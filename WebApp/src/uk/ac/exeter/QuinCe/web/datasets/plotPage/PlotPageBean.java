@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.primefaces.json.JSONArray;
@@ -12,7 +13,8 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -24,7 +26,6 @@ import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Bean for pages containing plots and tables
@@ -457,7 +458,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
     try {
       reset();
 
-      ResourceManager resourceManager = ResourceManager.getInstance();
       dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
 
       initData();
@@ -571,6 +571,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
       JSONObject obj = new JSONObject();
 
+      // The date is the first column and also the row ID
       obj.put("DT_RowId",
         DateTimeUtils.dateToLong(pageData.getRowIds().get(i)));
 
@@ -584,35 +585,106 @@ public abstract class PlotPageBean extends BaseManagedBean {
         throw new BeanException("Page Data row not loaded");
       }
 
-      for (FieldValue value : row.values()) {
+      // If the data contains position, the second column will be the lon and
+      // lat combined. We will use up two column indices to keep everything
+      // aligned.
 
-        if (null == value) {
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-        } else {
-          JSONArray cellData = new JSONArray();
+      if (pageData.containsPosition()) {
+        columnIndex++;
+        obj.put(String.valueOf(columnIndex),
+          makePositionCellData(columnIndex, row));
 
-          if (value.getValue().isNaN()) {
-            cellData.put(JSONObject.NULL);
+        // Add the extra column index
+        columnIndex++;
+      }
+
+      for (Map.Entry<Field, FieldValue> entry : row.entrySet()) {
+
+        // Ignore the position fields - we did them above.
+        if (entry.getKey().getId() != FileDefinition.LONGITUDE_COLUMN_ID
+          && entry.getKey().getId() != FileDefinition.LATITUDE_COLUMN_ID) {
+
+          FieldValue value = entry.getValue();
+
+          if (null == value) {
+            columnIndex++;
+            obj.put(String.valueOf(columnIndex), JSONObject.NULL);
           } else {
-            cellData.put(value.getValue());
+            JSONArray cellData = new JSONArray();
+
+            if (value.getValue().isNaN()) {
+              cellData.put(JSONObject.NULL);
+            } else {
+              cellData.put(value.getValue());
+            }
+
+            cellData.put(value.isUsed());
+            cellData.put(value.getQcFlag().getFlagValue());
+            cellData.put(value.needsFlag());
+            cellData.put(value.getQcComment());
+
+            columnIndex++;
+            obj.put(String.valueOf(columnIndex), cellData);
           }
-
-          cellData.put(value.isUsed());
-          cellData.put(value.getQcFlag().getFlagValue());
-          cellData.put(value.needsFlag());
-          cellData.put(value.getQcComment());
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), cellData);
         }
-
       }
 
       json.put(obj);
     }
 
     return json.toString();
+  }
+
+  private JSONArray makePositionCellData(int columnIndex,
+    LinkedHashMap<Field, FieldValue> row) {
+
+    // Defaults assuming no position data for this row
+    StringBuilder value = new StringBuilder();
+    boolean used = true;
+    Flag flag = Flag.GOOD;
+    boolean needsFlag = false;
+    String qcComment = null;
+
+    Field lonField = pageData.getFieldSets()
+      .getField(FileDefinition.LONGITUDE_COLUMN_ID);
+    Field latField = pageData.getFieldSets()
+      .getField(FileDefinition.LATITUDE_COLUMN_ID);
+
+    FieldValue lonValue = row.get(lonField);
+    FieldValue latValue = row.get(latField);
+
+    if (null != lonValue || null != latValue) {
+
+      if (null == lonValue) {
+        value.append("---");
+      } else {
+        value.append(lonValue.getValue());
+        flag = lonValue.getQcFlag();
+        needsFlag = lonValue.needsFlag();
+        qcComment = lonValue.getQcComment();
+      }
+
+      value.append(" | ");
+
+      if (null == latValue) {
+        value.append("---");
+      } else {
+        value.append(latValue.getValue());
+        if (latValue.getQcFlag().moreSignificantThan(flag)) {
+          flag = lonValue.getQcFlag();
+          needsFlag = lonValue.needsFlag();
+          qcComment = lonValue.getQcComment();
+        }
+      }
+    }
+
+    JSONArray cellData = new JSONArray();
+    cellData.put(value.toString());
+    cellData.put(used);
+    cellData.put(flag.getFlagValue());
+    cellData.put(needsFlag);
+    cellData.put(qcComment);
+    return cellData;
   }
 
   /**
@@ -764,11 +836,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
   }
 
   protected boolean positionColumnSelected() {
-    boolean result = false;
-    Field selectedField = fieldSets.getField(selectedColumn);
-    if (null != selectedField) {
-      result = SensorType.isPosition(selectedField.getId());
-    }
-    return result;
+    String columnHeader = fieldSets.getTableHeadingsList().get(selectedColumn);
+    return columnHeader.equals(FieldSets.POSITION_FIELD_HEADER);
   }
 }

@@ -157,41 +157,33 @@ public class ManualQcBean extends PlotPageBean {
 
     List<FieldValue> updates = new ArrayList<FieldValue>();
 
-    int otherPositionColumn = (selectedColumn == fieldSets
-      .getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID))
-        ? fieldSets.getColumnIndex(FileDefinition.LATITUDE_COLUMN_ID)
-        : fieldSets.getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID);
-
     for (LocalDateTime time : times) {
 
       // Both position values are always flagged
-      FieldValue chosenPositionValue = pageData.getValue(time, selectedColumn);
-      FieldValue otherPositionValue = pageData.getValue(time,
-        otherPositionColumn);
+      FieldValue lonValue = pageData.getValue(time,
+        FileDefinition.LONGITUDE_COLUMN_ID);
+      FieldValue latValue = pageData.getValue(time,
+        FileDefinition.LATITUDE_COLUMN_ID);
 
       // Record which is the most significant position QC - this will be applied
       // to the sensors
-      Flag appliedFlag = chosenPositionValue.getQcFlag();
-      String appliedComment = chosenPositionValue.getQcComment();
+      Flag appliedFlag = lonValue.getQcFlag();
+      String appliedComment = lonValue.getQcComment();
 
       // Whichever position has the worst flag, that's the one we use. If it's a
       // tie, use each value's own QC.
-      if (otherPositionValue.getQcFlag()
-        .moreSignificantThan(chosenPositionValue.getQcFlag())) {
-
-        chosenPositionValue.setQC(otherPositionValue.getQcFlag(),
-          otherPositionValue.getQcComment());
-        appliedFlag = otherPositionValue.getQcFlag();
-        appliedComment = otherPositionValue.getQcComment();
-      } else if (chosenPositionValue.getQcFlag()
-        .moreSignificantThan(otherPositionValue.getQcFlag())) {
-
-        otherPositionValue.setQC(chosenPositionValue.getQcFlag(),
-          chosenPositionValue.getQcComment());
+      if (latValue.getQcFlag().moreSignificantThan(appliedFlag)) {
+        appliedFlag = latValue.getQcFlag();
+        appliedComment = latValue.getQcComment();
+      } else if (latValue.getQcFlag().equalSignificance(lonValue.getQcFlag())) {
+        appliedComment += "; " + latValue.getQcComment();
       }
 
-      updates.add(chosenPositionValue);
-      updates.add(otherPositionValue);
+      lonValue.setQC(appliedFlag, appliedComment);
+      latValue.setQC(appliedFlag, appliedComment);
+
+      updates.add(lonValue);
+      updates.add(latValue);
 
       updates.addAll(setSensorsQc(time, appliedFlag, appliedComment));
 
@@ -370,29 +362,20 @@ public class ManualQcBean extends PlotPageBean {
     List<LocalDateTime> times = getSelectedRowsList();
     List<FieldValue> updates = new ArrayList<FieldValue>(times.size() * 2);
 
-    Field selectedField = fieldSets.getField(selectedColumn);
-    Field otherPositionField;
+    Field lonField = pageData.getFieldSets()
+      .getField(FileDefinition.LONGITUDE_COLUMN_ID);
+    Field latField = pageData.getFieldSets()
+      .getField(FileDefinition.LATITUDE_COLUMN_ID);
 
-    if (selectedColumn == fieldSets
-      .getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID)) {
-
-      otherPositionField = fieldSets
-        .getField(fieldSets.getColumnIndex(FileDefinition.LATITUDE_COLUMN_ID));
-    } else {
-      otherPositionField = fieldSets
-        .getField(fieldSets.getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID));
-    }
-
-    // Update the sensors first, since this will ensure all data is loaded and
+    // Update the sensors first, since this explicitly loads all data and
     // may overwrite the position fields
     updates.addAll(pageData.applyQcToFieldSet(times,
-      fieldSets.getFieldSet(DataSetDataDB.SENSORS_FIELDSET), selectedField,
+      fieldSets.getFieldSet(DataSetDataDB.SENSORS_FIELDSET), lonField,
       DataSetDataDB.POSITION_QC_PREFIX, new Flag(userFlag), userComment));
 
     // Now update the position fields
-    updates.addAll(pageData.setQC(times, selectedField, userFlag, userComment));
-    updates
-      .addAll(pageData.setQC(times, otherPositionField, userFlag, userComment));
+    updates.addAll(pageData.setQC(times, lonField, userFlag, userComment));
+    updates.addAll(pageData.setQC(times, latField, userFlag, userComment));
 
     return updates;
   }

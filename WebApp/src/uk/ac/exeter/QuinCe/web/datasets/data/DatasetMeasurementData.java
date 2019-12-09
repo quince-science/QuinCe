@@ -346,6 +346,17 @@ public abstract class DatasetMeasurementData
     return rowIdsJson;
   }
 
+  /**
+   * Determines whether or not this data contains position data
+   *
+   * @return {@code true} if the data contains positions; {@code false}
+   *         otherwise.
+   */
+  public boolean containsPosition() {
+    return fieldSets.containsField(FileDefinition.LONGITUDE_COLUMN_ID)
+      || fieldSets.containsField(FileDefinition.LATITUDE_COLUMN_ID);
+  }
+
   private void updateRowIdsCache() {
     // If the cache size doesn't equal the data size, it needs rebuilding
     if (rowIdsCache.size() != size()) {
@@ -365,12 +376,12 @@ public abstract class DatasetMeasurementData
 
   private void loadPositions() throws MeasurementDataException {
 
-    loadField(fieldSets.getField(FileDefinition.LONGITUDE_COLUMN_ID),
-      fieldSets.getField(FileDefinition.LATITUDE_COLUMN_ID));
-
-    positions = new TreeMap<LocalDateTime, Position>();
-
     if (fieldSets.containsField(FileDefinition.LONGITUDE_COLUMN_ID)) {
+      loadField(fieldSets.getField(FileDefinition.LONGITUDE_COLUMN_ID),
+        fieldSets.getField(FileDefinition.LATITUDE_COLUMN_ID));
+
+      positions = new TreeMap<LocalDateTime, Position>();
+
       Field lonField = fieldSets.getField(FileDefinition.LONGITUDE_COLUMN_ID);
       Field latField = fieldSets.getField(FileDefinition.LATITUDE_COLUMN_ID);
 
@@ -432,6 +443,10 @@ public abstract class DatasetMeasurementData
 
   public FieldValue getValue(LocalDateTime time, int fieldIndex) {
     return get(time).get(fieldSets.getField(fieldIndex));
+  }
+
+  public FieldValue getValue(LocalDateTime time, long fieldId) {
+    return get(time).get(fieldSets.getField(fieldId));
   }
 
   public CommentSet getCommentSet(int fieldIndex, List<LocalDateTime> rows) {
