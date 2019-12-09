@@ -658,7 +658,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
       if (null == lonValue) {
         value.append("---");
       } else {
-        value.append(lonValue.getValue());
+        value.append(numberFormatter.format(lonValue.getValue()));
         flag = lonValue.getQcFlag();
         needsFlag = lonValue.needsFlag();
         qcComment = lonValue.getQcComment();
@@ -669,7 +669,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
       if (null == latValue) {
         value.append("---");
       } else {
-        value.append(latValue.getValue());
+        value.append(numberFormatter.format(latValue.getValue()));
         if (latValue.getQcFlag().moreSignificantThan(flag)) {
           flag = lonValue.getQcFlag();
           needsFlag = lonValue.needsFlag();
