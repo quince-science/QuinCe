@@ -179,8 +179,8 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
 
   # CHECK DICTONARY : DELETE FILES ON SERVER; OLDER THAN 30 DAYS
     logging.debug('Checking local database')
-    c.execute("SELECT * FROM latest \
-     WHERE (nc_date < date('now','-30 day') AND uploaded == ?)",[UPLOADED]) 
+    c.execute("SELECT * FROM latest WHERE uploaded == ?\
+      order by nc_date desc limit 100 OFFSET 30",[UPLOADED]) 
     results_delete = c.fetchall()
     logging.debug(f'delete {len(results_delete)}; {results_delete}')
     
@@ -192,9 +192,8 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
         WHERE filename = ?", [NOT_UPLOADED, filename])
 
   # CHECK DICTIONARY: UPLOAD FILES NOT ON SERVER; YOUNGER THAN 30 DAYS
-    c.execute("SELECT * FROM latest \
-      WHERE (nc_date >= date('now','-30 day') \
-      AND NOT uploaded == ?)",[UPLOADED]) 
+    c.execute("SELECT * FROM latest WHERE NOT uploaded == ?\
+      order by nc_date desc limit 30",[UPLOADED]) 
     results_upload = c.fetchall()    
     logging.debug(f'upload {len(results_upload)}: {results_upload}')
 
