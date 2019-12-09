@@ -159,19 +159,15 @@ public class ManualQcBean extends PlotPageBean {
 
     for (LocalDateTime time : times) {
 
-      // Both position values are always flagged
+      // Both position values are flagged
       FieldValue lonValue = pageData.getValue(time,
         FileDefinition.LONGITUDE_COLUMN_ID);
       FieldValue latValue = pageData.getValue(time,
         FileDefinition.LATITUDE_COLUMN_ID);
 
-      // Record which is the most significant position QC - this will be applied
-      // to the sensors
       Flag appliedFlag = lonValue.getQcFlag();
       String appliedComment = lonValue.getQcComment();
 
-      // Whichever position has the worst flag, that's the one we use. If it's a
-      // tie, use each value's own QC.
       if (latValue.getQcFlag().moreSignificantThan(appliedFlag)) {
         appliedFlag = latValue.getQcFlag();
         appliedComment = latValue.getQcComment();
@@ -208,9 +204,11 @@ public class ManualQcBean extends PlotPageBean {
       FieldValue value = pageData.getValue(time,
         fieldSets.getColumnIndex(field.getId()));
 
-      // We don't change the QC if the automatic QC has yet to be verified.
-      // The user's choice may override the position flag
-      if (!value.needsFlag() && flag.moreSignificantThan(value.getQcFlag())) {
+      // Override the sensor's QC if the position QC is of equal or worse flag
+      // significance.
+      if (flag.equalSignificance(value.getQcFlag())
+        || flag.moreSignificantThan(value.getQcFlag())) {
+
         value.setQC(flag, DataSetDataDB.POSITION_QC_PREFIX + comment);
         updatedValues.add(value);
       }

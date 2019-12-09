@@ -697,8 +697,7 @@ public abstract class DatasetMeasurementData
 
           // If the value's existing flag is GOOD or NEEDED, overwrite it with
           // the supplied flag
-          if (value.getQcFlag().equals(Flag.NEEDED)
-            || value.getQcFlag().isGood()) {
+          if (value.needsFlag || value.getQcFlag().isGood()) {
             value.setQC(flag, appliedComment);
             updates.add(value);
           } else {
