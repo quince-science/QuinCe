@@ -695,9 +695,12 @@ public abstract class DatasetMeasurementData
         FieldValue value = get(time).get(field);
         if (null != value && !value.isGhost()) {
 
-          // If the value's existing flag is GOOD or NEEDED, overwrite it with
-          // the supplied flag
-          if (value.needsFlag || value.getQcFlag().isGood()) {
+          // If the new flag is more significant than the value's existing flag,
+          // or of the same significance but the flag has not been confirmed by
+          // the user, set it.
+          if (flag.moreSignificantThan(value.getQcFlag())
+            || (flag.equalSignificance(value.getQcFlag()) && value.needsFlag)) {
+
             value.setQC(flag, appliedComment);
             updates.add(value);
           } else {
