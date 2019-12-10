@@ -170,102 +170,30 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
     c = create_connection(cmems_db)
 
   # CHECK IF FTP IS EMPTY 
-    logging.debug('Checking FTP directory')
     directory_empty = check_directory(ftp, nrt_dir) 
     if directory_empty:
-      logging.error('Previous export has failed, \
-        clean up remanent files before re-exporting')
+      logging.error('Previous export has failed, remanent files on server')
       return False 
 
-  # CHECK DICTONARY : DELETE FILES ON SERVER; OLDER THAN 30 DAYS
-    logging.debug('Checking local database')
-    c.execute("SELECT * FROM latest WHERE uploaded == ?\
-      order by nc_date desc limit 100 OFFSET 30",[UPLOADED]) 
-    results_delete = c.fetchall()
-    logging.debug(f'delete {len(results_delete)}; {results_delete}')
-    
-    dnt_delete = {}
-    for item in results_delete: 
-      filename, filepath_local  = item[0], item[2]
-      dnt_delete[filename] = item[6]
-      c.execute("UPDATE latest SET uploaded = ? \
-        WHERE filename = ?", [NOT_UPLOADED, filename])
+  # CHECK DICTONARY : DELETE files not among 30 most recent    
+    dnt_delete = to_be_deleted(c)
 
   # CHECK DICTIONARY: UPLOAD FILES NOT ON SERVER; YOUNGER THAN 30 DAYS
-    c.execute("SELECT * FROM latest WHERE NOT uploaded == ?\
-      order by nc_date desc limit 30",[UPLOADED]) 
-    results_upload = c.fetchall()    
-    logging.debug(f'upload {len(results_upload)}: {results_upload}')
-
-    dnt_upload = {}
-    for item in results_upload:
-      filename, filepath_local  = item[0], item[2]
-      
-      upload_result, filepath_ftp, start_upload_time, stop_upload_time = (
-        upload_to_ftp(ftp, ftp_config, filepath_local))
-      #logging.debug(f'upload result: {upload_result}')
-      
-      if upload_result == 0: #upload ok
-        # Setting dnt-variable to temp variable: curr_date.
-        # After DNT is created, the DNT-filepath is updated for all  
-        # instances where DNT-filetpath is curr_date
-        c.execute("UPDATE latest \
-          SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
-          WHERE filename = ?", 
-          [UPLOADED, filepath_ftp, curr_date ,filename])
-
-        # create DNT-entry
-        dnt_upload[filename] = ({'ftp_filepath':filepath_ftp, 
-          'start_upload_time':start_upload_time, 
-          'stop_upload_time':stop_upload_time,
-          'local_filepath':local_folder+'/'+filename +'.nc'})    
-        logging.debug(f'dnt entry: {dnt_upload[filename]}') 
-      else:
-        logging.debug(f'upload failed: {upload_result}')
+    results_upload = to_be_uploaded(c) 
+    dnt_upload = upload_new(
+      c,ftp,ftp_config,results_upload,curr_date,local_folder)
 
     if dnt_upload or dnt_delete:
-      # FETCH INDEX
-      c.execute("SELECT * FROM latest WHERE uploaded == 1")
-      currently_uploaded = c.fetchall()
-
-      try:
-        index_filename = build_index(currently_uploaded)
-      except Exception as e:
-        logging.error('Building index failed: ', exc_info=True)
-        OK = False
-        error += 'Building index failed: ' + str(e)
- 
-      # UPLOAD INDEX 
-      try:
-        upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
-          upload_to_ftp(ftp,ftp_config, index_filename))
-        logging.debug(f'index upload result: {upload_result}')
-      except Exception as e:
-        logging.error('Uploading index failed: ', exc_info=True)
-        OK = False      
-        error += 'Uploading index failed: ' + str(e)
+      index_filename, error, OK = build_index(c,error,OK)
+      dnt_upload, error, OK = upload_index(
+        dnt_upload,ftp,ftp_config,index_filename,error,OK)
     
       # BUILD DNT-FILE
-      # Adding index file to DNT-list:
-      dnt_upload[index_filename] = ({
-        'ftp_filepath':ftp_filepath, 
-        'start_upload_time':start_upload_time, 
-        'stop_upload_time':stop_upload_time,
-        'local_filepath': index_filename
-        })
-
       logging.info('Building DNT-file')
       try:
         dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
-
-        # UPLOAD DNT-FILE
-        _, dnt_ftp_filepath, _, _ = (
-          upload_to_ftp(ftp, ftp_config, dnt_local_filepath))
-        
-        logging.info('Updating database to include DNT filename')
-        sql_rec = "UPDATE latest SET dnt_file = ? WHERE dnt_file = ?"
-        sql_var = [dnt_local_filepath, curr_date]
-        c.execute(sql_rec,sql_var)
+        dnt_ftp_filepath = upload_DNT(
+          c,ftp,ftp_config,dnt_local_filepath,curr_date)
 
         try:
           response = evaluate_response_file(
@@ -274,42 +202,127 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
 
         except Exception as e:
           logging.error('No response from CMEMS: ', exc_info=True)
-          OK = False
-          error += 'No response from CMEMS: ' + str(e)
+          OK = False; error += 'No response from CMEMS: ' + str(e)
 
       except Exception as exception:
         logging.error('Building DNT failed: ', exc_info=True)
-        OK = False
-        error += 'Building DNT failed: ' + str(exception)
+        OK = False; error += 'Building DNT failed: ' + str(exception)
 
       # FOLDER CLEAN UP
       if dnt_delete:
         logging.debug('Delete empty directories')
         try: 
           _, dnt_local_filepath_f = build_fDNT(dnt_delete)
-
           _, dnt_ftp_filepath_f, _, _ = (
             upload_to_ftp(ftp, ftp_config, dnt_local_filepath_f))  
           try:
-            response = evaluate_response_file(
-              ftp,dnt_ftp_filepath_f,dnt_local_filepath_f.rsplit('/',1)[0],cmems_db)
+            response = evaluate_response_file(ftp,dnt_ftp_filepath_f,
+              dnt_local_filepath_f.rsplit('/',1)[0],cmems_db)
             logging.debug('cmems fDNT-response, folders: {}'.format(response))
 
           except Exception as e:
             logging.error('No response from CMEMS: ', exc_info=True)
-            OK = False
-            error += 'No response from CMEMS: ' + str(e)
+            OK = False; error += 'No response from CMEMS: ' + str(e)
 
         except Exception as e:
           logging.error('Uploading fDNT failed: ', exc_info=True)
-          OK = False
-          error += 'Uploading fDNT failed: ' + str(e)
+          OK = False; error += 'Uploading fDNT failed: ' + str(e)
 
     if not OK:
       logging.error('Upload failed')
       abort_upload(error, ftp, nrt_dir, c, curr_date)
 
     return OK
+
+def to_be_deleted(c):
+  """ Queries local db for files to be deleted"""
+  logging.debug('Checking local database')
+  c.execute("SELECT * FROM latest WHERE uploaded == ?\
+    order by nc_date desc limit 100 OFFSET 30",[UPLOADED]) 
+  results_delete = c.fetchall()
+  logging.debug(f'delete {len(results_delete)}; {results_delete}')
+
+  dnt_delete = {}
+  for item in results_delete: 
+    filename, filepath_local  = item[0], item[2]
+    dnt_delete[filename] = item[6]
+    c.execute("UPDATE latest SET uploaded = ? \
+      WHERE filename = ?", [NOT_UPLOADED, filename])
+
+  return dnt_delete
+
+def to_be_uploaded(c):
+  """ Queries local db for files to be uploaded"""
+  c.execute("SELECT * FROM latest WHERE (NOT uploaded == ? and hashsum in \
+    ( select hashsum from latest order by nc_date desc limit 30 ))",[UPLOADED]) 
+  results_upload = c.fetchall()    
+  logging.debug(f'upload {len(results_upload)}: {results_upload}')
+  return results_upload
+
+
+def upload_new(c,ftp,ftp_config,results_upload,curr_date,local_folder):
+  """ Uploads nc-files in results_upload to ftp-server"""
+
+  dnt_upload = {}
+  for item in results_upload:
+    filename, filepath_local  = item[0], item[2]
+    
+    upload_result, filepath_ftp, start_upload_time, stop_upload_time = (
+      upload_to_ftp(ftp, ftp_config, filepath_local))
+    
+    if upload_result == 0: #upload ok
+      # Setting dnt-variable to temp variable: curr_date.
+      # After DNT is created, the DNT-filepath is updated for all  
+      # instances where DNT-filetpath is curr_date
+      c.execute("UPDATE latest \
+        SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
+        WHERE filename = ?", 
+        [UPLOADED, filepath_ftp, curr_date ,filename])
+
+      # create DNT-entry
+      dnt_upload[filename] = ({'ftp_filepath':filepath_ftp, 
+        'start_upload_time':start_upload_time, 
+        'stop_upload_time':stop_upload_time,
+        'local_filepath':local_folder+'/'+filename +'.nc'})    
+      logging.debug(f'dnt entry: {dnt_upload[filename]}') 
+    else:
+      logging.debug(f'upload failed: {upload_result}')
+  return dnt_upload
+
+def upload_index(dnt_upload,ftp,ftp_config,index_filename,error,OK):
+  """ Uploads index file to ftp-server """
+
+  try:
+    upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
+      upload_to_ftp(ftp,ftp_config, index_filename))
+    logging.debug(f'index upload result: {upload_result}')
+  except Exception as e:
+    logging.error('Uploading index failed: ', exc_info=True)
+    OK = False      
+    error += 'Uploading index failed: ' + str(e)
+
+  # Adding index file to DNT-list:
+  dnt_upload[index_filename] = ({
+    'ftp_filepath':ftp_filepath, 
+    'start_upload_time':start_upload_time, 
+    'stop_upload_time':stop_upload_time,
+    'local_filepath': index_filename
+    })
+
+  return dnt_upload, error, OK
+
+def upload_DNT(c,ftp,ftp_config,dnt_local_filepath,curr_date):
+  """ Uploads DNT file to ftp server"""
+
+  _, dnt_ftp_filepath, _, _ = (
+    upload_to_ftp(ftp, ftp_config, dnt_local_filepath))
+  
+  logging.info('Updating database to include DNT filename')
+  sql_rec = "UPDATE latest SET dnt_file = ? WHERE dnt_file = ?"
+  sql_var = [dnt_local_filepath, curr_date]
+  c.execute(sql_rec,sql_var)
+
+  return dnt_ftp_filepath
 
 def abort_upload(error,ftp,nrt_dir,c,curr_date):
   # Remove currently updated files on ftp-server
@@ -335,6 +348,7 @@ def check_directory(ftp, nrt_dir):
   '''   Cleans out empty folders, checks if main directory is empty. 
   returns True when empty 
   '''
+  logging.debug('Checking FTP directory')
   uningested_files = clean_directory(ftp, nrt_dir)
   with open (not_ingested,'a+') as f:
     for item in uningested_files:
@@ -543,61 +557,68 @@ def build_fDNT(dnt_delete):
 
   return dnt_file, dnt_filepath
 
-def build_index(results_uploaded):
+def build_index(c,error,OK):
   '''
   Creates index-file over CMEMS directory.
 
   Lists all files currently uploaded to the CMEMS server. 
   '''
+  try:
+    c.execute("SELECT * FROM latest WHERE uploaded == 1")
+    currently_uploaded = c.fetchall()
 
-  date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
-  index_header = ('# Title : Carbon in-situ observations catalog \n'\
-    + '# Description : catalog of available in-situ observations per platform.\n'\
-    + '# Project : Copernicus \n# Format version : 1.0 \n'\
-    + '# Date of update : ' + date_header +'\n'
-    + '# catalog_id,file_name,geospatial_lat_min,geospatial_lat_max,'\
-    + 'geospatial_lon_min,geospatial_lon_max,time_coverage_start,'\
-    + 'time_coverage_end,provider,date_update,data_mode,parameters\n')
+    index_header = ('# Title : Carbon in-situ observations catalog \n'\
+      + '# Description : catalog of available in-situ observations per platform.\n'\
+      + '# Project : Copernicus \n# Format version : 1.0 \n'\
+      + '# Date of update : ' + date_header +'\n'
+      + '# catalog_id,file_name,geospatial_lat_min,geospatial_lat_max,'\
+      + 'geospatial_lon_min,geospatial_lon_max,time_coverage_start,'\
+      + 'time_coverage_end,provider,date_update,data_mode,parameters\n')
 
-  index_info = ''
-  for file in results_uploaded:
-    local_filepath = file[2]
-    ftp_filepath = file[6].replace('NRT_201904','NRT')
+    index_info = ''
+    for file in currently_uploaded:
+      local_filepath = file[2]
+      ftp_filepath = file[6].replace('NRT_201904','NRT')
 
-    nc = netCDF4.Dataset(local_filepath,mode='r')
+      nc = netCDF4.Dataset(local_filepath,mode='r')
 
-    lat_min = nc.geospatial_lat_min
-    lat_max = nc.geospatial_lat_max
-    lon_min = nc.geospatial_lon_min
-    lon_max = nc.geospatial_lon_max
-    time_start = nc.time_coverage_start
-    time_end  = nc.time_coverage_end
-    date_update = nc.date_update
+      lat_min = nc.geospatial_lat_min
+      lat_max = nc.geospatial_lat_max
+      lon_min = nc.geospatial_lon_min
+      lon_max = nc.geospatial_lon_max
+      time_start = nc.time_coverage_start
+      time_end  = nc.time_coverage_end
+      date_update = nc.date_update
 
-    #get list of parameters from netCDF file
-    var_list = nc.variables.keys()
-    var_list = list(filter(lambda x: '_' not in x, var_list))
-    var_list = list(filter(lambda x: 'TIME' not in x, var_list))
-    var_list = list(filter(lambda x: 'LATITUDE' not in x, var_list))
-    var_list = list(filter(lambda x: 'LONGITUDE' not in x, var_list))
-    nc.close()
-    parameters = ' '.join(var_list)
+      #get list of parameters from netCDF file
+      var_list = nc.variables.keys()
+      var_list = list(filter(lambda x: '_' not in x, var_list))
+      var_list = list(filter(lambda x: 'TIME' not in x, var_list))
+      var_list = list(filter(lambda x: 'LATITUDE' not in x, var_list))
+      var_list = list(filter(lambda x: 'LONGITUDE' not in x, var_list))
+      nc.close()
+      parameters = ' '.join(var_list)
 
-    index_info += ('COP-GLOBAL-01,' + server_location + ftp_filepath + ',' 
-                + lat_min + ',' + lat_max + ',' + lon_min + ',' + lon_max + ',' 
-                + time_start + ',' + time_end  
-                + ',University of Bergen Geophysical Institute,' 
-                + date_update + ',R,' + parameters + '\n')
+      index_info += ('COP-GLOBAL-01,' + server_location + ftp_filepath + ',' 
+                  + lat_min + ',' + lat_max + ',' + lon_min + ',' + lon_max + ',' 
+                  + time_start + ',' + time_end  
+                  + ',University of Bergen Geophysical Institute,' 
+                  + date_update + ',R,' + parameters + '\n')
 
-  index_latest = index_header + index_info
+    index_latest = index_header + index_info
 
-  index_filename = 'index_latest.txt'
-  with open(index_filename,'wb') as f: f.write(index_latest.encode())
- 
-  logging.debug('index file:\n' + index_latest)
+    index_filename = 'index_latest.txt'
+    with open(index_filename,'wb') as f: f.write(index_latest.encode())
+   
+    logging.debug('index file:\n' + index_latest)
+  except Exception as e:
+    logging.error('Building index failed: ', exc_info=True)
+    OK = False
+    error += 'Building index failed: ' + str(e)
 
-  return index_filename
+  return index_filename,error,OK
 
 
 def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
