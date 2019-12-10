@@ -256,7 +256,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
         'local_filepath': index_filename
         })
 
-      logging.info('Building DNT-file')
+      logging.info('Building and uploading DNT-file')
       try:
         dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
 
@@ -264,7 +264,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
         _, dnt_ftp_filepath, _, _ = (
           upload_to_ftp(ftp, ftp_config, dnt_local_filepath))
         
-        logging.info('Updating database to include DNT filename')
+        logging.debug('Updating database to include DNT filename')
         sql_rec = "UPDATE latest SET dnt_file = ? WHERE dnt_file = ?"
         sql_var = [dnt_local_filepath, curr_date]
         c.execute(sql_rec,sql_var)
@@ -286,7 +286,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
 
       # FOLDER CLEAN UP
       if dnt_delete:
-        logging.debug('Delete empty directories')
+        logging.info('Delete empty directories')
         try: 
           _, dnt_local_filepath_f = build_fDNT(dnt_delete)
 
@@ -395,14 +395,14 @@ def sql_commit(nc_dict):
     filename_exists = c.fetchone()
     
     if filename_exists: # if netCDF file already in database
-      logging.info(f'Updating: {key}')
+      logging.debug(f'Updating: {key}')
       sql_req = "UPDATE latest SET filename=?,hashsum=?,filepath=?,nc_date=?,\
         dataset=?,uploaded=?,ftp_filepath=?,dnt_file=?,comment=?,export_date=? \
         WHERE filename=?"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
         nc_dict[key]['date'],nc_dict[key]['dataset'],uploaded,None,None,None,key,date])
     else:
-      logging.debug(f'Adding new entry {key}')
+      logging.info(f'Adding new entry {key}')
       sql_req = "INSERT INTO latest(filename,hashsum,filepath,nc_date,\
         dataset,uploaded,ftp_filepath,dnt_file,comment,export_date) \
         VALUES (?,?,?,?,?,?,?,?,?,?)"
