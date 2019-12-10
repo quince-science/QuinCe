@@ -273,6 +273,10 @@ public class FieldValue {
     return needsFlag;
   }
 
+  public void setNeedsFlag(boolean needsFlag) {
+    this.needsFlag = needsFlag;
+  }
+
   public String getQcComment() {
     return qcComment;
   }

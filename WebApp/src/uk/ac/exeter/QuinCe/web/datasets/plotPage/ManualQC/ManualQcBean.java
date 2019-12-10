@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -140,11 +139,27 @@ public class ManualQcBean extends PlotPageBean {
     if (positionColumnSelected()) {
       updatedValues = acceptPositionAutoQC();
     } else {
-      updatedValues = getSelectedRowsList().stream()
-        .map(t -> pageData.getValue(t, selectedColumn))
-        .collect(Collectors.toList());
 
-      // TODO If the Positional QC is worse than this QC, use that instead.
+      List<LocalDateTime> updateRows = getSelectedRowsList();
+
+      updatedValues = new ArrayList<FieldValue>(updateRows.size());
+
+      for (LocalDateTime row : updateRows) {
+
+        FieldValue position = pageData.getValue(row,
+          FieldSets.POSITION_FIELD_ID);
+        FieldValue value = pageData.getValue(row, selectedColumn);
+
+        // We can use the auto QC value if (a) the position QC is not confirmed
+        // or (b) the auto QC is worse than the position QC
+        if (position.needsFlag()
+          || value.getQcFlag().moreSignificantThan(position.getQcFlag())) {
+
+          value.setNeedsFlag(false);
+        }
+
+        updatedValues.add(value);
+      }
     }
 
     saveUpdates(updatedValues);
