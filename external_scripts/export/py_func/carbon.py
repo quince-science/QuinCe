@@ -41,7 +41,7 @@ def export_file_to_cp(
   for L1 exports. Might get deprecated.
 
   '''
-  logging.info(f'Processing {level} file: {filename}')
+  logging.debug(f'Processing {level} file: {filename}')
   
   file = get_file_from_zip(dataset_zip,filename)
   hashsum = get_hashsum(file)  
@@ -57,7 +57,7 @@ def export_file_to_cp(
   else: 
     export_filename = os.path.split(file)[-1]
 
-  logging.info(f'Checking for previous export of {export_filename}')
+  logging.debug(f'Checking for previous export of {export_filename}')
   #sql_investigate returns old hashsum if new version(same name, diff hashsum).
   NRT = manifest['manifest']['metadata']['nrt']
   prev_exp = sql_investigate(
@@ -94,7 +94,7 @@ def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
   success = True
 
   #posting metadata-json
-  logging.info(f'POSTING {file} metadata-object to {META_URL}')
+  logging.debug(f'POSTING {file} metadata-object to {META_URL}')
   resp = push_object(
     META_URL,meta.encode('utf-8'),auth_cookie,META_CONTENT_TYPE,'POST')
   logging.debug(f'{file} metadata upload response: {resp}')
@@ -108,7 +108,7 @@ def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
   #  + urllib.parse.quote(OBJ_SPEC_URI, safe='') + '&nRows=' 
   #  + str(manifest['manifest']['metadata']['records']))
   object_url = OBJECT_BASE_URL + hashsum
-  logging.info(f'PUTTING data-object: {file} to {object_url}')
+  logging.debug(f'PUTTING data-object: {file} to {object_url}')
   
   with open(file) as f: 
     data = f.read().encode('utf-8')
@@ -175,7 +175,7 @@ def build_metadata_package(file,manifest,platform,index,hashsum,
 
 def get_hashsum(filename):
   ''' returns a 256 hashsum corresponding to input file. '''
-  logging.info(f'Generating hashsum for datafile {filename}')
+  logging.debug(f'Generating hashsum for datafile {filename}')
   with open(filename) as f: content = f.read()
   hashsum = hashlib.sha256(content.encode('utf-8')).hexdigest()
   return hashsum
@@ -196,7 +196,7 @@ def push_object(url,data,auth_cookie,content_type,method):
 
 def get_auth_cookie(config):   
   '''   Returns authentication cookie from Carbon Portal.   '''
-  logging.info('Obtaining authentication cookie')
+  logging.debug('Obtaining authentication cookie')
 
   auth_url = config['CARBON']['auth_url']
   auth_mail = config['CARBON']['auth_mail']
@@ -238,7 +238,7 @@ def sql_investigate(export_filename, hashsum,filename,level,L1_filename,NRT,plat
       filename_exists = c.fetchone() 
       if filename_exists: 
         if filename_exists[0] == hashsum:
-          logging.debug(f'{filename}: already exported')
+          logging.info(f'{filename}: already exported')
           return 'EXISTS'
         else:
           #update hashsum to newest version
@@ -248,7 +248,7 @@ def sql_investigate(export_filename, hashsum,filename,level,L1_filename,NRT,plat
             (export_filename,hashsum, today, filename_exists[0]))
           return filename_exists[0] #old_hashsum
       else:
-        logging.debug(f'{filename}: new entry.')
+        logging.info(f'{filename}: new entry.')
         return 'NEW'
     else:
       c.execute("SELECT hashsum FROM cp_export WHERE export_filename=? ",
@@ -257,7 +257,7 @@ def sql_investigate(export_filename, hashsum,filename,level,L1_filename,NRT,plat
       # fetches hashsum if filename exists
       if filename_exists: 
         if filename_exists[0] == hashsum:
-          logging.debug(f'{filename}: already exported')
+          logging.info(f'{filename}: already exported')
           return 'EXISTS'
         else:
           #update hashsum to newest version
@@ -267,7 +267,7 @@ def sql_investigate(export_filename, hashsum,filename,level,L1_filename,NRT,plat
             (hashsum, today, filename))
           return filename_exists[0] #old_hashsum
       else:
-        logging.debug(f'{filename}: new entry.')
+        logging.info(f'{filename}: new entry.')
         return 'NEW'
   except Exception as e:
     logging.error(f'Checking database failed:  {filename} ', exc_info=True)
@@ -286,7 +286,7 @@ def sql_commit(export_filename,hashsum,filename,level,L1_filename):
     filename_exists = c.fetchone() 
     if filename_exists:
       if not(filename_exists[0] == hashsum):
-        logging.info(f'Update to {filename}')
+        logging.debug(f'Update to {filename}')
         c.execute("UPDATE cp_export SET \
           hashsum=?,export_date=? WHERE filename = ?",\
           (hashsum, today, filename))
