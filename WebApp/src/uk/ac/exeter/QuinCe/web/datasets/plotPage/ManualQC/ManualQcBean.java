@@ -147,7 +147,7 @@ public class ManualQcBean extends PlotPageBean {
       for (LocalDateTime row : updateRows) {
 
         FieldValue position = pageData.getValue(row,
-          FieldSets.POSITION_FIELD_ID);
+          FileDefinition.LONGITUDE_COLUMN_ID);
         FieldValue value = pageData.getValue(row, selectedColumn);
 
         // We can use the auto QC value if (a) the position QC is not confirmed
@@ -357,10 +357,32 @@ public class ManualQcBean extends PlotPageBean {
       if (positionColumnSelected()) {
         updates = applyManualPositionFlag();
       } else {
-        updates = pageData.setQC(getSelectedRowsList(), selectedColumn,
-          userFlag, userComment);
 
-        // TODO If the Positional QC is worse than this QC, use that instead.
+        Flag flag = new Flag(userFlag);
+
+        List<LocalDateTime> rows = getSelectedRowsList();
+        updates = new ArrayList<FieldValue>(rows.size());
+
+        for (LocalDateTime row : rows) {
+
+          FieldValue position = pageData.getValue(row,
+            FileDefinition.LONGITUDE_COLUMN_ID);
+          FieldValue value = pageData.getValue(row, selectedColumn);
+
+          // We can use the selected QC value if (a) the position QC is not
+          // confirmed
+          // or (b) the auto QC is worse than the position QC
+          if (position.needsFlag()
+            || flag.moreSignificantThan(position.getQcFlag())) {
+
+            value.setQC(flag, userComment);
+          } else {
+            value.setQC(position.getQcFlag(),
+              DataSetDataDB.POSITION_QC_PREFIX + position.getQcComment());
+          }
+
+          updates.add(value);
+        }
       }
     } catch (Exception e) {
       e.printStackTrace();
