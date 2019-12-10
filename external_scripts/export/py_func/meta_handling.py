@@ -27,7 +27,7 @@ def extract_zip(dataset_zip,dataset_name):
   
   returns:  manifest, L1 datafilename and L0 datafilenames 
   '''
-  logging.info(
+  logging.debug(
     f'Extracting manifest and datafiles from zip. Dataset: {dataset_name}')
    
   with ZipFile(io.BytesIO(dataset_zip),'r') as zip: 
