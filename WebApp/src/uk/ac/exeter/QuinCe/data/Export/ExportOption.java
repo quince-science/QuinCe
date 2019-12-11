@@ -108,6 +108,11 @@ public class ExportOption {
   private Map<String, String> replacementColumnHeaders = null;
 
   /**
+   * Indicates whether export option should be visible in webapp
+   */
+  private boolean visible = true;
+
+  /**
    * Build an ExportOption object from a JSON string
    *
    * @param index
@@ -167,6 +172,10 @@ public class ExportOption {
 
   public boolean includeUnits() {
     return includeUnits;
+  }
+
+  public boolean getVisible() {
+    return visible;
   }
 
   /**
@@ -240,6 +249,12 @@ public class ExportOption {
           }
         }
       }
+    }
+
+    if (json.has("visible")) {
+      visible = json.getBoolean("visible");
+    } else {
+      visible = true;
     }
 
     if (json.has("missingValue")) {
@@ -429,7 +444,7 @@ public class ExportOption {
 
   /**
    * Get the class to be used for building the export data. This is typically
-   * used for customising data prost-processors before the final export.
+   * used for customizing data post-processors before the final export.
    *
    * @return The export data class
    */
