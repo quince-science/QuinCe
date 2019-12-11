@@ -84,6 +84,11 @@ public class SensorValue implements Comparable<SensorValue> {
     this.value = value;
     this.autoQC = new AutoQCResult();
     this.dirty = true;
+
+    if (null == value) {
+      this.userQCFlag = Flag.BAD;
+      this.userQCMessage = "Missing";
+    }
   }
 
   /**

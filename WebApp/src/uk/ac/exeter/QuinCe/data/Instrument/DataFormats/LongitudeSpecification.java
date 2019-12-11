@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Handles all formats of longitudes, and the corresponding column assignments
  * within a data file
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -36,7 +36,7 @@ public class LongitudeSpecification extends PositionSpecification {
 
   /**
    * Constructor for a complete specification
-   * 
+   *
    * @param format
    *          The format
    * @param valueColumn
@@ -62,49 +62,53 @@ public class LongitudeSpecification extends PositionSpecification {
   }
 
   @Override
-  public double getValue(List<String> line) throws PositionException {
+  public String getValue(List<String> line) throws PositionException {
 
-    double value;
+    String result = line.get(getValueColumn()).trim();
 
-    try {
-      value = Double.parseDouble(line.get(getValueColumn()));
+    if (result.length() == 0) {
+      result = null;
+    } else {
+      try {
+        double doubleValue = Double.parseDouble(result);
 
-      switch (format) {
-      case FORMAT_0_360: {
-        if (value > 180) {
-          value = (360 - value) * -1;
+        switch (format) {
+        case FORMAT_0_360: {
+          if (doubleValue > 180) {
+            doubleValue = (360 - doubleValue) * -1;
+          }
+          break;
         }
-        break;
+        case FORMAT_MINUS180_180: {
+          // No need to do anything!
+          break;
+        }
+        case FORMAT_0_180: {
+          String hemisphere = line.get(getHemisphereColumn());
+          doubleValue = doubleValue * hemisphereMultiplier(hemisphere);
+          break;
+        }
+        default: {
+          throw new InvalidPositionFormatException(format);
+        }
+        }
+
+        result = String.valueOf(doubleValue);
+
+      } catch (NumberFormatException e) {
+        System.out.println(
+          "NumberFormatException: Invalid longitude value '" + result + "'");
       }
-      case FORMAT_MINUS180_180: {
-        // No need to do anything!
-        break;
-      }
-      case FORMAT_0_180: {
-        String hemisphere = line.get(getHemisphereColumn());
-        value = value * hemisphereMultiplier(hemisphere);
-        break;
-      }
-      default: {
-        throw new InvalidPositionFormatException(format);
-      }
-      }
-    } catch (NumberFormatException e) {
-      throw new PositionException(
-        "Invalid longitude value '" + line.get(getValueColumn()) + "'");
+
     }
 
-    if (value < -180 || value > 180) {
-      throw new PositionException("Invalid longitude value '" + value + "'");
-    }
-
-    return value;
+    return result;
   }
 
   /**
    * Calculate the longitude multiplier for a longitude value. East = 1, West =
    * -1
-   * 
+   *
    * @param hemisphere
    *          The hemisphere
    * @return The multiplier

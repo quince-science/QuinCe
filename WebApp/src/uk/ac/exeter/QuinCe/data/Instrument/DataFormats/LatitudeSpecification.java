@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * Specifies the latitude format for a data file
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -30,7 +30,7 @@ public class LatitudeSpecification extends PositionSpecification {
 
   /**
    * Constructor for a complete specification
-   * 
+   *
    * @param format
    *          The format
    * @param valueColumn
@@ -56,43 +56,43 @@ public class LatitudeSpecification extends PositionSpecification {
   }
 
   @Override
-  public double getValue(List<String> line) throws PositionException {
+  public String getValue(List<String> line) throws PositionException {
 
-    double value;
+    String result = line.get(getValueColumn()).trim();
 
-    try {
-      value = Double.parseDouble(line.get(getValueColumn()));
+    if (result.length() == 0) {
+      result = null;
+    } else {
+      try {
+        double doubleValue = Double.parseDouble(line.get(getValueColumn()));
 
-      switch (format) {
-      case FORMAT_MINUS90_90: {
-        // No need to do anything!
-        break;
+        switch (format) {
+        case FORMAT_MINUS90_90: {
+          // No need to do anything!
+          break;
+        }
+        case FORMAT_0_90: {
+          String hemisphere = line.get(getHemisphereColumn());
+          doubleValue = doubleValue * hemisphereMultiplier(hemisphere);
+          break;
+        }
+        default: {
+          throw new InvalidPositionFormatException(format);
+        }
+        }
+      } catch (NumberFormatException e) {
+        System.out.println(
+          "NumberFormatException: Invalid latitude value '" + result + "'");
       }
-      case FORMAT_0_90: {
-        String hemisphere = line.get(getHemisphereColumn());
-        value = value * hemisphereMultiplier(hemisphere);
-        break;
-      }
-      default: {
-        throw new InvalidPositionFormatException(format);
-      }
-      }
-    } catch (NumberFormatException e) {
-      throw new PositionException(
-        "Invalid latitude value '" + line.get(getValueColumn()) + "'");
     }
 
-    if (value < -90 || value > 90) {
-      throw new PositionException("Invalid latitude value '" + value + "'");
-    }
-
-    return value;
+    return result;
   }
 
   /**
    * Calculate the longitude multiplier for a longitude value. East = 1, West =
    * -1
-   * 
+   *
    * @param hemisphere
    *          The hemisphere
    * @return The multiplier
