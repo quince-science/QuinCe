@@ -20,12 +20,14 @@
           </p:selectOneRadio>
           <table class="minimalCentered">
             <c:forEach var="option" items="#{exportBean.exportOptions}">
-              <tr>
-                <td><p:radioButton id="exportOption_#{option.index}"
-                    for="exportOption" itemIndex="#{option.index}" /></td>
-                <td><h:outputLabel for="exportOption_#{option.index}"
-                    value="#{option.name}" /></td>
-              </tr>
+              <ui:fragment rendered="#{option.visible}">     
+                <tr>
+                  <td><p:radioButton id="exportOption_#{option.index}"
+                      for="exportOption" itemIndex="#{option.index}" /></td>
+                  <td><h:outputLabel for="exportOption_#{option.index}"
+                      value="#{option.name}" /></td>
+                </tr>
+              </ui:fragment>
             </c:forEach>
           </table>
           <p:selectBooleanCheckbox id="includeRaw"
