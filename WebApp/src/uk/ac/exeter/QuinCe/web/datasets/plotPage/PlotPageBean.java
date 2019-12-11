@@ -650,32 +650,38 @@ public abstract class PlotPageBean extends BaseManagedBean {
     Field latField = pageData.getFieldSets()
       .getField(FileDefinition.LATITUDE_COLUMN_ID);
 
-    FieldValue lonValue = row.get(lonField);
-    FieldValue latValue = row.get(latField);
+    FieldValue lonFieldValue = row.get(lonField);
+    FieldValue latFieldValue = row.get(latField);
 
-    if (null != lonValue || null != latValue) {
+    double lonValue = null == lonFieldValue ? Double.NaN
+      : lonFieldValue.getValue();
+    double latValue = null == latFieldValue ? Double.NaN
+      : latFieldValue.getValue();
 
-      if (null == lonValue) {
-        value.append("---");
-      } else {
-        value.append(numberFormatter.format(lonValue.getValue()));
-        flag = lonValue.getQcFlag();
-        needsFlag = lonValue.needsFlag();
-        qcComment = lonValue.getQcComment();
-      }
+    if (null == lonFieldValue || Double.isNaN(lonValue)) {
+      value.append("---");
+      flag = Flag.BAD;
+      needsFlag = false;
+      qcComment = "Missing";
+    } else {
+      value.append(numberFormatter.format(lonValue));
+      flag = lonFieldValue.getQcFlag();
+      needsFlag = lonFieldValue.needsFlag();
+      qcComment = lonFieldValue.getQcComment();
+    }
 
-      value.append(" | ");
+    value.append(" | ");
 
-      if (null == latValue) {
-        value.append("---");
-      } else {
-        value.append(numberFormatter.format(latValue.getValue()));
-        if (latValue.getQcFlag().moreSignificantThan(flag)) {
-          flag = lonValue.getQcFlag();
-          needsFlag = lonValue.needsFlag();
-          qcComment = lonValue.getQcComment();
-        }
-      }
+    if (null == latFieldValue || Double.isNaN(latValue)) {
+      value.append("---");
+      flag = Flag.BAD;
+      needsFlag = false;
+      qcComment = "Missing";
+    } else {
+      value.append(numberFormatter.format(latValue));
+      flag = latFieldValue.getQcFlag();
+      needsFlag = latFieldValue.needsFlag();
+      qcComment = latFieldValue.getQcComment();
     }
 
     JSONArray cellData = new JSONArray();
