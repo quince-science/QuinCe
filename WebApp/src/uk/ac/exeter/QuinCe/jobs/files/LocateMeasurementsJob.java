@@ -66,7 +66,7 @@ public class LocateMeasurementsJob extends Job {
   /**
    * Constructor that allows the {@link JobManager} to create an instance of
    * this job.
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config
@@ -154,13 +154,20 @@ public class LocateMeasurementsJob extends Job {
             }
 
             if (measurementOK) {
+
               // Only store non-ignored run types (assume only one run type)
+              //
+              // Also don't store if either position is missing
               String runType = runTypeValues.get(0).getValue();
+              boolean ignoredRunType = instrument.getRunTypeCategory(runType)
+                .equals(RunTypeCategory.IGNORED);
+
               double longitude = longitudeValues.get(0).getDoubleValue();
               double latitude = latitudeValues.get(0).getDoubleValue();
+              boolean positionOK = null != longitudeValues.get(0).getValue()
+                && null != latitudeValues.get(0).getValue();
 
-              if (!instrument.getRunTypeCategory(runType)
-                .equals(RunTypeCategory.IGNORED)) {
+              if (!ignoredRunType && positionOK) {
                 measurements.add(new Measurement(dataSet.getId(), variable,
                   entry.getKey(), longitude, latitude, runType));
               }
