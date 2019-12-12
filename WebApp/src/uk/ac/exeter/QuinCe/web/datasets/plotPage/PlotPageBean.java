@@ -658,11 +658,15 @@ public abstract class PlotPageBean extends BaseManagedBean {
     double latValue = null == latFieldValue ? Double.NaN
       : latFieldValue.getValue();
 
+    boolean lonOK = true;
+    boolean latOK = true;
+
     if (null == lonFieldValue || Double.isNaN(lonValue)) {
       value.append("---");
       flag = Flag.BAD;
       needsFlag = false;
       qcComment = "Missing";
+      lonOK = false;
     } else {
       value.append(numberFormatter.format(lonValue));
       flag = lonFieldValue.getQcFlag();
@@ -677,11 +681,17 @@ public abstract class PlotPageBean extends BaseManagedBean {
       flag = Flag.BAD;
       needsFlag = false;
       qcComment = "Missing";
+      latOK = false;
     } else {
       value.append(numberFormatter.format(latValue));
       flag = latFieldValue.getQcFlag();
       needsFlag = latFieldValue.needsFlag();
       qcComment = latFieldValue.getQcComment();
+    }
+
+    // If both lat and lon are missing, use an empty string
+    if (!lonOK && !latOK) {
+      value.setLength(0);
     }
 
     JSONArray cellData = new JSONArray();
