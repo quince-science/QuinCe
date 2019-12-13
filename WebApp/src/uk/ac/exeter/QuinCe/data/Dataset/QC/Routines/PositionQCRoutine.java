@@ -21,6 +21,11 @@ import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
  * other measured values in the dataset.
  * </p>
  *
+ * <p>
+ * <b>Note:</b> This routine should only set BAD QC flags. The behaviour of
+ * subsequent QC if the position QC is QUESTIONABLE is undefined.
+ * </p>
+ *
  * @author Steve Jones
  *
  */
