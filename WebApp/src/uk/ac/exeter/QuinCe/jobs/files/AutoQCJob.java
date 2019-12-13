@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -19,10 +20,13 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.Routine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -186,57 +190,67 @@ public class AutoQCJob extends Job {
 
       positionQC.qcValues(null);
 
-      /*
-       * // Run the routines for each column for (Map.Entry<Long,
-       * NavigableSensorValuesList> entry : sensorValues .entrySet()) {
-       * SensorType sensorType = sensorAssignments
-       * .getSensorTypeForDBColumn(entry.getKey());
-       *
-       * // Where sensors have internal calibrations, their values need to be //
-       * QCed in separate groups. Map<String, NavigableSensorValuesList>
-       * valuesForQC = new HashMap<String, NavigableSensorValuesList>();
-       *
-       * if (!sensorType.hasInternalCalibration()) { // All the values can be
-       * QCed as a single group valuesForQC.put("",
-       * sensorValues.get(entry.getKey())); } else {
-       *
-       * // Get all the run type entries from the data set
-       * List<SensorAssignment> runTypeColumns = sensorAssignments
-       * .get(SensorType.RUN_TYPE_SENSOR_TYPE);
-       *
-       * TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
-       * for (SensorAssignment column : runTypeColumns) {
-       * runTypeValuesTemp.addAll(sensorValues.get(column.getDatabaseId())); }
-       *
-       * NavigableSensorValuesList runTypeValues = new
-       * NavigableSensorValuesList(); runTypeValues.addAll(runTypeValuesTemp);
-       *
-       * // Group the sensor values by run type
-       * runTypeValues.initIncrementalSearch();
-       *
-       * for (SensorValue value : sensorValues.get(entry.getKey())) {
-       *
-       * SensorValue runType = runTypeValues
-       * .incrementalSearch(value.getTime()); if
-       * (!valuesForQC.containsKey(runType.getValue())) {
-       * valuesForQC.put(runType.getValue(), new NavigableSensorValuesList()); }
-       *
-       * valuesForQC.get(runType.getValue()).add(value); }
-       *
-       * runTypeValues.finishIncrementalSearch(); }
-       *
-       * // QC each group of sensor values in turn for (Map.Entry<String,
-       * NavigableSensorValuesList> values : valuesForQC .entrySet()) {
-       *
-       * SensorValue.clearAutoQC(values.getValue()); if
-       * (values.getKey().equals("") ||
-       * measurementRunTypes.contains(values.getKey())) { // Loop through all
-       * routines for (Routine routine :
-       * qcRoutinesConfig.getRoutines(sensorType)) {
-       * routine.qcValues(values.getValue()); } }
-       *
-       * } }
-       */
+      // Run the routines for each column
+      for (Map.Entry<Long, NavigableSensorValuesList> entry : sensorValues
+        .entrySet()) {
+        SensorType sensorType = sensorAssignments
+          .getSensorTypeForDBColumn(entry.getKey());
+
+        // Where sensors have internal calibrations, their values need to be //
+        // QCed in separate groups.
+        Map<String, NavigableSensorValuesList> valuesForQC = new HashMap<String, NavigableSensorValuesList>();
+
+        if (!sensorType.hasInternalCalibration()) {
+          // All the values can be QCed as a single group
+          valuesForQC.put("", sensorValues.get(entry.getKey()));
+        } else {
+
+          // Get all the run type entries from the data set
+          List<SensorAssignment> runTypeColumns = sensorAssignments
+            .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+
+          TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
+          for (SensorAssignment column : runTypeColumns) {
+            runTypeValuesTemp.addAll(sensorValues.get(column.getDatabaseId()));
+          }
+
+          NavigableSensorValuesList runTypeValues = new NavigableSensorValuesList();
+          runTypeValues.addAll(runTypeValuesTemp);
+
+          // Group the sensor values by run type
+          runTypeValues.initDateSearch();
+
+          for (SensorValue value : sensorValues.get(entry.getKey())) {
+
+            SensorValue runType = runTypeValues.dateSearch(value.getTime());
+            if (!valuesForQC.containsKey(runType.getValue())) {
+              valuesForQC.put(runType.getValue(),
+                new NavigableSensorValuesList());
+            }
+
+            valuesForQC.get(runType.getValue()).add(value);
+          }
+
+          runTypeValues.finishDateSearch();
+        }
+
+        // QC each group of sensor values in turn
+        for (Map.Entry<String, NavigableSensorValuesList> values : valuesForQC
+          .entrySet()) {
+
+          SensorValue.clearAutoQC(values.getValue());
+          if (values.getKey().equals("")
+            || measurementRunTypes.contains(values.getKey())) {
+            // Loop through all
+            // routines
+            for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
+              routine.qcValues(values.getValue());
+            }
+          }
+
+        }
+      }
+
       // Send all sensor values to be stored. The storeSensorValues method only
       // writes those values whose 'dirty' flag is set.
       List<SensorValue> allValues = new ArrayList<SensorValue>();
