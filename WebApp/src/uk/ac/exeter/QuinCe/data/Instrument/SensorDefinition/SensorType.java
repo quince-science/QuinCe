@@ -510,4 +510,15 @@ public class SensorType implements Comparable<SensorType> {
   public static boolean isPosition(long id) {
     return (id == LONGITUDE_ID || id == LATITUDE_ID);
   }
+
+  /**
+   * Determines whether or not this {@code SensorType} is for a normal sensor,
+   * i.e. not a diagnostic, system or position sensor.
+   *
+   * @return {@code true} if this is a normal sensor type; {@code false}
+   *         otherwise.
+   */
+  public boolean isSensor() {
+    return !isDiagnostic() && !isSystemType() && !isPosition(id);
+  }
 }

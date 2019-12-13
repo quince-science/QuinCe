@@ -21,6 +21,11 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 public class SensorValue implements Comparable<SensorValue> {
 
   /**
+   * The QC comment used for missing values
+   */
+  public static final String MISSING_QC_COMMENT = "Missing";
+
+  /**
    * The database ID of this value
    */
   private final long id;
@@ -87,7 +92,7 @@ public class SensorValue implements Comparable<SensorValue> {
 
     if (null == value) {
       this.userQCFlag = Flag.BAD;
-      this.userQCMessage = "Missing";
+      this.userQCMessage = MISSING_QC_COMMENT;
     }
   }
 
@@ -272,12 +277,8 @@ public class SensorValue implements Comparable<SensorValue> {
    *          The user QC flag
    * @param message
    *          The user QC message
-   * @throws RecordNotFoundException
-   *           If the value has not yet been stored in the database
    */
-  public void setUserQC(Flag flag, String message)
-    throws RecordNotFoundException {
-
+  public void setUserQC(Flag flag, String message) {
     userQCFlag = flag;
     userQCMessage = message;
     dirty = true;

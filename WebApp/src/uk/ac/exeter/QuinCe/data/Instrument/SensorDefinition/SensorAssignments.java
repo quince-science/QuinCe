@@ -43,7 +43,7 @@ public class SensorAssignments
 
   /**
    * Build the list of assignments based on the supplied list of variable IDs
-   * 
+   *
    * @throws DatabaseException
    *           If any database lookups fail
    * @throws SensorConfigurationException
@@ -71,7 +71,7 @@ public class SensorAssignments
   /**
    * Make a SensorAssignments using a list of InstrumentVariable objects instead
    * of their IDs. This can't be a constructor because of type erasure.
-   * 
+   *
    * @param conn
    *          A database connection
    * @param variables
@@ -93,7 +93,7 @@ public class SensorAssignments
 
   /**
    * Initialise the data structure
-   * 
+   *
    * @param conn
    *          A database connection
    * @throws DatabaseException
@@ -120,7 +120,7 @@ public class SensorAssignments
 
   /**
    * Initialise the data structure
-   * 
+   *
    * @param conn
    *          A database connection
    * @throws DatabaseException
@@ -187,7 +187,7 @@ public class SensorAssignments
   /**
    * See if a given SensorType has any dependents, and whether those dependents
    * have been assigned
-   * 
+   *
    * @param sensorType
    *          The SensorType
    * @param variableIDs
@@ -213,7 +213,7 @@ public class SensorAssignments
 
   /**
    * See if a SensorType has been assigned
-   * 
+   *
    * @param sensorType
    *          The sensor type
    * @return {@code true} if the sensor has been assigned; {@code false} if not
@@ -286,7 +286,7 @@ public class SensorAssignments
   /**
    * Determine whether or not a given column in a given file has already been
    * assigned
-   * 
+   *
    * @param file
    *          The file
    * @param column
@@ -431,7 +431,7 @@ public class SensorAssignments
 
   /**
    * Get the Sensors Configuration
-   * 
+   *
    * @return The Sensors Configuration
    */
   private SensorsConfiguration getSensorConfig() {
@@ -440,7 +440,7 @@ public class SensorAssignments
 
   /**
    * Add a sensor assignment using the name of a sensor type
-   * 
+   *
    * @param sensorType
    *          The sensor type
    * @param assignment
@@ -459,7 +459,7 @@ public class SensorAssignments
 
   /**
    * Add a sensor assignment using the ID of a sensor type
-   * 
+   *
    * @param sensorTypeId
    *          The sensor type
    * @param assignment
@@ -497,7 +497,7 @@ public class SensorAssignments
    * De-assign a file/column from this set of assignments. The assignment
    * doesn't have to exist; the method will return a {@code boolean} indicating
    * whether or not a matching assignment was found and removed.
-   * 
+   *
    * @param fileDescription
    *          The file description
    * @param columnIndex
@@ -527,7 +527,7 @@ public class SensorAssignments
 
   /**
    * Remove all assignments from a given file
-   * 
+   *
    * @param fileDescription
    *          The file description
    */
@@ -549,7 +549,7 @@ public class SensorAssignments
 
   /**
    * Determines whether or not a Core Sensor has been assigned within any file
-   * 
+   *
    * @param dataFileName
    *          The file to be checked
    * @param primaryOnly
@@ -580,7 +580,7 @@ public class SensorAssignments
   /**
    * Determine whether or not the Run Type is required in a given file, and has
    * not yet been assigned.
-   * 
+   *
    * @param dataFileName
    *          The data file to be checked
    * @return {@code true} if the run type is required; {@code false} if not.
@@ -605,7 +605,7 @@ public class SensorAssignments
   /**
    * Get the number of columns assigned to a given SensorType. If the SensorType
    * is not found, returns 0
-   * 
+   *
    * @param sensorType
    *          The SensorType
    * @return The number of assigned columns
@@ -622,7 +622,7 @@ public class SensorAssignments
 
   /**
    * Get the sensor assignment with a given File Column database ID
-   * 
+   *
    * @param columnId
    *          The file column database ID
    * @return The sensor assignment
@@ -657,7 +657,7 @@ public class SensorAssignments
 
   /**
    * Get the column IDs for the Run Type columns
-   * 
+   *
    * @return
    */
   public List<Long> getRunTypeColumnIDs() {
@@ -679,5 +679,25 @@ public class SensorAssignments
     }
 
     return ids;
+  }
+
+  /**
+   * Get the column IDs of all sensor columns
+   *
+   * @return The sensor column IDs
+   */
+  public List<Long> getSensorColumnIds() {
+
+    List<Long> result = new ArrayList<Long>();
+
+    for (SensorType type : keySet()) {
+      if (type.isSensor()) {
+        get(type).stream().forEach(a -> {
+          result.add(a.getDatabaseId());
+        });
+      }
+    }
+
+    return result;
   }
 }

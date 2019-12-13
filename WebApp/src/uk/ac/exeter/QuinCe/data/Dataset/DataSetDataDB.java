@@ -78,11 +78,6 @@ public class DataSetDataDB {
   public static final String DIAGNOSTICS_FIELDSET_NAME = "Diagnostics";
 
   /**
-   * Prefix applied to QC comments on sensors inherited from positional QC
-   */
-  public static final String POSITION_QC_PREFIX = "Position QC:";
-
-  /**
    * Statement to store a sensor value
    */
   private static final String STORE_NEW_SENSOR_VALUE_STATEMENT = "INSERT INTO "
