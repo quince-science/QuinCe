@@ -52,7 +52,7 @@ public abstract class PositionSpecification {
 
   /**
    * Constructor for a complete specification
-   * 
+   *
    * @param format
    *          The format
    * @param valueColumn
@@ -74,7 +74,7 @@ public abstract class PositionSpecification {
 
   /**
    * Get the position format
-   * 
+   *
    * @return The position format
    */
   public int getFormat() {
@@ -83,7 +83,7 @@ public abstract class PositionSpecification {
 
   /**
    * Set the format for this position specification
-   * 
+   *
    * @param format
    *          The format code
    * @throws InvalidPositionFormatException
@@ -99,7 +99,7 @@ public abstract class PositionSpecification {
 
   /**
    * Determine whether a given format identifier is valid
-   * 
+   *
    * @param format
    *          The format identifier
    * @return {@code true} if the format is valid; {@code false} if it is not
@@ -109,7 +109,7 @@ public abstract class PositionSpecification {
   /**
    * Determines whether or not a hemisphere column is required for this
    * specification's format
-   * 
+   *
    * @return {@code true} if a hemisphere column is required; {@code false} if
    *         it is not
    */
@@ -118,7 +118,7 @@ public abstract class PositionSpecification {
   /**
    * Determines whether or not this specification is complete, i.e. all required
    * column indices are supplied
-   * 
+   *
    * @return {@code true} if the specification is complete; {@code false} if it
    *         is not
    */
@@ -138,7 +138,7 @@ public abstract class PositionSpecification {
 
   /**
    * Get the column for the position's value
-   * 
+   *
    * @return The value column
    */
   public int getValueColumn() {
@@ -147,7 +147,7 @@ public abstract class PositionSpecification {
 
   /**
    * Set the column for the position's value
-   * 
+   *
    * @param valueColumn
    *          The value column
    */
@@ -157,7 +157,7 @@ public abstract class PositionSpecification {
 
   /**
    * Get the column for the position's hemisphere
-   * 
+   *
    * @return The hemisphere column
    */
   public int getHemisphereColumn() {
@@ -166,7 +166,7 @@ public abstract class PositionSpecification {
 
   /**
    * Set the column for the position's hemisphere
-   * 
+   *
    * @param hemisphereColumn
    *          The hemisphere column
    */
@@ -180,7 +180,7 @@ public abstract class PositionSpecification {
    * <p>
    * The JSON string is as follows:
    * </p>
-   * 
+   *
    * <pre>
    *   {
    *     "format": <position format>,
@@ -228,12 +228,12 @@ public abstract class PositionSpecification {
 
   /**
    * Get the position value from a given line
-   * 
+   *
    * @param line
    *          The line
    * @return The position value
    * @throws PositionException
    *           If the position cannot be extracted, or is invalid
    */
-  public abstract double getValue(List<String> line) throws PositionException;
+  public abstract String getValue(List<String> line) throws PositionException;
 }

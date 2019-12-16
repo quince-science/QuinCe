@@ -17,6 +17,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -33,6 +35,7 @@ import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
+import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
 
 /**
@@ -127,27 +130,120 @@ public class ManualQcBean extends PlotPageBean {
   /**
    * Apply the automatically generated QC flags to the rows selected in the
    * table
+   *
+   * @throws MeasurementDataException
    */
-  public void acceptAutoQc() {
-    try {
+  public void acceptAutoQc() throws MeasurementDataException {
 
-      List<LocalDateTime> times = getSelectedRowsList();
-      List<FieldValue> updateValues = new ArrayList<FieldValue>(times.size());
+    List<FieldValue> updatedValues = null;
 
-      for (LocalDateTime time : times) {
-        updateValues.add(pageData.getValue(time, selectedColumn));
+    if (positionColumnSelected()) {
+      updatedValues = acceptPositionAutoQC();
+    } else {
+
+      List<LocalDateTime> updateRows = getSelectedRowsList();
+
+      updatedValues = new ArrayList<FieldValue>(updateRows.size());
+
+      for (LocalDateTime row : updateRows) {
+
+        FieldValue position = pageData.getValue(row,
+          FileDefinition.LONGITUDE_COLUMN_ID);
+        FieldValue value = pageData.getValue(row, selectedColumn);
+
+        // We can use the auto QC value if (a) the position QC is not confirmed
+        // or (b) the auto QC is worse than the position QC
+        if (position.needsFlag()
+          || value.getQcFlag().moreSignificantThan(position.getQcFlag())) {
+
+          value.setNeedsFlag(false);
+        }
+
+        updatedValues.add(value);
+      }
+    }
+
+    saveUpdates(updatedValues);
+  }
+
+  private List<FieldValue> acceptPositionAutoQC()
+    throws MeasurementDataException {
+
+    List<LocalDateTime> times = getSelectedRowsList();
+
+    List<FieldValue> updates = new ArrayList<FieldValue>();
+
+    for (LocalDateTime time : times) {
+
+      // Both position values are flagged
+      FieldValue lonValue = pageData.getValue(time,
+        FileDefinition.LONGITUDE_COLUMN_ID);
+      FieldValue latValue = pageData.getValue(time,
+        FileDefinition.LATITUDE_COLUMN_ID);
+
+      Flag appliedFlag = lonValue.getQcFlag();
+      String appliedComment = lonValue.getQcComment();
+
+      if (latValue.getQcFlag().moreSignificantThan(appliedFlag)) {
+        appliedFlag = latValue.getQcFlag();
+        appliedComment = latValue.getQcComment();
+      } else if (latValue.getQcFlag().equalSignificance(lonValue.getQcFlag())) {
+        appliedComment += "; " + latValue.getQcComment();
       }
 
-      DataSetDataDB.setQC(getDataSource(), updateValues);
+      lonValue.setQC(appliedFlag, appliedComment);
+      latValue.setQC(appliedFlag, appliedComment);
 
-      for (FieldValue value : updateValues) {
-        value.setNeedsFlag(false);
+      updates.add(lonValue);
+      updates.add(latValue);
+
+      updates.addAll(setSensorsQc(time, appliedFlag, appliedComment));
+
+      // TODO Also check any values between this and next time with position. Do
+      // all those values too.
+
+    }
+
+    return updates;
+
+  }
+
+  private List<FieldValue> setSensorsQc(LocalDateTime time, Flag flag,
+    String comment) throws MeasurementDataException {
+
+    List<FieldValue> updatedValues = new ArrayList<FieldValue>();
+
+    List<Field> sensorFields = fieldSets
+      .get(fieldSets.getFieldSet(DataSetDataDB.SENSORS_FIELDSET));
+
+    for (Field field : sensorFields) {
+      FieldValue value = pageData.getValue(time,
+        fieldSets.getColumnIndex(field.getId()));
+
+      // Override the sensor's QC if the position QC is of equal or worse flag
+      // significance.
+      if (flag.equalSignificance(value.getQcFlag())
+        || flag.moreSignificantThan(value.getQcFlag())) {
+
+        value.setQC(flag, PositionQCRoutine.POSITION_QC_PREFIX + comment);
+        updatedValues.add(value);
       }
+    }
 
-      updateFlagsRequired();
-      dirty = true;
-    } catch (Exception e) {
-      e.printStackTrace();
+    return updatedValues;
+  }
+
+  private void saveUpdates(List<FieldValue> updates) {
+
+    if (null != updates && updates.size() > 0) {
+      try {
+        DataSetDataDB.setQC(getDataSource(), updates);
+
+        updateFlagsRequired();
+        dirty = true;
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 
@@ -255,15 +351,69 @@ public class ManualQcBean extends PlotPageBean {
    * Apply the entered WOCE flag and comment to the rows selected in the table
    */
   public void applyManualFlag() {
+
+    List<FieldValue> updates = null;
+
     try {
-      List<FieldValue> updatedValues = pageData.setQC(getSelectedRowsList(),
-        selectedColumn, new Flag(userFlag), userComment);
-      DataSetDataDB.setQC(getDataSource(), updatedValues);
-      updateFlagsRequired();
-      dirty = true;
+      if (positionColumnSelected()) {
+        updates = applyManualPositionFlag();
+      } else {
+
+        Flag flag = new Flag(userFlag);
+
+        List<LocalDateTime> rows = getSelectedRowsList();
+        updates = new ArrayList<FieldValue>(rows.size());
+
+        for (LocalDateTime row : rows) {
+
+          FieldValue position = pageData.getValue(row,
+            FileDefinition.LONGITUDE_COLUMN_ID);
+          FieldValue value = pageData.getValue(row, selectedColumn);
+
+          // We can use the selected QC value if (a) the position QC is not
+          // confirmed
+          // or (b) the auto QC is worse than the position QC
+          if (position.needsFlag()
+            || flag.moreSignificantThan(position.getQcFlag())) {
+
+            value.setQC(flag, userComment);
+          } else {
+            value.setQC(position.getQcFlag(),
+              PositionQCRoutine.POSITION_QC_PREFIX + position.getQcComment());
+          }
+
+          updates.add(value);
+        }
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }
+
+    saveUpdates(updates);
+  }
+
+  private List<FieldValue> applyManualPositionFlag()
+    throws InvalidFlagException, MeasurementDataException {
+
+    List<LocalDateTime> times = getSelectedRowsList();
+    List<FieldValue> updates = new ArrayList<FieldValue>(times.size() * 2);
+
+    Field lonField = pageData.getFieldSets()
+      .getField(FileDefinition.LONGITUDE_COLUMN_ID);
+    Field latField = pageData.getFieldSets()
+      .getField(FileDefinition.LATITUDE_COLUMN_ID);
+
+    // Update the sensors first, since this explicitly loads all data and
+    // may overwrite the position fields
+    updates.addAll(pageData.applyQcToFieldSet(times,
+      fieldSets.getFieldSet(DataSetDataDB.SENSORS_FIELDSET), lonField,
+      PositionQCRoutine.POSITION_QC_PREFIX, new Flag(userFlag), userComment));
+
+    // Now update the position fields
+    updates.addAll(pageData.setQC(times, lonField, userFlag, userComment));
+    updates.addAll(pageData.setQC(times, latField, userFlag, userComment));
+
+    return updates;
   }
 
   @Override
@@ -376,8 +526,11 @@ public class ManualQcBean extends PlotPageBean {
 
     // Nothing is selectable for NRT datasets
     if (!dataset.isNrt()) {
-      // Sensor values. This is the field set with ID -1.
-      // We'll add diagnostics sometime.
+
+      // Position columns
+      result.add(fieldSets.getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID));
+      result.add(fieldSets.getColumnIndex(FileDefinition.LATITUDE_COLUMN_ID));
+
       LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets
         .getColumnIndexes();
       result.addAll(columnIndexes.get(DataSetDataDB.SENSORS_FIELDSET));

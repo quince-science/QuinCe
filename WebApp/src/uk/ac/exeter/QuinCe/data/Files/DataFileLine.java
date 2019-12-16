@@ -5,12 +5,11 @@ import java.time.LocalDateTime;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 
 /**
  * Class representing a specific line in a data file
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -28,7 +27,7 @@ public class DataFileLine {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param file
    *          The data file
    * @param line
@@ -41,7 +40,7 @@ public class DataFileLine {
 
   /**
    * Get the name of the file that the line is in
-   * 
+   *
    * @return The file name
    */
   public String getFilename() {
@@ -50,7 +49,7 @@ public class DataFileLine {
 
   /**
    * Get the line number
-   * 
+   *
    * @return The line number
    */
   public int getLine() {
@@ -59,7 +58,7 @@ public class DataFileLine {
 
   /**
    * Get the date of the line
-   * 
+   *
    * @return The date
    * @throws DataFileException
    *           If the date cannot be extracted
@@ -102,7 +101,7 @@ public class DataFileLine {
 
   /**
    * Get the line's Run Type
-   * 
+   *
    * @return The Run Type
    * @throws DataFileException
    *           If the Run Type cannot be extracted from the line
@@ -115,7 +114,7 @@ public class DataFileLine {
 
   /**
    * Get the line's Run Type
-   * 
+   *
    * @return The Run Type
    * @throws DataFileException
    *           If the Run Type cannot be extracted from the line
@@ -128,35 +127,9 @@ public class DataFileLine {
   }
 
   /**
-   * Get the longitude of the line
-   * 
-   * @return The longitude
-   * @throws DataFileException
-   *           If the file contents cannot be extracted
-   * @throws PositionException
-   *           If the latitude is invalid
-   */
-  public double getLongitude() throws DataFileException, PositionException {
-    return file.getLongitude(line);
-  }
-
-  /**
-   * Get the latitude of the line
-   * 
-   * @return The latitude
-   * @throws DataFileException
-   *           If the file contents cannot be extracted
-   * @throws PositionException
-   *           If the latitude is invalid
-   */
-  public double getLatitude() throws DataFileException, PositionException {
-    return file.getLatitude(line);
-  }
-
-  /**
    * Get a value from a field. If the value is missing (i.e. it equals the
    * {@code missingValue}), returns {@code null}.
-   * 
+   *
    * @param field
    *          The field
    * @param missingValue

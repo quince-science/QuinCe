@@ -2,9 +2,7 @@ package uk.ac.exeter.QuinCe.web.datasets.export;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.math.RoundingMode;
 import java.sql.Connection;
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,19 +64,9 @@ public class ExportBean extends BaseManagedBean {
   private boolean includeRawFiles = false;
 
   /**
-   * Formatter for numeric values All values are displayed to 3 decimal places.
-   */
-  private static DecimalFormat numberFormatter;
-
-  /**
    * The export data, organised ready for building export files
    */
   private ExportData exportData = null;
-
-  static {
-    numberFormatter = new DecimalFormat("#0.000");
-    numberFormatter.setRoundingMode(RoundingMode.HALF_UP);
-  }
 
   /**
    * Initialise the bean

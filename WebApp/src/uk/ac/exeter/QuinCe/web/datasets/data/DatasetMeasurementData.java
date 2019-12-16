@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
 import uk.ac.exeter.QuinCe.data.Dataset.Position;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -345,6 +346,17 @@ public abstract class DatasetMeasurementData
     return rowIdsJson;
   }
 
+  /**
+   * Determines whether or not this data contains position data
+   *
+   * @return {@code true} if the data contains positions; {@code false}
+   *         otherwise.
+   */
+  public boolean containsPosition() {
+    return fieldSets.containsField(FileDefinition.LONGITUDE_COLUMN_ID)
+      || fieldSets.containsField(FileDefinition.LATITUDE_COLUMN_ID);
+  }
+
   private void updateRowIdsCache() {
     // If the cache size doesn't equal the data size, it needs rebuilding
     if (rowIdsCache.size() != size()) {
@@ -364,12 +376,12 @@ public abstract class DatasetMeasurementData
 
   private void loadPositions() throws MeasurementDataException {
 
-    loadField(fieldSets.getField(FileDefinition.LONGITUDE_COLUMN_ID),
-      fieldSets.getField(FileDefinition.LATITUDE_COLUMN_ID));
-
-    positions = new TreeMap<LocalDateTime, Position>();
-
     if (fieldSets.containsField(FileDefinition.LONGITUDE_COLUMN_ID)) {
+      loadField(fieldSets.getField(FileDefinition.LONGITUDE_COLUMN_ID),
+        fieldSets.getField(FileDefinition.LATITUDE_COLUMN_ID));
+
+      positions = new TreeMap<LocalDateTime, Position>();
+
       Field lonField = fieldSets.getField(FileDefinition.LONGITUDE_COLUMN_ID);
       Field latField = fieldSets.getField(FileDefinition.LATITUDE_COLUMN_ID);
 
@@ -433,6 +445,10 @@ public abstract class DatasetMeasurementData
     return get(time).get(fieldSets.getField(fieldIndex));
   }
 
+  public FieldValue getValue(LocalDateTime time, long fieldId) {
+    return get(time).get(fieldSets.getField(fieldId));
+  }
+
   public CommentSet getCommentSet(int fieldIndex, List<LocalDateTime> rows) {
 
     CommentSet result = new CommentSet();
@@ -452,19 +468,35 @@ public abstract class DatasetMeasurementData
   }
 
   public List<FieldValue> setQC(List<LocalDateTime> rows, int fieldIndex,
-    Flag flag, String comment) {
+    Flag flag, String comment) throws MeasurementDataException {
+
+    return setQC(rows, fieldSets.getField(fieldIndex), flag, comment);
+  }
+
+  public List<FieldValue> setQC(List<LocalDateTime> rows, int fieldIndex,
+    int flag, String comment)
+    throws InvalidFlagException, MeasurementDataException {
+
+    return setQC(rows, fieldSets.getField(fieldIndex), new Flag(flag), comment);
+  }
+
+  public List<FieldValue> setQC(List<LocalDateTime> rows, Field field, int flag,
+    String comment) throws InvalidFlagException, MeasurementDataException {
+
+    return setQC(rows, field, new Flag(flag), comment);
+  }
+
+  public List<FieldValue> setQC(List<LocalDateTime> rows, Field field,
+    Flag flag, String comment) throws MeasurementDataException {
 
     List<FieldValue> updatedValues = new ArrayList<FieldValue>(rows.size());
-    Field field = fieldSets.getField(fieldIndex);
 
-    for (LocalDateTime id : rows) {
-      FieldValue value = get(id).get(field);
+    for (LocalDateTime time : rows) {
+      FieldValue value = get(time).get(field);
 
       // Do not set QC on ghost data
       if (null != value && !value.isGhost()) {
-        value.setQcFlag(flag);
-        value.setQcComment(comment);
-        value.setNeedsFlag(false);
+        value.setQC(flag, comment);
         updatedValues.add(value);
       }
     }
@@ -552,7 +584,13 @@ public abstract class DatasetMeasurementData
     times.stream().forEach(t -> this.rowsLoaded.put(t, loaded));
   }
 
-  protected abstract void load(List<LocalDateTime> times)
+  protected void load(List<LocalDateTime> times)
+    throws MeasurementDataException {
+    loadAction(times.stream().filter(t -> !rowsLoaded.get(t))
+      .collect(Collectors.toList()));
+  }
+
+  protected abstract void loadAction(List<LocalDateTime> times)
     throws MeasurementDataException;
 
   private void loadField(Field... field) throws MeasurementDataException {
@@ -563,4 +601,132 @@ public abstract class DatasetMeasurementData
 
   protected abstract void loadFieldAction(List<Field> field)
     throws MeasurementDataException;
+
+  /**
+   * Apply the specified QC flag to all the {@link FieldValue}s in a given
+   * {@link FieldSet} at the specified times.
+   *
+   * <p>
+   * This method takes the QC flag and comment from a given {@link Field} and
+   * applies it to all the fields in the specified {@link FieldSet}. This is
+   * useful where the quality of a given field impacts the quality of all the
+   * others. For example, a bad position implies that all the sensors (SST,
+   * Salinity etc.) must also be bad.
+   * </p>
+   * <p>
+   * Depending on the instrument's configuration, the affected fields may not
+   * have values at the exact times as the source field. Therefore, any
+   * {@link FieldValue} in the {@link FieldSet} that occurs before the
+   * <i>next</i> value from the source {@link Field} will be included in the
+   * update.
+   * </p>
+   * <p>
+   * Each {@link FieldValue} will be treated independently of all the others,
+   * with the QC flag applied as follows:
+   * </p>
+   * <ul>
+   * <li>If the field has no user QC set, the supplied QC is applied with the
+   * specified prefix so it can be detected correctly in future updates.</li>
+   * <li>If the field already has a user QC set with the supplied prefix, we
+   * update the field's QC as follows:
+   * <ul>
+   * <li>If the supplied value is {@link Flag#GOOD}, the field's flag is
+   * removed. If the field's auto QC is anything other than {@link Flag#GOOD},
+   * the user QC flag is set to {@link Flag#NEEDED}.</li>
+   * <li>If the supplied value is anything other than {@link Flag#GOOD}, the
+   * supplied QC is applied with the specified prefix.</li>
+   * </ul>
+   * </li>
+   * <li>If the field already has a user QC set without the supplied prefix, and
+   * the supplied flag is worse than the existing flag, the supplied QC is
+   * applied with the specified prefix.</li>
+   * </ul>
+   * <p>
+   * Ghost data values are ignored by this method.
+   * </p>
+   *
+   * @param times
+   * @param fieldSet
+   * @param commentPrefix
+   * @param userFlag
+   * @param userComment
+   * @return
+   * @throws MeasurementDataException
+   */
+  public List<FieldValue> applyQcToFieldSet(List<LocalDateTime> times,
+    FieldSet fieldSet, Field sourceField, String commentPrefix, Flag flag,
+    String comment) throws MeasurementDataException {
+
+    String appliedComment = commentPrefix + " " + comment;
+
+    List<FieldValue> updates = new ArrayList<FieldValue>();
+
+    // Find all the times to be updated. This includes the times in the supplied
+    // list, plus: For each time, all the times until the *next* time that a
+    // value from the source field is recorded
+    TreeSet<LocalDateTime> updateTimes = new TreeSet<LocalDateTime>();
+
+    for (LocalDateTime time : times) {
+      updateTimes.add(time);
+
+      boolean nextTimeFound = false;
+      LocalDateTime searchKey = higherKey(time);
+
+      while (!nextTimeFound) {
+        if (null == searchKey || null != get(searchKey).get(sourceField)) {
+          nextTimeFound = true;
+        } else {
+          updateTimes.add(searchKey);
+          searchKey = higherKey(searchKey);
+        }
+      }
+    }
+
+    // Make sure the data for all times are loaded
+    load(new ArrayList<LocalDateTime>(updateTimes));
+
+    // updateTimes now contains all the times we have to update. Loop through
+    // each of these times
+    for (LocalDateTime time : updateTimes) {
+
+      // Loop through each field in the specified fieldset
+      for (Field field : fieldSets.get(fieldSet)) {
+
+        FieldValue value = get(time).get(field);
+        if (null != value && !value.isGhost()) {
+
+          // If the new flag is more significant than the value's existing flag,
+          // or of the same significance but the flag has not been confirmed by
+          // the user, set it.
+          if (flag.moreSignificantThan(value.getQcFlag())
+            || (flag.equalSignificance(value.getQcFlag()) && value.needsFlag)) {
+
+            value.setQC(flag, appliedComment);
+            updates.add(value);
+          } else {
+
+            // If the value has a field that doesn't have the supplied prefix,
+            // see if the new QC value is worse than the existing one. If so,
+            // replace it.
+            if (!value.getQcComment().startsWith(commentPrefix)) {
+              if (flag.moreSignificantThan(value.getQcFlag())) {
+                value.setQC(flag, appliedComment);
+                updates.add(value);
+              }
+            } else {
+              if (!flag.isGood()) {
+                value.setQC(flag, appliedComment);
+                updates.add(value);
+              } else {
+                value.setQC(Flag.NEEDED, null);
+                updates.add(value);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return updates;
+  }
 }

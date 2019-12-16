@@ -119,7 +119,7 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   }
 
   @Override
-  protected void load(List<LocalDateTime> times)
+  protected void loadAction(List<LocalDateTime> times)
     throws MeasurementDataException {
 
     if (times.size() > 0) {

@@ -422,7 +422,8 @@ function clickCellAction(cellIndex, shiftClick) {
   // If the cell isn't selectable, or has no value, do nothing.
   if (canSelectCell(rowId, columnIndex) &&
     null != jsDataTable.cell(cellIndex).data() &&
-    null != jsDataTable.cell(cellIndex).data()[0]) {
+    null != jsDataTable.cell(cellIndex).data()[0] &&
+    '' != jsDataTable.cell(cellIndex).data()[0]) {
 
     if (columnIndex != selectedColumn) {
       selectedColumn = columnIndex;
@@ -498,7 +499,7 @@ function getRowsInRange(startRow, endRow, columnIndex) {
     
     var rowIndex = jsDataTable.row('#' + selectableRows[currentIndex]).index();
     var cellData = jsDataTable.cell({row:rowIndex, column:columnIndex}).data();
-    if (null != cellData && null != cellData[0]) {
+    if (null != cellData && null != cellData[0] && '' != cellData[0]) {
       rows.push(selectableRows[currentIndex]);
     }
   }

@@ -446,4 +446,22 @@ public class Flag implements Comparable<Flag> {
 
     return result;
   }
+
+  /**
+   * Check whether the supplied flag is of equal significance to this flag.
+   *
+   * <p>
+   * Uses the output of {@link #getWoceValue()} for comparison. A {@code false}
+   * result does not indicate which flag is more significant; use
+   * {@link #moreSignificantThan(Flag)}.
+   * </p>
+   *
+   * @param otherFlag
+   *          The flag to be compared.
+   * @return {@code true} if the supplied flag is of equal significance to this
+   *         flag; {@code false} otherwise.
+   */
+  public boolean equalSignificance(Flag otherFlag) {
+    return otherFlag.getWoceValue() == getWoceValue();
+  }
 }
