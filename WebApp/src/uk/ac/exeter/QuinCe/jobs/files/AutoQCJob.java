@@ -15,7 +15,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.NavigableSensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.PositionQCRoutine;
@@ -163,7 +163,7 @@ public class AutoQCJob extends Job {
         .getQCRoutinesConfiguration();
 
       // Get the sensor values grouped by data file column
-      Map<Long, NavigableSensorValuesList> sensorValues = DataSetDataDB
+      Map<Long, SearchableSensorValuesList> sensorValues = DataSetDataDB
         .getSensorValuesByColumn(conn, dataSet.getId());
 
       // First run the position QC. This will potentially set QC flags on all
@@ -174,9 +174,9 @@ public class AutoQCJob extends Job {
       // all values, and therefore doesn't need to pass any to the actual QC
       // call.
       List<Long> dataSensorColumnIds = sensorAssignments.getSensorColumnIds();
-      Set<NavigableSensorValuesList> dataSensorValues = new HashSet<NavigableSensorValuesList>();
+      Set<SearchableSensorValuesList> dataSensorValues = new HashSet<SearchableSensorValuesList>();
 
-      for (Map.Entry<Long, NavigableSensorValuesList> entry : sensorValues
+      for (Map.Entry<Long, SearchableSensorValuesList> entry : sensorValues
         .entrySet()) {
 
         if (dataSensorColumnIds.contains(entry.getKey())) {
@@ -191,14 +191,14 @@ public class AutoQCJob extends Job {
       positionQC.qcValues(null);
 
       // Run the routines for each column
-      for (Map.Entry<Long, NavigableSensorValuesList> entry : sensorValues
+      for (Map.Entry<Long, SearchableSensorValuesList> entry : sensorValues
         .entrySet()) {
         SensorType sensorType = sensorAssignments
           .getSensorTypeForDBColumn(entry.getKey());
 
         // Where sensors have internal calibrations, their values need to be //
         // QCed in separate groups.
-        Map<String, NavigableSensorValuesList> valuesForQC = new HashMap<String, NavigableSensorValuesList>();
+        Map<String, SearchableSensorValuesList> valuesForQC = new HashMap<String, SearchableSensorValuesList>();
 
         if (!sensorType.hasInternalCalibration()) {
           // All the values can be QCed as a single group
@@ -214,7 +214,7 @@ public class AutoQCJob extends Job {
             runTypeValuesTemp.addAll(sensorValues.get(column.getDatabaseId()));
           }
 
-          NavigableSensorValuesList runTypeValues = new NavigableSensorValuesList();
+          SearchableSensorValuesList runTypeValues = new SearchableSensorValuesList();
           runTypeValues.addAll(runTypeValuesTemp);
 
           // Group the sensor values by run type
@@ -225,7 +225,7 @@ public class AutoQCJob extends Job {
             SensorValue runType = runTypeValues.dateSearch(value.getTime());
             if (!valuesForQC.containsKey(runType.getValue())) {
               valuesForQC.put(runType.getValue(),
-                new NavigableSensorValuesList());
+                new SearchableSensorValuesList());
             }
 
             valuesForQC.get(runType.getValue()).add(value);
@@ -235,7 +235,7 @@ public class AutoQCJob extends Job {
         }
 
         // QC each group of sensor values in turn
-        for (Map.Entry<String, NavigableSensorValuesList> values : valuesForQC
+        for (Map.Entry<String, SearchableSensorValuesList> values : valuesForQC
           .entrySet()) {
 
           SensorValue.clearAutoQC(values.getValue());

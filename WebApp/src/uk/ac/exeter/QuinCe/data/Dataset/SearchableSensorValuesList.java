@@ -26,7 +26,7 @@ import java.util.ListIterator;
  *
  */
 @SuppressWarnings("serial")
-public class NavigableSensorValuesList extends ArrayList<SensorValue> {
+public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
   /**
    * The date search iterator
@@ -41,7 +41,7 @@ public class NavigableSensorValuesList extends ArrayList<SensorValue> {
   /**
    * Constructor for an empty list
    */
-  public NavigableSensorValuesList() {
+  public SearchableSensorValuesList() {
     super();
   }
 
@@ -51,7 +51,7 @@ public class NavigableSensorValuesList extends ArrayList<SensorValue> {
    * @param list
    *          The existing list
    */
-  public NavigableSensorValuesList(List<SensorValue> list) {
+  public SearchableSensorValuesList(List<SensorValue> list) {
     super(list);
   }
 

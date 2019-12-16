@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import uk.ac.exeter.QuinCe.data.Dataset.NavigableSensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
@@ -61,7 +61,7 @@ public class PositionQCRoutine extends Routine {
    * The set of {@link SensorValue}s for the dataset from the {@link AutoQCJob},
    * excluding diagnostics and system values.
    */
-  private Set<NavigableSensorValuesList> sensorValues;
+  private Set<SearchableSensorValuesList> sensorValues;
 
   /**
    * Initialise the routine with the position and sensor values.
@@ -80,7 +80,7 @@ public class PositionQCRoutine extends Routine {
    *           If the routine cannot be constructed
    */
   public PositionQCRoutine(List<SensorValue> lonValues,
-    List<SensorValue> latValues, Set<NavigableSensorValuesList> sensorValues)
+    List<SensorValue> latValues, Set<SearchableSensorValuesList> sensorValues)
     throws RoutineException {
 
     super(null);
@@ -107,7 +107,7 @@ public class PositionQCRoutine extends Routine {
   public void qcValues(List<SensorValue> values) throws RoutineException {
 
     // Initialise date range searches for all SensorValue lists
-    sensorValues.forEach(NavigableSensorValuesList::initRangeSearch);
+    sensorValues.forEach(SearchableSensorValuesList::initRangeSearch);
 
     int posIndex = 0;
 
@@ -157,7 +157,7 @@ public class PositionQCRoutine extends Routine {
           nextPosTime = nextPos.getTime();
         }
 
-        for (NavigableSensorValuesList valuesList : sensorValues) {
+        for (SearchableSensorValuesList valuesList : sensorValues) {
           List<SensorValue> updateValues = valuesList
             .rangeSearch(currentPosTime, nextPosTime);
 
