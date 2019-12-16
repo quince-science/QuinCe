@@ -3,11 +3,13 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import uk.ac.exeter.QuinCe.data.Dataset.NavigableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
+import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 
 /**
  * Auto QC routine for position values.
@@ -19,6 +21,15 @@ import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
  * with them directly instead of receiving just the position values as a normal
  * {@link Routine} would. This is because the position QC affects the QC all of
  * other measured values in the dataset.
+ * </p>
+ *
+ * <p>
+ * The routine checks for missing position values, and positions outside the
+ * legal range (-180:180 for longitude, -90:90 for latitude). Note that the
+ * {@link ExtractDataSetJob} will have converted positions of any format to
+ * these ranges. Any position values that fail these checks will be marked BAD.
+ * Additionally, all sensors will also have a BAD flag applied, since a sensor
+ * value without a valid position cannot be used.
  * </p>
  *
  * <p>
@@ -105,8 +116,40 @@ public class PositionQCRoutine extends Routine {
       SensorValue lon = lonValues.get(posIndex);
       SensorValue lat = latValues.get(posIndex);
 
-      if (isMissing(lon) || isMissing(lat)) {
+      boolean qcFailed = false;
 
+      // The method to use to set QC flags on sensors
+      Consumer<SensorValue> flagSetter = null;
+
+      // Missing value check
+      if (isMissing(lon) || isMissing(lat)) {
+        setPositionMissing(lon, lat);
+        qcFailed = true;
+        flagSetter = this::setPositionMissing;
+
+      } else {
+
+        // Range check
+        double lonValue = lon.getDoubleValue();
+        double latValue = lat.getDoubleValue();
+
+        if (lonValue < -180.0 || lonValue > 180.0) {
+          qcFailed = true;
+        } else if (latValue < -90.0 || latValue > 90.0) {
+          qcFailed = true;
+        }
+
+        if (qcFailed) {
+          setPositionOutOfRange(lon, lat);
+          flagSetter = this::setPositionOutOfRange;
+        }
+      }
+
+      // If the position QC failed, apply the same QC flag to each sensor value
+      // between this and the next position (exclusive).
+      // This handles the case where sensor values are not aligned with position
+      // values in time.
+      if (qcFailed) {
         LocalDateTime currentPosTime = lon.getTime();
         LocalDateTime nextPosTime = LocalDateTime.MAX;
         SensorValue nextPos = lonValues.get(posIndex + 1);
@@ -118,7 +161,7 @@ public class PositionQCRoutine extends Routine {
           List<SensorValue> updateValues = valuesList
             .rangeSearch(currentPosTime, nextPosTime);
 
-          updateValues.forEach(this::setPositionMissing);
+          updateValues.forEach(flagSetter);
         }
       }
 
@@ -126,11 +169,57 @@ public class PositionQCRoutine extends Routine {
     }
   }
 
+  /**
+   * Determine whether or not a {@link SensorValue} contains a missing value.
+   *
+   * @param value
+   *          The value to check.
+   * @return {@code true} if the value is missing; {@code false} otherwise.
+   */
   private boolean isMissing(SensorValue value) {
     return null == value.getValue();
   }
 
-  private void setPositionMissing(SensorValue value) {
-    value.setUserQC(Flag.BAD, POSITION_QC_PREFIX + "Missing");
+  /**
+   * Set the QC for an Out Of Range position value on the specified
+   * {@link SensorValue}. More than one value can be supplied.
+   *
+   * @param value
+   *          The value whose QC is to be set.
+   * @see #setPositionQC(String, SensorValue...)
+   */
+  private void setPositionOutOfRange(SensorValue... value) {
+    setPositionQC("Out of range", value);
+  }
+
+  /**
+   * Set the QC for an Missing position value on the specified
+   * {@link SensorValue}. More than one value can be supplied.
+   *
+   * @param value
+   *          The value whose QC is to be set.
+   * @see #setPositionQC(String, SensorValue...)
+   */
+  private void setPositionMissing(SensorValue... value) {
+    setPositionQC("Missing", value);
+  }
+
+  /**
+   * Set the position QC result as the QC for a {@link SensorValue}. Multiple
+   * values can be supplied.
+   *
+   * <p>
+   * The QC message will be prepended with {@link #POSITION_QC_PREFIX}.
+   * </p>
+   *
+   * @param message
+   *          The QC message.
+   * @param value
+   *          The value whose QC is to be set.
+   */
+  private void setPositionQC(String message, SensorValue... value) {
+    for (SensorValue v : value) {
+      v.setUserQC(Flag.BAD, POSITION_QC_PREFIX + message);
+    }
   }
 }
