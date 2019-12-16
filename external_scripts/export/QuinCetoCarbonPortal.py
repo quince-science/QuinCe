@@ -28,10 +28,9 @@ with open(config_file_carbon) as f: config_carbon = toml.load(f)
 with open(config_file_meta) as f: config_meta = toml.load(f)
 with open(platform_lookup_file) as f: platform = toml.load(f)
 
-if not os.path.isdir('log'):
-  os.mkdir('log')
-#logging.basicConfig(stream=sys.stdout,format='%(asctime)s %(message)s', level=logging.DEBUG)
-logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
+if not os.path.isdir('log'): os.mkdir('log')
+logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.INFO)
+#logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 upload = True # for debugging purposes, when False no data is exported.
 
@@ -48,10 +47,10 @@ def main():
         manifest, 
         data_filenames, 
         raw_filenames] = process_dataset(dataset,config_quince)
-        logging.debug(manifest)
 
-        platform_code = manifest['manifest']['metadata']['platformCode']
+        platform_code = manifest['manifest']['metadata']['platformCode']              
         export_destination = platform[platform_code]['export'] 
+
 
         if 'ICOS' in export_destination: 
           cp_cookie = get_auth_cookie(config_carbon)
@@ -66,9 +65,11 @@ def main():
             
         #--- Processing L1 files
         for index, data_filename in enumerate(data_filenames):
-
+          key = '/'
+          if '26NA' in platform_code: key = ' No Salinity Flags' + key
+          
           ## EXPORTING L1 TO CARBON PORTAL ##
-          if 'ICOS' in data_filename and 'ICOS' in export_destination: 
+          if 'ICOS OTC' + key in data_filename and 'ICOS' in export_destination:
             try:
               L1_hashsum = export_file_to_cp(
                 manifest, platform, config_carbon, data_filename, platform_code, 
@@ -76,9 +77,7 @@ def main():
             except Exception as e:
               logging.INFO('Carbon Portal export failed')
               logging.error('Exception occurred: ', exc_info=True)
-
-          if 'Copernicus' in data_filename and 'CMEMS' in export_destination:  
-            logging.info('Executing Copernicus routine')
+          if 'Copernicus' + key in data_filename and 'CMEMS' in export_destination:  
             curr_date  = build_dataproduct(dataset_zip,dataset['name'],data_filename)
             try: 
               if upload:
@@ -88,7 +87,9 @@ def main():
                   successful_upload_CMEMS = False
             except Exception as e:
               logging.error('Exception occurred: ', exc_info=True)
-              logging.info('FTP connection failed')
+              successful_upload_CMEMS = False
+          else:
+            successful_upload_CMEMS = False
         if successful_upload_CMEMS:
           report_complete_export(config_quince,dataset['id'])
         else: 
