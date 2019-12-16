@@ -1,4 +1,4 @@
-Managing Saildrone data
+SAILDRONE DATA RETRIEVAL AND CONVERSION
 ===============================================================================
 
 The script 'saildrone_main.py' will request data from the saildrone API. The
