@@ -60,7 +60,7 @@ public class BaseTest {
   protected ApplicationContext context;
 
   /**
-   * A mock Servlet Contextt
+   * A mock Servlet Context
    */
   @Mock
   protected static ServletContext servletContext;
