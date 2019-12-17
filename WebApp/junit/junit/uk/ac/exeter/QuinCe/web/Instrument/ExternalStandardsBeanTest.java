@@ -1,6 +1,6 @@
 package junit.uk.ac.exeter.QuinCe.web.Instrument;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,10 +41,25 @@ public class ExternalStandardsBeanTest extends BaseTest {
    * Test that the bean can be successfully initialised.
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base" })
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
   @Test
   public void initBeanTest() {
     ExternalStandardsBean bean = initBean();
-    assertNotNull(bean);
+    assertEquals(INSTRUMENT_ID, bean.getInstrumentId());
+    assertEquals(INSTRUMENT_NAME, bean.getInstrumentName());
+  }
+
+  /**
+   * Test that the bean can be successfully initialised.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/edit" })
+  @Test
+  public void getAffectedDatasetsTest() {
+    ExternalStandardsBean bean = initBean();
+    assertEquals(INSTRUMENT_ID, bean.getInstrumentId());
+    assertEquals(INSTRUMENT_NAME, bean.getInstrumentName());
   }
 }

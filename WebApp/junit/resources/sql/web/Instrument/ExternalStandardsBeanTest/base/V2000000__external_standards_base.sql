@@ -1,4 +1,4 @@
--- A test instrument
+-- Basic instrument setup
 
 -- User
 INSERT INTO user (id, email, salt, password)
