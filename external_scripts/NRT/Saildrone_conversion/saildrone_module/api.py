@@ -9,7 +9,7 @@
 #------------------------------------------------------------------------------
 import json
 import urllib
-import saildrone_module
+import saildrone_module as saildrone
 import os
 
 
@@ -30,7 +30,7 @@ def auth():
 		url=auth_url, headers=our_header,
 		data=our_data, method='POST')
 
-	auth_response_dict = saildrone_module.to_dict(auth_request)
+	auth_response_dict = saildrone.to_dict(auth_request)
 
 	token = auth_response_dict['token']
 	return token
@@ -43,7 +43,7 @@ def check_available(token):
 	check_available_request = urllib.request.Request(
 		check_available_url, method='GET')
 
-	available_dict = saildrone_module.to_dict(check_available_request)
+	available_dict = saildrone.to_dict(check_available_request)
 
 	data = available_dict['data']
 	access_list = data['access']
@@ -59,7 +59,7 @@ def write_json(data_dir, header, drone_id, dataset, start, end, token):
 	data_request = urllib.request.Request(
 		get_data_url, headers=header, method='GET')
 
-	data_dict = saildrone_module.to_dict(data_request)
+	data_dict = saildrone.to_dict(data_request)
 
 	output_file_name = str(drone_id) + '_' + dataset + '.json'
 	output_file_path = os.path.join(data_dir, output_file_name)
