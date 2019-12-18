@@ -3,8 +3,8 @@
 ###############################################################################
 
 ### Description
-# Script uses Saildrone API to get saildrone data, converts it from json to csv
-# format, and shares it with QuinCe.
+# Script uses Saildrone API to download saildrone ocean and biogeo data,
+# converts it from json to csv format, and shares it with QuinCe.
 
 
 #------------------------------------------------------------------------------
@@ -13,11 +13,14 @@ import os
 import saildrone_module
 from datetime import datetime
 import shutil
-import pandas as pd # remove when merge works
+import urllib
+import json
+import ast
 
 
-#------------------------------------------------------------------------------
+###----------------------------------------------------------------------------
 ### Handling directories
+###----------------------------------------------------------------------------
 
 # Store path to the main script directory
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -32,52 +35,112 @@ data_dir = os.path.join(script_dir,'data_files')
 # Create new archive directry with current timestamp as name
 now = datetime.now()
 dt_string = now.strftime("%Y%m%dT%H%M%S")
-new_archive_path = os.path.join(data_dir, str(dt_string))
-os.mkdir(new_archive_path)
+archive_path = os.path.join(data_dir, str(dt_string))
+os.mkdir(archive_path)
 
 
-#------------------------------------------------------------------------------
+###----------------------------------------------------------------------------
 ### API
+###----------------------------------------------------------------------------
 
-# ... Ask for oceanpgraphy and biogeo data file and store in the 'data_files'
-# directory.
+#-----------------
+# Authenticate
+
+#saildrone_auth_url = 'https://developer-mission.saildrone.com/v1/auth'
+#our_header = {'Content-Type':'application/json', 'Accept':'application/json'}
+#our_data = json.dumps({'key':'XbXS9f7TfZepb7nD',
+#	'secret':'dGL99eMuBcsJYm5guq29AtKeCGHCT2kP'}).encode()
+
+#auth_request = urllib.request.Request(
+# 	url=saildrone_auth_url, headers=our_header,
+# 	data=our_data, method='POST')
+
+#auth_response_dict = saildrone_module.to_dict(auth_request)
+
+#token = auth_response_dict['token']
 
 
-#------------------------------------------------------------------------------
-### Convert to csv format
+#-----------------
+# See what can be downloaded
 
-# Extract name of content in the data directory
-filenames = os.listdir(data_dir)
+#check_available_url = 'https://developer-mission.saildrone.com/v1/auth/'\
+#	+ 'access?token=' + token
 
-# Run each json file through the function which converts to csv. Then move the
-# json file to the archive folder.
-for file in filenames:
-	if '.json' in file:
-		json_file_path = os.path.join(data_dir, file)
-		saildrone_module.convert_to_csv(json_file_path)
-#		shutil.move(json_file_path, os.path.join(new_archive_path, file))
+#available_data_request = urllib.request.Request(
+#	check_available_url, method='GET')
+
+#available_data_dict = saildrone_module.to_dict(available_data_request)
+
+#data = available_data_dict['data']
+#access_list = data['access']      # List of dict, each with info on 1 saildrone
 
 
-#------------------------------------------------------------------------------
-### Merge biogeo and ocean csv file
+#-----------------
+# Find out what's new since previous download
 
-# Store csv file paths.
-# !!Change this after API part is done.
-ocean_csv_path = os.path.join(data_dir, '1030_oceanographic.csv')
-biogeo_csv_path = os.path.join(data_dir, '1030_biogeo.csv')
+# !!! Find out somehow what I have not downloaded before. Create
+# !!! new dictionary with new data and use this in the 'get-data-loop' below.
 
-# Call function in the saildrone module which merges the ocean and biogeo file.
-merged_df = saildrone_module.merge_ocean_biogeo(
-	ocean_csv_path, biogeo_csv_path)
 
-# Move the ocean and biogeo csv files to the archive folder.
-# !!Change this after API part is done
-shutil.move(ocean_csv_path,
-	os.path.join(new_archive_path, '1030_oceanographic.csv'))
-shutil.move(biogeo_csv_path,
-	os.path.join(new_archive_path, '1030_biogeo.csv'))
+#-----------------
+# Download data
 
-# Export the merged data frame to csv
-export_csv_path = os.path.join(data_dir,'merged.csv')
-export_csv = merged_df.to_csv(
-	export_csv_path, index=None, header=True, sep=',')
+# !!! Get 500 error when try to download all at once)
+# !!! Add try except! urllib.error module
+#for drone in access_list:
+#	drone_id = drone['drone_id']
+#	start = drone['start_date']
+#	end = drone['end_date']
+
+#	datasets = ['oceanographic', 'biogeochemical']
+#	json_paths = []
+#	for dataset in datasets:
+#		json_path = saildrone_module.write_json(
+#			data_dir, our_header, drone_id, dataset, start, end, token)
+#		json_paths.append(json_path)
+
+
+# !!! WHILE TESTING:
+# The loop above will download ocean and biogeo file from one drone. It will
+# also create 'json_paths'. While testing, create this manually.
+ocean_path = os.path.join(data_dir,'1030_oceanographic.json')
+biogeo_path = os.path.join(data_dir, '1030_biogeochemical.json')
+json_paths = [ocean_path, biogeo_path]
+drone_id = 1030
+
+
+###----------------------------------------------------------------------------
+### Convert to csv format and merge ocean and bio file
+###----------------------------------------------------------------------------
+
+# !!! Add one indent to this section when the download loop is not a comment.
+
+# Convert each json to csv file. Move the json file to the archive
+# folder. Store the new csv paths.
+csv_paths = []
+for path in json_paths :
+	csv_path = saildrone_module.convert_to_csv(path)
+	csv_paths.append(csv_path)
+	shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
+
+
+# Merge if ocean and bio was downloaded (ocean path is then always first).
+# Export the merged data to a csv file. Move the ocean and biogeo file to
+# archive.
+if len(csv_paths) == 2:
+	merged_df = saildrone_module.merge_ocean_biogeo(csv_paths[0], csv_paths[1])
+
+	merged_path = os.path.join(data_dir, str(drone_id) + '_merged.csv')
+	merged_csv = merged_df.to_csv(
+		merged_path, index=None, header=True, sep=',')
+
+	for path in csv_paths:
+		shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
+
+
+###----------------------------------------------------------------------------
+### Send to QuinCe
+###----------------------------------------------------------------------------
+
+# All files in the data_folder are ready for export to QuinCe. Do quince
+# want unmerged?
