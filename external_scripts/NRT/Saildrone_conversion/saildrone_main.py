@@ -10,7 +10,7 @@
 #------------------------------------------------------------------------------
 ### Import packages
 import os
-import saildrone_module
+import saildrone_module as saildrone
 from datetime import datetime
 import shutil
 import urllib
@@ -44,10 +44,10 @@ os.mkdir(archive_path)
 ###----------------------------------------------------------------------------
 
 # Create authentication token
-token = saildrone_module.auth()
+token = saildrone.auth()
 
 # See what can be downloaded
-access_list = saildrone_module.check_available(token)
+access_list = saildrone.check_available(token)
 
 
 
@@ -71,7 +71,7 @@ access_list = saildrone_module.check_available(token)
 #	datasets = ['oceanographic', 'biogeochemical']
 #	json_paths = []
 #	for dataset in datasets:
-#		json_path = saildrone_module.write_json(
+#		json_path = saildrone.write_json(
 #			data_dir, our_header, drone_id, dataset, start, end, token)
 #		json_paths.append(json_path)
 
@@ -95,7 +95,7 @@ drone_id = 1021
 # folder. Store the new csv paths.
 csv_paths = []
 for path in json_paths :
-	csv_path = saildrone_module.convert_to_csv(path)
+	csv_path = saildrone.convert_to_csv(path)
 	csv_paths.append(csv_path)
 	shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
 
@@ -104,7 +104,7 @@ for path in json_paths :
 # Export the merged data to a csv file. Move the ocean and biogeo file to
 # archive.
 if len(csv_paths) == 2:
-	merged_df = saildrone_module.merge_ocean_biogeo(csv_paths[0], csv_paths[1])
+	merged_df = saildrone.merge_ocean_biogeo(csv_paths[0], csv_paths[1])
 
 	merged_path = os.path.join(data_dir, str(drone_id) + '_merged.csv')
 	merged_csv = merged_df.to_csv(
