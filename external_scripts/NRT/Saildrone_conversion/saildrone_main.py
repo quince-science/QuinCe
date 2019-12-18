@@ -43,36 +43,12 @@ os.mkdir(archive_path)
 ### API
 ###----------------------------------------------------------------------------
 
-#-----------------
-# Authenticate
+# Create authentication token
+token = saildrone_module.auth()
 
-#saildrone_auth_url = 'https://developer-mission.saildrone.com/v1/auth'
-#our_header = {'Content-Type':'application/json', 'Accept':'application/json'}
-#our_data = json.dumps({'key':'XbXS9f7TfZepb7nD',
-#	'secret':'dGL99eMuBcsJYm5guq29AtKeCGHCT2kP'}).encode()
-
-#auth_request = urllib.request.Request(
-# 	url=saildrone_auth_url, headers=our_header,
-# 	data=our_data, method='POST')
-
-#auth_response_dict = saildrone_module.to_dict(auth_request)
-
-#token = auth_response_dict['token']
-
-
-#-----------------
 # See what can be downloaded
+access_list = saildrone_module.check_available(token)
 
-#check_available_url = 'https://developer-mission.saildrone.com/v1/auth/'\
-#	+ 'access?token=' + token
-
-#available_data_request = urllib.request.Request(
-#	check_available_url, method='GET')
-
-#available_data_dict = saildrone_module.to_dict(available_data_request)
-
-#data = available_data_dict['data']
-#access_list = data['access']      # List of dict, each with info on 1 saildrone
 
 
 #-----------------
@@ -103,10 +79,10 @@ os.mkdir(archive_path)
 # !!! WHILE TESTING:
 # The loop above will download ocean and biogeo file from one drone. It will
 # also create 'json_paths'. While testing, create this manually.
-ocean_path = os.path.join(data_dir,'1030_oceanographic.json')
-biogeo_path = os.path.join(data_dir, '1030_biogeochemical.json')
+ocean_path = os.path.join(data_dir,'1021_oceanographic.json')
+biogeo_path = os.path.join(data_dir, '1021_biogeochemical.json')
 json_paths = [ocean_path, biogeo_path]
-drone_id = 1030
+drone_id = 1021
 
 
 ###----------------------------------------------------------------------------
