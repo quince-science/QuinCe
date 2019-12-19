@@ -12,6 +12,7 @@ import urllib
 import saildrone_module as saildrone
 import os
 
+our_header = {'Content-Type':'application/json', 'Accept':'application/json'}
 
 def to_dict(request_output):
 	byte = urllib.request.urlopen(request_output).read()
@@ -22,7 +23,6 @@ def to_dict(request_output):
 
 def auth():
 	auth_url = 'https://developer-mission.saildrone.com/v1/auth'
-	our_header = {'Content-Type':'application/json', 'Accept':'application/json'}
 	our_data = json.dumps({'key':'XbXS9f7TfZepb7nD',
 		'secret':'dGL99eMuBcsJYm5guq29AtKeCGHCT2kP'}).encode()
 
@@ -50,7 +50,7 @@ def check_available(token):
 	return access_list
 
 
-def write_json(data_dir, header, drone_id, dataset, start, end, token):
+def write_json(data_dir, drone_id, dataset, start, end, token):
 
 	get_data_url = 'https://developer-mission.saildrone.com/v1/timeseries/'\
 	+ f'{drone_id}?data_set={dataset}&interval=1&start_date={start}&end_date='\
