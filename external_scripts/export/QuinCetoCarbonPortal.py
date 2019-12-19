@@ -42,6 +42,7 @@ def main():
     if not export_list:
       logging.info('Terminating script, no datasets to be exported.')
     else: 
+      cp_cookie = get_auth_cookie(config_carbon)
       for dataset in export_list: 
         [dataset_zip,
         manifest, 
@@ -51,10 +52,7 @@ def main():
         platform_code = manifest['manifest']['metadata']['platformCode']              
         export_destination = platform[platform_code]['export'] 
 
-
         if 'ICOS' in export_destination: 
-          cp_cookie = get_auth_cookie(config_carbon)
-        
           L0_hashsums = []
           for index, raw_filename in enumerate(raw_filenames):
             L0_hashsum = export_file_to_cp(
@@ -75,7 +73,7 @@ def main():
                 manifest, platform, config_carbon, data_filename, platform_code, 
                 dataset_zip, index, cp_cookie, 'L1', upload, L0_hashsums)
             except Exception as e:
-              logging.INFO('Carbon Portal export failed')
+              logging.error('Carbon Portal export failed')
               logging.error('Exception occurred: ', exc_info=True)
           if 'Copernicus' + key in data_filename and 'CMEMS' in export_destination:  
             curr_date  = build_dataproduct(dataset_zip,dataset['name'],data_filename)
