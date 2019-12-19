@@ -32,14 +32,13 @@ logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s',
 #logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 upload = True # for debugging purposes, when False no data is exported.
-slack = Slacker(config['slack']['api_token'])
+slack = Slacker(basicConfig['slack']['api_token'])
 
 def main():
   logging.debug('Obtaining IDs of datasets ready for export from QuinCe')
-  export_list = get_export_list(config_quince)
+  export_list = get_export_list(basicConfig)
 
   try:
-    1/0
     if not export_list:
       logging.info('Terminating script, no datasets to be exported.')
     else: 
@@ -48,7 +47,7 @@ def main():
         [dataset_zip,
         manifest, 
         data_filenames, 
-        raw_filenames] = process_dataset(dataset,config_quince)
+        raw_filenames] = process_dataset(dataset,basicConfig)
 
         platform_code = manifest['manifest']['metadata']['platformCode']              
         export_destination = platform[platform_code]['export'] 
@@ -90,9 +89,9 @@ def main():
           else:
             successful_upload_CMEMS = False
         if successful_upload_CMEMS:
-          report_complete_export(config_quince,dataset['id'])
+          report_complete_export(basicConfig,dataset['id'])
         else: 
-          report_abandon_export(config_quince,dataset['id'])
+          report_abandon_export(basicConfig,dataset['id'])
 
   except Exception as e: 
     exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -103,9 +102,9 @@ def main():
     logging.error(err_msg)
     try:
       if export_list:
-        report_abandon_export(config_quince,dataset['id'])
+        report_abandon_export(basicConfig,dataset['id'])
     except Exception as e:
-      slack.chat.post_message(config['slack']['workspace'],f'Failed to report to QuinCe {e}')
+      slack.chat.post_message('#'+basicConfig['slack']['workspace'],f'Failed to report to QuinCe {e}')
 
 
 if __name__ == '__main__':
