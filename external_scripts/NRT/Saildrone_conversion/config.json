@@ -1,0 +1,16 @@
+{
+    "col_order": [
+        "time",
+        "co2",
+        "sst",
+        "etc"
+    ],
+    "datasets": [
+        "oceanographic",
+        "biogeochemical",
+        "atmospheric"
+    ],
+    "drones_ignored": [
+        "1021"
+    ]
+}
