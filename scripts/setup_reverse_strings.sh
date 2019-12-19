@@ -21,4 +21,4 @@ git checkout WebApp/WebContent/META-INF/context.xml \
   external_scripts/NRT/config.toml \
   external_scripts/export/config_carbon.toml \
   external_scripts/export/config_copernicus.toml \
-  external_scripts/export/config_quince.toml
+  external_scripts/export/config.toml

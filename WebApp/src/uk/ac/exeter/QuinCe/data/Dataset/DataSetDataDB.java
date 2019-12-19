@@ -420,14 +420,14 @@ public class DataSetDataDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static Map<Long, NavigableSensorValuesList> getSensorValuesByColumn(
+  public static Map<Long, SearchableSensorValuesList> getSensorValuesByColumn(
     Connection conn, long datasetId)
     throws RecordNotFoundException, DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
 
-    Map<Long, NavigableSensorValuesList> values = new HashMap<Long, NavigableSensorValuesList>();
+    Map<Long, SearchableSensorValuesList> values = new HashMap<Long, SearchableSensorValuesList>();
     PreparedStatement stmt = null;
     ResultSet records = null;
 
@@ -439,7 +439,7 @@ public class DataSetDataDB {
       records = stmt.executeQuery();
 
       long currentColumnId = -1;
-      NavigableSensorValuesList currentSensorValues = new NavigableSensorValuesList();
+      SearchableSensorValuesList currentSensorValues = new SearchableSensorValuesList();
 
       while (records.next()) {
         SensorValue sensorValue = sensorValueFromResultSet(records, datasetId);
@@ -450,7 +450,7 @@ public class DataSetDataDB {
           }
 
           currentColumnId = sensorValue.getColumnId();
-          currentSensorValues = new NavigableSensorValuesList();
+          currentSensorValues = new SearchableSensorValuesList();
         }
 
         currentSensorValues.add(sensorValue);

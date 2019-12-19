@@ -9,6 +9,7 @@ import toml
 import sys
 import os
 import traceback
+from slacker import Slacker
 
 from py_func.quince_comm import get_export_list, report_abandon_export, report_complete_export
 from py_func.meta_handling import process_dataset 
@@ -16,48 +17,47 @@ from py_func.carbon import get_auth_cookie, export_file_to_cp
 from py_func.copernicus import build_dataproduct, upload_to_copernicus
 
 
-config_file_quince = 'config_quince.toml'
+config_file = 'config.toml'
 config_file_copernicus = 'config_copernicus.toml'
 config_file_carbon = 'config_carbon.toml'
-config_file_meta = 'config_meta.toml'
 platform_lookup_file = 'platforms.toml'
 
-with open(config_file_quince) as f: config_quince = toml.load(f)
+with open(config_file) as f: basicConfig = toml.load(f)
 with open(config_file_copernicus) as f: config_copernicus = toml.load(f)
 with open(config_file_carbon) as f: config_carbon = toml.load(f)
-with open(config_file_meta) as f: config_meta = toml.load(f)
 with open(platform_lookup_file) as f: platform = toml.load(f)
 
 if not os.path.isdir('log'): os.mkdir('log')
 logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.INFO)
 #logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
 
+slack = Slacker(basicConfig['slack']['api_token'])
 upload = True # for debugging purposes, when False no data is exported.
 
 def main():
   logging.debug('Obtaining IDs of datasets ready for export from QuinCe')
-  export_list = get_export_list(config_quince)
-
   try:
+    export_list = get_export_list(basicConfig)
+
     if not export_list:
       logging.info('Terminating script, no datasets to be exported.')
     else: 
+      cp_cookie = get_auth_cookie(config_carbon)
       for dataset in export_list: 
         [dataset_zip,
         manifest, 
         data_filenames, 
-        raw_filenames] = process_dataset(dataset,config_quince)
+        raw_filenames] = process_dataset(dataset,basicConfig)
 
         platform_code = manifest['manifest']['metadata']['platformCode']              
         export_destination = platform[platform_code]['export'] 
 
-
+        #--- Processing L0 files
         if 'ICOS' in export_destination: 
-          cp_cookie = get_auth_cookie(config_carbon)
-        
+          successful_upload_CP = False
           L0_hashsums = []
           for index, raw_filename in enumerate(raw_filenames):
-            L0_hashsum = export_file_to_cp(
+            successful_upload_CP, L0_hashsum = export_file_to_cp(
               manifest, platform, config_carbon, raw_filename, platform_code, 
               dataset_zip, index, cp_cookie,'L0',upload)
             if L0_hashsum:
@@ -68,16 +68,16 @@ def main():
           key = '/'
           if '26NA' in platform_code: key = ' No Salinity Flags' + key
           
-          ## EXPORTING L1 TO CARBON PORTAL ##
           if 'ICOS OTC' + key in data_filename and 'ICOS' in export_destination:
             try:
-              L1_hashsum = export_file_to_cp(
+              successful_upload_CP, L1_hashsum = export_file_to_cp(
                 manifest, platform, config_carbon, data_filename, platform_code, 
                 dataset_zip, index, cp_cookie, 'L1', upload, L0_hashsums)
             except Exception as e:
-              logging.INFO('Carbon Portal export failed')
+              logging.error('Carbon Portal export failed')
               logging.error('Exception occurred: ', exc_info=True)
-          if 'Copernicus' + key in data_filename and 'CMEMS' in export_destination:  
+          if 'Copernicus' + key in data_filename and 'CMEMS' in export_destination: 
+            successful_upload_CMEMS = False
             curr_date  = build_dataproduct(dataset_zip,dataset['name'],data_filename)
             try: 
               if upload:
@@ -90,23 +90,26 @@ def main():
               successful_upload_CMEMS = False
           else:
             successful_upload_CMEMS = False
-        if successful_upload_CMEMS:
-          report_complete_export(config_quince,dataset['id'])
+        successful_upload = successful_upload_CP and successful_upload_CMEMS 
+        slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'Upload to Carbon Portal: {successful_upload_CP}')
+        slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'Upload to CMEMS: {successful_upload_CMEMS}')
+        if successful_upload:
+          report_complete_export(basicConfig,dataset['id'])
         else: 
-          report_abandon_export(config_quince,dataset['id'])
+          report_abandon_export(basicConfig,dataset['id'])
 
   except Exception as e: 
-    print(e); 
-    logging.info('Failed to run. Encountered: %s ',e);
     exc_type, exc_obj, exc_tb = sys.exc_info()
-    traceback.print_exc()
-
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    logging.debug(f'type: {exc_type}')
-    logging.debug(f'file name: {fname}')
-    logging.debug(f'line number: {exc_tb.tb_lineno}')
+    err_msg = f'Failed to run. Encountered: {e} \n type: {exc_type} \n file name: {fname} \n line number: {exc_tb.tb_lineno}'
     
-    report_abandon_export(config_quince,dataset['id'])
+    slack.chat.post_message('#'+basicConfig['slack']['err_workspace'],err_msg)
+    logging.error(err_msg)
+    try:
+      if export_list:
+        report_abandon_export(basicConfig,dataset['id'])
+    except Exception as e:
+      slack.chat.post_message('#'+basicConfig['slack']['err_workspace'],f'Failed to abandon QuinCe export {e}')
 
 
 if __name__ == '__main__':

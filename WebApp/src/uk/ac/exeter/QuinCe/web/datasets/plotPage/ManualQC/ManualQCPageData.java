@@ -83,7 +83,7 @@ public class ManualQCPageData extends DatasetMeasurementData {
   }
 
   @Override
-  protected void load(List<LocalDateTime> times)
+  protected void loadAction(List<LocalDateTime> times)
     throws MeasurementDataException {
 
     try {

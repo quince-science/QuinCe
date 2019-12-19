@@ -19,7 +19,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 /**
  * Holds a description of a sample data file uploaded during the creation of a
  * new instrument
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -28,11 +28,15 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Special column ID for longitude, because it's not defined in the
    * file_column dataset
+   *
+   * @see uk.ac.exeter.QuinCe.web.datasets.data.FieldSets#POSITION_FIELD_ID
    */
   public static final long LONGITUDE_COLUMN_ID = -1000L;
 
   /**
    * Special column ID for latitude
+   *
+   * @see uk.ac.exeter.QuinCe.web.datasets.data.FieldSets#POSITION_FIELD_ID
    */
   public static final long LATITUDE_COLUMN_ID = -1001L;
 
@@ -179,7 +183,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Construct a complete file definition
-   * 
+   *
    * @param databaseId
    *          The definition's database ID
    * @param description
@@ -230,7 +234,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the database ID of this file definition
-   * 
+   *
    * @return The database ID
    */
   public long getDatabaseId() {
@@ -239,7 +243,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the description for this file
-   * 
+   *
    * @return The file description
    */
   public String getFileDescription() {
@@ -248,7 +252,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the description for this file
-   * 
+   *
    * @param fileDescription
    *          The file description
    */
@@ -289,7 +293,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Get the number of lines that make up the header. This is only valid if
    * {@link #headerType} is set to {@link #HEADER_TYPE_LINE_COUNT}.
-   * 
+   *
    * @return The number of lines in the header
    */
   public int getHeaderLines() {
@@ -298,7 +302,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the number of lines that make up the header
-   * 
+   *
    * @param headerLines
    *          The number of lines in the header
    */
@@ -310,7 +314,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Get the string that defines the last line of the header. This is only valid
    * if {@link #headerType} is set to {@link #HEADER_TYPE_STRING}.
-   * 
+   *
    * @return The string that defines the last line of the header.
    */
   public String getHeaderEndString() {
@@ -319,7 +323,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the string that defines the last line of the header.
-   * 
+   *
    * @param headerEndString
    *          The string that defines the last line of the header.
    */
@@ -329,7 +333,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the number of column header rows
-   * 
+   *
    * @return The number of column header rows
    */
   public int getColumnHeaderRows() {
@@ -338,7 +342,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the number of column header rows
-   * 
+   *
    * @param columnHeaderRows
    *          The number of column header rows
    */
@@ -348,7 +352,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the file's column separator
-   * 
+   *
    * @return The separator
    */
   public String getSeparator() {
@@ -357,7 +361,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the name for the file's column separator
-   * 
+   *
    * @return The separator name
    */
   public String getSeparatorName() {
@@ -394,7 +398,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the file's column separator using the separator name
-   * 
+   *
    * @param separatorName
    *          The separator name
    * @throws InvalidSeparatorException
@@ -411,7 +415,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Ensure that a separator is one of the supported options
-   * 
+   *
    * @param separator
    *          The separator to be checked
    * @return {@code true} if the separator is supported; {@code false} if it is
@@ -432,7 +436,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Get the header type of the file. Will be either
    * {@link #HEADER_TYPE_LINE_COUNT} or {@link #HEADER_TYPE_STRING}.
-   * 
+   *
    * @return The header type.
    */
   public int getHeaderType() {
@@ -442,7 +446,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Set the header type of the file. Must be either
    * {@link #HEADER_TYPE_LINE_COUNT} or {@link #HEADER_TYPE_STRING}.
-   * 
+   *
    * @param headerType
    *          The header type
    * @throws InvalidHeaderTypeException
@@ -458,7 +462,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the header to be defined by a number of lines
-   * 
+   *
    * @param headerLines
    *          The number of lines in the header
    */
@@ -469,7 +473,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the header to be defined by a string that marks the end of the header
-   * 
+   *
    * @param headerString
    *          The string denoting the end of the header
    */
@@ -480,7 +484,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the column count
-   * 
+   *
    * @param columnCount
    *          The column count
    */
@@ -490,7 +494,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the column count
-   * 
+   *
    * @return The column count
    */
   public int getColumnCount() {
@@ -499,7 +503,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Convert a string from a data file into a list of column values
-   * 
+   *
    * @param dataLine
    *          The data line
    * @return The column values
@@ -517,7 +521,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the longitude specification
-   * 
+   *
    * @return The longitude specification
    */
   public LongitudeSpecification getLongitudeSpecification() {
@@ -526,7 +530,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the latitude specification
-   * 
+   *
    * @return The latitude specification
    */
   public LatitudeSpecification getLatitudeSpecification() {
@@ -535,7 +539,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the date/time specification
-   * 
+   *
    * @return The date/time specification
    */
   public DateTimeSpecification getDateTimeSpecification() {
@@ -547,7 +551,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    *
    * The header has either with a specified number of header lines or a header
    * end string.
-   * 
+   *
    * @return {@code true} if the file has a header; {@code false} if it does
    *         not.
    */
@@ -557,7 +561,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the file set of which this definition is a member
-   * 
+   *
    * @return The parent file set
    */
   public InstrumentFileSet getFileSet() {
@@ -567,7 +571,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Remove a column assignment from the date/time or position specification. If
    * there is no assignment for the column, no action is taken.
-   * 
+   *
    * @param column
    *          The column to be unassigned
    * @return {@code true} if an assignment was found and removed; {@code false}
@@ -606,7 +610,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Get the assigned run types for this file. If the {@link #runTypeColumn} is
    * {@code -1}, this will return {@code null}.
-   * 
+   *
    * @return The run types
    */
   public RunTypeAssignments getRunTypes() {
@@ -615,7 +619,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the list of run type values in this file
-   * 
+   *
    * @return The run type values
    */
   public List<String> getRunTypeValues() {
@@ -631,7 +635,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the list of run type values with the specified value excluded
-   * 
+   *
    * @param exclusion
    *          The value to exclude from the list
    * @return The list of run types without the excluded value
@@ -645,7 +649,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Get the run type column for this file. Returns -1 if the column is not
    * assigned
-   * 
+   *
    * @return The run type column
    */
   public int getRunTypeColumn() {
@@ -671,7 +675,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the run type category for a given run type
-   * 
+   *
    * @param runType
    *          The run type
    * @param category
@@ -683,7 +687,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the run type category for a given run type
-   * 
+   *
    * @param runType
    *          The run type
    * @param category
@@ -701,7 +705,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Insert the complete set of run types associated with this file definition.
    * Replaces any existing run types.
-   * 
+   *
    * @param runTypes
    *          The run types
    */
@@ -712,7 +716,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Compare the layout of this file definition to a supplied definition to see
    * if they are identical.
-   * 
+   *
    * @param compare
    *          The definition to be compared
    * @return {@code true} if the layouts match; {@code false} otherwise.
@@ -765,7 +769,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * If multiple lines match the prefix and suffix, the first line will be
    * returned.
    * </p>
-   * 
+   *
    * @param fileContents
    *          The file contents
    * @param prefix
@@ -809,7 +813,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the number of rows in a file header
-   * 
+   *
    * @param fileContents
    *          The file contents
    * @return The number of rows in the file header
@@ -845,7 +849,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Get the file header from a file. If there is no header, returns an empty
    * list.
-   * 
+   *
    * @param fileContents
    *          The file contents
    * @return The lines of the file header
@@ -865,7 +869,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Determine whether or not this file contains Run Types
-   * 
+   *
    * @return {@code true} if the file contains Run Types; {@code false} if not
    */
   public boolean hasRunTypes() {
@@ -874,7 +878,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the run type from a data line
-   * 
+   *
    * @param line
    *          The line
    * @return The run type
@@ -889,7 +893,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the run type from a data line
-   * 
+   *
    * @param line
    *          The line
    * @return The run type
@@ -915,7 +919,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the Run Type Category of the Run Type on the given line
-   * 
+   *
    * @param line
    *          The line
    * @return The Run Type Category
