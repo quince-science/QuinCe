@@ -41,8 +41,9 @@ def export_file_to_cp(
   for L1 exports. Currently not in use on request by Oleg.
 
   '''
+  CP_success = False
   logging.debug(f'Processing {level} file: {filename}')
-  
+    
   file = get_file_from_zip(dataset_zip,filename)
   hashsum = get_hashsum(file)  
 
@@ -59,7 +60,6 @@ def export_file_to_cp(
     export_filename = os.path.split(file)[-1]
 
   logging.debug(f'Checking for previous export of {export_filename}')
-  #sql_investigate returns old hashsum if new version(same name, diff hashsum).
   prev_exp = sql_investigate(export_filename,hashsum,level,NRT,platform_code)
   logging.debug(prev_exp['info'])
   is_next_version = None
@@ -80,16 +80,16 @@ def export_file_to_cp(
           auth_cookie, file, hashsum, meta, OBJ_SPEC_URI[level])
         logging.debug(f'Upload status: {upload_status}')
         if upload_status:
+          CP_success = True
           db_status = sql_commit(
             export_filename, hashsum,filename,level,L1_filename)
           logging.debug(f'{export_filename}: SQL commit {db_status}')
         else:
-          logging.debug(f'{export_filename}: upload failed.')
           raise Exception(f'Failed to upload: {export_filename}, \nException: {e}')
       except Exception as e:
         raise Exception(f'Failed to upload: {export_filename}, \nException: {e}')
 
-  return hashsum
+  return CP_success, hashsum
 
 def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
   '''Uploads metadata and data object to Carbon Portal  '''

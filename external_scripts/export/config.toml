@@ -10,4 +10,5 @@ password='%local_api_password%'
 
 [slack]
 api_token = '%slack_api_token%'
-workspace = '%slack_workspace%'
+err_workspace = '%slack_err%'
+rep_workspace = '%slack_rep%'
