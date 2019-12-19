@@ -30,10 +30,9 @@ def quince_req(config, call, dataset_id=-1):
         conn = urllib.request.urlopen(request)
         quince_response = conn.read()
         conn.close()
-        return quince_response
 
     except Exception as e:
-      logging.error(f'Failed to connect to QuinCe. Encountered: {e}');
+      raise Exception(f'Failed to connect to QuinCe. Encountered: {e}');
       exc_type, exc_obj, exc_tb = sys.exc_info()
 
       fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -43,6 +42,7 @@ def quince_req(config, call, dataset_id=-1):
 
       sys.exit('Failed to connect to QuinCe')
 
+    return quince_response
 
 def get_export_list(config):
     ''' Retrieves list of datasets ready for export from QuinCe. 
