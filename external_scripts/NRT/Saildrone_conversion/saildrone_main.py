@@ -16,7 +16,8 @@ import shutil
 import urllib
 import json
 import ast
-import pandas
+import pandas as pd
+
 
 ###----------------------------------------------------------------------------
 ### Handling directories
@@ -41,18 +42,14 @@ os.mkdir(archive_path)
 
 
 ###----------------------------------------------------------------------------
-### API
+### Find out which data to request
 ###----------------------------------------------------------------------------
 
-
-# Create authentication token
+# Create authentication token for saildrone API, and see what's available
 token = saildrone.auth()
+access_list = saildrone.get_available(token)
 
-# See what can be downloaded
-access_list = saildrone.check_available(token)
-
-
-# Get col_order, drones to ignore, and datasets to download from config file
+# Import information from config file and from the stored_info file.
 try:
 	with open ('./config.json') as file:
 		configs = json.load(file)
@@ -60,39 +57,65 @@ try:
 	datasets = configs['datasets']
 	col_order = configs['col_order']
 except FileNotFoundError:
-	# Create config file with keys, no values.
-	# Notify via slack to fill inn config values.
-	# Temporary:
+	# !!! Create config file with keys, no values. Notify via slack to fill inn
+	# config values. Temporary solution:
 	print("Missing config file")
 
-# Get the next start dates from file
 try:
-	with open('./next_start.json') as file:
-		next_start = json.load(file)
+	with open('./stored_info.json') as file:
+		stored_info = json.load(file)
+	next_request = stored_info['next_request']
+	prev_access_list = stored_info['prev_access_list']
 except FileNotFoundError:
-	print("Missing 'next_start.json' file")
+	# !!! Create stored info template file. Notify via slack to fill inn values.
+	# Temporary solution:
+	print("Missing 'stored_info.json' file")
+
+# Check if the access list has changed since the previous run (and previous
+# access list was not empty): send message and replace the prev_access_list
+# with the new access_list.
+if prev_access_list != access_list and bool(prev_access_list):
+	#!!! Send message to slack. Temp soluion:
+	print("Access_list has changed")
+	stored_info['prev_access_list'] = access_list
+
+# If the access list contains new drones which are not on ignore list, add
+# them to the next_request dictionary:
+for dictionary in access_list:
+	drone = str(dictionary['drone_id'])
+	if drone not in drones_ignored and drone not in next_request.keys():
+			next_request[drone] = dictionary['start_date']
+
+# Function 'check_next_request' will return a list of next requests where
+# drone items are removed if any of the following is not available: the drone
+# itself, any of the dataset typs, or the start date.
+next_request_checked = saildrone.check_next_request(
+	next_request, access_list, datasets)
+
+#-----
+## Required inputs for the download request function will be:
+# - 'data_dir' and 'token', already defined with the same name
+# - 'end' is always current timestamp:
+end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
+# - 'dataset' is defined in the 'datasets' list
+# - 'drone_id' and 'start' are defined in the 'next_request_checked' dictionary
+#-----
 
 
+###----------------------------------------------------------------------------
+### Download data
+###----------------------------------------------------------------------------
 
-
-# TODO:
-# Add col_order to config file (see pdf)
-# Add a check to see if there are new drones in access list. If they are not
-# on the ignore list, add them to the next_start list.
-
-
-#-----------------
-# Download data
 
 # !!! Get 500 error when try to download all at once)
-
 # !!! Add try except! urllib.error module
-
 # !!! Find a way to download so that get the whole period I request, and
 # !!! not just the final 1000 measurements
 
 
-# !!! Change code below to use new inputs, e.g. from next_start.json
+
+
+# !!! Change code
 #for drone in access_list:
 #	drone_id = drone['drone_id']
 #	start = drone['start_date']
@@ -121,12 +144,11 @@ except FileNotFoundError:
 # !!! WHILE TESTING:
 # The loop above will download ocean and biogeo file from one drone. It will
 # also create 'json_paths'. While testing, create this manually.
-
-ocean_path = os.path.join(data_dir,'1053_oceanographic.json')
-biogeo_path = os.path.join(data_dir, '1053_biogeochemical.json')
-atmos_path = os.path.join(data_dir, '1053_atmospheric.json')
-json_paths = [ocean_path, biogeo_path, atmos_path]
-drone_id = 1053
+#ocean_path = os.path.join(data_dir,'1053_oceanographic.json')
+#biogeo_path = os.path.join(data_dir, '1053_biogeochemical.json')
+#atmos_path = os.path.join(data_dir, '1053_atmospheric.json')
+#json_paths = [ocean_path, biogeo_path, atmos_path]
+#drone_id = 1053
 
 ###----------------------------------------------------------------------------
 ### Convert to csv format and merge ocean and bio file
@@ -136,10 +158,10 @@ drone_id = 1053
 
 # Convert each json to csv file. Move the json file to the archive
 # folder. Store the new csv paths.
-csv_paths = []
-for path in json_paths :
-	csv_path = saildrone.convert_to_csv(path)
-	csv_paths.append(csv_path)
+#csv_paths = []
+#for path in json_paths :
+#	csv_path = saildrone.convert_to_csv(path)
+#	csv_paths.append(csv_path)
 #	shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
 
 # !!! Need to update merge script so that co2 and sst are on the same row,
@@ -149,33 +171,34 @@ for path in json_paths :
 # atmos in the csv_path variable.). Sort the columns of the merged dataset
 # using the col_order (previously extracted from the config file). Export the
 # merged data to a csv file. Move the original csv files to archive.
-if len(csv_paths) == 3:
-	merged_df = saildrone.merge_ocean_biogeo(
-		csv_paths[0], csv_paths[1], csv_paths[2])
+#if len(csv_paths) == 3:
+#	merged_df = saildrone.merge_ocean_biogeo(
+#		csv_paths[0], csv_paths[1], csv_paths[2])
 
 	# Add columns that might be missing:
-	for param in col_order:
-		if param not in merged_df.columns:
-			merged_df[param] = None
+#	for param in col_order:
+#		if param not in merged_df.columns:
+#			merged_df[param] = None
 
 	# !!! Add check:
 	# If there are new headers in the merged_df. Notify slack.
 
 	# Sort by the column order given in config file
-	merged_sorted_df = merged_df[col_order]
+#	merged_sorted_df = merged_df[col_order]
 
-	merged_path = os.path.join(data_dir, str(drone_id) + '_merged.csv')
-	merged_csv = merged_sorted_df.to_csv(merged_path, index=None, header=True, sep=',')
+#	merged_path = os.path.join(data_dir, str(drone_id) + '_merged.csv')
+#	merged_csv = merged_sorted_df.to_csv(merged_path, index=None, header=True, sep=',')
 
-	for path in csv_paths:
-		shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
+#	for path in csv_paths:
+#		shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
 
 
-# !!! Update next start json file based on what was succesfully requested
+# !!! Update stored_info.json 'next_request' parameter based on what was
+# succesfully requested.
 # Example how to write to json:
-#next_start = ....
-#with open('./next_start.json', 'w') as file:
-#	json.dump(next_start, file,
+#next_request = ....
+#with open('./stored_info.json', 'w') as file:
+#	json.dump(stored_info, file,
 #		sort_keys=True, indent=4, separators=(',',': '))
 
 
