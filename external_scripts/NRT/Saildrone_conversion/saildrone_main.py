@@ -103,32 +103,8 @@ end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
 
 
 ###----------------------------------------------------------------------------
-### Download data
+### Download json, convert to csv, and merge datasets.
 ###----------------------------------------------------------------------------
-
-
-# !!! Get 500 error when try to download all at once)
-# !!! Add try except! urllib.error module
-# !!! Find a way to download so that get the whole period I request, and
-# !!! not just the final 1000 measurements
-
-
-
-
-# !!! Change code
-#for drone in access_list:
-#	drone_id = drone['drone_id']
-#	start = drone['start_date']
-#	end = drone['end_date']
-
-#	datasets = ['oceanographic', 'biogeochemical']
-#	json_paths = []
-#	for dataset in datasets:
-#		json_path = saildrone.write_json(
-#			data_dir, drone_id, dataset, start, end, token)
-#		json_paths.append(json_path)
-
-
 
 # !!! WHILTE TESTING!!! Download individual datasets
 #drone_id = 1053
@@ -137,69 +113,75 @@ end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
 #dataset = 'biogeochemical'
 #start = '2019-12-18T19:00:00.000Z'
 #end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
-
 #saildrone.write_json(data_dir, drone_id, dataset, start, end, token)
 
-
-# !!! WHILE TESTING:
-# The loop above will download ocean and biogeo file from one drone. It will
-# also create 'json_paths'. While testing, create this manually.
+# The loop above will download ocean, atmos and  biogeo file from one drone.
+# It will also create 'json_paths'. While testing, create this manually:
 #ocean_path = os.path.join(data_dir,'1053_oceanographic.json')
 #biogeo_path = os.path.join(data_dir, '1053_biogeochemical.json')
 #atmos_path = os.path.join(data_dir, '1053_atmospheric.json')
 #json_paths = [ocean_path, biogeo_path, atmos_path]
 #drone_id = 1053
 
-###----------------------------------------------------------------------------
-### Convert to csv format and merge ocean and bio file
-###----------------------------------------------------------------------------
 
-# !!! Add one indent to this section when the download loop is not a comment.
+# !!! Add try except! urllib.error module
 
-# Convert each json to csv file. Move the json file to the archive
-# folder. Store the new csv paths.
-#csv_paths = []
-#for path in json_paths :
-#	csv_path = saildrone.convert_to_csv(path)
-#	csv_paths.append(csv_path)
-#	shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
+# Loop that downloads, converts, merges and writes datafiles. Keep track on
+# next start requests in next_request_updated.
+next_request_updated = dict(next_request_checked)
+for drone_id, start in next_request_checked.items():
 
-# !!! Need to update merge script so that co2 and sst are on the same row,
-# !!! even with different times. ON HOLD: STEVE WILL DO THIS FIRST
-
-# Merge if ocean, bio and atmos was downloaded (order is always ocean, bio,
-# atmos in the csv_path variable.). Sort the columns of the merged dataset
-# using the col_order (previously extracted from the config file). Export the
-# merged data to a csv file. Move the original csv files to archive.
-#if len(csv_paths) == 3:
-#	merged_df = saildrone.merge_ocean_biogeo(
-#		csv_paths[0], csv_paths[1], csv_paths[2])
-
-	# Add columns that might be missing:
-#	for param in col_order:
-#		if param not in merged_df.columns:
-#			merged_df[param] = None
-
-	# !!! Add check:
-	# If there are new headers in the merged_df. Notify slack.
-
-	# Sort by the column order given in config file
-#	merged_sorted_df = merged_df[col_order]
-
-#	merged_path = os.path.join(data_dir, str(drone_id) + '_merged.csv')
-#	merged_csv = merged_sorted_df.to_csv(merged_path, index=None, header=True, sep=',')
-
-#	for path in csv_paths:
-#		shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
+	# Download the json files and store their paths
+	json_paths =[]
+	for dataset in datasets:
+		json_path = saildrone.write_json(
+			data_dir, drone_id, dataset, start, end, token)
+		json_paths.append(json_path)
 
 
-# !!! Update stored_info.json 'next_request' parameter based on what was
-# succesfully requested.
-# Example how to write to json:
-#next_request = ....
-#with open('./stored_info.json', 'w') as file:
-#	json.dump(stored_info, file,
-#		sort_keys=True, indent=4, separators=(',',': '))
+	# Convert each json to csv. Move the json file to the archive folder.
+	# Store the new csv paths.
+	csv_paths = []
+	for path in json_paths :
+		csv_path = saildrone.convert_to_csv(path)
+		csv_paths.append(csv_path)
+		shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
+
+
+	# Create merged dataframe if ocean, bio and atmos was downloaded.
+	# (The order is always ocean, bio, atmos in the csv_path variable.)
+	if len(csv_paths) == 3:
+		merged_df = saildrone.merge_ocean_biogeo(
+			csv_paths[0], csv_paths[1], csv_paths[2])
+
+		# Add missing columns to ensure consistent data format:
+		for param in col_order:
+			if param not in merged_df.columns:
+				merged_df[param] = None
+
+		# !!! Check: If there are new headers in the merged_df.
+		# Notify slack and stop script
+
+		# Sort by the defined column order from the config file
+		merged_sorted_df = merged_df[col_order]
+
+		# Export the merged data to a csv file
+		merged_path = os.path.join(data_dir, str(drone_id) + '_merged.csv')
+		merged_csv = merged_sorted_df.to_csv(merged_path, index=None, header=True, sep=',')
+
+		# Move the individual csv files to archive.
+		for path in csv_paths:
+			shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
+
+		#  Set new start date for the next_request:
+		next_request_updated[drone_id] = end
+
+
+# Update stored_info file
+stored_info['next_request'] = next_request_updated
+with open('./stored_info.json', 'w') as file:
+	json.dump(stored_info, file,
+		sort_keys=True, indent=4, separators=(',',': '))
 
 
 ###----------------------------------------------------------------------------
