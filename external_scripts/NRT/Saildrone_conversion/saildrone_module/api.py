@@ -97,6 +97,9 @@ def check_next_request(next_request, access_list, datasets):
 
 def write_json(data_dir, drone_id, dataset, start, end, token):
 
+	# !!! Add while loop: continue download until got the whole
+	# period requested.
+
 	get_data_url = 'https://developer-mission.saildrone.com/v1/timeseries/'\
 	+ f'{drone_id}?data_set={dataset}&interval=1&start_date={start}&end_date='\
 	+ f'{end}&order_by=desc&limit=1000&offset=0&token={token}'
