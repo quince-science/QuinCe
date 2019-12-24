@@ -152,7 +152,11 @@ public class PositionQCRoutine extends Routine {
       if (qcFailed) {
         LocalDateTime currentPosTime = lon.getTime();
         LocalDateTime nextPosTime = LocalDateTime.MAX;
-        SensorValue nextPos = lonValues.get(posIndex + 1);
+
+        SensorValue nextPos = null;
+        if (posIndex + 1 < lonValues.size()) {
+          nextPos = lonValues.get(posIndex + 1);
+        }
         if (null != nextPos) {
           nextPosTime = nextPos.getTime();
         }
