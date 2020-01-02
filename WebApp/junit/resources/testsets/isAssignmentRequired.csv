@@ -39,38 +39,38 @@ Depends On Me,true,true,,,,Dummy Dependent,false,false,,false,,,,,false
 Depends On Me,true,true,,,,Dummy Dependent,false,false,,true,,,,,false
 Depends On Me,true,true,,,,Dummy Dependent,false,true,,false,,,,,false
 Depends On Me,true,true,,,,Dummy Dependent,false,true,,true,,,,,false
-xH₂O in gas,false,false,,,,CO₂ in gas,true,false,,false,,,,,false
-xH₂O in gas,false,false,,,,CO₂ in gas,true,false,,true,false,,,,false
-xH₂O in gas,false,false,,,,CO₂ in gas,true,false,,true,true,,,,true
-xH₂O in gas,false,false,,,,CO₂ in gas,true,true,false,false,,,,,false
-xH₂O in gas,false,false,,,,CO₂ in gas,true,true,true,false,,,,,true
-xH₂O in gas,false,false,,,,CO₂ in gas,true,true,false,true,false,,,,false
-xH₂O in gas,false,false,,,,CO₂ in gas,true,true,false,true,true,,,,true
-xH₂O in gas,false,false,,,,CO₂ in gas,true,true,true,true,true,,,,true
-xH₂O in gas,false,true,,,,CO₂ in gas,true,false,,false,,,,,false
-xH₂O in gas,false,true,,,,CO₂ in gas,true,false,,true,false,,,,false
-xH₂O in gas,false,true,,,,CO₂ in gas,true,false,,true,true,,,,true
-xH₂O in gas,false,true,,,,CO₂ in gas,true,true,false,false,,,,,false
-xH₂O in gas,false,true,,,,CO₂ in gas,true,true,true,false,,,,,true
-xH₂O in gas,false,true,,,,CO₂ in gas,true,true,false,true,false,,,,false
-xH₂O in gas,false,true,,,,CO₂ in gas,true,true,false,true,true,,,,true
-xH₂O in gas,false,true,,,,CO₂ in gas,true,true,true,true,true,,,,true
-xH₂O in gas,true,false,,,,CO₂ in gas,true,false,,false,,,,,false
-xH₂O in gas,true,false,,,,CO₂ in gas,true,false,,true,false,,,,false
-xH₂O in gas,true,false,,,,CO₂ in gas,true,false,,true,true,,,,false
-xH₂O in gas,true,false,,,,CO₂ in gas,true,true,false,false,,,,,false
-xH₂O in gas,true,false,,,,CO₂ in gas,true,true,true,false,,,,,false
-xH₂O in gas,true,false,,,,CO₂ in gas,true,true,false,true,false,,,,false
-xH₂O in gas,true,false,,,,CO₂ in gas,true,true,false,true,true,,,,false
-xH₂O in gas,true,false,,,,CO₂ in gas,true,true,true,true,true,,,,false
-xH₂O in gas,true,true,,,,CO₂ in gas,true,false,,false,,,,,false
-xH₂O in gas,true,true,,,,CO₂ in gas,true,false,,true,false,,,,false
-xH₂O in gas,true,true,,,,CO₂ in gas,true,false,,true,true,,,,false
-xH₂O in gas,true,true,,,,CO₂ in gas,true,true,false,false,,,,,false
-xH₂O in gas,true,true,,,,CO₂ in gas,true,true,true,false,,,,,false
-xH₂O in gas,true,true,,,,CO₂ in gas,true,true,false,true,false,,,,false
-xH₂O in gas,true,true,,,,CO₂ in gas,true,true,false,true,true,,,,false
-xH₂O in gas,true,true,,,,CO₂ in gas,true,true,true,true,true,,,,false
+xH₂O (with standards),false,false,,,,xCO₂ (with standards),true,false,,false,,,,,false
+xH₂O (with standards),false,false,,,,xCO₂ (with standards),true,false,,true,false,,,,false
+xH₂O (with standards),false,false,,,,xCO₂ (with standards),true,false,,true,true,,,,true
+xH₂O (with standards),false,false,,,,xCO₂ (with standards),true,true,false,false,,,,,false
+xH₂O (with standards),false,false,,,,xCO₂ (with standards),true,true,true,false,,,,,true
+xH₂O (with standards),false,false,,,,xCO₂ (with standards),true,true,false,true,false,,,,false
+xH₂O (with standards),false,false,,,,xCO₂ (with standards),true,true,false,true,true,,,,true
+xH₂O (with standards),false,false,,,,xCO₂ (with standards),true,true,true,true,true,,,,true
+xH₂O (with standards),false,true,,,,xCO₂ (with standards),true,false,,false,,,,,false
+xH₂O (with standards),false,true,,,,xCO₂ (with standards),true,false,,true,false,,,,false
+xH₂O (with standards),false,true,,,,xCO₂ (with standards),true,false,,true,true,,,,true
+xH₂O (with standards),false,true,,,,xCO₂ (with standards),true,true,false,false,,,,,false
+xH₂O (with standards),false,true,,,,xCO₂ (with standards),true,true,true,false,,,,,true
+xH₂O (with standards),false,true,,,,xCO₂ (with standards),true,true,false,true,false,,,,false
+xH₂O (with standards),false,true,,,,xCO₂ (with standards),true,true,false,true,true,,,,true
+xH₂O (with standards),false,true,,,,xCO₂ (with standards),true,true,true,true,true,,,,true
+xH₂O (with standards),true,false,,,,xCO₂ (with standards),true,false,,false,,,,,false
+xH₂O (with standards),true,false,,,,xCO₂ (with standards),true,false,,true,false,,,,false
+xH₂O (with standards),true,false,,,,xCO₂ (with standards),true,false,,true,true,,,,false
+xH₂O (with standards),true,false,,,,xCO₂ (with standards),true,true,false,false,,,,,false
+xH₂O (with standards),true,false,,,,xCO₂ (with standards),true,true,true,false,,,,,false
+xH₂O (with standards),true,false,,,,xCO₂ (with standards),true,true,false,true,false,,,,false
+xH₂O (with standards),true,false,,,,xCO₂ (with standards),true,true,false,true,true,,,,false
+xH₂O (with standards),true,false,,,,xCO₂ (with standards),true,true,true,true,true,,,,false
+xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,false,,false,,,,,false
+xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,false,,true,false,,,,false
+xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,false,,true,true,,,,false
+xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,true,false,false,,,,,false
+xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,true,true,false,,,,,false
+xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,true,false,true,false,,,,false
+xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,true,false,true,true,,,,false
+xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,true,true,true,true,,,,false
 Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,false,false
 Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,true,false
 Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,false,false

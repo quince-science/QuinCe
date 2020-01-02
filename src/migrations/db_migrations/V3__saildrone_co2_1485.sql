@@ -23,8 +23,8 @@ UPDATE sensor_types SET display_order = 2200 WHERE id = 21;
 UPDATE sensor_types SET display_order = 2300 WHERE id = 22;
 
 -- Rename sensor types
-UPDATE sensor_types SET name = "xH₂O (with standards)" WHERE id = 8;
-UPDATE sensor_types SET name = "xCO₂ (with standards)" WHERE id = 9;
+UPDATE sensor_types SET name = 'xH₂O (with standards)' WHERE id = 8;
+UPDATE sensor_types SET name = 'xCO₂ (with standards)' WHERE id = 9;
 
 -- Variable setup for SailDrone CO₂
 INSERT INTO variables (id, name, attributes)
