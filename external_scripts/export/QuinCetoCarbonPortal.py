@@ -77,22 +77,33 @@ def main():
               logging.error('Carbon Portal export failed')
               logging.error('Exception occurred: ', exc_info=True)
           if 'Copernicus' + key in data_filename and 'CMEMS' in export_destination: 
-            successful_upload_CMEMS = False
+            successful_upload_CMEMS = 0
             curr_date  = build_dataproduct(dataset_zip,dataset['name'],data_filename)
             try: 
               if upload:
                   successful_upload_CMEMS = upload_to_copernicus(
                       config_copernicus,'nrt_server',dataset,curr_date)
               else: 
-                  successful_upload_CMEMS = False
+                  successful_upload_CMEMS = 0
             except Exception as e:
               logging.error('Exception occurred: ', exc_info=True)
-              successful_upload_CMEMS = False
+              successful_upload_CMEMS = 0
           else:
-            successful_upload_CMEMS = False
-        successful_upload = successful_upload_CP and successful_upload_CMEMS 
-        slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'Upload to Carbon Portal: {successful_upload_CP}')
-        slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'Upload to CMEMS: {successful_upload_CMEMS}')
+            successful_upload_CMEMS = 0
+        
+        if successful_upload_CP == 0: CP_slack_msg = 'Carbon Portal: Export failed'
+        elif successful_upload_CP == 1: CP_slack_msg = 'Carbon Portal: Successful export'
+        elif successful_upload_CP == 2: CP_slack_msg = 'Carbon Portal: No new data'
+        
+        if successful_upload_CMEMS == 0: CMEMS_slack_msg = 'CMEMS: Export failed'
+        elif successful_upload_CMEMS == 1: CMEMS_slack_msg = 'CMEMS: Successful export'
+        elif successful_upload_CMEMS == 2: CMEMS_slack_msg = 'CMEMS: No new data'
+
+
+
+        slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'{CP_slack_msg}')
+        slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'{CMEMS_slack_msg}')
+        successful_upload = successful_upload_CP != 0 and successful_upload_CMEMS != 0
         if successful_upload:
           report_complete_export(basicConfig,dataset['id'])
         else: 
