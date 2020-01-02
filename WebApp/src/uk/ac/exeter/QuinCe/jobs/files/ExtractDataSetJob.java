@@ -25,6 +25,9 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -127,6 +130,10 @@ public class ExtractDataSetJob extends Job {
       // We want to store when run types begin and end
       RunTypePeriods runTypePeriods = new RunTypePeriods();
 
+      CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
+        .getMostRecentCalibrations(conn, instrument.getDatabaseId(),
+          dataSet.getStart());
+
       // Collect the true start and end times of the dataset based on the
       // actual data
       LocalDateTime realStartTime = null;
@@ -188,10 +195,24 @@ public class ExtractDataSetJob extends Job {
 
                     runTypePeriods.add(runType, time);
                   } else {
-                    sensorValues.add(new SensorValue(dataSet.getId(),
+
+                    // Create the SensorValue object
+                    SensorValue value = new SensorValue(dataSet.getId(),
                       assignment.getDatabaseId(), time,
                       file.getStringValue(line, assignment.getColumn(),
-                        assignment.getMissingValue())));
+                        assignment.getMissingValue()));
+
+                    // Apply calibration if required
+                    Calibration sensorCalibration = sensorCalibrations
+                      .getTargetCalibration(
+                        String.valueOf(assignment.getDatabaseId()));
+
+                    if (null != sensorCalibration) {
+                      value.calibrateValue(sensorCalibration);
+                    }
+
+                    // Add to storage list
+                    sensorValues.add(value);
                   }
                 }
               }
