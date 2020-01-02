@@ -20,11 +20,11 @@ public class QCRoutinesConfigurationException extends Exception {
   /**
    * The line of the config file where the error occurred
    */
-  private int lineNumber;
+  private long lineNumber;
 
   /**
    * Creates an exception that doesn't relate to a specific configuration item
-   * 
+   *
    * @param configFile
    *          The path of the file being worked on when the exception occurred.
    * @param message
@@ -37,7 +37,7 @@ public class QCRoutinesConfigurationException extends Exception {
 
   /**
    * Creates an exception relating to a specific line
-   * 
+   *
    * @param configFile
    *          The path of the file being worked on when the exception occurred.
    * @param lineNumber
@@ -45,7 +45,7 @@ public class QCRoutinesConfigurationException extends Exception {
    * @param message
    *          The error message.
    */
-  public QCRoutinesConfigurationException(String configFile, int lineNumber,
+  public QCRoutinesConfigurationException(String configFile, long lineNumber,
     String message) {
     super(message);
     this.configFile = configFile;
@@ -54,7 +54,7 @@ public class QCRoutinesConfigurationException extends Exception {
 
   /**
    * Creates an exception relating to a specific line with a root cause
-   * 
+   *
    * @param configFile
    *          The path of the file being worked on when the exception occurred.
    * @param lineNumber
@@ -64,7 +64,7 @@ public class QCRoutinesConfigurationException extends Exception {
    * @param cause
    *          The underlying cause of the exception
    */
-  public QCRoutinesConfigurationException(String configFile, int lineNumber,
+  public QCRoutinesConfigurationException(String configFile, long lineNumber,
     String message, Throwable cause) {
 
     super(message, cause);
@@ -75,7 +75,7 @@ public class QCRoutinesConfigurationException extends Exception {
   /**
    * Creates an exception for an error pertaining to a specific configuration
    * item
-   * 
+   *
    * @param configFile
    *          The path of the file being worked on when the exception occurred.
    * @param itemName
@@ -86,7 +86,7 @@ public class QCRoutinesConfigurationException extends Exception {
    *          The error message
    */
   public QCRoutinesConfigurationException(String configFile, String itemName,
-    int lineNumber, String message) {
+    long lineNumber, String message) {
 
     super(message);
     this.configFile = configFile;
@@ -96,7 +96,7 @@ public class QCRoutinesConfigurationException extends Exception {
 
   /**
    * Creates an exception relating to a specific line with a root cause
-   * 
+   *
    * @param configFile
    *          The path of the file being worked on when the exception occurred.
    * @param itemName
@@ -109,7 +109,7 @@ public class QCRoutinesConfigurationException extends Exception {
    *          The underlying cause of the exception
    */
   public QCRoutinesConfigurationException(String configFile, String itemName,
-    int lineNumber, String message, Throwable cause) {
+    long lineNumber, String message, Throwable cause) {
 
     super(message, cause);
     this.configFile = configFile;
@@ -119,7 +119,7 @@ public class QCRoutinesConfigurationException extends Exception {
 
   /**
    * Create a configuration exception that has an underlying cause
-   * 
+   *
    * @param configFile
    *          The path of the file being worked on when the exception occurred.
    * @param message
@@ -136,7 +136,7 @@ public class QCRoutinesConfigurationException extends Exception {
 
   /**
    * Returns the message of the exception, file name, item name and line number.
-   * 
+   *
    * @return The exception message
    */
   @Override
@@ -168,7 +168,7 @@ public class QCRoutinesConfigurationException extends Exception {
 
   /**
    * Returns the path of the file being worked on when the exception occurred.
-   * 
+   *
    * @return The path of the file being worked on when the exception occurred.
    */
   public String getFile() {
@@ -178,7 +178,7 @@ public class QCRoutinesConfigurationException extends Exception {
   /**
    * Returns the name of the configuration item that was being processed when
    * the error occurred.
-   * 
+   *
    * @return The name of the configuration item
    */
   public String getItemName() {
@@ -187,17 +187,17 @@ public class QCRoutinesConfigurationException extends Exception {
 
   /**
    * Returns the line number on which the error occurred.
-   * 
+   *
    * @return The line number on which the error occurred.
    */
-  public int getLine() {
+  public long getLine() {
     return lineNumber;
   }
 
   /**
    * Returns just the error message from the exception without the filename,
    * item name or line number, as per {@link Exception#getMessage}.
-   * 
+   *
    * @return The error message of the exception without the filename.
    */
   public String getMessageOnly() {

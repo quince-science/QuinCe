@@ -142,7 +142,16 @@ public abstract class DataReducer {
    * @return
    */
   private boolean isMeasurementRunType(Instrument instrument, String runType) {
-    return instrument.getRunTypeCategory(runType).getType() == variable.getId();
+    boolean result = false;
+
+    if (!instrument.hasInternalCalibrations()) {
+      result = true;
+    } else {
+      result = instrument.getRunTypeCategory(runType).getType() == variable
+        .getId();
+    }
+
+    return result;
   }
 
   /**
