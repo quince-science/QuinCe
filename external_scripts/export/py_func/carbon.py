@@ -41,7 +41,7 @@ def export_file_to_cp(
   for L1 exports. Currently not in use on request by Oleg.
 
   '''
-  CP_success = False
+  CP_success = 0
   logging.debug(f'Processing {level} file: {filename}')
     
   file = get_file_from_zip(dataset_zip,filename)
@@ -69,7 +69,9 @@ def export_file_to_cp(
   if prev_exp['status'] == 'UPDATE': 
     is_next_version = prev_exp['old_hashsum'] #old hashsum
 
-  if prev_exp['status'] == 'NEW' or prev_exp['status'] == 'UPDATE':
+  if prev_exp['status'] == 'EXISTS':
+    CP_success = 2
+  elif prev_exp['status'] == 'NEW' or prev_exp['status'] == 'UPDATE':
     meta = build_metadata_package(
       file, manifest, platform[platform_code],index, hashsum, 
       OBJ_SPEC_URI[level], level, L0_hashsums, is_next_version, export_filename)
@@ -80,7 +82,7 @@ def export_file_to_cp(
           auth_cookie, file, hashsum, meta, OBJ_SPEC_URI[level])
         logging.debug(f'Upload status: {upload_status}')
         if upload_status:
-          CP_success = True
+          CP_success = 1
           db_status = sql_commit(
             export_filename, hashsum,filename,level,L1_filename)
           logging.debug(f'{export_filename}: SQL commit {db_status}')
