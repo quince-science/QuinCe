@@ -374,10 +374,12 @@ public class SensorAssignments
           if (testType.hasDependsQuestion()) {
 
             // See if the Depends Question has been answered true
-            for (SensorAssignment assignment : get(testType)) {
-              if (assignment.getDependsQuestionAnswer()) {
-                dependents.add(testType);
-                break;
+            if (null != get(testType)) {
+              for (SensorAssignment assignment : get(testType)) {
+                if (assignment.getDependsQuestionAnswer()) {
+                  dependents.add(testType);
+                  break;
+                }
               }
             }
           } else {
@@ -695,6 +697,27 @@ public class SensorAssignments
         get(type).stream().forEach(a -> {
           result.add(a.getDatabaseId());
         });
+      }
+    }
+
+    return result;
+  }
+
+
+  /**
+   * Determine whether or not any of the assigned sensors require internal
+   * calibrations.
+   *
+   * @return {@code true} if any internal calibrations are required;
+   *         {@code false} otherwise.
+   */
+  public boolean hasInternalCalibrations() {
+    boolean result = false;
+
+    for (SensorType sensorType : keySet()) {
+      if (sensorType.hasInternalCalibration() && get(sensorType).size() > 0) {
+        result = true;
+        break;
       }
     }
 
