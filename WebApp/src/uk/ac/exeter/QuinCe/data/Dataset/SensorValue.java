@@ -8,6 +8,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -64,7 +65,7 @@ public class SensorValue implements Comparable<SensorValue> {
   /**
    * The value (can be null)
    */
-  private final String value;
+  private String value;
 
   /**
    * Indicates whether the value needs to be saved to the database
@@ -407,5 +408,11 @@ public class SensorValue implements Comparable<SensorValue> {
     } else if (!time.equals(other.time))
       return false;
     return true;
+  }
+
+  public void calibrateValue(Calibration calibration) {
+    if (!isNaN()) {
+      value = String.valueOf(calibration.calibrateValue(getDoubleValue()));
+    }
   }
 }
