@@ -567,7 +567,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
     JSONArray json = new JSONArray();
 
-    for (int i = start; i < start + length; i++) {
+    int end = start + length;
+    if (end > pageData.size()) {
+      end = pageData.size();
+    }
+
+    for (int i = start; i < end; i++) {
 
       JSONObject obj = new JSONObject();
 

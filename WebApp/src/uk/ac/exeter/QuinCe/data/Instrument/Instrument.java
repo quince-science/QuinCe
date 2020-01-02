@@ -524,4 +524,17 @@ public class Instrument {
   public void setDepth(int depth) {
     this.depth = depth;
   }
+
+  public boolean hasInternalCalibrations() {
+    boolean result = false;
+
+    for (InstrumentVariable variable : variables) {
+      if (variable.hasInternalCalibrations()) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
+  }
 }

@@ -447,17 +447,24 @@ public class DataSetsBean extends BaseManagedBean {
           validCalibration = false;
           validCalibrationMessage = "One or more sensor calibration equations are missing";
         } else {
-          // Check external standards
-          CalibrationSet externalStandards = ExternalStandardDB.getInstance()
-            .getStandardsSet(getDataSource(), getCurrentInstrumentId(),
-              DateTimeUtils.parseDisplayDateTime(startTime));
-          if (!externalStandards.isComplete()) {
-            validCalibration = false;
-            validCalibrationMessage = "No complete set of external standards is available";
-          } else if (!ExternalStandardDB.hasZeroStandard(externalStandards)) {
-            validCalibration = false;
-            validCalibrationMessage = "One external standard must have a zero concentration";
+
+          // Check for external standards if required.
+          if (getCurrentInstrument().getSensorAssignments()
+            .hasInternalCalibrations()) {
+
+            // Check internal calibration standards
+            CalibrationSet standards = ExternalStandardDB.getInstance()
+              .getStandardsSet(getDataSource(), getCurrentInstrumentId(),
+                DateTimeUtils.parseDisplayDateTime(startTime));
+            if (!standards.isComplete()) {
+              validCalibration = false;
+              validCalibrationMessage = "No complete set of external standards is available";
+            } else if (!ExternalStandardDB.hasZeroStandard(standards)) {
+              validCalibration = false;
+              validCalibrationMessage = "One external standard must have a zero concentration";
+            }
           }
+
         }
       } catch (Exception e) {
         e.printStackTrace();

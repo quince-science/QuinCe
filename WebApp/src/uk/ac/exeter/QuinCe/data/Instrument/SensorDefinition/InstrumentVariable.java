@@ -66,7 +66,7 @@ public class InstrumentVariable {
 
   /**
    * Main constructor using SensorType ids
-   * 
+   *
    * @param id
    *          The variable's database ID
    * @param name
@@ -131,7 +131,7 @@ public class InstrumentVariable {
 
   /**
    * Get the database ID of this variable
-   * 
+   *
    * @return
    */
   public long getId() {
@@ -140,7 +140,7 @@ public class InstrumentVariable {
 
   /**
    * Get the variable name
-   * 
+   *
    * @return The variable name
    */
   public String getName() {
@@ -149,7 +149,7 @@ public class InstrumentVariable {
 
   /**
    * Get the core SensorType
-   * 
+   *
    * @return The core SensorType
    */
   public SensorType getCoreSensorType() {
@@ -159,7 +159,7 @@ public class InstrumentVariable {
   /**
    * Get all SensorTypes required for this variable, including both Core and
    * Required types.
-   * 
+   *
    * @return All required SensorTypes
    */
   public List<SensorType> getAllSensorTypes() {
@@ -265,7 +265,7 @@ public class InstrumentVariable {
 
   /**
    * Get a list of variable IDs from a list of variables
-   * 
+   *
    * @param variables
    *          The variables
    * @return The variable IDs
@@ -299,6 +299,19 @@ public class InstrumentVariable {
 
     for (InstrumentVariable variable : variables) {
       if (variable.requiredSensorTypes.contains(sensorType)) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  public boolean hasInternalCalibrations() {
+    boolean result = false;
+
+    for (SensorType sensorType : getAllSensorTypes()) {
+      if (sensorType.hasInternalCalibration()) {
         result = true;
         break;
       }
