@@ -553,8 +553,15 @@ public abstract class DatasetMeasurementData
    *          The number of rows to load
    */
   public void loadRows(int start, int length) throws MeasurementDataException {
-    List<LocalDateTime> datesToLoad = getRowIds()
-      .subList(start, start + length - 1).stream()
+
+    List<LocalDateTime> rowIds = getRowIds();
+
+    int subListEnd = start + length;
+    if (subListEnd > size()) {
+      subListEnd = size();
+    }
+
+    List<LocalDateTime> datesToLoad = rowIds.subList(start, subListEnd).stream()
       .filter(d -> !rowsLoaded.get(d)).collect(Collectors.toList());
 
     // Load those dates that haven't already been loaded

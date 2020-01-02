@@ -133,11 +133,15 @@ public class LocateMeasurementsJob extends Job {
 
             // Get the Run Type for this measurement
             // We assume there's only one run type
-            List<SensorValue> runTypeValues = sensorTypeGroups
-              .get(SensorType.RUN_TYPE_SENSOR_TYPE);
-            if (null == runTypeValues) {
-              throw new RecordNotFoundException(
-                "Missing Run Type for measurement at " + entry.getKey());
+            List<SensorValue> runTypeValues = null;
+
+            if (variable.hasInternalCalibrations()) {
+              runTypeValues = sensorTypeGroups
+                .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+              if (null == runTypeValues) {
+                throw new RecordNotFoundException(
+                  "Missing Run Type for measurement at " + entry.getKey());
+              }
             }
 
             // Ditto for longitude and latitude
@@ -158,9 +162,14 @@ public class LocateMeasurementsJob extends Job {
               // Only store non-ignored run types (assume only one run type)
               //
               // Also don't store if either position is missing
-              String runType = runTypeValues.get(0).getValue();
-              boolean ignoredRunType = instrument.getRunTypeCategory(runType)
-                .equals(RunTypeCategory.IGNORED);
+              String runType = null;
+              boolean ignoredRunType = false;
+
+              if (variable.hasInternalCalibrations()) {
+                runType = runTypeValues.get(0).getValue();
+                ignoredRunType = instrument.getRunTypeCategory(runType)
+                  .equals(RunTypeCategory.IGNORED);
+              }
 
               double longitude = longitudeValues.get(0).getDoubleValue();
               double latitude = latitudeValues.get(0).getDoubleValue();
