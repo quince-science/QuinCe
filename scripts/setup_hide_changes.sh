@@ -16,6 +16,6 @@ git update-index --assume-unchanged      \
   configuration/quince.properties        \
   external_scripts/NRT/config.toml \
   external_scripts/export/config_carbon.toml \
-  external_scripts/export/config_quince.toml \
+  external_scripts/export/config.toml \
   external_scripts/export/config_copernicus.toml
 
