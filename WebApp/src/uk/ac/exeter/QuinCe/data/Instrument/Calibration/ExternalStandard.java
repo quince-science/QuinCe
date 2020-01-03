@@ -8,7 +8,7 @@ import uk.ac.exeter.QuinCe.utils.ParameterException;
 
 /**
  * Represents a external standard calibration
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -22,14 +22,14 @@ public class ExternalStandard extends Calibration {
 
   static {
     valueNames = new ArrayList<String>(1);
-    valueNames.add("CO₂ in gas");
-    valueNames.add("xH₂O in gas");
+    valueNames.add("xCO₂ (with standards)");
+    valueNames.add("xH₂O (with standards)");
   }
 
   /**
    * Create an empty external standard placeholder that isn't bound to a
    * particular standard
-   * 
+   *
    * @param instrumentId
    *          The instrument ID
    */
@@ -39,7 +39,7 @@ public class ExternalStandard extends Calibration {
 
   /**
    * Creates an empty external standard for a specified standard
-   * 
+   *
    * @param instrumentid
    *          The instrument ID
    * @param standard
@@ -52,7 +52,7 @@ public class ExternalStandard extends Calibration {
 
   /**
    * Construct a complete external standard object with all data
-   * 
+   *
    * @param instrumentId
    *          The instrument ID
    * @param target
@@ -98,7 +98,7 @@ public class ExternalStandard extends Calibration {
 
   /**
    * Get the concentration of the external standard
-   * 
+   *
    * @return The concentration
    */
   public double getConcentration() {
@@ -111,7 +111,7 @@ public class ExternalStandard extends Calibration {
 
   /**
    * Set the concentration of the external standard
-   * 
+   *
    * @param concentration
    *          The concentration
    */
