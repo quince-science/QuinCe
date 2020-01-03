@@ -124,7 +124,7 @@ def get_daily_files(source_dir,month,vessel):
 
 def create_empty_dataset(month,vessel,dim_tot):
   ''' Creates empty monthly file with correct dimensions '''
-  nc_name = 'monthly/GL_' + str(month) + '_TS_TS_'  + vessel + '.nc'
+  nc_name = local_folder + '/GL_TS_TS_'  + vessel + '_' + str(month) + '.nc'
   logging.debug(f'Creating new empty monthly file: {nc_name}')
   dataset_m = netCDF4.Dataset(nc_name,'w',format='NETCDF4_CLASSIC')
 
