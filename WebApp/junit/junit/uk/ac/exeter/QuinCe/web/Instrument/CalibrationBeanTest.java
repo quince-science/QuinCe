@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.flywaydb.test.annotation.FlywayTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,6 +27,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.Instrument.CalibrationBean;
 import uk.ac.exeter.QuinCe.web.Instrument.InvalidCalibrationEditException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Tests for the {@link CalibrationBean} class.
@@ -103,6 +105,11 @@ public class CalibrationBeanTest extends BaseTest {
   @BeforeEach
   public void setup() {
     initResourceManager();
+  }
+
+  @AfterEach
+  public void tearDown() {
+    ResourceManager.destroy();
   }
 
   /**
