@@ -196,6 +196,10 @@ public class SensorsConfigurationTest extends BaseTest {
    */
   @AfterEach
   public void destroyResourceManager() {
+    var1List = null;
+    var2List = null;
+    bothVarsList = null;
+    invalidVarList = null;
     ResourceManager.destroy();
   }
 
