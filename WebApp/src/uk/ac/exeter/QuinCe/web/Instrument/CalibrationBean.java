@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -14,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.NonExistentCalibrationTargetException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -423,5 +425,61 @@ public abstract class CalibrationBean extends BaseManagedBean {
    */
   private String getTimelineId(DataSet dataset) {
     return "DS-" + dataset.getId();
+  }
+
+  /**
+   * Determine which {@link DataSet}s will be affected by editing a given
+   * calibration.
+   *
+   * <p>
+   * The result of the method will be a map of affected {@link DataSet}s with
+   * {@code boolean}s indicating whether or not that {@link DataSet} can be
+   * reprocessed. If, for example, a {@link DataSet} is left without a leading
+   * calibration before it, then there is no way to apply a calibration and
+   * therefore it cannot be reprocessed.
+   *
+   * <p>
+   * The calibration being edited is specified by its database ID in
+   * {@code editedCalibration}. If a new calibration is being created, this
+   * should be negative.
+   * </p>
+   *
+   * <p>
+   * The new calibration details are given by its time and target. If only the
+   * coefficients for the calibration have changed, there will still be affected
+   * {@link DataSet}s. However, passing the (unchanged) {@code newTime} and
+   * {@code newTarget} will still cause the method to perform the correct
+   * checks. If the {@code newTime} and {@code newTarget} are both {@code null},
+   * the method will assume that the specified calibration is to be deleted.
+   * </p>
+   *
+   * <p>
+   * If one of {@code newTime} or {@code newTarget} but not the other, an
+   * Exception will be thrown. If {@code newTime} and {@code newTarget} are both
+   * {@code null} (implying a deleted calibration) but the
+   * {@code editCalibration} is negative, an Exception will be thrown.
+   * </p>
+   *
+   * @param editedCalibration
+   *          The database ID of the calibration being edited; negative if this
+   *          is a new calibration.
+   * @param newTime
+   *          The new calibration time.
+   * @param newTarget
+   *          The new calibration target.
+   * @return The affected {@link DataSet}s.
+   * @throws InvalidCalibrationEditException
+   *           If the specified calibration details are invalid.
+   * @throws RecordNotFoundException
+   *           If the specified calibration does not exist.
+   * @throws NonExistentCalibrationTargetException
+   *           If the specified calibration target does not exist.
+   */
+  public Map<DataSet, Boolean> getAffectedDataSets(long editedCalibration,
+    LocalDateTime newTime, String newTarget)
+    throws InvalidCalibrationEditException, RecordNotFoundException,
+    NonExistentCalibrationTargetException {
+
+    return null;
   }
 }

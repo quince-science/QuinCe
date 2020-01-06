@@ -2,8 +2,12 @@ package junit.uk.ac.exeter.QuinCe.web.Instrument;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.sql.Connection;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,10 +20,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.NonExistentCalibrationTargetException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.Instrument.CalibrationBean;
+import uk.ac.exeter.QuinCe.web.Instrument.InvalidCalibrationEditException;
 
 /**
  * Tests for the {@link CalibrationBean} class.
@@ -34,6 +40,13 @@ import uk.ac.exeter.QuinCe.web.Instrument.CalibrationBean;
  * These types and targets will exist in the database through the Flyway
  * migrations but require the mocks to ensure the queries search for the correct
  * items.
+ * </p>
+ *
+ * <p>
+ * Tests for invalid calls to
+ * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+ * are provided by this class. Tests for valid calls are provided by
+ * {@link GetAffectedDatasetsTests}.
  * </p>
  *
  * @author Steve Jones
@@ -62,7 +75,23 @@ public class CalibrationBeanTest extends BaseTest {
   private static final String[] CALIBRATION_TARGETS = new String[] { "TARGET1",
     "TARGET2", "TARGET3" };
 
+  /**
+   * The map used by the mocked
+   * {@link CalibrationDB#getTargets(Connection, long)} method.
+   *
+   * @see #setup()
+   */
   private static Map<String, String> targets = null;
+
+  /**
+   * An ID for an existing calibration
+   */
+  private static final long EXISTING_CALIBRATION = 1001L;
+
+  /**
+   * An ID for a non-existent calibration
+   */
+  private static final long NON_EXISTENT_CALIBRATION = 2000L;
 
   static {
     targets = new HashMap<String, String>();
@@ -153,5 +182,164 @@ public class CalibrationBeanTest extends BaseTest {
   public void getInstrumentNameTest() {
     CalibrationBean bean = initBean();
     assertEquals(INSTRUMENT_NAME, bean.getInstrumentName());
+  }
+
+  /**
+   * Test that {@link CalibrationBean#setInstrumentId()} works.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void setInstrumentIdTest() {
+    CalibrationBean bean = initBean();
+    bean.setInstrumentId(1000L);
+    assertEquals(1000L, bean.getInstrumentId());
+  }
+
+  /**
+   * Test that {@link CalibrationBean#setInstrumentName()} works.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void setInstrumentNameTest() {
+    CalibrationBean bean = initBean();
+    bean.setInstrumentName("NEW NAME");
+    assertEquals("NEW NAME", bean.getInstrumentName());
+  }
+
+  // ******************************************
+  //
+  // getAffectedDataSets tests - invalid cases
+
+  /**
+   * Test that calling
+   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+   * with a {@code null} {@code newTime} and a present {@code newTarget} throws
+   * an exception.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void getAffectedDatasetsNullTimeOnlyTest() {
+    CalibrationBean bean = initBean();
+    assertThrows(InvalidCalibrationEditException.class, () -> {
+      bean.getAffectedDataSets(EXISTING_CALIBRATION, null,
+        CALIBRATION_TARGETS[0]);
+    });
+  }
+
+  /**
+   * Test that calling
+   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+   * with a {@code null} {@code newTime} and a present {@code newTarget} throws
+   * an exception.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void getAffectedDatasetsNullTargetOnlyTest() {
+    CalibrationBean bean = initBean();
+    assertThrows(InvalidCalibrationEditException.class, () -> {
+      bean.getAffectedDataSets(EXISTING_CALIBRATION,
+        LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")), null);
+    });
+  }
+
+  /**
+   * Test that calling
+   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+   * with a non-existent calibration ID throws an exception.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void getAffectedDatasetsNonExistentCalibrationTest() {
+    CalibrationBean bean = initBean();
+    assertThrows(RecordNotFoundException.class, () -> {
+      bean.getAffectedDataSets(NON_EXISTENT_CALIBRATION,
+        LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")),
+        CALIBRATION_TARGETS[0]);
+    });
+  }
+
+  /**
+   * Test that calling
+   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+   * to make a new calibration with a non-existent target throws an exception.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void getAffectedDatasetsNewWithNonExistentTargetTest() {
+    CalibrationBean bean = initBean();
+    assertThrows(NonExistentCalibrationTargetException.class, () -> {
+      bean.getAffectedDataSets(-1L,
+        LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")), "Flurble");
+    });
+  }
+
+  /**
+   * Test that calling
+   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+   * to make edit a calibration with a non-existent target throws an exception.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void getAffectedDatasetsEditWithNonExistentTargetTest() {
+    CalibrationBean bean = initBean();
+    assertThrows(NonExistentCalibrationTargetException.class, () -> {
+      bean.getAffectedDataSets(EXISTING_CALIBRATION,
+        LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")), "Flurble");
+    });
+  }
+
+  /**
+   * Test that calling
+   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+   * to make a new calibration with a date in the future throws an exception.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void getAffectedDatasetsNewWithFutureDateTest() {
+    CalibrationBean bean = initBean();
+
+    LocalDateTime future = LocalDateTime
+      .ofInstant(Instant.now(), ZoneId.of("UTC")).plusDays(1);
+
+    assertThrows(NonExistentCalibrationTargetException.class, () -> {
+      bean.getAffectedDataSets(-1L, future, CALIBRATION_TARGETS[0]);
+    });
+  }
+
+  /**
+   * Test that calling
+   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+   * to make edit a calibration with a date in the future throws an exception.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void getAffectedDatasetsEditWithFutureDateTest() {
+    CalibrationBean bean = initBean();
+
+    LocalDateTime future = LocalDateTime
+      .ofInstant(Instant.now(), ZoneId.of("UTC")).plusDays(1);
+
+    assertThrows(NonExistentCalibrationTargetException.class, () -> {
+      bean.getAffectedDataSets(EXISTING_CALIBRATION, future,
+        CALIBRATION_TARGETS[0]);
+    });
   }
 }
