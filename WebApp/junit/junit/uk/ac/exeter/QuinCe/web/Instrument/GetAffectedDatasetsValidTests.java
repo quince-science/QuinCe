@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.flywaydb.test.annotation.FlywayTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -33,6 +34,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Instrument.CalibrationBean;
 import uk.ac.exeter.QuinCe.web.Instrument.InvalidCalibrationEditException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Complex combination tests for the
@@ -103,6 +105,11 @@ public class GetAffectedDatasetsValidTests extends TestSetTest {
   @BeforeEach
   public void setup() {
     initResourceManager();
+  }
+
+  @AfterEach
+  public void tearDown() {
+    ResourceManager.destroy();
   }
 
   /**

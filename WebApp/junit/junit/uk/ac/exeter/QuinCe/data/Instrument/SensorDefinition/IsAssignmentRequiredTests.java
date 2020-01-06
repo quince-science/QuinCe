@@ -222,6 +222,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   public void tearDown() {
     assignments = null;
     config = null;
+    ResourceManager.destroy();
   }
 
   /**

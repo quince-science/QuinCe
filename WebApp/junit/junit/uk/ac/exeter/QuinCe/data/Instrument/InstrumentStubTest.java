@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.flywaydb.test.annotation.FlywayTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -69,6 +70,11 @@ public class InstrumentStubTest extends BaseTest {
    * An instrument name that does not exist in the database
    */
   private String badInstrumentName = "9 million bicycles";
+
+  @AfterEach
+  public void tearDown() {
+    ResourceManager.destroy();
+  }
 
   /**
    * Load the {@code id} and {@code name} of the instrument in the testbase

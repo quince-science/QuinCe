@@ -329,7 +329,8 @@ public class SensorAssignmentsTest extends BaseTest {
    * </p>
    */
   @AfterEach
-  public void destroySensorAssignments() {
+  public void tearDown() {
+    config = null;
     assignments = null;
     ResourceManager.destroy();
   }
