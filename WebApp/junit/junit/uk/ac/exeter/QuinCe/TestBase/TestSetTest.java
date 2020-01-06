@@ -70,7 +70,7 @@ public abstract class TestSetTest extends BaseTest {
       String line;
       while ((line = in.readLine()) != null) {
         lineNumber++;
-        lines.add(new TestSetLine(lineNumber, line.split(",")));
+        lines.add(new TestSetLine(lineNumber, line.split(",", -1)));
       }
     } catch (Exception e) {
       throw new TestSetException(testSet, e);

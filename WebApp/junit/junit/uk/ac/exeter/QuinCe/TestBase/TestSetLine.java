@@ -1,5 +1,8 @@
 package junit.uk.ac.exeter.QuinCe.TestBase;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,6 +45,16 @@ public class TestSetLine {
    * The contents of the line split into fields
    */
   private String[] fields;
+
+  /**
+   * Formatter for date/times in a field
+   */
+  private static DateTimeFormatter dateTimeFormatter = null;
+
+  static {
+    dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss'Z'")
+      .withZone(ZoneOffset.UTC);
+  }
 
   /**
    * Basic constructor
@@ -88,14 +101,58 @@ public class TestSetLine {
   }
 
   /**
-   * Get a field value as an integer
+   * Get a field value as an integer.
+   *
+   * <p>
+   * Returns {@code 0} if the field is empty.
    *
    * @param fieldNumber
    *          The zero-based field number
    * @return The field value
    */
   public int getIntField(int fieldNumber) {
-    return Integer.parseInt(fields[fieldNumber]);
+    int result = 0;
+
+    if (!isFieldEmpty(fieldNumber)) {
+      result = Integer.parseInt(fields[fieldNumber]);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get a field value as an long
+   *
+   * @param fieldNumber
+   *          The zero-based field number
+   * @return The field value
+   */
+  public long getLongField(int fieldNumber) {
+    long result = 0;
+
+    if (!isFieldEmpty(fieldNumber)) {
+      result = Long.parseLong(fields[fieldNumber]);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get a field value as a {@link LocalDateTime}
+   *
+   * @param fieldNumber
+   *          The zero-based field number
+   * @return The field value
+   */
+  public LocalDateTime getTimeField(int fieldNumber) {
+
+    LocalDateTime result = null;
+
+    if (!isFieldEmpty(fieldNumber)) {
+      result = LocalDateTime.parse(fields[fieldNumber], dateTimeFormatter);
+    }
+
+    return result;
   }
 
   /**
