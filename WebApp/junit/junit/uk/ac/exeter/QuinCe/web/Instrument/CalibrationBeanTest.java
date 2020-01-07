@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.NonExistentCalibrationTargetException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -347,7 +348,7 @@ public class CalibrationBeanTest extends BaseTest {
     LocalDateTime future = LocalDateTime
       .ofInstant(Instant.now(), ZoneId.of("UTC")).plusDays(1);
 
-    assertThrows(NonExistentCalibrationTargetException.class, () -> {
+    assertThrows(InvalidCalibrationDateException.class, () -> {
       bean.getAffectedDataSets(-1L, future, "TARGET1");
     });
   }
@@ -374,7 +375,7 @@ public class CalibrationBeanTest extends BaseTest {
     LocalDateTime future = LocalDateTime
       .ofInstant(Instant.now(), ZoneId.of("UTC")).plusDays(1);
 
-    assertThrows(NonExistentCalibrationTargetException.class, () -> {
+    assertThrows(InvalidCalibrationDateException.class, () -> {
       bean.getAffectedDataSets(EXISTING_CALIBRATION, future, "TARGET1");
     });
   }
