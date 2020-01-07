@@ -85,8 +85,14 @@ public class TestSetLine {
    *          The zero-based field number
    * @return The field contents
    */
-  public String getStringField(int fieldNumber) {
-    return fields[fieldNumber];
+  public String getStringField(int fieldNumber, boolean emptyAsNull) {
+    String result = fields[fieldNumber].trim();
+
+    if (result.length() == 0 && emptyAsNull) {
+      result = null;
+    }
+
+    return result;
   }
 
   /**
