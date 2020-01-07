@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -15,7 +17,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.NonExistentCalibrationTargetException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationTargetException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -437,6 +440,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * reprocessed. If, for example, a {@link DataSet} is left without a leading
    * calibration before it, then there is no way to apply a calibration and
    * therefore it cannot be reprocessed.
+   * </p>
    *
    * <p>
    * The calibration being edited is specified by its database ID in
@@ -457,10 +461,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * If one of {@code newTime} or {@code newTarget} but not the other, an
    * Exception will be thrown. If {@code newTime} and {@code newTarget} are both
    * {@code null} (implying a deleted calibration) but the
-   * {@code editCalibration} is negative, an Exception will be thrown.
+   * {@code editCalibration} is negative, an exception will be thrown.
    * </p>
    *
-   * @param editedCalibration
+   * @param editedCalibrationId
    *          The database ID of the calibration being edited; negative if this
    *          is a new calibration.
    * @param newTime
@@ -475,11 +479,87 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @throws NonExistentCalibrationTargetException
    *           If the specified calibration target does not exist.
    */
-  public Map<DataSet, Boolean> getAffectedDataSets(long editedCalibration,
+  public Map<DataSet, Boolean> getAffectedDataSets(long editedCalibrationId,
     LocalDateTime newTime, String newTarget)
     throws InvalidCalibrationEditException, RecordNotFoundException,
-    NonExistentCalibrationTargetException {
+    InvalidCalibrationTargetException, InvalidCalibrationDateException {
+
+    checkAffectedDataSetsParameters(editedCalibrationId, newTime, newTarget);
+
+    Calibration editedCalibration = null;
+
+    if (editedCalibrationId > 0) {
+      editedCalibration = getCalibration(editedCalibrationId);
+
+      if (null == editedCalibration) {
+        throw new RecordNotFoundException(
+          "Calibration " + editedCalibrationId + " not found");
+      }
+    }
 
     return null;
+  }
+
+  private void checkAffectedDataSetsParameters(long editedCalibrationId,
+    LocalDateTime newTime, String newTarget)
+    throws RecordNotFoundException, InvalidCalibrationEditException {
+
+    // A zero calibration ID is invalid
+    if (editedCalibrationId == 0) {
+      throw new RecordNotFoundException("Invalid calibration ID", "calibration",
+        editedCalibrationId);
+    }
+
+    // Cannot have only one of newTime and newTarget set
+    if (null == newTime && null != newTarget) {
+      throw new InvalidCalibrationEditException("Missing time");
+    }
+
+    if (null != newTime && null == newTarget) {
+      throw new InvalidCalibrationEditException("Missing target");
+    }
+
+    // Future dates are not allowed
+    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(),
+      ZoneId.of("UTC"));
+    if (null != newTime && newTime.isAfter(now)) {
+      throw new InvalidCalibrationDateException();
+    }
+
+    // Invalid targets are not allowed
+    if (null != newTarget && !calibrationTargets.containsKey(newTarget)) {
+      throw new InvalidCalibrationTargetException(newTarget);
+    }
+
+    // Cannot have null time and target (implying deleting a calibration) with a
+    // negative ID
+    if (null == newTime && null == newTarget && editedCalibrationId < 0) {
+      throw new InvalidCalibrationEditException(
+        "Cannot delete a calbration without an ID");
+    }
+  }
+
+  /**
+   * Find a calibration using its database ID. Returns {@code null} if the
+   * calibration is not found.
+   *
+   * @param calibrationId
+   *          The calbration's ID
+   * @return The calibration
+   */
+  private Calibration getCalibration(long calibrationId) {
+    Calibration result = null;
+
+    for (List<Calibration> calibrations : calibrations.values()) {
+      for (Calibration calibration : calibrations) {
+        if (calibration.getId() == calibrationId) {
+          result = calibration;
+          break;
+        }
+      }
+    }
+
+    return result;
+
   }
 }

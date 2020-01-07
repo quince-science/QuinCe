@@ -109,7 +109,7 @@ public class UserDBCodeCheckTest extends TestSetTest {
    * @return The email address
    */
   private String getEmail(TestSetLine line) {
-    return line.getStringField(EMAIL_FIELD);
+    return line.getStringField(EMAIL_FIELD, true);
   }
 
   /**
@@ -210,7 +210,7 @@ public class UserDBCodeCheckTest extends TestSetTest {
 
     String result = null;
 
-    switch (line.getStringField(field)) {
+    switch (line.getStringField(field, false)) {
     case "NULL": {
       result = null;
       break;
@@ -231,8 +231,8 @@ public class UserDBCodeCheckTest extends TestSetTest {
       break;
     }
     default: {
-      throw new TestLineException(line,
-        "Unrecognised code specifier '" + line.getStringField(field) + "'");
+      throw new TestLineException(line, "Unrecognised code specifier '"
+        + line.getStringField(field, false) + "'");
     }
     }
 
