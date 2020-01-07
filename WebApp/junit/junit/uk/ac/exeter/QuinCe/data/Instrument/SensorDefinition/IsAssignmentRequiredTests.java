@@ -374,7 +374,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   }
 
   private SensorType getMainSensorType(TestSetLine line) throws Exception {
-    return config.getSensorType(line.getStringField(SENSOR_TYPE_COL));
+    return config.getSensorType(line.getStringField(SENSOR_TYPE_COL, true));
   }
 
   /**
@@ -418,7 +418,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   private void assignRelation(TestSetLine line)
     throws SensorTypeNotFoundException, SensorAssignmentException {
     if (!line.isFieldEmpty(RELATION_COL)) {
-      String relationTypeName = line.getStringField(RELATION_COL);
+      String relationTypeName = line.getStringField(RELATION_COL, true);
       if (line.getBooleanField(SIBLING_ASSIGNED_PRIMARY_COL)) {
         assignments.addAssignment(getSensorTypeId(relationTypeName),
           SensorAssignmentsTest
@@ -447,7 +447,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   private void assignDependent(TestSetLine line)
     throws SensorTypeNotFoundException, SensorAssignmentException {
     if (!line.isFieldEmpty(DEPENDENT_COL)) {
-      String dependentTypeName = line.getStringField(DEPENDENT_COL);
+      String dependentTypeName = line.getStringField(DEPENDENT_COL, true);
       if (line.getBooleanField(DEPENDENT_ASSIGNED_PRIMARY_COL)) {
 
         boolean dependsQuestionAnswer = false;
@@ -495,7 +495,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   private void assignDependentSibling(TestSetLine line) throws Exception {
     if (!line.isFieldEmpty(DEPENDENT_SIBLING_COL)) {
       String dependentSiblingTypeName = line
-        .getStringField(DEPENDENT_SIBLING_COL);
+        .getStringField(DEPENDENT_SIBLING_COL, true);
       if (line.getBooleanField(DEPENDENT_SIBLING_ASSIGNED_PRIMARY_COL)) {
         assignments.addAssignment(getSensorTypeId(dependentSiblingTypeName),
           SensorAssignmentsTest

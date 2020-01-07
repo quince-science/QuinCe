@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.NonExistentCalibrationTargetException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationTargetException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -296,7 +296,7 @@ public class CalibrationBeanTest extends BaseTest {
     throws MissingParamException, DatabaseException, RecordNotFoundException,
     InstrumentException {
     CalibrationBean bean = initBean();
-    assertThrows(NonExistentCalibrationTargetException.class, () -> {
+    assertThrows(InvalidCalibrationTargetException.class, () -> {
       bean.getAffectedDataSets(-1L,
         LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")), "Flurble");
     });
@@ -320,7 +320,7 @@ public class CalibrationBeanTest extends BaseTest {
     throws MissingParamException, DatabaseException, RecordNotFoundException,
     InstrumentException {
     CalibrationBean bean = initBean();
-    assertThrows(NonExistentCalibrationTargetException.class, () -> {
+    assertThrows(InvalidCalibrationTargetException.class, () -> {
       bean.getAffectedDataSets(EXISTING_CALIBRATION,
         LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")), "Flurble");
     });
@@ -377,6 +377,77 @@ public class CalibrationBeanTest extends BaseTest {
 
     assertThrows(InvalidCalibrationDateException.class, () -> {
       bean.getAffectedDataSets(EXISTING_CALIBRATION, future, "TARGET1");
+    });
+  }
+
+  /**
+   * Test that calling
+   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+   * to make edit a calibration with an ID of {@code 0} throws an exception.
+   *
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws DatabaseException
+   * @throws MissingParamException
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void getAffectedDatasetsZeroIDTest() throws MissingParamException,
+    DatabaseException, RecordNotFoundException, InstrumentException {
+    CalibrationBean bean = initBean();
+
+    assertThrows(RecordNotFoundException.class, () -> {
+      bean.getAffectedDataSets(0, null, null);
+    });
+  }
+
+  /**
+   * Test that calling
+   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+   * to delete a calibration with a negative ID throws an exception.
+   *
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws DatabaseException
+   * @throws MissingParamException
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void getAffectedDatasetsDeleteNegativeIDTest()
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException {
+    CalibrationBean bean = initBean();
+
+    assertThrows(InvalidCalibrationEditException.class, () -> {
+      bean.getAffectedDataSets(-1, null, null);
+    });
+  }
+
+  /**
+   * Test that calling
+   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
+   * to delete non-existent calibration throws an exception.
+   *
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws DatabaseException
+   * @throws MissingParamException
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
+    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+  @Test
+  public void getAffectedDatasetsDeleteNonExistentCalibrationTest()
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException {
+    CalibrationBean bean = initBean();
+
+    assertThrows(RecordNotFoundException.class, () -> {
+      bean.getAffectedDataSets(NON_EXISTENT_CALIBRATION, null, null);
     });
   }
 }

@@ -26,14 +26,8 @@ import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import junit.uk.ac.exeter.QuinCe.User.UserDBTest;
 import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.NonExistentCalibrationTargetException;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Instrument.CalibrationBean;
-import uk.ac.exeter.QuinCe.web.Instrument.InvalidCalibrationEditException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -116,16 +110,8 @@ public class GetAffectedDatasetsValidTests extends TestSetTest {
    * Tests for code checks on users with various combinations of email and
    * password reset codes.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
    * @throws TestLineException
    *           If the test set line is invalid.
-   * @throws NonExistentCalibrationTargetException
-   * @throws RecordNotFoundException
-   * @throws InvalidCalibrationEditException
-   * @throws InstrumentException
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
@@ -133,28 +119,31 @@ public class GetAffectedDatasetsValidTests extends TestSetTest {
   @ParameterizedTest
   @MethodSource("getGetAffectedDatasetsValidTestSet")
   public void getAffectedDatasetsTest(TestSetLine line)
-    throws MissingParamException, DatabaseException, TestLineException,
-    InvalidCalibrationEditException, RecordNotFoundException,
-    NonExistentCalibrationTargetException, InstrumentException {
+    throws TestLineException {
 
-    CalibrationBean bean = CalibrationBeanTest.initBean();
+    // None of these tests should throw an exception
+    try {
+      CalibrationBean bean = CalibrationBeanTest.initBean();
 
-    // Run the first call
-    Map<DataSet, Boolean> beanAffectedDataSets = bean
-      .getAffectedDataSets(getId1(line), getTime1(line), getTarget1(line));
+      // Run the first call
+      Map<DataSet, Boolean> beanAffectedDataSets = bean
+        .getAffectedDataSets(getId1(line), getTime1(line), getTarget1(line));
 
-    assertNotNull(beanAffectedDataSets);
+      assertNotNull(beanAffectedDataSets);
 
-    // Run the second call if it's specified
-    if (!line.isFieldEmpty(ID2_FIELD)) {
-      Map<DataSet, Boolean> secondAffectedDataSets = bean
-        .getAffectedDataSets(getId2(line), getTime2(line), getTarget2(line));
+      // Run the second call if it's specified
+      if (!line.isFieldEmpty(ID2_FIELD)) {
+        Map<DataSet, Boolean> secondAffectedDataSets = bean
+          .getAffectedDataSets(getId2(line), getTime2(line), getTarget2(line));
 
-      beanAffectedDataSets.putAll(secondAffectedDataSets);
+        beanAffectedDataSets.putAll(secondAffectedDataSets);
+      }
+
+      assertTrue(
+        checkAgainstTestSpec(beanAffectedDataSets, getAffectedDatasets(line)));
+    } catch (Exception e) {
+      throw new TestLineException(line, e);
     }
-
-    assertTrue(
-      checkAgainstTestSpec(beanAffectedDataSets, getAffectedDatasets(line)));
 
   }
 
@@ -230,7 +219,7 @@ public class GetAffectedDatasetsValidTests extends TestSetTest {
    * @return The target
    */
   private String getTarget1(TestSetLine line) {
-    return line.getStringField(TARGET1_FIELD);
+    return line.getStringField(TARGET1_FIELD, true);
   }
 
   /**
@@ -263,7 +252,7 @@ public class GetAffectedDatasetsValidTests extends TestSetTest {
    * @return The target
    */
   private String getTarget2(TestSetLine line) {
-    return line.getStringField(TARGET2_FIELD);
+    return line.getStringField(TARGET2_FIELD, true);
   }
 
   /**
@@ -281,11 +270,12 @@ public class GetAffectedDatasetsValidTests extends TestSetTest {
 
     Map<String, Boolean> result = new HashMap<String, Boolean>();
 
-    List<String> datasets = StringUtils
-      .delimitedToList(line.getStringField(AFFECTED_DATASETS_FIELD), ";");
+    List<String> datasets = StringUtils.delimitedToList(
+      line.getStringField(AFFECTED_DATASETS_FIELD, false), ";");
 
     List<Boolean> canBeReprocessed = StringUtils
-      .delimitedToList(line.getStringField(CAN_BE_REPROCESSED_FIELD), ";")
+      .delimitedToList(line.getStringField(CAN_BE_REPROCESSED_FIELD, false),
+        ";")
       .stream().map(v -> Boolean.parseBoolean(v)).collect(Collectors.toList());
 
     if (datasets.size() != canBeReprocessed.size()) {
