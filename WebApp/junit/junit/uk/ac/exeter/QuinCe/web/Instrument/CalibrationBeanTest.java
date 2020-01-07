@@ -4,23 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.sql.Connection;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.NonExistentCalibrationTargetException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -67,25 +61,6 @@ public class CalibrationBeanTest extends BaseTest {
   private static final String INSTRUMENT_NAME = "Test Instrument";
 
   /**
-   * The calibration type used for these tests
-   */
-  private static final String CALIBRATION_TYPE = "CALIBRATION_TEST";
-
-  /**
-   * The calibration targets used for these tests
-   */
-  private static final String[] CALIBRATION_TARGETS = new String[] { "TARGET1",
-    "TARGET2", "TARGET3" };
-
-  /**
-   * The map used by the mocked
-   * {@link CalibrationDB#getTargets(Connection, long)} method.
-   *
-   * @see #setup()
-   */
-  private static Map<String, String> targets = null;
-
-  /**
    * An ID for an existing calibration
    */
   private static final long EXISTING_CALIBRATION = 1001L;
@@ -94,13 +69,6 @@ public class CalibrationBeanTest extends BaseTest {
    * An ID for a non-existent calibration
    */
   private static final long NON_EXISTENT_CALIBRATION = 2000L;
-
-  static {
-    targets = new HashMap<String, String>();
-    for (String target : CALIBRATION_TARGETS) {
-      targets.put(target, target);
-    }
-  }
 
   @BeforeEach
   public void setup() {
@@ -127,21 +95,7 @@ public class CalibrationBeanTest extends BaseTest {
   public static CalibrationBean initBean() throws MissingParamException,
     DatabaseException, RecordNotFoundException, InstrumentException {
 
-    // Mock CalibrationDB instance
-    CalibrationDB mockDbInstance = Mockito.mock(CalibrationDB.class);
-    Mockito.when(mockDbInstance.getCalibrationType())
-      .thenReturn(CALIBRATION_TYPE);
-    Mockito.when(mockDbInstance.getTargets(Mockito.any(Connection.class),
-      Mockito.eq(INSTRUMENT_ID))).thenReturn(targets);
-
-    // Mock a calibration bean
-    //
-    // The database instance will also be mocked to provide the correct
-    // calibration types and targets.
-    CalibrationBean bean = Mockito.mock(CalibrationBean.class,
-      Mockito.CALLS_REAL_METHODS);
-    Mockito.when(ReflectionTestUtils.invokeMethod(bean, "getDbInstance"))
-      .thenReturn(mockDbInstance);
+    CalibrationBean bean = new CalibrationBeanTestStub();
 
     // Set the instrument details
     bean.setInstrumentId(INSTRUMENT_ID);
@@ -270,8 +224,7 @@ public class CalibrationBeanTest extends BaseTest {
     InstrumentException {
     CalibrationBean bean = initBean();
     assertThrows(InvalidCalibrationEditException.class, () -> {
-      bean.getAffectedDataSets(EXISTING_CALIBRATION, null,
-        CALIBRATION_TARGETS[0]);
+      bean.getAffectedDataSets(EXISTING_CALIBRATION, null, "TARGET1");
     });
   }
 
@@ -320,8 +273,7 @@ public class CalibrationBeanTest extends BaseTest {
     CalibrationBean bean = initBean();
     assertThrows(RecordNotFoundException.class, () -> {
       bean.getAffectedDataSets(NON_EXISTENT_CALIBRATION,
-        LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")),
-        CALIBRATION_TARGETS[0]);
+        LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")), "TARGET1");
     });
   }
 
@@ -396,7 +348,7 @@ public class CalibrationBeanTest extends BaseTest {
       .ofInstant(Instant.now(), ZoneId.of("UTC")).plusDays(1);
 
     assertThrows(NonExistentCalibrationTargetException.class, () -> {
-      bean.getAffectedDataSets(-1L, future, CALIBRATION_TARGETS[0]);
+      bean.getAffectedDataSets(-1L, future, "TARGET1");
     });
   }
 
@@ -423,8 +375,7 @@ public class CalibrationBeanTest extends BaseTest {
       .ofInstant(Instant.now(), ZoneId.of("UTC")).plusDays(1);
 
     assertThrows(NonExistentCalibrationTargetException.class, () -> {
-      bean.getAffectedDataSets(EXISTING_CALIBRATION, future,
-        CALIBRATION_TARGETS[0]);
+      bean.getAffectedDataSets(EXISTING_CALIBRATION, future, "TARGET1");
     });
   }
 }
