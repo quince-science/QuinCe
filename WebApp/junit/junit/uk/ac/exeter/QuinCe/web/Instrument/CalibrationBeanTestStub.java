@@ -17,11 +17,13 @@ import uk.ac.exeter.QuinCe.web.Instrument.CalibrationBean;
  */
 public class CalibrationBeanTestStub extends CalibrationBean {
 
+  private CalibrationDB stubDbInstance;
+
   /**
    * Package-protected constructor
    */
-  protected CalibrationBeanTestStub() {
-
+  protected CalibrationBeanTestStub(CalibrationDB dbInstance) {
+    this.stubDbInstance = dbInstance;
   }
 
   @Override
@@ -31,17 +33,17 @@ public class CalibrationBeanTestStub extends CalibrationBean {
 
   @Override
   protected CalibrationDB getDbInstance() {
-    return ExternalStandardDB.getInstance();
+    return stubDbInstance;
   }
 
   @Override
   protected String getCalibrationType() {
-    return getDbInstance().getCalibrationType();
+    return stubDbInstance.getCalibrationType();
   }
 
   @Override
   public String getHumanReadableCalibrationType() {
-    return getDbInstance().getCalibrationType();
+    return stubDbInstance.getCalibrationType();
   }
 
   @Override

@@ -66,4 +66,9 @@ public class SensorCalibrationDB extends CalibrationDB {
   public String getCalibrationType() {
     return SENSOR_CALIBRATION_TYPE;
   }
+
+  @Override
+  public boolean priorCalibrationRequired() {
+    return false;
+  }
 }
