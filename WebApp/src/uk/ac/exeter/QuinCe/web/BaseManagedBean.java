@@ -133,9 +133,11 @@ public abstract class BaseManagedBean {
    */
   public String internalError(Throwable error) {
     setMessage("STACK_TRACE", StringUtils.stackTraceToString(error));
+    System.out.println(StringUtils.stackTraceToString(error));
     if (null != error.getCause()) {
       setMessage("CAUSE_STACK_TRACE",
         StringUtils.stackTraceToString(error.getCause()));
+      System.out.println(StringUtils.stackTraceToString(error.getCause()));
     }
     return INTERNAL_ERROR_RESULT;
   }
