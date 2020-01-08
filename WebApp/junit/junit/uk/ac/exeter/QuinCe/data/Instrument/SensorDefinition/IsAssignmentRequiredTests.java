@@ -2,13 +2,11 @@ package junit.uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterEach;
@@ -19,7 +17,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.TestLineException;
-import junit.uk.ac.exeter.QuinCe.TestBase.TestSetException;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -341,7 +338,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * @see #getExpectedAssignmentRequired(TestSetLine)
    */
   @ParameterizedTest
-  @MethodSource("getAssignmentRequiredTestSet")
+  @MethodSource("getLines")
   public void isAssignmentRequiredTests(TestSetLine line)
     throws TestLineException {
 
@@ -358,19 +355,6 @@ public class IsAssignmentRequiredTests extends TestSetTest {
       throw new TestLineException(line, e);
     }
 
-  }
-
-  /**
-   * Retrieves the Test Set for {@link #isAssignmentRequiredTests(TestSetLine)}.
-   *
-   * @return The test set
-   * @throws IOException
-   *           If the Test Set file cannot be read
-   */
-  @SuppressWarnings("unused")
-  private Stream<TestSetLine> getAssignmentRequiredTestSet()
-    throws TestSetException {
-    return getTestSet("isAssignmentRequired");
   }
 
   private SensorType getMainSensorType(TestSetLine line) throws Exception {
@@ -547,5 +531,10 @@ public class IsAssignmentRequiredTests extends TestSetTest {
     }
 
     return result;
+  }
+
+  @Override
+  protected String getTestSetName() {
+    return "isAssignmentRequired";
   }
 }

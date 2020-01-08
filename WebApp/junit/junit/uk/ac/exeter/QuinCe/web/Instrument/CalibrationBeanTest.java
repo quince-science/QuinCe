@@ -15,8 +15,11 @@ import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationTargetException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -28,22 +31,17 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * Tests for the {@link CalibrationBean} class.
  *
  * <p>
- * These tests use a mocked {@link CalibrationBean} since it's an abstract
- * class.
- * </p>
- * <p>
- * The database instance (provided by {@code CalibrationBean.getDbInstance()})
- * will also be mocked to report the correct calibration types and targets.
- * These types and targets will exist in the database through the Flyway
- * migrations but require the mocks to ensure the queries search for the correct
- * items.
+ * These tests use a stub {@link CalibrationBean} since it's an abstract class.
+ * The test stub can use either {@link ExternalStandardDB} or
+ * {@link SensorCalibrationDB} for its database instance according to the needs
+ * of the tests.
  * </p>
  *
  * <p>
  * Tests for invalid calls to
  * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
  * are provided by this class. Tests for valid calls are provided by
- * {@link GetAffectedDatasetsValidTests}.
+ * {@link GetAffectedDatasetsPriorsRequiredTests}.
  * </p>
  *
  * @author Steve Jones
@@ -82,21 +80,36 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
+   * Create an initialised bean using a default {@CalibrationDB} back end. Use
+   * this when the exact back end being used will not affect the outcome of the
+   * test.
+   *
+   * @return The initialised bean.
+   */
+  public static CalibrationBean initBean() {
+
+    return initBean(ExternalStandardDB.getInstance());
+  }
+
+  /**
    * Create an initialised bean for tests.
    *
    * <p>
    * This method is tested by {@link #initBeanTest()}.
    * </p>
-   *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
    */
-  public static CalibrationBean initBean() throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException {
 
-    CalibrationBean bean = new CalibrationBeanTestStub();
+  /**
+   * Create an initialised bean with the specified {@link CalibrationDB}
+   * instance as its back end.
+   *
+   * @param dbInstance
+   *          The {@link CalibrationDB} instance to use
+   * @return The initialised bean
+   */
+  public static CalibrationBean initBean(CalibrationDB dbInstance) {
+
+    CalibrationBean bean = new CalibrationBeanTestStub(dbInstance);
 
     // Set the instrument details
     bean.setInstrumentId(INSTRUMENT_ID);

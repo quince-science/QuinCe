@@ -228,4 +228,9 @@ public class ExternalStandardDB extends CalibrationDB {
 
     return result;
   }
+
+  @Override
+  public boolean priorCalibrationRequired() {
+    return true;
+  }
 }

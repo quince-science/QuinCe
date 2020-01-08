@@ -472,4 +472,13 @@ public abstract class CalibrationDB {
    * @return The calibration type
    */
   public abstract String getCalibrationType();
+
+  /**
+   * Specifies whether or not a dataset must have a calibration prior to its
+   * start date.
+   *
+   * @return {@code true} if datasets must be preceded by a calibration;
+   *         {@code false} if not.
+   */
+  public abstract boolean priorCalibrationRequired();
 }
