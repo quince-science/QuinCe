@@ -40,7 +40,7 @@ public class DataReductionRecord {
 
   /**
    * Create an empty record for a given measurement
-   * 
+   *
    * @param measurement
    *          The measurement
    */
@@ -55,7 +55,7 @@ public class DataReductionRecord {
 
   /**
    * Set the QC details for the record
-   * 
+   *
    * @param flag
    *          The QC flag
    * @param message
@@ -72,7 +72,7 @@ public class DataReductionRecord {
 
   /**
    * Store a calculation value
-   * 
+   *
    * @param parameter
    *          The parameter
    * @param value
@@ -88,7 +88,7 @@ public class DataReductionRecord {
 
   /**
    * Get the measurement ID
-   * 
+   *
    * @return The measurement ID
    */
   public long getMeasurementId() {
@@ -97,7 +97,7 @@ public class DataReductionRecord {
 
   /**
    * Get the variable ID
-   * 
+   *
    * @return The variable ID
    */
   public long getVariableId() {
@@ -106,7 +106,7 @@ public class DataReductionRecord {
 
   /**
    * Get the QC flag
-   * 
+   *
    * @return The QC flag
    */
   public Flag getQCFlag() {
@@ -115,7 +115,7 @@ public class DataReductionRecord {
 
   /**
    * Get the QC messages
-   * 
+   *
    * @return The QC messages
    */
   public List<String> getQCMessages() {
@@ -124,7 +124,7 @@ public class DataReductionRecord {
 
   /**
    * Get the calculation values as a JSON string
-   * 
+   *
    * @return The calculation JSON
    */
   public String getCalculationJson() {

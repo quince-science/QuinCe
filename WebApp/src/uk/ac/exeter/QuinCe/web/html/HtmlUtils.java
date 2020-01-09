@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * Various HTML-related utilities and constants
- * 
+ *
  * @author Steve Jones
  *
  */

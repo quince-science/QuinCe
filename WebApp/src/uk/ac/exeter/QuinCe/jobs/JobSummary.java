@@ -64,7 +64,7 @@ public class JobSummary {
 
   /**
    * Basic constructor - simply takes in all values for the summary
-   * 
+   *
    * @param id
    *          The job's database ID
    * @param owner
@@ -101,7 +101,7 @@ public class JobSummary {
 
   /**
    * Get the job's database ID
-   * 
+   *
    * @return The job's database ID
    */
   public long getId() {
@@ -110,7 +110,7 @@ public class JobSummary {
 
   /**
    * Get the job's owner
-   * 
+   *
    * @return The job's owner
    */
   public User getOwner() {
@@ -119,7 +119,7 @@ public class JobSummary {
 
   /**
    * Get the job's class name. The package is removed.
-   * 
+   *
    * @return The job's class name
    */
   public String getClassName() {
@@ -130,7 +130,7 @@ public class JobSummary {
 
   /**
    * Get the date/time that the job was created
-   * 
+   *
    * @return The date/time that the job was created
    */
   public Date getCreated() {
@@ -139,7 +139,7 @@ public class JobSummary {
 
   /**
    * Get the current status of the job
-   * 
+   *
    * @return The current status of the job
    */
   public String getStatus() {
@@ -148,7 +148,7 @@ public class JobSummary {
 
   /**
    * Get the date/time that the job was started
-   * 
+   *
    * @return The date/time that the job was started
    */
   @Deprecated
@@ -158,7 +158,7 @@ public class JobSummary {
 
   /**
    * Get the date/time that the job finished
-   * 
+   *
    * @return The date/time that the job finished
    */
   @Deprecated
@@ -168,7 +168,7 @@ public class JobSummary {
 
   /**
    * Get the current progress of the job
-   * 
+   *
    * @return The current progress of the job
    */
   public double getProgress() {
@@ -177,7 +177,7 @@ public class JobSummary {
 
   /**
    * Get the stack trace for the job
-   * 
+   *
    * @return The stack trace for the job
    */
   public String getStackTrace() {
@@ -186,7 +186,7 @@ public class JobSummary {
 
   /**
    * Get the stack trace for the job, formatted in HTML
-   * 
+   *
    * @return The stack trace for the job in HTML
    */
   public String getStackTraceAsHtml() {

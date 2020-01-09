@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 
 /**
  * Exception for file definitions
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,7 +15,7 @@ public class FileDefinitionException extends Exception {
 
   /**
    * Simple error
-   * 
+   *
    * @param message
    *          The error message
    */

@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.jobs;
 
 /**
  * Exception raised when a specified job does not exist in the system
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,7 +15,7 @@ public class NoSuchJobException extends Exception {
 
   /**
    * Constructor
-   * 
+   *
    * @param jobID
    *          The ID of the job that was requested
    */

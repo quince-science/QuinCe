@@ -19,7 +19,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * Note that these methods are not publicly accessible; all calls to this class
  * are made through the {@code DataFileDB} class.
  * </p>
- * 
+ *
  * @author Steve Jones
  * @see DataFileDB
  */
@@ -72,7 +72,7 @@ public class FileStore {
 
   /**
    * Deletes a file from the file store
-   * 
+   *
    * @param fileStore
    *          The location of the file store
    * @param dataFile
@@ -93,7 +93,7 @@ public class FileStore {
 
   /**
    * Retrieve a file from the file store
-   * 
+   *
    * @param fileStore
    *          The location of the file store
    * @param dataFile
@@ -110,7 +110,7 @@ public class FileStore {
 
   /**
    * Get the raw bytes for a file
-   * 
+   *
    * @param fileStore
    *          The file store
    * @param dataFile
@@ -149,7 +149,7 @@ public class FileStore {
 
   /**
    * Ensure that the directory for a given instrument's files exists
-   * 
+   *
    * @param fileStorePath
    *          The root path of the file store
    * @param fileDefinitionId
@@ -177,7 +177,7 @@ public class FileStore {
   /**
    * Returns the path to the directory where a given instrument's files are
    * stored
-   * 
+   *
    * @param fileStorePath
    *          The root of the file store
    * @param fileDefinitionId
@@ -191,7 +191,7 @@ public class FileStore {
 
   /**
    * Get the Java File object for a data file
-   * 
+   *
    * @param fileStorePath
    *          The path to the data file within the file store
    * @param dataFile
@@ -207,7 +207,7 @@ public class FileStore {
   /**
    * Close a writer. Not strictly a database thing, but it's in the same spirit
    * and used in the same places.
-   * 
+   *
    * @param writer
    *          The writer
    */
@@ -224,7 +224,7 @@ public class FileStore {
   /**
    * Delete a file from the file system. If the file does not exist, no action
    * is taken.
-   * 
+   *
    * @param file
    *          The file to be deleted
    */

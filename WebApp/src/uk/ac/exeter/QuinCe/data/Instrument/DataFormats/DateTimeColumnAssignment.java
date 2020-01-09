@@ -52,7 +52,7 @@ public class DateTimeColumnAssignment {
 
   /**
    * Create an empty assignment
-   * 
+   *
    * @param assignmentIndex
    *          The assignment index
    */
@@ -64,7 +64,7 @@ public class DateTimeColumnAssignment {
 
   /**
    * Construct a complete assignment
-   * 
+   *
    * @param assignmentIndex
    *          The assignment index
    * @param column
@@ -85,7 +85,7 @@ public class DateTimeColumnAssignment {
 
   /**
    * Get the assigned column index
-   * 
+   *
    * @return The column index
    */
   public int getColumn() {
@@ -94,7 +94,7 @@ public class DateTimeColumnAssignment {
 
   /**
    * Set the assigned column index
-   * 
+   *
    * @param column
    *          The column index
    */
@@ -104,7 +104,7 @@ public class DateTimeColumnAssignment {
 
   /**
    * Get the date format as a string
-   * 
+   *
    * @return The date format string
    */
   public String getDateFormatString() {
@@ -113,7 +113,7 @@ public class DateTimeColumnAssignment {
 
   /**
    * Set the format string
-   * 
+   *
    * @param format
    *          The format string
    * @throws DateTimeSpecificationException
@@ -140,7 +140,7 @@ public class DateTimeColumnAssignment {
   /**
    * Get the date format as a formatter object. If this assignment does not have
    * a format, the method returns null
-   * 
+   *
    * @return The formatter
    */
   public DateTimeFormatter getFormatter() {
@@ -155,7 +155,7 @@ public class DateTimeColumnAssignment {
 
   /**
    * Get the properties of this assignment
-   * 
+   *
    * @return The assignment properties
    */
   public Properties getProperties() {
@@ -165,7 +165,7 @@ public class DateTimeColumnAssignment {
   /**
    * Determine whether or not this assignment is populated, i.e. has a column
    * index assigned.
-   * 
+   *
    * @return {@code true} if the assignment is populate; {@code false} if it is
    *         empty
    */
@@ -176,7 +176,7 @@ public class DateTimeColumnAssignment {
   /**
    * Set the header prefix for the
    * {@link DateTimeSpecification#HOURS_FROM_START} assignment
-   * 
+   *
    * @param prefix
    *          The prefix
    * @throws DateTimeSpecificationException
@@ -194,7 +194,7 @@ public class DateTimeColumnAssignment {
   /**
    * Get the header prefix for the
    * {@link DateTimeSpecification#HOURS_FROM_START} assignment
-   * 
+   *
    * @return The prefix
    * @throws DateTimeSpecificationException
    *           If an attempt is made to set a prefix for a different assignment
@@ -211,7 +211,7 @@ public class DateTimeColumnAssignment {
   /**
    * Set the header suffix for the
    * {@link DateTimeSpecification#HOURS_FROM_START} assignment
-   * 
+   *
    * @param suffix
    *          The suffix
    * @throws DateTimeSpecificationException
@@ -229,7 +229,7 @@ public class DateTimeColumnAssignment {
   /**
    * Get the header suffix for the
    * {@link DateTimeSpecification#HOURS_FROM_START} assignment
-   * 
+   *
    * @return suffix The suffix
    * @throws DateTimeSpecificationException
    *           If an attempt is made to set a suffix for a different assignment

@@ -50,7 +50,7 @@ public class JobThreadPool {
 
   /**
    * Creates the thread pool and fills it with waiting job threads
-   * 
+   *
    * @param maxThreads
    *          The maximum number of threads in the pool
    */
@@ -96,7 +96,7 @@ public class JobThreadPool {
 
   /**
    * Returns the number of threads available in the pool
-   * 
+   *
    * @return The number of threads available in the pool
    */
   public int getAvailableThreads() {
@@ -140,7 +140,7 @@ public class JobThreadPool {
   /**
    * Returns a job thread to the stack ready for another job. If the thread is
    * an overflow thread, it is not returned to the stack.
-   * 
+   *
    * @param thread
    *          The thread to be returned.
    */
@@ -190,7 +190,7 @@ public class JobThreadPool {
 
   /**
    * Retrieve the job thread pool
-   * 
+   *
    * @return The job thread pool
    * @throws JobThreadPoolNotInitialisedException
    *           If the pool has not been initialised
@@ -213,7 +213,7 @@ public class JobThreadPool {
 
   /**
    * Get the number of idle threads in the pool
-   * 
+   *
    * @return The number of idle threads in the pool
    */
   public int getPoolThreadCount() {
@@ -222,7 +222,7 @@ public class JobThreadPool {
 
   /**
    * Get the maximum number of threads in the pool
-   * 
+   *
    * @return The maximum number of threads in the pool
    */
   public int getMaxThreads() {
@@ -231,7 +231,7 @@ public class JobThreadPool {
 
   /**
    * Get the number of currently running threads
-   * 
+   *
    * @return The number of running threads
    */
   public int getRunningThreadsCount() {
@@ -241,7 +241,7 @@ public class JobThreadPool {
   /**
    * Get the number of overflow threads. These are threads that have been
    * created for high priority jobs in excess of the maximum thread count.
-   * 
+   *
    * @return The number of overflow threads
    */
   public int getOverflowThreadsCount() {

@@ -104,7 +104,7 @@ public class AuthenticatedFilter implements Filter {
   /**
    * Determines whether or not this is a request for a resource rather than a
    * page of the application.
-   * 
+   *
    * @param request
    *          The request
    * @return {@code true} if the request is a resource request; {@code false}
@@ -128,7 +128,7 @@ public class AuthenticatedFilter implements Filter {
   /**
    * Determines whether or not a page can be accessed without the user having
    * logged in.
-   * 
+   *
    * @param request
    *          The request
    * @return {@code true} if the request is allowed without being logged in;

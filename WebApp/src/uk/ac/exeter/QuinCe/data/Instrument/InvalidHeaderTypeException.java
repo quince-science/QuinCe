@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 
 /**
  * Excpeption thrown if an invalid header type is specified
- * 
+ *
  * @author Steve Jones
  *
  */

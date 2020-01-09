@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 /**
  * Simple object for a single calibration coefficient
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -20,7 +20,7 @@ public class CalibrationCoefficient {
 
   /**
    * Creates an empty (zero) coefficient
-   * 
+   *
    * @param name
    *          The coefficient name
    */
@@ -30,7 +30,7 @@ public class CalibrationCoefficient {
 
   /**
    * Create a coefficient with a value
-   * 
+   *
    * @param name
    *          The coefficient name
    * @param value
@@ -43,7 +43,7 @@ public class CalibrationCoefficient {
 
   /**
    * Get the coefficient name
-   * 
+   *
    * @return The coefficient's name
    */
   public String getName() {
@@ -52,7 +52,7 @@ public class CalibrationCoefficient {
 
   /**
    * Get the coefficient value
-   * 
+   *
    * @return The value
    */
   public double getValue() {
@@ -61,7 +61,7 @@ public class CalibrationCoefficient {
 
   /**
    * Set the coefficient value
-   * 
+   *
    * @param value
    *          The value
    */

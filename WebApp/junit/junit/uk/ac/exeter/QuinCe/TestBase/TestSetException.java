@@ -2,7 +2,7 @@ package junit.uk.ac.exeter.QuinCe.TestBase;
 
 /**
  * Exception class to wrap errors encountered while setting up test sets
- * 
+ *
  * @author Steve Jones
  *
  */

@@ -6,7 +6,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
 /**
  * A single entry in a comment set
- * 
+ *
  * @author Steve Jones
  * @see CommentSet
  */
@@ -29,7 +29,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param comment
    *          The comment string
    * @param flag
@@ -70,7 +70,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
    * Get the comment string for this entry
-   * 
+   *
    * @return The comment
    */
   public String getComment() {
@@ -79,7 +79,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
    * Get the number of instances of this comment that have been recorded
-   * 
+   *
    * @return The instance count
    */
   public int getCount() {
@@ -88,7 +88,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
    * Get the 'worst' flag assigned to instances of this comment
-   * 
+   *
    * @return The flag
    */
   public Flag getFlag() {
@@ -105,7 +105,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
    * Get the comment entry as a JSON array
-   * 
+   *
    * @return The JSON array
    */
   public JSONArray toJson() {

@@ -18,7 +18,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Defines how the date and time are stored in a data file
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -162,7 +162,7 @@ public class DateTimeSpecification {
 
   /**
    * Constructs an empty specification
-   * 
+   *
    * @param fileHasHeader
    *          Indicates whether or not the file containing this specification
    *          has a header
@@ -189,7 +189,7 @@ public class DateTimeSpecification {
 
   /**
    * Constructor for a complete specification to be built from raw values
-   * 
+   *
    * @param fileHasHeader
    *          Indicates whether or not the file containing this specification
    *          has a header
@@ -270,7 +270,7 @@ public class DateTimeSpecification {
    * <p>
    * The JSON string is as follows:
    * </p>
-   * 
+   *
    * <pre>
    * {}
    * </pre>
@@ -316,7 +316,7 @@ public class DateTimeSpecification {
   /**
    * Determine whether or not this specification has had both date and time
    * fully assigned
-   * 
+   *
    * @return {@code true} if the date and time have been assigned; {@code false}
    *         if assignments are still required
    */
@@ -349,7 +349,7 @@ public class DateTimeSpecification {
    * As column assignments are filled in, some options become unavailable as
    * they are incompatible with the populated ones. This method returns the keys
    * that have either been assigned or still can be assigned.
-   * 
+   *
    * @return The available entries
    */
   private List<Integer> getAvailableEntries() {
@@ -467,7 +467,7 @@ public class DateTimeSpecification {
 
   /**
    * Determine whether a column has been assigned to the specified index.
-   * 
+   *
    * @param assignmentIndex
    *          The index
    * @return {@code true} if a column has been assigned; {@code false} if it is
@@ -480,7 +480,7 @@ public class DateTimeSpecification {
 
   /**
    * Get the assignment for a given date/time field
-   * 
+   *
    * @param assignmentIndex
    *          The date/time field index
    * @return The assignment
@@ -491,7 +491,7 @@ public class DateTimeSpecification {
 
   /**
    * Determine whether no date/time entries have been assigned
-   * 
+   *
    * @return {@code true} if no assignments have been made; {@code false} if it
    *         one or more assignments have been made
    * @see DateTimeColumnAssignment#isAssigned()
@@ -511,7 +511,7 @@ public class DateTimeSpecification {
 
   /**
    * Set the specified bits on a mask
-   * 
+   *
    * @param mask
    *          The mask
    * @param bits
@@ -530,7 +530,7 @@ public class DateTimeSpecification {
 
   /**
    * Get the name for a specified date/time assignment index
-   * 
+   *
    * @param index
    *          The index
    * @return The name
@@ -601,7 +601,7 @@ public class DateTimeSpecification {
 
   /**
    * Get the index for a specified date/time assignment name
-   * 
+   *
    * @param name
    *          The name
    * @return The index
@@ -672,7 +672,7 @@ public class DateTimeSpecification {
 
   /**
    * Assign a column to a date/time variable
-   * 
+   *
    * @param variable
    *          The variable name
    * @param column
@@ -701,7 +701,7 @@ public class DateTimeSpecification {
 
   /**
    * Assign a column to the {@link #HOURS_FROM_START} assignment
-   * 
+   *
    * @param column
    *          The column index
    * @param headerPrefix
@@ -724,7 +724,7 @@ public class DateTimeSpecification {
 
   /**
    * Remove a column from any of the assignments
-   * 
+   *
    * @param column
    *          The index of the column to be unassigned
    * @return {@code true} if the column index was found and removed;
@@ -749,7 +749,7 @@ public class DateTimeSpecification {
 
   /**
    * Specify whether or not the parent file has a header
-   * 
+   *
    * @param fileHasHeader
    *          Flag indicating whether or not the parent file has a header
    */
@@ -759,7 +759,7 @@ public class DateTimeSpecification {
 
   /**
    * Get the date and time from a line in a file
-   * 
+   *
    * @param headerDate
    *          The date from the file header
    * @param line
@@ -808,7 +808,7 @@ public class DateTimeSpecification {
 
   /**
    * Get the date of a line using the Hours From Start Date specification
-   * 
+   *
    * @param headerDate
    *          The file's start date from the header
    * @param line
@@ -852,7 +852,7 @@ public class DateTimeSpecification {
 
   /**
    * Get value of a date/time field
-   * 
+   *
    * @param line
    *          The line whose date is to be extracted
    * @return The date/time
@@ -883,7 +883,7 @@ public class DateTimeSpecification {
 
   /**
    * Get the date/time of a Year/Julian DateTime formatted line
-   * 
+   *
    * @param line
    *          The line
    * @return The date/time
@@ -939,7 +939,7 @@ public class DateTimeSpecification {
 
   /**
    * Get a date from a line containing a date-only string
-   * 
+   *
    * @param line
    *          The line
    * @return The date
@@ -970,7 +970,7 @@ public class DateTimeSpecification {
 
   /**
    * Get the date from a line containing a year and Julian day
-   * 
+   *
    * @param line
    *          The line
    * @return The date
@@ -1014,7 +1014,7 @@ public class DateTimeSpecification {
 
   /**
    * Get a date from a line containing year/month/day fields
-   * 
+   *
    * @param line
    *          The line
    * @return The date
@@ -1071,7 +1071,7 @@ public class DateTimeSpecification {
 
   /**
    * Get the time from a line with a single time column
-   * 
+   *
    * @param line
    *          The line
    * @return The time
@@ -1102,7 +1102,7 @@ public class DateTimeSpecification {
 
   /**
    * Get the time from a line containing hour/minute/second fields
-   * 
+   *
    * @param line
    *          The line
    * @return The time

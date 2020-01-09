@@ -23,7 +23,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * API call for uploading new files for an instrument
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -32,7 +32,7 @@ public class UploadFile {
 
   /**
    * Main API method
-   * 
+   *
    * @return The upload response
    */
   @POST

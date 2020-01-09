@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Files;
 
 /**
  * Class to hold a message related to a data file
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -21,7 +21,7 @@ public class DataFileMessage implements Comparable<DataFileMessage> {
 
   /**
    * Constructor for a message that is not related to a specific row in the file
-   * 
+   *
    * @param message
    *          The message text
    */
@@ -32,7 +32,7 @@ public class DataFileMessage implements Comparable<DataFileMessage> {
 
   /**
    * Constructor for a message related to a specific row in the file
-   * 
+   *
    * @param line
    *          The row number
    * @param message

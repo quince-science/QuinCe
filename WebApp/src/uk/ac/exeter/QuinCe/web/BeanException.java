@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.web;
 
 /**
  * Exception class for miscellaneous errors in beans
- * 
+ *
  * @author Steve Jones
  *
  */

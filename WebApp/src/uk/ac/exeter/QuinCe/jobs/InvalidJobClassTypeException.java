@@ -16,7 +16,7 @@ public class InvalidJobClassTypeException extends Exception {
 
   /**
    * Constructor
-   * 
+   *
    * @param className
    *          The name of the invalid class
    */

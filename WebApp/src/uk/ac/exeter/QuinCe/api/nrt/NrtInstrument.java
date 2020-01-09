@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.api.nrt;
 
 /**
  * POJO bean for an NRT instrument. Used by GetNrtInstruments
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -31,7 +31,7 @@ public class NrtInstrument {
 
   /**
    * Complete constructor
-   * 
+   *
    * @param id
    *          instrument ID
    * @param name
@@ -47,7 +47,7 @@ public class NrtInstrument {
 
   /**
    * Get the instrument ID
-   * 
+   *
    * @return instrument ID
    */
   public long getId() {
@@ -56,7 +56,7 @@ public class NrtInstrument {
 
   /**
    * Set the instrument ID
-   * 
+   *
    * @param id
    *          instrument ID
    */
@@ -66,7 +66,7 @@ public class NrtInstrument {
 
   /**
    * Get the instrument name
-   * 
+   *
    * @return instrument name
    */
   public String getName() {
@@ -75,7 +75,7 @@ public class NrtInstrument {
 
   /**
    * Set the instrument name
-   * 
+   *
    * @param name
    *          instrument name
    */
@@ -85,7 +85,7 @@ public class NrtInstrument {
 
   /**
    * Get the instrument owner's name
-   * 
+   *
    * @return instrument owner's name
    */
   public String getOwner() {
@@ -94,7 +94,7 @@ public class NrtInstrument {
 
   /**
    * Set the instrument owner's name
-   * 
+   *
    * @param owner
    *          instrument owner's name
    */

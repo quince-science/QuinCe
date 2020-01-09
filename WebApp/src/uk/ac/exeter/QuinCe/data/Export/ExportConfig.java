@@ -86,7 +86,7 @@ public class ExportConfig {
   /**
    * Initialises the {@code ExportConfig} singleton. This must be called before
    * the class can be used.
-   * 
+   *
    * @param configFile
    *          The full path to the export configuration file
    * @throws ExportException
@@ -100,7 +100,7 @@ public class ExportConfig {
 
   /**
    * Returns the {@code ExportConfig} singleton instance
-   * 
+   *
    * @return The {@code ExportConfig} singleton instance
    * @throws ExportException
    *           If the class has not been initialised
@@ -116,7 +116,7 @@ public class ExportConfig {
 
   /**
    * Read and parse the export options configuration file
-   * 
+   *
    * @throws ExportException
    *           If the configuration file is invalid
    * @throws FileNotFoundException
@@ -144,7 +144,7 @@ public class ExportConfig {
 
   /**
    * Returns the list of all configured export options
-   * 
+   *
    * @return The list of export options
    */
   public List<ExportOption> getOptions() {

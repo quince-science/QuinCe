@@ -89,7 +89,7 @@ public abstract class FileJob extends Job {
       /*
        * fileId = Long.parseLong(parameters.get(FILE_ID_KEY)); instrument =
        * InstrumentDB.getInstrumentByFileId(dataSource, fileId);
-       * 
+       *
        * if (!DataFileDB.fileExists(dataSource, fileId)) { throw new
        * InvalidJobParametersException("The data file " + fileId +
        * " does not exist"); }
@@ -114,7 +114,7 @@ public abstract class FileJob extends Job {
 
   /**
    * Perform the file job tasks
-   * 
+   *
    * @param thread
    *          The thread that will be running the job
    * @throws JobFailedException

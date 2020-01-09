@@ -6,7 +6,7 @@ import javax.sql.DataSource;
 
 /**
  * Utility functions for beans, filters, servlets etc.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -14,7 +14,7 @@ public class ServletUtils {
 
   /**
    * Get the application's resource mananger
-   * 
+   *
    * @return The resource manager
    * @throws ResourceException
    *           If the resource manager cannot be retrieved
@@ -30,7 +30,7 @@ public class ServletUtils {
 
   /**
    * Retrieve a database connection from the pool
-   * 
+   *
    * @return A database connection
    * @throws ResourceException
    *           If there is an error connecting to the database
@@ -46,7 +46,7 @@ public class ServletUtils {
 
   /**
    * Retrieve the application configuration
-   * 
+   *
    * @return The application configuration
    * @throws ResourceException
    *           If the retrieval fails

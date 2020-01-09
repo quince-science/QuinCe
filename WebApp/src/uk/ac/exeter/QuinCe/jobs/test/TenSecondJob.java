@@ -13,7 +13,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * A test job that runs in chunks of 10 seconds. It doesn't actually do
  * anything, but simply updates its progress after each 10 second chunk.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -36,7 +36,7 @@ public class TenSecondJob extends Job {
 
   /**
    * Constructs a job object, and validates the parameters passed to it
-   * 
+   *
    * @param resourceManager
    *          The system resource manager
    * @param config

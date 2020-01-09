@@ -66,7 +66,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
   /**
    * Store selected files. This moves the file(s) to the file store, and updates
    * the database with file info.
-   * 
+   *
    * @throws MissingParamException
    *           If any required parameters are missing
    * @throws FileExistsException

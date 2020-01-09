@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 /**
  * Exception for errors encountered while handling data sets
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,7 +15,7 @@ public class DataSetException extends Exception {
 
   /**
    * Constructor for a simple error message
-   * 
+   *
    * @param message
    *          The error message
    */
@@ -25,7 +25,7 @@ public class DataSetException extends Exception {
 
   /**
    * Constructor for wrapping an error
-   * 
+   *
    * @param cause
    *          The error
    */
@@ -35,7 +35,7 @@ public class DataSetException extends Exception {
 
   /**
    * Constructor for wrapping an error with a message
-   * 
+   *
    * @param message
    *          The error message
    * @param cause

@@ -13,7 +13,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 /**
  * Class to hold a Caculation Value with its QC information. These are built for
  * a given sensor type from all available values using fallbacks, averaging etc.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -48,7 +48,7 @@ public class CalculationValue {
 
   /**
    * Determine whether or not this value is NaN
-   * 
+   *
    * @return {@code true} if the value is NaN; {@code false} otherwise
    */
   public boolean isNaN() {
@@ -57,7 +57,7 @@ public class CalculationValue {
 
   /**
    * Get the value
-   * 
+   *
    * @return The value
    */
   public Double getValue() {
@@ -66,7 +66,7 @@ public class CalculationValue {
 
   /**
    * Get the QC flag
-   * 
+   *
    * @return The QC flag
    */
   public Flag getQCFlag() {
@@ -79,7 +79,7 @@ public class CalculationValue {
 
   /**
    * Get the QC messages
-   * 
+   *
    * @return The QC messages
    */
   public List<String> getQCMessages() {
@@ -89,7 +89,7 @@ public class CalculationValue {
   /**
    * Get the database IDs of the sensor values used to generate this
    * CalculationValue
-   * 
+   *
    * @return The sensor value IDs
    */
   public TreeSet<Long> getUsedSensorValueIds() {
@@ -107,7 +107,7 @@ public class CalculationValue {
   /**
    * Get the value to be used in data reduction calculations from a given set of
    * sensor values
-   * 
+   *
    * @param list
    *          The sensor values
    * @return The calculation value

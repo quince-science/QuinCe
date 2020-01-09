@@ -23,7 +23,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 /**
  * Methods for storing and retrieving external standards information from the
  * database
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -61,7 +61,7 @@ public class ExternalStandardDB extends CalibrationDB {
 
   /**
    * Retrieve the singleton instance of the class
-   * 
+   *
    * @return The singleton
    */
   public static ExternalStandardDB getInstance() {
@@ -100,7 +100,7 @@ public class ExternalStandardDB extends CalibrationDB {
   /**
    * Retrieve a CalibrationSet containing the external standards deployed
    * immediately before the specified date
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -139,7 +139,7 @@ public class ExternalStandardDB extends CalibrationDB {
   /**
    * Retrieve a CalibrationSet containing the external standards deployed
    * immediately before the specified date
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -203,7 +203,7 @@ public class ExternalStandardDB extends CalibrationDB {
   /**
    * Determine whether or not a set of standards contains a standard with zero
    * concentration
-   * 
+   *
    * @param standards
    *          The standards to be checked
    * @return {@code true} if there is at least one standard with zero

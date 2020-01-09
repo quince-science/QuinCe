@@ -167,7 +167,7 @@ public class JobManager {
 
   /**
    * Adds a job to the database
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param owner
@@ -218,7 +218,7 @@ public class JobManager {
 
   /**
    * Adds a job to the database
-   * 
+   *
    * @param conn
    *          A database connection
    * @param owner
@@ -343,7 +343,7 @@ public class JobManager {
 
   /**
    * Adds a job to the database, and instantly runs it
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config
@@ -402,7 +402,7 @@ public class JobManager {
 
   /**
    * Sets the status of a job
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param jobID
@@ -437,7 +437,7 @@ public class JobManager {
 
   /**
    * Sets the status of a job
-   * 
+   *
    * @param conn
    *          A database connection
    * @param jobID
@@ -485,7 +485,7 @@ public class JobManager {
    * Update a job record with the necessary details when it's started. The
    * {@code status} is set to {@link Job#RUNNING_STATUS}, and the
    * {@code started} field is given the current time.
-   * 
+   *
    * @param conn
    *          A database connection
    * @param jobID
@@ -527,7 +527,7 @@ public class JobManager {
 
   /**
    * Retrieve a {@link Job} object from the database
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config
@@ -584,7 +584,7 @@ public class JobManager {
 
   /**
    * Create a {@link Job} object from a database query result set
-   * 
+   *
    * @param result
    *          The query result
    * @param resourceManager
@@ -621,7 +621,7 @@ public class JobManager {
    * Update a job record with the necessary details when it's successfully
    * finished running. The {@code status} is set to {@link Job#FINISHED_STATUS},
    * and the {@code ended} field is given the current time.
-   * 
+   *
    * @param conn
    *          A database connection
    * @param jobID
@@ -661,7 +661,7 @@ public class JobManager {
    * Update a job record with the necessary details when it's been killed. The
    * {@code status} is set to {@link Job#KILLED_STATUS}, and the {@code ended}
    * field is given the current time.
-   * 
+   *
    * @param conn
    *          A database connection
    * @param jobID
@@ -699,7 +699,7 @@ public class JobManager {
 
   /**
    * Update a job record indicating that the job failed due to an error
-   * 
+   *
    * @param conn
    *          A database connection
    * @param jobID
@@ -743,7 +743,7 @@ public class JobManager {
   /**
    * Set the progress for a job. The progress must be a percentage (between 0
    * and 100 inclusive)
-   * 
+   *
    * @param conn
    *          A database connection
    * @param jobID
@@ -792,7 +792,7 @@ public class JobManager {
 
   /**
    * Determines whether or not a job with the given ID exists in the database
-   * 
+   *
    * @param conn
    *          A database connection
    * @param jobID
@@ -837,7 +837,7 @@ public class JobManager {
   /**
    * Retrieve the next queued job (i.e. the job with the oldest submission date)
    * from the database
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config
@@ -898,7 +898,7 @@ public class JobManager {
 
   /**
    * Checks a class name to see if it a valid {@link Job} class
-   * 
+   *
    * @param jobClass
    *          The class name
    * @return An integer flag containing the result of the check. See
@@ -954,7 +954,7 @@ public class JobManager {
 
   /**
    * Checks a job status string to make sure it's valid
-   * 
+   *
    * @param status
    *          The status string to be checked
    * @return {@code true} if the status string is valid; {@code false} otherwise
@@ -976,7 +976,7 @@ public class JobManager {
   /**
    * Returns a list of all the job statuses in the database, and the number of
    * jobs with each of those statuses
-   * 
+   *
    * @param dataSource
    *          A data source
    * @return The list of job statuses and counts
@@ -1020,7 +1020,7 @@ public class JobManager {
 
   /**
    * Retrieve summaries of the complete list of jobs in the system.
-   * 
+   *
    * @param dataSource
    *          A data source
    * @return The list of jobs
@@ -1086,7 +1086,7 @@ public class JobManager {
 
   /**
    * Start the next queued job, if there is one
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config
@@ -1141,7 +1141,7 @@ public class JobManager {
    * This method restarts jobs that have been interrupted. They are identified
    * by jobs that are marked as running, but whose thread does not exist. (When
    * a job is name, the thread name is stored in the database.)
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @throws MissingParamException
@@ -1200,7 +1200,7 @@ public class JobManager {
 
   /**
    * Get the status for a job
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param jobId
@@ -1235,7 +1235,7 @@ public class JobManager {
 
   /**
    * Get the status for a job
-   * 
+   *
    * @param conn
    *          A database connection
    * @param jobId
@@ -1283,7 +1283,7 @@ public class JobManager {
 
   /**
    * Get the owner of a job
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param jobId
@@ -1319,7 +1319,7 @@ public class JobManager {
 
   /**
    * Get the owner of a job
-   * 
+   *
    * @param conn
    *          A database exception
    * @param jobId
@@ -1370,7 +1370,7 @@ public class JobManager {
   /**
    * Place a set of jobs in the {@link Job#WAITING_STATUS} state so they can be
    * re-run.
-   * 
+   *
    * @param conn
    *          A database connection
    * @param jobIds
@@ -1412,7 +1412,7 @@ public class JobManager {
   /**
    * Place a set of jobs in the {@link Job#WAITING_STATUS} state so they can be
    * re-run.
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param jobIds
@@ -1441,7 +1441,7 @@ public class JobManager {
 
   /**
    * Place a job in the {@link Job#WAITING_STATUS} state so it can be re-run.
-   * 
+   *
    * @param conn
    *          A database connection
    * @param jobId
@@ -1460,7 +1460,7 @@ public class JobManager {
 
   /**
    * Place a job in the {@link Job#WAITING_STATUS} state so it can be re-run.
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param jobId
@@ -1584,7 +1584,7 @@ public class JobManager {
   /**
    * Determines whether or not a job will operate on files, by checking whether
    * it is a subclass of {@link FileJob}.
-   * 
+   *
    * @param jobClass
    *          The job class to check
    * @return {@code true} if the job will operate on files; {@code false} if it
@@ -1603,7 +1603,7 @@ public class JobManager {
 
   /**
    * Kill any jobs associated with a set of data files
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param fileIds

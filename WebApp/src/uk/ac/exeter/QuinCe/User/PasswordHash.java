@@ -69,21 +69,21 @@ public class PasswordHash {
 
   /**
    * The index of the iteration count in password validation parameters.
-   * 
+   *
    * @see #validatePassword(char[], String)
    */
   public static final int ITERATION_INDEX = 0;
 
   /**
    * The index of the salt in password validation parameters.
-   * 
+   *
    * @see #validatePassword(char[], String)
    */
   public static final int SALT_INDEX = 1;
 
   /**
    * The index of the algorithm in password validation parameters.
-   * 
+   *
    * @see #validatePassword(char[], String)
    */
   public static final int PBKDF2_INDEX = 2;
@@ -344,7 +344,7 @@ public class PasswordHash {
 
   /**
    * Generate a random salt to be used with a password.
-   * 
+   *
    * @return The salt
    */
   public static byte[] generateSalt() {

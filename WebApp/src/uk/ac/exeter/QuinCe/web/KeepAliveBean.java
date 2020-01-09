@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.web;
 /**
  * A small bean that lives in the session, which receives empty requests to keep
  * user sessions alive
- * 
+ *
  * @author Steve Jones
  *
  */

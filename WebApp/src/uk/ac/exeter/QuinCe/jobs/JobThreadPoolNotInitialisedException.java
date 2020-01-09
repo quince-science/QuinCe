@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.jobs;
 /**
  * Exception thrown when an attempt is made to access the {@link JobThreadPool}
  * before it has been initialised.
- * 
+ *
  * @author Steve Jones
  * @see JobThreadPool#initialise(int)
  */
