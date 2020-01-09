@@ -1,6 +1,8 @@
 package junit.uk.ac.exeter.QuinCe.utils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -175,6 +177,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test that {@link StringUtils#makeCsvString(String)} doubles up quotes
    */
+  @Test
   public void makeCsvQuoteStringTest() {
     assertTrue("\"I \"\"am\"\" String\""
       .equals(StringUtils.makeCsvString("I \"am\" String")));
@@ -251,5 +254,108 @@ public class StringUtilsTest extends BaseTest {
   @Test
   public void makeCsvStringMultipleNewlineTest() {
     assertTrue("\"a;b;c\"".equals(StringUtils.makeCsvString("a\nb\nc")));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringIntegerTest() {
+    assertEquals(new Double(7.0), StringUtils.doubleFromString("7"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringZeroIntegerTest() {
+    assertEquals(new Double(0.0), StringUtils.doubleFromString("0"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringNegativeIntegerTest() {
+    assertEquals(new Double(-7.0), StringUtils.doubleFromString("-7"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringDoubleTest() {
+    assertEquals(new Double(7.657), StringUtils.doubleFromString("7.657"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringZeroDoubleTest() {
+    assertEquals(new Double(0.0), StringUtils.doubleFromString("0.0"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringNegativeDoubleTest() {
+    assertEquals(new Double(-7.657), StringUtils.doubleFromString("-7.657"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringThousandsTest() {
+    assertEquals(new Double(7547.54), StringUtils.doubleFromString("7,547.54"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringNegativeThousandsTest() {
+    assertEquals(new Double(-7547.54),
+      StringUtils.doubleFromString("-7,547.54"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringStringTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.doubleFromString("Flurble");
+    });
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringNaNTest() {
+    assertEquals((Double) Double.NaN, StringUtils.doubleFromString("NaN"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void doubleFromStringEmptyStringTest() {
+    assertEquals((Double) Double.NaN, StringUtils.doubleFromString(null));
   }
 }
