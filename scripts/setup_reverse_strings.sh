@@ -5,10 +5,7 @@
 # This script reverses changes made to config files by the
 # setup_replace_strings.sh - script. Currently it just
 # checks out the original files. Any changes to these files
-# will thus be overwritten. This regards the files:
-# - quince.properties
-# - context.xml
-# - web.xml
+# will thus be overwritten.
 #
 ############################################################
 
