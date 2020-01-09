@@ -7,7 +7,7 @@ import java.util.Properties;
 
 /**
  * User Preferences
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -20,7 +20,7 @@ public class UserPreferences extends Properties {
 
   /**
    * The property name for the last instrument that the user interacted with
-   * 
+   *
    * @see #setLastInstrument(long)
    */
   private static final String LAST_INSTRUMENT = "lastInstrument";
@@ -32,7 +32,7 @@ public class UserPreferences extends Properties {
 
   /**
    * Construct an empty preferences object for a user
-   * 
+   *
    * @param userId
    *          The user ID
    */
@@ -43,7 +43,7 @@ public class UserPreferences extends Properties {
 
   /**
    * Construct a preferences object from a String representation
-   * 
+   *
    * @param userId
    *          The user ID
    * @param preferencesString
@@ -70,7 +70,7 @@ public class UserPreferences extends Properties {
 
   /**
    * Get the ID of the user to which these preferences belong
-   * 
+   *
    * @return The user ID
    */
   protected long getUserId() {
@@ -79,7 +79,7 @@ public class UserPreferences extends Properties {
 
   /**
    * Store the last instrument that the user interacted with
-   * 
+   *
    * @param instrumentId
    *          The instrument's database ID
    */
@@ -89,7 +89,7 @@ public class UserPreferences extends Properties {
 
   /**
    * Retrieve the last instrument that the user interacted with
-   * 
+   *
    * @return The instrument's database ID
    */
   public long getLastInstrument() {
@@ -109,7 +109,7 @@ public class UserPreferences extends Properties {
 
   /**
    * Write the user preferences to a String
-   * 
+   *
    * @return The user preferences string
    */
   public String writeToString() {

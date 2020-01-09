@@ -46,7 +46,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Create a new file definition with the default description
-   * 
+   *
    * @param fileSet
    *          The file set that will contain this file definition
    */
@@ -62,7 +62,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Create a new file definition with a specified description
-   * 
+   *
    * @param fileDescription
    *          The file description
    * @param fileSet
@@ -76,7 +76,7 @@ public class FileDefinitionBuilder extends FileDefinition {
   /**
    * Determines whether or not file data has been uploaded for this instrument
    * file
-   * 
+   *
    * @return {@code true} if file data has been uploaded; {@code false} if it
    *         has not.
    */
@@ -86,7 +86,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Guess the layout of the file from its contents
-   * 
+   *
    * @see #calculateColumnCount()
    */
   public void guessFileLayout() {
@@ -143,7 +143,7 @@ public class FileDefinitionBuilder extends FileDefinition {
   /**
    * Get the {@link #MAX_DISPLAY_LINES} of the file data as a JSON string, to be
    * used in previewing the file contents
-   * 
+   *
    * @return The file preview data
    */
   public String getFilePreview() {
@@ -162,7 +162,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Search a string to find the most commonly occurring valid separator value
-   * 
+   *
    * @return The most common separator in the string
    */
   private String getMostCommonSeparator() {
@@ -183,7 +183,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Count the number of instances of a given separator in a string
-   * 
+   *
    * @param separator
    *          The separator to search for
    * @param searchString
@@ -214,7 +214,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Store the file data as an array of Strings
-   * 
+   *
    * @param fileContents
    *          The file data
    */
@@ -224,7 +224,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Create a deep copy of a {@code FileDefinitionBuilder} object.
-   * 
+   *
    * @param source
    *          The source object
    * @return The copied object
@@ -310,7 +310,7 @@ public class FileDefinitionBuilder extends FileDefinition {
   /**
    * Dummy set column method for bean requirements. We don't allow external
    * agencies to set this, but it's needed for bean compatibility
-   * 
+   *
    * @param columnCount
    *          The column count
    */
@@ -365,7 +365,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Return the row number of the first column header row in the file
-   * 
+   *
    * @return The first column header row, or -1 if the file does not have column
    *         headers
    */
@@ -385,7 +385,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Get the data from the sample file as a JSON string
-   * 
+   *
    * @return The file data
    */
   public String getJsonData() {
@@ -441,7 +441,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Get the unique values from a column
-   * 
+   *
    * @param column
    *          The column index
    * @return The unique values
@@ -471,7 +471,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Shortcut method to get the length of the header
-   * 
+   *
    * @return The header length
    */
   private int getHeaderLength() {
@@ -490,7 +490,7 @@ public class FileDefinitionBuilder extends FileDefinition {
    * If multiple lines match the prefix and suffix, the first line will be
    * returned.
    * </p>
-   * 
+   *
    * @param prefix
    *          The prefix
    * @param suffix

@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Servlet for handling user logout
- * 
+ *
  * @author Steve Jones
  *
  */

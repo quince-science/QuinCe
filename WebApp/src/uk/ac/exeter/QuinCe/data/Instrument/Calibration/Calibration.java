@@ -44,7 +44,7 @@ public abstract class Calibration implements Comparable<Calibration> {
   /**
    * The date and time of the deployment. Some calibrations do not have a time,
    * in which case the time portion will be set to midnight.
-   * 
+   *
    * @see #hasTime
    */
   private LocalDateTime deploymentDate = LocalDateTime.now(ZoneOffset.UTC)
@@ -60,14 +60,14 @@ public abstract class Calibration implements Comparable<Calibration> {
    * The values for the calibration. The list must contain the same number of
    * entries as the list of value names returned by
    * {@link #getCoefficientNames()}.
-   * 
+   *
    * @see #getCoefficientNames()
    */
   protected List<CalibrationCoefficient> coefficients = null;
 
   /**
    * Create an empty calibration for an instrument
-   * 
+   *
    * @param instrumentId
    *          The instrument's database ID
    */
@@ -78,7 +78,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Create an empty calibration for a specified target
-   * 
+   *
    * @param instrumentId
    *          The instrument ID
    * @param type
@@ -94,7 +94,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Get the human-readable names of the values to be stored for the calibration
-   * 
+   *
    * @return The value names
    */
   public abstract List<String> getCoefficientNames();
@@ -102,7 +102,7 @@ public abstract class Calibration implements Comparable<Calibration> {
   /**
    * Get the type of the calibration. This is provided by each of the concrete
    * implementations of the class
-   * 
+   *
    * @return The calibration type
    */
   public String getType() {
@@ -117,7 +117,7 @@ public abstract class Calibration implements Comparable<Calibration> {
    * assumes that the coefficients are not set and returns a default
    * {@code "Not set"} value.
    * </p>
-   * 
+   *
    * @return The calibration values string
    */
   public String getHumanReadableCoefficients() {
@@ -139,14 +139,14 @@ public abstract class Calibration implements Comparable<Calibration> {
   /**
    * Build the human-readable coefficients string for
    * {@link #getHumanReadableCoefficients()}.
-   * 
+   *
    * @return The human-readable coefficients
    */
   protected abstract String buildHumanReadableCoefficients();
 
   /**
    * Get the calibration target
-   * 
+   *
    * @return The target
    */
   public String getTarget() {
@@ -155,7 +155,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Set the calibration target
-   * 
+   *
    * @param target
    *          The target
    */
@@ -165,7 +165,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Get the deployment date as a {@link LocalDateTime} object
-   * 
+   *
    * @return The deployment date
    */
   public LocalDateTime getDeploymentDate() {
@@ -174,7 +174,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Set the deployment date
-   * 
+   *
    * @param deploymentDate
    *          The deployment date
    */
@@ -188,7 +188,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Get the database ID of the instrument to which this calibration applies
-   * 
+   *
    * @return The instrument ID
    */
   public long getInstrumentId() {
@@ -197,7 +197,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Get the calibration values as a semicolon-delimited list
-   * 
+   *
    * @return The calibration values
    */
   public String getCoefficientsAsDelimitedList() {
@@ -228,7 +228,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Get the coefficients for this calibration
-   * 
+   *
    * @return The coefficients
    */
   public List<CalibrationCoefficient> getCoefficients() {
@@ -241,7 +241,7 @@ public abstract class Calibration implements Comparable<Calibration> {
   /**
    * Get the list of coefficients that are user-editable. For most calibrations
    * this will be the complete set
-   * 
+   *
    * @return The user-editable calibration coefficients
    */
   public List<CalibrationCoefficient> getEditableCoefficients() {
@@ -250,7 +250,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Set the coefficients for this calibration
-   * 
+   *
    * @param coefficients
    *          The coefficients
    * @throws CalibrationException
@@ -302,7 +302,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Determine whether the calibration coefficients are valid
-   * 
+   *
    * @return {@code true} if the coefficients are valid; {@code false} if they
    *         are not
    */
@@ -325,7 +325,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Get the value of a named coefficient
-   * 
+   *
    * @param name
    *          The coefficient name
    * @return The coefficient value
@@ -345,7 +345,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Calibrate a single value using this calibration
-   * 
+   *
    * @param rawValue
    *          The value to be calibrated
    * @return The calibrated value

@@ -49,7 +49,7 @@ public class DateColumnGroupedSensorValues
   /**
    * Add a SensorValue to the structure in the correct place according to its
    * timestamp and sensor type
-   * 
+   *
    * @param value
    *          The value to add
    * @throws RecordNotFoundException
@@ -76,7 +76,7 @@ public class DateColumnGroupedSensorValues
 
   /**
    * Add all the sensors in a collection to the data structure
-   * 
+   *
    * @param values
    *          The values to be added
    * @throws RecordNotFoundException
@@ -91,7 +91,7 @@ public class DateColumnGroupedSensorValues
 
   /**
    * Get the first time in this set of sensor values
-   * 
+   *
    * @return The first time
    */
   public LocalDateTime getFirstTime() {

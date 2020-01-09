@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 
 /**
  * Exception thrown when an invalid file separator is specified
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,7 +15,7 @@ public class InvalidSeparatorException extends Exception {
 
   /**
    * Constructor for a specified invalid separator
-   * 
+   *
    * @param separator
    *          The invalid separator
    */

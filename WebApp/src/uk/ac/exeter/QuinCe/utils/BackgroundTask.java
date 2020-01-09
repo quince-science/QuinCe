@@ -89,7 +89,7 @@ public abstract class BackgroundTask
 
   /**
    * Perform the task actions
-   * 
+   *
    * @throws BackgroundTaskException
    *           If an error occurs in the task
    */
@@ -98,7 +98,7 @@ public abstract class BackgroundTask
   /**
    * Returns the amount of time (in seconds) to wait before running the task
    * again.
-   * 
+   *
    * @return The number of seconds to wait between task runs
    */
   protected abstract long getRunInterval();

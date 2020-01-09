@@ -17,7 +17,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * Job to reset dataset export status if export is taking too long (we assume
  * that the exporter has died)
- * 
+ *
  * @author zuj007
  *
  */

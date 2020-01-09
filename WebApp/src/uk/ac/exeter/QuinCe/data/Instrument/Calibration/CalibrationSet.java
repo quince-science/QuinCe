@@ -46,7 +46,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
 
   /**
    * Initialise an empty calibration set
-   * 
+   *
    * @param instrumentId
    *          The ID of the instrument to which the calibrations will belong
    * @param type
@@ -151,7 +151,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
    * Get the contents of the calibration set as a {@link List}.
    *
    * Required for JSF.
-   * 
+   *
    * @return The calibration set as a {@link List}.
    */
   public List<Calibration> asList() {
@@ -161,7 +161,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
   /**
    * Determines whether or not the calibration set contains a
    * {@link Calibration} for all the targets specified for the set.
-   * 
+   *
    * @return {@code true} if a Calibration has been added for each target;
    *         {@code false} otherwise
    * @see #targets
@@ -193,7 +193,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
    * Get the target name of the calibration whose coefficient is immediately
    * below the specified value. This assumes that the calibrations have a single
    * coefficient, and picks the first one in the list
-   * 
+   *
    * @param value
    *          The value
    * @param allowEqualValue
@@ -228,7 +228,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
    * Get the target name of the calibration whose coefficient is immediately
    * above the specified value. This assumes that the calibrations have a single
    * coefficient, and picks the first one in the list
-   * 
+   *
    * @param value
    *          The value
    * @param allowEqualValue
@@ -262,7 +262,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
   /**
    * Get the value of the named calibration. Assumes that there is only one
    * coefficient.
-   * 
+   *
    * @param target
    *          The calibration target
    * @return The calibration value
@@ -312,7 +312,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
 
   /**
    * Get the names of the targets that can be stored in this calibration set
-   * 
+   *
    * @return
    */
   public Map<String, String> getTargets() {

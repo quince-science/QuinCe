@@ -5,7 +5,7 @@ import javax.faces.context.ExceptionHandlerFactory;
 
 /**
  * Factory class for custom exception handlers
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -18,7 +18,7 @@ public class CustomExceptionHandlerFactory extends ExceptionHandlerFactory {
 
   /**
    * Constructor - grabs a link to the parent {@code ExceptionHandlerFactory}
-   * 
+   *
    * @param parent
    *          The parent factory
    */

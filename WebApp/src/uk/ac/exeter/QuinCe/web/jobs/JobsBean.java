@@ -14,7 +14,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for handling jobs in the web application
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -112,7 +112,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Submit a test job to the queue.
-   * 
+   *
    * @see TenSecondJob
    */
   public void submitJob() {
@@ -129,7 +129,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Submit a test job to be run immediately
-   * 
+   *
    * @see TenSecondJob
    */
   public void submitImmediateJob() {
@@ -147,7 +147,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Build the parameters for a test job
-   * 
+   *
    * @return The test job parameters
    * @see #submitJob()
    * @see #submitImmediateJob()
@@ -160,7 +160,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Manually start the next job in the queue
-   * 
+   *
    * @see JobManager#startNextJob(uk.ac.exeter.QuinCe.web.system.ResourceManager,
    *      java.util.Properties)
    */
@@ -177,7 +177,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Place a job back in the queue to be run again
-   * 
+   *
    * @see JobManager#requeueJob(javax.sql.DataSource, long)
    */
   public void requeue() {
@@ -194,7 +194,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the number of idle threads
-   * 
+   *
    * @return The number of idle threads
    */
   public int getIdleThreads() {
@@ -203,7 +203,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Set the number of idle threads
-   * 
+   *
    * @param idleThreads
    *          The number of idle threads
    */
@@ -213,7 +213,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the maximum number of threads
-   * 
+   *
    * @return The maximum number of threads
    */
   public int getMaxThreads() {
@@ -222,7 +222,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Set maximum number of threads
-   * 
+   *
    * @param maxThreads
    *          The maximum number of threads
    */
@@ -232,7 +232,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the number of running threads
-   * 
+   *
    * @return The number of running threads
    */
   public int getRunningThreads() {
@@ -241,7 +241,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Set the number of running threads
-   * 
+   *
    * @param runningThreads
    *          The number of running threads
    */
@@ -251,7 +251,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the number of overflow threads
-   * 
+   *
    * @return The number of overflow threads
    */
   public int getOverflowThreads() {
@@ -260,7 +260,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Set the number of overflow threads
-   * 
+   *
    * @param overflowThreads
    *          The number of overflow threads
    */
@@ -270,7 +270,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the number of waiting jobs
-   * 
+   *
    * @return The number of waiting jobs
    */
   public int getWaitingJobs() {
@@ -279,7 +279,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the number of running jobs
-   * 
+   *
    * @return The number of running jobs
    */
   public int getRunningJobs() {
@@ -288,7 +288,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the number of jobs with errors
-   * 
+   *
    * @return The number of jobs with errors
    */
   public int getErrorJobs() {
@@ -297,7 +297,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the number of jobs that have finished successfully
-   * 
+   *
    * @return The number of jobs that have finished successfully
    */
   public int getFinishedJobs() {
@@ -306,7 +306,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the list of all jobs in the system
-   * 
+   *
    * @return The list of jobs
    */
   public List<JobSummary> getJobList() {
@@ -315,7 +315,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the number of jobs with a specified status
-   * 
+   *
    * @param status
    *          The status
    * @return The number of jobs with the specified status
@@ -336,7 +336,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the number of chunks for the test job
-   * 
+   *
    * @return The number of chunks for the test job
    * @see #submitJob()
    * @see #submitImmediateJob()
@@ -348,7 +348,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Set the number of chunks for the test job
-   * 
+   *
    * @param chunkCount
    *          The number of chunks for the test job
    * @see #submitJob()
@@ -361,7 +361,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Set the ID of the job that is currently being worked on
-   * 
+   *
    * @param chosenJob
    *          The job ID
    */
@@ -371,7 +371,7 @@ public class JobsBean extends BaseManagedBean {
 
   /**
    * Get the ID of the job that is currently being worked on
-   * 
+   *
    * @return The job ID
    */
   public long getChosenJob() {

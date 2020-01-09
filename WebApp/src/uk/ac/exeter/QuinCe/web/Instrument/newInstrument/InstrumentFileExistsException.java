@@ -5,7 +5,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 /**
  * Exception for attempting to add an {@link FileDefinition} where a file with
  * the same description has already been added.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -18,7 +18,7 @@ public class InstrumentFileExistsException extends Exception {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param file
    *          The duplicate instrument file
    */

@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * Utility methods for checking method parameters
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,7 +15,7 @@ public class MissingParam {
 
   /**
    * Check that a character array is not {@code null} or empty.
-   * 
+   *
    * @param parameter
    *          The character array
    * @param parameterName
@@ -30,7 +30,7 @@ public class MissingParam {
 
   /**
    * Check that a database connection is not null and not closed
-   * 
+   *
    * @param conn
    *          The database connection
    * @param parameterName
@@ -57,7 +57,7 @@ public class MissingParam {
 
   /**
    * Ensure that a parameter value is not {@code null}
-   * 
+   *
    * @param parameter
    *          The parameter value to be checked
    * @param parameterName
@@ -77,7 +77,7 @@ public class MissingParam {
 
   /**
    * Ensure that a Collection is not null and not empty
-   * 
+   *
    * @param collection
    *          The Collection
    * @param collectionName
@@ -114,7 +114,7 @@ public class MissingParam {
 
   /**
    * Ensure that a Map is not null and not empty
-   * 
+   *
    * @param map
    *          The Map
    * @param mapName
@@ -152,7 +152,7 @@ public class MissingParam {
   /**
    * Check that a character array is not {@code null}. It can be empty if
    * {@code canBeEmpty} is set to {@code true}.
-   * 
+   *
    * @param parameter
    *          The character array
    * @param parameterName
@@ -201,7 +201,7 @@ public class MissingParam {
 
   /**
    * Check that an integer value is positive
-   * 
+   *
    * @param parameter
    *          The value
    * @param parameterName
@@ -218,7 +218,7 @@ public class MissingParam {
 
   /**
    * Check that a long value is positive
-   * 
+   *
    * @param parameter
    *          The value
    * @param parameterName
@@ -235,7 +235,7 @@ public class MissingParam {
 
   /**
    * Check that an integer value is zero or positive
-   * 
+   *
    * @param parameter
    *          The value
    * @param parameterName
@@ -252,7 +252,7 @@ public class MissingParam {
 
   /**
    * Check that a double value is zero or positive
-   * 
+   *
    * @param parameter
    *          The value
    * @param parameterName
@@ -269,7 +269,7 @@ public class MissingParam {
 
   /**
    * Check that a String value contains a comma-separated list of integers
-   * 
+   *
    * @param list
    *          The String value
    * @param parameterName
@@ -300,7 +300,7 @@ public class MissingParam {
 
   /**
    * Check that a Long value is either {@code null} or positive
-   * 
+   *
    * @param parameter
    *          The parameter
    * @param parameterName

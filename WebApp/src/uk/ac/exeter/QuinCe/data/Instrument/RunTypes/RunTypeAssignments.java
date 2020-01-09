@@ -34,7 +34,7 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
   /**
    * Automatically convert a key to match the internal Map If the key is a
    * String, convert it to lower case. Otherwise leave it as it is
-   * 
+   *
    * @param key
    *          The key
    * @return The converted key
@@ -68,7 +68,7 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
 
   /**
    * Get the Run Type column for the parent file definition
-   * 
+   *
    * @return The run type column
    */
   public int getColumn() {
@@ -100,7 +100,7 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
 
   /**
    * Get the run type for a given run name, following aliases if required
-   * 
+   *
    * @param runName
    *          The run name
    * @param followAlias

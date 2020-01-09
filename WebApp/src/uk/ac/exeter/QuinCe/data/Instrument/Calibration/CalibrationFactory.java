@@ -8,7 +8,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Factory for creating {@link Calibration} objects
- * 
+ *
  * @author Steve Jones
  *
  */

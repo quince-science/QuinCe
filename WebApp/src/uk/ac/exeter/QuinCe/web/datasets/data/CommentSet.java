@@ -8,7 +8,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 /**
  * Holds a set of QC/WOCE comments. Comments with the same text are unique, and
  * counts are kept of the number of each distinct comment.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -28,7 +28,7 @@ public class CommentSet implements Iterable<CommentSetEntry> {
 
   /**
    * Add a comment to the comment set.
-   * 
+   *
    * @param comment
    *          The comment string
    * @param flag
@@ -53,7 +53,7 @@ public class CommentSet implements Iterable<CommentSetEntry> {
 
   /**
    * Provides an iterator for the entries in this comment set
-   * 
+   *
    * @return The iterator
    */
   @Override
