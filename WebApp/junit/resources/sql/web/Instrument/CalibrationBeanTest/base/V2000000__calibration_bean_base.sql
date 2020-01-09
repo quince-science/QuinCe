@@ -1,4 +1,4 @@
--- Basic instrument setup
+-- Basic instrument setup for all Calibration Bean tests
 
 -- User
 INSERT INTO user (id, email, salt, password)
