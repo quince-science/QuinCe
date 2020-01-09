@@ -527,7 +527,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
     }
 
     // Invalid targets are not allowed
-    if (null != newTarget && !calibrationTargets.containsKey(newTarget)) {
+    if (null != newTarget && !calibrationTargets.containsValue(newTarget)) {
       throw new InvalidCalibrationTargetException(newTarget);
     }
 
