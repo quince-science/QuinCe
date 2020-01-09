@@ -15,7 +15,7 @@ public class HighDeltaRoutine extends Routine {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param parameters
    *          The parameters
    * @throws QCRoutinesConfigurationException
@@ -76,7 +76,7 @@ public class HighDeltaRoutine extends Routine {
 
   /**
    * Get the short form QC message
-   * 
+   *
    * @return The short QC message
    */
   public static String getShortMessage() {
@@ -85,7 +85,7 @@ public class HighDeltaRoutine extends Routine {
 
   /**
    * Get the long form QC message
-   * 
+   *
    * @param requiredValue
    *          The value required by the routine
    * @param actualValue

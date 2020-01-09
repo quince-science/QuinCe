@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 /**
  * Exceptions thrown when handling calibrations
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,7 +15,7 @@ public class CalibrationException extends RuntimeException {
 
   /**
    * Constructor for a simple error message
-   * 
+   *
    * @param message
    *          The error message
    */
@@ -25,7 +25,7 @@ public class CalibrationException extends RuntimeException {
 
   /**
    * Constructor wrapper for an internal error while processing calibrations
-   * 
+   *
    * @param cause
    *          The error
    */

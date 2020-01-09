@@ -4,7 +4,7 @@ import org.primefaces.json.JSONObject;
 
 /**
  * Class for a string with a highlighted region
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -27,7 +27,7 @@ public class HighlightedString {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param string
    *          The string
    * @param highlightStart
@@ -73,7 +73,7 @@ public class HighlightedString {
 
   /**
    * Get the highlighted string as a JSON object
-   * 
+   *
    * @return The string as a JSON object
    */
   public String getJson() {
@@ -86,7 +86,7 @@ public class HighlightedString {
 
   /**
    * Get the highlighted portion of the string
-   * 
+   *
    * @return The highlighted portion of the string
    */
   public String getHighlightedPortion() {

@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 /**
  * Mini class for holding a measurement value link, which is simply a
  * measurement ID and a sensor value ID
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -21,7 +21,7 @@ public class MeasurementValue {
 
   /**
    * Constructor for full objects
-   * 
+   *
    * @param measurement
    *          The measurement
    * @param sensorValue
@@ -34,7 +34,7 @@ public class MeasurementValue {
 
   /**
    * Constructor for IDs
-   * 
+   *
    * @param measurementId
    *          The measurement ID
    * @param sensorValueId
@@ -47,7 +47,7 @@ public class MeasurementValue {
 
   /**
    * Get the measurement ID
-   * 
+   *
    * @return The measurement ID
    */
   public long getMeasurementId() {
@@ -56,7 +56,7 @@ public class MeasurementValue {
 
   /**
    * Get the sensor value ID
-   * 
+   *
    * @return The sensor value ID
    */
   public long getSensorValueId() {

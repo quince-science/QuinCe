@@ -92,7 +92,7 @@ public class SensorsConfiguration {
   /**
    * Load the sensor type details from the database. Does not perform any checks
    * yet.
-   * 
+   *
    * @throws DatabaseException
    *           If a database error occurs
    * @throws MissingParamException
@@ -125,7 +125,7 @@ public class SensorsConfiguration {
 
   /**
    * Load the sensor types used by the variables defined in the database
-   * 
+   *
    * @param conn
    *          A database connection
    * @throws DatabaseException
@@ -220,7 +220,7 @@ public class SensorsConfiguration {
 
   /**
    * Get the list of sensor types in this configuration
-   * 
+   *
    * @return The sensor types
    */
   public List<SensorType> getSensorTypes() {
@@ -233,7 +233,7 @@ public class SensorsConfiguration {
   /**
    * Check the sensor type parent and dependsOn references to make sure they
    * exist
-   * 
+   *
    * @throws SensorConfigurationException
    *           If any reference doesn't exist
    */
@@ -266,7 +266,7 @@ public class SensorsConfiguration {
   /**
    * Check a list of sensor names to ensure they are all present in the sensor
    * configuration.
-   * 
+   *
    * @param names
    *          The names to check
    * @throws SensorConfigurationException
@@ -294,7 +294,7 @@ public class SensorsConfiguration {
   /**
    * Get all the child types of a given sensor type. If there are no children,
    * the list will be empty
-   * 
+   *
    * @param parent
    *          The parent sensor type
    * @return The child types
@@ -314,7 +314,7 @@ public class SensorsConfiguration {
   /**
    * Get the parent SensorType of a given SensorType. Returns {@code null} if
    * there is no parent
-   * 
+   *
    * @param child
    *          The sensor type whose parent is required
    * @return The parent sensor type
@@ -329,7 +329,7 @@ public class SensorsConfiguration {
 
   /**
    * Determine whether a given SensorType has children
-   * 
+   *
    * @param sensorType
    *          The SensorType
    * @return {@code true} if the SensorType has children; {@code false} if not
@@ -367,7 +367,7 @@ public class SensorsConfiguration {
 
   /**
    * Get the core sensor type for a set of variables identified by ID
-   * 
+   *
    * @param varId
    *          The variable IDs
    * @return The core sensor types
@@ -394,7 +394,7 @@ public class SensorsConfiguration {
 
   /**
    * Get all sensor types that are not defined as core sensor types
-   * 
+   *
    * @param conn
    *          A database connection
    * @return The non-core sensor types
@@ -467,7 +467,7 @@ public class SensorsConfiguration {
 
   /**
    * Get the {@link SensorType} object for a given sensor ID
-   * 
+   *
    * @param sensorId
    *          The sensor's database ID
    * @return The SensorType object
@@ -486,7 +486,7 @@ public class SensorsConfiguration {
 
   /**
    * Get the {@link SensorType} object with the given name
-   * 
+   *
    * @param sensorId
    *          The sensor type's name
    * @return The SensorType object
@@ -513,7 +513,7 @@ public class SensorsConfiguration {
   /**
    * Get the list of {@link SensorType} objects corresponding to the supplied
    * list of names
-   * 
+   *
    * @param sensorId
    *          The sensor types' names
    * @return The SensorType objects
@@ -532,7 +532,7 @@ public class SensorsConfiguration {
 
   /**
    * See if the supplied SensorType is required by any of the listed variables
-   * 
+   *
    * @param sensorType
    *          The SensorType
    * @param variableIds
@@ -564,7 +564,7 @@ public class SensorsConfiguration {
 
   /**
    * See if the supplied SensorType is required by any of the listed variables
-   * 
+   *
    * @param sensorType
    *          The SensorType
    * @param variableIds
@@ -613,7 +613,7 @@ public class SensorsConfiguration {
 
   /**
    * Get the set of SensorTypes required for the specified variables.
-   * 
+   *
    * @param variableIds
    *          The variables' database IDs
    * @return The SensorTypes required by the variables
@@ -650,7 +650,7 @@ public class SensorsConfiguration {
   /**
    * Convenience method to see if a SensorType has a parent. Simply calls
    * {@link SensorType#hasParent()}.
-   * 
+   *
    * @param sensorType
    *          The SensorType to check
    * @return {@code true} if the SensorType has a parent; {@code false} if not
@@ -661,7 +661,7 @@ public class SensorsConfiguration {
 
   /**
    * Make sure parents and children are configured correctly
-   * 
+   *
    * @throws SensorConfigurationException
    *           If any configuration is invalid
    */
@@ -692,7 +692,7 @@ public class SensorsConfiguration {
 
   /**
    * Get an InstrumentVariable by its ID
-   * 
+   *
    * @param variableId
    *          The variable ID
    * @return The InstrumentVariable object
@@ -710,7 +710,7 @@ public class SensorsConfiguration {
 
   /**
    * Get a list of InstrumentVaraiables using their IDs
-   * 
+   *
    * @param variableId
    *          The variable IDs
    * @return The InstrumentVariable objects

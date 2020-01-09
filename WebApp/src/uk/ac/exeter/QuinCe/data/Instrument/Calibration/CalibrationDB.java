@@ -24,7 +24,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Database methods for database actions related to calibrations
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -32,7 +32,7 @@ public abstract class CalibrationDB {
 
   /**
    * Statement to add a new calibration to the database
-   * 
+   *
    * @see #addCalibration(DataSource, Calibration)
    */
   private static final String ADD_CALIBRATION_STATEMENT = "INSERT INTO calibration "
@@ -41,7 +41,7 @@ public abstract class CalibrationDB {
 
   /**
    * Query for finding recent calibrations.
-   * 
+   *
    * @see #getCurrentCalibrations(DataSource, long)
    */
   private static final String GET_RECENT_CALIBRATIONS_QUERY = "SELECT "
@@ -51,7 +51,7 @@ public abstract class CalibrationDB {
 
   /**
    * Query to determine whether a calibration already exists
-   * 
+   *
    * @see #calibrationExists(DataSource, Calibration)
    */
   private static final String CALIBRATION_EXISTS_QUERY = "SELECT "
@@ -77,7 +77,7 @@ public abstract class CalibrationDB {
 
   /**
    * Add a new calibration to the database
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param calibration
@@ -125,7 +125,7 @@ public abstract class CalibrationDB {
 
   /**
    * Get the most recent calibrations for each target
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -163,7 +163,7 @@ public abstract class CalibrationDB {
 
   /**
    * Get the most recent calibrations for each target
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -244,7 +244,7 @@ public abstract class CalibrationDB {
   /**
    * Retrieve all calibrations from the database of a given type, grouped by
    * target and ordered by date
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -312,7 +312,7 @@ public abstract class CalibrationDB {
    * Determine whether or not a calibration exists that coincides with the
    * specified calibration (checks instrument, type, target and deployment
    * date).
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param calibration
@@ -362,7 +362,7 @@ public abstract class CalibrationDB {
 
   /**
    * Get the list of possible calibration targets for a given instrument
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -396,7 +396,7 @@ public abstract class CalibrationDB {
 
   /**
    * Get the list of possible calibration targets for a given instrument
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -415,7 +415,7 @@ public abstract class CalibrationDB {
 
   /**
    * Get the calibration type for database actions
-   * 
+   *
    * @return The calibration type
    */
   public abstract String getCalibrationType();

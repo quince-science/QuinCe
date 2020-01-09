@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.utils;
 
 /**
  * A simple Exception class to wrap errors encountered in background tasks
- * 
+ *
  * @author Steve Jones
  * @see BackgroundTask
  */
@@ -15,7 +15,7 @@ public class BackgroundTaskException extends Exception {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param cause
    *          The underlying error
    */

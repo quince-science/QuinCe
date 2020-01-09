@@ -14,7 +14,7 @@ public abstract class SensorCalibration extends Calibration {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param instrumentId
    *          The instrument that the calibration is for
    * @param target
@@ -26,7 +26,7 @@ public abstract class SensorCalibration extends Calibration {
 
   /**
    * Basic constructor with no target set
-   * 
+   *
    * @param instrumentId
    *          The instrument that the calibration is for
    */
@@ -36,7 +36,7 @@ public abstract class SensorCalibration extends Calibration {
 
   /**
    * Construct a complete sensor calibration object.
-   * 
+   *
    * @param instrumentId
    *          The instrument ID
    * @param target

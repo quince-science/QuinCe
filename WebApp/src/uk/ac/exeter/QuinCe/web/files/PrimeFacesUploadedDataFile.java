@@ -13,7 +13,7 @@ public class PrimeFacesUploadedDataFile extends UploadedDataFile {
 
   /**
    * Set up the object and load the file contents
-   * 
+   *
    * @param uploadedFile
    *          The uploaded file
    */

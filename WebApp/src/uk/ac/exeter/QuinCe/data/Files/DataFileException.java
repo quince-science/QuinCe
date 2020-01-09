@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Files;
 
 /**
  * Exception for errors in data files
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -36,7 +36,7 @@ public class DataFileException extends Exception {
 
   /**
    * Constructor for a simple error message
-   * 
+   *
    * @param message
    *          The error message
    */
@@ -48,7 +48,7 @@ public class DataFileException extends Exception {
 
   /**
    * Constructor for an error with an underlying cause
-   * 
+   *
    * @param cause
    *          The cause
    */
@@ -60,7 +60,7 @@ public class DataFileException extends Exception {
 
   /**
    * Constructor for an error with an underlying cause
-   * 
+   *
    * @param message
    *          The error message
    * @param cause

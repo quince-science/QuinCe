@@ -19,7 +19,7 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 /**
  * Bean for handling calibrations
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -63,7 +63,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Initialise the bean
-   * 
+   *
    * @return The navigation string
    */
   public String start() {
@@ -99,7 +99,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Get the instrument's database ID
-   * 
+   *
    * @return The instrument ID
    */
   public long getInstrumentId() {
@@ -108,7 +108,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Set the database ID of the instrument
-   * 
+   *
    * @param instrumentId
    *          The instrument ID
    */
@@ -118,7 +118,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Get the instrument name
-   * 
+   *
    * @return The instrument name
    */
   public String getInstrumentName() {
@@ -127,7 +127,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Set the instrument name
-   * 
+   *
    * @param instrumentName
    *          The instrument name
    */
@@ -137,14 +137,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Get the navigation string that will navigate to the list of calibrations
-   * 
+   *
    * @return The list navigation string
    */
   protected abstract String getPageNavigation();
 
   /**
    * Get a list of all possible targets for the calibration type
-   * 
+   *
    * @return The targets
    * @throws Exception
    *           If the list of targets cannot be retrieved
@@ -155,7 +155,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Store the entered calibration in the database
-   * 
+   *
    * @return The navigation
    */
   public String addCalibration() {
@@ -181,14 +181,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Get an instance of the database interaction class for the calibrations
-   * 
+   *
    * @return The database interaction instance
    */
   protected abstract CalibrationDB getDbInstance();
 
   /**
    * Load the most recent calibrations from the database
-   * 
+   *
    * @throws RecordNotFoundException
    *           If any required database records are missing
    * @throws DatabaseException
@@ -209,14 +209,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Get the calibration type for the calibrations being edited
-   * 
+   *
    * @return The calibration type
    */
   protected abstract String getCalibrationType();
 
   /**
    * Get the human-readable calibration type for the calibrations being edited
-   * 
+   *
    * @return The human-readable calibration type
    */
   public abstract String getHumanReadableCalibrationType();
@@ -224,7 +224,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
   /**
    * Individual targets are represented as groups on the page. Get the JSON for
    * these groups
-   * 
+   *
    * @return The targets JSON
    */
   public String getTargetsJson() throws Exception {
@@ -252,7 +252,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Get the JSON for the individual calibrations
-   * 
+   *
    * @return The calibrations JSON
    */
   public String getCalibrationsJson() {
@@ -283,7 +283,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Get the new calibration deployment details
-   * 
+   *
    * @return The new calibration
    */
   public Calibration getNewCalibration() {
@@ -292,14 +292,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Get the label to use for the calibration target
-   * 
+   *
    * @return The target label
    */
   public abstract String getTargetLabel();
 
   /**
    * Get the label used to describe the coefficients
-   * 
+   *
    * @return The coefficients label
    */
   public String getCoefficientsLabel() {
