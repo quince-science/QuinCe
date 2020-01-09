@@ -42,8 +42,8 @@ public class GetAffectedDatasetsPriorsRequiredTests
    *           If the test set line is invalid.
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/editPriorsRequired" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/editPriorsRequired" })
   @ParameterizedTest
   @MethodSource("getLines")
   public void getAffectedDatasetsTest(TestSetLine line)

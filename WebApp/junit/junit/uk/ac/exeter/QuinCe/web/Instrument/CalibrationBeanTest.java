@@ -131,8 +131,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void initBeanTest() throws MissingParamException, DatabaseException,
     RecordNotFoundException, InstrumentException {
@@ -149,8 +149,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getInstrumentIdTest() throws MissingParamException,
     DatabaseException, RecordNotFoundException, InstrumentException {
@@ -167,8 +167,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getInstrumentNameTest() throws MissingParamException,
     DatabaseException, RecordNotFoundException, InstrumentException {
@@ -185,8 +185,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void setInstrumentIdTest() throws MissingParamException,
     DatabaseException, RecordNotFoundException, InstrumentException {
@@ -204,8 +204,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void setInstrumentNameTest() throws MissingParamException,
     DatabaseException, RecordNotFoundException, InstrumentException {
@@ -230,8 +230,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsNullTimeOnlyTest()
     throws MissingParamException, DatabaseException, RecordNotFoundException,
@@ -254,8 +254,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsNullTargetOnlyTest()
     throws MissingParamException, DatabaseException, RecordNotFoundException,
@@ -278,8 +278,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsNonExistentCalibrationTest()
     throws MissingParamException, DatabaseException, RecordNotFoundException,
@@ -302,8 +302,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsNewWithNonExistentTargetTest()
     throws MissingParamException, DatabaseException, RecordNotFoundException,
@@ -326,8 +326,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsEditWithNonExistentTargetTest()
     throws MissingParamException, DatabaseException, RecordNotFoundException,
@@ -350,8 +350,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsNewWithFutureDateTest()
     throws MissingParamException, DatabaseException, RecordNotFoundException,
@@ -377,8 +377,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsEditWithFutureDateTest()
     throws MissingParamException, DatabaseException, RecordNotFoundException,
@@ -404,8 +404,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsZeroIDTest() throws MissingParamException,
     DatabaseException, RecordNotFoundException, InstrumentException {
@@ -427,8 +427,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsDeleteNegativeIDTest()
     throws MissingParamException, DatabaseException, RecordNotFoundException,
@@ -451,8 +451,8 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws MissingParamException
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/base",
-    "resources/sql/web/Instrument/ExternalStandardsBeanTest/simple" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsDeleteNonExistentCalibrationTest()
     throws MissingParamException, DatabaseException, RecordNotFoundException,
