@@ -48,7 +48,7 @@ public abstract class NewInstrumentValidator implements Validator {
 
   /**
    * Perform the validation
-   * 
+   *
    * @param bean
    *          The new instrument bean
    * @param value

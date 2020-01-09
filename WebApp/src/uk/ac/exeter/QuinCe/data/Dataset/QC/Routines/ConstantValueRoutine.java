@@ -16,7 +16,7 @@ public class ConstantValueRoutine extends Routine {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param parameters
    *          The parameters
    * @throws QCRoutinesConfigurationException
@@ -83,7 +83,7 @@ public class ConstantValueRoutine extends Routine {
    * Determines whether or not the value in the passed record is identical to
    * that in the list of constant records. Null values always return a 'not
    * constant' result.
-   * 
+   *
    * @param record
    *          The record to be checked
    * @param firstRecord
@@ -111,7 +111,7 @@ public class ConstantValueRoutine extends Routine {
    * See how long the value has been constant in the set of stored records. If
    * the value is constant for longer than the maximum time, flag each record
    * accordingly.
-   * 
+   *
    * @param constantRecords
    *          The records to be checked
    * @throws RoutineException
@@ -145,7 +145,7 @@ public class ConstantValueRoutine extends Routine {
 
   /**
    * Get the short form QC message
-   * 
+   *
    * @return The short QC message
    */
   public static String getShortMessage() {
@@ -154,7 +154,7 @@ public class ConstantValueRoutine extends Routine {
 
   /**
    * Get the long form QC message
-   * 
+   *
    * @param requiredValue
    *          The value required by the routine
    * @param actualValue

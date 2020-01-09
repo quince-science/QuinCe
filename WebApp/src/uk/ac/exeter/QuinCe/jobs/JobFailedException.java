@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.jobs;
 
 /**
  * Exception for uncaught errors that occur in running jobs
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,7 +15,7 @@ public class JobFailedException extends Exception {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param id
    *          The job ID
    * @param cause
@@ -27,7 +27,7 @@ public class JobFailedException extends Exception {
 
   /**
    * Constructor with an error message
-   * 
+   *
    * @param id
    *          The job ID
    * @param message
@@ -43,7 +43,7 @@ public class JobFailedException extends Exception {
    * Constructor for an error that occurred at a specific point in a job. This
    * is usually used for errors while processing files, to indicate the line
    * that was processed when the error occurred.
-   * 
+   *
    * @param id
    *          The job ID
    * @param place
@@ -57,7 +57,7 @@ public class JobFailedException extends Exception {
 
   /**
    * Constructor for an error condition that occurs without an underlying cause
-   * 
+   *
    * @param id
    *          The job ID
    * @param message
@@ -71,7 +71,7 @@ public class JobFailedException extends Exception {
    * Constructor for an error that occurs in a specific place, but without an
    * underlying cause. This is usually used for errors while processing files,
    * to indicate the line that was processed when the error occurred.
-   * 
+   *
    * @param id
    *          The job ID
    * @param place

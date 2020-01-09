@@ -33,7 +33,7 @@ public class CreateNrtDataset extends Job {
   /**
    * Constructor that allows the {@link JobManager} to create an instance of
    * this job.
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config

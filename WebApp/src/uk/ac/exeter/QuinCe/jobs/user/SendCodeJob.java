@@ -18,7 +18,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Background job to send email verification codes to users
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -31,7 +31,7 @@ public abstract class SendCodeJob extends Job {
 
   /**
    * Job object constructor
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config
@@ -98,7 +98,7 @@ public abstract class SendCodeJob extends Job {
 
   /**
    * Construct the email verification link that the user will click in the email
-   * 
+   *
    * @param config
    *          The application configuration
    * @return The link
@@ -149,35 +149,35 @@ public abstract class SendCodeJob extends Job {
 
   /**
    * Get the URL path
-   * 
+   *
    * @return The URL path
    */
   protected abstract String getUrlPath();
 
   /**
    * Get the email subject
-   * 
+   *
    * @return The email subject
    */
   protected abstract String getSubject();
 
   /**
    * Get the email text
-   * 
+   *
    * @return The email text
    */
   protected abstract String getEmailText();
 
   /**
    * Get the description of the code being used
-   * 
+   *
    * @return The code description
    */
   protected abstract String getCodeDescription();
 
   /**
    * Get the code
-   * 
+   *
    * @return The code
    */
   protected abstract String getCode(User user);

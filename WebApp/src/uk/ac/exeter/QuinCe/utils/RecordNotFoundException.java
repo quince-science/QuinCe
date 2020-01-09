@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.utils;
 
 /**
  * Exception raised when database records cannot be found
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,7 +15,7 @@ public class RecordNotFoundException extends Exception {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param message
    *          The error messages
    */
@@ -25,7 +25,7 @@ public class RecordNotFoundException extends Exception {
 
   /**
    * Constructor for a named table and record ID
-   * 
+   *
    * @param message
    *          The error message
    * @param table

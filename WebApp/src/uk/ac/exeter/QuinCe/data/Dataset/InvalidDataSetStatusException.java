@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 /**
  * Exception for invalid data set status
- * 
+ *
  * @author Steve Jones
  */
 public class InvalidDataSetStatusException extends Exception {
@@ -14,7 +14,7 @@ public class InvalidDataSetStatusException extends Exception {
 
   /**
    * Simple constructor
-   * 
+   *
    * @param status
    *          The invalid status value
    */

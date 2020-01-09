@@ -47,7 +47,7 @@ public class CalculationInputValues {
 
   /**
    * Set the value and QC details for a sensor type
-   * 
+   *
    * @param sensorType
    *          The sensor type name
    * @param value
@@ -70,7 +70,7 @@ public class CalculationInputValues {
 
   /**
    * Set the value and QC details for a sensor type with a single QC message
-   * 
+   *
    * @param sensorType
    *          The sensor type name
    * @param value
@@ -90,7 +90,7 @@ public class CalculationInputValues {
   /**
    * Get a list of the sensor types that have a NaN value. Returns an empty list
    * if there are no NaN values
-   * 
+   *
    * @return The sensor types with NaN value
    */
   public List<String> getNaNs() {

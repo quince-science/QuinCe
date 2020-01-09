@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
 /**
  * Exception for invalid position formats
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,7 +15,7 @@ public class InvalidPositionFormatException extends PositionException {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param format
    *          The invalid format
    */

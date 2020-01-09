@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * An entry in a variable tree
- * 
+ *
  * @see VariableList
  * @author Steve Jones
  *
@@ -70,7 +70,7 @@ public class Variable {
 
   /**
    * Constructor for a top-level tree entry
-   * 
+   *
    * @param type
    *          The entry type
    * @param label
@@ -86,7 +86,7 @@ public class Variable {
 
   /**
    * Constructor for a top-level tree entry
-   * 
+   *
    * @param type
    *          The entry type
    * @param label
@@ -112,7 +112,7 @@ public class Variable {
 
   /**
    * Set the entry's ID
-   * 
+   *
    * @param id
    *          The ID
    */
@@ -122,7 +122,7 @@ public class Variable {
 
   /**
    * Get the entry's ID
-   * 
+   *
    * @return The ID
    */
   public int getId() {
@@ -131,7 +131,7 @@ public class Variable {
 
   /**
    * Get the human-readable label
-   * 
+   *
    * @return The label
    */
   public String getLabel() {
@@ -140,7 +140,7 @@ public class Variable {
 
   /**
    * Get the database field name
-   * 
+   *
    * @return The field name
    */
   public String getFieldName() {
@@ -149,7 +149,7 @@ public class Variable {
 
   /**
    * Get the type
-   * 
+   *
    * @return The type
    */
   public int getType() {
@@ -158,7 +158,7 @@ public class Variable {
 
   /**
    * Get a list of variable IDs from a list of variables
-   * 
+   *
    * @param variables
    *          The variables
    * @return The variable IDs
@@ -176,7 +176,7 @@ public class Variable {
 
   /**
    * Determine whether or not this variable can be shown on the X axis of plots
-   * 
+   *
    * @return {@code true} if the variable can be shown on the X axis;
    *         {@code false} if it cannot
    */
@@ -186,7 +186,7 @@ public class Variable {
 
   /**
    * Determine whether or not this variable can be shown on the Y axis of plots
-   * 
+   *
    * @return {@code true} if the variable can be shown on the Y axis;
    *         {@code false} if it cannot
    */
@@ -197,7 +197,7 @@ public class Variable {
   /**
    * Determine whether or not this variable should be visible in the selection
    * dialog
-   * 
+   *
    * @return {@code true} if the variable is visible; {@code false} if it is not
    */
   public boolean getVisible() {

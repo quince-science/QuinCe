@@ -7,7 +7,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 
 /**
  * Class to define a set of InstrumentFiles when creating an instrument
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -43,12 +43,12 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
    * <p>
    * The assignments are encoded as a JSON string in the following format:
    * </p>
-   * 
+   *
    * <pre>
    * [
    * ]
    * </pre>
-   * 
+   *
    * @return The time and position assignments
    * @throws DateTimeSpecificationException
    *           If an error occurs while generating the date/time string
@@ -89,7 +89,7 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
   /**
    * Get the list of registered file descriptions and their columns as a JSON
    * string
-   * 
+   *
    * @return The file names
    */
   public String getFilesAndColumns() {

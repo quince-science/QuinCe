@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 
 /**
  * Defines a Run Type Category
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -65,7 +65,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param code
    *          The category code - either a variable ID, or a special code as
    *          above
@@ -81,7 +81,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
    * Get the category type
-   * 
+   *
    * @return The category type
    */
   public long getType() {
@@ -90,7 +90,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
    * Get the category description
-   * 
+   *
    * @return The category description
    */
   public String getDescription() {
@@ -99,7 +99,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
    * Determine whether or not this run type is for measurements
-   * 
+   *
    * @return {@code true} if this is a measurement type; {@code false} otherwise
    */
   public boolean isMeasurementType() {
@@ -130,7 +130,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
    * Determine whether or not this category references a variable
-   * 
+   *
    * @return
    */
   public boolean isVariable() {

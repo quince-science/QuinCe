@@ -15,4 +15,3 @@ git update-index --no-assume-unchanged   \
   external_scripts/export/config_carbon.toml \
   external_scripts/export/config.toml \
   external_scripts/export/config_copernicus.toml
-

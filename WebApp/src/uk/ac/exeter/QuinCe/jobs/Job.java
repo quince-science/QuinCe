@@ -96,7 +96,7 @@ public abstract class Job {
 
   /**
    * Constructs a job object, and validates the parameters passed to it
-   * 
+   *
    * @param resourceManager
    *          The system resource manager
    * @param config
@@ -131,7 +131,7 @@ public abstract class Job {
   /**
    * Determines whether or not this job object has been destroyed. Destroyed
    * objects should be discarded.
-   * 
+   *
    * @return {@code true} if this Job object has been destroyed; {@code false}
    *         otherwise.
    */
@@ -141,7 +141,7 @@ public abstract class Job {
 
   /**
    * Performs the job tasks
-   * 
+   *
    * @param thread
    *          The thread that will be running the job
    * @throws JobFailedException
@@ -151,7 +151,7 @@ public abstract class Job {
 
   /**
    * Validate the parameters passed in to this job
-   * 
+   *
    * @throws InvalidJobParametersException
    *           If the parameters are invalid
    */
@@ -160,7 +160,7 @@ public abstract class Job {
 
   /**
    * Set the progress for the job, as a percentage
-   * 
+   *
    * @param progress
    *          The progress
    * @throws BadProgressException
@@ -190,7 +190,7 @@ public abstract class Job {
    * Log the fact that the job has been started in the appropriate locations.
    * Initially this is just in the job manager, but it can be extended by other
    * classes
-   * 
+   *
    * @param threadName
    *          The thread name
    * @throws MissingParamException
@@ -218,7 +218,7 @@ public abstract class Job {
    * Log the fact that the job has been finished in the appropriate locations.
    * Initially this is just in the job manager, but it can be extended by other
    * classes
-   * 
+   *
    * @throws MissingParamException
    *           If any of the parameters to the underlying commands are missing
    * @throws DatabaseException
@@ -244,7 +244,7 @@ public abstract class Job {
    * Log the fact that the job has been finished in the appropriate locations.
    * Initially this is just in the job manager, but it can be extended by other
    * classes
-   * 
+   *
    * @throws MissingParamException
    *           If any of the parameters to the underlying commands are missing
    * @throws DatabaseException
@@ -268,7 +268,7 @@ public abstract class Job {
 
   /**
    * Logs a job error to the appropriate locations
-   * 
+   *
    * @param error
    *          The error
    * @throws DatabaseException
@@ -294,7 +294,7 @@ public abstract class Job {
 
   /**
    * Get the job's ID
-   * 
+   *
    * @return The job ID
    */
   public long getID() {
@@ -313,7 +313,7 @@ public abstract class Job {
   /**
    * Set the finish state for the job that this thread is running. Must be one
    * of {@link Job#FINISHED_STATUS} or {@link Job#KILLED_STATUS}.
-   * 
+   *
    * @param finishState
    *          The finish state of the job
    * @throws JobException
@@ -333,7 +333,7 @@ public abstract class Job {
 
   /**
    * Return the finish state of this job. See {@link #finishState}.
-   * 
+   *
    * @return The job's finish state
    */
   protected String getFinishState() {

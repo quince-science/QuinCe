@@ -16,7 +16,7 @@ public class InvalidJobParametersException extends Exception {
 
   /**
    * Constructor with a simple error message
-   * 
+   *
    * @param message
    *          The error message
    */
@@ -26,7 +26,7 @@ public class InvalidJobParametersException extends Exception {
 
   /**
    * Constructor with an error message and an underlying cause.
-   * 
+   *
    * @param message
    *          The error message
    * @param cause

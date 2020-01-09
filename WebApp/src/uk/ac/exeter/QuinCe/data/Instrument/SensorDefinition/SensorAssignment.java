@@ -5,7 +5,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 /**
  * Records the data file and column number that have been assigned a particular
  * sensor role
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -33,7 +33,7 @@ public class SensorAssignment {
 
   /**
    * The answer to the Depends Question
-   * 
+   *
    * @see SensorType#getDependsQuestion
    */
   private boolean dependsQuestionAnswer = false;
@@ -50,7 +50,7 @@ public class SensorAssignment {
 
   /**
    * Simple constructor
-   * 
+   *
    * @param dataFile
    *          The data file
    * @param column
@@ -79,7 +79,7 @@ public class SensorAssignment {
 
   /**
    * Simple constructor
-   * 
+   *
    * @param databaseId
    *          The assignment's datbaase ID
    * @param dataFile
@@ -114,7 +114,7 @@ public class SensorAssignment {
 
   /**
    * Get the database ID of this sensor assignment
-   * 
+   *
    * @return The assignment's database ID
    */
   public long getDatabaseId() {
@@ -123,7 +123,7 @@ public class SensorAssignment {
 
   /**
    * Set the database ID of this assignment
-   * 
+   *
    * @param databaseId
    *          The database ID
    */
@@ -133,7 +133,7 @@ public class SensorAssignment {
 
   /**
    * Get the data file
-   * 
+   *
    * @return The data file
    */
   public String getDataFile() {
@@ -142,7 +142,7 @@ public class SensorAssignment {
 
   /**
    * Get the column number
-   * 
+   *
    * @return The column number
    */
   public int getColumn() {
@@ -151,7 +151,7 @@ public class SensorAssignment {
 
   /**
    * Get the name of the sensor
-   * 
+   *
    * @return The sensor name
    */
   public String getSensorName() {
@@ -166,7 +166,7 @@ public class SensorAssignment {
 
   /**
    * Set the answer to the Depends Question
-   * 
+   *
    * @param dependsQuestionAnswer
    *          The answer
    * @see SensorType#getDependsQuestion()
@@ -177,7 +177,7 @@ public class SensorAssignment {
 
   /**
    * Get the answer to the Depends Question
-   * 
+   *
    * @return The answer
    * @see SensorType#getDependsQuestion()
    */
@@ -187,7 +187,7 @@ public class SensorAssignment {
 
   /**
    * Determines whether or not this is a primary sensor
-   * 
+   *
    * @return {@code true} if this is a primary sensor; {@code false} if it is a
    *         fallback sensor
    */
@@ -197,7 +197,7 @@ public class SensorAssignment {
 
   /**
    * Get the missing value String
-   * 
+   *
    * @return The missing value String
    */
   public String getMissingValue() {
@@ -206,7 +206,7 @@ public class SensorAssignment {
 
   /**
    * Set the missing value String
-   * 
+   *
    * @param missingValue
    *          The missing value String
    */
@@ -234,7 +234,7 @@ public class SensorAssignment {
 
   /**
    * Get the human-readable string describing this assignment
-   * 
+   *
    * @return The assignment description
    */
   public String getTarget() {
