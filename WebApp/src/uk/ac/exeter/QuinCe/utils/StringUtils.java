@@ -807,7 +807,7 @@ public final class StringUtils {
   public static Double doubleFromString(String value) {
     Double result = Double.NaN;
     if (null != value && value.trim().length() > 0) {
-      result = Double.parseDouble(value.replaceAll(",", ""));
+      result = Double.parseDouble(value.replaceAll(",", "").trim());
     }
 
     return result;
