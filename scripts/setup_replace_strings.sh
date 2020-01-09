@@ -2,11 +2,8 @@
 
 ############################################################
 #
-# This script replaces placeholders in the files
-# - quince.properties
-# - context.xml
-# - web.xml
-# with values from the files quince.setup.default and
+# This script replaces placeholders in various configuration
+# files with values from the files quince.setup.default and
 # quince.setup, the second overriding the first if exists.
 #
 # Usage:
@@ -64,7 +61,7 @@ fi
 # Remove empty and commented lines
 setup=$(echo "$setup"|sed -e '/^#/d' -e '/^\s*$/d')
 
-# Files to do search repace in:
+# Files to do search replace in:
 files=\
 "WebApp/WebContent/WEB-INF/web.xml
 configuration/quince.properties
@@ -98,5 +95,8 @@ do
 done <<< "$setup"
 
 rm NB-quince_is_not_setup 2>/dev/null
+
+# Hide the changed files
+./scripts/setup_hide_changes.sh
 
 exit 0
