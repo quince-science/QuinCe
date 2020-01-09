@@ -10,11 +10,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
 /**
  * Miscellaneous string utilities
@@ -117,21 +114,6 @@ public final class StringUtils {
    *
    * @param values
    *          The String to be converted
-   * @return A list of String values
-   */
-  public static List<String> delimitedToList(String values) {
-    return delimitedToList(values, ";");
-  }
-
-  /**
-   * Converts a String containing values separated by semi-colon delimiters into
-   * a list of String values
-   *
-   * <b>Note that this does not handle semi-colons within the values
-   * themselves.</b>
-   *
-   * @param values
-   *          The String to be converted
    * @param delimiter
    *          The delimiter
    * @return A list of String values
@@ -148,17 +130,6 @@ public final class StringUtils {
     }
 
     return result;
-  }
-
-  /**
-   * Convert a delimited list of integers into a list of integers
-   *
-   * @param values
-   *          The list
-   * @return The list as integers
-   */
-  public static List<Integer> delimitedToIntegerList(String values) {
-    return delimitedToIntegerList(values, ";");
   }
 
   /**
@@ -262,20 +233,6 @@ public final class StringUtils {
   }
 
   /**
-   * Determines whether or not a line is a comment, signified by it starting
-   * with {@code #} or {@code !} or {@code //}
-   *
-   * @param line
-   *          The line to be checked
-   * @return {@code true} if the line is a comment; {@code false} otherwise.
-   */
-  public static boolean isComment(String line) {
-    String trimmedLine = line.trim();
-    return trimmedLine.length() == 0 || trimmedLine.charAt(0) == '#'
-      || trimmedLine.charAt(0) == '!' || trimmedLine.startsWith("//", 0);
-  }
-
-  /**
    * Trims all items in a list of strings. A string that starts with a single
    * backslash has that backslash removed.
    *
@@ -294,57 +251,6 @@ public final class StringUtils {
       }
 
       result.add(trimmedValue);
-    }
-
-    return result;
-  }
-
-  /**
-   * Determine whether or not a String contains a numeric value
-   *
-   * @param value
-   *          The String
-   * @return {@code true} if the String contains a number; {@code false} if it
-   *         does not
-   */
-  public static boolean isNumeric(String value) {
-    boolean result = true;
-
-    if (null == value) {
-      result = false;
-    } else {
-      try {
-        Double doubleValue = new Double(value);
-        if (doubleValue.isNaN()) {
-          result = false;
-        }
-      } catch (NumberFormatException e) {
-        result = false;
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Determine whether or not a String contains an integer value
-   *
-   * @param value
-   *          The String
-   * @return {@code true} if the String contains an integer; {@code false} if it
-   *         does not
-   */
-  public static boolean isInteger(String value) {
-    boolean result = true;
-
-    if (null == value) {
-      result = false;
-    } else {
-      try {
-        new Integer(value);
-      } catch (NumberFormatException e) {
-        result = false;
-      }
     }
 
     return result;
@@ -412,36 +318,6 @@ public final class StringUtils {
   }
 
   /**
-   * Convert a case-insensitive Y/N value to a boolean
-   *
-   * @param value
-   *          The value
-   * @return The boolean value
-   * @throws StringFormatException
-   *           If the supplied value is not Y or N
-   */
-  public static boolean parseYNBoolean(String value)
-    throws StringFormatException {
-    boolean result;
-
-    switch (value.toUpperCase()) {
-    case "Y": {
-      result = true;
-      break;
-    }
-    case "N": {
-      result = false;
-      break;
-    }
-    default: {
-      throw new StringFormatException("Invalid boolean value", value);
-    }
-    }
-
-    return result;
-  }
-
-  /**
    * Convert a Properties object into a JSON string
    *
    * @param properties
@@ -498,272 +374,6 @@ public final class StringUtils {
     }
 
     return result;
-  }
-
-  /**
-   * Create a JSON field value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param value
-   *          The field value
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, String value) {
-    return makeJsonField(fieldNumber, value, true);
-  }
-
-  /**
-   * Make a JSON field value from a flag, using the flag's integer value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param flag
-   *          The flag
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, Flag flag) {
-    return makeJsonField(fieldNumber, flag.getFlagValue());
-  }
-
-  /**
-   * Create a JSON field value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param value
-   *          The field value
-   * @param asString
-   *          Indicates whether or not the value should be represented as a
-   *          String
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, double value,
-    boolean asString) {
-    return makeJsonField(fieldNumber, value, asString, -1);
-  }
-
-  /**
-   * Create a JSON field value formatted with a given number of decimal places
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param value
-   *          The field value
-   * @param asString
-   *          Indicates whether or not the value should be represented as a
-   *          String
-   * @param decimalPlaces
-   *          The number of decimal places
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, double value,
-    boolean asString, int decimalPlaces) {
-    String stringValue;
-
-    if (decimalPlaces > -1) {
-      stringValue = String.format(Locale.ENGLISH, "%.0" + decimalPlaces + "f",
-        value);
-    } else {
-      stringValue = String.valueOf(value);
-    }
-
-    return makeJsonField(fieldNumber, stringValue, asString);
-  }
-
-  /**
-   * Create a JSON field value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param value
-   *          The field value
-   * @param asString
-   *          Indicates whether or not the value should be represented as a
-   *          String
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, boolean value,
-    boolean asString) {
-    return makeJsonField(fieldNumber, String.valueOf(value), asString);
-  }
-
-  /**
-   * Create a JSON field value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param value
-   *          The field value
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, double value) {
-    return makeJsonField(fieldNumber, value, false, -1);
-  }
-
-  /**
-   * Create a JSON field value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param value
-   *          The field value
-   * @param decimalPlaces
-   *          The number of decimal places
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, double value,
-    int decimalPlaces) {
-    return makeJsonField(fieldNumber, value, false, decimalPlaces);
-  }
-
-  /**
-   * Create a JSON field value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param value
-   *          The field value
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, boolean value) {
-    return makeJsonField(fieldNumber, String.valueOf(value), false);
-  }
-
-  /**
-   * Create a JSON field value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param value
-   *          The field value
-   * @param asString
-   *          Indicates whether or not the value should be represented as a
-   *          String
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, long value,
-    boolean asString) {
-    return makeJsonField(fieldNumber, String.valueOf(value), asString);
-  }
-
-  /**
-   * Create a JSON field value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param value
-   *          The field value
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, long value) {
-    return makeJsonField(fieldNumber, String.valueOf(value), false);
-  }
-
-  /**
-   * Create a JSON field value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @param value
-   *          The field value
-   * @param asString
-   *          Indicates whether or not the value should be represented as a
-   *          String
-   * @return The field string
-   */
-  public static String makeJsonField(int fieldNumber, String value,
-    boolean asString) {
-    return makeJsonField(String.valueOf(fieldNumber), value, asString);
-  }
-
-  /**
-   * Create a JSON field value
-   *
-   * @param fieldName
-   *          The field name
-   * @param value
-   *          The field value
-   * @param asString
-   *          Indicates whether or not the value should be represented as a
-   *          String
-   * @return The field string
-   */
-  public static String makeJsonField(String fieldName, String value,
-    boolean asString) {
-
-    StringBuilder field = new StringBuilder();
-
-    field.append("\"");
-    field.append(fieldName);
-    field.append("\":");
-
-    if (asString) {
-      field.append("\"");
-    }
-
-    field.append(value);
-
-    if (asString) {
-      field.append("\"");
-    }
-
-    return field.toString();
-  }
-
-  /**
-   * Create a JSON field with a {@code null} value
-   *
-   * @param fieldNumber
-   *          The field number
-   * @return The JSON field
-   */
-  public static String makeJsonNull(int fieldNumber) {
-    return makeJsonNull(String.valueOf(fieldNumber));
-  }
-
-  /**
-   * Create a JSON field with a {@code null} value
-   *
-   * @param fieldName
-   *          The field name
-   * @return The JSON field
-   */
-  public static String makeJsonNull(String fieldName) {
-    StringBuilder field = new StringBuilder();
-
-    field.append("\"");
-    field.append(fieldName);
-    field.append("\":null");
-
-    return field.toString();
-  }
-
-  /**
-   * Convert a JSON array of numbers to a list of integers
-   *
-   * @param jsonArray
-   *          The JSON array
-   * @return The integer list
-   */
-  public static List<Integer> jsonArrayToIntList(String jsonArray) {
-    return delimitedToIntegerList(
-      jsonArray.substring(1, jsonArray.length() - 1), ",");
-  }
-
-  /**
-   * Convert a list of objects to a JSON array
-   *
-   * @param list
-   *          The list
-   * @return The JSON array
-   */
-  public static String intListToJsonArray(List<Integer> list) {
-    StringBuilder result = new StringBuilder();
-    result.append('[');
-    result.append(collectionToDelimited(list, ","));
-    result.append(']');
-    return result.toString();
   }
 
   /**
