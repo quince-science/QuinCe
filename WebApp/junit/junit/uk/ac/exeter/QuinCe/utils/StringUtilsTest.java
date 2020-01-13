@@ -4,11 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -225,5 +228,83 @@ public class StringUtilsTest extends BaseTest {
   @MethodSource("createNullEmptyStrings")
   public void doubleFromStringEmptyStringTest() {
     assertEquals((Double) Double.NaN, StringUtils.doubleFromString(null));
+  }
+
+  /**
+   * Test that
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * returns an empty string with null input.ß
+   */
+  @Test
+  public void listToDelimitedNullTest() {
+    assertTrue("".equals(StringUtils.collectionToDelimited(null, ",")));
+  }
+
+  /**
+   * Test that
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * returns an empty string with an empty input collection.
+   */
+  @Test
+  public void listToDelimitedEmptyTest() {
+    assertTrue(""
+      .equals(StringUtils.collectionToDelimited(new ArrayList<String>(), ",")));
+  }
+
+  /**
+   * Test that
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * with an empty/null delimiter joins strings with no delimiter.
+   */
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void listToDelimitedNullDelimiterTest(String delimiter) {
+    ArrayList<String> list = new ArrayList<String>(2);
+    list.add("a");
+    list.add("b");
+
+    assertTrue("ab".equals(StringUtils.collectionToDelimited(list, delimiter)));
+  }
+
+  /**
+   * Test that
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * with an empty/null delimiter joins strings with no delimiter.
+   */
+  @Test
+  public void listToDelimitedOneCharDelimiterTest() {
+    ArrayList<String> list = new ArrayList<String>(2);
+    list.add("a");
+    list.add("b");
+
+    assertTrue("a,b".equals(StringUtils.collectionToDelimited(list, ",")));
+  }
+
+  /**
+   * Test that
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * with an empty/null delimiter joins strings with no delimiter.
+   */
+  @Test
+  public void listToDelimitedTwoCharDelimiterTest() {
+    ArrayList<String> list = new ArrayList<String>(2);
+    list.add("a");
+    list.add("b");
+
+    assertTrue("a;;b".equals(StringUtils.collectionToDelimited(list, ";;")));
+  }
+
+  /**
+   * Test that
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * with an empty/null delimiter joins strings with no delimiter.
+   */
+  @Test
+  public void listToDelimitedNonStringListTest() {
+    ArrayList<Flag> list = new ArrayList<Flag>(2);
+    list.add(Flag.BAD);
+    list.add(Flag.GOOD);
+
+    assertTrue("Bad,Good".equals(StringUtils.collectionToDelimited(list, ",")));
   }
 }
