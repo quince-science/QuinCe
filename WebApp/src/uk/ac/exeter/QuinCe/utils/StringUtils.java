@@ -44,8 +44,14 @@ public final class StringUtils {
   public static String collectionToDelimited(Collection<?> collection,
     String delimiter) {
 
-    return collection.stream().map(c -> c.toString())
-      .collect(Collectors.joining(delimiter));
+    String result = "";
+
+    if (null != collection) {
+      result = collection.stream().map(c -> c.toString())
+        .collect(Collectors.joining(null == delimiter ? "" : delimiter.trim()));
+    }
+
+    return result;
   }
 
   /**
