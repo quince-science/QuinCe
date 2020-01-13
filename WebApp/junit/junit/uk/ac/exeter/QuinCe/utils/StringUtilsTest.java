@@ -267,9 +267,9 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that
+   * Test
    * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
-   * with an empty/null delimiter joins strings with no delimiter.
+   * with a delimiter.
    */
   @Test
   public void listToDelimitedOneCharDelimiterTest() {
@@ -281,9 +281,9 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that
+   * Test
    * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
-   * with an empty/null delimiter joins strings with no delimiter.
+   * with a multi-character delimiter.
    */
   @Test
   public void listToDelimitedTwoCharDelimiterTest() {
@@ -295,9 +295,9 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that
+   * Test
    * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
-   * with an empty/null delimiter joins strings with no delimiter.
+   * with a non-String list.
    */
   @Test
   public void listToDelimitedNonStringListTest() {
