@@ -1390,7 +1390,7 @@ public class JobManager {
 
     try {
       String statement = REQUEUE_JOBS_STATEMENT.replaceAll("%%IDS%%",
-        StringUtils.collectionToDelimited(jobIds));
+        StringUtils.collectionToDelimited(jobIds, ";"));
       stmt = conn.prepareStatement(statement);
       stmt.execute();
 

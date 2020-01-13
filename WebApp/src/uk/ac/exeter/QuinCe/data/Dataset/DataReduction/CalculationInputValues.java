@@ -116,8 +116,8 @@ public class CalculationInputValues {
       string.append(", Flag ");
       string.append(qcFlags.get(sensorType));
       string.append(": ");
-      string
-        .append(StringUtils.collectionToDelimited(qcMessages.get(sensorType)));
+      string.append(
+        StringUtils.collectionToDelimited(qcMessages.get(sensorType), ";"));
       string.append('\n');
     }
 

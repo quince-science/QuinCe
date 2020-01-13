@@ -105,19 +105,19 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
 
             // Set the new QC flag and comments
             fCO2Value.setQC(newFCO2Flag,
-              StringUtils.collectionToDelimited(qcComments));
+              StringUtils.collectionToDelimited(qcComments, ";"));
 
             // Also set the flags on the pCO₂ values
             Field pCO2EqField = fieldSets
               .getField("pCO₂ In Water - Equilibrator Temperature");
             FieldValue pCO2EqValue = dateEntry.get(pCO2EqField);
             pCO2EqValue.setQC(newFCO2Flag,
-              StringUtils.collectionToDelimited(qcComments));
+              StringUtils.collectionToDelimited(qcComments, ";"));
 
             Field pCO2Field = fieldSets.getField("pCO₂ In Water");
             FieldValue pCO2Value = dateEntry.get(pCO2Field);
             pCO2Value.setQC(newFCO2Flag,
-              StringUtils.collectionToDelimited(qcComments));
+              StringUtils.collectionToDelimited(qcComments, ";"));
           }
         }
       }
