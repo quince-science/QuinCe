@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * Miscellaneous string utilities
@@ -29,80 +29,23 @@ public final class StringUtils {
   }
 
   /**
-   * Converts a collection of values to a single string, with a semi-colon
-   * delimiter.
-   *
-   * <b>Note that this does not handle semi-colons within the values
-   * themselves.</b>
-   *
-   * @param list
-   *          The list to be converted
-   * @return The converted list
-   */
-  public static String collectionToDelimited(Collection<?> list) {
-    return collectionToDelimited(list, ";", null);
-  }
-
-  /**
    * Converts a collection of values to a single string, with a specified
    * delimiter.
    *
    * <b>Note that this does not handle the case where the delimiter is found
    * within the values themselves.</b>
    *
-   * @param list
+   * @param collection
    *          The list to be converted
    * @param delimiter
    *          The delimiter to use
    * @return The converted list
    */
-  public static String collectionToDelimited(Collection<?> list,
-    String delimiter) {
-    return collectionToDelimited(list, delimiter, null);
-  }
-
-  /**
-   * Convert a collection of objects to a delimited string
-   *
-   * @param collection
-   *          The list
-   * @param delimiter
-   *          The delimiter
-   * @param surrounder
-   *          The character to put at the start and end of each entry
-   * @return The delimited string
-   */
   public static String collectionToDelimited(Collection<?> collection,
-    String delimiter, String surrounder) {
+    String delimiter) {
 
-    String result = null;
-
-    if (null != collection) {
-      StringBuilder buildResult = new StringBuilder();
-
-      Iterator<?> i = collection.iterator();
-      int counter = 0;
-      while (i.hasNext()) {
-        Object item = i.next();
-        counter++;
-
-        if (null != surrounder) {
-          buildResult.append(surrounder);
-          buildResult
-            .append(item.toString().replace(surrounder, "\\" + surrounder));
-          buildResult.append(surrounder);
-        } else {
-          buildResult.append(item.toString());
-        }
-
-        if (counter < (collection.size())) {
-          buildResult.append(delimiter);
-        }
-      }
-      result = buildResult.toString();
-    }
-
-    return result;
+    return collection.stream().map(c -> c.toString())
+      .collect(Collectors.joining(delimiter));
   }
 
   /**
