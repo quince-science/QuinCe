@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -476,19 +477,31 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *           If the specified calibration details are invalid.
    * @throws RecordNotFoundException
    *           If the specified calibration does not exist.
+   * @throws DatabaseException
+   * @throws MissingParamException
    * @throws NonExistentCalibrationTargetException
    *           If the specified calibration target does not exist.
    */
   public Map<DataSet, Boolean> getAffectedDataSets(long editedCalibrationId,
     LocalDateTime newTime, String newTarget)
     throws InvalidCalibrationEditException, RecordNotFoundException,
-    InvalidCalibrationTargetException, InvalidCalibrationDateException {
+    InvalidCalibrationTargetException, InvalidCalibrationDateException,
+    MissingParamException, DatabaseException {
 
+    // Make sure all the parameters are present and valid
     checkAffectedDataSetsParameters(editedCalibrationId, newTime, newTarget);
+
+    // Get a new copy of the calibrations setup. We don't use the bean's copy
+    // because this is a what-if method and we don't want the results to be
+    // kept.
+    TreeMap<String, List<Calibration>> testCalibrations = dbInstance
+      .getCalibrations(getDataSource(), instrumentId);
 
     Calibration editedCalibration = null;
 
+    // If we're editing an existing calibration, get it
     if (editedCalibrationId > 0) {
+
       editedCalibration = getCalibration(editedCalibrationId);
 
       if (null == editedCalibration) {
@@ -497,9 +510,155 @@ public abstract class CalibrationBean extends BaseManagedBean {
       }
     }
 
-    return null;
+    Map<DataSet, Boolean> result = new HashMap<DataSet, Boolean>();
+
+    // If we're editing an existing calibration...
+    if (null != editedCalibration) {
+
+      // Work out which datasets will be affected by removing the calibration
+      // from its current location
+
+      LocalDateTime[] surroundingCalibrations = getSurroundingCalibrations(
+        testCalibrations.get(editedCalibration.getTarget()),
+        editedCalibration.getDeploymentDate());
+
+      // Get the datasets that are encompassed by the prev and next dates
+      // If there's no previous date, includes all datasets before the next date
+      // If there's no next date, includes all datasets after the start date
+      // If neither date is set, includes all datasets
+      List<DataSet> affectedDatasets = DataSetDB.getDatasetsBetweenDates(
+        getDataSource(), instrumentId, surroundingCalibrations[0],
+        surroundingCalibrations[1]);
+
+      // Add them to the result. If there's no previous date, the boolean is
+      // False because it can't be reprocessed
+      for (DataSet dataSet : affectedDatasets) {
+        boolean canBeReprocessed = true;
+        if (dbInstance.priorCalibrationRequired()
+          && null == surroundingCalibrations[0]) {
+
+          canBeReprocessed = false;
+        }
+
+        result.put(dataSet, canBeReprocessed);
+      }
+
+      // Now remove the calibration from the test calibrations so the next
+      // stage can see what happens when we add it in its new location
+      testCalibrations.get(editedCalibration.getTarget())
+        .remove(editedCalibration);
+
+    }
+
+    // If we're adding a new calibration (which includes editing an existing one
+    // - it's treated as a delete then add)...
+    if (null != newTime && null != newTarget) {
+
+      // Get the calibrations either side of the new calibration date
+      List<Calibration> newTargetCalibrations = testCalibrations.get(newTarget);
+      LocalDateTime[] surroundingCalibrations = getSurroundingCalibrations(
+        newTargetCalibrations, newTime);
+
+      // Get the datasets covered by the before/after calbration range
+      List<DataSet> affectedDatasets = DataSetDB.getDatasetsBetweenDates(
+        getDataSource(), instrumentId, surroundingCalibrations[0],
+        surroundingCalibrations[1]);
+
+      // Add them to the result.
+      for (DataSet dataSet : affectedDatasets) {
+
+        boolean canBeReprocessed = true;
+
+        // If (a) prior calibrations are required, (b) the new calibration is
+        // not before the dataset, and (c) there are no other calibrations
+        // before the dataset, it can't be reprocessed.
+        if (dbInstance.priorCalibrationRequired()
+          && dataSet.getStart().isBefore(newTime)
+          && !testCalibrations.get(newTarget).get(0).getDeploymentDate()
+            .isBefore(dataSet.getStart())) {
+
+          canBeReprocessed = false;
+        }
+
+        // If the dataset is already flagged as affected, then we need to see
+        // if the target has been changed. If so, then a False canBeReprocessed
+        // flag will always override the flag we've just calculated.
+        if (null != editedCalibration
+          && !editedCalibration.getTarget().equals(newTarget)) {
+
+          if (result.containsKey(dataSet) && result.get(dataSet) == false) {
+            canBeReprocessed = false;
+          }
+
+        }
+
+        result.put(dataSet, canBeReprocessed);
+      }
+    }
+
+    return result;
   }
 
+  /**
+   * Get the calibrations before and after a given date from a list of
+   * calibrations.
+   *
+   * <p>
+   * Returns a two-element array of {@code [before, after]}. If there are no
+   * calibrations before or after the given date, the corresponding array entry
+   * will be {@code null}.
+   * </p>
+   *
+   * <p>
+   * The date searches are exclusive, so a date that equals the {@code baseDate}
+   * will not be included in the output.
+   * </p>
+   *
+   * @param searchCalibrations
+   *          The calibrations to search.
+   * @param baseDate
+   *          The date on which to base the search.
+   * @return The preceding and following calibration dates.
+   */
+  private LocalDateTime[] getSurroundingCalibrations(
+    List<Calibration> searchCalibrations, LocalDateTime baseDate) {
+
+    // Get the dates of the previous and next calibrations for the same
+    // target, if they exist
+    LocalDateTime before = null;
+    LocalDateTime after = null;
+
+    for (int i = 0; i < searchCalibrations.size(); i++) {
+
+      LocalDateTime calibrationTime = searchCalibrations.get(i)
+        .getDeploymentDate();
+
+      if (calibrationTime.isBefore(baseDate)) {
+        before = calibrationTime;
+      } else if (calibrationTime.isAfter(baseDate)) {
+        after = calibrationTime;
+        break; // We've found everything we need so stop
+      }
+    }
+
+    return new LocalDateTime[] { before, after };
+  }
+
+  /**
+   * Check that the parameters passed to
+   * {@link #getAffectedDataSets(long, LocalDateTime, String)} are valid.
+   *
+   * @param editedCalibrationId
+   *          The edited calibration ID
+   * @param newTime
+   *          The new calibration time
+   * @param newTarget
+   *          The new calibration target
+   * @throws RecordNotFoundException
+   *           If the edited calibration does not exist
+   * @throws InvalidCalibrationEditException
+   *           If the new calibration details are invalid.
+   */
   private void checkAffectedDataSetsParameters(long editedCalibrationId,
     LocalDateTime newTime, String newTarget)
     throws RecordNotFoundException, InvalidCalibrationEditException {

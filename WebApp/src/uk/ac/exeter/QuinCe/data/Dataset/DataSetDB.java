@@ -66,20 +66,30 @@ public class DataSetDB {
     + "WHERE id = ?";
 
   /**
+   * Base for all dataset queries to ensure that all queries get the same fields
+   * in the same order.
+   */
+  private static final String DATASET_QUERY_BASE = "SELECT "
+    + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
+    + "d.status_date, d.nrt, d.properties, d.created, d.last_touched, " // 11
+    + "COALESCE(d.messages_json, '[]'), " // 12
+    + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude " // 16
+    + "FROM dataset d WHERE ";
+
+  private static final String GET_DATASETS_BETWEEN_DATES_QUERY = DATASET_QUERY_BASE
+    + "d.instrument_id = ? AND d.start <= ? AND d.end >= ?";
+
+  /**
    * Make an SQL query for retrieving complete datasets using a specified WHERE
    * clause
    *
    * @param whereField
    *          The field to use in the WHERE clause
    * @return The query SQL
+   * @see #DATASET_QUERY_BASE
    */
   private static String makeGetDatasetsQuery(String... whereFields) {
-    StringBuilder sql = new StringBuilder(
-      "SELECT " + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
-        + "d.status_date, d.nrt, d.properties, d.created, d.last_touched, " // 11
-        + "COALESCE(d.messages_json, '[]'), " // 12
-        + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude " // 16
-        + "FROM dataset d WHERE ");
+    StringBuilder sql = new StringBuilder(DATASET_QUERY_BASE);
 
     sql.append(Stream.of(whereFields).map(field -> "d." + field + " = ? ")
       .collect(Collectors.joining("AND ")));
@@ -815,5 +825,72 @@ public class DataSetDB {
     }
 
     return dataSets;
+  }
+
+  /**
+   * Get the {@link DataSet}s between two dates for a given instrument.
+   *
+   * <p>
+   * Any dataset that is partially covered by the selected date range will be
+   * included in the results.
+   * </p>
+   *
+   * <p>
+   * If either the {@code start} or {@code end} dates are {@code null}, the
+   * method assumes that they are infinitely far away in time and will therefore
+   * encompass all datasets.
+   * </p>
+   *
+   * @param dataSource
+   *          A data source
+   * @param instrumentId
+   *          The instrument's database ID
+   * @param start
+   *          The start date
+   * @param end
+   *          The end date
+   * @return The matching {@link DataSets}s
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   */
+  public static List<DataSet> getDatasetsBetweenDates(DataSource dataSource,
+    long instrumentId, LocalDateTime start, LocalDateTime end)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkPositive(instrumentId, "instrumentId");
+
+    List<DataSet> result = new ArrayList<DataSet>();
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(GET_DATASETS_BETWEEN_DATES_QUERY)) {
+
+      long startDateMillis = null != start ? DateTimeUtils.dateToLong(start)
+        : Long.MIN_VALUE;
+      long endDateMillis = null != end ? DateTimeUtils.dateToLong(end)
+        : Long.MAX_VALUE;
+
+      stmt.setLong(1, instrumentId);
+      stmt.setLong(2, endDateMillis);
+      stmt.setLong(3, startDateMillis);
+
+      try (ResultSet records = stmt.executeQuery()) {
+
+        while (records.next()) {
+          result.add(dataSetFromRecord(records));
+        }
+
+      } catch (SQLException e) {
+        throw new DatabaseException("Error while retrieving datasets", e);
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving datasets", e);
+    }
+
+    return result;
   }
 }

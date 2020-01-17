@@ -385,4 +385,19 @@ public abstract class Calibration implements Comparable<Calibration> {
   public void setId(long id) {
     this.id = id;
   }
+
+  @Override
+  public String toString() {
+    return id + ";" + getType() + ";" + target;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    boolean result = false;
+
+    if (o instanceof Calibration && ((Calibration) o).id == id)
+      result = true;
+
+    return result;
+  }
 }
