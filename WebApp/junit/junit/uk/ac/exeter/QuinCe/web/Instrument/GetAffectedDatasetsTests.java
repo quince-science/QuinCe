@@ -188,12 +188,39 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
       }
 
       // The affected data sets and boolean flags should all match
-      assertTrue(affectedDatasets.equals(getExpectedAffectedDatasets(line)));
+      Map<String, Boolean> affectedDatasetNames = getDatasetNamesMap(
+        affectedDatasets);
+
+      assertTrue(
+        affectedDatasetNames.equals(getExpectedAffectedDatasets(line)));
     } catch (Exception e) {
       throw new TestLineException(line, e);
     }
 
   }
 
+  /**
+   * Convert a map of {@code <Dataset, Boolean>} to a map of
+   * {@code <Dataset Name, Boolean>}.
+   *
+   * @param input
+   *          The Dataset map
+   * @return The dataset name mapß
+   */
+  private Map<String, Boolean> getDatasetNamesMap(Map<DataSet, Boolean> input) {
+    Map<String, Boolean> result = new HashMap<String, Boolean>();
+
+    for (Map.Entry<DataSet, Boolean> entry : input.entrySet()) {
+      result.put(entry.getKey().getName(), entry.getValue());
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the database instance to be used for these tests
+   *
+   * @return The database instance
+   */
   protected abstract CalibrationDB getDbInstance();
 }
