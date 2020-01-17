@@ -3,6 +3,8 @@ package junit.uk.ac.exeter.QuinCe.TestBase;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -170,5 +172,15 @@ public class TestSetLine {
    */
   public boolean isFieldEmpty(int fieldNumber) {
     return fields[fieldNumber].trim().length() == 0;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder result = new StringBuilder("Line ");
+    result.append(lineNumber);
+    result.append(": ");
+    result.append(Arrays.stream(fields).collect(Collectors.joining(",")));
+
+    return result.toString();
   }
 }

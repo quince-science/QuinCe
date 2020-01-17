@@ -697,18 +697,6 @@ public class DataSet {
     return result;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    // Compares database ID only
-    boolean result = false;
-
-    if (o instanceof DataSet) {
-      result = ((DataSet) o).id == id;
-    }
-
-    return result;
-  }
-
   /**
    * Set the dataset's geographical bounds
    *
@@ -767,5 +755,32 @@ public class DataSet {
 
   public LocalDateTime getCreatedDate() {
     return createdDate;
+  }
+
+  @Override
+  public String toString() {
+    return id + ";" + name;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (int) (id ^ (id >>> 32));
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof DataSet))
+      return false;
+    DataSet other = (DataSet) obj;
+    if (id != other.id)
+      return false;
+    return true;
   }
 }
