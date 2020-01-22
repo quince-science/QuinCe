@@ -26,7 +26,7 @@ import pandas as pd
 # Store path to the main script directory
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
-# Create a data directory if it does not already exist  # Change to try except!
+# Create a data directory if it does not already exist
 if not os.path.isdir('./data_files'):
 	os.mkdir(os.path.join(script_dir,'data_files'))
 
@@ -165,6 +165,11 @@ for drone_id, start in next_request_checked.items():
 		# Sort by the defined column order from the config file
 		merged_sorted_df = merged_df[col_order]
 
+		# Get the last record we downloaded. Note that this assumes that the first
+		# column in the dataset is a time. This will change once the different
+		# SailDrone datasets are no longer merged together.
+		last_record_date = merged_sorted_df.tail(1).iloc[0, 0]
+
 		# Export the merged data to a csv file
 		merged_path = os.path.join(data_dir, str(drone_id) + '_merged.csv')
 		merged_csv = merged_sorted_df.to_csv(merged_path, index=None, header=True, sep=',')
@@ -174,7 +179,8 @@ for drone_id, start in next_request_checked.items():
 			shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
 
 		#  Set new start date for the next_request:
-		next_request_updated[drone_id] = end
+		next_request_updated[drone_id] = (last_record_date
+			+ pd.Timedelta("1 second")).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
 # Update stored_info file

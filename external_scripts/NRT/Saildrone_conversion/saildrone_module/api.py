@@ -102,7 +102,7 @@ def write_json(data_dir, drone_id, dataset, start, end, token):
 
 	get_data_url = 'https://developer-mission.saildrone.com/v1/timeseries/'\
 	+ f'{drone_id}?data_set={dataset}&interval=1&start_date={start}&end_date='\
-	+ f'{end}&order_by=desc&limit=1000&offset=0&token={token}'
+	+ f'{end}&order_by=asc&limit=1000&offset=0&token={token}'
 
 	data_request = urllib.request.Request(
 		get_data_url, headers=our_header, method='GET')
