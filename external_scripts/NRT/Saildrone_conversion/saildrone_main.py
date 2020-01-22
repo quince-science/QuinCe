@@ -168,10 +168,13 @@ for drone_id, start in next_request_checked.items():
 		# Get the last record we downloaded. Note that this assumes that the first
 		# column in the dataset is a time. This will change once the different
 		# SailDrone datasets are no longer merged together.
+		# This will be used as the starting point for the next request
 		last_record_date = merged_sorted_df.tail(1).iloc[0, 0]
 
 		# Export the merged data to a csv file
-		merged_path = os.path.join(data_dir, str(drone_id) + '_merged.csv')
+		merged_path = os.path.join(data_dir, str(drone_id) + '_'
+			+ start[0:4] + start[5:7] + start[8:10] + start[11:13] + start[14:16] + start[17:19]
+			+ "-" + last_record_date.strftime('%Y%m%d%H%M%S') + '_merged.csv')
 		merged_csv = merged_sorted_df.to_csv(merged_path, index=None, header=True, sep=',')
 
 		# Move the individual csv files to archive.
