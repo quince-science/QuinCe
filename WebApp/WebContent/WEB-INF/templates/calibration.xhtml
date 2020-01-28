@@ -84,7 +84,8 @@
               </div>
               <div id="coefficients">
                 <p:outputLabel
-                  value="#{sessionScope[beanName].coefficientsLabel}:"></p:outputLabel>
+                  value="#{sessionScope[beanName].coefficientsLabel}:">
+                </p:outputLabel>
                 <div id="coefficientFields" class="fields">
                   <ui:repeat
                     value="#{sessionScope[beanName].calibration.editableCoefficients}"
@@ -98,12 +99,62 @@
             </div>
           </div>
           <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-            <p:commandButton value="Save" ajax="false"
-              action="#{sessionScope[beanName].saveCalibration}"/>
+            <p:commandButton value="Check" ajax="true" widgetVar="checkDatasetsButton"
+              action="#{sessionScope[beanName].calcAffectedDataSets}"
+              process="@form"
+              update="affectedDatasetsStatus affectedDatasets"
+              oncomplete="showAffectedDatasets();"/>
             <p:button value="Cancel"
               onclick="PF('deploymentDialog').hide();return false"/>
           </h:panelGrid>
         </p:dialog>
+        <p:dialog id="affectedDatasetsDialog" widgetVar="affectedDatasetsDialog"
+          header="Affected Datasets" modal="true">
+          
+          <p:inputText id="affectedDatasetsStatus" type="hidden"
+            widgetVar="affectedDatasetsStatus"
+            value="#{sessionScope[beanName].affectedDatasetsStatus}"
+            emptyMessage="No datasets affected"/>
+          
+          <div class="instructions">
+            The following datasets are affected by this change and will be
+            reprocessed:
+          </div>
+          
+          <p:dataTable id="affectedDatasets" var="entry" scrollable="true"
+            scrollHeight="350" style="width: 600px"
+            value="#{sessionScope[beanName].affectedDatasets}"
+            emptyMessage="No datasets affected">
+            
+            <p:column>
+              <f:facet name="header">
+                <h:outputText value="Dataset" />
+              </f:facet>
+              <h:outputText value="#{entry.key.name}"/>
+            </p:column>
+            <p:column width="150" style="text-align: center">
+              <f:facet name="header">
+                <h:outputText value="Can Reprocess?" />
+              </f:facet>
+              <ui:fragment rendered="#{entry.value}">
+                <h:graphicImage value="/resources/image/tick.svg" class="actionIcon"
+                  alt="Can be reprocessed" title="Can be reprocessed" />
+              </ui:fragment>
+              <ui:fragment rendered="#{!entry.value}">
+                <h:graphicImage value="/resources/image/x-red.svg" class="actionIcon"
+                  alt="Cannot be reprocessed" title="Cannot be reprocessed" />
+              </ui:fragment>
+            </p:column>
+          </p:dataTable>
+          <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+            <p:commandButton value="Save" widgetVar="saveEditButton"
+              ajax="false"
+              action="#{sessionScope[beanName].saveCalibration}"/>
+            <p:button value="Cancel"
+              onclick="PF('affectedDatasetsDialog').hide();return false"/>
+          </h:panelGrid>
+        </p:dialog>
+        
         <h:panelGrid columns="1" styleClass="buttonPanel">
           <p:commandButton value="Back to Instruments List"
             action="/instrument/instrument_list.xhtml" />
