@@ -18,8 +18,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationFactory;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationTargetException;
+import uk.ac.exeter.QuinCe.jobs.Job;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -35,6 +39,30 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  *
  */
 public abstract class CalibrationBean extends BaseManagedBean {
+
+  /**
+   * Status flag indicating that no {@link DataSet}s are affected by the current
+   * edit.
+   *
+   * @see #getAffectedDatasetsStatus()
+   */
+  private static final int NO_AFFECTED_DATASETS = 0;
+
+  /**
+   * Status flag indicating that some {@link DataSet}s are affected by the
+   * current edit, and they can all be reprocessed.
+   *
+   * @see #getAffectedDatasetsStatus()
+   */
+  private static final int AFFECTED_DATASETS_OK = 1;
+
+  /**
+   * Status flag indicating that some {@link DataSet}s are affected by the
+   * current edit, but at least one cannot be reprocessed.
+   *
+   * @see #getAffectedDatasetsStatus()
+   */
+  private static final int AFFECTED_DATASETS_FAIL = -1;
 
   /**
    * The database ID of the calibration currently being edited
@@ -87,6 +115,11 @@ public abstract class CalibrationBean extends BaseManagedBean {
   private Calibration calibration;
 
   /**
+   * The {@link DataSet}s that will be affected by the current edit action
+   */
+  private Map<DataSet, Boolean> affectedDatasets = null;
+
+  /**
    * Empty constructor
    */
   public CalibrationBean() {
@@ -120,6 +153,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
         datasets = DataSetDB.getDataSets(getDataSource(), instrumentId);
         dbInstance = getDbInstance();
         loadCalibrations();
+        affectedDatasets = null;
         calibration = initNewCalibration();
       } catch (Exception e) {
         nav = internalError(e);
@@ -204,12 +238,43 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
       loadCalibrations();
       calibration = initNewCalibration();
+
+      // Trigger reprocessing for all affected datasets
+      if (null != affectedDatasets) {
+        for (DataSet dataSet : affectedDatasets.keySet()) {
+          Class<? extends Job> reprocessJobClass = getReprocessJobClass();
+
+          DataSetDB.setDatasetStatus(getDataSource(), dataSet.getId(),
+            getReprocessStatus());
+          Map<String, String> jobParams = new HashMap<String, String>();
+
+          // See GitHub Issue #1369
+          jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(dataSet.getId()));
+          JobManager.addJob(getDataSource(), getUser(),
+            reprocessJobClass.getCanonicalName(), jobParams);
+
+        }
+      }
     } catch (Exception e) {
       nav = internalError(e);
     }
 
     return nav;
   }
+
+  /**
+   * Get the status to set on a {@link DataSet} that is being reprocessed.
+   *
+   * @return The new status.
+   */
+  protected abstract int getReprocessStatus();
+
+  /**
+   * Get the job class for reprocessing a {@link DataSet}.
+   *
+   * @return The reprocessing job class.
+   */
+  protected abstract Class<? extends Job> getReprocessJobClass();
 
   /**
    * Add a new calibration
@@ -399,7 +464,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
     this.selectedCalibrationId = selectedCalibrationId;
   }
 
-  public void loadSelectedCalibration() {
+  public void loadSelectedCalibration() throws RecordNotFoundException {
+
+    calibration = null;
+
     if (selectedCalibrationId == DatabaseUtils.NO_DATABASE_RECORD) {
       calibration = initNewCalibration();
     } else {
@@ -407,10 +475,16 @@ public abstract class CalibrationBean extends BaseManagedBean {
       for (List<Calibration> calibs : calibrations.values()) {
         for (Calibration c : calibs) {
           if (c.getId() == selectedCalibrationId) {
-            calibration = c;
+            calibration = CalibrationFactory.clone(c);
             break;
           }
         }
+      }
+
+      // The calibration wasn't found
+      if (null == calibration) {
+        throw new RecordNotFoundException(instrumentName, "calibration",
+          selectedCalibrationId);
       }
     }
   }
@@ -482,14 +556,9 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @throws NonExistentCalibrationTargetException
    *           If the specified calibration target does not exist.
    */
-  public Map<DataSet, Boolean> getAffectedDataSets(long editedCalibrationId,
-    LocalDateTime newTime, String newTarget)
-    throws InvalidCalibrationEditException, RecordNotFoundException,
-    InvalidCalibrationTargetException, InvalidCalibrationDateException,
-    MissingParamException, DatabaseException {
-
-    // Make sure all the parameters are present and valid
-    checkAffectedDataSetsParameters(editedCalibrationId, newTime, newTarget);
+  public void calcAffectedDataSets() throws InvalidCalibrationEditException,
+    RecordNotFoundException, InvalidCalibrationTargetException,
+    InvalidCalibrationDateException, MissingParamException, DatabaseException {
 
     // Get a new copy of the calibrations setup. We don't use the bean's copy
     // because this is a what-if method and we don't want the results to be
@@ -497,18 +566,22 @@ public abstract class CalibrationBean extends BaseManagedBean {
     TreeMap<String, List<Calibration>> testCalibrations = dbInstance
       .getCalibrations(getDataSource(), instrumentId);
 
+    // Get the existing calibration to be edited, if required
     Calibration editedCalibration = null;
 
     // If we're editing an existing calibration, get it
-    if (editedCalibrationId > 0) {
+    if (calibration.getId() > 0) {
 
-      editedCalibration = getCalibration(editedCalibrationId);
+      editedCalibration = getCalibration(calibration.getId());
 
       if (null == editedCalibration) {
         throw new RecordNotFoundException(
-          "Calibration " + editedCalibrationId + " not found");
+          "Calibration " + calibration.getId() + " not found");
       }
     }
+
+    // Make sure all the parameters are present and valid
+    checkEditedCalibration();
 
     Map<DataSet, Boolean> result = new HashMap<DataSet, Boolean>();
 
@@ -552,12 +625,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     // If we're adding a new calibration (which includes editing an existing one
     // - it's treated as a delete then add)...
-    if (null != newTime && null != newTarget) {
+    if (null != calibration.getDeploymentDate()
+      && null != calibration.getTarget()) {
 
       // Get the calibrations either side of the new calibration date
-      List<Calibration> newTargetCalibrations = testCalibrations.get(newTarget);
+      List<Calibration> newTargetCalibrations = testCalibrations
+        .get(calibration.getTarget());
       LocalDateTime[] surroundingCalibrations = getSurroundingCalibrations(
-        newTargetCalibrations, newTime);
+        newTargetCalibrations, calibration.getDeploymentDate());
 
       // Get the datasets covered by the before/after calbration range
       List<DataSet> affectedDatasets = DataSetDB.getDatasetsBetweenDates(
@@ -573,9 +648,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
         // not before the dataset, and (c) there are no other calibrations
         // before the dataset, it can't be reprocessed.
         if (dbInstance.priorCalibrationRequired()
-          && dataSet.getStart().isBefore(newTime)
-          && !testCalibrations.get(newTarget).get(0).getDeploymentDate()
-            .isBefore(dataSet.getStart())) {
+          && dataSet.getStart().isBefore(calibration.getDeploymentDate())
+          && (testCalibrations.get(calibration.getTarget()).size() == 0
+            || !testCalibrations.get(calibration.getTarget()).get(0)
+              .getDeploymentDate().isBefore(dataSet.getStart()))) {
 
           canBeReprocessed = false;
         }
@@ -584,7 +660,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
         // if the target has been changed. If so, then a False canBeReprocessed
         // flag will always override the flag we've just calculated.
         if (null != editedCalibration
-          && !editedCalibration.getTarget().equals(newTarget)) {
+          && !editedCalibration.getTarget().equals(calibration.getTarget())) {
 
           if (result.containsKey(dataSet) && result.get(dataSet) == false) {
             canBeReprocessed = false;
@@ -593,6 +669,66 @@ public abstract class CalibrationBean extends BaseManagedBean {
         }
 
         result.put(dataSet, canBeReprocessed);
+      }
+    }
+
+    this.affectedDatasets = result;
+  }
+
+  /**
+   * Get the {@link DataSet}s that will be affected by the current edit action,
+   * along with a flag specifying whether each {@link DataSet} can be
+   * recalculated once the edit is complete.
+   *
+   * @return The affected {@link DataSet}s.
+   */
+  public Map<DataSet, Boolean> getAffectedDatasets() {
+    return affectedDatasets;
+  }
+
+  /**
+   * Dummy method allowing the front end to call a {@code set} method. Does
+   * nothing.
+   *
+   * <p>
+   * This only exists because the front end form has a lot of dynamically
+   * generated inputs that can't be referenced by name, so the whole form has to
+   * be submitted.
+   * </p>
+   *
+   * @param count
+   *          The count (ignored)
+   */
+  public void setAffectedDatasetsStatus(int count) {
+    ; // Do nothing
+  }
+
+  /**
+   * Get the status of the {@link DataSet}s affected by the current edit.
+   * Returns one of:
+   *
+   * <ul>
+   * <li>{@link #NO_AFFECTED_DATASETS}: No datasets are affected.</li>
+   * <li>{@link #AFFECTED_DATASETS_OK}: Some datasets are affected and all can
+   * be reprocessed.</li>
+   * <li>{@link #AFFECTED_DATASETS_FAIL}: Some datasets are affected but at
+   * least one cannot be reprocessed.</li>
+   * </ul>
+   *
+   *
+   * @return The status of the affected {@link DataSet}s.
+   */
+  public int getAffectedDatasetsStatus() {
+
+    int result = NO_AFFECTED_DATASETS;
+
+    if (null != affectedDatasets && affectedDatasets.size() > 0) {
+      result = AFFECTED_DATASETS_OK;
+      for (Boolean datasetOk : affectedDatasets.values()) {
+        if (!datasetOk) {
+          result = AFFECTED_DATASETS_FAIL;
+          break;
+        }
       }
     }
 
@@ -659,40 +795,44 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @throws InvalidCalibrationEditException
    *           If the new calibration details are invalid.
    */
-  private void checkAffectedDataSetsParameters(long editedCalibrationId,
-    LocalDateTime newTime, String newTarget)
+  private void checkEditedCalibration()
     throws RecordNotFoundException, InvalidCalibrationEditException {
 
     // A zero calibration ID is invalid
-    if (editedCalibrationId == 0) {
+    if (calibration.getId() == 0) {
       throw new RecordNotFoundException("Invalid calibration ID", "calibration",
-        editedCalibrationId);
+        calibration.getId());
     }
 
     // Cannot have only one of newTime and newTarget set
-    if (null == newTime && null != newTarget) {
+    if (null == calibration.getDeploymentDate()
+      && null != calibration.getTarget()) {
       throw new InvalidCalibrationEditException("Missing time");
     }
 
-    if (null != newTime && null == newTarget) {
+    if (null != calibration.getDeploymentDate()
+      && null == calibration.getTarget()) {
       throw new InvalidCalibrationEditException("Missing target");
     }
 
     // Future dates are not allowed
     LocalDateTime now = LocalDateTime.ofInstant(Instant.now(),
       ZoneId.of("UTC"));
-    if (null != newTime && newTime.isAfter(now)) {
+    if (null != calibration.getDeploymentDate()
+      && calibration.getDeploymentDate().isAfter(now)) {
       throw new InvalidCalibrationDateException();
     }
 
     // Invalid targets are not allowed
-    if (null != newTarget && !calibrationTargets.containsValue(newTarget)) {
-      throw new InvalidCalibrationTargetException(newTarget);
+    if (null != calibration.getTarget()
+      && !calibrationTargets.containsValue(calibration.getTarget())) {
+      throw new InvalidCalibrationTargetException(calibration.getTarget());
     }
 
     // Cannot have null time and target (implying deleting a calibration) with a
     // negative ID
-    if (null == newTime && null == newTarget && editedCalibrationId < 0) {
+    if (null == calibration.getDeploymentDate()
+      && null == calibration.getTarget() && calibration.getId() < 0) {
       throw new InvalidCalibrationEditException(
         "Cannot delete a calbration without an ID");
     }

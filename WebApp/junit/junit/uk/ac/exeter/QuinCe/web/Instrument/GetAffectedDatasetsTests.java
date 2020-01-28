@@ -1,5 +1,6 @@
 package junit.uk.ac.exeter.QuinCe.web.Instrument;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -66,6 +67,12 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
    * {@link #getAffectedDatasetsTest(TestSetLine)}.
    */
   private static final int CAN_BE_REPROCESSED_FIELD = 7;
+
+  /**
+   * A column in the Test Set file for
+   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   */
+  private static final int DATASETS_STATUS_FIELD = 8;
 
   /**
    * Get the first calibration ID from a {@link TestSetLine}.
@@ -168,23 +175,51 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
     return result;
   }
 
+  /**
+   * Get the overall affected data sets status from a {@link TestSetLine}.
+   *
+   * @param line
+   *          The line.
+   * @return The affected datasets status.
+   * @see CalibrationBean#getAffectedDatasetsStatus()
+   */
+  private int getExpectedAffectedDatasetsStatus(TestSetLine line)
+    throws TestLineException {
+
+    return line.getIntField(DATASETS_STATUS_FIELD);
+  }
+
   protected void runTest(TestSetLine line) throws TestLineException {
 
     try {
-      CalibrationBean bean = CalibrationBeanTest.initBean(getDbInstance());
+      CalibrationBean bean = CalibrationBeanTest.initBean(getDbInstance(),
+        getId1(line), getTime1(line), getTarget1(line));
+
+      boolean checkAffectedCount = true;
 
       // Run the first call
-      Map<DataSet, Boolean> affectedDatasets = bean
-        .getAffectedDataSets(getId1(line), getTime1(line), getTarget1(line));
+      bean.calcAffectedDataSets();
 
+      // Get the affected datasets from the first call
+      Map<DataSet, Boolean> affectedDatasets = bean.getAffectedDatasets();
       assertNotNull(affectedDatasets);
 
       // Run the second call if it's specified
       if (!line.isFieldEmpty(ID2_FIELD)) {
-        Map<DataSet, Boolean> secondAffectedDataSets = bean
-          .getAffectedDataSets(getId2(line), getTime2(line), getTarget2(line));
 
-        affectedDatasets.putAll(secondAffectedDataSets);
+        // If we run two tests back to back, we can't test the affected count
+        // from the bean
+        checkAffectedCount = false;
+
+        // Bean for the second call
+        CalibrationBean bean2 = CalibrationBeanTest.initBean(getDbInstance(),
+          getId2(line), getTime2(line), getTarget2(line));
+
+        // Calculate the affected DataSets for the second call
+        bean2.calcAffectedDataSets();
+
+        // Add them to the first set
+        affectedDatasets.putAll(bean2.getAffectedDatasets());
       }
 
       // The affected data sets and boolean flags should all match
@@ -193,6 +228,11 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
 
       assertTrue(
         affectedDatasetNames.equals(getExpectedAffectedDatasets(line)));
+
+      if (checkAffectedCount) {
+        assertEquals(bean.getAffectedDatasetsStatus(),
+          getExpectedAffectedDatasetsStatus(line));
+      }
     } catch (Exception e) {
       throw new TestLineException(line, e);
     }
@@ -205,7 +245,7 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
    *
    * @param input
    *          The Dataset map
-   * @return The dataset name mapß
+   * @return The dataset name map
    */
   private Map<String, Boolean> getDatasetNamesMap(Map<DataSet, Boolean> input) {
     Map<String, Boolean> result = new HashMap<String, Boolean>();

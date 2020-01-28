@@ -1,8 +1,11 @@
 package junit.uk.ac.exeter.QuinCe.web.Instrument;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
+import uk.ac.exeter.QuinCe.jobs.Job;
+import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.web.Instrument.CalibrationBean;
 
 /**
@@ -48,14 +51,23 @@ public class CalibrationBeanTestStub extends CalibrationBean {
 
   @Override
   protected Calibration initNewCalibration() {
-    // TODO Auto-generated method stub
-    return null;
+    return new CalibrationTestStub(instrumentId);
   }
 
   @Override
   public String getTargetLabel() {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  protected int getReprocessStatus() {
+    return DataSet.STATUS_AUTO_QC;
+  }
+
+  @Override
+  protected Class<? extends Job> getReprocessJobClass() {
+    return AutoQCJob.class;
   }
 
 }

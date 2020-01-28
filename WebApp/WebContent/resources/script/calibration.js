@@ -10,3 +10,17 @@ function editDeployment(item) {
     loadCalibration(); // PF RemoteCommand
   }
 }
+
+function showAffectedDatasets() {
+  
+  PF('deploymentDialog').hide();
+  let affectedDatasetsStatus = parseInt(PF('affectedDatasetsStatus').jq.val());
+    
+  PF('affectedDatasetsDialog').show();
+    
+  if (affectedDatasetsStatus < 0) {
+    PF('saveEditButton').disable();
+  } else {
+    PF('saveEditButton').enable();
+  }
+}
