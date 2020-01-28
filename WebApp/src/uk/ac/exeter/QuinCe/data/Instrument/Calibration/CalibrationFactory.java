@@ -113,4 +113,18 @@ public class CalibrationFactory {
 
     return result;
   }
+
+  /**
+   * Create a clone of a {@link Calibration} object.
+   *
+   * @param calibration
+   *          The {@link Calibration}.
+   * @return The clone.
+   */
+  public static Calibration clone(Calibration calibration) {
+    return createCalibration(calibration.getType(),
+      calibration.getClass().getSimpleName(), calibration.getId(),
+      calibration.getInstrumentId(), calibration.getDeploymentDate(),
+      calibration.getTarget(), calibration.getCoefficientsAsDelimitedList());
+  }
 }
