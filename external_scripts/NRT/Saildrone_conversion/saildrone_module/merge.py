@@ -1,5 +1,5 @@
 ###############################################################################
-### MERGE OCEAN AND BIOGEO FILE                                                    ###
+### MERGE FILES                                                             ###
 ###############################################################################
 
 ### Description:
@@ -50,13 +50,3 @@ def merge_ocean_biogeo(ocean_path, biogeo_path, atmos_path):
 		how='outer', sort= True)
 
 	return merged_df
-
-
-
-
-
-
-
-
-
-
