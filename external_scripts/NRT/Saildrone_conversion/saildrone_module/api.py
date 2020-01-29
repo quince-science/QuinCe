@@ -26,7 +26,7 @@ def to_dict(request_output):
 
 def auth():
 	auth_url = 'https://developer-mission.saildrone.com/v1/auth'
-	our_header = {'Content-Type':'application/json', 'Accept':'application/json'}
+	#our_header = {'Content-Type':'application/json', 'Accept':'application/json'}
 	our_data = json.dumps({'key':'XbXS9f7TfZepb7nD',
 		'secret':'dGL99eMuBcsJYm5guq29AtKeCGHCT2kP'}).encode()
 
@@ -60,17 +60,19 @@ def check_next_request(next_request, access_list, datasets):
 	next_request_checked = dict(next_request)
 	for drone, start in next_request.items():
 
+		# Find what's available for the drone in question
 		available = [dictionary for dictionary in access_list
 			if str(dictionary['drone_id']) == drone]
 
-		# Check if drone itself is available.
+		# Remove drone from next request if it is no longer available
 		if not available:
 			# !!! Send message to slack. Temp solution:
 			print("Drone ", drone," no longer available.")
 			del next_request_checked[drone]
 			continue
 
-		# Check if datasets are available (try-except in order to use continue)
+		# Check if datasets we want are available
+		# (try-except in order to use continue for the main for loop)
 		try:
 			for dataset in datasets:
 				if dataset not in available[0]['data_set']:

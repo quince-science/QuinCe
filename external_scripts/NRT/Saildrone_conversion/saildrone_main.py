@@ -92,14 +92,7 @@ for dictionary in access_list:
 next_request_checked = saildrone.check_next_request(
 	next_request, access_list, datasets)
 
-#-----
-## Required inputs for the download request function will be:
-# - 'data_dir' and 'token', already defined with the same name
-# - 'end' is always current timestamp:
-end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
-# - 'dataset' is defined in the 'datasets' list
-# - 'drone_id' and 'start' are defined in the 'next_request_checked' dictionary
-#-----
+
 
 
 ###----------------------------------------------------------------------------
@@ -114,17 +107,16 @@ end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
 #start = '2019-12-18T19:00:00.000Z'
 #end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
 #saildrone.write_json(data_dir, drone_id, dataset, start, end, token)
-
-# The loop above will download ocean, atmos and  biogeo file from one drone.
-# It will also create 'json_paths'. While testing, create this manually:
 #ocean_path = os.path.join(data_dir,'1053_oceanographic.json')
 #biogeo_path = os.path.join(data_dir, '1053_biogeochemical.json')
 #atmos_path = os.path.join(data_dir, '1053_atmospheric.json')
 #json_paths = [ocean_path, biogeo_path, atmos_path]
-#drone_id = 1053
+
+###------
 
 
-# !!! Add try except! urllib.error module
+# The end date for download request are always the current time stamp
+end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
 
 # Loop that downloads, converts, merges and writes datafiles. Keep track on
 # next start requests in next_request_updated.
@@ -165,21 +157,24 @@ for drone_id, start in next_request_checked.items():
 		# Sort by the defined column order from the config file
 		merged_sorted_df = merged_df[col_order]
 
-		# Get the last record we downloaded. Note that this assumes that the first
-		# column in the dataset is a time. This will change once the different
-		# SailDrone datasets are no longer merged together.
-		# This will be used as the starting point for the next request
+		# Get the last record we downloaded. Note that this assumes that the
+		# first column in the dataset is a time. This will change once the
+		# different SailDrone datasets are no longer merged together. This will
+		# be used as the starting point for the next request.
 		last_record_date = merged_sorted_df.tail(1).iloc[0, 0]
 
 		# Export the merged data to a csv file
 		merged_path = os.path.join(data_dir, str(drone_id) + '_'
-			+ start[0:4] + start[5:7] + start[8:10] + start[11:13] + start[14:16] + start[17:19]
-			+ "-" + last_record_date.strftime('%Y%m%d%H%M%S') + '_merged.csv')
-		merged_csv = merged_sorted_df.to_csv(merged_path, index=None, header=True, sep=',')
+			+ start[0:4] + start[5:7] + start[8:10] + start[11:13]
+			+ start[14:16] + start[17:19] + "-"
+			+ last_record_date.strftime('%Y%m%d%H%M%S') + '_merged.csv')
+		merged_csv = merged_sorted_df.to_csv(merged_path,
+			index=None, header=True, sep=',')
 
 		# Move the individual csv files to archive.
 		for path in csv_paths:
-			shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
+			shutil.move(path, os.path.join(archive_path,
+			os.path.basename(path)))
 
 		#  Set new start date for the next_request:
 		next_request_updated[drone_id] = (last_record_date
