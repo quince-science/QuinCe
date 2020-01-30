@@ -24,29 +24,32 @@ def set_datetime(df):
 		df.loc[:,'time_interval'], format = '%Y-%m-%dT%H:%M:%S.%fZ')
 
 
-# This function need to change!! Will merge lines with different time together.
-def merge_ocean_biogeo(ocean_path, biogeo_path, atmos_path):
+def merge_datasets(csv_paths):
 
-	ocean_df = pd.read_csv(ocean_path)
-	biogeo_df = pd.read_csv(biogeo_path)
-	atmos_df = pd.read_csv(atmos_path)
+	count = 1
+	for file in csv_paths:
 
-	set_datetime(ocean_df)
-	set_datetime(biogeo_df)
-	set_datetime(atmos_df)
+		# Read the files, set their date-time, and add their header suffix
+		df = pd.read_csv(file)
+		set_datetime(df)
+		file_name = file.split('data_files\\',)[1]
+		suffix = '_' + file_name.split("_",)[1][0:5] + 'File'
+		df = add_header_suffix(df, suffix)
 
-	ocean_df = add_header_suffix(ocean_df, '_oceanFile')
-	biogeo_df = add_header_suffix(biogeo_df, '_biogeoFile')
-	atmos_df = add_header_suffix(atmos_df, '_atmosFile')
+		# For the first file: simply store the data frame and suffix in a new
+		# variable so that it can be used in the next iteration.
+		if count == 1:
+			df_previous = df
+			suffix_previous = suffix
 
-	initial_merge = biogeo_df.merge(ocean_df,
-		left_on='time_interval_biogeoFile',
-		right_on='time_interval_oceanFile',
-		how='outer', sort= True)
+		# Merge the current data frame with the previous (merged) data frame.
+		if count >= 2:
+			left = 'time_interval' + suffix_previous
+			right = 'time_interval' + suffix
+			merged_df = df_previous.merge(df, left_on=left, right_on=right,
+				how='outer', sort= True)
+			df_previous = merged_df
 
-	merged_df = initial_merge.merge(atmos_df,
-		left_on = 'time_interval_biogeoFile',
-		right_on='time_interval_atmosFile',
-		how='outer', sort= True)
+		count += 1
 
 	return merged_df

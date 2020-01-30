@@ -93,27 +93,9 @@ next_request_checked = saildrone.check_next_request(
 	next_request, access_list, datasets)
 
 
-
-
 ###----------------------------------------------------------------------------
 ### Download json, convert to csv, and merge datasets.
 ###----------------------------------------------------------------------------
-
-# !!! WHILTE TESTING!!! Download individual datasets
-#drone_id = 1053
-#dataset = 'atmospheric'
-#dataset = 'oceanographic'
-#dataset = 'biogeochemical'
-#start = '2019-12-18T19:00:00.000Z'
-#end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
-#saildrone.write_json(data_dir, drone_id, dataset, start, end, token)
-#ocean_path = os.path.join(data_dir,'1053_oceanographic.json')
-#biogeo_path = os.path.join(data_dir, '1053_biogeochemical.json')
-#atmos_path = os.path.join(data_dir, '1053_atmospheric.json')
-#json_paths = [ocean_path, biogeo_path, atmos_path]
-
-###------
-
 
 # The end date for download request are always the current time stamp
 end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
@@ -140,11 +122,9 @@ for drone_id, start in next_request_checked.items():
 		shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
 
 
-	# Create merged dataframe if ocean, bio and atmos was downloaded.
-	# (The order is always ocean, bio, atmos in the csv_path variable.)
-	if len(csv_paths) == 3:
-		merged_df = saildrone.merge_ocean_biogeo(
-			csv_paths[0], csv_paths[1], csv_paths[2])
+	# Create merged dataframe
+	if len(csv_paths) > 1:
+		merged_df = saildrone.merge_datasets(csv_paths)
 
 		# Add missing columns to ensure consistent data format:
 		for param in col_order:
@@ -165,9 +145,9 @@ for drone_id, start in next_request_checked.items():
 
 		# Export the merged data to a csv file
 		merged_path = os.path.join(data_dir, str(drone_id) + '_'
-			+ start[0:4] + start[5:7] + start[8:10] + start[11:13]
+			+ start[0:4] + start[5:7] + start[8:10] + 'T' + start[11:13]
 			+ start[14:16] + start[17:19] + "-"
-			+ last_record_date.strftime('%Y%m%d%H%M%S') + '_merged.csv')
+			+ last_record_date.strftime('%Y%m%dT%H%M%S') + '_merged.csv')
 		merged_csv = merged_sorted_df.to_csv(merged_path,
 			index=None, header=True, sep=',')
 
