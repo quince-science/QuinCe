@@ -52,13 +52,13 @@ public class DataReducerFactory {
           calibrationSet);
         break;
       }
-      case "SailDrone Marine CO₂": {
+      case "SailDrone Marine CO₂ NRT": {
         reducer = new SaildroneMarinePco2Reducer(variable, nrt,
           variableAttributes, allMeasurements, groupedSensorValues,
           calibrationSet);
         break;
       }
-      case "SailDrone Atmospheric CO₂": {
+      case "SailDrone Atmospheric CO₂ NRT": {
         reducer = new SaildroneAtmosphericPco2Reducer(variable, nrt,
           variableAttributes, allMeasurements, groupedSensorValues,
           calibrationSet);
@@ -92,12 +92,12 @@ public class DataReducerFactory {
         null, null);
       break;
     }
-    case "SailDrone Marine CO₂": {
+    case "SailDrone Marine CO₂ NRT": {
       reducer = new SaildroneMarinePco2Reducer(variable, false, null, null,
         null, null);
       break;
     }
-    case "SailDrone Atmospheric CO₂": {
+    case "SailDrone Atmospheric CO₂ NRT": {
       reducer = new SaildroneAtmosphericPco2Reducer(variable, false, null, null,
         null, null);
       break;

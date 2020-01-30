@@ -12,7 +12,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
- * Data Reduction class for underway marine pCO₂
+ * Data Reduction class for NRT Atmospheric fCO₂ from SailDrones.
+ *
+ * <p>
+ * Calculations from Sutton et al. 2014 (doi: 10.5194/essd-6-353-2014).
+ * </p>
  *
  * @author Steve Jones
  *
@@ -53,11 +57,12 @@ public class SaildroneAtmosphericPco2Reducer extends DataReducer {
 
     Double airTemperature = getValue(sensorValues, "Air Temperature");
     Double salinity = getValue(sensorValues, "Salinity");
-    Double atmosphericPressure = getValue(sensorValues, "Atmospheric Pressure");
+    Double licorPressure = getValue(sensorValues,
+      "LICOR Pressure (Atmosphere)");
     Double xCo2 = getValue(sensorValues, "xCO₂ atmosphere (dry, no standards)");
     Double pH2O = calcPH2O(salinity, airTemperature);
-    Double pCo2 = calcPco2(xCo2, atmosphericPressure, pH2O);
-    Double fCO2 = calcFco2(pCo2, xCo2, atmosphericPressure, airTemperature);
+    Double pCo2 = calcPco2(xCo2, licorPressure, pH2O);
+    Double fCO2 = calcFco2(pCo2, xCo2, licorPressure, airTemperature);
 
     // Store the calculated values
     record.put("pH₂O", pH2O);
@@ -91,15 +96,15 @@ public class SaildroneAtmosphericPco2Reducer extends DataReducer {
    *
    * @param co2
    *          The dry, calibrated CO<sub>2</sub> value
-   * @param atmPressure
+   * @param pressure
    *          The atmospheric pressure
    * @param pH2O
    *          The water vapour pressure
    * @return pCO<sub>2</sub> in air
    */
-  private Double calcPco2(Double co2, Double atmPressure, Double pH2O) {
-    Double atmospheres = atmPressure * PASCALS_TO_ATMOSPHERES * 100;
-    return co2 * (atmospheres - pH2O);
+  private Double calcPco2(Double co2, Double pressure, Double pH2O) {
+    Double pressure_atm = pressure * PASCALS_TO_ATMOSPHERES * 100;
+    return co2 * (pressure_atm - pH2O);
   }
 
   /**
@@ -130,8 +135,8 @@ public class SaildroneAtmosphericPco2Reducer extends DataReducer {
 
   @Override
   protected String[] getRequiredTypeStrings() {
-    return new String[] { "Air Temperature", "Salinity", "Atmospheric Pressure",
-      "xCO₂ atmosphere (dry, no standards)" };
+    return new String[] { "Air Temperature", "Salinity",
+      "LICOR Pressure (Atmosphere)", "xCO₂ atmosphere (dry, no standards)" };
   }
 
   @Override

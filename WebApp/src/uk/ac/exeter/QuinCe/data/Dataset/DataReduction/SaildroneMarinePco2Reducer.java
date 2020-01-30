@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
@@ -11,10 +10,13 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 
 /**
- * Data Reduction class for underway marine pCO₂
+ * Data Reduction class for NRT Marine fCO₂ from SailDrones.
+ *
+ * <p>
+ * Calculations from Sutton et al. 2014 (doi: 10.5194/essd-6-353-2014).
+ * </p>
  *
  * @author Steve Jones
  *
@@ -30,8 +32,6 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
 
   static {
     calculationParameters = new ArrayList<CalculationParameter>(8);
-    calculationParameters.add(new CalculationParameter("Equilibrator Pressure",
-      "Equilibrator Pressure", "PRESEQ", "hPa", false));
     calculationParameters.add(new CalculationParameter("pH₂O",
       "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
     calculationParameters.add(new CalculationParameter("pCO₂", "pCO₂ In Water",
@@ -54,20 +54,16 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
     Map<SensorType, CalculationValue> sensorValues, DataReductionRecord record)
     throws Exception {
 
-    Set<SensorType> requiredSensorTypes = getRequiredSensorTypes(
-      instrument.getSensorAssignments());
-
     Double intakeTemperature = getValue(sensorValues, "Intake Temperature");
     Double salinity = getValue(sensorValues, "Salinity");
-    Double equilibratorPressure = getEquilibratorPressure(requiredSensorTypes,
-      sensorValues).getValue();
+    Double licorPressure = getValue(sensorValues,
+      "LICOR Pressure (Equilibrator)");
     Double xCo2 = getValue(sensorValues, "xCO₂ water (dry, no standards)");
     Double pH2O = calcPH2O(salinity, intakeTemperature);
-    Double pCo2 = calcPco2(xCo2, equilibratorPressure, pH2O);
-    Double fCO2 = calcFco2(pCo2, xCo2, equilibratorPressure, intakeTemperature);
+    Double pCo2 = calcPco2(xCo2, licorPressure, pH2O);
+    Double fCO2 = calcFco2(pCo2, xCo2, licorPressure, intakeTemperature);
 
     // Store the calculated values
-    record.put("Equilibrator Pressure", equilibratorPressure);
     record.put("pH₂O", pH2O);
     record.put("pCO₂", pCo2);
     record.put("fCO₂", fCO2);
@@ -94,15 +90,15 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
    *
    * @param co2
    *          The dry, calibrated CO<sub>2</sub> value
-   * @param eqp
+   * @param pressure
    *          The equilibrator pressure
    * @param pH2O
    *          The water vapour pressure
    * @return pCO<sub>2</sub> in water
    */
-  private Double calcPco2(Double co2, Double eqp, Double pH2O) {
-    Double eqp_atm = eqp * PASCALS_TO_ATMOSPHERES * 100;
-    return co2 * (eqp_atm - pH2O);
+  private Double calcPco2(Double co2, Double pressure, Double pH2O) {
+    Double pressure_atm = pressure * PASCALS_TO_ATMOSPHERES * 100;
+    return co2 * (pressure_atm - pH2O);
   }
 
   /**
@@ -131,41 +127,10 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
         / (82.0575 * kelvin));
   }
 
-  private CalculationValue getEquilibratorPressure(Set<SensorType> sensorTypes,
-    Map<SensorType, CalculationValue> sensorValues)
-    throws SensorTypeNotFoundException {
-
-    CalculationValue absolute = null;
-    CalculationValue differential = null;
-
-    // Get the Absolute equilibrator pressure
-    SensorType absoluteSensorType = getSensorType(
-      "Equilibrator Pressure (absolute)");
-    if (sensorTypes.contains(absoluteSensorType)) {
-      absolute = sensorValues.get(absoluteSensorType);
-    }
-
-    // Now the differential, with calculation to ambient pressure
-    SensorType differentialSensorType = getSensorType(
-      "Equilibrator Pressure (differential)");
-    SensorType ambientSensorType = getSensorType("Ambient Pressure");
-
-    if (sensorTypes.contains(differentialSensorType)) {
-      CalculationValue differentialPressure = sensorValues
-        .get(differentialSensorType);
-      CalculationValue ambientPressure = sensorValues.get(ambientSensorType);
-
-      differential = CalculationValue.sum(ambientPressure,
-        differentialPressure);
-    }
-
-    return CalculationValue.mean(absolute, differential);
-  }
-
   @Override
   protected String[] getRequiredTypeStrings() {
     return new String[] { "Intake Temperature", "Salinity",
-      "Equilibrator Pressure", "xCO₂ water (dry, no standards)" };
+      "LICOR Pressure (Equilibrator)", "xCO₂ water (dry, no standards)" };
   }
 
   @Override
