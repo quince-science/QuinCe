@@ -87,10 +87,11 @@ for dictionary in access_list:
 			next_request[drone] = dictionary['start_date']
 
 # Function 'check_next_request' will return a list of next requests where
-# drone items are removed if any of the following is not available: the drone
-# itself, any of the dataset typs, or the start date.
+# drone items are removed if they are on the ignore list, OR if any of the
+# following is not available: the drone itself, any of the dataset typs, or the
+# start date.
 next_request_checked = saildrone.check_next_request(
-	next_request, access_list, datasets)
+	next_request, access_list, datasets, drones_ignored)
 
 
 ###----------------------------------------------------------------------------
