@@ -100,6 +100,7 @@ next_request_checked = saildrone.check_next_request(
 # The end date for download request are always the current time stamp
 end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
 
+
 # Loop that downloads, converts, merges and writes datafiles. Keep track on
 # next start requests in next_request_updated.
 next_request_updated = dict(next_request_checked)
@@ -147,7 +148,7 @@ for drone_id, start in next_request_checked.items():
 		merged_path = os.path.join(data_dir, str(drone_id) + '_'
 			+ start[0:4] + start[5:7] + start[8:10] + 'T' + start[11:13]
 			+ start[14:16] + start[17:19] + "-"
-			+ last_record_date.strftime('%Y%m%dT%H%M%S') + '_merged.csv')
+			+ last_record_date.strftime('%Y%m%dT%H%M%S') + '.csv')
 		merged_csv = merged_sorted_df.to_csv(merged_path,
 			index=None, header=True, sep=',')
 
