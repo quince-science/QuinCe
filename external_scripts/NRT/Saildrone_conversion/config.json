@@ -1,6 +1,8 @@
 {
     "datasets": [
-        "atmospheric"
+        "atmospheric",
+        "oceanographic",
+        "biogeochemical"
     ],
     "drones_ignored": [
         "1021",
@@ -90,19 +92,7 @@
         "asvco2_span_flag_biogeFile",
         "asvco2_prawler_ctd_salinity_biogeFile",
         "asvco2_prawler_ctd_temperature_biogeFile",
-        "asvco2_durafet_vtemp_biogeFile",
-        "time_interval_vehicFile",
-        "course_over_ground_mean_vehicFile",
-        "pitch_mean_vehicFile",
-        "pitch_max_vehicFile",
-        "roll_mean_vehicFile",
-        "roll_max_vehicFile",
-        "speed_over_ground_mean_vehicFile",
-        "speed_over_ground_max_vehicFile",
-        "speed_over_ground_min_vehicFile",
-        "heading_mean_vehicFile",
-        "wing_angle_vehicFile",
-        "wing_heading_mean_vehicFile"
+        "asvco2_durafet_vtemp_biogeFile"
     ],
     "FTP": {
         "server": "quince-scripts.bcdc.no",
