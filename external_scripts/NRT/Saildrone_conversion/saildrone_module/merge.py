@@ -3,8 +3,8 @@
 ###############################################################################
 
 ### Description:
-# This function merges the ocean and biogeo file. Outer full merge so that all
-# values are kept in the merged output file.
+# This function merges files. Outer full merge so that all values are kept in
+# the merged output file.
 
 #------------------------------------------------------------------------------
 import pandas as pd
