@@ -57,9 +57,14 @@ def get_available(token):
 
 
 
-def check_next_request(next_request, access_list, datasets):
+def check_next_request(next_request, access_list, datasets, drones_ignored):
 	next_request_checked = dict(next_request)
 	for drone, start in next_request.items():
+
+		# Remove drone from the requst list if it is on the ignore list
+		if drone in drones_ignored:
+			del next_request_checked[drone]
+			continue
 
 		# Find what's available for the drone in question
 		available = [dictionary for dictionary in access_list
@@ -94,7 +99,7 @@ def check_next_request(next_request, access_list, datasets):
 			del next_request_checked[drone]
 			continue
 
-		return next_request_checked
+	return next_request_checked
 
 
 
