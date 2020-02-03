@@ -1,12 +1,10 @@
 {
     "datasets": [
-        "biogeochemical",
-        "atmospheric",
-        "oceanographic",
-        "vehicle"
+        "atmospheric"
     ],
     "drones_ignored": [
-        "1021"
+        "1021",
+        "1053"
     ],
     "col_order": [
         "time_interval_atmosFile",
@@ -105,5 +103,12 @@
         "heading_mean_vehicFile",
         "wing_angle_vehicFile",
         "wing_heading_mean_vehicFile"
-    ]
+    ],
+    "FTP": {
+        "server": "quince-scripts.bcdc.no",
+        "user": "ubuntu",
+        "private_key_file":"C:\\users\\cla023\\PuTTy Keys\\camilla.ppk",
+        "private_key_pass": "",
+        "dir": "FTP_TEST"
+    }
 }
