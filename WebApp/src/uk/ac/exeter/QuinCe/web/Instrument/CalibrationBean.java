@@ -673,6 +673,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
     }
 
     this.affectedDatasets = result;
+
+    // Set or clear the "cannot be reprocessed" message
+    if (getAffectedDatasetsStatus() < 0) {
+      setMessage(getComponentID("affectedDatasets"),
+        "This change cannot be completed because some datasets cannot be reprocessed.");
+    }
   }
 
   /**
@@ -860,5 +866,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     return result;
 
+  }
+
+  @Override
+  public String getFormName() {
+    return "deploymentForm";
   }
 }
