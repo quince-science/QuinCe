@@ -9,6 +9,9 @@ verify_ssl = true
 json = "*"
 pandas = "*"
 urllib = "*"
+pysftp = "*"
+bytesio = "*"
+io = "*"
 
 [requires]
 python_version = "3.7"

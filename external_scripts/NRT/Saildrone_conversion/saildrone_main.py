@@ -7,8 +7,10 @@
 # converts it from json to csv format, and shares it with QuinCe.
 
 
-#------------------------------------------------------------------------------
+###----------------------------------------------------------------------------
 ### Import packages
+###----------------------------------------------------------------------------
+
 import os
 import saildrone_module as saildrone
 from datetime import datetime
@@ -42,20 +44,16 @@ os.mkdir(archive_path)
 
 
 ###----------------------------------------------------------------------------
-### Find out which data to request
+### Extract information from the config and stored info files
 ###----------------------------------------------------------------------------
 
-# Create authentication token for saildrone API, and see what's available
-token = saildrone.auth()
-access_list = saildrone.get_available(token)
-
-# Import information from config file and from the stored_info file.
 try:
 	with open ('./config.json') as file:
 		configs = json.load(file)
 	drones_ignored = configs['drones_ignored']
 	datasets = configs['datasets']
 	col_order = configs['col_order']
+	FTP = configs['FTP']
 except FileNotFoundError:
 	# !!! Create config file with keys, no values. Notify via slack to fill inn
 	# config values. Temporary solution:
@@ -70,6 +68,15 @@ except FileNotFoundError:
 	# !!! Create stored info template file. Notify via slack to fill inn values.
 	# Temporary solution:
 	print("Missing 'stored_info.json' file")
+
+
+###----------------------------------------------------------------------------
+### Find out which data to request
+###----------------------------------------------------------------------------
+
+# Create authentication token for saildrone API, and see what's available
+token = saildrone.auth()
+access_list = saildrone.get_available(token)
 
 # Check if the access list has changed since the previous run (and previous
 # access list was not empty): send message and replace the prev_access_list
@@ -95,15 +102,17 @@ next_request_checked = saildrone.check_next_request(
 
 
 ###----------------------------------------------------------------------------
-### Download json, convert to csv, and merge datasets.
+### Download json, convert to csv, merge datasets and send to Quince
 ###----------------------------------------------------------------------------
 
 # The end date for download request are always the current time stamp
 end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
 
+# Create connection to the Quince FTP
+ftpconn = saildrone.connect_ftp(FTP)
 
-# Loop that downloads, converts, merges and writes datafiles. Keep track on
-# next start requests in next_request_updated.
+# Loop that downloads, converts, merges, writes datafiles and send it to the
+# QuinCe ftp site. Keep track on next start requests in next_request_updated.
 next_request_updated = dict(next_request_checked)
 for drone_id, start in next_request_checked.items():
 
@@ -114,7 +123,6 @@ for drone_id, start in next_request_checked.items():
 			data_dir, drone_id, dataset, start, end, token)
 		json_paths.append(json_path)
 
-
 	# Convert each json to csv. Move the json file to the archive folder.
 	# Store the new csv paths.
 	csv_paths = []
@@ -123,45 +131,51 @@ for drone_id, start in next_request_checked.items():
 		csv_paths.append(csv_path)
 		shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
 
-
 	# Create merged dataframe
-	if len(csv_paths) > 1:
-		merged_df = saildrone.merge_datasets(csv_paths)
+	merged_df = saildrone.merge_datasets(csv_paths)
 
-		# Add missing columns to ensure consistent data format:
-		for param in col_order:
-			if param not in merged_df.columns:
-				merged_df[param] = None
+	# Add missing columns to ensure consistent data format:
+	for param in col_order:
+		if param not in merged_df.columns:
+			merged_df[param] = None
 
-		# !!! Check: If there are new headers in the merged_df.
-		# Notify slack and stop script
+	# !!! Check: If there are new headers in the merged_df.
+	# Notify slack and stop script
 
-		# Sort by the defined column order from the config file
-		merged_sorted_df = merged_df[col_order]
+	# Sort by the defined column order from the config file
+	merged_sorted_df = merged_df[col_order]
 
-		# Get the last record we downloaded from the biogeo dataset. This will
-		# change once the different SailDrone datasets are no longer merged
-		# together. This will be used as the starting point for the next
-		# request.
-		col_index = merged_sorted_df.columns.get_loc('time_interval_biogeFile')
-		last_record_date = merged_sorted_df.tail(1).iloc[0,col_index]
+	# Get the last record we downloaded from the biogeo dataset. This will
+	# change once the different SailDrone datasets are no longer merged
+	# together. This will be used as the starting point for the next
+	# request.
+	col_index = merged_sorted_df.columns.get_loc('time_interval_biogeFile')
+	last_record_date = merged_sorted_df.tail(1).iloc[0,col_index]
 
-		# Export the merged data to a csv file
-		merged_path = os.path.join(data_dir, str(drone_id) + '_'
-			+ start[0:4] + start[5:7] + start[8:10] + 'T' + start[11:13]
-			+ start[14:16] + start[17:19] + "-"
-			+ last_record_date.strftime('%Y%m%dT%H%M%S') + '.csv')
-		merged_csv = merged_sorted_df.to_csv(merged_path,
-			index=None, header=True, sep=',')
+	# Export the merged data to a csv file
+	merged_file_name = (str(drone_id) + '_'
+		+ start[0:4] + start[5:7] + start[8:10] + 'T' + start[11:13]
+		+ start[14:16] + start[17:19] + "-"
+		+ last_record_date.strftime('%Y%m%dT%H%M%S') + '.csv')
+	merged_path = os.path.join(data_dir, merged_file_name)
+	merged_csv = merged_sorted_df.to_csv(merged_path,
+		index=None, header=True, sep=',')
 
-		# Move the individual csv files to archive.
-		for path in csv_paths:
-			shutil.move(path, os.path.join(archive_path,
-			os.path.basename(path)))
+	# Move the individual csv files to archive.
+	for path in csv_paths:
+		shutil.move(path, os.path.join(archive_path,
+		os.path.basename(path)))
 
-		#  Set new start date for the next_request:
-		next_request_updated[drone_id] = (last_record_date
-			+ pd.Timedelta("1 minute")).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+	# Export the merged dataset to the Quince FTP site
+	# !!! This does not work yet !!!
+	#upload_result = saildrone.upload_file(ftpconn=ftpconn,
+	#	ftp_config=FTP, instrument_id=1000, filename=merged_file_name,
+	#	contents=merged_path)
+	#print(upload_result)
+
+	#  Set new start date for the next_request:
+	next_request_updated[drone_id] = (last_record_date
+		+ pd.Timedelta("1 minute")).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
 # Update stored_info file
@@ -169,11 +183,3 @@ stored_info['next_request'] = next_request_updated
 with open('./stored_info.json', 'w') as file:
 	json.dump(stored_info, file,
 		sort_keys=True, indent=4, separators=(',',': '))
-
-
-###----------------------------------------------------------------------------
-### Send to QuinCe
-###----------------------------------------------------------------------------
-
-# All files in the data_folder are ready for export to QuinCe. Do quince
-# want unmerged?
