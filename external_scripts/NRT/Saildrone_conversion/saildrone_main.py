@@ -157,21 +157,19 @@ for drone_id, start in next_request_checked.items():
 		+ start[0:4] + start[5:7] + start[8:10] + 'T' + start[11:13]
 		+ start[14:16] + start[17:19] + "-"
 		+ last_record_date.strftime('%Y%m%dT%H%M%S') + '.csv')
-	merged_path = os.path.join(data_dir, merged_file_name)
+	merged_path = os.path.join(archive_path, merged_file_name)
 	merged_csv = merged_sorted_df.to_csv(merged_path,
 		index=None, header=True, sep=',')
 
-	# Move the individual csv files to archive.
+	# Move the individual csv files to archive
 	for path in csv_paths:
 		shutil.move(path, os.path.join(archive_path,
 		os.path.basename(path)))
 
 	# Export the merged dataset to the Quince FTP site
-	# !!! This does not work yet !!!
-	#upload_result = saildrone.upload_file(ftpconn=ftpconn,
-	#	ftp_config=FTP, instrument_id=1000, filename=merged_file_name,
-	#	contents=merged_path)
-	#print(upload_result)
+	upload_result = saildrone.upload_file(ftpconn=ftpconn,
+		ftp_config=FTP, instrument_id=1000, filename=merged_file_name,
+		contents=merged_csv)
 
 	#  Set new start date for the next_request:
 	next_request_updated[drone_id] = (last_record_date
