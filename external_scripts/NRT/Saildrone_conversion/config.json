@@ -97,7 +97,7 @@
     "FTP": {
         "server": "quince-scripts.bcdc.no",
         "user": "ubuntu",
-        "private_key_file":"C:\\users\\cla023\\PuTTy Keys\\camilla.ppk",
+        "private_key_file":"C:/users/cla023/PuTTy Keys/camilla.pem",
         "private_key_pass": "",
         "dir": "FTP_TEST"
     }
