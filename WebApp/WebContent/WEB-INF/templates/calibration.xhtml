@@ -102,7 +102,7 @@
             <p:commandButton value="Check" ajax="true" widgetVar="checkDatasetsButton"
               action="#{sessionScope[beanName].calcAffectedDataSets}"
               process="@form"
-              update="affectedDatasetsStatus affectedDatasets"
+              update="affectedDatasetsStatus affectedDatasets affectedDatasetsMessage"
               oncomplete="showAffectedDatasets();"/>
             <p:button value="Cancel"
               onclick="PF('deploymentDialog').hide();return false"/>
@@ -146,6 +146,7 @@
               </ui:fragment>
             </p:column>
           </p:dataTable>
+          <p:message id="affectedDatasetsMessage" for="affectedDatasets"/>
           <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
             <p:commandButton value="Save" widgetVar="saveEditButton"
               ajax="false"
