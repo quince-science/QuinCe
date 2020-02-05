@@ -1,10 +1,10 @@
 ###############################################################################
-### MERGE FILES                                                             ###
+### MERGE CSV FILES                                                             ###
 ###############################################################################
 
 ### Description:
-# This function merges files. Outer full merge so that all values are kept in
-# the merged output file.
+# This function merges csv files. An 'outer full merge' is performed so that
+# all values are kept in the merged output file.
 
 #------------------------------------------------------------------------------
 import pandas as pd
@@ -29,7 +29,7 @@ def merge_datasets(csv_paths):
 	count = 1
 	for file in csv_paths:
 
-		# Read the files, set their date-time, and add their header suffix
+		# Read the file, set the timestamp, and add a header suffix
 		df = pd.read_csv(file)
 		set_datetime(df)
 		file_name = file.split('data_files\\',)[1]
@@ -37,7 +37,7 @@ def merge_datasets(csv_paths):
 		df = add_header_suffix(df, suffix)
 
 		# For the first file: simply store the data frame and suffix in a new
-		# variable so that it can be used in the next iteration.
+		# variable so that it can be used in the next iteration
 		if count == 1:
 			df_previous = df
 			suffix_previous = suffix
