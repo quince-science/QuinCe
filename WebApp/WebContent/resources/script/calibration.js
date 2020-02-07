@@ -1,14 +1,38 @@
+const ADD = 1;
+const EDIT = 0;
+const DELETE = -1;
+
 function addDeployment() {
+  hideSelectionDetails();
   $('#deploymentForm\\:calibrationId').val(-1);
-  loadCalibration(); // PF RemoteCommand
+  $('#deploymentForm\\:editAction').val(ADD);
+  newCalibration();
 }
 
-function editDeployment(item) {
+function selectDeployment(item) {
   // Ignore dataset clicks (they have a string id)
   if (null != item.item && typeof(item.item) === 'number') {
     $('#deploymentForm\\:calibrationId').val(item.item);
-    loadCalibration(); // PF RemoteCommand
+    selectCalibration();
   }
+}
+
+function editSelection() {
+  $('#deploymentForm\\:editAction').val(EDIT);
+  PF('deploymentDialog').show();
+}
+
+function deleteSelection() {
+  $('#deploymentForm\\:editAction').val(DELETE);
+  PF('checkDatasetsButton').jq.click();
+}
+
+function showSelectionDetails() {
+  PF('selectionDetails').jq.show();
+}
+
+function hideSelectionDetails() {
+  PF('selectionDetails').jq.hide();
 }
 
 function showAffectedDatasets() {

@@ -16,16 +16,18 @@
   </ui:define>
   <ui:define name="content">
     <div class="fullPage">
-      <h:form id="deploymentForm" method="post" charset="utf8">
-        <h:inputHidden id="calibrationId"
-          value="#{sessionScope[beanName].selectedCalibrationId}"/>
-          
-        <p:remoteCommand name="loadCalibration"
+      <h:form id="deploymentForm" method="post" charset="utf8">          
+        <p:remoteCommand name="selectCalibration"
           action="#{sessionScope[beanName].loadSelectedCalibration}"
-          process="calibrationId" update="@form"
-          oncomplete="PF('deploymentDialog').show();"/>
+          process="calibrationId editAction" update="@(form :not(.noupdate))"
+          oncomplete="showSelectionDetails()"/>
 
-        <div id="timelineContainer"></div>
+        <p:remoteCommand name="newCalibration"
+          action="#{sessionScope[beanName].loadSelectedCalibration}"
+          process="calibrationId editAction" update="@(form :not(.noupdate))"
+          oncomplete="PF('deploymentDialog').show()"/>
+
+        <div id="timelineContainer" class="noupdate"></div>
         <script>
           var TIMELINE_OPTIONS = {
             showCurrentTime: false,
@@ -49,14 +51,43 @@
             usedTargets, TIMELINE_OPTIONS);
           
           timelineContainer.onclick = function (event) {
-            editDeployment(timeline.getEventProperties(event));
+            selectDeployment(timeline.getEventProperties(event));
           }
         </script>
+        
+        <!-- Selected item details -->
+        <p:fieldset widgetVar="selectionDetails" styleClass="visbility: hidden"
+          legend="Selected #{sessionScope[beanName].calibrationName}">
+          
+          <h:inputHidden id="calibrationId"
+            value="#{sessionScope[beanName].selectedCalibrationId}"/>
+          <h:inputHidden id="editAction"
+            value="#{sessionScope[beanName].editAction}"/>
+            
+          <p:panelGrid columns="3">
+            <h:outputLabel>Date:</h:outputLabel>
+            <h:outputText id="selectedDate"
+              value="#{sessionScope[beanName].calibration.deploymentDate}"/>
+            <div><!-- Blank entry --></div>
+
+            <h:outputLabel>Target:</h:outputLabel>            
+            <h:outputText id="selectedTarget"
+              value="#{sessionScope[beanName].calibration.target}"/>
+            <p:commandButton widgetVar="editSelection" value="Edit..."
+              ajax="false" onclick="editSelection();return false;"/>
+
+            <h:outputLabel value="#{sessionScope[beanName].coefficientsLabel}"/>            
+            <h:outputText id="selectedCoefficients"
+              value="#{sessionScope[beanName].calibration.humanReadableCoefficients}"/>
+            <p:commandButton widgetVar="deleteSelection" value="Delete..."
+              ajax="false" onclick="deleteSelection();return false;"/>
+          </p:panelGrid>
+        </p:fieldset>
         <p:messages styleClass="pageBlock" />
         <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
             <p:button widgetVar="showAddDialog"
-              value="Add New Deployment" ajax="false"
-              onclick="addDeployment();return false;" />
+              value="Add New #{sessionScope[beanName].calibrationName}"
+              ajax="false" onclick="addDeployment();return false;" />
         </h:panelGrid>
         <p:dialog id="deploymentDialog" widgetVar="deploymentDialog"
           header="Deployment" modal="true">
@@ -148,7 +179,7 @@
           </p:dataTable>
           <p:message id="affectedDatasetsMessage" for="affectedDatasets"/>
           <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-            <p:commandButton value="Save" widgetVar="saveEditButton"
+            <p:commandButton value="Continue" widgetVar="saveEditButton"
               ajax="false"
               action="#{sessionScope[beanName].saveCalibration}"/>
             <p:button value="Cancel"

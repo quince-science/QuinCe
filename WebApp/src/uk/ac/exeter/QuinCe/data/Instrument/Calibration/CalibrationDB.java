@@ -44,6 +44,9 @@ public abstract class CalibrationDB {
     + "SET instrument_id = ?, type = ?, target = ?, deployment_date = ?, "
     + "coefficients = ?, class = ? WHERE id = ?";
 
+  private static final String DELETE_CALIBRATION_STATEMENT = "DELETE FROM "
+    + "calibration WHERE id = ?";
+
   /**
    * Query for finding recent calibrations.
    *
@@ -168,6 +171,25 @@ public abstract class CalibrationDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing calibration", e);
     }
+  }
+
+  public void deleteCalibration(DataSource dataSource, long calibrationId)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkPositive(calibrationId, "calibrationId");
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(DELETE_CALIBRATION_STATEMENT);) {
+
+      stmt.setLong(1, calibrationId);
+      stmt.execute();
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while deleting calibration", e);
+    }
+
   }
 
   /**
