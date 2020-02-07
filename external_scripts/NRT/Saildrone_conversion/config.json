@@ -5,8 +5,7 @@
         "biogeochemical"
     ],
     "drones_ignored": [
-        "1021",
-        "1053"
+        "1021"
     ],
     "col_order": [
         "time_interval_atmosFile",
