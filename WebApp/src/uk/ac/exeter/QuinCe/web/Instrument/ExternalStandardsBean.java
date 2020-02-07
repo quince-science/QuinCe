@@ -77,4 +77,9 @@ public class ExternalStandardsBean extends CalibrationBean {
   protected Class<? extends Job> getReprocessJobClass() {
     return AutoQCJob.class;
   }
+
+  @Override
+  public String getCalibrationName() {
+    return "Standard";
+  }
 }

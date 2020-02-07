@@ -41,6 +41,21 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
+   * Code for the action to add a new calibration
+   */
+  protected static final int ADD_ACTION = 1;
+
+  /**
+   * Code for the action to edit a calibration
+   */
+  protected static final int EDIT_ACTION = 0;
+
+  /**
+   * Code for the action to delete a calibration
+   */
+  protected static final int DELETE_ACTION = -1;
+
+  /**
    * Status flag indicating that no {@link DataSet}s are affected by the current
    * edit.
    *
@@ -113,6 +128,11 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * The newly entered calibration
    */
   private Calibration calibration;
+
+  /**
+   * The calibration edit action
+   */
+  private int editAction = EDIT_ACTION;
 
   /**
    * The {@link DataSet}s that will be affected by the current edit action
@@ -230,10 +250,22 @@ public abstract class CalibrationBean extends BaseManagedBean {
     String nav = null;
 
     try {
-      if (calibration.getId() == DatabaseUtils.NO_DATABASE_RECORD) {
+      switch (editAction) {
+      case ADD_ACTION: {
         addCalibration();
-      } else {
+        break;
+      }
+      case EDIT_ACTION: {
         updateCalibration();
+        break;
+      }
+      case DELETE_ACTION: {
+        deleteCalibration();
+        break;
+      }
+      default: {
+        throw new Exception("Unrecognised action " + editAction);
+      }
       }
 
       loadCalibrations();
@@ -303,6 +335,11 @@ public abstract class CalibrationBean extends BaseManagedBean {
     } else {
       dbInstance.updateCalibration(getDataSource(), calibration);
     }
+  }
+
+  private void deleteCalibration()
+    throws MissingParamException, DatabaseException {
+    dbInstance.deleteCalibration(getDataSource(), calibration.getId());
   }
 
   /**
@@ -586,7 +623,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
     Map<DataSet, Boolean> result = new HashMap<DataSet, Boolean>();
 
     // If we're editing an existing calibration...
-    if (null != editedCalibration) {
+    if (editAction != ADD_ACTION) {
 
       // Work out which datasets will be affected by removing the calibration
       // from its current location
@@ -625,8 +662,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     // If we're adding a new calibration (which includes editing an existing one
     // - it's treated as a delete then add)...
-    if (null != calibration.getDeploymentDate()
-      && null != calibration.getTarget()) {
+    if (editAction == EDIT_ACTION || editAction == ADD_ACTION) {
 
       // Get the calibrations either side of the new calibration date
       List<Calibration> newTargetCalibrations = testCalibrations
@@ -871,5 +907,17 @@ public abstract class CalibrationBean extends BaseManagedBean {
   @Override
   public String getFormName() {
     return "deploymentForm";
+  }
+
+  public String getCalibrationName() {
+    return "Calibration";
+  }
+
+  public int getEditAction() {
+    return editAction;
+  }
+
+  public void setEditAction(int editAction) {
+    this.editAction = editAction;
   }
 }
