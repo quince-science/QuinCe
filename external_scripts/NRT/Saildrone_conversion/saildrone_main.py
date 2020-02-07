@@ -26,18 +26,18 @@ import pandas as pd
 # Store path to the main script directory
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
-# Create a data directory if it does not already exist
+# Create a main data directory if it does not already exist
 if not os.path.isdir('./data_files'):
 	os.mkdir(os.path.join(script_dir,'data_files'))
 
-# Store path to the data directory
-data_dir = os.path.join(script_dir,'data_files')
+# Store path to the main data directory
+main_data_dir = os.path.join(script_dir,'data_files')
 
-# Create new archive directry with current timestamp as name
+# Create new data directry with current timestamp as name
 now = datetime.now()
 dt_string = now.strftime("%Y%m%dT%H%M%S")
-archive_path = os.path.join(data_dir, str(dt_string))
-os.mkdir(archive_path)
+data_dir = os.path.join(main_data_dir, str(dt_string))
+os.mkdir(data_dir)
 
 
 ###----------------------------------------------------------------------------
@@ -117,21 +117,14 @@ for drone_id, start in next_request_checked.items():
 			data_dir, drone_id, dataset, start, end, token)
 		json_paths.append(json_path)
 
-	# Convert each json to csv. Move the json file to the archive folder. Store
-	# the paths of the csv files.
+	# Convert each json to csv, and store the csv paths
 	csv_paths = []
 	for path in json_paths :
 		csv_path = saildrone.convert_to_csv(path)
 		csv_paths.append(csv_path)
-		shutil.move(path, os.path.join(archive_path, os.path.basename(path)))
 
 	# Create merged dataframe
 	merged_df = saildrone.merge_datasets(csv_paths)
-
-	# Move the individual csv files to archive
-	for path in csv_paths:
-		shutil.move(path, os.path.join(archive_path,
-		os.path.basename(path)))
 
 	# Add missing columns (with empty data), and sort by the defined column
 	# order to ensure consistent data format
@@ -148,12 +141,12 @@ for drone_id, start in next_request_checked.items():
 	time_index = merged_sorted_df.columns.get_loc('time_interval_biogeFile')
 	last_record_date = merged_sorted_df.tail(1).iloc[0,time_index]
 
-	# Store the merged data as a csv file in the archive folder
+	# Store the merged data as a csv files in the data directory
 	merged_file_name = (str(drone_id) + '_'
 		+ start[0:4] + start[5:7] + start[8:10] + 'T' + start[11:13]
 		+ start[14:16] + start[17:19] + "-"
 		+ last_record_date.strftime('%Y%m%dT%H%M%S') + '.csv')
-	merged_path = os.path.join(archive_path, merged_file_name)
+	merged_path = os.path.join(data_dir, merged_file_name)
 	merged_csv = merged_sorted_df.to_csv(merged_path,
 		index=None, header=True, sep=',')
 
@@ -174,7 +167,7 @@ for drone_id, start in next_request_checked.items():
 ###----------------------------------------------------------------------------
 
 # Update stored_info file
-#stored_info['next_request'] = next_request_updated
-#with open('./stored_info.json', 'w') as file:
-#	json.dump(stored_info, file,
-#		sort_keys=True, indent=4, separators=(',',': '))
+stored_info['next_request'] = next_request_updated
+with open('./stored_info.json', 'w') as file:
+	json.dump(stored_info, file,
+		sort_keys=True, indent=4, separators=(',',': '))
