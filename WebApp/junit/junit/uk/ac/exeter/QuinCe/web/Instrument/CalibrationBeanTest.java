@@ -131,13 +131,14 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   public static CalibrationBean initBean(CalibrationDB dbInstance,
-    long calibrationId, LocalDateTime deploymentDate, String target)
-    throws RecordNotFoundException {
+    int editAction, long calibrationId, LocalDateTime deploymentDate,
+    String target) throws RecordNotFoundException {
 
     CalibrationBean bean = initBean(dbInstance);
 
     bean.setSelectedCalibrationId(calibrationId);
     bean.loadSelectedCalibration();
+    bean.setEditAction(editAction);
     bean.getCalibration().setDeploymentDate(deploymentDate);
     bean.getCalibration().setTarget(target);
 

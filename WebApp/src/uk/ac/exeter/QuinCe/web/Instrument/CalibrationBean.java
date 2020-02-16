@@ -43,17 +43,17 @@ public abstract class CalibrationBean extends BaseManagedBean {
   /**
    * Code for the action to add a new calibration
    */
-  protected static final int ADD_ACTION = 1;
+  public static final int ADD_ACTION = 1;
 
   /**
    * Code for the action to edit a calibration
    */
-  protected static final int EDIT_ACTION = 0;
+  public static final int EDIT_ACTION = 0;
 
   /**
    * Code for the action to delete a calibration
    */
-  protected static final int DELETE_ACTION = -1;
+  public static final int DELETE_ACTION = -1;
 
   /**
    * Status flag indicating that no {@link DataSet}s are affected by the current
