@@ -14,6 +14,7 @@ import junit.uk.ac.exeter.QuinCe.TestBase.TestLineException;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Instrument.CalibrationBean;
@@ -24,55 +25,140 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
    * A column in the Test Set file for
    * {@link #getAffectedDatasetsTest(TestSetLine)}.
    */
-  private static final int ID1_FIELD = 0;
+  private static final int ACTION1_FIELD = 0;
 
   /**
    * A column in the Test Set file for
    * {@link #getAffectedDatasetsTest(TestSetLine)}.
    */
-  private static final int TIME1_FIELD = 1;
+  private static final int ID1_FIELD = 1;
 
   /**
    * A column in the Test Set file for
    * {@link #getAffectedDatasetsTest(TestSetLine)}.
    */
-  private static final int TARGET1_FIELD = 2;
+  private static final int TIME1_FIELD = 2;
 
   /**
    * A column in the Test Set file for
    * {@link #getAffectedDatasetsTest(TestSetLine)}.
    */
-  private static final int ID2_FIELD = 3;
+  private static final int TARGET1_FIELD = 3;
 
   /**
    * A column in the Test Set file for
    * {@link #getAffectedDatasetsTest(TestSetLine)}.
    */
-  private static final int TIME2_FIELD = 4;
+  private static final int ACTION2_FIELD = 4;
 
   /**
    * A column in the Test Set file for
    * {@link #getAffectedDatasetsTest(TestSetLine)}.
    */
-  private static final int TARGET2_FIELD = 5;
+  private static final int ID2_FIELD = 5;
 
   /**
    * A column in the Test Set file for
    * {@link #getAffectedDatasetsTest(TestSetLine)}.
    */
-  private static final int AFFECTED_DATASETS_FIELD = 6;
+  private static final int TIME2_FIELD = 6;
 
   /**
    * A column in the Test Set file for
    * {@link #getAffectedDatasetsTest(TestSetLine)}.
    */
-  private static final int CAN_BE_REPROCESSED_FIELD = 7;
+  private static final int TARGET2_FIELD = 7;
 
   /**
    * A column in the Test Set file for
    * {@link #getAffectedDatasetsTest(TestSetLine)}.
    */
-  private static final int DATASETS_STATUS_FIELD = 8;
+  private static final int AFFECTED_DATASETS_FIELD = 8;
+
+  /**
+   * A column in the Test Set file for
+   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   */
+  private static final int CAN_BE_REPROCESSED_FIELD = 9;
+
+  /**
+   * A column in the Test Set file for
+   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   */
+  private static final int DATASETS_STATUS_FIELD = 10;
+
+  /**
+   * Get the first action from a {@link TestSetLine}.
+   *
+   * <p>
+   * The column must contain one of {@code ADD}, {@code EDIT} or {@code DELETE}
+   * corresponding to {@link CalibrationBean#ADD_ACTION},
+   * {@link CalibrationBean#EDIT_ACTION} or
+   * {@link CalibrationBean#DELETE_ACTION} respectively. This method will return
+   * the codes for use directly in the {@link Calibration}.
+   * </p>
+   *
+   * @param line
+   *          The line
+   * @param column
+   *          The column from which to retrieve the action value
+   * @return The action code
+   * @throws Exception
+   *           If the action value is not recognised
+   */
+  private int getAction(TestSetLine line, int column) throws Exception {
+    String columnText = line.getStringField(column, false);
+
+    int result;
+
+    switch (columnText) {
+    case "ADD": {
+      result = CalibrationBean.ADD_ACTION;
+      break;
+    }
+    case "EDIT": {
+      result = CalibrationBean.EDIT_ACTION;
+      break;
+    }
+    case "DELETE": {
+      result = CalibrationBean.DELETE_ACTION;
+      break;
+    }
+    default: {
+      throw new Exception("Unrecognised action '" + columnText + "'");
+    }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the first action from a {@link TestSetLine}.
+   *
+   * @param line
+   *          The line
+   * @return The action code
+   * @throws Exception
+   *           If the action in the line is not recognised.
+   * @see #getAction(TestSetLine, int)
+   */
+  private int getAction1(TestSetLine line) throws Exception {
+    return getAction(line, ACTION1_FIELD);
+  }
+
+  /**
+   * Get the second action from a {@link TestSetLine}.
+   *
+   * @param line
+   *          The line
+   * @return The action code
+   * @throws Exception
+   *           If the action in the line is not recognised.
+   * @see #getAction(TestSetLine, int)
+   */
+  private int getAction2(TestSetLine line) throws Exception {
+    return getAction(line, ACTION2_FIELD);
+  }
 
   /**
    * Get the first calibration ID from a {@link TestSetLine}.
@@ -193,7 +279,7 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
 
     try {
       CalibrationBean bean = CalibrationBeanTest.initBean(getDbInstance(),
-        getId1(line), getTime1(line), getTarget1(line));
+        getAction1(line), getId1(line), getTime1(line), getTarget1(line));
 
       boolean checkAffectedCount = true;
 
@@ -213,7 +299,7 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
 
         // Bean for the second call
         CalibrationBean bean2 = CalibrationBeanTest.initBean(getDbInstance(),
-          getId2(line), getTime2(line), getTarget2(line));
+          getAction2(line), getId2(line), getTime2(line), getTarget2(line));
 
         // Calculate the affected DataSets for the second call
         bean2.calcAffectedDataSets();
