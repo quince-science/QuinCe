@@ -465,9 +465,10 @@ public class CalibrationBeanTest extends BaseTest {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
   @Test
-  public void addFirstCalibrationBeforeAllTest() throws RecordNotFoundException,
-    InvalidCalibrationTargetException, InvalidCalibrationDateException,
-    MissingParamException, InvalidCalibrationEditException, DatabaseException {
+  public void addFirstCalibrationBeforeAllPriorsRequiredTest()
+    throws RecordNotFoundException, InvalidCalibrationTargetException,
+    InvalidCalibrationDateException, MissingParamException,
+    InvalidCalibrationEditException, DatabaseException {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 1, 0, 0, 0),
@@ -498,9 +499,10 @@ public class CalibrationBeanTest extends BaseTest {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
   @Test
-  public void addFirstCalibrationAfterAllTest() throws RecordNotFoundException,
-    InvalidCalibrationTargetException, InvalidCalibrationDateException,
-    MissingParamException, InvalidCalibrationEditException, DatabaseException {
+  public void addFirstCalibrationAfterAllPriorsRequiredTest()
+    throws RecordNotFoundException, InvalidCalibrationTargetException,
+    InvalidCalibrationDateException, MissingParamException,
+    InvalidCalibrationEditException, DatabaseException {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 20, 0, 0, 0),
@@ -530,9 +532,10 @@ public class CalibrationBeanTest extends BaseTest {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
   @Test
-  public void addFirstCalibrationBetweenTest() throws RecordNotFoundException,
-    InvalidCalibrationTargetException, InvalidCalibrationDateException,
-    MissingParamException, InvalidCalibrationEditException, DatabaseException {
+  public void addFirstCalibrationBetweenPriorsRequiredTest()
+    throws RecordNotFoundException, InvalidCalibrationTargetException,
+    InvalidCalibrationDateException, MissingParamException,
+    InvalidCalibrationEditException, DatabaseException {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 7, 0, 0, 0),
@@ -545,6 +548,132 @@ public class CalibrationBeanTest extends BaseTest {
     assertTrue(affectedDatasetMatches(affected, "A", false));
     assertTrue(affectedDatasetMatches(affected, "B", true));
 
+  }
+
+  /**
+   * Test that adding the first calibration for a target before all datasets
+   * works and all datasets are affected (and can be recalculated).
+   *
+   * @throws RecordNotFoundException
+   * @throws DatabaseException
+   * @throws InvalidCalibrationEditException
+   * @throws MissingParamException
+   * @throws InvalidCalibrationDateException
+   * @throws InvalidCalibrationTargetException
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
+  @Test
+  public void addFirstCalibrationBeforeAllPriorsNotRequiredTest()
+    throws RecordNotFoundException, InvalidCalibrationTargetException,
+    InvalidCalibrationDateException, MissingParamException,
+    InvalidCalibrationEditException, DatabaseException {
+
+    CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
+      CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 1, 0, 0, 0),
+      "1001");
+
+    bean.calcAffectedDataSets();
+
+    Map<String, Boolean> affected = getDatasetNamesMap(
+      bean.getAffectedDatasets());
+
+    assertTrue(affectedDatasetMatches(affected, "A", true));
+    assertTrue(affectedDatasetMatches(affected, "B", true));
+
+  }
+
+  /**
+   * Test that adding the first calibration for a target after all datasets
+   * works and all datasets are affected (and can be recalculated).
+   *
+   * @throws RecordNotFoundException
+   * @throws DatabaseException
+   * @throws InvalidCalibrationEditException
+   * @throws MissingParamException
+   * @throws InvalidCalibrationDateException
+   * @throws InvalidCalibrationTargetException
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
+  @Test
+  public void addFirstCalibrationAfterAllPriorsNotRequiredTest()
+    throws RecordNotFoundException, InvalidCalibrationTargetException,
+    InvalidCalibrationDateException, MissingParamException,
+    InvalidCalibrationEditException, DatabaseException {
+
+    CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
+      CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 20, 0, 0, 0),
+      "1001");
+
+    bean.calcAffectedDataSets();
+    Map<String, Boolean> affected = getDatasetNamesMap(
+      bean.getAffectedDatasets());
+
+    assertTrue(affectedDatasetMatches(affected, "A", true));
+    assertTrue(affectedDatasetMatches(affected, "B", true));
+
+  }
+
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
+  @Test
+  public void addFirstCalibrationBetweenPriorsNotRequiredTest()
+    throws RecordNotFoundException, InvalidCalibrationTargetException,
+    InvalidCalibrationDateException, MissingParamException,
+    InvalidCalibrationEditException, DatabaseException {
+
+    CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
+      CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 7, 0, 0, 0),
+      "1001");
+
+    bean.calcAffectedDataSets();
+    Map<String, Boolean> affected = getDatasetNamesMap(
+      bean.getAffectedDatasets());
+
+    assertTrue(affectedDatasetMatches(affected, "A", true));
+    assertTrue(affectedDatasetMatches(affected, "B", true));
+  }
+
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/priorsRequiredSingleCalibrationSingleDataset" })
+  @Test
+  public void deleteOnlyCalibrationPriorsRequiredTest()
+    throws RecordNotFoundException, InvalidCalibrationTargetException,
+    InvalidCalibrationDateException, MissingParamException,
+    InvalidCalibrationEditException, DatabaseException {
+
+    CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
+      CalibrationBean.DELETE_ACTION, 1001, null, null);
+
+    bean.calcAffectedDataSets();
+    Map<String, Boolean> affected = getDatasetNamesMap(
+      bean.getAffectedDatasets());
+
+    assertTrue(affectedDatasetMatches(affected, "A", false));
+  }
+
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/priorsNotRequiredSingleCalibrationSingleDataset" })
+  @Test
+  public void deleteOnlyCalibrationPriorsNotRequiredTest()
+    throws RecordNotFoundException, InvalidCalibrationTargetException,
+    InvalidCalibrationDateException, MissingParamException,
+    InvalidCalibrationEditException, DatabaseException {
+
+    CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
+      CalibrationBean.DELETE_ACTION, 1001, null, null);
+
+    bean.calcAffectedDataSets();
+    Map<String, Boolean> affected = getDatasetNamesMap(
+      bean.getAffectedDatasets());
+
+    assertTrue(affectedDatasetMatches(affected, "A", true));
   }
 
   /**
