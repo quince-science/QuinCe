@@ -19,15 +19,15 @@ formatString=yyyy-MM-dd HH\:mm\:ss');
 -- Some file columns with calibratable sensors
 INSERT INTO file_column (id, file_definition_id, file_column, primary_sensor,
     sensor_type, sensor_name)
-  VALUES (1001, 1000000, 4, 1, 1, 'TARGET1');
+  VALUES (1001, 1000000, 4, 1, 1, 'SENSOR1');
 
 INSERT INTO file_column (id, file_definition_id, file_column, primary_sensor,
     sensor_type, sensor_name)
-  VALUES (1002, 1000000, 5, 1, 2, 'TARGET2');
+  VALUES (1002, 1000000, 5, 1, 2, 'SENSOR2');
 
 INSERT INTO file_column (id, file_definition_id, file_column, primary_sensor,
     sensor_type, sensor_name)
-  VALUES (1003, 1000000, 6, 1, 3, 'TARGET3');
+  VALUES (1003, 1000000, 6, 1, 3, 'SENSOR3');
 
 
 -- External standard run types
