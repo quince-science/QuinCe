@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -667,6 +668,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
       // Get the calibrations either side of the new calibration date
       List<Calibration> newTargetCalibrations = testCalibrations
         .get(calibration.getTarget());
+      if (null == newTargetCalibrations) {
+        newTargetCalibrations = new ArrayList<Calibration>(0);
+      }
+
       LocalDateTime[] surroundingCalibrations = getSurroundingCalibrations(
         newTargetCalibrations, calibration.getDeploymentDate());
 
@@ -685,7 +690,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
         // before the dataset, it can't be reprocessed.
         if (dbInstance.priorCalibrationRequired()
           && dataSet.getStart().isBefore(calibration.getDeploymentDate())
-          && (testCalibrations.get(calibration.getTarget()).size() == 0
+          && (null == testCalibrations.get(calibration.getTarget())
+            || testCalibrations.get(calibration.getTarget()).size() == 0
             || !testCalibrations.get(calibration.getTarget()).get(0)
               .getDeploymentDate().isBefore(dataSet.getStart()))) {
 
@@ -867,7 +873,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     // Invalid targets are not allowed
     if (null != calibration.getTarget()
-      && !calibrationTargets.containsValue(calibration.getTarget())) {
+      && !calibrationTargets.containsKey(calibration.getTarget())) {
       throw new InvalidCalibrationTargetException(calibration.getTarget());
     }
 
