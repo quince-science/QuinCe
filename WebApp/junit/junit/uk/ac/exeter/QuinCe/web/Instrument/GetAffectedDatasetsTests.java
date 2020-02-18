@@ -309,8 +309,8 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
       }
 
       // The affected data sets and boolean flags should all match
-      Map<String, Boolean> affectedDatasetNames = getDatasetNamesMap(
-        affectedDatasets);
+      Map<String, Boolean> affectedDatasetNames = CalibrationBeanTest
+        .getDatasetNamesMap(affectedDatasets);
 
       assertTrue(
         affectedDatasetNames.equals(getExpectedAffectedDatasets(line)));
@@ -323,24 +323,6 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
       throw new TestLineException(line, e);
     }
 
-  }
-
-  /**
-   * Convert a map of {@code <Dataset, Boolean>} to a map of
-   * {@code <Dataset Name, Boolean>}.
-   *
-   * @param input
-   *          The Dataset map
-   * @return The dataset name map
-   */
-  private Map<String, Boolean> getDatasetNamesMap(Map<DataSet, Boolean> input) {
-    Map<String, Boolean> result = new HashMap<String, Boolean>();
-
-    for (Map.Entry<DataSet, Boolean> entry : input.entrySet()) {
-      result.put(entry.getKey().getName(), entry.getValue());
-    }
-
-    return result;
   }
 
   /**
