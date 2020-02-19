@@ -102,29 +102,43 @@
               </p:calendar>
             </div>
             <div id="deploymentFields">
-              <div id="targetField" class="fields">
-                <p:outputLabel for="target"
-                  value="#{sessionScope[beanName].targetLabel}:"></p:outputLabel>
-                <p:selectOneMenu id="target" widgetVar="target" autoWidth="false"
-                  value="#{sessionScope[beanName].calibration.target}">
-                  <f:selectItems
-                    value="#{sessionScope[beanName].targets.entrySet()}"
-                    var="entry" itemValue="#{entry.key}"
-                    itemLabel="#{entry.value}" />
-                </p:selectOneMenu>
-              </div>
+              <table id="targetField">
+                <tr>
+                  <td>
+                    <p:outputLabel for="target"
+                      value="#{sessionScope[beanName].targetLabel}:"></p:outputLabel>
+                  </td>
+                  <td>
+                    <p:selectOneMenu id="target" widgetVar="target" autoWidth="false"
+                      value="#{sessionScope[beanName].calibration.target}">
+                      <f:selectItems
+                        value="#{sessionScope[beanName].targets.entrySet()}"
+                        var="entry" itemValue="#{entry.key}"
+                        itemLabel="#{entry.value}" />
+                    </p:selectOneMenu>
+                  </td>
+                </tr>
+              </table>
               <div id="coefficients">
                 <p:outputLabel
                   value="#{sessionScope[beanName].coefficientsLabel}:">
                 </p:outputLabel>
-                <div id="coefficientFields" class="fields">
-                  <ui:repeat
-                    value="#{sessionScope[beanName].calibration.editableCoefficients}"
-                    var="coefficient" varStatus="varStatus">
-                    <p:outputLabel for="value" value="#{coefficient.name}:" />
-                    <p:inputNumber id="value" widgetVar="coefficient-#{varStatus.index}"
-                      value="#{coefficient.value}" size="12" decimalPlaces="5" />
-                  </ui:repeat>
+                <div id="coefficientFields">
+                  <table>
+                    <ui:repeat
+                      value="#{sessionScope[beanName].calibration.editableCoefficients}"
+                      var="coefficient" varStatus="varStatus">
+                      <tr>
+                        <td>
+                          <p:outputLabel for="value" value="#{coefficient.name}:" />
+                        </td>
+                        <td>
+                        <p:inputNumber id="value" widgetVar="coefficient-#{varStatus.index}"
+                          value="#{coefficient.value}" size="12" decimalPlaces="5" />
+                        </td>
+                      </tr>
+                    </ui:repeat>
+                  </table>
                 </div>
               </div>
             </div>
