@@ -56,7 +56,7 @@
         </script>
         
         <!-- Selected item details -->
-        <p:fieldset widgetVar="selectionDetails" styleClass="visbility: hidden"
+        <p:fieldset widgetVar="selectionDetails" styleClass="selectedCalibration"
           legend="Selected #{sessionScope[beanName].calibrationName}">
           
           <h:inputHidden id="calibrationId"
@@ -64,24 +64,44 @@
           <h:inputHidden id="editAction"
             value="#{sessionScope[beanName].editAction}"/>
             
-          <p:panelGrid columns="3">
-            <h:outputLabel>Date:</h:outputLabel>
-            <h:outputText id="selectedDate"
-              value="#{sessionScope[beanName].calibration.deploymentDate}"/>
-            <div><!-- Blank entry --></div>
-
-            <h:outputLabel>Target:</h:outputLabel>            
-            <h:outputText id="selectedTarget"
-              value="#{sessionScope[beanName].calibration.target}"/>
+          <table>
+            <tr>
+              <td>
+                <h:outputLabel>Date:</h:outputLabel>
+              </td>
+              <td>
+                <h:outputText id="selectedDate"
+                  value="#{sessionScope[beanName].calibration.deploymentDate}"/>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <h:outputLabel>Target:</h:outputLabel>            
+              </td>
+              <td>
+                <h:outputText id="selectedTarget"
+                  value="#{sessionScope[beanName].calibrationTargetName}"/>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <h:outputLabel
+                  value="#{sessionScope[beanName].coefficientsLabel}"/>:          
+              </td>
+              <td>
+                <h:outputText id="selectedCoefficients"
+                  value="#{sessionScope[beanName].calibration.humanReadableCoefficients}"/>
+              </td>
+            </tr>
+          </table>
+          
+          <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
             <p:commandButton widgetVar="editSelection" value="Edit..."
               ajax="false" onclick="editSelection();return false;"/>
 
-            <h:outputLabel value="#{sessionScope[beanName].coefficientsLabel}"/>            
-            <h:outputText id="selectedCoefficients"
-              value="#{sessionScope[beanName].calibration.humanReadableCoefficients}"/>
             <p:commandButton widgetVar="deleteSelection" value="Delete..."
               ajax="false" onclick="deleteSelection();return false;"/>
-          </p:panelGrid>
+          </h:panelGrid>
         </p:fieldset>
         <p:messages styleClass="pageBlock" />
         <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
@@ -102,7 +122,7 @@
               </p:calendar>
             </div>
             <div id="deploymentFields">
-              <table id="targetField">
+              <table>
                 <tr>
                   <td>
                     <p:outputLabel for="target"

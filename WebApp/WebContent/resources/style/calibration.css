@@ -39,3 +39,9 @@
 #coefficientFields {
   margin-top: 10px;  
 }
+
+.selectedCalibration {
+  width: 30%;
+  margin: auto;
+  display: none;
+}
