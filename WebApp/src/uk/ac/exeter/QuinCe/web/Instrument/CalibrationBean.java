@@ -236,7 +236,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @throws Exception
    *           If the list of targets cannot be retrieved
    */
-  public Map<String, String> getTargets() throws Exception {
+  public Map<String, String> getTargets() {
     return calibrationTargets;
   };
 
@@ -398,7 +398,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     for (String target : calibrations.keySet()) {
       JSONObject group = new JSONObject();
-      group.put("id", counter);
+      group.put("id", target);
       group.put("order", counter);
       group.put("content", getTargets().get(target));
 
@@ -428,7 +428,6 @@ public abstract class CalibrationBean extends BaseManagedBean {
   public String getCalibrationsJson() {
     JSONArray items = new JSONArray();
 
-    int groupId = 0;
     for (String key : calibrations.keySet()) {
 
       for (Calibration calibration : calibrations.get(key)) {
@@ -436,7 +435,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
         calibrationJson.put("id", calibration.getId());
         calibrationJson.put("type", "box");
         calibrationJson.put("target", key);
-        calibrationJson.put("group", groupId);
+        calibrationJson.put("group", key);
         calibrationJson.put("start",
           DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
         calibrationJson.put("content",
@@ -454,8 +453,6 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
         items.put(calibrationJson);
       }
-
-      groupId++;
     }
 
     // Add the datasets
@@ -925,5 +922,15 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   public void setEditAction(int editAction) {
     this.editAction = editAction;
+  }
+
+  public String getCalibrationTargetName() {
+    String result = null;
+
+    if (null != calibration && null != calibration.getTarget()) {
+      result = getTargets().get(calibration.getTarget());
+    }
+
+    return result;
   }
 }
