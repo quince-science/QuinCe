@@ -85,9 +85,11 @@ cmems_db = 'files_cmems.db'
 
 product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
 
-nrt_dir = '/' + product_id + '/NRT_201904/latest'
+dataset_id = 'NRT_202003'
+
+nrt_dir = '/' + product_id + '/' + dataset_id + '/latest'
 dnt_dir = '/' + product_id + '/DNT'
-index_dir = '/' + product_id + '/NRT_201904'
+index_dir = '/' + product_id + '/' + dataset_id
 
 local_folder = 'latest'
 
@@ -469,7 +471,7 @@ def build_DNT(dnt_upload,dnt_delete):
   dnt.set('date', date)
   dnt.set('product',product_id)
   dataset = ET.SubElement(dnt,'dataset')
-  dataset.set('DatasetName','NRT_201904')
+  dataset.set('DatasetName',dataset_id)
 
 # upload
   for item in dnt_upload:
@@ -518,7 +520,7 @@ def build_fDNT(dnt_delete):
   dnt.set('date', date)
   dnt.set('product',product_id)
   dataset = ET.SubElement(dnt,'dataset')
-  dataset.set('DatasetName','NRT_201904')
+  dataset.set('DatasetName',dataset_id)
 
 # delete
   for item in dnt_delete:
@@ -563,10 +565,10 @@ def build_index(results_uploaded):
     + 'geospatial_lon_min,geospatial_lon_max,time_coverage_start,'\
     + 'time_coverage_end,provider,date_update,data_mode,parameters\n')
 
-  index_info = ''
-  for file in results_uploaded:
-    local_filepath = file[2]
-    ftp_filepath = file[6].replace('NRT_201904','NRT')
+    index_info = ''
+    for file in currently_uploaded:
+      local_filepath = file[2]
+      ftp_filepath = file[6].replace(dataset_id,'NRT')
 
     nc = netCDF4.Dataset(local_filepath,mode='r')
 
