@@ -548,10 +548,9 @@ def build_fDNT(dnt_delete):
 
   return dnt_file, dnt_filepath
 
-def build_index(results_uploaded):
+def build_index(currently_uploaded):
   '''
   Creates index-file over CMEMS directory.
-
   Lists all files currently uploaded to the CMEMS server. 
   '''
 
@@ -565,10 +564,10 @@ def build_index(results_uploaded):
     + 'geospatial_lon_min,geospatial_lon_max,time_coverage_start,'\
     + 'time_coverage_end,provider,date_update,data_mode,parameters\n')
 
-    index_info = ''
-    for file in currently_uploaded:
-      local_filepath = file[2]
-      ftp_filepath = file[6].replace(dataset_id,'NRT')
+  index_info = ''
+  for file in currently_uploaded:
+    local_filepath = file[2]
+    ftp_filepath = file[6].replace(dataset_id,'NRT') # Upload URL differs from host URL  /NRT_202003/ --> /NRT/
 
     nc = netCDF4.Dataset(local_filepath,mode='r')
 

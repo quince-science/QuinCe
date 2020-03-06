@@ -28,8 +28,8 @@ with open(config_file_carbon) as f: config_carbon = toml.load(f)
 with open(platform_lookup_file) as f: platform = toml.load(f)
 
 if not os.path.isdir('log'): os.mkdir('log')
-logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.INFO)
-#logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
+#logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.INFO)
+logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 slack = Slacker(basicConfig['slack']['api_token'])
 upload = True # for debugging purposes, when False no data is exported.
@@ -39,7 +39,6 @@ def main():
   logging.debug('Obtaining IDs of datasets ready for export from QuinCe')
   try:
     export_list = get_export_list(basicConfig)
-
     if not export_list:
       logging.info('Terminating script, no datasets to be exported.')
     else: 
