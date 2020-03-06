@@ -8,23 +8,23 @@ import os
 
 def quince_req(config, call, dataset_id=-1):
     ''' sends request to QuinCe'''
-    quince_url = config["QuinCe"]["url"]
-    user = config["QuinCe"]["user"]
-    password = config["QuinCe"]["password"]
+    quince_url = config['QuinCe']['url']
+    user = config['QuinCe']['user']
+    password = config['QuinCe']['password']
 
     data = urllib.parse.urlencode({'id':str(dataset_id)})
     data = data.encode('ascii')
 
     if dataset_id is -1:
-        request = urllib.request.Request(quince_url + "/api/export/" + call)
+        request = urllib.request.Request(quince_url + '/api/export/' + call)
     else:
-        request = urllib.request.Request(quince_url + "/api/export/" + call, 
+        request = urllib.request.Request(quince_url + '/api/export/' + call, 
             data=data)
 
-    auth_string = "%s:%s" % (user, password)
-    base64_auth_string = base64.standard_b64encode(auth_string.encode("utf-8"))
-    request.add_header("Authorization", "Basic %s" % base64_auth_string
-        .decode("utf-8"))
+    auth_string = '%s:%s' % (user, password)
+    base64_auth_string = base64.standard_b64encode(auth_string.encode('utf-8'))
+    request.add_header('Authorization', 'Basic %s' % base64_auth_string
+        .decode('utf-8'))
 
     try:
         conn = urllib.request.urlopen(request)
@@ -52,6 +52,7 @@ def get_export_list(config):
     ready to be downloaded.
     '''
     logging.debug('Retrieving exportList from QuinCe')
+    logging.debug('Fetching from ' + config['QuinCe']['url'])
     export_list = quince_req(config,'exportList').decode('utf8')
     export_list_count = export_list.count('id')
     logging.info(f'{export_list_count} dataset(s) ready for export')
