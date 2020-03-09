@@ -16,7 +16,7 @@
   </ui:define>
   <ui:define name="content">
     <div class="fullPage">
-      <h:form id="deploymentForm" method="post" charset="utf8">          
+      <h:form id="deploymentForm" method="post" charset="utf8">
         <p:remoteCommand name="selectCalibration"
           action="#{sessionScope[beanName].loadSelectedCalibration}"
           process="calibrationId editAction" update="@(form :not(.noupdate))"
@@ -49,21 +49,21 @@
           var calibrations =  new vis.DataSet(calibrationsJson);
           var timeline = new vis.Timeline(timelineContainer, calibrations,
             usedTargets, TIMELINE_OPTIONS);
-          
+
           timelineContainer.onclick = function (event) {
             selectDeployment(timeline.getEventProperties(event));
           }
         </script>
-        
+
         <!-- Selected item details -->
         <p:fieldset widgetVar="selectionDetails" styleClass="selectedCalibration"
           legend="Selected #{sessionScope[beanName].calibrationName}">
-          
+
           <h:inputHidden id="calibrationId"
             value="#{sessionScope[beanName].selectedCalibrationId}"/>
           <h:inputHidden id="editAction"
             value="#{sessionScope[beanName].editAction}"/>
-            
+
           <table>
             <tr>
               <td>
@@ -76,7 +76,7 @@
             </tr>
             <tr>
               <td>
-                <h:outputLabel>Target:</h:outputLabel>            
+                <h:outputLabel>Target:</h:outputLabel>
               </td>
               <td>
                 <h:outputText id="selectedTarget"
@@ -86,7 +86,7 @@
             <tr>
               <td>
                 <h:outputLabel
-                  value="#{sessionScope[beanName].coefficientsLabel}"/>:          
+                  value="#{sessionScope[beanName].coefficientsLabel}"/>:
               </td>
               <td>
                 <h:outputText id="selectedCoefficients"
@@ -94,7 +94,7 @@
               </td>
             </tr>
           </table>
-          
+
           <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
             <p:commandButton widgetVar="editSelection" value="Edit..."
               ajax="false" onclick="editSelection();return false;"/>
@@ -111,7 +111,7 @@
         </h:panelGrid>
         <p:dialog id="deploymentDialog" widgetVar="deploymentDialog"
           header="Deployment" modal="true">
-            
+
           <div id="deploymentPanelContent">
             <div id="deploymentCalendar">
               <p:calendar id="deploymentDate" widgetVar="deploymentDate"
@@ -175,22 +175,22 @@
         </p:dialog>
         <p:dialog id="affectedDatasetsDialog" widgetVar="affectedDatasetsDialog"
           header="Affected Datasets" modal="true">
-          
+
           <p:inputText id="affectedDatasetsStatus" type="hidden"
             widgetVar="affectedDatasetsStatus"
             value="#{sessionScope[beanName].affectedDatasetsStatus}"
             emptyMessage="No datasets affected"/>
-          
+
           <div class="instructions">
             The following datasets are affected by this change and will be
             reprocessed:
           </div>
-          
+
           <p:dataTable id="affectedDatasets" var="entry" scrollable="true"
             scrollHeight="350" style="width: 600px"
             value="#{sessionScope[beanName].affectedDatasets}"
             emptyMessage="No datasets affected">
-            
+
             <p:column>
               <f:facet name="header">
                 <h:outputText value="Dataset" />
@@ -220,7 +220,7 @@
               onclick="PF('affectedDatasetsDialog').hide();return false"/>
           </h:panelGrid>
         </p:dialog>
-        
+
         <h:panelGrid columns="1" styleClass="buttonPanel">
           <p:commandButton value="Back to Instruments List"
             action="/instrument/instrument_list.xhtml" />
