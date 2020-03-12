@@ -13,7 +13,6 @@ import org.flywaydb.core.api.migration.Context;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -91,9 +90,9 @@ public class V6__UsedValues_1561 extends BaseJavaMigration {
     // Create the new table
     String createSql = "CREATE TABLE measurement_values ("
       + "measurement_id BIGINT(20) NOT NULL,"
-      + "sensor_type_id INT(11) NOT NULL," + "file_column_id INT(11) NOT NULL,"
-      + "prior BIGINT(20) NOT NULL," + "post BIGINT(20) NULL,"
-      + "PRIMARY KEY (measurement_id, sensor_type_id, file_column_id),"
+      + "file_column_id INT(11) NOT NULL," + "prior BIGINT(20) NOT NULL,"
+      + "post BIGINT(20) NULL,"
+      + "PRIMARY KEY (measurement_id, file_column_id),"
       + "CONSTRAINT MEAS_VAL_MEASUREMENT FOREIGN KEY (measurement_id)"
       + "  REFERENCES measurements (id) ON DELETE NO ACTION ON UPDATE NO ACTION, "
       + "CONSTRAINT MEAS_VAL_PRIOR_SENSORVAL FOREIGN KEY (prior) "
@@ -180,8 +179,8 @@ public class V6__UsedValues_1561 extends BaseJavaMigration {
 
     // Loop through each sensor_value_id for this measurement
     try (PreparedStatement sensorValueQuery = conn
-      .prepareStatement("SELECT mv.sensor_value_id, sv.file_column, "
-        + "fc.sensor_type FROM measurement_values_old mv "
+      .prepareStatement("SELECT mv.sensor_value_id, sv.file_column "
+        + "FROM measurement_values_old mv "
         + "INNER JOIN sensor_values sv ON mv.sensor_value_id = sv.id "
         + "INNER JOIN file_column fc on sv.file_column = fc.id "
         + "WHERE mv.measurement_id = ?")) {
@@ -194,13 +193,12 @@ public class V6__UsedValues_1561 extends BaseJavaMigration {
 
           long sensorValueId = sensorValueDetails.getLong(1);
           long fileColumnId = sensorValueDetails.getLong(2);
-          long sensorTypeId = sensorValueDetails.getLong(3);
 
           // See if these details are already in the new table. If not, add
           // them.
           if (!newTableContains(conn, trueMeasurementId, fileColumnId)) {
-            addMeasurementValue(conn, trueMeasurementId, sensorTypeId,
-              fileColumnId, sensorValueId);
+            addMeasurementValue(conn, trueMeasurementId, fileColumnId,
+              sensorValueId);
           }
         }
       }
@@ -212,12 +210,12 @@ public class V6__UsedValues_1561 extends BaseJavaMigration {
 
       long lonValueId = getPositionValueId(conn, datasetId, time,
         FileDefinition.LONGITUDE_COLUMN_ID);
-      addMeasurementValue(conn, trueMeasurementId, SensorType.LONGITUDE_ID,
+      addMeasurementValue(conn, trueMeasurementId,
         FileDefinition.LONGITUDE_COLUMN_ID, lonValueId);
 
       long latValueId = getPositionValueId(conn, datasetId, time,
         FileDefinition.LATITUDE_COLUMN_ID);
-      addMeasurementValue(conn, trueMeasurementId, SensorType.LATITUDE_ID,
+      addMeasurementValue(conn, trueMeasurementId,
         FileDefinition.LATITUDE_COLUMN_ID, latValueId);
     }
   }
@@ -243,17 +241,15 @@ public class V6__UsedValues_1561 extends BaseJavaMigration {
   }
 
   private void addMeasurementValue(Connection conn, long measurementId,
-    long sensorTypeId, long fileColumnId, long sensorValueId)
-    throws SQLException {
+    long fileColumnId, long sensorValueId) throws SQLException {
 
-    try (PreparedStatement addSensorValueStmt = conn.prepareStatement(
-      "INSERT INTO measurement_values (measurement_id, sensor_type_id, "
-        + "file_column_id, prior) VALUES (?, ?, ?, ?)")) {
+    try (PreparedStatement addSensorValueStmt = conn
+      .prepareStatement("INSERT INTO measurement_values (measurement_id, "
+        + "file_column_id, prior) VALUES (?, ?, ?)")) {
 
       addSensorValueStmt.setLong(1, measurementId);
-      addSensorValueStmt.setLong(2, sensorTypeId);
-      addSensorValueStmt.setLong(3, fileColumnId);
-      addSensorValueStmt.setLong(4, sensorValueId);
+      addSensorValueStmt.setLong(2, fileColumnId);
+      addSensorValueStmt.setLong(3, sensorValueId);
 
       addSensorValueStmt.execute();
     }
