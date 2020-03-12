@@ -74,6 +74,9 @@ dependencies {
 	compile 'org.apache.myfaces.core:myfaces-impl:2.2.8'
 	compile 'org.apache.myfaces.core:myfaces-bundle:2.2.8'
 	
+	// Flyway library for Java-based migrations
+	compile 'org.flywaydb:flyway-core:5.2.4'
+	
 	// Google GSON library
 	compile 'com.google.code.gson:gson:2.8.5'
 
@@ -94,6 +97,8 @@ dependencies {
 	testImplementation 'com.h2database:h2:1.4.197'
 	testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:5.2.1'
 	testImplementation 'org.mockito:mockito-core:2.15.0'
+	// Flyway library for Java-based migrations
+	testImplementation 'org.flywaydb:flyway-core:5.2.4'
 
 	// JUnit resources
 	testCompile files('WebApp/junit')
@@ -102,7 +107,7 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDirs = ['WebApp/src', 'src/QC_Routines/src']
+            srcDirs = ['WebApp/src', 'src/QC_Routines/src', 'src/migrations']
         }
         resources {
             srcDirs = ['WebApp/WebContent/resources', 'src/migrations']
