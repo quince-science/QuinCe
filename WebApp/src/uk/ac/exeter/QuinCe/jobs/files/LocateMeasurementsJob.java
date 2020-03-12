@@ -4,21 +4,23 @@ import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -108,80 +110,76 @@ public class LocateMeasurementsJob extends Job {
         ResourceManager.getInstance().getSensorsConfiguration(),
         ResourceManager.getInstance().getRunTypeCategoryConfiguration());
 
-      // Get all the sensor values for the dataset, ordered by date and then
-      // grouped by sensor type
-      DateColumnGroupedSensorValues groupedSensorValues = DataSetDataDB
-        .getSensorValuesByDateAndColumn(conn, instrument, dataSet.getId());
+      // Get the run types for the dataset
+      TreeMap<LocalDateTime, String> runTypes = null;
 
-      // The list of measurements being built, to be stored in the database
+      if (instrument.hasRunTypes()) {
+        runTypes = new TreeMap<LocalDateTime, String>();
+
+        List<SensorValue> runTypeSensorValues = DataSetDataDB.getSensorValues(
+          conn, dataSet.getId(),
+          instrument.getSensorAssignments().getRunTypeColumnIDs());
+
+        for (SensorValue value : runTypeSensorValues) {
+          runTypes.put(value.getTime(), value.getValue());
+        }
+      }
+
+      // Get all the times that the core sensor for one of the instrument's
+      // variables has a value.
+      List<InstrumentVariable> variables = instrument.getVariables();
+
+      Set<Long> measurementColumnIds = new HashSet<Long>(variables.size());
+
+      for (InstrumentVariable variable : variables) {
+        SensorType sensorType = variable.getCoreSensorType();
+        List<Long> columns = instrument.getSensorAssignments()
+          .getColumnIds(sensorType);
+        measurementColumnIds.addAll(columns);
+      }
+
+      TreeSet<LocalDateTime> measurementTimes = DataSetDataDB
+        .getSensorValueDates(conn, dataSet.getId(), measurementColumnIds);
+
+      // Now log all the times as new measurements, with the run type from the
+      // same time or immediately before.
       List<Measurement> measurements = new ArrayList<Measurement>(
-        groupedSensorValues.size());
+        measurementTimes.size());
 
-      // Go through each date in turn
-      for (Map.Entry<LocalDateTime, Map<SensorType, List<SensorValue>>> entry : groupedSensorValues
-        .entrySet()) {
+      ArrayList<LocalDateTime> runTypeTimes = null;
 
-        // See if there's a core value for each of the instrument's measured
-        // variables for this date
-        Map<SensorType, List<SensorValue>> sensorTypeGroups = entry.getValue();
+      if (null != runTypes) {
+        runTypeTimes = new ArrayList<LocalDateTime>(runTypes.keySet());
+      }
 
-        for (InstrumentVariable variable : instrument.getVariables()) {
-          if (sensorTypeGroups.containsKey(variable.getCoreSensorType())) {
+      int currentRunTypeTime = 0;
 
-            // We have a value. Therefore we have a measurement.
-            boolean measurementOK = true;
+      for (LocalDateTime measurementTime : measurementTimes) {
 
-            // Get the Run Type for this measurement
-            // We assume there's only one run type
-            List<SensorValue> runTypeValues = null;
+        // Get the run type for this measurement
+        String runType = null;
+        if (null != runTypes) {
 
-            if (variable.hasInternalCalibrations()) {
-              runTypeValues = sensorTypeGroups
-                .get(SensorType.RUN_TYPE_SENSOR_TYPE);
-              if (null == runTypeValues) {
-                throw new RecordNotFoundException(
-                  "Missing Run Type for measurement at " + entry.getKey());
-              }
+          // Find the run type immediately before or at the same time as the
+          // measurement
+          if (runTypeTimes.get(currentRunTypeTime).isAfter(measurementTime)) {
+            // There is no run type for this measurement. This isn't allowed!
+            throw new JobFailedException(id, "No run type available in Dataset "
+              + dataSet.getId() + " at time " + measurementTime.toString());
+          } else {
+            while (currentRunTypeTime < runTypeTimes.size() - 1 && !runTypeTimes
+              .get(currentRunTypeTime).isAfter(measurementTime)) {
+              currentRunTypeTime++;
             }
 
-            // Ditto for longitude and latitude
-            List<SensorValue> longitudeValues = sensorTypeGroups
-              .get(SensorType.LONGITUDE_SENSOR_TYPE);
-            if (null == longitudeValues) {
-              measurementOK = false;
-            }
-
-            List<SensorValue> latitudeValues = sensorTypeGroups
-              .get(SensorType.LATITUDE_SENSOR_TYPE);
-            if (null == latitudeValues) {
-              measurementOK = false;
-            }
-
-            if (measurementOK) {
-
-              // Only store non-ignored run types (assume only one run type)
-              //
-              // Also don't store if either position is missing
-              String runType = null;
-              boolean ignoredRunType = false;
-
-              if (variable.hasInternalCalibrations()) {
-                runType = runTypeValues.get(0).getValue();
-                ignoredRunType = instrument.getRunTypeCategory(runType)
-                  .equals(RunTypeCategory.IGNORED);
-              }
-
-              double longitude = longitudeValues.get(0).getDoubleValue();
-              double latitude = latitudeValues.get(0).getDoubleValue();
-              boolean positionOK = null != longitudeValues.get(0).getValue()
-                && null != latitudeValues.get(0).getValue();
-
-              if (!ignoredRunType && positionOK) {
-                measurements.add(new Measurement(dataSet.getId(), variable,
-                  entry.getKey(), longitude, latitude, runType));
-              }
-            }
+            runType = runTypes.get(runTypeTimes.get(currentRunTypeTime));
           }
+        }
+
+        // Make sure the run type is for an actual measurement (if applicable)
+        if (null == runType || instrument.isMeasurementRunType(runType)) {
+          measurements
+            .add(new Measurement(dataSet.getId(), measurementTime, runType));
         }
       }
 
@@ -193,8 +191,8 @@ public class LocateMeasurementsJob extends Job {
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(LocateMeasurementsJob.ID_PARAM,
         String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
-        DataReductionJob.class.getCanonicalName(), jobParams);
+      // JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
+      // DataReductionJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
     } catch (Exception e) {

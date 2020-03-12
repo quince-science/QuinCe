@@ -537,4 +537,49 @@ public class Instrument {
 
     return result;
   }
+
+  public boolean hasRunTypes() {
+    return sensorAssignments.getRunTypeColumnIDs().size() > 0;
+  }
+
+  /**
+   * Determine whether a Measurement object has the correct run type for data
+   * reduction to be performed
+   *
+   * @param runType
+   *          The run type
+   * @return
+   */
+  public boolean isMeasurementRunType(String runType) {
+    boolean result = false;
+
+    if (!hasInternalCalibrations()) {
+      result = true;
+    } else {
+      result = getRunTypeCategory(runType).isMeasurementType();
+    }
+
+    return result;
+  }
+
+  /**
+   * Determine whether a Measurement object has the correct run type for data
+   * reduction to be performed
+   *
+   * @param runType
+   *          The run type
+   * @return
+   */
+  public boolean isRunTypeForVariable(InstrumentVariable variable,
+    String runType) {
+    boolean result = false;
+
+    if (!hasInternalCalibrations()) {
+      result = true;
+    } else {
+      result = getRunTypeCategory(runType).getType() == variable.getId();
+    }
+
+    return result;
+  }
 }

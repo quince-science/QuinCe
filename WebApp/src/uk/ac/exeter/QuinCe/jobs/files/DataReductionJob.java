@@ -18,13 +18,11 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -163,31 +161,31 @@ public class DataReductionJob extends Job {
                 CalculationValue.get(measurement, sensorType, sensorValues));
             }
           }
-
-          DataReducer reducer = reducers.get(measurement.getVariable());
-          if (null == reducer) {
-
-            Map<String, Float> variableAttributes = InstrumentDB
-              .getVariableAttributes(conn, instrument.getDatabaseId(),
-                measurement.getVariable().getId());
-
-            reducer = DataReducerFactory.getReducer(conn, instrument,
-              measurement.getVariable(), dataSet.isNrt(), variableAttributes,
-              calibrationSet, allMeasurements, groupedSensorValues);
-
-            reducers.put(measurement.getVariable(), reducer);
-          }
-
-          DataReductionRecord dataReductionRecord = reducer
-            .performDataReduction(instrument, measurement, calculationValues);
-
-          calculationValuesToStore.addAll(calculationValues.values());
-          dataReductionRecords.add(dataReductionRecord);
+          /*
+           * DataReducer reducer = reducers.get(measurement.getVariable()); if
+           * (null == reducer) {
+           *
+           * Map<String, Float> variableAttributes = InstrumentDB
+           * .getVariableAttributes(conn, instrument.getDatabaseId(),
+           * measurement.getVariable().getId());
+           *
+           * reducer = DataReducerFactory.getReducer(conn, instrument,
+           * measurement.getVariable(), dataSet.isNrt(), variableAttributes,
+           * calibrationSet, allMeasurements, groupedSensorValues);
+           *
+           * reducers.put(measurement.getVariable(), reducer); }
+           *
+           * DataReductionRecord dataReductionRecord = reducer
+           * .performDataReduction(instrument, measurement, calculationValues);
+           *
+           * calculationValuesToStore.addAll(calculationValues.values());
+           * dataReductionRecords.add(dataReductionRecord);
+           */
         }
       }
 
-      DataSetDataDB.storeDataReduction(conn, calculationValuesToStore,
-        dataReductionRecords);
+      // DataSetDataDB.storeDataReduction(conn, calculationValuesToStore,
+      // dataReductionRecords);
 
       // If the thread was interrupted, undo everything
       if (thread.isInterrupted()) {
@@ -286,17 +284,14 @@ public class DataReductionJob extends Job {
     Measurement measurement) {
 
     boolean result = false;
-
-    if (!instrument.hasInternalCalibrations()) {
-      result = true;
-    } else {
-      RunTypeCategory runTypeCategory = instrument
-        .getRunTypeCategory(measurement.getRunType());
-
-      result = runTypeCategory.isMeasurementType() && runTypeCategory
-        .getDescription().equals(measurement.getVariable().getName());
-    }
-
+    /*
+     * if (!instrument.hasInternalCalibrations()) { result = true; } else {
+     * RunTypeCategory runTypeCategory = instrument
+     * .getRunTypeCategory(measurement.getRunType());
+     *
+     * result = runTypeCategory.isMeasurementType() && runTypeCategory
+     * .getDescription().equals(measurement.getVariable().getName()); }
+     */
     return result;
   }
 }
