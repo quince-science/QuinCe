@@ -66,7 +66,6 @@ import json
 import time
 
 from py_func.carbon import get_file_from_zip
-
 # Upload result codes
 UPLOAD_OK = 0
 FILE_EXISTS = 2
@@ -76,7 +75,7 @@ UPLOADED = 1
 NOT_UPLOADED = 0
 FAILED_INGESTION = -1
 
-dnt_datetime_format = '%Y%m%dT%H%M%SZ'
+dnt_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
 
 log_file = 'log/cmems_log.txt'
@@ -84,8 +83,9 @@ not_ingested = 'log/log_uningested_files.csv'
 cmems_db = 'files_cmems.db'
 
 product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
-
 dataset_id = 'NRT_202003'
+institution = 'University of Bergen Geophysical Institute'
+institution_edmo = '4595'
 
 nrt_dir = '/' + product_id + '/' + dataset_id + '/latest'
 dnt_dir = '/' + product_id + '/DNT'
@@ -128,11 +128,25 @@ def build_dataproduct(dataset_zip,dataset_name,destination_filename):
     with open(nc_filepath,'wb') as f: f.write(nc_content)
 
     # reading netCDF file to memory
-    nc = netCDF4.Dataset(nc_filepath,mode = 'a')
+    nc = netCDF4.Dataset(nc_filepath,mode = 'r+')
     datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
     nc.date_update = datasetdate
     nc.history = datasetdate + " : Creation"
-    nc.close() # commits the changes to disk.
+
+    platform_code = nc.platform_code
+    last_lat = nc.last_latitude_observation
+    last_lon = nc.last_longitude_observation
+    last_dt = nc.last_date_observation 
+
+    #get list of parameters from netCDF file
+    var_list = nc.variables.keys()
+    var_list = list(filter(lambda x: '_' not in x, var_list))
+    var_list = list(filter(lambda x: 'TIME' not in x, var_list))
+    var_list = list(filter(lambda x: 'LATITUDE' not in x, var_list))
+    var_list = list(filter(lambda x: 'LONGITUDE' not in x, var_list))
+    parameters = ' '.join(var_list)
+    nc.close()
 
     # create dictionary object
     date = nc_filename.split('_')[-1]
@@ -143,14 +157,19 @@ def build_dataproduct(dataset_zip,dataset_name,destination_filename):
       'hashsum': hashsum, 
       'date': date, 
       'dataset':dataset_name,
-      'uploaded':False})
+      'uploaded':False,
+      'platform': platform_code,
+      'parameters':parameters,
+      'last_lat':last_lat,
+      'last_lon':last_lon,
+      'last_dt':last_dt})
 
   logging.debug(f'Commiting metadata to local SQL database {cmems_db}')
   sql_commit(nc_dict)
   return str(curr_date)
 
 
-def upload_to_copernicus(ftp_config,server,dataset,curr_date):
+def upload_to_copernicus(ftp_config,server,dataset,curr_date,platform):
   '''
   - Creates a FTP-connection
   - Uploads netCDF files
@@ -159,9 +178,9 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
 
   ftp_config contains login information
   '''
-
   status = 0
   error = curr_date
+  error_msg = ''
 
   # create ftp-connection
   with ftputil.FTPHost(
@@ -242,23 +261,53 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
           error += 'Building index failed: ' + str(e)
    
         # UPLOAD INDEX 
+        if index_filename:
+          try:
+            upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
+              upload_to_ftp(ftp,ftp_config, index_filename))
+            logging.debug(f'index upload result: {upload_result}')
+          except Exception as e:
+            logging.error('Uploading index failed: ', exc_info=True)
+            status = 0      
+            error += 'Uploading index failed: ' + str(e)
+        
+          # BUILD DNT-FILE
+          # Adding index file to DNT-list:
+          dnt_upload[index_filename] = ({
+            'ftp_filepath':ftp_filepath, 
+            'start_upload_time':start_upload_time, 
+            'stop_upload_time':stop_upload_time,
+            'local_filepath': index_filename,
+            })
+
+        
+        # INDEX platform
         try:
-          upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
-            upload_to_ftp(ftp,ftp_config, index_filename))
-          logging.debug(f'index upload result: {upload_result}')
+          index_platform = build_index_platform(c,platform)
         except Exception as e:
-          logging.error('Uploading index failed: ', exc_info=True)
-          status = 0      
-          error += 'Uploading index failed: ' + str(e)
-      
-        # BUILD DNT-FILE
-        # Adding index file to DNT-list:
-        dnt_upload[index_filename] = ({
-          'ftp_filepath':ftp_filepath, 
-          'start_upload_time':start_upload_time, 
-          'stop_upload_time':stop_upload_time,
-          'local_filepath': index_filename
-          })
+          logging.error('Building platform index failed: ', exc_info=True)
+          status = 0
+          error += 'Building platform index failed: ' + str(e)
+   
+        if index_platform:
+          try:
+            upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
+              upload_to_ftp(ftp,ftp_config, index_platform))
+            logging.debug(f'index platform upload result: {upload_result}')
+          except Exception as e:
+            logging.error('Uploading platform index failed: ', exc_info=True)
+            status = 0      
+            error += 'Uploading platform index failed: ' + str(e)
+        
+          # BUILD DNT-FILE
+          # Adding index file to DNT-list:
+          dnt_upload[index_platform] = ({
+            'ftp_filepath':ftp_filepath, 
+            'start_upload_time':start_upload_time, 
+            'stop_upload_time':stop_upload_time,
+            'local_filepath': index_platform,
+
+            })
 
         logging.info('Building and uploading DNT-file')
         try:
@@ -312,9 +361,10 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
 
       if status == 0:
         logging.error('Upload failed')
-        abort_upload(error, ftp, nrt_dir, c, curr_date)
+        error_msg = abort_upload(error, ftp, nrt_dir, c, curr_date)
+        
+    return status, error_msg
 
-    return status
 
 def abort_upload(error,ftp,nrt_dir,c,curr_date):
   # Remove currently updated files on ftp-server
@@ -332,8 +382,10 @@ def abort_upload(error,ftp,nrt_dir,c,curr_date):
     SET uploaded = ?, ftp_filepath = ?, dnt_file = ?, comment = ? \
     WHERE dnt_file = ?")
   sql_var = [0,None,None,error_msg, curr_date]
+
   c.execute(sql_req,sql_var)
 
+  return error_msg
 
 
 def check_directory(ftp, nrt_dir):
@@ -378,7 +430,12 @@ def create_connection(DB):
               ftp_filepath TEXT,
               dnt_file TEXT,
               comment TEXT,
-              export_date TEXT
+              export_date TEXT,
+              platform TEXT,
+              parameters TEXT,
+              last_lat TEXT,
+              last_lon TEXT,
+              last_dt TEXT
               )''')
   return c
 
@@ -399,18 +456,24 @@ def sql_commit(nc_dict):
     
     if filename_exists: # if netCDF file already in database
       logging.debug(f'Updating: {key}')
-      sql_req = "UPDATE latest SET filename=?,hashsum=?,filepath=?,nc_date=?,\
-        dataset=?,uploaded=?,ftp_filepath=?,dnt_file=?,comment=?,export_date=? \
+      sql_req = "UPDATE latest SET hashsum=?,filepath=?,nc_date=?,\
+        dataset=?,uploaded=?,ftp_filepath=?,dnt_file=?,comment=?,\
+        platform=?,parameters=?,last_lat=?,last_lon=?,last_dt=?\
         WHERE filename=?"
-      sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
-        nc_dict[key]['date'],nc_dict[key]['dataset'],uploaded,None,None,None,key,date])
+      sql_param = ([nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
+        nc_dict[key]['date'],nc_dict[key]['dataset'],uploaded,None,None,
+        'last updated:'+date,nc_dict[key]['platform'],nc_dict[key]['parameters'],
+        nc_dict[key]['last_lat'],nc_dict[key]['last_lon'],nc_dict[key]['last_dt'],key])
     else:
       logging.info(f'Adding new entry {key}')
       sql_req = "INSERT INTO latest(filename,hashsum,filepath,nc_date,\
-        dataset,uploaded,ftp_filepath,dnt_file,comment,export_date) \
-        VALUES (?,?,?,?,?,?,?,?,?,?)"
+        dataset,uploaded,ftp_filepath,dnt_file,comment,export_date,\
+        platform,parameters,last_lat,last_lon,last_dt)\
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
-        nc_dict[key]['date'],nc_dict[key]['dataset'],uploaded,None,None,None,date])
+        nc_dict[key]['date'],nc_dict[key]['dataset'],uploaded,None,None,None,
+        date,nc_dict[key]['platform'],nc_dict[key]['parameters'],
+        nc_dict[key]['last_lat'],nc_dict[key]['last_lon'],nc_dict[key]['last_dt']])
 
     c.execute(sql_req,sql_param)
 
@@ -550,7 +613,7 @@ def build_fDNT(dnt_delete):
 
 def build_index(currently_uploaded):
   '''
-  Creates index-file over CMEMS directory.
+  Creates index-file of CMEMS directory.
   Lists all files currently uploaded to the CMEMS server. 
   '''
 
@@ -578,20 +641,13 @@ def build_index(currently_uploaded):
     time_start = nc.time_coverage_start
     time_end  = nc.time_coverage_end
     date_update = nc.date_update
-
-    #get list of parameters from netCDF file
-    var_list = nc.variables.keys()
-    var_list = list(filter(lambda x: '_' not in x, var_list))
-    var_list = list(filter(lambda x: 'TIME' not in x, var_list))
-    var_list = list(filter(lambda x: 'LATITUDE' not in x, var_list))
-    var_list = list(filter(lambda x: 'LONGITUDE' not in x, var_list))
     nc.close()
-    parameters = ' '.join(var_list)
+
+    parameters = str(file[11])
 
     index_info += ('COP-GLOBAL-01,' + server_location + ftp_filepath + ',' 
                 + lat_min + ',' + lat_max + ',' + lon_min + ',' + lon_max + ',' 
-                + time_start + ',' + time_end  
-                + ',University of Bergen Geophysical Institute,' 
+                + time_start + ',' + time_end  + ',' + institution +',' 
                 + date_update + ',R,' + parameters + '\n')
 
   index_latest = index_header + index_info
@@ -600,6 +656,55 @@ def build_index(currently_uploaded):
   with open(index_filename,'wb') as f: f.write(index_latest.encode())
  
   logging.debug('index file:\n' + index_latest)
+
+  return index_filename
+
+def build_index_platform(c,platform):
+  '''
+  Creates index-file of CMEMS directory.
+  Lists all platforms uploaded to the CMEMS server. 
+  '''
+
+  date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+
+  index_header = ('# Title : In Situ platforms catalog \n'\
+    + '# Description : catalog of available In Situ platforms.\n'\
+    + '# Project : Copernicus \n# Format version : 1.0 \n'\
+    + '# Date of update : ' + date_header +'\n'
+    + '# platform_code,creation_date,update_date,wmo_platform_code,data_source,'
+    + 'institution,institution_edmo_code,parameter,last_latitude_observation,'
+    + 'last_longitude_observation,last_date_observation \n')
+
+  # Get unique platforms from db
+  c.execute("SELECT DISTINCT platform FROM latest")
+  unique_platforms = c.fetchall()
+  logging.debug(unique_platforms)
+  if (None,) in unique_platforms: unique_platforms.remove((None,))
+
+  index_info = ''
+  for unique_platform in unique_platforms:
+    platform_id = platform[unique_platform[0]]['platform_id']
+    c.execute("SELECT * FROM latest WHERE platform = ? ORDER BY last_dt DESC",
+      [unique_platform[0]])
+    db_last = c.fetchone()
+    
+    index_info += (platform[platform_id]['call_sign'] + ',' 
+      + str(platform[platform_id]['creation_date']) + ','
+      + str(db_last[9]) + ',' 
+      + platform_id + ',' 
+      + 'GL_TS_TS_' + platform[platform_id]['call_sign'] + '_XXXXXX,' 
+      + institution + ',' + institution_edmo + ',' 
+      + str(db_last[11]) + ',' 
+      + str(db_last[12]) + ',' 
+      + str(db_last[13]) + ',' 
+      + str(db_last[14]) + '\n')
+
+  index_platform = index_header + index_info
+
+  index_filename = 'index_platform.txt'
+  with open(index_filename,'wb') as f: f.write(index_platform.encode())
+ 
+  logging.debug('index file:\n' + index_platform)
 
   return index_filename
 
