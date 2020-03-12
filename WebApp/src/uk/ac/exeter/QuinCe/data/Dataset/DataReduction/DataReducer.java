@@ -110,27 +110,26 @@ public abstract class DataReducer {
   public DataReductionRecord performDataReduction(Instrument instrument,
     Measurement measurement, Map<SensorType, CalculationValue> sensorValues)
     throws Exception {
+    /*
+     * DataReductionRecord record = new DataReductionRecord(measurement);
+     * 
+     * if (!isMeasurementRunType(instrument, measurement.getRunType())) {
+     * makeEmptyRecord(record); } else { doCalculation(instrument, measurement,
+     * sensorValues, record);
+     * 
+     * List<SensorType> missingParameters = getMissingParameters(
+     * instrument.getSensorAssignments(), sensorValues); if
+     * (missingParameters.size() > 0) { makeMissingParameterRecord(record,
+     * missingParameters); } else { doCalculation(instrument, measurement,
+     * sensorValues, record); } }
+     * 
+     * applyQCFlags(instrument.getSensorAssignments(), variable, sensorValues,
+     * record);
+     * 
+     * return record;
+     */
 
-    DataReductionRecord record = new DataReductionRecord(measurement);
-
-    if (!isMeasurementRunType(instrument, measurement.getRunType())) {
-      makeEmptyRecord(record);
-    } else {
-      doCalculation(instrument, measurement, sensorValues, record);
-
-      List<SensorType> missingParameters = getMissingParameters(
-        instrument.getSensorAssignments(), sensorValues);
-      if (missingParameters.size() > 0) {
-        makeMissingParameterRecord(record, missingParameters);
-      } else {
-        doCalculation(instrument, measurement, sensorValues, record);
-      }
-    }
-
-    applyQCFlags(instrument.getSensorAssignments(), variable, sensorValues,
-      record);
-
-    return record;
+    return null;
   }
 
   /**

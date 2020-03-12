@@ -1,8 +1,8 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
@@ -24,24 +24,9 @@ public class Measurement implements Comparable<Measurement> {
   private final long datasetId;
 
   /**
-   * The measured variable
-   */
-  private final InstrumentVariable variable;
-
-  /**
    * The timestamp of the measurement
    */
   private final LocalDateTime time;
-
-  /**
-   * The longitude of the measurement
-   */
-  private final double longitude;
-
-  /**
-   * The latitude of the measurement
-   */
-  private final double latitude;
 
   /**
    * The run type of the measurement (optional)
@@ -53,8 +38,6 @@ public class Measurement implements Comparable<Measurement> {
    *
    * @param datasetId
    *          The ID of the dataset to which the measurement belongs
-   * @param variable
-   *          The variable that is measured
    * @param time
    *          The timestamp of the measurement
    * @param longitude
@@ -64,15 +47,11 @@ public class Measurement implements Comparable<Measurement> {
    * @param runType
    *          The run type of the measurement
    */
-  public Measurement(long datasetId, InstrumentVariable variable,
-    LocalDateTime time, double longitude, double latitude, String runType) {
+  public Measurement(long datasetId, LocalDateTime time, String runType) {
 
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.datasetId = datasetId;
-    this.variable = variable;
     this.time = time;
-    this.longitude = longitude;
-    this.latitude = latitude;
     this.runType = runType;
   }
 
@@ -83,8 +62,6 @@ public class Measurement implements Comparable<Measurement> {
    *          The measurement's database ID
    * @param datasetId
    *          The ID of the dataset to which the measurement belongs
-   * @param variable
-   *          The variable that is measured
    * @param time
    *          The timestamp of the measurement
    * @param longitude
@@ -94,15 +71,12 @@ public class Measurement implements Comparable<Measurement> {
    * @param runType
    *          The run type of the measurement
    */
-  public Measurement(long id, long datasetId, InstrumentVariable variable,
-    LocalDateTime time, double longitude, double latitude, String runType) {
+  public Measurement(long id, long datasetId, LocalDateTime time,
+    String runType) {
 
     this.id = id;
     this.datasetId = datasetId;
-    this.variable = variable;
     this.time = time;
-    this.longitude = longitude;
-    this.latitude = latitude;
     this.runType = runType;
   }
 
@@ -135,39 +109,12 @@ public class Measurement implements Comparable<Measurement> {
   }
 
   /**
-   * Get the variable measured in this measurement
-   *
-   * @return The measured variable
-   */
-  public InstrumentVariable getVariable() {
-    return variable;
-  }
-
-  /**
    * Get the time of the measurement
    *
    * @return The measurement time
    */
   public LocalDateTime getTime() {
     return time;
-  }
-
-  /**
-   * Get the longitude of the measurement
-   *
-   * @return The measurement longitude
-   */
-  public double getLongitude() {
-    return longitude;
-  }
-
-  /**
-   * Get the latitude of the measurement
-   *
-   * @return The measurement latitude
-   */
-  public double getLatitude() {
-    return latitude;
   }
 
   /**
@@ -180,35 +127,9 @@ public class Measurement implements Comparable<Measurement> {
   }
 
   /*
-   * In theory, equals and compareTo should check the same fields. However, we
-   * will only compare Measurements from the same dataset, and the id field is
-   * unique (the primary key in the database).
-   *
-   * Therefore checking the id is sufficient to know that two objects are equal.
-   * Comparison is done on the id first, and if they aren't equal then the time
-   * is used. This ensures that "compareTo() == 0" is consistent with
-   * "equals() == true" in all cases.
-   *
-   * If the IDs aren't equal, compareTo uses time to establish ordering.
+   * We will only need to compare measurements from the same dataset. Therefore
+   * we can get away with just comparing the times.
    */
-
-  @Override
-  public boolean equals(Object o) {
-    // Compare by ID
-    boolean equals = false;
-
-    if (o instanceof Measurement) {
-      equals = ((Measurement) o).id == id;
-    }
-
-    return equals;
-  }
-
-  @Override
-  public int hashCode() {
-    return Long.hashCode(id);
-  }
-
   @Override
   public int compareTo(Measurement o) {
     int result = 0;
@@ -218,5 +139,26 @@ public class Measurement implements Comparable<Measurement> {
     }
 
     return result;
+  }
+
+  /*
+   * Equals & hashCode use the dataset ID and time
+   */
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(datasetId, time);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof Measurement))
+      return false;
+    Measurement other = (Measurement) obj;
+    return datasetId == other.datasetId && Objects.equals(time, other.time);
   }
 }

@@ -14,13 +14,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -113,15 +113,13 @@ public class DataSetDataDB {
    * Statement to store a measurement record
    */
   private static final String STORE_MEASUREMENT_STATEMENT = "INSERT INTO "
-    + "measurements (dataset_id, variable_id, date, longitude, latitude, run_type) "
-    + "VALUES (?, ?, ?, ?, ?, ?)";
+    + "measurements (dataset_id, date, run_type) " + "VALUES (?, ?, ?)";
 
   /**
    * Query to get all measurement records for a dataset
    */
   private static final String GET_MEASUREMENTS_QUERY = "SELECT "
-    + "id, variable_id, date, longitude, latitude, run_type "
-    + "FROM measurements WHERE dataset_id = ? "
+    + "id, date, run_type " + "FROM measurements WHERE dataset_id = ? "
     + "ORDER BY variable_id ASC, date ASC";
 
   private static final String GET_MEASUREMENT_TIMES_QUERY = "SELECT "
@@ -139,15 +137,11 @@ public class DataSetDataDB {
    * Statement to store a data reduction result
    */
   private static final String STORE_DATA_REDUCTION_STATEMENT = "INSERT INTO "
-    + "data_reduction (measurement_id, variable_id, calculation_values, "
+    + "data_reduction (measurement_id, variable_id, values_json, "
     + "qc_flag, qc_message) VALUES (?, ?, ?, ?, ?)";
 
   private static final String DELETE_DATA_REDUCTION_STATEMENT = "DELETE FROM "
     + "data_reduction WHERE measurement_id IN "
-    + "(SELECT id FROM measurements WHERE dataset_id = ?)";
-
-  private static final String DELETE_MEASUREMENT_VALUES_STATEMENT = "DELETE FROM "
-    + "measurement_values WHERE measurement_id IN "
     + "(SELECT id FROM measurements WHERE dataset_id = ?)";
 
   private static final String DELETE_MEASUREMENTS_STATEMENT = "DELETE FROM "
@@ -169,8 +163,18 @@ public class DataSetDataDB {
     + "AND sv.file_column IN " + DatabaseUtils.IN_PARAMS_TOKEN + " "
     + "ORDER BY sv.date ASC";
 
+  private static final String GET_SENSOR_VALUES_QUERY = "SELECT "
+    + "id, file_column, date, value, auto_qc, " // 5
+    + "user_qc_flag, user_qc_message " // 8
+    + "FROM sensor_values WHERE dataset_id = ? AND file_column IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + "ORDER BY date";
+
   private static final String GET_SENSOR_VALUE_DATES_QUERY = "SELECT DISTINCT "
     + "date FROM sensor_values WHERE dataset_id = ? ORDER BY date ASC";
+
+  private static final String GET_SENSOR_VALUE_DATES_FOR_COLUMNS_QUERY = "SELECT "
+    + "DISTINCT date FROM sensor_values WHERE dataset_id = ? AND FILE_COLUMN IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY date ASC";
 
   private static final String GET_REQUIRED_FLAGS_QUERY = "SELECT "
     + "COUNT(*) FROM sensor_values WHERE dataset_id = ? "
@@ -239,9 +243,7 @@ public class DataSetDataDB {
 
       switch (originalField) {
       case "id":
-      case "date":
-      case "longitude":
-      case "latitude": {
+      case "date": {
         datasetFields.add(originalField);
         break;
       }
@@ -579,11 +581,8 @@ public class DataSetDataDB {
       // Batch up all the measurements
       for (Measurement measurement : measurements) {
         stmt.setLong(1, measurement.getDatasetId());
-        stmt.setLong(2, measurement.getVariable().getId());
-        stmt.setLong(3, DateTimeUtils.dateToLong(measurement.getTime()));
-        stmt.setDouble(4, measurement.getLongitude());
-        stmt.setDouble(5, measurement.getLatitude());
-        stmt.setString(6, measurement.getRunType());
+        stmt.setLong(2, DateTimeUtils.dateToLong(measurement.getTime()));
+        stmt.setString(3, measurement.getRunType());
         stmt.addBatch();
       }
 
@@ -678,15 +677,10 @@ public class DataSetDataDB {
       while (records.next()) {
         long id = records.getLong(1);
         // We already have the dataset id
-        long variableId = records.getLong(2);
-        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
-        double longitude = records.getDouble(4);
-        double latitude = records.getDouble(5);
-        String runType = records.getString(6);
+        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(2));
+        String runType = records.getString(3);
 
-        measurements.add(
-          new Measurement(id, datasetId, instrument.getVariable(variableId),
-            time, longitude, latitude, runType));
+        measurements.add(new Measurement(id, datasetId, time, runType));
       }
 
     } catch (Exception e) {
@@ -754,48 +748,28 @@ public class DataSetDataDB {
    *           If the data cannot be stored
    */
   public static void storeDataReduction(Connection conn,
-    Collection<CalculationValue> values,
     List<DataReductionRecord> dataReductionRecords) throws DatabaseException {
-
-    PreparedStatement valueStmt = null;
-    PreparedStatement dataReductionStmt = null;
-
-    try {
-      valueStmt = conn.prepareStatement(STORE_MEASUREMENT_VALUE_STATEMENT);
-
-      // First the used sensor values
-      for (CalculationValue value : values) {
-        for (long id : value.getUsedSensorValueIds()) {
-          valueStmt.setLong(1, value.getMeasurementId());
-          valueStmt.setLong(2, value.getVariableId());
-          valueStmt.setLong(3, id);
-
-          valueStmt.addBatch();
-        }
-      }
-
-      valueStmt.executeBatch();
-
-      // And now the data reduction record
-      dataReductionStmt = conn.prepareStatement(STORE_DATA_REDUCTION_STATEMENT);
-      for (DataReductionRecord dataReduction : dataReductionRecords) {
-        dataReductionStmt.setLong(1, dataReduction.getMeasurementId());
-        dataReductionStmt.setLong(2, dataReduction.getVariableId());
-        dataReductionStmt.setString(3, dataReduction.getCalculationJson());
-        dataReductionStmt.setInt(4, dataReduction.getQCFlag().getFlagValue());
-        dataReductionStmt.setString(5, StringUtils
-          .collectionToDelimited(dataReduction.getQCMessages(), ";"));
-
-        dataReductionStmt.addBatch();
-      }
-
-      dataReductionStmt.executeBatch();
-
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while storing data reduction", e);
-    } finally {
-      DatabaseUtils.closeStatements(valueStmt);
-    }
+    /*
+     * PreparedStatement dataReductionStmt = null;
+     *
+     * try { // And now the data reduction record dataReductionStmt =
+     * conn.prepareStatement(STORE_DATA_REDUCTION_STATEMENT); for
+     * (DataReductionRecord dataReduction : dataReductionRecords) {
+     * dataReductionStmt.setLong(1, dataReduction.getMeasurementId());
+     * dataReductionStmt.setLong(2, dataReduction.getVariableId());
+     * dataReductionStmt.setString(3, dataReduction.getValuesJson());
+     * dataReductionStmt.setInt(4, dataReduction.getQCFlag().getFlagValue());
+     * dataReductionStmt.setString(5, StringUtils
+     * .collectionToDelimited(dataReduction.getQCMessages(), ";"));
+     *
+     * dataReductionStmt.addBatch(); }
+     *
+     * dataReductionStmt.executeBatch();
+     *
+     * } catch (SQLException e) { throw new
+     * DatabaseException("Error while storing data reduction", e); } finally {
+     * DatabaseUtils.closeStatements(dataReductionStmt); }
+     */
   }
 
   /**
@@ -849,7 +823,6 @@ public class DataSetDataDB {
     MissingParam.checkZeroPositive(datasetId, "datasetId");
 
     PreparedStatement delDataReductionStmt = null;
-    PreparedStatement delMeasurementValuesStmt = null;
     PreparedStatement delMeasurementsStmt = null;
 
     try {
@@ -860,11 +833,6 @@ public class DataSetDataDB {
       delDataReductionStmt.setLong(1, datasetId);
       delDataReductionStmt.execute();
 
-      delMeasurementValuesStmt = conn
-        .prepareStatement(DELETE_MEASUREMENT_VALUES_STATEMENT);
-      delMeasurementValuesStmt.setLong(1, datasetId);
-      delMeasurementValuesStmt.execute();
-
       delMeasurementsStmt = conn
         .prepareStatement(DELETE_MEASUREMENTS_STATEMENT);
       delMeasurementsStmt.setLong(1, datasetId);
@@ -874,9 +842,58 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while deleting measurements", e);
     } finally {
-      DatabaseUtils.closeStatements(delMeasurementsStmt,
-        delMeasurementValuesStmt, delDataReductionStmt);
+      DatabaseUtils.closeStatements(delMeasurementsStmt, delDataReductionStmt);
     }
+  }
+
+  /**
+   * Get all the sensor values for the given columns that occur between the
+   * specified dates (inclusive).
+   *
+   * @param conn
+   *          A database connection
+   * @param start
+   *          The start date
+   * @param end
+   *          The end date
+   * @param columnIds
+   *          The column IDs
+   * @return
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static List<SensorValue> getSensorValues(Connection conn,
+    long datasetId, List<Long> columnIds)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkPositive(datasetId, "datasetId");
+    MissingParam.checkMissing(columnIds, "columnIds", false);
+
+    List<SensorValue> result = new ArrayList<SensorValue>();
+
+    String sql = DatabaseUtils.makeInStatementSql(GET_SENSOR_VALUES_QUERY,
+      columnIds.size());
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setLong(1, datasetId);
+      for (int i = 0; i < columnIds.size(); i++) {
+        stmt.setLong(i + 2, columnIds.get(i));
+      }
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.add(sensorValueFromResultSet(records, datasetId));
+        }
+      }
+
+    } catch (SQLException | InvalidFlagException e) {
+      throw new DatabaseException("Error getting sensor values", e);
+    }
+
+    return result;
   }
 
   /**
@@ -917,6 +934,58 @@ public class DataSetDataDB {
     }
 
     return times;
+  }
+
+  /**
+   * Retrieve the dates of all sensor values for a given set of columns in a
+   * dataset.
+   *
+   * @param conn
+   *          A database connection.
+   * @param datasetId
+   *          The dataset ID.
+   * @param columnIds
+   *          The column IDs.
+   * @return The value dates.
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static TreeSet<LocalDateTime> getSensorValueDates(Connection conn,
+    long datasetId, Collection<Long> columnIds)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkPositive(datasetId, "datasetId");
+    MissingParam.checkMissing(columnIds, "columnIds", false);
+
+    TreeSet<LocalDateTime> result = new TreeSet<LocalDateTime>();
+
+    String sql = DatabaseUtils.makeInStatementSql(
+      GET_SENSOR_VALUE_DATES_FOR_COLUMNS_QUERY, columnIds.size());
+
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setLong(1, datasetId);
+
+      int paramCount = 1;
+      for (long columnId : columnIds) {
+        paramCount++;
+        stmt.setLong(paramCount, columnId);
+      }
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.add(DateTimeUtils.longToDate(records.getLong(1)));
+        }
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving sensor value dates",
+        e);
+    }
+
+    return result;
   }
 
   public static int getFlagsRequired(DataSource dataSource, long datasetId)

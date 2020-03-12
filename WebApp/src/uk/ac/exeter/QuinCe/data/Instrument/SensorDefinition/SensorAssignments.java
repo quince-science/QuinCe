@@ -703,7 +703,6 @@ public class SensorAssignments
     return result;
   }
 
-
   /**
    * Determine whether or not any of the assigned sensors require internal
    * calibrations.
@@ -718,6 +717,23 @@ public class SensorAssignments
       if (sensorType.hasInternalCalibration() && get(sensorType).size() > 0) {
         result = true;
         break;
+      }
+    }
+
+    return result;
+  }
+
+  public List<Long> getColumnIds(SensorType sensorType) {
+
+    List<Long> result = null;
+
+    List<SensorAssignment> assignments = get(sensorType);
+    if (null != assignments) {
+
+      result = new ArrayList<Long>(assignments.size());
+
+      for (SensorAssignment assignment : assignments) {
+        result.add(assignment.getDatabaseId());
       }
     }
 

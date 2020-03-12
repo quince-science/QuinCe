@@ -6,7 +6,6 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 
-import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 import uk.ac.exeter.QuinCe.utils.NoEmptyStringList;
@@ -44,9 +43,9 @@ public class DataReductionRecord {
    * @param measurement
    *          The measurement
    */
-  public DataReductionRecord(Measurement measurement) {
-    this.measurementId = measurement.getId();
-    this.variableId = measurement.getVariable().getId();
+  public DataReductionRecord(long measurementId, long variableId) {
+    this.measurementId = measurementId;
+    this.variableId = variableId;
 
     this.calculationValues = new HashMap<String, Double>();
     this.qcFlag = Flag.ASSUMED_GOOD;
