@@ -168,10 +168,13 @@ public class CalculationValue {
         finalValue = valueTotal / count;
       }
     }
+    /*
+     * return new CalculationValue(measurement.getId(),
+     * measurement.getVariable().getId(), usedSensorValues, finalValue, qcFlag,
+     * qcMessages, flagNeeded);
+     */
 
-    return new CalculationValue(measurement.getId(),
-      measurement.getVariable().getId(), usedSensorValues, finalValue, qcFlag,
-      qcMessages, flagNeeded);
+    return null;
   }
 
   /**
