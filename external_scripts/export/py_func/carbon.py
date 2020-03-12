@@ -31,7 +31,7 @@ OBJECT_CONTENT_TYPE = 'text/csv'
 
 def export_file_to_cp(
   manifest, platform, config, filename, platform_code,dataset_zip,index, 
-  auth_cookie,level,upload,L0_hashsums=[]):
+  auth_cookie,level,upload,err_msg,L0_hashsums=[]):
   ''' Upload routine for NRT data files
 
   Uploads both metadata and data object
@@ -41,7 +41,7 @@ def export_file_to_cp(
   for L1 exports. Currently not in use on request by Oleg.
 
   '''
-  CP_success = 0
+  CP_success = 0;
   logging.debug(f'Processing {level} file: {filename}')
     
   file = get_file_from_zip(dataset_zip,filename)
@@ -65,7 +65,7 @@ def export_file_to_cp(
   is_next_version = None
 
   if prev_exp['status'] == 'ERROR': 
-    raise Exception(f'Checking database failed.{prev_exp["ERROR"]}')
+    err_msg +=(f'Checking database failed.{prev_exp["ERROR"]}')
   if prev_exp['status'] == 'UPDATE': 
     is_next_version = prev_exp['old_hashsum'] #old hashsum
 
@@ -86,12 +86,10 @@ def export_file_to_cp(
           db_status = sql_commit(
             export_filename, hashsum,filename,level,L1_filename)
           logging.debug(f'{export_filename}: SQL commit {db_status}')
-        else:
-          raise Exception(f'Failed to upload: {export_filename}, \nException: {e}')
       except Exception as e:
-        raise Exception(f'Failed to upload: {export_filename}, \nException: {e}')
+        err_msg += (f'Failed to upload: {export_filename}, \nException: {e}')
 
-  return CP_success, hashsum
+  return CP_success, hashsum, err_msg
 
 def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
   '''Uploads metadata and data object to Carbon Portal  '''
