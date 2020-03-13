@@ -17,14 +17,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
-import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
@@ -43,27 +42,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  */
 // TODO The detailed selection operations are not yet implemented.
-public class LocateMeasurementsJob extends Job {
-
-  /**
-   * The parameter name for the data set id
-   */
-  public static final String ID_PARAM = "id";
+public class LocateMeasurementsJob extends DataSetJob {
 
   /**
    * Name of the job, used for reporting
    */
   private final String jobName = "Locate Measurements";
-
-  /**
-   * The data set being processed by the job
-   */
-  private DataSet dataSet = null;
-
-  /**
-   * The instrument to which the data set belongs
-   */
-  private Instrument instrument = null;
 
   /**
    * Constructor that allows the {@link JobManager} to create an instance of
@@ -101,13 +85,8 @@ public class LocateMeasurementsJob extends Job {
     try {
       conn = dataSource.getConnection();
 
-      // Get the data set from the database
-      dataSet = DataSetDB.getDataSet(conn,
-        Long.parseLong(parameters.get(ID_PARAM)));
-
-      instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
-        ResourceManager.getInstance().getSensorsConfiguration(),
-        ResourceManager.getInstance().getRunTypeCategoryConfiguration());
+      DataSet dataSet = getDataset(conn);
+      Instrument instrument = getInstrument(conn);
 
       reset(conn);
       conn.setAutoCommit(false);
@@ -202,14 +181,15 @@ public class LocateMeasurementsJob extends Job {
       DatabaseUtils.rollBack(conn);
       try {
         // Set the dataset to Error status
-        dataSet.setStatus(DataSet.STATUS_ERROR);
+        getDataset(conn).setStatus(DataSet.STATUS_ERROR);
         // And add a (friendly) message...
         StringBuffer message = new StringBuffer();
         message.append(getJobName());
         message.append(" - error: ");
         message.append(e.getMessage());
-        dataSet.addMessage(message.toString(), ExceptionUtils.getStackTrace(e));
-        DataSetDB.updateDataSet(conn, dataSet);
+        getDataset(conn).addMessage(message.toString(),
+          ExceptionUtils.getStackTrace(e));
+        DataSetDB.updateDataSet(conn, getDataset(conn));
         conn.commit();
       } catch (Exception e1) {
         e1.printStackTrace();
@@ -222,22 +202,33 @@ public class LocateMeasurementsJob extends Job {
   }
 
   @Override
-  protected void validateParameters() throws InvalidJobParametersException {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
   public String getJobName() {
     return jobName;
   }
 
+  /**
+   * Reset the data set processing.
+   *
+   * Delete all related records and reset the status
+   *
+   * @throws MissingParamException
+   *           If any of the parameters are invalid
+   * @throws InvalidDataSetStatusException
+   *           If the method sets an invalid data set status
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws RecordNotFoundException
+   *           If the record don't exist
+   */
   protected void reset(Connection conn) throws JobFailedException {
+
     try {
-      DataSetDataDB.deleteMeasurementValues(conn, dataSet.getId());
-      DataSetDataDB.deleteMeasurements(conn, dataSet.getId());
+      DataSetDataDB.deleteMeasurementValues(conn, getDataset(conn).getId());
+      DataSetDataDB.deleteMeasurements(conn, getDataset(conn).getId());
+      DataSetDB.setDatasetStatus(conn, getDataset(conn).getId(),
+        DataSet.STATUS_WAITING);
     } catch (Exception e) {
-      throw new JobFailedException(id, "Error while resetting measurements", e);
+      throw new JobFailedException(id, "Error while resetting dataset", e);
     }
   }
 }
