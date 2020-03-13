@@ -444,7 +444,7 @@ public class Instrument {
       variables.size());
 
     for (InstrumentVariable variable : variables) {
-      List<SensorType> variableSensorTypes = variable.getAllSensorTypes();
+      List<SensorType> variableSensorTypes = variable.getAllSensorTypes(false);
       for (SensorType type : variableSensorTypes) {
         if (type.equals(sensorType)) {
           result.add(variable);

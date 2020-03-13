@@ -212,4 +212,25 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
     return result;
   }
+
+  public MeasurementValue getMeasurementValue(Measurement measurement,
+    MeasurementValueStub stub) {
+
+    MeasurementValue result = new MeasurementValue(stub);
+
+    if (null == dateSearchIterator) {
+      initDateSearch();
+    }
+
+    SensorValue prior = dateSearch(measurement.getTime());
+    SensorValue post = null;
+
+    if (prior.getTime().isBefore(measurement.getTime())) {
+      post = get(dateSearchIterator.nextIndex());
+    }
+
+    result.setValues(prior, post);
+
+    return result;
+  }
 }

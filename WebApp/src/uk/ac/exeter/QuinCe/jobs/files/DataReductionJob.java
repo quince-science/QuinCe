@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -13,16 +14,12 @@ import uk.ac.exeter.QuinCe.api.nrt.MakeNrtDataset;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationValue;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueStub;
+import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -108,82 +105,104 @@ public class DataReductionJob extends Job {
       DataSetDB.updateDataSet(statusConn, dataSet);
       statusConn.close();
 
-      // Get all the sensor values for the dataset, ordered by date and then
-      // grouped by sensor type
-      DateColumnGroupedSensorValues groupedSensorValues = DataSetDataDB
-        .getSensorValuesByDateAndColumn(conn, instrument, dataSet.getId());
+      // Load all the sensor values for this dataset
+      Map<Long, SearchableSensorValuesList> allSensorValues = DataSetDataDB
+        .getSensorValuesByColumn(conn, dataSet.getId());
 
-      // Get all the measurement records
-      List<Measurement> allMeasurements = DataSetDataDB.getMeasurements(conn,
+      TreeSet<Measurement> measurements = DataSetDataDB.getMeasurements(conn,
         instrument, dataSet.getId());
 
-      // Get the most recent calibration data from before the dataset start
-      CalibrationSet calibrationSet = null;
+      for (Measurement measurement : measurements) {
 
-      if (instrument.hasInternalCalibrations()) {
-        calibrationSet = ExternalStandardDB.getInstance()
-          .getMostRecentCalibrations(conn, instrument.getDatabaseId(),
-            groupedSensorValues.getFirstTime());
-      }
+        Map<SensorType, List<MeasurementValue>> measurementSensorValues = new HashMap<SensorType, List<MeasurementValue>>();
 
-      // Cached data reducer instances
-      Map<InstrumentVariable, DataReducer> reducers = new HashMap<InstrumentVariable, DataReducer>();
+        for (InstrumentVariable variable : instrument.getVariables()) {
+          if (instrument.isRunTypeForVariable(variable,
+            measurement.getRunType())) {
 
-      // Storage of values to be written to the database
-      List<CalculationValue> calculationValuesToStore = new ArrayList<CalculationValue>();
-      List<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>(
-        allMeasurements.size());
+            getSensorValuesForMeasurement(measurement, instrument,
+              variable.getAllSensorTypes(true), allSensorValues,
+              measurementSensorValues);
 
-      // Process each measurement individually
-      for (Measurement measurement : allMeasurements) {
+            DataSetDataDB.storeMeasurementValues(conn,
+              measurementSensorValues.values());
 
-        // Only process true measurements (not internal calibrations etc
-        if (isVariableMeasurement(instrument, measurement)) {
-
-          // Get the value to be used in calculation for each sensor type
-          Map<SensorType, CalculationValue> calculationValues = new HashMap<SensorType, CalculationValue>();
-
-          // TODO This will have to be more intelligent - allowing
-          // retrieval of values before and after the measurement time
-          // for interpolation etc.
-          //
-          // Get all the sensor values for the measurement time
-          Map<SensorType, List<SensorValue>> values = groupedSensorValues
-            .get(measurement.getTime());
-
-          // Loop through each sensor type
-          for (SensorType sensorType : values.keySet()) {
-
-            if (!sensorType.isSystemType()) {
-              List<SensorValue> sensorValues = values.get(sensorType);
-
-              calculationValues.put(sensorType,
-                CalculationValue.get(measurement, sensorType, sensorValues));
-            }
           }
-          /*
-           * DataReducer reducer = reducers.get(measurement.getVariable()); if
-           * (null == reducer) {
-           *
-           * Map<String, Float> variableAttributes = InstrumentDB
-           * .getVariableAttributes(conn, instrument.getDatabaseId(),
-           * measurement.getVariable().getId());
-           *
-           * reducer = DataReducerFactory.getReducer(conn, instrument,
-           * measurement.getVariable(), dataSet.isNrt(), variableAttributes,
-           * calibrationSet, allMeasurements, groupedSensorValues);
-           *
-           * reducers.put(measurement.getVariable(), reducer); }
-           *
-           * DataReductionRecord dataReductionRecord = reducer
-           * .performDataReduction(instrument, measurement, calculationValues);
-           *
-           * calculationValuesToStore.addAll(calculationValues.values());
-           * dataReductionRecords.add(dataReductionRecord);
-           */
         }
+
       }
 
+      /*
+       * // Get all the sensor values for the dataset, ordered by date and then
+       * // grouped by sensor type DateColumnGroupedSensorValues
+       * groupedSensorValues = DataSetDataDB
+       * .getSensorValuesByDateAndColumn(conn, instrument, dataSet.getId());
+       *
+       * // Get all the measurement records List<Measurement> allMeasurements =
+       * DataSetDataDB.getMeasurements(conn, instrument, dataSet.getId());
+       *
+       * // Get the most recent calibration data from before the dataset start
+       * CalibrationSet calibrationSet = null;
+       *
+       * if (instrument.hasInternalCalibrations()) { calibrationSet =
+       * ExternalStandardDB.getInstance() .getMostRecentCalibrations(conn,
+       * instrument.getDatabaseId(), groupedSensorValues.getFirstTime()); }
+       *
+       * // Cached data reducer instances Map<InstrumentVariable, DataReducer>
+       * reducers = new HashMap<InstrumentVariable, DataReducer>();
+       *
+       * // Storage of values to be written to the database
+       * List<CalculationValue> calculationValuesToStore = new
+       * ArrayList<CalculationValue>(); List<DataReductionRecord>
+       * dataReductionRecords = new ArrayList<DataReductionRecord>(
+       * allMeasurements.size());
+       *
+       * // Process each measurement individually for (Measurement measurement :
+       * allMeasurements) {
+       *
+       * // Only process true measurements (not internal calibrations etc if
+       * (isVariableMeasurement(instrument, measurement)) {
+       *
+       * // Get the value to be used in calculation for each sensor type
+       * Map<SensorType, CalculationValue> calculationValues = new
+       * HashMap<SensorType, CalculationValue>();
+       *
+       * // TODO This will have to be more intelligent - allowing // retrieval
+       * of values before and after the measurement time // for interpolation
+       * etc. // // Get all the sensor values for the measurement time
+       * Map<SensorType, List<SensorValue>> values = groupedSensorValues
+       * .get(measurement.getTime());
+       *
+       * // Loop through each sensor type for (SensorType sensorType :
+       * values.keySet()) {
+       *
+       * if (!sensorType.isSystemType()) { List<SensorValue> sensorValues =
+       * values.get(sensorType);
+       *
+       * calculationValues.put(sensorType, CalculationValue.get(measurement,
+       * sensorType, sensorValues)); } }
+       *
+       * DataReducer reducer = reducers.get(measurement.getVariable()); if (null
+       * == reducer) {
+       *
+       * Map<String, Float> variableAttributes = InstrumentDB
+       * .getVariableAttributes(conn, instrument.getDatabaseId(),
+       * measurement.getVariable().getId());
+       *
+       * reducer = DataReducerFactory.getReducer(conn, instrument,
+       * measurement.getVariable(), dataSet.isNrt(), variableAttributes,
+       * calibrationSet, allMeasurements, groupedSensorValues);
+       *
+       * reducers.put(measurement.getVariable(), reducer); }
+       *
+       * DataReductionRecord dataReductionRecord = reducer
+       * .performDataReduction(instrument, measurement, calculationValues);
+       *
+       * calculationValuesToStore.addAll(calculationValues.values());
+       * dataReductionRecords.add(dataReductionRecord);
+       *
+       * } }
+       */
       // DataSetDataDB.storeDataReduction(conn, calculationValuesToStore,
       // dataReductionRecords);
 
@@ -273,25 +292,33 @@ public class DataReductionJob extends Job {
     return jobName;
   }
 
-  /**
-   * Determines whether or not a measurement
-   *
-   * @param instrument
-   * @param measurement
-   * @return
-   */
-  private boolean isVariableMeasurement(Instrument instrument,
-    Measurement measurement) {
+  private void getSensorValuesForMeasurement(Measurement measurement,
+    Instrument instrument, List<SensorType> sensorTypes,
+    Map<Long, SearchableSensorValuesList> allSensorValues,
+    Map<SensorType, List<MeasurementValue>> measurementSensorValues) {
 
-    boolean result = false;
-    /*
-     * if (!instrument.hasInternalCalibrations()) { result = true; } else {
-     * RunTypeCategory runTypeCategory = instrument
-     * .getRunTypeCategory(measurement.getRunType());
-     *
-     * result = runTypeCategory.isMeasurementType() && runTypeCategory
-     * .getDescription().equals(measurement.getVariable().getName()); }
-     */
-    return result;
+    for (SensorType sensorType : sensorTypes) {
+      // If we've already loaded the sensor types, don't bother doing it again
+      if (!measurementSensorValues.containsKey(sensorType)) {
+
+        measurementSensorValues.put(sensorType,
+          new ArrayList<MeasurementValue>());
+
+        for (long columnId : instrument.getSensorAssignments()
+          .getColumnIds(sensorType)) {
+
+          SearchableSensorValuesList columnValues = allSensorValues
+            .get(columnId);
+
+          MeasurementValueStub stub = new MeasurementValueStub(measurement,
+            columnId);
+
+          MeasurementValue measurementValue = columnValues
+            .getMeasurementValue(measurement, stub);
+
+          measurementSensorValues.get(sensorType).add(measurementValue);
+        }
+      }
+    }
   }
 }
