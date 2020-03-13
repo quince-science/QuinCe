@@ -579,7 +579,7 @@ public class SensorsConfiguration {
 
     boolean required = false;
 
-    List<SensorType> variableSensorTypes = variable.getAllSensorTypes();
+    List<SensorType> variableSensorTypes = variable.getAllSensorTypes(false);
     for (SensorType varSensorType : variableSensorTypes) {
       if (varSensorType.equalsIncludingRelations(sensorType)) {
         required = true;
@@ -631,9 +631,9 @@ public class SensorsConfiguration {
         throw new SensorConfigurationException("Unknown variable ID " + varId);
       } else {
         if (!replaceParentsWithChildren) {
-          sensorTypes.addAll(variable.getAllSensorTypes());
+          sensorTypes.addAll(variable.getAllSensorTypes(false));
         } else {
-          for (SensorType tempType : variable.getAllSensorTypes()) {
+          for (SensorType tempType : variable.getAllSensorTypes(false)) {
             if (!isParent(tempType)) {
               sensorTypes.add(tempType);
             } else {

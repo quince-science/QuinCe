@@ -727,13 +727,36 @@ public class SensorAssignments
 
     List<Long> result = null;
 
-    List<SensorAssignment> assignments = get(sensorType);
-    if (null != assignments) {
+    if (sensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
+      result = new ArrayList<Long>(1);
+      result.add(FileDefinition.LONGITUDE_COLUMN_ID);
+    } else if (sensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
+      result = new ArrayList<Long>(1);
+      result.add(FileDefinition.LATITUDE_COLUMN_ID);
+    } else {
 
-      result = new ArrayList<Long>(assignments.size());
+      SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+        .getSensorsConfiguration();
 
-      for (SensorAssignment assignment : assignments) {
-        result.add(assignment.getDatabaseId());
+      Set<SensorType> sensorTypes;
+
+      if (sensorConfig.isParent(sensorType)) {
+        sensorTypes = sensorConfig.getChildren(sensorType);
+      } else {
+        sensorTypes = new HashSet<SensorType>();
+        sensorTypes.add(sensorType);
+      }
+
+      for (SensorType type : sensorTypes) {
+        List<SensorAssignment> assignments = get(type);
+        if (null != assignments) {
+
+          result = new ArrayList<Long>(assignments.size());
+
+          for (SensorAssignment assignment : assignments) {
+            result.add(assignment.getDatabaseId());
+          }
+        }
       }
     }
 

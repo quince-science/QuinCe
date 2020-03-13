@@ -191,8 +191,8 @@ public class LocateMeasurementsJob extends Job {
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(LocateMeasurementsJob.ID_PARAM,
         String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
-      // JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
-      // DataReductionJob.class.getCanonicalName(), jobParams);
+      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
+        DataReductionJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
     } catch (Exception e) {
@@ -228,5 +228,13 @@ public class LocateMeasurementsJob extends Job {
   @Override
   public String getJobName() {
     return jobName;
+  }
+
+  protected void reset() throws JobFailedException {
+    try {
+      DataSetDataDB.deleteMeasurements(dataSource, dataSet.getId());
+    } catch (Exception e) {
+      throw new JobFailedException(id, "Error while resetting measurements", e);
+    }
   }
 }

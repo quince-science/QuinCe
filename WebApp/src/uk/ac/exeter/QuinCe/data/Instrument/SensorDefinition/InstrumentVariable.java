@@ -162,9 +162,14 @@ public class InstrumentVariable {
    *
    * @return All required SensorTypes
    */
-  public List<SensorType> getAllSensorTypes() {
+  public List<SensorType> getAllSensorTypes(boolean includePosition) {
     List<SensorType> result = new ArrayList<SensorType>(requiredSensorTypes);
     result.add(coreSensorType);
+
+    if (includePosition) {
+      result.add(SensorType.LONGITUDE_SENSOR_TYPE);
+      result.add(SensorType.LATITUDE_SENSOR_TYPE);
+    }
     return result;
   }
 
@@ -310,7 +315,7 @@ public class InstrumentVariable {
   public boolean hasInternalCalibrations() {
     boolean result = false;
 
-    for (SensorType sensorType : getAllSensorTypes()) {
+    for (SensorType sensorType : getAllSensorTypes(false)) {
       if (sensorType.hasInternalCalibration()) {
         result = true;
         break;

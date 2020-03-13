@@ -120,18 +120,11 @@ public class DataSetDataDB {
    */
   private static final String GET_MEASUREMENTS_QUERY = "SELECT "
     + "id, date, run_type " + "FROM measurements WHERE dataset_id = ? "
-    + "ORDER BY variable_id ASC, date ASC";
+    + "ORDER BY date ASC";
 
   private static final String GET_MEASUREMENT_TIMES_QUERY = "SELECT "
     + "date FROM measurements WHERE dataset_id = ? " + "AND run_type IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY date ASC";
-
-  /**
-   * Statement to store a Measurement Value
-   */
-  private static final String STORE_MEASUREMENT_VALUE_STATEMENT = "INSERT INTO "
-    + "measurement_values (measurement_id, variable_id, sensor_value_id) "
-    + "VALUES (?, ?, ?)";
 
   /**
    * Statement to store a data reduction result
@@ -202,6 +195,10 @@ public class DataSetDataDB {
     + "date, value FROM sensor_values "
     + " WHERE dataset_id = ? AND file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY date ASC";
+
+  private static final String STORE_MEASUREMENT_VALUE_STATEMENT = "INSERT INTO "
+    + "measurement_values (measurement_id, file_column_id, "
+    + "prior, post) VALUES (?, ?, ?, ?)";
 
   /**
    * Take a list of fields, and return those which come from the dataset data.
@@ -656,7 +653,7 @@ public class DataSetDataDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static List<Measurement> getMeasurements(Connection conn,
+  public static TreeSet<Measurement> getMeasurements(Connection conn,
     Instrument instrument, long datasetId)
     throws MissingParamException, DatabaseException {
 
@@ -666,7 +663,7 @@ public class DataSetDataDB {
     PreparedStatement stmt = null;
     ResultSet records = null;
 
-    List<Measurement> measurements = new ArrayList<Measurement>();
+    TreeSet<Measurement> measurements = new TreeSet<Measurement>();
 
     try {
 
@@ -691,47 +688,6 @@ public class DataSetDataDB {
     }
 
     return measurements;
-  }
-
-  /**
-   * Store a set of measurement values
-   *
-   * @param conn
-   *          A database connection
-   * @param measurementValues
-   *          The measurement values
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   */
-  public static void storeMeasurementValues(Connection conn,
-    List<MeasurementValue> measurementValues)
-    throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(measurementValues, "measurementValues");
-
-    PreparedStatement stmt = null;
-
-    try {
-
-      stmt = conn.prepareStatement(STORE_MEASUREMENT_VALUE_STATEMENT);
-
-      // Batch up all the measurements
-      for (MeasurementValue measurementValue : measurementValues) {
-        stmt.setLong(1, measurementValue.getMeasurementId());
-        stmt.setLong(2, measurementValue.getSensorValueId());
-        stmt.addBatch();
-      }
-
-      // Store them, and get the keys back
-      stmt.executeBatch();
-    } catch (Exception e) {
-      throw new DatabaseException("Error while storing measurements", e);
-    } finally {
-      DatabaseUtils.closeStatements(stmt);
-    }
   }
 
   /**
@@ -1421,5 +1377,42 @@ public class DataSetDataDB {
     }
 
     return result;
+  }
+
+  public static void storeMeasurementValues(Connection conn,
+    Collection<? extends Collection<MeasurementValue>> values)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(values, "values", false);
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(STORE_MEASUREMENT_VALUE_STATEMENT)) {
+
+      for (Collection<MeasurementValue> outer : values) {
+
+        for (MeasurementValue value : outer) {
+
+          stmt.setLong(1, value.getMeasurementId());
+          stmt.setLong(2, value.getColumnId());
+          stmt.setLong(3, value.getPrior());
+          if (null == value.getPost()) {
+            stmt.setNull(4, Types.BIGINT);
+          } else {
+            stmt.setLong(4, value.getPost());
+          }
+
+          stmt.addBatch();
+
+        }
+
+      }
+
+      stmt.executeBatch();
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while storing measurement values", e);
+    }
+
   }
 }
