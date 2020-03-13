@@ -116,7 +116,7 @@ public class ExportData extends ManualQCPageData {
     } else {
       // Only use sensor types required by the instrument's variables
       for (InstrumentVariable variable : variables) {
-        for (SensorType sensorType : variable.getAllSensorTypes()) {
+        for (SensorType sensorType : variable.getAllSensorTypes(false)) {
           exportSensorTypes.put(sensorType,
             sensors.get(sensorType).get(0).getDatabaseId());
         }
