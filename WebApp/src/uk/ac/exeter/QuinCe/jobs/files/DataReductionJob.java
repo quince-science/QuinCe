@@ -14,16 +14,15 @@ import uk.ac.exeter.QuinCe.api.nrt.MakeNrtDataset;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueStub;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
-import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
@@ -38,12 +37,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  * @author Steve Jones
  */
-public class DataReductionJob extends Job {
-
-  /**
-   * The parameter name for the data set id
-   */
-  public static final String ID_PARAM = "id";
+public class DataReductionJob extends DataSetJob {
 
   /**
    * Name of the job, used for reporting
@@ -82,29 +76,19 @@ public class DataReductionJob extends Job {
   protected void execute(JobThread thread) throws JobFailedException {
 
     Connection conn = null;
-    Connection statusConn = null;
-    DataSet dataSet = null;
-    Instrument instrument = null;
 
     try {
       conn = dataSource.getConnection();
       reset(conn);
+      DataSet dataSet = getDataset(conn);
+      Instrument instrument = getInstrument(conn);
+      DataSetDB.updateDataSet(conn, dataSet);
+
       conn.setAutoCommit(false);
-
-      dataSet = DataSetDB.getDataSet(conn,
-        Long.parseLong(parameters.get(ID_PARAM)));
-
-      instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
-        ResourceManager.getInstance().getSensorsConfiguration(),
-        ResourceManager.getInstance().getRunTypeCategoryConfiguration());
 
       // Clear messages before executing job
       dataSet.clearMessages();
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
-
-      statusConn = dataSource.getConnection();
-      DataSetDB.updateDataSet(statusConn, dataSet);
-      statusConn.close();
 
       // Load all the sensor values for this dataset
       Map<Long, SearchableSensorValuesList> allSensorValues = DataSetDataDB
@@ -127,10 +111,8 @@ public class DataReductionJob extends Job {
 
             DataSetDataDB.storeMeasurementValues(conn,
               measurementSensorValues.values());
-
           }
         }
-
       }
 
       /*
@@ -240,57 +222,24 @@ public class DataReductionJob extends Job {
       DatabaseUtils.rollBack(conn);
 
       try {
-        if (dataSet != null
-          && dataSet.getId() != DatabaseUtils.NO_DATABASE_RECORD) {
-          // Change dataset status to Error, and append an error message
-          StringBuffer message = new StringBuffer();
-          message.append(getJobName());
-          message.append(" - error: ");
-          message.append(e.getMessage());
-          dataSet.addMessage(message.toString(),
-            ExceptionUtils.getStackTrace(e));
-          dataSet.setStatus(DataSet.STATUS_ERROR);
+        // Change dataset status to Error, and append an error message
+        StringBuffer message = new StringBuffer();
+        message.append(getJobName());
+        message.append(" - error: ");
+        message.append(e.getMessage());
+        getDataset(conn).addMessage(message.toString(),
+          ExceptionUtils.getStackTrace(e));
+        getDataset(conn).setStatus(DataSet.STATUS_ERROR);
 
-          DataSetDB.updateDataSet(conn, dataSet);
-          conn.commit();
-        }
+        DataSetDB.updateDataSet(conn, getDataset(conn));
+        conn.commit();
       } catch (Exception e1) {
         e.printStackTrace();
       }
 
       throw new JobFailedException(id, e);
     } finally {
-      DatabaseUtils.closeConnection(conn, statusConn);
-    }
-  }
-
-  /**
-   * Removes any previously calculated data reduction results from the database
-   *
-   * @throws JobFailedException
-   *           If an error occurs
-   */
-  protected void reset(Connection conn) throws JobFailedException {
-    try {
-      DataSetDataDB.deleteMeasurementValues(conn,
-        Long.parseLong(parameters.get(ID_PARAM)));
-    } catch (Exception e) {
-      throw new JobFailedException(id, "Error while resetting data", e);
-    }
-  }
-
-  @Override
-  protected void validateParameters() throws InvalidJobParametersException {
-
-    String datasetIdString = parameters.get(ID_PARAM);
-    if (null == datasetIdString) {
-      throw new InvalidJobParametersException(ID_PARAM + "is missing");
-    }
-
-    try {
-      Long.parseLong(datasetIdString);
-    } catch (NumberFormatException e) {
-      throw new InvalidJobParametersException(ID_PARAM + "is not numeric");
+      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -326,6 +275,31 @@ public class DataReductionJob extends Job {
           measurementSensorValues.get(sensorType).add(measurementValue);
         }
       }
+    }
+  }
+
+  /**
+   * Reset the data set processing.
+   *
+   * Delete all related records and reset the status
+   *
+   * @throws MissingParamException
+   *           If any of the parameters are invalid
+   * @throws InvalidDataSetStatusException
+   *           If the method sets an invalid data set status
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws RecordNotFoundException
+   *           If the record don't exist
+   */
+  protected void reset(Connection conn) throws JobFailedException {
+
+    try {
+      DataSetDataDB.deleteMeasurementValues(conn, getDataset(conn).getId());
+      DataSetDB.setDatasetStatus(conn, getDataset(conn).getId(),
+        DataSet.STATUS_WAITING);
+    } catch (Exception e) {
+      throw new JobFailedException(id, "Error while resetting dataset", e);
     }
   }
 }
