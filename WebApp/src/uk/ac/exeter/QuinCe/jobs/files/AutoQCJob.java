@@ -16,6 +16,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -24,7 +25,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.Routine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -74,27 +74,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @see Flag
  * @see Message
  */
-public class AutoQCJob extends Job {
-
-  /**
-   * The parameter name for the data set id
-   */
-  public static final String ID_PARAM = "id";
+public class AutoQCJob extends DataSetJob {
 
   /**
    * Name of the job, used for reporting
    */
   private final String jobName = "Automatic Quality Control";
-
-  /**
-   * The data set being processed by the job
-   */
-  private DataSet dataSet = null;
-
-  /**
-   * The instrument to which the data set belongs
-   */
-  private Instrument instrument = null;
 
   private List<String> measurementRunTypes;
 
@@ -145,17 +130,13 @@ public class AutoQCJob extends Job {
       // After automatic QC, all measurements must be recalculated.
       // Therefore before we start, destroy any existing measurements
       // in the data set
-      clearMeasurements(conn);
+      reset(conn);
 
       conn.setAutoCommit(false);
 
       // Get the data set from the database
-      dataSet = DataSetDB.getDataSet(conn,
-        Long.parseLong(parameters.get(ID_PARAM)));
-
-      instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
-        ResourceManager.getInstance().getSensorsConfiguration(),
-        ResourceManager.getInstance().getRunTypeCategoryConfiguration());
+      DataSet dataSet = getDataset(conn);
+      Instrument instrument = getInstrument(conn);
 
       SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 
@@ -281,14 +262,15 @@ public class AutoQCJob extends Job {
       DatabaseUtils.rollBack(conn);
       try {
         // Set the dataset to Error status
-        dataSet.setStatus(DataSet.STATUS_ERROR);
+        getDataset(conn).setStatus(DataSet.STATUS_ERROR);
         // And add a (friendly) message...
         StringBuffer message = new StringBuffer();
         message.append(getJobName());
         message.append(" - error: ");
         message.append(e.getMessage());
-        dataSet.addMessage(message.toString(), ExceptionUtils.getStackTrace(e));
-        DataSetDB.updateDataSet(conn, dataSet);
+        getDataset(conn).addMessage(message.toString(),
+          ExceptionUtils.getStackTrace(e));
+        DataSetDB.updateDataSet(conn, getDataset(conn));
         conn.commit();
       } catch (Exception e1) {
         e1.printStackTrace();
@@ -299,25 +281,34 @@ public class AutoQCJob extends Job {
     }
   }
 
-  private void clearMeasurements(Connection conn) throws JobFailedException {
-    try {
-      DataSetDataDB.deleteMeasurementValues(conn,
-        Long.parseLong(parameters.get(ID_PARAM)));
-      DataSetDataDB.deleteMeasurements(dataSource,
-        Long.parseLong(parameters.get(ID_PARAM)));
-    } catch (Exception e) {
-      throw new JobFailedException(Long.parseLong(parameters.get(ID_PARAM)),
-        "Failed to clear previous measurement data", e);
-    }
-  }
-
-  @Override
-  protected void validateParameters() throws InvalidJobParametersException {
-    // TODO Auto-generated method stub
-  }
-
   @Override
   public String getJobName() {
     return jobName;
+  }
+
+  /**
+   * Reset the data set processing.
+   *
+   * Delete all related records and reset the status
+   *
+   * @throws MissingParamException
+   *           If any of the parameters are invalid
+   * @throws InvalidDataSetStatusException
+   *           If the method sets an invalid data set status
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws RecordNotFoundException
+   *           If the record don't exist
+   */
+  protected void reset(Connection conn) throws JobFailedException {
+
+    try {
+      DataSetDataDB.deleteMeasurementValues(conn, getDataset(conn).getId());
+      DataSetDataDB.deleteMeasurements(conn, getDataset(conn).getId());
+      DataSetDB.setDatasetStatus(conn, getDataset(conn).getId(),
+        DataSet.STATUS_WAITING);
+    } catch (Exception e) {
+      throw new JobFailedException(id, "Error while resetting dataset", e);
+    }
   }
 }
