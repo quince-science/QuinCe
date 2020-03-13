@@ -200,6 +200,10 @@ public class DataSetDataDB {
     + "measurement_values (measurement_id, file_column_id, "
     + "prior, post) VALUES (?, ?, ?, ?)";
 
+  private static final String DELETE_MEASUREMENT_VALUES_STATEMENT = "DELETE "
+    + "FROM measurement_values WHERE measurement_id IN "
+    + "(SELECT id FROM measurements WHERE dataset_id = ?)";
+
   /**
    * Take a list of fields, and return those which come from the dataset data.
    * Any others will come from calculation data and will be left alone.
@@ -1403,16 +1407,28 @@ public class DataSetDataDB {
           }
 
           stmt.addBatch();
-
         }
-
       }
 
       stmt.executeBatch();
-
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing measurement values", e);
     }
+  }
 
+  public static void deleteMeasurementValues(Connection conn, long datasetId)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkPositive(datasetId, "datasetId");
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(DELETE_MEASUREMENT_VALUES_STATEMENT)) {
+
+      stmt.setLong(1, datasetId);
+      stmt.execute();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while deleting measurment values", e);
+    }
   }
 }

@@ -137,15 +137,16 @@ public class AutoQCJob extends Job {
   @Override
   protected void execute(JobThread thread) throws JobFailedException {
 
-    // After automatic QC, all measurements must be recalculated.
-    // Therefore before we start, destroy any existing measurements
-    // in the data set
-    clearMeasurements();
-
     Connection conn = null;
 
     try {
       conn = dataSource.getConnection();
+
+      // After automatic QC, all measurements must be recalculated.
+      // Therefore before we start, destroy any existing measurements
+      // in the data set
+      clearMeasurements(conn);
+
       conn.setAutoCommit(false);
 
       // Get the data set from the database
@@ -298,8 +299,10 @@ public class AutoQCJob extends Job {
     }
   }
 
-  private void clearMeasurements() throws JobFailedException {
+  private void clearMeasurements(Connection conn) throws JobFailedException {
     try {
+      DataSetDataDB.deleteMeasurementValues(conn,
+        Long.parseLong(parameters.get(ID_PARAM)));
       DataSetDataDB.deleteMeasurements(dataSource,
         Long.parseLong(parameters.get(ID_PARAM)));
     } catch (Exception e) {

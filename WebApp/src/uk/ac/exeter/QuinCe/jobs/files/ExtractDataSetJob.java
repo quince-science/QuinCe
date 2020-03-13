@@ -391,6 +391,7 @@ public class ExtractDataSetJob extends Job {
   private void reset(Connection conn) throws MissingParamException,
     InvalidDataSetStatusException, DatabaseException, RecordNotFoundException {
 
+    DataSetDataDB.deleteMeasurementValues(conn, dataSet.getId());
     DataSetDataDB.deleteMeasurements(conn, dataSet.getId());
     DataSetDataDB.deleteSensorValues(conn, dataSet.getId());
     DataSetDB.setDatasetStatus(conn, dataSet.getId(), DataSet.STATUS_WAITING);

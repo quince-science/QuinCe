@@ -88,6 +88,7 @@ public class DataReductionJob extends Job {
 
     try {
       conn = dataSource.getConnection();
+      reset(conn);
       conn.setAutoCommit(false);
 
       dataSet = DataSetDB.getDataSet(conn,
@@ -269,7 +270,13 @@ public class DataReductionJob extends Job {
    * @throws JobFailedException
    *           If an error occurs
    */
-  protected void reset() throws JobFailedException {
+  protected void reset(Connection conn) throws JobFailedException {
+    try {
+      DataSetDataDB.deleteMeasurementValues(conn,
+        Long.parseLong(parameters.get(ID_PARAM)));
+    } catch (Exception e) {
+      throw new JobFailedException(id, "Error while resetting data", e);
+    }
   }
 
   @Override
