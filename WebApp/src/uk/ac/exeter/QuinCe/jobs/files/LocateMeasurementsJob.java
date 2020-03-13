@@ -100,7 +100,6 @@ public class LocateMeasurementsJob extends Job {
 
     try {
       conn = dataSource.getConnection();
-      conn.setAutoCommit(false);
 
       // Get the data set from the database
       dataSet = DataSetDB.getDataSet(conn,
@@ -109,6 +108,9 @@ public class LocateMeasurementsJob extends Job {
       instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
         ResourceManager.getInstance().getSensorsConfiguration(),
         ResourceManager.getInstance().getRunTypeCategoryConfiguration());
+
+      reset(conn);
+      conn.setAutoCommit(false);
 
       // Get the run types for the dataset
       TreeMap<LocalDateTime, String> runTypes = null;
@@ -230,9 +232,10 @@ public class LocateMeasurementsJob extends Job {
     return jobName;
   }
 
-  protected void reset() throws JobFailedException {
+  protected void reset(Connection conn) throws JobFailedException {
     try {
-      DataSetDataDB.deleteMeasurements(dataSource, dataSet.getId());
+      DataSetDataDB.deleteMeasurementValues(conn, dataSet.getId());
+      DataSetDataDB.deleteMeasurements(conn, dataSet.getId());
     } catch (Exception e) {
       throw new JobFailedException(id, "Error while resetting measurements", e);
     }
