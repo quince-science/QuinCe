@@ -33,7 +33,7 @@ cp_url = 'http://meta.icos-cp.eu/resources/stations/SAILDRONE_SD1030'
 category_code = '3B'
 data_type = 'autonomous surface water vehicle'
 call_sign = '5801955'
-export = ['ICOS','CMEMS']
+export = ['ICOS']
 creation_date = '2020-03-01T00:00:00Z'
 
 [1801573]
@@ -47,7 +47,7 @@ cp_url = 'http://meta.icos-cp.eu/resources/stations/SAILDRONE_SD1053'
 category_code = '3B'
 data_type = 'autonomous surface water vehicle'
 call_sign = '1801573'
-export = ['ICOS','CMEMS']
+export = ['ICOS']
 creation_date = '2020-03-01T00:00:00Z'
 
 [1801573]
