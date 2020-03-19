@@ -36,3 +36,5 @@ external_scripts/export/index_latest.txt
 
 # Ignore data directory from saildrone directory
 external_scripts/NRT/Saildrone_conversion/data_files
+
+external_scripts/export/index_platform.txt
