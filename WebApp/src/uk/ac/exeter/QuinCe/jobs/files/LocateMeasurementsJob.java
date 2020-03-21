@@ -157,11 +157,8 @@ public class LocateMeasurementsJob extends DataSetJob {
           }
         }
 
-        // Make sure the run type is for an actual measurement (if applicable)
-        if (null == runType || instrument.isMeasurementRunType(runType)) {
-          measurements
-            .add(new Measurement(dataSet.getId(), measurementTime, runType));
-        }
+        measurements
+          .add(new Measurement(dataSet.getId(), measurementTime, runType));
       }
 
       DataSetDataDB.storeMeasurements(conn, measurements);

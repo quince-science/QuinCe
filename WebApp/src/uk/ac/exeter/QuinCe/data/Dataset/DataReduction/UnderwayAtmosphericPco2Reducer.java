@@ -1,16 +1,13 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
  * Data Reduction class for underway marine pCO₂
@@ -49,60 +46,48 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   }
 
   public UnderwayAtmosphericPco2Reducer(InstrumentVariable variable,
-    boolean nrt, Map<String, Float> variableAttributes,
-    List<Measurement> allMeasurements,
-    DateColumnGroupedSensorValues groupedSensorValues,
-    CalibrationSet calibrationSet) {
+    boolean nrt, Map<String, Float> variableAttributes) {
 
-    super(variable, nrt, variableAttributes, allMeasurements,
-      groupedSensorValues, calibrationSet);
+    super(variable, nrt, variableAttributes);
   }
 
   @Override
-  protected void doCalculation(Instrument instrument, Measurement measurement,
-    Map<SensorType, CalculationValue> sensorValues, DataReductionRecord record)
+  protected void doCalculation(Instrument instrument,
+    MeasurementValues sensorValues, DataReductionRecord recordm,
+    Map<String, ArrayList<Measurement>> allMeasurements, Connection conn)
     throws Exception {
-
-    Set<SensorType> requiredSensorTypes = getRequiredSensorTypes(
-      instrument.getSensorAssignments());
-
-    SensorType xH2OSensorType = getSensorType("xH₂O (with standards)");
-    SensorType co2SensorType = getSensorType("xCO₂ (with standards)");
-
-    Double trueXH2O = 0.0D;
-    if (requiredSensorTypes.contains(xH2OSensorType)) {
-      trueXH2O = applyValueCalibration(measurement, xH2OSensorType,
-        sensorValues.get(xH2OSensorType), false);
-    }
-
-    Double intakeTemperature = getValue(sensorValues,
-      "Equilibrator Temperature");
-    Double salinity = getValue(sensorValues, "Salinity");
-    Double seaLevelPressure = getSeaLevelAtmPressure(
-      getValue(sensorValues, "Atmospheric Pressure"), intakeTemperature);
-    Double co2InGas = getValue(sensorValues, "xCO₂ (with standards)");
-
-    Double co2Dried = co2InGas;
-    if (requiredSensorTypes.contains(xH2OSensorType)) {
-      co2Dried = calcDriedCo2(co2InGas, trueXH2O);
-    }
-
-    Double co2Calibrated = applyValueCalibration(measurement, co2SensorType,
-      co2Dried, true);
-    Double pH2O = calcPH2O(salinity, intakeTemperature);
-    Double pCO2 = calcPco2TEWet(co2Calibrated, seaLevelPressure, pH2O);
-    Double fCO2 = calcFCO2(pCO2, co2Calibrated, seaLevelPressure,
-      intakeTemperature);
-
-    // Store the calculated values
-    record.put("True Moisture", trueXH2O);
-    record.put("Sea Level Pressure", seaLevelPressure);
-    record.put("pH₂O", pH2O);
-    record.put("Dried CO₂", co2Dried);
-    record.put("Calibrated CO₂", co2Calibrated);
-    record.put("pCO₂", pCO2);
-    record.put("fCO₂", fCO2);
-  }
+    /*
+     * Set<SensorType> requiredSensorTypes = getRequiredSensorTypes(
+     * instrument.getSensorAssignments());
+     *
+     * SensorType xH2OSensorType = getSensorType("xH₂O (with standards)");
+     * SensorType co2SensorType = getSensorType("xCO₂ (with standards)");
+     *
+     * Double trueXH2O = 0.0D; if (requiredSensorTypes.contains(xH2OSensorType))
+     * { trueXH2O = applyValueCalibration(measurement, xH2OSensorType,
+     * sensorValues.get(xH2OSensorType), false); }
+     *
+     * Double intakeTemperature = getValue(sensorValues,
+     * "Equilibrator Temperature"); Double salinity = getValue(sensorValues,
+     * "Salinity"); Double seaLevelPressure = getSeaLevelAtmPressure(
+     * getValue(sensorValues, "Atmospheric Pressure"), intakeTemperature);
+     * Double co2InGas = getValue(sensorValues, "xCO₂ (with standards)");
+     *
+     * Double co2Dried = co2InGas; if
+     * (requiredSensorTypes.contains(xH2OSensorType)) { co2Dried =
+     * calcDriedCo2(co2InGas, trueXH2O); }
+     *
+     * Double co2Calibrated = applyValueCalibration(measurement, co2SensorType,
+     * co2Dried, true); Double pH2O = calcPH2O(salinity, intakeTemperature);
+     * Double pCO2 = calcPco2TEWet(co2Calibrated, seaLevelPressure, pH2O);
+     * Double fCO2 = calcFCO2(pCO2, co2Calibrated, seaLevelPressure,
+     * intakeTemperature);
+     *
+     * // Store the calculated values record.put("True Moisture", trueXH2O);
+     * record.put("Sea Level Pressure", seaLevelPressure); record.put("pH₂O",
+     * pH2O); record.put("Dried CO₂", co2Dried); record.put("Calibrated CO₂",
+     * co2Calibrated); record.put("pCO₂", pCO2); record.put("fCO₂", fCO2);
+     */ }
 
   private Double getSeaLevelAtmPressure(Double measuredPressure,
     Double intakeTemperature) {

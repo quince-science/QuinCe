@@ -6,10 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
-import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 
 /**
@@ -31,10 +28,7 @@ public class DataReducerFactory {
    */
   public static DataReducer getReducer(Connection conn, Instrument instrument,
     InstrumentVariable variable, boolean nrt,
-    Map<String, Float> variableAttributes, CalibrationSet calibrationSet,
-    List<Measurement> allMeasurements,
-    DateColumnGroupedSensorValues groupedSensorValues)
-    throws DataReductionException {
+    Map<String, Float> variableAttributes) throws DataReductionException {
 
     DataReducer reducer;
 
@@ -42,26 +36,22 @@ public class DataReducerFactory {
       switch (variable.getName()) {
       case "Underway Marine pCO₂": {
         reducer = new UnderwayMarinePco2Reducer(variable, nrt,
-          variableAttributes, allMeasurements, groupedSensorValues,
-          calibrationSet);
+          variableAttributes);
         break;
       }
       case "Underway Atmospheric pCO₂": {
         reducer = new UnderwayAtmosphericPco2Reducer(variable, nrt,
-          variableAttributes, allMeasurements, groupedSensorValues,
-          calibrationSet);
+          variableAttributes);
         break;
       }
       case "SailDrone Marine CO₂ NRT": {
         reducer = new SaildroneMarinePco2Reducer(variable, nrt,
-          variableAttributes, allMeasurements, groupedSensorValues,
-          calibrationSet);
+          variableAttributes);
         break;
       }
       case "SailDrone Atmospheric CO₂ NRT": {
         reducer = new SaildroneAtmosphericPco2Reducer(variable, nrt,
-          variableAttributes, allMeasurements, groupedSensorValues,
-          calibrationSet);
+          variableAttributes);
         break;
       }
       case "Soderman": {
@@ -88,23 +78,19 @@ public class DataReducerFactory {
 
     switch (variable.getName()) {
     case "Underway Marine pCO₂": {
-      reducer = new UnderwayMarinePco2Reducer(variable, false, null, null, null,
-        null);
+      reducer = new UnderwayMarinePco2Reducer(variable, false, null);
       break;
     }
     case "Underway Atmospheric pCO₂": {
-      reducer = new UnderwayAtmosphericPco2Reducer(variable, false, null, null,
-        null, null);
+      reducer = new UnderwayAtmosphericPco2Reducer(variable, false, null);
       break;
     }
     case "SailDrone Marine CO₂ NRT": {
-      reducer = new SaildroneMarinePco2Reducer(variable, false, null, null,
-        null, null);
+      reducer = new SaildroneMarinePco2Reducer(variable, false, null);
       break;
     }
     case "SailDrone Atmospheric CO₂ NRT": {
-      reducer = new SaildroneAtmosphericPco2Reducer(variable, false, null, null,
-        null, null);
+      reducer = new SaildroneAtmosphericPco2Reducer(variable, false, null);
       break;
     }
     case "Soderman": {
