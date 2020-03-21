@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 import uk.ac.exeter.QuinCe.utils.NoEmptyStringList;
@@ -16,11 +17,6 @@ public class DataReductionRecord {
    * The database ID of the measurement
    */
   private final long measurementId;
-
-  /**
-   * The database ID of the variable being processed
-   */
-  private final long variableId;
 
   /**
    * Intermediate calculation values
@@ -43,9 +39,8 @@ public class DataReductionRecord {
    * @param measurement
    *          The measurement
    */
-  public DataReductionRecord(long measurementId, long variableId) {
-    this.measurementId = measurementId;
-    this.variableId = variableId;
+  public DataReductionRecord(Measurement measurement) {
+    this.measurementId = measurement.getId();
 
     this.calculationValues = new HashMap<String, Double>();
     this.qcFlag = Flag.ASSUMED_GOOD;
@@ -92,15 +87,6 @@ public class DataReductionRecord {
    */
   public long getMeasurementId() {
     return measurementId;
-  }
-
-  /**
-   * Get the variable ID
-   *
-   * @return The variable ID
-   */
-  public long getVariableId() {
-    return variableId;
   }
 
   /**

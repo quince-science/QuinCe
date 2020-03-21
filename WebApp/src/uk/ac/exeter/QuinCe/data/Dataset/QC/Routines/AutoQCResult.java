@@ -1,10 +1,12 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class AutoQCResult extends ArrayList<RoutineFlag> {
 
@@ -91,15 +93,14 @@ public class AutoQCResult extends ArrayList<RoutineFlag> {
    *           If a message cannot be retrieved
    */
   public String getAllMessages() throws RoutineException {
-    StringBuilder result = new StringBuilder();
+    return StringUtils.collectionToDelimited(getAllMessagesList(), ";");
+  }
 
+  public List<String> getAllMessagesList() throws RoutineException {
+    List<String> messages = new ArrayList<String>(size());
     for (int i = 0; i < size(); i++) {
-      result.append(get(i).getShortMessage());
-      if (i < size() - 1) {
-        result.append("; ");
-      }
+      messages.add(get(i).getShortMessage());
     }
-
-    return result.toString();
+    return messages;
   }
 }

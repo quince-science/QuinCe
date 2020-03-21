@@ -1,15 +1,13 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
  * Data Reduction class for NRT Atmospheric fCO₂ from SailDrones.
@@ -41,34 +39,29 @@ public class SaildroneAtmosphericPco2Reducer extends DataReducer {
   }
 
   public SaildroneAtmosphericPco2Reducer(InstrumentVariable variable,
-    boolean nrt, Map<String, Float> variableAttributes,
-    List<Measurement> allMeasurements,
-    DateColumnGroupedSensorValues groupedSensorValues,
-    CalibrationSet calibrationSet) {
+    boolean nrt, Map<String, Float> variableAttributes) {
 
-    super(variable, nrt, variableAttributes, allMeasurements,
-      groupedSensorValues, calibrationSet);
+    super(variable, nrt, variableAttributes);
   }
 
   @Override
-  protected void doCalculation(Instrument instrument, Measurement measurement,
-    Map<SensorType, CalculationValue> sensorValues, DataReductionRecord record)
+  protected void doCalculation(Instrument instrument,
+    MeasurementValues sensorValues, DataReductionRecord record,
+    Map<String, ArrayList<Measurement>> allMeasurements, Connection conn)
     throws Exception {
 
-    Double airTemperature = getValue(sensorValues, "Air Temperature");
-    Double salinity = getValue(sensorValues, "Salinity");
-    Double licorPressure = getValue(sensorValues,
-      "LICOR Pressure (Atmosphere)");
-    Double xCo2 = getValue(sensorValues, "xCO₂ atmosphere (dry, no standards)");
-    Double pH2O = calcPH2O(salinity, airTemperature);
-    Double pCo2 = calcPco2(xCo2, licorPressure, pH2O);
-    Double fCO2 = calcFco2(pCo2, xCo2, licorPressure, airTemperature);
-
-    // Store the calculated values
-    record.put("pH₂O", pH2O);
-    record.put("pCO₂", pCo2);
-    record.put("fCO₂", fCO2);
-  }
+    /*
+     * Double airTemperature = getValue(sensorValues, "Air Temperature"); Double
+     * salinity = getValue(sensorValues, "Salinity"); Double licorPressure =
+     * getValue(sensorValues, "LICOR Pressure (Atmosphere)"); Double xCo2 =
+     * getValue(sensorValues, "xCO₂ atmosphere (dry, no standards)"); Double
+     * pH2O = calcPH2O(salinity, airTemperature); Double pCo2 = calcPco2(xCo2,
+     * licorPressure, pH2O); Double fCO2 = calcFco2(pCo2, xCo2, licorPressure,
+     * airTemperature);
+     *
+     * // Store the calculated values record.put("pH₂O", pH2O);
+     * record.put("pCO₂", pCo2); record.put("fCO₂", fCO2);
+     */ }
 
   /**
    * Calculates the water vapour pressure (pH<sub>2</sub>O). From Weiss and
