@@ -162,6 +162,11 @@ public class DataSetDataDB {
     + "FROM sensor_values WHERE dataset_id = ? AND file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + "ORDER BY date";
 
+  private static final String GET_SENSOR_VALUES_BY_ID_QUERY = "SELECT "
+    + "id, file_column, date, value, auto_qc, " // 5
+    + "user_qc_flag, user_qc_message " // 8
+    + "FROM sensor_values WHERE id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
+
   private static final String GET_SENSOR_VALUE_DATES_QUERY = "SELECT DISTINCT "
     + "date FROM sensor_values WHERE dataset_id = ? ORDER BY date ASC";
 
@@ -643,7 +648,8 @@ public class DataSetDataDB {
   }
 
   /**
-   * Get the set of measurements for a dataset, ordered by date and variable
+   * Get the set of measurements for a dataset, grouped by run type and ordered
+   * by date
    *
    * @param conn
    *          A database connection
@@ -657,8 +663,8 @@ public class DataSetDataDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static TreeSet<Measurement> getMeasurements(Connection conn,
-    Instrument instrument, long datasetId)
+  public static Map<String, ArrayList<Measurement>> getMeasurements(
+    Connection conn, Instrument instrument, long datasetId)
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
@@ -667,7 +673,7 @@ public class DataSetDataDB {
     PreparedStatement stmt = null;
     ResultSet records = null;
 
-    TreeSet<Measurement> measurements = new TreeSet<Measurement>();
+    Map<String, ArrayList<Measurement>> measurements = new HashMap<String, ArrayList<Measurement>>();
 
     try {
 
@@ -681,7 +687,12 @@ public class DataSetDataDB {
         LocalDateTime time = DateTimeUtils.longToDate(records.getLong(2));
         String runType = records.getString(3);
 
-        measurements.add(new Measurement(id, datasetId, time, runType));
+        if (!measurements.containsKey(runType)) {
+          measurements.put(runType, new ArrayList<Measurement>());
+        }
+
+        measurements.get(runType)
+          .add(new Measurement(id, datasetId, time, runType));
       }
 
     } catch (Exception e) {
@@ -1430,5 +1441,36 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while deleting measurment values", e);
     }
+  }
+
+  public static List<SensorValue> getSensorValuesById(Connection conn,
+    long datasetId, List<Long> ids)
+    throws MissingParamException, DatabaseException, InvalidFlagException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(ids, "ids", false);
+
+    String sql = DatabaseUtils.makeInStatementSql(GET_SENSOR_VALUES_BY_ID_QUERY,
+      ids.size());
+
+    List<SensorValue> result = new ArrayList<SensorValue>(ids.size());
+
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      for (int i = 0; i < ids.size(); i++) {
+        stmt.setLong(i + 1, ids.get(i));
+      }
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.add(sensorValueFromResultSet(records, datasetId));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting sensor values", e);
+    }
+
+    return result;
   }
 }

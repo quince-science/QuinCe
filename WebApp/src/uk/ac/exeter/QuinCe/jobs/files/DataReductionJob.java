@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeSet;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -17,9 +16,14 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
-import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueStub;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.MeasurementValues;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -69,6 +73,7 @@ public class DataReductionJob extends DataSetJob {
   public DataReductionJob(ResourceManager resourceManager, Properties config,
     long jobId, Map<String, String> parameters) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+
     super(resourceManager, config, jobId, parameters);
   }
 
@@ -94,23 +99,61 @@ public class DataReductionJob extends DataSetJob {
       Map<Long, SearchableSensorValuesList> allSensorValues = DataSetDataDB
         .getSensorValuesByColumn(conn, dataSet.getId());
 
-      TreeSet<Measurement> measurements = DataSetDataDB.getMeasurements(conn,
-        instrument, dataSet.getId());
+      // Get all the measurements grouped by run type
+      Map<String, ArrayList<Measurement>> allMeasurements = DataSetDataDB
+        .getMeasurements(conn, instrument, dataSet.getId());
 
-      for (Measurement measurement : measurements) {
+      // Cache of data reducers
+      Map<InstrumentVariable, DataReducer> reducers = new HashMap<InstrumentVariable, DataReducer>();
 
-        Map<SensorType, List<MeasurementValue>> measurementSensorValues = new HashMap<SensorType, List<MeasurementValue>>();
+      ArrayList<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>();
 
+      // Loop through each run type
+      for (String runType : allMeasurements.keySet()) {
+
+        // Loop through each variable
         for (InstrumentVariable variable : instrument.getVariables()) {
-          if (instrument.isRunTypeForVariable(variable,
-            measurement.getRunType())) {
+
+          // Process each measurement
+          dataReductionRecords.ensureCapacity(
+            dataReductionRecords.size() + allMeasurements.get(runType).size());
+
+          for (Measurement measurement : allMeasurements.get(runType)) {
+
+            // Get all the sensor values
+            MeasurementValues measurementSensorValues = new MeasurementValues(
+              instrument, measurement);
 
             getSensorValuesForMeasurement(measurement, instrument,
               variable.getAllSensorTypes(true), allSensorValues,
               measurementSensorValues);
 
+            // Store the measurement values in the database
             DataSetDataDB.storeMeasurementValues(conn,
               measurementSensorValues.values());
+
+            // If the run type is applicable to this variable, perform the data
+            // reduction
+            if (instrument.isRunTypeForVariable(variable, runType)) {
+
+              // Get the data reducer for this variable and perform data
+              // reduction
+              DataReducer reducer = reducers.get(variable);
+              if (null == reducer) {
+                Map<String, Float> variableAttributes = InstrumentDB
+                  .getVariableAttributes(conn, instrument.getDatabaseId(),
+                    variable.getId());
+                reducer = DataReducerFactory.getReducer(conn, instrument,
+                  variable, dataSet.isNrt(), variableAttributes);
+                reducers.put(variable, reducer);
+              }
+
+              DataReductionRecord dataReductionRecord = reducer
+                .performDataReduction(instrument, measurement,
+                  measurementSensorValues, allMeasurements, conn);
+
+              dataReductionRecords.add(dataReductionRecord);
+            }
           }
         }
       }
@@ -251,7 +294,7 @@ public class DataReductionJob extends DataSetJob {
   private void getSensorValuesForMeasurement(Measurement measurement,
     Instrument instrument, List<SensorType> sensorTypes,
     Map<Long, SearchableSensorValuesList> allSensorValues,
-    Map<SensorType, List<MeasurementValue>> measurementSensorValues) {
+    MeasurementValues measurementSensorValues) throws RoutineException {
 
     for (SensorType sensorType : sensorTypes) {
       // If we've already loaded the sensor types, don't bother doing it again
@@ -266,13 +309,10 @@ public class DataReductionJob extends DataSetJob {
           SearchableSensorValuesList columnValues = allSensorValues
             .get(columnId);
 
-          MeasurementValueStub stub = new MeasurementValueStub(measurement,
-            columnId);
-
           MeasurementValue measurementValue = columnValues
-            .getMeasurementValue(measurement, stub);
+            .getMeasurementValue(measurement, columnId);
 
-          measurementSensorValues.get(sensorType).add(measurementValue);
+          measurementSensorValues.put(sensorType, measurementValue);
         }
       }
     }

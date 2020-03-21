@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,17 +79,17 @@ public abstract class DataReducer {
    */
   private HashMap<String, LocalDateTime> nextSearchTimes;
 
+  /**
+   * The value calculators being used by this reducer
+   */
+  protected ValueCalculators valueCalculators;
+
   public DataReducer(InstrumentVariable variable, boolean nrt,
-    Map<String, Float> variableAttributes, List<Measurement> allMeasurements,
-    DateColumnGroupedSensorValues groupedSensorValues,
-    CalibrationSet calibrationSet) {
+    Map<String, Float> variableAttributes) {
 
     this.variable = variable;
     this.nrt = nrt;
     this.variableAttributes = variableAttributes;
-    this.allMeasurements = allMeasurements;
-    this.groupedSensorValues = groupedSensorValues;
-    this.calibrationSet = calibrationSet;
 
     previousSearchTimes = new HashMap<String, LocalDateTime>();
     nextSearchTimes = new HashMap<String, LocalDateTime>();
@@ -108,24 +109,30 @@ public abstract class DataReducer {
    * @return The data reduction result
    */
   public DataReductionRecord performDataReduction(Instrument instrument,
-    Measurement measurement, Map<SensorType, CalculationValue> sensorValues)
+    Measurement measurement, MeasurementValues sensorValues,
+    Map<String, ArrayList<Measurement>> allMeasurements, Connection conn)
     throws Exception {
+
+    DataReductionRecord record = new DataReductionRecord(measurement);
+
+    doCalculation(instrument, sensorValues, record, allMeasurements, conn);
+
     /*
      * DataReductionRecord record = new DataReductionRecord(measurement);
-     * 
+     *
      * if (!isMeasurementRunType(instrument, measurement.getRunType())) {
      * makeEmptyRecord(record); } else { doCalculation(instrument, measurement,
      * sensorValues, record);
-     * 
+     *
      * List<SensorType> missingParameters = getMissingParameters(
      * instrument.getSensorAssignments(), sensorValues); if
      * (missingParameters.size() > 0) { makeMissingParameterRecord(record,
      * missingParameters); } else { doCalculation(instrument, measurement,
      * sensorValues, record); } }
-     * 
+     *
      * applyQCFlags(instrument.getSensorAssignments(), variable, sensorValues,
      * record);
-     * 
+     *
      * return record;
      */
 
@@ -168,8 +175,9 @@ public abstract class DataReducer {
    *          The data reduction result
    */
   protected abstract void doCalculation(Instrument instrument,
-    Measurement measurement, Map<SensorType, CalculationValue> sensorValues,
-    DataReductionRecord record) throws Exception;
+    MeasurementValues sensorValues, DataReductionRecord record,
+    Map<String, ArrayList<Measurement>> allMeasurements, Connection conn)
+    throws Exception;
 
   /**
    * Set the state for a non-calculated record (used for unused run types etc)
@@ -632,19 +640,6 @@ public abstract class DataReducer {
     }
 
     return result;
-  }
-
-  protected SensorType getSensorType(String sensorTypeName)
-    throws SensorTypeNotFoundException {
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-      .getSensorsConfiguration();
-    return sensorConfig.getSensorType(sensorTypeName);
-  }
-
-  protected Double getValue(Map<SensorType, CalculationValue> sensorValues,
-    String sensorTypeName) throws SensorTypeNotFoundException {
-    SensorType sensorType = getSensorType(sensorTypeName);
-    return sensorValues.get(sensorType).getValue();
   }
 
   private class PrevNextTimes {
