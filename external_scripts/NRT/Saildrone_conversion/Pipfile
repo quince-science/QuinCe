@@ -6,12 +6,8 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-json = "*"
 pandas = "*"
-urllib = "*"
 pysftp = "*"
-bytesio = "*"
-io = "*"
 
 [requires]
 python_version = "3.7"
