@@ -23,3 +23,4 @@ process is correct. The json files, csv files and the final exported files gets
 stored in directories named by the timestamp when the main script was ran. The
 file names always start with the drone id. For the exported file, the file name
 is followed by the start and end timestamp for the data it contains.
+
