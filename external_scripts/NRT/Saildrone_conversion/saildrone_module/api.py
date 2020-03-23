@@ -11,7 +11,7 @@
 
 #------------------------------------------------------------------------------
 import json
-import urllib
+import urllib.request
 import os
 import pandas as pd
 from datetime import datetime
@@ -81,12 +81,15 @@ def write_json(data_dir, drone_id, dataset, start, end, token):
 	# keep requesting (while loop) until we do not receive any data
 	more_to_request = True
 	data_list_concat = []
+	offset = 0
 	while (more_to_request is True):
 
 		# Define the download request URL
 		get_data_url = 'https://developer-mission.saildrone.com/v1/timeseries/'\
 		+ f'{drone_id}?data_set={dataset}&interval=1&start_date={start}&end_date='\
-		+ f'{end}&order_by=asc&limit=1000&offset=0&token={token}'
+		+ f'{end}&order_by=asc&limit=1000&offset={offset}&token={token}'
+
+		print(get_data_url)
 
 		# Send request
 		data_request = urllib.request.Request(
@@ -102,12 +105,8 @@ def write_json(data_dir, drone_id, dataset, start, end, token):
 			more_to_request = False
 		else:
 			data_list_concat = data_list_concat + data_dict['data']
+			offset = offset + len(data_dict['data'])
 
-			last_dict = data_dict['data'][-1:]
-			last_record = datetime.strptime(last_dict[0]['time_interval'],
-			 "%Y-%m-%dT%H:%M:%S.000Z")
-			start = (last_record +
-				pd.Timedelta("1 minute")).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 	# Replace the data section of the last json file received with the
 	# concatenated data list

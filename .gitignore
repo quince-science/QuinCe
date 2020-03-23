@@ -11,6 +11,7 @@
 **/*.sqlite
 DataPreparation/sqlite/*.csv
 **/__pycache__
+**/Pipfile.lock
 .pydevproject
 **/*.log
 
