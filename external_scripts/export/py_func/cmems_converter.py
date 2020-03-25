@@ -5,18 +5,12 @@ import pandas as pd
 import numpy as np
 import numpy.ma as ma
 import csv, json
+import toml
 from math import isnan
 from io import BytesIO
 from zipfile import ZipFile
 from netCDF4 import Dataset
 from re import match
-
-NAME = 1
-CATEGORY_CODE = 2
-DATA_TYPE = 3
-CALLSIGN = 4
-AUTHOR_LIST = 5
-YEAR = datetime.datetime.now().year
 
 TIME_BASE = datetime.datetime(1950, 1, 1, 0, 0, 0)
 QC_LONG_NAME = "quality flag"
@@ -36,10 +30,11 @@ DM_FLAG_MEANINGS = "real-time provisional delayed-mode mixed"
 PLATFORM_CODES = {
   "31" : "research vessel",
   "32" : "vessel of opportunity",
-  "41" : "moored surface buoy"
+  "41" : "moored surface buoy",
+  "3B" : "autonomous surface water vehicle"
 }
 
-def buildnetcdfs(datasetname, fieldconfig, filedata):
+def buildnetcdfs(datasetname, fieldconfig, filedata,platform):
   ''' Construct CMEMS complient netCDF files from filedata'''
 
   result = []
@@ -52,7 +47,7 @@ def buildnetcdfs(datasetname, fieldconfig, filedata):
     linedate = getlinedate(filedata.iloc[[currentline]])
     if linedate != currentdate:
       if currentdate:
-        result.append(makenetcdf(datasetname, fieldconfig, filedata[daystartline:dayendline + 1]))
+        result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline + 1]))
 
       currentdate = linedate
       daystartline = currentline
@@ -62,16 +57,16 @@ def buildnetcdfs(datasetname, fieldconfig, filedata):
 
   # Make the last netCDF
   if dayendline:
-    result.append(makenetcdf(datasetname, fieldconfig, filedata[daystartline:dayendline+1]))
+    result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline+1]))
 
   return result
 
-def makenetcdf(datasetname, fieldconfig, records):
+def makenetcdf(datasetname, fieldconfig, platform, records):
   filedate = getlinedate(records.iloc[[0]])
   ncbytes = None
 
   platform_code = getplatformcode(datasetname)
-  filenameroot = "GL_TS_TS_" + getplatformvalue(platform_code, CALLSIGN) + "_" + str(filedate)
+  filenameroot = "GL_TS_TS_" + platform[platform_code]['call_sign']  + "_" + str(filedate)
 
   # Open a new netCDF file
   ncpath = tempfile.gettempdir() + "/" + filenameroot + ".nc"
@@ -228,12 +223,12 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.author = "cmems-service"
   nc.naming_authority = "Copernicus"
 
-  nc.platform_code = getplatformvalue(platform_code, CALLSIGN)
-  nc.site_code = getplatformvalue(platform_code, CALLSIGN)
+  nc.platform_code = platform[platform_code]['call_sign']
+  nc.site_code = platform[platform_code]['call_sign']
 
   # For buoys -> Mooring observation.
-  platform_category_code = getplatformvalue(platform_code, CATEGORY_CODE)
-  nc.platform_name = getplatformvalue(platform_code, NAME)
+  platform_category_code = platform[platform_code]['category_code']
+  nc.platform_name = platform[platform_code]['name']
   nc.source_platform_category_code = platform_category_code
   nc.source = PLATFORM_CODES[platform_category_code]
 
@@ -245,8 +240,9 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.reference = "http://marine.copernicus.eu/, https://www.icos-cp.eu/"
   #nc.citation = "These data were collected and made freely available by the " \
   #  + "Copernicus project and the programs that contribute to it."
-  nc.citation = (getplatformvalue(platform_code, AUTHOR_LIST) + "(" + str(YEAR) 
-    + "): NRT data from " + getplatformvalue(platform_code, NAME) +  
+  nc.citation = (platform[platform_code]['author_list'] 
+    + "(" + str( datetime.datetime.now().year) 
+    + "): NRT data from " + platform[platform_code]['name'] +  
     ". Made available through the Copernicus project.")
   nc.distribution_statement = ("These data follow Copernicus standards; they " 
     + "are public and free of charge. User assumes all risk for use of data. " 
@@ -273,19 +269,6 @@ def makeqcvalues(values, qc):
       result[i] = 9
     else:
       result[i] = makeqcvalue(qc[i])
-
-  return result
-
-def getplatformvalue(platform_code,value):
-  result = None
-
-  with open("ship_categories.csv") as infile:
-    reader = csv.reader(infile)
-    lookups = {rows[0]:rows[value] for rows in reader}
-    try:
-      result = lookups[platform_code]
-    except KeyError:
-      logging.error(f"PLATFORM CODE '{platform_code}' not found in ship categories")
 
   return result
 
@@ -359,9 +342,12 @@ def main():
   fieldconfig = pd.read_csv('fields.csv', delimiter=',', quotechar='\'')
 
   zipfile = sys.argv[1]
-
+  
   datasetname = os.path.splitext(zipfile)[0]
   datasetpath = datasetname + "/dataset/Copernicus/" + datasetname + ".csv"
+
+  platform_lookup_file = 'platforms.toml'
+  with open(platform_lookup_file) as f: platform = toml.load(f)
 
   filedata = None
 
@@ -370,7 +356,7 @@ def main():
 
   filedata['Timestamp'] = filedata['Timestamp'].astype(str)
 
-  netcdfs = buildnetcdfs(datasetname, fieldconfig, filedata)
+  netcdfs = buildnetcdfs(datasetname, fieldconfig, filedata, platform)
 
   for i in range(0, len(netcdfs)):
     with open(netcdfs[i][0] + ".nc", "wb") as outchan:
