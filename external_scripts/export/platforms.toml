@@ -1,9 +1,7 @@
 [58GS]
 name = 'G. O. Sars'
-nodc_code = '58GS'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_GOSars'
 category_code = '31'
-data_type = 'VOS'
 call_sign = 'LMEL'
 export = ['ICOS','CMEMS']
 creation_date = '2019-03-27T21:01:48Z'
@@ -15,10 +13,8 @@ platform_id = '58GS'
 
 [26NA]
 name = 'Nuka Arctica'
-nodc_code = '26NA'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_26NA'
 category_code = '31'
-data_type = 'VOS'
 call_sign = 'OXYH2'
 export = ['ICOS','CMEMS']
 creation_date = '2019-03-27T14:54:38Z'
@@ -29,10 +25,8 @@ platform_id = '26NA'
 
 [65DK]
 name = 'Cap San Lorenzo'
-nodc_code = '65DK'
 cp_url = 'https://meta.icos-cp.eu/resources/stations/OS_VOS%20France-Brazil'
-category_code = '31'
-data_type = 'VOS'
+category_code = '32'
 call_sign = 'OXOF2'
 export = ['ICOS','CMEMS']
 creation_date = '2019-03-27T14:54:38Z'
@@ -44,10 +38,8 @@ platform_id = '65DK'
 
 [SD1030]
 name = 'Saildrone 1030'
-nodc_code = 'SD1030'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/SAILDRONE_SD1030'
 category_code = '3B'
-data_type = 'autonomous surface water vehicle'
 call_sign = '5801955'
 export = ['ICOS']
 creation_date = '2020-03-01T00:00:00Z'
@@ -59,10 +51,8 @@ platform_id = 'SD1030'
 
 [SD1053]
 name = 'Saildrone 1053'
-nodc_code = 'SD1053'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/SAILDRONE_SD1053'
 category_code = '3B'
-data_type = 'autonomous surface water vehicle'
 call_sign = '1801573'
 export = ['ICOS']
 creation_date = '2020-03-01T00:00:00Z'
