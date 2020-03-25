@@ -93,7 +93,7 @@ index_dir = '/' + product_id + '/' + dataset_id
 
 local_folder = 'latest'
 
-def build_dataproduct(dataset_zip,dataset_name,destination_filename):
+def build_dataproduct(dataset_zip,dataset_name,destination_filename,platform):
   '''
   transforms csv-file to daily netCDF-files.
   Creates dictionary containing info on each netCDF file extracted
@@ -114,7 +114,7 @@ def build_dataproduct(dataset_zip,dataset_name,destination_filename):
   logging.info(f'Creating netcdf-files based on {csv_file} to send to CMEMS')
 
   filedata = pd.read_csv(csv_file, delimiter=',')
-  nc_files = buildnetcdfs(dataset_name, fieldconfig, filedata)
+  nc_files = buildnetcdfs(dataset_name, fieldconfig, filedata,platform)
    
   nc_dict = {}
   for nc_file in nc_files:

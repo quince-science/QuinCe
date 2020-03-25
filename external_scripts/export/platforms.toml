@@ -2,11 +2,12 @@
 name = 'G. O. Sars'
 nodc_code = '58GS'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_GOSars'
-category_code = 31
+category_code = '31'
 data_type = 'VOS'
 call_sign = 'LMEL'
 export = ['ICOS','CMEMS']
 creation_date = '2019-03-27T21:01:48Z'
+author_list = 'Skjelvan, Ingunn'
 
 [LMEL]
 platform_id = '58GS'
@@ -16,18 +17,33 @@ platform_id = '58GS'
 name = 'Nuka Arctica'
 nodc_code = '26NA'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_26NA'
-category_code = 31
+category_code = '31'
 data_type = 'VOS'
 call_sign = 'OXYH2'
 export = ['ICOS','CMEMS']
 creation_date = '2019-03-27T14:54:38Z'
+author_list = 'Becker, Meike; Olsen, Are'
 
 [OXYH2]
 platform_id = '26NA'
 
+[65DK]
+name = 'Cap San Lorenzo'
+nodc_code = '65DK'
+cp_url = 'https://meta.icos-cp.eu/resources/stations/OS_VOS%20France-Brazil'
+category_code = '31'
+data_type = 'VOS'
+call_sign = 'OXOF2'
+export = ['ICOS','CMEMS']
+creation_date = '2019-03-27T14:54:38Z'
+author_list = 'Lefèvre, Nathalie'
+
+[OXOF2]
+platform_id = '65DK'
+
 
 [SD1030]
-name = 
+name = 'Saildrone 1030'
 nodc_code = 'SD1030'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/SAILDRONE_SD1030'
 category_code = '3B'
@@ -35,13 +51,14 @@ data_type = 'autonomous surface water vehicle'
 call_sign = '5801955'
 export = ['ICOS']
 creation_date = '2020-03-01T00:00:00Z'
+author_list = ''
 
-[1801573]
+[5801955]
 platform_id = 'SD1030'
 
 
 [SD1053]
-name = 
+name = 'Saildrone 1053'
 nodc_code = 'SD1053'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/SAILDRONE_SD1053'
 category_code = '3B'
@@ -49,6 +66,7 @@ data_type = 'autonomous surface water vehicle'
 call_sign = '1801573'
 export = ['ICOS']
 creation_date = '2020-03-01T00:00:00Z'
+author_list = ''
 
 [1801573]
 platform_id = 'SD1053'
