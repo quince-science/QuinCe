@@ -40,7 +40,6 @@
     "allSensors": true,
     "includeCalculationColumns": true,
     "exportDataClass": "NeutraliseSalinityFlagsExportData",
-    "visible": false,
     "replaceColumnHeaders": {
       "ALATGP01": "Latitude",
       "ALONGP01": "Longitude",
@@ -94,7 +93,6 @@
     "includeQCComments": false,
     "qcFlagSuffix": "_QC",
     "timestampHeader": "Timestamp",
-    "exportDataClass": "NeutraliseSalinityFlagsExportData",
-    "visible": false
+    "exportDataClass": "NeutraliseSalinityFlagsExportData"
   }
 ]
