@@ -10,7 +10,7 @@ import uk.ac.exeter.QuinCe.web.files.UploadedDataFile;
 
 /**
  * {#UploadedDataFile} instance for use with simple Strings
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -28,7 +28,7 @@ public class APIUploadedDataFile extends UploadedDataFile {
 
   /**
    * Basic constructor for pre-prepared strings
-   * 
+   *
    * @param filename
    *          The filename
    * @param contents
@@ -45,7 +45,7 @@ public class APIUploadedDataFile extends UploadedDataFile {
    * UTF-8.
    *
    * Note that the InputStream is not closed by this constructor.
-   * 
+   *
    * @param filename
    *          The filename
    * @param inputStream

@@ -72,7 +72,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * Returns a list of the instruments owned by the current user
-   * 
+   *
    * @return The instruments owned by the current user
    */
   public List<InstrumentStub> getInstrumentList() {
@@ -81,7 +81,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * View the calibrations list page for the chosen instrument
-   * 
+   *
    * @return The calibrations list page navigation
    */
   public String viewCalibrations() {
@@ -90,7 +90,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * View the external standards list page for the chosen instrument
-   * 
+   *
    * @return The external standards list page navigation
    */
   public String viewStandards() {
@@ -99,7 +99,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * Returns to the instrument list
-   * 
+   *
    * @return The navigation string for the instrument list
    */
   public String viewInstrumentList() {
@@ -110,7 +110,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * Returns the ID of the instrument chosen from the instrument list
-   * 
+   *
    * @return The instrument ID
    */
   public long getChosenInstrument() {
@@ -125,7 +125,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * Sets the ID of the instrument chosen from the instrument list
-   * 
+   *
    * @param chosenInstrument
    *          The instrument ID
    */

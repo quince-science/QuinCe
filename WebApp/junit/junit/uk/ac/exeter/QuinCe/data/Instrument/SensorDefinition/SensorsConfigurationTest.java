@@ -196,6 +196,10 @@ public class SensorsConfigurationTest extends BaseTest {
    */
   @AfterEach
   public void destroyResourceManager() {
+    var1List = null;
+    var2List = null;
+    bothVarsList = null;
+    invalidVarList = null;
     ResourceManager.destroy();
   }
 
@@ -682,7 +686,7 @@ public class SensorsConfigurationTest extends BaseTest {
     SensorsConfiguration config = getConfig();
     List<SensorType> coreSensors = config.getCoreSensors(var1List);
     assertEquals(1, coreSensors.size());
-    assertTrue(coreSensors.get(0).getName().equals("CO₂ in gas"));
+    assertTrue(coreSensors.get(0).getName().equals("xCO₂ (with standards)"));
   }
 
   /**
@@ -703,7 +707,8 @@ public class SensorsConfigurationTest extends BaseTest {
     List<SensorType> coreSensors = config.getCoreSensors(bothVarsList);
 
     assertEquals(2, coreSensors.size());
-    assertTrue(coreSensors.contains(config.getSensorType("CO₂ in gas")));
+    assertTrue(
+      coreSensors.contains(config.getSensorType("xCO₂ (with standards)")));
     assertTrue(coreSensors.contains(config.getSensorType("testSensor")));
   }
 
@@ -749,7 +754,8 @@ public class SensorsConfigurationTest extends BaseTest {
         .getNonCoreSensors(getDataSource().getConnection());
 
       // Should not contain any of the core sensors
-      assertFalse(nonCoreSensors.contains(config.getSensorType("CO₂ in gas")));
+      assertFalse(
+        nonCoreSensors.contains(config.getSensorType("xCO₂ (with standards)")));
       assertFalse(nonCoreSensors.contains(config.getSensorType("testSensor")));
 
       // Should include the used sensors, whether used multiple times or just
@@ -787,7 +793,8 @@ public class SensorsConfigurationTest extends BaseTest {
   @Test
   public void isCoreSensorCoreTest() throws Exception {
     SensorsConfiguration config = getConfig();
-    assertTrue(config.isCoreSensor(config.getSensorType("CO₂ in gas")));
+    assertTrue(
+      config.isCoreSensor(config.getSensorType("xCO₂ (with standards)")));
   }
 
   /**
@@ -862,7 +869,7 @@ public class SensorsConfigurationTest extends BaseTest {
     initVarList();
     initTestVarList();
     SensorsConfiguration config = getResourceManagerConfig();
-    SensorType sensorType = config.getSensorType("CO₂ in gas");
+    SensorType sensorType = config.getSensorType("xCO₂ (with standards)");
 
     assertTrue(config.requiredForVariables(sensorType, var1List));
     assertFalse(config.requiredForVariables(sensorType, var2List));

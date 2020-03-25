@@ -3,19 +3,14 @@ import tempfile
 import datetime
 import pandas as pd
 import numpy as np
+import numpy.ma as ma
 import csv, json
+import toml
 from math import isnan
 from io import BytesIO
 from zipfile import ZipFile
 from netCDF4 import Dataset
 from re import match
-
-NAME = 1
-CATEGORY_CODE = 2
-DATA_TYPE = 3
-CALLSIGN = 4
-AUTHOR_LIST = 5
-YEAR = datetime.datetime.now().year
 
 TIME_BASE = datetime.datetime(1950, 1, 1, 0, 0, 0)
 QC_LONG_NAME = "quality flag"
@@ -35,10 +30,11 @@ DM_FLAG_MEANINGS = "real-time provisional delayed-mode mixed"
 PLATFORM_CODES = {
   "31" : "research vessel",
   "32" : "vessel of opportunity",
-  "41" : "moored surface buoy"
+  "41" : "moored surface buoy",
+  "3B" : "autonomous surface water vehicle"
 }
 
-def buildnetcdfs(datasetname, fieldconfig, filedata):
+def buildnetcdfs(datasetname, fieldconfig, filedata,platform):
   ''' Construct CMEMS complient netCDF files from filedata'''
 
   result = []
@@ -51,7 +47,7 @@ def buildnetcdfs(datasetname, fieldconfig, filedata):
     linedate = getlinedate(filedata.iloc[[currentline]])
     if linedate != currentdate:
       if currentdate:
-        result.append(makenetcdf(datasetname, fieldconfig, filedata[daystartline:dayendline + 1]))
+        result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline + 1]))
 
       currentdate = linedate
       daystartline = currentline
@@ -61,16 +57,16 @@ def buildnetcdfs(datasetname, fieldconfig, filedata):
 
   # Make the last netCDF
   if dayendline:
-    result.append(makenetcdf(datasetname, fieldconfig, filedata[daystartline:dayendline+1]))
+    result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline+1]))
 
   return result
 
-def makenetcdf(datasetname, fieldconfig, records):
+def makenetcdf(datasetname, fieldconfig, platform, records):
   filedate = getlinedate(records.iloc[[0]])
   ncbytes = None
 
   platform_code = getplatformcode(datasetname)
-  filenameroot = "GL_TS_TS_" + getplatformcallsign(platform_code) + "_" + str(filedate)
+  filenameroot = "GL_TS_TS_" + platform[platform_code]['call_sign']  + "_" + str(filedate)
 
   # Open a new netCDF file
   ncpath = tempfile.gettempdir() + "/" + filenameroot + ".nc"
@@ -80,7 +76,7 @@ def makenetcdf(datasetname, fieldconfig, records):
   depthdim = nc.createDimension("DEPTH", 1)
 
   # Time, lat and lon dimensions are created per record
-  timedim = nc.createDimension("TIME", None)
+  timedim = nc.createDimension("TIME", records.shape[0])
   timevar = nc.createVariable("TIME", "d", ("TIME"), fill_value = 999999.0)
   timevar.long_name = "Time"
   timevar.standard_name = "time"
@@ -157,21 +153,33 @@ def makenetcdf(datasetname, fieldconfig, records):
     for key, value in attributes.items():
       var.setncattr(key, value)
 
-    varvalues = np.empty([records.shape[0], 1])
-    varvalues[:,0] = records[field['Export Column']].to_numpy()
+    # Read the data values
+    datavalues = records[field['Export Column']].to_numpy()
 
+    # Calculate QC values
+    qc_values = np.empty([records.shape[0], 1])
+    if field['QC'] == "Data":
+      qc_values[:,0] = makeqcvalues(datavalues, records[field['Export Column'] + '_QC'].to_numpy())
+    else:
+      qc_values[:,0] = field['QC']
+
+
+    if not isnan(field['add_offset']):
+      var.setncattr('add_offset', field['add_offset'])
+      var.setncattr('scale_factor', field['scale_factor'])
+
+      # The netCDF library detects FillValues *after* it's done the packing step.
+      # So we replace the NaN values so that the packing will get the correct FillValue
+      datavalues[np.isnan(datavalues)] = float(field['FillValue']) * float(field['scale_factor'])
+
+    varvalues = np.empty([records.shape[0], 1])
+    varvalues[:,0] = datavalues
     var[:,:] = varvalues
 
     # DM variable
     dmvar = nc.createVariable(field['netCDF Name'] + '_DM', 'c', ("TIME", "DEPTH"), fill_value=' ')
     assigndmvarattributes(dmvar)
     dmvar[:,:] = dms
-
-    qc_values = np.empty([records.shape[0], 1])
-    if field['QC'] == "Data":
-      qc_values[:,0] = makeqcvalues(varvalues, records[field['Export Column'] + '_QC'].to_numpy())
-    else:
-      qc_values[:,0] = field['QC']
 
     qcvar = nc.createVariable(field['netCDF Name'] + '_QC', "b", ("TIME", "DEPTH"), \
       fill_value = QC_FILL_VALUE)
@@ -215,12 +223,12 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.author = "cmems-service"
   nc.naming_authority = "Copernicus"
 
-  nc.platform_code = getplatformcallsign(platform_code)
-  nc.site_code = getplatformcallsign(platform_code)
+  nc.platform_code = platform[platform_code]['call_sign']
+  nc.site_code = platform[platform_code]['call_sign']
 
   # For buoys -> Mooring observation.
-  platform_category_code = getplatformcategorycode(platform_code)
-  nc.platform_name = getplatformname(platform_code)
+  platform_category_code = platform[platform_code]['category_code']
+  nc.platform_name = platform[platform_code]['name']
   nc.source_platform_category_code = platform_category_code
   nc.source = PLATFORM_CODES[platform_category_code]
 
@@ -232,8 +240,9 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.reference = "http://marine.copernicus.eu/, https://www.icos-cp.eu/"
   #nc.citation = "These data were collected and made freely available by the " \
   #  + "Copernicus project and the programs that contribute to it."
-  nc.citation = (getplatformvalue(platform_code, AUTHOR_LIST) + "(" + str(YEAR) 
-    + "): NRT data from " + getplatformvalue(platform_code, NAME) +  
+  nc.citation = (platform[platform_code]['author_list'] 
+    + "(" + str( datetime.datetime.now().year) 
+    + "): NRT data from " + platform[platform_code]['name'] +  
     ". Made available through the Copernicus project.")
   nc.distribution_statement = ("These data follow Copernicus standards; they " 
     + "are public and free of charge. User assumes all risk for use of data. " 
@@ -260,71 +269,6 @@ def makeqcvalues(values, qc):
       result[i] = 9
     else:
       result[i] = makeqcvalue(qc[i])
-
-  return result
-
-def getplatformvalue(platform_code,value):
-  result = None
-
-  with open("ship_categories.csv") as infile:
-    reader = csv.reader(infile)
-    lookups = {rows[0]:rows[value] for rows in reader}
-    try:
-      result = lookups[platform_code]
-    except KeyError:
-      logging.error(f"PLATFORM CODE '{platform_code}' not found in ship categories")
-
-  return result
-
-def getplatformcategorycode(platform_code):
-  result = None
-
-  with open("ship_categories.csv") as infile:
-    reader = csv.reader(infile)
-    lookups = {rows[0]:rows[2] for rows in reader}
-    try:
-      result = lookups[platform_code]
-    except KeyError:
-      logging.error(f"PLATFORM CODE '{platform_code}' not found in ship categories")
-
-  return result
-
-def getplatformname(platform_code):
-  result = None
-
-  with open("ship_categories.csv") as infile:
-    reader = csv.reader(infile)
-    lookups = {rows[0]:rows[1] for rows in reader}
-    try:
-      result = lookups[platform_code]
-    except KeyError:
-      logging.error(f"PLATFORM CODE ' {platform_code} ' not found in ship categories")
-
-  return result
-
-def getplatformcallsign(platform_code):
-  result = None
-
-  with open("ship_categories.csv") as infile:
-    reader = csv.reader(infile)
-    lookups = {rows[0]:rows[4] for rows in reader}
-    try:
-      result = lookups[platform_code]
-    except KeyError:
-      logging.error(f"PLATFORM CODE ' {platform_code}' not found in ship categories")
-
-  return result
-
-def getplatformdatatype(platform_code):
-  result = None
-
-  with open("ship_categories.csv") as infile:
-    reader = csv.reader(infile)
-    lookups = {rows[0]:rows[3] for rows in reader}
-    try:
-      result = lookups[platform_code]
-    except KeyError:
-      logging.error(f"PLATFORM CODE '{platform_code}' not found in ship categories")
 
   return result
 
@@ -365,7 +309,7 @@ def makeqcvalue(flag):
   elif flag == 4:
     result = 4
   else:
-    raise ValueError("Unrecognised flag value " + flag)
+    raise ValueError("Unrecognised flag value " + str(flag))
 
   return result
 
@@ -398,9 +342,12 @@ def main():
   fieldconfig = pd.read_csv('fields.csv', delimiter=',', quotechar='\'')
 
   zipfile = sys.argv[1]
-
+  
   datasetname = os.path.splitext(zipfile)[0]
   datasetpath = datasetname + "/dataset/Copernicus/" + datasetname + ".csv"
+
+  platform_lookup_file = 'platforms.toml'
+  with open(platform_lookup_file) as f: platform = toml.load(f)
 
   filedata = None
 
@@ -409,7 +356,7 @@ def main():
 
   filedata['Timestamp'] = filedata['Timestamp'].astype(str)
 
-  netcdfs = buildnetcdfs(datasetname, fieldconfig, filedata)
+  netcdfs = buildnetcdfs(datasetname, fieldconfig, filedata, platform)
 
   for i in range(0, len(netcdfs)):
     with open(netcdfs[i][0] + ".nc", "wb") as outchan:

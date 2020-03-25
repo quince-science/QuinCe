@@ -571,63 +571,11 @@ public class DataFile {
     return runType;
   }
 
-  /**
-   * Get the longitude for a given line
-   *
-   * @param line
-   *          The line
-   * @return The longitude
-   * @throws DataFileException
-   *           If the file contents cannot be extracted
-   * @throws PositionException
-   *           If the longitude is invalid
-   */
-  public double getLongitude(int line) throws DataFileException {
-
-    double result = -999.9;
-
-    try {
-      loadContents();
-      result = fileDefinition.getLongitudeSpecification()
-        .getValue(fileDefinition.extractFields(contents.get(line)));
-    } catch (PositionException e) {
-      throw new DataFileException(databaseId, line, e);
-    }
-
-    return result;
-  }
-
-  public double getLongitude(List<String> line) throws PositionException {
+  public String getLongitude(List<String> line) throws PositionException {
     return fileDefinition.getLongitudeSpecification().getValue(line);
   }
 
-  /**
-   * Get the latitude for a given line
-   *
-   * @param line
-   *          The line
-   * @return The longitude
-   * @throws DataFileException
-   *           If the file contents cannot be extracted
-   * @throws PositionException
-   *           If the latitude is invalid
-   */
-  public double getLatitude(int line)
-    throws DataFileException, PositionException {
-    double result = -999.9;
-
-    try {
-      loadContents();
-      result = fileDefinition.getLatitudeSpecification()
-        .getValue(fileDefinition.extractFields(contents.get(line)));
-    } catch (PositionException e) {
-      throw new DataFileException(databaseId, line, e);
-    }
-
-    return result;
-  }
-
-  public double getLatitude(List<String> line) throws PositionException {
+  public String getLatitude(List<String> line) throws PositionException {
     return fileDefinition.getLatitudeSpecification().getValue(line);
   }
 
@@ -881,13 +829,11 @@ public class DataFile {
 
     if (field < line.size()) {
       result = line.get(field).trim().replaceAll(",", "");
-
-      if (result.equals(missingValue)) {
+      if (result.length() == 0 || result.equals(missingValue)) {
         result = null;
-      }
-
-      if (null != result) {
+      } else {
         try {
+          // See if this is a numeric value. If it isn't, log an error.
           Double.parseDouble(result);
         } catch (NumberFormatException e) {
           System.out

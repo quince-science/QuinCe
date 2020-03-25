@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Background job to send email verification codes to users
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -24,7 +24,7 @@ public class SendPasswordResetMailJob extends SendCodeJob {
 
   /**
    * Job object constructor
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config

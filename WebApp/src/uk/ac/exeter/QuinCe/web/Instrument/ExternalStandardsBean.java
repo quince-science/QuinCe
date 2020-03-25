@@ -3,14 +3,17 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandard;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
+import uk.ac.exeter.QuinCe.jobs.Job;
+import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 
 /**
  * Bean for external standards
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -63,5 +66,20 @@ public class ExternalStandardsBean extends CalibrationBean {
   @Override
   public String getCoefficientsLabel() {
     return "Concentration";
+  }
+
+  @Override
+  protected int getReprocessStatus() {
+    return DataSet.STATUS_AUTO_QC;
+  }
+
+  @Override
+  protected Class<? extends Job> getReprocessJobClass() {
+    return AutoQCJob.class;
+  }
+
+  @Override
+  public String getCalibrationName() {
+    return "Standard";
   }
 }

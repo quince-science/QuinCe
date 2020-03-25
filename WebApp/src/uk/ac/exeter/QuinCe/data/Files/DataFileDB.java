@@ -887,8 +887,9 @@ public class DataFileDB {
     MissingParam.checkMissing(start, "start");
     MissingParam.checkMissing(end, "end");
 
-    if (end.equals(start) || end.isBefore(start)) {
-      throw new IllegalArgumentException("End date must be after start date");
+    if (end.isBefore(start)) {
+      throw new IllegalArgumentException(
+        "End date must not be before start date");
     }
 
     List<DataFile> files = new ArrayList<DataFile>();

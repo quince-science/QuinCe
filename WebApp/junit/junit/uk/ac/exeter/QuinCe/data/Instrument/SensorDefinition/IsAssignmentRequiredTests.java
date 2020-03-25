@@ -2,13 +2,11 @@ package junit.uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterEach;
@@ -19,7 +17,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.TestLineException;
-import junit.uk.ac.exeter.QuinCe.TestBase.TestSetException;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -222,6 +219,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   public void tearDown() {
     assignments = null;
     config = null;
+    ResourceManager.destroy();
   }
 
   /**
@@ -340,7 +338,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * @see #getExpectedAssignmentRequired(TestSetLine)
    */
   @ParameterizedTest
-  @MethodSource("getAssignmentRequiredTestSet")
+  @MethodSource("getLines")
   public void isAssignmentRequiredTests(TestSetLine line)
     throws TestLineException {
 
@@ -359,21 +357,8 @@ public class IsAssignmentRequiredTests extends TestSetTest {
 
   }
 
-  /**
-   * Retrieves the Test Set for {@link #isAssignmentRequiredTests(TestSetLine)}.
-   *
-   * @return The test set
-   * @throws IOException
-   *           If the Test Set file cannot be read
-   */
-  @SuppressWarnings("unused")
-  private Stream<TestSetLine> getAssignmentRequiredTestSet()
-    throws TestSetException {
-    return getTestSet("isAssignmentRequired");
-  }
-
   private SensorType getMainSensorType(TestSetLine line) throws Exception {
-    return config.getSensorType(line.getStringField(SENSOR_TYPE_COL));
+    return config.getSensorType(line.getStringField(SENSOR_TYPE_COL, true));
   }
 
   /**
@@ -417,7 +402,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   private void assignRelation(TestSetLine line)
     throws SensorTypeNotFoundException, SensorAssignmentException {
     if (!line.isFieldEmpty(RELATION_COL)) {
-      String relationTypeName = line.getStringField(RELATION_COL);
+      String relationTypeName = line.getStringField(RELATION_COL, true);
       if (line.getBooleanField(SIBLING_ASSIGNED_PRIMARY_COL)) {
         assignments.addAssignment(getSensorTypeId(relationTypeName),
           SensorAssignmentsTest
@@ -446,7 +431,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   private void assignDependent(TestSetLine line)
     throws SensorTypeNotFoundException, SensorAssignmentException {
     if (!line.isFieldEmpty(DEPENDENT_COL)) {
-      String dependentTypeName = line.getStringField(DEPENDENT_COL);
+      String dependentTypeName = line.getStringField(DEPENDENT_COL, true);
       if (line.getBooleanField(DEPENDENT_ASSIGNED_PRIMARY_COL)) {
 
         boolean dependsQuestionAnswer = false;
@@ -494,7 +479,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   private void assignDependentSibling(TestSetLine line) throws Exception {
     if (!line.isFieldEmpty(DEPENDENT_SIBLING_COL)) {
       String dependentSiblingTypeName = line
-        .getStringField(DEPENDENT_SIBLING_COL);
+        .getStringField(DEPENDENT_SIBLING_COL, true);
       if (line.getBooleanField(DEPENDENT_SIBLING_ASSIGNED_PRIMARY_COL)) {
         assignments.addAssignment(getSensorTypeId(dependentSiblingTypeName),
           SensorAssignmentsTest
@@ -546,5 +531,10 @@ public class IsAssignmentRequiredTests extends TestSetTest {
     }
 
     return result;
+  }
+
+  @Override
+  protected String getTestSetName() {
+    return "isAssignmentRequired";
   }
 }

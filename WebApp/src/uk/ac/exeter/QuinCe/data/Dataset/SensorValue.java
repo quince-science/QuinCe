@@ -8,6 +8,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -19,6 +20,11 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  *
  */
 public class SensorValue implements Comparable<SensorValue> {
+
+  /**
+   * The QC comment used for missing values
+   */
+  public static final String MISSING_QC_COMMENT = "Missing";
 
   /**
    * The database ID of this value
@@ -59,7 +65,7 @@ public class SensorValue implements Comparable<SensorValue> {
   /**
    * The value (can be null)
    */
-  private final String value;
+  private String value;
 
   /**
    * Indicates whether the value needs to be saved to the database
@@ -84,6 +90,11 @@ public class SensorValue implements Comparable<SensorValue> {
     this.value = value;
     this.autoQC = new AutoQCResult();
     this.dirty = true;
+
+    if (null == value) {
+      this.userQCFlag = Flag.BAD;
+      this.userQCMessage = MISSING_QC_COMMENT;
+    }
   }
 
   /**
@@ -267,12 +278,8 @@ public class SensorValue implements Comparable<SensorValue> {
    *          The user QC flag
    * @param message
    *          The user QC message
-   * @throws RecordNotFoundException
-   *           If the value has not yet been stored in the database
    */
-  public void setUserQC(Flag flag, String message)
-    throws RecordNotFoundException {
-
+  public void setUserQC(Flag flag, String message) {
     userQCFlag = flag;
     userQCMessage = message;
     dirty = true;
@@ -401,5 +408,11 @@ public class SensorValue implements Comparable<SensorValue> {
     } else if (!time.equals(other.time))
       return false;
     return true;
+  }
+
+  public void calibrateValue(Calibration calibration) {
+    if (!isNaN()) {
+      value = String.valueOf(calibration.calibrateValue(getDoubleValue()));
+    }
   }
 }

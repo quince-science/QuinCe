@@ -45,8 +45,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </p>
  *
  * <p>
- * Equilibrator Pressure (differential) depends on Ambient Pressure. CO₂ in gas
- * optionally depends on xH₂O in gas.
+ * Equilibrator Pressure (differential) depends on Ambient Pressure. xCO₂ (with
+ * standards) optionally depends on xH₂O (with standards).
  * </p>
  *
  * <p>
@@ -58,7 +58,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <li>Salinity</li>
  * <li>Equilibrator Temperature</li>
  * <li>Equilibrator Pressure</li>
- * <li>CO₂ in gas <i>(core)</i></li>
+ * <li>xCO₂ (with standards) <i>(core)</i></li>
  * <li>Run Type</li>
  * </ul>
  *
@@ -293,8 +293,8 @@ public class SensorAssignmentsTest extends BaseTest {
     intakeTemperatureId = getSensorTypeId("Intake Temperature");
     salinityId = getSensorTypeId("Salinity");
     equilibratorPressureParentId = getSensorTypeId("Equilibrator Pressure");
-    xh2oId = getSensorTypeId("xH₂O in gas");
-    co2Id = getSensorTypeId("CO₂ in gas");
+    xh2oId = getSensorTypeId("xH₂O (with standards)");
+    co2Id = getSensorTypeId("xCO₂ (with standards)");
   }
 
   /**
@@ -329,7 +329,8 @@ public class SensorAssignmentsTest extends BaseTest {
    * </p>
    */
   @AfterEach
-  public void destroySensorAssignments() {
+  public void tearDown() {
+    config = null;
     assignments = null;
     ResourceManager.destroy();
   }

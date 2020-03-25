@@ -3,9 +3,11 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -13,11 +15,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.NavigableSensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.Routine;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -96,7 +100,7 @@ public class AutoQCJob extends Job {
   /**
    * Constructor that allows the {@link JobManager} to create an instance of
    * this job.
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config
@@ -124,7 +128,7 @@ public class AutoQCJob extends Job {
   /**
    * Runs the configured QC routines on the file specified in the job
    * parameters.
-   * 
+   *
    * @param thread
    *          The thread that is running this job
    * @see FileJob#FILE_ID_KEY
@@ -159,18 +163,42 @@ public class AutoQCJob extends Job {
         .getQCRoutinesConfiguration();
 
       // Get the sensor values grouped by data file column
-      Map<Long, NavigableSensorValuesList> sensorValues = DataSetDataDB
+      Map<Long, SearchableSensorValuesList> sensorValues = DataSetDataDB
         .getSensorValuesByColumn(conn, dataSet.getId());
 
+      // First run the position QC. This will potentially set QC flags on all
+      // sensor values, and those values will then be skipped by the 'normal'
+      // routines later on.
+      //
+      // Note that this routine uses a different API - the constructor is given
+      // all values, and therefore doesn't need to pass any to the actual QC
+      // call.
+      List<Long> dataSensorColumnIds = sensorAssignments.getSensorColumnIds();
+      Set<SearchableSensorValuesList> dataSensorValues = new HashSet<SearchableSensorValuesList>();
+
+      for (Map.Entry<Long, SearchableSensorValuesList> entry : sensorValues
+        .entrySet()) {
+
+        if (dataSensorColumnIds.contains(entry.getKey())) {
+          dataSensorValues.add(entry.getValue());
+        }
+      }
+
+      PositionQCRoutine positionQC = new PositionQCRoutine(
+        sensorValues.get(FileDefinition.LONGITUDE_COLUMN_ID),
+        sensorValues.get(FileDefinition.LATITUDE_COLUMN_ID), dataSensorValues);
+
+      positionQC.qcValues(null);
+
       // Run the routines for each column
-      for (Map.Entry<Long, NavigableSensorValuesList> entry : sensorValues
+      for (Map.Entry<Long, SearchableSensorValuesList> entry : sensorValues
         .entrySet()) {
         SensorType sensorType = sensorAssignments
           .getSensorTypeForDBColumn(entry.getKey());
 
-        // Where sensors have internal calibrations, their values need to be
+        // Where sensors have internal calibrations, their values need to be //
         // QCed in separate groups.
-        Map<String, NavigableSensorValuesList> valuesForQC = new HashMap<String, NavigableSensorValuesList>();
+        Map<String, SearchableSensorValuesList> valuesForQC = new HashMap<String, SearchableSensorValuesList>();
 
         if (!sensorType.hasInternalCalibration()) {
           // All the values can be QCed as a single group
@@ -186,35 +214,35 @@ public class AutoQCJob extends Job {
             runTypeValuesTemp.addAll(sensorValues.get(column.getDatabaseId()));
           }
 
-          NavigableSensorValuesList runTypeValues = new NavigableSensorValuesList();
+          SearchableSensorValuesList runTypeValues = new SearchableSensorValuesList();
           runTypeValues.addAll(runTypeValuesTemp);
 
           // Group the sensor values by run type
-          runTypeValues.initIncrementalSearch();
+          runTypeValues.initDateSearch();
 
           for (SensorValue value : sensorValues.get(entry.getKey())) {
 
-            SensorValue runType = runTypeValues
-              .incrementalSearch(value.getTime());
+            SensorValue runType = runTypeValues.dateSearch(value.getTime());
             if (!valuesForQC.containsKey(runType.getValue())) {
               valuesForQC.put(runType.getValue(),
-                new NavigableSensorValuesList());
+                new SearchableSensorValuesList());
             }
 
             valuesForQC.get(runType.getValue()).add(value);
           }
 
-          runTypeValues.finishIncrementalSearch();
+          runTypeValues.finishDateSearch();
         }
 
         // QC each group of sensor values in turn
-        for (Map.Entry<String, NavigableSensorValuesList> values : valuesForQC
+        for (Map.Entry<String, SearchableSensorValuesList> values : valuesForQC
           .entrySet()) {
 
           SensorValue.clearAutoQC(values.getValue());
           if (values.getKey().equals("")
             || measurementRunTypes.contains(values.getKey())) {
-            // Loop through all routines
+            // Loop through all
+            // routines
             for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
               routine.qcValues(values.getValue());
             }
@@ -223,7 +251,8 @@ public class AutoQCJob extends Job {
         }
       }
 
-      // Store all the sensor values
+      // Send all sensor values to be stored. The storeSensorValues method only
+      // writes those values whose 'dirty' flag is set.
       List<SensorValue> allValues = new ArrayList<SensorValue>();
       sensorValues.values().forEach(allValues::addAll);
       DataSetDataDB.storeSensorValues(conn, allValues);

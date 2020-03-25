@@ -66,7 +66,7 @@ public class LocateMeasurementsJob extends Job {
   /**
    * Constructor that allows the {@link JobManager} to create an instance of
    * this job.
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config
@@ -133,11 +133,15 @@ public class LocateMeasurementsJob extends Job {
 
             // Get the Run Type for this measurement
             // We assume there's only one run type
-            List<SensorValue> runTypeValues = sensorTypeGroups
-              .get(SensorType.RUN_TYPE_SENSOR_TYPE);
-            if (null == runTypeValues) {
-              throw new RecordNotFoundException(
-                "Missing Run Type for measurement at " + entry.getKey());
+            List<SensorValue> runTypeValues = null;
+
+            if (variable.hasInternalCalibrations()) {
+              runTypeValues = sensorTypeGroups
+                .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+              if (null == runTypeValues) {
+                throw new RecordNotFoundException(
+                  "Missing Run Type for measurement at " + entry.getKey());
+              }
             }
 
             // Ditto for longitude and latitude
@@ -154,13 +158,25 @@ public class LocateMeasurementsJob extends Job {
             }
 
             if (measurementOK) {
+
               // Only store non-ignored run types (assume only one run type)
-              String runType = runTypeValues.get(0).getValue();
+              //
+              // Also don't store if either position is missing
+              String runType = null;
+              boolean ignoredRunType = false;
+
+              if (variable.hasInternalCalibrations()) {
+                runType = runTypeValues.get(0).getValue();
+                ignoredRunType = instrument.getRunTypeCategory(runType)
+                  .equals(RunTypeCategory.IGNORED);
+              }
+
               double longitude = longitudeValues.get(0).getDoubleValue();
               double latitude = latitudeValues.get(0).getDoubleValue();
+              boolean positionOK = null != longitudeValues.get(0).getValue()
+                && null != latitudeValues.get(0).getValue();
 
-              if (!instrument.getRunTypeCategory(runType)
-                .equals(RunTypeCategory.IGNORED)) {
+              if (!ignoredRunType && positionOK) {
                 measurements.add(new Measurement(dataSet.getId(), variable,
                   entry.getKey(), longitude, latitude, runType));
               }

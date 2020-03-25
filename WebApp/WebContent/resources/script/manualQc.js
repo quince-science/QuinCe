@@ -147,7 +147,11 @@ function getColumnDefs() {
             result += ' onmouseover="showQCMessage(' + data[2] + ', \''+ data[4] + '\')" onmouseout="hideQCMessage()"';
           }
 
-          result += '>' + (null == data[0] ? "" : data[0].toFixed(3)) + '</div>';
+          result += '>';
+          if (null != data[0]) {
+            result += ($.isNumeric(data[0]) ? data[0].toFixed(3) : data[0]);
+          }
+          result += '</div>';
           return result;
       }
 

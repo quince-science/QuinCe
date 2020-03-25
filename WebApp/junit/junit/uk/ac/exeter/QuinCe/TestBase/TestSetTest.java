@@ -12,6 +12,23 @@ import org.junit.jupiter.params.ParameterizedTest;
 
 public abstract class TestSetTest extends BaseTest {
 
+  private List<TestSetLine> lines = null;
+
+  protected List<TestSetLine> getLines() throws TestSetException {
+    if (null == lines) {
+      lines = getTestSetLines();
+    }
+
+    return lines;
+  }
+
+  /**
+   * Get the name of the test set
+   *
+   * @return
+   */
+  protected abstract String getTestSetName();
+
   /**
    * Get the contents of a Test Set file as a {@link Stream} of
    * {@link TestSetLine} objects.
@@ -50,8 +67,7 @@ public abstract class TestSetTest extends BaseTest {
    * @throws IOException
    *           If the file cannot be read
    */
-  protected Stream<TestSetLine> getTestSet(String testSet)
-    throws TestSetException {
+  private List<TestSetLine> getTestSetLines() throws TestSetException {
 
     File testSetFile = null;
     List<TestSetLine> lines = new ArrayList<TestSetLine>();
@@ -59,7 +75,8 @@ public abstract class TestSetTest extends BaseTest {
 
     try {
       testSetFile = context
-        .getResource("classpath:resources/testsets/" + testSet + ".csv")
+        .getResource(
+          "classpath:resources/testsets/" + getTestSetName() + ".csv")
         .getFile();
 
       in = new BufferedReader(new FileReader(testSetFile));
@@ -70,10 +87,10 @@ public abstract class TestSetTest extends BaseTest {
       String line;
       while ((line = in.readLine()) != null) {
         lineNumber++;
-        lines.add(new TestSetLine(lineNumber, line.split(",")));
+        lines.add(new TestSetLine(lineNumber, line.split(",", -1)));
       }
     } catch (Exception e) {
-      throw new TestSetException(testSet, e);
+      throw new TestSetException(getTestSetName(), e);
     } finally {
       try {
         if (null != in) {
@@ -84,7 +101,7 @@ public abstract class TestSetTest extends BaseTest {
       }
     }
 
-    return lines.stream();
+    return lines;
   }
 
 }

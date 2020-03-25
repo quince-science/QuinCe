@@ -29,7 +29,7 @@ public class ServletUtilsBean {
 
   /**
    * Use this to get the GlobalSessionData object for this session.
-   * 
+   *
    * @return an instance of the GlobalSessionData
    */
   public static ServletUtilsBean getInstance() {
@@ -40,7 +40,7 @@ public class ServletUtilsBean {
 
   /**
    * Shorthand to retrieve the run type categories from the configuration
-   * 
+   *
    * @return
    * @throws ResourceException
    */

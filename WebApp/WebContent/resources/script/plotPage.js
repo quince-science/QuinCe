@@ -418,11 +418,12 @@ function clickCellAction(cellIndex, shiftClick) {
 
   var rowId = jsDataTable.row(cellIndex.row).data()['DT_RowId'];
   var columnIndex = cellIndex.column;
-  
+
   // If the cell isn't selectable, or has no value, do nothing.
   if (canSelectCell(rowId, columnIndex) &&
     null != jsDataTable.cell(cellIndex).data() &&
-    null != jsDataTable.cell(cellIndex).data()[0]) {
+    null != jsDataTable.cell(cellIndex).data()[0] &&
+    '' != jsDataTable.cell(cellIndex).data()[0]) {
 
     if (columnIndex != selectedColumn) {
       selectedColumn = columnIndex;
@@ -495,10 +496,10 @@ function getRowsInRange(startRow, endRow, columnIndex) {
 
   while (selectableRows[currentIndex] != endRow) {
     currentIndex = currentIndex + step;
-    
+
     var rowIndex = jsDataTable.row('#' + selectableRows[currentIndex]).index();
     var cellData = jsDataTable.cell({row:rowIndex, column:columnIndex}).data();
-    if (null != cellData && null != cellData[0]) {
+    if (null != cellData && null != cellData[0] && '' != cellData[0]) {
       rows.push(selectableRows[currentIndex]);
     }
   }
@@ -604,12 +605,12 @@ function drawPlot(index, resetZoom) {
 
   var xAxisRange = null;
   var yAxisRange = null;
-  
+
   if (!resetZoom && null != window[plotVar]) {
     xAxisRange = window[plotVar].xAxisRange();
     yAxisRange = window[plotVar].yAxisRange();
   }
-  
+
   // Get the plot data
   var plotData = null;
   // TODO 0 = date - but we need to make it a proper lookup
@@ -648,7 +649,7 @@ function drawPlot(index, resetZoom) {
   graph_options.labelsDiv = 'plot' + index + 'Label';
   // Ghost data and series data colors
   graph_options.colors = ['#C0C0C0', '#01752D'];
-  
+
   // Zoom
   if (!resetZoom) {
     graph_options.dateWindow = xAxisRange;
@@ -980,7 +981,7 @@ function updatePlot(plotIndex) {
   } else {
     initMap(plotIndex);
   }
-  
+
   plotLoaded(plotIndex);
 }
 
@@ -1169,7 +1170,7 @@ function resetZoom(index) {
       yRangePad: 10,
       xRangePad: 10
     });
-    
+
     window['plot' + index].resetZoom();
   }
 }
@@ -1200,7 +1201,7 @@ function makeHighlights(plotData) {
 
     if (selected ||
       (Math.abs(manualFlag) != FLAG_GOOD && manualFlag != FLAG_FLUSHING)) {
-      
+
       highlightColor = null;
       if (plotData[i][PLOT_MANUAL_FLAG_INDEX] in HIGHLIGHT_COLORS ) {
         highlightColor = HIGHLIGHT_COLORS[plotData[i][PLOT_MANUAL_FLAG_INDEX]]

@@ -41,9 +41,9 @@ dnt_datetime_format = '%Y%m%dT%H%M%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
 
 product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
-nc_dir = '/' + product_id + '/NRT_201904/monthly/vessel'
+nc_dir = '/' + product_id + '/NRT_202003/monthly/vessel'
 dnt_dir = '/' + product_id + '/DNT'
-index_dir = '/' + product_id + '/NRT_201904'
+index_dir = '/' + product_id + '/NRT_202003'
 local_folder = 'monthly'
 dnt_folder = 'DNT/' + local_folder + '/'  
 
@@ -438,7 +438,7 @@ def build_DNT(dnt_upload):
   dnt.set('date', date)
   dnt.set('product',product_id)
   dataset = ET.SubElement(dnt,'dataset')
-  dataset.set('DatasetName','NRT_201904')
+  dataset.set('DatasetName','NRT_202003')
 
   for item in dnt_upload:
     local_filepath = dnt_upload[item]['local_filepath']
@@ -479,7 +479,7 @@ def build_index(results_uploaded):
   index_info = ''
   for file in results_uploaded:
     local_filepath = file[2]
-    ftp_filepath = file[5].replace('NRT_201904','NRT')
+    ftp_filepath = file[5].replace('NRT_202003','NRT')
     
     nc = netCDF4.Dataset(local_filepath,mode='r')
     lat_min = nc.geospatial_lat_min

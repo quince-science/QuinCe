@@ -120,9 +120,13 @@ public class DataReductionJob extends Job {
         instrument, dataSet.getId());
 
       // Get the most recent calibration data from before the dataset start
-      CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
-        .getMostRecentCalibrations(conn, instrument.getDatabaseId(),
-          groupedSensorValues.getFirstTime());
+      CalibrationSet calibrationSet = null;
+
+      if (instrument.hasInternalCalibrations()) {
+        calibrationSet = ExternalStandardDB.getInstance()
+          .getMostRecentCalibrations(conn, instrument.getDatabaseId(),
+            groupedSensorValues.getFirstTime());
+      }
 
       // Cached data reducer instances
       Map<InstrumentVariable, DataReducer> reducers = new HashMap<InstrumentVariable, DataReducer>();
@@ -279,10 +283,18 @@ public class DataReductionJob extends Job {
   private boolean isVariableMeasurement(Instrument instrument,
     Measurement measurement) {
 
-    RunTypeCategory runTypeCategory = instrument
-      .getRunTypeCategory(measurement.getRunType());
+    boolean result = false;
 
-    return runTypeCategory.isMeasurementType() && runTypeCategory
-      .getDescription().equals(measurement.getVariable().getName());
+    if (!instrument.hasInternalCalibrations()) {
+      result = true;
+    } else {
+      RunTypeCategory runTypeCategory = instrument
+        .getRunTypeCategory(measurement.getRunType());
+
+      result = runTypeCategory.isMeasurementType() && runTypeCategory
+        .getDescription().equals(measurement.getVariable().getName());
+    }
+
+    return result;
   }
 }

@@ -11,6 +11,7 @@
 **/*.sqlite
 DataPreparation/sqlite/*.csv
 **/__pycache__
+**/Pipfile.lock
 .pydevproject
 **/*.log
 
@@ -33,3 +34,8 @@ external_scripts/export/index_monthly.txt
 external_scripts/export/monthly/stations.rdf
 
 external_scripts/export/index_latest.txt
+
+# Ignore data directory from saildrone directory
+external_scripts/NRT/Saildrone_conversion/data_files
+
+external_scripts/export/index_platform.txt

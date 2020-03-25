@@ -50,7 +50,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Constructor for a brand new measurement that is not yet in the database
-   * 
+   *
    * @param datasetId
    *          The ID of the dataset to which the measurement belongs
    * @param variable
@@ -78,7 +78,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Constructor for a measurement from the database
-   * 
+   *
    * @param id
    *          The measurement's database ID
    * @param datasetId
@@ -108,7 +108,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Set the database ID for this measurement
-   * 
+   *
    * @param id
    *          The database ID
    */
@@ -118,7 +118,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the database ID of this measurement
-   * 
+   *
    * @return The measurement ID
    */
   public long getId() {
@@ -127,7 +127,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the database ID of the dataset to which this measurement belongs
-   * 
+   *
    * @return The dataset ID
    */
   public long getDatasetId() {
@@ -136,7 +136,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the variable measured in this measurement
-   * 
+   *
    * @return The measured variable
    */
   public InstrumentVariable getVariable() {
@@ -145,7 +145,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the time of the measurement
-   * 
+   *
    * @return The measurement time
    */
   public LocalDateTime getTime() {
@@ -154,7 +154,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the longitude of the measurement
-   * 
+   *
    * @return The measurement longitude
    */
   public double getLongitude() {
@@ -163,7 +163,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the latitude of the measurement
-   * 
+   *
    * @return The measurement latitude
    */
   public double getLatitude() {
@@ -172,7 +172,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the Run Type of this measurement
-   * 
+   *
    * @return The run type
    */
   public String getRunType() {

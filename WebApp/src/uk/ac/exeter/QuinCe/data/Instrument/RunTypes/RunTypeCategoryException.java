@@ -4,7 +4,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
  * Exception for run type category errors
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -17,7 +17,7 @@ public class RunTypeCategoryException extends InstrumentException {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param message
    *          The error message
    */
@@ -27,7 +27,7 @@ public class RunTypeCategoryException extends InstrumentException {
 
   /**
    * Constructor for an error with an underlying cause
-   * 
+   *
    * @param message
    *          The error message
    * @param cause
@@ -39,7 +39,7 @@ public class RunTypeCategoryException extends InstrumentException {
 
   /**
    * Constructor for an error on a given line of the configuration file
-   * 
+   *
    * @param lineNumber
    *          The line number on which the error was found
    * @param message

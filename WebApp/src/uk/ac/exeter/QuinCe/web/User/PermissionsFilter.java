@@ -21,7 +21,7 @@ import uk.ac.exeter.QuinCe.User.User;
  * This is an abstract class. Implementing classes will determine which
  * permission they will check.
  * </p>
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -56,7 +56,7 @@ public abstract class PermissionsFilter implements Filter {
   /**
    * Determine whether or not the specified user has the permission being
    * checked by this filter.
-   * 
+   *
    * @param user
    *          The user whose permissions must be checked
    * @return {@code true} if the user has the permission; {@code false} if they

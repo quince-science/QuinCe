@@ -33,7 +33,7 @@ public class CreateNrtDataset extends Job {
   /**
    * Constructor that allows the {@link JobManager} to create an instance of
    * this job.
-   * 
+   *
    * @param resourceManager
    *          The application's resource manager
    * @param config
@@ -88,20 +88,24 @@ public class CreateNrtDataset extends Job {
 
       LocalDateTime endDate = DataFileDB.getLastFileDate(conn,
         instrument.getDatabaseId());
-      String nrtDatasetName = buildNrtDatasetName(instrument);
-      DataSet newDataset = new DataSet(instrument.getDatabaseId(),
-        nrtDatasetName, nrtStartDate, endDate, true);
-      DataSetDB.addDataSet(conn, newDataset);
 
-      // TODO This is a copy of the code in DataSetsBean.addDataSet. Does it
-      // need collapsing?
-      Map<String, String> params = new HashMap<String, String>();
-      params.put(ExtractDataSetJob.ID_PARAM,
-        String.valueOf(newDataset.getId()));
+      // Only create the NRT dataset if there are records available
+      if (endDate.isAfter(nrtStartDate)) {
+        String nrtDatasetName = buildNrtDatasetName(instrument);
 
-      JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
-        ExtractDataSetJob.class.getCanonicalName(), params);
+        DataSet newDataset = new DataSet(instrument.getDatabaseId(),
+          nrtDatasetName, nrtStartDate, endDate, true);
+        DataSetDB.addDataSet(conn, newDataset);
 
+        // TODO This is a copy of the code in DataSetsBean.addDataSet. Does it
+        // need collapsing?
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(ExtractDataSetJob.ID_PARAM,
+          String.valueOf(newDataset.getId()));
+
+        JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
+          ExtractDataSetJob.class.getCanonicalName(), params);
+      }
     } catch (Exception e) {
       e.printStackTrace();
       DatabaseUtils.rollBack(conn);

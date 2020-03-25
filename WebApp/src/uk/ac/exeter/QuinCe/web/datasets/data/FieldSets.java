@@ -8,6 +8,8 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+
 @SuppressWarnings("serial")
 public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
@@ -20,6 +22,20 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
   private long defaultFieldSet = FieldSet.BASE_ID;
 
   private List<Field> unusedFields = new ArrayList<Field>();
+
+  /**
+   * Special field ID for the combined lon/lat position field. Used to override
+   * the separate longitude and latitude field IDs
+   *
+   * @see uk.ac.exeter.QuinCe.data.Instrument.FileDefinition#LONGITUDE_COLUMN_ID
+   * @see uk.ac.exeter.QuinCe.data.Instrument.FileDefinition#LATITUDE_COLUMN_ID
+   */
+  public static final long POSITION_FIELD_ID = -1002L;
+
+  /**
+   * The header for the combined lon/lat position field.
+   */
+  public static final String POSITION_FIELD_HEADER = "Lon | Lat";
 
   public FieldSets(String rowIdName) {
     super();
@@ -225,7 +241,14 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
     for (List<Field> fields : values()) {
       for (Field field : fields) {
-        headings.add(field.getFullName());
+        // Replace lon/lat fields with a single position field ID
+        if (field.getId() == FileDefinition.LONGITUDE_COLUMN_ID) {
+          headings.add(POSITION_FIELD_HEADER);
+        } else if (field.getId() == FileDefinition.LATITUDE_COLUMN_ID) {
+          headings.add("Dummy (ex Lat)");
+        } else {
+          headings.add(field.getFullName());
+        }
       }
     }
 
@@ -237,7 +260,14 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
     for (List<Field> fields : values()) {
       for (Field field : fields) {
-        headings.add(field.getId());
+
+        // Replace lon/lat fields with a single position field ID
+        if (field.getId() == FileDefinition.LONGITUDE_COLUMN_ID) {
+          headings.add(FieldSets.POSITION_FIELD_ID);
+        } else if (field.getId() != FileDefinition.LATITUDE_COLUMN_ID) {
+          // Ignore the latitude column
+          headings.add(field.getId());
+        }
       }
     }
 
@@ -252,6 +282,29 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     return new Gson().toJson(getTableIDsList());
   }
 
+  public int getColumnIndex(long fieldId) {
+
+    boolean found = false;
+    int currentColumn = -1;
+
+    for (List<Field> fieldSetFields : values()) {
+
+      for (int i = 0; i < fieldSetFields.size(); i++) {
+        currentColumn++;
+        if (fieldSetFields.get(i).getId() == fieldId) {
+          found = true;
+          break;
+        }
+      }
+
+      if (found) {
+        break;
+      }
+    }
+
+    return (found ? currentColumn : -1);
+  }
+
   public LinkedHashMap<Long, List<Integer>> getColumnIndexes() {
     LinkedHashMap<Long, List<Integer>> columnIndexes = new LinkedHashMap<Long, List<Integer>>();
 
@@ -262,7 +315,15 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
       columnIndexes.put(fieldSet.getId(), new ArrayList<Integer>());
 
       for (int i = 0; i < get(fieldSet).size(); i++) {
-        columnIndexes.get(fieldSet.getId()).add(++currentColumn);
+
+        currentColumn++;
+
+        // The latitude has a column index, but we don't include it in this
+        // list. The longitude column is converted to the combined position and
+        // latitude is empty and therefore not shown.
+        if (get(fieldSet).get(i).getId() != FileDefinition.LATITUDE_COLUMN_ID) {
+          columnIndexes.get(fieldSet.getId()).add(currentColumn);
+        }
       }
     }
 

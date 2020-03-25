@@ -1,0 +1,14 @@
+[QuinCe]
+url='http://quince.bcdc.no'
+user='api_user@bcdc.no'
+password='%quince_export_api_password%'
+
+[QuinCeAPI]
+url='http://localhost:8080/QuinCe'
+user='api_user@bcdc.no'
+password='%local_api_password%'
+
+[slack]
+api_token = '%slack_api_token%'
+err_workspace = '%slack_err%'
+rep_workspace = '%slack_rep%'

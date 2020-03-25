@@ -14,7 +14,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 
 /**
  * Factory class for Data Reducers
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -22,7 +22,7 @@ public class DataReducerFactory {
 
   /**
    * Get the Data Reducer for a given variable and initialise it
-   * 
+   *
    * @param variable
    *          The variable
    * @return The Data Reducer
@@ -48,6 +48,18 @@ public class DataReducerFactory {
       }
       case "Underway Atmospheric pCO₂": {
         reducer = new UnderwayAtmosphericPco2Reducer(variable, nrt,
+          variableAttributes, allMeasurements, groupedSensorValues,
+          calibrationSet);
+        break;
+      }
+      case "SailDrone Marine CO₂ NRT": {
+        reducer = new SaildroneMarinePco2Reducer(variable, nrt,
+          variableAttributes, allMeasurements, groupedSensorValues,
+          calibrationSet);
+        break;
+      }
+      case "SailDrone Atmospheric CO₂ NRT": {
+        reducer = new SaildroneAtmosphericPco2Reducer(variable, nrt,
           variableAttributes, allMeasurements, groupedSensorValues,
           calibrationSet);
         break;
@@ -80,6 +92,16 @@ public class DataReducerFactory {
         null, null);
       break;
     }
+    case "SailDrone Marine CO₂ NRT": {
+      reducer = new SaildroneMarinePco2Reducer(variable, false, null, null,
+        null, null);
+      break;
+    }
+    case "SailDrone Atmospheric CO₂ NRT": {
+      reducer = new SaildroneAtmosphericPco2Reducer(variable, false, null, null,
+        null, null);
+      break;
+    }
     default: {
       throw new DataReductionException(
         "Cannot find reducer for variable " + variable.getName());
@@ -91,7 +113,7 @@ public class DataReducerFactory {
 
   /**
    * Get the calculation parameters for a given data reducer with their IDs
-   * 
+   *
    * @param variable
    *          The variable for the data reducer
    * @return The calculation parameter names

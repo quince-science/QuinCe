@@ -42,7 +42,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Create an empty assignment for a run type
-   * 
+   *
    * @param runType
    *          The run type
    */
@@ -53,7 +53,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Construct a standard run type assignment to a category
-   * 
+   *
    * @param runType
    *          The run type
    * @param category
@@ -66,7 +66,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Create an alias from one run type to another
-   * 
+   *
    * @param runType
    *          The run type
    * @param aliasTo
@@ -82,7 +82,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   /**
    * Determine whether or not this run type is correctly assigned, either to a
    * category or as an alias
-   * 
+   *
    * @return {@code true} if the run type is assigned; {@code false} if it is
    *         not
    */
@@ -92,7 +92,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Get the run name that this assignment is for
-   * 
+   *
    * @return The run name
    */
   public String getRunName() {
@@ -114,7 +114,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Determine whether or not this run type is an alias
-   * 
+   *
    * @return {@code true} if the run type is an alias; {@code false} if it is
    *         not
    */
@@ -124,7 +124,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Set the flag stating whether or not this run type is an alias
-   * 
+   *
    * @param alias
    *          The alias flag
    */
@@ -135,7 +135,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   /**
    * Get the run type to which this run type is aliased. Returns {@code null} if
    * this is not an alias
-   * 
+   *
    * @return The alias
    */
   public String getAliasTo() {
@@ -144,7 +144,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Set the run type to which this run type is aliased.
-   * 
+   *
    * @param aliasTo
    *          The alias
    */
@@ -192,7 +192,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Get a human readable description of this assignment
-   * 
+   *
    * @return The assignment description
    */
   public String getAssignmentText() {
@@ -211,7 +211,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   /**
    * Get the code for the assigned Run Type category. If no category is
    * assigned, returns {@code null}
-   * 
+   *
    * @return The assigned category
    */
   public long getCategoryCode() {
@@ -230,7 +230,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Set a run type
-   * 
+   *
    * @param code
    * @throws RunTypeCategoryException
    *           If the code is not recognised

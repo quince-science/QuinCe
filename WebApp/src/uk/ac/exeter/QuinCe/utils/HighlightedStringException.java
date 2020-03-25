@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.utils;
 
 /**
  * Exception for errors in highlighted strings
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,7 +15,7 @@ public class HighlightedStringException extends Exception {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param message
    *          The error message
    */

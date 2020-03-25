@@ -87,7 +87,7 @@ public class User {
 
   /**
    * Construct a User object
-   * 
+   *
    * @param databaseId
    *          The database record ID for the user
    * @param emailAddress
@@ -122,7 +122,7 @@ public class User {
 
   /**
    * Return the user's email address
-   * 
+   *
    * @return The user's email address
    */
   public String getEmailAddress() {
@@ -132,7 +132,7 @@ public class User {
   /**
    * Return the user's full name, constructed by combining the first name and
    * surname.
-   * 
+   *
    * @return The user's full name
    */
   public String getFullName() {
@@ -141,7 +141,7 @@ public class User {
 
   /**
    * Return the user's given name
-   * 
+   *
    * @return The user's given name
    */
   public String getGivenName() {
@@ -150,7 +150,7 @@ public class User {
 
   /**
    * Return the user's surname
-   * 
+   *
    * @return The user's surname
    */
   public String getSurname() {
@@ -159,7 +159,7 @@ public class User {
 
   /**
    * Set the email verification code
-   * 
+   *
    * @param code
    *          The email verification code
    * @param time
@@ -172,7 +172,7 @@ public class User {
 
   /**
    * Set the password reset code
-   * 
+   *
    * @param code
    *          The password reset code
    * @param time
@@ -185,7 +185,7 @@ public class User {
 
   /**
    * Retrieve the email verification code
-   * 
+   *
    * @return The email verification code
    */
   public String getEmailVerificationCode() {
@@ -194,7 +194,7 @@ public class User {
 
   /**
    * Return the time at which the email verification code was set
-   * 
+   *
    * @return The time at which the email verification code was set
    */
   public Timestamp getEmailVerificationCodeTime() {
@@ -203,7 +203,7 @@ public class User {
 
   /**
    * Retrieve the password reset code
-   * 
+   *
    * @return code The password reset code
    */
   public String getPasswordResetCode() {
@@ -212,7 +212,7 @@ public class User {
 
   /**
    * Return the time at which the password reset code was set
-   * 
+   *
    * @return The time at which the password reset code was set
    */
   public Timestamp getPasswordResetCodeTime() {
@@ -231,7 +231,7 @@ public class User {
 
   /**
    * Sets the database ID for this user object
-   * 
+   *
    * @param id
    *          The user's ID
    */
@@ -241,7 +241,7 @@ public class User {
 
   /**
    * Determines whether or not this user is a job manager
-   * 
+   *
    * @return {@code true} if this user is a job manager; {@code false} if not
    */
   public boolean getJobManager() {
@@ -250,7 +250,7 @@ public class User {
 
   /**
    * Get the user's preferences
-   * 
+   *
    * @return The user's preferences
    */
   public UserPreferences getPreferences() {
@@ -259,7 +259,7 @@ public class User {
 
   /**
    * Determine whether or not this is an administrator user
-   * 
+   *
    * @return {@code true} if this user is an administrator; {@code false} if not
    */
   public boolean isAdminUser() {
@@ -268,7 +268,7 @@ public class User {
 
   /**
    * Determine whether or not this is an API user
-   * 
+   *
    * @return {@code true} if this user can access the API; {@code false} if not
    */
   public boolean isApiUser() {
@@ -277,7 +277,7 @@ public class User {
 
   /**
    * Determine whether or not this is an approval user
-   * 
+   *
    * @return {@code true} if this user can approve datasets for export;
    *         {@code false} if not
    */

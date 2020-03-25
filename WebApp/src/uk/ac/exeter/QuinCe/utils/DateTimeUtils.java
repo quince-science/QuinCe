@@ -40,7 +40,7 @@ public class DateTimeUtils {
 
   static {
     isoDateTimeFormatter = java.time.format.DateTimeFormatter
-      .ofPattern("YYYY-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+      .ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
     displayDateTimeFormatter = java.time.format.DateTimeFormatter
       .ofPattern(DISPLAY_DATE_TIME_FORMAT).withZone(ZoneOffset.UTC);
   }
@@ -48,7 +48,7 @@ public class DateTimeUtils {
   /**
    * Determines whether or not the current time is within a given number of
    * hours of the current time
-   * 
+   *
    * @param time1
    *          The time to be checked against the current time, in milliseconds
    *          since 1st Jan 1970
@@ -64,7 +64,7 @@ public class DateTimeUtils {
 
   /**
    * Format a date/time to YYYY-MM-dd HH:mm:ss format
-   * 
+   *
    * @param dateTime
    *          The date/time
    * @return The formatted date/time
@@ -76,7 +76,7 @@ public class DateTimeUtils {
   /**
    * Convert a UTC {@link LocalDateTime} to a {@code long} milliseconds value
    * for storage in the database
-   * 
+   *
    * @param date
    *          The date
    * @return The long value
@@ -88,7 +88,7 @@ public class DateTimeUtils {
   /**
    * Convert a {@code long} milliseconds from the database into a UTC
    * {@link LocalDateTime}.
-   * 
+   *
    * @param milliseconds
    *          The milliseconds value
    * @return The {@code LocalDateTime} object
@@ -100,7 +100,7 @@ public class DateTimeUtils {
 
   /**
    * Generate an ISOformatted date string for a given date
-   * 
+   *
    * @param date
    *          The date
    * @return The ISO date string
@@ -111,7 +111,7 @@ public class DateTimeUtils {
 
   /**
    * Calculate the time between two dates, in seconds
-   * 
+   *
    * @param date1
    *          The first date
    * @param date2

@@ -14,7 +14,7 @@ public abstract class SensorCalibration extends Calibration {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param instrumentId
    *          The instrument that the calibration is for
    * @param target
@@ -26,7 +26,7 @@ public abstract class SensorCalibration extends Calibration {
 
   /**
    * Basic constructor with no target set
-   * 
+   *
    * @param instrumentId
    *          The instrument that the calibration is for
    */
@@ -36,7 +36,7 @@ public abstract class SensorCalibration extends Calibration {
 
   /**
    * Construct a complete sensor calibration object.
-   * 
+   *
    * @param instrumentId
    *          The instrument ID
    * @param target
@@ -48,10 +48,11 @@ public abstract class SensorCalibration extends Calibration {
    * @throws CalibrationException
    *           If the calibration details are invalid
    */
-  protected SensorCalibration(long instrumentId, String target,
+  protected SensorCalibration(long id, long instrumentId, String target,
     LocalDateTime deploymentDate, List<Double> coefficients)
     throws CalibrationException {
-    super(instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE, target);
+    super(id, instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE,
+      target);
     setDeploymentDate(deploymentDate);
     setCoefficients(coefficients);
     if (!validate()) {

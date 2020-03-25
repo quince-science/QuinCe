@@ -15,7 +15,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundEx
 
 /**
  * Data Reduction class for underway marine pCO₂
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -68,8 +68,8 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     Set<SensorType> requiredSensorTypes = getRequiredSensorTypes(
       instrument.getSensorAssignments());
 
-    SensorType xH2OSensorType = getSensorType("xH₂O in gas");
-    SensorType co2SensorType = getSensorType("CO₂ in gas");
+    SensorType xH2OSensorType = getSensorType("xH₂O (with standards)");
+    SensorType co2SensorType = getSensorType("xCO₂ (with standards)");
 
     Double trueXH2O = 0.0D;
     if (requiredSensorTypes.contains(xH2OSensorType)) {
@@ -83,7 +83,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       "Equilibrator Temperature");
     Double equilibratorPressure = getEquilibratorPressure(requiredSensorTypes,
       sensorValues).getValue();
-    Double co2InGas = getValue(sensorValues, "CO₂ in gas");
+    Double co2InGas = getValue(sensorValues, "xCO₂ (with standards)");
 
     Double co2Dried = co2InGas;
     if (requiredSensorTypes.contains(xH2OSensorType)) {
@@ -114,7 +114,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   /**
    * Calculates the water vapour pressure (pH<sub>2</sub>O). From Weiss and
    * Price (1980)
-   * 
+   *
    * @param salinity
    *          Salinity
    * @param eqt
@@ -129,7 +129,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
   /**
    * Calculate dried CO2 using a moisture measurement
-   * 
+   *
    * @param co2
    *          The measured CO2 value
    * @param xH2O
@@ -141,8 +141,8 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   }
 
   /**
-   * Calculates pCO<sub>2</sub> in water at equlibrator temperature
-   * 
+   * Calculates pCO<sub>2</sub> in water at equilibrator temperature
+   *
    * @param co2
    *          The dry, calibrated CO<sub>2</sub> value
    * @param eqp
@@ -159,7 +159,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   /**
    * Calculates pCO<sub>2</sub> at the intake (sea surface) temperature. From
    * Takahashi et al. (2009)
-   * 
+   *
    * @param pco2TEWet
    *          The pCO<sub>2</sub> at equilibrator temperature
    * @param eqt
@@ -174,7 +174,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
   /**
    * Converts pCO<sub>2</sub> to fCO<sub>2</sub>
-   * 
+   *
    * @param pco2SST
    *          pCO<sub>2</sub> at intake temperature
    * @param co2Calibrated
@@ -232,7 +232,8 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   @Override
   protected String[] getRequiredTypeStrings() {
     return new String[] { "Intake Temperature", "Salinity",
-      "Equilibrator Temperature", "Equilibrator Pressure", "CO₂ in gas" };
+      "Equilibrator Temperature", "Equilibrator Pressure",
+      "xCO₂ (with standards)" };
   }
 
   @Override

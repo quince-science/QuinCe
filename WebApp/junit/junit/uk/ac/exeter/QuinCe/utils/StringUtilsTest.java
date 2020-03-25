@@ -1,13 +1,17 @@
 package junit.uk.ac.exeter.QuinCe.utils;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -17,137 +21,6 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  *
  */
 public class StringUtilsTest extends BaseTest {
-
-  /**
-   * Test that {@link StringUtils#isNumeric(String)} correctly identifies an
-   * integer as numeric.
-   */
-  @Test
-  public void isNumericIntegerTest() {
-    assertTrue(StringUtils.isNumeric("7"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isNumeric(String)} correctly identifies a
-   * negative integer as numeric.
-   */
-  @Test
-  public void isNumericNegativeIntegerTest() {
-    assertTrue(StringUtils.isNumeric("-7"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isNumeric(String)} correctly identifies a
-   * decimal number as numeric.
-   */
-  @Test
-  public void isNumericFloatTest() {
-    assertTrue(StringUtils.isNumeric("67.5"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isNumeric(String)} correctly identifies a
-   * negative decimal number as numeric.
-   */
-  @Test
-  public void isNumericNegativeFloatTest() {
-    assertTrue(StringUtils.isNumeric("-67.5"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isNumeric(String)} correctly identifies a
-   * string as non-numeric.
-   */
-  @Test
-  public void isNumericNonNumericTest() {
-    assertFalse(StringUtils.isNumeric("I am not a number"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isNumeric(String)} correctly identifies
-   * {@code "NaN"} as non-numeric.
-   */
-  @Test
-  public void isNumericNanTest() {
-    assertFalse(StringUtils.isNumeric("NaN"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isNumeric(String)} correctly identifies empty
-   * values as non-numeric.
-   */
-  @ParameterizedTest
-  @MethodSource("createNullEmptyStrings")
-  public void isNumericEmptyTest(String empty) {
-    assertFalse(StringUtils.isNumeric(empty));
-  }
-
-  /**
-   * Test that {@link StringUtils#isInteger(String)} correctly identifies an
-   * integer as an integer.
-   */
-  @Test
-  public void isIntegerIntegerTest() {
-    assertTrue(StringUtils.isInteger("7"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isInteger(String)} correctly identifies a
-   * negative integer as an integer.
-   */
-  @Test
-  public void isIntegerNegativeIntegerTest() {
-    assertTrue(StringUtils.isInteger("-7"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isInteger(String)} correctly identifies a
-   * decimal number as a non-integer.
-   */
-  @Test
-  public void isIntegerFloatTest() {
-    assertFalse(StringUtils.isInteger("67.5"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isInteger(String)} correctly identifies a
-   * negative decimal number as a non-integer.
-   */
-  @Test
-  public void isIntegerNegativeFloatTest() {
-    assertFalse(StringUtils.isInteger("-67.5"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isInteger(String)} correctly identifies a
-   * string as a non-integer.
-   */
-  @Test
-  public void isIntegerNonNumericTest() {
-    assertFalse(StringUtils.isInteger("I am not a number"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isNumeric(String)} correctly identifies
-   * {@code "NaN"} as a non-integer.
-   */
-  @Test
-  public void isIntegerNanTest() {
-    assertFalse(StringUtils.isInteger("NaN"));
-  }
-
-  /**
-   * Test that {@link StringUtils#isInteger(String)} correctly identifies empty
-   * values as a non-integer.
-   *
-   * @param empty
-   *          The empty String value (from the method source).
-   */
-  @ParameterizedTest
-  @MethodSource("createNullEmptyStrings")
-  public void isIntegerEmptyTest(String empty) {
-    assertFalse(StringUtils.isInteger(empty));
-  }
 
   /**
    * Test that empty String values are converted to {@code ""} by
@@ -175,6 +48,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test that {@link StringUtils#makeCsvString(String)} doubles up quotes
    */
+  @Test
   public void makeCsvQuoteStringTest() {
     assertTrue("\"I \"\"am\"\" String\""
       .equals(StringUtils.makeCsvString("I \"am\" String")));
@@ -251,5 +125,186 @@ public class StringUtilsTest extends BaseTest {
   @Test
   public void makeCsvStringMultipleNewlineTest() {
     assertTrue("\"a;b;c\"".equals(StringUtils.makeCsvString("a\nb\nc")));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringIntegerTest() {
+    assertEquals(new Double(7.0), StringUtils.doubleFromString("7"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringZeroIntegerTest() {
+    assertEquals(new Double(0.0), StringUtils.doubleFromString("0"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringNegativeIntegerTest() {
+    assertEquals(new Double(-7.0), StringUtils.doubleFromString("-7"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringDoubleTest() {
+    assertEquals(new Double(7.657), StringUtils.doubleFromString("7.657"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringZeroDoubleTest() {
+    assertEquals(new Double(0.0), StringUtils.doubleFromString("0.0"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringNegativeDoubleTest() {
+    assertEquals(new Double(-7.657), StringUtils.doubleFromString("-7.657"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringThousandsTest() {
+    assertEquals(new Double(7547.54), StringUtils.doubleFromString("7,547.54"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringNegativeThousandsTest() {
+    assertEquals(new Double(-7547.54),
+      StringUtils.doubleFromString("-7,547.54"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringStringTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.doubleFromString("Flurble");
+    });
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @Test
+  public void doubleFromStringNaNTest() {
+    assertEquals((Double) Double.NaN, StringUtils.doubleFromString("NaN"));
+  }
+
+  /**
+   * Test that {@link StringUtils#doubleFromString(String)} works with an
+   * integer.
+   */
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void doubleFromStringEmptyStringTest() {
+    assertEquals((Double) Double.NaN, StringUtils.doubleFromString(null));
+  }
+
+  /**
+   * Test that
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * returns an empty string with null input.ß
+   */
+  @Test
+  public void listToDelimitedNullTest() {
+    assertTrue("".equals(StringUtils.collectionToDelimited(null, ",")));
+  }
+
+  /**
+   * Test that
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * returns an empty string with an empty input collection.
+   */
+  @Test
+  public void listToDelimitedEmptyTest() {
+    assertTrue(""
+      .equals(StringUtils.collectionToDelimited(new ArrayList<String>(), ",")));
+  }
+
+  /**
+   * Test that
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * with an empty/null delimiter joins strings with no delimiter.
+   */
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void listToDelimitedNullDelimiterTest(String delimiter) {
+    ArrayList<String> list = new ArrayList<String>(2);
+    list.add("a");
+    list.add("b");
+
+    assertTrue("ab".equals(StringUtils.collectionToDelimited(list, delimiter)));
+  }
+
+  /**
+   * Test
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * with a delimiter.
+   */
+  @Test
+  public void listToDelimitedOneCharDelimiterTest() {
+    ArrayList<String> list = new ArrayList<String>(2);
+    list.add("a");
+    list.add("b");
+
+    assertTrue("a,b".equals(StringUtils.collectionToDelimited(list, ",")));
+  }
+
+  /**
+   * Test
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * with a multi-character delimiter.
+   */
+  @Test
+  public void listToDelimitedTwoCharDelimiterTest() {
+    ArrayList<String> list = new ArrayList<String>(2);
+    list.add("a");
+    list.add("b");
+
+    assertTrue("a;;b".equals(StringUtils.collectionToDelimited(list, ";;")));
+  }
+
+  /**
+   * Test
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * with a non-String list.
+   */
+  @Test
+  public void listToDelimitedNonStringListTest() {
+    ArrayList<Flag> list = new ArrayList<Flag>(2);
+    list.add(Flag.BAD);
+    list.add(Flag.GOOD);
+
+    assertTrue("Bad,Good".equals(StringUtils.collectionToDelimited(list, ",")));
   }
 }

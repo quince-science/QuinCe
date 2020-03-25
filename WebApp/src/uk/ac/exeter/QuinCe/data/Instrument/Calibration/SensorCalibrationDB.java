@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Methods for storing and retrieving sensor calibrations from the database
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -36,7 +36,7 @@ public class SensorCalibrationDB extends CalibrationDB {
 
   /**
    * Retrieve the singleton instance of the class
-   * 
+   *
    * @return The singleton
    */
   public static SensorCalibrationDB getInstance() {
@@ -65,5 +65,10 @@ public class SensorCalibrationDB extends CalibrationDB {
   @Override
   public String getCalibrationType() {
     return SENSOR_CALIBRATION_TYPE;
+  }
+
+  @Override
+  public boolean priorCalibrationRequired() {
+    return false;
   }
 }

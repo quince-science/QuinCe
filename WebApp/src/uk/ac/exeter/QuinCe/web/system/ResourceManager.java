@@ -25,7 +25,7 @@ import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
  * Utility class for handling resources required by the web application. The
  * Resource Manager is a singleton object, which is created during
  * initialisation of the web application
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -135,7 +135,7 @@ public class ResourceManager implements ServletContextListener {
 
   /**
    * Retrieve the application's data source
-   * 
+   *
    * @return The data source
    */
   public DataSource getDBDataSource() {
@@ -144,7 +144,7 @@ public class ResourceManager implements ServletContextListener {
 
   /**
    * Retrieve the application configuration
-   * 
+   *
    * @return The application configuration
    */
   public Properties getConfig() {
@@ -165,7 +165,7 @@ public class ResourceManager implements ServletContextListener {
 
   /**
    * Load the application configuration
-   * 
+   *
    * @param filePath
    *          The path to the configuration file
    * @return The configuration Properties object
@@ -183,7 +183,7 @@ public class ResourceManager implements ServletContextListener {
 
   /**
    * Retrieve the singleton instance of the Resource Manager
-   * 
+   *
    * @return The resource manager
    */
   public static ResourceManager getInstance() {

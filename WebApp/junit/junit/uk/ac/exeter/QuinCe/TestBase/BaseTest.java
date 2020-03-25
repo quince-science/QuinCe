@@ -2,6 +2,7 @@ package junit.uk.ac.exeter.QuinCe.TestBase;
 
 import java.util.stream.Stream;
 
+import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.sql.DataSource;
@@ -60,10 +61,13 @@ public class BaseTest {
   protected ApplicationContext context;
 
   /**
-   * A mock Servlet Contextt
+   * A mock Servlet Context
    */
   @Mock
   protected static ServletContext servletContext;
+
+  @Mock
+  protected static FacesContext facesContext;
 
   /**
    * A mock Servlet Context Event
@@ -87,6 +91,8 @@ public class BaseTest {
     Mockito.doReturn(TestResourceManager.CONFIG_PATH).when(servletContext)
       .getInitParameter("configuration.path");
 
+    facesContext = MockFacesContext.mockFacesContext();
+
     servletContextEvent = Mockito.mock(ServletContextEvent.class);
     Mockito.doReturn(servletContext).when(servletContextEvent)
       .getServletContext();
@@ -98,6 +104,7 @@ public class BaseTest {
    */
   @AfterAll
   public static void globalTeardown() {
+    facesContext.release();
     ResourceManager.destroy();
   }
 

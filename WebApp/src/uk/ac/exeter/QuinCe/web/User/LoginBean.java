@@ -17,7 +17,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for handling user logins
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -79,7 +79,7 @@ public class LoginBean extends BaseManagedBean {
 
   /**
    * Get the entered email address
-   * 
+   *
    * @return The email address
    */
   public String getEmailAddress() {
@@ -88,7 +88,7 @@ public class LoginBean extends BaseManagedBean {
 
   /**
    * Set the entered email address
-   * 
+   *
    * @param emailAddress
    *          The email address
    */
@@ -98,7 +98,7 @@ public class LoginBean extends BaseManagedBean {
 
   /**
    * Get the entered password
-   * 
+   *
    * @return The password
    */
   public String getPassword() {
@@ -107,7 +107,7 @@ public class LoginBean extends BaseManagedBean {
 
   /**
    * Set the entered password
-   * 
+   *
    * @param password
    *          The password
    */
@@ -117,7 +117,7 @@ public class LoginBean extends BaseManagedBean {
 
   /**
    * Authenticate the user.
-   * 
+   *
    * @return The authentication result. One of {@link #AUTHENTICATION_OK_RESULT}
    *         or {@link #AUTHENTICATION_FAILED_RESULT}.
    * @see UserDB#authenticate(javax.sql.DataSource, String, char[])
@@ -178,7 +178,7 @@ public class LoginBean extends BaseManagedBean {
 
   /**
    * Navigate to the sign-up page
-   * 
+   *
    * @return The navigation to the sign-up page
    */
   public String signUp() {
@@ -187,7 +187,7 @@ public class LoginBean extends BaseManagedBean {
 
   /**
    * Navigate to the Lost Password page
-   * 
+   *
    * @return The navigation to the lost password page
    */
   public String startLostPassword() {
@@ -196,7 +196,7 @@ public class LoginBean extends BaseManagedBean {
 
   /**
    * Generate and send a password reset link
-   * 
+   *
    * @return Navigation to the confirmation page
    */
   public String resetPassword() throws Exception {
@@ -221,7 +221,7 @@ public class LoginBean extends BaseManagedBean {
 
   /**
    * Get the current application version
-   * 
+   *
    * @return The app version
    */
   public String getAppVersion() {

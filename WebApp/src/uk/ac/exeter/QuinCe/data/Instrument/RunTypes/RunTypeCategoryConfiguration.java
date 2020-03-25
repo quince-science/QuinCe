@@ -10,7 +10,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 
 /**
  * Configuration for the run type categories used in the application
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -23,7 +23,7 @@ public class RunTypeCategoryConfiguration {
 
   /**
    * Loads the configuration from a config file
-   * 
+   *
    * @param configFile
    *          The config file
    * @throws RunTypeCategoryException
@@ -56,7 +56,7 @@ public class RunTypeCategoryConfiguration {
    * IGNORED category (@link {@link RunTypeCategory#IGNORED}) is included at the
    * end of the list if requested
    * </p>
-   * 
+   *
    * @param includeIgnored
    *          Specifies whether the IGNORED category should be included
    * @return The run type categories
@@ -79,7 +79,7 @@ public class RunTypeCategoryConfiguration {
 
   /**
    * Get a category using its type
-   * 
+   *
    * @param type
    *          The type
    * @return The category

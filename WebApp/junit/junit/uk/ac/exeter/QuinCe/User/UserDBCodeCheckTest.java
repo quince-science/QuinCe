@@ -2,9 +2,6 @@ package junit.uk.ac.exeter.QuinCe.User;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
-import java.util.stream.Stream;
-
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -12,7 +9,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.TestLineException;
-import junit.uk.ac.exeter.QuinCe.TestBase.TestSetException;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import uk.ac.exeter.QuinCe.User.User;
@@ -77,7 +73,7 @@ public class UserDBCodeCheckTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = {
     "resources/sql/data/User/UserDBTest/codeCheckTests" })
   @ParameterizedTest
-  @MethodSource("getCodeCheckTestSet")
+  @MethodSource("getLines")
   public void codeCheckTests(TestSetLine line)
     throws MissingParamException, DatabaseException, TestLineException {
 
@@ -90,18 +86,6 @@ public class UserDBCodeCheckTest extends TestSetTest {
   }
 
   /**
-   * Retrieves the Test Set for {@link #codeCheckTests(TestSetLine)}.
-   *
-   * @return The test set
-   * @throws IOException
-   *           If the Test Set file cannot be read
-   */
-  @SuppressWarnings("unused")
-  private Stream<TestSetLine> getCodeCheckTestSet() throws TestSetException {
-    return getTestSet("userCodeCheckTests");
-  }
-
-  /**
    * Get the email address from a {@link TestSetLine}
    *
    * @param line
@@ -109,7 +93,7 @@ public class UserDBCodeCheckTest extends TestSetTest {
    * @return The email address
    */
   private String getEmail(TestSetLine line) {
-    return line.getStringField(EMAIL_FIELD);
+    return line.getStringField(EMAIL_FIELD, true);
   }
 
   /**
@@ -210,7 +194,7 @@ public class UserDBCodeCheckTest extends TestSetTest {
 
     String result = null;
 
-    switch (line.getStringField(field)) {
+    switch (line.getStringField(field, false)) {
     case "NULL": {
       result = null;
       break;
@@ -231,12 +215,16 @@ public class UserDBCodeCheckTest extends TestSetTest {
       break;
     }
     default: {
-      throw new TestLineException(line,
-        "Unrecognised code specifier '" + line.getStringField(field) + "'");
+      throw new TestLineException(line, "Unrecognised code specifier '"
+        + line.getStringField(field, false) + "'");
     }
     }
 
     return result;
   }
 
+  @Override
+  protected String getTestSetName() {
+    return "userCodeCheckTests";
+  }
 }

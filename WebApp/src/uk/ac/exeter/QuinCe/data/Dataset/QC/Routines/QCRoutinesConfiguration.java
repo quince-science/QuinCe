@@ -1,21 +1,22 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
 
-import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class QCRoutinesConfiguration {
 
@@ -37,7 +38,7 @@ public class QCRoutinesConfiguration {
   /**
    * Main constructor - parses supplied config file and builds all Routine
    * objects.
-   * 
+   *
    * @param configFile
    *          The configuration file
    * @throws QCRoutinesConfigurationException
@@ -56,7 +57,7 @@ public class QCRoutinesConfiguration {
 
   /**
    * Add a Routine to the configuration
-   * 
+   *
    * @param sensorType
    *          The target sensor type
    * @param routine
@@ -72,7 +73,7 @@ public class QCRoutinesConfiguration {
 
   /**
    * Initialise the configuration from the supplied file
-   * 
+   *
    * @param configFilename
    *          The filename
    * @throws QCRoutinesConfigurationException
@@ -81,69 +82,55 @@ public class QCRoutinesConfiguration {
   private void init(SensorsConfiguration sensorsConfig, String configFilename)
     throws QCRoutinesConfigurationException {
 
-    try {
-      BufferedReader reader = new BufferedReader(
-        new FileReader(configFilename));
-      try {
-        String line = reader.readLine();
-        int currentLine = 1;
+    try (Reader in = new FileReader(configFilename)) {
+      Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(in);
 
-        while (null != line) {
-          if (!StringUtils.isComment(line)) {
-            List<String> fields = Arrays.asList(line.split(","));
-            fields = StringUtils.trimList(fields);
-
-            // The first field is the class name. Grab it and remove
-            // it from the list, so what's left is the parameters.
-            String routineName = fields.get(0);
-            String sensorTypeName = fields.get(1);
-            List<String> parameters = fields.subList(2, fields.size());
-
-            String fullClassName = getFullClassName(routineName);
-
-            if (routineName.equalsIgnoreCase("")) {
-              throw new QCRoutinesConfigurationException(configFilename,
-                currentLine, "Routine class name cannot be empty");
-            } else if (sensorTypeName.equalsIgnoreCase("")) {
-              throw new QCRoutinesConfigurationException(configFilename,
-                currentLine, "Sensor Type name cannot be empty");
-            } else {
-              try {
-
-                SensorType sensorType = sensorsConfig
-                  .getSensorType(sensorTypeName);
-
-                // Instantiate the routine class
-                Class<?> routineClass = Class.forName(fullClassName);
-
-                @SuppressWarnings("unchecked")
-                Constructor<Routine> constructor = (Constructor<Routine>) routineClass
-                  .getConstructor(List.class);
-
-                Routine instance = constructor.newInstance(parameters);
-
-                addRoutine(sensorType, instance);
-
-              } catch (SensorTypeNotFoundException e) {
-                throw new QCRoutinesConfigurationException(configFilename,
-                  currentLine,
-                  "Sensor Type '" + sensorTypeName + "' does not exist");
-              } catch (ClassNotFoundException e) {
-                throw new QCRoutinesConfigurationException(configFilename,
-                  currentLine,
-                  "Routine check class '" + fullClassName + "' does not exist");
-              } catch (Exception e) {
-                throw new QCRoutinesConfigurationException(configFilename,
-                  currentLine, "Error creating Routine check class", e);
-              }
-            }
-          }
-
-          line = reader.readLine();
-          currentLine++;
+      for (CSVRecord record : records) {
+        String routineName = record.get("Class");
+        String sensorTypeName = record.get("Sensor Type");
+        List<String> parameters = new ArrayList<String>(record.size() - 2);
+        for (int i = 2; i < record.size(); i++) {
+          parameters.add(record.get(i));
         }
-      } finally {
-        reader.close();
+
+        String fullClassName = getFullClassName(routineName);
+
+        if (routineName.equalsIgnoreCase("")) {
+          throw new QCRoutinesConfigurationException(configFilename,
+            record.getRecordNumber(), "Routine class name cannot be empty");
+        } else if (sensorTypeName.equalsIgnoreCase("")) {
+          throw new QCRoutinesConfigurationException(configFilename,
+            record.getRecordNumber(), "Sensor Type name cannot be empty");
+        } else {
+          try {
+
+            SensorType sensorType = sensorsConfig.getSensorType(sensorTypeName);
+
+            // Instantiate the routine class
+            Class<?> routineClass = Class.forName(fullClassName);
+
+            @SuppressWarnings("unchecked")
+            Constructor<Routine> constructor = (Constructor<Routine>) routineClass
+              .getConstructor(List.class);
+
+            Routine instance = constructor.newInstance(parameters);
+
+            addRoutine(sensorType, instance);
+
+          } catch (SensorTypeNotFoundException e) {
+            throw new QCRoutinesConfigurationException(configFilename,
+              record.getRecordNumber(),
+              "Sensor Type '" + sensorTypeName + "' does not exist");
+          } catch (ClassNotFoundException e) {
+            throw new QCRoutinesConfigurationException(configFilename,
+              record.getRecordNumber(),
+              "Routine check class '" + fullClassName + "' does not exist");
+          } catch (Exception e) {
+            throw new QCRoutinesConfigurationException(configFilename,
+              record.getRecordNumber(), "Error creating Routine check class",
+              e);
+          }
+        }
       }
     } catch (IOException e) {
       throw new QCRoutinesConfigurationException(configFilename,
@@ -153,7 +140,7 @@ public class QCRoutinesConfiguration {
 
   /**
    * Get the QC routines for a given sensor type
-   * 
+   *
    * @param sensorType
    *          The sensor type
    * @return The routines to be run
@@ -169,7 +156,7 @@ public class QCRoutinesConfiguration {
 
   /**
    * Get the full class name from a routine name
-   * 
+   *
    * @param routineName
    *          The routine name
    * @return The full class name
@@ -210,7 +197,7 @@ public class QCRoutinesConfiguration {
 
   /**
    * Get the Class object for a routine given its name
-   * 
+   *
    * @param routineName
    *          The routine name
    * @return The Routine class

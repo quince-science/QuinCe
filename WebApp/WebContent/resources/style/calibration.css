@@ -40,12 +40,8 @@
   margin-top: 10px;  
 }
 
-.fields {
-  display: grid;
-  grid-template-columns: [label] auto [value] 100%;
-  grid-column-gap: 10px;
-  grid-row-gap: 10px;
-  align-items: center;
-  justify-content: start;
+.selectedCalibration {
+  width: 30%;
+  margin: auto;
+  display: none;
 }
-

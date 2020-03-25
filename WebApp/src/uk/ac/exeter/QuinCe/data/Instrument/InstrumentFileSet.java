@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Methods to handle and process a set of file definitions for an instrument
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -42,7 +42,7 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
   /**
    * Determine whether or not the file set contains a file definition with the
    * specified description
-   * 
+   *
    * @param description
    *          The file description
    * @return {@code true} if a file with the specified description is present;
@@ -64,7 +64,7 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
   /**
    * Retrieve the file definition with the specified description. If no
    * definition is found, the method returns {@code null}
-   * 
+   *
    * @param description
    *          The file description
    * @return The file definition
@@ -85,7 +85,7 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
   /**
    * Retrieve the file definition with the specified database ID. If no
    * definition is found, the method returns {@code null}
-   * 
+   *
    * @param definitionId
    *          The database ID
    * @return The file definition

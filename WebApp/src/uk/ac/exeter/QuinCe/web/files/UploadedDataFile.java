@@ -77,7 +77,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Extract the file contents as individual lines
-   * 
+   *
    * @return The file lines
    */
   public String[] getLines() {
@@ -95,7 +95,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Get the filename of the file
-   * 
+   *
    * @return The filename
    */
   public abstract String getName();
@@ -172,7 +172,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Get info and error-messages as a JSON-structure.
-   * 
+   *
    * @return a json-array with messages
    */
   public String getMessages() {
@@ -221,7 +221,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Determine whether or not this file has been extraced and processed.
-   * 
+   *
    * @return {@code true} if the file has been processed; {@code false} if it
    *         has not
    */
@@ -231,7 +231,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Set the flag indicating whether or not the file has been processed
-   * 
+   *
    * @param processed
    *          The processed flag
    */
@@ -241,7 +241,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Determine whether or not error messages have been generated for this file
-   * 
+   *
    * @return {@code true} if there are messages; {@code false} if there are none
    */
   public boolean getHasMessages() {
@@ -251,7 +251,7 @@ public abstract class UploadedDataFile {
   /**
    * Determine whether or not unrecognised run types have been detected in the
    * file
-   * 
+   *
    * @return {@code true} if unrecognised run types have been found;
    *         {@code false} otherwise
    */
@@ -261,7 +261,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Determine whether or not this file will replace an existing file
-   * 
+   *
    * @return {@code true} if this is a replacement file; {@code false} if it is
    *         not
    */
@@ -271,7 +271,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Set the ID of the data file that this file will replace
-   * 
+   *
    * @param oldId
    */
   public void setReplacementFile(long oldId) {
@@ -280,7 +280,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Get the ID of the file that this file will replace
-   * 
+   *
    * @return
    */
   public long getReplacementFile() {
@@ -290,7 +290,7 @@ public abstract class UploadedDataFile {
   /**
    * Extract the file contents and ensure that it doesn't clash with existing
    * files
-   * 
+   *
    * @param instrument
    *          The instrument to which the file belongs
    * @param appConfig
@@ -435,7 +435,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Get the HTTP response status code
-   * 
+   *
    * @return The status code
    */
   public int getStatusCode() {
@@ -444,7 +444,7 @@ public abstract class UploadedDataFile {
 
   /**
    * Get the contents of the file
-   * 
+   *
    * @return The file contents
    */
   protected abstract String getFileContents();

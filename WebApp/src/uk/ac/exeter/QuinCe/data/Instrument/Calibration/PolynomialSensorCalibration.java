@@ -7,7 +7,7 @@ import java.util.ListIterator;
 
 /**
  * A calibration that applies up to a fifth-order polynomial adjustment
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -36,7 +36,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   /**
    * Create a calibration object
-   * 
+   *
    * @param instrumentId
    *          The instrument to which the calibration target belongs
    * @param target
@@ -48,7 +48,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   /**
    * Create a calibration object with no target set
-   * 
+   *
    * @param instrumentId
    *          The instrument to which the calibration target belongs
    */
@@ -58,7 +58,9 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   /**
    * Construct a complete sensor calibration object.
-   * 
+   *
+   * @param id
+   *          The calibration's database ID
    * @param instrumentId
    *          The instrument ID
    * @param target
@@ -70,9 +72,9 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    * @throws CalibrationException
    *           If the calibration details are invalid
    */
-  public PolynomialSensorCalibration(long instrumentId, String target,
+  public PolynomialSensorCalibration(long id, long instrumentId, String target,
     LocalDateTime deploymentDate, List<Double> coefficients) {
-    super(instrumentId, target, deploymentDate, coefficients);
+    super(id, instrumentId, target, deploymentDate, coefficients);
   }
 
   @Override
@@ -94,7 +96,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   /**
    * Add a coefficient to the human readable coefficients string
-   * 
+   *
    * @param string
    *          The string being constructed
    * @param coefficient

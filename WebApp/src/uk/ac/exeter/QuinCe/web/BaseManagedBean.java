@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -26,7 +28,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 /**
  * Several Managed Beans are used in the QuinCe application. This abstract class
  * provides a set of useful methods for inheriting concrete bean classes to use.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -43,7 +45,7 @@ public abstract class BaseManagedBean {
    * The default result for indicating that an error occurred during a
    * processing action. This will be used in the {@code faces-config.xml} file
    * to determine the next navigation destination.
-   * 
+   *
    * @see #internalError(Throwable)
    */
   public static final String INTERNAL_ERROR_RESULT = "InternalError";
@@ -76,8 +78,18 @@ public abstract class BaseManagedBean {
   private boolean forceInstrumentReload = false;
 
   /**
+   * Formatter for numeric values All values are displayed to 3 decimal places.
+   */
+  protected static DecimalFormat numberFormatter;
+
+  static {
+    numberFormatter = new DecimalFormat("#0.000");
+    numberFormatter.setRoundingMode(RoundingMode.HALF_UP);
+  }
+
+  /**
    * Set a message that can be displayed to the user on a form
-   * 
+   *
    * @param componentID
    *          The component ID to which the message relates (can be null)
    * @param messageString
@@ -96,7 +108,7 @@ public abstract class BaseManagedBean {
   /**
    * Generates a JSF component ID for a given form input name by combining it
    * with the bean's form name.
-   * 
+   *
    * @param componentName
    *          The form input name
    * @return The JSF component ID
@@ -121,16 +133,18 @@ public abstract class BaseManagedBean {
    */
   public String internalError(Throwable error) {
     setMessage("STACK_TRACE", StringUtils.stackTraceToString(error));
+    System.out.println(StringUtils.stackTraceToString(error));
     if (null != error.getCause()) {
       setMessage("CAUSE_STACK_TRACE",
         StringUtils.stackTraceToString(error.getCause()));
+      System.out.println(StringUtils.stackTraceToString(error.getCause()));
     }
     return INTERNAL_ERROR_RESULT;
   }
 
   /**
    * Retrieve a parameter from the request
-   * 
+   *
    * @param paramName
    *          The name of the parameter to retrieve
    * @return The parameter value
@@ -142,7 +156,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Retrieves the current HTTP Session object
-   * 
+   *
    * @return The HTTP Session object
    */
   public HttpSession getSession() {
@@ -152,7 +166,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Directly navigate to a given result
-   * 
+   *
    * @param navigation
    *          The navigation result
    */
@@ -164,7 +178,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Evaluate and EL expression and return its value
-   * 
+   *
    * @param expression
    *          The EL expression
    * @return The result of evaluating the expression
@@ -177,7 +191,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Returns the User object for the current session
-   * 
+   *
    * @return The User object
    */
   public User getUser() {
@@ -212,7 +226,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the URL stub for the application
-   * 
+   *
    * @return The application URL stub
    */
   public String getUrlStub() {
@@ -223,7 +237,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Get a data source
-   * 
+   *
    * @return The data source
    */
   public DataSource getDataSource() {
@@ -232,7 +246,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the application configuration
-   * 
+   *
    * @return The application configuration
    */
   protected Properties getAppConfig() {
@@ -289,7 +303,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the list of instruments owned by the user
-   * 
+   *
    * @return The list of instruments
    */
   public List<InstrumentStub> getInstruments() {
@@ -343,7 +357,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the current instrument
-   * 
+   *
    * @return The current instrument
    */
   public long getCurrentInstrumentId() {
@@ -359,7 +373,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Set the current instrument
-   * 
+   *
    * @param currentInstrument
    *          The current instrument
    */
@@ -386,7 +400,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Determine whether or not there are instruments available for this user
-   * 
+   *
    * @return {@code true} if the user has any instruments; {@code false} if not.
    */
   public boolean getHasInstruments() {
@@ -405,7 +419,7 @@ public abstract class BaseManagedBean {
   /**
    * Set to true to make full instrument reload on initialiseInstrument This is
    * reset to false after running initialiseInstrument
-   * 
+   *
    * @param forceReload
    */
   public void setForceInstrumentReload(boolean forceReload) {
@@ -414,7 +428,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the list of available run type categories
-   * 
+   *
    * @return The run type categories
    * @throws ResourceException
    *           If the Resource Manager cannot be accessed
@@ -436,7 +450,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Determine whether or not the current user can approve datasets for export
-   * 
+   *
    * @return {@code true} if the user can approve datasets; {@code false} if not
    */
   public boolean isApprovalUser() {
@@ -445,7 +459,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the IDs of the variables assigned to the current instrument
-   * 
+   *
    * @return The variable IDs
    */
   protected List<Long> getInstrumentVariableIDs() {

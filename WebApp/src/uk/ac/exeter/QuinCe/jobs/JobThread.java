@@ -5,7 +5,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * A thread object that is used to run a job.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -29,7 +29,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 
   /**
    * Creates a job thread
-   * 
+   *
    * @param overflowThread
    *          Indicates whether or not this is an overflow thread
    */
@@ -40,7 +40,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 
   /**
    * Sets up the job that this thread will run.
-   * 
+   *
    * @param job
    *          The job
    * @throws MissingParamException
@@ -63,7 +63,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
   /**
    * Checks whether or not this is an overflow thread, and therefore whether it
    * should be destroyed when finished with or returned to the thread pool
-   * 
+   *
    * @return {@code true} if it is an overflow thread; {@code false} if it is
    *         not
    */

@@ -10,7 +10,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 /**
  * Exception class for handling attempts to store raw data files that already
  * exist
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -28,7 +28,7 @@ public class FileExistsException extends Exception {
 
   /**
    * The exception constructor
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentID
@@ -52,7 +52,7 @@ public class FileExistsException extends Exception {
   /**
    * Constructor for an existing file found that overlaps the specified date
    * range
-   * 
+   *
    * @param fileDescription
    *          The file description
    * @param startDate
