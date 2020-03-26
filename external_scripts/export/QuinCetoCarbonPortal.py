@@ -51,56 +51,65 @@ def main():
 
         platform_code = manifest['manifest']['metadata']['platformCode']              
         export_destination = platform[platform_code]['export'] 
-
-        #--- Processing L0 files
-        if 'ICOS' in export_destination: 
-          successful_upload_CP = 0; cp_err_msg = '';
-          L0_hashsums = []
-          for index, raw_filename in enumerate(raw_filenames):
-            successful_upload_CP, L0_hashsum, cp_err_msg = export_file_to_cp(
-              manifest, platform, config_carbon, raw_filename, platform_code, 
-              dataset_zip, index, cp_cookie,'L0',upload,cp_err_msg)
-            if L0_hashsum:
-              L0_hashsums += [L0_hashsum]
+        logging.debug(export_destination)
+        key = '/'
+        if '26NA' in platform_code: key = ' No Salinity Flags' + key
+        for destination in export_destination:
+          if 'ICOS' in destination: 
+            #--- Processing L0 files
+            successful_upload_CP = 0; cp_err_msg = '';
+            L0_hashsums = []
+            for index, raw_filename in enumerate(raw_filenames):
+              successful_upload_CP, L0_hashsum, cp_err_msg = export_file_to_cp(
+                manifest, platform, config_carbon, raw_filename, platform_code, 
+                dataset_zip, index, cp_cookie,'L0',upload,cp_err_msg)
+              if L0_hashsum:
+                L0_hashsums += [L0_hashsum]
             
-        #--- Processing L1 files
-        for index, data_filename in enumerate(data_filenames):
-          key = '/'
-          if '26NA' in platform_code: key = ' No Salinity Flags' + key
-          
-          if 'ICOS OTC' + key in data_filename and 'ICOS' in export_destination:
+            #--- Processing L1 files            
+            data_filename = (dataset["name"] + '/dataset/' + "ICOS OTC" + key 
+              + dataset["name"] + '.csv')
+            index = -1 # used in export of L0, not needed for L1
+            logging.debug(data_filename in data_filenames)
+            
             try:
               successful_upload_CP, L1_hashsum, cp_err_msg = export_file_to_cp(
                 manifest, platform, config_carbon, data_filename, platform_code, 
                 dataset_zip, index, cp_cookie, 'L1', upload, cp_err_msg,L0_hashsums)
             except Exception as e:
               logging.error('Carbon Portal export failed. \n', exc_info=True)
-          if 'Copernicus' + key in data_filename and 'CMEMS' in export_destination: 
+    
+          if 'CMEMS' in destination: 
+            data_filename = (dataset["name"] + '/dataset/' + "Copernicus" + key 
+              + dataset["name"] + '.csv')
+
             successful_upload_CMEMS = 0; cmems_err_msg = '';
             curr_date  = build_dataproduct(dataset_zip,dataset['name'],data_filename,platform)
             try: 
               if upload:
                   successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus(
                       config_copernicus,'nrt_server',dataset,curr_date,platform)
-              else: 
-                  successful_upload_CMEMS = 0
             except Exception as e:
               logging.error('Exception occurred: ', exc_info=True)
               successful_upload_CMEMS = 0
-          else:
-            successful_upload_CMEMS = 0
         
-        if successful_upload_CP == 0: CP_slack_msg = 'Carbon Portal: Export failed, ' + str(cp_err_msg)
+        successful_upload = True
+
+        if successful_upload_CP == 0: 
+          CP_slack_msg = 'Carbon Portal: Export failed, ' + str(cp_err_msg)
+          successful_upload = False
         elif successful_upload_CP == 1: CP_slack_msg = 'Carbon Portal: Successful export'
         elif successful_upload_CP == 2: CP_slack_msg = 'Carbon Portal: No new data'
         
-        if successful_upload_CMEMS == 0: CMEMS_slack_msg = 'CMEMS: Export failed, ' + cmems_err_msg
+        if successful_upload_CMEMS == 0: 
+          CMEMS_slack_msg = 'CMEMS: Export failed, ' + cmems_err_msg
+          successful_upload = False
         elif successful_upload_CMEMS == 1: CMEMS_slack_msg = 'CMEMS: Successful export'
         elif successful_upload_CMEMS == 2: CMEMS_slack_msg = 'CMEMS: No new data'
 
         slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'{CP_slack_msg}')
         slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'{CMEMS_slack_msg}')
-        successful_upload = successful_upload_CP != 0 and successful_upload_CMEMS != 0
+
         if successful_upload:
           report_complete_export(basicConfig,dataset['id'])
         else: 
