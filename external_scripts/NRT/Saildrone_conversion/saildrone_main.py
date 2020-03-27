@@ -51,6 +51,7 @@ try:
 	datasets = configs['datasets']
 	col_order = configs['col_order']
 	FTP = configs['FTP']
+	quince_instrument_ids = configs['instrument_ids']
 except FileNotFoundError:
 	# !!! Create config file with keys, no values. Notify via slack to fill inn
 	# config values. Temporary solution:
@@ -99,22 +100,31 @@ next_request_checked = saildrone.check_next_request(
 ### Download json, convert to csv, merge datasets and send to Quince
 ###----------------------------------------------------------------------------
 
-# The end date for download request are always the current time stamp
-end = now.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
-
 # Create connection to the Quince FTP
 ftpconn = saildrone.connect_ftp(FTP)
 
 # Loop that downloads, converts, merges, and sends data files it to the QuinCe
 # FTP. Keep track on what to request next time in the next_request_updated.
 next_request_updated = dict(next_request_checked)
-for drone_id, start in next_request_checked.items():
+for drone_id, start_string in next_request_checked.items():
+
+	# Calculate the end date as 28 days after the end date.
+	# This prevents any single update being too big.
+	# Since this will typically run once per day it's not ususally a problem.
+	start_date = datetime.strptime(start_string, "%Y-%m-%dT%H:%M:%S.000Z")
+	end_date = start_date + pd.Timedelta("28 days")
+	end_string = end_date.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
+
+	if not drone_id in quince_instrument_ids:
+		raise LookupError('QuinCe instrument ID missing for SailDrone ' + drone_id)
+
+	quince_instrument_id = quince_instrument_ids[drone_id]
 
 	# Download the json files and store their paths
 	json_paths =[]
 	for dataset in datasets:
 		json_path = saildrone.write_json(
-			data_dir, drone_id, dataset, start, end, token)
+			data_dir, drone_id, dataset, start_string, end_string, token)
 		json_paths.append(json_path)
 
 	# Convert each json to csv, and store the csv paths
@@ -143,8 +153,8 @@ for drone_id, start in next_request_checked.items():
 
 	# Store the merged data as a csv files in the data directory
 	merged_file_name = (str(drone_id) + '_'
-		+ start[0:4] + start[5:7] + start[8:10] + 'T' + start[11:13]
-		+ start[14:16] + start[17:19] + "-"
+		+ start_string[0:4] + start_string[5:7] + start_string[8:10] + 'T'
+		+ start_string[11:13] + start_string[14:16] + start_string[17:19] + "-"
 		+ last_record_date.strftime('%Y%m%dT%H%M%S') + '.csv')
 	merged_path = os.path.join(data_dir, merged_file_name)
 	merged_csv = merged_sorted_df.to_csv(merged_path,
@@ -154,8 +164,8 @@ for drone_id, start in next_request_checked.items():
 	with open(merged_path, 'rb') as file:
 		byte = file.read()
 		upload_result = saildrone.upload_file(ftpconn=ftpconn,
-			ftp_config=FTP, instrument_id=1000, filename=merged_file_name,
-			contents=byte)
+			ftp_config=FTP, instrument_id=quince_instrument_id,
+			filename=merged_file_name, contents=byte)
 
 	#  Set new start date for the next_request:
 	next_request_updated[drone_id] = (last_record_date

@@ -32,7 +32,7 @@ def merge_datasets(csv_paths):
 		# Read the file, set the timestamp, and add a header suffix
 		df = pd.read_csv(file)
 		set_datetime(df)
-		file_name = file.split('data_files\\',)[1]
+		file_name = file.split('data_files/',)[1]
 		suffix = '_' + file_name.split("_",)[1][0:5] + 'File'
 		df = add_header_suffix(df, suffix)
 
