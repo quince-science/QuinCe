@@ -101,11 +101,13 @@ def write_json(data_dir, drone_id, dataset, start, end, token):
 		# If request output is empty: stop sending requests. If not, add the
 		# new data to the concatenated data list. Add one second to the last
 		# record recieved (used as start date for the next request).
+		print('Received ' + str(len(data_dict['data'])))
 		if len(data_dict['data']) == 0:
 			more_to_request = False
 		else:
 			data_list_concat = data_list_concat + data_dict['data']
 			offset = offset + len(data_dict['data'])
+			print('Total length ' + str(len(data_list_concat)))
 
 
 	# Replace the data section of the last json file received with the
