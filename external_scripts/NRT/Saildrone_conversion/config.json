@@ -99,5 +99,9 @@
         "private_key_file":"/Users/zuj007/.ssh/id_rsa",
         "private_key_pass": "",
         "dir": "FTP_TEST"
+    },
+    "instrument_ids": {
+        "1030" : 5,
+        "1053" : 6
     }
 }
