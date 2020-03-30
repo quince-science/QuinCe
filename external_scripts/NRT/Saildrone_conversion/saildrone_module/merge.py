@@ -1,5 +1,5 @@
 ###############################################################################
-### MERGE CSV FILES                                                             ###
+### MERGE CSV FILES                                                         ###
 ###############################################################################
 
 ### Description:
@@ -53,3 +53,43 @@ def merge_datasets(csv_paths):
 		count += 1
 
 	return merged_df
+
+def extract_biogeo_observations(all_records):
+
+	biogeo = pd.DataFrame(columns=all_records.columns)
+
+	current_sst = None
+	current_salinity = None
+	current_air_temp = None
+
+	# Loop through each record of the input.
+	# If there's sst/salinity/air temp, keep them
+	# If there's CO2 measurements, copy the whole record but add in
+	# the last seen sst/sal/airtemp
+	for index, row in all_records.iterrows():
+		keep_row = False
+
+		# Update cached values if they're present
+		if not pd.isnull(row['sbe37_temperature_filtered_oceanFile']):
+			current_sst = row['sbe37_temperature_filtered_oceanFile']
+			keep_row = True
+
+		if not pd.isnull(row['sbe37_practical_salinity_filtered_oceanFile']):
+		  current_salinity = row['sbe37_practical_salinity_filtered_oceanFile']
+		  keep_row = True
+
+		if not pd.isnull(row['air_temperature_filtered_atmosFile']):
+		  current_air_temp = row['air_temperature_filtered_atmosFile']
+		  keep_row = True
+
+    # If we have biogeo data, copy the row and add in the cached values
+		if not pd.isnull(row['asvco2_xco2_seawater_dry_biogeFile']):
+			row['sbe37_temperature_filtered_oceanFile'] = current_sst
+			row['sbe37_practical_salinity_filtered_oceanFile'] = current_salinity
+			row['air_temperature_filtered_atmosFile'] = current_air_temp
+			keep_row = True
+
+		if keep_row:
+			biogeo = biogeo.append(row)
+
+	return biogeo
