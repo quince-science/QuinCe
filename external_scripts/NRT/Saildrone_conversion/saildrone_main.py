@@ -145,39 +145,45 @@ for drone_id, start_string in next_request_checked.items():
 	# Notify slack and stop script
 	merged_sorted_df = merged_df[col_order]
 
-	# Get the last record we downloaded from the biogeo dataset. This will
-	# change once the different SailDrone datasets are no longer merged
-	# together. This will be used as the starting point for the next request.
-	time_index = merged_sorted_df.columns.get_loc('time_interval_biogeFile')
-	last_record_date = merged_sorted_df.tail(1).iloc[0,time_index]
+	biogeo_observations = saildrone.extract_biogeo_observations(merged_sorted_df)
 
-	# Store the merged data as a csv files in the data directory
-	merged_file_name = (str(drone_id) + '_'
-		+ start_string[0:4] + start_string[5:7] + start_string[8:10] + 'T'
-		+ start_string[11:13] + start_string[14:16] + start_string[17:19] + "-"
-		+ last_record_date.strftime('%Y%m%dT%H%M%S') + '.csv')
-	merged_path = os.path.join(data_dir, merged_file_name)
-	merged_csv = merged_sorted_df.to_csv(merged_path,
-		index=None, header=True, sep=',')
+	if len(biogeo_observations) > 0:
 
-	# Open the merged csv file in byte format and send to the Quince FTP
-	with open(merged_path, 'rb') as file:
-		byte = file.read()
-		upload_result = saildrone.upload_file(ftpconn=ftpconn,
-			ftp_config=FTP, instrument_id=quince_instrument_id,
-			filename=merged_file_name, contents=byte)
+		# Get the last record we downloaded from the biogeo dataset. This will
+		# change once the different SailDrone datasets are no longer merged
+		# together. This will be used as the starting point for the next request.
+		time_index = biogeo_observations.columns.get_loc('time_interval_biogeFile')
+		last_record_date = biogeo_observations.tail(1).iloc[0,time_index]
 
-	#  Set new start date for the next_request:
-	next_request_updated[drone_id] = (last_record_date
-		+ pd.Timedelta("1 minute")).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+		# Store the merged data as a csv files in the data directory
+		merged_file_name = (str(drone_id) + '_'
+			+ start_string[0:4] + start_string[5:7] + start_string[8:10] + 'T'
+			+ start_string[11:13] + start_string[14:16] + start_string[17:19] + "-"
+			+ last_record_date.strftime('%Y%m%dT%H%M%S') + '.csv')
+		merged_path = os.path.join(data_dir, merged_file_name)
+		merged_csv = biogeo_observations.to_csv(merged_path,
+			index=None, header=True, sep=',')
+
+		# Open the merged csv file in byte format and send to the Quince FTP
+		with open(merged_path, 'rb') as file:
+			byte = file.read()
+			upload_result = saildrone.upload_file(ftpconn=ftpconn,
+				ftp_config=FTP, instrument_id=quince_instrument_id,
+				filename=merged_file_name, contents=byte)
+
+		#  Set new start date for the next_request:
+		next_request_updated[drone_id] = (last_record_date
+			+ pd.Timedelta("1 minute")).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
-###----------------------------------------------------------------------------
-### Prepare for next download request
-###----------------------------------------------------------------------------
+	###----------------------------------------------------------------------------
+	### Prepare for next download request
+	###----------------------------------------------------------------------------
 
-# Update stored_info file
-stored_info['next_request'] = next_request_updated
-with open('./stored_info.json', 'w') as file:
-	json.dump(stored_info, file,
-		sort_keys=True, indent=4, separators=(',',': '))
+	# Update stored_info file
+	stored_info['next_request'] = next_request_updated
+	with open('./stored_info.json', 'w') as file:
+		json.dump(stored_info, file,
+			sort_keys=True, indent=4, separators=(',',': '))
+
+ftpconn.close()
