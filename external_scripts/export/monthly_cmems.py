@@ -41,13 +41,16 @@ dnt_datetime_format = '%Y%m%dT%H%M%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
 
 product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
-nc_dir = '/' + product_id + '/NRT_202003/monthly/vessel'
+nc_dir_monthly = '/' + product_id + '/NRT_202003/monthly/vessel'
+nc_dir_history = '/' + product_id + '/NRT_202003/history/vessel'
 dnt_dir = '/' + product_id + '/DNT'
 index_dir = '/' + product_id + '/NRT_202003'
-local_folder = 'monthly'
-dnt_folder = 'DNT/' + local_folder + '/'  
+monthly_folder = 'monthly'
+history_folder = 'history'
+dnt_folder = 'DNT/monthly_historical/'  
 
-if not os.path.isdir(local_folder):  os.mkdir(local_folder)
+if not os.path.isdir(monthly_folder):  os.mkdir(monthly_folder)
+if not os.path.isdir(history_folder): os.mkdir(history_folder)
 if not os.path.isdir(dnt_folder):  os.mkdir(dnt_folder)
 
 # Upload result codes
@@ -61,16 +64,18 @@ FAILED_INGESTION = -1
 config_file_copernicus = 'config_copernicus.toml'
 with open(config_file_copernicus) as f: ftp_config = toml.load(f)
 
-
 def main():
   nc_dict = {}
-
+  
+  # Creating monthly netCDF files
   months = pd.date_range('2019-03-01',DT.datetime.today()-
     DT.timedelta(days=14), freq='MS').strftime("%Y%m").tolist()
-
   for month in months:
     # Creating monthly netCDF based on daily netCDFs
-    nc_dict = generating_monthly_netCDF(vesselnames,source_dir,month,nc_dict)  
+    nc_dict = generating_monthly_netCDF(vesselnames,source_dir,month,nc_dict)
+
+  # Creating historical netCDF files
+  nc_dict = generating_history_netCDF(vesselnames,source_dir,nc_dict)
 
   # Add new netCDFs to SQL database
   sql_commit(nc_dict)
@@ -80,6 +85,7 @@ def main():
 
 
 def generating_monthly_netCDF(vesselnames,source_dir,month,nc_dict):
+    ''' Creates netCDF file(s) of data based on month and vessel(s), returns dicionary containing list of file(s) created'''
   for vessel in vesselnames.keys():
     logging.debug(f'Retrieving list of daily netCDF files for {month} {vessel}')
     daily_files[vessel], file_nr[vessel], dataset, dim_tot = (
@@ -96,6 +102,24 @@ def generating_monthly_netCDF(vesselnames,source_dir,month,nc_dict):
   return nc_dict
 
 
+def generating_history_netCDF(vesselnames,source_dir,nc_dict):
+    ''' Creates netCDF file(s) of all data associated with vessel(s), returns dicionary containing list of file(s) created'''
+  for vessel in vesselnames.keys():
+    logging.debug(f'Retrieving list of all daily netCDF files for {vessel}')
+    daily_files[vessel], file_nr[vessel], dataset, dim_tot = (
+      get_daily_files(source_dir,'history',vessel))
+    if file_nr[vessel] > 0:
+      logging.info(f'Creating historical netCDF file for {vesselnames[vessel]} [{vessel}]')
+      nc_name, dataset_m = create_empty_dataset('history',vessel,dim_tot)
+      dataset_m = assign_attributes(dataset,dataset_m)
+      dataset_m = populate_netCDF(dataset,dataset_m,daily_files[vessel],source_dir)
+      dataset_m = set_global_attributes(dataset,dataset_m)
+      dataset_m.close()
+      logging.info(f'Historical netCDF file for {vesselnames[vessel]} completed')
+      nc_dict[vessel+'_history'] = sql_entry(nc_name,'history')
+  return nc_dict
+
+
 def get_daily_files(source_dir,month,vessel):
   ''' Fetches applicable daily files from source_dir
   returns filenames, number of files, last dataset 
@@ -106,26 +130,25 @@ def get_daily_files(source_dir,month,vessel):
   for root, dirs, files in os.walk( source_dir, topdown=False):
     dim_tot=0
     for name in sorted(files):
-      if month in name and vessel in name:
+      if (month in name or month == 'history') and vessel in name:
         file_nr+=1
         logging.debug(f'reading filename: {name}')
         filenames += [name]
         dataset = netCDF4.Dataset(os.path.join(root, name))
-        dim_depth = len(dataset.dimensions['DEPTH'])
-        dim_time = len(dataset.dimensions['TIME'])
-        dim_lat = len(dataset.dimensions['LATITUDE'])
-        dim_lon = len(dataset.dimensions['LONGITUDE'])
-        dim_pos = len(dataset.dimensions['POSITION'])
-        dim_tot += dim_time
+        dim_tot += len(dataset.dimensions['TIME'])
+  
   if len(filenames) == 0: dataset = None
 
   return filenames, file_nr, dataset, dim_tot
 
 
 def create_empty_dataset(month,vessel,dim_tot):
-  ''' Creates empty monthly file with correct dimensions '''
-  nc_name = 'monthly/GL_' + str(month) + '_TS_TS_'  + vessel + '.nc'
-  logging.debug(f'Creating new empty monthly file: {nc_name}')
+  ''' Creates empty netCDF file with correct dimensions '''
+  if month == 'history': 
+    nc_name = 'history/GL_TS_'+ vessel + '.nc'
+  else:
+    nc_name = 'monthly/GL_' + str(month) + '_TS_TS_'  + vessel + '.nc'
+  logging.debug(f'Creating new empty file: {nc_name}')
   dataset_m = netCDF4.Dataset(nc_name,'w',format='NETCDF4_CLASSIC')
 
   logging.debug('Assigning dimensions')
@@ -160,7 +183,7 @@ def assign_attributes(dataset,dataset_m):
 
 def populate_netCDF(dataset,dataset_m,daily_files,source_dir):
   ''' For each variable in each daily netCDF file:
-  extract data from daily file; save data to monthly dataset.
+  extract data from daily file; save data to new dataset; dataset_m.
   '''
   logging.debug('populating monthly nc-file')
   start = {}
@@ -186,7 +209,7 @@ def populate_netCDF(dataset,dataset_m,daily_files,source_dir):
 
 
 def set_global_attributes(dataset,dataset_m):
-  ''' Assigns global attributes to monthly file, based on dataset's attributes '''
+  ''' Assigns global attributes to new file, based on most resent dataset's attributes '''
   set_gattr = {}
 
   # Setting monthly file to same global attributes as a daily dataset 
@@ -286,9 +309,15 @@ def upload_to_copernicus():
 
   # CHECK IF FTP IS EMPTY 
     logging.debug('Checking FTP directory')
-    directory_empty = check_directory(ftp, nc_dir) 
+    directory_empty = check_directory(ftp, nc_dir_monthly) 
     if not directory_empty:
-      logging.error('Previous export has failed, \
+      logging.error('Monthly: Previous export has failed, \
+        clean up remanent files before re-exporting. Aborting export')
+      return False 
+
+    directory_empty = check_directory(ftp, nc_dir_history) 
+    if not directory_empty:
+      logging.error('History: Previous export has failed, \
         clean up remanent files before re-exporting. Aborting export')
       return False 
 
@@ -361,7 +390,7 @@ def check_directory(ftp, nrt_dir):
     logging.warning('ftp-folder is not empty')
     return False 
   else:
-    logging.debug('Directory is clean')
+    logging.debug(f'{nrt_dir} is clean')
     return True
 
 
@@ -410,7 +439,10 @@ def upload_to_ftp(ftp, ftp_config, filepath,dest_folder=None):
 def get_destination(filepath,dest_folder):
   if filepath.endswith('.nc'):
     filename = filepath.rsplit('/',1)[-1]
-    ftp_folder = nc_dir + '/' + dest_folder     
+    if 'history' in filepath:
+        ftp_folder = nc_dir_history
+    else:
+        ftp_folder = nc_dir + '/' + dest_folder     
     ftp_filepath = ftp_folder + '/' +  filename
   elif filepath.endswith('.xml'):
     ftp_folder = dnt_dir
