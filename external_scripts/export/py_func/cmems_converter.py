@@ -164,8 +164,8 @@ def makenetcdf(datasetname, fieldconfig, platform, records):
       qc_values[:,0] = field['QC']
 
 
-    if not isnan(field['add_offset']):
-      var.setncattr('add_offset', field['add_offset'])
+    if field['add_scale_factor']:
+      var.setncattr('add_offset', 0)
       var.setncattr('scale_factor', field['scale_factor'])
 
       # The netCDF library detects FillValues *after* it's done the packing step.
@@ -192,9 +192,8 @@ def makenetcdf(datasetname, fieldconfig, platform, records):
 
   nc.data_type = "OceanSITES trajectory data"
   nc.netcdf_version = "netCDF-4 classic model"
-  nc.format_version = "1.2"
-  nc.Conventions = "CF-1.6 OceanSITES-Manual-1.2 Copernicus-InSituTAC-SRD-1.3 "\
-    + "Copernicus-InSituTAC-ParametersList-3.1.0"
+  nc.format_version = "1.4"
+  nc.Conventions = " CF-1.6 Copernicus-Manual-1.0 Copernicus-InSituTAC-SRD-1.4 Copernicus-InSituTAC- ParametersList-3.1.0"
 
   nc.cdm_data_type = "Trajectory"
   nc.data_mode = "R"
