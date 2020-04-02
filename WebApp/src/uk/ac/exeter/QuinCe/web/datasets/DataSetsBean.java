@@ -154,7 +154,7 @@ public class DataSetsBean extends BaseManagedBean {
     RecordNotFoundException, InstrumentException, ResourceException {
     if (null != getCurrentInstrument()) {
       dataSets = DataSetDB.getDataSets(getDataSource(),
-        getCurrentInstrument().getDatabaseId());
+        getCurrentInstrument().getDatabaseId(), true);
       hasFiles = DataFileDB.getFileCount(getDataSource(),
         getCurrentInstrument().getDatabaseId()) > 0;
     } else {

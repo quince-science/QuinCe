@@ -81,7 +81,7 @@ public class CreateNrtDataset extends Job {
       // The real dataset date will be adjusted when the records are extracted
       LocalDateTime nrtStartDate = LocalDateTime.of(1900, 1, 1, 0, 0, 0);
       DataSet lastDataset = DataSetDB.getLastDataSet(conn,
-        instrument.getDatabaseId());
+        instrument.getDatabaseId(), false);
       if (null != lastDataset) {
         nrtStartDate = lastDataset.getEnd().plusSeconds(1);
       }
