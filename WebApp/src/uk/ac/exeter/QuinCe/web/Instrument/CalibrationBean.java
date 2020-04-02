@@ -171,7 +171,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     if (ok) {
       try {
-        datasets = DataSetDB.getDataSets(getDataSource(), instrumentId);
+        datasets = DataSetDB.getDataSets(getDataSource(), instrumentId, true);
         dbInstance = getDbInstance();
         loadCalibrations();
         affectedDatasets = null;

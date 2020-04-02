@@ -113,7 +113,8 @@ public class DataSetDB {
    *           If any required parameters are missing
    */
   public static List<DataSet> getDataSets(DataSource dataSource,
-    long instrumentId) throws DatabaseException, MissingParamException {
+    long instrumentId, boolean includeNrt)
+    throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
@@ -122,7 +123,7 @@ public class DataSetDB {
     Connection conn = null;
     try {
       conn = dataSource.getConnection();
-      result = getDataSets(conn, instrumentId);
+      result = getDataSets(conn, instrumentId, includeNrt);
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving data sets", e);
     } finally {
@@ -145,8 +146,8 @@ public class DataSetDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static List<DataSet> getDataSets(Connection conn, long instrumentId)
-    throws DatabaseException, MissingParamException {
+  public static List<DataSet> getDataSets(Connection conn, long instrumentId,
+    boolean includeNrt) throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
@@ -163,7 +164,10 @@ public class DataSetDB {
       records = stmt.executeQuery();
 
       while (records.next()) {
-        result.add(dataSetFromRecord(records));
+        DataSet dataSet = dataSetFromRecord(records);
+        if (!dataSet.isNrt() || includeNrt) {
+          result.add(dataSet);
+        }
       }
 
     } catch (SQLException e) {
@@ -545,17 +549,20 @@ public class DataSetDB {
    *          A database connection
    * @param instrument
    *          The instrument's database ID
+   * @param includeNrt
+   *          Indicates whether or not NRT datasets should be included in the
+   *          search
    * @return The most recent dataset, or {@code null} if there are no datasets
    * @throws MissingParamException
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurs
    */
-  public static DataSet getLastDataSet(Connection conn, long instrumentId)
-    throws MissingParamException, DatabaseException {
+  public static DataSet getLastDataSet(Connection conn, long instrumentId,
+    boolean includeNrt) throws MissingParamException, DatabaseException {
     DataSet result = null;
 
-    List<DataSet> datasets = getDataSets(conn, instrumentId);
+    List<DataSet> datasets = getDataSets(conn, instrumentId, includeNrt);
     if (datasets.size() > 0) {
       result = datasets.get(datasets.size() - 1);
     }
