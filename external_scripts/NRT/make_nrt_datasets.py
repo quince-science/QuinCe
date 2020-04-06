@@ -45,7 +45,7 @@ def main():
       if status_code == 200:
         log_instrument(logger, nrt_id, logging.INFO, \
           "NRT dataset created")
-      else:
+      elif status_code != 204:
         log_instrument(logger, nrt_id, logging.ERROR, \
           "NRT dataset failed: " + str(status_code))
 
