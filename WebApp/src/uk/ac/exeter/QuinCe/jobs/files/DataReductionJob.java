@@ -210,7 +210,9 @@ public class DataReductionJob extends Job {
         // Set the dataset status
         DataSetDB.updateDataSet(conn, dataSet);
 
-        if (instrument.getNrt()) {
+        // Remake the NRT dataset if necessary (and we haven't just processed
+        // it!)
+        if (instrument.getNrt() && !dataSet.isNrt()) {
           MakeNrtDataset.createNrtDataset(conn, instrument);
         }
       }
