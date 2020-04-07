@@ -39,3 +39,5 @@ HighDelta,Ambient Pressure,50
 HighDelta,xCO₂ (with standards),20
 HighDelta,"xCO₂ water (dry, no standards)",20
 HighDelta,"xCO₂ atmosphere (dry, no standards)",20
+GradientTest,Equilibrator Temperature,3
+GradientTest,Equilibrator Pressure (absolute),50
