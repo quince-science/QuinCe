@@ -13,27 +13,28 @@ public class EquilibratorPressureCalculator extends ValueCalculator {
   @Override
   public Double calculateValue(MeasurementValues measurementValues,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception {
+    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
+    Connection conn) throws Exception {
 
     MeanCalculator mean = new MeanCalculator();
 
     // Calculate the absolute pressures
     DefaultValueCalculator absolutePressureCalculator = new DefaultValueCalculator(
       "Equilibrator Pressure (absolute)");
-    absolutePressureCalculator.calculateValue(measurementValues, conn, mean);
+    absolutePressureCalculator.calculateValue(measurementValues,
+      allMeasurements, allSensorValues, reducer, conn);
 
     // Now get the differential pressures and ambient pressures, and calculate
     // the absolute equilibrator from those
     DefaultValueCalculator relativePressureCalculator = new DefaultValueCalculator(
       "Equilibrator Pressure (differential)");
     Double relativePressure = relativePressureCalculator.calculateValue(
-      measurementValues, allMeasurements, allSensorValues, conn);
+      measurementValues, allMeasurements, allSensorValues, reducer, conn);
 
     DefaultValueCalculator ambientPressureCalculator = new DefaultValueCalculator(
       "Ambient Pressure");
     Double ambientPressure = ambientPressureCalculator.calculateValue(
-      measurementValues, allMeasurements, allSensorValues, conn);
+      measurementValues, allMeasurements, allSensorValues, reducer, conn);
 
     if (!relativePressure.isNaN() && !ambientPressure.isNaN()) {
       mean.add(ambientPressure + relativePressure);

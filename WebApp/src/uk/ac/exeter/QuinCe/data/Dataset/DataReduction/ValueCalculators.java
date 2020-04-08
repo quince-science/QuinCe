@@ -7,16 +7,15 @@ import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class ValueCalculators {
 
-  private HashMap<SensorType, ValueCalculator> calculators;
+  private HashMap<String, ValueCalculator> calculators;
 
   private static ValueCalculators instance = null;
 
   private ValueCalculators() {
-    calculators = new HashMap<SensorType, ValueCalculator>();
+    calculators = new HashMap<String, ValueCalculator>();
   }
 
   public static ValueCalculators getInstance() {
@@ -28,17 +27,17 @@ public class ValueCalculators {
   }
 
   public Double calculateValue(MeasurementValues measurementValues,
-    SensorType sensorType, Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception {
+    String sensorType, Map<String, ArrayList<Measurement>> allMeasurements,
+    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
+    Connection conn) throws Exception {
 
     return getCalculator(sensorType).calculateValue(measurementValues,
-      allMeasurements, allSensorValues, conn);
-
+      allMeasurements, allSensorValues, reducer, conn);
   }
 
-  private ValueCalculator getCalculator(SensorType sensorType)
+  private ValueCalculator getCalculator(String sensorType)
     throws ValueCalculatorException {
+
     if (!calculators.containsKey(sensorType)) {
       calculators.put(sensorType, initCalculator(sensorType));
     }
@@ -46,19 +45,23 @@ public class ValueCalculators {
     return calculators.get(sensorType);
   }
 
-  private static ValueCalculator initCalculator(SensorType sensorType)
+  private static ValueCalculator initCalculator(String sensorType)
     throws ValueCalculatorException {
 
     ValueCalculator result = null;
 
     try {
-      switch (sensorType.getName()) {
+      switch (sensorType) {
       case "Equilibrator Pressure": {
         result = new EquilibratorPressureCalculator();
         break;
       }
       case "xCO₂ (with standards)": {
         result = new xCO2InGasWithStandardsCalculator();
+        break;
+      }
+      case "Atmospheric Pressure at Sea Level": {
+        result = new AtmosphericPressureAtSeaLevelCalculator();
         break;
       }
       default: {

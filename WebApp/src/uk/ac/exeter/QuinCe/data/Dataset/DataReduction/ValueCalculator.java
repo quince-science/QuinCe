@@ -22,8 +22,8 @@ public abstract class ValueCalculator {
 
   public abstract Double calculateValue(MeasurementValues measurementValues,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception;
+    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
+    Connection conn) throws Exception;
 
   protected Map<Long, SensorValue> getSensorValues(
     MeasurementValues measurementValues, SensorType sensorType, Connection conn)
@@ -73,6 +73,17 @@ public abstract class ValueCalculator {
     }
 
     return result;
+  }
+
+  protected double interpolate(SensorValue prior, SensorValue post,
+    LocalDateTime measurementTime) {
+
+    double x0 = DateTimeUtils.dateToLong(prior.getTime());
+    double y0 = prior.getDoubleValue();
+    double x1 = DateTimeUtils.dateToLong(post.getTime());
+    double y1 = post.getDoubleValue();
+
+    return interpolate(x0, y0, x1, y1, measurementTime);
   }
 
   protected double interpolate(double x0, double y0, double x1, double y1,
