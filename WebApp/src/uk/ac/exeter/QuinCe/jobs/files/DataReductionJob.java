@@ -15,7 +15,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
@@ -26,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -120,21 +120,21 @@ public class DataReductionJob extends DataSetJob {
 
           for (Measurement measurement : allMeasurements.get(runType)) {
 
-            // Get all the sensor values
-            MeasurementValues measurementSensorValues = new MeasurementValues(
-              instrument, measurement);
-
-            getSensorValuesForMeasurement(measurement, instrument,
-              variable.getAllSensorTypes(true), allSensorValues,
-              measurementSensorValues);
-
-            // Store the measurement values in the database
-            DataSetDataDB.storeMeasurementValues(conn,
-              measurementSensorValues.values());
-
             // If the run type is applicable to this variable, perform the data
             // reduction
             if (instrument.isRunTypeForVariable(variable, runType)) {
+
+              // Get all the sensor values
+              MeasurementValues measurementSensorValues = new MeasurementValues(
+                instrument, measurement);
+
+              getSensorValuesForMeasurement(measurement, instrument,
+                variable.getAllSensorTypes(true), allSensorValues,
+                measurementSensorValues);
+
+              // Store the measurement values in the database
+              DataSetDataDB.storeMeasurementValues(conn,
+                measurementSensorValues.values());
 
               // Get the data reducer for this variable and perform data
               // reduction
@@ -144,13 +144,14 @@ public class DataReductionJob extends DataSetJob {
                   .getVariableAttributes(conn, instrument.getDatabaseId(),
                     variable.getId());
                 reducer = DataReducerFactory.getReducer(conn, instrument,
-                  variable, dataSet.isNrt(), variableAttributes);
+                  variable, variableAttributes);
                 reducers.put(variable, reducer);
               }
 
               DataReductionRecord dataReductionRecord = reducer
                 .performDataReduction(instrument, measurement,
-                  measurementSensorValues, allMeasurements, conn);
+                  measurementSensorValues, allMeasurements, allSensorValues,
+                  conn);
 
               dataReductionRecords.add(dataReductionRecord);
             }
@@ -294,26 +295,19 @@ public class DataReductionJob extends DataSetJob {
   private void getSensorValuesForMeasurement(Measurement measurement,
     Instrument instrument, List<SensorType> sensorTypes,
     Map<Long, SearchableSensorValuesList> allSensorValues,
-    MeasurementValues measurementSensorValues) throws RoutineException {
+    MeasurementValues measurementSensorValues)
+    throws RoutineException, SensorTypeNotFoundException {
 
     for (SensorType sensorType : sensorTypes) {
-      // If we've already loaded the sensor types, don't bother doing it again
-      if (!measurementSensorValues.containsKey(sensorType)) {
 
-        measurementSensorValues.put(sensorType,
-          new ArrayList<MeasurementValue>());
+      measurementSensorValues.loadSensorValues(allSensorValues, sensorType);
 
-        for (long columnId : instrument.getSensorAssignments()
-          .getColumnIds(sensorType)) {
+      // If this SensorType depends on another, add that too.
+      SensorType dependsOn = instrument.getSensorAssignments()
+        .getDependsOn(sensorType);
 
-          SearchableSensorValuesList columnValues = allSensorValues
-            .get(columnId);
-
-          MeasurementValue measurementValue = columnValues
-            .getMeasurementValue(measurement, columnId);
-
-          measurementSensorValues.put(sensorType, measurementValue);
-        }
+      if (null != dependsOn) {
+        measurementSensorValues.loadSensorValues(allSensorValues, dependsOn);
       }
     }
   }
