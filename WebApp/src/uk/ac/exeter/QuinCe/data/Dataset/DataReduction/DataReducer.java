@@ -1,24 +1,18 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.math3.stat.regression.SimpleRegression;
-
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -27,8 +21,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationE
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -67,16 +59,6 @@ public abstract class DataReducer {
   protected CalibrationSet calibrationSet;
 
   /**
-   * Cache of searched record times prior to starting point
-   */
-  private HashMap<String, LocalDateTime> previousSearchTimes;
-
-  /**
-   * Cache of searched record times after starting point
-   */
-  private HashMap<String, LocalDateTime> nextSearchTimes;
-
-  /**
    * The value calculators being used by this reducer
    */
   protected ValueCalculators valueCalculators;
@@ -86,9 +68,6 @@ public abstract class DataReducer {
 
     this.variable = variable;
     this.variableAttributes = variableAttributes;
-
-    previousSearchTimes = new HashMap<String, LocalDateTime>();
-    nextSearchTimes = new HashMap<String, LocalDateTime>();
   }
 
   /**
@@ -311,278 +290,6 @@ public abstract class DataReducer {
   }
 
   protected abstract String[] getRequiredTypeStrings();
-
-  /**
-   * Apply external standards calibration to a sensor value
-   *
-   * @param recordDate
-   *          The date of the record from which the sensor value was taken
-   * @param sensorName
-   *          The name of the sensor
-   * @param calculationValue
-   *          The sensor value to be calibrated
-   * @param ignoreZero
-   *          Indicates whether or not the zero standard should be ignored
-   * @return The calibrated sensor value
-   * @throws DataReductionException
-   *           If there are not sufficient standard measurements
-   */
-  protected Double applyValueCalibration(Measurement measurement,
-    SensorType sensorType, CalculationValue originalValue, boolean ignoreZero)
-    throws DataReductionException {
-    return applyValueCalibration(measurement, sensorType,
-      originalValue.getValue(), ignoreZero);
-  }
-
-  /**
-   * Apply external standards calibration to a sensor value
-   *
-   * @param recordDate
-   *          The date of the record from which the sensor value was taken
-   * @param sensorName
-   *          The name of the sensor
-   * @param calculationValue
-   *          The sensor value to be calibrated
-   * @param ignoreZero
-   *          Indicates whether or not the zero standard should be ignored
-   * @return The calibrated sensor value
-   * @throws DataReductionException
-   *           If there are not sufficient standard measurements
-   */
-  protected Double applyValueCalibration(Measurement measurement,
-    SensorType sensorType, Double originalValue, boolean ignoreZero)
-    throws DataReductionException {
-
-    // TODO Add excessive calibration adjustment check to this method -
-    // it will set the flag on the CalculationValue
-
-    Double calibratedValue;
-
-    // Get the before and after measurements for each run type
-    try {
-
-      // For each external standard target, calculate the offset from the
-      // external
-      // standard at the record date
-      Map<String, Double> standardMeasurements = new HashMap<String, Double>();
-      for (String target : calibrationSet.getTargets().keySet()) {
-        double concentration = calibrationSet.getCalibrationValue(target,
-          sensorType.getName());
-        if (!ignoreZero || concentration > 0.0) {
-
-          PrevNextTimes surroundingTimes = getSurroundingTimes(measurement,
-            target, sensorType);
-
-          CalculationValue priorCalibrationValue = null;
-          if (null != surroundingTimes.prev) {
-            priorCalibrationValue = CalculationValue.get(measurement,
-              sensorType,
-              groupedSensorValues.get(surroundingTimes.prev).get(sensorType));
-          }
-
-          CalculationValue postCalibrationValue = null;
-          if (null != surroundingTimes.next) {
-            postCalibrationValue = CalculationValue.get(measurement, sensorType,
-              groupedSensorValues.get(surroundingTimes.next).get(sensorType));
-          }
-
-          standardMeasurements.put(target,
-            calculateStandardValueAtDate(measurement.getTime(), target,
-              surroundingTimes.prev, priorCalibrationValue,
-              surroundingTimes.next, postCalibrationValue));
-        }
-      }
-
-      // Make a regression of the offsets to calculate the offset at the
-      // measured concentration
-      SimpleRegression regression = new SimpleRegression(true);
-      for (String target : standardMeasurements.keySet()) {
-        regression.addData(standardMeasurements.get(target),
-          calibrationSet.getCalibrationValue(target, sensorType.getName()));
-      }
-
-      calibratedValue = regression.predict(originalValue);
-
-    } catch (Exception e) {
-      if (e instanceof DataReductionException) {
-        throw (DataReductionException) e;
-      } else {
-        throw new DataReductionException(
-          "Error while applying internal calibration", e);
-      }
-    }
-
-    return calibratedValue;
-  }
-
-  /**
-   * Calculate the measured external standard value at a given date between two
-   * calibration measurements.
-   *
-   * One of the calibrations can be {@code null}, in which case the value that
-   * of the calibration measurement that is not {@null}. If both measurements
-   * are {@code null} an error is thrown.
-   *
-   * @param date
-   *          The target date for which the value is to be calculated
-   * @param target
-   *          The name of the external standard
-   * @param sensorName
-   *          The name of the sensor whose offset is being calculated
-   * @param priorCalibration
-   *          The calibration measurement prior to the {@code date}
-   * @param postCalibration
-   *          The calibration measurement after the {@code date}
-   * @return The value at the specified date
-   * @throws RecordNotFoundException
-   *           If both calibration measurements are {@code null}.
-   */
-  private Double calculateStandardValueAtDate(LocalDateTime date, String target,
-    LocalDateTime priorCalibrationTime, CalculationValue priorCalibration,
-    LocalDateTime postCalibrationTime, CalculationValue postCalibration)
-    throws RecordNotFoundException {
-
-    Double result;
-
-    if (null == priorCalibration && null == postCalibration) {
-      throw new RecordNotFoundException(
-        "No calibrations found for external standard '" + target + "'");
-    } else if (null == priorCalibration) {
-      result = postCalibration.getValue();
-    } else if (null == postCalibration) {
-      result = priorCalibration.getValue();
-    } else {
-      double priorMeasuredValue = priorCalibration.getValue();
-      double postMeasuredValue = postCalibration.getValue();
-      SimpleRegression regression = new SimpleRegression(true);
-      regression.addData(DateTimeUtils.dateToLong(priorCalibrationTime),
-        priorMeasuredValue);
-      regression.addData(DateTimeUtils.dateToLong(postCalibrationTime),
-        postMeasuredValue);
-      result = regression.predict(DateTimeUtils.dateToLong(date));
-    }
-
-    return result;
-  }
-
-  private PrevNextTimes getSurroundingTimes(Measurement start, String runType,
-    SensorType sensorType) throws RoutineException {
-
-    PrevNextTimes result = null;
-    PrevNextTimes cached = new PrevNextTimes(previousSearchTimes.get(runType),
-      nextSearchTimes.get(runType));
-    boolean searchRequired = false;
-
-    if (null == cached.prev && null == cached.next) {
-      searchRequired = true;
-    } else if (null != cached.prev && start.getTime().isBefore(cached.prev)) {
-      searchRequired = true;
-    } else if (null != cached.next && start.getTime().isAfter(cached.next)) {
-      searchRequired = true;
-    }
-
-    if (!searchRequired) {
-      result = cached;
-    } else {
-      LocalDateTime prev = getPreviousTime(start, runType, sensorType);
-      LocalDateTime next = getNextTime(start, runType, sensorType);
-      result = new PrevNextTimes(prev, next);
-
-      previousSearchTimes.put(runType, prev);
-      nextSearchTimes.put(runType, next);
-    }
-
-    return result;
-  }
-
-  /**
-   * Get the last measurement prior to the specified date with the specified run
-   * type. Returns {@code null} if there is no matching record. Skips empty
-   * records and records whose QC flag is not GOOD or ASSUMED_GOOD
-   *
-   * @param time
-   *          The time
-   * @param runType
-   *          The run type
-   * @return The previous measurement
-   * @throws RoutineException
-   */
-  private LocalDateTime getPreviousTime(Measurement start, String runType,
-    SensorType sensorType) throws RoutineException {
-
-    // TODO This and getNextTime can be refactored together
-
-    LocalDateTime result = null;
-
-    int i = allMeasurements.indexOf(start) - 1;
-    while (null == result && i >= 0) {
-      Measurement currentMeasurement = allMeasurements.get(i);
-      if (currentMeasurement.getRunType().equals(runType)) {
-        Map<SensorType, List<SensorValue>> measurementData = groupedSensorValues
-          .get(currentMeasurement.getTime());
-
-        CalculationValue value = CalculationValue.get(start, sensorType,
-          measurementData.get(sensorType));
-
-        // Skip empty and non-GOOD values
-        if (!value.isNaN() && value.getQCFlag().isGood()) {
-          result = currentMeasurement.getTime();
-        }
-      }
-
-      i--;
-    }
-
-    return result;
-  }
-
-  /**
-   * Get the first measurement after the specified date with the specified run
-   * type. Returns {@code null} if there is no matching record. Skips empty
-   * records and records whose QC flag is not GOOD or ASSUMED_GOOD
-   *
-   * @param time
-   *          The time
-   * @param runType
-   *          The run type
-   * @return The previous measurement
-   * @throws RoutineException
-   */
-  private LocalDateTime getNextTime(Measurement start, String runType,
-    SensorType sensorType) throws RoutineException {
-    LocalDateTime result = null;
-
-    int i = allMeasurements.indexOf(start) + 1;
-    while (null == result && i < allMeasurements.size()) {
-      Measurement currentMeasurement = allMeasurements.get(i);
-      if (currentMeasurement.getRunType().equals(runType)) {
-        Map<SensorType, List<SensorValue>> measurementData = groupedSensorValues
-          .get(currentMeasurement.getTime());
-
-        CalculationValue value = CalculationValue.get(start, sensorType,
-          measurementData.get(sensorType));
-
-        // Skip empty and non-GOOD values
-        if (!value.isNaN() && value.getQCFlag().isGood()) {
-          result = currentMeasurement.getTime();
-        }
-      }
-
-      i++;
-    }
-
-    return result;
-  }
-
-  private class PrevNextTimes {
-    LocalDateTime prev;
-    LocalDateTime next;
-
-    private PrevNextTimes(LocalDateTime prev, LocalDateTime next) {
-      this.prev = prev;
-      this.next = next;
-    }
-  }
 
   protected Double kelvin(Double celsius) {
     return celsius + 273.15;
