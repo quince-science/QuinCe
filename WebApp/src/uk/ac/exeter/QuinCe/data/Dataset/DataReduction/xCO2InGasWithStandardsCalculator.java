@@ -44,8 +44,8 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
   @Override
   public Double calculateValue(MeasurementValues measurementValues,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception {
+    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
+    Connection conn) throws Exception {
 
     Double result;
 
@@ -74,12 +74,13 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
       result = dryingCalculation(measurementValues.getMeasurement().getTime(),
         measurementValues.getInstrument(), allMeasurements, allSensorValues,
         measurementValues, xco2Values, xh2oValues, sensorValues, calibrationSet,
-        conn);
+        reducer, conn);
     } else {
       result = nonDryingCalculation(
         measurementValues.getMeasurement().getTime(),
         measurementValues.getInstrument(), allMeasurements, allSensorValues,
-        measurementValues, xco2Values, sensorValues, calibrationSet, conn);
+        measurementValues, xco2Values, sensorValues, calibrationSet, reducer,
+        conn);
     }
 
     return result;
@@ -107,7 +108,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     Map<Long, SearchableSensorValuesList> allSensorValues,
     MeasurementValues measurementValues, ArrayList<MeasurementValue> xco2Values,
     ArrayList<MeasurementValue> xh2oValues, Map<Long, SensorValue> sensorValues,
-    CalibrationSet calibrationSet, Connection conn)
+    CalibrationSet calibrationSet, DataReducer reducer, Connection conn)
     throws ValueCalculatorException {
 
     MeanCalculator mean = new MeanCalculator();
@@ -122,7 +123,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
 
       double xh2oPriorCalibratedValue = calibrate(instrument, allMeasurements,
         allSensorValues, measurementValues, xh2oSensorType, xh2oPrior.getTime(),
-        xh2oPrior.getDoubleValue(), calibrationSet, false, conn);
+        xh2oPrior.getDoubleValue(), calibrationSet, false, reducer, conn);
 
       double xco2PriorValue = xco2Prior.getDoubleValue();
       double xco2PriorDriedValue = dry(xco2PriorValue,
@@ -130,7 +131,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
 
       double xco2PriorCalibratedValue = calibrate(instrument, allMeasurements,
         allSensorValues, measurementValues, xco2SensorType, xco2Prior.getTime(),
-        xco2PriorDriedValue, calibrationSet, true, conn);
+        xco2PriorDriedValue, calibrationSet, true, reducer, conn);
 
       if (!xco2Value.hasPost()) {
         mean.add(xco2PriorCalibratedValue);
@@ -141,14 +142,15 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
         double xh2oPostCalibratedValue = calibrate(instrument, allMeasurements,
           allSensorValues, measurementValues, xh2oSensorType,
           xh2oPost.getTime(), xh2oPost.getDoubleValue(), calibrationSet, false,
-          conn);
+          reducer, conn);
 
         double xco2PostValue = xco2Post.getDoubleValue();
         double xco2PostDriedValue = dry(xco2PostValue, xh2oPostCalibratedValue);
 
         double xco2PostCalibratedValue = calibrate(instrument, allMeasurements,
           allSensorValues, measurementValues, xco2SensorType,
-          xco2Post.getTime(), xco2PostDriedValue, calibrationSet, true, conn);
+          xco2Post.getTime(), xco2PostDriedValue, calibrationSet, true, reducer,
+          conn);
 
         mean.add(interpolate(xco2Prior.getTime(), xco2PriorCalibratedValue,
           xco2Post.getTime(), xco2PostCalibratedValue, measurementTime));
@@ -163,7 +165,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     Map<Long, SearchableSensorValuesList> allSensorValues,
     MeasurementValues measurementValues, ArrayList<MeasurementValue> xco2Values,
     Map<Long, SensorValue> sensorValues, CalibrationSet calibrationSet,
-    Connection conn) throws ValueCalculatorException {
+    DataReducer reducer, Connection conn) throws ValueCalculatorException {
 
     MeanCalculator mean = new MeanCalculator();
 
@@ -173,7 +175,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
 
       double priorCalibratedValue = calibrate(instrument, allMeasurements,
         allSensorValues, measurementValues, xco2SensorType, prior,
-        calibrationSet, true, conn);
+        calibrationSet, true, reducer, conn);
 
       if (!measurementValue.hasPost()) {
         mean.add(priorCalibratedValue);
@@ -182,7 +184,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
 
         double postCalibratedValue = calibrate(instrument, allMeasurements,
           allSensorValues, measurementValues, xco2SensorType, post,
-          calibrationSet, true, conn);
+          calibrationSet, true, reducer, conn);
 
         mean.add(interpolate(prior.getTime(), priorCalibratedValue,
           post.getTime(), postCalibratedValue, measurementTime));
@@ -210,11 +212,11 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     Map<Long, SearchableSensorValuesList> allSensorValues,
     MeasurementValues measurementValues, SensorType sensorType,
     SensorValue sensorValue, CalibrationSet calibrationSet, boolean ignoreZero,
-    Connection conn) throws ValueCalculatorException {
+    DataReducer reducer, Connection conn) throws ValueCalculatorException {
 
     return calibrate(instrument, allMeasurements, allSensorValues,
       measurementValues, sensorType, sensorValue.getTime(),
-      sensorValue.getDoubleValue(), calibrationSet, ignoreZero, conn);
+      sensorValue.getDoubleValue(), calibrationSet, ignoreZero, reducer, conn);
   }
 
   private double calibrate(Instrument instrument,
@@ -222,7 +224,8 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     Map<Long, SearchableSensorValuesList> allSensorValues,
     MeasurementValues measurementValues, SensorType sensorType,
     LocalDateTime time, double value, CalibrationSet calibrationSet,
-    boolean ignoreZero, Connection conn) throws ValueCalculatorException {
+    boolean ignoreZero, DataReducer reducer, Connection conn)
+    throws ValueCalculatorException {
 
     // TODO Add excessive calibration adjustment check to this method -
     // it will set the flag on the CalculationValue
@@ -248,9 +251,11 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
         if (concentration > 0.0 || !ignoreZero) {
 
           CalibrationTimeValue priorValue = getPriorCalibrationValue(instrument,
-            allMeasurements, allSensorValues, target, time, sensorType, conn);
+            allMeasurements, allSensorValues, target, time, sensorType, reducer,
+            conn);
           CalibrationTimeValue postValue = getPostCalibrationValue(instrument,
-            allMeasurements, allSensorValues, target, time, sensorType, conn);
+            allMeasurements, allSensorValues, target, time, sensorType, reducer,
+            conn);
 
           standardMeasurements.put(target,
             interpolate(priorValue.time, priorValue.value, postValue.time,
@@ -280,8 +285,8 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
   private CalibrationTimeValue getPriorCalibrationValue(Instrument instrument,
     Map<String, ArrayList<Measurement>> allMeasurements,
     Map<Long, SearchableSensorValuesList> allSensorValues, String target,
-    LocalDateTime start, SensorType sensorType, Connection conn)
-    throws Exception {
+    LocalDateTime start, SensorType sensorType, DataReducer reducer,
+    Connection conn) throws Exception {
 
     int rangeStart = -1;
     int rangeEnd = -1;
@@ -327,14 +332,14 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     }
 
     return calculateCalibrationValue(sensorType, priorRunMeasurements,
-      instrument, allMeasurements, allSensorValues, conn);
+      instrument, allMeasurements, allSensorValues, reducer, conn);
   }
 
   private CalibrationTimeValue getPostCalibrationValue(Instrument instrument,
     Map<String, ArrayList<Measurement>> allMeasurements,
     Map<Long, SearchableSensorValuesList> allSensorValues, String target,
-    LocalDateTime start, SensorType sensorType, Connection conn)
-    throws Exception {
+    LocalDateTime start, SensorType sensorType, DataReducer reducer,
+    Connection conn) throws Exception {
 
     int rangeStart = -1;
     int rangeEnd = -1;
@@ -384,14 +389,14 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     }
 
     return calculateCalibrationValue(sensorType, postRunMeasurements,
-      instrument, allMeasurements, allSensorValues, conn);
+      instrument, allMeasurements, allSensorValues, reducer, conn);
   }
 
   private CalibrationTimeValue calculateCalibrationValue(SensorType sensorType,
     List<Measurement> runMeasurements, Instrument instrument,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception {
+    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
+    Connection conn) throws Exception {
     DefaultValueCalculator calculator = new DefaultValueCalculator(sensorType);
 
     CalibrationTimeValue result = null;
@@ -408,7 +413,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
         runMeasurementValues.loadSensorValues(allSensorValues, sensorType);
 
         mean.add(calculator.calculateValue(runMeasurementValues,
-          allMeasurements, allSensorValues, conn));
+          allMeasurements, allSensorValues, reducer, conn));
       }
 
       result = new CalibrationTimeValue(

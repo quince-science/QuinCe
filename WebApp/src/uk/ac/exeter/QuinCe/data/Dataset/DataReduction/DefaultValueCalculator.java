@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -12,7 +11,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -34,18 +32,10 @@ public class DefaultValueCalculator extends ValueCalculator {
   @Override
   public Double calculateValue(MeasurementValues measurementValues,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception {
+    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
+    Connection conn) throws Exception {
 
     MeanCalculator mean = new MeanCalculator();
-
-    calculateValue(measurementValues, conn, mean);
-
-    return mean.mean();
-  }
-
-  protected void calculateValue(MeasurementValues measurementValues,
-    Connection conn, MeanCalculator mean) throws Exception {
 
     if (null != measurementValues.get(sensorType)) {
       Map<Long, SensorValue> sensorValues = getSensorValues(measurementValues,
@@ -64,16 +54,7 @@ public class DefaultValueCalculator extends ValueCalculator {
         }
       }
     }
-  }
 
-  private double interpolate(SensorValue prior, SensorValue post,
-    LocalDateTime measurementTime) {
-
-    double x0 = DateTimeUtils.dateToLong(prior.getTime());
-    double y0 = prior.getDoubleValue();
-    double x1 = DateTimeUtils.dateToLong(post.getTime());
-    double y1 = post.getDoubleValue();
-
-    return interpolate(x0, y0, x1, y1, measurementTime);
+    return mean.mean();
   }
 }

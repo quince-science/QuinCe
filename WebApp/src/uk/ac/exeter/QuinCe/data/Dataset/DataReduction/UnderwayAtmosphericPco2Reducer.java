@@ -18,13 +18,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
  */
 public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
-  /**
-   * The conversion factor from Pascals to Atmospheres
-   */
-  private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
-
-  private static final double MOLAR_MASS_AIR = 28.97e-3;
-
   private static List<CalculationParameter> calculationParameters;
 
   static {
@@ -54,122 +47,34 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   @Override
   protected void doCalculation(Instrument instrument,
-    MeasurementValues sensorValues, DataReductionRecord recordm,
+    MeasurementValues sensorValues, DataReductionRecord record,
     Map<String, ArrayList<Measurement>> allMeasurements,
     Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
     throws Exception {
-    /*
-     * Set<SensorType> requiredSensorTypes = getRequiredSensorTypes(
-     * instrument.getSensorAssignments());
-     *
-     * SensorType xH2OSensorType = getSensorType("xH₂O (with standards)");
-     * SensorType co2SensorType = getSensorType("xCO₂ (with standards)");
-     *
-     * Double trueXH2O = 0.0D; if (requiredSensorTypes.contains(xH2OSensorType))
-     * { trueXH2O = applyValueCalibration(measurement, xH2OSensorType,
-     * sensorValues.get(xH2OSensorType), false); }
-     *
-     * Double intakeTemperature = getValue(sensorValues,
-     * "Equilibrator Temperature"); Double salinity = getValue(sensorValues,
-     * "Salinity"); Double seaLevelPressure = getSeaLevelAtmPressure(
-     * getValue(sensorValues, "Atmospheric Pressure"), intakeTemperature);
-     * Double co2InGas = getValue(sensorValues, "xCO₂ (with standards)");
-     *
-     * Double co2Dried = co2InGas; if
-     * (requiredSensorTypes.contains(xH2OSensorType)) { co2Dried =
-     * calcDriedCo2(co2InGas, trueXH2O); }
-     *
-     * Double co2Calibrated = applyValueCalibration(measurement, co2SensorType,
-     * co2Dried, true); Double pH2O = calcPH2O(salinity, intakeTemperature);
-     * Double pCO2 = calcPco2TEWet(co2Calibrated, seaLevelPressure, pH2O);
-     * Double fCO2 = calcFCO2(pCO2, co2Calibrated, seaLevelPressure,
-     * intakeTemperature);
-     *
-     * // Store the calculated values record.put("True Moisture", trueXH2O);
-     * record.put("Sea Level Pressure", seaLevelPressure); record.put("pH₂O",
-     * pH2O); record.put("Dried CO₂", co2Dried); record.put("Calibrated CO₂",
-     * co2Calibrated); record.put("pCO₂", pCO2); record.put("fCO₂", fCO2);
-     */ }
 
-  private Double getSeaLevelAtmPressure(Double measuredPressure,
-    Double intakeTemperature) {
-    Float sensorHeight = variableAttributes.get("atm_pres_sensor_height");
+    // We use equilibrator temperature as the presumed most realistic gas
+    // temperature
+    Double equilibratorTemperature = sensorValues.getValue(
+      "Equilibrator Temperature", allMeasurements, allSensorValues, this, conn);
+    Double salinity = sensorValues.getValue("Salinity", allMeasurements,
+      allSensorValues, this, conn);
+    Double seaLevelPressure = sensorValues.getValue(
+      "Atmospheric Pressure at Sea Level", allMeasurements, allSensorValues,
+      this, conn);
+    Double co2InGas = sensorValues.getValue("xCO₂ (with standards)",
+      allMeasurements, allSensorValues, this, conn);
 
-    Double correction = (measuredPressure * MOLAR_MASS_AIR)
-      / (kelvin(intakeTemperature) * 8.314) * 9.8 * sensorHeight;
+    Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
 
-    return measuredPressure + correction;
-  }
+    Double pCO2 = Calculators.calcpCO2TEWet(co2InGas, seaLevelPressure, pH2O);
+    Double fCO2 = Calculators.calcfCO2(pCO2, co2InGas, seaLevelPressure,
+      equilibratorTemperature);
 
-  /**
-   * Calculates the water vapour pressure (pH<sub>2</sub>O). From Weiss and
-   * Price (1980)
-   *
-   * @param salinity
-   *          Salinity
-   * @param eqt
-   *          Equilibrator temperature (in celsius)
-   * @return The calculated pH2O value
-   */
-  private Double calcPH2O(Double salinity, Double eqt) {
-    double kelvin = kelvin(eqt);
-    return Math.exp(24.4543 - 67.4509 * (100 / kelvin)
-      - 4.8489 * Math.log(kelvin / 100) - 0.000544 * salinity);
-  }
-
-  /**
-   * Calculate dried CO2 using a moisture measurement
-   *
-   * @param co2
-   *          The measured CO2 value
-   * @param xH2O
-   *          The moisture value
-   * @return The 'dry' CO2 value
-   */
-  private Double calcDriedCo2(Double co2, Double xH2O) {
-    return co2 / (1.0 - (xH2O / 1000));
-  }
-
-  /**
-   * Calculates pCO<sub>2</sub> in water at equlibrator temperature
-   *
-   * @param co2
-   *          The dry, calibrated CO<sub>2</sub> value
-   * @param eqp
-   *          The equilibrator pressure
-   * @param pH2O
-   *          The water vapour pressure
-   * @return pCO<sub>2</sub> in water at equlibrator temperature
-   */
-  private Double calcPco2TEWet(Double co2, Double eqp, Double pH2O) {
-    Double eqp_atm = eqp * PASCALS_TO_ATMOSPHERES * 100;
-    return co2 * (eqp_atm - pH2O);
-  }
-
-  /**
-   * Converts pCO<sub>2</sub> to fCO<sub>2</sub>
-   *
-   * @param pCO2
-   *          pCO<sub>2</sub> at intake temperature
-   * @param co2Calibrated
-   *          The calibrated, dried xCO<sub>2</sub> value
-   * @param eqp
-   *          The equilibrator pressure
-   * @param eqt
-   *          The equilibrator temperature
-   * @return The fCO<sub>2</sub> value
-   */
-  private Double calcFCO2(Double pCO2, Double co2Calibrated, Double eqp,
-    Double eqt) {
-    Double kelvin = kelvin(eqt);
-    Double B = -1636.75 + 12.0408 * kelvin - 0.0327957 * Math.pow(kelvin, 2)
-      + (3.16528 * 1e-5) * Math.pow(kelvin, 3);
-    Double delta = 57.7 - 0.118 * kelvin;
-    Double eqpAtmospheres = (eqp * 100) * PASCALS_TO_ATMOSPHERES;
-
-    return pCO2 * Math.exp(
-      ((B + 2 * Math.pow(1 - co2Calibrated * 1e-6, 2) * delta) * eqpAtmospheres)
-        / (82.0575 * kelvin));
+    // Store the calculated values record.put("True Moisture", trueXH2O);
+    record.put("Sea Level Pressure", seaLevelPressure);
+    record.put("pH₂O", pH2O);
+    record.put("pCO₂", pCO2);
+    record.put("fCO₂", fCO2);
   }
 
   @Override

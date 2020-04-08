@@ -289,11 +289,11 @@ public abstract class DataReducer {
     return result;
   }
 
-  protected abstract String[] getRequiredTypeStrings();
-
-  protected Double kelvin(Double celsius) {
-    return celsius + 273.15;
+  public Float getVariableAttribute(String attribute) {
+    return variableAttributes.get(attribute);
   }
+
+  protected abstract String[] getRequiredTypeStrings();
 
   public abstract List<CalculationParameter> getCalculationParameters();
 }
