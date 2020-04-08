@@ -10,6 +10,10 @@ public class ValueCalculatorException extends Exception {
       cause);
   }
 
+  public ValueCalculatorException(String sensorType, Throwable cause) {
+    super("Error in value calculator for SensorType " + sensorType, cause);
+  }
+
   public ValueCalculatorException(SensorType sensorType, String message) {
     super("Error in value calculator for SensorType " + sensorType.toString()
       + ": " + message);

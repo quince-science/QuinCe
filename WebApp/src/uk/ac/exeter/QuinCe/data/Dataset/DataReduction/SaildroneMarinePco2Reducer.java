@@ -75,7 +75,7 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
    * @return The calculated pH2O value
    */
   private Double calcPH2O(Double salinity, Double sst) {
-    double kelvin = kelvin(sst);
+    double kelvin = Calculators.kelvin(sst);
     return Math.exp(24.4543 - 67.4509 * (100 / kelvin)
       - 4.8489 * Math.log(kelvin / 100) - 0.000544 * salinity);
   }
@@ -111,7 +111,7 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
    */
   private Double calcFco2(Double pCo2, Double co2Calibrated, Double eqp,
     Double sst) {
-    Double kelvin = kelvin(sst);
+    Double kelvin = Calculators.kelvin(sst);
     Double B = -1636.75 + 12.0408 * kelvin - 0.0327957 * Math.pow(kelvin, 2)
       + (3.16528 * 1e-5) * Math.pow(kelvin, 3);
     Double delta = 57.7 - 0.118 * kelvin;

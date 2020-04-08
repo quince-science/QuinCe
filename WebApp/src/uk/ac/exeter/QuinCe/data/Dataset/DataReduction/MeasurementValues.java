@@ -12,8 +12,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @SuppressWarnings("serial")
 public class MeasurementValues
@@ -41,25 +39,22 @@ public class MeasurementValues
     get(sensorType).add(value);
   }
 
-  public Double getValue(String sensorType,
-    Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception {
-
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-      .getSensorsConfiguration();
-
-    return getValue(sensorConfig.getSensorType(sensorType), allMeasurements,
-      allSensorValues, conn);
-  }
-
   public Double getValue(SensorType sensorType,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception {
+    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
+    Connection conn) throws Exception {
+
+    return getValue(sensorType.getName(), allMeasurements, allSensorValues,
+      reducer, conn);
+  }
+
+  public Double getValue(String sensorType,
+    Map<String, ArrayList<Measurement>> allMeasurements,
+    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
+    Connection conn) throws Exception {
 
     return ValueCalculators.getInstance().calculateValue(this, sensorType,
-      allMeasurements, allSensorValues, conn);
+      allMeasurements, allSensorValues, reducer, conn);
   }
 
   public Measurement getMeasurement() {
