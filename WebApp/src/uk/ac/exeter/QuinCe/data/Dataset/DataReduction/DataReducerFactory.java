@@ -27,30 +27,28 @@ public class DataReducerFactory {
    *           If the reducer cannot be retreived
    */
   public static DataReducer getReducer(Connection conn, Instrument instrument,
-    InstrumentVariable variable, boolean nrt,
-    Map<String, Float> variableAttributes) throws DataReductionException {
+    InstrumentVariable variable, Map<String, Float> variableAttributes)
+    throws DataReductionException {
 
     DataReducer reducer;
 
     try {
       switch (variable.getName()) {
       case "Underway Marine pCO₂": {
-        reducer = new UnderwayMarinePco2Reducer(variable, nrt,
-          variableAttributes);
+        reducer = new UnderwayMarinePco2Reducer(variable, variableAttributes);
         break;
       }
       case "Underway Atmospheric pCO₂": {
-        reducer = new UnderwayAtmosphericPco2Reducer(variable, nrt,
+        reducer = new UnderwayAtmosphericPco2Reducer(variable,
           variableAttributes);
         break;
       }
       case "SailDrone Marine CO₂ NRT": {
-        reducer = new SaildroneMarinePco2Reducer(variable, nrt,
-          variableAttributes);
+        reducer = new SaildroneMarinePco2Reducer(variable, variableAttributes);
         break;
       }
       case "SailDrone Atmospheric CO₂ NRT": {
-        reducer = new SaildroneAtmosphericPco2Reducer(variable, nrt,
+        reducer = new SaildroneAtmosphericPco2Reducer(variable,
           variableAttributes);
         break;
       }
@@ -78,19 +76,19 @@ public class DataReducerFactory {
 
     switch (variable.getName()) {
     case "Underway Marine pCO₂": {
-      reducer = new UnderwayMarinePco2Reducer(variable, false, null);
+      reducer = new UnderwayMarinePco2Reducer(variable, null);
       break;
     }
     case "Underway Atmospheric pCO₂": {
-      reducer = new UnderwayAtmosphericPco2Reducer(variable, false, null);
+      reducer = new UnderwayAtmosphericPco2Reducer(variable, null);
       break;
     }
     case "SailDrone Marine CO₂ NRT": {
-      reducer = new SaildroneMarinePco2Reducer(variable, false, null);
+      reducer = new SaildroneMarinePco2Reducer(variable, null);
       break;
     }
     case "SailDrone Atmospheric CO₂ NRT": {
-      reducer = new SaildroneAtmosphericPco2Reducer(variable, false, null);
+      reducer = new SaildroneAtmosphericPco2Reducer(variable, null);
       break;
     }
     case "Soderman": {

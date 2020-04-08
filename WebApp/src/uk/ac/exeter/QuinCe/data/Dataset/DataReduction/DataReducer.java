@@ -14,6 +14,8 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
@@ -43,11 +45,6 @@ public abstract class DataReducer {
    * The variable that this reducer works on
    */
   protected InstrumentVariable variable;
-
-  /**
-   * Indicates whether or not we are processing an NRT dataset
-   */
-  private boolean nrt;
 
   /**
    * The variable attributes
@@ -84,11 +81,10 @@ public abstract class DataReducer {
    */
   protected ValueCalculators valueCalculators;
 
-  public DataReducer(InstrumentVariable variable, boolean nrt,
+  public DataReducer(InstrumentVariable variable,
     Map<String, Float> variableAttributes) {
 
     this.variable = variable;
-    this.nrt = nrt;
     this.variableAttributes = variableAttributes;
 
     previousSearchTimes = new HashMap<String, LocalDateTime>();
@@ -102,62 +98,28 @@ public abstract class DataReducer {
    *          The instrument that took the measurement
    * @param measurement
    *          The measurement
-   * @param sensorValues
+   * @param measurementValues
    *          The measurement's sensor values
    * @param allMeasurements
    *          All measurements for the data set
    * @return The data reduction result
    */
   public DataReductionRecord performDataReduction(Instrument instrument,
-    Measurement measurement, MeasurementValues sensorValues,
-    Map<String, ArrayList<Measurement>> allMeasurements, Connection conn)
+    Measurement measurement, MeasurementValues measurementValues,
+    Map<String, ArrayList<Measurement>> allMeasurements,
+    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
     throws Exception {
 
     DataReductionRecord record = new DataReductionRecord(measurement);
 
-    doCalculation(instrument, sensorValues, record, allMeasurements, conn);
+    doCalculation(instrument, measurementValues, record, allMeasurements,
+      allSensorValues, conn);
 
-    /*
-     * DataReductionRecord record = new DataReductionRecord(measurement);
-     *
-     * if (!isMeasurementRunType(instrument, measurement.getRunType())) {
-     * makeEmptyRecord(record); } else { doCalculation(instrument, measurement,
-     * sensorValues, record);
-     *
-     * List<SensorType> missingParameters = getMissingParameters(
-     * instrument.getSensorAssignments(), sensorValues); if
-     * (missingParameters.size() > 0) { makeMissingParameterRecord(record,
-     * missingParameters); } else { doCalculation(instrument, measurement,
-     * sensorValues, record); } }
-     *
-     * applyQCFlags(instrument.getSensorAssignments(), variable, sensorValues,
-     * record);
-     *
-     * return record;
-     */
-
-    return null;
-  }
-
-  /**
-   * Determine whether a Measurement object has the correct run type for data
-   * reduction to be performed
-   *
-   * @param runType
-   *          The run type
-   * @return
-   */
-  private boolean isMeasurementRunType(Instrument instrument, String runType) {
-    boolean result = false;
-
-    if (!instrument.hasInternalCalibrations()) {
-      result = true;
-    } else {
-      result = instrument.getRunTypeCategory(runType).getType() == variable
-        .getId();
+    for (MeasurementValue value : measurementValues.getAllValues()) {
+      record.setQc(value.getQcFlag(), value.getQcMessages());
     }
 
-    return result;
+    return record;
   }
 
   /**
@@ -176,7 +138,8 @@ public abstract class DataReducer {
    */
   protected abstract void doCalculation(Instrument instrument,
     MeasurementValues sensorValues, DataReductionRecord record,
-    Map<String, ArrayList<Measurement>> allMeasurements, Connection conn)
+    Map<String, ArrayList<Measurement>> allMeasurements,
+    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
     throws Exception;
 
   /**
@@ -345,37 +308,6 @@ public abstract class DataReducer {
     }
 
     return result;
-  }
-
-  /**
-   * See if any required values are NaN in the supplied set of values. If there
-   * are NaNs, make the record a blank and return {@code true}.
-   *
-   * @param record
-   *          The record being processed
-   * @param values
-   *          The calculation values
-   * @param requiredTypes
-   *          The required sensor types
-   * @return
-   * @throws SensorTypeNotFoundException
-   * @throws DataReductionException
-   */
-  private List<SensorType> getMissingParameters(
-    SensorAssignments instrumentAssignments,
-    Map<SensorType, CalculationValue> values)
-    throws SensorTypeNotFoundException, DataReductionException {
-
-    List<SensorType> missingTypes = new ArrayList<SensorType>();
-
-    for (SensorType type : getRequiredSensorTypes(instrumentAssignments)) {
-      CalculationValue value = values.get(type);
-      if (null == value || value.isNaN()) {
-        missingTypes.add(type);
-      }
-    }
-
-    return missingTypes;
   }
 
   protected abstract String[] getRequiredTypeStrings();
@@ -649,59 +581,6 @@ public abstract class DataReducer {
     private PrevNextTimes(LocalDateTime prev, LocalDateTime next) {
       this.prev = prev;
       this.next = next;
-    }
-  }
-
-  /**
-   * Set the QC flag on a record based on the flags of the sensor values. The
-   * flag logic is in {@link DataReductionRecord}.
-   *
-   * @param instrumentAssignments
-   *          The sensor assignments for the instrument
-   * @param variable
-   *          The variable being processed
-   * @param sensorValues
-   *          The sensor values
-   * @param record
-   *          The target record
-   * @throws SensorTypeNotFoundException
-   *           If the sensor config is invalid
-   * @throws DataReductionException
-   *           If the QC cannot be applied
-   * @throws SensorConfigurationException
-   *           If the sensor config is invalid
-   */
-  private void applyQCFlags(SensorAssignments instrumentAssignments,
-    InstrumentVariable variable, Map<SensorType, CalculationValue> sensorValues,
-    DataReductionRecord record) throws SensorTypeNotFoundException,
-    DataReductionException, SensorConfigurationException {
-
-    for (SensorType sensorType : getRequiredSensorTypes(
-      instrumentAssignments)) {
-
-      Flag cascadeFlag;
-      CalculationValue value = sensorValues.get(sensorType);
-      if (!nrt && value.flagNeeded()) {
-        cascadeFlag = Flag.NEEDED;
-      } else {
-        cascadeFlag = variable.getCascade(sensorType, value.getQCFlag(),
-          instrumentAssignments);
-        if (null == cascadeFlag) {
-          cascadeFlag = Flag.ASSUMED_GOOD;
-        }
-      }
-      record.setQc(cascadeFlag, value.getQCMessages());
-    }
-
-    // Now apply the diagnostic QC flags. This is a straight 1:1 cascade: Bad
-    // diagnostic = Bad variable flag
-    for (Map.Entry<SensorType, CalculationValue> entry : sensorValues
-      .entrySet()) {
-
-      if (entry.getKey().isDiagnostic()) {
-        record.setQc(entry.getValue().getQCFlag(),
-          entry.getValue().getQCMessages());
-      }
     }
   }
 

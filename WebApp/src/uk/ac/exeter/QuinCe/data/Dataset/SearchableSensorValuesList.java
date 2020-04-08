@@ -8,7 +8,7 @@ import java.util.ListIterator;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 
 /**
- * A linked list of SensorValue objects with stateful search capabilities.
+ * A list of SensorValue objects with stateful search capabilities.
  *
  * <p>
  * There are two stateful search types that can be performed:
