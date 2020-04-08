@@ -72,4 +72,26 @@ public class MeasurementValue {
       qcMessage.addAll(sensorValue.getAutoQcResult().getAllMessagesList());
     }
   }
+
+  public Flag getQcFlag() {
+    return null != overrideFlag ? overrideFlag : worstValueFlag;
+  }
+
+  public List<String> getQcMessages() {
+    return qcMessage;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder string = new StringBuilder('[');
+    string.append(measurementId);
+    string.append('/');
+    string.append(columnId);
+    string.append(": ");
+    string.append(prior);
+    string.append('/');
+    string.append(post);
+    string.append(']');
+    return string.toString();
+  }
 }

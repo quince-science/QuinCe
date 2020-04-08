@@ -7,12 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.mutable.MutableDouble;
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -23,34 +21,31 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public abstract class ValueCalculator {
 
   public abstract Double calculateValue(MeasurementValues measurementValues,
-    Map<String, ArrayList<Measurement>> allMeasurements, Connection conn)
+    Map<String, ArrayList<Measurement>> allMeasurements,
+    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
     throws Exception;
-
-  protected Double mean(MutableDouble sum, MutableInt count) {
-
-    Double mean = Double.NaN;
-    if (count.intValue() > 0) {
-      mean = sum.doubleValue() / count.intValue();
-    }
-
-    return mean;
-  }
 
   protected Map<Long, SensorValue> getSensorValues(
     MeasurementValues measurementValues, SensorType sensorType, Connection conn)
     throws MissingParamException, DatabaseException, InvalidFlagException {
 
-    HashMap<Long, SensorValue> result = new HashMap<Long, SensorValue>();
+    Map<Long, SensorValue> sensorValues = new HashMap<Long, SensorValue>();
+    getSensorValues(sensorValues, measurementValues, sensorType, conn);
+    return sensorValues;
+
+  }
+
+  protected void getSensorValues(Map<Long, SensorValue> values,
+    MeasurementValues measurementValues, SensorType sensorType, Connection conn)
+    throws MissingParamException, DatabaseException, InvalidFlagException {
 
     List<Long> ids = getSensorValueIds(measurementValues.get(sensorType));
     List<SensorValue> sensorValues = DataSetDataDB.getSensorValuesById(conn,
       measurementValues.getMeasurement().getDatasetId(), ids);
 
     for (SensorValue value : sensorValues) {
-      result.put(value.getId(), value);
+      values.put(value.getId(), value);
     }
-
-    return result;
   }
 
   protected double interpolate(LocalDateTime x0, double y0, LocalDateTime x1,

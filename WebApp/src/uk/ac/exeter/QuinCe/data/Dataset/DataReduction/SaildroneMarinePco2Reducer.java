@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 
@@ -38,16 +39,17 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
       "FCO2XXXX", "μatm", true));
   }
 
-  public SaildroneMarinePco2Reducer(InstrumentVariable variable, boolean nrt,
+  public SaildroneMarinePco2Reducer(InstrumentVariable variable,
     Map<String, Float> variableAttributes) {
 
-    super(variable, nrt, variableAttributes);
+    super(variable, variableAttributes);
   }
 
   @Override
   protected void doCalculation(Instrument instrument,
     MeasurementValues sensorValues, DataReductionRecord record,
-    Map<String, ArrayList<Measurement>> allMeasurements, Connection conn)
+    Map<String, ArrayList<Measurement>> allMeasurements,
+    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
     throws Exception {
     /*
      * Double intakeTemperature = getValue(sensorValues, "Intake Temperature");

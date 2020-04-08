@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class ValueCalculators {
@@ -28,10 +29,11 @@ public class ValueCalculators {
 
   public Double calculateValue(MeasurementValues measurementValues,
     SensorType sensorType, Map<String, ArrayList<Measurement>> allMeasurements,
-    Connection conn) throws Exception {
+    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
+    throws Exception {
 
     return getCalculator(sensorType).calculateValue(measurementValues,
-      allMeasurements, conn);
+      allMeasurements, allSensorValues, conn);
 
   }
 

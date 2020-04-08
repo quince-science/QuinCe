@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 
@@ -47,27 +48,29 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       "FCO2XXXX", "μatm", true));
   }
 
-  public UnderwayMarinePco2Reducer(InstrumentVariable variable, boolean nrt,
+  public UnderwayMarinePco2Reducer(InstrumentVariable variable,
     Map<String, Float> variableAttributes) {
 
-    super(variable, nrt, variableAttributes);
+    super(variable, variableAttributes);
   }
 
   @Override
   protected void doCalculation(Instrument instrument,
     MeasurementValues sensorValues, DataReductionRecord record,
-    Map<String, ArrayList<Measurement>> allMeasurements, Connection conn)
+    Map<String, ArrayList<Measurement>> allMeasurements,
+    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
     throws Exception {
 
     Double intakeTemperature = sensorValues.getValue("Intake Temperature",
-      allMeasurements, conn);
-    Double salinity = sensorValues.getValue("Salinity", allMeasurements, conn);
-    Double equilibratorTemperature = sensorValues
-      .getValue("Equilibrator Temperature", allMeasurements, conn);
+      allMeasurements, allSensorValues, conn);
+    Double salinity = sensorValues.getValue("Salinity", allMeasurements,
+      allSensorValues, conn);
+    Double equilibratorTemperature = sensorValues.getValue(
+      "Equilibrator Temperature", allMeasurements, allSensorValues, conn);
     Double equilibratorPressure = sensorValues.getValue("Equilibrator Pressure",
-      allMeasurements, conn);
+      allMeasurements, allSensorValues, conn);
     Double co2InGas = sensorValues.getValue("xCO₂ (with standards)",
-      allMeasurements, conn);
+      allMeasurements, allSensorValues, conn);
 
     Double pH2O = calcPH2O(salinity, equilibratorTemperature);
     Double pCo2TEWet = calcPco2TEWet(co2InGas, equilibratorPressure, pH2O);

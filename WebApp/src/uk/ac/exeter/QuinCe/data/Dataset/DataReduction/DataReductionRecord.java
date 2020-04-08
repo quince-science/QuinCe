@@ -55,7 +55,7 @@ public class DataReductionRecord {
    * @param message
    *          The QC messages
    */
-  protected void setQc(Flag flag, List<String> messages) {
+  public void setQc(Flag flag, List<String> messages) {
     if (flag.equals(qcFlag)) {
       qcMessages.addAll(messages);
     } else if (flag.moreSignificantThan(qcFlag)) {
