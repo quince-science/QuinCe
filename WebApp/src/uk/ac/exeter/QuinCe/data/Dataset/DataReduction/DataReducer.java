@@ -89,7 +89,8 @@ public abstract class DataReducer {
     Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
     throws Exception {
 
-    DataReductionRecord record = new DataReductionRecord(measurement);
+    DataReductionRecord record = new DataReductionRecord(measurement, variable,
+      getCalculationParameterNames());
 
     doCalculation(instrument, measurementValues, record, allMeasurements,
       allSensorValues, conn);
@@ -138,9 +139,10 @@ public abstract class DataReducer {
    *          The record
    * @param missingParameterName
    *          The name of the missing parameter
+   * @throws DataReductionException
    */
   protected void makeMissingParameterRecord(DataReductionRecord record,
-    List<SensorType> missingTypes) {
+    List<SensorType> missingTypes) throws DataReductionException {
 
     List<String> qcMessages = new ArrayList<String>(missingTypes.size());
 

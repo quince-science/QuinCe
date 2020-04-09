@@ -22,14 +22,10 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   static {
     calculationParameters = new ArrayList<CalculationParameter>(7);
-    calculationParameters.add(new CalculationParameter("True Moisture",
-      "Atmosphere True Moisture", "AWMXRCORR", "μmol mol-1", false));
     calculationParameters.add(new CalculationParameter("Sea Level Pressure",
       "Atmospheric Pressure At Sea Level", "CAPAZZ01", "hPa", false));
     calculationParameters.add(new CalculationParameter("pH₂O",
       "Atmosphere Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
-    calculationParameters.add(new CalculationParameter("Dried CO₂",
-      "xCO₂ In Atmoshpere - Dry Air", "XCO2DRAT", "μmol mol-1", false));
     calculationParameters.add(new CalculationParameter("Calibrated CO₂",
       "xCO₂ In Atmosphere - Calibrated In Dry Air", "XCO2DCMA", "μmol mol-1",
       false));
@@ -70,9 +66,9 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     Double fCO2 = Calculators.calcfCO2(pCO2, co2InGas, seaLevelPressure,
       equilibratorTemperature);
 
-    // Store the calculated values record.put("True Moisture", trueXH2O);
     record.put("Sea Level Pressure", seaLevelPressure);
     record.put("pH₂O", pH2O);
+    record.put("Calibrated CO₂", co2InGas);
     record.put("pCO₂", pCO2);
     record.put("fCO₂", fCO2);
   }
