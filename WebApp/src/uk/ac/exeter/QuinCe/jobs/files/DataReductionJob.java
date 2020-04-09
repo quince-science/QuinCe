@@ -153,11 +153,15 @@ public class DataReductionJob extends DataSetJob {
                   measurementSensorValues, allMeasurements, allSensorValues,
                   conn);
 
+              // APPLY QC RECORDS HERE
+
               dataReductionRecords.add(dataReductionRecord);
             }
           }
         }
       }
+
+      DataSetDataDB.storeDataReduction(conn, dataReductionRecords);
 
       // If the thread was interrupted, undo everything
       if (thread.isInterrupted()) {
