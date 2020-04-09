@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 import uk.ac.exeter.QuinCe.utils.NoEmptyStringList;
 
@@ -17,6 +19,13 @@ public class DataReductionRecord {
    * The database ID of the measurement
    */
   private final long measurementId;
+
+  /**
+   * The variable calculated in this record
+   */
+  private final long variableId;
+
+  private final List<String> parameterNames;
 
   /**
    * Intermediate calculation values
@@ -39,8 +48,11 @@ public class DataReductionRecord {
    * @param measurement
    *          The measurement
    */
-  public DataReductionRecord(Measurement measurement) {
+  public DataReductionRecord(Measurement measurement,
+    InstrumentVariable variable, List<String> parameterNames) {
     this.measurementId = measurement.getId();
+    this.variableId = variable.getId();
+    this.parameterNames = Collections.unmodifiableList(parameterNames);
 
     this.calculationValues = new HashMap<String, Double>();
     this.qcFlag = Flag.ASSUMED_GOOD;
@@ -71,13 +83,22 @@ public class DataReductionRecord {
    *          The parameter
    * @param value
    *          The value
+   * @throws DataReductionException
    */
-  protected void put(String parameter, Double value) {
+  protected void put(String parameter, Double value)
+    throws DataReductionException {
+    if (!parameterNames.contains(parameter)) {
+      throw new DataReductionException(
+        "Unrecognised calculation parameter '" + parameter);
+    }
     calculationValues.put(parameter, value);
   }
 
-  protected void putAll(Map<String, Double> values) {
-    calculationValues.putAll(values);
+  protected void putAll(Map<String, Double> values)
+    throws DataReductionException {
+    for (Map.Entry<String, Double> entry : values.entrySet()) {
+      put(entry.getKey(), entry.getValue());
+    }
   }
 
   /**
@@ -87,6 +108,10 @@ public class DataReductionRecord {
    */
   public long getMeasurementId() {
     return measurementId;
+  }
+
+  public long getVariableId() {
+    return variableId;
   }
 
   /**

@@ -130,7 +130,7 @@ public class DataSetDataDB {
    * Statement to store a data reduction result
    */
   private static final String STORE_DATA_REDUCTION_STATEMENT = "INSERT INTO "
-    + "data_reduction (measurement_id, variable_id, values_json, "
+    + "data_reduction (measurement_id, variable_id, calculation_values, "
     + "qc_flag, qc_message) VALUES (?, ?, ?, ?, ?)";
 
   private static final String DELETE_DATA_REDUCTION_STATEMENT = "DELETE FROM "
@@ -720,27 +720,26 @@ public class DataSetDataDB {
    */
   public static void storeDataReduction(Connection conn,
     List<DataReductionRecord> dataReductionRecords) throws DatabaseException {
-    /*
-     * PreparedStatement dataReductionStmt = null;
-     *
-     * try { // And now the data reduction record dataReductionStmt =
-     * conn.prepareStatement(STORE_DATA_REDUCTION_STATEMENT); for
-     * (DataReductionRecord dataReduction : dataReductionRecords) {
-     * dataReductionStmt.setLong(1, dataReduction.getMeasurementId());
-     * dataReductionStmt.setLong(2, dataReduction.getVariableId());
-     * dataReductionStmt.setString(3, dataReduction.getValuesJson());
-     * dataReductionStmt.setInt(4, dataReduction.getQCFlag().getFlagValue());
-     * dataReductionStmt.setString(5, StringUtils
-     * .collectionToDelimited(dataReduction.getQCMessages(), ";"));
-     *
-     * dataReductionStmt.addBatch(); }
-     *
-     * dataReductionStmt.executeBatch();
-     *
-     * } catch (SQLException e) { throw new
-     * DatabaseException("Error while storing data reduction", e); } finally {
-     * DatabaseUtils.closeStatements(dataReductionStmt); }
-     */
+
+    try (PreparedStatement dataReductionStmt = conn
+      .prepareStatement(STORE_DATA_REDUCTION_STATEMENT)) {
+      for (DataReductionRecord dataReduction : dataReductionRecords) {
+        dataReductionStmt.setLong(1, dataReduction.getMeasurementId());
+        dataReductionStmt.setLong(2, dataReduction.getVariableId());
+        dataReductionStmt.setString(3, dataReduction.getCalculationJson());
+        dataReductionStmt.setInt(4, dataReduction.getQCFlag().getFlagValue());
+        dataReductionStmt.setString(5, StringUtils
+          .collectionToDelimited(dataReduction.getQCMessages(), ";"));
+
+        dataReductionStmt.addBatch();
+      }
+
+      dataReductionStmt.executeBatch();
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while storing data reduction", e);
+    }
+
   }
 
   /**
@@ -1433,13 +1432,21 @@ public class DataSetDataDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(datasetId, "datasetId");
 
-    try (PreparedStatement stmt = conn
-      .prepareStatement(DELETE_MEASUREMENT_VALUES_STATEMENT)) {
+    try (
+      PreparedStatement mvStmt = conn
+        .prepareStatement(DELETE_MEASUREMENT_VALUES_STATEMENT);
 
-      stmt.setLong(1, datasetId);
-      stmt.execute();
+      PreparedStatement drStmt = conn
+        .prepareStatement(DELETE_DATA_REDUCTION_STATEMENT);) {
+
+      mvStmt.setLong(1, datasetId);
+      mvStmt.execute();
+
+      drStmt.setLong(1, datasetId);
+      drStmt.execute();
+
     } catch (SQLException e) {
-      throw new DatabaseException("Error while deleting measurment values", e);
+      throw new DatabaseException("Error while deleting measurement values", e);
     }
   }
 

@@ -26,12 +26,8 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       "Equilibrator Pressure", "PRESEQ", "hPa", false));
     calculationParameters.add(new CalculationParameter("ΔT",
       "Water-Equilibrator Temperature Difference", "DELTAT", "°C", false));
-    calculationParameters.add(new CalculationParameter("True Moisture",
-      "Marine True Moisture", "MWMXRCORR", "μmol mol-1", false));
     calculationParameters.add(new CalculationParameter("pH₂O",
       "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
-    calculationParameters.add(new CalculationParameter("Dried CO₂",
-      "xCO₂ In Water - Dry Air", "XCO2WBDY", "μmol mol-1", false));
     calculationParameters.add(new CalculationParameter("Calibrated CO₂",
       "xCO₂ In Water - Calibrated In Dry Air", "XCO2DECQ", "μmol mol-1",
       false));
