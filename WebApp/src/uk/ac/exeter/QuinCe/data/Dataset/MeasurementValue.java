@@ -6,10 +6,13 @@ import java.util.Objects;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class MeasurementValue {
 
   private final long measurementId;
+
+  private final SensorType sensorType;
 
   private final long columnId;
 
@@ -19,12 +22,12 @@ public class MeasurementValue {
 
   private Flag worstValueFlag = Flag.ASSUMED_GOOD;
 
-  private Flag overrideFlag = null;
-
   private List<String> qcMessage = new ArrayList<String>();
 
-  public MeasurementValue(Measurement measurement, long columnId) {
+  public MeasurementValue(Measurement measurement, SensorType sensorType,
+    long columnId) {
     this.measurementId = measurement.getId();
+    this.sensorType = sensorType;
     this.columnId = columnId;
   }
 
@@ -59,23 +62,19 @@ public class MeasurementValue {
   }
 
   private void addQC(SensorValue sensorValue) throws RoutineException {
-    if (null != sensorValue.getUserQCFlag()) {
-      if (sensorValue.getUserQCFlag().moreSignificantThan(worstValueFlag)) {
-        worstValueFlag = sensorValue.getUserQCFlag();
-      }
 
-      qcMessage.add(sensorValue.getUserQCMessage());
-    } else {
-      if (sensorValue.getAutoQcFlag().moreSignificantThan(worstValueFlag)) {
-        worstValueFlag = sensorValue.getAutoQcFlag();
-      }
+    if (sensorValue.getUserQCFlag(true).moreSignificantThan(worstValueFlag)) {
+      worstValueFlag = sensorValue.getUserQCFlag(true);
+    }
 
-      qcMessage.addAll(sensorValue.getAutoQcResult().getAllMessagesList());
+    String valueQCMessage = sensorValue.getUserQCMessage();
+    if (valueQCMessage.length() > 0) {
+      qcMessage.add(sensorType.getName() + ": " + valueQCMessage);
     }
   }
 
   public Flag getQcFlag() {
-    return null != overrideFlag ? overrideFlag : worstValueFlag;
+    return worstValueFlag;
   }
 
   public List<String> getQcMessages() {
