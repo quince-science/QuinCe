@@ -29,4 +29,9 @@ public class MeanCalculator {
 
     return mean;
   }
+
+  @Override
+  public String toString() {
+    return sum + " / " + count + " = " + mean();
+  }
 }
