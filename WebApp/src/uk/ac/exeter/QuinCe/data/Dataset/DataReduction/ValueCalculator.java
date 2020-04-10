@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -40,11 +41,13 @@ public abstract class ValueCalculator {
     throws MissingParamException, DatabaseException, InvalidFlagException {
 
     List<Long> ids = getSensorValueIds(measurementValues.get(sensorType));
-    List<SensorValue> sensorValues = DataSetDataDB.getSensorValuesById(conn,
-      measurementValues.getMeasurement().getDatasetId(), ids);
+    if (ids.size() > 0) {
+      List<SensorValue> sensorValues = DataSetDataDB.getSensorValuesById(conn,
+        measurementValues.getMeasurement().getDatasetId(), ids);
 
-    for (SensorValue value : sensorValues) {
-      values.put(value.getId(), value);
+      for (SensorValue value : sensorValues) {
+        values.put(value.getId(), value);
+      }
     }
   }
 
@@ -94,7 +97,7 @@ public abstract class ValueCalculator {
     return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
   }
 
-  private List<Long> getSensorValueIds(List<MeasurementValue> values) {
+  private List<Long> getSensorValueIds(LinkedHashSet<MeasurementValue> values) {
     List<Long> result = new ArrayList<Long>(values.size() * 2);
 
     for (MeasurementValue value : values) {

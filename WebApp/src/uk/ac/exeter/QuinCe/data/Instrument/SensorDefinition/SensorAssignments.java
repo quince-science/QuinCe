@@ -760,6 +760,10 @@ public class SensorAssignments
       }
     }
 
+    if (null == result) {
+      result = new ArrayList<Long>(0);
+    }
+
     return result;
   }
 }

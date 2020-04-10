@@ -19,8 +19,10 @@ public class SensorType implements Comparable<SensorType> {
 
   /**
    * Value to use when a SensorType has no parent
+   *
+   * Just a random number - only used in this class.
    */
-  public static final long NO_PARENT = -1000;
+  public static final long NO_PARENT = -677L;
 
   /**
    * Value to use when a SensorType does not depend on another sensor.
