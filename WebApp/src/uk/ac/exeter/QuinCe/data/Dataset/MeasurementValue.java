@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
@@ -93,5 +94,22 @@ public class MeasurementValue {
     string.append(post);
     string.append(']');
     return string.toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(columnId, measurementId);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof MeasurementValue))
+      return false;
+    MeasurementValue other = (MeasurementValue) obj;
+    return columnId == other.columnId && measurementId == other.measurementId;
   }
 }

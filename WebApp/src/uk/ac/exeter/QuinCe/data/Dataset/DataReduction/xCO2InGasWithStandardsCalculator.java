@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -57,14 +59,14 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     Map<Long, SensorValue> sensorValues = getSensorValues(measurementValues,
       xco2SensorType, conn);
 
-    ArrayList<MeasurementValue> xco2Values = measurementValues
+    LinkedHashSet<MeasurementValue> xco2Values = measurementValues
       .get(xco2SensorType);
 
     if (dryingRequired(measurementValues.getInstrument())) {
 
       getSensorValues(sensorValues, measurementValues, xh2oSensorType, conn);
 
-      ArrayList<MeasurementValue> xh2oValues = measurementValues
+      LinkedHashSet<MeasurementValue> xh2oValues = measurementValues
         .get(xh2oSensorType);
       if (xh2oValues.size() != xco2Values.size()) {
         throw new ValueCalculatorException(xh2oSensorType,
@@ -106,17 +108,21 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
   private Double dryingCalculation(LocalDateTime measurementTime,
     Instrument instrument, Map<String, ArrayList<Measurement>> allMeasurements,
     Map<Long, SearchableSensorValuesList> allSensorValues,
-    MeasurementValues measurementValues, ArrayList<MeasurementValue> xco2Values,
-    ArrayList<MeasurementValue> xh2oValues, Map<Long, SensorValue> sensorValues,
-    CalibrationSet calibrationSet, DataReducer reducer, Connection conn)
-    throws ValueCalculatorException {
+    MeasurementValues measurementValues,
+    LinkedHashSet<MeasurementValue> xco2Values,
+    LinkedHashSet<MeasurementValue> xh2oValues,
+    Map<Long, SensorValue> sensorValues, CalibrationSet calibrationSet,
+    DataReducer reducer, Connection conn) throws ValueCalculatorException {
 
     MeanCalculator mean = new MeanCalculator();
 
-    for (int i = 0; i < xco2Values.size(); i++) {
+    Iterator<MeasurementValue> xco2Iterator = xco2Values.iterator();
+    Iterator<MeasurementValue> xh2oIterator = xh2oValues.iterator();
 
-      MeasurementValue xh2oValue = xh2oValues.get(i);
-      MeasurementValue xco2Value = xco2Values.get(i);
+    while (xco2Iterator.hasNext()) {
+
+      MeasurementValue xh2oValue = xh2oIterator.next();
+      MeasurementValue xco2Value = xco2Iterator.next();
 
       SensorValue xh2oPrior = sensorValues.get(xh2oValue.getPrior());
       SensorValue xco2Prior = sensorValues.get(xco2Value.getPrior());
@@ -163,7 +169,8 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
   private Double nonDryingCalculation(LocalDateTime measurementTime,
     Instrument instrument, Map<String, ArrayList<Measurement>> allMeasurements,
     Map<Long, SearchableSensorValuesList> allSensorValues,
-    MeasurementValues measurementValues, ArrayList<MeasurementValue> xco2Values,
+    MeasurementValues measurementValues,
+    LinkedHashSet<MeasurementValue> xco2Values,
     Map<Long, SensorValue> sensorValues, CalibrationSet calibrationSet,
     DataReducer reducer, Connection conn) throws ValueCalculatorException {
 
@@ -397,6 +404,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     Map<String, ArrayList<Measurement>> allMeasurements,
     Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
     Connection conn) throws Exception {
+
     DefaultValueCalculator calculator = new DefaultValueCalculator(sensorType);
 
     CalibrationTimeValue result = null;

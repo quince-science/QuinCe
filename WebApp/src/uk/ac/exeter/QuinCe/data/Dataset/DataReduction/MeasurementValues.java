@@ -3,8 +3,10 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
@@ -12,10 +14,12 @@ import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @SuppressWarnings("serial")
 public class MeasurementValues
-  extends HashMap<SensorType, ArrayList<MeasurementValue>> {
+  extends HashMap<SensorType, LinkedHashSet<MeasurementValue>> {
 
   private Instrument instrument;
 
@@ -33,7 +37,7 @@ public class MeasurementValues
 
   public void put(SensorType sensorType, MeasurementValue value) {
     if (!containsKey(sensorType)) {
-      put(sensorType, new ArrayList<MeasurementValue>());
+      put(sensorType, new LinkedHashSet<MeasurementValue>());
     }
 
     get(sensorType).add(value);
@@ -69,12 +73,30 @@ public class MeasurementValues
 
   public void loadSensorValues(
     Map<Long, SearchableSensorValuesList> allSensorValues,
-    SensorType sensorType) throws RoutineException {
+    SensorType sensorType)
+    throws RoutineException, SensorTypeNotFoundException {
 
+    Set<SensorType> children = ResourceManager.getInstance()
+      .getSensorsConfiguration().getChildren(sensorType);
+
+    if (children.size() > 0) {
+      for (SensorType child : children) {
+        loadSensorValuesAction(allSensorValues, child);
+      }
+    } else {
+      loadSensorValuesAction(allSensorValues, sensorType);
+    }
+
+  }
+
+  private void loadSensorValuesAction(
+    Map<Long, SearchableSensorValuesList> allSensorValues,
+    SensorType sensorType)
+    throws RoutineException, SensorTypeNotFoundException {
     // If we've already loaded the sensor type, don't bother doing it again
     if (!containsKey(sensorType)) {
 
-      put(sensorType, new ArrayList<MeasurementValue>());
+      put(sensorType, new LinkedHashSet<MeasurementValue>());
 
       for (long columnId : instrument.getSensorAssignments()
         .getColumnIds(sensorType)) {
@@ -86,6 +108,15 @@ public class MeasurementValues
 
         put(sensorType, measurementValue);
       }
+
+      // If this SensorType depends on another, add that too.
+      SensorType dependsOn = instrument.getSensorAssignments()
+        .getDependsOn(sensorType);
+
+      if (null != dependsOn) {
+        loadSensorValues(allSensorValues, dependsOn);
+      }
+
     }
   }
 
