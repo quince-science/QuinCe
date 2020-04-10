@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -20,12 +19,10 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.MeasurementValues;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -128,9 +125,10 @@ public class DataReductionJob extends DataSetJob {
               MeasurementValues measurementSensorValues = new MeasurementValues(
                 instrument, measurement);
 
-              getSensorValuesForMeasurement(measurement, instrument,
-                variable.getAllSensorTypes(true), allSensorValues,
-                measurementSensorValues);
+              for (SensorType sensorType : variable.getAllSensorTypes(true)) {
+                measurementSensorValues.loadSensorValues(allSensorValues,
+                  sensorType);
+              }
 
               // Store the measurement values in the database
               DataSetDataDB.storeMeasurementValues(conn,
@@ -222,26 +220,6 @@ public class DataReductionJob extends DataSetJob {
     return jobName;
   }
 
-  private void getSensorValuesForMeasurement(Measurement measurement,
-    Instrument instrument, List<SensorType> sensorTypes,
-    Map<Long, SearchableSensorValuesList> allSensorValues,
-    MeasurementValues measurementSensorValues)
-    throws RoutineException, SensorTypeNotFoundException {
-
-    for (SensorType sensorType : sensorTypes) {
-
-      measurementSensorValues.loadSensorValues(allSensorValues, sensorType);
-
-      // If this SensorType depends on another, add that too.
-      SensorType dependsOn = instrument.getSensorAssignments()
-        .getDependsOn(sensorType);
-
-      if (null != dependsOn) {
-        measurementSensorValues.loadSensorValues(allSensorValues, dependsOn);
-      }
-    }
-  }
-
   /**
    * Reset the data set processing.
    *
@@ -259,7 +237,7 @@ public class DataReductionJob extends DataSetJob {
   protected void reset(Connection conn) throws JobFailedException {
 
     try {
-      DataSetDataDB.deleteMeasurementValues(conn, getDataset(conn).getId());
+      DataSetDataDB.deleteDataReduction(conn, getDataset(conn).getId());
       DataSetDB.setDatasetStatus(conn, getDataset(conn).getId(),
         DataSet.STATUS_WAITING);
     } catch (Exception e) {

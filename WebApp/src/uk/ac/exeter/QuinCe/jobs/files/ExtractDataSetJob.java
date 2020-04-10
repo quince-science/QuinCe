@@ -379,7 +379,7 @@ public class ExtractDataSetJob extends DataSetJob {
   protected void reset(Connection conn) throws JobFailedException {
 
     try {
-      DataSetDataDB.deleteMeasurementValues(conn, getDataset(conn).getId());
+      DataSetDataDB.deleteDataReduction(conn, getDataset(conn).getId());
       DataSetDataDB.deleteMeasurements(conn, getDataset(conn).getId());
       DataSetDataDB.deleteSensorValues(conn, getDataset(conn).getId());
       DataSetDB.setDatasetStatus(conn, getDataset(conn).getId(),

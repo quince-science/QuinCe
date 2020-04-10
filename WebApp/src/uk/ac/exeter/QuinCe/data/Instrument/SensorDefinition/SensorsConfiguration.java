@@ -293,18 +293,24 @@ public class SensorsConfiguration {
 
   /**
    * Get all the child types of a given sensor type. If there are no children,
-   * the list will be empty
+   * the list will be empty.
    *
    * @param parent
    *          The parent sensor type
    * @return The child types
    */
   public Set<SensorType> getChildren(SensorType parent) {
+
     Set<SensorType> children = new HashSet<SensorType>();
 
-    for (SensorType type : sensorTypes.values()) {
-      if (type.getParent() == parent.getId()) {
-        children.add(type);
+    // Ignore position sensor types
+    if (!parent.equals(SensorType.LONGITUDE_SENSOR_TYPE)
+      && !parent.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
+
+      for (SensorType type : sensorTypes.values()) {
+        if (type.getParent() == parent.getId()) {
+          children.add(type);
+        }
       }
     }
 

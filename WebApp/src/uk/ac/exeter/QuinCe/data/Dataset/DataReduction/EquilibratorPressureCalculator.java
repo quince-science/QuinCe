@@ -21,8 +21,8 @@ public class EquilibratorPressureCalculator extends ValueCalculator {
     // Calculate the absolute pressures
     DefaultValueCalculator absolutePressureCalculator = new DefaultValueCalculator(
       "Equilibrator Pressure (absolute)");
-    absolutePressureCalculator.calculateValue(measurementValues,
-      allMeasurements, allSensorValues, reducer, conn);
+    mean.add(absolutePressureCalculator.calculateValue(measurementValues,
+      allMeasurements, allSensorValues, reducer, conn));
 
     // Now get the differential pressures and ambient pressures, and calculate
     // the absolute equilibrator from those

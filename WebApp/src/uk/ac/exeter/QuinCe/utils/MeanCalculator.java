@@ -13,9 +13,11 @@ public class MeanCalculator {
 
   }
 
-  public void add(double value) {
-    sum.add(value);
-    count.increment();
+  public void add(Double value) {
+    if (!value.isNaN()) {
+      sum.add(value);
+      count.increment();
+    }
   }
 
   public Double mean() {

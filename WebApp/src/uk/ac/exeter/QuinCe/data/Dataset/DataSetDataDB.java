@@ -1426,7 +1426,7 @@ public class DataSetDataDB {
     }
   }
 
-  public static void deleteMeasurementValues(Connection conn, long datasetId)
+  public static void deleteDataReduction(Connection conn, long datasetId)
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
