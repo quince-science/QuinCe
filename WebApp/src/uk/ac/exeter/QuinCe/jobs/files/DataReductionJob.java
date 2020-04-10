@@ -151,8 +151,6 @@ public class DataReductionJob extends DataSetJob {
                   measurementSensorValues, allMeasurements, allSensorValues,
                   conn);
 
-              // APPLY QC RECORDS HERE
-
               dataReductionRecords.add(dataReductionRecord);
             }
           }

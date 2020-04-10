@@ -220,9 +220,7 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
     MeasurementValue result = new MeasurementValue(measurement, columnId);
 
-    if (null == dateSearchIterator) {
-      initDateSearch();
-    }
+    initDateSearch();
 
     SensorValue prior = dateSearch(measurement.getTime());
     SensorValue post = null;
@@ -230,6 +228,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     if (prior.getTime().isBefore(measurement.getTime())) {
       post = get(dateSearchIterator.nextIndex());
     }
+
+    finishDateSearch();
 
     result.setValues(prior, post);
 
