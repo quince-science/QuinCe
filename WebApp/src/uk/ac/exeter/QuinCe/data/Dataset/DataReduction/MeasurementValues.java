@@ -104,7 +104,7 @@ public class MeasurementValues
         SearchableSensorValuesList columnValues = allSensorValues.get(columnId);
 
         MeasurementValue measurementValue = columnValues
-          .getMeasurementValue(measurement, columnId);
+          .getMeasurementValue(measurement, sensorType, columnId);
 
         put(sensorType, measurementValue);
       }

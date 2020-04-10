@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
  * A list of SensorValue objects with stateful search capabilities.
@@ -216,9 +217,10 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   }
 
   public MeasurementValue getMeasurementValue(Measurement measurement,
-    long columnId) throws RoutineException {
+    SensorType sensorType, long columnId) throws RoutineException {
 
-    MeasurementValue result = new MeasurementValue(measurement, columnId);
+    MeasurementValue result = new MeasurementValue(measurement, sensorType,
+      columnId);
 
     initDateSearch();
 

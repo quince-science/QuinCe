@@ -208,7 +208,20 @@ public class SensorValue implements Comparable<SensorValue> {
    * @return The user QC flag
    */
   public Flag getUserQCFlag() {
-    return userQCFlag;
+    return getUserQCFlag(false);
+  }
+
+  public Flag getUserQCFlag(boolean ignoreNeeded) {
+
+    Flag result = userQCFlag;
+
+    if ((null == userQCFlag || userQCFlag.equals(Flag.NEEDED))
+      && ignoreNeeded) {
+
+      result = getAutoQcFlag();
+    }
+
+    return result;
   }
 
   /**
@@ -217,7 +230,25 @@ public class SensorValue implements Comparable<SensorValue> {
    * @return The user QC message
    */
   public String getUserQCMessage() {
-    return null == userQCMessage ? "" : userQCMessage;
+    return getUserQCMessage(false);
+  }
+
+  public String getUserQCMessage(boolean ignoreNeeded) {
+
+    String result = null == userQCMessage ? "" : userQCMessage;
+
+    if ((null == userQCFlag || userQCFlag.equals(Flag.NEEDED))
+      && ignoreNeeded) {
+
+      try {
+        result = getAutoQcResult().getAllMessages();
+      } catch (RoutineException e) {
+        e.printStackTrace();
+        result = "Unable to retrieve auto QC messages";
+      }
+    }
+
+    return result;
   }
 
   /**
