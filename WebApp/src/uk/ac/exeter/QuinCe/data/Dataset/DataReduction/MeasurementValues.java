@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
@@ -21,14 +22,18 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class MeasurementValues
   extends HashMap<SensorType, LinkedHashSet<MeasurementValue>> {
 
-  private Instrument instrument;
+  private final Instrument instrument;
 
-  private Measurement measurement;
+  private final Measurement measurement;
 
-  public MeasurementValues(Instrument instrument, Measurement measurement) {
+  private final String searchIdPrefix;
+
+  public MeasurementValues(Instrument instrument, Measurement measurement,
+    String searchId) {
     super();
     this.instrument = instrument;
     this.measurement = measurement;
+    this.searchIdPrefix = searchId;
   }
 
   public Instrument getInstrument() {
@@ -45,8 +50,8 @@ public class MeasurementValues
 
   public Double getValue(SensorType sensorType,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
-    Connection conn) throws Exception {
+    DatasetSensorValues allSensorValues, DataReducer reducer, Connection conn)
+    throws Exception {
 
     return getValue(sensorType.getName(), allMeasurements, allSensorValues,
       reducer, conn);
@@ -54,8 +59,8 @@ public class MeasurementValues
 
   public Double getValue(String sensorType,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
-    Connection conn) throws Exception {
+    DatasetSensorValues allSensorValues, DataReducer reducer, Connection conn)
+    throws Exception {
 
     return ValueCalculators.getInstance().calculateValue(this, sensorType,
       allMeasurements, allSensorValues, reducer, conn);
@@ -71,8 +76,7 @@ public class MeasurementValues
     return result;
   }
 
-  public void loadSensorValues(
-    Map<Long, SearchableSensorValuesList> allSensorValues,
+  public void loadSensorValues(DatasetSensorValues allSensorValues,
     SensorType sensorType)
     throws RoutineException, SensorTypeNotFoundException {
 
@@ -89,8 +93,7 @@ public class MeasurementValues
 
   }
 
-  private void loadSensorValuesAction(
-    Map<Long, SearchableSensorValuesList> allSensorValues,
+  private void loadSensorValuesAction(DatasetSensorValues allSensorValues,
     SensorType sensorType)
     throws RoutineException, SensorTypeNotFoundException {
     // If we've already loaded the sensor type, don't bother doing it again
@@ -101,10 +104,11 @@ public class MeasurementValues
       for (long columnId : instrument.getSensorAssignments()
         .getColumnIds(sensorType)) {
 
-        SearchableSensorValuesList columnValues = allSensorValues.get(columnId);
+        SearchableSensorValuesList columnValues = allSensorValues
+          .getColumnValues(columnId);
 
         MeasurementValue measurementValue = columnValues
-          .getMeasurementValue(measurement, sensorType, columnId);
+          .getMeasurementValue(measurement, sensorType, columnId, searchIdPrefix);
 
         put(sensorType, measurementValue);
       }
@@ -116,8 +120,6 @@ public class MeasurementValues
       if (null != dependsOn) {
         loadSensorValues(allSensorValues, dependsOn);
       }
-
     }
   }
-
 }

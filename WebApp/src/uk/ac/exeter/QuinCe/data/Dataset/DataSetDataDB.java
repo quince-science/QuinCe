@@ -94,20 +94,16 @@ public class DataSetDataDB {
   private static final String DELETE_SENSOR_VALUES_STATEMENT = "DELETE FROM "
     + "sensor_values WHERE dataset_id = ?";
 
-  private static final String GET_SENSOR_VALUES_BY_COLUMN_QUERY = "SELECT "
+  private static final String GET_SENSOR_VALUES_FOR_DATASET_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 7
-    + "FROM sensor_values WHERE dataset_id = ? " + "ORDER BY file_column, date";
+    + "FROM sensor_values WHERE dataset_id = ?";
 
-  /**
-   * Query to get all the sensor values for a dataset. Flushing values are
-   * ignored.
-   */
-  private static final String GET_SENSOR_VALUES_BY_DATE_AND_COLUMN_QUERY = "SELECT "
+  private static final String GET_SENSOR_VALUES_FOR_DATASET_NO_FLUSHING_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 7
     + "FROM sensor_values WHERE dataset_id = ? AND user_qc_flag != "
-    + Flag.VALUE_FLUSHING + " ORDER BY date, file_column";
+    + Flag.VALUE_FLUSHING;
 
   /**
    * Statement to store a measurement record
@@ -156,16 +152,11 @@ public class DataSetDataDB {
     + "AND sv.file_column IN " + DatabaseUtils.IN_PARAMS_TOKEN + " "
     + "ORDER BY sv.date ASC";
 
-  private static final String GET_SENSOR_VALUES_QUERY = "SELECT "
+  private static final String GET_SENSOR_VALUES_FOR_COLUMNS_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 8
     + "FROM sensor_values WHERE dataset_id = ? AND file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + "ORDER BY date";
-
-  private static final String GET_SENSOR_VALUES_BY_ID_QUERY = "SELECT "
-    + "id, file_column, date, value, auto_qc, " // 5
-    + "user_qc_flag, user_qc_message " // 8
-    + "FROM sensor_values WHERE id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
 
   private static final String GET_SENSOR_VALUE_DATES_QUERY = "SELECT DISTINCT "
     + "date FROM sensor_values WHERE dataset_id = ? ORDER BY date ASC";
@@ -428,104 +419,35 @@ public class DataSetDataDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static Map<Long, SearchableSensorValuesList> getSensorValuesByColumn(
-    Connection conn, long datasetId)
+  public static DatasetSensorValues getSensorValues(Connection conn,
+    Instrument instrument, long datasetId, boolean ignoreFlushing)
     throws RecordNotFoundException, DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
 
-    Map<Long, SearchableSensorValuesList> values = new HashMap<Long, SearchableSensorValuesList>();
-    PreparedStatement stmt = null;
-    ResultSet records = null;
+    DatasetSensorValues values = new DatasetSensorValues(instrument);
 
-    try {
+    String query = ignoreFlushing
+      ? GET_SENSOR_VALUES_FOR_DATASET_NO_FLUSHING_QUERY
+      : GET_SENSOR_VALUES_FOR_DATASET_QUERY;
 
-      stmt = conn.prepareStatement(GET_SENSOR_VALUES_BY_COLUMN_QUERY);
+    try (PreparedStatement stmt = conn.prepareStatement(query)) {
+
       stmt.setLong(1, datasetId);
 
-      records = stmt.executeQuery();
+      try (ResultSet records = stmt.executeQuery()) {
 
-      long currentColumnId = -1;
-      SearchableSensorValuesList currentSensorValues = new SearchableSensorValuesList();
-
-      while (records.next()) {
-        SensorValue sensorValue = sensorValueFromResultSet(records, datasetId);
-
-        if (sensorValue.getColumnId() != currentColumnId) {
-          if (currentColumnId != -1) {
-            values.put(currentColumnId, currentSensorValues);
-          }
-
-          currentColumnId = sensorValue.getColumnId();
-          currentSensorValues = new SearchableSensorValuesList();
+        while (records.next()) {
+          values.add(sensorValueFromResultSet(records, datasetId));
         }
-
-        currentSensorValues.add(sensorValue);
-      }
-
-      if (currentColumnId == -1) {
-        throw new RecordNotFoundException(
-          "No sensor values found for dataset " + datasetId);
-      } else {
-        values.put(currentColumnId, currentSensorValues);
       }
 
     } catch (Exception e) {
       throw new DatabaseException("Error while retrieving sensor values", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
     }
 
     return values;
-  }
-
-  /**
-   * Get all the sensor values for a data set The returned list is ordered by
-   * timestamp and then grouped by the values' source {@code file_column}
-   * database records. Any sensor values whose user QC flag is set to FLUSHING
-   * will not be included.
-   *
-   * @param conn
-   *          A database connection
-   * @param datasetId
-   *          The dataset whose values are to be retrieved
-   * @return The values
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   */
-  public static DateColumnGroupedSensorValues getSensorValuesByDateAndColumn(
-    Connection conn, Instrument instrument, long datasetId)
-    throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(datasetId, "datasetId");
-
-    DateColumnGroupedSensorValues result = new DateColumnGroupedSensorValues(
-      instrument);
-
-    PreparedStatement stmt = null;
-    ResultSet records = null;
-
-    try {
-      stmt = conn.prepareStatement(GET_SENSOR_VALUES_BY_DATE_AND_COLUMN_QUERY);
-      stmt.setLong(1, datasetId);
-
-      records = stmt.executeQuery();
-      while (records.next()) {
-        result.add(sensorValueFromResultSet(records, datasetId));
-      }
-    } catch (Exception e) {
-      throw new DatabaseException("Error while retrieving sensor values", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-    }
-
-    return result;
   }
 
   /**
@@ -834,7 +756,7 @@ public class DataSetDataDB {
    * @throws DatabaseException
    *           If a database error occurs
    */
-  public static List<SensorValue> getSensorValues(Connection conn,
+  public static List<SensorValue> getSensorValuesForColumns(Connection conn,
     long datasetId, List<Long> columnIds)
     throws MissingParamException, DatabaseException {
 
@@ -844,8 +766,8 @@ public class DataSetDataDB {
 
     List<SensorValue> result = new ArrayList<SensorValue>();
 
-    String sql = DatabaseUtils.makeInStatementSql(GET_SENSOR_VALUES_QUERY,
-      columnIds.size());
+    String sql = DatabaseUtils.makeInStatementSql(
+      GET_SENSOR_VALUES_FOR_COLUMNS_QUERY, columnIds.size());
     try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
       stmt.setLong(1, datasetId);
@@ -1448,36 +1370,5 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while deleting measurement values", e);
     }
-  }
-
-  public static List<SensorValue> getSensorValuesById(Connection conn,
-    long datasetId, List<Long> ids)
-    throws MissingParamException, DatabaseException, InvalidFlagException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(ids, "ids", false);
-
-    String sql = DatabaseUtils.makeInStatementSql(GET_SENSOR_VALUES_BY_ID_QUERY,
-      ids.size());
-
-    List<SensorValue> result = new ArrayList<SensorValue>(ids.size());
-
-    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-      for (int i = 0; i < ids.size(); i++) {
-        stmt.setLong(i + 1, ids.get(i));
-      }
-
-      try (ResultSet records = stmt.executeQuery()) {
-        while (records.next()) {
-          result.add(sensorValueFromResultSet(records, datasetId));
-        }
-      }
-
-    } catch (SQLException e) {
-      throw new DatabaseException("Error getting sensor values", e);
-    }
-
-    return result;
   }
 }

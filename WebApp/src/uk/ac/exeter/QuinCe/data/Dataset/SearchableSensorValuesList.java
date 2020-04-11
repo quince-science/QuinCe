@@ -2,8 +2,9 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -32,20 +33,18 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
   /**
-   * The date search iterator
-   */
-  private ListIterator<SensorValue> dateSearchIterator = null;
-
-  /**
    * The date range search iterator
    */
   private int rangeSearchPos = Integer.MIN_VALUE;
+
+  private Map<String, SensorValuesListDateSearch> dateSearches;
 
   /**
    * Constructor for an empty list
    */
   public SearchableSensorValuesList() {
     super();
+    dateSearches = new HashMap<String, SensorValuesListDateSearch>();
   }
 
   /**
@@ -56,59 +55,6 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    */
   public SearchableSensorValuesList(List<SensorValue> list) {
     super(list);
-  }
-
-  /**
-   * Initialise the single date search
-   */
-  public void initDateSearch() {
-    if (null != dateSearchIterator) {
-      throw new IllegalStateException("Date search is already initialised");
-    }
-
-    dateSearchIterator = listIterator();
-  }
-
-  /**
-   * Finish the single date search
-   */
-  public void finishDateSearch() {
-    if (null == dateSearchIterator) {
-      throw new IllegalStateException("Date search has not been initialised");
-    }
-
-    dateSearchIterator = null;
-  }
-
-  /**
-   * Perform an incremental search for the specified time from the current
-   * search state. Returns the latest SensorValue that is before or equal to the
-   * specified time. Returns {@code null} if there is no element before that
-   * time.
-   *
-   * @param time
-   *          The time to search for
-   * @return The latest SensorValue that is before or equal to the specified
-   *         time
-   */
-  public SensorValue dateSearch(LocalDateTime time) {
-    SensorValue result = null;
-
-    if (null == dateSearchIterator) {
-      throw new IllegalStateException("Date search has not been initialised");
-    }
-
-    while (dateSearchIterator.hasNext()
-      && !get(dateSearchIterator.nextIndex()).getTime().isAfter(time)) {
-
-      dateSearchIterator.next();
-    }
-
-    if (dateSearchIterator.hasPrevious()) {
-      result = get(dateSearchIterator.previousIndex());
-    }
-
-    return result;
   }
 
   /**
@@ -126,7 +72,7 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    * Finish the range search
    */
   public void finishRangeSearch() {
-    if (rangeSearchPos < 0) {
+    if (rangeSearchPos == Integer.MIN_VALUE) {
       throw new IllegalStateException("Range search has not been initialised");
     }
 
@@ -216,24 +162,87 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     return result;
   }
 
+  public void initDateSearch(String name) {
+
+    if (dateSearches.containsKey(name)) {
+      throw new IllegalStateException(
+        "Date search '" + name + "' already exists");
+    }
+
+    SensorValuesListDateSearch newSearch = new SensorValuesListDateSearch(this);
+    dateSearches.put(name, newSearch);
+  }
+
+  public void destroyDateSearch(String name) {
+
+    if (!dateSearches.containsKey(name)) {
+      throw new IllegalStateException(
+        "Date search '" + name + "' doesn not exist");
+    }
+
+    dateSearches.remove(name);
+  }
+
+  public SensorValue dateSearch(String name, LocalDateTime time) {
+    if (!dateSearches.containsKey(name)) {
+      throw new IllegalStateException(
+        "Date search '" + name + "' doesn not exist");
+    }
+
+    return dateSearches.get(name).search(time);
+  }
+
+  public boolean hasDateSearch(String name) {
+    return dateSearches.containsKey(name);
+  }
+
   public MeasurementValue getMeasurementValue(Measurement measurement,
-    SensorType sensorType, long columnId) throws RoutineException {
+    SensorType sensorType, long columnId, String searchId)
+    throws RoutineException {
+
+    String searchName = searchId + "-" + columnId;
+
+    if (!hasDateSearch(searchName)) {
+      initDateSearch(searchName);
+    }
 
     MeasurementValue result = new MeasurementValue(measurement, sensorType,
       columnId);
 
-    initDateSearch();
-
-    SensorValue prior = dateSearch(measurement.getTime());
+    SensorValue prior = dateSearch(searchName, measurement.getTime());
     SensorValue post = null;
 
     if (prior.getTime().isBefore(measurement.getTime())) {
-      post = get(dateSearchIterator.nextIndex());
+      post = get(dateSearches.get(searchName).nextIndex());
     }
 
-    finishDateSearch();
-
     result.setValues(prior, post);
+
+    return result;
+  }
+
+  protected void destroySearchesWithPrefix(String prefix) {
+    ArrayList<String> searchesToDestroy = new ArrayList<String>(
+      dateSearches.size());
+
+    for (String searchName : dateSearches.keySet()) {
+      if (searchName.startsWith(prefix)) {
+        searchesToDestroy.add(searchName);
+      }
+    }
+
+    searchesToDestroy.forEach(x -> dateSearches.remove(x));
+  }
+
+  protected boolean hasSearchWithPrefix(String prefix) {
+    boolean result = false;
+
+    for (String searchName : dateSearches.keySet()) {
+      if (searchName.startsWith(prefix)) {
+        result = true;
+        break;
+      }
+    }
 
     return result;
   }

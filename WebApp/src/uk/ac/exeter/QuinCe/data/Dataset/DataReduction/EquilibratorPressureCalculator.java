@@ -4,8 +4,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 
 public class EquilibratorPressureCalculator extends ValueCalculator {
@@ -13,8 +13,8 @@ public class EquilibratorPressureCalculator extends ValueCalculator {
   @Override
   public Double calculateValue(MeasurementValues measurementValues,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
-    Connection conn) throws Exception {
+    DatasetSensorValues allSensorValues, DataReducer reducer, Connection conn)
+    throws Exception {
 
     MeanCalculator mean = new MeanCalculator();
 

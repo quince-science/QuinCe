@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 
@@ -45,8 +45,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   protected void doCalculation(Instrument instrument,
     MeasurementValues sensorValues, DataReductionRecord record,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception {
+    DatasetSensorValues allSensorValues, Connection conn) throws Exception {
 
     // We use equilibrator temperature as the presumed most realistic gas
     // temperature
