@@ -4,8 +4,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -34,8 +34,8 @@ public class AtmosphericPressureAtSeaLevelCalculator extends ValueCalculator {
   @Override
   public Double calculateValue(MeasurementValues measurementValues,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, DataReducer reducer,
-    Connection conn) throws Exception {
+    DatasetSensorValues allSensorValues, DataReducer reducer, Connection conn)
+    throws Exception {
 
     // Get the atmospheric pressure value
     DefaultValueCalculator pressureValueCalculator = new DefaultValueCalculator(
