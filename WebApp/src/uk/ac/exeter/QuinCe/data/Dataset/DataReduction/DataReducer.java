@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
@@ -86,8 +86,7 @@ public abstract class DataReducer {
   public DataReductionRecord performDataReduction(Instrument instrument,
     Measurement measurement, MeasurementValues measurementValues,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception {
+    DatasetSensorValues allSensorValues, Connection conn) throws Exception {
 
     DataReductionRecord record = new DataReductionRecord(measurement, variable,
       getCalculationParameterNames());
@@ -119,8 +118,7 @@ public abstract class DataReducer {
   protected abstract void doCalculation(Instrument instrument,
     MeasurementValues sensorValues, DataReductionRecord record,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    Map<Long, SearchableSensorValuesList> allSensorValues, Connection conn)
-    throws Exception;
+    DatasetSensorValues allSensorValues, Connection conn) throws Exception;
 
   /**
    * Set the state for a non-calculated record (used for unused run types etc)

@@ -12,9 +12,9 @@ import uk.ac.exeter.QuinCe.api.nrt.MakeNrtDataset;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -93,8 +93,11 @@ public class DataReductionJob extends DataSetJob {
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
 
       // Load all the sensor values for this dataset
-      Map<Long, SearchableSensorValuesList> allSensorValues = DataSetDataDB
-        .getSensorValuesByColumn(conn, dataSet.getId());
+      DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
+        instrument, dataSet.getId(), true);
+
+      // The prefix used for SensorValue searches
+      String searchIdPrefix = "DataReductionJob_" + dataSet.getId();
 
       // Get all the measurements grouped by run type
       Map<String, ArrayList<Measurement>> allMeasurements = DataSetDataDB
@@ -123,7 +126,7 @@ public class DataReductionJob extends DataSetJob {
 
               // Get all the sensor values
               MeasurementValues measurementSensorValues = new MeasurementValues(
-                instrument, measurement);
+                instrument, measurement, searchIdPrefix);
 
               for (SensorType sensorType : variable.getAllSensorTypes(true)) {
                 measurementSensorValues.loadSensorValues(allSensorValues,
@@ -156,6 +159,14 @@ public class DataReductionJob extends DataSetJob {
           }
         }
       }
+
+      // Ideally we wouldn't need this. When the MeasurementValues objects
+      // are destroyed then it should clean up the searches that it created, but
+      // there is no reliable destructor mechanism in Java 8.
+      //
+      // In Java 9 there is the Cleaner mechanism that can handle this.
+      // TODO Implement in Java 9. GitHub issue #1653
+      allSensorValues.destroySearchesWithPrefix(searchIdPrefix);
 
       DataSetDataDB.storeDataReduction(conn, dataReductionRecords);
 

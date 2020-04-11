@@ -97,7 +97,7 @@ public class LocateMeasurementsJob extends DataSetJob {
       if (instrument.hasRunTypes()) {
         runTypes = new TreeMap<LocalDateTime, String>();
 
-        List<SensorValue> runTypeSensorValues = DataSetDataDB.getSensorValues(
+        List<SensorValue> runTypeSensorValues = DataSetDataDB.getSensorValuesForColumns(
           conn, dataSet.getId(),
           instrument.getSensorAssignments().getRunTypeColumnIDs());
 

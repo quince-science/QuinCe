@@ -2,9 +2,9 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -58,10 +58,15 @@ public class PositionQCRoutine extends Routine {
   private List<SensorValue> latValues;
 
   /**
-   * The set of {@link SensorValue}s for the dataset from the {@link AutoQCJob},
-   * excluding diagnostics and system values.
+   * The IDs of the data columns for the instrument, excluding diagnostics and
+   * system values.
    */
-  private Set<SearchableSensorValuesList> sensorValues;
+  private List<Long> dataColumnIds;
+
+  /**
+   * The complete set of sensor values for the current dataset
+   */
+  private final DatasetSensorValues allSensorValues;
 
   /**
    * Initialise the routine with the position and sensor values.
@@ -80,8 +85,8 @@ public class PositionQCRoutine extends Routine {
    *           If the routine cannot be constructed
    */
   public PositionQCRoutine(List<SensorValue> lonValues,
-    List<SensorValue> latValues, Set<SearchableSensorValuesList> sensorValues)
-    throws RoutineException {
+    List<SensorValue> latValues, List<Long> dataColumnIds,
+    DatasetSensorValues allSensorValues) throws RoutineException {
 
     super(null);
 
@@ -91,7 +96,8 @@ public class PositionQCRoutine extends Routine {
 
     this.lonValues = lonValues;
     this.latValues = latValues;
-    this.sensorValues = sensorValues;
+    this.dataColumnIds = dataColumnIds;
+    this.allSensorValues = allSensorValues;
   }
 
   /**
@@ -106,8 +112,9 @@ public class PositionQCRoutine extends Routine {
   @Override
   public void qcValues(List<SensorValue> values) throws RoutineException {
 
-    // Initialise date range searches for all SensorValue lists
-    sensorValues.forEach(SearchableSensorValuesList::initRangeSearch);
+    // Initialise date range searches for all data columns
+    dataColumnIds
+      .forEach(x -> allSensorValues.getColumnValues(x).initRangeSearch());
 
     int posIndex = 0;
 
@@ -161,8 +168,11 @@ public class PositionQCRoutine extends Routine {
           nextPosTime = nextPos.getTime();
         }
 
-        for (SearchableSensorValuesList valuesList : sensorValues) {
-          List<SensorValue> updateValues = valuesList
+        for (long columnId : dataColumnIds) {
+          SearchableSensorValuesList columnValues = allSensorValues
+            .getColumnValues(columnId);
+
+          List<SensorValue> updateValues = columnValues
             .rangeSearch(currentPosTime, nextPosTime);
 
           updateValues.forEach(flagSetter);
@@ -171,6 +181,9 @@ public class PositionQCRoutine extends Routine {
 
       posIndex++;
     }
+
+    dataColumnIds
+      .forEach(x -> allSensorValues.getColumnValues(x).finishRangeSearch());
   }
 
   /**
