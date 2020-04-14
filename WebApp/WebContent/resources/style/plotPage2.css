@@ -1,0 +1,12 @@
+.plotPageHeader {
+  height: 20px;
+  color: #2779AA;
+}
+
+.plotPageFooter {
+  position: absolute;
+  bottom: 0px;
+  height: 30px;
+  width: calc(100% - 8px);
+  color: #2779AA;
+}

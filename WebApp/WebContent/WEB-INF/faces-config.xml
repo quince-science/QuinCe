@@ -230,6 +230,11 @@
       <redirect/>
     </navigation-case>
     <navigation-case>
+      <from-outcome>user_qc2</from-outcome>
+      <to-view-id>/dataset/manual_qc2.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
+    <navigation-case>
       <from-outcome>export</from-outcome>
       <to-view-id>/dataset/export.xhtml</to-view-id>
       <redirect/>
