@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+  <title><ui:insert name="title">Welcome</ui:insert> - #{utils.siteName}</title>
+  <h:outputScript library="primefaces" name="jquery/jquery.js" />
+  <ui:insert name="localHead"></ui:insert>
+  <h:outputScript name="script/jquery.splitter.js" />
+  <h:outputStylesheet name="style/jquery.splitter.css" />
+</h:head>
+<h:body class="fullPage">
+  <ui:include src="/WEB-INF/templates/keep_alive.xhtml" />
+  <!--  The main stylesheet goes here because it can then override PrimeFaces styles -->
+  <h:outputStylesheet name="style/main.css" />
+  <h:outputStylesheet name="style/plotPage2.css" />
+  <p:toolbar styleClass="plotPageHeader">
+    <f:facet name="left">
+      #{sessionScope[beanName].dataset.name} - <ui:insert name="qcType">Quality Control</ui:insert>
+    </f:facet>
+    <f:facet name="right">
+      <ui:insert name="pageStatus"></ui:insert>
+    </f:facet>
+  </p:toolbar>
+
+  <p:toolbar id="footerToolbar" styleClass="plotPageFooter">
+    <f:facet name="left">
+      TABLE CONTROLS
+    </f:facet>
+    <f:facet name="right">
+      <div id="qcMessage" class="inline"></div>
+      <div id="qcControls">
+        QC CONTROLS
+        |
+        <h:form id="finishButtonForm" method="post" styleClass="inline">
+         <p:commandButton widgetVar="finishButton" value="Finish" ajax="false"
+           process="@none" action="#{sessionScope[beanName].finish}" styleClass="inlineButton" />
+        </h:form>
+      </div>
+    </f:facet>
+  </p:toolbar>
+</h:body>
+
+</html>
