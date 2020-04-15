@@ -26,7 +26,6 @@
 
       function goToQc2(id) {
         clearInterval(refreshInterval);
-        PF('pleaseWait').show();
         $('#datasetListForm\\:manualQC2DatasetId').val(id);
         $('#datasetListForm\\:manualQC2Link').click();
         return false;

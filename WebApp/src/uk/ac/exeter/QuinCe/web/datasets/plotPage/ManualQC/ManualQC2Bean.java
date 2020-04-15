@@ -20,6 +20,19 @@ public class ManualQC2Bean extends PlotPage2Bean {
   }
 
   @Override
+  public void loadData() {
+    try {
+
+      data = new ManualQC2Data(getCurrentInstrument(), dataset,
+        getDataSource());
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+
+  @Override
   protected void processDirtyData() {
     System.out.println("Dirty!");
   }
