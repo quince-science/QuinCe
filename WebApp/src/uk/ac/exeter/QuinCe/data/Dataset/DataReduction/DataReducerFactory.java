@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,6 +147,19 @@ public class DataReducerFactory {
       if (includeCalculationColumns || parameter.isResult()) {
         result.put(id, parameter);
       }
+    }
+
+    return result;
+  }
+
+  public static Map<InstrumentVariable, List<CalculationParameter>> getCalculationParameters(
+    Collection<InstrumentVariable> variables) throws DataReductionException {
+
+    Map<InstrumentVariable, List<CalculationParameter>> result = new HashMap<InstrumentVariable, List<CalculationParameter>>();
+
+    for (InstrumentVariable variable : variables) {
+      DataReducer reducer = getSkeletonReducer(variable);
+      result.put(variable, reducer.getCalculationParameters());
     }
 
     return result;

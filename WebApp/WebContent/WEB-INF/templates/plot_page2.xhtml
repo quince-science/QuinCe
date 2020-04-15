@@ -2,7 +2,8 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
-  xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
+  xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:p="http://primefaces.org/ui"
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
 <h:head>
@@ -11,12 +12,40 @@
   <ui:insert name="localHead"></ui:insert>
   <h:outputScript name="script/jquery.splitter.js" />
   <h:outputStylesheet name="style/jquery.splitter.css" />
+  
+  <script>
+    function initLoading() {
+      PF('pleaseWait').show();
+      loadData();
+    }
+    
+    function dataLoaded() {
+      PF('pleaseWait').hide();
+    }
+  </script>
 </h:head>
-<h:body class="fullPage">
+<h:body class="fullPage" onload="initLoading()">
   <ui:include src="/WEB-INF/templates/keep_alive.xhtml" />
   <!--  The main stylesheet goes here because it can then override PrimeFaces styles -->
   <h:outputStylesheet name="style/main.css" />
   <h:outputStylesheet name="style/plotPage2.css" />
+  
+  <!-- General form for page-level data, commands etc -->
+  <h:form id="plotPageForm" method="post">
+
+  <p:remoteCommand name="loadData"
+    action="#{sessionScope[beanName].loadData}"
+    oncomplete="dataLoaded()" />
+  </h:form>
+  
+  
+  <p:dialog header="Please wait" widgetVar="pleaseWait" modal="true"
+    resizable="false" closable="false">
+    Preparing data. This can take quite a while, so please be patient...
+  </p:dialog>
+  
+  
+  
   <p:toolbar styleClass="plotPageHeader">
     <f:facet name="left">
       #{sessionScope[beanName].dataset.name} - <ui:insert name="qcType">Quality Control</ui:insert>
@@ -43,5 +72,4 @@
     </f:facet>
   </p:toolbar>
 </h:body>
-
 </html>

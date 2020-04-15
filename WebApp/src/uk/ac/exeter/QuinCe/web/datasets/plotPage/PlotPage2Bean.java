@@ -27,6 +27,11 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
   protected boolean dirty = false;
 
   /**
+   * The data for the page
+   */
+  protected PlotPage2Data data;
+
+  /**
    * Get the dataset ID
    *
    * @return The dataset ID
@@ -46,9 +51,9 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
   }
 
   /**
-   * Get the current DataSet object
+   * Get the current DataSet object.
    *
-   * @return The data set
+   * @return The data set.
    */
   public DataSet getDataset() {
     return dataset;
@@ -114,6 +119,16 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
 
     return getScreenNavigation();
   }
+
+  /**
+   * Load the data for the plot page.
+   *
+   * <p>
+   * On completion of this method the bean will assume that {@link #data} is
+   * populated and ready for use.
+   * </p>
+   */
+  public abstract void loadData();
 
   /**
    * Finish with this bean instance, tidying up as necessary.
