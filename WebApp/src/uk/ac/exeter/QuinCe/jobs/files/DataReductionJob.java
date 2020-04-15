@@ -101,7 +101,7 @@ public class DataReductionJob extends DataSetJob {
 
       // Get all the measurements grouped by run type
       Map<String, ArrayList<Measurement>> allMeasurements = DataSetDataDB
-        .getMeasurements(conn, instrument, dataSet.getId());
+        .getMeasurementsByRunType(conn, instrument, dataSet.getId());
 
       // Cache of data reducers
       Map<InstrumentVariable, DataReducer> reducers = new HashMap<InstrumentVariable, DataReducer>();

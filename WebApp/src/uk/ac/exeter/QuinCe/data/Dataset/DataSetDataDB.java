@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
@@ -175,11 +176,17 @@ public class DataSetDataDB {
     + "ON (m.id = dr.measurement_id) WHERE m.dataset_id = ? " + "AND m.date IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY m.date ASC";
 
-  private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
+  private static final String GET_DATA_REDUCTION_QUERY_OLD = "SELECT "
     + "m.date, dr.calculation_values, qc_flag "
     + "FROM measurements m INNER JOIN data_reduction dr "
     + "ON (m.id = dr.measurement_id) WHERE m.dataset_id = ? "
     + "AND dr.variable_id = ? ORDER BY m.date ASC";
+
+  private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
+    + "dr.measurement_id, dr.variable_id, dr.calculation_values, "
+    + "dr.qc_flag, dr.qc_message FROM data_reduction dr INNER JOIN "
+    + "measurements m ON dr.measurement_id = m.id WHERE m.dataset_id = ? "
+    + "ORDER BY dr.measurement_id ASC";
 
   private static final String SET_QC_STATEMENT = "UPDATE sensor_values SET "
     + "user_qc_flag = ?, user_qc_message = ? " + "WHERE id = ?";
@@ -585,7 +592,7 @@ public class DataSetDataDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static Map<String, ArrayList<Measurement>> getMeasurements(
+  public static Map<String, ArrayList<Measurement>> getMeasurementsByRunType(
     Connection conn, Instrument instrument, long datasetId)
     throws MissingParamException, DatabaseException {
 
@@ -615,6 +622,59 @@ public class DataSetDataDB {
 
         measurements.get(runType)
           .add(new Measurement(id, datasetId, time, runType));
+      }
+
+    } catch (Exception e) {
+      throw new DatabaseException("Error while retrieving measurements", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return measurements;
+  }
+
+  /**
+   * Get the set of measurements for a dataset, grouped by run type and ordered
+   * by date
+   *
+   * @param conn
+   *          A database connection
+   * @param instrument
+   *          The instrument to which the dataset belongs
+   * @param datasetId
+   *          The database ID of the dataset
+   * @return The measurements
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   */
+  public static List<Measurement> getMeasurements(Connection conn,
+    Instrument instrument, long datasetId)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    List<Measurement> measurements = new ArrayList<Measurement>();
+
+    try {
+
+      stmt = conn.prepareStatement(GET_MEASUREMENTS_QUERY);
+      stmt.setLong(1, datasetId);
+
+      records = stmt.executeQuery();
+      while (records.next()) {
+        long id = records.getLong(1);
+        // We already have the dataset id
+        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(2));
+        String runType = records.getString(3);
+
+        measurements.add(new Measurement(id, datasetId, time, runType));
       }
 
     } catch (Exception e) {
@@ -1197,6 +1257,62 @@ public class DataSetDataDB {
     }
   }
 
+  public static Map<Long, Map<InstrumentVariable, DataReductionRecord>> getDataReductionData(
+    Connection conn, Instrument instrument, DataSet dataSet)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(instrument, "instrument");
+    MissingParam.checkMissing(dataSet, "dataSet");
+
+    Map<Long, Map<InstrumentVariable, DataReductionRecord>> result = new HashMap<Long, Map<InstrumentVariable, DataReductionRecord>>();
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(GET_DATA_REDUCTION_QUERY)) {
+
+      stmt.setLong(1, dataSet.getId());
+
+      long currentMeasurement = -1L;
+      try (ResultSet records = stmt.executeQuery()) {
+
+        while (records.next()) {
+
+          long measurementId = records.getLong(1);
+          long variableId = records.getLong(2);
+
+          String calculationValuesJson = records.getString(3);
+          Type mapType = new TypeToken<HashMap<String, Double>>() {
+          }.getType();
+          Map<String, Double> calculationValues = new Gson()
+            .fromJson(calculationValuesJson, mapType);
+
+          Flag qcFlag = new Flag(records.getInt(4));
+          String qcMessage = records.getString(5);
+
+          DataReductionRecord record = ReadOnlyDataReductionRecord.makeRecord(
+            measurementId, variableId, calculationValues, qcFlag, qcMessage);
+
+          if (measurementId != currentMeasurement) {
+            result.put(measurementId,
+              new HashMap<InstrumentVariable, DataReductionRecord>());
+            currentMeasurement = measurementId;
+          }
+
+          result.get(currentMeasurement).put(instrument.getVariable(variableId),
+            record);
+
+        }
+
+      }
+
+    } catch (Exception e) {
+      throw new DatabaseException("Error while retrieving data reduction data",
+        e);
+    }
+
+    return result;
+  }
+
   public static void loadDataReductionData(DataSource dataSource,
     DatasetMeasurementData output, InstrumentVariable variable, Field field)
     throws MissingParamException, DatabaseException, InvalidFlagException {
@@ -1208,7 +1324,7 @@ public class DataSetDataDB {
 
     try (Connection conn = dataSource.getConnection();
       PreparedStatement stmt = conn
-        .prepareStatement(GET_DATA_REDUCTION_QUERY)) {
+        .prepareStatement(GET_DATA_REDUCTION_QUERY_OLD)) {
 
       stmt.setLong(1, output.getDatasetId());
       stmt.setLong(2, variable.getId());

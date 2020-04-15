@@ -30,7 +30,7 @@ public class DataReductionRecord {
   /**
    * Intermediate calculation values
    */
-  private HashMap<String, Double> calculationValues;
+  private Map<String, Double> calculationValues;
 
   /**
    * QC Flag
@@ -57,6 +57,20 @@ public class DataReductionRecord {
     this.calculationValues = new HashMap<String, Double>();
     this.qcFlag = Flag.ASSUMED_GOOD;
     this.qcMessages = new NoEmptyStringList();
+  }
+
+  protected DataReductionRecord(long measurementId, long variableId,
+    List<String> parameterNames, Map<String, Double> calculationValues,
+    Flag qcFlag, NoEmptyStringList qcMessages) {
+
+    this.measurementId = measurementId;
+    this.variableId = variableId;
+    this.parameterNames = Collections.unmodifiableList(parameterNames);
+
+    this.calculationValues = calculationValues;
+    this.qcFlag = qcFlag;
+    this.qcMessages = qcMessages;
+
   }
 
   /**
@@ -92,13 +106,6 @@ public class DataReductionRecord {
         "Unrecognised calculation parameter '" + parameter);
     }
     calculationValues.put(parameter, value);
-  }
-
-  protected void putAll(Map<String, Double> values)
-    throws DataReductionException {
-    for (Map.Entry<String, Double> entry : values.entrySet()) {
-      put(entry.getKey(), entry.getValue());
-    }
   }
 
   /**
