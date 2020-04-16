@@ -26,6 +26,11 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
+   * Fixed column name for the time
+   */
+  public static final String TIME_COLUMN_NAME = "Time";
+
+  /**
    * Special column ID for longitude, because it's not defined in the
    * file_column dataset
    *
@@ -34,11 +39,21 @@ public class FileDefinition implements Comparable<FileDefinition> {
   public static final long LONGITUDE_COLUMN_ID = -1000L;
 
   /**
+   * Fixed name for the Longitude column
+   */
+  public static final String LONGITUDE_COLUMN_NAME = "Longitude";
+
+  /**
    * Special column ID for latitude
    *
    * @see uk.ac.exeter.QuinCe.web.datasets.data.FieldSets#POSITION_FIELD_ID
    */
   public static final long LATITUDE_COLUMN_ID = -1001L;
+
+  /**
+   * Fixed name for the Latitude column
+   */
+  public static final String LATITUDE_COLUMN_NAME = "Latitude";
 
   /**
    * The name of the Run Type column
