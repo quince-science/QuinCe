@@ -60,6 +60,15 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
   }
 
   /**
+   * Get the page data.
+   *
+   * @return The page data.
+   */
+  public PlotPage2Data getData() {
+    return data;
+  }
+
+  /**
    * Get the navigation to the plot screen
    *
    * @return The navigation to the plot screen
@@ -98,6 +107,8 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
       reset();
 
       dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
+      initDataObject();
+
     } catch (Exception e) {
       return internalError(e);
     }
@@ -121,14 +132,27 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
   }
 
   /**
-   * Load the data for the plot page.
-   *
+   * Load the page data.
    * <p>
    * On completion of this method the bean will assume that {@link #data} is
    * populated and ready for use.
    * </p>
    */
-  public abstract void loadData();
+  public void loadData() {
+    data.loadData(getDataSource());
+  }
+
+  /**
+   * Initialise the data object for the plot page.
+   *
+   * <p>
+   * This should create the data object, but not load any data. Data loading is
+   * delayed until later ajax calls to allow site responsiveness.
+   * </p>
+   *
+   * @see #loadData()
+   */
+  protected abstract void initDataObject();
 
   /**
    * Finish with this bean instance, tidying up as necessary.
@@ -143,6 +167,26 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
     reset();
 
     return getFinishNavigation();
+  }
+
+  /**
+   * Abort this bean, cleaning it up without performing any further data
+   * processing.
+   *
+   * @return Navigation to the destination page.
+   */
+  public String abort() {
+    reset();
+    return getFinishNavigation();
+  }
+
+  /**
+   * Get the latest error message from data processing.
+   *
+   * @return The error message.
+   */
+  public String getError() {
+    return data.getErrorMessage();
   }
 
 }
