@@ -12,40 +12,59 @@
   <ui:insert name="localHead"></ui:insert>
   <h:outputScript name="script/jquery.splitter.js" />
   <h:outputStylesheet name="style/jquery.splitter.css" />
-  
-  <script>
-    function initLoading() {
-      PF('pleaseWait').show();
-      loadData();
-    }
-    
-    function dataLoaded() {
-      PF('pleaseWait').hide();
-    }
-  </script>
+  <h:outputScript name="script/datatables.min.js" />
+  <h:outputStylesheet name="style/datatables.min.css" />
+
+  <!-- The script that controls all the page actions -->
+  <h:outputScript name="script/plotPage2.js" />
 </h:head>
-<h:body class="fullPage" onload="initLoading()">
+
+<h:body class="fullPage" onload="initPage()">
   <ui:include src="/WEB-INF/templates/keep_alive.xhtml" />
   <!--  The main stylesheet goes here because it can then override PrimeFaces styles -->
   <h:outputStylesheet name="style/main.css" />
   <h:outputStylesheet name="style/plotPage2.css" />
-  
+
   <!-- General form for page-level data, commands etc -->
   <h:form id="plotPageForm" method="post">
+    <h:inputHidden id="error"
+      value="#{sessionScope[beanName].error}" />
 
-  <p:remoteCommand name="loadData"
-    action="#{sessionScope[beanName].loadData}"
-    oncomplete="dataLoaded()" />
+    <h:inputHidden id="columnHeadings"
+      value="#{sessionScope[beanName].data.columnHeadingsJson}" />
+
+    <p:remoteCommand name="loadData"
+      action="#{sessionScope[beanName].loadData}"
+      process="@none" update="error columnHeadings"
+      oncomplete="dataLoaded()" />
+
   </h:form>
-  
-  
+
   <p:dialog header="Please wait" widgetVar="pleaseWait" modal="true"
     resizable="false" closable="false">
     Preparing data. This can take quite a while, so please be patient...
   </p:dialog>
-  
-  
-  
+
+  <p:dialog header="Error" widgetVar="errorMessage" modal="true"
+    resizable="false" closable="false">
+
+    <div class="error">
+      ERROR: An error occurred during processing. Please report the following to site support:
+    </div>
+
+    <div id="errorMessageString" class="instructions">
+      ...
+    </div>
+    <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+      <p:commandButton id="abortButton" value="Close"
+        action="#{sessionScope[beanName].abort}" />
+    </h:panelGrid>
+
+
+  </p:dialog>
+
+
+
   <p:toolbar styleClass="plotPageHeader">
     <f:facet name="left">
       #{sessionScope[beanName].dataset.name} - <ui:insert name="qcType">Quality Control</ui:insert>
@@ -54,6 +73,18 @@
       <ui:insert name="pageStatus"></ui:insert>
     </f:facet>
   </p:toolbar>
+
+  <div id="plotPageContent" class="plotPageContent">
+    <div id="plots">
+      <div id="plot1Panel" class="plotContainer">
+        Plot 1
+      </div>
+      <div id="plot2Panel" class="plotContainer">
+        Plot 2
+      </div>
+    </div>
+    <div id="tableContent">Table</div>
+  </div>
 
   <p:toolbar id="footerToolbar" styleClass="plotPageFooter">
     <f:facet name="left">
