@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.sql.DataSource;
@@ -120,7 +121,7 @@ public class DataSetDataDB {
     + "ORDER BY date ASC";
 
   private static final String GET_MEASUREMENT_TIMES_QUERY = "SELECT "
-    + "date FROM measurements WHERE dataset_id = ? " + "AND run_type IN "
+    + "id, date FROM measurements WHERE dataset_id = ? " + "AND run_type IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY date ASC";
 
   /**
@@ -635,8 +636,7 @@ public class DataSetDataDB {
   }
 
   /**
-   * Get the set of measurements for a dataset, grouped by run type and ordered
-   * by date
+   * Get the set of measurements for a dataset ordered by date
    *
    * @param conn
    *          A database connection
@@ -651,8 +651,7 @@ public class DataSetDataDB {
    *           If any required parameters are missing
    */
   public static List<Measurement> getMeasurements(Connection conn,
-    Instrument instrument, long datasetId)
-    throws MissingParamException, DatabaseException {
+    long datasetId) throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -1355,21 +1354,20 @@ public class DataSetDataDB {
     }
   }
 
-  public static List<LocalDateTime> getMeasurementTimes(DataSource dataSource,
+  public static Map<LocalDateTime, Long> getMeasurementTimes(Connection conn,
     long datasetId, List<String> runTypes)
     throws MissingParamException, DatabaseException {
 
-    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(datasetId, "datasetId");
     MissingParam.checkMissing(runTypes, "runTypes", false);
 
-    List<LocalDateTime> result = new ArrayList<LocalDateTime>();
+    TreeMap<LocalDateTime, Long> result = new TreeMap<LocalDateTime, Long>();
 
     String sql = DatabaseUtils.makeInStatementSql(GET_MEASUREMENT_TIMES_QUERY,
       runTypes.size());
 
-    try (Connection conn = dataSource.getConnection();
-      PreparedStatement stmt = conn.prepareStatement(sql)) {
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
       stmt.setLong(1, datasetId);
 
@@ -1379,7 +1377,10 @@ public class DataSetDataDB {
 
       try (ResultSet records = stmt.executeQuery()) {
         while (records.next()) {
-          result.add(DateTimeUtils.longToDate(records.getLong(1)));
+          long id = records.getLong(1);
+          LocalDateTime date = DateTimeUtils.longToDate(records.getLong(2));
+
+          result.put(date, id);
         }
       }
 

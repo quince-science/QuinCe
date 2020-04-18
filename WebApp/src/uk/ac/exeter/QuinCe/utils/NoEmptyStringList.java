@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
  * @author Steve Jones
  *
  */
+@SuppressWarnings("serial")
 public class NoEmptyStringList extends ArrayList<String> {
 
   public NoEmptyStringList() {
@@ -78,5 +79,10 @@ public class NoEmptyStringList extends ArrayList<String> {
   private static List<String> filterCollection(Collection<? extends String> c) {
     return c.stream().filter(NoEmptyStringList::isValid).map(String::trim)
       .collect(Collectors.toList());
+  }
+
+  @Override
+  public String toString() {
+    return StringUtils.collectionToDelimited(this, ";");
   }
 }

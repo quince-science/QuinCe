@@ -29,7 +29,7 @@ public class DatasetSensorValues {
 
   private Map<SensorType, TreeSet<SensorValue>> valuesBySensorType;
 
-  private TreeMap<LocalDateTime, Map<SensorType, List<SensorValue>>> valuesByDateAndSensorType;
+  private TreeMap<LocalDateTime, Map<Long, SensorValue>> valuesByDateAndColumn;
 
   private final Instrument instrument;
 
@@ -37,7 +37,7 @@ public class DatasetSensorValues {
     valuesById = new HashMap<Long, SensorValue>();
     valuesByColumn = new HashMap<Long, SearchableSensorValuesList>();
     valuesBySensorType = new HashMap<SensorType, TreeSet<SensorValue>>();
-    valuesByDateAndSensorType = new TreeMap<LocalDateTime, Map<SensorType, List<SensorValue>>>();
+    valuesByDateAndColumn = new TreeMap<LocalDateTime, Map<Long, SensorValue>>();
 
     this.instrument = instrument;
   }
@@ -50,7 +50,7 @@ public class DatasetSensorValues {
     addById(sensorValue);
     addByColumn(sensorValue);
     addBySensorType(sensorValue, sensorType);
-    addByDateAndSensorType(sensorValue, sensorType);
+    addByDateAndColumn(sensorValue);
   }
 
   public Set<Long> getColumnIds() {
@@ -94,24 +94,16 @@ public class DatasetSensorValues {
     valuesBySensorType.get(sensorType).add(sensorValue);
   }
 
-  private void addByDateAndSensorType(SensorValue sensorValue,
-    SensorType sensorType) throws RecordNotFoundException {
+  private void addByDateAndColumn(SensorValue sensorValue)
+    throws RecordNotFoundException {
 
     LocalDateTime time = sensorValue.getTime();
 
-    if (!valuesByDateAndSensorType.containsKey(time)) {
-      valuesByDateAndSensorType.put(time,
-        new HashMap<SensorType, List<SensorValue>>());
+    if (!valuesByDateAndColumn.containsKey(time)) {
+      valuesByDateAndColumn.put(time, new HashMap<Long, SensorValue>());
     }
 
-    Map<SensorType, List<SensorValue>> timeEntries = valuesByDateAndSensorType
-      .get(time);
-
-    if (!timeEntries.containsKey(sensorType)) {
-      timeEntries.put(sensorType, new ArrayList<SensorValue>());
-    }
-
-    timeEntries.get(sensorType).add(sensorValue);
+    valuesByDateAndColumn.get(time).put(sensorValue.getColumnId(), sensorValue);
   }
 
   /**
@@ -140,6 +132,11 @@ public class DatasetSensorValues {
   }
 
   public List<LocalDateTime> getTimes() {
-    return new ArrayList<LocalDateTime>(valuesByDateAndSensorType.keySet());
+    return new ArrayList<LocalDateTime>(valuesByDateAndColumn.keySet());
+  }
+
+  public Map<Long, SensorValue> get(LocalDateTime time) {
+
+    return valuesByDateAndColumn.get(time);
   }
 }

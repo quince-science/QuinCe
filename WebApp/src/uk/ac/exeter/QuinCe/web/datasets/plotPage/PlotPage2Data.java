@@ -10,15 +10,26 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 
 public abstract class PlotPage2Data {
 
   /**
+   * Gson instance for serializing table data
+   */
+  private static Gson tableDataGson;
+
+  /**
    * An error string to display to the user if something goes wrong.
    */
   private String errorMessage = null;
+
+  /**
+   * Indicates whether or not data has been loaded.
+   */
+  protected boolean loaded = false;
 
   /**
    * The indicator of the root field group.
@@ -31,13 +42,41 @@ public abstract class PlotPage2Data {
    */
   public static final String ROOT_FIELD_GROUP = "_ROOT";
 
+  static {
+    // Initialise Gson builder
+    tableDataGson = new GsonBuilder().registerTypeAdapter(
+      PlotPageTableRecord.class, new PlotPageTableRecordSerializer()).create();
+  }
+
   /**
    * Load all page data.
+   *
+   * <p>
+   * This calls {@link #loadDataAction(DataSource)} to do the actual loading
+   * work.
+   * </p>
+   *
+   * @param dataSource
+   *          A data source.
+   * @see #loadDataAction(DataSource)
+   */
+  public void loadData(DataSource dataSource) {
+    try {
+      loadDataAction(dataSource);
+      loaded = true;
+    } catch (Exception e) {
+      error("Error while loading dataset data", e);
+    }
+  }
+
+  /**
+   * The actual method for loading the data.
    *
    * @param dataSource
    *          A data source.
    */
-  public abstract void loadData(DataSource dataSource);
+  protected abstract void loadDataAction(DataSource dataSource)
+    throws Exception;
 
   /**
    * Get the column headings for the table in groups, without QC columns.
@@ -83,21 +122,59 @@ public abstract class PlotPage2Data {
    */
   public String getColumnHeadingsJson() {
 
-    // Reorganise the column headings into a structure that can be used to build
-    // the JSON
-    LinkedHashMap<String, List<String>> headings = getColumnHeadings();
+    String result = null;
 
-    List<JsonColumnGroup> jsonGroups = new ArrayList<JsonColumnGroup>(
-      headings.size());
+    if (loaded) {
+      // Reorganise the column headings into a structure that can be used to
+      // build the JSON
+      LinkedHashMap<String, List<String>> headings = getColumnHeadings();
 
-    if (validateColumnHeadings(headings)) {
-      for (Map.Entry<String, List<String>> group : headings.entrySet()) {
-        jsonGroups.add(new JsonColumnGroup(group));
+      List<JsonColumnGroup> jsonGroups = new ArrayList<JsonColumnGroup>(
+        headings.size());
+
+      if (validateColumnHeadings(headings)) {
+        for (Map.Entry<String, List<String>> group : headings.entrySet()) {
+          jsonGroups.add(new JsonColumnGroup(group));
+        }
+      }
+
+      // Convert the reorganised data to JSON
+      result = new Gson().toJson(jsonGroups);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the columns indices at which each column group is positioned in the
+   * full list of headings.
+   *
+   * <p>
+   * The result is a map of {@code groupName -> first column index}.
+   * </p>
+   *
+   * <p>
+   * The root column group is not included because that group's columns are
+   * always visible in the displayed table.
+   * </p>
+   *
+   * @return The column indices for each group.
+   */
+  public LinkedHashMap<String, Integer> getColumnGroupOffsets() {
+
+    LinkedHashMap<String, Integer> result = new LinkedHashMap<String, Integer>();
+
+    int nextColumn = 0;
+    for (Map.Entry<String, List<String>> groupEntry : getColumnHeadings()
+      .entrySet()) {
+
+      if (!groupEntry.getKey().equals(ROOT_FIELD_GROUP)) {
+        result.put(groupEntry.getKey(), nextColumn);
+        nextColumn += groupEntry.getValue().size();
       }
     }
 
-    // Convert the reorganised data to JSON
-    return new Gson().toJson(jsonGroups);
+    return result;
   }
 
   /**
@@ -207,6 +284,59 @@ public abstract class PlotPage2Data {
     this.errorMessage = message;
     cause.printStackTrace();
   }
+
+  /**
+   * Get the number of records in the dataset.
+   *
+   * <p>
+   * This is equivalent to the number of records that will be shown in the QC
+   * table.
+   * </p>
+   *
+   * @return The dataset size.
+   */
+  public abstract int size();
+
+  /**
+   * Generate the data for the table as a JSON String.
+   *
+   * <p>
+   * The format for the JSON string is specified by
+   * {@link PlotPage2Bean#generateTableData()}.
+   * </p>
+   *
+   * @param start
+   *          The first row to generate.
+   * @param length
+   *          The number of rows to generate.
+   * @return The JSON string.
+   *
+   * @see PlotPage2Bean#generateTableData()
+   */
+  public String generateTableData(int start, int length) {
+
+    String result = null;
+
+    if (loaded) {
+      List<PlotPageTableRecord> records = generateTableDataRecords(start,
+        length);
+      result = tableDataGson.toJson(records);
+    }
+
+    return result;
+  }
+
+  /**
+   * Generate the table data records for {@link #generateTableData(int, int)}.
+   *
+   * @param start
+   *          The first row to generate.
+   * @param length
+   *          The number of rows to generate.
+   * @return The table records.
+   */
+  protected abstract List<PlotPageTableRecord> generateTableDataRecords(
+    int start, int length);
 
   /**
    * Utility class to represent a column header group as an independent Java
