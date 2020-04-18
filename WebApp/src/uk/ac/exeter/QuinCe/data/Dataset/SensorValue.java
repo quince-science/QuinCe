@@ -447,6 +447,18 @@ public class SensorValue implements Comparable<SensorValue> {
     }
   }
 
+  public Flag getDisplayFlag() {
+    return flagNeeded() ? autoQC.getOverallFlag() : userQCFlag;
+  }
+
+  public String getDisplayQCMessage() throws RoutineException {
+    return flagNeeded() ? autoQC.getAllMessages() : userQCMessage;
+  }
+
+  public boolean flagNeeded() {
+    return userQCFlag.equals(Flag.NEEDED);
+  }
+
   @Override
   public String toString() {
     return time + ": " + columnId + " = " + value;
