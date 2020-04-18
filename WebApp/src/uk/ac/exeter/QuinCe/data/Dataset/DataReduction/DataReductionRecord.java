@@ -148,4 +148,8 @@ public class DataReductionRecord {
     Gson gson = new Gson();
     return gson.toJson(MathUtils.nanToNull(calculationValues));
   }
+
+  public Double getCalculationValue(String param) {
+    return calculationValues.get(param);
+  }
 }

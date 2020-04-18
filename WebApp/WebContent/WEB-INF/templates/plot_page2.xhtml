@@ -35,9 +35,28 @@
 
     <p:remoteCommand name="loadData"
       action="#{sessionScope[beanName].loadData}"
-      process="@none" update="error columnHeadings"
+      process="@this" update="error columnHeadings"
       oncomplete="dataLoaded()" />
 
+  </h:form>
+
+  <!-- Form for table data -->
+  <h:form id="tableForm" method="post">
+    <h:inputHidden value="#{sessionScope[beanName].tableJsonData}"
+      id="tableJsonData" />
+    <h:inputHidden value="#{sessionScope[beanName].recordCount}"
+      id="recordCount" />
+    <h:inputHidden value="#{sessionScope[beanName].tableDataDraw}"
+      id="tableDataDraw" />
+    <h:inputHidden value="#{sessionScope[beanName].tableDataStart}"
+      id="tableDataStart" />
+    <h:inputHidden value="#{sessionScope[beanName].tableDataLength}"
+      id="tableDataLength" />
+    <p:remoteCommand name="tableGetData"
+      action="#{sessionScope[beanName].generateTableData}"
+      process="tableDataDraw tableDataStart tableDataLength"
+      update="tableJsonData tableDataDraw recordCount"
+      oncomplete="tableDataDownload()" />
   </h:form>
 
   <p:dialog header="Please wait" widgetVar="pleaseWait" modal="true"
@@ -83,12 +102,17 @@
         Plot 2
       </div>
     </div>
-    <div id="tableContent">Table</div>
+    <div id="tableContent"></div>
   </div>
 
   <p:toolbar id="footerToolbar" styleClass="plotPageFooter">
     <f:facet name="left">
-      TABLE CONTROLS
+      <!--
+      <p:selectOneMenu widgetVar="columnSelector"
+        onchange="scrollToColumn(event.target.value)">
+        <f:selectItems value="#{sessionScope[beanName].data.columnGroupOffsets}" />
+      </p:selectOneMenu>
+      -->
     </f:facet>
     <f:facet name="right">
       <div id="qcMessage" class="inline"></div>

@@ -29,6 +29,27 @@ var plotSplitProportion = 0.5;
 
 /*
  *********************************************
+ * General data variables
+ *********************************************
+ */
+var columnHeaders = null;
+
+/*
+ *********************************************
+ * Table variables
+ *********************************************
+ */
+
+//The callback function for the DataTables drawing call
+var dataTableDrawCallback = null;
+
+//Variables for highlighting selected row in table
+var tableScrollRow = null;
+var scrollEventTimer = null;
+var scrollEventTimeLimit = 300;
+
+/*
+ *********************************************
  * Page layout functions
  *********************************************
  */
@@ -60,17 +81,6 @@ function errorCheck() {
   return errorFound;
 }
 
-// Draws the initial page data once loading is complete.
-// Called by oncomplete of loadData() PF remoteCommand
-function dataLoaded() {
-  
-  if (!errorCheck()) {
-    drawAllContent();
-    drawTable();
-    PF('pleaseWait').hide();
-  }
-}
-
 // Lay out the overall page structure
 function layoutPage() {
   $('#plotPageContent').split({
@@ -88,7 +98,7 @@ function layoutPage() {
 
 // Draw all page components
 function drawAllContent() {
-  
+  console.log('drawAllContent');
 }
 
 // Handle table/plot split adjustment 
@@ -99,14 +109,79 @@ function scaleTableSplit() {
 
 // Handle split adjustment between the two plots
 function resizePlots() {
-  
+  console.log('Resize plots');
 }
 
 // Adjust the size of all page elements after a window
 // resize or split adjustment
 function resizeAllContent() {
-  
+  console.log('resizeAllContent');
 }
+
+function showQCMessage(qcFlag, qcMessage) {
+
+  if (qcMessage != "") {
+
+    var content = '';
+    content += '<div class="qcInfoMessage ';
+
+    switch (qcFlag) {
+    case 3: {
+      content += 'questionable';
+      break;
+    }
+    case 4: {
+      content += 'bad';
+      break;
+    }
+    }
+
+    content += '">';
+    content += qcMessage;
+    content += '</div>';
+
+    $('#qcMessage').html(content);
+    $('#qcControls').hide();
+    $('#qcMessage').show();
+  }
+}
+
+function hideQCMessage() {
+  $('#qcMessage').hide();
+  $('#qcControls').show();
+}
+
+/*
+ *******************************************************
+ * General data functions
+ *******************************************************
+ */
+
+// Draws the initial page data once loading is complete.
+// Called by oncomplete of loadData() PF remoteCommand
+function dataLoaded() {
+
+  if (!errorCheck()) {
+    columnHeaders = JSON.parse($('#plotPageForm\\:columnHeadings').val());
+    drawAllContent();
+    drawTable();
+    PF('pleaseWait').hide();
+  }
+}
+
+// Get the index of the group that the specified column is in
+function getColumnGroup(column) {
+  
+  let currentIndex = -1;
+  let currentGroup = -1;
+  while (currentIndex < column) {
+    currentGroup++;
+    currentIndex += columnHeaders[currentGroup].headings.length;
+  }
+  
+  return currentGroup;
+}
+
 
 /*
  *******************************************************
@@ -123,21 +198,11 @@ function drawTable() {
   // Construct the table header
   let html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%"><thead>';
   
-  let headingGroups = JSON.parse($('#plotPageForm\\:columnHeadings').val());
-
-  headingGroups.forEach(g => {
+  columnHeaders.forEach(g => {
     
     g.headings.forEach(h => {
       html += '<th>';
       html += h;
-      html += '</th>';
-
-      html += '<th>';
-      html += h + QCFLAG_COL_SUFFIX;
-      html += '</th>';
-
-      html += '<th>';
-      html += h + QCMESSAGE_COL_SUFFIX;
       html += '</th>';
     });
   });
@@ -146,4 +211,149 @@ function drawTable() {
   
   // Replace the existing table with the new one
   $('#tableContent').html(html);
+  
+  // And initialise the table itself
+  jsDataTable = $('#dataTable').DataTable( {
+    ordering: false,
+    searching: false,
+    fixedColumns: {
+      leftColumns: columnHeaders[0].headings.length
+    },
+    serverSide: true,
+    scroller: {
+      loadingIndicator: true
+    },
+    scrollX: true,
+    scrollY: calcTableScrollY(),
+    ajax: function ( data, callback, settings ) {
+      // Since we've done a major scroll, disable the short
+      // scroll timeout
+      clearTimeout(scrollEventTimer);
+      scrollEventTimer = null;
+
+      // Store the callback
+      dataTableDrawCallback = callback;
+
+      // Fill in the form inputs
+      $('#tableForm\\:tableDataDraw').val(data.draw);
+      $('#tableForm\\:tableDataStart').val(data.start);
+      $('#tableForm\\:tableDataLength').val(data.length);
+
+      // Clear the existing table data to stop it being sent back to the server
+      $('#tableForm\\:tableJsonData').val("");
+
+      // Submit the query to the server
+      tableGetData(); // PF remoteCommand
+    },
+    bInfo: false,
+    drawCallback: function (settings) {
+      if (null != tableScrollRow) {
+        highlightRow(tableScrollRow);
+        tableScrollRow = null;
+      }
+      setupTableClickHandlers();
+      drawTableSelection();
+    },
+    columnDefs: getColumnDefs()
+  });
+}
+
+// Calculate the value of the scrollY entry for the data table
+function calcTableScrollY() {
+  return $('#tableContent').height() - $('#footerToolbar').outerHeight();
+ }
+
+// Initialise the click event handlers for the table
+function setupTableClickHandlers() {
+  console.log('setupTableClickHandlers');
+}
+
+// Highlight the selected table cells
+function drawTableSelection() {
+  console.log('drawTableSelection');
+}
+
+// Formats for table columns
+function getColumnDefs() {
+
+  return [
+    {"defaultContent": "",
+      "targets": '_all'
+    },
+    {"render":
+      function (data, type, row, meta) {
+
+        let result = '';
+
+        if (null != data) {
+          let flagClass = null;
+          switch (data['qcFlag']) {
+          case 3: {
+            flagClass = 'questionable';
+              break;
+          }
+          case 4: {
+            flagClass = 'bad';
+              break;
+          }
+          case -100: {
+            flagClass = 'ignore';
+          }
+        }
+
+        var classes = []
+        if ($.isNumeric(data['value'])) {
+          classes.push('numericCol');
+        }
+
+        if (!data['used']) {
+          classes.push('unused');
+        }
+
+        if (null != flagClass) {
+          classes.push(flagClass);
+        }
+
+        if (data['needsFlag']) {
+          classes.push('needsFlag');
+        }
+        
+        result = '<div class="' + classes.join(' ') + '"';
+
+        if (null != flagClass) {
+          result += ' onmouseover="showQCMessage(' + data['qcFlag'] + ', \''+ data['qcMessage'] + '\')" onmouseout="hideQCMessage()"';
+        }
+
+        result += '>';
+        if (null != data['value']) {
+          result += ($.isNumeric(data['value']) ? data['value'].toFixed(3) : data['value']);
+        }
+        result += '</div>';
+        return result;
+      }
+
+      },
+      "targets": '_all'
+    }
+  ];
+}
+
+/*
+ * Called when table data has been downloaded from the server.
+ * The previously stored callback function is triggered with
+ * the data from the server.
+ */
+function tableDataDownload() {
+  errorCheck();
+  dataTableDrawCallback( {
+    draw: $('#tableForm\\:tableDataDraw').val(),
+    data: JSON.parse($('#tableForm\\:tableJsonData').val()),
+    recordsTotal: $('#tableForm\\:recordCount').val(),
+    recordsFiltered: $('#tableForm\\:recordCount').val()
+  });
+}
+
+// Scroll to the specfied column in the table
+function scrollToColumn(column) {
+  console.log('Scrolling to column ' + column);
 }
