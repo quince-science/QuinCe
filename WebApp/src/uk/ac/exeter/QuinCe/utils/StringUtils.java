@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -16,6 +17,8 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.math.NumberUtils;
+
 /**
  * Miscellaneous string utilities
  *
@@ -23,6 +26,15 @@ import java.util.stream.Collectors;
  *
  */
 public final class StringUtils {
+
+  private static DecimalFormat threeDecimalPoints;
+
+  static {
+    threeDecimalPoints = new DecimalFormat();
+    threeDecimalPoints.setMinimumFractionDigits(3);
+    threeDecimalPoints.setMaximumFractionDigits(3);
+    threeDecimalPoints.setGroupingUsed(false);
+  }
 
   /**
    * Private constructor to prevent instantiation
@@ -406,6 +418,16 @@ public final class StringUtils {
     Double result = Double.NaN;
     if (null != value && value.trim().length() > 0) {
       result = Double.parseDouble(value.replaceAll(",", "").trim());
+    }
+
+    return result;
+  }
+
+  public static String formatNumber(String value) {
+    String result = value;
+
+    if (NumberUtils.isCreatable(value)) {
+      result = threeDecimalPoints.format(Double.parseDouble(value));
     }
 
     return result;

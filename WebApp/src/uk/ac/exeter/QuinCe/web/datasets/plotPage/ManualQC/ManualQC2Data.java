@@ -24,6 +24,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 
@@ -128,8 +129,7 @@ public class ManualQC2Data extends PlotPage2Data {
     // Time and Position
     List<String> rootColumns = new ArrayList<String>(3);
     rootColumns.add(FileDefinition.TIME_COLUMN_NAME);
-    rootColumns.add(FileDefinition.LONGITUDE_COLUMN_NAME);
-    rootColumns.add(FileDefinition.LATITUDE_COLUMN_NAME);
+    rootColumns.add("Position");
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
 
@@ -225,11 +225,22 @@ public class ManualQC2Data extends PlotPage2Data {
 
         // We assume there's only one position - the UI won't allow users to
         // enter more than one.
-        record.addColumn(
-          recordSensorValues.get(FileDefinition.LONGITUDE_COLUMN_ID), true);
+        //
+        // The position is combined into a single column.
 
-        record.addColumn(
-          recordSensorValues.get(FileDefinition.LATITUDE_COLUMN_ID), true);
+        SensorValue longitude = recordSensorValues
+          .get(FileDefinition.LONGITUDE_COLUMN_ID);
+        SensorValue latitude = recordSensorValues
+          .get(FileDefinition.LATITUDE_COLUMN_ID);
+
+        StringBuilder positionString = new StringBuilder();
+        positionString.append(StringUtils.formatNumber(longitude.getValue()));
+        positionString.append('|');
+        positionString.append(StringUtils.formatNumber(latitude.getValue()));
+
+        record.addColumn(positionString.toString(), true,
+          longitude.getDisplayFlag(), longitude.getDisplayQCMessage(),
+          longitude.flagNeeded());
 
         for (long columnId : sensorColumnIds) {
           record.addColumn(recordSensorValues.get(columnId), false);

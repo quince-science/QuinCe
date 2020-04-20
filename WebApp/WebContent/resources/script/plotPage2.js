@@ -326,7 +326,7 @@ function getColumnDefs() {
 
         result += '>';
         if (null != data['value']) {
-          result += ($.isNumeric(data['value']) ? data['value'].toFixed(3) : data['value']);
+          result += (data['value']);
         }
         result += '</div>';
         return result;
