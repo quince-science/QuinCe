@@ -196,13 +196,17 @@ function getColumnGroup(column) {
 function drawTable() {
 
   // Construct the table header
-  let html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%"><thead>';
+  let html = '<table id="dataTable" class="cell-border stripe compact nowrap" width="100%"><thead>';
   
   columnHeaders.forEach(g => {
     
     g.headings.forEach(h => {
-      html += '<th>';
-      html += h;
+      html += '<th ';
+      if (h.numeric) {
+        html += 'class="dt-head-right"';
+      }
+      html += '>';
+      html += h.heading;
       html += '</th>';
     });
   });
