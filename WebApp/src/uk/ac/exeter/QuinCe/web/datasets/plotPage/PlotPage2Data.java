@@ -101,7 +101,7 @@ public abstract class PlotPage2Data {
    *
    * @return
    */
-  protected abstract LinkedHashMap<String, List<String>> getColumnHeadings();
+  protected abstract LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings();
 
   /**
    * Get the table headings in JSON format.
@@ -127,13 +127,14 @@ public abstract class PlotPage2Data {
     if (loaded) {
       // Reorganise the column headings into a structure that can be used to
       // build the JSON
-      LinkedHashMap<String, List<String>> headings = getColumnHeadings();
+      LinkedHashMap<String, List<ColumnHeading>> headings = getColumnHeadings();
 
       List<JsonColumnGroup> jsonGroups = new ArrayList<JsonColumnGroup>(
         headings.size());
 
       if (validateColumnHeadings(headings)) {
-        for (Map.Entry<String, List<String>> group : headings.entrySet()) {
+        for (Map.Entry<String, List<ColumnHeading>> group : headings
+          .entrySet()) {
           jsonGroups.add(new JsonColumnGroup(group));
         }
       }
@@ -165,7 +166,7 @@ public abstract class PlotPage2Data {
     LinkedHashMap<String, Integer> result = new LinkedHashMap<String, Integer>();
 
     int nextColumn = 0;
-    for (Map.Entry<String, List<String>> groupEntry : getColumnHeadings()
+    for (Map.Entry<String, List<ColumnHeading>> groupEntry : getColumnHeadings()
       .entrySet()) {
 
       if (!groupEntry.getKey().equals(ROOT_FIELD_GROUP)) {
@@ -185,7 +186,7 @@ public abstract class PlotPage2Data {
    * @return {@code true} if the column headings are valid; {@code false} if not
    */
   private boolean validateColumnHeadings(
-    LinkedHashMap<String, List<String>> headings) {
+    LinkedHashMap<String, List<ColumnHeading>> headings) {
 
     boolean valid = true;
 
@@ -194,7 +195,7 @@ public abstract class PlotPage2Data {
       error("No column headings available");
       valid = false;
     } else {
-      for (Map.Entry<String, List<String>> group : headings.entrySet()) {
+      for (Map.Entry<String, List<ColumnHeading>> group : headings.entrySet()) {
 
         // A column group name cannot be null or empty
         if (StringUtils.isBlank(group.getKey())) {
@@ -202,7 +203,7 @@ public abstract class PlotPage2Data {
           valid = false;
         }
 
-        List<String> groupColumns = group.getValue();
+        List<ColumnHeading> groupColumns = group.getValue();
 
         // Each column group must contain at least one column
         if (null == groupColumns || groupColumns.size() == 0) {
@@ -212,25 +213,26 @@ public abstract class PlotPage2Data {
 
           for (int i = 0; i < groupColumns.size(); i++) {
 
+            String columnName = groupColumns.get(i).getHeading();
+
             // Blank column is not allowed
-            if (StringUtils.isBlank(groupColumns.get(i))) {
+            if (StringUtils.isBlank(columnName)) {
               error("Blank column heading detected",
                 new Exception("Blank column heading in group " + group.getKey()
                   + ", index " + i));
-            } else if (groupColumns.get(i)
+            } else if (columnName
               .equals(FileDefinition.LONGITUDE_COLUMN_NAME)) {
 
               // Longitude must be followed by Latitude
               if (i + 1 == groupColumns.size() || !groupColumns.get(i + 1)
-                .equals(FileDefinition.LATITUDE_COLUMN_NAME)) {
+                .getHeading().equals(FileDefinition.LATITUDE_COLUMN_NAME)) {
                 error("Invalid position columns",
                   new Exception("Longitude must be followed by Latitude"));
               }
-            } else if (groupColumns.get(i)
-              .equals(FileDefinition.LATITUDE_COLUMN_NAME)) {
+            } else if (columnName.equals(FileDefinition.LATITUDE_COLUMN_NAME)) {
 
               // Latitude must be preceded by Longitude
-              if (i == 0 || !groupColumns.get(i - 1)
+              if (i == 0 || !groupColumns.get(i - 1).getHeading()
                 .equals(FileDefinition.LONGITUDE_COLUMN_NAME)) {
 
                 error("Invalid position columns",
@@ -354,9 +356,10 @@ public abstract class PlotPage2Data {
 
     protected String group;
 
-    protected List<String> headings;
+    protected List<ColumnHeading> headings;
 
-    private JsonColumnGroup(Map.Entry<String, List<String>> headingGroup) {
+    private JsonColumnGroup(
+      Map.Entry<String, List<ColumnHeading>> headingGroup) {
       this.group = headingGroup.getKey();
       this.headings = headingGroup.getValue();
     }

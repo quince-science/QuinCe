@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 
@@ -58,7 +59,7 @@ public class ManualQC2Data extends PlotPage2Data {
   /**
    * The column headers for the data
    */
-  private LinkedHashMap<String, List<String>> columnHeadings = null;
+  private LinkedHashMap<String, List<ColumnHeading>> columnHeadings = null;
 
   /**
    * The list of sensor column IDs in the same order as they are represented in
@@ -124,12 +125,12 @@ public class ManualQC2Data extends PlotPage2Data {
 
   private void buildColumnHeaders() {
 
-    columnHeadings = new LinkedHashMap<String, List<String>>();
+    columnHeadings = new LinkedHashMap<String, List<ColumnHeading>>();
 
     // Time and Position
-    List<String> rootColumns = new ArrayList<String>(3);
-    rootColumns.add(FileDefinition.TIME_COLUMN_NAME);
-    rootColumns.add("Position");
+    List<ColumnHeading> rootColumns = new ArrayList<ColumnHeading>(3);
+    rootColumns.add(new ColumnHeading(FileDefinition.TIME_COLUMN_NAME, false));
+    rootColumns.add(new ColumnHeading("Position", false));
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
 
@@ -155,24 +156,26 @@ public class ManualQC2Data extends PlotPage2Data {
       }
     }
 
-    List<String> sensorColumnNames = new ArrayList<String>(
+    List<ColumnHeading> sensorColumnHeadings = new ArrayList<ColumnHeading>(
       sensorColumns.size());
     sensorColumnIds = new long[sensorColumns.size()];
 
     for (int i = 0; i < sensorColumns.size(); i++) {
-      sensorColumnNames.add(sensorColumns.get(i).getSensorName());
+      sensorColumnHeadings
+        .add(new ColumnHeading(sensorColumns.get(i).getSensorName(), true));
       sensorColumnIds[i] = sensorColumns.get(i).getDatabaseId();
     }
 
-    columnHeadings.put("Sensors", sensorColumnNames);
+    columnHeadings.put("Sensors", sensorColumnHeadings);
 
     diagnosticColumnIds = new long[diagnosticColumns.size()];
     if (diagnosticColumns.size() > 0) {
-      List<String> diagnosticColumnNames = new ArrayList<String>(
+      List<ColumnHeading> diagnosticColumnNames = new ArrayList<ColumnHeading>(
         diagnosticColumns.size());
 
       for (int i = 0; i < diagnosticColumns.size(); i++) {
-        diagnosticColumnNames.add(diagnosticColumns.get(i).getSensorName());
+        diagnosticColumnNames.add(
+          new ColumnHeading(diagnosticColumns.get(i).getSensorName(), true));
         diagnosticColumnIds[i] = diagnosticColumns.get(i).getDatabaseId();
       }
 
@@ -182,8 +185,10 @@ public class ManualQC2Data extends PlotPage2Data {
     // Each of the instrument variables
     for (InstrumentVariable variable : instrument.getVariables()) {
       try {
-        columnHeadings.put(variable.getName(), new ArrayList<String>(
-          DataReducerFactory.getCalculationParameters(variable).keySet()));
+        columnHeadings.put(variable.getName(),
+          ColumnHeading.headingList(
+            DataReducerFactory.getCalculationParameters(variable).keySet(),
+            true));
       } catch (DataReductionException e) {
         error("Error getting variable headers", e);
       }
@@ -191,7 +196,7 @@ public class ManualQC2Data extends PlotPage2Data {
   }
 
   @Override
-  protected LinkedHashMap<String, List<String>> getColumnHeadings() {
+  protected LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings() {
     return columnHeadings;
   }
 
