@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -132,5 +133,16 @@ public abstract class Routine {
   public static String getLongMessage(String requiredValue,
     String actualValue) {
     return "DEFAULT LONG MESSAGE. YOU SHOULD NOT BE SEEING THIS!";
+  }
+
+  /**
+   * Filter a list of {@link SensorValue} objects to remove any NaN values.
+   *
+   * @param values
+   *          The values to be filtered.
+   * @return The filtered list.
+   */
+  protected List<SensorValue> filterMissingValues(List<SensorValue> values) {
+    return values.stream().filter(x -> !x.isNaN()).collect(Collectors.toList());
   }
 }
