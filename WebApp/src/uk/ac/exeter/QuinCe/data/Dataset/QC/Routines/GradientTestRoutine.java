@@ -49,51 +49,79 @@ public class GradientTestRoutine extends Routine {
     SensorValue prevValue = null;
     SensorValue currValue = null;
     SensorValue nextValue = null;
+    int gradientStart = 0;
 
-    for (int i = 1; i < values.size(); i++) {
-      currValue = values.get(i);
+    List<SensorValue> filteredValues = filterMissingValues(values);
 
-      prevValue = values.get(i - 1);
-      nextValue = values.get(i + 1);
+    int i = 1;
+    while (i < filteredValues.size() - 1) {
+      currValue = filteredValues.get(i);
 
-      if (!currValue.isNaN()) {
+      prevValue = filteredValues.get(i - 1);
+      nextValue = filteredValues.get(i + 1);
 
-        int r = 1;
-        while (prevValue.isNaN()) {
-          r++;
-          prevValue = values.get(i - r);
-        }
-        r = 1;
-        while (nextValue.isNaN()) {
-          r++;
-          nextValue = values.get(i + r);
-        }
+      // calculate observed change
+      double obsChange = Math.abs(currValue.getDoubleValue()
+        - (nextValue.getDoubleValue() + prevValue.getDoubleValue()) / 2);
+      // calculate expected change
+      double expChange = Math
+        .abs((nextValue.getDoubleValue() - prevValue.getDoubleValue()) / 2);
 
-        // calculate observed change
-        double obsChange = Math.abs(currValue.getDoubleValue()
-          - (nextValue.getDoubleValue() + prevValue.getDoubleValue()) / 2);
-        // calculate expected change
-        double expChange = Math
-          .abs((nextValue.getDoubleValue() - prevValue.getDoubleValue()) / 2);
+      // Eqs from Ylva Ericson CPH
+      // Spike: Test value = | cV - (nV + pV)/2 | - | (nV - pV) / 2 |,
+      // Gradient: Test value = | cV - (nV + pV)/2 | = obsChange
+      // fitGradient = obsChange;
+      double fitSpike = obsChange - expChange;
 
-        // Eqs from Ylva Ericson CPH
-        // Spike: Test value = | cV - (nV + pV)/2 | - | (nV - pV) / 2 |,
-        // Gradient: Test value = | cV - (nV + pV)/2 | = obsChange
-        // fitGradient = obsChange;
-        double fitSpike = obsChange - expChange;
+      if (obsChange > maxDelta) {
+        if (fitSpike > maxDelta) {
+          // spike, add flag to currValue
+          addFlag(currValue, Flag.BAD, maxDelta, fitSpike);
+          System.out
+            .println("Setting spike-flag " + currValue.getDoubleValue());
+          i++;
+        } else { // gradient
+          gradientStart = i - 1;
+          addFlag(prevValue, Flag.BAD, maxDelta, obsChange);
 
-        if (obsChange > maxDelta) {
-          if (fitSpike > maxDelta) {
-            // spike, add flag to currValue
-            addFlag(currValue, Flag.BAD, maxDelta, fitSpike);
-            i++;
-          } else { // gradient
-            addFlag(prevValue, Flag.BAD, maxDelta, obsChange);
+          while (obsChange > maxDelta) {
             addFlag(currValue, Flag.BAD, maxDelta, obsChange);
+
+            i++;
+            currValue = filteredValues.get(i);
+            prevValue = filteredValues.get(i - 1);
+            nextValue = filteredValues.get(i + 1);
+
+            obsChange = Math.abs(currValue.getDoubleValue()
+              - (nextValue.getDoubleValue() + prevValue.getDoubleValue()) / 2);
           }
         }
-
       }
+      i++;
     }
+  }
+
+  /**
+   * Get the short form QC message
+   *
+   * @return The short QC message
+   */
+  public static String getShortMessage() {
+    return "Gradient too steep, changes too quickly";
+  }
+
+  /**
+   * Get the long form QC message
+   *
+   * @param requiredValue
+   *          The value required by the routine
+   * @param actualValue
+   *          The value received by the routine
+   * @return The long form message
+   */
+  public static String getLongMessage(String requiredValue,
+    String actualValue) {
+    return "Gradient too steep. Changes too quickly - " + actualValue
+      + "/min, limit is " + requiredValue + "/min";
   }
 }
