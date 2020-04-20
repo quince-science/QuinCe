@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * A basic object representing a column in the plot page table.
@@ -52,7 +53,7 @@ class PlotPageTableColumn {
    */
   public PlotPageTableColumn(String value, boolean used, Flag qcFlag,
     String qcMessage, boolean flagNeeded) {
-    this.value = value;
+    this.value = StringUtils.formatNumber(value);
     this.used = used;
     this.qcFlag = qcFlag;
     this.qcMessage = qcMessage;
