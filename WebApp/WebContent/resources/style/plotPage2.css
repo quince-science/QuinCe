@@ -58,6 +58,6 @@
  * Table
  *************************
  */
-.rightBorder {
-  border-right: 1px solid black;
+td.selected {
+  background-color: #FFFF00 !important;
 }

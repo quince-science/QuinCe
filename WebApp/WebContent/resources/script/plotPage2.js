@@ -5,8 +5,13 @@
  */
 
 // DATA CONSTANTS
-const QCFLAG_COL_SUFFIX = '_FLAG';
-const QCMESSAGE_COL_SUFFIX = '_MESSAGE';
+
+// PAGE CONSTANTS
+var SELECT_ACTION = 1;
+var DESELECT_ACTION = 0;
+var SELECTION_POINT = -100;
+
+// TABLE CONSTANTS
 
 /*
  *********************************************
@@ -32,7 +37,13 @@ var plotSplitProportion = 0.5;
  * General data variables
  *********************************************
  */
+
+// Column Headers for table and plots
 var columnHeaders = null;
+
+// Selection details
+selectedColumn = -1;
+var selectedRows = [];
 
 /*
  *********************************************
@@ -47,6 +58,15 @@ var dataTableDrawCallback = null;
 var tableScrollRow = null;
 var scrollEventTimer = null;
 var scrollEventTimeLimit = 300;
+
+//Table selections
+var selectedColumn = -1;
+var selectedRows = [];
+
+//The row number (in the data file) of the last selected/deselected row, and
+//which action was performed.
+var lastClickedRow = -1;
+var lastClickedAction = DESELECT_ACTION;
 
 /*
  *********************************************
@@ -122,7 +142,7 @@ function showQCMessage(qcFlag, qcMessage) {
 
   if (qcMessage != "") {
 
-    var content = '';
+    let content = '';
     content += '<div class="qcInfoMessage ';
 
     switch (qcFlag) {
@@ -180,6 +200,67 @@ function getColumnGroup(column) {
   }
   
   return currentGroup;
+}
+
+function clearSelection() {
+  selectedColumn = -1;
+  selectedRows = [];
+  selectionUpdated();
+}
+
+function selectionUpdated() {
+
+  drawTableSelection();
+  
+/*
+  // Redraw the plots to show selection
+  if (null != plot1) {
+    drawPlot(1, false);
+  }
+  if (null != plot2) {
+    drawPlot(2, false);
+  }
+  if (null != map1) {
+    drawMap(1);
+  }
+  if (null != map2) {
+    drawMap(2);
+  }
+
+  if (canEdit && typeof postSelectionUpdated == 'function') {
+    postSelectionUpdated();
+  }
+*/
+}
+
+// Get the details of the specified column header
+function getColumn(colIndex) {
+  
+  let result = null;
+  
+  let currentIndex = 0;
+  for (let i = 0; i < columnHeaders.length; i++) {
+    let groupHeaders = columnHeaders[i].headings;
+    if (currentIndex + groupHeaders.length > colIndex) {
+      result = groupHeaders[colIndex - currentIndex];
+      break;
+    } else {
+      currentIndex += groupHeaders.length;
+    }
+  }
+  
+  return result;
+}
+
+function canSelectCell(rowID, colIndex) {
+
+  let result = true;
+
+  if (!getColumn(colIndex).editable) {
+    result = false;
+  }
+
+  return result;
 }
 
 
@@ -260,6 +341,24 @@ function drawTable() {
     },
     columnDefs: getColumnDefs()
   });
+  
+  resizeAllContent();
+  clearSelection();
+
+  // Large table scrolls trigger highlights when the table is redrawn.
+  // This handles small scrolls that don't trigger a redraw.
+  $('.dataTables_scrollBody').scroll(function() {
+    if (null != tableScrollRow) {
+      if (scrollEventTimer) {
+        clearTimeout(scrollEventTimer);
+      }
+
+      scrollEventTimer = setTimeout(function() {
+        highlightRow(tableScrollRow);
+        tableScrollRow = null;
+      }, scrollEventTimeLimit);
+    }
+  });
 }
 
 // Calculate the value of the scrollY entry for the data table
@@ -269,13 +368,89 @@ function calcTableScrollY() {
 
 // Initialise the click event handlers for the table
 function setupTableClickHandlers() {
-  console.log('setupTableClickHandlers');
+  // Remove any existing handlers
+  $('.dataTable').off('click', 'tbody td');
+
+  // Set click handler
+  $('.dataTable').on('click', 'tbody td', function() {
+    clickCellAction(this._DT_CellIndex, event.shiftKey);
+  })
+}
+
+function clickCellAction(cellIndex, shiftClick) {
+
+  let rowId = jsDataTable.row(cellIndex.row).data()['DT_RowId'];
+  let columnIndex = cellIndex.column;
+
+  // If the cell isn't selectable, or has no value, do nothing.
+  if (canSelectCell(rowId, columnIndex) &&
+    null != jsDataTable.cell(cellIndex).data() &&
+    null != jsDataTable.cell(cellIndex).data().value &&
+    '' != jsDataTable.cell(cellIndex).data().value) {
+
+    if (columnIndex != selectedColumn) {
+      selectedColumn = columnIndex;
+      selectedRows = [rowId];
+      lastClickedRow = rowId;
+      lastClickedAction = SELECT_ACTION;
+    } else {
+
+      let action = lastClickedAction;
+      let actionRows = [rowId];
+
+      if (!shiftClick) {
+        if ($.inArray(rowId, selectedRows) != -1) {
+          action = DESELECT_ACTION;
+        } else {
+          action = SELECT_ACTION;
+        }
+      } else {
+        actionRows = getRowsInRange(lastClickedRow, rowId, columnIndex);
+      }
+
+      if (action == SELECT_ACTION) {
+        addRowsToSelection(actionRows);
+      } else {
+        removeRowsFromSelection(actionRows);
+      }
+
+      lastClickedRow = rowId;
+      lastClickedAction = action;
+    }
+
+    selectionUpdated();
+  }
 }
 
 // Highlight the selected table cells
 function drawTableSelection() {
-  console.log('drawTableSelection');
+  // Clear all selection display
+  $(jsDataTable.table().node()).find('.selected').removeClass('selected');
+
+  // Highlight selected cells
+  var rows = jsDataTable.rows()[0];
+  for (var i = 0; i < rows.length; i++) {
+    var row = jsDataTable.row(i);
+    var col = jsDataTable.cell({row:i, column:selectedColumn});
+
+    if ($.inArray(row.data()['DT_RowId'], selectedRows) > -1) {
+      $(jsDataTable.cell({row : i, column : selectedColumn}).node()).addClass('selected')
+    }
+  }
+
+  // Update the selection summary
+  if (selectedRows.length == 0) {
+    $('#selectedColumn').html('None');
+    $('#selectedRowsCount').html('');
+  } else {
+    $('#selectedColumn').html(JSON.parse($('#plotPageForm\\:columnHeadings').val())[selectedColumn]);
+    $('#selectedRowsCount').html(selectedRows.length);
+  }
 }
+
+function highlightRow(row) {
+  console.log('highlightRow');
+} 
 
 // Formats for table columns
 function getColumnDefs() {
@@ -305,7 +480,7 @@ function getColumnDefs() {
           }
         }
 
-        var classes = []
+        let classes = []
         if ($.isNumeric(data['value'])) {
           classes.push('numericCol');
         }
@@ -360,4 +535,56 @@ function tableDataDownload() {
 // Scroll to the specfied column in the table
 function scrollToColumn(column) {
   console.log('Scrolling to column ' + column);
+}
+
+function addRowsToSelection(rows) {
+  selectedRows = selectedRows.concat(rows).sort((a, b) => a - b);
+}
+
+function removeRowsFromSelection(rows) {
+
+  var rowsIndex = 0;
+  var selectionIndex = 0;
+
+  while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
+    while (selectedRows[selectionIndex] == rows[rowsIndex]) {
+      selectedRows.splice(selectionIndex, 1);
+      rowsIndex++;
+      if (rowsIndex == rows.length || selectionIndex == selectedRows.length) {
+        break;
+      }
+    }
+    selectionIndex++;
+  }
+}
+
+function getRowsInRange(startRow, endRow, columnIndex) {
+
+  let rows = [];
+
+  let step = 1;
+  if (endRow < startRow) {
+    step = -1;
+  }
+
+  let rowIDs = JSON.parse($('#plotPageForm\\:rowIDs').val());
+
+  let startIndex = rowIDs.indexOf(startRow);
+  let currentIndex = startIndex;
+
+  while (rowIDs[currentIndex] != endRow) {
+    currentIndex = currentIndex + step;
+
+    let rowIndex = jsDataTable.row('#' + rowIDs[currentIndex]).index();
+    var cellData = jsDataTable.cell({row:rowIndex, column:columnIndex}).data();
+    if (null != cellData && null != cellData.value && '' != cellData.value) {
+      rows.push(rowIDs[currentIndex]);
+    }
+  }
+
+  if (step == -1) {
+    rows = rows.reverse();
+  }
+
+  return rows;
 }

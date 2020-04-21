@@ -25,6 +25,11 @@ public class ColumnHeading {
   private final boolean numeric;
 
   /**
+   * Indicates whether or not values in this column can be edited.
+   */
+  private final boolean editable;
+
+  /**
    * Simple constructor.
    *
    * @param heading
@@ -32,9 +37,10 @@ public class ColumnHeading {
    * @param numeric
    *          Whether the column is numeric.
    */
-  public ColumnHeading(String heading, boolean numeric) {
+  public ColumnHeading(String heading, boolean numeric, boolean editable) {
     this.heading = heading;
     this.numeric = numeric;
+    this.editable = editable;
   }
 
   /**
@@ -56,6 +62,10 @@ public class ColumnHeading {
     return numeric;
   }
 
+  public boolean canEdit() {
+    return editable;
+  }
+
   /**
    * Build a list of {@link ColumnHeader}s from a list of column names with the
    * specified {@link #numeric} flag.
@@ -64,12 +74,14 @@ public class ColumnHeading {
    *          The column names.
    * @param numeric
    *          The {@link #numeric} flag to use for the columns.
+   * @param editable
+   *          The {@link #editable} flag to use for the columns.
    * @return The list of {@link ColumnHeading} objects.
    */
   public static List<ColumnHeading> headingList(Collection<String> names,
-    boolean numeric) {
+    boolean numeric, boolean editable) {
 
-    return names.stream().map(x -> new ColumnHeading(x, numeric))
+    return names.stream().map(x -> new ColumnHeading(x, numeric, editable))
       .collect(Collectors.toList());
   }
 }

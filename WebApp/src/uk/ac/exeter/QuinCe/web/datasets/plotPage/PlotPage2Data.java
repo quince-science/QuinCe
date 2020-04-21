@@ -329,6 +329,29 @@ public abstract class PlotPage2Data {
   }
 
   /**
+   * Get the complete list of row IDs.
+   *
+   * @return The row IDs.
+   */
+  protected abstract List<String> getRowIDs();
+
+  /**
+   * Return the list of row IDs as a JSON string array.
+   *
+   * <p>
+   * We can't use the standard JSF mechanism to directly return a
+   * {@code List<String>} to the front end, because JSF 'helpfully' coverts
+   * numeric values to numbers instead of keeping them as strings which screws
+   * up the Javascript processing.
+   * </p>
+   *
+   * @return The row IDs as a JSON string.
+   */
+  public String getRowIDsJson() {
+    return new Gson().toJson(getRowIDs());
+  }
+
+  /**
    * Generate the table data records for {@link #generateTableData(int, int)}.
    *
    * @param start
