@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -24,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
@@ -45,6 +47,12 @@ public class ManualQC2Data extends PlotPage2Data {
    * The Measurement objects for the dataset
    */
   private Map<LocalDateTime, Long> measurements = null;
+
+  /**
+   * All row IDs for the dataset. Row IDs are the millisecond values of the
+   * times.
+   */
+  private List<String> rowIDs = null;
 
   /**
    * The dataset's sensor values.
@@ -119,6 +127,11 @@ public class ManualQC2Data extends PlotPage2Data {
       dataReduction = DataSetDataDB.getDataReductionData(conn, instrument,
         dataset);
 
+      // Build the row IDs
+      rowIDs = sensorValues.getTimes().stream()
+        .map(t -> String.valueOf(DateTimeUtils.dateToLong(t)))
+        .collect(Collectors.toList());
+
       buildColumnHeaders();
     }
   }
@@ -129,8 +142,9 @@ public class ManualQC2Data extends PlotPage2Data {
 
     // Time and Position
     List<ColumnHeading> rootColumns = new ArrayList<ColumnHeading>(3);
-    rootColumns.add(new ColumnHeading(FileDefinition.TIME_COLUMN_NAME, false));
-    rootColumns.add(new ColumnHeading("Position", false));
+    rootColumns
+      .add(new ColumnHeading(FileDefinition.TIME_COLUMN_NAME, false, false));
+    rootColumns.add(new ColumnHeading("Position", false, true));
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
 
@@ -161,8 +175,8 @@ public class ManualQC2Data extends PlotPage2Data {
     sensorColumnIds = new long[sensorColumns.size()];
 
     for (int i = 0; i < sensorColumns.size(); i++) {
-      sensorColumnHeadings
-        .add(new ColumnHeading(sensorColumns.get(i).getSensorName(), true));
+      sensorColumnHeadings.add(
+        new ColumnHeading(sensorColumns.get(i).getSensorName(), true, true));
       sensorColumnIds[i] = sensorColumns.get(i).getDatabaseId();
     }
 
@@ -174,8 +188,8 @@ public class ManualQC2Data extends PlotPage2Data {
         diagnosticColumns.size());
 
       for (int i = 0; i < diagnosticColumns.size(); i++) {
-        diagnosticColumnNames.add(
-          new ColumnHeading(diagnosticColumns.get(i).getSensorName(), true));
+        diagnosticColumnNames.add(new ColumnHeading(
+          diagnosticColumns.get(i).getSensorName(), true, true));
         diagnosticColumnIds[i] = diagnosticColumns.get(i).getDatabaseId();
       }
 
@@ -188,7 +202,7 @@ public class ManualQC2Data extends PlotPage2Data {
         columnHeadings.put(variable.getName(),
           ColumnHeading.headingList(
             DataReducerFactory.getCalculationParameters(variable).keySet(),
-            true));
+            true, false));
       } catch (DataReductionException e) {
         error("Error getting variable headers", e);
       }
@@ -240,7 +254,7 @@ public class ManualQC2Data extends PlotPage2Data {
 
         StringBuilder positionString = new StringBuilder();
         positionString.append(StringUtils.formatNumber(longitude.getValue()));
-        positionString.append('|');
+        positionString.append(" | ");
         positionString.append(StringUtils.formatNumber(latitude.getValue()));
 
         record.addColumn(positionString.toString(), true,
@@ -302,5 +316,10 @@ public class ManualQC2Data extends PlotPage2Data {
     }
 
     return records;
+  }
+
+  @Override
+  protected List<String> getRowIDs() {
+    return rowIDs;
   }
 }

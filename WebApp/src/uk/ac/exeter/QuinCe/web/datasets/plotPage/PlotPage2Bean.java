@@ -368,4 +368,18 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
     return data.getErrorMessage();
   }
 
+  /**
+   * Indicates whether or not this dataset can be edited.
+   *
+   * <p>
+   * By default, a dataset can be edited unless it is an NRT dataset.
+   * </p>
+   *
+   * @return {@code true} if the dataset can be edited; {@code false} if not.
+   *
+   * @see DataSet#isNrt()
+   */
+  public boolean getCanEdit() {
+    return !dataset.isNrt();
+  }
 }
