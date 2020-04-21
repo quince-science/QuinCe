@@ -33,9 +33,12 @@
     <h:inputHidden id="columnHeadings"
       value="#{sessionScope[beanName].data.columnHeadingsJson}" />
 
+    <h:inputHidden id="rowIDs"
+      value="#{sessionScope[beanName].data.rowIDsJson}" />
+
     <p:remoteCommand name="loadData"
       action="#{sessionScope[beanName].loadData}"
-      process="@this" update="error columnHeadings"
+      process="@this" update="error columnHeadings rowIDs"
       oncomplete="dataLoaded()" />
 
   </h:form>
@@ -78,11 +81,7 @@
       <p:commandButton id="abortButton" value="Close"
         action="#{sessionScope[beanName].abort}" />
     </h:panelGrid>
-
-
   </p:dialog>
-
-
 
   <p:toolbar styleClass="plotPageHeader">
     <f:facet name="left">
@@ -117,7 +116,19 @@
     <f:facet name="right">
       <div id="qcMessage" class="inline"></div>
       <div id="qcControls">
-        QC CONTROLS
+        <ui:fragment rendered="#{!sessionScope[beanName].canEdit}">
+          <span class="instructions">NRT Dataset - cannot be edited</span>
+        </ui:fragment>
+        <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
+          <h:form id="selectActionsForm" method="post" styleClass="inline">
+              Selection:
+              <span id="selectedColumn"></span>
+            <span id="selectedRowsCount">0</span>
+            <p:commandButton icon="clearSelectionButton"
+              onclick="clearSelection();" styleClass="inlineButton tightButton" />
+            <ui:insert name="selectionActions">Selection actions here</ui:insert>
+          </h:form>
+        </ui:fragment>
         |
         <h:form id="finishButtonForm" method="post" styleClass="inline">
          <p:commandButton widgetVar="finishButton" value="Finish" ajax="false"
