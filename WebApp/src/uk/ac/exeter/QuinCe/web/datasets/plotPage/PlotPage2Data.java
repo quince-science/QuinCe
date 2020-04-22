@@ -34,7 +34,7 @@ public abstract class PlotPage2Data {
   /**
    * The column for which values have been selected
    */
-  protected int selectedColumn = -1;
+  protected long selectedColumn = -1L;
 
   /**
    * The IDs of the selected rows
@@ -403,7 +403,7 @@ public abstract class PlotPage2Data {
    *
    * @return The selected column.
    */
-  public int getSelectedColumn() {
+  public long getSelectedColumn() {
     return selectedColumn;
   }
 
@@ -413,7 +413,7 @@ public abstract class PlotPage2Data {
    * @param selectedColumn
    *          The selected column.
    */
-  public void setSelectedColumn(int selectedColumn) {
+  public void setSelectedColumn(long selectedColumn) {
     this.selectedColumn = selectedColumn;
   }
 

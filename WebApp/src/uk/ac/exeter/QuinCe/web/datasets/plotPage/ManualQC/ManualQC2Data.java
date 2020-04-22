@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -339,40 +338,6 @@ public class ManualQC2Data extends PlotPage2Data {
   }
 
   /**
-   * Get the database ID of a column by its index.
-   *
-   * <p>
-   * This method assumes that only sensor or diagnostic columns will be
-   * requested, since they are the only ones that will be edited. Requesting a
-   * column from a variable will result in an
-   * {@link ArrayIndexOutOfBoundsException}.
-   * </p>
-   *
-   * @param columnIndex
-   *          The column index.
-   * @return The column ID.
-   */
-  private long getColumnId(int columnIndex) {
-
-    long result = -1L;
-
-    Iterator<String> groups = columnHeadings.keySet().iterator();
-    int currentIndex = 0;
-
-    while (groups.hasNext()) {
-      List<ColumnHeading> groupHeaders = columnHeadings.get(groups.next());
-      if (currentIndex + groupHeaders.size() > columnIndex) {
-        result = groupHeaders.get(columnIndex - currentIndex).getId();
-        break;
-      } else {
-        currentIndex += groupHeaders.size();
-      }
-    }
-
-    return result;
-  }
-
-  /**
    * Accept automatic QC flags for the selected values.
    *
    * @throws RoutineException
@@ -384,15 +349,13 @@ public class ManualQC2Data extends PlotPage2Data {
   public void acceptAutoQC() {
 
     try {
-      long selectedColumnId = getColumnId(selectedColumn);
-
       List<SensorValue> updates = new ArrayList<SensorValue>(
         selectedRows.size());
 
       for (String rowId : selectedRows) {
         LocalDateTime rowTime = DateTimeUtils.longToDate(Long.parseLong(rowId));
         SensorValue sensorValue = sensorValues.getSensorValue(rowTime,
-          selectedColumnId);
+          selectedColumn);
 
         sensorValue.setUserQC(sensorValue.getAutoQcFlag(),
           sensorValue.getAutoQcResult().getAllMessages());

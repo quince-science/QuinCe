@@ -1,5 +1,5 @@
 function acceptAutoQc() {
-  $('#selectionForm\\:selectedColumn').val(selectedColumn);
+  $('#selectionForm\\:selectedColumn').val(getColumn(selectedColumn).id);
   $('#selectionForm\\:selectedRows').val(selectedRows);
   submitAutoQC();
 }
