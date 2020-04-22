@@ -120,12 +120,19 @@
           <span class="instructions">NRT Dataset - cannot be edited</span>
         </ui:fragment>
         <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
-          <h:form id="selectActionsForm" method="post" styleClass="inline">
-              Selection:
-              <span id="selectedColumn"></span>
-            <span id="selectedRowsCount">0</span>
+          <h:form id="selectionForm" method="post" styleClass="inline">
+            Selection:
+            <span id="selectedColumnDisplay"></span>
+            <span id="selectedRowsCountDisplay">0</span>
             <p:commandButton icon="clearSelectionButton"
               onclick="clearSelection();" styleClass="inlineButton tightButton" />
+            <h:inputHidden id="selectedColumn"
+              value="#{sessionScope[beanName].data.selectedColumn}" />
+            <h:inputHidden id="selectedRows"
+              value="#{sessionScope[beanName].data.selectedRows}" />
+
+            <ui:insert name="selectionFormEntries" />
+            <ui:insert name="selectionDialog" />
             <ui:insert name="selectionActions">Selection actions here</ui:insert>
           </h:form>
         </ui:fragment>

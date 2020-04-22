@@ -32,6 +32,16 @@ public abstract class PlotPage2Data {
   protected boolean loaded = false;
 
   /**
+   * The column for which values have been selected
+   */
+  protected int selectedColumn = -1;
+
+  /**
+   * The IDs of the selected rows
+   */
+  protected List<String> selectedRows = null;
+
+  /**
    * The indicator of the root field group.
    *
    * <p>
@@ -340,7 +350,7 @@ public abstract class PlotPage2Data {
    *
    * <p>
    * We can't use the standard JSF mechanism to directly return a
-   * {@code List<String>} to the front end, because JSF 'helpfully' coverts
+   * {@code List<String>} to the front end, because JSF 'helpfully' converts
    * numeric values to numbers instead of keeping them as strings which screws
    * up the Javascript processing.
    * </p>
@@ -386,5 +396,48 @@ public abstract class PlotPage2Data {
       this.group = headingGroup.getKey();
       this.headings = headingGroup.getValue();
     }
+  }
+
+  /**
+   * Get the currently selected column.
+   *
+   * @return The selected column.
+   */
+  public int getSelectedColumn() {
+    return selectedColumn;
+  }
+
+  /**
+   * Set the currently selected column.
+   *
+   * @param selectedColumn
+   *          The selected column.
+   */
+  public void setSelectedColumn(int selectedColumn) {
+    this.selectedColumn = selectedColumn;
+  }
+
+  /**
+   * Get the current list of selected rows.
+   *
+   * @return The selected rows.
+   */
+  public String getSelectedRows() {
+    return new Gson().toJson(selectedRows);
+  }
+
+  /**
+   * Set the list of currently selected rows.
+   *
+   * <p>
+   * Converts all supplied values to Strings.
+   * </p>
+   *
+   * @param selectedRows
+   *          The selected rows.
+   */
+  public void setSelectedRows(String selectedRows) {
+    this.selectedRows = uk.ac.exeter.QuinCe.utils.StringUtils
+      .delimitedToList(selectedRows, ",");
   }
 }

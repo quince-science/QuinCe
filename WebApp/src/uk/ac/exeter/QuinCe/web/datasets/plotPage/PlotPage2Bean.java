@@ -27,11 +27,6 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
   protected boolean dirty = false;
 
   /**
-   * The data for the page
-   */
-  protected PlotPage2Data data;
-
-  /**
    * The data for the current view of the data table.
    *
    * <p>
@@ -109,9 +104,7 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
    *
    * @return The page data.
    */
-  public PlotPage2Data getData() {
-    return data;
-  }
+  public abstract PlotPage2Data getData();
 
   /**
    * Get the navigation to the plot screen
@@ -123,7 +116,7 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
   /**
    * Clear all cached data
    */
-  private void reset() {
+  protected void reset() {
     dataset = null;
     dirty = false;
   }
@@ -189,8 +182,8 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
    */
   public int getRecordCount() {
     int result = -1;
-    if (null != data) {
-      result = data.size();
+    if (null != getData()) {
+      result = getData().size();
     }
 
     return result;
@@ -307,7 +300,8 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
    * @see PlotPage2Data#generateTableData(int, int)
    */
   public void generateTableData() {
-    tableJsonData = data.generateTableData(tableDataStart, tableDataLength);
+    tableJsonData = getData().generateTableData(tableDataStart,
+      tableDataLength);
   }
 
   /**
@@ -318,7 +312,7 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
    * </p>
    */
   public void loadData() {
-    data.loadData(getDataSource());
+    getData().loadData(getDataSource());
   }
 
   /**
@@ -331,7 +325,7 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
    *
    * @see #loadData()
    */
-  protected abstract void initDataObject();
+  protected abstract void initDataObject() throws Exception;
 
   /**
    * Finish with this bean instance, tidying up as necessary.
@@ -365,7 +359,7 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
    * @return The error message.
    */
   public String getError() {
-    return data.getErrorMessage();
+    return getData().getErrorMessage();
   }
 
   /**
