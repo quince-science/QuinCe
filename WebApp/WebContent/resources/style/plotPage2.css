@@ -53,6 +53,18 @@
     height: 10px;
 }
 
+.clearSelectionButton {
+  background-image: url("#{resource['image/delete_button.svg']}") !important;
+  background-size: cover;
+  margin-left: -13px !important;
+  margin-top: -13px !important;
+  width: 25px !important;
+  height: 25px !important;
+  margin-left: -13px !important;
+  margin-top: -13px !important;
+}
+
+
 /*
  *************************
  * Table

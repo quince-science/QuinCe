@@ -443,7 +443,7 @@ function drawTableSelection() {
     $('#selectedColumn').html('None');
     $('#selectedRowsCount').html('');
   } else {
-    $('#selectedColumn').html(JSON.parse($('#plotPageForm\\:columnHeadings').val())[selectedColumn]);
+    $('#selectedColumn').html(getColumn(selectedColumn).heading);
     $('#selectedRowsCount').html(selectedRows.length);
   }
 }
