@@ -7,8 +7,23 @@
 
   <ui:param name="beanName" value="manualQC2Bean" />
 
+  <ui:define name="localHead">
+    <h:outputScript name="script/manualQc2.js" />
+  </ui:define>
+
   <ui:define name="pageStatus">
     TO DO - FLAGS NEEDED HERE
+  </ui:define>
+
+  <ui:define name="selectionActions">
+    <p:remoteCommand name="submitAutoQC" action="#{manualQC2Bean.acceptAutoQC}"
+      process="selectedColumn selectedRows" update=":plotPageForm:error"
+      oncomplete="qcFlagsAccepted()" />
+
+    <p:commandButton widgetVar="acceptQcButton" value="Accept Automatic QC"
+      onclick="acceptAutoQc()" styleClass="inlineButton" />
+    <p:commandButton widgetVar="overrideQcButton" value="Override Automatic QC"
+      onclick="startUserQcFlags()" styleClass="inlineButton" />
   </ui:define>
 
 </ui:composition>
