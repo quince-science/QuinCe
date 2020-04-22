@@ -139,4 +139,8 @@ public class DatasetSensorValues {
 
     return valuesByDateAndColumn.get(time);
   }
+
+  public SensorValue getSensorValue(LocalDateTime time, long columnID) {
+    return valuesByDateAndColumn.get(time).get(columnID);
+  }
 }

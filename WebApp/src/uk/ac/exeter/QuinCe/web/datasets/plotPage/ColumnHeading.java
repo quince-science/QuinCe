@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
@@ -13,6 +13,11 @@ import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
  *
  */
 public class ColumnHeading {
+
+  /**
+   * The column's ID
+   */
+  private final long id;
 
   /**
    * The column heading.
@@ -37,10 +42,21 @@ public class ColumnHeading {
    * @param numeric
    *          Whether the column is numeric.
    */
-  public ColumnHeading(String heading, boolean numeric, boolean editable) {
+  public ColumnHeading(long id, String heading, boolean numeric,
+    boolean editable) {
+    this.id = id;
     this.heading = heading;
     this.numeric = numeric;
     this.editable = editable;
+  }
+
+  /**
+   * Get the column's ID
+   *
+   * @return The column ID
+   */
+  public long getId() {
+    return id;
   }
 
   /**
@@ -78,10 +94,11 @@ public class ColumnHeading {
    *          The {@link #editable} flag to use for the columns.
    * @return The list of {@link ColumnHeading} objects.
    */
-  public static List<ColumnHeading> headingList(Collection<String> names,
+  public static List<ColumnHeading> headingList(Map<String, Long> headings,
     boolean numeric, boolean editable) {
 
-    return names.stream().map(x -> new ColumnHeading(x, numeric, editable))
+    return headings.entrySet().stream()
+      .map(x -> new ColumnHeading(x.getValue(), x.getKey(), numeric, editable))
       .collect(Collectors.toList());
   }
 }

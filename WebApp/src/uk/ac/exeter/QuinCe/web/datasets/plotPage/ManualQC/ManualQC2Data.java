@@ -1,9 +1,11 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,18 +22,27 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 
 public class ManualQC2Data extends PlotPage2Data {
+
+  /**
+   * The database connection to use for all actions. Set up by
+   * {@link #loadData(DataSource)}.
+   */
+  private Connection conn = null;
 
   /**
    * The dataset whose data is represented.
@@ -95,12 +106,12 @@ public class ManualQC2Data extends PlotPage2Data {
    *          The dataset.
    * @param dataSource
    *          A data source.
-   * @param progress
-   *          A Progress object that can be updated as data is loaded.
+   * @throws SQLException
    * @throws Exception
    *           If the data cannot be loaded.
    */
-  protected ManualQC2Data(Instrument instrument, DataSet dataset) {
+  protected ManualQC2Data(DataSource dataSource, Instrument instrument,
+    DataSet dataset) throws SQLException {
     this.instrument = instrument;
     this.dataset = dataset;
   }
@@ -116,24 +127,24 @@ public class ManualQC2Data extends PlotPage2Data {
   @Override
   public void loadDataAction(DataSource dataSource) throws Exception {
 
-    try (Connection conn = dataSource.getConnection()) {
+    // Store the connection for later use.
+    conn = dataSource.getConnection();
 
-      sensorValues = DataSetDataDB.getSensorValues(conn, instrument,
-        dataset.getId(), false);
+    sensorValues = DataSetDataDB.getSensorValues(conn, instrument,
+      dataset.getId(), false);
 
-      measurements = DataSetDataDB.getMeasurementTimes(conn, dataset.getId(),
-        instrument.getMeasurementRunTypes());
+    measurements = DataSetDataDB.getMeasurementTimes(conn, dataset.getId(),
+      instrument.getMeasurementRunTypes());
 
-      dataReduction = DataSetDataDB.getDataReductionData(conn, instrument,
-        dataset);
+    dataReduction = DataSetDataDB.getDataReductionData(conn, instrument,
+      dataset);
 
-      // Build the row IDs
-      rowIDs = sensorValues.getTimes().stream()
-        .map(t -> String.valueOf(DateTimeUtils.dateToLong(t)))
-        .collect(Collectors.toList());
+    // Build the row IDs
+    rowIDs = sensorValues.getTimes().stream()
+      .map(t -> String.valueOf(DateTimeUtils.dateToLong(t)))
+      .collect(Collectors.toList());
 
-      buildColumnHeaders();
-    }
+    buildColumnHeaders();
   }
 
   private void buildColumnHeaders() {
@@ -142,9 +153,10 @@ public class ManualQC2Data extends PlotPage2Data {
 
     // Time and Position
     List<ColumnHeading> rootColumns = new ArrayList<ColumnHeading>(3);
-    rootColumns
-      .add(new ColumnHeading(FileDefinition.TIME_COLUMN_NAME, false, false));
-    rootColumns.add(new ColumnHeading("Position", false, true));
+    rootColumns.add(new ColumnHeading(FileDefinition.TIME_COLUMN_ID,
+      FileDefinition.TIME_COLUMN_NAME, false, false));
+    rootColumns.add(new ColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
+      "Position", false, true));
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
 
@@ -175,9 +187,11 @@ public class ManualQC2Data extends PlotPage2Data {
     sensorColumnIds = new long[sensorColumns.size()];
 
     for (int i = 0; i < sensorColumns.size(); i++) {
-      sensorColumnHeadings.add(
-        new ColumnHeading(sensorColumns.get(i).getSensorName(), true, true));
-      sensorColumnIds[i] = sensorColumns.get(i).getDatabaseId();
+
+      SensorAssignment column = sensorColumns.get(i);
+      sensorColumnHeadings.add(new ColumnHeading(column.getDatabaseId(),
+        column.getSensorName(), true, true));
+      sensorColumnIds[i] = column.getDatabaseId();
     }
 
     columnHeadings.put("Sensors", sensorColumnHeadings);
@@ -188,9 +202,12 @@ public class ManualQC2Data extends PlotPage2Data {
         diagnosticColumns.size());
 
       for (int i = 0; i < diagnosticColumns.size(); i++) {
-        diagnosticColumnNames.add(new ColumnHeading(
-          diagnosticColumns.get(i).getSensorName(), true, true));
-        diagnosticColumnIds[i] = diagnosticColumns.get(i).getDatabaseId();
+
+        SensorAssignment column = diagnosticColumns.get(i);
+
+        diagnosticColumnNames.add(new ColumnHeading(column.getDatabaseId(),
+          column.getSensorName(), true, true));
+        diagnosticColumnIds[i] = column.getDatabaseId();
       }
 
       columnHeadings.put("Diagnostics", diagnosticColumnNames);
@@ -199,10 +216,8 @@ public class ManualQC2Data extends PlotPage2Data {
     // Each of the instrument variables
     for (InstrumentVariable variable : instrument.getVariables()) {
       try {
-        columnHeadings.put(variable.getName(),
-          ColumnHeading.headingList(
-            DataReducerFactory.getCalculationParameters(variable).keySet(),
-            true, false));
+        columnHeadings.put(variable.getName(), ColumnHeading.headingList(
+          DataReducerFactory.getCalculationParameters(variable), true, false));
       } catch (DataReductionException e) {
         error("Error getting variable headers", e);
       }
@@ -321,5 +336,81 @@ public class ManualQC2Data extends PlotPage2Data {
   @Override
   protected List<String> getRowIDs() {
     return rowIDs;
+  }
+
+  /**
+   * Get the database ID of a column by its index.
+   *
+   * <p>
+   * This method assumes that only sensor or diagnostic columns will be
+   * requested, since they are the only ones that will be edited. Requesting a
+   * column from a variable will result in an
+   * {@link ArrayIndexOutOfBoundsException}.
+   * </p>
+   *
+   * @param columnIndex
+   *          The column index.
+   * @return The column ID.
+   */
+  private long getColumnId(int columnIndex) {
+
+    long result = -1L;
+
+    Iterator<String> groups = columnHeadings.keySet().iterator();
+    int currentIndex = 0;
+
+    while (groups.hasNext()) {
+      List<ColumnHeading> groupHeaders = columnHeadings.get(groups.next());
+      if (currentIndex + groupHeaders.size() > columnIndex) {
+        result = groupHeaders.get(columnIndex - currentIndex).getId();
+        break;
+      } else {
+        currentIndex += groupHeaders.size();
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Accept automatic QC flags for the selected values.
+   *
+   * @throws RoutineException
+   *           If the automatic QC details cannot be retrieved.
+   * @throws SQLException
+   * @throws DatabaseException
+   * @throws MissingParamException
+   */
+  public void acceptAutoQC() {
+
+    try {
+      long selectedColumnId = getColumnId(selectedColumn);
+
+      List<SensorValue> updates = new ArrayList<SensorValue>(
+        selectedRows.size());
+
+      for (String rowId : selectedRows) {
+        LocalDateTime rowTime = DateTimeUtils.longToDate(Long.parseLong(rowId));
+        SensorValue sensorValue = sensorValues.getSensorValue(rowTime,
+          selectedColumnId);
+
+        sensorValue.setUserQC(sensorValue.getAutoQcFlag(),
+          sensorValue.getAutoQcResult().getAllMessages());
+
+        updates.add(sensorValue);
+      }
+
+      DataSetDataDB.storeSensorValues(conn, updates);
+    } catch (Exception e) {
+      error("Error while updating QC flags", e);
+    }
+  }
+
+  protected void destroy() {
+    try {
+      conn.close();
+    } catch (SQLException e) {
+      // Not much we can do about this.
+    }
   }
 }

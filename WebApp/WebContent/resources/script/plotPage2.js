@@ -440,11 +440,11 @@ function drawTableSelection() {
 
   // Update the selection summary
   if (selectedRows.length == 0) {
-    $('#selectedColumn').html('None');
-    $('#selectedRowsCount').html('');
+    $('#selectedColumnDisplay').html('None');
+    $('#selectedRowsCountDisplay').html('');
   } else {
-    $('#selectedColumn').html(getColumn(selectedColumn).heading);
-    $('#selectedRowsCount').html(selectedRows.length);
+    $('#selectedColumnDisplay').html(getColumn(selectedColumn).heading);
+    $('#selectedRowsCountDisplay').html(selectedRows.length);
   }
 }
 
@@ -493,7 +493,7 @@ function getColumnDefs() {
           classes.push(flagClass);
         }
 
-        if (data['needsFlag']) {
+        if (data['flagNeeded']) {
           classes.push('needsFlag');
         }
         

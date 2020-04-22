@@ -26,6 +26,11 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
+   * Fixed column ID for the time
+   */
+  public static final long TIME_COLUMN_ID = -1100L;
+
+  /**
    * Fixed column name for the time
    */
   public static final String TIME_COLUMN_NAME = "Time";
