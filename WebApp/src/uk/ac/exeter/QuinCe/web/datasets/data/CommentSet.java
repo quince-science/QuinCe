@@ -12,6 +12,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class CommentSet implements Iterable<CommentSetEntry> {
 
   /**
