@@ -59,10 +59,6 @@ var tableScrollRow = null;
 var scrollEventTimer = null;
 var scrollEventTimeLimit = 300;
 
-//Table selections
-var selectedColumn = -1;
-var selectedRows = [];
-
 //The row number (in the data file) of the last selected/deselected row, and
 //which action was performed.
 var lastClickedRow = -1;
@@ -211,6 +207,16 @@ function clearSelection() {
 function selectionUpdated() {
 
   drawTableSelection();
+  
+  if (selectedRows.length == 0) {
+    $('#selectionActions :button').each(function(index, value) {
+      $(value).prop('disabled', true).addClass('ui-state-disabled');
+    });
+  } else {
+    $('#selectionActions :button').each(function(index, value) {
+      $(value).prop('disabled', false).removeClass('ui-state-disabled');
+    });
+  }
   
 /*
   // Redraw the plots to show selection
