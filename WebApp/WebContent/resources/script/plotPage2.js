@@ -252,15 +252,10 @@ function getColumn(colIndex) {
   return result;
 }
 
-function canSelectCell(rowID, colIndex) {
 
-  let result = true;
-
-  if (!getColumn(colIndex).editable) {
-    result = false;
-  }
-
-  return result;
+function fillSelectionForm() {
+  $('#selectionForm\\:selectedColumn').val(getColumn(selectedColumn).id);
+  $('#selectionForm\\:selectedRows').val(selectedRows);
 }
 
 
@@ -588,3 +583,15 @@ function getRowsInRange(startRow, endRow, columnIndex) {
 
   return rows;
 }
+
+function canSelectCell(rowID, colIndex) {
+
+  let result = true;
+
+  if (!getColumn(colIndex).editable) {
+    result = false;
+  }
+
+  return result;
+}
+

@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -31,6 +32,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.utils.ValueCounter;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
@@ -90,6 +92,26 @@ public class ManualQC2Data extends PlotPage2Data {
    * in {@link #columnHeaders}.
    */
   private long[] diagnosticColumnIds = null;
+
+  /**
+   * The initial user QC comments generated from the selected values.
+   */
+  private String userCommentsList = null;
+
+  /**
+   * The worst QC flag set on any of the selected values.
+   */
+  private Flag worstSelectedFlag = Flag.GOOD;
+
+  /**
+   * The flag set during user QC
+   */
+  private Flag userFlag = Flag.GOOD;
+
+  /**
+   * The user QC comment
+   */
+  private String userComment = null;
 
   /**
    * Construct the data object.
@@ -349,24 +371,37 @@ public class ManualQC2Data extends PlotPage2Data {
   public void acceptAutoQC() {
 
     try {
-      List<SensorValue> updates = new ArrayList<SensorValue>(
-        selectedRows.size());
 
-      for (String rowId : selectedRows) {
-        LocalDateTime rowTime = DateTimeUtils.longToDate(Long.parseLong(rowId));
-        SensorValue sensorValue = sensorValues.getSensorValue(rowTime,
-          selectedColumn);
+      List<SensorValue> sensorValues = getSelectedSensorValues();
 
+      for (SensorValue sensorValue : sensorValues) {
         sensorValue.setUserQC(sensorValue.getAutoQcFlag(),
           sensorValue.getAutoQcResult().getAllMessages());
-
-        updates.add(sensorValue);
       }
 
-      DataSetDataDB.storeSensorValues(conn, updates);
+      DataSetDataDB.storeSensorValues(conn, sensorValues);
     } catch (Exception e) {
       error("Error while updating QC flags", e);
     }
+  }
+
+  /**
+   * Get the {@link SensorValue}s for the current selection.
+   *
+   * @return The {@link SensorValue}s.
+   */
+  private List<SensorValue> getSelectedSensorValues() {
+
+    List<SensorValue> values = new ArrayList<SensorValue>(selectedRows.size());
+
+    if (null != selectedRows) {
+      for (String rowId : selectedRows) {
+        values.add(sensorValues.getSensorValue(
+          DateTimeUtils.longToDate(Long.parseLong(rowId)), selectedColumn));
+      }
+    }
+
+    return values;
   }
 
   protected void destroy() {
@@ -374,6 +409,82 @@ public class ManualQC2Data extends PlotPage2Data {
       conn.close();
     } catch (SQLException e) {
       // Not much we can do about this.
+    }
+  }
+
+  /**
+   * Generate the QC comments list and find the worst QC flag from the currently
+   * selected values.
+   */
+  public void generateUserCommentsList() {
+
+    ValueCounter comments = new ValueCounter();
+    worstSelectedFlag = Flag.GOOD;
+
+    for (SensorValue sensorValue : getSelectedSensorValues()) {
+      if (sensorValue.getDisplayFlag().moreSignificantThan(worstSelectedFlag)) {
+        worstSelectedFlag = sensorValue.getDisplayFlag();
+      }
+
+      if (!sensorValue.flagNeeded()) {
+        comments.add(sensorValue.getUserQCMessage());
+      } else {
+        try {
+          comments.addAll(sensorValue.getAutoQcResult().getAllMessagesList());
+        } catch (RoutineException e) {
+          error("Error getting QC comments", e);
+        }
+      }
+    }
+
+    userCommentsList = comments.toString();
+  }
+
+  /**
+   * Get the QC comments generated from the current selection.
+   *
+   * @return The QC comments
+   */
+  public String getUserCommentsList() {
+    return userCommentsList;
+  }
+
+  /**
+   * Get the worst QC flag from the current selection.
+   *
+   * @return The QC flag.
+   */
+  public Flag getWorstSelectedFlag() {
+    return worstSelectedFlag;
+  }
+
+  public int getUserFlag() {
+    return userFlag.getFlagValue();
+  }
+
+  public void setUserFlag(int userFlag) {
+    try {
+      this.userFlag = new Flag(userFlag);
+    } catch (InvalidFlagException e) {
+      error("Error setting QC flag", e);
+    }
+  }
+
+  public String getUserComment() {
+    return userComment;
+  }
+
+  public void setUserComment(String userComment) {
+    this.userComment = userComment;
+  }
+
+  public void applyManualFlag() {
+    try {
+      List<SensorValue> sensorValues = getSelectedSensorValues();
+      sensorValues.forEach(v -> v.setUserQC(userFlag, userComment));
+      DataSetDataDB.storeSensorValues(conn, sensorValues);
+    } catch (Exception e) {
+      error("Error storing QC data", e);
     }
   }
 }
