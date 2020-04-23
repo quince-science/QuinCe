@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
  * @author Steve Jones
  * @see CommentSet
  */
+@Deprecated
 public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
