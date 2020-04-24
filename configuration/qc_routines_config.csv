@@ -29,15 +29,13 @@ Outlier,Ambient Pressure,3
 Outlier,xCO₂ (with standards),3
 Outlier,"xCO₂ water (dry, no standards)",3
 Outlier,"xCO₂ atmosphere (dry, no standards)",3
-HighDelta,Intake Temperature,3
-HighDelta,Salinity,3
-HighDelta,Equilibrator Temperature,3
-HighDelta,Equilibrator Pressure (absolute),50
-HighDelta,Equilibrator Pressure (differential),50
-HighDelta,xH₂O (with standards),5
-HighDelta,Ambient Pressure,50
-HighDelta,xCO₂ (with standards),20
-HighDelta,"xCO₂ water (dry, no standards)",20
-HighDelta,"xCO₂ atmosphere (dry, no standards)",20
+GradientTest,Intake Temperature,3
+GradientTest,Salinity,3
 GradientTest,Equilibrator Temperature,3
 GradientTest,Equilibrator Pressure (absolute),50
+GradientTest,Equilibrator Pressure (differential),50
+GradientTest,xH₂O (with standards),5
+GradientTest,Ambient Pressure,50
+GradientTest,xCO₂ (with standards),20
+GradientTest,"xCO₂ water (dry, no standards)",20
+GradientTest,"xCO₂ atmosphere (dry, no standards)",20

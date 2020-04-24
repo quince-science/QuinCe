@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
@@ -49,7 +50,6 @@ public class GradientTestRoutine extends Routine {
     SensorValue prevValue = null;
     SensorValue currValue = null;
     SensorValue nextValue = null;
-    int gradientStart = 0;
 
     List<SensorValue> filteredValues = filterMissingValues(values);
 
@@ -60,41 +60,39 @@ public class GradientTestRoutine extends Routine {
       prevValue = filteredValues.get(i - 1);
       nextValue = filteredValues.get(i + 1);
 
-      // calculate observed change
-      double obsChange = Math.abs(currValue.getDoubleValue()
-        - (nextValue.getDoubleValue() + prevValue.getDoubleValue()) / 2);
-      // calculate expected change
-      double expChange = Math
-        .abs((nextValue.getDoubleValue() - prevValue.getDoubleValue()) / 2);
+      // time-increment
+      double tDiff = ChronoUnit.SECONDS.between(prevValue.getTime(),
+        currValue.getTime()) / 60.0;
 
-      // Eqs from Ylva Ericson CPH
-      // Spike: Test value = | cV - (nV + pV)/2 | - | (nV - pV) / 2 |,
-      // Gradient: Test value = | cV - (nV + pV)/2 | = obsChange
-      // fitGradient = obsChange;
-      double fitSpike = obsChange - expChange;
+      double delta = Math
+        .abs(currValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
 
-      if (obsChange > maxDelta) {
-        if (fitSpike > maxDelta) {
-          // spike, add flag to currValue
-          addFlag(currValue, Flag.BAD, maxDelta, fitSpike);
-          System.out
-            .println("Setting spike-flag " + currValue.getDoubleValue());
+      if (delta > maxDelta) { // spike or gradient
+        double deltaNext = Math
+          .abs(nextValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
+        if (deltaNext < maxDelta) { // Spike
+          addFlag(currValue, Flag.BAD, maxDelta, delta);
           i++;
-        } else { // gradient
-          gradientStart = i - 1;
-          addFlag(prevValue, Flag.BAD, maxDelta, obsChange);
 
-          while (obsChange > maxDelta) {
-            addFlag(currValue, Flag.BAD, maxDelta, obsChange);
+        } else { // Gradient
+          addFlag(prevValue, Flag.BAD, maxDelta, delta);
+          addFlag(currValue, Flag.BAD, maxDelta, delta);
 
+          while ((delta > maxDelta) & (i < filteredValues.size() - 1)) {
             i++;
             currValue = filteredValues.get(i);
             prevValue = filteredValues.get(i - 1);
-            nextValue = filteredValues.get(i + 1);
 
-            obsChange = Math.abs(currValue.getDoubleValue()
-              - (nextValue.getDoubleValue() + prevValue.getDoubleValue()) / 2);
+            tDiff = ChronoUnit.SECONDS.between(prevValue.getTime(),
+              currValue.getTime()) / 60.0;
+
+            delta = Math.abs(
+              currValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
+
+            addFlag(currValue, Flag.BAD, maxDelta, delta);
+
           }
+
         }
       }
       i++;
