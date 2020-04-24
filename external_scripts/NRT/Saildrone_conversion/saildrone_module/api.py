@@ -1,5 +1,5 @@
 ###############################################################################
-### FUNCTIONS WHICH SEND REQUESTS TO THE SAILDRONE API                      ###
+### FUNCTIONS WHICH SEND REQUESTS TO THE SAILDRONE API											###
 ###############################################################################
 
 ### Description:
@@ -12,6 +12,7 @@
 #------------------------------------------------------------------------------
 import json
 import urllib.request
+from urllib.error import HTTPError
 import os
 import pandas as pd
 from datetime import datetime
@@ -21,16 +22,33 @@ our_header = {'Content-Type':'application/json', 'Accept':'application/json'}
 
 
 # Function which converts html request output to a dictionary
-def to_dict(request_output):
+def to_dict(url):
 
-	# Read the request output
-	byte = urllib.request.urlopen(request_output).read()
+	response = None
 
-	# Convert the output to utf-8
-	string = byte.decode('utf-8')
+	# urlopen throws an error if the HTTP status is not 200.
+	# The error is still a response object, so we can grab it -
+	# we need to examine it either way
+	try:
+		response = urllib.request.urlopen(url)
+	except HTTPError as e:
+		response = e
 
-	# Convert to dictionary
-	dictionary = json.loads(string)
+	# Get the response body as a dictionary
+	dictionary = json.loads(response.read().decode('utf-8'))
+
+	error = False
+
+	if response.status == 400:
+		if dictionary['message'] != "Request out of time bound":
+			error = True
+	elif response.status >= 400:
+		error = True
+
+	if error:
+		# The response is an error, so we can simply raise it
+		raise response
+
 	return dictionary
 
 
