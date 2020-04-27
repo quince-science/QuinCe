@@ -76,9 +76,10 @@ public class GradientTestRoutine extends Routine {
 
         } else { // Gradient
           addFlag(prevValue, Flag.BAD, maxDelta, delta);
-          addFlag(currValue, Flag.BAD, maxDelta, delta);
 
           while ((delta > maxDelta) & (i < filteredValues.size() - 1)) {
+            addFlag(currValue, Flag.BAD, maxDelta, delta);
+
             i++;
             currValue = filteredValues.get(i);
             prevValue = filteredValues.get(i - 1);
@@ -88,8 +89,6 @@ public class GradientTestRoutine extends Routine {
 
             delta = Math.abs(
               currValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
-
-            addFlag(currValue, Flag.BAD, maxDelta, delta);
 
           }
 
