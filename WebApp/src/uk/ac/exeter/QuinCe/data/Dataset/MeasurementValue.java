@@ -67,9 +67,17 @@ public class MeasurementValue {
       worstValueFlag = sensorValue.getUserQCFlag(true);
     }
 
-    String valueQCMessage = sensorValue.getUserQCMessage();
+    String valueQCMessage = sensorValue.getUserQCMessage(true);
+
+    String messagePrefix = sensorType.getName();
+
+    // The latitude is ignored so we don't need to worry about that.
+    if (sensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
+      messagePrefix = "Position";
+    }
+
     if (valueQCMessage.length() > 0) {
-      qcMessage.add(sensorType.getName() + ": " + valueQCMessage);
+      qcMessage.add(messagePrefix + ": " + valueQCMessage);
     }
   }
 

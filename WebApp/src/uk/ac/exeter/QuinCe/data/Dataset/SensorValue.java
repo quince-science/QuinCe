@@ -8,6 +8,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -25,6 +26,12 @@ public class SensorValue implements Comparable<SensorValue> {
    * The QC comment used for missing values
    */
   public static final String MISSING_QC_COMMENT = "Missing";
+
+  /**
+   * Prefix applied to QC comments on sensors inherited from positional QC
+   */
+  // TODO Make this private once the old ManualQCBean is deleted
+  public static final String POSITION_QC_PREFIX = "Position QC:";
 
   /**
    * The database ID of this value
@@ -235,17 +242,13 @@ public class SensorValue implements Comparable<SensorValue> {
 
   public String getUserQCMessage(boolean ignoreNeeded) {
 
-    String result = null == userQCMessage ? "" : userQCMessage;
+    String result = (null == userQCMessage ? "" : userQCMessage);
 
-    if ((null == userQCFlag || userQCFlag.equals(Flag.NEEDED))
-      && ignoreNeeded) {
-
-      try {
-        result = getAutoQcResult().getAllMessages();
-      } catch (RoutineException e) {
-        e.printStackTrace();
-        result = "Unable to retrieve auto QC messages";
-      }
+    // If we're ignoring the position, clear the QC message if it's from the
+    // position QC
+    if (result.startsWith(POSITION_QC_PREFIX) && true
+      && columnId != FileDefinition.LONGITUDE_COLUMN_ID) {
+      result = "";
     }
 
     return result;
@@ -303,7 +306,8 @@ public class SensorValue implements Comparable<SensorValue> {
   }
 
   /**
-   * Set the User QC information
+   * Set the User QC information. If this will override an existing position QC,
+   * only set it if the flag is worse than the position flag.
    *
    * @param flag
    *          The user QC flag
@@ -311,9 +315,74 @@ public class SensorValue implements Comparable<SensorValue> {
    *          The user QC message
    */
   public void setUserQC(Flag flag, String message) {
+
+    boolean setQC = true;
+
+    // Don't override an existing position QC that's worse than what we're
+    // trying to set
+    if (userQCMessage.startsWith(POSITION_QC_PREFIX)
+      && userQCFlag.moreSignificantThan(flag)) {
+      setQC = false;
+    }
+
+    if (setQC) {
+      setUserQCAction(flag, message);
+    }
+  }
+
+  private void setUserQCAction(Flag flag, String message) {
     userQCFlag = flag;
     userQCMessage = message;
     dirty = true;
+  }
+
+  /**
+   * Set the position QC for this value.
+   *
+   * <p>
+   * If the position value is GOOD, then it doesn't affect the value's QC. If
+   * the value's auto QC is not GOOD, then the user flag is NEEDED.
+   * </p>
+   *
+   * <p>
+   * If the position value is not GOOD, then it replaces the existing user QC if
+   * it's either NEEDED or less significant than the position flag.
+   * </p>
+   *
+   * @param positionFlag
+   *          The position QC flag.
+   * @param positionMessage
+   *          The position QC message.
+   * @throws RoutineException
+   */
+  public void setPositionQC(Flag positionFlag, String positionMessage)
+    throws RoutineException {
+
+    if (positionFlag.isGood() && userQCMessage.startsWith(POSITION_QC_PREFIX)) {
+      if (!getAutoQcFlag().isGood()) {
+        setUserQCAction(Flag.NEEDED, getAutoQcResult().getAllMessages());
+      } else {
+        setUserQCAction(Flag.ASSUMED_GOOD, null);
+      }
+
+      // Rewrite the user QC if (a) already position QC, (b) NEEDED, or (c)
+      // worse than existing user QC
+
+      // If this is already a position QC, just overwrite it
+    } else if (null != userQCMessage
+      && userQCMessage.startsWith(POSITION_QC_PREFIX)) {
+
+      setUserQCAction(positionFlag, POSITION_QC_PREFIX + positionMessage);
+
+      // If the existing flag is NEEDED and the position flag is worse than the
+      // auto qc flag, or the user flag is anything else and the position flag
+      // is worse, use the position QC
+    } else if ((userQCFlag.equals(Flag.NEEDED)
+      && positionFlag.moreSignificantThan(getAutoQcFlag()))
+      || positionFlag.moreSignificantThan(userQCFlag)) {
+
+      setUserQCAction(positionFlag, POSITION_QC_PREFIX + positionMessage);
+    }
   }
 
   /**
@@ -457,6 +526,10 @@ public class SensorValue implements Comparable<SensorValue> {
 
   public boolean flagNeeded() {
     return userQCFlag.equals(Flag.NEEDED);
+  }
+
+  public boolean hasPositionQC() {
+    return userQCMessage.startsWith(POSITION_QC_PREFIX);
   }
 
   @Override

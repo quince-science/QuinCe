@@ -15,10 +15,10 @@ import org.primefaces.json.JSONArray;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -224,7 +224,7 @@ public class ManualQcBean extends PlotPageBean {
       if (flag.equalSignificance(value.getQcFlag())
         || flag.moreSignificantThan(value.getQcFlag())) {
 
-        value.setQC(flag, PositionQCRoutine.POSITION_QC_PREFIX + comment);
+        value.setQC(flag, SensorValue.POSITION_QC_PREFIX + comment);
         updatedValues.add(value);
       }
     }
@@ -378,7 +378,7 @@ public class ManualQcBean extends PlotPageBean {
             value.setQC(flag, userComment);
           } else {
             value.setQC(position.getQcFlag(),
-              PositionQCRoutine.POSITION_QC_PREFIX + position.getQcComment());
+              SensorValue.POSITION_QC_PREFIX + position.getQcComment());
           }
 
           updates.add(value);
@@ -406,7 +406,7 @@ public class ManualQcBean extends PlotPageBean {
     // may overwrite the position fields
     updates.addAll(pageData.applyQcToFieldSet(times,
       fieldSets.getFieldSet(DataSetDataDB.SENSORS_FIELDSET), lonField,
-      PositionQCRoutine.POSITION_QC_PREFIX, new Flag(userFlag), userComment));
+      SensorValue.POSITION_QC_PREFIX, new Flag(userFlag), userComment));
 
     // Now update the position fields
     updates.addAll(pageData.setQC(times, lonField, userFlag, userComment));
