@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,13 @@ public class DatasetSensorValues {
   private TreeMap<LocalDateTime, Map<Long, SensorValue>> valuesByDateAndColumn;
 
   private final Instrument instrument;
+
+  /**
+   * A cache of all the times in the dataset
+   *
+   * @see #getTimes()
+   */
+  private List<LocalDateTime> times = null;
 
   public DatasetSensorValues(Instrument instrument) {
     valuesById = new HashMap<Long, SensorValue>();
@@ -104,6 +112,9 @@ public class DatasetSensorValues {
     }
 
     valuesByDateAndColumn.get(time).put(sensorValue.getColumnId(), sensorValue);
+
+    // Clear the cache of times, since it will need rebuilding.
+    times = null;
   }
 
   /**
@@ -132,7 +143,12 @@ public class DatasetSensorValues {
   }
 
   public List<LocalDateTime> getTimes() {
-    return new ArrayList<LocalDateTime>(valuesByDateAndColumn.keySet());
+
+    if (null == times) {
+      times = new ArrayList<LocalDateTime>(valuesByDateAndColumn.keySet());
+    }
+
+    return times;
   }
 
   public Map<Long, SensorValue> get(LocalDateTime time) {
@@ -142,5 +158,72 @@ public class DatasetSensorValues {
 
   public SensorValue getSensorValue(LocalDateTime time, long columnID) {
     return valuesByDateAndColumn.get(time).get(columnID);
+  }
+
+  /**
+   * Get all sensor values within a specified time range.
+   *
+   * <p>
+   * The start time is inclusive, while the end time is exclusive.
+   * </p>
+   *
+   * <p>
+   * <strong>Note:</strong> The start time must be present in the dataset for
+   * this method to work.
+   * </p>
+   *
+   * @param start
+   *          The start time (inclusive).
+   * @param end
+   *          The end time (exclusive).
+   * @return The sensor values that fall within the time range.
+   */
+  public List<SensorValue> getByTimeRange(LocalDateTime start,
+    LocalDateTime end) {
+
+    List<SensorValue> result = new ArrayList<SensorValue>();
+
+    List<LocalDateTime> times = getTimes();
+
+    int timeIndex = Collections.binarySearch(times, start);
+    if (timeIndex >= 0) {
+      while (times.get(timeIndex).isBefore(end)) {
+
+        Map<Long, SensorValue> timeSensorValues = valuesByDateAndColumn
+          .get(times.get(timeIndex));
+
+        result.addAll(timeSensorValues.values());
+        timeIndex++;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the {@link SensorValue} for a column that occurs either on or before
+   * the specified time.
+   *
+   * @param columnId
+   *          The required column
+   * @param time
+   *          The time
+   * @return The {@link SensorValue}.
+   */
+  public SensorValue getSensorValueOnOrBefore(long columnId,
+    LocalDateTime time) {
+
+    SensorValue result = valuesByDateAndColumn.get(time).get(columnId);
+
+    if (null == result) {
+      int timeIndex = getTimes().indexOf(time);
+      while (null == result && timeIndex > 0) {
+        timeIndex--;
+        result = valuesByDateAndColumn.get(time).get(columnId);
+      }
+    }
+
+    return result;
+
   }
 }

@@ -374,23 +374,37 @@ function setupTableClickHandlers() {
 
   // Set click handler
   $('.dataTable').on('click', 'tbody td', function() {
-    clickCellAction(this._DT_CellIndex, event.shiftKey);
+    clickCellAction(this, event.shiftKey);
   })
 }
 
-function clickCellAction(cellIndex, shiftClick) {
+function clickCellAction(cell, shiftClick) {
+  
+  let rowIndex = 0;
+  let colIndex = 0;
+  
+  // Normal cells have a _DT_CellIndex property.
+  
+  // The frozen columns are actually in a separate table drawn over the
+  // top of the jsDataTable, and have the ids in the cells' data elements.
+  if (cell._DT_CellIndex) {
+    rowIndex = cell._DT_CellIndex.row;
+    colIndex = cell._DT_CellIndex.column;
+  } else {
+    rowIndex = $(cell).data().dtRow;
+    colIndex = $(cell).data().dtColumn;
+  }
 
-  let rowId = jsDataTable.row(cellIndex.row).data()['DT_RowId'];
-  let columnIndex = cellIndex.column;
+  let rowId = jsDataTable.row(rowIndex).data()['DT_RowId'];
 
   // If the cell isn't selectable, or has no value, do nothing.
-  if (canSelectCell(rowId, columnIndex) &&
-    null != jsDataTable.cell(cellIndex).data() &&
-    null != jsDataTable.cell(cellIndex).data().value &&
-    '' != jsDataTable.cell(cellIndex).data().value) {
+  if (canSelectCell(rowId, colIndex) &&
+    null != jsDataTable.cell(rowIndex, colIndex).data() &&
+    null != jsDataTable.cell(rowIndex, colIndex).data().value &&
+    '' != jsDataTable.cell(rowIndex, colIndex).data().value) {
 
-    if (columnIndex != selectedColumn) {
-      selectedColumn = columnIndex;
+    if (colIndex != selectedColumn) {
+      selectedColumn = colIndex;
       selectedRows = [rowId];
       lastClickedRow = rowId;
       lastClickedAction = SELECT_ACTION;
@@ -406,7 +420,7 @@ function clickCellAction(cellIndex, shiftClick) {
           action = SELECT_ACTION;
         }
       } else {
-        actionRows = getRowsInRange(lastClickedRow, rowId, columnIndex);
+        actionRows = getRowsInRange(lastClickedRow, rowId, colIndex);
       }
 
       if (action == SELECT_ACTION) {
@@ -425,17 +439,23 @@ function clickCellAction(cellIndex, shiftClick) {
 
 // Highlight the selected table cells
 function drawTableSelection() {
-  // Clear all selection display
-  $(jsDataTable.table().node()).find('.selected').removeClass('selected');
+  // Clear all selection display. This clears both the main table
+  // and the overlaid fixed columns table
+  $("td.selected").removeClass('selected');
 
   // Highlight selected cells
   var rows = jsDataTable.rows()[0];
   for (var i = 0; i < rows.length; i++) {
     var row = jsDataTable.row(i);
-    var col = jsDataTable.cell({row:i, column:selectedColumn});
 
     if ($.inArray(row.data()['DT_RowId'], selectedRows) > -1) {
-      $(jsDataTable.cell({row : i, column : selectedColumn}).node()).addClass('selected')
+      
+      if (isFixedColumn(selectedColumn)) {
+        // Set the overlaid fixed columns table
+        $($('[data-dt-row=' + i + '][data-dt-column=' + selectedColumn + ']')[0]).addClass('selected');
+      } else {
+        $(jsDataTable.cell({row : i, column : selectedColumn}).node()).addClass('selected');
+      }
     }
   }
 
@@ -447,6 +467,11 @@ function drawTableSelection() {
     $('#selectedColumnDisplay').html(getColumn(selectedColumn).heading);
     $('#selectedRowsCountDisplay').html(selectedRows.length);
   }
+}
+
+function isFixedColumn(columnIndex) {
+  // All columns in the first group are fixed
+  return columnIndex < columnHeaders[0].headings.length;
 }
 
 function highlightRow(row) {

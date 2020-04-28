@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.Consumer;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
@@ -41,11 +40,6 @@ import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
  *
  */
 public class PositionQCRoutine extends Routine {
-
-  /**
-   * Prefix applied to QC comments on sensors inherited from positional QC
-   */
-  public static final String POSITION_QC_PREFIX = "Position QC:";
 
   /**
    * The longitude values
@@ -126,13 +120,13 @@ public class PositionQCRoutine extends Routine {
       boolean qcFailed = false;
 
       // The method to use to set QC flags on sensors
-      Consumer<SensorValue> flagSetter = null;
+      String qcMessage = null;
 
       // Missing value check
       if (isMissing(lon) || isMissing(lat)) {
-        setPositionMissing(lon, lat);
+        setPositionQC("Missing", lon, lat);
         qcFailed = true;
-        flagSetter = this::setPositionMissing;
+        qcMessage = "Missing";
 
       } else {
 
@@ -147,8 +141,8 @@ public class PositionQCRoutine extends Routine {
         }
 
         if (qcFailed) {
-          setPositionOutOfRange(lon, lat);
-          flagSetter = this::setPositionOutOfRange;
+          setPositionQC("Out of range", lon, lat);
+          qcMessage = "Out of range";
         }
       }
 
@@ -172,10 +166,11 @@ public class PositionQCRoutine extends Routine {
           SearchableSensorValuesList columnValues = allSensorValues
             .getColumnValues(columnId);
 
-          List<SensorValue> updateValues = columnValues
-            .rangeSearch(currentPosTime, nextPosTime);
+          for (SensorValue value : columnValues.rangeSearch(currentPosTime,
+            nextPosTime)) {
 
-          updateValues.forEach(flagSetter);
+            value.setPositionQC(Flag.BAD, qcMessage);
+          }
         }
       }
 
@@ -198,45 +193,24 @@ public class PositionQCRoutine extends Routine {
   }
 
   /**
-   * Set the QC for an Out Of Range position value on the specified
-   * {@link SensorValue}. More than one value can be supplied.
-   *
-   * @param value
-   *          The value whose QC is to be set.
-   * @see #setPositionQC(String, SensorValue...)
-   */
-  private void setPositionOutOfRange(SensorValue... value) {
-    setPositionQC("Out of range", value);
-  }
-
-  /**
-   * Set the QC for an Missing position value on the specified
-   * {@link SensorValue}. More than one value can be supplied.
-   *
-   * @param value
-   *          The value whose QC is to be set.
-   * @see #setPositionQC(String, SensorValue...)
-   */
-  private void setPositionMissing(SensorValue... value) {
-    setPositionQC("Missing", value);
-  }
-
-  /**
    * Set the position QC result as the QC for a {@link SensorValue}. Multiple
    * values can be supplied.
    *
    * <p>
-   * The QC message will be prepended with {@link #POSITION_QC_PREFIX}.
+   * The QC message will be prepended with
+   * {@link SensorValue#POSITION_QC_PREFIX}.
    * </p>
    *
    * @param message
    *          The QC message.
    * @param value
    *          The value whose QC is to be set.
+   * @throws RoutineException
    */
-  private void setPositionQC(String message, SensorValue... value) {
+  private void setPositionQC(String message, SensorValue... value)
+    throws RoutineException {
     for (SensorValue v : value) {
-      v.setUserQC(Flag.BAD, POSITION_QC_PREFIX + message);
+      v.setPositionQC(Flag.BAD, message);
     }
   }
 }
