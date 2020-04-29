@@ -23,7 +23,6 @@ public class GradientTestRoutine extends Routine {
    */
   public GradientTestRoutine(List<String> parameters) throws RoutineException {
     super(parameters);
-    // TODO Auto-generated constructor stub
   }
 
   @Override
@@ -77,7 +76,7 @@ public class GradientTestRoutine extends Routine {
         } else { // Gradient
           addFlag(prevValue, Flag.BAD, maxDelta, delta);
 
-          while ((delta > maxDelta) & (i < filteredValues.size() - 1)) {
+          while ((delta > maxDelta) && (i < filteredValues.size() - 1)) {
             addFlag(currValue, Flag.BAD, maxDelta, delta);
 
             i++;
@@ -89,9 +88,7 @@ public class GradientTestRoutine extends Routine {
 
             delta = Math.abs(
               currValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
-
           }
-
         }
       }
       i++;
@@ -104,7 +101,7 @@ public class GradientTestRoutine extends Routine {
    * @return The short QC message
    */
   public static String getShortMessage() {
-    return "Gradient too steep, changes too quickly";
+    return "Changes too quickly";
   }
 
   /**
@@ -118,7 +115,7 @@ public class GradientTestRoutine extends Routine {
    */
   public static String getLongMessage(String requiredValue,
     String actualValue) {
-    return "Gradient too steep. Changes too quickly - " + actualValue
-      + "/min, limit is " + requiredValue + "/min";
+    return "Changes too quickly - " + actualValue + "/min, limit is "
+      + requiredValue + "/min";
   }
 }
