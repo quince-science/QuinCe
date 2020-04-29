@@ -516,7 +516,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
     }
 
     values = Arrays.asList(dataLine.split(separator, dataLine.length()));
-    return StringUtils.trimList(values);
+    return StringUtils.trimListAndQuotes(values);
   }
 
   /**

@@ -190,19 +190,27 @@ public final class StringUtils {
    * @return The converted strings
    */
   public static List<String> trimList(List<String> source) {
+    return source.stream().map(s -> trimString(s)).collect(Collectors.toList());
+  }
+
+  public static List<String> trimListAndQuotes(List<String> source) {
 
     List<String> result = new ArrayList<String>(source.size());
 
     for (int i = 0; i < source.size(); i++) {
-      String trimmedValue = source.get(i).trim();
-      if (trimmedValue.startsWith("\\")) {
-        trimmedValue = trimmedValue.substring(1);
-      }
-
-      result.add(trimmedValue);
+      String noQuotes = source.get(i).replaceAll("^\"|\"$", "");
+      result.add(trimString(noQuotes));
     }
 
     return result;
+  }
+
+  private static String trimString(String value) {
+    String trimmedValue = value.trim();
+    if (trimmedValue.startsWith("\\")) {
+      trimmedValue = trimmedValue.substring(1);
+    }
+    return trimmedValue;
   }
 
   /**
