@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
@@ -254,7 +255,8 @@ public class InternalCalibrationBean extends PlotPageBean {
           calibration.getCoefficient(sensorType));
       }
 
-      json.put(calibration.getTarget(), variableCalibrations);
+      json.put(StringUtils.tabToSpace(calibration.getTarget()),
+        variableCalibrations);
     }
 
     calibrationJson = json.toString();

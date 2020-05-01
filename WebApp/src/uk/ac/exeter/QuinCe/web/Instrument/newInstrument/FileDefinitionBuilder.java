@@ -12,6 +12,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InvalidSeparatorException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
 
 /**
@@ -410,9 +411,11 @@ public class FileDefinitionBuilder extends FileDefinition {
         result.append('"');
 
         // We can't guarantee that every column has data, so
-        // fill in empty strings for unused columns
+        // fill in empty strings for unused columns. Also replace tabs
+        // with \\t so it's valid JSON after loading in Javascript.
         if (j < columnValues.size()) {
-          result.append(columnValues.get(j).replaceAll("'", "\\'"));
+          result.append(StringUtils.tabToSpace(
+            columnValues.get(j).replaceAll("'", "\\'")));
         }
 
         result.append('"');

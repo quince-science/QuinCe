@@ -31,6 +31,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.ParameterException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 /**
@@ -398,9 +399,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     for (String target : calibrations.keySet()) {
       JSONObject group = new JSONObject();
-      group.put("id", target);
+      group.put("id", StringUtils.tabToSpace(target));
       group.put("order", counter);
-      group.put("content", getTargets().get(target));
+      group.put("content",
+        StringUtils.tabToSpace(getTargets().get(target)));
 
       groups.put(group);
       counter++;
@@ -434,8 +436,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
         JSONObject calibrationJson = new JSONObject();
         calibrationJson.put("id", calibration.getId());
         calibrationJson.put("type", "box");
-        calibrationJson.put("target", key);
-        calibrationJson.put("group", key);
+        calibrationJson.put("target",
+          StringUtils.tabToSpace(key));
+        calibrationJson.put("group",
+          StringUtils.tabToSpace(key));
         calibrationJson.put("start",
           DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
         calibrationJson.put("content",
