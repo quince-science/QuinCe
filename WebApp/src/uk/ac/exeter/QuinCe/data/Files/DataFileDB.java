@@ -530,8 +530,8 @@ public class DataFileDB {
    * Returns a list of all the files owned by a specific user. The list can
    * optionally be restricted by an instrument ID.
    *
-   * @param dataSource
-   *          A data source
+   * @param conn
+   *          A database connection
    * @param appConfig
    *          The application configuration
    * @param user
@@ -548,13 +548,41 @@ public class DataFileDB {
   public static List<DataFile> getFiles(DataSource dataSource,
     Properties appConfig, Long instrumentId) throws DatabaseException {
 
-    Connection conn = null;
+    try (Connection conn = dataSource.getConnection()) {
+      return getFiles(conn, appConfig, instrumentId);
+    } catch (SQLException e) {
+      throw new DatabaseException("An error occurred while searching for files",
+        e);
+    }
+  }
+
+  /**
+   * Returns a list of all the files owned by a specific user. The list can
+   * optionally be restricted by an instrument ID.
+   *
+   * @param dataSource
+   *          A data source
+   * @param appConfig
+   *          The application configuration
+   * @param user
+   *          The user
+   * @param instrumentId
+   *          The instrument ID used to filter the list (optional)
+   * @return The list of files
+   * @throws DatabaseException
+   *           If an error occurs during the search
+   * @see #GET_USER_FILES_QUERY
+   * @see #GET_USER_FILES_BY_INSTRUMENT_QUERY
+   * @see #makeDataFile(ResultSet, String, Connection)
+   */
+  public static List<DataFile> getFiles(Connection conn, Properties appConfig,
+    Long instrumentId) throws DatabaseException {
+
     PreparedStatement stmt = null;
     ResultSet records = null;
     List<DataFile> fileInfo = new ArrayList<DataFile>();
 
     try {
-      conn = dataSource.getConnection();
       InstrumentFileSet fileDefinitions = InstrumentDB.getFileDefinitions(conn,
         instrumentId);
 
@@ -581,7 +609,6 @@ public class DataFileDB {
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
 
     return fileInfo;

@@ -3,12 +3,14 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -77,34 +79,49 @@ public class CreateNrtDataset extends Job {
 
       // Now create the new dataset
 
-      // Default to 1st Jan 1900, or immediately after the last dataset.
-      // The real dataset date will be adjusted when the records are extracted
+      // The NRT dataset will start immediately after the last 'real' dataset.
+      // If there isn't one, it will start at the beginning of the first
+      // available
+      // data file.
       LocalDateTime nrtStartDate = LocalDateTime.of(1900, 1, 1, 0, 0, 0);
       DataSet lastDataset = DataSetDB.getLastDataSet(conn,
         instrument.getDatabaseId(), false);
       if (null != lastDataset) {
         nrtStartDate = lastDataset.getEnd().plusSeconds(1);
+      } else {
+        List<DataFile> instrumentFiles = DataFileDB.getFiles(conn,
+          ResourceManager.getInstance().getConfig(),
+          instrument.getDatabaseId());
+
+        // If there's no files then we can't do anything
+        if (instrumentFiles.size() == 0) {
+          nrtStartDate = null;
+        } else {
+          nrtStartDate = instrumentFiles.get(0).getStartDate();
+        }
       }
 
-      LocalDateTime endDate = DataFileDB.getLastFileDate(conn,
-        instrument.getDatabaseId());
+      if (null != nrtStartDate) {
+        LocalDateTime endDate = DataFileDB.getLastFileDate(conn,
+          instrument.getDatabaseId());
 
-      // Only create the NRT dataset if there are records available
-      if (endDate.isAfter(nrtStartDate)) {
-        String nrtDatasetName = buildNrtDatasetName(instrument);
+        // Only create the NRT dataset if there are records available
+        if (endDate.isAfter(nrtStartDate)) {
+          String nrtDatasetName = buildNrtDatasetName(instrument);
 
-        DataSet newDataset = new DataSet(instrument.getDatabaseId(),
-          nrtDatasetName, nrtStartDate, endDate, true);
-        DataSetDB.addDataSet(conn, newDataset);
+          DataSet newDataset = new DataSet(instrument.getDatabaseId(),
+            nrtDatasetName, nrtStartDate, endDate, true);
+          DataSetDB.addDataSet(conn, newDataset);
 
-        // TODO This is a copy of the code in DataSetsBean.addDataSet. Does it
-        // need collapsing?
-        Map<String, String> params = new HashMap<String, String>();
-        params.put(ExtractDataSetJob.ID_PARAM,
-          String.valueOf(newDataset.getId()));
+          // TODO This is a copy of the code in DataSetsBean.addDataSet. Does it
+          // need collapsing?
+          Map<String, String> params = new HashMap<String, String>();
+          params.put(ExtractDataSetJob.ID_PARAM,
+            String.valueOf(newDataset.getId()));
 
-        JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
-          ExtractDataSetJob.class.getCanonicalName(), params);
+          JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
+            ExtractDataSetJob.class.getCanonicalName(), params);
+        }
       }
     } catch (Exception e) {
       e.printStackTrace();
