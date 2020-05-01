@@ -56,6 +56,16 @@ then
   exit 1
 fi
 
+echo "Run project unit tests"
+./gradlew test
+if [ $? -gt 0 ]
+then
+  >&2 printf "ERROR: Application unit testing failed.\n"
+  exit 1
+fi
+echo ""
+echo ""
+
 # Make a database backup
 scripts/db_backup.sh -v
 if [ $? -gt 0 ]
@@ -86,16 +96,6 @@ echo "Build output .war - file"
 if [ $? -gt 0 ]
 then
   >&2 printf "ERROR: Build application war file failed.\n"
-  exit 1
-fi
-echo ""
-echo ""
-
-echo "Run project unit tests"
-./gradlew test
-if [ $? -gt 0 ]
-then
-  >&2 printf "ERROR: Application unit testing failed.\n"
   exit 1
 fi
 echo ""
