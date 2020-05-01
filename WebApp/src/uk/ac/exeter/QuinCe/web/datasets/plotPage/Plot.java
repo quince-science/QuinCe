@@ -222,7 +222,8 @@ public class Plot {
       result.append("\",\"ID\",\"QC Flag\",\"");
       result.append(parentBean.getGhostDataLabel());
       result.append("\",\"");
-      result.append(yAxis.getFullName());
+      result
+        .append(StringUtils.tabToSpace(yAxis.getFullName()));
       result.append('"');
       break;
     }
@@ -239,7 +240,8 @@ public class Plot {
       result.append("\",\"");
       result.append("QC Flag");
       result.append("\",\"");
-      result.append(mapVariable.getFullName());
+      result.append(
+        StringUtils.tabToSpace(mapVariable.getFullName()));
       result.append('"');
     }
     }
