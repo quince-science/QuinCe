@@ -141,9 +141,9 @@ public class ExtractDataSetJob extends Job {
 
       // Collect the data bounds
       double minLon = Double.MAX_VALUE;
-      double maxLon = Double.MIN_VALUE;
+      double maxLon = -Double.MAX_VALUE;
       double minLat = Double.MAX_VALUE;
-      double maxLat = Double.MIN_VALUE;
+      double maxLat = -Double.MAX_VALUE;
 
       for (DataFile file : files) {
         FileDefinition fileDefinition = file.getFileDefinition();
@@ -166,15 +166,49 @@ public class ExtractDataSetJob extends Job {
             realEndTime = time;
 
             if (null != fileDefinition.getLongitudeSpecification()) {
+
+              String longitude = file.getLongitude(line);
+
               sensorValues.add(new SensorValue(dataSet.getId(),
-                FileDefinition.LONGITUDE_COLUMN_ID, time,
-                file.getLongitude(line)));
+                FileDefinition.LONGITUDE_COLUMN_ID, time, longitude));
+
+              if (null != longitude) {
+                try {
+                  double lonDouble = Double.parseDouble(longitude);
+                  if (lonDouble < minLon) {
+                    minLon = lonDouble;
+                  }
+
+                  if (lonDouble > maxLon) {
+                    maxLon = lonDouble;
+                  }
+                } catch (NumberFormatException e) {
+                  // Ignore it now. QC will pick it up later.
+                }
+              }
             }
 
             if (null != fileDefinition.getLatitudeSpecification()) {
+
+              String latitude = file.getLatitude(line);
+
               sensorValues.add(new SensorValue(dataSet.getId(),
-                FileDefinition.LATITUDE_COLUMN_ID, time,
-                file.getLatitude(line)));
+                FileDefinition.LATITUDE_COLUMN_ID, time, latitude));
+
+              if (null != latitude) {
+                try {
+                  double latDouble = Double.parseDouble(latitude);
+                  if (latDouble < minLat) {
+                    minLat = latDouble;
+                  }
+
+                  if (latDouble > maxLat) {
+                    maxLat = latDouble;
+                  }
+                } catch (NumberFormatException e) {
+                  // Ignore it now. QC will pick it up later.
+                }
+              }
             }
 
             // Assigned columns
