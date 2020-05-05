@@ -22,6 +22,11 @@ public class LatitudeSpecification extends PositionSpecification {
   public static final int FORMAT_0_90 = 1;
 
   /**
+   * Indicates a format of degress and decimal minutes
+   */
+  public static final int FORMAT_DEG_DEC_MIN = 2;
+
+  /**
    * Basic constructor
    */
   public LatitudeSpecification() {
@@ -47,7 +52,7 @@ public class LatitudeSpecification extends PositionSpecification {
 
   @Override
   public boolean formatValid(int format) {
-    return (format >= 0 && format <= 1);
+    return (format >= 0 && format <= 2);
   }
 
   @Override
@@ -64,7 +69,7 @@ public class LatitudeSpecification extends PositionSpecification {
       result = null;
     } else {
       try {
-        double doubleValue = Double.parseDouble(line.get(getValueColumn()));
+        double doubleValue = 0D;
 
         switch (format) {
         case FORMAT_MINUS90_90: {
@@ -72,14 +77,32 @@ public class LatitudeSpecification extends PositionSpecification {
           break;
         }
         case FORMAT_0_90: {
+          doubleValue = Double.parseDouble(result);
           String hemisphere = line.get(getHemisphereColumn());
           doubleValue = doubleValue * hemisphereMultiplier(hemisphere);
+          break;
+        }
+        case FORMAT_DEG_DEC_MIN: {
+          // Split on whitespace
+          String[] split = result.split("\\s+");
+
+          if (split.length != 2) {
+            throw new NumberFormatException();
+          }
+
+          int degrees = Integer.parseInt(split[0]);
+          double minutes = Double.parseDouble(split[1]);
+
+          doubleValue = degrees + (minutes / 60);
           break;
         }
         default: {
           throw new InvalidPositionFormatException(format);
         }
         }
+
+        result = String.valueOf(doubleValue);
+
       } catch (NumberFormatException e) {
         System.out.println(
           "NumberFormatException: Invalid latitude value '" + result + "'");
