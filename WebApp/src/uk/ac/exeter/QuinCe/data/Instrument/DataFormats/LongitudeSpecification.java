@@ -28,6 +28,11 @@ public class LongitudeSpecification extends PositionSpecification {
   public static final int FORMAT_0_180 = 2;
 
   /**
+   * Indicates a format of degress and decimal minutes (-180:180)
+   */
+  public static final int FORMAT_DEG_DEC_MIN = 3;
+
+  /**
    * Basic constructor
    */
   public LongitudeSpecification() {
@@ -53,7 +58,7 @@ public class LongitudeSpecification extends PositionSpecification {
 
   @Override
   public boolean formatValid(int format) {
-    return (format >= 0 && format <= 2);
+    return (format >= 0 && format <= 3);
   }
 
   @Override
@@ -70,10 +75,11 @@ public class LongitudeSpecification extends PositionSpecification {
       result = null;
     } else {
       try {
-        double doubleValue = Double.parseDouble(result);
+        double doubleValue = 0D;
 
         switch (format) {
         case FORMAT_0_360: {
+          doubleValue = Double.parseDouble(result);
           if (doubleValue > 180) {
             doubleValue = (360 - doubleValue) * -1;
           }
@@ -85,7 +91,22 @@ public class LongitudeSpecification extends PositionSpecification {
         }
         case FORMAT_0_180: {
           String hemisphere = line.get(getHemisphereColumn());
+          doubleValue = Double.parseDouble(result);
           doubleValue = doubleValue * hemisphereMultiplier(hemisphere);
+          break;
+        }
+        case FORMAT_DEG_DEC_MIN: {
+          // Split on whitespace
+          String[] split = result.split("\\s+");
+
+          if (split.length != 2) {
+            throw new NumberFormatException();
+          }
+
+          int degrees = Integer.parseInt(split[0]);
+          double minutes = Double.parseDouble(split[1]);
+
+          doubleValue = degrees + (minutes / 60);
           break;
         }
         default: {

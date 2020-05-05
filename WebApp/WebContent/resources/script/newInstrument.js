@@ -407,6 +407,10 @@ function renderPositionAssignments() {
           positionHtml += '0° to 180°';
           break;
         }
+        case 3: {
+          positionHtml += 'Degrees, decimal minutes';
+          break;
+        }
         }
 
         positionHtml += '</td></tr>';
@@ -447,6 +451,10 @@ function renderPositionAssignments() {
         }
         case 1: {
           positionHtml += '0° to 90°';
+          break;
+        }
+        case 2: {
+          positionHtml += 'Degrees, decimal minutes';
           break;
         }
         }
