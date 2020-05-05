@@ -19,16 +19,16 @@ RangeCheck,xH₂O (with standards),0,100,0,100
 RangeCheck,xCO₂ (with standards),80,1200,0,50000
 RangeCheck,"xCO₂ water (dry, no standards)",80,1200,0,50000
 RangeCheck,"xCO₂ atmosphere (dry, no standards)",80,1200,0,50000
-Outlier,Intake Temperature,3
-Outlier,Salinity,3
-Outlier,Equilibrator Temperature,3
-Outlier,Equilibrator Pressure (absolute),3
-Outlier,Equilibrator Pressure (differential),3
-Outlier,xH₂O (with standards),3
-Outlier,Ambient Pressure,3
-Outlier,xCO₂ (with standards),3
-Outlier,"xCO₂ water (dry, no standards)",3
-Outlier,"xCO₂ atmosphere (dry, no standards)",3
+Outlier,Intake Temperature,5
+Outlier,Salinity,5
+Outlier,Equilibrator Temperature,5
+Outlier,Equilibrator Pressure (absolute),5
+Outlier,Equilibrator Pressure (differential),5
+Outlier,xH₂O (with standards),5
+Outlier,Ambient Pressure,5
+Outlier,xCO₂ (with standards),5
+Outlier,"xCO₂ water (dry, no standards)",5
+Outlier,"xCO₂ atmosphere (dry, no standards)",5
 GradientTest,Intake Temperature,3
 GradientTest,Salinity,3
 GradientTest,Equilibrator Temperature,3
