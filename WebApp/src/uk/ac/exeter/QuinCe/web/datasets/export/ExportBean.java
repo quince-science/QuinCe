@@ -354,8 +354,18 @@ public class ExportBean extends BaseManagedBean {
                 if (null == fieldValue || fieldValue.isGhost()) {
                   output.append("");
                 } else {
-                  output.append(
-                    StringUtils.makeCsvString(fieldValue.getQcComment()));
+
+                  // TODO Temporary fix to strip commas and quotes from
+                  // QC messages, because the destination CSV parse is broken.
+                  String qcMessage = fieldValue.getQcComment();
+                  qcMessage = qcMessage.replaceAll("\"", "").replaceAll(",",
+                    "");
+
+                  output.append(qcMessage);
+
+                  // old version
+                  // output.append(
+                  // StringUtils.makeCsvString(fieldValue.getQcComment()));
                 }
               }
             }
