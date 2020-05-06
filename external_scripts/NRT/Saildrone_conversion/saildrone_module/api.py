@@ -18,7 +18,7 @@ import pandas as pd
 from datetime import datetime
 
 
-our_header = {'Content-Type':'application/json', 'Accept':'application/json'}
+REQUEST_HEADER = {'Content-Type':'application/json', 'Accept':'application/json'}
 
 
 # Function which converts html request output to a dictionary
@@ -53,18 +53,18 @@ def to_dict(url):
 
 
 # Function which returns the token needed for authentication
-def auth():
+def auth(authentication):
 
 	# Define the authentication request url
 	auth_url = 'https://developer-mission.saildrone.com/v1/auth'
 
 	# Define our data
-	our_data = json.dumps({'key':'XbXS9f7TfZepb7nD',
-		'secret':'dGL99eMuBcsJYm5guq29AtKeCGHCT2kP'}).encode()
+	our_data = json.dumps({'key':authentication['key'],
+		'secret':authentication['secret']}).encode()
 
 	# Send the request
 	auth_request = urllib.request.Request(
-		url=auth_url, headers=our_header,
+		url=auth_url, headers=REQUEST_HEADER,
 		data=our_data, method='POST')
 
 	# Convert the response to a dictionary. Extract and return the token
@@ -111,7 +111,7 @@ def write_json(data_dir, drone_id, dataset, start, end, token):
 
 		# Send request
 		data_request = urllib.request.Request(
-			get_data_url, headers=our_header, method='GET')
+			get_data_url, headers=REQUEST_HEADER, method='GET')
 
 		# Store output from request in dictionary
 		data_dict = to_dict(data_request)
