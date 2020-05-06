@@ -5,6 +5,7 @@
 [![build](https://github.com/BjerknesClimateDataCentre/QuinCe/workflows/build/badge.svg)](https://github.com/BjerknesClimateDataCentre/QuinCe/actions)
 [![junit](https://github.com/BjerknesClimateDataCentre/QuinCe/workflows/junit/badge.svg)](https://github.com/BjerknesClimateDataCentre/QuinCe/actions)
 [![Issues](https://img.shields.io/github/issues-raw/BjerknesClimateDataCentre/QuinCe)](https://github.com/BjerknesClimateDataCentre/QuinCe/issues)
+[![Bugs](https://img.shields.io/github/issues/BjerknesClimateDataCentre/QuinCe/bug?color=red&label=known%20bugs)](https://github.com/BjerknesClimateDataCentre/QuinCe/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
 [![Pull Requests](https://img.shields.io/github/issues-pr/BjerknesClimateDataCentre/QuinCe)](https://github.com/BjerknesClimateDataCentre/QuinCe/pulls)
 [![License](https://img.shields.io/github/license/BjerknesClimateDataCentre/QuinCe)](https://www.gnu.org/licenses/gpl-3.0)
 
