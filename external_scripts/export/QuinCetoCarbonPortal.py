@@ -54,6 +54,8 @@ def main():
         logging.debug(export_destination)
         key = '/'
         if '26NA' in platform_code: key = ' No Salinity Flags' + key
+        successful_upload_CP = -1
+        successful_upload_CMEMS = -1
         for destination in export_destination:
           if 'ICOS' in destination: 
             #--- Processing L0 files
@@ -94,6 +96,8 @@ def main():
               successful_upload_CMEMS = 0
         
         successful_upload = True
+        CP_slack_msg = None
+        CMEMS_slack_msg = None
 
         if successful_upload_CP == 0: 
           CP_slack_msg = 'Carbon Portal: Export failed, ' + str(cp_err_msg)
@@ -107,8 +111,8 @@ def main():
         elif successful_upload_CMEMS == 1: CMEMS_slack_msg = 'CMEMS: Successful export'
         elif successful_upload_CMEMS == 2: CMEMS_slack_msg = 'CMEMS: No new data'
 
-        slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'{CP_slack_msg}')
-        slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'{CMEMS_slack_msg}')
+        if CP_slack_msg: slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'{CP_slack_msg}')
+        if CMEMS_slack_msg: slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'{CMEMS_slack_msg}')
 
         if successful_upload:
           report_complete_export(basicConfig,dataset['id'])
