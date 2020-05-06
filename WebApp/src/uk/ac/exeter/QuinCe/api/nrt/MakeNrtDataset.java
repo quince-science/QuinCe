@@ -111,6 +111,13 @@ public class MakeNrtDataset {
 
       if (null != lastFileModification
         && lastFileModification.isAfter(existingDataset.getCreatedDate())) {
+
+        System.out.println("******* MAKING NRT*********");
+        System.out.println(
+          "Existing NRT creation date: " + existingDataset.getCreatedDate());
+        System.out.println("Last file mod date:: " + lastFileModification);
+        System.out.println("***************************");
+
         createDataset = true;
       }
     }
