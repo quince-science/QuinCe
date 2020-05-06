@@ -73,7 +73,7 @@ except FileNotFoundError:
 ###----------------------------------------------------------------------------
 
 # Create authentication token for saildrone API, and see what's available
-token = saildrone.auth()
+token = saildrone.auth(configs['saildrone_api'])
 access_list = saildrone.get_available(token)
 
 # If the access list has changed since the previous run (and previous

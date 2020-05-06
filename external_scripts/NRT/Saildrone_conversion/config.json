@@ -1,4 +1,8 @@
 {
+    "saildrone_api": {
+        "key": "%saildrone_api_key%",
+        "secret": "%saildrone_api_secret"
+    },
     "datasets": [
         "atmospheric",
         "oceanographic",
