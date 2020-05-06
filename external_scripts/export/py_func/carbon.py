@@ -126,7 +126,7 @@ def build_metadata_package(file,manifest,platform,index,hashsum,
   creation_date = datetime.datetime.utcnow().isoformat()+'Z'
 
   meta= {
-    'submitterId': 'OTC',
+    'submitterId': platform['submitter_id'],
     'hashSum':hashsum,
     'specificInfo':{'station': platform['cp_url'],},
     'objectSpecification': obj_spec
