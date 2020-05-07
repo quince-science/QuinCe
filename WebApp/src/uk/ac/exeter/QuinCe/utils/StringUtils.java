@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -55,27 +56,42 @@ public final class StringUtils {
   }
 
   /**
-   * Converts a String containing values separated by semi-colon delimiters into
-   * a list of String values
+   * Converts a String containing values separated a specified delimiter into a
+   * list of String values.
    *
-   * <b>Note that this does not handle semi-colons within the values
-   * themselves.</b>
+   * <p>
+   * <strong>Limitations:</strong>
+   * <ul>
+   * <li>This does not handle escaped delimiters within the values
+   * themselves.</li>
+   * <li>Full stops/periods can be used as the delimeter, but other regex
+   * special characters will not work.</li>
+   * </ul>
    *
    * @param values
    *          The String to be converted
    * @param delimiter
    *          The delimiter
    * @return A list of String values
+   * @see #checkDelimiter(String, String...)
    */
   public static List<String> delimitedToList(String values, String delimiter) {
-    List<String> result = null;
 
-    if (null != values) {
-      if (values.length() == 0) {
-        result = new ArrayList<String>();
-      } else {
-        result = Arrays.asList(values.split(delimiter, 0));
+    checkDelimiter(delimiter);
+
+    List<String> result;
+
+    if (null == values) {
+      result = new ArrayList<String>(0);
+    } else if (values.length() == 0) {
+      result = new ArrayList<String>(0);
+    } else {
+      String regex = delimiter;
+      if (delimiter.equals(".")) {
+        regex = "\\.";
       }
+
+      result = Arrays.asList(values.split(regex, 0));
     }
 
     return result;
@@ -89,17 +105,23 @@ public final class StringUtils {
    * @param delimiter
    *          The delimiter
    * @return The list as integers
+   * @see #checkDelimiter(String, String...)
    */
   public static List<Integer> delimitedToIntegerList(String values,
     String delimiter) {
 
-    List<Integer> result = null;
+    checkDelimiter(delimiter, "-", ".");
 
-    if (values != null) {
-      result = new ArrayList<Integer>();
+    List<Integer> result;
 
-      for (String item : delimitedToList(values, delimiter)) {
-        result.add(Integer.parseInt(item));
+    if (null == values || values.trim().length() == 0) {
+      result = new ArrayList<Integer>(0);
+    } else {
+      String[] numberList = values.split(delimiter);
+      result = new ArrayList<Integer>(numberList.length);
+
+      for (String number : numberList) {
+        result.add(Integer.parseInt(number));
       }
     }
 
@@ -124,18 +146,23 @@ public final class StringUtils {
    * @param values
    *          The list
    * @return The list as integers
+   * @see #checkDelimiter(String, String...)
    */
   public static List<Double> delimitedToDoubleList(String values,
     String delimiter) {
 
-    List<Double> result = null;
+    checkDelimiter(delimiter, "-", ".");
 
-    if (values != null) {
-      List<String> stringList = delimitedToList(values, delimiter);
-      result = new ArrayList<Double>(stringList.size());
+    List<Double> result;
 
-      for (String item : stringList) {
-        result.add(Double.parseDouble(item));
+    if (null == values || values.trim().length() == 0) {
+      result = new ArrayList<Double>(0);
+    } else {
+      String[] numberList = values.split(delimiter);
+      result = new ArrayList<Double>(numberList.length);
+
+      for (String number : numberList) {
+        result.add(Double.parseDouble(number));
       }
     }
 
@@ -153,9 +180,11 @@ public final class StringUtils {
     // TODO This is the preferred way of doing this. Make the other methods do
     // the same.
 
-    List<Long> result = null;
+    List<Long> result;
 
-    if (values != null) {
+    if (null == values || values.trim().length() == 0) {
+      result = new ArrayList<Long>(0);
+    } else {
       String[] numberList = values.split(",");
       result = new ArrayList<Long>(numberList.length);
 
@@ -389,5 +418,53 @@ public final class StringUtils {
     }
 
     return result;
+  }
+
+  /**
+   * Check whether or not a specified delimiter is valid.
+   *
+   * <p>
+   * The following delimiters are invalid:
+   * </p>
+   * <ul>
+   * <li>{@code null}</li>
+   * <li>Double or single quotes</li>
+   * <li>The digits 0-9</li>
+   * <li>Any strings specified in {@code invalidDelimiters}</li>
+   * </ul>
+   *
+   * <p>
+   * The method throws an {@link IllegalArgumentException} if the delimiter is
+   * invalid.
+   * </p>
+   *
+   * @param delimiter
+   *          The delimiter to test.
+   * @param invalidDelimiters
+   *          The additional invalid delimiters
+   */
+  private static void checkDelimiter(String delimiter,
+    String... invalidDelimiters) {
+
+    if (null == delimiter) {
+      throw new IllegalArgumentException("null delimiter is invalid");
+    }
+
+    if (delimiter.length() != 1) {
+      throw new IllegalArgumentException("Delimiter must be one character");
+    }
+
+    if (Pattern.matches("[\"'0-9a-zA-Z]", delimiter)) {
+      throw new IllegalArgumentException(
+        "Invalid delimiter '" + delimiter + "'");
+    }
+
+    for (int i = 0; i < invalidDelimiters.length; i++) {
+      if (delimiter.equals(invalidDelimiters[i])) {
+        throw new IllegalArgumentException(
+          "Invalid delimiter '" + delimiter + "'");
+      }
+    }
+
   }
 }
