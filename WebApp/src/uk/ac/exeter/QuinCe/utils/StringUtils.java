@@ -381,6 +381,13 @@ public final class StringUtils {
   }
 
   public static String tabToSpace(String in) {
-    return in.replaceAll("\t", " ");
+
+    String result = null;
+
+    if (null != in) {
+      return in.replaceAll("\t", " ");
+    }
+
+    return result;
   }
 }
