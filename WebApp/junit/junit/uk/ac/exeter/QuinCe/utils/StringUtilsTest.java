@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,6 +22,63 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  *
  */
 public class StringUtilsTest extends BaseTest {
+
+  /**
+   * Generate a list of commonly used list delimiters.
+   *
+   * @return The delimiters.
+   */
+  @SuppressWarnings("unused")
+  private static List<String> makeDelimiters() {
+    List<String> delimiters = new ArrayList<String>(3);
+    delimiters.add(",");
+    delimiters.add(";");
+    delimiters.add(" ");
+    return delimiters;
+  }
+
+  /**
+   * Generate a list of disallowed delimiters.
+   *
+   * @return The disallowed delimiters.
+   */
+  @SuppressWarnings("unused")
+  private static List<String> makeStandardInvalidDelimiters() {
+    List<String> delimiters = new ArrayList<String>(67);
+    delimiters.add(null);
+    delimiters.add("\"");
+    delimiters.add("'");
+    delimiters.add("");
+    delimiters.add(",,");
+
+    for (char c = 'a'; c <= 'z'; c++) {
+      delimiters.add(String.valueOf(c));
+    }
+
+    for (char c = 'A'; c <= 'Z'; c++) {
+      delimiters.add(String.valueOf(c));
+    }
+
+    for (char c = '0'; c <= '9'; c++) {
+      delimiters.add(String.valueOf(c));
+    }
+
+    return delimiters;
+  }
+
+  /**
+   * Make a list of delimiters that are disallowed for lists of numbers.
+   *
+   * @return The disallowed delimiters.
+   */
+  @SuppressWarnings("unused")
+  private static List<String> makeNumericInvalidDelimiters() {
+    List<String> delimiters = new ArrayList<String>(2);
+    delimiters.add(".");
+    delimiters.add("-");
+
+    return delimiters;
+  }
 
   /**
    * Test that empty String values are converted to {@code ""} by
@@ -59,7 +117,7 @@ public class StringUtilsTest extends BaseTest {
    * quoted String and escapes quotes
    */
   @Test
-  public void makeCsvStringQuotedString() {
+  public void makeCsvStringQuotedStringTest() {
     assertTrue("\"\"\"I am String\"\"\""
       .equals(StringUtils.makeCsvString("\"I am String\"")));
   }
@@ -337,5 +395,663 @@ public class StringUtilsTest extends BaseTest {
     assertEquals("Tab at end ", StringUtils.tabToSpace("Tab at end\t"));
     assertEquals("Escape test\\t1", StringUtils.tabToSpace("Escape test\\t1"));
     assertEquals("Escape test\\ 2", StringUtils.tabToSpace("Escape test\\\t2"));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToLongList(String)} with
+   * empty strings returns an empty list.
+   *
+   * @param empty
+   *          The generated empty string
+   */
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void delimitedToLongListEmptyTest(String empty) {
+    assertEquals(0, StringUtils.delimitedToLongList(empty).size());
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToLongList(String)} with a single
+   * value.
+   */
+  @Test
+  public void delimitedToLongListOneTest() {
+    assertTrue(checkLongList(StringUtils.delimitedToLongList("4"), 4L));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToLongList(String)} with a several
+   * values.
+   */
+  @Test
+  public void delimitedToLongListMultipleTest() {
+    assertTrue(
+      checkLongList(StringUtils.delimitedToLongList("4,5,6"), 4L, 5L, 6L));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToLongList(String)} with
+   * spaces between values will fail.
+   */
+  @Test
+  public void delimitedToLongListSpaceBetweenValuesTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToLongList("4, 5, 6");
+    });
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToLongList(String)} with end
+   * padding will fail.
+   */
+  @Test
+  public void delimitedToLongListPaddedListTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToLongList("4,5,6 ");
+    });
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToLongList(String)} with negative,
+   * zero and positive values.
+   */
+  @Test
+  public void delimitedToLongListPositiveNegativeTest() {
+    assertTrue(
+      checkLongList(StringUtils.delimitedToLongList("-1,0,1"), -1L, 0L, 1L));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToLongList(String)} with a
+   * string value fails.
+   */
+  @Test
+  public void delimitedToLongListCharTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToLongList("flurble");
+    });
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToLongList(String)} with a
+   * decimal value fails.
+   */
+  @Test
+  public void delimitedToLongListDecimalTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToLongList("4.5");
+    });
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToLongList(String)} with an empty
+   * value fails.
+   */
+  @Test
+  public void delimitedToLongListEmptyValueTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToLongList("4,,6");
+    });
+  }
+
+  /**
+   * Check that a list of {@link Long}s contains the specified set of values.
+   *
+   * @param list
+   *          The list to check.
+   * @param doubles
+   *          The values that the list should contain.
+   * @return {@code true} if the list contains the specified values;
+   *         {@code false} otherwise.
+   */
+  private boolean checkLongList(List<Long> list, Long... longs) {
+    boolean ok = true;
+
+    if (list.size() != longs.length) {
+      ok = false;
+    } else {
+      for (int i = 0; i < list.size(); i++) {
+        if (!list.get(i).equals(longs[i])) {
+          ok = false;
+          break;
+        }
+      }
+    }
+
+    return ok;
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with an
+   * empty String returns an empty list.
+   */
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void delimitedToDoubleListEmptyTest(String empty) {
+    assertEquals(0, StringUtils.delimitedToDoubleList(empty).size());
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToDoubleList(String)} with an
+   * integer value.
+   */
+  @Test
+  public void delimitedToDoubleListOneIntTest() {
+    assertTrue(checkDoubleList(StringUtils.delimitedToDoubleList("4"), 4D));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToDoubleList(String)} with a
+   * decimal value.
+   */
+  @Test
+  public void delimitedToDoubleListOneTest() {
+    assertTrue(
+      checkDoubleList(StringUtils.delimitedToDoubleList("4.35454"), 4.35454D));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToDoubleList(String)} with
+   * multiple values.
+   */
+  @Test
+  public void delimitedToDoubleListMultipleTest() {
+    assertTrue(
+      checkDoubleList(StringUtils.delimitedToDoubleList("4.5;5.6;6.7;7"), 4.5D,
+        5.6D, 6.7D, 7D));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with a
+   * spaces between values fails.
+   */
+  @Test
+  public void delimitedToDoubleListSpaceBetweenValuesTest() {
+    assertTrue(
+      checkDoubleList(StringUtils.delimitedToDoubleList("4.5; 5.6; 6.7; 7"),
+        4.5D, 5.6D, 6.7D, 7D));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToDoubleList(String)} with a
+   * variety of negative, zero and positive values.
+   */
+  @Test
+  public void delimitedToDoubleListPositiveNegativeTest() {
+    assertTrue(checkDoubleList(
+      StringUtils
+        .delimitedToDoubleList("-1.234;-1;-0.001;0;0.001;1;1.234;1.23e4"),
+      -1.234D, -1D, -0.001D, 0D, 0.001D, 1D, 1.234, 1.23e4D));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with a
+   * string value fails.
+   */
+  @Test
+  public void delimitedToDoubleListCharTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToDoubleList("flurble");
+    });
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with an
+   * empty value fails.
+   */
+  @Test
+  public void delimitedToDoubleListEmptyValueTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToDoubleList("4.5;;6.7");
+    });
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToDoubleList(String)} with a
+   * variety of delimiters.
+   */
+  @ParameterizedTest
+  @MethodSource("makeDelimiters")
+  public void delimitedToDoubleListDelimitersTest(String delimiter) {
+
+    StringBuffer input = new StringBuffer();
+    input.append("4.5");
+    input.append(delimiter);
+    input.append("5.6");
+    input.append(delimiter);
+    input.append("6.7");
+
+    assertTrue(checkDoubleList(
+      StringUtils.delimitedToDoubleList(input.toString(), delimiter), 4.5D,
+      5.6D, 6.7D));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with
+   * invalid delimiters fails.
+   */
+  @ParameterizedTest
+  @MethodSource("makeStandardInvalidDelimiters")
+  public void delimitedToDoubleListStandardInvalidDelimitersTest(
+    String delimiter) {
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      StringUtils.delimitedToDoubleList("4.5,5.6", delimiter);
+    });
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with
+   * invalid delimiters for numbers fails.
+   */
+  @ParameterizedTest
+  @MethodSource("makeNumericInvalidDelimiters")
+  public void delimitedToDoubleListNumericInvalidDelimitersTest(
+    String delimiter) {
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      StringUtils.delimitedToDoubleList("4.5,5.6", delimiter);
+    });
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToDoubleList(String)} with a space
+   * delimiter.
+   */
+  @Test
+  public void delimitedToDoubleListSpaceDelimiterTest() {
+    assertTrue(checkDoubleList(
+      StringUtils.delimitedToDoubleList("4.5 5.6 6.7", " "), 4.5D, 5.6D, 6.7D));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with a
+   * padded string fails.
+   */
+  @Test
+  public void delimitedToDoubleListPaddedListTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToIntegerList("4.5,5.6,6.7 ", ",");
+    });
+  }
+
+  /**
+   * Check that a list of {@link Double}s contains the specified set of values.
+   *
+   * @param list
+   *          The list to check.
+   * @param doubles
+   *          The values that the list should contain.
+   * @return {@code true} if the list contains the specified values;
+   *         {@code false} otherwise.
+   */
+  private boolean checkDoubleList(List<Double> list, Double... doubles) {
+    boolean ok = true;
+
+    if (list.size() != doubles.length) {
+      ok = false;
+    } else {
+      for (int i = 0; i < list.size(); i++) {
+        if (!list.get(i).equals(doubles[i])) {
+          ok = false;
+          break;
+        }
+      }
+    }
+
+    return ok;
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with
+   * an empty String returns an empty list.
+   */
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void delimitedToIntegerListEmptyTest(String empty) {
+    assertEquals(0, StringUtils.delimitedToIntegerList(empty, ",").size());
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToIntegerList(String)} with a
+   * single value.
+   */
+  @Test
+  public void delimitedToIntegerListOneTest() {
+    assertTrue(checkIntList(StringUtils.delimitedToIntegerList("4", ","), 4));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with a
+   * decimal value fails.
+   */
+  @Test
+  public void delimitedToIntegerListSingleFloatTest() {
+
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToIntegerList("4.35454", ",");
+    });
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToIntegerList(String)} with a
+   * several value.
+   */
+  @Test
+  public void delimitedToIntegerListMultipleTest() {
+    assertTrue(checkIntList(StringUtils.delimitedToIntegerList("4,5,6,7", ","),
+      4, 5, 6, 7));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with
+   * spaces between values fails.
+   */
+  @Test
+  public void delimitedToIntegerListSpaceBetweenValuesTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToIntegerList("4, 5, 6, 7", ",");
+    });
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToIntegerList(String)} with a set
+   * of positive and negative values.
+   */
+  @Test
+  public void delimitedToIntegerListPositiveNegativeTest() {
+    assertTrue(checkIntList(StringUtils.delimitedToIntegerList("-1,0,1", ","),
+      -1, 0, 1));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with a
+   * string value fails.
+   */
+  @Test
+  public void delimitedToIntegerListCharTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToIntegerList("flurble", ",");
+    });
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with
+   * an empty value fails.
+   */
+  @Test
+  public void delimitedToIntegerListEmptyValueTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToIntegerList("4.5,,6.7", ",");
+    });
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToIntegerList(String)} with a
+   * variety of delimiters.
+   */
+  @ParameterizedTest
+  @MethodSource("makeDelimiters")
+  public void delimitedToIntgerListDelimitersTest(String delimiter) {
+
+    StringBuffer input = new StringBuffer();
+    input.append("4");
+    input.append(delimiter);
+    input.append("5");
+    input.append(delimiter);
+    input.append("6");
+
+    assertTrue(checkIntList(
+      StringUtils.delimitedToIntegerList(input.toString(), delimiter), 4, 5,
+      6));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with
+   * invalid delimiters fails.
+   */
+  @ParameterizedTest
+  @MethodSource("makeStandardInvalidDelimiters")
+  public void delimitedToIntegerListStandardInvalidDelimitersTest(
+    String delimiter) {
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      StringUtils.delimitedToIntegerList("4,5", delimiter);
+    });
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with
+   * invalid numeric delimiters fails.
+   */
+  @ParameterizedTest
+  @MethodSource("makeNumericInvalidDelimiters")
+  public void delimitedToIntegerListNumericInvalidDelimitersTest(
+    String delimiter) {
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      StringUtils.delimitedToIntegerList("4,5", delimiter);
+    });
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToIntegerList(String)} with a
+   * space delimiter.
+   */
+  @Test
+  public void delimitedToIntegerListSpaceDelimiterTest() {
+    assertTrue(
+      checkIntList(StringUtils.delimitedToIntegerList("4 5 6", " "), 4, 5, 6));
+  }
+
+  /**
+   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with a
+   * padded list fails.
+   */
+  @Test
+  public void delimitedToIntegerListPaddedListTest() {
+    assertThrows(NumberFormatException.class, () -> {
+      StringUtils.delimitedToIntegerList("4,5,6 ", ",");
+    });
+  }
+
+  /**
+   * Check that a list of {@link Double}s contains the specified set of values.
+   *
+   * @param list
+   *          The list to check.
+   * @param doubles
+   *          The values that the list should contain.
+   * @return {@code true} if the list contains the specified values;
+   *         {@code false} otherwise.
+   */
+  private boolean checkIntList(List<Integer> list, Integer... ints) {
+    boolean ok = true;
+
+    if (list.size() != ints.length) {
+      ok = false;
+    } else {
+      for (int i = 0; i < list.size(); i++) {
+        if (!list.get(i).equals(ints[i])) {
+          ok = false;
+          break;
+        }
+      }
+    }
+
+    return ok;
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with a null or
+   * empty string fails, and any other whitespace character gives a list size of
+   * one containing that character.
+   */
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void delimitedToListEmptyTest(String empty) {
+
+    if (null == empty || empty.length() == 0) {
+      assertEquals(0, StringUtils.delimitedToList(empty, ",").size());
+    } else {
+      assertTrue(
+        checkStringList(StringUtils.delimitedToList(empty, ","), empty));
+    }
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with a single
+   * value.
+   */
+  @Test
+  public void delimitedToListOneTest() {
+    assertTrue(
+      checkStringList(StringUtils.delimitedToList("flurble", ","), "flurble"));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with several
+   * value.
+   */
+  @Test
+  public void delimitedToListMultipleTest() {
+    assertTrue(
+      checkStringList(StringUtils.delimitedToList("flurble,hurble,nurble", ","),
+        "flurble", "hurble", "nurble"));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with a various
+   * numeric values (all should retain their exact input format).
+   */
+  @Test
+  public void delimitedToListNumbersTest() {
+    assertTrue(
+      checkStringList(StringUtils.delimitedToList("-3,0,4.345,5.400", ","),
+        "-3", "0", "4.345", "5.400"));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with a spaces
+   * between values (spaces should be preserved).
+   */
+  @Test
+  public void delimitedToListSpaceBetweenValuesTest() {
+    assertTrue(checkStringList(
+      StringUtils.delimitedToList("flurble, hurble, nurble", ","), "flurble",
+      " hurble", " nurble"));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with an empty
+   * value (the empty value is retained as an empty string).
+   */
+  @Test
+  public void delimitedToListEmptyValueTest() {
+    assertTrue(
+      checkStringList(StringUtils.delimitedToList("flurble,,hurble", ","),
+        "flurble", "", "hurble"));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with a various
+   * delimiters.
+   */
+  @ParameterizedTest
+  @MethodSource("makeDelimiters")
+  public void delimitedToIntgerDelimitersTest(String delimiter) {
+
+    StringBuffer input = new StringBuffer();
+    input.append("flurble");
+    input.append(delimiter);
+    input.append("hurble");
+    input.append(delimiter);
+    input.append("nurble");
+
+    assertTrue(
+      checkStringList(StringUtils.delimitedToList(input.toString(), delimiter),
+        "flurble", "hurble", "nurble"));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with invalid
+   * delimiters.
+   */
+  @ParameterizedTest
+  @MethodSource("makeStandardInvalidDelimiters")
+  public void delimitedToListStandardInvalidDelimitersTest(String delimiter) {
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      StringUtils.delimitedToList("4,5", delimiter);
+    });
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with invalid
+   * numeric delimiters (these are allowed for strings).
+   */
+  @ParameterizedTest
+  @MethodSource("makeNumericInvalidDelimiters")
+  public void delimitedToListNumericInvalidDelimitersTest(String delimiter) {
+
+    StringBuffer input = new StringBuffer();
+    input.append("flurble");
+    input.append(delimiter);
+    input.append("hurble");
+    input.append(delimiter);
+    input.append("nurble");
+
+    assertTrue(
+      checkStringList(StringUtils.delimitedToList(input.toString(), delimiter),
+        "flurble", "hurble", "nurble"));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with a space
+   * delimiter.
+   */
+  @Test
+  public void delimitedToListSpaceDelimiterTest() {
+    assertTrue(
+      checkStringList(StringUtils.delimitedToList("flurble hurble nurble", " "),
+        "flurble", "hurble", "nurble"));
+  }
+
+  /**
+   * Test calling {@link StringUtils#delimitedToList(String)} with a padded list
+   * (the padding is retained in the list values).
+   */
+  @Test
+  public void delimitedToListPaddedListTest() {
+    assertTrue(checkStringList(
+      StringUtils.delimitedToList("flurble,hurble,nurble ", ","), "flurble",
+      "hurble", "nurble "));
+  }
+
+  /**
+   * Check that a list of {@link Double}s contains the specified set of values.
+   *
+   * @param list
+   *          The list to check.
+   * @param doubles
+   *          The values that the list should contain.
+   * @return {@code true} if the list contains the specified values;
+   *         {@code false} otherwise.
+   */
+  private boolean checkStringList(List<String> list, String... strings) {
+    boolean ok = true;
+
+    if (list.size() != strings.length) {
+      ok = false;
+    } else {
+      for (int i = 0; i < list.size(); i++) {
+        if (!list.get(i).equals(strings[i])) {
+          ok = false;
+          break;
+        }
+      }
+    }
+
+    return ok;
   }
 }
