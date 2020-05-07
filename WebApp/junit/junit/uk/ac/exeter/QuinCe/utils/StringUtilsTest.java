@@ -307,4 +307,35 @@ public class StringUtilsTest extends BaseTest {
 
     assertTrue("Bad,Good".equals(StringUtils.collectionToDelimited(list, ",")));
   }
+
+  /**
+   * Test {@link StringUtils#tabToSpace(String)} with empty strings.
+   */
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void tabToSpaceEmptyStringTest(String empty) {
+
+    // Tab will get replaced. Duh.
+    if (null != empty && empty.equals("\t")) {
+      assertEquals(" ", StringUtils.tabToSpace(empty));
+    } else {
+      assertEquals(empty, StringUtils.tabToSpace(empty));
+    }
+  }
+
+  /**
+   * Test {@link StringUtils#tabToSpace(String)} with various strings.
+   */
+  @Test
+  public void tabToSpaceTest() {
+
+    String noTabs = "I am a string with no tabs";
+    assertEquals(noTabs, StringUtils.tabToSpace(noTabs));
+
+    assertEquals("I have a tab", StringUtils.tabToSpace("I have a\ttab"));
+    assertEquals(" Tab at start", StringUtils.tabToSpace("\tTab at start"));
+    assertEquals("Tab at end ", StringUtils.tabToSpace("Tab at end\t"));
+    assertEquals("Escape test\\t1", StringUtils.tabToSpace("Escape test\\t1"));
+    assertEquals("Escape test\\ 2", StringUtils.tabToSpace("Escape test\\\t2"));
+  }
 }
