@@ -79,6 +79,9 @@ public class DataSetDB {
   private static final String GET_DATASETS_BETWEEN_DATES_QUERY = DATASET_QUERY_BASE
     + "d.instrument_id = ? AND d.start <= ? AND d.end >= ?";
 
+  private static final String NRT_COUNT_QUERY = "SELECT COUNT(*) FROM dataset "
+    + "WHERE nrt = 1 AND instrument_id = ?";
+
   /**
    * Make an SQL query for retrieving complete datasets using a specified WHERE
    * clause
@@ -896,6 +899,43 @@ public class DataSetDB {
 
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving datasets", e);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the number of NRT datasets defined for the specified instrument.
+   *
+   * @param conn
+   *          A database connection.
+   * @param instrumentId
+   *          The instrument's database ID.
+   * @return The number of NRT datasets.
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   */
+  public static int getNrtCount(Connection conn, long instrumentId)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkPositive(instrumentId, "instrumentId");
+
+    int result = 0;
+
+    try (PreparedStatement stmt = conn.prepareStatement(NRT_COUNT_QUERY)) {
+
+      stmt.setLong(1, instrumentId);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        records.next();
+        result = records.getInt(1);
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting NRT count", e);
     }
 
     return result;
