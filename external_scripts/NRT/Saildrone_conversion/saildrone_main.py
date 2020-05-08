@@ -108,11 +108,11 @@ ftpconn = saildrone.connect_ftp(FTP)
 next_request_updated = dict(next_request_checked)
 for drone_id, start_string in next_request_checked.items():
 
-	# Calculate the end date as 7 days after the start date.
+	# Calculate the end date as 2 days after the start date.
 	# This prevents any single update being too big.
 	# Since this will typically run once per day it's not ususally a problem.
 	start_date = datetime.strptime(start_string, "%Y-%m-%dT%H:%M:%S.000Z")
-	end_date = start_date + pd.Timedelta("7 days")
+	end_date = start_date + pd.Timedelta("2 days")
 	end_string = end_date.strftime("%Y-%m-%dT%H:%M:%S") + ".000Z"
 
 	if not drone_id in quince_instrument_ids:
