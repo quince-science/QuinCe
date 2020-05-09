@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.api.nrt;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -112,19 +111,6 @@ public class MakeNrtDataset {
 
       if (null != lastFileModification
         && lastFileModification.isAfter(existingDataset.getCreatedDate())) {
-
-        System.out.println("******* MAKING NRT*********");
-        System.out.println(
-          "Existing NRT creation date: " + existingDataset.getCreatedDate());
-        System.out.println("Last file mod date:: " + lastFileModification);
-        System.out.println("***************************");
-
-        List<DataSet> dataSets = DataSetDB.getDataSets(conn,
-          instrument.getDatabaseId(), true);
-        for (DataSet dataSet : dataSets) {
-          System.out.println(dataSet.getId() + " " + dataSet.getName() + " "
-            + dataSet.getStatus() + " " + dataSet.getCreatedDate());
-        }
 
         createDataset = true;
       }
