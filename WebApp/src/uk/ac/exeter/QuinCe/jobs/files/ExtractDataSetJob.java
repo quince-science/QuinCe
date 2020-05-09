@@ -247,8 +247,8 @@ public class ExtractDataSetJob extends DataSetJob {
       // The last run type will cover the rest of time
       runTypePeriods.finish();
 
-      // Now flag all the values that are within the instrument's pre-
-      // and post-flushing periods (if they're defined)
+      // Now flag all the values that have internal calibrations and are within
+      // the instrument's pre- and post-flushing periods (if they're defined)
       if (instrument.getPreFlushingTime() > 0
         || instrument.getPostFlushingTime() > 0) {
 
@@ -258,31 +258,33 @@ public class ExtractDataSetJob extends DataSetJob {
         Iterator<SensorValue> valuesIter = sensorValues.iterator();
         while (valuesIter.hasNext()) {
           SensorValue value = valuesIter.next();
+          SensorType sensorType = instrument.getSensorAssignments()
+            .getSensorTypeForDBColumn(value.getColumnId());
 
-          boolean periodFound = false;
+          if (sensorType.hasInternalCalibration()) {
+            boolean periodFound = false;
 
-          // Make sure we have the correct run type period
-          while (!periodFound) {
+            // Make sure we have the correct run type period
+            while (!periodFound) {
 
-            // If we have multiple file definitions, it's possible that
-            // timestamps
-            // in the file where the run type *isn't* defined will fall between
-            // run types.
-            //
-            // In this case, simply use the next known run type. Otherwise we
-            // find
-            // the run type that the timestamp is in.
-            if (value.getTime().isBefore(currentPeriod.getStart())
-              || currentPeriod.encompasses(value.getTime())) {
-              periodFound = true;
-            } else {
-              currentPeriodIndex++;
-              currentPeriod = runTypePeriods.get(currentPeriodIndex);
+              // If we have multiple file definitions, it's possible that
+              // timestamps in the file where the run type *isn't* defined will
+              // fall between run types.
+              //
+              // In this case, simply use the next known run type. Otherwise we
+              // find the run type that the timestamp is in.
+              if (value.getTime().isBefore(currentPeriod.getStart())
+                || currentPeriod.encompasses(value.getTime())) {
+                periodFound = true;
+              } else {
+                currentPeriodIndex++;
+                currentPeriod = runTypePeriods.get(currentPeriodIndex);
+              }
             }
-          }
 
-          if (inFlushingPeriod(value.getTime(), currentPeriod, instrument)) {
-            value.setUserQC(Flag.FLUSHING, "");
+            if (inFlushingPeriod(value.getTime(), currentPeriod, instrument)) {
+              value.setUserQC(Flag.FLUSHING, "");
+            }
           }
         }
       }

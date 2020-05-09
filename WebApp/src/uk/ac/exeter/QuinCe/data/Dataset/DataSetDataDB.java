@@ -15,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -885,58 +884,6 @@ public class DataSetDataDB {
     }
 
     return times;
-  }
-
-  /**
-   * Retrieve the dates of all sensor values for a given set of columns in a
-   * dataset.
-   *
-   * @param conn
-   *          A database connection.
-   * @param datasetId
-   *          The dataset ID.
-   * @param columnIds
-   *          The column IDs.
-   * @return The value dates.
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws DatabaseException
-   *           If a database error occurs
-   */
-  public static TreeSet<LocalDateTime> getSensorValueDates(Connection conn,
-    long datasetId, Collection<Long> columnIds)
-    throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkPositive(datasetId, "datasetId");
-    MissingParam.checkMissing(columnIds, "columnIds", false);
-
-    TreeSet<LocalDateTime> result = new TreeSet<LocalDateTime>();
-
-    String sql = DatabaseUtils.makeInStatementSql(
-      GET_SENSOR_VALUE_DATES_FOR_COLUMNS_QUERY, columnIds.size());
-
-    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-      stmt.setLong(1, datasetId);
-
-      int paramCount = 1;
-      for (long columnId : columnIds) {
-        paramCount++;
-        stmt.setLong(paramCount, columnId);
-      }
-
-      try (ResultSet records = stmt.executeQuery()) {
-        while (records.next()) {
-          result.add(DateTimeUtils.longToDate(records.getLong(1)));
-        }
-      }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving sensor value dates",
-        e);
-    }
-
-    return result;
   }
 
   public static int getFlagsRequired(DataSource dataSource, long datasetId)

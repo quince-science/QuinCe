@@ -318,11 +318,18 @@ public class SensorValue implements Comparable<SensorValue> {
 
     boolean setQC = true;
 
-    // Don't override an existing position QC that's worse than what we're
-    // trying to set
-    if (userQCMessage.startsWith(POSITION_QC_PREFIX)
-      && userQCFlag.moreSignificantThan(flag)) {
-      setQC = false;
+    if (null != userQCFlag) {
+
+      // Never override a flushing flag
+      if (userQCFlag.equals(Flag.FLUSHING)) {
+        setQC = false;
+      } else if (null != userQCMessage
+        && userQCMessage.startsWith(POSITION_QC_PREFIX)
+        && userQCFlag.moreSignificantThan(flag)) {
+        // Don't override an existing position QC that's worse than what we're
+        // trying to set
+        setQC = false;
+      }
     }
 
     if (setQC) {
