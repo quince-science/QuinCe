@@ -4,6 +4,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 
+@Deprecated
 public class RunTypeField extends Field {
 
   private String runType;

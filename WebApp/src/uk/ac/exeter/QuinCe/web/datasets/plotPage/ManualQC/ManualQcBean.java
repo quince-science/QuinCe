@@ -44,6 +44,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
  * @author Steve Jones
  *
  */
+@Deprecated
 @ManagedBean
 @SessionScoped
 public class ManualQcBean extends PlotPageBean {

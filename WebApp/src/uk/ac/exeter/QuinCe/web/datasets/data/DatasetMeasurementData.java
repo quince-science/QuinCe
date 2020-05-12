@@ -28,6 +28,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
+@Deprecated
 @SuppressWarnings("serial")
 public abstract class DatasetMeasurementData
   extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
