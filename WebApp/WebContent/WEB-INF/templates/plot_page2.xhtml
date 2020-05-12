@@ -130,6 +130,10 @@
               value="#{sessionScope[beanName].data.selectedColumn}" />
             <h:inputHidden id="selectedRows"
               value="#{sessionScope[beanName].data.selectedRows}" />
+            <h:inputHidden id="lastClickedRow"
+              value="#{sessionScope[beanName].data.lastClickedRow}" />
+            <h:inputHidden id="lastSelectionAction"
+              value="#{sessionScope[beanName].data.lastSelectionAction}" />
 
             <ui:insert name="selectionFormEntries" />
             <ui:insert name="selectionDialog" />
