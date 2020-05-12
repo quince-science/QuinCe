@@ -30,6 +30,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
+@Deprecated
 @SuppressWarnings("serial")
 public class InternalCalibrationPageData extends DatasetMeasurementData {
 

@@ -24,6 +24,7 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
  * @author Steve Jones
  *
  */
+@Deprecated
 @SuppressWarnings("serial")
 public class InternalCalibrationFieldSets extends FieldSets {
 

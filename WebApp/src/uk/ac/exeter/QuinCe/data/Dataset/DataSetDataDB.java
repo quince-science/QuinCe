@@ -945,6 +945,7 @@ public class DataSetDataDB {
     }
   }
 
+  @Deprecated
   public static void loadMeasurementData(DataSource dataSource,
     DatasetMeasurementData output, List<LocalDateTime> times)
     throws DatabaseException, MissingParamException, MeasurementDataException,
@@ -964,6 +965,7 @@ public class DataSetDataDB {
     }
   }
 
+  @Deprecated
   public static void loadQCSensorValuesByTime(DataSource dataSource,
     DatasetMeasurementData output, List<LocalDateTime> times)
     throws MissingParamException, DatabaseException, MeasurementDataException,
@@ -976,6 +978,7 @@ public class DataSetDataDB {
     }
   }
 
+  @Deprecated
   public static void loadQCSensorValuesByTime(Connection conn,
     DatasetMeasurementData output, List<LocalDateTime> times)
     throws MissingParamException, DatabaseException, MeasurementDataException,
@@ -1007,6 +1010,7 @@ public class DataSetDataDB {
     }
   }
 
+  @Deprecated
   public static void loadQCSensorValuesByField(DataSource dataSource,
     DatasetMeasurementData output, List<Field> fields)
     throws MissingParamException, DatabaseException, MeasurementDataException,
@@ -1019,6 +1023,7 @@ public class DataSetDataDB {
     }
   }
 
+  @Deprecated
   public static void loadQCSensorValuesByField(Connection conn,
     DatasetMeasurementData output, List<Field> fields)
     throws MissingParamException, DatabaseException, MeasurementDataException,
@@ -1055,6 +1060,7 @@ public class DataSetDataDB {
 
   }
 
+  @Deprecated
   private static void readQCSensorValues(DatasetMeasurementData output,
     PreparedStatement stmt, List<Long> runTypeColumns)
     throws SQLException, MissingParamException, MeasurementDataException,
@@ -1143,6 +1149,7 @@ public class DataSetDataDB {
       used, ghost);
   }
 
+  @Deprecated
   private static void loadDataReductionData(Connection conn,
     DatasetMeasurementData output, List<LocalDateTime> times)
     throws MissingParamException, DatabaseException, InvalidFlagException,
@@ -1259,6 +1266,7 @@ public class DataSetDataDB {
     return result;
   }
 
+  @Deprecated
   public static void loadDataReductionData(DataSource dataSource,
     DatasetMeasurementData output, InstrumentVariable variable, Field field)
     throws MissingParamException, DatabaseException, InvalidFlagException {
