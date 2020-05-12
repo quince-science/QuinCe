@@ -1,5 +1,4 @@
 function acceptAutoQc() {
-  fillSelectionForm();
   submitAutoQC(); // remoteCommand
 }
 
@@ -17,15 +16,14 @@ function qcFlagsAccepted() {
 }
 
 function startUserQcFlags() {
-  fillSelectionForm();
   generateUserQCComments(); // remoteCommand
 }
 
 function showFlagDialog() {
   errorCheck();
 
-  let woceRowHtml = selectedRows.length.toString() + ' row';
-  if (selectedRows.length > 1) {
+  let woceRowHtml = getSelectedRows().length.toString() + ' row';
+  if (getSelectedRows().length > 1) {
     woceRowHtml += 's';
   }
   $('#manualRowCount').html(woceRowHtml);
@@ -54,6 +52,5 @@ function updateFlagDialogControls() {
 }
 
 function saveManualComment() {
-  fillSelectionForm();
   applyManualFlag(); // remoteCommand
 }
