@@ -31,14 +31,14 @@
       partialSubmit="true" process="selectedColumn selectedRows"
       update="userCommentList worstSelectedFlag :plotPageForm:error"
       oncomplete="showFlagDialog()" />
-      
+
     <p:remoteCommand name="applyManualFlag"
       action="#{manualQC2Bean.applyManualFlag}"
       process="selectedColumn selectedRows manualFlag manualComment"
       update="@none"
       oncomplete="qcFlagsAccepted()" />
-      
-  </ui:define>  
+
+  </ui:define>
 
   <ui:define name="selectionDialog">
     <p:dialog widgetVar="flagDialog" modal="true" header="Set QC Flag"

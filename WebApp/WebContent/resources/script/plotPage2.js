@@ -8,8 +8,7 @@
 
 // PAGE CONSTANTS
 var SELECT_ACTION = 1;
-var DESELECT_ACTION = 0;
-var SELECTION_POINT = -100;
+var DESELECT_ACTION = -1;
 
 // TABLE CONSTANTS
 
@@ -41,10 +40,6 @@ var plotSplitProportion = 0.5;
 // Column Headers for table and plots
 var columnHeaders = null;
 
-// Selection details
-selectedColumn = -1;
-var selectedRows = [];
-
 /*
  *********************************************
  * Table variables
@@ -58,11 +53,6 @@ var dataTableDrawCallback = null;
 var tableScrollRow = null;
 var scrollEventTimer = null;
 var scrollEventTimeLimit = 300;
-
-//The row number (in the data file) of the last selected/deselected row, and
-//which action was performed.
-var lastClickedRow = -1;
-var lastClickedAction = DESELECT_ACTION;
 
 /*
  *********************************************
@@ -198,9 +188,128 @@ function getColumnGroup(column) {
   return currentGroup;
 }
 
+
+//Get the details of the specified column header
+function getColumn(columnIndex) {
+
+  let result = null;
+
+  let currentIndex = 0;
+  for (let i = 0; i < columnHeaders.length; i++) {
+    let groupHeaders = columnHeaders[i].headings;
+    if (currentIndex + groupHeaders.length > columnIndex) {
+      result = groupHeaders[columnIndex - currentIndex];
+      break;
+    } else {
+      currentIndex += groupHeaders.length;
+    }
+  }
+
+  return result;
+}
+
+function getColumnIndex(columnId) {
+  
+  let result = null;
+  
+  let currentIndex = -1;
+  for (let i = 0; i < columnHeaders.length; i++) {
+    let groupHeaders = columnHeaders[i].headings;
+    for (let j = 0; j < groupHeaders.length; j++) {
+      currentIndex++;
+      if (groupHeaders[j].id == columnId) {
+        result = currentIndex;
+        break;
+      }
+    }
+  }
+  
+  return result;
+}
+
+/*
+ *******************************************************
+ * Selection functions
+ * 
+ * The selection details are maintained via form inputs
+ *******************************************************
+ */
+
+// Get the selected column ID
+function getSelectedColumn() {
+  return $('#selectionForm\\:selectedColumn').val();
+}
+
+// Get the selected column index
+function getSelectedColumnIndex() {
+  return getColumnIndex(getSelectedColumn());
+}
+
+// Set the selected column ID
+function setSelectedColumn(column) {
+  $('#selectionForm\\:selectedColumn').val(column);
+}
+
+// Get the selected rows as an array of row IDs
+function getSelectedRows() {
+  return JSON.parse($('#selectionForm\\:selectedRows').val())
+}
+
+// Set the selected rows as an array of row IDs.
+// Sorts the rows before setting them
+function setSelectedRows(rows) {
+  $('#selectionForm\\:selectedRows').val(JSON.stringify(rows.sort()));
+}
+
+// Get the ID of the last clicked row
+function getLastClickedRow() {
+  return $('#selectionForm\\:lastClickedRow').val();
+}
+
+// Set the ID of the last clicked row
+function setLastClickedRow(row) {
+  $('#selectionForm\\:lastClickedRow').val(row);
+}
+
+// Get the last selection action
+function getLastSelectionAction() {
+  return $('#selectionForm\\:lastSelectionAction').val();
+}
+
+// Set the last selection action
+function setLastSelectionAction(action) {
+  $('#selectionForm\\:lastSelectionAction').val(action);
+}
+
+function addRowsToSelection(rows) {
+  setSelectedRows(getSelectedRows().concat(rows).sort());
+}
+
+function removeRowsFromSelection(rows) {
+
+  var selectedRows = getSelectedRows();
+  
+  var rowsIndex = 0;
+  var selectionIndex = 0;
+
+  while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
+    while (selectedRows[selectionIndex] == rows[rowsIndex]) {
+      selectedRows.splice(selectionIndex, 1);
+      rowsIndex++;
+      if (rowsIndex == rows.length || selectionIndex == selectedRows.length) {
+        break;
+      }
+    }
+    selectionIndex++;
+  }
+  
+  setSelectedRows(selectedRows);
+}
+
 function clearSelection() {
-  selectedColumn = -1;
-  selectedRows = [];
+  setSelectedColumn(-1);
+  setSelectedRows([]);
+  setLastClickedRow(-1);
   selectionUpdated();
 }
 
@@ -208,7 +317,7 @@ function selectionUpdated() {
 
   drawTableSelection();
   
-  if (selectedRows.length == 0) {
+  if (getSelectedRows().length == 0) {
     $('#selectionActions :button').each(function(index, value) {
       $(value).prop('disabled', true).addClass('ui-state-disabled');
     });
@@ -237,31 +346,6 @@ function selectionUpdated() {
     postSelectionUpdated();
   }
 */
-}
-
-// Get the details of the specified column header
-function getColumn(colIndex) {
-  
-  let result = null;
-  
-  let currentIndex = 0;
-  for (let i = 0; i < columnHeaders.length; i++) {
-    let groupHeaders = columnHeaders[i].headings;
-    if (currentIndex + groupHeaders.length > colIndex) {
-      result = groupHeaders[colIndex - currentIndex];
-      break;
-    } else {
-      currentIndex += groupHeaders.length;
-    }
-  }
-  
-  return result;
-}
-
-
-function fillSelectionForm() {
-  $('#selectionForm\\:selectedColumn').val(getColumn(selectedColumn).id);
-  $('#selectionForm\\:selectedRows').val(selectedRows);
 }
 
 
@@ -403,24 +487,24 @@ function clickCellAction(cell, shiftClick) {
     null != jsDataTable.cell(rowIndex, colIndex).data().value &&
     '' != jsDataTable.cell(rowIndex, colIndex).data().value) {
 
-    if (colIndex != selectedColumn) {
-      selectedColumn = colIndex;
-      selectedRows = [rowId];
-      lastClickedRow = rowId;
-      lastClickedAction = SELECT_ACTION;
+    if (colIndex != getSelectedColumnIndex()) {
+      setSelectedColumn(getColumn(colIndex).id);
+      setSelectedRows([rowId]);
+      setLastClickedRow(rowId);
+      setLastSelectionAction(SELECT_ACTION);
     } else {
 
-      let action = lastClickedAction;
+      let action = getLastSelectionAction();
       let actionRows = [rowId];
 
       if (!shiftClick) {
-        if ($.inArray(rowId, selectedRows) != -1) {
+        if ($.inArray(rowId, getSelectedRows()) != -1) {
           action = DESELECT_ACTION;
         } else {
           action = SELECT_ACTION;
         }
       } else {
-        actionRows = getRowsInRange(lastClickedRow, rowId, colIndex);
+        actionRows = getRowsInRange(getLastClickedRow(), rowId, colIndex);
       }
 
       if (action == SELECT_ACTION) {
@@ -429,8 +513,8 @@ function clickCellAction(cell, shiftClick) {
         removeRowsFromSelection(actionRows);
       }
 
-      lastClickedRow = rowId;
-      lastClickedAction = action;
+      setLastClickedRow(rowId);
+      setLastSelectionAction(action);
     }
 
     selectionUpdated();
@@ -448,23 +532,25 @@ function drawTableSelection() {
   for (var i = 0; i < rows.length; i++) {
     var row = jsDataTable.row(i);
 
-    if ($.inArray(row.data()['DT_RowId'], selectedRows) > -1) {
+    if ($.inArray(row.data()['DT_RowId'], getSelectedRows()) > -1) {
       
-      if (isFixedColumn(selectedColumn)) {
+      if (isFixedColumn(getSelectedColumn())) {
         // Set the overlaid fixed columns table
-        $($('[data-dt-row=' + i + '][data-dt-column=' + selectedColumn + ']')[0]).addClass('selected');
+        $($('[data-dt-row=' + i + '][data-dt-column=' + getSelectedColumnIndex() + ']')[0]).addClass('selected');
       } else {
-        $(jsDataTable.cell({row : i, column : selectedColumn}).node()).addClass('selected');
+        $(jsDataTable.cell({row : i, column : getSelectedColumnIndex()}).node()).addClass('selected');
       }
     }
   }
+  
+  let selectedRows = getSelectedRows();
 
   // Update the selection summary
   if (selectedRows.length == 0) {
     $('#selectedColumnDisplay').html('None');
     $('#selectedRowsCountDisplay').html('');
   } else {
-    $('#selectedColumnDisplay').html(getColumn(selectedColumn).heading);
+    $('#selectedColumnDisplay').html(getColumn(getSelectedColumnIndex()).heading);
     $('#selectedRowsCountDisplay').html(selectedRows.length);
   }
 }
@@ -561,27 +647,6 @@ function tableDataDownload() {
 // Scroll to the specfied column in the table
 function scrollToColumn(column) {
   console.log('Scrolling to column ' + column);
-}
-
-function addRowsToSelection(rows) {
-  selectedRows = selectedRows.concat(rows).sort((a, b) => a - b);
-}
-
-function removeRowsFromSelection(rows) {
-
-  var rowsIndex = 0;
-  var selectionIndex = 0;
-
-  while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
-    while (selectedRows[selectionIndex] == rows[rowsIndex]) {
-      selectedRows.splice(selectionIndex, 1);
-      rowsIndex++;
-      if (rowsIndex == rows.length || selectionIndex == selectedRows.length) {
-        break;
-      }
-    }
-    selectionIndex++;
-  }
 }
 
 function getRowsInRange(startRow, endRow, columnIndex) {

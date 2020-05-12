@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,10 +12,27 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 
 public abstract class PlotPage2Data {
+
+  /**
+   * Indicates a select action
+   */
+  protected static final int SELECT = 1;
+
+  /**
+   * Indicates a deselect action
+   */
+  protected static final int DESELECT = -1;
+
+  /**
+   * Json serialization type for lists of strings
+   */
+  Type stringList = new TypeToken<List<String>>() {
+  }.getType();
 
   /**
    * Gson instance for serializing table data
@@ -40,6 +58,16 @@ public abstract class PlotPage2Data {
    * The IDs of the selected rows
    */
   protected List<String> selectedRows = null;
+
+  /**
+   * The ID of the last row that was selected/deselected
+   */
+  protected String lastClickedRow = null;
+
+  /**
+   * Indicates whether the last selection action was a select or a deselect
+   */
+  protected int lastSelectionAction = SELECT;
 
   /**
    * The indicator of the root field group.
@@ -399,19 +427,19 @@ public abstract class PlotPage2Data {
   }
 
   /**
-   * Get the currently selected column.
+   * Get the currently selected column index.
    *
-   * @return The selected column.
+   * @return The selected column index.
    */
   public long getSelectedColumn() {
     return selectedColumn;
   }
 
   /**
-   * Set the currently selected column.
+   * Set the currently selected column index.
    *
    * @param selectedColumn
-   *          The selected column.
+   *          The selected column index.
    */
   public void setSelectedColumn(long selectedColumn) {
     this.selectedColumn = selectedColumn;
@@ -430,14 +458,55 @@ public abstract class PlotPage2Data {
    * Set the list of currently selected rows.
    *
    * <p>
-   * Converts all supplied values to Strings.
+   * Converts all supplied values to Strings. The method assumes that the
+   * strings are already sorted.
    * </p>
    *
    * @param selectedRows
    *          The selected rows.
    */
   public void setSelectedRows(String selectedRows) {
-    this.selectedRows = uk.ac.exeter.QuinCe.utils.StringUtils
-      .delimitedToList(selectedRows, ",");
+    this.selectedRows = new Gson().fromJson(selectedRows, stringList);
+  }
+
+  /**
+   * Get the ID of the last clicked row.
+   *
+   * @return The last clicked row
+   */
+  public String getLastClickedRow() {
+    return lastClickedRow;
+  }
+
+  /**
+   * Set the ID of the last clicked row.
+   *
+   * @param lastClickedRow
+   *          The last clicked row.
+   */
+  public void setLastClickedRow(String lastClickedRow) {
+    this.lastClickedRow = lastClickedRow;
+  }
+
+  /**
+   * Get the last selection action
+   *
+   * @return The last selection action
+   * @see #SELECT
+   * @see #DESELECT
+   */
+  public int getLastSelectionAction() {
+    return lastSelectionAction;
+  }
+
+  /**
+   * Set the last selection action
+   *
+   * @return The last selection action
+   * @see #SELECT
+   * @see #DESELECT
+   */
+  public void setLastSelectionAction(int lastSelectionAction) {
+    this.lastSelectionAction = lastSelectionAction;
   }
 }
