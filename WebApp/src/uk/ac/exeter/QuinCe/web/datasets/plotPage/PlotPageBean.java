@@ -33,6 +33,7 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
  * @author Steve Jones
  *
  */
+@Deprecated
 public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
