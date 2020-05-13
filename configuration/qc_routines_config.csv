@@ -6,6 +6,7 @@ ConstantValue,Equilibrator Pressure (absolute),120
 ConstantValue,Equilibrator Pressure (differential),120
 ConstantValue,xH₂O (with standards),120
 ConstantValue,Ambient Pressure,120
+ConstantValue,Atmospheric Pressure, 120
 ConstantValue,xCO₂ (with standards),120
 ConstantValue,"xCO₂ water (dry, no standards)",120
 ConstantValue,"xCO₂ atmosphere (dry, no standards)",120
@@ -15,6 +16,7 @@ RangeCheck,Equilibrator Temperature,-5,40,-10,50
 RangeCheck,Equilibrator Pressure (absolute),-3,1100,-5,1250
 RangeCheck,Equilibrator Pressure (differential),-3,1100,-5,1250
 RangeCheck,Ambient Pressure,900,1100,750,1250
+RangeCheck,Atmospheric Pressure,900,1100,750,1250
 RangeCheck,xH₂O (with standards),0,100,0,100
 RangeCheck,xCO₂ (with standards),80,1200,0,50000
 RangeCheck,"xCO₂ water (dry, no standards)",80,1200,0,50000
@@ -26,6 +28,7 @@ Outlier,Equilibrator Pressure (absolute),5
 Outlier,Equilibrator Pressure (differential),5
 Outlier,xH₂O (with standards),5
 Outlier,Ambient Pressure,5
+Outlier,Atmospheric Pressure,5
 Outlier,xCO₂ (with standards),5
 Outlier,"xCO₂ water (dry, no standards)",5
 Outlier,"xCO₂ atmosphere (dry, no standards)",5
@@ -36,6 +39,7 @@ GradientTest,Equilibrator Pressure (absolute),50
 GradientTest,Equilibrator Pressure (differential),50
 GradientTest,xH₂O (with standards),5
 GradientTest,Ambient Pressure,50
+GradientTest,Atmospheric Pressure,50
 GradientTest,xCO₂ (with standards),20
 GradientTest,"xCO₂ water (dry, no standards)",20
 GradientTest,"xCO₂ atmosphere (dry, no standards)",20
