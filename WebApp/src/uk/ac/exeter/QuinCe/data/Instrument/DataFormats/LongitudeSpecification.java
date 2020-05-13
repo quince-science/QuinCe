@@ -30,7 +30,7 @@ public class LongitudeSpecification extends PositionSpecification {
   /**
    * Indicates a format of degress and decimal minutes (-180:180)
    */
-  public static final int FORMAT_DEG_DEC_MIN = 3;
+  public static final int FORMAT_HEM_DEG_DEC_MIN = 3;
 
   /**
    * Basic constructor
@@ -95,18 +95,27 @@ public class LongitudeSpecification extends PositionSpecification {
           doubleValue = doubleValue * hemisphereMultiplier(hemisphere);
           break;
         }
-        case FORMAT_DEG_DEC_MIN: {
+        case FORMAT_HEM_DEG_DEC_MIN: {
           // Split on whitespace
           String[] split = result.split("\\s+");
 
-          if (split.length != 2) {
+          if (split.length != 3) {
             throw new NumberFormatException();
           }
 
-          int degrees = Integer.parseInt(split[0]);
-          double minutes = Double.parseDouble(split[1]);
+          String hemisphere = split[0];
+          int degrees = Integer.parseInt(split[1]);
+          double minutes = Double.parseDouble(split[2]);
 
           doubleValue = degrees + (minutes / 60);
+
+          if (hemisphere.equals("W")) {
+            doubleValue = doubleValue * -1;
+          } else if (!hemisphere.equals("N")) {
+            throw new PositionException(
+              "Invalid hemisphere value '" + hemisphere + "'");
+          }
+
           break;
         }
         default: {

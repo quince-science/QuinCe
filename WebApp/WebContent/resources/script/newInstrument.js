@@ -408,7 +408,7 @@ function renderPositionAssignments() {
           break;
         }
         case 3: {
-          positionHtml += 'Degrees, decimal minutes';
+          positionHtml += 'Hemisphere, degrees, decimal minutes';
           break;
         }
         }
@@ -454,7 +454,7 @@ function renderPositionAssignments() {
           break;
         }
         case 2: {
-          positionHtml += 'Degrees, decimal minutes';
+          positionHtml += 'Hemisphere, degrees, decimal minutes';
           break;
         }
         }
