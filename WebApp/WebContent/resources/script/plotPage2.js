@@ -10,6 +10,8 @@
 var SELECT_ACTION = 1;
 var DESELECT_ACTION = -1;
 
+var FLAG_FLUSHING = -100;
+
 // TABLE CONSTANTS
 
 /*
@@ -282,7 +284,7 @@ function setLastSelectionAction(action) {
 }
 
 function addRowsToSelection(rows) {
-  setSelectedRows(getSelectedRows().concat(rows).sort());
+  setSelectedRows(getSelectedRows().concat(rows));
 }
 
 function removeRowsFromSelection(rows) {
@@ -482,7 +484,7 @@ function clickCellAction(cell, shiftClick) {
   let rowId = jsDataTable.row(rowIndex).data()['DT_RowId'];
 
   // If the cell isn't selectable, or has no value, do nothing.
-  if (canSelectCell(rowId, colIndex) &&
+  if (canSelectCell(rowIndex, colIndex) &&
     null != jsDataTable.cell(rowIndex, colIndex).data() &&
     null != jsDataTable.cell(rowIndex, colIndex).data().value &&
     '' != jsDataTable.cell(rowIndex, colIndex).data().value) {
@@ -667,8 +669,8 @@ function getRowsInRange(startRow, endRow, columnIndex) {
     currentIndex = currentIndex + step;
 
     let rowIndex = jsDataTable.row('#' + rowIDs[currentIndex]).index();
-    var cellData = jsDataTable.cell({row:rowIndex, column:columnIndex}).data();
-    if (null != cellData && null != cellData.value && '' != cellData.value) {
+    
+    if (canSelectCell(rowIndex, columnIndex)) {
       rows.push(rowIDs[currentIndex]);
     }
   }
@@ -680,12 +682,24 @@ function getRowsInRange(startRow, endRow, columnIndex) {
   return rows;
 }
 
-function canSelectCell(rowID, colIndex) {
+// Determine whether or not a cell can be selected.
+// Based on whether:
+// * The column is editable
+// * The cell contains data
+// * The cell's flag is FLUSHING
+function canSelectCell(rowIndex, colIndex) {
 
   let result = true;
 
   if (!getColumn(colIndex).editable) {
     result = false;
+  } else {
+    let cellData = jsDataTable.cell(rowIndex, colIndex).data();
+    if (null == cellData || null == cellData.value || "" == cellData.value) {
+      result = false;
+    } else if (jsDataTable.cell(rowIndex, colIndex).data().qcFlag == FLAG_FLUSHING) {
+      result = false;
+    }
   }
 
   return result;
