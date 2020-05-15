@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -60,9 +61,14 @@ public abstract class PlotPage2Data {
   protected List<String> selectedRows = null;
 
   /**
+   * The ID of the row that was just selected/deselected
+   */
+  protected String clickedRow = null;
+
+  /**
    * The ID of the last row that was selected/deselected
    */
-  protected String lastClickedRow = null;
+  protected String prevClickedRow = null;
 
   /**
    * Indicates whether the last selection action was a select or a deselect
@@ -285,6 +291,25 @@ public abstract class PlotPage2Data {
     return valid;
   }
 
+  protected boolean isColumnEditable(long columnId) {
+
+    boolean editable = false;
+
+    Map<String, List<ColumnHeading>> columnHeadings = getColumnHeadings();
+
+    mainLoop: for (List<ColumnHeading> groupHeadings : columnHeadings
+      .values()) {
+      for (ColumnHeading heading : groupHeadings) {
+        if (heading.getId() == columnId) {
+          editable = heading.canEdit();
+          break mainLoop;
+        }
+      }
+    }
+
+    return editable;
+  }
+
   /**
    * Get the last set error message.
    */
@@ -470,22 +495,41 @@ public abstract class PlotPage2Data {
   }
 
   /**
-   * Get the ID of the last clicked row.
+   * Get the ID of the row that was just clicked.
    *
-   * @return The last clicked row
+   * @return The clicked row
    */
-  public String getLastClickedRow() {
-    return lastClickedRow;
+  public String getClickedRow() {
+    return clickedRow;
   }
 
   /**
-   * Set the ID of the last clicked row.
+   * Set the ID of the row that was just clicked.
    *
-   * @param lastClickedRow
-   *          The last clicked row.
+   * @param clickedRow
+   *          The clicked row.
    */
-  public void setLastClickedRow(String lastClickedRow) {
-    this.lastClickedRow = lastClickedRow;
+  public void setClickedRow(String clickedRow) {
+    this.clickedRow = clickedRow;
+  }
+
+  /**
+   * Get the ID of the previously clicked row.
+   *
+   * @return The previously clicked row
+   */
+  public String getPrevClickedRow() {
+    return prevClickedRow;
+  }
+
+  /**
+   * Set the ID of the previously clicked row.
+   *
+   * @param prevClickedRow
+   *          The previously clicked row.
+   */
+  public void setPrevClickedRow(String prevClickedRow) {
+    this.prevClickedRow = prevClickedRow;
   }
 
   /**
@@ -508,5 +552,51 @@ public abstract class PlotPage2Data {
    */
   public void setLastSelectionAction(int lastSelectionAction) {
     this.lastSelectionAction = lastSelectionAction;
+  }
+
+  /**
+   * Select (or deselect) the range of rows specified by {@link #prevClickedRow}
+   * and {@link #clickedRow}.
+   */
+  public void selectRange() {
+
+    TreeSet<String> newSelectedRows = new TreeSet<String>(selectedRows);
+
+    List<String> allRows = getRowIDs();
+
+    int rangeStart = allRows.indexOf(prevClickedRow);
+    int rangeEnd = allRows.indexOf(clickedRow);
+
+    if (rangeEnd < rangeStart) {
+      int temp = rangeStart;
+      rangeStart = rangeEnd;
+      rangeEnd = temp;
+    }
+
+    for (int i = rangeStart; i <= rangeEnd; i++) {
+      if (lastSelectionAction == DESELECT) {
+        newSelectedRows.remove(allRows.get(i));
+      } else {
+        if (canSelectCell(allRows.get(i), selectedColumn)) {
+          newSelectedRows.add(allRows.get(i));
+        }
+      }
+    }
+
+    selectedRows = new ArrayList<String>(newSelectedRows);
+    prevClickedRow = clickedRow;
+  }
+
+  /**
+   * Determine whether or not a cell can be selected by the user.
+   *
+   * @param row
+   *          The row ID.
+   * @param column
+   *          The column.
+   * @return {@code true} if the cell can be selected; {@code false} if not.
+   */
+  protected boolean canSelectCell(String row, long column) {
+    return isColumnEditable(column);
   }
 }

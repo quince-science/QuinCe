@@ -29,6 +29,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -410,12 +411,11 @@ public class ManualQC2Data extends PlotPage2Data {
     return values;
   }
 
+  /**
+   * Clean up the data
+   */
   protected void destroy() {
-    try {
-      conn.close();
-    } catch (SQLException e) {
-      // Not much we can do about this.
-    }
+    DatabaseUtils.closeConnection(conn);
   }
 
   /**
@@ -594,5 +594,57 @@ public class ManualQC2Data extends PlotPage2Data {
     }
 
     return updatedValues;
+  }
+
+  /**
+   * Determine whether or not a cell can be selected by the user.
+   *
+   * <p>
+   * A cell is selectable if:
+   * </p>
+   * <ul>
+   * <li>The column is editable</li>
+   * <li>The cell is not empty</li>
+   * <li>The cell is not a ghost ({@link #isGhost(SensorValue)})</li>
+   * </ul>
+   *
+   * @param row
+   *          The row ID.
+   * @param column
+   *          The column.
+   * @return {@code true} if the cell can be selected; {@code false} if not.
+   * @see #isGhost(SensorValue)
+   */
+  @Override
+  protected boolean canSelectCell(String row, long column) {
+
+    boolean selectable = isColumnEditable(column);
+
+    if (selectable) {
+      SensorValue sensorValue = sensorValues.get(DateTimeUtils.longToDate(row))
+        .get(column);
+      if (sensorValue.isNaN() || isGhost(sensorValue)) {
+        selectable = false;
+      }
+    }
+
+    return selectable;
+  }
+
+  /**
+   * Determine whether or not a given {@link SensorValue} should be regarded as
+   * a ghost value (i.e. visible but not editable).
+   *
+   * <p>
+   * For Manual QC, a value is a ghost if it has its QC flag set to
+   * {@link Flag#FLUSHING}.
+   * </p>
+   *
+   * @param sensorValue
+   *          The sensor value.
+   * @return {@code true} if the value is a ghost; {@code false} otherwise.
+   */
+  private boolean isGhost(SensorValue sensorValue) {
+    return sensorValue.getUserQCFlag().equals(Flag.FLUSHING);
   }
 }

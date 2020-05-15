@@ -1120,6 +1120,7 @@ public class DataSetDataDB {
     }
   }
 
+  @Deprecated
   private static FieldValue makeSensorFieldValue(ResultSet record,
     SensorType sensorType)
     throws SQLException, RoutineException, InvalidFlagException {
