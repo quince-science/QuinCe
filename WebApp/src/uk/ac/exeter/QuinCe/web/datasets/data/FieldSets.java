@@ -264,7 +264,8 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
         // Replace lon/lat fields with a single position field ID
         if (field.getId() == FileDefinition.LONGITUDE_COLUMN_ID) {
           headings.add(FieldSets.POSITION_FIELD_ID);
-        } else if (field.getId() != FileDefinition.LATITUDE_COLUMN_ID) {
+        } else {
+          // } else if (field.getId() != FileDefinition.LATITUDE_COLUMN_ID) {
           // Ignore the latitude column
           headings.add(field.getId());
         }
