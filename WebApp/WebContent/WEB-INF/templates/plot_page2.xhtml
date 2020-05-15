@@ -130,10 +130,17 @@
               value="#{sessionScope[beanName].data.selectedColumn}" />
             <h:inputHidden id="selectedRows"
               value="#{sessionScope[beanName].data.selectedRows}" />
-            <h:inputHidden id="lastClickedRow"
-              value="#{sessionScope[beanName].data.lastClickedRow}" />
+            <h:inputHidden id="clickedRow"
+              value="#{sessionScope[beanName].data.clickedRow}" />
+            <h:inputHidden id="prevClickedRow"
+              value="#{sessionScope[beanName].data.prevClickedRow}" />
             <h:inputHidden id="lastSelectionAction"
               value="#{sessionScope[beanName].data.lastSelectionAction}" />
+              
+            <p:remoteCommand name="selectRange"
+              action="#{sessionScope[beanName].data.selectRange}"
+              process="@form" update="selectedRows prevClickedRow lastSelectionAction"
+              oncomplete="selectionUpdated()" />
 
             <ui:insert name="selectionFormEntries" />
             <ui:insert name="selectionDialog" />

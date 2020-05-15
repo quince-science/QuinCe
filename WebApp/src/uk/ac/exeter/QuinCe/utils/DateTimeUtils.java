@@ -99,6 +99,18 @@ public class DateTimeUtils {
   }
 
   /**
+   * Convert a {@code String} milliseconds value into a UTC
+   * {@link LocalDateTime}.
+   *
+   * @param milliseconds
+   *          The milliseconds value
+   * @return The {@code LocalDateTime} object
+   */
+  public static LocalDateTime longToDate(String milliseconds) {
+    return longToDate(Long.parseLong(milliseconds));
+  }
+
+  /**
    * Generate an ISOformatted date string for a given date
    *
    * @param date
