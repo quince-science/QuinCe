@@ -258,19 +258,31 @@ function getSelectedRows() {
 }
 
 // Set the selected rows as an array of row IDs.
-// Sorts the rows before setting them
+// Sorts and uniques (via a Set) the rows before setting them
 function setSelectedRows(rows) {
-  $('#selectionForm\\:selectedRows').val(JSON.stringify(rows.sort()));
+  $('#selectionForm\\:selectedRows').val(
+    JSON.stringify([...new Set(rows.sort())])
+  );
 }
 
-// Get the ID of the last clicked row
-function getLastClickedRow() {
-  return $('#selectionForm\\:lastClickedRow').val();
+//Get the ID of the clicked row
+function getClickedRow() {
+  return $('#selectionForm\\:clickedRow').val();
 }
 
-// Set the ID of the last clicked row
-function setLastClickedRow(row) {
-  $('#selectionForm\\:lastClickedRow').val(row);
+// Set the ID of the clicked row
+function setClickedRow(row) {
+  $('#selectionForm\\:clickedRow').val(row);
+}
+
+//Get the ID of the previously clicked row
+function getPrevClickedRow() {
+  return $('#selectionForm\\:prevClickedRow').val();
+}
+
+// Set the ID of the previously clicked row
+function setPrevClickedRow(row) {
+  $('#selectionForm\\:prevClickedRow').val(row);
 }
 
 // Get the last selection action
@@ -311,7 +323,7 @@ function removeRowsFromSelection(rows) {
 function clearSelection() {
   setSelectedColumn(-1);
   setSelectedRows([]);
-  setLastClickedRow(-1);
+  setPrevClickedRow(-1);
   selectionUpdated();
 }
 
@@ -465,6 +477,8 @@ function setupTableClickHandlers() {
 }
 
 function clickCellAction(cell, shiftClick) {
+
+  let immediateUpdate = true;
   
   let rowIndex = 0;
   let colIndex = 0;
@@ -482,17 +496,15 @@ function clickCellAction(cell, shiftClick) {
   }
 
   let rowId = jsDataTable.row(rowIndex).data()['DT_RowId'];
+  setClickedRow(rowId);
 
-  // If the cell isn't selectable, or has no value, do nothing.
-  if (canSelectCell(rowIndex, colIndex) &&
-    null != jsDataTable.cell(rowIndex, colIndex).data() &&
-    null != jsDataTable.cell(rowIndex, colIndex).data().value &&
-    '' != jsDataTable.cell(rowIndex, colIndex).data().value) {
+  // If the cell isn't selectable do nothing.
+  if (canSelectCell(rowIndex, colIndex)) {
 
     if (colIndex != getSelectedColumnIndex()) {
       setSelectedColumn(getColumn(colIndex).id);
       setSelectedRows([rowId]);
-      setLastClickedRow(rowId);
+      setPrevClickedRow(rowId);
       setLastSelectionAction(SELECT_ACTION);
     } else {
 
@@ -506,20 +518,37 @@ function clickCellAction(cell, shiftClick) {
           action = SELECT_ACTION;
         }
       } else {
-        actionRows = getRowsInRange(getLastClickedRow(), rowId, colIndex);
+        // If the previous clicked row is outside the currently loaded
+        // table range, we have to process it on the back end
+        let loadedRows = jsDataTable.rows().ids();
+        if (getPrevClickedRow() < loadedRows[0] ||
+            getPrevClickedRow() > loadedRows[loadedRows.length - 1]) {
+          
+          immediateUpdate = false;
+          selectRange(); // PF RemoteCommand
+        } else {
+          actionRows = getRowsInRange(getPrevClickedRow(), rowId, colIndex);
+        }
       }
 
-      if (action == SELECT_ACTION) {
-        addRowsToSelection(actionRows);
-      } else {
-        removeRowsFromSelection(actionRows);
-      }
+      // Only update the selection if it's not being done on the back end
+      if (immediateUpdate) {
+        if (action == SELECT_ACTION) {
+          addRowsToSelection(actionRows);
+        } else {
+          removeRowsFromSelection(actionRows);
+        }
 
-      setLastClickedRow(rowId);
-      setLastSelectionAction(action);
+        setPrevClickedRow(rowId);
+        setLastSelectionAction(action);
+      }
     }
 
-    selectionUpdated();
+    // Report that the selection is updated, unless it's been sent to the
+    // back end for processing
+    if (immediateUpdate) {
+      selectionUpdated();
+    }
   }
 }
 
