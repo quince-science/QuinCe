@@ -373,7 +373,7 @@ public class ManualQcBean extends PlotPageBean {
           // We can use the selected QC value if (a) the position QC is not
           // confirmed
           // or (b) the auto QC is worse than the position QC
-          if (position.needsFlag()
+          if (null == position || position.needsFlag()
             || flag.moreSignificantThan(position.getQcFlag())) {
 
             value.setQC(flag, userComment);
