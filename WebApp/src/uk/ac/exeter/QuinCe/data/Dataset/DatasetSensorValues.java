@@ -224,6 +224,17 @@ public class DatasetSensorValues {
     }
 
     return result;
+  }
 
+  /**
+   * Determines whether or not this data contains the specified column,
+   * identified by its ID.
+   *
+   * @param columnId
+   *          The column ID.
+   * @return {@code true} if the column exists; {@code false} if it does not.
+   */
+  public boolean containsColumn(long columnId) {
+    return valuesByColumn.containsKey(columnId);
   }
 }

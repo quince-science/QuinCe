@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 
 /**
@@ -167,5 +168,20 @@ public class DataReducerFactory {
 
   private static long makeId(InstrumentVariable variable, int sequence) {
     return variable.getId() * 10000 + sequence;
+  }
+
+  public static InstrumentVariable getVariable(Instrument instrument,
+    long parameterId) throws InstrumentException {
+
+    return instrument.getVariable(parameterId / 10000);
+  }
+
+  public static CalculationParameter getVariableParameter(
+    InstrumentVariable variable, long parameterId)
+    throws DataReductionException {
+
+    int parameterIndex = (int) (parameterId % 10000);
+    return getSkeletonReducer(variable).getCalculationParameters()
+      .get(parameterIndex);
   }
 }
