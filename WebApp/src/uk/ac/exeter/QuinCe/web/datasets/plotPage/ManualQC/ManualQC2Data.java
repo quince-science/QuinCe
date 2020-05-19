@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -17,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -37,6 +39,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableColumn;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 
 public class ManualQC2Data extends PlotPage2Data {
@@ -217,7 +220,7 @@ public class ManualQC2Data extends PlotPage2Data {
       sensorColumnIds[i] = column.getDatabaseId();
     }
 
-    columnHeadings.put("Sensors", sensorColumnHeadings);
+    columnHeadings.put(SENSORS_FIELD_GROUP, sensorColumnHeadings);
 
     diagnosticColumnIds = new long[diagnosticColumns.size()];
     if (diagnosticColumns.size() > 0) {
@@ -233,7 +236,7 @@ public class ManualQC2Data extends PlotPage2Data {
         diagnosticColumnIds[i] = column.getDatabaseId();
       }
 
-      columnHeadings.put("Diagnostics", diagnosticColumnNames);
+      columnHeadings.put(DIAGNOSTICS_FIELD_GROUP, diagnosticColumnNames);
     }
 
     // Each of the instrument variables
@@ -646,5 +649,60 @@ public class ManualQC2Data extends PlotPage2Data {
    */
   private boolean isGhost(SensorValue sensorValue) {
     return sensorValue.getUserQCFlag().equals(Flag.FLUSHING);
+  }
+
+  @Override
+  protected TreeMap<LocalDateTime, PlotPageTableColumn> getColumnValues(
+    ColumnHeading column) throws Exception {
+
+    TreeMap<LocalDateTime, PlotPageTableColumn> result = new TreeMap<LocalDateTime, PlotPageTableColumn>();
+
+    if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
+      for (LocalDateTime time : sensorValues.getTimes()) {
+        result.put(time, new PlotPageTableColumn(time));
+      }
+    } else if (sensorValues.containsColumn(column.getId())) {
+      for (SensorValue sensorValue : sensorValues
+        .getColumnValues(column.getId())) {
+
+        result.put(sensorValue.getTime(),
+          new PlotPageTableColumn(sensorValue, false));
+      }
+    } else {
+
+      InstrumentVariable variable = DataReducerFactory.getVariable(instrument,
+        column.getId());
+      CalculationParameter parameter = DataReducerFactory
+        .getVariableParameter(variable, column.getId());
+
+      for (Map.Entry<LocalDateTime, Long> measurement : measurements
+        .entrySet()) {
+
+        DataReductionRecord record = dataReduction.get(measurement.getValue())
+          .get(variable);
+        if (null != record) {
+          result.put(measurement.getKey(),
+            new PlotPageTableColumn(record, parameter.getName()));
+        }
+      }
+    }
+
+    return result;
+  }
+
+  @Override
+  protected ColumnHeading getDefaultYAxis1() {
+    // The first sensor
+    return columnHeadings.get(SENSORS_FIELD_GROUP).get(0);
+  }
+
+  @Override
+  protected ColumnHeading getDefaultYAxis2() {
+    // The core sensor value for the first variable
+    InstrumentVariable variable = instrument.getVariables().get(0);
+    SensorType sensorType = variable.getCoreSensorType();
+    long coreColumn = instrument.getSensorAssignments().getColumnIds(sensorType)
+      .get(0);
+    return getColumnHeading(coreColumn);
   }
 }
