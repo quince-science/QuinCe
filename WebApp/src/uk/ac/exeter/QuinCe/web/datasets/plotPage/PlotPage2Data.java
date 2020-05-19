@@ -1,10 +1,12 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.sql.DataSource;
@@ -76,6 +78,16 @@ public abstract class PlotPage2Data {
   protected int lastSelectionAction = SELECT;
 
   /**
+   * Details for the first plot
+   */
+  private Plot2 plot1 = null;
+
+  /**
+   * Details for the second plot
+   */
+  private Plot2 plot2 = null;
+
+  /**
    * The indicator of the root field group.
    *
    * <p>
@@ -85,6 +97,10 @@ public abstract class PlotPage2Data {
    * </p>
    */
   public static final String ROOT_FIELD_GROUP = "_ROOT";
+
+  public static final String SENSORS_FIELD_GROUP = "Sensors";
+
+  public static final String DIAGNOSTICS_FIELD_GROUP = "Diagnostics";
 
   static {
     // Initialise Gson builder
@@ -107,6 +123,8 @@ public abstract class PlotPage2Data {
   public void loadData(DataSource dataSource) {
     try {
       loadDataAction(dataSource);
+      plot1 = new Plot2(this, getDefaultXAxis(), getDefaultYAxis1());
+      plot2 = new Plot2(this, getDefaultXAxis(), getDefaultYAxis1());
       loaded = true;
     } catch (Exception e) {
       error("Error while loading dataset data", e);
@@ -599,4 +617,96 @@ public abstract class PlotPage2Data {
   protected boolean canSelectCell(String row, long column) {
     return isColumnEditable(column);
   }
+
+  /**
+   * Get the details of the first plot
+   *
+   * @return
+   */
+  public Plot2 getPlot1() {
+    return plot1;
+  }
+
+  /**
+   * Get the details of the second plot
+   */
+  public Plot2 getPlot2() {
+    return plot2;
+  }
+
+  /**
+   * Get the {@code index}th column heading, excluding those in the root column
+   * group (zero-based).
+   *
+   * @param index
+   *          The index.
+   * @return The column heading.
+   */
+  private ColumnHeading getNonRootColumn(int index) {
+    return getColumnHeadingsList(false).get(index);
+  }
+
+  /**
+   * Get all the column headings in an ordered list.
+   *
+   * @param excludeRoot
+   *          Indicates whether the root group should be omitted.
+   * @return The column headings
+   */
+  private List<ColumnHeading> getColumnHeadingsList(boolean excludeRoot) {
+
+    List<ColumnHeading> headingsList = new ArrayList<ColumnHeading>();
+
+    Map<String, List<ColumnHeading>> headings = getColumnHeadings();
+    for (String group : headings.keySet()) {
+      if (!group.equals(ROOT_FIELD_GROUP) || !excludeRoot) {
+        headingsList.addAll(headings.get(group));
+      }
+    }
+
+    return headingsList;
+  }
+
+  /**
+   * Get all the values for a given column.
+   *
+   * @param column
+   *          The column.
+   * @return The column values.
+   */
+  protected abstract TreeMap<LocalDateTime, PlotPageTableColumn> getColumnValues(
+    ColumnHeading column) throws Exception;
+
+  /**
+   * Get the {@link ColumnHeading} for the specified column ID.
+   *
+   * @param columnId
+   *          The column ID.
+   * @return The column heading.
+   */
+  protected ColumnHeading getColumnHeading(long columnId) {
+
+    ColumnHeading result = null;
+
+    LinkedHashMap<String, List<ColumnHeading>> headings = getColumnHeadings();
+
+    outer: for (String group : headings.keySet()) {
+      for (ColumnHeading heading : headings.get(group)) {
+        if (heading.getId() == columnId) {
+          result = heading;
+          break outer;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  protected ColumnHeading getDefaultXAxis() {
+    return getColumnHeadings().get(ROOT_FIELD_GROUP).get(0);
+  }
+
+  protected abstract ColumnHeading getDefaultYAxis1();
+
+  protected abstract ColumnHeading getDefaultYAxis2();
 }

@@ -173,6 +173,7 @@ function dataLoaded() {
     columnHeaders = JSON.parse($('#plotPageForm\\:columnHeadings').val());
     drawAllContent();
     drawTable();
+    initPlot(1);
     PF('pleaseWait').hide();
   }
 }
@@ -189,7 +190,6 @@ function getColumnGroup(column) {
   
   return currentGroup;
 }
-
 
 //Get the details of the specified column header
 function getColumn(columnIndex) {
@@ -734,3 +734,16 @@ function canSelectCell(rowIndex, colIndex) {
   return result;
 }
 
+//******************************************************
+//
+// Plot functions
+//
+//******************************************************
+
+function initPlot(index) {
+  window["loadPlot" + index](); // PF remotecommand
+}
+
+function drawPlot(index) {
+  console.log("Gimme a crayon");
+}

@@ -71,7 +71,8 @@
     resizable="false" closable="false">
 
     <div class="error">
-      ERROR: An error occurred during processing. Please report the following to site support:
+      ERROR: An error occurred during processing.
+      Please report the following to site support:
     </div>
 
     <div id="errorMessageString" class="instructions">
@@ -95,7 +96,56 @@
   <div id="plotPageContent" class="plotPageContent">
     <div id="plots">
       <div id="plot1Panel" class="plotContainer">
-        Plot 1
+        <h:form id="plot1Form" method="post">
+          <h:inputHidden id="plot1Data"
+            value="#{sessionScope[beanName].data.plot1.mainData}"/>
+          <h:inputHidden id="plot1Flags"
+            value="#{sessionScope[beanName].data.plot1.flagData}"/>
+          <h:inputHidden id="plot1XAxis"
+            value="#{sessionScope[beanName].data.plot1.xaxis}"/>
+          <h:inputHidden id="plot1YAxis"
+            value="#{sessionScope[beanName].data.plot1.yaxis}"/>
+            
+          <p:remoteCommand name="loadPlot1"
+            action="#{sessionScope[beanName].data.plot1.getAll}"
+            process="@this" update="plot1Data plot1Flags plot1XAxis plot1YAxis"
+            oncomplete="drawPlot(1)" />
+
+          <div id="plot1Container"></div>
+          <div id="plot1Label" class="plotLabels"></div>
+          <div id="map1Container" class="hidden"></div>
+          <div id="map1ScaleControlContainer"
+            class="ol-unselectable ol-control mapScaleControlContainer hidden">
+            <button type="button" onclick="toggleScale(1);">S</button>
+          </div>
+          <div id="map1Value" class="mapValue"></div>
+          <div id="map1Scale" class="mapScale hidden"></div>
+          <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
+            <f:facet name="left">
+              <p:selectOneButton id="plotMode" widgetVar="plot1Mode"
+                styleClass="plotModeButtons"
+                onchange="initPlot(1)" unselectable="false">
+                <f:selectItem itemLabel=" " itemValue="plot" />
+                <f:selectItem itemLabel=" " itemValue="map" />
+              </p:selectOneButton>
+              <div class="plotFooterButtonContainer">
+                <p:commandButton icon="selectVariableButton"
+                  onclick="showVariableDialog(1)"
+                  styleClass="inlineButton tightButton plotFooterButton" />
+                <p:commandButton icon="zoomOutButton" onclick="resetZoom(1)"
+                  styleClass="inlineButton tightButton plotFooterButton" />
+              </div>
+              <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
+                <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode"
+                  value="zoom" styleClass="selectModeButtons"
+                  onchange="setPlotSelectMode(1)" unselectable="false">
+                  <f:selectItem itemLabel=" " itemValue="zoom" />
+                  <f:selectItem itemLabel=" " itemValue="select" />
+                </p:selectOneButton>
+              </ui:fragment>
+            </f:facet>
+          </p:toolbar>
+        </h:form>
       </div>
       <div id="plot2Panel" class="plotContainer">
         Plot 2

@@ -1,6 +1,12 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.time.LocalDateTime;
+
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -10,7 +16,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * @author Steve Jones
  *
  */
-class PlotPageTableColumn {
+public class PlotPageTableColumn {
 
   /**
    * The displayed value.
@@ -58,6 +64,57 @@ class PlotPageTableColumn {
     this.qcFlag = qcFlag;
     this.qcMessage = qcMessage;
     this.flagNeeded = flagNeeded;
+  }
+
+  /**
+   * Constructor for a timestamp.
+   *
+   * @param time
+   *          The timestamp.
+   */
+  public PlotPageTableColumn(LocalDateTime time) {
+    this.value = String.valueOf(DateTimeUtils.dateToLong(time));
+    this.used = false;
+    this.qcFlag = Flag.GOOD;
+    this.qcMessage = "";
+    this.flagNeeded = false;
+  }
+
+  /**
+   * Builds a {@link PlotPageTableColumn} from a {@link SensorValue}.
+   *
+   * @param sensorValue
+   *          The {@link SensorValue}.
+   * @param used
+   *          Whether the value is used in a calculation.
+   * @throws RoutineException
+   *           If the QC message cannot be extracted.
+   */
+  public PlotPageTableColumn(SensorValue sensorValue, boolean used)
+    throws RoutineException {
+
+    this.value = sensorValue.getValue();
+    this.used = used;
+    this.qcFlag = sensorValue.getDisplayFlag();
+    this.qcMessage = sensorValue.getDisplayQCMessage();
+    this.flagNeeded = sensorValue.flagNeeded();
+  }
+
+  /**
+   * Create a column value for a parameter from a {@link DataReductionRecord}.
+   *
+   * @param record
+   *          The data reduction record.
+   * @param parameterName
+   *          The parameter.
+   */
+  public PlotPageTableColumn(DataReductionRecord record, String parameterName) {
+    this.value = String.valueOf(record.getCalculationValue(parameterName));
+    this.used = false;
+    this.qcFlag = record.getQCFlag();
+    this.qcMessage = StringUtils.collectionToDelimited(record.getQCMessages(),
+      ";");
+    this.flagNeeded = qcFlag.equals(Flag.NEEDED);
   }
 
   /**
