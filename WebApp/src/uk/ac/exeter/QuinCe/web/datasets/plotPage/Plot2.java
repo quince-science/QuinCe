@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -10,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 public class Plot2 {
@@ -70,7 +72,6 @@ public class Plot2 {
     this.data = data;
     this.xAxis = xAxis;
     this.yAxis = yAxis;
-    makePlotValues();
   }
 
   /**
@@ -137,15 +138,57 @@ public class Plot2 {
         PlotPageTableColumn x = xValues.get(time);
         PlotPageTableColumn y = yValues.get(time);
 
-        plotValues
-          .add(new PlotValue(String.valueOf(DateTimeUtils.dateToLong(time)),
+        PlotValue plotValue;
+
+        if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
+          plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
+            Double.parseDouble(y.getValue()),
+            y.getQcFlag().equals(Flag.FLUSHING), y.getQcFlag());
+        } else {
+          plotValue = new PlotValue(DateTimeUtils.dateToLong(time),
             Double.parseDouble(x.getValue()), Double.parseDouble(y.getValue()),
-            y.getQcFlag().equals(Flag.FLUSHING), y.getQcFlag()));
+            y.getQcFlag().equals(Flag.FLUSHING), y.getQcFlag());
+        }
+
+        plotValues.add(plotValue);
       }
     }
   }
 
-  protected void init(ColumnHeading xAxis, ColumnHeading yAxis)
-    throws Exception {
+  /**
+   * Initialise the plot and its data. Called from the front end when the QC
+   * page is loaded.
+   *
+   * @throws Exception
+   *           If any error occurs
+   */
+  public void init() {
+    try {
+      makePlotValues();
+    } catch (Exception e) {
+      data.error(e.getMessage());
+    }
+  }
+
+  public String getDataLabels() {
+    List<String> labels = new ArrayList<String>(4);
+    labels.add(xAxis.getHeading());
+    labels.add("ID");
+    labels.add("GHOST");
+    labels.add(yAxis.getHeading());
+
+    return new Gson().toJson(labels);
+
+  }
+
+  public String getFlagLabels() {
+    List<String> labels = new ArrayList<String>(4);
+    labels.add(xAxis.getHeading());
+    labels.add("ID");
+    labels.add("BAD");
+    labels.add("QUESTIONABLE");
+    labels.add("NEEDED");
+
+    return new Gson().toJson(labels);
   }
 }
