@@ -63,6 +63,9 @@ const DATA_POINT_HIGHLIGHT_SIZE = 5;
 var dataPlot1 = null;
 var dataPlot1Data = null;
 
+var dataPlot2 = null;
+var daraPlot2Data = null;
+
 var BASE_PLOT_OPTIONS = {
   drawPoints: true,
   strokeWidth: 0.0,
@@ -123,11 +126,6 @@ function layoutPage() {
   });
 }
 
-// Draw all page components
-function drawAllContent() {
-  console.log('drawAllContent');
-}
-
 // Handle table/plot split adjustment 
 function scaleTableSplit() {
   tableSplitProportion = $('#plotPageContent').split().position() / $('#plotPageContent').height();
@@ -136,13 +134,35 @@ function scaleTableSplit() {
 
 // Handle split adjustment between the two plots
 function resizePlots() {
-  console.log('Resize plots');
+  resizePlot(1);
+
+//    if (null != window['map' + index]) {
+//      $('#map' + index + 'Container').width($('#plot' + index + 'Panel').width());
+//      $('#map' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
+//      window['map' + index].updateSize();
+//    }
+}
+
+function resizePlot(index) {
+  if (null != window['dataPlot' + index]) {
+    $('#plot' + index + 'Container').width('100%');
+    $('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
+    window['dataPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+  }
 }
 
 // Adjust the size of all page elements after a window
 // resize or split adjustment
 function resizeAllContent() {
-  console.log('resizeAllContent');
+  $('#plotPageContent').height(window.innerHeight - 73);
+
+  $('#plotPageContent').split().position($('#plotPageContent').height() * tableSplitProportion);
+
+  if (null != jsDataTable) {
+    $('.dataTables_scrollBody').height(calcTableScrollY());
+  }
+
+  resizePlots();
 }
 
 function showQCMessage(qcFlag, qcMessage) {
@@ -190,7 +210,6 @@ function dataLoaded() {
 
   if (!errorCheck()) {
     columnHeaders = JSON.parse($('#plotPageForm\\:columnHeadings').val());
-    drawAllContent();
     drawTable();
     initPlot(1);
     PF('pleaseWait').hide();
@@ -808,9 +827,12 @@ function drawPlot(index) {
   let labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
   
   let graph_options = Object.assign({}, BASE_PLOT_OPTIONS);
+  // Ghost data and series data colors
+  graph_options.colors = ['#01752D', '#C0C0C0'];
   graph_options.xlabel = labels[0];
   graph_options.ylabel = labels[3];
   graph_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
+  graph_options.labelsDiv = 'plot' + index + 'Label';
   graph_options.visibility = [false, true, true];
   graph_options.pointSize = DATA_POINT_SIZE;
   graph_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
@@ -825,6 +847,7 @@ function drawPlot(index) {
       gridLineColor: 'rbg(200, 200, 200)',
     }
   };
+  graph_options.interactionModel = getInteractionModel(index);
   graph_options.clickCallback = function(e, x, points) {
     scrollToTableRow(getRowId(e, x, points));
   };
@@ -834,6 +857,32 @@ function drawPlot(index) {
     window['dataPlot' + index + 'Data'],
     graph_options
   );
+  
+  resizePlot(1);
+}
+
+//Get the interaction model for a plot
+function getInteractionModel(index) {
+  var plot = window['plot' + index];
+  var selectMode = $('[id^=plot' + index + 'Form\\:plotSelectMode]:checked').val();
+
+  var interactionModel = null;
+
+  if (selectMode == 'select') {
+    interactionModel = {
+      mousedown: selectModeMouseDown,
+      mouseup: selectModeMouseUp,
+      mousemove: selectModeMouseMove
+    }
+  } else {
+  // Use the default interaction model, but without
+  // double-click. We use the clickCallback property defined
+  // in BASE_GRAPH_OPTIONS above
+  interactionModel = Dygraph.defaultInteractionModel;
+    interactionModel.dblclick = null;
+  }
+
+  return interactionModel;
 }
 
 /*
