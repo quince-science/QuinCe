@@ -14,6 +14,8 @@
   <h:outputStylesheet name="style/jquery.splitter.css" />
   <h:outputScript name="script/datatables.min.js" />
   <h:outputStylesheet name="style/datatables.min.css" />
+  <h:outputScript name="script/dygraph.min.js" />
+  <h:outputStylesheet name="style/dygraph.css" />
 
   <!-- The script that controls all the page actions -->
   <h:outputScript name="script/plotPage2.js" />
@@ -99,19 +101,28 @@
         <h:form id="plot1Form" method="post">
           <h:inputHidden id="plot1Data"
             value="#{sessionScope[beanName].data.plot1.mainData}"/>
+          <h:inputHidden id="plot1DataLabels"
+            value="#{sessionScope[beanName].data.plot1.dataLabels}"/>
           <h:inputHidden id="plot1Flags"
             value="#{sessionScope[beanName].data.plot1.flagData}"/>
+          <h:inputHidden id="plot1FlagLabels"
+            value="#{sessionScope[beanName].data.plot1.flagLabels}"/>
           <h:inputHidden id="plot1XAxis"
             value="#{sessionScope[beanName].data.plot1.xaxis}"/>
           <h:inputHidden id="plot1YAxis"
             value="#{sessionScope[beanName].data.plot1.yaxis}"/>
             
           <p:remoteCommand name="loadPlot1"
-            action="#{sessionScope[beanName].data.plot1.getAll}"
-            process="@this" update="plot1Data plot1Flags plot1XAxis plot1YAxis"
+            action="#{sessionScope[beanName].data.plot1.init}"
+            process="@this"
+            update=":plotPageForm:error plot1Data plot1Flags plot1XAxis plot1YAxis plot1DataLabels plot1FlagLabels"
             oncomplete="drawPlot(1)" />
 
-          <div id="plot1Container"></div>
+          <div id="plot1Container">
+            <div id="plot1DataPlot" class="dataPlot"></div>
+            <div id="plot1HighlightPlot" class="highlightPlot"></div>
+            <div id="plot1FlagPlot" class="flagPlot"></div>
+          </div>
           <div id="plot1Label" class="plotLabels"></div>
           <div id="map1Container" class="hidden"></div>
           <div id="map1ScaleControlContainer"

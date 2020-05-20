@@ -8,6 +8,8 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+
 public class MainPlotValueSerializer implements JsonSerializer<PlotValue> {
 
   @Override
@@ -16,7 +18,12 @@ public class MainPlotValueSerializer implements JsonSerializer<PlotValue> {
 
     JsonArray json = new JsonArray();
 
-    json.add(src.getX());
+    if (src.xIsTime()) {
+      json.add(DateTimeUtils.toIsoDate(src.getXTime()));
+    } else {
+      json.add(src.getXDouble());
+    }
+
     json.add(src.getId());
     if (src.isGhost()) {
       json.add(src.getY());

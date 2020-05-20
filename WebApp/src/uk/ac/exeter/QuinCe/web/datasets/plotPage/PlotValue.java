@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -9,12 +10,17 @@ class PlotValue implements Comparable<PlotValue> {
   /**
    * The value ID (typically the timestamp)
    */
-  private final String id;
+  private final long id;
+
+  /**
+   * The x value as a timestamp
+   */
+  private final LocalDateTime xTime;
 
   /**
    * The x value
    */
-  private final double x;
+  private final double xDouble;
 
   /**
    * The y value
@@ -45,16 +51,17 @@ class PlotValue implements Comparable<PlotValue> {
    * @param flag
    *          The y value's QC flag.
    */
-  protected PlotValue(String id, double x, double y, boolean ghost, Flag flag) {
+  protected PlotValue(long id, double x, double y, boolean ghost, Flag flag) {
     this.id = id;
-    this.x = x;
+    this.xDouble = x;
+    this.xTime = null;
     this.y = y;
     this.ghost = ghost;
     this.flag = flag;
   }
 
   /**
-   * Constructor for a value that is not a ghost.
+   * Constructor for all fields.
    *
    * @param id
    *          The value ID (typically the timestamp).
@@ -62,14 +69,18 @@ class PlotValue implements Comparable<PlotValue> {
    *          The x value.
    * @param y
    *          The y value.
+   * @param ghost
+   *          Indicates whether or not this is a ghost value.
    * @param flag
    *          The y value's QC flag.
    */
-  protected PlotValue(String id, double x, double y, Flag flag) {
+  protected PlotValue(long id, LocalDateTime x, double y, boolean ghost,
+    Flag flag) {
     this.id = id;
-    this.x = x;
+    this.xDouble = 0;
+    this.xTime = x;
     this.y = y;
-    this.ghost = false;
+    this.ghost = ghost;
     this.flag = flag;
   }
 
@@ -78,9 +89,18 @@ class PlotValue implements Comparable<PlotValue> {
 
     // Compare by x value first (for ordering in plot)
     // followed by id
-    int result = Double.compare(x, o.x);
+    // Use time if both are times. Else double value.
+    // Weird shit will happen if you compare a time to a non-time.
+    int result;
+
+    if (xIsTime() && o.xIsTime()) {
+      result = xTime.compareTo(o.xTime);
+    } else {
+      result = Double.compare(xDouble, o.xDouble);
+    }
+
     if (result == 0) {
-      result = id.compareTo(o.id);
+      result = Long.compare(id, o.id);
     }
 
     return result;
@@ -103,15 +123,19 @@ class PlotValue implements Comparable<PlotValue> {
     return Objects.equals(id, other.id);
   }
 
-  public double getX() {
-    return x;
+  public double getXDouble() {
+    return xDouble;
+  }
+
+  public LocalDateTime getXTime() {
+    return xTime;
   }
 
   public double getY() {
     return y;
   }
 
-  public String getId() {
+  public long getId() {
     return id;
   }
 
@@ -137,5 +161,17 @@ class PlotValue implements Comparable<PlotValue> {
   public boolean inFlagPlot() {
     return (flag.equals(Flag.BAD) || flag.equals(Flag.QUESTIONABLE)
       || flag.equals(Flag.NEEDED));
+  }
+
+  /**
+   * Indicates whether or not the X Axis is time.
+   *
+   * <p>
+   * This is used by the JSON serializers to determine how to build the JSON.
+   *
+   * @return {@code true} if the X axis is time. {@code false} otherwise.
+   */
+  public boolean xIsTime() {
+    return null != xTime;
   }
 }

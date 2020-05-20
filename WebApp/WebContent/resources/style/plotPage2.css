@@ -73,3 +73,15 @@
 td.selected {
   background-color: #FFFF00 !important;
 }
+
+/*
+ *************************
+ * Plots
+ *************************
+ */
+.dataPlot {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 100;
+}

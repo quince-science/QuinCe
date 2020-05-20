@@ -69,7 +69,7 @@ public class ManualQC2Data extends PlotPage2Data {
    * All row IDs for the dataset. Row IDs are the millisecond values of the
    * times.
    */
-  private List<String> rowIDs = null;
+  private List<Long> rowIDs = null;
 
   /**
    * The dataset's sensor values.
@@ -167,8 +167,7 @@ public class ManualQC2Data extends PlotPage2Data {
 
     // Build the row IDs
     rowIDs = sensorValues.getTimes().stream()
-      .map(t -> String.valueOf(DateTimeUtils.dateToLong(t)))
-      .collect(Collectors.toList());
+      .map(t -> DateTimeUtils.dateToLong(t)).collect(Collectors.toList());
 
     buildColumnHeaders();
   }
@@ -360,7 +359,7 @@ public class ManualQC2Data extends PlotPage2Data {
   }
 
   @Override
-  protected List<String> getRowIDs() {
+  protected List<Long> getRowIDs() {
     return rowIDs;
   }
 
@@ -405,9 +404,9 @@ public class ManualQC2Data extends PlotPage2Data {
     List<SensorValue> values = new ArrayList<SensorValue>(selectedRows.size());
 
     if (null != selectedRows) {
-      for (String rowId : selectedRows) {
-        values.add(sensorValues.getSensorValue(
-          DateTimeUtils.longToDate(Long.parseLong(rowId)), selectedColumn));
+      for (Long rowId : selectedRows) {
+        values.add(sensorValues.getSensorValue(DateTimeUtils.longToDate(rowId),
+          selectedColumn));
       }
     }
 
@@ -619,7 +618,7 @@ public class ManualQC2Data extends PlotPage2Data {
    * @see #isGhost(SensorValue)
    */
   @Override
-  protected boolean canSelectCell(String row, long column) {
+  protected boolean canSelectCell(long row, long column) {
 
     boolean selectable = isColumnEditable(column);
 
