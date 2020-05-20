@@ -34,7 +34,7 @@ public abstract class PlotPage2Data {
   /**
    * Json serialization type for lists of strings
    */
-  Type stringList = new TypeToken<List<String>>() {
+  Type longList = new TypeToken<List<Long>>() {
   }.getType();
 
   /**
@@ -60,7 +60,7 @@ public abstract class PlotPage2Data {
   /**
    * The IDs of the selected rows
    */
-  protected List<String> selectedRows = null;
+  protected List<Long> selectedRows = null;
 
   /**
    * The ID of the row that was just selected/deselected
@@ -123,8 +123,11 @@ public abstract class PlotPage2Data {
   public void loadData(DataSource dataSource) {
     try {
       loadDataAction(dataSource);
+
+      // Initialise the plots
       plot1 = new Plot2(this, getDefaultXAxis(), getDefaultYAxis1());
       plot2 = new Plot2(this, getDefaultXAxis(), getDefaultYAxis1());
+
       loaded = true;
     } catch (Exception e) {
       error("Error while loading dataset data", e);
@@ -414,7 +417,7 @@ public abstract class PlotPage2Data {
    *
    * @return The row IDs.
    */
-  protected abstract List<String> getRowIDs();
+  protected abstract List<Long> getRowIDs();
 
   /**
    * Return the list of row IDs as a JSON string array.
@@ -509,7 +512,7 @@ public abstract class PlotPage2Data {
    *          The selected rows.
    */
   public void setSelectedRows(String selectedRows) {
-    this.selectedRows = new Gson().fromJson(selectedRows, stringList);
+    this.selectedRows = new Gson().fromJson(selectedRows, longList);
   }
 
   /**
@@ -578,9 +581,9 @@ public abstract class PlotPage2Data {
    */
   public void selectRange() {
 
-    TreeSet<String> newSelectedRows = new TreeSet<String>(selectedRows);
+    TreeSet<Long> newSelectedRows = new TreeSet<Long>(selectedRows);
 
-    List<String> allRows = getRowIDs();
+    List<Long> allRows = getRowIDs();
 
     int rangeStart = allRows.indexOf(prevClickedRow);
     int rangeEnd = allRows.indexOf(clickedRow);
@@ -601,7 +604,7 @@ public abstract class PlotPage2Data {
       }
     }
 
-    selectedRows = new ArrayList<String>(newSelectedRows);
+    selectedRows = new ArrayList<Long>(newSelectedRows);
     prevClickedRow = clickedRow;
   }
 
@@ -614,7 +617,7 @@ public abstract class PlotPage2Data {
    *          The column.
    * @return {@code true} if the cell can be selected; {@code false} if not.
    */
-  protected boolean canSelectCell(String row, long column) {
+  protected boolean canSelectCell(long row, long column) {
     return isColumnEditable(column);
   }
 

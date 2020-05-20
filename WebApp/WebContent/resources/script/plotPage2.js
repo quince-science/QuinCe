@@ -1,17 +1,3 @@
-/*
- *********************************************
- * Constants
- *********************************************
- */
-
-// DATA CONSTANTS
-
-// PAGE CONSTANTS
-var SELECT_ACTION = 1;
-var DESELECT_ACTION = -1;
-
-var FLAG_FLUSHING = -100;
-
 // TABLE CONSTANTS
 
 /*
@@ -19,6 +5,11 @@ var FLAG_FLUSHING = -100;
  * Page variables
  *********************************************
  */
+
+// PAGE CONSTANTS
+const SELECT_ACTION = 1;
+const DESELECT_ACTION = -1;
+const FLAG_FLUSHING = -100;
 
 /*
  * Variables for the plot/table layout
@@ -55,6 +46,34 @@ var dataTableDrawCallback = null;
 var tableScrollRow = null;
 var scrollEventTimer = null;
 var scrollEventTimeLimit = 300;
+
+/*
+ *********************************************
+ * Plot variables
+ *********************************************
+ */
+
+// PLOT CONSTANTS
+const DATA_POINT_SIZE = 2;
+const DATA_POINT_HIGHLIGHT_SIZE = 5;
+
+// Plot data is passed through form inputs.
+// On the page we move them to variables so the plot data isn't
+// constantly sent back to the server with ajax requests.
+var dataPlot1 = null;
+var dataPlot1Data = null;
+
+var BASE_PLOT_OPTIONS = {
+  drawPoints: true,
+  strokeWidth: 0.0,
+  labelsUTC: true,
+  labelsSeparateLine: true,
+  digitsAfterDecimal: 2,
+  animatedZooms: true,
+  xRangePad: 10,
+  yRangePad: 10
+}
+
 
 /*
  *********************************************
@@ -680,6 +699,40 @@ function scrollToColumn(column) {
   console.log('Scrolling to column ' + column);
 }
 
+/*
+ * Scroll to the table row with the given ID
+ */
+function scrollToTableRow(rowId) {
+
+  var tableRow = -1;
+
+  if (null != rowId) {
+    tableRow = JSON.parse($('#plotPageForm\\:rowIDs').val()).indexOf(rowId);
+  }
+
+  if (tableRow >= 0) {
+    jsDataTable.scroller().scrollToRow(tableRow - 2);
+
+    // Because we scroll to the row - 2, we know that the
+    // row we want to highlight is the third row
+    tableScrollRow = rowId;
+
+    // The highlight is done as part of the table draw callback
+  }
+}
+
+function highlightRow(rowId) {
+  if (null != rowId) {
+    setTimeout(function() {
+      var rowNode = $('#' + rowId)[0];
+      $(rowNode).css('animationName', 'rowFlash').css('animationDuration', '1s');
+      setTimeout(function() {
+        $(rowNode).css('animationName', '');
+      }, 1000);
+    }, 100);
+  }
+}
+
 function getRowsInRange(startRow, endRow, columnIndex) {
 
   let rows = [];
@@ -745,5 +798,72 @@ function initPlot(index) {
 }
 
 function drawPlot(index) {
-  console.log("Gimme a crayon");
+  errorCheck();
+  
+  window['dataPlot' + index + 'Data'] =
+    parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Data').val());
+  
+  $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
+  
+  let labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
+  
+  let graph_options = Object.assign({}, BASE_PLOT_OPTIONS);
+  graph_options.xlabel = labels[0];
+  graph_options.ylabel = labels[3];
+  graph_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
+  graph_options.visibility = [false, true, true];
+  graph_options.pointSize = DATA_POINT_SIZE;
+  graph_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
+  graph_options.selectMode = 'euclidian';
+  graph_options.axes = {
+    x: {
+      drawGrid: false
+    },
+    y: {
+      drawGrid: true,
+      gridLinePattern: [1, 3],
+      gridLineColor: 'rbg(200, 200, 200)',
+    }
+  };
+  graph_options.clickCallback = function(e, x, points) {
+    scrollToTableRow(getRowId(e, x, points));
+  };
+  
+  window['dataPlot' + index] = new Dygraph(
+    document.getElementById('plot' + index + 'DataPlot'),
+    window['dataPlot' + index + 'Data'],
+    graph_options
+  );
 }
+
+/*
+ * Get the Row ID from a given graph click event
+ *
+ * For now, this just looks up the row using the X value. This will
+ * work for dates, but will need to be more intelligent for non-date plots.
+ */
+function getRowId(event, xValue, points) {
+  var containerId = $(event.target).
+  parents().
+  filter(function() {
+    return this.id.match(/plot[1-2]Container/)
+  })[0]['id'];
+
+  var plotIndex = containerId.substring(4, 5);
+  var pointId = points[0]['idx'];
+
+  return window['dataPlot' + plotIndex + 'Data'][pointId][1];
+}
+
+// Parse a JSON string, converting any string values to dates.
+function parseJsonWithDates(json) {
+  return JSON.parse($('#plot1Form\\:plot1Data').val(), (key, value) => {
+    let val = value;
+    if (typeof value === 'string') {
+      val = new Date(value);
+    }
+    return val;
+  });
+}
+
+

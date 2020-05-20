@@ -9,6 +9,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
 
@@ -18,7 +19,11 @@ public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
 
     JsonArray json = new JsonArray();
 
-    json.add(src.getX());
+    if (src.xIsTime()) {
+      json.add(DateTimeUtils.toIsoDate(src.getXTime()));
+    } else {
+      json.add(src.getXDouble());
+    }
 
     // Bad
     if (src.getFlag().equals(Flag.BAD)) {
