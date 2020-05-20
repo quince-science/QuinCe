@@ -85,3 +85,74 @@ td.selected {
   left: 0px;
   z-index: 100;
 }
+
+.plotLabels {
+  position: absolute;
+  bottom: 36px;
+  right: 0px;
+  padding: 2px;
+  background: #DDD;
+  margin: 0px;
+}
+
+.plotModeButtons .ui-button:nth-child(1) {
+  background-image: url("#{resource['image/plot_button.svg']}") !important;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  width: 46.77px !important;
+  height: 29.22px !important;
+}
+
+.plotModeButtons .ui-button:nth-child(2) {
+  background-image: url("#{resource['image/globe_button.svg']}") !important;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  width: 46.77px !important;
+  height: 29.22px !important;
+}
+
+.plotFooterButtonContainer {
+  display: inline;
+  position:relative;
+}
+
+/* These buttons are sometimes mixed in with PrimeFaces stuff,
+   which breaks the layout. This fixes the CSS when PF stuff is
+   present (i.e. we aren't the only thing in the plot footer */
+.plotFooterButtonContainer:not(:only-child) {
+  top: -10px !important;
+}
+
+.selectVariableButton {
+  background-image: url("#{resource['image/select_button.svg']}") !important;
+  background-size: cover;
+  margin-left: -13px !important;
+  margin-top: -13px !important;
+  width: 25px !important;
+  height: 25px !important;
+}
+
+.zoomOutButton {
+  background-image: url("#{resource['image/zoomout_button.svg']}") !important;
+  background-size: cover;
+  margin-left: -13px !important;
+  margin-top: -13px !important;
+  width: 25px !important;
+  height: 25px !important;
+}
+
+.selectModeButtons .ui-button:nth-child(1) {
+  background-image: url("#{resource['image/zoom_button.svg']}") !important;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  width: 46.77px !important;
+  height: 29.22px !important;
+}
+
+.selectModeButtons .ui-button:nth-child(2) {
+  background-image: url("#{resource['image/mark_button.svg']}") !important;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  width: 46.77px !important;
+  height: 29.22px !important;
+}
