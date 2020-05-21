@@ -65,12 +65,12 @@ public abstract class PlotPage2Data {
   /**
    * The ID of the row that was just selected/deselected
    */
-  protected String clickedRow = null;
+  protected long clickedRow = -1L;
 
   /**
    * The ID of the last row that was selected/deselected
    */
-  protected String prevClickedRow = null;
+  protected long prevClickedRow = -1L;
 
   /**
    * Indicates whether the last selection action was a select or a deselect
@@ -520,7 +520,7 @@ public abstract class PlotPage2Data {
    *
    * @return The clicked row
    */
-  public String getClickedRow() {
+  public long getClickedRow() {
     return clickedRow;
   }
 
@@ -530,7 +530,7 @@ public abstract class PlotPage2Data {
    * @param clickedRow
    *          The clicked row.
    */
-  public void setClickedRow(String clickedRow) {
+  public void setClickedRow(long clickedRow) {
     this.clickedRow = clickedRow;
   }
 
@@ -539,7 +539,7 @@ public abstract class PlotPage2Data {
    *
    * @return The previously clicked row
    */
-  public String getPrevClickedRow() {
+  public long getPrevClickedRow() {
     return prevClickedRow;
   }
 
@@ -549,7 +549,7 @@ public abstract class PlotPage2Data {
    * @param prevClickedRow
    *          The previously clicked row.
    */
-  public void setPrevClickedRow(String prevClickedRow) {
+  public void setPrevClickedRow(long prevClickedRow) {
     this.prevClickedRow = prevClickedRow;
   }
 

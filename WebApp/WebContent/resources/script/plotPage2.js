@@ -309,7 +309,8 @@ function setSelectedRows(rows) {
 
 //Get the ID of the clicked row
 function getClickedRow() {
-  return $('#selectionForm\\:clickedRow').val();
+  // Get as number
+  return +$('#selectionForm\\:clickedRow').val();
 }
 
 // Set the ID of the clicked row
@@ -319,7 +320,8 @@ function setClickedRow(row) {
 
 //Get the ID of the previously clicked row
 function getPrevClickedRow() {
-  return $('#selectionForm\\:prevClickedRow').val();
+  // Get as number
+  return +$('#selectionForm\\:prevClickedRow').val();
 }
 
 // Set the ID of the previously clicked row
@@ -601,9 +603,9 @@ function drawTableSelection() {
   $("td.selected").removeClass('selected');
 
   // Highlight selected cells
-  var rows = jsDataTable.rows()[0];
-  for (var i = 0; i < rows.length; i++) {
-    var row = jsDataTable.row(i);
+  let rows = jsDataTable.rows()[0];
+  for (let i = 0; i < rows.length; i++) {
+    let row = jsDataTable.row(i);
 
     if ($.inArray(row.data()['DT_RowId'], getSelectedRows()) > -1) {
       

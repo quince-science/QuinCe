@@ -30,7 +30,7 @@ public class PlotPageTableRecord {
   /**
    * The record ID
    */
-  private final String id;
+  private final long id;
 
   /**
    * The record's columns
@@ -48,12 +48,12 @@ public class PlotPageTableRecord {
    * @param id
    *          The record ID
    */
-  public PlotPageTableRecord(String id) {
+  public PlotPageTableRecord(long id) {
     this.id = id;
   }
 
   public PlotPageTableRecord(LocalDateTime id) {
-    this.id = String.valueOf(DateTimeUtils.dateToLong(id));
+    this.id = DateTimeUtils.dateToLong(id);
   }
 
   /**
@@ -115,7 +115,7 @@ public class PlotPageTableRecord {
     }
   }
 
-  protected String getId() {
+  protected long getId() {
     return id;
   }
 
