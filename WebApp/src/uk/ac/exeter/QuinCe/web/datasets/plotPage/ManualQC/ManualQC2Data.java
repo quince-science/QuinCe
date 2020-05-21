@@ -389,6 +389,7 @@ public class ManualQC2Data extends PlotPage2Data {
       }
 
       DataSetDataDB.storeSensorValues(conn, sensorValues);
+      initPlots();
     } catch (Exception e) {
       error("Error while updating QC flags", e);
     }
@@ -524,6 +525,8 @@ public class ManualQC2Data extends PlotPage2Data {
 
       // Store the updated sensor values
       DataSetDataDB.storeSensorValues(conn, selectedValues);
+
+      initPlots();
 
     } catch (Exception e) {
       error("Error storing QC data", e);
