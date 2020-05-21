@@ -7,8 +7,10 @@ function qcFlagsAccepted() {
   
   PF('flagDialog').hide();
   
+  drawFlagPlot(1);
   clearSelection();
-  // redrawPlot(1);
+  
+  
   // redrawPlot(2);
 
   // Reload table data

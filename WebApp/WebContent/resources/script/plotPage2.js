@@ -872,7 +872,11 @@ function drawPlot(index) {
     data_options
   );
   
-  // Flags plot
+  drawFlagPlot(index);
+  resizePlot(index);
+}
+
+function drawFlagPlot(index) {
   window['flagPlot' + index + 'Data'] =
     parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
   
@@ -887,8 +891,8 @@ function drawPlot(index) {
   flag_options.pointSize = FLAG_POINT_SIZE;
   flag_options.highlightCircleSize = 0;
   flag_options.selectMode = 'euclidian';
-  data_options.xRangePad = 0;
-  data_options.yRangePad = 0;
+  flag_options.xRangePad = 0;
+  flag_options.yRangePad = 0;
   flag_options.axes = {
     x: {
       drawGrid: false
@@ -905,7 +909,7 @@ function drawPlot(index) {
     window['flagPlot' + index + 'Data'],
     flag_options
   );
-
+  
   resizePlot(index);
 }
 
