@@ -56,25 +56,27 @@ var scrollEventTimeLimit = 300;
 // PLOT CONSTANTS
 const DATA_POINT_SIZE = 2;
 const DATA_POINT_HIGHLIGHT_SIZE = 5;
+const FLAG_POINT_SIZE = 8;
 
 // Plot data is passed through form inputs.
 // On the page we move them to variables so the plot data isn't
 // constantly sent back to the server with ajax requests.
 var dataPlot1 = null;
 var dataPlot1Data = null;
+var flagPlot1 = null;
+var flagPlot1Data = null;
 
 var dataPlot2 = null;
 var daraPlot2Data = null;
+var flagPlot2 = null;
+var flagPlot2Data = null;
 
 var BASE_PLOT_OPTIONS = {
   drawPoints: true,
   strokeWidth: 0.0,
   labelsUTC: true,
   labelsSeparateLine: true,
-  digitsAfterDecimal: 2,
-  animatedZooms: true,
-  xRangePad: 10,
-  yRangePad: 10
+  digitsAfterDecimal: 2
 }
 
 
@@ -148,6 +150,8 @@ function resizePlot(index) {
     $('#plot' + index + 'Container').width('100%');
     $('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
     window['dataPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+    window['flagPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+    syncZoom(index);
   }
 }
 
@@ -819,6 +823,7 @@ function initPlot(index) {
 function drawPlot(index) {
   errorCheck();
   
+  // Data plot
   window['dataPlot' + index + 'Data'] =
     parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Data').val());
   
@@ -826,18 +831,22 @@ function drawPlot(index) {
   
   let labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
   
-  let graph_options = Object.assign({}, BASE_PLOT_OPTIONS);
+  let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
   // Ghost data and series data colors
-  graph_options.colors = ['#01752D', '#C0C0C0'];
-  graph_options.xlabel = labels[0];
-  graph_options.ylabel = labels[3];
-  graph_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
-  graph_options.labelsDiv = 'plot' + index + 'Label';
-  graph_options.visibility = [false, true, true];
-  graph_options.pointSize = DATA_POINT_SIZE;
-  graph_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
-  graph_options.selectMode = 'euclidian';
-  graph_options.axes = {
+  data_options.colors = ['#01752D', '#C0C0C0'];
+  data_options.xlabel = labels[0];
+  data_options.ylabel = labels[3];
+  data_options.labels = labels;
+  data_options.labelsDiv = 'plot' + index + 'Label';
+  data_options.visibility = [false, true, true];
+  data_options.pointSize = DATA_POINT_SIZE;
+  data_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
+  data_options.selectMode = 'euclidian';
+  data_options.animatedZooms = true;
+  data_options.xRangePad = 10;
+  data_options.yRangePad = 10;
+
+  data_options.axes = {
     x: {
       drawGrid: false
     },
@@ -847,19 +856,66 @@ function drawPlot(index) {
       gridLineColor: 'rbg(200, 200, 200)',
     }
   };
-  graph_options.interactionModel = getInteractionModel(index);
-  graph_options.clickCallback = function(e, x, points) {
+  data_options.interactionModel = getInteractionModel(index);
+  data_options.clickCallback = function(e, x, points) {
     scrollToTableRow(getRowId(e, x, points));
+  };
+  data_options.zoomCallback = function(xMin, xMax, yRange) {
+    syncZoom(index);
   };
   
   window['dataPlot' + index] = new Dygraph(
     document.getElementById('plot' + index + 'DataPlot'),
     window['dataPlot' + index + 'Data'],
-    graph_options
+    data_options
   );
   
-  resizePlot(1);
+  // Flags plot
+  window['flagPlot' + index + 'Data'] =
+    parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
+  
+  $('#plot' + index + 'Form\\:plot' + index + 'Flags').val("");
+    
+  let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
+  // Ghost data and series data colors
+  flag_options.colors = ['#FF0000', '#FFA42B', '#817FFF'];
+  flag_options.xlabel = ' ';
+  flag_options.ylabel = ' ';
+  flag_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
+  flag_options.pointSize = FLAG_POINT_SIZE;
+  flag_options.highlightCircleSize = 0;
+  flag_options.selectMode = 'euclidian';
+  data_options.xRangePad = 0;
+  data_options.yRangePad = 0;
+  flag_options.axes = {
+    x: {
+      drawGrid: false
+    },
+    y: {
+      drawGrid: false
+    }
+  };
+  flag_options.interactionModel = null;
+  flag_options.animatedZooms = false;
+  
+  window['flagPlot' + index] = new Dygraph(
+    document.getElementById('plot' + index + 'FlagPlot'),
+    window['flagPlot' + index + 'Data'],
+    flag_options
+  );
+
+  resizePlot(index);
 }
+
+function syncZoom(index) {
+  window['flagPlot' + index].updateOptions({
+    dateWindow: window['dataPlot' + index].xAxisRange(),
+    valueRange: window['dataPlot' + index].yAxisRange(),
+    yRangePad: 0,
+    xRangePad: 0
+  });
+}
+
 
 //Get the interaction model for a plot
 function getInteractionModel(index) {
@@ -885,6 +941,15 @@ function getInteractionModel(index) {
   return interactionModel;
 }
 
+function resetZoom(index) {
+  window['dataPlot' + index].updateOptions({
+    yRangePad: 10,
+    xRangePad: 10
+  });
+
+  window['dataPlot' + index].resetZoom();
+}
+
 /*
  * Get the Row ID from a given graph click event
  *
@@ -906,7 +971,7 @@ function getRowId(event, xValue, points) {
 
 // Parse a JSON string, converting any string values to dates.
 function parseJsonWithDates(json) {
-  return JSON.parse($('#plot1Form\\:plot1Data').val(), (key, value) => {
+  return JSON.parse(json, (key, value) => {
     let val = value;
     if (typeof value === 'string') {
       val = new Date(value);
@@ -914,5 +979,3 @@ function parseJsonWithDates(json) {
     return val;
   });
 }
-
-

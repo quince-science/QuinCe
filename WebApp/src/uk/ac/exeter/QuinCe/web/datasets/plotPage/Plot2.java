@@ -143,11 +143,13 @@ public class Plot2 {
         if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
           plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
             Double.parseDouble(y.getValue()),
-            y.getQcFlag().equals(Flag.FLUSHING), y.getQcFlag());
+            y.getQcFlag().equals(Flag.FLUSHING),
+            y.getFlagNeeded() ? Flag.NEEDED : y.getQcFlag());
         } else {
           plotValue = new PlotValue(DateTimeUtils.dateToLong(time),
             Double.parseDouble(x.getValue()), Double.parseDouble(y.getValue()),
-            y.getQcFlag().equals(Flag.FLUSHING), y.getQcFlag());
+            y.getQcFlag().equals(Flag.FLUSHING),
+            y.getFlagNeeded() ? Flag.NEEDED : y.getQcFlag());
         }
 
         plotValues.add(plotValue);
@@ -184,7 +186,6 @@ public class Plot2 {
   public String getFlagLabels() {
     List<String> labels = new ArrayList<String>(4);
     labels.add(xAxis.getHeading());
-    labels.add("ID");
     labels.add("BAD");
     labels.add("QUESTIONABLE");
     labels.add("NEEDED");
