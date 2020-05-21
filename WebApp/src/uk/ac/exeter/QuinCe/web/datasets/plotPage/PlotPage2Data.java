@@ -637,6 +637,11 @@ public abstract class PlotPage2Data {
     return plot2;
   }
 
+  protected void initPlots() {
+    plot1.init();
+    plot2.init();
+  }
+
   /**
    * Get the {@code index}th column heading, excluding those in the root column
    * group (zero-based).

@@ -23,7 +23,8 @@
 
     <p:remoteCommand name="submitAutoQC" action="#{manualQC2Bean.acceptAutoQC}"
       partialSubmit="true"
-      process="selectedColumn selectedRows" update=":plotPageForm:error"
+      process="selectedColumn selectedRows"
+      update=":plotPageForm:error :plot1Form:plot1Flags"
       oncomplete="qcFlagsAccepted()" />
 
     <p:remoteCommand name="generateUserQCComments"
@@ -35,7 +36,7 @@
     <p:remoteCommand name="applyManualFlag"
       action="#{manualQC2Bean.applyManualFlag}"
       process="selectedColumn selectedRows manualFlag manualComment"
-      update="@none"
+      update=":plotPageForm:error :plot1Form:plot1Flags"
       oncomplete="qcFlagsAccepted()" />
 
   </ui:define>
