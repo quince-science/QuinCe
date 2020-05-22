@@ -69,9 +69,11 @@ public class LongitudeSpecification extends PositionSpecification {
   @Override
   public String getValue(List<String> line) throws PositionException {
 
-    String result = line.get(getValueColumn()).trim();
+    String result = null;
 
-    if (result.length() == 0) {
+    String stringValue = line.get(getValueColumn()).trim();
+
+    if (stringValue.length() == 0) {
       result = null;
     } else {
       try {
@@ -79,25 +81,25 @@ public class LongitudeSpecification extends PositionSpecification {
 
         switch (format) {
         case FORMAT_0_360: {
-          doubleValue = Double.parseDouble(result);
+          doubleValue = Double.parseDouble(stringValue);
           if (doubleValue > 180) {
             doubleValue = (360 - doubleValue) * -1;
           }
           break;
         }
         case FORMAT_MINUS180_180: {
-          // No need to do anything!
+          doubleValue = Double.parseDouble(stringValue);
           break;
         }
         case FORMAT_0_180: {
           String hemisphere = line.get(getHemisphereColumn());
-          doubleValue = Double.parseDouble(result);
+          doubleValue = Double.parseDouble(stringValue);
           doubleValue = doubleValue * hemisphereMultiplier(hemisphere);
           break;
         }
         case FORMAT_HEM_DEG_DEC_MIN: {
           // Split on whitespace
-          String[] split = result.split("\\s+");
+          String[] split = stringValue.split("\\s+");
 
           if (split.length != 3) {
             throw new NumberFormatException();
@@ -126,8 +128,8 @@ public class LongitudeSpecification extends PositionSpecification {
         result = String.valueOf(doubleValue);
 
       } catch (NumberFormatException e) {
-        System.out.println(
-          "NumberFormatException: Invalid longitude value '" + result + "'");
+        System.out.println("NumberFormatException: Invalid longitude value '"
+          + stringValue + "'");
       }
 
     }
