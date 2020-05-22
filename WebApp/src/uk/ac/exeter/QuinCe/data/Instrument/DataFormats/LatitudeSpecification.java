@@ -63,28 +63,29 @@ public class LatitudeSpecification extends PositionSpecification {
   @Override
   public String getValue(List<String> line) throws PositionException {
 
-    String result = line.get(getValueColumn()).trim();
+    String result = null;
+    String stringValue = line.get(getValueColumn()).trim();
 
-    if (result.length() == 0) {
-      result = null;
+    if (stringValue.length() == 0) {
+      stringValue = null;
     } else {
       try {
         double doubleValue = 0D;
 
         switch (format) {
         case FORMAT_MINUS90_90: {
-          // No need to do anything!
+          doubleValue = Double.parseDouble(stringValue);
           break;
         }
         case FORMAT_0_90: {
-          doubleValue = Double.parseDouble(result);
+          doubleValue = Double.parseDouble(stringValue);
           String hemisphere = line.get(getHemisphereColumn());
           doubleValue = doubleValue * hemisphereMultiplier(hemisphere);
           break;
         }
         case FORMAT_HEM_DEG_DEC_MIN: {
           // Split on whitespace
-          String[] split = result.split("\\s+");
+          String[] split = stringValue.split("\\s+");
 
           if (split.length != 3) {
             throw new NumberFormatException();
@@ -113,8 +114,8 @@ public class LatitudeSpecification extends PositionSpecification {
         result = String.valueOf(doubleValue);
 
       } catch (NumberFormatException e) {
-        System.out.println(
-          "NumberFormatException: Invalid latitude value '" + result + "'");
+        System.out.println("NumberFormatException: Invalid latitude value '"
+          + stringValue + "'");
       }
     }
 
