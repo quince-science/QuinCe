@@ -57,6 +57,7 @@ var scrollEventTimeLimit = 300;
 const DATA_POINT_SIZE = 2;
 const DATA_POINT_HIGHLIGHT_SIZE = 5;
 const FLAG_POINT_SIZE = 8;
+const SELECTION_POINT_SIZE = 8.5;
 
 // Plot data is passed through form inputs.
 // On the page we move them to variables so the plot data isn't
@@ -65,11 +66,13 @@ var dataPlot1 = null;
 var dataPlot1Data = null;
 var flagPlot1 = null;
 var flagPlot1Data = null;
+var selectionPlot1 = null;
 
 var dataPlot2 = null;
 var daraPlot2Data = null;
 var flagPlot2 = null;
 var flagPlot2Data = null;
+var selectionPlot2 = null;
 
 var BASE_PLOT_OPTIONS = {
   drawPoints: true,
@@ -150,7 +153,15 @@ function resizePlot(index) {
     $('#plot' + index + 'Container').width('100%');
     $('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
     window['dataPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
-    window['flagPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+    
+    if (null != window['flagPlot' + index]) {
+      window['flagPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+    }
+    
+    if (null != window['selectionPlot' + index]) {
+      window['selectionPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+    }
+    
     syncZoom(index);
   }
 }
@@ -374,6 +385,8 @@ function clearSelection() {
 function selectionUpdated() {
 
   drawTableSelection();
+  drawSelectionPlot(1);
+  //drawSelectionPlot(2);
   
   if (getSelectedRows().length == 0) {
     $('#selectionActions :button').each(function(index, value) {
@@ -822,6 +835,10 @@ function initPlot(index) {
   window["loadPlot" + index](); // PF remotecommand
 }
 
+function getPlotLabels(index) {
+  return JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
+}
+
 function drawPlot(index) {
   errorCheck();
   
@@ -831,7 +848,7 @@ function drawPlot(index) {
   
   $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
   
-  let labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
+  let labels = getPlotLabels(index);
   
   let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
   // Ghost data and series data colors
@@ -883,7 +900,7 @@ function drawFlagPlot(index) {
   $('#plot' + index + 'Form\\:plot' + index + 'Flags').val("");
     
   let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
-  // Ghost data and series data colors
+  // Flag colors
   flag_options.colors = ['#FF0000', '#FFA42B', '#817FFF'];
   flag_options.xlabel = ' ';
   flag_options.ylabel = ' ';
@@ -913,13 +930,76 @@ function drawFlagPlot(index) {
   resizePlot(index);
 }
 
+function drawSelectionPlot(index) {
+  
+  let plotVar = 'selectionPlot' + index;
+  
+  if (null != window[plotVar]) {
+    window[plotVar].destroy();
+    window[plotVar] = null;
+  }
+  
+  let selectionData = getSelectionPlotData(index);
+    
+  if (selectionData.length > 0) {
+
+    let plotLabels = getPlotLabels(index);
+    
+    // Convert X values to dates if required
+    if (plotLabels[0] == "Time") {
+      for (let i = 0; i < selectionData.length; i++) {
+        selectionData[i][0] = new Date(selectionData[i][0]);
+      }
+    }
+
+    
+    let selection_options = Object.assign({}, BASE_PLOT_OPTIONS);
+    selection_options.colors = ['#FFFF00'];
+    selection_options.xlabel = ' ';
+    selection_options.ylabel = ' ';
+    selection_options.labels = [' ', ' '];
+    selection_options.pointSize = SELECTION_POINT_SIZE;
+    selection_options.highlightCircleSize = 0;
+    selection_options.selectMode = 'euclidian';
+    selection_options.xRangePad = 0;
+    selection_options.yRangePad = 0;
+    selection_options.axes = {
+      x: {
+        drawGrid: false
+      },
+      y: {
+        drawGrid: false
+      }
+    };
+    selection_options.interactionModel = null;
+    selection_options.animatedZooms = false;
+    
+    window[plotVar] = new Dygraph(
+      document.getElementById('plot' + index + 'SelectionPlot'),
+      selectionData,
+      selection_options
+    );
+    
+    resizePlot(index);
+  }
+}
+
 function syncZoom(index) {
-  window['flagPlot' + index].updateOptions({
-    dateWindow: window['dataPlot' + index].xAxisRange(),
-    valueRange: window['dataPlot' + index].yAxisRange(),
-    yRangePad: 0,
-    xRangePad: 0
-  });
+  
+  let zoomOptions = {
+      dateWindow: window['dataPlot' + index].xAxisRange(),
+      valueRange: window['dataPlot' + index].yAxisRange(),
+      yRangePad: 0,
+      xRangePad: 0
+    };
+  
+  if (null != window['flagPlot' + index]) {
+    window['flagPlot' + index].updateOptions(zoomOptions);
+  }
+
+  if (null != window['selectionPlot' + index]) {
+    window['selectionPlot' + index].updateOptions(zoomOptions);
+  }
 }
 
 
@@ -973,6 +1053,28 @@ function getRowId(event, xValue, points) {
   var pointId = points[0]['idx'];
 
   return window['dataPlot' + plotIndex + 'Data'][pointId][1];
+}
+
+// Get the data for the selection plot
+function getSelectionPlotData(index) {
+  let selectionData = [];
+  
+  let selectedIds = getSelectedRows();
+  
+  let plotDataVar = 'dataPlot' + index + 'Data';
+  
+  if (null != window[plotDataVar]) {
+    for (let i = 0; i < window[plotDataVar].length; i++) {
+      if ($.inArray(window[plotDataVar][i][1], selectedIds) != -1) {
+        selectionData.push([window[plotDataVar][i][1], window[plotDataVar][i][3]]);
+        if (selectionData.length == selectedIds.length) {
+          break;
+        }
+      }
+    }
+  }
+  
+  return selectionData;
 }
 
 // Parse a JSON string, converting any string values to dates.
