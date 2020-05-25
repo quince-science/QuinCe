@@ -861,7 +861,7 @@ function drawPlot(index) {
   data_options.pointSize = DATA_POINT_SIZE;
   data_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
   data_options.selectMode = 'euclidian';
-  data_options.animatedZooms = true;
+  data_options.animatedZooms = false;
   data_options.xRangePad = 10;
   data_options.yRangePad = 10;
 
@@ -918,6 +918,8 @@ function drawFlagPlot(index) {
       drawGrid: false
     }
   };
+  flag_options.axisLabelFontSize = 0;
+  flag_options.xAxisHeight = 20;
   flag_options.interactionModel = null;
   flag_options.animatedZooms = false;
   
@@ -971,6 +973,8 @@ function drawSelectionPlot(index) {
         drawGrid: false
       }
     };
+    selection_options.axisLabelFontSize = 0;
+    selection_options.xAxisHeight = 20;
     selection_options.interactionModel = null;
     selection_options.animatedZooms = false;
     
