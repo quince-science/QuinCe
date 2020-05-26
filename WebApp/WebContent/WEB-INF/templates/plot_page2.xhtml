@@ -143,7 +143,7 @@
                 <p:commandButton icon="selectVariableButton"
                   onclick="showVariableDialog(1)"
                   styleClass="inlineButton tightButton plotFooterButton" />
-                <p:commandButton icon="zoomOutButton" onclick="resetZoom(1)"
+                <p:commandButton icon="zoomOutButton" onclick="resetZoom(1); return false;"
                   styleClass="inlineButton tightButton plotFooterButton" />
               </div>
               <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
