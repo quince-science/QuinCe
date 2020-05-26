@@ -79,24 +79,21 @@ td.selected {
  * Plots
  *************************
  */
-.dataPlot {
+.plot {
   position: absolute;
   top: 0px;
   left: 0px;
+}
+
+.dataPlot {
   z-index: 100;
 }
 
 .flagPlot {
-  position: absolute;
-  top: 0px;
-  left: 0px;
   z-index: 10;
 }
 
 .selectionPlot {
-  position: absolute;
-  top: 0px;
-  left: 0px;
   z-index: 50;
 }
 
