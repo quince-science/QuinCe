@@ -880,8 +880,6 @@ function getPlotLabels(index) {
 function drawPlot(index) {
   errorCheck();
   
-  console.log("DRAWPLOT")
-  
   // Data plot
   window['dataPlot' + index + 'Data'] =
     parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Data').val());
@@ -889,6 +887,10 @@ function drawPlot(index) {
   $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
   
   let labels = getPlotLabels(index);
+  
+  if (null != window['dataPlot' + index]) {
+    window['dataPlot' + index].destroy();
+  }
   
   let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
   // Ghost data and series data colors
@@ -938,38 +940,46 @@ function drawFlagPlot(index) {
     parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
   
   $('#plot' + index + 'Form\\:plot' + index + 'Flags').val("");
+
+  if (null != window['flagPlot' + index]) {
+    window['flagPlot' + index].destroy();
+  }
+
+  if (window['flagPlot' + index + 'Data'].length == 0) {
+    window['flagPlot' + index] = null;
+  } else {
+    let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
+    // Flag colors
+    flag_options.colors = ['#FF0000', '#FFA42B', '#817FFF'];
+    flag_options.xlabel = ' ';
+    flag_options.ylabel = ' ';
+    flag_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
+    flag_options.pointSize = FLAG_POINT_SIZE;
+    flag_options.highlightCircleSize = 0;
+    flag_options.selectMode = 'euclidian';
+    flag_options.xRangePad = 0;
+    flag_options.yRangePad = 0;
+    flag_options.axes = {
+      x: {
+        drawGrid: false
+      },
+      y: {
+        drawGrid: false
+      }
+    };
+    flag_options.axisLabelFontSize = 0;
+    flag_options.xAxisHeight = 20;
+    flag_options.interactionModel = null;
+    flag_options.animatedZooms = false;
     
-  let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
-  // Flag colors
-  flag_options.colors = ['#FF0000', '#FFA42B', '#817FFF'];
-  flag_options.xlabel = ' ';
-  flag_options.ylabel = ' ';
-  flag_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
-  flag_options.pointSize = FLAG_POINT_SIZE;
-  flag_options.highlightCircleSize = 0;
-  flag_options.selectMode = 'euclidian';
-  flag_options.xRangePad = 0;
-  flag_options.yRangePad = 0;
-  flag_options.axes = {
-    x: {
-      drawGrid: false
-    },
-    y: {
-      drawGrid: false
-    }
-  };
-  flag_options.axisLabelFontSize = 0;
-  flag_options.xAxisHeight = 20;
-  flag_options.interactionModel = null;
-  flag_options.animatedZooms = false;
-  
-  window['flagPlot' + index] = new Dygraph(
-    document.getElementById('plot' + index + 'FlagPlot'),
-    window['flagPlot' + index + 'Data'],
-    flag_options
-  );
-  
-  resizePlot(index);
+    window['flagPlot' + index] = new Dygraph(
+      document.getElementById('plot' + index + 'FlagPlot'),
+      window['flagPlot' + index + 'Data'],
+      flag_options
+    );
+    
+    resizePlot(index);
+  }
 }
 
 function drawSelectionPlot(index) {
