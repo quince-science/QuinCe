@@ -1089,6 +1089,7 @@ function resetZoom(index) {
   });
 
   window['dataPlot' + index].resetZoom();
+  syncZoom(index);
 }
 
 /*
