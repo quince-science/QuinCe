@@ -1120,16 +1120,9 @@ function getSelectionPlotData(index) {
   let plotDataVar = 'dataPlot' + index + 'Data';
   
   if (null != window[plotDataVar]) {
-    // We grab the X axis from index 0 of the plot data,
-    // unless it's the time then we grab index 1
-    let xIndex = 0;
-    if (getPlotLabels(index)[0] == "Time") {
-      xIndex = 1;
-    }
-
     for (let i = 0; i < window[plotDataVar].length; i++) {
       if ($.inArray(window[plotDataVar][i][1], selectedIds) != -1) {
-        selectionData.push([window[plotDataVar][i][xIndex], window[plotDataVar][i][3]]);
+        selectionData.push([window[plotDataVar][i][0], window[plotDataVar][i][3]]);
         if (selectionData.length == selectedIds.length) {
           break;
         }
