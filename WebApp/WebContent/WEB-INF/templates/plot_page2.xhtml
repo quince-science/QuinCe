@@ -34,13 +34,15 @@
 
     <h:inputHidden id="columnHeadings"
       value="#{sessionScope[beanName].data.columnHeadingsJson}" />
+    <h:inputHidden id="extendedColumnHeadings"
+      value="#{sessionScope[beanName].data.extendedColumnHeadingsJson}" />
 
     <h:inputHidden id="rowIDs"
       value="#{sessionScope[beanName].data.rowIDsJson}" />
 
     <p:remoteCommand name="loadData"
       action="#{sessionScope[beanName].loadData}"
-      process="@this" update="error columnHeadings rowIDs"
+      process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis columnHeadings extendedColumnHeadings rowIDs"
       oncomplete="dataLoaded()" />
 
   </h:form>
@@ -85,6 +87,56 @@
         action="#{sessionScope[beanName].abort}" />
     </h:panelGrid>
   </p:dialog>
+  
+  <p:dialog widgetVar="variableDialog" modal="true" header="Variables"
+    resizable="false">
+    <div id="variablesList">
+      <ui:repeat
+        value="#{sessionScope[beanName].data.extendedColumnHeadings.entrySet().toArray()}"
+        var="entry">
+        
+        <div class="variableGroup">
+          <div class="varGroupName">
+            <h:outputText value="#{entry.key}" />
+          </div>
+          <ui:repeat value="#{entry.value}" var="variable">
+            <div class="variable">
+              <div class="varName varGroupMember">
+                <h:outputText value="#{variable.heading}" />
+              </div>
+              <div class="variableControls">
+                <p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}"
+                  id="mapVarCheckbox"
+                  onchange="updateMapCheckboxes(#{variable.id})" />
+                <p:selectBooleanButton widgetVar="xAxis-#{variable.id}"
+                  onLabel="X" offLabel="X" styleClass="axisButton"
+                  onchange="updateAxisButtons('x', #{variable.id})" />
+                <ui:remove>
+                  <!-- Date/Time cannot be used for the Y axis -->
+                </ui:remove>
+                <!-- Time cannot be on Y axis -->
+                <ui:fragment rendered="#{variable.heading ne 'Time'}">
+                  <p:selectBooleanButton widgetVar="yAxis-#{variable.id}"
+                    onLabel="Y" offLabel="Y" styleClass="axisButton"
+                    onchange="updateAxisButtons('y', #{variable.id})" />
+                </ui:fragment>
+                <ui:fragment rendered="#{variable.heading eq 'Time'}">
+                  <div class="noAxisButton">&nbsp;</div>
+                </ui:fragment>
+              </div>
+            </div>
+          </ui:repeat>
+        </div>        
+      </ui:repeat>
+    </div>
+    <h:panelGrid columns="2" styleClass="buttonPanel">
+      <p:commandButton widgetVar="variableOk" value="OK"
+        onclick="applyVariables();" />
+      <p:commandButton value="Cancel" onclick="PF('variableDialog').hide();" />
+    </h:panelGrid>
+  </p:dialog>
+  
+  
 
   <p:toolbar styleClass="plotPageHeader">
     <f:facet name="left">
@@ -114,8 +166,8 @@
             
           <p:remoteCommand name="loadPlot1"
             action="#{sessionScope[beanName].data.plot1.init}"
-            process="@this"
-            update=":plotPageForm:error plot1Data plot1Flags plot1XAxis plot1YAxis plot1DataLabels plot1FlagLabels"
+            process="@this plot1XAxis plot1YAxis"
+            update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels plot1FlagLabels"
             oncomplete="drawPlot(1)" />
 
           <div id="plot1Container">
@@ -134,14 +186,14 @@
           <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
             <f:facet name="left">
               <p:selectOneButton id="plotMode" widgetVar="plot1Mode"
-                styleClass="plotModeButtons"
+                styleClass="plotModeButtons" value="0"
                 onchange="initPlot(1)" unselectable="false">
-                <f:selectItem itemLabel=" " itemValue="plot" />
-                <f:selectItem itemLabel=" " itemValue="map" />
+                <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
+                <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
               </p:selectOneButton>
               <div class="plotFooterButtonContainer">
                 <p:commandButton icon="selectVariableButton"
-                  onclick="showVariableDialog(1)"
+                  onclick="showVariableDialog(1); return false;"
                   styleClass="inlineButton tightButton plotFooterButton" />
                 <p:commandButton icon="zoomOutButton" onclick="resetZoom(1); return false;"
                   styleClass="inlineButton tightButton plotFooterButton" />
