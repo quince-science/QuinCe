@@ -87,14 +87,14 @@
         action="#{sessionScope[beanName].abort}" />
     </h:panelGrid>
   </p:dialog>
-  
+
   <p:dialog widgetVar="variableDialog" modal="true" header="Variables"
     resizable="false">
     <div id="variablesList">
       <ui:repeat
         value="#{sessionScope[beanName].data.extendedColumnHeadings.entrySet().toArray()}"
         var="entry">
-        
+
         <div class="variableGroup">
           <div class="varGroupName">
             <h:outputText value="#{entry.key}" />
@@ -126,7 +126,7 @@
               </div>
             </div>
           </ui:repeat>
-        </div>        
+        </div>
       </ui:repeat>
     </div>
     <h:panelGrid columns="2" styleClass="buttonPanel">
@@ -135,8 +135,6 @@
       <p:commandButton value="Cancel" onclick="PF('variableDialog').hide();" />
     </h:panelGrid>
   </p:dialog>
-  
-  
 
   <p:toolbar styleClass="plotPageHeader">
     <f:facet name="left">
@@ -163,7 +161,7 @@
             value="#{sessionScope[beanName].data.plot1.xaxis}"/>
           <h:inputHidden id="plot1YAxis"
             value="#{sessionScope[beanName].data.plot1.yaxis}"/>
-            
+
           <p:remoteCommand name="loadPlot1"
             action="#{sessionScope[beanName].data.plot1.init}"
             process="@this plot1XAxis plot1YAxis"
@@ -249,7 +247,7 @@
               value="#{sessionScope[beanName].data.prevClickedRow}" />
             <h:inputHidden id="lastSelectionAction"
               value="#{sessionScope[beanName].data.lastSelectionAction}" />
-              
+
             <p:remoteCommand name="selectRange"
               action="#{sessionScope[beanName].data.selectRange}"
               process="@form" update="selectedRows prevClickedRow lastSelectionAction"
