@@ -758,7 +758,7 @@ public abstract class PlotPage2Data {
 
     ColumnHeading result = null;
 
-    LinkedHashMap<String, List<ColumnHeading>> headings = getColumnHeadings();
+    LinkedHashMap<String, List<ColumnHeading>> headings = getExtendedColumnHeadings();
 
     outer: for (String group : headings.keySet()) {
       for (ColumnHeading heading : headings.get(group)) {
