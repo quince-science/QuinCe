@@ -106,6 +106,7 @@ td.selected {
   margin: 0px;
 }
 
+/* Plot footer controls */
 .plotModeButtons .ui-button:nth-child(1) {
   background-image: url("#{resource['image/plot_button.svg']}") !important;
   background-size: 20px;
@@ -167,3 +168,77 @@ td.selected {
   width: 46.77px !important;
   height: 29.22px !important;
 }
+
+/* Variables Dialog */
+#variablesList {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.variable {
+  display: flex;
+  margin-bottom: 3px;
+  margin-left: 10px;
+  margin-right: 10px;
+  height: 18px;
+}
+
+.variable:last-of-type {
+  margin-bottom: 30px;
+}
+
+.singleVariable {
+  margin-bottom: 15px;
+}
+
+.varName {
+  font-style: italic;
+  padding-right: 5px;
+  flex-grow: 1;
+  white-space: nowrap;
+}
+
+.variableGroup {
+  margin-left: 10px;
+}
+
+.variableGroup:last-of-type {
+  margin-bottom: 30px;
+}
+
+.varGroupName {
+  font-weight: 700;
+  text-decoration: underline;
+  margin-bottom: 10px;
+  height: 18px;
+  white-space: nowrap;
+}
+
+.varGroupMember {
+  text-indent: 15px;
+}
+
+.variableControls {
+  display: flex;
+  align-content: center;
+  margin-left: 5px;
+}
+
+.axisButton {
+  font-size: 12px !important;
+  width: 16px;
+  height: 16px;
+  position: relative;
+}
+
+.noAxisButton {
+  width: 19px;
+  height: 16px;
+}
+
+.ui-selectbooleanbutton .ui-button-text {
+  margin-left: -8px;
+  margin-top: -3px;
+}
+

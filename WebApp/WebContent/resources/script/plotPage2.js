@@ -32,6 +32,7 @@ var plotSplitProportion = 0.5;
 
 // Column Headers for table and plots
 var columnHeaders = null;
+var extendedColumnHeaders = null;
 
 /*
  *********************************************
@@ -59,6 +60,13 @@ const DATA_POINT_HIGHLIGHT_SIZE = 5;
 const FLAG_POINT_SIZE = 8;
 const SELECTION_POINT_SIZE = 8.5;
 
+const VARIABLES_DIALOG_ENTRY_HEIGHT = 35;
+
+const PLOT_MODE_PLOT = 0;
+const PLOT_MODE_MAP = 1;
+
+var currentPlot = 1;
+
 // Plot data is passed through form inputs.
 // On the page we move them to variables so the plot data isn't
 // constantly sent back to the server with ajax requests.
@@ -82,6 +90,7 @@ var BASE_PLOT_OPTIONS = {
   digitsAfterDecimal: 2
 }
 
+var updatingDialogButtons = false;
 
 /*
  *********************************************
@@ -225,6 +234,7 @@ function dataLoaded() {
 
   if (!errorCheck()) {
     columnHeaders = JSON.parse($('#plotPageForm\\:columnHeadings').val());
+    extendedColumnHeaders = JSON.parse($('#plotPageForm\\:extendedColumnHeadings').val());
     drawTable();
     initPlot(1);
     PF('pleaseWait').hide();
@@ -280,6 +290,38 @@ function getColumnIndex(columnId) {
   }
   
   return result;
+}
+
+function getColumnCount() {
+  let count = 0;
+  
+  for (let i = 0; i < columnHeaders.length; i++) {
+    count += columnHeaders[i].headings.length;
+  }
+  
+  return count;
+}
+
+function getColumnIds() {
+  return getColumnIdsWork(columnHeaders);
+}
+
+function getExtendedColumnIds() {
+  return getColumnIdsWork(extendedColumnHeaders);
+}
+
+function getColumnIdsWork(headers) {
+  let ids = [];
+  
+  for (let i = 0; i < headers.length; i++) {
+    let groupHeaders = headers[i].headings;
+    for (let j = 0; j < groupHeaders.length; j++) {
+      ids.push(groupHeaders[j].id);
+    }
+  }
+  
+  return ids;
+
 }
 
 /*
@@ -648,10 +690,6 @@ function isFixedColumn(columnIndex) {
   return columnIndex < columnHeaders[0].headings.length;
 }
 
-function highlightRow(row) {
-  console.log('highlightRow');
-} 
-
 // Formats for table columns
 function getColumnDefs() {
 
@@ -832,7 +870,7 @@ function canSelectCell(rowIndex, colIndex) {
 //******************************************************
 
 function initPlot(index) {
-  window["loadPlot" + index](); // PF remotecommand
+  eval('loadPlot' + index + '()'); // PF remoteCommand
 }
 
 function getPlotLabels(index) {
@@ -841,6 +879,8 @@ function getPlotLabels(index) {
 
 function drawPlot(index) {
   errorCheck();
+  
+  console.log("DRAWPLOT")
   
   // Data plot
   window['dataPlot' + index + 'Data'] =
@@ -1090,4 +1130,186 @@ function parseJsonWithDates(json) {
     }
     return val;
   });
+}
+
+function showVariableDialog(plotIndex) {
+  
+  currentPlot = plotIndex;
+  
+  let mode = getPlotMode(plotIndex);
+
+  if (mode == PLOT_MODE_PLOT) {
+    setupPlotVariables(plotIndex);
+  } else if (mode == PLOT_MODE_MAP) {
+    setupMapVariables(plotIndex);
+  }
+
+  PF('variableDialog').show();
+  resizeVariablesDialog();
+}
+
+function setupPlotVariables(plotIndex) {
+  getExtendedColumnIds().forEach(id => {
+    let xWidget = PrimeFaces.widgets['xAxis-' + id];
+    if (xWidget) {
+      xWidget.jq.show();
+    }
+
+    let yWidget = PrimeFaces.widgets['yAxis-' + id];
+    if (yWidget) {
+        yWidget.jq.show();
+      }
+
+    let mapWidget = PrimeFaces.widgets['mapVar-' + id];
+    if (mapWidget) {
+      mapWidget.jq.hide();
+    }
+  });
+
+  updateAxisButtons('x', $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val());
+  updateAxisButtons('y', $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val());
+}
+
+//Select the specified axis variable in the dialog
+function updateAxisButtons(axis, variable) {
+
+  
+  if (!updatingDialogButtons) {
+    updatingDialogButtons = true;
+
+    getExtendedColumnIds().forEach(id => {
+      let widget = PrimeFaces.widgets[axis + 'Axis-' + id];
+
+      // Not all variables will have an axis button
+      if (widget) {
+        if (id == variable) {
+          widget.check();
+        } else {
+          widget.uncheck();
+        }
+      }
+    });
+
+    updatingDialogButtons = false;
+  }
+}
+
+function setupMapVariables(plotIndex) {
+  currentPlot = plotIndex;
+  
+  getExtendedColumnIds().forEach(id => {
+    let xWidget = PrimeFaces.widgets['xAxis-' + id];
+    if (xWidget) {
+      xWidget.jq.hide();
+    }
+
+    let yWidget = PrimeFaces.widgets['yAxis-' + id];
+    if (yWidget) {
+        yWidget.jq.hide();
+      }
+
+    let mapWidget = PrimeFaces.widgets['mapVar-' + id];
+    if (mapWidget) {
+      mapWidget.jq.show();
+    }
+  });
+  updateMapCheckboxes(plotIndex, $('#plot' + plotIndex + 'Form\\:mapVariable').val());
+}
+
+//Select the specified variable in the dialog
+function updateMapCheckboxes(variable) {
+
+  if (!updatingDialogButtons) {
+    updatingDialogButtons = true;
+
+    getExtendedColumnIds().forEach(id => {
+        let widget = PrimeFaces.widgets['mapVar-' + id];
+
+        // Not all variables will have an axis button
+        if (widget) {
+          if (id == variable) {
+            widget.check();
+            $('#plot' + currentPlot + 'Form\\:mapVariable').val(variable);
+          } else {
+            widget.uncheck();
+          }
+        }
+      });
+
+    updatingDialogButtons = false;
+  }
+}
+
+function resizeVariablesDialog() {
+  let varList = $('#variablesList');
+  varList.width(200);
+
+  let maxHeight = $(window).innerHeight() - 200;
+  let varsPerColumn = Math.ceil(maxHeight / VARIABLES_DIALOG_ENTRY_HEIGHT);
+  
+  let variableCount = getColumnCount();
+  let columns = Math.ceil(variableCount / varsPerColumn);
+
+  if (columns == 1 && variableCount < 5) {
+    varsPerColumn = variableCount;
+  } else if (columns < 2 && variableCount > 5) {
+    columns = 2;
+    varsPerColumn = Math.ceil(variableCount / 2);
+  }
+
+  varList.height(varsPerColumn * VARIABLES_DIALOG_ENTRY_HEIGHT + 30);
+
+  PF('variableDialog').jq.width(varList.prop('scrollWidth') + 50);
+  PF('variableDialog').initPosition();
+}
+
+function getPlotMode(index) {
+  return +$('[id^=plot1Form\\:plotMode]:checked').val();
+}
+
+function applyVariables() {
+  if (PrimeFaces.widgets['variableDialog']) {
+    PF('variableDialog').hide();
+  }
+
+  var mode = getPlotMode(currentPlot);
+
+  if (mode == PLOT_MODE_PLOT) {
+    setPlotAxes(currentPlot);
+    initPlot(currentPlot);
+  } else if (mode == PLOT_MODE_MAP) {
+    eval('map' + currentPlot + 'GetData()'); // PF remoteCommand
+    initMap(currentPlot);
+  }
+
+}
+
+function getSelectedXAxis() {
+  return getSelectedCheckbox('xAxis');
+}
+
+function getSelectedYAxis() {
+  return getSelectedCheckbox('yAxis');
+}
+
+function getSelectedCheckbox(prefix) {
+  
+  let axis = 0;
+  
+  let columnIds = getExtendedColumnIds();
+  for (let i = 0; i < columnIds.length; i++) {
+    let widget = PrimeFaces.widgets[prefix + '-' + columnIds[i]];
+    if (widget && widget.input[0].checked) {
+      axis = columnIds[i];
+      break;
+    }
+  }
+  
+  return axis;
+}
+
+
+function setPlotAxes(plotIndex) {
+  $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
+  $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
 }

@@ -96,7 +96,7 @@ public abstract class PlotPage2Data {
    * given a special status in plots and maps.
    * </p>
    */
-  public static final String ROOT_FIELD_GROUP = "_ROOT";
+  public static final String ROOT_FIELD_GROUP = "Base";
 
   public static final String SENSORS_FIELD_GROUP = "Sensors";
 
@@ -144,7 +144,13 @@ public abstract class PlotPage2Data {
     throws Exception;
 
   /**
-   * Get the column headings for the table in groups, without QC columns.
+   * Get the standard column headings for the table in groups, without QC
+   * columns.
+   *
+   * <p>
+   * This set of column headings will contain the standard list for the data
+   * table, with combined columns for position and similar combinations.
+   * </p>
    *
    * <p>
    * Although all data values require accompanying QC Flag and QC Message
@@ -164,12 +170,44 @@ public abstract class PlotPage2Data {
    * will be 'locked' in the display table so its columns are always visible.
    * </p>
    *
-   * @return
+   * @return The column headings
    */
-  protected abstract LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings();
+  public abstract LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings();
 
   /**
-   * Get the table headings in JSON format.
+   * Get the extended column headings for the table in groups, without QC
+   * columns.
+   *
+   * <p>
+   * This set of column headings will contain the complete list of column
+   * headings with no combinations (e.g. separate latitude and longitude
+   * columns).
+   * </p>
+   *
+   * <p>
+   * Although all data values require accompanying QC Flag and QC Message
+   * columns, they must not be included in the output of this method. The
+   * application will ensure that they are included in the necessary places.
+   * </p>
+   *
+   * <p>
+   * The column headings will be returned as a map of
+   * {@code <group>, <header list>} so the headings can be grouped. The map is a
+   * {@link LinkedHashMap} so iterating over the map keys will always give the
+   * same group (and therefore column) order.
+   * </p>
+   *
+   * <p>
+   * The first group should be named by {@link #ROOT_FIELD_GROUP}. This group
+   * will be 'locked' in the display table so its columns are always visible.
+   * </p>
+   *
+   * @return The column headings
+   */
+  public abstract LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings();
+
+  /**
+   * Get the standard column headings in JSON format.
    *
    * <pre>
    * The JSON will be an array of objects, one for each group. Each object will
@@ -186,14 +224,38 @@ public abstract class PlotPage2Data {
    * @return The table headings JSON.
    */
   public String getColumnHeadingsJson() {
+    return buildColumnHeadingsJson(getColumnHeadings());
+  }
+
+  /**
+   * Get the extended column headings in JSON format.
+   *
+   * <pre>
+   * The JSON will be an array of objects, one for each group. Each object will
+   * contain the group name and an array of the column headings within that
+   * group.
+   * </p>
+   *
+   * <pre>
+   * {[ { group: 'Group 1', headings: ['Heading 1', 'Heading 2'] }, { group:
+   * 'Group 2', headings: ['Heading 3', 'Heading 4'] } ]}
+   * </pre>
+   *
+   *
+   * @return The table headings JSON.
+   */
+  public String getExtendedColumnHeadingsJson() {
+    return buildColumnHeadingsJson(getExtendedColumnHeadings());
+  }
+
+  private String buildColumnHeadingsJson(
+    LinkedHashMap<String, List<ColumnHeading>> headings) {
 
     String result = null;
 
     if (loaded) {
       // Reorganise the column headings into a structure that can be used to
       // build the JSON
-      LinkedHashMap<String, List<ColumnHeading>> headings = getColumnHeadings();
-
       List<JsonColumnGroup> jsonGroups = new ArrayList<JsonColumnGroup>(
         headings.size());
 
