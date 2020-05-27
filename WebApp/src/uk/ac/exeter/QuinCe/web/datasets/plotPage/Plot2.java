@@ -79,8 +79,14 @@ public class Plot2 {
    *
    * @return The x axis label.
    */
-  public String getXaxis() {
-    return null == xAxis ? "" : xAxis.getHeading();
+  public long getXaxis() {
+    return null == xAxis ? Long.MIN_VALUE : xAxis.getId();
+  }
+
+  public void setXaxis(long xAxis) {
+    if (xAxis != 0) {
+      this.xAxis = data.getColumnHeading(xAxis);
+    }
   }
 
   /**
@@ -88,8 +94,14 @@ public class Plot2 {
    *
    * @return The y axis label.
    */
-  public String getYaxis() {
-    return null == yAxis ? "" : yAxis.getHeading();
+  public long getYaxis() {
+    return null == yAxis ? Long.MIN_VALUE : yAxis.getId();
+  }
+
+  public void setYaxis(long yAxis) {
+    if (yAxis != 0) {
+      this.yAxis = data.getColumnHeading(yAxis);
+    }
   }
 
   /**

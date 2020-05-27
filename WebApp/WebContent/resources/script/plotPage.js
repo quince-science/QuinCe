@@ -1,3 +1,4 @@
+
 var FLAG_GOOD = 2;
 var FLAG_ASSUMED_GOOD = -2;
 var FLAG_QUESTIONABLE = 3;

@@ -87,6 +87,11 @@ public class ManualQC2Data extends PlotPage2Data {
   private LinkedHashMap<String, List<ColumnHeading>> columnHeadings = null;
 
   /**
+   * The extended column headers for the data
+   */
+  private LinkedHashMap<String, List<ColumnHeading>> extendedColumnHeadings = null;
+
+  /**
    * The list of sensor column IDs in the same order as they are represented in
    * {@link #columnHeaders}.
    */
@@ -168,13 +173,12 @@ public class ManualQC2Data extends PlotPage2Data {
     // Build the row IDs
     rowIDs = sensorValues.getTimes().stream()
       .map(t -> DateTimeUtils.dateToLong(t)).collect(Collectors.toList());
-
-    buildColumnHeaders();
   }
 
-  private void buildColumnHeaders() {
+  private void buildColumnHeadings() {
 
     columnHeadings = new LinkedHashMap<String, List<ColumnHeading>>();
+    extendedColumnHeadings = new LinkedHashMap<String, List<ColumnHeading>>();
 
     // Time and Position
     List<ColumnHeading> rootColumns = new ArrayList<ColumnHeading>(3);
@@ -184,6 +188,17 @@ public class ManualQC2Data extends PlotPage2Data {
       "Position", false, true));
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
+
+    // Extended Time and Position
+    List<ColumnHeading> extendedRootColumns = new ArrayList<ColumnHeading>(3);
+    extendedRootColumns.add(new ColumnHeading(FileDefinition.TIME_COLUMN_ID,
+      FileDefinition.TIME_COLUMN_NAME, false, false));
+    extendedRootColumns.add(new ColumnHeading(
+      FileDefinition.LONGITUDE_COLUMN_ID, "Longitude", false, true));
+    extendedRootColumns.add(new ColumnHeading(FileDefinition.LATITUDE_COLUMN_ID,
+      "Latitude", false, true));
+
+    extendedColumnHeadings.put(ROOT_FIELD_GROUP, extendedRootColumns);
 
     // Sensor Assignments are divided into sensors and diagnostics
     List<SensorAssignment> sensorColumns = new ArrayList<SensorAssignment>();
@@ -220,6 +235,7 @@ public class ManualQC2Data extends PlotPage2Data {
     }
 
     columnHeadings.put(SENSORS_FIELD_GROUP, sensorColumnHeadings);
+    extendedColumnHeadings.put(SENSORS_FIELD_GROUP, sensorColumnHeadings);
 
     diagnosticColumnIds = new long[diagnosticColumns.size()];
     if (diagnosticColumns.size() > 0) {
@@ -236,13 +252,18 @@ public class ManualQC2Data extends PlotPage2Data {
       }
 
       columnHeadings.put(DIAGNOSTICS_FIELD_GROUP, diagnosticColumnNames);
+      extendedColumnHeadings.put(DIAGNOSTICS_FIELD_GROUP,
+        diagnosticColumnNames);
     }
 
     // Each of the instrument variables
     for (InstrumentVariable variable : instrument.getVariables()) {
       try {
-        columnHeadings.put(variable.getName(), ColumnHeading.headingList(
-          DataReducerFactory.getCalculationParameters(variable), true, false));
+        List<ColumnHeading> variableHeadings = ColumnHeading.headingList(
+          DataReducerFactory.getCalculationParameters(variable), true, false);
+
+        columnHeadings.put(variable.getName(), variableHeadings);
+        extendedColumnHeadings.put(variable.getName(), variableHeadings);
       } catch (DataReductionException e) {
         error("Error getting variable headers", e);
       }
@@ -250,8 +271,21 @@ public class ManualQC2Data extends PlotPage2Data {
   }
 
   @Override
-  protected LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings() {
+  public LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings() {
+    if (null == columnHeadings) {
+      buildColumnHeadings();
+    }
+
     return columnHeadings;
+  }
+
+  @Override
+  public LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings() {
+    if (null == extendedColumnHeadings) {
+      buildColumnHeadings();
+    }
+
+    return extendedColumnHeadings;
   }
 
   @Override
