@@ -291,12 +291,20 @@ function getColumnById(columnId) {
 }
 
 function getColumnIndex(columnId) {
+  return getColumnIndexWork(extendedColumnHeaders, columnId);
+}
+
+function getTableColumnIndex(columnId) {
+  return getColumnIndexWork(columnHeaders, columnId);
+}
+
+function getColumnIndexWork(headers, columnId) {
   
   let result = null;
   
   let currentIndex = -1;
-  for (let i = 0; i < extendedColumnHeaders.length; i++) {
-    let groupHeaders = extendedColumnHeaders[i].headings;
+  for (let i = 0; i < headers.length; i++) {
+    let groupHeaders = headers[i].headings;
     for (let j = 0; j < groupHeaders.length; j++) {
       currentIndex++;
       if (groupHeaders[j].id == columnId) {
@@ -351,12 +359,7 @@ function getColumnIdsWork(headers) {
 
 // Get the selected column ID
 function getSelectedColumn() {
-  return $('#selectionForm\\:selectedColumn').val();
-}
-
-// Get the selected column index
-function getSelectedColumnIndex() {
-  return getColumnIndex(getSelectedColumn());
+  return getColumnById($('#selectionForm\\:selectedColumn').val());
 }
 
 // Set the selected column ID
@@ -550,9 +553,11 @@ function drawTable() {
       if (null != tableScrollRow) {
         highlightRow(tableScrollRow);
         tableScrollRow = null;
+        // drawTableSelection is called by highlightRow
+      } else {
+        drawTableSelection();
       }
       setupTableClickHandlers();
-      drawTableSelection();
     },
     columnDefs: getColumnDefs()
   });
@@ -617,7 +622,7 @@ function clickCellAction(cell, shiftClick) {
   // If the cell isn't selectable do nothing.
   if (canSelectCell(rowIndex, colIndex)) {
 
-    if (colIndex != getSelectedColumnIndex()) {
+    if (null == getSelectedColumn() || colIndex != getTableColumnIndex(getSelectedColumn().id)) {
       setSelectedColumn(getColumn(colIndex).id);
       setSelectedRows([rowId]);
       setPrevClickedRow(rowId);
@@ -673,32 +678,35 @@ function drawTableSelection() {
   // Clear all selection display. This clears both the main table
   // and the overlaid fixed columns table
   $("td.selected").removeClass('selected');
-
-  // Highlight selected cells
-  let rows = jsDataTable.rows()[0];
-  for (let i = 0; i < rows.length; i++) {
-    let row = jsDataTable.row(i);
-
-    if ($.inArray(row.data()['DT_RowId'], getSelectedRows()) > -1) {
-      
-      if (isFixedColumn(getSelectedColumn())) {
-        // Set the overlaid fixed columns table
-        $($('[data-dt-row=' + i + '][data-dt-column=' + getSelectedColumnIndex() + ']')[0]).addClass('selected');
-      } else {
-        $(jsDataTable.cell({row : i, column : getSelectedColumnIndex()}).node()).addClass('selected');
-      }
-    }
-  }
   
+  // Highlight selected cells
   let selectedRows = getSelectedRows();
 
-  // Update the selection summary
-  if (selectedRows.length == 0) {
+  if (selectedRows.length > 0) {
+
+    // Highlight the rows
+    let tableColumnIndex = getTableColumnIndex(getSelectedColumn().id);
+    let rows = jsDataTable.rows()[0];
+
+    for (let i = 0; i < rows.length; i++) {
+      let row = jsDataTable.row(i);
+
+      if ($.inArray(row.data()['DT_RowId'], getSelectedRows()) > -1) {
+        
+        if (isFixedColumn(getTableColumnIndex(getSelectedColumn().id))) {
+          // Set the overlaid fixed columns table
+          $($('[data-dt-row=' + i + '][data-dt-column=' + tableColumnIndex + ']')[0]).addClass('selected');
+        } else {
+          $(jsDataTable.cell({row : i, column : tableColumnIndex}).node()).addClass('selected');
+        }
+      }
+    }
+
+    $('#selectedColumnDisplay').html(getSelectedColumn().heading);
+    $('#selectedRowsCountDisplay').html(selectedRows.length);
+  } else {
     $('#selectedColumnDisplay').html('None');
     $('#selectedRowsCountDisplay').html('');
-  } else {
-    $('#selectedColumnDisplay').html(getColumn(getSelectedColumnIndex()).heading);
-    $('#selectedRowsCountDisplay').html(selectedRows.length);
   }
 }
 
@@ -821,6 +829,7 @@ function highlightRow(rowId) {
       $(rowNode).css('animationName', 'rowFlash').css('animationDuration', '1s');
       setTimeout(function() {
         $(rowNode).css('animationName', '');
+        drawTableSelection();
       }, 1000);
     }, 100);
   }
@@ -1469,7 +1478,7 @@ function selectPointsInRect(data, variableId, minX, maxX, minY, maxY) {
   }
 
   newSelectionColumn = getTrueSelectionColumn(variableId);
-  if (newSelectionColumn != getSelectedColumn()) {
+  if (null == getSelectedColumn() || newSelectionColumn != getSelectedColumn().id) {
     setSelectedRows(pointsToSelect);
     setSelectedColumn(newSelectionColumn);
   } else {
