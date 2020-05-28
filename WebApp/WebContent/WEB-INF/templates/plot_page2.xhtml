@@ -166,7 +166,7 @@
             action="#{sessionScope[beanName].data.plot1.init}"
             process="@this plot1XAxis plot1YAxis"
             update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels plot1FlagLabels"
-            oncomplete="drawPlot(1)" />
+            oncomplete="drawPlot(1, true, true)" />
 
           <div id="plot1Container">
             <div id="plot1DataPlot" class="plot dataPlot"></div>

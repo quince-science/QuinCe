@@ -196,7 +196,7 @@ public class ManualQC2Data extends PlotPage2Data {
     extendedRootColumns.add(new ColumnHeading(
       FileDefinition.LONGITUDE_COLUMN_ID, "Longitude", false, true));
     extendedRootColumns.add(new ColumnHeading(FileDefinition.LATITUDE_COLUMN_ID,
-      "Latitude", false, true));
+      "Latitude", false, true, FileDefinition.LONGITUDE_COLUMN_ID));
 
     extendedColumnHeadings.put(ROOT_FIELD_GROUP, extendedRootColumns);
 

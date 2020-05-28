@@ -77,7 +77,7 @@ var flagPlot1Data = null;
 var selectionPlot1 = null;
 
 var dataPlot2 = null;
-var daraPlot2Data = null;
+var dataPlot2Data = null;
 var flagPlot2 = null;
 var flagPlot2Data = null;
 var selectionPlot2 = null;
@@ -273,13 +273,30 @@ function getColumn(columnIndex) {
   return result;
 }
 
+function getColumnById(columnId) {
+  let result = null;
+
+  let currentIndex = 0;
+  for (let i = 0; i < extendedColumnHeaders.length; i++) {
+    let groupHeaders = extendedColumnHeaders[i].headings;
+    for (let j = 0; j < groupHeaders.length; j++) {
+      if (groupHeaders[j].id == columnId) {
+        result = groupHeaders[j];
+        break;
+      }
+    }
+  }
+
+  return result;
+}
+
 function getColumnIndex(columnId) {
   
   let result = null;
   
   let currentIndex = -1;
-  for (let i = 0; i < columnHeaders.length; i++) {
-    let groupHeaders = columnHeaders[i].headings;
+  for (let i = 0; i < extendedColumnHeaders.length; i++) {
+    let groupHeaders = extendedColumnHeaders[i].headings;
     for (let j = 0; j < groupHeaders.length; j++) {
       currentIndex++;
       if (groupHeaders[j].id == columnId) {
@@ -877,20 +894,34 @@ function getPlotLabels(index) {
   return JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
 }
 
-function drawPlot(index) {
+function drawPlot(index, drawOtherPlots, resetZoom) {
   errorCheck();
   
-  // Data plot
-  window['dataPlot' + index + 'Data'] =
-    parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Data').val());
+  let plotVar = 'dataPlot' + index;
   
-  $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
+  // If there's new data, extract it
+  let newPlotData = $('#plot' + index + 'Form\\:plot' + index + 'Data').val();
+  if (newPlotData) {
+    window['dataPlot' + index + 'Data'] = parseJsonWithDates(newPlotData);
+    $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
+  }
   
   let labels = getPlotLabels(index);
   
-  if (null != window['dataPlot' + index]) {
-    window['dataPlot' + index].destroy();
+  var xAxisRange = null;
+  var yAxisRange = null;
+
+  if (!resetZoom && null != window[plotVar]) {
+    xAxisRange = window[plotVar].xAxisRange();
+    yAxisRange = window[plotVar].yAxisRange();
   }
+
+  // Destroy the old plot
+  if (null != window[plotVar]) {
+    window[plotVar].destroy();
+  }
+  
+
   
   let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
   // Ghost data and series data colors
@@ -925,15 +956,24 @@ function drawPlot(index) {
     syncZoom(index);
   };
   
-  window['dataPlot' + index] = new Dygraph(
+  // Zoom
+  if (!resetZoom) {
+    data_options.dateWindow = xAxisRange;
+    data_options.valueRange = yAxisRange;
+    data_options.yRangePad = 0;
+    data_options.xRangePad = 0;
+  }
+
+  window[plotVar] = new Dygraph(
     document.getElementById('plot' + index + 'DataPlot'),
     window['dataPlot' + index + 'Data'],
     data_options
   );
   
-  drawFlagPlot(index);
-  drawSelectionPlot(index);
-  resizePlot(index);
+  if (drawOtherPlots) {
+    drawFlagPlot(index);
+    drawSelectionPlot(index);
+  }
 }
 
 function drawFlagPlot(index) {
@@ -1324,4 +1364,121 @@ function getSelectedCheckbox(prefix) {
 function setPlotAxes(plotIndex) {
   $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
   $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
+}
+
+function setPlotSelectMode(index) {
+  drawPlot(index, false, false);
+}
+
+function selectModeMouseDown(event, g, context) {
+  context.isZooming = true;
+  context.dragStartX = dragGetX(g, event);
+  context.dragStartY = dragGetY(g, event);
+  context.dragEndX = context.dragStartX;
+  context.dragEndY = context.dragStartY;
+  context.prevEndX = null;
+  context.prevEndY = null;
+}
+
+function selectModeMouseMove(event, g, context) {
+  if (context.isZooming) {
+    context.dragEndX = dragGetX(g, event);
+    context.dragEndY = dragGetY(g, event);
+    drawSelectRect(g, context);
+    context.prevEndX = context.dragEndX;
+    context.prevEndY = context.dragEndY;
+  }
+}
+
+function selectModeMouseUp(event, g, context) {
+
+  g.clearZoomRect_();
+
+  let plotIndex = g.maindiv_.id.substring(4,5);
+  let plotVar = $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val();
+
+  if (getColumn(getColumnIndex(plotVar)).editable) {
+    let minX = g.toDataXCoord(context.dragStartX);
+    let maxX = g.toDataXCoord(context.dragEndX);
+    if (maxX < minX) {
+      minX = maxX;
+      maxX = g.toDataXCoord(context.dragStartX);
+    }
+
+    let minY = g.toDataYCoord(context.dragStartY);
+    let maxY = g.toDataYCoord(context.dragEndY);
+    if (maxY < minY) {
+      minY = maxY;
+      maxY = g.toDataYCoord(context.dragStartY);
+    }
+
+    // If we've only moved the mouse by a small amount,
+    // interpret it as a click
+    let xDragDistance = Math.abs(context.dragEndX - context.dragStartX);
+    let yDragDistance = Math.abs(context.dragEndY - context.dragStartY);
+
+    if (xDragDistance <= 3 && yDragDistance <= 3) {
+      let closestPoint = g.findClosestPoint(context.dragEndX, context.dragEndY, undefined);
+      let pointId = closestPoint.point['idx'];
+      let row = window['dataPlot' + plotIndex + 'Data'][pointId][1];
+      scrollToTableRow(row);
+    } else {
+      selectPointsInRect(window['dataPlot' + plotIndex + 'Data'], plotVar, minX, maxX, minY, maxY);
+    }
+  }
+}
+
+function drawSelectRect(graph, context) {
+  let ctx = graph.canvas_ctx_;
+
+  if (null != context.prevEndX && null != context.prevEndY) {
+    ctx.clearRect(context.dragStartX, context.dragStartY,
+      (context.prevEndX - context.dragStartX),
+      (context.prevEndY - context.dragStartY))
+  }
+
+  ctx.fillStyle = "rgba(128,128,128,0.33)";
+  ctx.fillRect(context.dragStartX, context.dragStartY,
+    (context.dragEndX - context.dragStartX),
+    (context.dragEndY - context.dragStartY))
+}
+
+function dragGetX(graph, event) {
+  return  event.clientX - graph.canvas_.getBoundingClientRect().left;
+}
+
+function dragGetY(graph, event) {
+  return event.clientY - graph.canvas_.getBoundingClientRect().top;
+}
+
+function selectPointsInRect(data, variableId, minX, maxX, minY, maxY) {
+  let pointsToSelect = [];
+
+  for (var i = 0; i < data.length; i++) {
+    if (data[i][0] > maxX) {
+      break;
+    } else if (data[i][0] >= minX) {
+      // See if any of the Y values are in range
+      for (let y = 2; y < data[i].length; y++) {
+        if (null != data[i][y] && data[i][y] >= minY && data[i][y] <= maxY) {
+          pointsToSelect.push(data[i][1]);
+          break;
+        }
+      }
+    }
+  }
+
+  newSelectionColumn = getTrueSelectionColumn(variableId);
+  if (newSelectionColumn != getSelectedColumn()) {
+    setSelectedRows(pointsToSelect);
+    setSelectedColumn(newSelectionColumn);
+  } else {
+    addRowsToSelection(pointsToSelect);
+  }
+
+  selectionUpdated();
+}
+
+function getTrueSelectionColumn(columnId) {
+  return getColumnById(columnId).selectionColumn;
 }
