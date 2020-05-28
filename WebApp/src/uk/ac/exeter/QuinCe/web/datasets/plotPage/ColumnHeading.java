@@ -35,6 +35,22 @@ public class ColumnHeading {
   private final boolean editable;
 
   /**
+   * Indicates the true selection column for this column.
+   *
+   * <p>
+   * Some columns cannot be selected, because they are combined in the data
+   * table. Most commonly, latitude is combined with longitude. Therefore
+   * selections on the latitude column should instead become selections on the
+   * longitude column.
+   * </p>
+   *
+   * <p>
+   * For normal columns, this field will be the same as the {@link #id} field.
+   * </p>
+   */
+  private final long selectionColumn;
+
+  /**
    * Simple constructor.
    *
    * @param heading
@@ -48,6 +64,24 @@ public class ColumnHeading {
     this.heading = heading;
     this.numeric = numeric;
     this.editable = editable;
+    this.selectionColumn = id;
+  }
+
+  /**
+   * Constructor with a different selection column.
+   *
+   * @param heading
+   *          The heading.
+   * @param numeric
+   *          Whether the column is numeric.
+   */
+  public ColumnHeading(long id, String heading, boolean numeric,
+    boolean editable, long selectionColumn) {
+    this.id = id;
+    this.heading = heading;
+    this.numeric = numeric;
+    this.editable = editable;
+    this.selectionColumn = selectionColumn;
   }
 
   /**
@@ -80,6 +114,10 @@ public class ColumnHeading {
 
   public boolean canEdit() {
     return editable;
+  }
+
+  public long getSelectionColumn() {
+    return selectionColumn;
   }
 
   /**
