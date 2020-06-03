@@ -184,8 +184,8 @@
           <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
             <f:facet name="left">
               <p:selectOneButton id="plotMode" widgetVar="plot1Mode"
-                styleClass="plotModeButtons" value="0"
-                onchange="initPlot(1)" unselectable="false">
+                styleClass="plotModeButtons" style="display: none"
+                value="0" onchange="initPlot(1)" unselectable="false">
                 <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
                 <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
               </p:selectOneButton>
