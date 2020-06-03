@@ -1,0 +1,18 @@
+<class 'str'>
+     {
+    "submitterId": "OTC",
+    "hashSum": "f0f8febfb726559526fbc8f4cc51bde9448050b0635897c549d4b634c92067b4",
+    "specificInfo": {
+        "station": "http://meta.icos-cp.eu/resources/stations/OS_26NA",
+        "nRows": 91320,
+        "production": {
+            "creator": "http://meta.icos-cp.eu/resources/organizations/OTC",
+            "contributors": [], 
+            "creationDate": "2020-05-13T12:56:45.713338Z",
+            "comment": ""
+        }
+    },
+    "objectSpecification": "http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product",
+    "fileName": "26NA_NRT_20190327.csv",
+    "isNextVersionOf": "484dab12d55c2138bb40ba21bdca602605b1326337d9e74ba49848c77b0d496c"
+}

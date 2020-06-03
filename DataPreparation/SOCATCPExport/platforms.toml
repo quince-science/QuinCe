@@ -28,7 +28,7 @@ platform_id = '26NA'
 [65DK]
 name = 'Cap San Lorenzo'
 submitter_id = 'OTC'
-cp_url = 'https://meta.icos-cp.eu/resources/stations/OS_VOS%20France-Brazil'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_VOS%20France-Brazil'
 category_code = '32'
 call_sign = 'OXOF2'
 export = ['ICOS','CMEMS']
