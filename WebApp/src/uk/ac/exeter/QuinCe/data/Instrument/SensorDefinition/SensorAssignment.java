@@ -291,4 +291,9 @@ public class SensorAssignment {
       return false;
     return true;
   }
+
+  @Override
+  public String toString() {
+    return "ID " + databaseId + ": " + sensorName;
+  }
 }
