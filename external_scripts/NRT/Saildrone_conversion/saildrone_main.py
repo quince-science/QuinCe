@@ -149,7 +149,12 @@ for drone_id, start_string in next_request_checked.items():
 
 		biogeo_observations = saildrone.extract_biogeo_observations(merged_sorted_df)
 
-		if len(biogeo_observations) > 0:
+		if len(biogeo_observations) == 0:
+			# No biogeo data available. Set the last record date to the last
+			# ocean date.
+			time_index = merged_sorted_df.columns.get_loc('time_interval_oceanFile')
+			last_record_date = merged_sorted_df.tail(1).iloc[0,time_index]
+		else:
 
 			# Get the last record we downloaded from the biogeo dataset. This will
 			# change once the different SailDrone datasets are no longer merged
@@ -173,9 +178,9 @@ for drone_id, start_string in next_request_checked.items():
 					ftp_config=FTP, instrument_id=quince_instrument_id,
 					filename=merged_file_name, contents=byte)
 
-			#  Set new start date for the next_request:
-			next_request_updated[drone_id] = (last_record_date
-				+ pd.Timedelta("1 minute")).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+		#  Set new start date for the next_request:
+		next_request_updated[drone_id] = (last_record_date
+			+ pd.Timedelta("1 minute")).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
 	###----------------------------------------------------------------------------
