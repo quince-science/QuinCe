@@ -42,7 +42,8 @@
 
     <p:remoteCommand name="loadData"
       action="#{sessionScope[beanName].loadData}"
-      process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis columnHeadings extendedColumnHeadings rowIDs"
+      process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis
+        :plot2Form:plot2XAxis :plot2Form:plot2YAxis columnHeadings extendedColumnHeadings rowIDs"
       oncomplete="dataLoaded()" />
 
   </h:form>
@@ -209,7 +210,65 @@
         </h:form>
       </div>
       <div id="plot2Panel" class="plotContainer">
-        Plot 2
+        <h:form id="plot2Form" method="post">
+          <h:inputHidden id="plot2Data"
+            value="#{sessionScope[beanName].data.plot2.mainData}"/>
+          <h:inputHidden id="plot2DataLabels"
+            value="#{sessionScope[beanName].data.plot2.dataLabels}"/>
+          <h:inputHidden id="plot2Flags"
+            value="#{sessionScope[beanName].data.plot2.flagData}"/>
+          <h:inputHidden id="plot2FlagLabels"
+            value="#{sessionScope[beanName].data.plot2.flagLabels}"/>
+          <h:inputHidden id="plot2XAxis"
+            value="#{sessionScope[beanName].data.plot2.xaxis}"/>
+          <h:inputHidden id="plot2YAxis"
+            value="#{sessionScope[beanName].data.plot2.yaxis}"/>
+
+          <p:remoteCommand name="loadPlot2"
+            action="#{sessionScope[beanName].data.plot2.init}"
+            process="@this plot2XAxis plot2YAxis"
+            update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels plot2FlagLabels"
+            oncomplete="drawPlot(2, true, true)" />
+
+          <div id="plot2Container">
+            <div id="plot2DataPlot" class="plot dataPlot"></div>
+            <div id="plot2SelectionPlot" class="plot selectionPlot"></div>
+            <div id="plot2FlagPlot" class="plot flagPlot"></div>
+          </div>
+          <div id="plot2Label" class="plotLabels"></div>
+          <div id="map2Container" class="hidden"></div>
+          <div id="map2ScaleControlContainer"
+            class="ol-unselectable ol-control mapScaleControlContainer hidden">
+            <button type="button" onclick="toggleScale(2);">S</button>
+          </div>
+          <div id="map1Value" class="mapValue"></div>
+          <div id="map1Scale" class="mapScale hidden"></div>
+          <p:toolbar id="plot2Toolbar" styleClass="plotPageFooter">
+            <f:facet name="left">
+              <p:selectOneButton id="plotMode" widgetVar="plot2Mode"
+                styleClass="plotModeButtons" style="display: none"
+                value="0" onchange="initPlot(2)" unselectable="false">
+                <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
+                <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
+              </p:selectOneButton>
+              <div class="plotFooterButtonContainer">
+                <p:commandButton icon="selectVariableButton"
+                  onclick="showVariableDialog(2); return false;"
+                  styleClass="inlineButton tightButton plotFooterButton" />
+                <p:commandButton icon="zoomOutButton" onclick="resetZoom(2); return false;"
+                  styleClass="inlineButton tightButton plotFooterButton" />
+              </div>
+              <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
+                <p:selectOneButton id="plotSelectMode" widgetVar="plot2SelectMode"
+                  value="zoom" styleClass="selectModeButtons"
+                  onchange="setPlotSelectMode(2)" unselectable="false">
+                  <f:selectItem itemLabel=" " itemValue="zoom" />
+                  <f:selectItem itemLabel=" " itemValue="select" />
+                </p:selectOneButton>
+              </ui:fragment>
+            </f:facet>
+          </p:toolbar>
+        </h:form>
       </div>
     </div>
     <div id="tableContent"></div>
