@@ -153,9 +153,8 @@ public class ManualQcBean extends PlotPageBean {
 
         // We can use the auto QC value if (a) the position QC is not confirmed
         // or (b) the auto QC is worse than the position QC
-        if (position.needsFlag()
-          || value.getQcFlag().moreSignificantThan(position.getQcFlag())) {
-
+        if (null == position || (position.needsFlag()
+          || value.getQcFlag().moreSignificantThan(position.getQcFlag()))) {
           value.setNeedsFlag(false);
         }
 
@@ -373,8 +372,8 @@ public class ManualQcBean extends PlotPageBean {
           // We can use the selected QC value if (a) the position QC is not
           // confirmed
           // or (b) the auto QC is worse than the position QC
-          if (null == position || position.needsFlag()
-            || flag.moreSignificantThan(position.getQcFlag())) {
+          if (null == position || (position.needsFlag()
+            || flag.moreSignificantThan(position.getQcFlag()))) {
 
             value.setQC(flag, userComment);
           } else {
