@@ -237,6 +237,7 @@ function dataLoaded() {
     extendedColumnHeaders = JSON.parse($('#plotPageForm\\:extendedColumnHeadings').val());
     drawTable();
     initPlot(1);
+    initPlot(2);
     PF('pleaseWait').hide();
   }
 }
@@ -448,7 +449,7 @@ function selectionUpdated() {
 
   drawTableSelection();
   drawSelectionPlot(1);
-  //drawSelectionPlot(2);
+  drawSelectionPlot(2);
   
   if (getSelectedRows().length == 0) {
     $('#selectionActions :button').each(function(index, value) {
@@ -461,13 +462,6 @@ function selectionUpdated() {
   }
   
 /*
-  // Redraw the plots to show selection
-  if (null != plot1) {
-    drawPlot(1, false);
-  }
-  if (null != plot2) {
-    drawPlot(2, false);
-  }
   if (null != map1) {
     drawMap(1);
   }

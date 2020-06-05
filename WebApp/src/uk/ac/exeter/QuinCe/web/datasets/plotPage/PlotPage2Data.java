@@ -126,7 +126,7 @@ public abstract class PlotPage2Data {
 
       // Initialise the plots
       plot1 = new Plot2(this, getDefaultXAxis(), getDefaultYAxis1());
-      plot2 = new Plot2(this, getDefaultXAxis(), getDefaultYAxis1());
+      plot2 = new Plot2(this, getDefaultXAxis(), getDefaultYAxis2());
 
       loaded = true;
     } catch (Exception e) {
