@@ -101,6 +101,12 @@ var updatingDialogButtons = false;
 // Initialise the whole page
 function initPage() {
   
+  // When the window is resized, scale the panels
+  $(window).resize(function() {
+    clearTimeout(resizeEventTimer);
+    resizeEventTimer = setTimeout(resizeAllContent, 100);
+  });
+
   // Draw the basic page layout
   layoutPage();
   
@@ -149,6 +155,7 @@ function scaleTableSplit() {
 // Handle split adjustment between the two plots
 function resizePlots() {
   resizePlot(1);
+  resizePlot(2);
 
 //    if (null != window['map' + index]) {
 //      $('#map' + index + 'Container').width($('#plot' + index + 'Panel').width());
@@ -181,12 +188,13 @@ function resizeAllContent() {
   $('#plotPageContent').height(window.innerHeight - 73);
 
   $('#plotPageContent').split().position($('#plotPageContent').height() * tableSplitProportion);
+  resizePlots();
 
   if (null != jsDataTable) {
     $('.dataTables_scrollBody').height(calcTableScrollY());
+    jsDataTable.draw();
   }
 
-  resizePlots();
 }
 
 function showQCMessage(qcFlag, qcMessage) {
