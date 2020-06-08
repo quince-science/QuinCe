@@ -136,40 +136,47 @@ for drone_id, start_string in next_request_checked.items():
 	# Create merged dataframe
 	merged_df = saildrone.merge_datasets(csv_paths)
 
-	# Add missing columns (with empty data), and sort by the defined column
-	# order to ensure consistent data format
-	for param in col_order:
-		if param not in merged_df.columns:
-			merged_df[param] = None
-	# !!! Check: If there are new headers in the merged_df.
-	# Notify slack and stop script
-	merged_sorted_df = merged_df[col_order]
+	if merged_df is not None:
 
-	biogeo_observations = saildrone.extract_biogeo_observations(merged_sorted_df)
+		# Add missing columns (with empty data), and sort by the defined column
+		# order to ensure consistent data format
+		for param in col_order:
+			if param not in merged_df.columns:
+				merged_df[param] = None
+		# !!! Check: If there are new headers in the merged_df.
+		# Notify slack and stop script
+		merged_sorted_df = merged_df[col_order]
 
-	if len(biogeo_observations) > 0:
+		biogeo_observations = saildrone.extract_biogeo_observations(merged_sorted_df)
 
-		# Get the last record we downloaded from the biogeo dataset. This will
-		# change once the different SailDrone datasets are no longer merged
-		# together. This will be used as the starting point for the next request.
-		time_index = biogeo_observations.columns.get_loc('time_interval_biogeFile')
-		last_record_date = biogeo_observations.tail(1).iloc[0,time_index]
+		if len(biogeo_observations) == 0:
+			# No biogeo data available. Set the last record date to the last
+			# ocean date.
+			time_index = merged_sorted_df.columns.get_loc('time_interval_oceanFile')
+			last_record_date = merged_sorted_df.tail(1).iloc[0,time_index]
+		else:
 
-		# Store the merged data as a csv files in the data directory
-		merged_file_name = (str(drone_id) + '_'
-			+ start_string[0:4] + start_string[5:7] + start_string[8:10] + 'T'
-			+ start_string[11:13] + start_string[14:16] + start_string[17:19] + "-"
-			+ last_record_date.strftime('%Y%m%dT%H%M%S') + '.csv')
-		merged_path = os.path.join(data_dir, merged_file_name)
-		merged_csv = biogeo_observations.to_csv(merged_path,
-			index=None, header=True, sep=',')
+			# Get the last record we downloaded from the biogeo dataset. This will
+			# change once the different SailDrone datasets are no longer merged
+			# together. This will be used as the starting point for the next request.
+			time_index = biogeo_observations.columns.get_loc('time_interval_biogeFile')
+			last_record_date = biogeo_observations.tail(1).iloc[0,time_index]
 
-		# Open the merged csv file in byte format and send to the Quince FTP
-		with open(merged_path, 'rb') as file:
-			byte = file.read()
-			upload_result = saildrone.upload_file(ftpconn=ftpconn,
-				ftp_config=FTP, instrument_id=quince_instrument_id,
-				filename=merged_file_name, contents=byte)
+			# Store the merged data as a csv files in the data directory
+			merged_file_name = (str(drone_id) + '_'
+				+ start_string[0:4] + start_string[5:7] + start_string[8:10] + 'T'
+				+ start_string[11:13] + start_string[14:16] + start_string[17:19] + "-"
+				+ last_record_date.strftime('%Y%m%dT%H%M%S') + '.csv')
+			merged_path = os.path.join(data_dir, merged_file_name)
+			merged_csv = biogeo_observations.to_csv(merged_path,
+				index=None, header=True, sep=',')
+
+			# Open the merged csv file in byte format and send to the Quince FTP
+			with open(merged_path, 'rb') as file:
+				byte = file.read()
+				upload_result = saildrone.upload_file(ftpconn=ftpconn,
+					ftp_config=FTP, instrument_id=quince_instrument_id,
+					filename=merged_file_name, contents=byte)
 
 		#  Set new start date for the next_request:
 		next_request_updated[drone_id] = (last_record_date

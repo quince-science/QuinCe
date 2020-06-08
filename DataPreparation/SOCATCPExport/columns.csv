@@ -1,0 +1,33 @@
+Overview for renaming SOCAT headers to approximate QuinCe headers. Changes were implemented to aid consistency and the CP upload format.  
+
+SOCAT header,QuinCe header
+Expocode,
+version SOCAT_DOI,
+QC_Flag yr,
+mon day hh mm ss,Date/Time
+longitude [dec.deg.E],Longitude
+latitude [dec.deg.N],Latitude
+sample_depth [m],Depth [m]
+sal  ,P_sal [psu]
+SST [deg.C] ,Temp [degC]
+Tequ [deg.C],Temperature of Equilibration [degC]
+PPPP [hPa],Atmospheric Pressure [hPa]
+Pequ [hPa],Equilibrator Pressure (relative) [hPa]
+WOA_SSS NCEP_SLP [hPa],
+ETOPO2_depth [m],
+dist_to_land [km],
+GVCO2 [umol/mol],
+xCO2water_equ_dry [umol/mol],CO2 Mole Fraction [umol mol-1]
+xCO2water_SST_dry [umol/mol],
+pCO2water_equ_wet [uatm],pCO2 In Water - Equilibrator Temperature [uatm]
+pCO2water_SST_wet [uatm],pCO2 [uatm]
+fCO2water_equ_wet [uatm],
+fCO2water_SST_wet [uatm],
+fCO2rec [uatm],fCO2 [uatm]
+fCO2rec_src fCO2rec_flag,fCO2 [uatm] QC Flag
+
+
+Added columns:
+ pCO2 [uatm] QC Flag - constant value < 9 > 
+ P_sal [psu] QC Flag - constant value < 9 >
+ Temp [degC] QC Flag - constant value < 9 >

@@ -415,4 +415,9 @@ public class SensorValue implements Comparable<SensorValue> {
       value = String.valueOf(calibration.calibrateValue(getDoubleValue()));
     }
   }
+
+  @Override
+  public String toString() {
+    return time + ": " + columnId + " = " + value;
+  }
 }

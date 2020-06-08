@@ -27,30 +27,32 @@ def set_datetime(df):
 def merge_datasets(csv_paths):
 
 	count = 1
+	merged_df = None
 	for file in csv_paths:
+		if line_count(file) > 1:
 
-		# Read the file, set the timestamp, and add a header suffix
-		df = pd.read_csv(file)
-		set_datetime(df)
-		file_name = file.split('data_files/',)[1]
-		suffix = '_' + file_name.split("_",)[1][0:5] + 'File'
-		df = add_header_suffix(df, suffix)
+			# Read the file, set the timestamp, and add a header suffix
+			df = pd.read_csv(file)
+			set_datetime(df)
+			file_name = file.split('data_files/',)[1]
+			suffix = '_' + file_name.split("_",)[1][0:5] + 'File'
+			df = add_header_suffix(df, suffix)
 
-		# For the first file: simply store the data frame and suffix in a new
-		# variable so that it can be used in the next iteration
-		if count == 1:
-			df_previous = df
-			suffix_previous = suffix
+			# For the first file: simply store the data frame and suffix in a new
+			# variable so that it can be used in the next iteration
+			if count == 1:
+				df_previous = df
+				suffix_previous = suffix
 
-		# Merge the current data frame with the previous (merged) data frame.
-		if count >= 2:
-			left = 'time_interval' + suffix_previous
-			right = 'time_interval' + suffix
-			merged_df = df_previous.merge(df, left_on=left, right_on=right,
-				how='outer', sort= True)
-			df_previous = merged_df
+			# Merge the current data frame with the previous (merged) data frame.
+			if count >= 2:
+				left = 'time_interval' + suffix_previous
+				right = 'time_interval' + suffix
+				merged_df = df_previous.merge(df, left_on=left, right_on=right,
+					how='outer', sort= True)
+				df_previous = merged_df
 
-		count += 1
+			count += 1
 
 	return merged_df
 
@@ -93,3 +95,11 @@ def extract_biogeo_observations(all_records):
 			biogeo = biogeo.append(row)
 
 	return biogeo
+
+def line_count(file):
+	count = 0
+
+	with open(file) as f:
+		count = sum(1 for _ in f)
+
+	return count
