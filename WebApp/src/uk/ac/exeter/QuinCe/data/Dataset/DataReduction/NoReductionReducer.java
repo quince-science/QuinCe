@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,29 +21,25 @@ public class NoReductionReducer extends DataReducer {
     Map<String, Float> variableAttributes, List<Measurement> allMeasurements,
     DateColumnGroupedSensorValues groupedSensorValues,
     CalibrationSet calibrationSet) {
+
     super(variable, nrt, variableAttributes, allMeasurements,
       groupedSensorValues, calibrationSet);
-    // TODO Auto-generated constructor stub
   }
 
   @Override
   protected void doCalculation(Instrument instrument, Measurement measurement,
     Map<SensorType, CalculationValue> sensorValues, DataReductionRecord record)
     throws Exception {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   protected String[] getRequiredTypeStrings() {
-    // TODO Auto-generated method stub
-    return null;
+    return new String[] {};
   }
 
   @Override
   public List<CalculationParameter> getCalculationParameters() {
-    // TODO Auto-generated method stub
-    return null;
+    return new ArrayList<CalculationParameter>(0);
   }
 
 }
