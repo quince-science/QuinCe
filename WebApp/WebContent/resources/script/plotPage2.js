@@ -195,6 +195,9 @@ function resizeAllContent() {
     jsDataTable.draw();
   }
 
+  if (PF('variableDialog').isVisible()) {
+    resizeVariablesDialog();
+  }
 }
 
 function showQCMessage(qcFlag, qcMessage) {
