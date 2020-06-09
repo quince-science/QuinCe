@@ -129,4 +129,8 @@ public class ManualQC2Bean extends PlotPage2Bean {
   public void applyManualFlag() {
     data.applyManualFlag();
   }
+
+  public int getNeededFlagCount() {
+    return data.getNeedsFlagCount();
+  }
 }

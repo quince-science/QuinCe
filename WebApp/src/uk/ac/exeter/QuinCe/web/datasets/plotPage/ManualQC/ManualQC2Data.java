@@ -741,4 +741,14 @@ public class ManualQC2Data extends PlotPage2Data {
       .get(0);
     return getColumnHeading(coreColumn);
   }
+
+  /**
+   * Get the number of {@link SensorValue}s whose QC flag is
+   * {@link Flag#NEEDED}.
+   *
+   * @return The number of NEEDED flags
+   */
+  public int getNeedsFlagCount() {
+    return null == sensorValues ? -1 : sensorValues.getNeedsFlagCount();
+  }
 }
