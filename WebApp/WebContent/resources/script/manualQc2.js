@@ -15,6 +15,7 @@ function qcFlagsAccepted() {
 
   // Reload table data
   jsDataTable.ajax.reload(null, false);
+  itemNotLoading(UPDATE_DATA);
 }
 
 function startUserQcFlags() {
