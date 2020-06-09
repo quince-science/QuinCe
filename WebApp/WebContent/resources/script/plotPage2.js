@@ -1,4 +1,50 @@
-// TABLE CONSTANTS
+/*
+ *********************************************
+ * Controls for the Please Wait notification
+ *********************************************
+ */
+const TABLE_LOADING = 1;
+const PLOT1_LOADING = 1 << 1;
+const PLOT2_LOADING = 1 << 2;
+const MAP1_LOADING = 1 << 3;
+const MAP2_LOADING = 1 << 4;
+const UPDATE_DATA = 1 << 5;
+
+// Initially the table and both plots are loading
+var loadingItems = TABLE_LOADING | PLOT1_LOADING | PLOT2_LOADING;
+
+
+function plotLoading(index, mode) {
+  let item = 0;
+  
+  if (index == 1) {
+    if (mode == PLOT_MODE_PLOT) {
+      item = PLOT1_LOADING;
+    } else if (mode == PLOT_MODE_MAP) {
+      item = MAP1_LOADING;
+    }
+  } else if (index == 2) {
+    if (mode == PLOT_MODE_PLOT) {
+      item = PLOT2_LOADING;
+    } else if (mode == PLOT_MODE_MAP) {
+      item = MAP2_LOADING;
+    }
+  }
+  
+  itemLoading(item);
+}
+
+function itemLoading(item) {
+  loadingItems = loadingItems | item;
+  PF('pleaseWait').show();
+}
+
+function itemNotLoading(item) {
+  loadingItems = loadingItems & ~item
+  if (loadingItems == 0) {
+    PF('pleaseWait').hide();
+  }
+}
 
 /*
  *********************************************
@@ -101,6 +147,8 @@ var updatingDialogButtons = false;
 // Initialise the whole page
 function initPage() {
   
+  PF('pleaseWait').show();
+  
   // When the window is resized, scale the panels
   $(window).resize(function() {
     clearTimeout(resizeEventTimer);
@@ -111,8 +159,6 @@ function initPage() {
   layoutPage();
   
   // Trigger data loading on back end
-  PF('pleaseWait').show();
-  
   // PrimeFaces remoteCommand. Calls dataLoaded() when complete.
   loadData();
 }
@@ -249,7 +295,6 @@ function dataLoaded() {
     drawTable();
     initPlot(1);
     initPlot(2);
-    PF('pleaseWait').hide();
   }
 }
 
@@ -584,6 +629,8 @@ function drawTable() {
       }, scrollEventTimeLimit);
     }
   });
+  
+  itemNotLoading(TABLE_LOADING);
 }
 
 // Calculate the value of the scrollY entry for the data table
@@ -935,8 +982,6 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     window[plotVar].destroy();
   }
   
-
-  
   let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
   // Ghost data and series data colors
   data_options.colors = ['#01752D', '#C0C0C0'];
@@ -987,6 +1032,13 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   if (drawOtherPlots) {
     drawFlagPlot(index);
     drawSelectionPlot(index);
+  }
+  
+  // We can't use the window object here because consts don't get put there.
+  if (index == 1) {
+    itemNotLoading(PLOT1_LOADING);
+  } else if (index == 2) {
+    itemNotLoading(PLOT2_LOADING);
   }
 }
 
@@ -1340,6 +1392,8 @@ function applyVariables() {
 
   var mode = getPlotMode(currentPlot);
 
+  plotLoading(currentPlot, mode);
+  
   if (mode == PLOT_MODE_PLOT) {
     setPlotAxes(currentPlot);
     initPlot(currentPlot);
