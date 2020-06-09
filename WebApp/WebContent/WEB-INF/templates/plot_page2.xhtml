@@ -43,7 +43,7 @@
     <p:remoteCommand name="loadData"
       action="#{sessionScope[beanName].loadData}"
       process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis
-        :plot2Form:plot2XAxis :plot2Form:plot2YAxis columnHeadings extendedColumnHeadings rowIDs"
+        :plot2Form:plot2XAxis :plot2Form:plot2YAxis columnHeadings extendedColumnHeadings rowIDs :statusForm"
       oncomplete="dataLoaded()" />
 
   </h:form>
@@ -148,7 +148,9 @@
       #{sessionScope[beanName].dataset.name} - <ui:insert name="qcType">Quality Control</ui:insert>
     </f:facet>
     <f:facet name="right">
-      <ui:insert name="pageStatus"></ui:insert>
+      <h:form id="statusForm" method="post">
+        <ui:insert name="pageStatus"></ui:insert>
+      </h:form>
     </f:facet>
   </p:toolbar>
 

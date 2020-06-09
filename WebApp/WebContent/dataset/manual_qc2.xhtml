@@ -12,7 +12,7 @@
   </ui:define>
 
   <ui:define name="pageStatus">
-    TO DO - FLAGS NEEDED HERE
+    Flags needed: <h:outputText value="#{manualQC2Bean.neededFlagCount}"/>
   </ui:define>
 
   <ui:define name="selectionFormEntries">
@@ -24,7 +24,7 @@
     <p:remoteCommand name="submitAutoQC" action="#{manualQC2Bean.acceptAutoQC}"
       partialSubmit="true"
       process="selectedColumn selectedRows"
-      update=":plotPageForm:error :plot1Form:plot1Flags"
+      update=":plotPageForm:error :plot1Form:plot1Flags :statusForm"
       onstart="itemLoading(UPDATE_DATA)"
       oncomplete="qcFlagsAccepted()" />
 
@@ -37,7 +37,7 @@
     <p:remoteCommand name="applyManualFlag"
       action="#{manualQC2Bean.applyManualFlag}"
       process="selectedColumn selectedRows manualFlag manualComment"
-      update=":plotPageForm:error :plot1Form:plot1Flags"
+      update=":plotPageForm:error :plot1Form:plot1Flags :statusForm"
       onstart="itemLoading(UPDATE_DATA)"
       oncomplete="qcFlagsAccepted()" />
 

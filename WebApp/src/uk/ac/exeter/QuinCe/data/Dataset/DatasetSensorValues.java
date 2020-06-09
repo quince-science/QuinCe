@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -236,5 +237,24 @@ public class DatasetSensorValues {
    */
   public boolean containsColumn(long columnId) {
     return valuesByColumn.containsKey(columnId);
+  }
+
+  /**
+   * Get the number of {@link SensorValue}s whose QC flag is
+   * {@link Flag#NEEDED}.
+   *
+   * @return The number of NEEDED flags
+   */
+  public int getNeedsFlagCount() {
+
+    int result = 0;
+
+    for (SensorValue value : valuesById.values()) {
+      if (value.getUserQCFlag().equals(Flag.NEEDED)) {
+        result++;
+      }
+    }
+
+    return result;
   }
 }
