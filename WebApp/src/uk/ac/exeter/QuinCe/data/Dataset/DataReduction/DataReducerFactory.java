@@ -64,6 +64,11 @@ public class DataReducerFactory {
           calibrationSet);
         break;
       }
+      case "Soderman": {
+        reducer = new NoReductionReducer(variable, nrt, variableAttributes,
+          allMeasurements, groupedSensorValues, calibrationSet);
+        break;
+      }
       default: {
         throw new DataReductionException(
           "Cannot find reducer for variable " + variable.getName());
@@ -100,6 +105,10 @@ public class DataReducerFactory {
     case "SailDrone Atmospheric CO₂ NRT": {
       reducer = new SaildroneAtmosphericPco2Reducer(variable, false, null, null,
         null, null);
+      break;
+    }
+    case "Soderman": {
+      reducer = new NoReductionReducer(variable, false, null, null, null, null);
       break;
     }
     default: {
