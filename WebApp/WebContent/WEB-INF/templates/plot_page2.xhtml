@@ -69,7 +69,13 @@
 
   <p:dialog header="Please wait" widgetVar="pleaseWait" modal="true"
     resizable="false" closable="false">
-    Preparing data. This can take quite a while, so please be patient...
+    <h:form id="pleaseWaitForm">
+      Preparing data. This can take quite a while, so please be patient...
+      <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+        <p:commandButton widgetVar="finishButton" value="Abort" ajax="false"
+          process="@none" action="#{sessionScope[beanName].finish}" styleClass="inlineButton" />
+      </h:panelGrid>
+    </h:form>
   </p:dialog>
 
   <p:dialog header="Error" widgetVar="errorMessage" modal="true"
