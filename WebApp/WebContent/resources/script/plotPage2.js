@@ -1034,6 +1034,15 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     drawSelectionPlot(index);
   }
   
+  // Enable/disable the selection mode controls
+  let plotVariable = $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val();
+  if (getColumnById(plotVariable).editable) {
+    PF('plot' + index + 'SelectMode').enable();
+  } else {
+    $('[id^=plot' + index + 'Form\\:plotSelectMode\\:0]').click() // Set to zoom mode
+    PF('plot' + index + 'SelectMode').disable();
+  }
+  
   // We can't use the window object here because consts don't get put there.
   if (index == 1) {
     itemNotLoading(PLOT1_LOADING);
