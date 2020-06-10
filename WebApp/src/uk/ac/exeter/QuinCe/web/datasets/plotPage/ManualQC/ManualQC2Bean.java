@@ -1,10 +1,17 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
+import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Bean;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 
@@ -39,7 +46,16 @@ public class ManualQC2Bean extends PlotPage2Bean {
 
   @Override
   protected void processDirtyData() {
-    System.out.println("Dirty!");
+    try {
+      DataSetDB.setDatasetStatus(getDataSource(), datasetId,
+        DataSet.STATUS_AUTO_QC);
+      Map<String, String> jobParams = new HashMap<String, String>();
+      jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
+      JobManager.addJob(getDataSource(), getUser(),
+        AutoQCJob.class.getCanonicalName(), jobParams);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
@@ -58,6 +74,7 @@ public class ManualQC2Bean extends PlotPage2Bean {
    */
   public void acceptAutoQC() {
     data.acceptAutoQC();
+    dirty = true;
   }
 
   /**
@@ -128,6 +145,7 @@ public class ManualQC2Bean extends PlotPage2Bean {
 
   public void applyManualFlag() {
     data.applyManualFlag();
+    dirty = true;
   }
 
   public int getNeededFlagCount() {
