@@ -734,12 +734,23 @@ public class ManualQC2Data extends PlotPage2Data {
 
   @Override
   protected ColumnHeading getDefaultYAxis2() {
-    // The core sensor value for the first variable
+
+    ColumnHeading result = null;
+
+    // The core sensor value for the first variable, or if there isn't one,
+    // The second sensor
     InstrumentVariable variable = instrument.getVariables().get(0);
     SensorType sensorType = variable.getCoreSensorType();
-    long coreColumn = instrument.getSensorAssignments().getColumnIds(sensorType)
-      .get(0);
-    return getColumnHeading(coreColumn);
+
+    if (null != sensorType) {
+      long coreColumn = instrument.getSensorAssignments()
+        .getColumnIds(sensorType).get(0);
+      result = getColumnHeading(coreColumn);
+    } else {
+      return columnHeadings.get(SENSORS_FIELD_GROUP).get(1);
+    }
+
+    return result;
   }
 
   /**
