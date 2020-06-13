@@ -314,4 +314,15 @@ public class MissingParam {
       checkPositive(parameter, parameterName);
     }
   }
+
+  public static void checkMissing(int[] parameter, String parameterName,
+    boolean canBeEmpty) throws MissingParamException {
+
+    if (null == parameter) {
+      throw new MissingParamException(parameterName);
+    } else if (!canBeEmpty && parameter.length == 0) {
+      throw new EmptyMissingParamException(parameterName);
+    }
+
+  }
 }

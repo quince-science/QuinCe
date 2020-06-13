@@ -225,6 +225,11 @@
       <redirect/>
     </navigation-case>
     <navigation-case>
+      <from-outcome>internal_calibration_plot2</from-outcome>
+      <to-view-id>/dataset/internal_calibration2.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
+    <navigation-case>
       <from-outcome>user_qc</from-outcome>
       <to-view-id>/dataset/manual_qc.xhtml</to-view-id>
       <redirect/>

@@ -1042,13 +1042,16 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     $('[id^=plot' + index + 'Form\\:plotSelectMode\\:0]').click() // Set to zoom mode
     PF('plot' + index + 'SelectMode').disable();
   }
-  
+
+  resizePlot(index);
+
   // We can't use the window object here because consts don't get put there.
   if (index == 1) {
     itemNotLoading(PLOT1_LOADING);
   } else if (index == 2) {
     itemNotLoading(PLOT2_LOADING);
   }
+  
 }
 
 function drawFlagPlot(index) {
