@@ -72,9 +72,15 @@ public class PlotPageTableColumn {
    * @param time
    *          The timestamp.
    */
-  public PlotPageTableColumn(LocalDateTime time) {
-    this.value = String.valueOf(DateTimeUtils.dateToLong(time));
-    this.used = false;
+  public PlotPageTableColumn(LocalDateTime time, boolean milliseconds) {
+
+    if (milliseconds) {
+      this.value = String.valueOf(DateTimeUtils.dateToLong(time));
+    } else {
+      this.value = DateTimeUtils.formatDateTime(time);
+    }
+
+    this.used = true;
     this.qcFlag = Flag.GOOD;
     this.qcMessage = "";
     this.flagNeeded = false;

@@ -305,33 +305,57 @@ public class DatabaseUtils {
   }
 
   /**
-   * Construct an SQL Prepared Statement string that contains an IN parameter
-   * with the given number of parameters.
+   * Construct an SQL Prepared Statement string that contains one or more IN
+   * parameters with the given number of parameters.
    *
-   * The query must contain an {@link #IN_PARAMS_TOKEN}.
+   * The query must contain at least one {@link #IN_PARAMS_TOKEN}.
    *
    * @param query
    *          The query
    * @param inSize
-   *          The number of items in the IN parameter
+   *          The number of items in the IN parameter(s)
    * @return The generated SQL statement
    * @throws MissingParamException
    */
-  public static String makeInStatementSql(String query, int inSize)
+  public static String makeInStatementSql(String query, int... inSize)
     throws MissingParamException {
 
-    MissingParam.checkPositive(inSize, "inSize");
+    MissingParam.checkMissing(query, "query");
+    MissingParam.checkMissing(inSize, "inSize", false);
 
-    StringBuilder inParams = new StringBuilder();
-    inParams.append('(');
-    for (int i = 0; i < inSize; i++) {
-      inParams.append("?,");
+    StringBuilder sql = new StringBuilder();
+
+    int currentPos = 0;
+    for (int i = 0; i < inSize.length; i++) {
+      int tokenPos = query.indexOf(IN_PARAMS_TOKEN, currentPos);
+      if (tokenPos == -1) {
+        throw new MissingParamException(
+          "Mismatch between parameter tokens and parameter size list");
+      }
+
+      sql.append(query.substring(currentPos, tokenPos));
+      currentPos = tokenPos;
+
+      sql.append('(');
+      for (int j = 0; j < inSize[i]; j++) {
+        sql.append("?");
+        if (j < inSize[i] - 1) {
+          sql.append(',');
+        }
+      }
+      sql.append(')');
+
+      currentPos += IN_PARAMS_TOKEN.length();
     }
-    inParams.deleteCharAt(inParams.length() - 1);
 
-    inParams.append(')');
+    if (query.indexOf(IN_PARAMS_TOKEN, currentPos) > -1) {
+      throw new MissingParamException(
+        "Mismatch between parameter tokens and parameter size list");
+    }
 
-    return query.replaceAll(IN_PARAMS_TOKEN, inParams.toString());
+    sql.append(query.substring(currentPos));
+
+    return sql.toString();
   }
 
   /**

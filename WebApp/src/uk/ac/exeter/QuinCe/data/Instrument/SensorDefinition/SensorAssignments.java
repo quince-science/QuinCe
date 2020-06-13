@@ -723,6 +723,27 @@ public class SensorAssignments
     return result;
   }
 
+  /**
+   * Get the IDs of the columns that will be internally calibrated during data
+   * reduction.
+   *
+   * @return The column IDs
+   */
+  public List<Long> getInternalCalibrationSensors() {
+
+    List<Long> result = new ArrayList<Long>();
+
+    for (SensorType sensorType : keySet()) {
+      if (sensorType.hasInternalCalibration()) {
+        for (SensorAssignment assignment : get(sensorType)) {
+          result.add(assignment.getDatabaseId());
+        }
+      }
+    }
+
+    return result;
+  }
+
   public List<Long> getColumnIds(SensorType sensorType) {
 
     List<Long> result = null;
