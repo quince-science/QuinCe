@@ -9,12 +9,18 @@
   <ui:define name="localHead">
     <c:set var="mainMenuActiveIndex" value="0" scope="request" />
     <script>
-      function goToCalibrationData(id) {
-        PF('pleaseWait').show();
-        $('#datasetListForm\\:calibrationDatasetId').val(id);
-        $('#datasetListForm\\:reviewCalibrationDataLink').click();
-        return false;
-      }
+    function goToCalibrationData(id) {
+      PF('pleaseWait').show();
+      $('#datasetListForm\\:calibrationDatasetId').val(id);
+      $('#datasetListForm\\:reviewCalibrationDataLink').click();
+      return false;
+    }
+
+    function goToCalibrationData2(id) {
+      $('#datasetListForm\\:calibration2DatasetId').val(id);
+      $('#datasetListForm\\:reviewCalibrationDataLink2').click();
+      return false;
+    }
 
       function goToQc(id) {
         clearInterval(refreshInterval);
@@ -96,23 +102,36 @@
           value="#{internalCalibrationBean.datasetId}" />
         <p:commandLink id="reviewCalibrationDataLink" ajax="false"
           action="#{internalCalibrationBean.start}" />
+
+        <h:inputHidden id="calibration2DatasetId"
+          value="#{internalCalibration2Bean.datasetId}" />
+        <p:commandLink id="reviewCalibrationDataLink2" ajax="false"
+          action="#{internalCalibration2Bean.start}" />
+
         <h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}" />
         <p:commandLink id="recalculateLink" ajax="true"
           action="#{dataSetsBean.recalculate}" oncomplete="updateList()" />
+
         <p:commandLink id="submitLink" ajax="true"
           action="#{dataSetsBean.submitForApproval}" oncomplete="updateList()" />
+
         <p:commandLink id="approveLink" ajax="true"
           action="#{dataSetsBean.approve}" oncomplete="updateList()" />
+
         <h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}" />
         <p:commandLink id="manualQcLink" ajax="false"
           action="#{manualQcBean.start}" />
+
         <h:inputHidden id="manualQC2DatasetId" value="#{manualQC2Bean.datasetId}" />
         <p:commandLink id="manualQC2Link" ajax="false"
           action="#{manualQC2Bean.start}" />
+
         <p:remoteCommand name="updateList" update="datasets"
           actionListener="#{dataSetsBean.updateDatasetList}" />
+
         <ui:include src="/WEB-INF/templates/dialog.xhtml" />
-        <p:importConstants type="uk.ac.exeter.QuinCe.data.Dataset.DataSet"
+
+         <p:importConstants type="uk.ac.exeter.QuinCe.data.Dataset.DataSet"
           var="DataSet" />
         <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}"
           var="dataset" styleClass="pageBlock">
@@ -157,6 +176,11 @@
               <ui:fragment
                 rendered="#{dataset.status ge DataSet.STATUS_USER_QC}">
                 <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
+                  <h:graphicImage value="/resources/image/calibration.svg"
+                    styleClass="actionIcon" alt="Calibration"
+                    title="Calibration" />
+                </p:commandLink>
+                <p:commandLink onclick="goToCalibrationData2(#{dataset.id})">
                   <h:graphicImage value="/resources/image/calibration.svg"
                     styleClass="actionIcon" alt="Calibration"
                     title="Calibration" />

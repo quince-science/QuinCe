@@ -18,6 +18,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 public abstract class PlotPage2Data {
 
@@ -46,6 +47,16 @@ public abstract class PlotPage2Data {
    * An error string to display to the user if something goes wrong.
    */
   private String errorMessage = null;
+
+  /**
+   * The column headers for the data
+   */
+  protected LinkedHashMap<String, List<ColumnHeading>> columnHeadings = null;
+
+  /**
+   * The extended column headers for the data
+   */
+  protected LinkedHashMap<String, List<ColumnHeading>> extendedColumnHeadings = null;
 
   /**
    * Indicates whether or not data has been loaded.
@@ -172,7 +183,13 @@ public abstract class PlotPage2Data {
    *
    * @return The column headings
    */
-  public abstract LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings();
+  public LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings() {
+    if (null == columnHeadings) {
+      buildColumnHeadings();
+    }
+
+    return columnHeadings;
+  }
 
   /**
    * Get the extended column headings for the table in groups, without QC
@@ -204,7 +221,18 @@ public abstract class PlotPage2Data {
    *
    * @return The column headings
    */
-  public abstract LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings();
+  public LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings() {
+    if (null == extendedColumnHeadings) {
+      buildColumnHeadings();
+    }
+
+    return extendedColumnHeadings;
+  }
+
+  /**
+   * Build the column headings
+   */
+  protected abstract void buildColumnHeadings();
 
   /**
    * Get the standard column headings in JSON format.
@@ -401,7 +429,21 @@ public abstract class PlotPage2Data {
   }
 
   /**
-   * Register an error encountered during data processing.
+   * Register an exception encountered during data processing.
+   *
+   * @param e
+   *          The exception.
+   */
+  protected void error(Exception e) {
+    if (e instanceof NullPointerException) {
+      error("NullPointerException", e);
+    } else {
+      error(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Register a simple error encountered during data processing.
    *
    * <p>
    * The error message will be displayed to the user. A dummy exception will be
@@ -429,7 +471,9 @@ public abstract class PlotPage2Data {
    *          The underlying cause.
    */
   protected void error(String message, Throwable cause) {
-    this.errorMessage = message;
+
+    long millis = DateTimeUtils.dateToLong(LocalDateTime.now());
+    this.errorMessage = millis + ": " + message;
     cause.printStackTrace();
   }
 
@@ -779,4 +823,16 @@ public abstract class PlotPage2Data {
   protected abstract ColumnHeading getDefaultYAxis1();
 
   protected abstract ColumnHeading getDefaultYAxis2();
+
+  /**
+   * Get all the column headings as an unstructured list, i.e. not in their
+   * groups.
+   *
+   * @return The column headings.
+   */
+  protected List<ColumnHeading> getColumnHeadingsList() {
+    List<ColumnHeading> headings = new ArrayList<ColumnHeading>();
+    getColumnHeadings().values().forEach(x -> headings.addAll(x));
+    return headings;
+  }
 }

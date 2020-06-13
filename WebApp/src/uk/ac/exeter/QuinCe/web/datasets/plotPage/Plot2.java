@@ -150,21 +150,27 @@ public class Plot2 {
         PlotPageTableColumn x = xValues.get(time);
         PlotPageTableColumn y = yValues.get(time);
 
-        PlotValue plotValue;
+        PlotValue plotValue = null;
 
-        if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
-          plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
-            Double.parseDouble(y.getValue()),
-            y.getQcFlag().equals(Flag.FLUSHING),
-            y.getFlagNeeded() ? Flag.NEEDED : y.getQcFlag());
-        } else {
-          plotValue = new PlotValue(DateTimeUtils.dateToLong(time),
-            Double.parseDouble(x.getValue()), Double.parseDouble(y.getValue()),
-            y.getQcFlag().equals(Flag.FLUSHING),
-            y.getFlagNeeded() ? Flag.NEEDED : y.getQcFlag());
+        if (null != y) {
+
+          if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
+            plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
+              Double.parseDouble(y.getValue()),
+              y.getQcFlag().equals(Flag.FLUSHING),
+              y.getFlagNeeded() ? Flag.NEEDED : y.getQcFlag());
+          } else if (null != x) {
+            plotValue = new PlotValue(DateTimeUtils.dateToLong(time),
+              Double.parseDouble(x.getValue()),
+              Double.parseDouble(y.getValue()),
+              y.getQcFlag().equals(Flag.FLUSHING),
+              y.getFlagNeeded() ? Flag.NEEDED : y.getQcFlag());
+          }
         }
 
-        plotValues.add(plotValue);
+        if (null != plotValue) {
+          plotValues.add(plotValue);
+        }
       }
     }
   }
@@ -180,7 +186,7 @@ public class Plot2 {
     try {
       makePlotValues();
     } catch (Exception e) {
-      data.error(e.getMessage());
+      data.error(e);
     }
   }
 

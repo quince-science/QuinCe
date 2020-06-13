@@ -207,6 +207,15 @@ public class DataSetDataDB {
     + "FROM measurement_values WHERE measurement_id IN "
     + "(SELECT id FROM measurements WHERE dataset_id = ?)";
 
+  private static final String GET_INTERNAL_CALIBRATION_SENSOR_VALUES_QUERY = "SELECT "
+    + "sv.id, sv.file_column, sv.date, sv.value, sv.auto_qc, "
+    + "sv.user_qc_flag, sv.user_qc_message, m.run_type "
+    + "FROM sensor_values sv "
+    + "INNER JOIN measurements m ON m.date = sv.date "
+    + "WHERE m.dataset_id = ? AND m.run_type IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + " AND sv.file_column IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN;
+
   /**
    * Take a list of fields, and return those which come from the dataset data.
    * Any others will come from calculation data and will be left alone.
@@ -1443,5 +1452,56 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while deleting measurement values", e);
     }
+  }
+
+  public static List<RunTypeSensorValue> getInternalCalibrationSensorValues(
+    Connection conn, Instrument instrument, long datasetId)
+    throws MissingParamException, DatabaseException, InvalidFlagException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(instrument, "Instrument");
+    MissingParam.checkPositive(datasetId, "datasetId");
+
+    List<RunTypeSensorValue> result = new ArrayList<RunTypeSensorValue>();
+
+    List<String> calibrationRunTypes = instrument
+      .getInternalCalibrationRunTypes();
+    List<Long> calibratedColumns = instrument.getSensorAssignments()
+      .getInternalCalibrationSensors();
+
+    String sql = DatabaseUtils.makeInStatementSql(
+      GET_INTERNAL_CALIBRATION_SENSOR_VALUES_QUERY, calibrationRunTypes.size(),
+      calibratedColumns.size());
+
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setLong(1, datasetId);
+
+      int currentParam = 1;
+
+      for (String runType : calibrationRunTypes) {
+        currentParam++;
+        stmt.setString(currentParam, runType);
+      }
+
+      for (Long column : calibratedColumns) {
+        currentParam++;
+        stmt.setLong(currentParam, column);
+      }
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          SensorValue sensorValue = sensorValueFromResultSet(records,
+            datasetId);
+          result.add(new RunTypeSensorValue(sensorValue, records.getString(8)));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException(
+        "Error while getting calibration sensor values", e);
+    }
+
+    return result;
   }
 }

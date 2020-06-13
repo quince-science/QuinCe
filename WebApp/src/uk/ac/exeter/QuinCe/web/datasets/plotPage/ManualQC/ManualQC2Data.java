@@ -82,16 +82,6 @@ public class ManualQC2Data extends PlotPage2Data {
   private Map<Long, Map<InstrumentVariable, DataReductionRecord>> dataReduction = null;
 
   /**
-   * The column headers for the data
-   */
-  private LinkedHashMap<String, List<ColumnHeading>> columnHeadings = null;
-
-  /**
-   * The extended column headers for the data
-   */
-  private LinkedHashMap<String, List<ColumnHeading>> extendedColumnHeadings = null;
-
-  /**
    * The list of sensor column IDs in the same order as they are represented in
    * {@link #columnHeaders}.
    */
@@ -175,7 +165,8 @@ public class ManualQC2Data extends PlotPage2Data {
       .map(t -> DateTimeUtils.dateToLong(t)).collect(Collectors.toList());
   }
 
-  private void buildColumnHeadings() {
+  @Override
+  protected void buildColumnHeadings() {
 
     columnHeadings = new LinkedHashMap<String, List<ColumnHeading>>();
     extendedColumnHeadings = new LinkedHashMap<String, List<ColumnHeading>>();
@@ -271,24 +262,6 @@ public class ManualQC2Data extends PlotPage2Data {
   }
 
   @Override
-  public LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings() {
-    if (null == columnHeadings) {
-      buildColumnHeadings();
-    }
-
-    return columnHeadings;
-  }
-
-  @Override
-  public LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings() {
-    if (null == extendedColumnHeadings) {
-      buildColumnHeadings();
-    }
-
-    return extendedColumnHeadings;
-  }
-
-  @Override
   public int size() {
     // Each record is identified by its time stamp, so each time = 1 record
     return (loaded ? sensorValues.getTimes().size() : -1);
@@ -309,7 +282,7 @@ public class ManualQC2Data extends PlotPage2Data {
         PlotPageTableRecord record = new PlotPageTableRecord(times.get(i));
 
         // Timestamp
-        record.addColumn(times.get(i), true, Flag.GOOD, null, false);
+        record.addColumn(times.get(i));
 
         Map<Long, SensorValue> recordSensorValues = sensorValues
           .get(times.get(i));
@@ -695,7 +668,7 @@ public class ManualQC2Data extends PlotPage2Data {
 
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
       for (LocalDateTime time : sensorValues.getTimes()) {
-        result.put(time, new PlotPageTableColumn(time));
+        result.put(time, new PlotPageTableColumn(time, true));
       }
     } else if (sensorValues.containsColumn(column.getId())) {
       for (SensorValue sensorValue : sensorValues

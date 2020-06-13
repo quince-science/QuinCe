@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,11 +71,9 @@ public class PlotPageTableRecord {
    * @param flagNeeded
    *          Indicates whether or not a user QC flag is needed.
    */
-  public void addColumn(LocalDateTime value, boolean used, Flag qcFlag,
-    String qcMessage, boolean flagNeeded) {
+  public void addColumn(LocalDateTime value) {
 
-    addColumn(DateTimeUtils.formatDateTime(value), used, qcFlag, qcMessage,
-      flagNeeded);
+    addColumn(new PlotPageTableColumn(value, false));
   }
 
   public void addColumn(SensorValue sensorValue, boolean used)
@@ -100,9 +99,29 @@ public class PlotPageTableRecord {
   public void addColumn(String value, boolean used, Flag qcFlag,
     String qcMessage, boolean flagNeeded) {
 
-    columns.put(nextColumnIndex,
+    addColumn(
       new PlotPageTableColumn(value, used, qcFlag, qcMessage, flagNeeded));
+  }
+
+  public void addColumn(PlotPageTableColumn column) {
+    columns.put(nextColumnIndex, column);
     nextColumnIndex++;
+  }
+
+  /**
+   * Add a {@link Collection} of columns to the record.
+   *
+   * <p>
+   * Note that the columns will be inserted in the iteration order of the
+   * {@link Collection}, so it is the caller's responsibility to ensure that the
+   * order is correct (by using a {@link List} or similar).
+   * </p>
+   *
+   * @param columns
+   *          The columns to add.
+   */
+  public void addAll(Collection<PlotPageTableColumn> columns) {
+    columns.forEach(c -> addColumn(c));
   }
 
   public void addBlankColumn() {
