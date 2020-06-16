@@ -8,11 +8,9 @@ function qcFlagsAccepted() {
   PF('flagDialog').hide();
   
   drawFlagPlot(1);
+  drawFlagPlot(2);
   clearSelection();
   
-  
-  // redrawPlot(2);
-
   // Reload table data
   jsDataTable.ajax.reload(null, false);
   itemNotLoading(UPDATE_DATA);
