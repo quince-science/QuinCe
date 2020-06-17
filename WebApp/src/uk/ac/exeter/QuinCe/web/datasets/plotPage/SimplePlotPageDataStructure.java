@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
@@ -38,9 +40,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * @author Steve Jones
  *
  */
-@SuppressWarnings("serial")
-public class SimplePlotPageDataStructure extends
-  TreeMap<LocalDateTime, LinkedHashMap<ColumnHeading, PlotPageTableColumn>> {
+public class SimplePlotPageDataStructure {
 
   /**
    * Cached list of row IDs, i.e. the times as longs.
@@ -51,8 +51,13 @@ public class SimplePlotPageDataStructure extends
 
   private final ColumnHeading timeHeading;
 
+  /**
+   * The main data structure, with columns organised by date and column
+   */
+  private TreeMap<LocalDateTime, LinkedHashMap<ColumnHeading, PlotPageTableColumn>> pageData;
+
   public SimplePlotPageDataStructure(List<ColumnHeading> columnHeadings) {
-    super();
+    pageData = new TreeMap<LocalDateTime, LinkedHashMap<ColumnHeading, PlotPageTableColumn>>();
     this.columnHeadings = Collections.unmodifiableList(columnHeadings);
     timeHeading = getTimeHeading();
   }
@@ -64,10 +69,10 @@ public class SimplePlotPageDataStructure extends
     columnHeadings.forEach(x -> columns.put(x, null));
 
     if (null != timeHeading) {
-      columns.put(timeHeading, new PlotPageTableColumn(time, false));
+      columns.put(timeHeading, new SimplePlotPageTableColumn(time, false));
     }
 
-    put(time, columns);
+    pageData.put(time, columns);
   }
 
   /**
@@ -82,7 +87,7 @@ public class SimplePlotPageDataStructure extends
   public List<Long> getRowIds() {
 
     if (null == rowIds) {
-      rowIds = keySet().stream().map(x -> DateTimeUtils.dateToLong(x))
+      rowIds = pageData.keySet().stream().map(x -> DateTimeUtils.dateToLong(x))
         .collect(Collectors.toList());
     }
 
@@ -104,7 +109,7 @@ public class SimplePlotPageDataStructure extends
     for (int i = start; i <= end; i++) {
       LocalDateTime time = DateTimeUtils.longToDate(ids.get(i));
       PlotPageTableRecord record = new PlotPageTableRecord(time);
-      record.addAll(get(time).values());
+      record.addAll(pageData.get(time).values());
       result.add(record);
     }
 
@@ -116,10 +121,10 @@ public class SimplePlotPageDataStructure extends
 
     TreeMap<LocalDateTime, PlotPageTableColumn> result = new TreeMap<LocalDateTime, PlotPageTableColumn>();
 
-    for (LocalDateTime time : keySet()) {
-      for (ColumnHeading heading : get(time).keySet()) {
+    for (LocalDateTime time : pageData.keySet()) {
+      for (ColumnHeading heading : pageData.get(time).keySet()) {
         if (heading.equals(column)) {
-          result.put(time, get(time).get(column));
+          result.put(time, pageData.get(time).get(column));
           break;
         }
       }
@@ -141,7 +146,7 @@ public class SimplePlotPageDataStructure extends
   public void add(LocalDateTime time, ColumnHeading heading,
     PlotPageTableColumn value) {
 
-    if (!containsKey(time)) {
+    if (!pageData.containsKey(time)) {
       // Create the time entry
       addTime(time);
 
@@ -149,17 +154,63 @@ public class SimplePlotPageDataStructure extends
       rowIds = null;
     }
 
-    get(time).put(heading, value);
+    pageData.get(time).put(heading, value);
+  }
+
+  public void add(LocalDateTime time, ColumnHeading heading, SensorValue value,
+    boolean used) throws RoutineException {
+
+    if (!pageData.containsKey(time)) {
+      // Create the time entry
+      addTime(time);
+
+      // Clear the row IDs cache
+      rowIds = null;
+    }
+
+    pageData.get(time).put(heading,
+      new SensorValuePlotPageTableColumn(value, used));
   }
 
   private ColumnHeading getTimeHeading() {
+    return getHeading(FileDefinition.TIME_COLUMN_ID);
+  }
 
+  private ColumnHeading getHeading(long columnId) {
     ColumnHeading result = null;
 
     for (ColumnHeading heading : columnHeadings) {
-      if (heading.getId() == FileDefinition.TIME_COLUMN_ID) {
+      if (heading.getId() == columnId) {
         result = heading;
         break;
+      }
+    }
+
+    return result;
+  }
+
+  public int size() {
+    return pageData.size();
+  }
+
+  public List<SensorValue> getSensorValues(long columnId,
+    List<LocalDateTime> times) {
+
+    List<SensorValue> result = new ArrayList<SensorValue>(times.size());
+
+    ColumnHeading heading = getHeading(columnId);
+
+    for (LocalDateTime time : times) {
+
+      Map<ColumnHeading, PlotPageTableColumn> timeEntry = pageData.get(time);
+      if (null != timeEntry) {
+        PlotPageTableColumn column = timeEntry.get(heading);
+        if (null != column) {
+          if (column instanceof SensorValuePlotPageTableColumn) {
+            result
+              .add(((SensorValuePlotPageTableColumn) column).getSensorValue());
+          }
+        }
       }
     }
 

@@ -16,8 +16,8 @@ public class PlotPageTableRecordSerializer
   private static Gson gson;
 
   static {
-    gson = new GsonBuilder().registerTypeAdapter(PlotPageTableColumn.class,
-      new PlotPageTableColumnSerializer()).create();
+    gson = new GsonBuilder().registerTypeHierarchyAdapter(
+      PlotPageTableColumn.class, new PlotPageTableColumnSerializer()).create();
   }
 
   @Override
