@@ -7,7 +7,6 @@ import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
@@ -72,14 +71,11 @@ public class PlotPageTableRecord {
    *          Indicates whether or not a user QC flag is needed.
    */
   public void addColumn(LocalDateTime value) {
-
-    addColumn(new PlotPageTableColumn(value, false));
+    addColumn(new SimplePlotPageTableColumn(value, false));
   }
 
-  public void addColumn(SensorValue sensorValue, boolean used)
-    throws RoutineException {
-    addColumn(sensorValue.getValue(), used, sensorValue.getDisplayFlag(),
-      sensorValue.getDisplayQCMessage(), sensorValue.flagNeeded());
+  public void addColumn(SensorValue sensorValue, boolean used) {
+    addColumn(new SensorValuePlotPageTableColumn(sensorValue, used));
   }
 
   /**
@@ -99,8 +95,8 @@ public class PlotPageTableRecord {
   public void addColumn(String value, boolean used, Flag qcFlag,
     String qcMessage, boolean flagNeeded) {
 
-    addColumn(
-      new PlotPageTableColumn(value, used, qcFlag, qcMessage, flagNeeded));
+    addColumn(new SimplePlotPageTableColumn(value, used, qcFlag, qcMessage,
+      flagNeeded));
   }
 
   public void addColumn(PlotPageTableColumn column) {

@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Miscellaneous date/time utilities
@@ -145,4 +147,8 @@ public class DateTimeUtils {
     return LocalDateTime.parse(dateTimeString, displayDateTimeFormatter);
   }
 
+  public static List<LocalDateTime> longsToDates(List<Long> millisecondses) {
+    return millisecondses.stream().map(x -> longToDate(x))
+      .collect(Collectors.toList());
+  }
 }

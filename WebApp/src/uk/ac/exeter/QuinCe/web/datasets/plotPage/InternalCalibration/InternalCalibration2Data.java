@@ -13,12 +13,17 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypeSensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableColumn;
@@ -86,8 +91,8 @@ public class InternalCalibration2Data extends PlotPage2Data {
 
     for (RunTypeSensorValue value : sensorValues) {
       long columnId = makeColumnId(value.getRunType(), value.getColumnId());
-      dataStructure.add(value.getTime(), getColumnHeading(columnId),
-        new PlotPageTableColumn(value, false));
+      dataStructure.add(value.getTime(), getColumnHeading(columnId), value,
+        false);
     }
   }
 
@@ -227,5 +232,23 @@ public class InternalCalibration2Data extends PlotPage2Data {
    */
   protected void destroy() {
     DatabaseUtils.closeConnection(conn);
+  }
+
+  private List<SensorValue> getSelectedSensorValues() {
+    return dataStructure.getSensorValues(selectedColumn,
+      DateTimeUtils.longsToDates(selectedRows));
+  }
+
+  protected void applyFlag(Flag flag, String message)
+    throws MissingParamException, DatabaseException {
+
+    List<SensorValue> sensorValues = getSelectedSensorValues();
+
+    sensorValues.forEach(v -> v.setUserQC(flag, message));
+
+    // Store the updated sensor values
+    DataSetDataDB.storeSensorValues(conn, sensorValues);
+
+    initPlots();
   }
 }
