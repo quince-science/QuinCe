@@ -38,9 +38,12 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTableColumn;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableColumn;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableColumn;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableColumn;
 
 public class ManualQC2Data extends PlotPage2Data {
 
@@ -668,14 +671,14 @@ public class ManualQC2Data extends PlotPage2Data {
 
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
       for (LocalDateTime time : sensorValues.getTimes()) {
-        result.put(time, new PlotPageTableColumn(time, true));
+        result.put(time, new SimplePlotPageTableColumn(time, true));
       }
     } else if (sensorValues.containsColumn(column.getId())) {
       for (SensorValue sensorValue : sensorValues
         .getColumnValues(column.getId())) {
 
         result.put(sensorValue.getTime(),
-          new PlotPageTableColumn(sensorValue, false));
+          new SensorValuePlotPageTableColumn(sensorValue, false));
       }
     } else {
 
@@ -691,7 +694,8 @@ public class ManualQC2Data extends PlotPage2Data {
           .get(variable);
         if (null != record) {
           result.put(measurement.getKey(),
-            new PlotPageTableColumn(record, parameter.getName()));
+            new DataReductionRecordPlotPageTableColumn(record,
+              parameter.getName()));
         }
       }
     }

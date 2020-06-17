@@ -24,7 +24,7 @@
     <p:remoteCommand name="submitAutoQC" action="#{manualQC2Bean.acceptAutoQC}"
       partialSubmit="true"
       process="selectedColumn selectedRows"
-      update=":plotPageForm:error :plot1Form:plot1Flags :statusForm"
+      update=":plotPageForm:error :plot1Form:plot1Flags :plot2Form:plot2Flags :statusForm"
       onstart="itemLoading(UPDATE_DATA)"
       oncomplete="qcFlagsAccepted()" />
 
@@ -37,7 +37,7 @@
     <p:remoteCommand name="applyManualFlag"
       action="#{manualQC2Bean.applyManualFlag}"
       process="selectedColumn selectedRows manualFlag manualComment"
-      update=":plotPageForm:error :plot1Form:plot1Flags :statusForm"
+      update=":plotPageForm:error :plot1Form:plot1Flags :plot2Form:plot2Flags :statusForm"
       onstart="itemLoading(UPDATE_DATA)"
       oncomplete="qcFlagsAccepted()" />
 
@@ -66,16 +66,16 @@
       <h:panelGrid columns="2" styleClass="buttonPanel">
         <p:commandButton widgetVar="manualCommentOk" value="OK"
           onclick="saveManualComment();" />
-        <p:commandButton value="Cancel" onclick="PF('flagDialog').hide();" />
+        <p:commandButton value="Cancel" onclick="PF('flagDialog').hide(); return false;" />
       </h:panelGrid>
     </p:dialog>
   </ui:define>
 
   <ui:define name="selectionActions">
     <p:commandButton widgetVar="acceptQcButton" value="Accept Automatic QC"
-      onclick="acceptAutoQc()" styleClass="inlineButton" />
+      onclick="acceptAutoQc(); return false;" styleClass="inlineButton" />
     <p:commandButton widgetVar="overrideQcButton" value="Override Automatic QC"
-      onclick="startUserQcFlags()" styleClass="inlineButton" />
+      onclick="startUserQcFlags(); return false;" styleClass="inlineButton" />
   </ui:define>
 
 </ui:composition>

@@ -8,9 +8,12 @@ import javax.faces.bean.SessionScoped;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Bean;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 
@@ -27,6 +30,16 @@ public class InternalCalibration2Bean extends PlotPage2Bean {
    * The data for the page
    */
   protected InternalCalibration2Data data;
+
+  /**
+   * Indicates whether or not the selected calibrations should be used
+   */
+  private boolean useCalibrations = true;
+
+  /**
+   * The message attached to calibrations that should not be used
+   */
+  private String useCalibrationsMessage = null;
 
   @Override
   protected String getScreenNavigation() {
@@ -67,5 +80,65 @@ public class InternalCalibration2Bean extends PlotPage2Bean {
     }
 
     super.reset();
+  }
+
+  /**
+   * Get the flag indicating whether the selected calibrations are to be used
+   *
+   * @return The use calibrations flag
+   */
+  public boolean getUseCalibrations() {
+    return useCalibrations;
+  }
+
+  /**
+   * Set the flag indicating whether the selected calibrations are to be used
+   *
+   * @param useCalibrations
+   *          The use calibrations flag
+   */
+  public void setUseCalibrations(boolean useCalibrations) {
+    this.useCalibrations = useCalibrations;
+  }
+
+  /**
+   * Get the message that will be attached to calibrations which aren't being
+   * used
+   *
+   * @return The message for unused calibrations
+   */
+  public String getUseCalibrationsMessage() {
+    return useCalibrationsMessage;
+  }
+
+  /**
+   * Set the message that will be attached to calibrations which aren't being
+   * used
+   *
+   * @param useCalibrationsMessage
+   *          The message for unused calibrations
+   */
+  public void setUseCalibrationsMessage(String useCalibrationsMessage) {
+    this.useCalibrationsMessage = useCalibrationsMessage;
+  }
+
+  /**
+   * Set the usage status of the selected rows
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   */
+  public void setCalibrationUse()
+    throws MissingParamException, DatabaseException {
+
+    Flag newFlag = Flag.GOOD;
+    if (!useCalibrations) {
+      newFlag = Flag.BAD;
+    }
+
+    data.applyFlag(newFlag, useCalibrationsMessage);
+    // dirty = true;
   }
 }
