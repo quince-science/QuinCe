@@ -74,7 +74,7 @@
   {
     "exportName": "Copernicus",
     "separator": "comma",
-    "variables": ["Underway Marine pCO₂"],
+    "variables": ["Underway Marine pCO₂","SailDrone Marine CO₂ NRT"],
     "allSensors": true,
     "includeCalculationColumns": false,
     "useColumnCodes": true,
