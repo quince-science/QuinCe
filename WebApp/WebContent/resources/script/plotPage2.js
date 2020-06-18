@@ -968,7 +968,7 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   }
   
   let labels = getPlotLabels(index);
-  
+    
   var xAxisRange = null;
   var yAxisRange = null;
 
@@ -1022,6 +1022,26 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     data_options.yRangePad = 0;
     data_options.xRangePad = 0;
   }
+  
+  // Reference value
+  let referenceValue = getColumnById($('#plot1Form\\:plot1YAxis').val()).referenceValue;  
+  if (null != referenceValue) {
+    data_options.underlayCallback = function(canvas, area, g) {
+      let xmin = g.toDomXCoord(g.xAxisExtremes()[0]);
+      let xmax = g.toDomXCoord(g.xAxisExtremes()[1]);
+      let ycoord = g.toDomYCoord(referenceValue);
+  
+      canvas.setLineDash([10, 5]);
+      canvas.strokeStyle = '#FF0000';
+      canvas.lineWidth = 3;
+      canvas.beginPath();
+      canvas.moveTo(xmin, ycoord);
+      canvas.lineTo(xmax, ycoord);
+      canvas.stroke();
+      canvas.setLineDash([]);
+    }
+  }
+
 
   window[plotVar] = new Dygraph(
     document.getElementById('plot' + index + 'DataPlot'),

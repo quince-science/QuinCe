@@ -30,6 +30,11 @@ public class ColumnHeading {
   private final boolean numeric;
 
   /**
+   * The reference value for this column
+   */
+  private final Double referenceValue;
+
+  /**
    * Indicates whether or not values in this column can be edited.
    */
   private final boolean editable;
@@ -65,6 +70,25 @@ public class ColumnHeading {
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
+    this.referenceValue = null;
+  }
+
+  /**
+   * Simple constructor with reference value
+   *
+   * @param heading
+   *          The heading.
+   * @param numeric
+   *          Whether the column is numeric.
+   */
+  public ColumnHeading(long id, String heading, boolean numeric,
+    boolean editable, Double referenceValue) {
+    this.id = id;
+    this.heading = heading;
+    this.numeric = numeric;
+    this.editable = editable;
+    this.selectionColumn = id;
+    this.referenceValue = referenceValue;
   }
 
   /**
@@ -82,6 +106,7 @@ public class ColumnHeading {
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = selectionColumn;
+    this.referenceValue = null;
   }
 
   /**
@@ -138,5 +163,9 @@ public class ColumnHeading {
     return headings.entrySet().stream()
       .map(x -> new ColumnHeading(x.getValue(), x.getKey(), numeric, editable))
       .collect(Collectors.toList());
+  }
+
+  public Double getReferenceValue() {
+    return referenceValue;
   }
 }

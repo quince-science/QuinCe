@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.InternalCalibration;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,13 +16,15 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableColumn;
@@ -31,12 +32,6 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageDataStructure;
 
 public class InternalCalibration2Data extends PlotPage2Data {
-
-  /**
-   * The database connection to use for all actions. Set up by
-   * {@link #loadData(DataSource)}.
-   */
-  private Connection conn = null;
 
   /**
    * The dataset whose data is represented.
@@ -79,10 +74,7 @@ public class InternalCalibration2Data extends PlotPage2Data {
   }
 
   @Override
-  protected void loadDataAction(DataSource dataSource) throws Exception {
-
-    // Store the connection for later use.
-    conn = dataSource.getConnection();
+  protected void loadDataAction() throws Exception {
 
     List<RunTypeSensorValue> sensorValues = DataSetDataDB
       .getInternalCalibrationSensorValues(conn, instrument, dataset.getId());
@@ -97,9 +89,13 @@ public class InternalCalibration2Data extends PlotPage2Data {
   }
 
   @Override
-  protected void buildColumnHeadings() {
+  protected void buildColumnHeadings()
+    throws MissingParamException, DatabaseException, RecordNotFoundException {
 
     columnHeadings = new LinkedHashMap<String, List<ColumnHeading>>();
+
+    CalibrationSet calibrations = ExternalStandardDB.getInstance()
+      .getStandardsSet(conn, instrument.getDatabaseId(), dataset.getStart());
 
     // Time
     List<ColumnHeading> rootColumns = new ArrayList<ColumnHeading>(1);
@@ -127,11 +123,14 @@ public class InternalCalibration2Data extends PlotPage2Data {
         for (SensorAssignment assignment : assignments) {
           for (String runType : runTypes) {
 
+            Double calibrationValue = calibrations.getCalibrationValue(runType,
+              sensorType.getName());
+
             long columnId = makeColumnId(runType, assignment);
             String columnName = runType + ":" + assignment.getSensorName();
 
             ColumnHeading heading = new ColumnHeading(columnId, columnName,
-              true, true);
+              true, true, calibrationValue);
             sensorTypeColumns.add(heading);
             columnCount++;
             if (columnCount == 1) {
@@ -225,13 +224,6 @@ public class InternalCalibration2Data extends PlotPage2Data {
   @Override
   protected ColumnHeading getDefaultYAxis2() {
     return defaultYAxis2;
-  }
-
-  /**
-   * Clean up the data
-   */
-  protected void destroy() {
-    DatabaseUtils.closeConnection(conn);
   }
 
   private List<SensorValue> getSelectedSensorValues() {
