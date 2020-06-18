@@ -416,29 +416,37 @@ public class ManualQcBean extends PlotPageBean {
     return updates;
   }
 
+  /*
+   * @Override protected Field getDefaultPlot1YAxis() { Field result = null;
+   *
+   * try { List<FileColumn> fileColumns = InstrumentDB
+   * .getSensorColumns(getDataSource(), getCurrentInstrumentId());
+   *
+   * for (FileColumn column : fileColumns) { if
+   * (column.getSensorType().getName().equals("Intake Temperature")) { result =
+   * fieldSets.getField(column.getColumnId()); } } } catch (Exception e) { // Do
+   * nothing }
+   *
+   * return result; }
+   */
   @Override
   protected Field getDefaultPlot1YAxis() {
-    Field result = null;
-
-    try {
-      List<FileColumn> fileColumns = InstrumentDB
-        .getSensorColumns(getDataSource(), getCurrentInstrumentId());
-
-      for (FileColumn column : fileColumns) {
-        if (column.getSensorType().getName().equals("Intake Temperature")) {
-          result = fieldSets.getField(column.getColumnId());
-        }
-      }
-    } catch (Exception e) {
-      // Do nothing
-    }
-
-    return result;
+    return fieldSets.getField(5);
   }
+
+  /*
+   * @Override protected Field getDefaultPlot2YAxis() { return
+   * fieldSets.getField("fCO₂"); }
+   */
 
   @Override
   protected Field getDefaultPlot2YAxis() {
-    return fieldSets.getField("fCO₂");
+    // Field result = null;
+    // list of fieldsets = list(Get fieldsets)
+    // get last non-empty fieldset
+    // get last item in fieldset
+
+    return fieldSets.getField(7);
   }
 
   @Override
