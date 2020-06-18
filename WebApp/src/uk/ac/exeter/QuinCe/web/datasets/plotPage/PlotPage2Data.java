@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.lang.reflect.Type;
+import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,6 +19,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 public abstract class PlotPage2Data {
@@ -31,6 +33,11 @@ public abstract class PlotPage2Data {
    * Indicates a deselect action
    */
   protected static final int DESELECT = -1;
+
+  /**
+   * The database connection for retrieving data
+   */
+  protected Connection conn = null;
 
   /**
    * Json serialization type for lists of strings
@@ -133,7 +140,9 @@ public abstract class PlotPage2Data {
    */
   public void loadData(DataSource dataSource) {
     try {
-      loadDataAction(dataSource);
+      conn = dataSource.getConnection();
+      buildColumnHeadings();
+      loadDataAction();
 
       // Initialise the plots
       plot1 = new Plot2(this, getDefaultXAxis(), getDefaultYAxis1());
@@ -151,8 +160,7 @@ public abstract class PlotPage2Data {
    * @param dataSource
    *          A data source.
    */
-  protected abstract void loadDataAction(DataSource dataSource)
-    throws Exception;
+  protected abstract void loadDataAction() throws Exception;
 
   /**
    * Get the standard column headings for the table in groups, without QC
@@ -184,10 +192,6 @@ public abstract class PlotPage2Data {
    * @return The column headings
    */
   public LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings() {
-    if (null == columnHeadings) {
-      buildColumnHeadings();
-    }
-
     return columnHeadings;
   }
 
@@ -222,17 +226,13 @@ public abstract class PlotPage2Data {
    * @return The column headings
    */
   public LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings() {
-    if (null == extendedColumnHeadings) {
-      buildColumnHeadings();
-    }
-
     return extendedColumnHeadings;
   }
 
   /**
    * Build the column headings
    */
-  protected abstract void buildColumnHeadings();
+  protected abstract void buildColumnHeadings() throws Exception;
 
   /**
    * Get the standard column headings in JSON format.
@@ -295,7 +295,7 @@ public abstract class PlotPage2Data {
       }
 
       // Convert the reorganised data to JSON
-      result = new Gson().toJson(jsonGroups);
+      result = new GsonBuilder().serializeNulls().create().toJson(jsonGroups);
     }
 
     return result;
@@ -749,39 +749,6 @@ public abstract class PlotPage2Data {
   }
 
   /**
-   * Get the {@code index}th column heading, excluding those in the root column
-   * group (zero-based).
-   *
-   * @param index
-   *          The index.
-   * @return The column heading.
-   */
-  private ColumnHeading getNonRootColumn(int index) {
-    return getColumnHeadingsList(false).get(index);
-  }
-
-  /**
-   * Get all the column headings in an ordered list.
-   *
-   * @param excludeRoot
-   *          Indicates whether the root group should be omitted.
-   * @return The column headings
-   */
-  private List<ColumnHeading> getColumnHeadingsList(boolean excludeRoot) {
-
-    List<ColumnHeading> headingsList = new ArrayList<ColumnHeading>();
-
-    Map<String, List<ColumnHeading>> headings = getColumnHeadings();
-    for (String group : headings.keySet()) {
-      if (!group.equals(ROOT_FIELD_GROUP) || !excludeRoot) {
-        headingsList.addAll(headings.get(group));
-      }
-    }
-
-    return headingsList;
-  }
-
-  /**
    * Get all the values for a given column.
    *
    * @param column
@@ -834,5 +801,12 @@ public abstract class PlotPage2Data {
     List<ColumnHeading> headings = new ArrayList<ColumnHeading>();
     getColumnHeadings().values().forEach(x -> headings.addAll(x));
     return headings;
+  }
+
+  /**
+   * Clean up the data
+   */
+  public void destroy() {
+    DatabaseUtils.closeConnection(conn);
   }
 }

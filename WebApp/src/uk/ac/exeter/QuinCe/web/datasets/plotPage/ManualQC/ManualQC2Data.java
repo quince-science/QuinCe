@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -46,12 +44,6 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableColumn;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableColumn;
 
 public class ManualQC2Data extends PlotPage2Data {
-
-  /**
-   * The database connection to use for all actions. Set up by
-   * {@link #loadData(DataSource)}.
-   */
-  private Connection conn = null;
 
   /**
    * The dataset whose data is represented.
@@ -149,11 +141,7 @@ public class ManualQC2Data extends PlotPage2Data {
    *           If the data cannot be loaded.
    */
   @Override
-  public void loadDataAction(DataSource dataSource) throws Exception {
-
-    // Store the connection for later use.
-    conn = dataSource.getConnection();
-
+  public void loadDataAction() throws Exception {
     sensorValues = DataSetDataDB.getSensorValues(conn, instrument,
       dataset.getId(), false);
 
@@ -422,13 +410,6 @@ public class ManualQC2Data extends PlotPage2Data {
     }
 
     return values;
-  }
-
-  /**
-   * Clean up the data
-   */
-  protected void destroy() {
-    DatabaseUtils.closeConnection(conn);
   }
 
   /**
