@@ -153,8 +153,8 @@ public class LocateMeasurementsJob extends DataSetJob {
                   + " at time " + measurementTime.toString());
             } else {
               while (currentRunTypeTime < runTypeTimes.size() - 1
-                && !runTypeTimes.get(currentRunTypeTime)
-                  .isAfter(measurementTime)) {
+                && runTypeTimes.get(currentRunTypeTime)
+                  .isBefore(measurementTime)) {
                 currentRunTypeTime++;
               }
 
