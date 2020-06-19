@@ -119,4 +119,28 @@ public class MeasurementValue {
     MeasurementValue other = (MeasurementValue) obj;
     return columnId == other.columnId && measurementId == other.measurementId;
   }
+
+  /**
+   * Determines whether or not any registered sensor values for the given
+   * {@link SensorType} have been flagged as {@link Flag#FLUSHING}.
+   *
+   * @return
+   */
+  public boolean isFlushing(DatasetSensorValues allSensorValues) {
+    boolean result = false;
+
+    SensorValue priorSensorValue = allSensorValues.getById(prior);
+    if (priorSensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+      result = true;
+    } else {
+      if (null != post) {
+        SensorValue postSensorValue = allSensorValues.getById(post);
+        if (postSensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+          result = true;
+        }
+      }
+    }
+
+    return result;
+  }
 }
