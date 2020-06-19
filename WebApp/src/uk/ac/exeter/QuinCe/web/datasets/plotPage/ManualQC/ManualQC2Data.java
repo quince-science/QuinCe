@@ -299,16 +299,22 @@ public class ManualQC2Data extends PlotPage2Data {
         }
 
         Long measurementId = measurements.get(times.get(i));
-        Map<InstrumentVariable, DataReductionRecord> dataReductionData;
+        Map<InstrumentVariable, DataReductionRecord> dataReductionData = null;
 
         if (null != measurementId) {
           // Retrieve the data reduction data
           dataReductionData = dataReduction.get(measurementId);
-        } else {
+        }
+
+        // If there's no measurement, or no data reduction for that measurement
+        // (which can happen if the instrument is in a flushing period),
+        // make a blank data reduction set.
+        if (null == dataReductionData) {
           // Make a blank set
           dataReductionData = new HashMap<InstrumentVariable, DataReductionRecord>();
-          instrument.getVariables()
-            .forEach(x -> dataReductionData.put(x, null));
+          for (InstrumentVariable variable : instrument.getVariables()) {
+            dataReductionData.put(variable, null);
+          }
         }
 
         // Variables

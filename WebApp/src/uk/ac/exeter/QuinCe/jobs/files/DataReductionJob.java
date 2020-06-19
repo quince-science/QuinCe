@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -94,7 +95,7 @@ public class DataReductionJob extends DataSetJob {
 
       // Load all the sensor values for this dataset
       DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataSet.getId(), true);
+        instrument, dataSet.getId(), false);
 
       // The prefix used for SensorValue searches
       String searchIdPrefix = "DataReductionJob_" + dataSet.getId();
@@ -133,28 +134,45 @@ public class DataReductionJob extends DataSetJob {
                   sensorType);
               }
 
-              // Store the measurement values in the database
-              DataSetDataDB.storeMeasurementValues(conn,
-                measurementSensorValues.values());
-
-              // Get the data reducer for this variable and perform data
+              // If any of the core sensor values are linked to this measurement
+              // are in a flushing period, then we don't perform the data
               // reduction
-              DataReducer reducer = reducers.get(variable);
-              if (null == reducer) {
-                Map<String, Float> variableAttributes = InstrumentDB
-                  .getVariableAttributes(conn, instrument.getDatabaseId(),
-                    variable.getId());
-                reducer = DataReducerFactory.getReducer(conn, instrument,
-                  variable, variableAttributes);
-                reducers.put(variable, reducer);
+              boolean flushing = false;
+
+              for (MeasurementValue measurementValue : measurementSensorValues
+                .get(variable.getCoreSensorType())) {
+                if (measurementValue.isFlushing(allSensorValues)) {
+                  flushing = true;
+                  break;
+                }
               }
 
-              DataReductionRecord dataReductionRecord = reducer
-                .performDataReduction(instrument, measurement,
-                  measurementSensorValues, allMeasurements, allSensorValues,
-                  conn);
+              if (!flushing) {
 
-              dataReductionRecords.add(dataReductionRecord);
+                // Store the measurement values in the database
+                DataSetDataDB.storeMeasurementValues(conn,
+                  measurementSensorValues.values());
+
+                // Get the data reducer for this variable and perform data
+                // reduction
+                DataReducer reducer = reducers.get(variable);
+                if (null == reducer) {
+                  Map<String, Float> variableAttributes = InstrumentDB
+                    .getVariableAttributes(conn, instrument.getDatabaseId(),
+                      variable.getId());
+                  reducer = DataReducerFactory.getReducer(conn, instrument,
+                    variable, variableAttributes);
+                  reducers.put(variable, reducer);
+                }
+
+                DataReductionRecord dataReductionRecord = reducer
+                  .performDataReduction(instrument, measurement,
+                    measurementSensorValues, allMeasurements, allSensorValues,
+                    conn);
+
+                dataReductionRecords.add(dataReductionRecord);
+              }
+
             }
           }
         }

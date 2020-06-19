@@ -19,7 +19,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -136,35 +135,30 @@ public class LocateMeasurementsJob extends DataSetJob {
       int currentRunTypeTime = 0;
 
       for (SensorValue sensorValue : sensorValues) {
+        LocalDateTime measurementTime = sensorValue.getTime();
 
-        if (!sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
-          LocalDateTime measurementTime = sensorValue.getTime();
+        // Get the run type for this measurement
+        String runType = null;
+        if (null != runTypes) {
 
-          // Get the run type for this measurement
-          String runType = null;
-          if (null != runTypes) {
-
-            // Find the run type immediately before or at the same time as the
-            // measurement
-            if (runTypeTimes.get(currentRunTypeTime).isAfter(measurementTime)) {
-              // There is no run type for this measurement. This isn't allowed!
-              throw new JobFailedException(id,
-                "No run type available in Dataset " + dataSet.getId()
-                  + " at time " + measurementTime.toString());
-            } else {
-              while (currentRunTypeTime < runTypeTimes.size() - 1
-                && runTypeTimes.get(currentRunTypeTime)
-                  .isBefore(measurementTime)) {
-                currentRunTypeTime++;
-              }
-
-              runType = runTypes.get(runTypeTimes.get(currentRunTypeTime));
+          // Find the run type immediately before or at the same time as the
+          // measurement
+          if (runTypeTimes.get(currentRunTypeTime).isAfter(measurementTime)) {
+            // There is no run type for this measurement. This isn't allowed!
+            throw new JobFailedException(id, "No run type available in Dataset "
+              + dataSet.getId() + " at time " + measurementTime.toString());
+          } else {
+            while (currentRunTypeTime < runTypeTimes.size() - 1 && runTypeTimes
+              .get(currentRunTypeTime).isBefore(measurementTime)) {
+              currentRunTypeTime++;
             }
-          }
 
-          measurements
-            .add(new Measurement(dataSet.getId(), measurementTime, runType));
+            runType = runTypes.get(runTypeTimes.get(currentRunTypeTime));
+          }
         }
+
+        measurements
+          .add(new Measurement(dataSet.getId(), measurementTime, runType));
       }
 
       DataSetDataDB.storeMeasurements(conn, measurements);
