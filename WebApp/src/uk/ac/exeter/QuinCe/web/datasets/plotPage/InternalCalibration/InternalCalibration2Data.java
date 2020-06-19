@@ -33,16 +33,6 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageDataStructure;
 
 public class InternalCalibration2Data extends PlotPage2Data {
 
-  /**
-   * The dataset whose data is represented.
-   */
-  private final DataSet dataset;
-
-  /**
-   * The instrument that the dataset belongs to.
-   */
-  private final Instrument instrument;
-
   private ColumnHeading defaultYAxis1 = null;
 
   private ColumnHeading defaultYAxis2 = null;
@@ -69,8 +59,7 @@ public class InternalCalibration2Data extends PlotPage2Data {
    */
   protected InternalCalibration2Data(DataSource dataSource,
     Instrument instrument, DataSet dataset) throws SQLException {
-    this.instrument = instrument;
-    this.dataset = dataset;
+    super(dataSource, instrument, dataset);
   }
 
   @Override
@@ -182,7 +171,8 @@ public class InternalCalibration2Data extends PlotPage2Data {
   }
 
   @Override
-  public LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings() {
+  public LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings()
+    throws Exception {
     return getColumnHeadings();
   }
 
