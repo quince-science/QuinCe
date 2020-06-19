@@ -28,14 +28,14 @@ public class RunTypeSensorValue extends SensorValue {
   /**
    * Create a clone of an existing {@link SensorValue} object and add a run
    * type.
-   * 
+   *
    * @param sensorValue
    *          The sensor value.
    * @param runType
    *          The run type.
    */
   public RunTypeSensorValue(SensorValue sensorValue, String runType) {
-    super(sensorValue.getDatasetId(), sensorValue.getDatasetId(),
+    super(sensorValue.getId(), sensorValue.getDatasetId(),
       sensorValue.getColumnId(), sensorValue.getTime(), sensorValue.getValue(),
       sensorValue.getAutoQcResult(), sensorValue.getUserQCFlag(),
       sensorValue.getUserQCMessage());
