@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import javax.sql.DataSource;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -145,7 +147,7 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
       reset();
 
       dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
-      initDataObject();
+      initDataObject(getDataSource());
 
     } catch (Exception e) {
       return internalError(e);
@@ -312,7 +314,7 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
    * </p>
    */
   public void loadData() {
-    getData().loadData(getDataSource());
+    getData().loadData();
   }
 
   /**
@@ -325,7 +327,8 @@ public abstract class PlotPage2Bean extends BaseManagedBean {
    *
    * @see #loadData()
    */
-  protected abstract void initDataObject() throws Exception;
+  protected abstract void initDataObject(DataSource dataSource)
+    throws Exception;
 
   /**
    * Finish with this bean instance, tidying up as necessary.

@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.lang.reflect.Type;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,7 +19,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
@@ -38,6 +41,16 @@ public abstract class PlotPage2Data {
    * The database connection for retrieving data
    */
   protected Connection conn = null;
+
+  /**
+   * The dataset whose data is represented.
+   */
+  protected final DataSet dataset;
+
+  /**
+   * The instrument that the dataset belongs to.
+   */
+  protected final Instrument instrument;
 
   /**
    * Json serialization type for lists of strings
@@ -126,6 +139,13 @@ public abstract class PlotPage2Data {
       PlotPageTableRecord.class, new PlotPageTableRecordSerializer()).create();
   }
 
+  protected PlotPage2Data(DataSource dataSource, Instrument instrument,
+    DataSet dataset) throws SQLException {
+    this.conn = dataSource.getConnection();
+    this.instrument = instrument;
+    this.dataset = dataset;
+  }
+
   /**
    * Load all page data.
    *
@@ -138,10 +158,8 @@ public abstract class PlotPage2Data {
    *          A data source.
    * @see #loadDataAction(DataSource)
    */
-  public void loadData(DataSource dataSource) {
+  public void loadData() {
     try {
-      conn = dataSource.getConnection();
-      buildColumnHeadings();
       loadDataAction();
 
       // Initialise the plots
@@ -190,8 +208,14 @@ public abstract class PlotPage2Data {
    * </p>
    *
    * @return The column headings
+   * @throws Exception
    */
-  public LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings() {
+  public LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings()
+    throws Exception {
+    if (null == columnHeadings) {
+      buildColumnHeadings();
+    }
+
     return columnHeadings;
   }
 
@@ -224,8 +248,14 @@ public abstract class PlotPage2Data {
    * </p>
    *
    * @return The column headings
+   * @throws Exception
    */
-  public LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings() {
+  public LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings()
+    throws Exception {
+    if (null == extendedColumnHeadings) {
+      buildColumnHeadings();
+    }
+
     return extendedColumnHeadings;
   }
 
@@ -250,8 +280,9 @@ public abstract class PlotPage2Data {
    *
    *
    * @return The table headings JSON.
+   * @throws Exception
    */
-  public String getColumnHeadingsJson() {
+  public String getColumnHeadingsJson() throws Exception {
     return buildColumnHeadingsJson(getColumnHeadings());
   }
 
@@ -271,8 +302,9 @@ public abstract class PlotPage2Data {
    *
    *
    * @return The table headings JSON.
+   * @throws Exception
    */
-  public String getExtendedColumnHeadingsJson() {
+  public String getExtendedColumnHeadingsJson() throws Exception {
     return buildColumnHeadingsJson(getExtendedColumnHeadings());
   }
 
@@ -315,8 +347,10 @@ public abstract class PlotPage2Data {
    * </p>
    *
    * @return The column indices for each group.
+   * @throws Exception
    */
-  public LinkedHashMap<String, Integer> getColumnGroupOffsets() {
+  public LinkedHashMap<String, Integer> getColumnGroupOffsets()
+    throws Exception {
 
     LinkedHashMap<String, Integer> result = new LinkedHashMap<String, Integer>();
 
@@ -402,7 +436,7 @@ public abstract class PlotPage2Data {
     return valid;
   }
 
-  protected boolean isColumnEditable(long columnId) {
+  protected boolean isColumnEditable(long columnId) throws Exception {
 
     boolean editable = false;
 
@@ -684,8 +718,10 @@ public abstract class PlotPage2Data {
   /**
    * Select (or deselect) the range of rows specified by {@link #prevClickedRow}
    * and {@link #clickedRow}.
+   *
+   * @throws Exception
    */
-  public void selectRange() {
+  public void selectRange() throws Exception {
 
     TreeSet<Long> newSelectedRows = new TreeSet<Long>(selectedRows);
 
@@ -722,8 +758,9 @@ public abstract class PlotPage2Data {
    * @param column
    *          The column.
    * @return {@code true} if the cell can be selected; {@code false} if not.
+   * @throws Exception
    */
-  protected boolean canSelectCell(long row, long column) {
+  protected boolean canSelectCell(long row, long column) throws Exception {
     return isColumnEditable(column);
   }
 
@@ -764,8 +801,9 @@ public abstract class PlotPage2Data {
    * @param columnId
    *          The column ID.
    * @return The column heading.
+   * @throws Exception
    */
-  protected ColumnHeading getColumnHeading(long columnId) {
+  protected ColumnHeading getColumnHeading(long columnId) throws Exception {
 
     ColumnHeading result = null;
 
@@ -783,21 +821,22 @@ public abstract class PlotPage2Data {
     return result;
   }
 
-  protected ColumnHeading getDefaultXAxis() {
+  protected ColumnHeading getDefaultXAxis() throws Exception {
     return getColumnHeadings().get(ROOT_FIELD_GROUP).get(0);
   }
 
-  protected abstract ColumnHeading getDefaultYAxis1();
+  protected abstract ColumnHeading getDefaultYAxis1() throws Exception;
 
-  protected abstract ColumnHeading getDefaultYAxis2();
+  protected abstract ColumnHeading getDefaultYAxis2() throws Exception;
 
   /**
    * Get all the column headings as an unstructured list, i.e. not in their
    * groups.
    *
    * @return The column headings.
+   * @throws Exception
    */
-  protected List<ColumnHeading> getColumnHeadingsList() {
+  protected List<ColumnHeading> getColumnHeadingsList() throws Exception {
     List<ColumnHeading> headings = new ArrayList<ColumnHeading>();
     getColumnHeadings().values().forEach(x -> headings.addAll(x));
     return headings;
