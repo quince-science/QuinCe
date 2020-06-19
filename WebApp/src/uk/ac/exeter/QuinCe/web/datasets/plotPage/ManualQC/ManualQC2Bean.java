@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
@@ -35,8 +36,8 @@ public class ManualQC2Bean extends PlotPage2Bean {
   }
 
   @Override
-  public void initDataObject() throws SQLException {
-    data = new ManualQC2Data(getDataSource(), getCurrentInstrument(), dataset);
+  public void initDataObject(DataSource dataSource) throws SQLException {
+    data = new ManualQC2Data(dataSource, getCurrentInstrument(), dataset);
   }
 
   @Override

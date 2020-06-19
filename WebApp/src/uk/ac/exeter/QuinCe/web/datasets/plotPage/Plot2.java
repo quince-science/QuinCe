@@ -83,7 +83,7 @@ public class Plot2 {
     return null == xAxis ? Long.MIN_VALUE : xAxis.getId();
   }
 
-  public void setXaxis(long xAxis) {
+  public void setXaxis(long xAxis) throws Exception {
     if (xAxis != 0) {
       this.xAxis = data.getColumnHeading(xAxis);
     }
@@ -98,7 +98,7 @@ public class Plot2 {
     return null == yAxis ? Long.MIN_VALUE : yAxis.getId();
   }
 
-  public void setYaxis(long yAxis) {
+  public void setYaxis(long yAxis) throws Exception {
     if (yAxis != 0) {
       this.yAxis = data.getColumnHeading(yAxis);
     }

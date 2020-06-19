@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
@@ -66,8 +67,8 @@ public class InternalCalibration2Bean extends PlotPage2Bean {
   }
 
   @Override
-  protected void initDataObject() throws Exception {
-    data = new InternalCalibration2Data(getDataSource(), getCurrentInstrument(),
+  protected void initDataObject(DataSource dataSource) throws Exception {
+    data = new InternalCalibration2Data(dataSource, getCurrentInstrument(),
       dataset);
   }
 

@@ -46,16 +46,6 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableColumn;
 public class ManualQC2Data extends PlotPage2Data {
 
   /**
-   * The dataset whose data is represented.
-   */
-  private final DataSet dataset;
-
-  /**
-   * The instrument that the dataset belongs to.
-   */
-  private final Instrument instrument;
-
-  /**
    * The Measurement objects for the dataset
    */
   private Map<LocalDateTime, Long> measurements = null;
@@ -128,8 +118,7 @@ public class ManualQC2Data extends PlotPage2Data {
    */
   protected ManualQC2Data(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
-    this.instrument = instrument;
-    this.dataset = dataset;
+    super(dataSource, instrument, dataset);
   }
 
   /**
@@ -609,10 +598,11 @@ public class ManualQC2Data extends PlotPage2Data {
    * @param column
    *          The column.
    * @return {@code true} if the cell can be selected; {@code false} if not.
+   * @throws Exception
    * @see #isGhost(SensorValue)
    */
   @Override
-  protected boolean canSelectCell(long row, long column) {
+  protected boolean canSelectCell(long row, long column) throws Exception {
 
     boolean selectable = isColumnEditable(column);
 
@@ -691,7 +681,7 @@ public class ManualQC2Data extends PlotPage2Data {
   }
 
   @Override
-  protected ColumnHeading getDefaultYAxis2() {
+  protected ColumnHeading getDefaultYAxis2() throws Exception {
 
     ColumnHeading result = null;
 
