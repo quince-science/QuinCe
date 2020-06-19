@@ -38,7 +38,7 @@ def main():
   logging.info('***** Starting QuinCe NRT export *****')    
   logging.debug('Obtaining IDs of datasets ready for export from QuinCe')
   try:
-    export_list = get_export_list(basicConfig)
+    export_list = get_export_list(basicConfig) 
     if not export_list:
       logging.info('Terminating script, no datasets to be exported.')
     else: 
@@ -80,7 +80,7 @@ def main():
                 dataset_zip, index, cp_cookie, 'L1', upload, cp_err_msg,L0_hashsums)
             except Exception as e:
               logging.error('Carbon Portal export failed. \n', exc_info=True)
-    
+
           if 'CMEMS' in destination: 
             data_filename = (dataset["name"] + '/dataset/' + "Copernicus" + key 
               + dataset["name"] + '.csv')
@@ -96,20 +96,21 @@ def main():
               successful_upload_CMEMS = 0
         
         successful_upload = True
-        CP_slack_msg = None
-        CMEMS_slack_msg = None
+
+        CP_slack_msg = platform[platform_code]['name'] + ' : ' + dataset['name'] + ' - Carbon Portal - '
 
         if successful_upload_CP == 0: 
-          CP_slack_msg = 'Carbon Portal: Export failed, ' + str(cp_err_msg)
+          CP_slack_msg += 'Export failed. ' + str(cp_err_msg)
           successful_upload = False
-        elif successful_upload_CP == 1: CP_slack_msg = 'Carbon Portal: Successful export'
-        elif successful_upload_CP == 2: CP_slack_msg = 'Carbon Portal: No new data'
+        elif successful_upload_CP == 1: CP_slack_msg += 'Successfully exported.'
+        elif successful_upload_CP == 2: CP_slack_msg += 'No new data.'
         
+        CMEMS_slack_msg = platform[platform_code]['name'] + ' : ' + dataset['name'] + ' - CMEMS - ' 
         if successful_upload_CMEMS == 0: 
-          CMEMS_slack_msg = 'CMEMS: Export failed, ' + cmems_err_msg
+          CMEMS_slack_msg += 'Export failed. ' + cmems_err_msg
           successful_upload = False
-        elif successful_upload_CMEMS == 1: CMEMS_slack_msg = 'CMEMS: Successful export'
-        elif successful_upload_CMEMS == 2: CMEMS_slack_msg = 'CMEMS: No new data'
+        elif successful_upload_CMEMS == 1: CMEMS_slack_msg += 'Successfully exported.'
+        elif successful_upload_CMEMS == 2: CMEMS_slack_msg += 'No new data.'
 
         if CP_slack_msg: slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'{CP_slack_msg}')
         if CMEMS_slack_msg: slack.chat.post_message('#'+basicConfig['slack']['rep_workspace'],f'{CMEMS_slack_msg}')
