@@ -88,6 +88,7 @@ def export_file_to_cp(
           logging.debug(f'{export_filename}: SQL commit {db_status}')
       except Exception as e:
         err_msg += (f'Failed to upload: {export_filename}, \nException: {e}')
+    else: CP_success = 1
 
   return CP_success, hashsum, err_msg
 
