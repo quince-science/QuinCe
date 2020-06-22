@@ -670,16 +670,43 @@ public class ManualQC2Data extends PlotPage2Data {
 
     TreeMap<LocalDateTime, PlotPageTableColumn> result = new TreeMap<LocalDateTime, PlotPageTableColumn>();
 
+    SensorType sensorType = instrument.getSensorAssignments()
+      .getSensorTypeForDBColumn(column.getId());
+
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
       for (LocalDateTime time : sensorValues.getTimes()) {
         result.put(time, new SimplePlotPageTableColumn(time, true));
       }
     } else if (sensorValues.containsColumn(column.getId())) {
-      for (SensorValue sensorValue : sensorValues
-        .getColumnValues(column.getId())) {
 
-        result.put(sensorValue.getTime(),
-          new SensorValuePlotPageTableColumn(sensorValue, false));
+      // If the sensor type doesn't have internal calibrations, add all values
+      if (!sensorType.hasInternalCalibration()) {
+        for (SensorValue sensorValue : sensorValues
+          .getColumnValues(column.getId())) {
+
+          result.put(sensorValue.getTime(),
+            new SensorValuePlotPageTableColumn(sensorValue, false));
+        }
+      } else {
+
+        for (SensorValue sensorValue : sensorValues
+          .getColumnValues(column.getId())) {
+
+          // Get the run type from the closest measurement
+          Measurement concurrentMeasurement = measurements
+            .get(measurements.floorKey(sensorValue.getTime()));
+          String runType = null == concurrentMeasurement ? null
+            : concurrentMeasurement.getRunType();
+
+          // Only include the value if the run type is not an internal
+          // calibration
+          if (!instrument.getRunTypeCategory(runType)
+            .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+
+            result.put(sensorValue.getTime(),
+              new SensorValuePlotPageTableColumn(sensorValue, false));
+          }
+        }
       }
     } else {
 
