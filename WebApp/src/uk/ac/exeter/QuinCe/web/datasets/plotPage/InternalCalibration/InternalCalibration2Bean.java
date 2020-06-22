@@ -140,6 +140,6 @@ public class InternalCalibration2Bean extends PlotPage2Bean {
     }
 
     data.applyFlag(newFlag, useCalibrationsMessage);
-    // dirty = true;
+    dirty = true;
   }
 }
