@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
@@ -26,6 +27,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -48,7 +50,7 @@ public class ManualQC2Data extends PlotPage2Data {
   /**
    * The Measurement objects for the dataset
    */
-  private Map<LocalDateTime, Long> measurements = null;
+  private TreeMap<LocalDateTime, Measurement> measurements = null;
 
   /**
    * All row IDs for the dataset. Row IDs are the millisecond values of the
@@ -134,8 +136,12 @@ public class ManualQC2Data extends PlotPage2Data {
     sensorValues = DataSetDataDB.getSensorValues(conn, instrument,
       dataset.getId(), false);
 
-    measurements = DataSetDataDB.getMeasurementTimes(conn, dataset.getId(),
-      instrument.getMeasurementRunTypes());
+    List<Measurement> measurementsList = DataSetDataDB.getMeasurements(conn,
+      dataset.getId());
+
+    measurements = new TreeMap<LocalDateTime, Measurement>();
+
+    measurementsList.forEach(x -> measurements.put(x.getTime(), x));
 
     dataReduction = DataSetDataDB.getDataReductionData(conn, instrument,
       dataset);
@@ -261,6 +267,12 @@ public class ManualQC2Data extends PlotPage2Data {
       for (int i = start; i < start + length; i++) {
         PlotPageTableRecord record = new PlotPageTableRecord(times.get(i));
 
+        // Get the run type from the closest measurement
+        Measurement concurrentMeasurement = measurements
+          .get(measurements.floorKey(times.get(i)));
+        String runType = null == concurrentMeasurement ? null
+          : concurrentMeasurement.getRunType();
+
         // Timestamp
         record.addColumn(times.get(i));
 
@@ -289,7 +301,19 @@ public class ManualQC2Data extends PlotPage2Data {
           longitude.flagNeeded());
 
         for (long columnId : sensorColumnIds) {
-          record.addColumn(recordSensorValues.get(columnId), false);
+
+          // If the sensor type has internal calibrations, AND we're in a run
+          // type for the internal calibrations, don't include it.
+          SensorType sensorType = instrument.getSensorAssignments()
+            .getSensorTypeForDBColumn(columnId);
+
+          if (sensorType.hasInternalCalibration()
+            && instrument.getRunTypeCategory(runType)
+              .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+            record.addBlankColumn();
+          } else {
+            record.addColumn(recordSensorValues.get(columnId), false);
+          }
         }
 
         if (null != diagnosticColumnIds) {
@@ -298,7 +322,7 @@ public class ManualQC2Data extends PlotPage2Data {
           }
         }
 
-        Long measurementId = measurements.get(times.get(i));
+        Long measurementId = measurements.get(times.get(i)).getId();
         Map<InstrumentVariable, DataReductionRecord> dataReductionData = null;
 
         if (null != measurementId) {
@@ -307,8 +331,8 @@ public class ManualQC2Data extends PlotPage2Data {
         }
 
         // If there's no measurement, or no data reduction for that measurement
-        // (which can happen if the instrument is in a flushing period),
-        // make a blank data reduction set.
+        // (which can happen if the instrument is in a flushing period or in
+        // calibration mode), make a blank data reduction set.
         if (null == dataReductionData) {
           // Make a blank set
           dataReductionData = new HashMap<InstrumentVariable, DataReductionRecord>();
@@ -664,11 +688,11 @@ public class ManualQC2Data extends PlotPage2Data {
       CalculationParameter parameter = DataReducerFactory
         .getVariableParameter(variable, column.getId());
 
-      for (Map.Entry<LocalDateTime, Long> measurement : measurements
+      for (Map.Entry<LocalDateTime, Measurement> measurement : measurements
         .entrySet()) {
 
-        DataReductionRecord record = dataReduction.get(measurement.getValue())
-          .get(variable);
+        DataReductionRecord record = dataReduction
+          .get(measurement.getValue().getId()).get(variable);
         if (null != record) {
           result.put(measurement.getKey(),
             new DataReductionRecordPlotPageTableColumn(record,
