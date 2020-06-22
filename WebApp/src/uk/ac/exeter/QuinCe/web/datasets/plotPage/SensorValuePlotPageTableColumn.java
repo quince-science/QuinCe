@@ -66,7 +66,7 @@ public class SensorValuePlotPageTableColumn implements PlotPageTableColumn {
 
   /**
    * Get the {@link SensorValue} that is the basis for this column.
-   * 
+   *
    * @return The sensor value.
    */
   public SensorValue getSensorValue() {
