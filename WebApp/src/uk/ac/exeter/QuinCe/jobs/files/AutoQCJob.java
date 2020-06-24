@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -239,12 +240,18 @@ public class AutoQCJob extends Job {
           .entrySet()) {
 
           SensorValue.clearAutoQC(values.getValue());
+
+          List<SensorValue> filteredValues = values.getValue().stream()
+            .filter(x -> !(x.getUserQCFlag().equals(Flag.BAD)
+              | x.getUserQCFlag().equals(Flag.QUESTIONABLE)))
+            .collect(Collectors.toList());
+
           if (values.getKey().equals("")
             || measurementRunTypes.contains(values.getKey())) {
             // Loop through all
             // routines
             for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
-              routine.qcValues(values.getValue());
+              routine.qcValues(filteredValues);
             }
           }
 
