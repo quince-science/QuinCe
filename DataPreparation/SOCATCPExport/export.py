@@ -50,12 +50,18 @@ def main():
     logging.info(f'Processing {level} file: {filename}')
     citation = ''
     L0_hashsums = []
+    is_next_version = None
     print(filepath)
+
+    if export_date is not None:
+      is_next_version = hashsum
 
     if level == 'L2':
       #fetch citation
       c.execute("SELECT citation, doi from citation where expocode = ? ",[expocode])
-      citation = ', doi:'.join(c.fetchone()).strip('\n').strip(', doi:10.1594/PANGAEA.xxxxxx')
+      citation = ', doi:'.join(c.fetchone()).strip('\n')
+      if (citation.find(', doi:10.1594/PANGAEA.xxxxxx'))>0:
+        citation = citation[0:citation.find(', doi:10.1594/PANGAEA.xxxxxx')]
       
       #fetch linked L0 hashsums
       c.execute("SELECT L0 from L0Links where expocode = ? ",[expocode])
@@ -69,7 +75,7 @@ def main():
             L0_hashsums += L0_hashsum
 
     # Create metadata
-    meta = build_metadata_package(filename, nRows, startDate, endDate, platform[platform_code], hashsum, citation,level,L0_hashsums)
+    meta = build_metadata_package(filename, nRows, startDate, endDate, platform[platform_code], hashsum, citation,level,is_next_version,L0_hashsums)
 
     # Upload file
     try:
@@ -105,7 +111,7 @@ def create_connection():
   return c
 
 def build_metadata_package(filename, nRows, startDate, endDate, platform, hashsum, citation,
-  level,L0_hashsums):
+  level,is_next_version,L0_hashsums):
   '''  Builds metadata-package, step 1 of 2 Carbon Portal upload process.
   https://github.com/ICOS-Carbon-Portal/meta#registering-the-metadata-package
   returns metadata json object
@@ -127,8 +133,10 @@ def build_metadata_package(filename, nRows, startDate, endDate, platform, hashsu
       {'creator': 'http://meta.icos-cp.eu/resources/organizations/OTC',
       'contributors': [],
       'creationDate': creation_date,
-      'comment': citation.replace('\n','').strip()})
+      'comment': citation})
     meta['specificInfo']['production']['sources'] = L0_hashsums
+    if is_next_version is not None:
+      meta['isNextVersionOf'] = is_next_version
 
   if 'L0' in level:  # L0 specific metadata
     meta['specificInfo']['acquisitionInterval'] = ({
