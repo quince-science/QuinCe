@@ -29,6 +29,7 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCPageData;
 
+@Deprecated
 @SuppressWarnings("serial")
 public class ExportData extends ManualQCPageData {
 

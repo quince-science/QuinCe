@@ -15,7 +15,7 @@ import org.primefaces.json.JSONObject;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
+import uk.ac.exeter.QuinCe.web.datasets.export.Export2Data;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -29,7 +29,7 @@ public class ExportOption {
   private static final String EXPORT_DATA_PACKAGE = "uk.ac.exeter.QuinCe.web.datasets.export.";
 
   private static final String DEFAULT_EXPORT_DATA_CLASS = EXPORT_DATA_PACKAGE
-    + "ExportData";
+    + "Export2Data";
 
   private int index;
 
@@ -58,7 +58,7 @@ public class ExportOption {
    * The export data class to use for this export. Used for custom
    * post-processors
    */
-  private Class<? extends ExportData> dataClass;
+  private Class<? extends Export2Data> dataClass;
 
   /**
    * Indicates whether all sensors will be exported, or just those required for
@@ -323,7 +323,7 @@ public class ExportOption {
     }
 
     try {
-      dataClass = (Class<? extends ExportData>) Class.forName(className);
+      dataClass = (Class<? extends Export2Data>) Class.forName(className);
     } catch (ClassNotFoundException e) {
       // Since we've already checked the class, this shouldn't really happen
       throw new ExportConfigurationException(name, e);
@@ -337,7 +337,7 @@ public class ExportOption {
 
     try {
       Class<? extends Object> testClass = Class.forName(className);
-      Class<ExportData> rootClass = (Class<ExportData>) Class
+      Class<Export2Data> rootClass = (Class<Export2Data>) Class
         .forName(DEFAULT_EXPORT_DATA_CLASS);
 
       if (!rootClass.isAssignableFrom(testClass)) {
@@ -348,7 +348,7 @@ public class ExportOption {
         try {
           // Check that the correct constructor is available
           testClass.getConstructor(DataSource.class, Instrument.class,
-            DataSet.class, ExportOption.class);
+            DataSet.class);
         } catch (NoSuchMethodException e) {
           errorMessage = "No valid constructor found in " + className;
         }
@@ -448,7 +448,7 @@ public class ExportOption {
    *
    * @return The export data class
    */
-  public Class<? extends ExportData> getExportDataClass() {
+  public Class<? extends Export2Data> getExportDataClass() {
     return dataClass;
   }
 
@@ -463,15 +463,16 @@ public class ExportOption {
    *          The dataset that will be exported
    * @return The ExportData object
    */
-  public ExportData makeExportData(DataSource dataSource, Instrument instrument,
-    DataSet dataset) throws ExportConfigurationException {
+  public Export2Data makeExportData(DataSource dataSource,
+    Instrument instrument, DataSet dataset)
+    throws ExportConfigurationException {
 
     try {
       Constructor<?> constructor = dataClass.getConstructor(DataSource.class,
-        Instrument.class, DataSet.class, ExportOption.class);
+        Instrument.class, DataSet.class);
 
-      return (ExportData) constructor.newInstance(dataSource, instrument,
-        dataset, this);
+      return (Export2Data) constructor.newInstance(dataSource, instrument,
+        dataset);
     } catch (Exception e) {
       throw new ExportConfigurationException(name,
         "Error creating ExportData object", e);

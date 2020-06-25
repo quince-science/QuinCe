@@ -81,8 +81,8 @@
     </ui:fragment>
     <ui:fragment rendered="#{dataSetsBean.hasInstruments}">
       <h:form id="exportForm" method="post" charset="utf8">
-        <h:inputHidden id="exportDatasetId" value="#{exportBean.datasetId}" />
-        <p:commandLink id="exportLink" ajax="false" action="#{exportBean.start}" />
+        <h:inputHidden id="exportDatasetId" value="#{exportBean2.datasetId}" />
+        <p:commandLink id="exportLink" ajax="false" action="#{exportBean2.start}" />
       </h:form>
       <h:form id="datasetListForm" method="post" charset="utf8">
         <h:panelGrid columns="3" cellpadding="5" class="buttonPanel contentList">
