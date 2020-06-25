@@ -6,6 +6,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 
+@Deprecated
 public class ExportField extends Field {
 
   private ColumnHeader columnHeader;

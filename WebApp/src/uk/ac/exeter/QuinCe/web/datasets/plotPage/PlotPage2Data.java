@@ -803,7 +803,7 @@ public abstract class PlotPage2Data {
    * @return The column heading.
    * @throws Exception
    */
-  protected ColumnHeading getColumnHeading(long columnId) throws Exception {
+  public ColumnHeading getColumnHeading(long columnId) throws Exception {
 
     ColumnHeading result = null;
 

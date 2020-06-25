@@ -4,8 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -13,6 +16,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.sql.DataSource;
 
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
@@ -24,16 +28,20 @@ import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
-@Deprecated
 @ManagedBean
 @SessionScoped
-public class ExportBean extends BaseManagedBean {
+public class ExportBean2 extends BaseManagedBean {
 
   /**
    * Navigation to the export page
@@ -41,7 +49,7 @@ public class ExportBean extends BaseManagedBean {
   private static final String NAV_EXPORT_PAGE = "export";
 
   /**
-   * The database ID of the dataset to be exported
+   * The dataset to be exported
    */
   private DataSet dataset = null;
 
@@ -56,17 +64,9 @@ public class ExportBean extends BaseManagedBean {
   private boolean includeRawFiles = false;
 
   /**
-   * The export data, organised ready for building export files
-   */
-  private ExportData exportData = null;
-
-  /**
    * Initialise the bean
    */
   public String start() {
-    // Reset the export data
-    exportData = null;
-
     return NAV_EXPORT_PAGE;
   }
 
@@ -169,14 +169,11 @@ public class ExportBean extends BaseManagedBean {
    */
   private void exportSingleFile() {
 
-    Connection conn = null;
-
     try {
-      conn = getDataSource().getConnection();
       ExportOption exportOption = getExportOptions().get(chosenExportOption);
 
-      byte[] fileContent = getDatasetExport(conn, getCurrentInstrument(),
-        dataset, exportOption);
+      byte[] fileContent = getDatasetExport(getCurrentInstrument(), dataset,
+        exportOption);
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -201,8 +198,6 @@ public class ExportBean extends BaseManagedBean {
       fc.responseComplete();
     } catch (Exception e) {
       e.printStackTrace();
-    } finally {
-      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -262,25 +257,45 @@ public class ExportBean extends BaseManagedBean {
    * @return The exported dataset
    * @throws Exception
    */
-  private static byte[] getDatasetExport(Connection conn, Instrument instrument,
-    DataSet dataset, ExportOption exportOption) throws Exception {
+  private static byte[] getDatasetExport(Instrument instrument, DataSet dataset,
+    ExportOption exportOption) throws Exception {
 
-    return new byte[] {};
+    DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
+
+    Export2Data data = exportOption.makeExportData(dataSource, instrument,
+      dataset);
+    data.loadData();
+
+    // Run the post-processor before generating the final output
+    data.postProcess();
+
+    // Work out which columns we are going to export
+    List<ColumnHeading> exportColumns = buildExportColumns(data, instrument,
+      exportOption);
+
+    // Let's make some output
+    StringBuilder output = new StringBuilder();
+
+    List<String> headers = new ArrayList<String>();
+
+    for (ColumnHeading heading : exportColumns) {
+
+      if (heading.getId() == FileDefinition.TIME_COLUMN_ID) {
+        headers.add(exportOption.getTimestampHeader());
+      } else {
+        String header = heading.getHeading();
+
+        // TODO Units
+
+        headers.add(header);
+      }
+    }
+
+    output.append(
+      StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
+    output.append('\n');
+
     /*
-     * DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
-     *
-     * ExportData data = exportOption.makeExportData(dataSource, instrument,
-     * dataset);
-     *
-     * data .addTimes(DataSetDataDB.getSensorValueDates(dataSource,
-     * dataset.getId()));
-     *
-     * DataSetDataDB.loadMeasurementData(dataSource, data, data.getRowIds());
-     *
-     * // Run the post-processor before generating the final output
-     * data.postProcess();
-     *
-     * // Let's make some output StringBuilder output = new StringBuilder();
      *
      * // Headers List<String> headers = new ArrayList<String>();
      * headers.add(exportOption.getTimestampHeader());
@@ -328,8 +343,46 @@ public class ExportBean extends BaseManagedBean {
      *
      * output.append('\n'); }
      *
-     * return output.toString().getBytes();
      */
+
+    return output.toString().getBytes();
+  }
+
+  private static List<ColumnHeading> buildExportColumns(Export2Data data,
+    Instrument instrument, ExportOption exportOption) throws Exception {
+
+    List<ColumnHeading> exportColumns = new ArrayList<ColumnHeading>();
+
+    LinkedHashMap<String, List<ColumnHeading>> dataHeadings = data
+      .getExtendedColumnHeadings();
+
+    // Add the base columns - time, position etc
+    exportColumns.addAll(dataHeadings.get(Export2Data.ROOT_FIELD_GROUP));
+
+    List<ColumnHeading> sensorColumns = dataHeadings
+      .get(Export2Data.SENSORS_FIELD_GROUP);
+    if (exportOption.includeAllSensors()) {
+      exportColumns.addAll(sensorColumns);
+    } else {
+
+      Set<SensorType> variableSensorTypes = new HashSet<SensorType>();
+
+      // Get the sensors required for the instrument's variables
+      for (InstrumentVariable variable : instrument.getVariables()) {
+        variableSensorTypes.addAll(variable.getAllSensorTypes(false));
+      }
+
+      // Find those columns with the required sensor types
+      for (ColumnHeading sensorHeading : sensorColumns) {
+        SensorType headingSensorType = instrument.getSensorAssignments()
+          .getSensorTypeForDBColumn(sensorHeading.getId());
+        if (variableSensorTypes.contains(headingSensorType)) {
+          exportColumns.add(sensorHeading);
+        }
+      }
+    }
+
+    return exportColumns;
   }
 
   /**
@@ -460,7 +513,7 @@ public class ExportBean extends BaseManagedBean {
 
       ZipEntry datasetEntry = new ZipEntry(datasetPath);
       zip.putNextEntry(datasetEntry);
-      zip.write(getDatasetExport(conn, instrument, dataset, option));
+      zip.write(getDatasetExport(instrument, dataset, option));
       zip.closeEntry();
     }
 
