@@ -146,6 +146,5 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
     }
 
     return result;
-
   }
 }
