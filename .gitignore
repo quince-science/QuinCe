@@ -14,6 +14,7 @@ DataPreparation/sqlite/*.csv
 **/Pipfile.lock
 .pydevproject
 **/*.log
+**/*.swp
 
 # Ignore build-files from gradle. Make sure gradle-wrapper.jar is not ignored
 /.gradle/
