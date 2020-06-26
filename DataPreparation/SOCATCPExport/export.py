@@ -59,7 +59,7 @@ def main():
       citation = ', doi:'.join(c.fetchone())
       citation = citation.strip('\n')
       placeholder_doi_start = citation.find(', doi:10.1594/PANGAEA.xxxxxx')
-      if (placeholder_doi_start) >= -1:
+      if (placeholder_doi_start) > -1:
         citation = citation[0 : placeholder_doi_start]
       
       # fetch linked L0 hashsums
