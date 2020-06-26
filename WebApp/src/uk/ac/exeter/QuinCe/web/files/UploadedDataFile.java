@@ -343,7 +343,11 @@ public abstract class UploadedDataFile {
           }
         }
 
-        if (!fileEmpty) {
+        if (fileEmpty) {
+          putMessage(Status.OK.getStatusCode(),
+            getName() + " is empty. File accepted but not processed",
+            FacesMessage.SEVERITY_INFO);
+        } else {
           if (null == getDataFile().getStartDate()
             || null == getDataFile().getEndDate()) {
             putMessage(UNPROCESSABLE_STATUS, getName()
