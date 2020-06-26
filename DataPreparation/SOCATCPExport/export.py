@@ -3,7 +3,6 @@
 # Exports files listed in db-export table. ready for export has uploaded value set to NULL
 # Fetches autentication cookie, assembles metata string from db tables and uploads metadata and file to CP
 
-
 # Maren K Karlsen 20200518
 
 import os
@@ -15,7 +14,6 @@ import toml
 import json
 import urllib
 import http.cookiejar
-
 
 DB = 'SOCATexport.db'
 OBJ_SPEC_URI = {}
@@ -37,33 +35,34 @@ logging.basicConfig(filename='export_console.log',format='%(asctime)s %(message)
 def main():
   ''' Iterates through files ready for upload, fetches citation and source-files for L2'''
 
-  # Create connection to CP
   auth_cookie = get_auth_cookie(config_carbon)
+  c = create_connection()
 
   # Fetch all non-uploaded entries from db.
-  c = create_connection()
   c.execute("SELECT * FROM export WHERE uploaded IS NULL")
-  # Iterate through entries
   entries = c.fetchall()
+
+  # Iterate through entries
   for entry in entries:
-    [filename,expocode,hashsum,platform_code,filepath,level,export_date,uploaded,startDate,endDate,nRows] = entry
+    [filename, expocode, hashsum, platform_code, filepath, level, export_date, uploaded, startDate, endDate, nRows] = entry
     logging.info(f'Processing {level} file: {filename}')
     citation = ''
     L0_hashsums = []
     is_next_version = None
-    print(filepath)
 
     if export_date is not None:
       is_next_version = hashsum
 
     if level == 'L2':
-      #fetch citation
+      # fetch citation
       c.execute("SELECT citation, doi from citation where expocode = ? ",[expocode])
-      citation = ', doi:'.join(c.fetchone()).strip('\n')
-      if (citation.find(', doi:10.1594/PANGAEA.xxxxxx'))>0:
-        citation = citation[0:citation.find(', doi:10.1594/PANGAEA.xxxxxx')]
+      citation = ', doi:'.join(c.fetchone())
+      citation = citation.strip('\n')
+      placeholder_doi_start = citation.find(', doi:10.1594/PANGAEA.xxxxxx')
+      if (placeholder_doi_start) >= -1:
+        citation = citation[0 : placeholder_doi_start]
       
-      #fetch linked L0 hashsums
+      # fetch linked L0 hashsums
       c.execute("SELECT L0 from L0Links where expocode = ? ",[expocode])
       LinkedL0 = c.fetchall()
       if LinkedL0:
@@ -75,7 +74,7 @@ def main():
             L0_hashsums += L0_hashsum
 
     # Create metadata
-    meta = build_metadata_package(filename, nRows, startDate, endDate, platform[platform_code], hashsum, citation,level,is_next_version,L0_hashsums)
+    meta = build_metadata_package(filename, nRows, startDate, endDate, platform[platform_code], hashsum, citation,level, is_next_version, L0_hashsums)
 
     # Upload file
     try:
@@ -109,6 +108,7 @@ def create_connection():
               nRows TEXT
               )''')
   return c
+
 
 def build_metadata_package(filename, nRows, startDate, endDate, platform, hashsum, citation,
   level,is_next_version,L0_hashsums):
@@ -152,6 +152,7 @@ def build_metadata_package(filename, nRows, startDate, endDate, platform, hashsu
 
   return meta_JSON
 
+
 def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
   '''Uploads metadata and data object to Carbon Portal  '''
   success = True
@@ -176,6 +177,7 @@ def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
 
   return success
 
+
 def push_object(url,data,auth_cookie,content_type,method):
   '''  http-posts/puts data-object to url with content-type and auth_cookie  '''
 
@@ -191,6 +193,7 @@ def push_object(url,data,auth_cookie,content_type,method):
     logging.error(e.read())
     raise Exception(f'{e.code} {method} failed,\n {data[0:50]}... not sent, {e.read()}')
   return response.read()
+
 
 def get_auth_cookie(config):   
   '''   Returns authentication cookie from Carbon Portal.   '''
@@ -222,12 +225,14 @@ def get_auth_cookie(config):
       logging.debug('No cookie obtained')
   return auth_cookie
 
+
 def get_hashsum(filename):
   ''' returns a 256 hashsum corresponding to input file. '''
   logging.debug(f'Generating hashsum for datafile {filename}')
   with open(filename,'r',encoding="utf8",errors='ignore') as f: content = f.read()
 
   return hashlib.sha256(content.encode('utf-8')).hexdigest()
+
 
 if __name__ == '__main__':
   main()
