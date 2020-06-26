@@ -73,6 +73,7 @@ public class UploadFile {
         }
       }
     } catch (Exception e) {
+      e.printStackTrace();
       result = Status.INTERNAL_SERVER_ERROR.getStatusCode();
       resultBody = e.getMessage();
     }
