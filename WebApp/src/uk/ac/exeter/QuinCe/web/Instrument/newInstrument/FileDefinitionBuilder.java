@@ -125,7 +125,8 @@ public class FileDefinitionBuilder extends FileDefinition {
       boolean dataFound = false;
       while (!dataFound && currentRow < fileContents.size()) {
         String numbers = fileContents.get(currentRow).replaceAll("[^0-9]", "");
-        if (numbers.length() > (fileContents.get(currentRow).length() / 2)) {
+        if (numbers.length() > (fileContents.get(currentRow)
+          .replaceAll(" +", " ").length() / 2)) {
           dataFound = true;
         } else {
           currentRow++;
@@ -198,7 +199,8 @@ public class FileDefinitionBuilder extends FileDefinition {
     if (separator.equals(" ")) {
       // Space separators come in groups, so count consecutive spaces as one
       // instance
-      searchPattern = Pattern.compile(" +");
+      searchString = searchString.trim();
+      searchPattern = Pattern.compile("  *");
     } else {
       searchPattern = Pattern.compile(separator);
     }
