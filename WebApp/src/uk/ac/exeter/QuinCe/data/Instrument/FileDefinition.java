@@ -155,7 +155,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * The file set of which this definition is a member
    */
-  private InstrumentFileSet fileSet;
+  protected InstrumentFileSet fileSet;
 
   static {
     SEPARATOR_LOOKUP = new HashMap<String, String>(4);

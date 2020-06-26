@@ -124,9 +124,40 @@ public class FileDefinitionBuilder extends FileDefinition {
       // Any lines between the header and this are column header rows
       boolean dataFound = false;
       while (!dataFound && currentRow < fileContents.size()) {
+
+        // Filter out multiple consecutive spaces, because they can throw off
+        // the data:non-data ratio
+        String filteredRow = fileContents.get(currentRow)
+          .replaceAll(getSeparator(), "");
+
+        // Also remove the run type strings if we know them, because they are
+        // data but not necessarily numbers
+        List<String> runTypes = new ArrayList<String>();
+        if (null != fileSet) {
+          for (FileDefinition fileDef : fileSet) {
+            runTypes.addAll(fileDef.getRunTypes().keySet());
+          }
+        }
+
+        // Process the run types by longest first to ensure short substrings
+        // don get removed and leave longer strings behind
+        StringUtils.sortByLength(runTypes, true);
+
+        // All run types are stored in lower case
+        filteredRow = filteredRow.toLowerCase();
+        for (String runType : runTypes) {
+          filteredRow = filteredRow.replaceAll(runType, "");
+        }
+
+        // Finally remove NaN, since that's also data
+        filteredRow = filteredRow.replaceAll("nan", "");
+
+        // Now get all the numbers from the original row
         String numbers = fileContents.get(currentRow).replaceAll("[^0-9]", "");
-        if (numbers.length() > (fileContents.get(currentRow)
-          .replaceAll(" +", " ").length() / 2)) {
+
+        // The count of numbers is over half of the length of the filtered row,
+        // then we think this is data.
+        if (numbers.length() > (filteredRow.length() / 2)) {
           dataFound = true;
         } else {
           currentRow++;
@@ -416,8 +447,8 @@ public class FileDefinitionBuilder extends FileDefinition {
         // fill in empty strings for unused columns. Also replace tabs
         // with \\t so it's valid JSON after loading in Javascript.
         if (j < columnValues.size()) {
-          result.append(StringUtils.tabToSpace(
-            columnValues.get(j).replaceAll("'", "\\'")));
+          result.append(
+            StringUtils.tabToSpace(columnValues.get(j).replaceAll("'", "\\'")));
         }
 
         result.append('"');
