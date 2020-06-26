@@ -7,6 +7,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -465,6 +467,14 @@ public final class StringUtils {
           "Invalid delimiter '" + delimiter + "'");
       }
     }
+  }
 
+  public static void sortByLength(List<String> list, boolean descending) {
+
+    Comparator<String> comparator = descending
+      ? new DescendingLengthComparator()
+      : new AscendingLengthComparator();
+
+    Collections.sort(list, comparator);
   }
 }
