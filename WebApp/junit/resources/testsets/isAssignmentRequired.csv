@@ -71,67 +71,67 @@ xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,true,true,fals
 xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,true,false,true,false,,,,false
 xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,true,false,true,true,,,,false
 xH₂O (with standards),true,true,,,,xCO₂ (with standards),true,true,true,true,true,,,,false
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,false,false
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,true,false
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,false,false
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,true,false
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,false,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,true,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,false,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,true,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,false,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,true,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,false,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,true,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,false,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,true,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,false,true
-Ambient Pressure,false,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,true,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,false,false
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,true,false
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,false,false
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,true,false
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,false,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,true,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,false,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,true,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,false,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,true,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,false,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,true,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,false,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,true,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,false,true
-Ambient Pressure,false,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,true,true
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,false,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,true,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,false,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,true,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,false,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,true,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,false,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,true,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,false,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,true,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,false,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,true,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,false,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,true,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,false,false
-Ambient Pressure,true,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,true,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,false,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,true,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,false,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,true,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,false,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,true,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,false,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,true,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,false,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,true,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,false,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,true,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,false,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,true,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,false,false
-Ambient Pressure,true,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,true,false
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,false,false
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,true,false
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,false,false
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,true,false
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,false,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,true,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,false,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,true,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,false,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,true,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,false,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,true,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,false,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,true,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,false,true
+Pressure at instrument,false,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,true,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,false,false
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,true,false
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,false,false
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,true,false
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,false,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,true,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,false,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,true,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,false,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,true,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,false,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,true,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,false,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,true,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,false,true
+Pressure at instrument,false,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,true,true
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,false,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,true,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,false,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,true,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,false,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,true,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,false,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,true,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,false,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,true,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,false,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,true,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,false,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,true,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,false,false
+Pressure at instrument,true,false,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,true,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,false,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),false,true,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,false,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,false,,false,,Equilibrator Pressure (absolute),true,true,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,false,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),false,true,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,false,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,false,,true,,Equilibrator Pressure (absolute),true,true,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,false,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),false,true,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,false,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,true,,false,,Equilibrator Pressure (absolute),true,true,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,false,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),false,true,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,false,false
+Pressure at instrument,true,true,,,,Equilibrator Pressure (differential),false,true,,true,,Equilibrator Pressure (absolute),true,true,false
