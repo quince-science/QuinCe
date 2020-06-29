@@ -212,10 +212,11 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       absolute = sensorValues.get(absoluteSensorType);
     }
 
-    // Now the differential, with calculation to ambient pressure
+    // Now the differential, with calculation to the pressure in the instrument
+    // environs
     SensorType differentialSensorType = getSensorType(
       "Equilibrator Pressure (differential)");
-    SensorType ambientSensorType = getSensorType("Ambient Pressure");
+    SensorType ambientSensorType = getSensorType("Pressure at instrument");
 
     if (sensorTypes.contains(differentialSensorType)) {
       CalculationValue differentialPressure = sensorValues
