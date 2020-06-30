@@ -221,10 +221,10 @@ def sql_investigate(export_filename, hashsum,level,NRT,platform):
   try:
 
     if NRT and level == 'L1':
-      c.execute("SELECT hashsum FROM cp_export WHERE export_filename LIKE ? ",
+      c.execute("SELECT hashsum FROM cp_export WHERE export_filename LIKE ? ORDER BY export_date desc",
         [platform + '%']) # % is wildcard
     else:
-      c.execute("SELECT hashsum FROM cp_export WHERE export_filename=? ",
+      c.execute("SELECT hashsum FROM cp_export WHERE export_filename=? ORDER BY export_date desc",
         [export_filename])
     
     filename_exists = c.fetchone()
