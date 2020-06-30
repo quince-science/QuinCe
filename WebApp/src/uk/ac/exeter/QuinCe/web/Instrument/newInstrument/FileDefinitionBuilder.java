@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.data.Instrument.InvalidSeparatorException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
@@ -135,7 +136,10 @@ public class FileDefinitionBuilder extends FileDefinition {
         List<String> runTypes = new ArrayList<String>();
         if (null != fileSet) {
           for (FileDefinition fileDef : fileSet) {
-            runTypes.addAll(fileDef.getRunTypes().keySet());
+            RunTypeAssignments runTypeAssignments = fileDef.getRunTypes();
+            if (null != runTypeAssignments) {
+              runTypes.addAll(runTypeAssignments.keySet());
+            }
           }
         }
 
