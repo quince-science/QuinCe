@@ -1,15 +1,14 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
  * No data reduction performed.
@@ -17,19 +16,17 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
  */
 public class NoReductionReducer extends DataReducer {
 
-  public NoReductionReducer(InstrumentVariable variable, boolean nrt,
-    Map<String, Float> variableAttributes, List<Measurement> allMeasurements,
-    DateColumnGroupedSensorValues groupedSensorValues,
-    CalibrationSet calibrationSet) {
+  public NoReductionReducer(InstrumentVariable variable,
+    Map<String, Float> variableAttributes) {
 
-    super(variable, nrt, variableAttributes, allMeasurements,
-      groupedSensorValues, calibrationSet);
+    super(variable, variableAttributes);
   }
 
   @Override
-  protected void doCalculation(Instrument instrument, Measurement measurement,
-    Map<SensorType, CalculationValue> sensorValues, DataReductionRecord record)
-    throws Exception {
+  protected void doCalculation(Instrument instrument,
+    MeasurementValues sensorValues, DataReductionRecord record,
+    Map<String, ArrayList<Measurement>> allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn) throws Exception {
   }
 
   @Override

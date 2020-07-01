@@ -32,7 +32,7 @@ public class EquilibratorPressureCalculator extends ValueCalculator {
       measurementValues, allMeasurements, allSensorValues, reducer, conn);
 
     DefaultValueCalculator ambientPressureCalculator = new DefaultValueCalculator(
-      "Ambient Pressure");
+      "Pressure at instrument");
     Double ambientPressure = ambientPressureCalculator.calculateValue(
       measurementValues, allMeasurements, allSensorValues, reducer, conn);
 
