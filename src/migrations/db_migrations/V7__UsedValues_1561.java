@@ -1,4 +1,4 @@
-package resources.db_migrations;
+package db_migrations;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,7 +28,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * @author Steve Jones
  *
  */
-public class V6__UsedValues_1561 extends BaseJavaMigration {
+public class V7__UsedValues_1561 extends BaseJavaMigration {
 
   @Override
   public void migrate(Context context) throws Exception {
