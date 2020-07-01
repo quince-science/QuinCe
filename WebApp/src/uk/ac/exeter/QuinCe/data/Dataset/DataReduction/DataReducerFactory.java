@@ -56,8 +56,7 @@ public class DataReducerFactory {
         break;
       }
       case "Soderman": {
-        reducer = new NoReductionReducer(variable, nrt, variableAttributes,
-          allMeasurements, groupedSensorValues, calibrationSet);
+        reducer = new NoReductionReducer(variable, variableAttributes);
         break;
       }
       default: {
@@ -95,7 +94,7 @@ public class DataReducerFactory {
       break;
     }
     case "Soderman": {
-      reducer = new NoReductionReducer(variable, false, null, null, null, null);
+      reducer = new NoReductionReducer(variable, null);
       break;
     }
     default: {
