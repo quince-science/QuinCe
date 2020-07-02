@@ -214,11 +214,21 @@ public class SensorAssignmentsTest extends BaseTest {
    * @param primary
    *          The primary/secondary status
    * @return The {@link SensorAssignment} object
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
    */
   protected static SensorAssignment makeAssignment(String file, int column,
-    boolean primary) {
-    return new SensorAssignment(file, column, "Assignment", primary, false,
-      "NaN");
+    boolean primary)
+    throws SensorTypeNotFoundException, SensorAssignmentException {
+
+    return new SensorAssignment(file, column, getTestSensorType(), "Assignment",
+      primary, false, "NaN");
+  }
+
+  private static SensorType getTestSensorType()
+    throws SensorTypeNotFoundException {
+    return ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("Intake Temperature");
   }
 
   /**
@@ -488,7 +498,7 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments.addAssignment(intakeTemperatureId,
       makeAssignment(DATA_FILE_NAME, 1, true));
     SensorAssignment assignment2 = new SensorAssignment(DATA_FILE_2_NAME, 1,
-      "Second file sensor", true, false, "NaN");
+      getTestSensorType(), "Second file sensor", true, false, "NaN");
     assignments.addAssignment(salinityId, assignment2);
 
     assertEquals(2, countAllAssignments());

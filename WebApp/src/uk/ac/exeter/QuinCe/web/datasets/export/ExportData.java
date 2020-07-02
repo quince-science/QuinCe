@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
@@ -144,21 +143,21 @@ public class ExportData extends ManualQCPageData {
 
       FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(),
         variable.getName());
-      TreeMap<Long, CalculationParameter> parameters = DataReducerFactory
+      List<CalculationParameter> parameters = DataReducerFactory
         .getCalculationParameters(variable, true);
 
-      for (Map.Entry<Long, CalculationParameter> entry : parameters
-        .entrySet()) {
-
-        ExportField field = new ExportField(varFieldSet, entry.getKey(),
-          entry.getValue().getColumnHeader(), !entry.getValue().isResult(),
-          entry.getValue().isResult(), exportOption);
-
-        fieldSets.addField(field, (!exportOption.includeCalculationColumns()
-          && !entry.getValue().isResult()));
-        variableFields.put(entry.getKey(), field);
-      }
-    }
+      /*
+       * for (Map.Entry<Long, CalculationParameter> entry : parameters
+       * .entrySet()) {
+       *
+       * ExportField field = new ExportField(varFieldSet, entry.getKey(),
+       * entry.getValue().getColumnHeader(), !entry.getValue().isResult(),
+       * entry.getValue().isResult(), exportOption);
+       *
+       * fieldSets.addField(field, (!exportOption.includeCalculationColumns() &&
+       * !entry.getValue().isResult())); variableFields.put(entry.getKey(),
+       * field); }
+       */ }
   }
 
   @Override

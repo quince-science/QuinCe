@@ -25,17 +25,17 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableColumn;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageDataStructure;
 
 public class InternalCalibration2Data extends PlotPage2Data {
 
-  private ColumnHeading defaultYAxis1 = null;
+  private PlotPageColumnHeading defaultYAxis1 = null;
 
-  private ColumnHeading defaultYAxis2 = null;
+  private PlotPageColumnHeading defaultYAxis2 = null;
 
   private SimplePlotPageDataStructure dataStructure = null;
 
@@ -81,15 +81,16 @@ public class InternalCalibration2Data extends PlotPage2Data {
   protected void buildColumnHeadings()
     throws MissingParamException, DatabaseException, RecordNotFoundException {
 
-    columnHeadings = new LinkedHashMap<String, List<ColumnHeading>>();
+    columnHeadings = new LinkedHashMap<String, List<PlotPageColumnHeading>>();
 
     CalibrationSet calibrations = ExternalStandardDB.getInstance()
       .getStandardsSet(conn, instrument.getDatabaseId(), dataset.getStart());
 
     // Time
-    List<ColumnHeading> rootColumns = new ArrayList<ColumnHeading>(1);
-    rootColumns.add(new ColumnHeading(FileDefinition.TIME_COLUMN_ID,
-      FileDefinition.TIME_COLUMN_NAME, false, false));
+    List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
+      1);
+    rootColumns.add(new PlotPageColumnHeading(
+      FileDefinition.TIME_COLUMN_HEADING, false, false));
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
 
@@ -102,7 +103,7 @@ public class InternalCalibration2Data extends PlotPage2Data {
     for (SensorType sensorType : instrument.getSensorAssignments().keySet()) {
       if (sensorType.hasInternalCalibration()) {
 
-        List<ColumnHeading> sensorTypeColumns = new ArrayList<ColumnHeading>();
+        List<PlotPageColumnHeading> sensorTypeColumns = new ArrayList<PlotPageColumnHeading>();
 
         List<SensorAssignment> assignments = instrument.getSensorAssignments()
           .get(sensorType);
@@ -118,8 +119,9 @@ public class InternalCalibration2Data extends PlotPage2Data {
             long columnId = makeColumnId(runType, assignment);
             String columnName = runType + ":" + assignment.getSensorName();
 
-            ColumnHeading heading = new ColumnHeading(columnId, columnName,
-              true, true, calibrationValue);
+            PlotPageColumnHeading heading = new PlotPageColumnHeading(columnId,
+              columnName, sensorType.getColumnHeading(), sensorType.getCode(),
+              sensorType.getUnits(), true, true, calibrationValue);
             sensorTypeColumns.add(heading);
             columnCount++;
             if (columnCount == 1) {
@@ -171,7 +173,7 @@ public class InternalCalibration2Data extends PlotPage2Data {
   }
 
   @Override
-  public LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings()
+  public LinkedHashMap<String, List<PlotPageColumnHeading>> getExtendedColumnHeadings()
     throws Exception {
     return getColumnHeadings();
   }
@@ -201,18 +203,18 @@ public class InternalCalibration2Data extends PlotPage2Data {
 
   @Override
   protected TreeMap<LocalDateTime, PlotPageTableColumn> getColumnValues(
-    ColumnHeading column) throws Exception {
+    PlotPageColumnHeading column) throws Exception {
 
     return dataStructure.getColumnValues(column);
   }
 
   @Override
-  protected ColumnHeading getDefaultYAxis1() {
+  protected PlotPageColumnHeading getDefaultYAxis1() {
     return defaultYAxis1;
   }
 
   @Override
-  protected ColumnHeading getDefaultYAxis2() {
+  protected PlotPageColumnHeading getDefaultYAxis2() {
     return defaultYAxis2;
   }
 

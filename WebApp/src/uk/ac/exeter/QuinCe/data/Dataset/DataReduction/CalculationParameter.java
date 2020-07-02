@@ -1,33 +1,29 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
-import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 
-public class CalculationParameter {
+public class CalculationParameter extends ColumnHeading {
 
-  private String name;
+  /**
+   * Indicates whether or not this parameter should be treated as a result of
+   * the calculation, as opposed to an intermediate value.
+   */
+  private final boolean result;
 
-  private ColumnHeader columnHeader;
+  public CalculationParameter(long id, String name, String columnName,
+    String columnCode, String units, boolean result) {
 
-  private boolean result;
-
-  public CalculationParameter(String name, String columnName, String columnCode,
-    String units, boolean result) {
-
-    this.name = name;
-    this.columnHeader = new ColumnHeader(columnName, columnCode, units);
+    super(id, name, columnName, columnCode, units);
     this.result = result;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public ColumnHeader getColumnHeader() {
-    return columnHeader;
-  }
-
+  /**
+   * Determine whether or not this parameter is a result of the calculation, as
+   * opposed to an intermediate value.
+   *
+   * @return {@code true} if it is a result; {@code false} otherwise.
+   */
   public boolean isResult() {
     return result;
   }
-
 }

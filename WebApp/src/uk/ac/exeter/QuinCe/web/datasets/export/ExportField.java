@@ -20,7 +20,7 @@ public class ExportField extends Field {
   public ExportField(FieldSet fieldSet, long fieldId, SensorType sensorType,
     boolean diagnostic, boolean hasQC, ExportOption exportOption) {
     super(fieldSet, fieldId, sensorType.getName());
-    this.columnHeader = sensorType.getColumnHeader();
+    this.columnHeader = null;
     this.diagnostic = diagnostic;
     this.hasQC = hasQC;
     this.exportOption = exportOption;

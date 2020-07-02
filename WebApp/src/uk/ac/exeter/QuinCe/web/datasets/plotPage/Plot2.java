@@ -34,12 +34,12 @@ public class Plot2 {
   /**
    * The column ID of the X axis
    */
-  private ColumnHeading xAxis = null;
+  private PlotPageColumnHeading xAxis = null;
 
   /**
    * The column ID of the Y axis
    */
-  private ColumnHeading yAxis = null;
+  private PlotPageColumnHeading yAxis = null;
 
   /**
    * The plot values.
@@ -67,8 +67,8 @@ public class Plot2 {
    *          The initial Y axis ID
    * @throws Exception
    */
-  protected Plot2(PlotPage2Data data, ColumnHeading xAxis, ColumnHeading yAxis)
-    throws Exception {
+  protected Plot2(PlotPage2Data data, PlotPageColumnHeading xAxis,
+    PlotPageColumnHeading yAxis) throws Exception {
     this.data = data;
     this.xAxis = xAxis;
     this.yAxis = yAxis;
@@ -192,10 +192,10 @@ public class Plot2 {
 
   public String getDataLabels() {
     List<String> labels = new ArrayList<String>(4);
-    labels.add(xAxis.getHeading());
+    labels.add(xAxis.getShortName());
     labels.add("ID");
     labels.add("GHOST");
-    labels.add(yAxis.getHeading());
+    labels.add(yAxis.getShortName());
 
     return new Gson().toJson(labels);
 
@@ -203,7 +203,7 @@ public class Plot2 {
 
   public String getFlagLabels() {
     List<String> labels = new ArrayList<String>(4);
-    labels.add(xAxis.getHeading());
+    labels.add(xAxis.getShortName());
     labels.add("BAD");
     labels.add("QUESTIONABLE");
     labels.add("NEEDED");

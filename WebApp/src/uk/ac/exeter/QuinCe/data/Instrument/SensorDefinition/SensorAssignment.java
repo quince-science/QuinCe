@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
@@ -19,17 +20,22 @@ public class SensorAssignment {
   /**
    * The data file
    */
-  private String dataFile;
+  private final String dataFile;
 
   /**
    * The column number (zero-based)
    */
-  private int column;
+  private final int column;
+
+  /**
+   * The {@link SensorType} of this assignment
+   */
+  private final SensorType sensorType;
 
   /**
    * The name of the sensor
    */
-  private String sensorName;
+  private final String sensorName;
 
   /**
    * The answer to the Depends Question
@@ -65,12 +71,19 @@ public class SensorAssignment {
    *          The answer to the Depends Question
    * @param missingValue
    *          The missing value String
+   * @throws SensorAssignmentException
    */
-  public SensorAssignment(String dataFile, int column, String sensorName,
-    boolean primary, boolean dependsQuestionAnswer, String missingValue) {
+  public SensorAssignment(String dataFile, int column, SensorType sensorType,
+    String sensorName, boolean primary, boolean dependsQuestionAnswer,
+    String missingValue) throws SensorAssignmentException {
 
     this.dataFile = dataFile;
     this.column = column;
+
+    if (null == sensorType) {
+      throw new SensorAssignmentException("SensorType cannot be null");
+    }
+    this.sensorType = sensorType;
     this.sensorName = sensorName;
     this.primary = primary;
     this.dependsQuestionAnswer = dependsQuestionAnswer;
@@ -100,12 +113,13 @@ public class SensorAssignment {
    *          The missing value String
    */
   public SensorAssignment(long databaseId, String dataFile, int fileColumn,
-    String sensorName, boolean primary, boolean dependsQuestionAnswer,
-    String missingValue) {
+    SensorType sensorType, String sensorName, boolean primary,
+    boolean dependsQuestionAnswer, String missingValue) {
 
     this.databaseId = databaseId;
     this.dataFile = dataFile;
     this.column = fileColumn;
+    this.sensorType = sensorType;
     this.sensorName = sensorName;
     this.primary = primary;
     this.dependsQuestionAnswer = dependsQuestionAnswer;
@@ -295,5 +309,11 @@ public class SensorAssignment {
   @Override
   public String toString() {
     return "ID " + databaseId + ": " + sensorName;
+  }
+
+  public ColumnHeading getColumnHeading() {
+    return new ColumnHeading(databaseId, sensorName,
+      sensorType.getColumnHeading(), sensorType.getCode(),
+      sensorType.getUnits());
   }
 }

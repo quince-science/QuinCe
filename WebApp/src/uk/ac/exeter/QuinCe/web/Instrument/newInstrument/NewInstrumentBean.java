@@ -820,9 +820,14 @@ public class NewInstrumentBean extends FileUploadBean {
    *           If any errors occur
    */
   public void storeSensorAssignment() throws Exception {
+
+    SensorType sensorType = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType(sensorAssignmentSensorType);
+
     SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile,
-      sensorAssignmentColumn, sensorAssignmentName, sensorAssignmentPrimary,
-      sensorAssignmentDependsQuestionAnswer, sensorAssignmentMissingValue);
+      sensorAssignmentColumn, sensorType, sensorAssignmentName,
+      sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer,
+      sensorAssignmentMissingValue);
 
     sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 
@@ -1886,7 +1891,8 @@ public class NewInstrumentBean extends FileUploadBean {
       // TODO This shouldn't have to be a special case
       if (getRunTypeColumn() > -1) {
         SensorAssignment sensorAssignment = new SensorAssignment(
-          getRunTypeFile(), getRunTypeColumn(), "Run Type", true, false, null);
+          getRunTypeFile(), getRunTypeColumn(), SensorType.RUN_TYPE_SENSOR_TYPE,
+          "Run Type", true, false, null);
 
         sensorAssignments.addAssignment(SensorType.RUN_TYPE_ID,
           sensorAssignment);

@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -84,7 +83,13 @@ public class SensorType implements Comparable<SensorType> {
   /**
    * The name of the sensor type
    */
-  private String name;
+  private final String name;
+
+  private final String columnHeading;
+
+  private final String code;
+
+  private final String units;
 
   /**
    * The variable group to which this SensorType belongs
@@ -136,11 +141,6 @@ public class SensorType implements Comparable<SensorType> {
   private boolean systemType = false;
 
   /**
-   * The column header
-   */
-  private ColumnHeader columnHeader;
-
-  /**
    * Determines where this sensor type will be displayed in lists of sensor
    * types
    */
@@ -182,6 +182,9 @@ public class SensorType implements Comparable<SensorType> {
 
     this.id = id;
     this.name = name;
+    this.columnHeading = columnHeading;
+    this.code = columnCode;
+    this.units = units;
     this.group = group;
 
     if (null == parent) {
@@ -237,7 +240,9 @@ public class SensorType implements Comparable<SensorType> {
     this.diagnostic = false;
     this.systemType = true;
     this.displayOrder = displayOrder;
-    this.columnHeader = new ColumnHeader(name, columnCode, units);
+    this.columnHeading = name;
+    this.code = columnCode;
+    this.units = units;
   }
 
   /**
@@ -290,8 +295,9 @@ public class SensorType implements Comparable<SensorType> {
     this.internalCalibration = record.getBoolean(7);
     this.diagnostic = record.getBoolean(8);
     this.displayOrder = record.getInt(9);
-    this.columnHeader = new ColumnHeader(record.getString(12),
-      record.getString(11), record.getString(10));
+    this.columnHeading = record.getString(12);
+    this.code = record.getString(11);
+    this.units = record.getString(10);
   }
 
   /**
@@ -507,10 +513,6 @@ public class SensorType implements Comparable<SensorType> {
     return systemType;
   }
 
-  public ColumnHeader getColumnHeader() {
-    return columnHeader;
-  }
-
   public static boolean isPosition(long id) {
     return (id == LONGITUDE_ID || id == LATITUDE_ID);
   }
@@ -524,5 +526,17 @@ public class SensorType implements Comparable<SensorType> {
    */
   public boolean isSensor() {
     return !isDiagnostic() && !isSystemType() && !isPosition(id);
+  }
+
+  public String getColumnHeading() {
+    return columnHeading;
+  }
+
+  public String getCode() {
+    return code;
+  }
+
+  public String getUnits() {
+    return units;
   }
 }
