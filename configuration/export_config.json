@@ -22,7 +22,7 @@
       "PRESEQABS": "Equilibrator Pressure (absolute) [hPa]",
       "WMXRZZ01": "H2O Mole Fraction [umol mol-1]",
       "PRESEQ": "Pressure in Equilibrator [hPa]",
-      "DELTAT": "Water-Equilibrator Temperature Difference [°C]",
+      "DELTAT": "Water-Equilibrator Temperature Difference [degC]",
       "MWMXRCORR": "Marine True Moisture [umol mol-1]",
       "RH2OX0EQ": "Water Vapour Pressure [hPa]",
       "XCO2WBDY": "xCO2 In Water - Dry Air [umol mol-1]",
@@ -31,7 +31,10 @@
       "AWMXRCORR": "Atmosphere True Moisture [umol mol-1]",
       "CAPAZZ01": "Atmospheric Pressure At Sea Level [hPa]",
       "XCO2DRAT": "xCO2 In Atmoshpere - Dry Air [mol mol-1]",
-      "XCO2DCMA": "xCO2 In Atmosphere - Calibrated In Dry Air [mol mol-1]"
+      "XCO2DCMA": "xCO2 In Atmosphere - Calibrated In Dry Air [mol mol-1]",
+      "LPRES0EQ_equil": "LICOR Pressure (Equilibrator) [hPa]",
+      "LPRES0EQ_atm": "LICOR Pressure (Atmosphere) [hPa]",
+      "CTMPZZ01": "Atmospheric Temperature [degC]"
     }
   },
   {
@@ -68,7 +71,10 @@
       "AWMXRCORR": "Atmosphere True Moisture [umol mol-1]",
       "CAPAZZ01": "Atmospheric Pressure At Sea Level [hPa]",
       "XCO2DRAT": "xCO2 In Atmoshpere - Dry Air [mol mol-1]",
-      "XCO2DCMA": "xCO2 In Atmosphere - Calibrated In Dry Air [mol mol-1]"
+      "XCO2DCMA": "xCO2 In Atmosphere - Calibrated In Dry Air [mol mol-1]",
+      "LPRES0EQ_equil": "LICOR Pressure (Equilibrator) [hPa]",
+      "LPRES0EQ_atm": "LICOR Pressure (Atmosphere) [hPa]",
+      "CTMPZZ01": "Atmospheric Temperature [degC]"
     }
   },
   {
