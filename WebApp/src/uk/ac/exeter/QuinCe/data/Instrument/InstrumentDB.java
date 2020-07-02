@@ -1277,18 +1277,19 @@ public class InstrumentDB {
           long assignmentId = columns.getLong(1);
           int fileColumn = columns.getInt(2);
           boolean primarySensor = columns.getBoolean(3);
-          long sensorType = columns.getLong(4);
+          SensorType sensorType = ResourceManager.getInstance()
+            .getSensorsConfiguration().getSensorType(columns.getLong(4));
           String sensorName = columns.getString(5);
           boolean dependsQuestionAnswer = columns.getBoolean(6);
           String missingValue = columns.getString(7);
 
-          assignments.addAssignment(sensorType,
+          assignments.addAssignment(sensorType.getId(),
             new SensorAssignment(assignmentId, file.getFileDescription(),
-              fileColumn, sensorName, primarySensor, dependsQuestionAnswer,
-              missingValue));
+              fileColumn, sensorType, sensorName, primarySensor,
+              dependsQuestionAnswer, missingValue));
 
           // Add the run type assignments to the file definition
-          if (sensorType == SensorType.RUN_TYPE_ID) {
+          if (sensorType.getId() == SensorType.RUN_TYPE_ID) {
             addFileRunTypes(conn, file, fileColumn);
           }
         }

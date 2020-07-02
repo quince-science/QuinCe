@@ -1,9 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 
 /**
@@ -12,17 +10,7 @@ import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
  * @author Steve Jones
  *
  */
-public class ColumnHeading {
-
-  /**
-   * The column's ID
-   */
-  private final long id;
-
-  /**
-   * The column heading.
-   */
-  private final String heading;
+public class PlotPageColumnHeading extends ColumnHeading {
 
   /**
    * Indicates whether or not the column will hold numeric values.
@@ -63,10 +51,10 @@ public class ColumnHeading {
    * @param numeric
    *          Whether the column is numeric.
    */
-  public ColumnHeading(long id, String heading, boolean numeric,
-    boolean editable) {
-    this.id = id;
-    this.heading = heading;
+  public PlotPageColumnHeading(long id, String shortName, String longName,
+    String codeName, String units, boolean numeric, boolean editable) {
+
+    super(id, shortName, longName, codeName, units);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
@@ -81,10 +69,11 @@ public class ColumnHeading {
    * @param numeric
    *          Whether the column is numeric.
    */
-  public ColumnHeading(long id, String heading, boolean numeric,
-    boolean editable, Double referenceValue) {
-    this.id = id;
-    this.heading = heading;
+  public PlotPageColumnHeading(long id, String shortName, String longName,
+    String codeName, String units, boolean numeric, boolean editable,
+    Double referenceValue) {
+
+    super(id, shortName, longName, codeName, units);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
@@ -99,10 +88,11 @@ public class ColumnHeading {
    * @param numeric
    *          Whether the column is numeric.
    */
-  public ColumnHeading(long id, String heading, boolean numeric,
-    boolean editable, long selectionColumn) {
-    this.id = id;
-    this.heading = heading;
+  public PlotPageColumnHeading(long id, String shortName, String longName,
+    String codeName, String units, boolean numeric, boolean editable,
+    long selectionColumn) {
+
+    super(id, shortName, longName, codeName, units);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = selectionColumn;
@@ -110,21 +100,50 @@ public class ColumnHeading {
   }
 
   /**
-   * Get the column's ID
+   * Construct a plot page heading from a calculation parameter
    *
-   * @return The column ID
+   * @param calculationParameter
+   *          The calculation parameter
    */
-  public long getId() {
-    return id;
+  public PlotPageColumnHeading(CalculationParameter calculationParameter) {
+    super(calculationParameter);
+
+    this.numeric = true;
+    this.editable = false;
+    this.selectionColumn = calculationParameter.getId();
+    this.referenceValue = null;
   }
 
   /**
-   * Get the heading.
+   * Construct a plot page heading from a calculation parameter
    *
-   * @return The heading.
+   * @param calculationParameter
+   *          The calculation parameter
    */
-  public String getHeading() {
-    return heading;
+  public PlotPageColumnHeading(ColumnHeading heading, boolean numeric,
+    boolean editable) {
+
+    super(heading);
+    this.numeric = numeric;
+    this.editable = editable;
+    this.selectionColumn = heading.getId();
+    this.referenceValue = null;
+  }
+
+  /**
+   * Construct a plot page heading from a calculation parameter
+   *
+   * @param calculationParameter
+   *          The calculation parameter
+   */
+  public PlotPageColumnHeading(ColumnHeading heading, boolean numeric,
+    boolean editable, long selectionColumn) {
+
+    super(heading);
+    this.numeric = numeric;
+    this.editable = editable;
+    this.selectionColumn = selectionColumn;
+    this.referenceValue = null;
   }
 
   /**
@@ -155,15 +174,17 @@ public class ColumnHeading {
    *          The {@link #numeric} flag to use for the columns.
    * @param editable
    *          The {@link #editable} flag to use for the columns.
-   * @return The list of {@link ColumnHeading} objects.
+   * @return The list of {@link PlotPageColumnHeading} objects.
    */
-  public static List<ColumnHeading> headingList(Map<String, Long> headings,
-    boolean numeric, boolean editable) {
-
-    return headings.entrySet().stream()
-      .map(x -> new ColumnHeading(x.getValue(), x.getKey(), numeric, editable))
-      .collect(Collectors.toList());
-  }
+  /*
+   * public static List<PlotPageColumnHeading> headingList( Map<String, Long>
+   * headings, boolean numeric, boolean editable) {
+   *
+   * return headings.entrySet().stream() .map(x -> new
+   * PlotPageColumnHeading(x.getValue(), x.getKey(), numeric, editable))
+   * .collect(Collectors.toList()); }
+   *
+   */
 
   public Double getReferenceValue() {
     return referenceValue;

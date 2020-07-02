@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Export;
 
+@Deprecated
 public class ColumnHeader {
 
   private final String heading;

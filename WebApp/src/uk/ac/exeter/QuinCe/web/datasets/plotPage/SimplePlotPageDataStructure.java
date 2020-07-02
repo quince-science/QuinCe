@@ -19,8 +19,8 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * {@link PlotPage2Data}.
  *
  * <p>
- * This is a nested map of {@link LocalDateTime} -> {@link ColumnHeading} ->
- * {@link PlotPageTableColumn}.
+ * This is a nested map of {@link LocalDateTime} ->
+ * {@link PlotPageColumnHeading} -> {@link PlotPageTableColumn}.
  * </p>
  *
  * <p>
@@ -30,7 +30,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * <li>{@link PlotPage2Data#size()} (from the {@link Map} interface)</li>
  * <li>{@link PlotPage2Data#getRowIDs()}</li>
  * <li>{@link PlotPage2Data#generateTableDataRecords(int, int)}</li>
- * <li>{@link PlotPage2Data#getColumnValues(ColumnHeading)}</li>
+ * <li>{@link PlotPage2Data#getColumnValues(PlotPageColumnHeading)}</li>
  * </p>
  *
  * <p>
@@ -47,25 +47,25 @@ public class SimplePlotPageDataStructure {
    */
   private List<Long> rowIds = null;
 
-  private final List<ColumnHeading> columnHeadings;
+  private final List<PlotPageColumnHeading> columnHeadings;
 
-  private final ColumnHeading timeHeading;
+  private final PlotPageColumnHeading timeHeading;
 
   /**
    * The main data structure, with columns organised by date and column
    */
-  private TreeMap<LocalDateTime, LinkedHashMap<ColumnHeading, PlotPageTableColumn>> pageData;
+  private TreeMap<LocalDateTime, LinkedHashMap<PlotPageColumnHeading, PlotPageTableColumn>> pageData;
 
-  public SimplePlotPageDataStructure(List<ColumnHeading> columnHeadings) {
-    pageData = new TreeMap<LocalDateTime, LinkedHashMap<ColumnHeading, PlotPageTableColumn>>();
-    this.columnHeadings = Collections.unmodifiableList(columnHeadings);
+  public SimplePlotPageDataStructure(List<PlotPageColumnHeading> list) {
+    pageData = new TreeMap<LocalDateTime, LinkedHashMap<PlotPageColumnHeading, PlotPageTableColumn>>();
+    this.columnHeadings = Collections.unmodifiableList(list);
     timeHeading = getTimeHeading();
   }
 
   private void addTime(LocalDateTime time) {
 
     // Create an empty map of all the columns
-    LinkedHashMap<ColumnHeading, PlotPageTableColumn> columns = new LinkedHashMap<ColumnHeading, PlotPageTableColumn>();
+    LinkedHashMap<PlotPageColumnHeading, PlotPageTableColumn> columns = new LinkedHashMap<PlotPageColumnHeading, PlotPageTableColumn>();
     columnHeadings.forEach(x -> columns.put(x, null));
 
     if (null != timeHeading) {
@@ -117,12 +117,12 @@ public class SimplePlotPageDataStructure {
   }
 
   public TreeMap<LocalDateTime, PlotPageTableColumn> getColumnValues(
-    ColumnHeading column) throws Exception {
+    PlotPageColumnHeading column) throws Exception {
 
     TreeMap<LocalDateTime, PlotPageTableColumn> result = new TreeMap<LocalDateTime, PlotPageTableColumn>();
 
     for (LocalDateTime time : pageData.keySet()) {
-      for (ColumnHeading heading : pageData.get(time).keySet()) {
+      for (PlotPageColumnHeading heading : pageData.get(time).keySet()) {
         if (heading.equals(column)) {
           result.put(time, pageData.get(time).get(column));
           break;
@@ -143,7 +143,7 @@ public class SimplePlotPageDataStructure {
    * @param value
    *          The value
    */
-  public void add(LocalDateTime time, ColumnHeading heading,
+  public void add(LocalDateTime time, PlotPageColumnHeading heading,
     PlotPageTableColumn value) {
 
     if (!pageData.containsKey(time)) {
@@ -157,8 +157,8 @@ public class SimplePlotPageDataStructure {
     pageData.get(time).put(heading, value);
   }
 
-  public void add(LocalDateTime time, ColumnHeading heading, SensorValue value,
-    boolean used) throws RoutineException {
+  public void add(LocalDateTime time, PlotPageColumnHeading heading,
+    SensorValue value, boolean used) throws RoutineException {
 
     if (!pageData.containsKey(time)) {
       // Create the time entry
@@ -172,14 +172,14 @@ public class SimplePlotPageDataStructure {
       new SensorValuePlotPageTableColumn(value, used));
   }
 
-  private ColumnHeading getTimeHeading() {
+  private PlotPageColumnHeading getTimeHeading() {
     return getHeading(FileDefinition.TIME_COLUMN_ID);
   }
 
-  private ColumnHeading getHeading(long columnId) {
-    ColumnHeading result = null;
+  private PlotPageColumnHeading getHeading(long columnId) {
+    PlotPageColumnHeading result = null;
 
-    for (ColumnHeading heading : columnHeadings) {
+    for (PlotPageColumnHeading heading : columnHeadings) {
       if (heading.getId() == columnId) {
         result = heading;
         break;
@@ -198,11 +198,12 @@ public class SimplePlotPageDataStructure {
 
     List<SensorValue> result = new ArrayList<SensorValue>(times.size());
 
-    ColumnHeading heading = getHeading(columnId);
+    PlotPageColumnHeading heading = getHeading(columnId);
 
     for (LocalDateTime time : times) {
 
-      Map<ColumnHeading, PlotPageTableColumn> timeEntry = pageData.get(time);
+      Map<PlotPageColumnHeading, PlotPageTableColumn> timeEntry = pageData
+        .get(time);
       if (null != timeEntry) {
         PlotPageTableColumn column = timeEntry.get(heading);
         if (null != column) {

@@ -222,6 +222,12 @@ public class IsAssignmentRequiredTests extends TestSetTest {
     ResourceManager.destroy();
   }
 
+  private static SensorType getTestSensorType()
+    throws SensorTypeNotFoundException {
+    return ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("Intake Temperature");
+  }
+
   /**
    * Test the {@link SensorAssignments#isAssignmentRequired(SensorType)} method.
    *
@@ -441,8 +447,8 @@ public class IsAssignmentRequiredTests extends TestSetTest {
         }
 
         SensorAssignment assignment = new SensorAssignment(
-          SensorAssignmentsTest.DATA_FILE_NAME, 5, "Assignment", true,
-          dependsQuestionAnswer, null);
+          SensorAssignmentsTest.DATA_FILE_NAME, 5, getTestSensorType(),
+          "Assignment", true, dependsQuestionAnswer, null);
         assignments.addAssignment(getSensorTypeId(dependentTypeName),
           assignment);
       }
@@ -455,8 +461,8 @@ public class IsAssignmentRequiredTests extends TestSetTest {
         }
 
         SensorAssignment assignment = new SensorAssignment(
-          SensorAssignmentsTest.DATA_FILE_NAME, 6, "Assignment", true,
-          dependsQuestionAnswer, null);
+          SensorAssignmentsTest.DATA_FILE_NAME, 6, getTestSensorType(),
+          "Assignment", true, dependsQuestionAnswer, null);
         assignments.addAssignment(getSensorTypeId(dependentTypeName),
           assignment);
       }

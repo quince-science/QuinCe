@@ -2,12 +2,18 @@ package junit.uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Tests for the {@link SensorAssignment} class.
@@ -26,9 +32,22 @@ public class SensorAssignmentTest {
    * </p>
    *
    * @return The constructed {@link SensorAssignment}
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
-  private SensorAssignment getNoIdFalsesAssignment() {
-    return new SensorAssignment("Data File", 1, "Sensor", false, false, "NaN");
+  private SensorAssignment getNoIdFalsesAssignment()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    MissingParamException, SensorConfigurationException {
+    return new SensorAssignment("Data File", 1, getTestSensorType(), "Sensor",
+      false, false, "NaN");
+  }
+
+  private SensorType getTestSensorType() throws SensorTypeNotFoundException,
+    MissingParamException, SensorConfigurationException {
+    return new SensorType(1L, "Test Sensor", "Test Group", null, null, null,
+      false, false, 0, "units", "code", "heading");
   }
 
   /**
@@ -44,12 +63,19 @@ public class SensorAssignmentTest {
   /**
    * Tests that a {@link SensorAssignment} with no database ID is correctly
    * constructed.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void noIdConstructorTest() {
+  public void noIdConstructorTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    MissingParamException, SensorConfigurationException {
 
-    SensorAssignment assignment = new SensorAssignment("Data File", 1, "Sensor",
-      false, false, "NaN");
+    SensorAssignment assignment = new SensorAssignment("Data File", 1,
+      getTestSensorType(), "Sensor", false, false, "NaN");
 
     assertEquals(DatabaseUtils.NO_DATABASE_RECORD, assignment.getDatabaseId());
     assertEquals("Data File", assignment.getDataFile());
@@ -63,11 +89,16 @@ public class SensorAssignmentTest {
   /**
    * Tests that a {@link SensorAssignment} with a database ID is correctly
    * constructed.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void idConstructorTest() {
+  public void idConstructorTest() throws SensorTypeNotFoundException,
+    MissingParamException, SensorConfigurationException {
     SensorAssignment assignment = new SensorAssignment(1, "Data File", 4,
-      "Sensor", false, false, "NaN");
+      getTestSensorType(), "Sensor", false, false, "NaN");
 
     assertEquals(1, assignment.getDatabaseId());
     assertEquals("Data File", assignment.getDataFile());
@@ -81,11 +112,18 @@ public class SensorAssignmentTest {
   /**
    * Tests that a {@link SensorAssignment} with both Primary and Depends
    * Question Answer attributes set to {@code true} is correctly constructed.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void noIdTrueValuesConstructorTest() {
-    SensorAssignment assignment = new SensorAssignment("Data File", 1, "Sensor",
-      true, true, "NaN");
+  public void noIdTrueValuesConstructorTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    MissingParamException, SensorConfigurationException {
+    SensorAssignment assignment = new SensorAssignment("Data File", 1,
+      getTestSensorType(), "Sensor", true, true, "NaN");
 
     assertTrue(assignment.isPrimary());
     assertTrue(assignment.getDependsQuestionAnswer());
@@ -94,11 +132,16 @@ public class SensorAssignmentTest {
   /**
    * Tests that a {@link SensorAssignment} with both Primary and Depends
    * Question Answer attributes set to {@code false} is correctly constructed.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void idTrueValuesConstructorTest() {
+  public void idTrueValuesConstructorTest() throws SensorTypeNotFoundException,
+    MissingParamException, SensorConfigurationException {
     SensorAssignment assignment = new SensorAssignment(1, "Data File", 4,
-      "Sensor", true, true, "NaN");
+      getTestSensorType(), "Sensor", true, true, "NaN");
 
     assertTrue(assignment.isPrimary());
     assertTrue(assignment.getDependsQuestionAnswer());
@@ -107,20 +150,49 @@ public class SensorAssignmentTest {
   /**
    * Tests that a {@link SensorAssignment} with a Sensor Name of {@code null} is
    * converted to an empty {@link String}.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void nullSensorNameTest() {
-    SensorAssignment assignment = new SensorAssignment("Data File", 1, null,
-      false, false, "Missing");
+  public void nullSensorNameTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    MissingParamException, SensorConfigurationException {
+    SensorAssignment assignment = new SensorAssignment("Data File", 1,
+      getTestSensorType(), null, false, false, "Missing");
 
     assertEquals("", assignment.getSensorName());
   }
 
   /**
-   * Test that the database ID for a {@link SensorAssignment} can be set.
+   * Tests that a {@link SensorAssignment} with a Sensor Name of {@code null} is
+   * converted to an empty {@link String}.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
    */
   @Test
-  public void setDatabaseIdTest() {
+  public void nullSensorTypeTest() {
+
+    assertThrows(SensorAssignmentException.class, () -> {
+      new SensorAssignment("Data File", 1, null, null, false, false, "Missing");
+    });
+  }
+
+  /**
+   * Test that the database ID for a {@link SensorAssignment} can be set.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
+   */
+  @Test
+  public void setDatabaseIdTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    MissingParamException, SensorConfigurationException {
     SensorAssignment assignment = getNoIdFalsesAssignment();
     assignment.setDatabaseId(77);
     assertEquals(77, assignment.getDatabaseId());
@@ -129,9 +201,16 @@ public class SensorAssignmentTest {
   /**
    * Test that the Depends Question Answer for a {@link SensorAssignment} can be
    * set.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void setDependsQuestionAnswerTest() {
+  public void setDependsQuestionAnswerTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    MissingParamException, SensorConfigurationException {
     SensorAssignment assignment = getNoIdFalsesAssignment();
     assignment.setDependsQuestionAnswer(true);
     assertTrue(assignment.getDependsQuestionAnswer());
@@ -139,9 +218,16 @@ public class SensorAssignmentTest {
 
   /**
    * Test that the Missing Value for a {@link SensorAssignment} can be set.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void setMissingValueTest() {
+  public void setMissingValueTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    MissingParamException, SensorConfigurationException {
     SensorAssignment assignment = getNoIdFalsesAssignment();
     assignment.setMissingValue("Missing");
     assertEquals("Missing", assignment.getMissingValue());
@@ -150,9 +236,16 @@ public class SensorAssignmentTest {
   /**
    * Test that the human-readable target {@link String} for a
    * {@link SensorAssignment} can be retrieved and is correct.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void getTargetTest() {
+  public void getTargetTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    MissingParamException, SensorConfigurationException {
     SensorAssignment assignment = getNoIdFalsesAssignment();
     assertEquals("Data File: Sensor", assignment.getTarget());
   }
@@ -161,31 +254,50 @@ public class SensorAssignmentTest {
    * Test that the constructor for a {@link SensorAssignment} with no database
    * ID correctly converts a {@code null} Missing Value to an empty
    * {@link String}.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void constructor1MissingValueTest() {
-    SensorAssignment assignment = new SensorAssignment("Data File", 1, "Sensor",
-      false, false, null);
+  public void constructor1MissingValueTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    MissingParamException, SensorConfigurationException {
+    SensorAssignment assignment = new SensorAssignment("Data File", 1,
+      getTestSensorType(), "Sensor", false, false, null);
     assertEquals("", assignment.getMissingValue());
   }
 
   /**
    * Test that the constructor for a {@link SensorAssignment} with a database ID
    * correctly converts a {@code null} Missing Value to an empty {@link String}.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void constructor2MissingValueTest() {
+  public void constructor2MissingValueTest() throws SensorTypeNotFoundException,
+    MissingParamException, SensorConfigurationException {
     SensorAssignment assignment = new SensorAssignment(1, "Data File", 1,
-      "Sensor", false, false, null);
+      getTestSensorType(), "Sensor", false, false, null);
     assertEquals("", assignment.getMissingValue());
   }
 
   /**
    * Test that setting the Missing Value to {@code null} correctly converts it
    * to an empty {@link String}.
+   *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorConfigurationException
+   * @throws MissingParamException
    */
   @Test
-  public void setNullMissingValueTest() {
+  public void setNullMissingValueTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    MissingParamException, SensorConfigurationException {
     SensorAssignment assignment = getNoIdFalsesAssignment();
     assignment.setMissingValue(null);
     assertEquals("", assignment.getMissingValue());

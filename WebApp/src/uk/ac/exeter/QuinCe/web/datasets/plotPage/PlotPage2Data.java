@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -19,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -71,12 +73,12 @@ public abstract class PlotPage2Data {
   /**
    * The column headers for the data
    */
-  protected LinkedHashMap<String, List<ColumnHeading>> columnHeadings = null;
+  protected LinkedHashMap<String, List<PlotPageColumnHeading>> columnHeadings = null;
 
   /**
    * The extended column headers for the data
    */
-  protected LinkedHashMap<String, List<ColumnHeading>> extendedColumnHeadings = null;
+  protected LinkedHashMap<String, List<PlotPageColumnHeading>> extendedColumnHeadings = null;
 
   /**
    * Indicates whether or not data has been loaded.
@@ -210,7 +212,7 @@ public abstract class PlotPage2Data {
    * @return The column headings
    * @throws Exception
    */
-  public LinkedHashMap<String, List<ColumnHeading>> getColumnHeadings()
+  public LinkedHashMap<String, List<PlotPageColumnHeading>> getColumnHeadings()
     throws Exception {
     if (null == columnHeadings) {
       buildColumnHeadings();
@@ -250,7 +252,7 @@ public abstract class PlotPage2Data {
    * @return The column headings
    * @throws Exception
    */
-  public LinkedHashMap<String, List<ColumnHeading>> getExtendedColumnHeadings()
+  public LinkedHashMap<String, List<PlotPageColumnHeading>> getExtendedColumnHeadings()
     throws Exception {
     if (null == extendedColumnHeadings) {
       buildColumnHeadings();
@@ -309,7 +311,7 @@ public abstract class PlotPage2Data {
   }
 
   private String buildColumnHeadingsJson(
-    LinkedHashMap<String, List<ColumnHeading>> headings) {
+    LinkedHashMap<String, List<PlotPageColumnHeading>> headings) {
 
     String result = null;
 
@@ -320,7 +322,7 @@ public abstract class PlotPage2Data {
         headings.size());
 
       if (validateColumnHeadings(headings)) {
-        for (Map.Entry<String, List<ColumnHeading>> group : headings
+        for (Map.Entry<String, List<PlotPageColumnHeading>> group : headings
           .entrySet()) {
           jsonGroups.add(new JsonColumnGroup(group));
         }
@@ -355,7 +357,7 @@ public abstract class PlotPage2Data {
     LinkedHashMap<String, Integer> result = new LinkedHashMap<String, Integer>();
 
     int nextColumn = 0;
-    for (Map.Entry<String, List<ColumnHeading>> groupEntry : getColumnHeadings()
+    for (Map.Entry<String, List<PlotPageColumnHeading>> groupEntry : getColumnHeadings()
       .entrySet()) {
 
       if (!groupEntry.getKey().equals(ROOT_FIELD_GROUP)) {
@@ -375,7 +377,7 @@ public abstract class PlotPage2Data {
    * @return {@code true} if the column headings are valid; {@code false} if not
    */
   private boolean validateColumnHeadings(
-    LinkedHashMap<String, List<ColumnHeading>> headings) {
+    LinkedHashMap<String, List<PlotPageColumnHeading>> headings) {
 
     boolean valid = true;
 
@@ -384,7 +386,8 @@ public abstract class PlotPage2Data {
       error("No column headings available");
       valid = false;
     } else {
-      for (Map.Entry<String, List<ColumnHeading>> group : headings.entrySet()) {
+      for (Map.Entry<String, List<PlotPageColumnHeading>> group : headings
+        .entrySet()) {
 
         // A column group name cannot be null or empty
         if (StringUtils.isBlank(group.getKey())) {
@@ -392,7 +395,7 @@ public abstract class PlotPage2Data {
           valid = false;
         }
 
-        List<ColumnHeading> groupColumns = group.getValue();
+        List<PlotPageColumnHeading> groupColumns = group.getValue();
 
         // Each column group must contain at least one column
         if (null == groupColumns || groupColumns.size() == 0) {
@@ -402,7 +405,7 @@ public abstract class PlotPage2Data {
 
           for (int i = 0; i < groupColumns.size(); i++) {
 
-            String columnName = groupColumns.get(i).getHeading();
+            String columnName = groupColumns.get(i).getShortName();
 
             // Blank column is not allowed
             if (StringUtils.isBlank(columnName)) {
@@ -414,14 +417,14 @@ public abstract class PlotPage2Data {
 
               // Longitude must be followed by Latitude
               if (i + 1 == groupColumns.size() || !groupColumns.get(i + 1)
-                .getHeading().equals(FileDefinition.LATITUDE_COLUMN_NAME)) {
+                .getShortName().equals(FileDefinition.LATITUDE_COLUMN_NAME)) {
                 error("Invalid position columns",
                   new Exception("Longitude must be followed by Latitude"));
               }
             } else if (columnName.equals(FileDefinition.LATITUDE_COLUMN_NAME)) {
 
               // Latitude must be preceded by Longitude
-              if (i == 0 || !groupColumns.get(i - 1).getHeading()
+              if (i == 0 || !groupColumns.get(i - 1).getShortName()
                 .equals(FileDefinition.LONGITUDE_COLUMN_NAME)) {
 
                 error("Invalid position columns",
@@ -440,11 +443,11 @@ public abstract class PlotPage2Data {
 
     boolean editable = false;
 
-    Map<String, List<ColumnHeading>> columnHeadings = getColumnHeadings();
+    Map<String, List<PlotPageColumnHeading>> columnHeadings = getColumnHeadings();
 
-    mainLoop: for (List<ColumnHeading> groupHeadings : columnHeadings
+    mainLoop: for (List<PlotPageColumnHeading> groupHeadings : columnHeadings
       .values()) {
-      for (ColumnHeading heading : groupHeadings) {
+      for (PlotPageColumnHeading heading : groupHeadings) {
         if (heading.getId() == columnId) {
           editable = heading.canEdit();
           break mainLoop;
@@ -603,12 +606,11 @@ public abstract class PlotPage2Data {
 
     protected String group;
 
-    protected List<ColumnHeading> headings;
+    protected List<PlotPageColumnHeading> headings;
 
-    private JsonColumnGroup(
-      Map.Entry<String, List<ColumnHeading>> headingGroup) {
-      this.group = headingGroup.getKey();
-      this.headings = headingGroup.getValue();
+    private JsonColumnGroup(Entry<String, List<PlotPageColumnHeading>> group2) {
+      this.group = group2.getKey();
+      this.headings = group2.getValue();
     }
   }
 
@@ -793,7 +795,7 @@ public abstract class PlotPage2Data {
    * @return The column values.
    */
   protected abstract TreeMap<LocalDateTime, PlotPageTableColumn> getColumnValues(
-    ColumnHeading column) throws Exception;
+    PlotPageColumnHeading column) throws Exception;
 
   /**
    * Get the {@link ColumnHeading} for the specified column ID.
@@ -803,14 +805,15 @@ public abstract class PlotPage2Data {
    * @return The column heading.
    * @throws Exception
    */
-  public ColumnHeading getColumnHeading(long columnId) throws Exception {
+  public PlotPageColumnHeading getColumnHeading(long columnId)
+    throws Exception {
 
-    ColumnHeading result = null;
+    PlotPageColumnHeading result = null;
 
-    LinkedHashMap<String, List<ColumnHeading>> headings = getExtendedColumnHeadings();
+    LinkedHashMap<String, List<PlotPageColumnHeading>> headings = getExtendedColumnHeadings();
 
     outer: for (String group : headings.keySet()) {
-      for (ColumnHeading heading : headings.get(group)) {
+      for (PlotPageColumnHeading heading : headings.get(group)) {
         if (heading.getId() == columnId) {
           result = heading;
           break outer;
@@ -821,13 +824,13 @@ public abstract class PlotPage2Data {
     return result;
   }
 
-  protected ColumnHeading getDefaultXAxis() throws Exception {
+  protected PlotPageColumnHeading getDefaultXAxis() throws Exception {
     return getColumnHeadings().get(ROOT_FIELD_GROUP).get(0);
   }
 
-  protected abstract ColumnHeading getDefaultYAxis1() throws Exception;
+  protected abstract PlotPageColumnHeading getDefaultYAxis1() throws Exception;
 
-  protected abstract ColumnHeading getDefaultYAxis2() throws Exception;
+  protected abstract PlotPageColumnHeading getDefaultYAxis2() throws Exception;
 
   /**
    * Get all the column headings as an unstructured list, i.e. not in their
@@ -836,8 +839,9 @@ public abstract class PlotPage2Data {
    * @return The column headings.
    * @throws Exception
    */
-  protected List<ColumnHeading> getColumnHeadingsList() throws Exception {
-    List<ColumnHeading> headings = new ArrayList<ColumnHeading>();
+  protected List<PlotPageColumnHeading> getColumnHeadingsList()
+    throws Exception {
+    List<PlotPageColumnHeading> headings = new ArrayList<PlotPageColumnHeading>();
     getColumnHeadings().values().forEach(x -> headings.addAll(x));
     return headings;
   }

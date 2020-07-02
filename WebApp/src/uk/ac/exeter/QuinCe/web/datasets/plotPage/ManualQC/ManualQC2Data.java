@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -37,9 +36,9 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTableColumn;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableColumn;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableColumn;
@@ -154,26 +153,30 @@ public class ManualQC2Data extends PlotPage2Data {
   @Override
   protected void buildColumnHeadings() {
 
-    columnHeadings = new LinkedHashMap<String, List<ColumnHeading>>();
-    extendedColumnHeadings = new LinkedHashMap<String, List<ColumnHeading>>();
+    columnHeadings = new LinkedHashMap<String, List<PlotPageColumnHeading>>();
+    extendedColumnHeadings = new LinkedHashMap<String, List<PlotPageColumnHeading>>();
 
     // Time and Position
-    List<ColumnHeading> rootColumns = new ArrayList<ColumnHeading>(3);
-    rootColumns.add(new ColumnHeading(FileDefinition.TIME_COLUMN_ID,
-      FileDefinition.TIME_COLUMN_NAME, false, false));
-    rootColumns.add(new ColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
-      "Position", false, true));
+    List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
+      3);
+    rootColumns.add(new PlotPageColumnHeading(
+      FileDefinition.TIME_COLUMN_HEADING, false, false));
+    rootColumns
+      .add(new PlotPageColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
+        "Position", "Position", "POSITION", null, false, true));
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
 
     // Extended Time and Position
-    List<ColumnHeading> extendedRootColumns = new ArrayList<ColumnHeading>(3);
-    extendedRootColumns.add(new ColumnHeading(FileDefinition.TIME_COLUMN_ID,
-      FileDefinition.TIME_COLUMN_NAME, false, false));
-    extendedRootColumns.add(new ColumnHeading(
-      FileDefinition.LONGITUDE_COLUMN_ID, "Longitude", false, true));
-    extendedRootColumns.add(new ColumnHeading(FileDefinition.LATITUDE_COLUMN_ID,
-      "Latitude", false, true, FileDefinition.LONGITUDE_COLUMN_ID));
+    List<PlotPageColumnHeading> extendedRootColumns = new ArrayList<PlotPageColumnHeading>(
+      3);
+    extendedRootColumns.add(new PlotPageColumnHeading(
+      FileDefinition.TIME_COLUMN_HEADING, false, false));
+    extendedRootColumns.add(new PlotPageColumnHeading(
+      FileDefinition.LONGITUDE_COLUMN_HEADING, false, true));
+    extendedRootColumns
+      .add(new PlotPageColumnHeading(FileDefinition.LATITUDE_COLUMN_HEADING,
+        false, true, FileDefinition.LONGITUDE_COLUMN_ID));
 
     extendedColumnHeadings.put(ROOT_FIELD_GROUP, extendedRootColumns);
 
@@ -199,15 +202,15 @@ public class ManualQC2Data extends PlotPage2Data {
       }
     }
 
-    List<ColumnHeading> sensorColumnHeadings = new ArrayList<ColumnHeading>(
+    List<PlotPageColumnHeading> sensorColumnHeadings = new ArrayList<PlotPageColumnHeading>(
       sensorColumns.size());
     sensorColumnIds = new long[sensorColumns.size()];
 
     for (int i = 0; i < sensorColumns.size(); i++) {
 
       SensorAssignment column = sensorColumns.get(i);
-      sensorColumnHeadings.add(new ColumnHeading(column.getDatabaseId(),
-        column.getSensorName(), true, true));
+      sensorColumnHeadings
+        .add(new PlotPageColumnHeading(column.getColumnHeading(), true, true));
       sensorColumnIds[i] = column.getDatabaseId();
     }
 
@@ -216,15 +219,15 @@ public class ManualQC2Data extends PlotPage2Data {
 
     diagnosticColumnIds = new long[diagnosticColumns.size()];
     if (diagnosticColumns.size() > 0) {
-      List<ColumnHeading> diagnosticColumnNames = new ArrayList<ColumnHeading>(
+      List<PlotPageColumnHeading> diagnosticColumnNames = new ArrayList<PlotPageColumnHeading>(
         diagnosticColumns.size());
 
       for (int i = 0; i < diagnosticColumns.size(); i++) {
 
         SensorAssignment column = diagnosticColumns.get(i);
 
-        diagnosticColumnNames.add(new ColumnHeading(column.getDatabaseId(),
-          column.getSensorName(), true, true));
+        diagnosticColumnNames.add(
+          new PlotPageColumnHeading(column.getColumnHeading(), true, true));
         diagnosticColumnIds[i] = column.getDatabaseId();
       }
 
@@ -236,11 +239,16 @@ public class ManualQC2Data extends PlotPage2Data {
     // Each of the instrument variables
     for (InstrumentVariable variable : instrument.getVariables()) {
       try {
-        List<ColumnHeading> variableHeadings = ColumnHeading.headingList(
-          DataReducerFactory.getCalculationParameters(variable), true, false);
+        List<CalculationParameter> variableHeadings = DataReducerFactory
+          .getCalculationParameters(variable, true);
 
-        columnHeadings.put(variable.getName(), variableHeadings);
-        extendedColumnHeadings.put(variable.getName(), variableHeadings);
+        List<PlotPageColumnHeading> variableQCHeadings = new ArrayList<PlotPageColumnHeading>(
+          variableHeadings.size());
+        variableHeadings.stream()
+          .forEach(x -> variableQCHeadings.add(new PlotPageColumnHeading(x)));
+
+        columnHeadings.put(variable.getName(), variableQCHeadings);
+        extendedColumnHeadings.put(variable.getName(), variableQCHeadings);
       } catch (DataReductionException e) {
         error("Error getting variable headers", e);
       }
@@ -347,13 +355,13 @@ public class ManualQC2Data extends PlotPage2Data {
             .get(variable);
 
           if (null != variableDataReduction) {
-            Set<String> params = DataReducerFactory
-              .getCalculationParameters(variable).keySet();
+            List<CalculationParameter> params = DataReducerFactory
+              .getCalculationParameters(variable, true);
 
-            for (String param : params) {
+            for (CalculationParameter param : params) {
               record.addColumn(
-                String
-                  .valueOf(variableDataReduction.getCalculationValue(param)),
+                String.valueOf(variableDataReduction
+                  .getCalculationValue(param.getShortName())),
                 false, variableDataReduction.getQCFlag(),
                 variableDataReduction.getQCMessages().toString(), false);
             }
@@ -666,7 +674,7 @@ public class ManualQC2Data extends PlotPage2Data {
 
   @Override
   protected TreeMap<LocalDateTime, PlotPageTableColumn> getColumnValues(
-    ColumnHeading column) throws Exception {
+    PlotPageColumnHeading column) throws Exception {
 
     TreeMap<LocalDateTime, PlotPageTableColumn> result = new TreeMap<LocalDateTime, PlotPageTableColumn>();
 
@@ -723,7 +731,7 @@ public class ManualQC2Data extends PlotPage2Data {
         if (null != record) {
           result.put(measurement.getKey(),
             new DataReductionRecordPlotPageTableColumn(record,
-              parameter.getName()));
+              parameter.getShortName()));
         }
       }
     }
@@ -732,15 +740,15 @@ public class ManualQC2Data extends PlotPage2Data {
   }
 
   @Override
-  protected ColumnHeading getDefaultYAxis1() {
+  protected PlotPageColumnHeading getDefaultYAxis1() {
     // The first sensor
     return columnHeadings.get(SENSORS_FIELD_GROUP).get(0);
   }
 
   @Override
-  protected ColumnHeading getDefaultYAxis2() throws Exception {
+  protected PlotPageColumnHeading getDefaultYAxis2() throws Exception {
 
-    ColumnHeading result = null;
+    PlotPageColumnHeading result = null;
 
     // The core sensor value for the first variable, or if there isn't one,
     // The second sensor

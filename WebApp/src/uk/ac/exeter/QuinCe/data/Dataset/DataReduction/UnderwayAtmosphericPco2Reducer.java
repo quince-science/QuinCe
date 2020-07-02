@@ -18,22 +18,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
  */
 public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
-  private static List<CalculationParameter> calculationParameters;
-
-  static {
-    calculationParameters = new ArrayList<CalculationParameter>(7);
-    calculationParameters.add(new CalculationParameter("Sea Level Pressure",
-      "Atmospheric Pressure At Sea Level", "CAPAZZ01", "hPa", false));
-    calculationParameters.add(new CalculationParameter("pH₂O",
-      "Atmosphere Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
-    calculationParameters.add(new CalculationParameter("Calibrated CO₂",
-      "xCO₂ In Atmosphere - Calibrated In Dry Air", "XCO2DCMA", "μmol mol-1",
-      false));
-    calculationParameters.add(new CalculationParameter("pCO₂",
-      "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
-    calculationParameters.add(new CalculationParameter("fCO₂",
-      "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true));
-  }
+  private static List<CalculationParameter> calculationParameters = null;
 
   public UnderwayAtmosphericPco2Reducer(InstrumentVariable variable,
     Map<String, Float> variableAttributes) {
@@ -80,6 +65,22 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   @Override
   public List<CalculationParameter> getCalculationParameters() {
+    if (null == calculationParameters) {
+      calculationParameters = new ArrayList<CalculationParameter>(5);
+      calculationParameters
+        .add(new CalculationParameter(makeParameterId(0), "Sea Level Pressure",
+          "Atmospheric Pressure At Sea Level", "CAPAZZ01", "hPa", false));
+      calculationParameters.add(new CalculationParameter(makeParameterId(1),
+        "pH₂O", "Atmosphere Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
+      calculationParameters.add(new CalculationParameter(makeParameterId(2),
+        "Calibrated CO₂", "xCO₂ In Atmosphere - Calibrated In Dry Air",
+        "XCO2DCMA", "μmol mol-1", false));
+      calculationParameters.add(new CalculationParameter(makeParameterId(3),
+        "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
+      calculationParameters.add(new CalculationParameter(makeParameterId(4),
+        "fCO₂", "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true));
+    }
+
     return calculationParameters;
   }
 }
