@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
@@ -36,6 +37,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
   public static final String TIME_COLUMN_NAME = "Time";
 
   /**
+   * The application-wide standard time column heading
+   */
+  public static final ColumnHeading TIME_COLUMN_HEADING;
+
+  /**
    * Special column ID for longitude, because it's not defined in the
    * file_column dataset
    *
@@ -49,6 +55,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
   public static final String LONGITUDE_COLUMN_NAME = "Longitude";
 
   /**
+   * The application-wide standard longitude column heading
+   */
+  public static final ColumnHeading LONGITUDE_COLUMN_HEADING;
+
+  /**
    * Special column ID for latitude
    *
    * @see uk.ac.exeter.QuinCe.web.datasets.data.FieldSets#POSITION_FIELD_ID
@@ -59,6 +70,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * Fixed name for the Latitude column
    */
   public static final String LATITUDE_COLUMN_NAME = "Latitude";
+
+  /**
+   * The application-wide standard longitude column heading
+   */
+  public static final ColumnHeading LATITUDE_COLUMN_HEADING;
 
   /**
    * The name of the Run Type column
@@ -183,6 +199,13 @@ public class FileDefinition implements Comparable<FileDefinition> {
     SEPARATOR_LOOKUP.put("COMMA", ",");
     SEPARATOR_LOOKUP.put("SEMICOLON", ";");
     SEPARATOR_LOOKUP.put("SPACE", " ");
+
+    TIME_COLUMN_HEADING = new ColumnHeading(TIME_COLUMN_ID, TIME_COLUMN_NAME,
+      TIME_COLUMN_NAME, "STRT8601", null);
+    LONGITUDE_COLUMN_HEADING = new ColumnHeading(LONGITUDE_COLUMN_ID,
+      LONGITUDE_COLUMN_NAME, LONGITUDE_COLUMN_NAME, "ALONGP01", "degrees_east");
+    LATITUDE_COLUMN_HEADING = new ColumnHeading(LATITUDE_COLUMN_ID,
+      LATITUDE_COLUMN_NAME, LATITUDE_COLUMN_NAME, "ALATGP01", "degrees_north");
   }
 
   /**

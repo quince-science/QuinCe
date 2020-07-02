@@ -162,7 +162,7 @@ public abstract class DataReducer {
    */
   protected List<String> getCalculationParameterNames() {
     return getCalculationParameters().stream()
-      .map(CalculationParameter::getName).collect(Collectors.toList());
+      .map(CalculationParameter::getShortName).collect(Collectors.toList());
   }
 
   /**
@@ -296,4 +296,8 @@ public abstract class DataReducer {
   protected abstract String[] getRequiredTypeStrings();
 
   public abstract List<CalculationParameter> getCalculationParameters();
+
+  protected long makeParameterId(int parameterNumber) {
+    return DataReducerFactory.makeParameterId(variable, parameterNumber);
+  }
 }

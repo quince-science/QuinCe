@@ -16,7 +16,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
@@ -490,20 +489,21 @@ public class ManualQcBean extends PlotPageBean {
       // Data reduction columns
       for (InstrumentVariable variable : getCurrentInstrument()
         .getVariables()) {
-        LinkedHashMap<String, Long> variableParameters = DataReducerFactory
-          .getCalculationParameters(variable);
+
+        // LinkedHashMap<String, Long> variableParameters = DataReducerFactory
+        // .getCalculationParameters(variable);
 
         FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(),
           variable.getName(), false);
 
         // Columns from data reduction are given IDs based on the
         // variable ID and parameter number
-        for (Map.Entry<String, Long> entry : variableParameters.entrySet()) {
-
-          fieldSets
-            .addField(new Field(varFieldSet, entry.getValue(), entry.getKey()));
-        }
-      }
+        /*
+         * for (Map.Entry<String, Long> entry : variableParameters.entrySet()) {
+         *
+         * fieldSets .addField(new Field(varFieldSet, entry.getValue(),
+         * entry.getKey())); }
+         */ }
 
       pageData = new ManualQCPageData(getCurrentInstrument(), fieldSets,
         dataset);

@@ -3,10 +3,9 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -106,47 +105,19 @@ public class DataReducerFactory {
     return reducer;
   }
 
-  /**
-   * Get the calculation parameters for a given data reducer with their IDs
-   *
-   * @param variable
-   *          The variable for the data reducer
-   * @return The calculation parameter names
-   * @throws DataReductionException
-   *           If the variable does not have a reducer
-   */
-  public static LinkedHashMap<String, Long> getCalculationParameters(
-    InstrumentVariable variable) throws DataReductionException {
-
-    DataReducer reducer = getSkeletonReducer(variable);
-    List<String> parameterNames = reducer.getCalculationParameterNames();
-
-    LinkedHashMap<String, Long> result = new LinkedHashMap<String, Long>();
-    int i = -1;
-    for (String name : parameterNames) {
-      i++;
-      result.put(name, makeId(variable, i));
-    }
-
-    return result;
-  }
-
-  public static TreeMap<Long, CalculationParameter> getCalculationParameters(
+  public static List<CalculationParameter> getCalculationParameters(
     InstrumentVariable variable, boolean includeCalculationColumns)
     throws DataReductionException {
 
     DataReducer reducer = getSkeletonReducer(variable);
 
-    TreeMap<Long, CalculationParameter> result = new TreeMap<Long, CalculationParameter>();
+    List<CalculationParameter> result;
 
-    List<CalculationParameter> parameters = reducer.getCalculationParameters();
-    for (int i = 0; i < parameters.size(); i++) {
-      long id = makeId(variable, i);
-
-      CalculationParameter parameter = parameters.get(i);
-      if (includeCalculationColumns || parameter.isResult()) {
-        result.put(id, parameter);
-      }
+    if (includeCalculationColumns) {
+      result = reducer.getCalculationParameters();
+    } else {
+      result = reducer.getCalculationParameters().stream()
+        .filter(x -> x.isResult()).collect(Collectors.toList());
     }
 
     return result;
@@ -165,7 +136,8 @@ public class DataReducerFactory {
     return result;
   }
 
-  private static long makeId(InstrumentVariable variable, int sequence) {
+  protected static long makeParameterId(InstrumentVariable variable,
+    int sequence) {
     return variable.getId() * 10000 + sequence;
   }
 

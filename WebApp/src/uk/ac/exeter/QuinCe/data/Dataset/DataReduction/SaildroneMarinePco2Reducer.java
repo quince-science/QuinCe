@@ -27,17 +27,7 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
    */
   private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
 
-  private static List<CalculationParameter> calculationParameters;
-
-  static {
-    calculationParameters = new ArrayList<CalculationParameter>(8);
-    calculationParameters.add(new CalculationParameter("pH₂O",
-      "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
-    calculationParameters.add(new CalculationParameter("pCO₂", "pCO₂ In Water",
-      "PCO2TK02", "μatm", true));
-    calculationParameters.add(new CalculationParameter("fCO₂", "fCO₂ In Water",
-      "FCO2XXXX", "μatm", true));
-  }
+  private static List<CalculationParameter> calculationParameters = null;
 
   public SaildroneMarinePco2Reducer(InstrumentVariable variable,
     Map<String, Float> variableAttributes) {
@@ -129,6 +119,15 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
 
   @Override
   public List<CalculationParameter> getCalculationParameters() {
+    if (null == calculationParameters) {
+      calculationParameters = new ArrayList<CalculationParameter>(3);
+      calculationParameters.add(new CalculationParameter(makeParameterId(0),
+        "pH₂O", "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
+      calculationParameters.add(new CalculationParameter(makeParameterId(1),
+        "pCO₂", "pCO₂ In Water", "PCO2TK02", "μatm", true));
+      calculationParameters.add(new CalculationParameter(makeParameterId(2),
+        "fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true));
+    }
     return calculationParameters;
   }
 }

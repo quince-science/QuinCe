@@ -36,7 +36,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.ColumnHeading;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @ManagedBean
@@ -270,23 +270,20 @@ public class ExportBean2 extends BaseManagedBean {
     data.postProcess();
 
     // Work out which columns we are going to export
-    List<ColumnHeading> exportColumns = buildExportColumns(data, instrument,
-      exportOption);
+    List<PlotPageColumnHeading> exportColumns = buildExportColumns(data,
+      instrument, exportOption);
 
     // Let's make some output
     StringBuilder output = new StringBuilder();
 
     List<String> headers = new ArrayList<String>();
 
-    for (ColumnHeading heading : exportColumns) {
+    for (PlotPageColumnHeading heading : exportColumns) {
 
       if (heading.getId() == FileDefinition.TIME_COLUMN_ID) {
         headers.add(exportOption.getTimestampHeader());
       } else {
-        String header = heading.getHeading();
-
-        // TODO Units
-
+        String header = heading.getLongName(exportOption.includeUnits());
         headers.add(header);
       }
     }
@@ -348,18 +345,19 @@ public class ExportBean2 extends BaseManagedBean {
     return output.toString().getBytes();
   }
 
-  private static List<ColumnHeading> buildExportColumns(Export2Data data,
-    Instrument instrument, ExportOption exportOption) throws Exception {
+  private static List<PlotPageColumnHeading> buildExportColumns(
+    Export2Data data, Instrument instrument, ExportOption exportOption)
+    throws Exception {
 
-    List<ColumnHeading> exportColumns = new ArrayList<ColumnHeading>();
+    List<PlotPageColumnHeading> exportColumns = new ArrayList<PlotPageColumnHeading>();
 
-    LinkedHashMap<String, List<ColumnHeading>> dataHeadings = data
+    LinkedHashMap<String, List<PlotPageColumnHeading>> dataHeadings = data
       .getExtendedColumnHeadings();
 
     // Add the base columns - time, position etc
     exportColumns.addAll(dataHeadings.get(Export2Data.ROOT_FIELD_GROUP));
 
-    List<ColumnHeading> sensorColumns = dataHeadings
+    List<PlotPageColumnHeading> sensorColumns = dataHeadings
       .get(Export2Data.SENSORS_FIELD_GROUP);
     if (exportOption.includeAllSensors()) {
       exportColumns.addAll(sensorColumns);
@@ -373,7 +371,7 @@ public class ExportBean2 extends BaseManagedBean {
       }
 
       // Find those columns with the required sensor types
-      for (ColumnHeading sensorHeading : sensorColumns) {
+      for (PlotPageColumnHeading sensorHeading : sensorColumns) {
         SensorType headingSensorType = instrument.getSensorAssignments()
           .getSensorTypeForDBColumn(sensorHeading.getId());
         if (variableSensorTypes.contains(headingSensorType)) {

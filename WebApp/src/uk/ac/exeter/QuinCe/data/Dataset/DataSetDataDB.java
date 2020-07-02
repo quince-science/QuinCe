@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -21,7 +20,6 @@ import javax.sql.DataSource;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
@@ -1198,21 +1196,21 @@ public class DataSetDataDB {
             Map<String, Double> values = new Gson().fromJson(valuesJson,
               mapType);
 
-            LinkedHashMap<String, Long> reductionParameters = DataReducerFactory
-              .getCalculationParameters(
-                sensorConfig.getInstrumentVariable(variableId));
-
-            for (Map.Entry<String, Long> entry : reductionParameters
-              .entrySet()) {
-
-              FieldValue columnValue = new FieldValue(entry.getValue(),
-                values.get(entry.getKey()), new AutoQCResult(), qcFlag,
-                qcComment, true);
-
-              output.addValue(time, reductionParameters.get(entry.getKey()),
-                columnValue);
-            }
-          }
+            /*
+             * LinkedHashMap<String, Long> reductionParameters =
+             * DataReducerFactory .getCalculationParameters(
+             * sensorConfig.getInstrumentVariable(variableId));
+             *
+             * for (Map.Entry<String, Long> entry : reductionParameters
+             * .entrySet()) {
+             *
+             * FieldValue columnValue = new FieldValue(entry.getValue(),
+             * values.get(entry.getKey()), new AutoQCResult(), qcFlag,
+             * qcComment, true);
+             *
+             * output.addValue(time, reductionParameters.get(entry.getKey()),
+             * columnValue); }
+             */ }
         }
       }
     } catch (SQLException e) {
@@ -1295,25 +1293,24 @@ public class DataSetDataDB {
 
       try (ResultSet records = stmt.executeQuery()) {
 
-        LinkedHashMap<String, Long> reductionParameters = DataReducerFactory
-          .getCalculationParameters(variable);
-
-        while (records.next()) {
-          LocalDateTime time = DateTimeUtils.longToDate(records.getLong(1));
-          String valuesJson = records.getString(2);
-          Type mapType = new TypeToken<HashMap<String, Double>>() {
-          }.getType();
-          Map<String, Double> values = new Gson().fromJson(valuesJson, mapType);
-          Flag qcFlag = new Flag(records.getInt(3));
-
-          FieldValue value = new FieldValue(
-            reductionParameters.get(field.getBaseName()),
-            values.get(field.getBaseName()), new AutoQCResult(), qcFlag, null,
-            true);
-
-          output.addValue(time, field, value);
-        }
-      }
+        /*
+         * LinkedHashMap<String, Long> reductionParameters = DataReducerFactory
+         * .getCalculationParameters(variable);
+         *
+         * while (records.next()) { LocalDateTime time =
+         * DateTimeUtils.longToDate(records.getLong(1)); String valuesJson =
+         * records.getString(2); Type mapType = new TypeToken<HashMap<String,
+         * Double>>() { }.getType(); Map<String, Double> values = new
+         * Gson().fromJson(valuesJson, mapType); Flag qcFlag = new
+         * Flag(records.getInt(3));
+         *
+         * FieldValue value = new FieldValue(
+         * reductionParameters.get(field.getBaseName()),
+         * values.get(field.getBaseName()), new AutoQCResult(), qcFlag, null,
+         * true);
+         *
+         * output.addValue(time, field, value); }
+         */ }
     } catch (Exception e) {
       throw new DatabaseException("Error getting data reduction data", e);
     }
