@@ -54,7 +54,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
   public PlotPageColumnHeading(long id, String shortName, String longName,
     String codeName, String units, boolean numeric, boolean editable) {
 
-    super(id, shortName, longName, codeName, units);
+    super(id, shortName, longName, codeName, units, true);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
@@ -73,7 +73,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     String codeName, String units, boolean numeric, boolean editable,
     Double referenceValue) {
 
-    super(id, shortName, longName, codeName, units);
+    super(id, shortName, longName, codeName, units, true);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
@@ -92,7 +92,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     String codeName, String units, boolean numeric, boolean editable,
     long selectionColumn) {
 
-    super(id, shortName, longName, codeName, units);
+    super(id, shortName, longName, codeName, units, true);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = selectionColumn;

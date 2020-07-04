@@ -13,7 +13,8 @@ public class CalculationParameter extends ColumnHeading {
   public CalculationParameter(long id, String name, String columnName,
     String columnCode, String units, boolean result) {
 
-    super(id, name, columnName, columnCode, units);
+    // A result field will have a QC value
+    super(id, name, columnName, columnCode, units, result);
     this.result = result;
   }
 

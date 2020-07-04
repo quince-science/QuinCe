@@ -314,6 +314,6 @@ public class SensorAssignment {
   public ColumnHeading getColumnHeading() {
     return new ColumnHeading(databaseId, sensorName,
       sensorType.getColumnHeading(), sensorType.getCode(),
-      sensorType.getUnits());
+      sensorType.getUnits(), true);
   }
 }
