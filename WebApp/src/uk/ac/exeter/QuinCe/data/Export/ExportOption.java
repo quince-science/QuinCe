@@ -26,6 +26,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public class ExportOption {
 
+  public static final int HEADER_MODE_SHORT = 0;
+
+  public static final int HEADER_MODE_LONG = 1;
+
+  public static final int HEADER_MODE_CODE = 2;
+
   private static final String EXPORT_DATA_PACKAGE = "uk.ac.exeter.QuinCe.web.datasets.export.";
 
   private static final String DEFAULT_EXPORT_DATA_CLASS = EXPORT_DATA_PACKAGE
@@ -75,7 +81,7 @@ public class ExportOption {
   /**
    * Indicates whether to use column codes instead of names
    */
-  private boolean useColumnCodes = false;
+  private int headerMode = HEADER_MODE_LONG;
 
   /**
    * Indicates whether units should be included in column headings
@@ -166,8 +172,8 @@ public class ExportOption {
     return includeCalculationColumns;
   }
 
-  public boolean useColumnCodes() {
-    return useColumnCodes;
+  public int getHeaderMode() {
+    return headerMode;
   }
 
   public boolean includeUnits() {
@@ -269,8 +275,8 @@ public class ExportOption {
       includeCalculationColumns = json.getBoolean("includeCalculationColumns");
     }
 
-    if (json.has("useColumnCodes")) {
-      useColumnCodes = json.getBoolean("useColumnCodes");
+    if (json.has("headerMode")) {
+      headerMode = parseHeaderMode(json, json.getString("headerMode"));
     }
 
     if (json.has("includeUnits")) {
@@ -296,7 +302,7 @@ public class ExportOption {
     // Replacement column headers. Forces useColumnCodes and does
     // not include units
     if (json.has("replaceColumnHeaders")) {
-      useColumnCodes = true;
+      headerMode = HEADER_MODE_CODE;
       includeUnits = false;
       replacementColumnHeaders = new HashMap<String, String>();
 
@@ -477,6 +483,32 @@ public class ExportOption {
       throw new ExportConfigurationException(name,
         "Error creating ExportData object", e);
     }
+  }
 
+  private int parseHeaderMode(JSONObject json, String mode)
+    throws ExportConfigurationException {
+
+    int result;
+
+    switch (mode.toLowerCase()) {
+    case "short": {
+      result = HEADER_MODE_SHORT;
+      break;
+    }
+    case "long": {
+      result = HEADER_MODE_LONG;
+      break;
+    }
+    case "code": {
+      result = HEADER_MODE_CODE;
+      break;
+    }
+    default: {
+      throw new ExportConfigurationException(json,
+        "Unrecognised header mode '" + mode + "'");
+    }
+    }
+
+    return result;
   }
 }
