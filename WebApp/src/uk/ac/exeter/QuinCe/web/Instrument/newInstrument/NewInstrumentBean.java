@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -519,10 +520,13 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   public Map<Long, String> getAllVariables() {
-    Map<Long, String> variables = null;
+    Map<Long, String> variables = new HashMap<Long, String>();
 
     try {
-      variables = InstrumentDB.getAllVariables(getDataSource());
+      for (InstrumentVariable variable : InstrumentDB
+        .getAllVariables(getDataSource())) {
+        variables.put(variable.getId(), variable.getName());
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }

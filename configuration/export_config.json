@@ -5,7 +5,7 @@
     "allSensors": true,
     "headerMode": "short",
     "includeCalculationColumns": true,
-    "includeUnits": false
+    "includeUnits": true
   },
   {
     "exportName": "ICOS OTC No Salinity Flags",

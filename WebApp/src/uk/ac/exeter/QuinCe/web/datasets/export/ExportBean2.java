@@ -21,8 +21,11 @@ import javax.sql.DataSource;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -282,44 +285,19 @@ public class ExportBean2 extends BaseManagedBean {
       if (heading.getId() == FileDefinition.TIME_COLUMN_ID) {
         headers.add(exportOption.getTimestampHeader());
       } else {
-        switch (exportOption.getHeaderMode()) {
-        case ExportOption.HEADER_MODE_SHORT: {
-          headers.add(heading.getShortName(exportOption.includeUnits()));
-          if (heading.hasQC()) {
-            headers
-              .add(heading.getShortName() + exportOption.getQcFlagSuffix());
+        addHeader(headers, exportOption, heading);
+      }
+    }
 
-            if (exportOption.includeQCComments()) {
-              headers.add(
-                heading.getShortName() + exportOption.getQcCommentSuffix());
-            }
-          }
-          break;
-        }
-        case ExportOption.HEADER_MODE_LONG: {
-          headers.add(heading.getLongName(exportOption.includeUnits()));
-          if (heading.hasQC()) {
-            headers.add(heading.getLongName() + exportOption.getQcFlagSuffix());
+    for (InstrumentVariable variable : exportOption.getVariables()) {
+      if (instrument.getVariables().contains(variable)) {
 
-            if (exportOption.includeQCComments()) {
-              headers
-                .add(heading.getLongName() + exportOption.getQcCommentSuffix());
-            }
-          }
-          break;
-        }
-        case ExportOption.HEADER_MODE_CODE: {
-          headers.add(heading.getCodeName(exportOption.includeUnits()));
-          if (heading.hasQC()) {
-            headers.add(heading.getCodeName() + exportOption.getQcFlagSuffix());
+        List<CalculationParameter> params = DataReducerFactory
+          .getCalculationParameters(variable,
+            exportOption.includeCalculationColumns());
 
-            if (exportOption.includeQCComments()) {
-              headers
-                .add(heading.getCodeName() + exportOption.getQcCommentSuffix());
-            }
-          }
-          break;
-        }
+        for (CalculationParameter param : params) {
+          addHeader(headers, exportOption, param);
         }
       }
     }
@@ -379,6 +357,44 @@ public class ExportBean2 extends BaseManagedBean {
      */
 
     return output.toString().getBytes();
+  }
+
+  private static void addHeader(List<String> headers, ExportOption exportOption,
+    ColumnHeading heading) throws ExportException {
+
+    String header = null;
+
+    switch (exportOption.getHeaderMode()) {
+    case ExportOption.HEADER_MODE_SHORT: {
+      header = heading.getShortName();
+      break;
+    }
+    case ExportOption.HEADER_MODE_LONG: {
+      header = heading.getLongName();
+      break;
+    }
+    case ExportOption.HEADER_MODE_CODE: {
+      header = heading.getCodeName();
+      break;
+    }
+    default: {
+      throw new ExportException("Unrecognised header mode");
+    }
+    }
+
+    if (exportOption.includeUnits()) {
+      headers.add(header + " [" + heading.getUnits() + ']');
+    } else {
+      headers.add(header);
+    }
+
+    if (heading.hasQC()) {
+      headers.add(header + exportOption.getQcFlagSuffix());
+
+      if (exportOption.includeQCComments()) {
+        headers.add(header + exportOption.getQcCommentSuffix());
+      }
+    }
   }
 
   private static List<PlotPageColumnHeading> buildExportColumns(
