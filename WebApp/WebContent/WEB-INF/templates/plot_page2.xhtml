@@ -109,7 +109,7 @@
           <ui:repeat value="#{entry.value}" var="variable">
             <div class="variable">
               <div class="varName varGroupMember">
-                <h:outputText value="#{variable.heading}" />
+                <h:outputText value="#{variable.shortName}" />
               </div>
               <div class="variableControls">
                 <p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}"
@@ -122,12 +122,12 @@
                   <!-- Date/Time cannot be used for the Y axis -->
                 </ui:remove>
                 <!-- Time cannot be on Y axis -->
-                <ui:fragment rendered="#{variable.heading ne 'Time'}">
+                <ui:fragment rendered="#{variable.shortName ne 'Time'}">
                   <p:selectBooleanButton widgetVar="yAxis-#{variable.id}"
                     onLabel="Y" offLabel="Y" styleClass="axisButton"
                     onchange="updateAxisButtons('y', #{variable.id})" />
                 </ui:fragment>
-                <ui:fragment rendered="#{variable.heading eq 'Time'}">
+                <ui:fragment rendered="#{variable.shortName eq 'Time'}">
                   <div class="noAxisButton">&nbsp;</div>
                 </ui:fragment>
               </div>

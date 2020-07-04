@@ -555,7 +555,7 @@ function drawTable() {
         html += 'class="dt-head-right"';
       }
       html += '>';
-      html += h.heading;
+      html += h.shortName;
       html += '</th>';
     });
   });
@@ -754,7 +754,7 @@ function drawTableSelection() {
       }
     }
 
-    $('#selectedColumnDisplay').html(getSelectedColumn().heading);
+    $('#selectedColumnDisplay').html(getSelectedColumn().shortName);
     $('#selectedRowsCountDisplay').html(selectedRows.length);
   } else {
     $('#selectedColumnDisplay').html('None');
