@@ -726,12 +726,14 @@ public class ManualQC2Data extends PlotPage2Data {
       for (Map.Entry<LocalDateTime, Measurement> measurement : measurements
         .entrySet()) {
 
-        DataReductionRecord record = dataReduction
-          .get(measurement.getValue().getId()).get(variable);
-        if (null != record) {
-          result.put(measurement.getKey(),
-            new DataReductionRecordPlotPageTableColumn(record,
-              parameter.getShortName()));
+        if (dataReduction.containsKey(measurement.getValue().getId())) {
+          DataReductionRecord record = dataReduction
+            .get(measurement.getValue().getId()).get(variable);
+          if (null != record) {
+            result.put(measurement.getKey(),
+              new DataReductionRecordPlotPageTableColumn(record,
+                parameter.getShortName()));
+          }
         }
       }
     }
