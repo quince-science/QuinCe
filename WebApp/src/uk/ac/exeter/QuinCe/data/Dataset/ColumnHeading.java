@@ -42,24 +42,27 @@ public class ColumnHeading {
    */
   private final String codeName;
 
+  public final boolean hasQC;
+
   /**
    * The units for the column.
    */
   private final String units;
 
   public ColumnHeading(long id, String shortName, String longName,
-    String codeName, String units) {
+    String codeName, String units, boolean hasQC) {
 
     this.id = id;
     this.shortName = shortName;
     this.longName = longName;
     this.codeName = codeName;
     this.units = units;
+    this.hasQC = hasQC;
   }
 
   /**
    * Copy constructor
-   * 
+   *
    * @param heading
    *          The source heading
    */
@@ -69,6 +72,7 @@ public class ColumnHeading {
     this.longName = heading.longName;
     this.codeName = heading.codeName;
     this.units = heading.units;
+    this.hasQC = heading.hasQC;
   }
 
   /**
@@ -147,6 +151,10 @@ public class ColumnHeading {
    */
   public String getCodeName(boolean includeUnits) {
     return includeUnits ? buildUnitsString(codeName) : codeName;
+  }
+
+  public boolean hasQC() {
+    return hasQC;
   }
 
   private String buildUnitsString(String base) {

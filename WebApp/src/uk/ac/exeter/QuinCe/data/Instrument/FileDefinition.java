@@ -201,11 +201,13 @@ public class FileDefinition implements Comparable<FileDefinition> {
     SEPARATOR_LOOKUP.put("SPACE", " ");
 
     TIME_COLUMN_HEADING = new ColumnHeading(TIME_COLUMN_ID, TIME_COLUMN_NAME,
-      TIME_COLUMN_NAME, "STRT8601", null);
+      TIME_COLUMN_NAME, "STRT8601", null, false);
     LONGITUDE_COLUMN_HEADING = new ColumnHeading(LONGITUDE_COLUMN_ID,
-      LONGITUDE_COLUMN_NAME, LONGITUDE_COLUMN_NAME, "ALONGP01", "degrees_east");
+      LONGITUDE_COLUMN_NAME, LONGITUDE_COLUMN_NAME, "ALONGP01", "degrees_east",
+      true);
     LATITUDE_COLUMN_HEADING = new ColumnHeading(LATITUDE_COLUMN_ID,
-      LATITUDE_COLUMN_NAME, LATITUDE_COLUMN_NAME, "ALATGP01", "degrees_north");
+      LATITUDE_COLUMN_NAME, LATITUDE_COLUMN_NAME, "ALATGP01", "degrees_north",
+      true);
   }
 
   /**

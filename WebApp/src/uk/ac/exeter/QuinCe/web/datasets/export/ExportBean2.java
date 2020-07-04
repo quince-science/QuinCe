@@ -279,12 +279,48 @@ public class ExportBean2 extends BaseManagedBean {
     List<String> headers = new ArrayList<String>();
 
     for (PlotPageColumnHeading heading : exportColumns) {
-
       if (heading.getId() == FileDefinition.TIME_COLUMN_ID) {
         headers.add(exportOption.getTimestampHeader());
       } else {
-        String header = heading.getLongName(exportOption.includeUnits());
-        headers.add(header);
+        switch (exportOption.getHeaderMode()) {
+        case ExportOption.HEADER_MODE_SHORT: {
+          headers.add(heading.getShortName(exportOption.includeUnits()));
+          if (heading.hasQC()) {
+            headers
+              .add(heading.getShortName() + exportOption.getQcFlagSuffix());
+
+            if (exportOption.includeQCComments()) {
+              headers.add(
+                heading.getShortName() + exportOption.getQcCommentSuffix());
+            }
+          }
+          break;
+        }
+        case ExportOption.HEADER_MODE_LONG: {
+          headers.add(heading.getLongName(exportOption.includeUnits()));
+          if (heading.hasQC()) {
+            headers.add(heading.getLongName() + exportOption.getQcFlagSuffix());
+
+            if (exportOption.includeQCComments()) {
+              headers
+                .add(heading.getLongName() + exportOption.getQcCommentSuffix());
+            }
+          }
+          break;
+        }
+        case ExportOption.HEADER_MODE_CODE: {
+          headers.add(heading.getCodeName(exportOption.includeUnits()));
+          if (heading.hasQC()) {
+            headers.add(heading.getCodeName() + exportOption.getQcFlagSuffix());
+
+            if (exportOption.includeQCComments()) {
+              headers
+                .add(heading.getCodeName() + exportOption.getQcCommentSuffix());
+            }
+          }
+          break;
+        }
+        }
       }
     }
 
