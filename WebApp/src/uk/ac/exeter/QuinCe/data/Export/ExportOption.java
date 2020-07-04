@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Export;
 
 import java.lang.reflect.Constructor;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,8 +16,9 @@ import org.primefaces.json.JSONObject;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.web.datasets.export.Export2Data;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class to hold details of a single export configuration
@@ -58,7 +60,7 @@ public class ExportOption {
    * The variables to be exported as part of this export. If any instrument does
    * not contain a given variable it will be ignored
    */
-  private List<Long> variables;
+  private List<InstrumentVariable> variables;
 
   /**
    * The export data class to use for this export. Used for custom
@@ -128,10 +130,10 @@ public class ExportOption {
    * @throws ExportException
    *           If the export configuration is invalid
    */
-  public ExportOption(ResourceManager resourceManager, int index,
-    JSONObject json) throws ExportException {
+  public ExportOption(Connection conn, SensorsConfiguration sensorConfig,
+    int index, JSONObject json) throws ExportException {
     this.index = index;
-    parseJson(resourceManager, json);
+    parseJson(conn, sensorConfig, json);
   }
 
   public int getIndex() {
@@ -160,7 +162,7 @@ public class ExportOption {
     return missingValue;
   }
 
-  public List<Long> getVariables() {
+  public List<InstrumentVariable> getVariables() {
     return variables;
   }
 
@@ -193,8 +195,8 @@ public class ExportOption {
    *           If the JSON does not contain valid values
    */
   @SuppressWarnings("unchecked")
-  private void parseJson(ResourceManager resourceManager, JSONObject json)
-    throws ExportConfigurationException {
+  private void parseJson(Connection conn, SensorsConfiguration sensorConfig,
+    JSONObject json) throws ExportConfigurationException {
 
     // Export name
     if (!json.has("exportName")) {
@@ -215,10 +217,9 @@ public class ExportOption {
     }
 
     // Variables
-    Map<Long, String> allVariables;
+    List<InstrumentVariable> allVariables;
     try {
-      allVariables = InstrumentDB
-        .getAllVariables(resourceManager.getDBDataSource());
+      allVariables = InstrumentDB.getAllVariables(conn, sensorConfig);
     } catch (Exception e) {
       throw new ExportConfigurationException("N/A",
         "Unable to retrieve variable information");
@@ -226,24 +227,24 @@ public class ExportOption {
 
     // If the element isn't provided, assume all variables
     if (!json.has("variables")) {
-      variables = new ArrayList<Long>(allVariables.keySet());
+      variables = allVariables;
     } else {
       JSONArray varArray = json.getJSONArray("variables");
 
       // If we have an empty array, use all variables
       if (varArray.length() == 0) {
-        variables = new ArrayList<Long>(allVariables.keySet());
+        variables = allVariables;
       } else {
-        variables = new ArrayList<Long>(varArray.length());
+        variables = new ArrayList<InstrumentVariable>(varArray.length());
 
         Iterator<Object> iter = json.getJSONArray("variables").iterator();
         while (iter.hasNext()) {
           String varName = (String) iter.next();
 
           boolean variableFound = false;
-          for (Map.Entry<Long, String> entry : allVariables.entrySet()) {
-            if (varName.equals(entry.getValue())) {
-              variables.add(entry.getKey());
+          for (InstrumentVariable variable : allVariables) {
+            if (varName.equals(variable.getName())) {
+              variables.add(variable);
               variableFound = true;
               break;
             }

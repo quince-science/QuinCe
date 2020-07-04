@@ -3,10 +3,11 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 
 /**
  * Configuration for the run type categories used in the application
@@ -29,19 +30,22 @@ public class RunTypeCategoryConfiguration {
    * @throws RunTypeCategoryException
    *           If the configuration cannot be accessed or is invalid
    */
-  public RunTypeCategoryConfiguration(Connection conn)
-    throws RunTypeCategoryException {
-    init(conn);
+  public RunTypeCategoryConfiguration(Connection conn,
+    SensorsConfiguration sensorConfig) throws RunTypeCategoryException {
+    init(conn, sensorConfig);
   }
 
-  private void init(Connection conn) throws RunTypeCategoryException {
+  private void init(Connection conn, SensorsConfiguration sensorConfig)
+    throws RunTypeCategoryException {
 
     try {
-      Map<Long, String> variables = InstrumentDB.getAllVariables(conn);
       categories = new TreeSet<RunTypeCategory>();
 
-      for (Map.Entry<Long, String> entry : variables.entrySet()) {
-        categories.add(new RunTypeCategory(entry.getKey(), entry.getValue()));
+      for (InstrumentVariable variable : InstrumentDB.getAllVariables(conn,
+        sensorConfig)) {
+
+        categories
+          .add(new RunTypeCategory(variable.getId(), variable.getName()));
       }
     } catch (Exception e) {
       throw new RunTypeCategoryException(
