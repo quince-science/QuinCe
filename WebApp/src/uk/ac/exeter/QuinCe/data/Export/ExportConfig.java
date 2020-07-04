@@ -4,12 +4,13 @@ import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.primefaces.json.JSONArray;
 
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 
 /**
  * <p>
@@ -68,7 +69,8 @@ public class ExportConfig {
    * @throws ExportException
    *           If the configuration file cannot be loaded or parsed
    */
-  private ExportConfig(ResourceManager resourceManager) throws ExportException {
+  private ExportConfig(Connection conn, SensorsConfiguration sensorConfig)
+    throws ExportException {
     if (configFilename == null) {
       throw new ExportException(
         "ExportConfig filename has not been set - must run init first");
@@ -76,7 +78,7 @@ public class ExportConfig {
 
     options = new ArrayList<ExportOption>();
     try {
-      readFile(resourceManager);
+      readFile(conn, sensorConfig);
     } catch (FileNotFoundException e) {
       throw new ExportException(
         "Could not find configuration file '" + configFilename + "'");
@@ -92,10 +94,10 @@ public class ExportConfig {
    * @throws ExportException
    *           If the configuration file cannot be loaded or parsed
    */
-  public static void init(ResourceManager resourceManager, String configFile)
-    throws ExportException {
+  public static void init(Connection conn, SensorsConfiguration sensorConfig,
+    String configFile) throws ExportException {
     configFilename = configFile;
-    instance = new ExportConfig(resourceManager);
+    instance = new ExportConfig(conn, sensorConfig);
   }
 
   /**
@@ -123,15 +125,15 @@ public class ExportConfig {
    *           If the file specified in the {@link #init(String)} call does not
    *           exist
    */
-  private void readFile(ResourceManager resourceManager)
+  private void readFile(Connection conn, SensorsConfiguration sensorConfig)
     throws ExportException, FileNotFoundException {
     try {
       String fileContent = new String(
         Files.readAllBytes(Paths.get(configFilename)), StandardCharsets.UTF_8);
       JSONArray jsonEntries = new JSONArray(fileContent);
       for (int i = 0; i < jsonEntries.length(); i++) {
-        options.add(
-          new ExportOption(resourceManager, i, jsonEntries.getJSONObject(i)));
+        options.add(new ExportOption(conn, sensorConfig, i,
+          jsonEntries.getJSONObject(i)));
       }
     } catch (Exception e) {
       if (e instanceof ExportException) {

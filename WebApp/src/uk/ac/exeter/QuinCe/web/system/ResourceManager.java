@@ -15,7 +15,6 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
-import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
@@ -99,7 +98,7 @@ public class ResourceManager implements ServletContextListener {
     // Initialise run type category configuration
     try {
       runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(
-        dbDataSource.getConnection());
+        dbDataSource.getConnection(), sensorsConfiguration);
     } catch (Exception e) {
       throw new RuntimeException("Could not load run type categories", e);
     }
@@ -115,8 +114,9 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise the file export options configuration
     try {
-      ExportConfig.init(this, configuration.getProperty("export.configfile"));
-    } catch (ExportException e) {
+      ExportConfig.init(dbDataSource.getConnection(), sensorsConfiguration,
+        configuration.getProperty("export.configfile"));
+    } catch (Exception e) {
       throw new RuntimeException("Could not initialise export configuration",
         e);
     }

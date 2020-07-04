@@ -216,7 +216,7 @@ public class InstrumentDB {
     + "owner FROM instrument WHERE id = ?";
 
   private static final String GET_ALL_VARIABLES_QUERY = "SELECT "
-    + "id, name FROM variables";
+    + "id FROM variables";
 
   /**
    * Get the sensor or diagnostic column details for a given instrument
@@ -1787,9 +1787,10 @@ public class InstrumentDB {
    *           If the variables cannot be retrieved
    * @throws MissingParamException
    *           If any required parameters are missing
+   * @throws VariableNotFoundException
    */
-  public static Map<Long, String> getAllVariables(DataSource dataSource)
-    throws DatabaseException, MissingParamException {
+  public static List<InstrumentVariable> getAllVariables(DataSource dataSource)
+    throws DatabaseException, MissingParamException, VariableNotFoundException {
     Connection conn = null;
 
     try {
@@ -1802,6 +1803,13 @@ public class InstrumentDB {
     }
   }
 
+  public static List<InstrumentVariable> getAllVariables(Connection conn)
+    throws MissingParamException, DatabaseException, VariableNotFoundException {
+
+    return getAllVariables(conn,
+      ResourceManager.getInstance().getSensorsConfiguration());
+  }
+
   /**
    * Get all the variables registered in the application
    *
@@ -1812,13 +1820,15 @@ public class InstrumentDB {
    *           If the variables cannot be retrieved
    * @throws MissingParamException
    *           If any required parameters are missing
+   * @throws VariableNotFoundException
    */
-  public static Map<Long, String> getAllVariables(Connection conn)
-    throws MissingParamException, DatabaseException {
+  public static List<InstrumentVariable> getAllVariables(Connection conn,
+    SensorsConfiguration sensorConfig)
+    throws MissingParamException, DatabaseException, VariableNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
 
-    Map<Long, String> variables = new HashMap<Long, String>();
+    List<InstrumentVariable> variables = new ArrayList<InstrumentVariable>();
 
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -1827,7 +1837,7 @@ public class InstrumentDB {
       stmt = conn.prepareStatement(GET_ALL_VARIABLES_QUERY);
       records = stmt.executeQuery();
       while (records.next()) {
-        variables.put(records.getLong(1), records.getString(2));
+        variables.add(sensorConfig.getInstrumentVariable(records.getLong(1)));
       }
 
     } catch (SQLException e) {
