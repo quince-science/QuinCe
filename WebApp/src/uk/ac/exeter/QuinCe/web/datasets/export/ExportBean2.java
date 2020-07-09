@@ -364,28 +364,34 @@ public class ExportBean2 extends BaseManagedBean {
 
     String header = null;
 
-    switch (exportOption.getHeaderMode()) {
-    case ExportOption.HEADER_MODE_SHORT: {
-      header = heading.getShortName();
-      break;
-    }
-    case ExportOption.HEADER_MODE_LONG: {
-      header = heading.getLongName();
-      break;
-    }
-    case ExportOption.HEADER_MODE_CODE: {
-      header = heading.getCodeName();
-      break;
-    }
-    default: {
-      throw new ExportException("Unrecognised header mode");
-    }
-    }
-
-    if (exportOption.includeUnits()) {
-      headers.add(header + " [" + heading.getUnits() + ']');
+    String replacementHeader = exportOption
+      .getReplacementHeader(heading.getCodeName());
+    if (null != replacementHeader) {
+      header = replacementHeader;
     } else {
-      headers.add(header);
+      switch (exportOption.getHeaderMode()) {
+      case ExportOption.HEADER_MODE_SHORT: {
+        header = heading.getShortName();
+        break;
+      }
+      case ExportOption.HEADER_MODE_LONG: {
+        header = heading.getLongName();
+        break;
+      }
+      case ExportOption.HEADER_MODE_CODE: {
+        header = heading.getCodeName();
+        break;
+      }
+      default: {
+        throw new ExportException("Unrecognised header mode");
+      }
+      }
+
+      if (exportOption.includeUnits()) {
+        headers.add(header + " [" + heading.getUnits() + ']');
+      } else {
+        headers.add(header);
+      }
     }
 
     if (heading.hasQC()) {

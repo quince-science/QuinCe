@@ -300,11 +300,8 @@ public class ExportOption {
       qcCommentSuffix = json.getString("qcCommentSuffix");
     }
 
-    // Replacement column headers. Forces useColumnCodes and does
-    // not include units
+    // Replacement column headers.
     if (json.has("replaceColumnHeaders")) {
-      headerMode = HEADER_MODE_CODE;
-      includeUnits = false;
       replacementColumnHeaders = new HashMap<String, String>();
 
       JSONObject replacementHeaderJson = json
@@ -437,16 +434,7 @@ public class ExportOption {
   }
 
   public String getReplacementHeader(String code) {
-    String result = code;
-
-    if (null != replacementColumnHeaders
-      && replacementColumnHeaders.containsKey(code)) {
-
-      result = replacementColumnHeaders.get(code);
-
-    }
-
-    return result;
+    return replacementColumnHeaders.get(code);
   }
 
   /**
