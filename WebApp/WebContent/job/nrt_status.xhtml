@@ -1,0 +1,75 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+  xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:c="http://java.sun.com/jsp/jstl/core"
+  template="/WEB-INF/templates/menu_page.xhtml">
+  <ui:define name="title">NRT Status</ui:define>
+  <ui:define name="localHead">
+    <c:set var="mainMenuActiveIndex" value="5" scope="request" />
+    <script>
+      var refreshEnabled = true;
+
+      $(function() {
+        loadStatus();
+      });
+
+      setInterval(function() {
+        loadStatus();
+      }, 10000);
+    </script>
+  </ui:define>
+  <ui:define name="content">
+    <h1>NRT Status</h1>
+    <div class="fullPage">
+      <div class="sectionContent">
+        <h:form id="nrtForm" method="post" accept-charset="utf8">
+          <p:remoteCommand id="loadStatus" name="loadStatus"
+            action="#{nrtStatusBean.update}" update="@form"/>
+          <p:dataTable id="nrtList" var="nrt" value="#{nrtStatusBean.nrtStatus}">
+            <p:column>
+              <f:facet name="header">
+                Platform
+              </f:facet>
+              #{nrt.platformCode}
+            </p:column>
+            <p:column>
+              <f:facet name="header">
+                Name
+              </f:facet>
+              #{nrt.instrument}
+            </p:column>
+            <p:column>
+              <f:facet name="header">
+                Latest record
+              </f:facet>
+              #{nrt.lastRecordDate}
+            </p:column>
+            <p:column>
+              <f:facet name="header">
+                Received
+              </f:facet>
+              #{nrt.createdDate}
+              <br/>
+              #{nrt.createdDelay} minutes
+            </p:column>
+            <p:column>
+              <f:facet name="header">
+                Status
+              </f:facet>
+              #{nrt.status}
+            </p:column>
+            <p:column>
+              <f:facet name="header">
+                Status Date
+              </f:facet>
+              #{nrt.statusDate}
+              <br/>
+              #{nrt.statusDelay} minutes
+            </p:column>
+          </p:dataTable>
+        </h:form>
+      </div>
+    </div>
+  </ui:define>
+</ui:composition>

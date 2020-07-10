@@ -82,6 +82,11 @@ public class DataSetDB {
   private static final String NRT_COUNT_QUERY = "SELECT COUNT(*) FROM dataset "
     + "WHERE nrt = 1 AND instrument_id = ?";
 
+  private static final String NRT_STATUS_QUERY = "SELECT "
+    + "ds.instrument_id, ds.created, ds.end, ds.status, ds.status_date "
+    + "FROM dataset ds INNER JOIN instrument i ON ds.instrument_id = i.id "
+    + "WHERE ds.nrt = 1 ORDER BY i.platform_code ASC";
+
   /**
    * Make an SQL query for retrieving complete datasets using a specified WHERE
    * clause
@@ -939,5 +944,43 @@ public class DataSetDB {
     }
 
     return result;
+  }
+
+  public static List<NrtStatus> getNrtStatus(DataSource dataSource)
+    throws DatabaseException, MissingParamException, RecordNotFoundException,
+    InstrumentException {
+
+    List<NrtStatus> result = new ArrayList<NrtStatus>();
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn.prepareStatement(NRT_STATUS_QUERY)) {
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+
+          long instrumentId = records.getLong(1);
+          LocalDateTime createdDate = DateTimeUtils
+            .longToDate(records.getTimestamp(2).getTime());
+          LocalDateTime lastRecord = DateTimeUtils
+            .longToDate(records.getLong(3));
+          int status = records.getInt(4);
+          LocalDateTime statusDate = DateTimeUtils
+            .longToDate(records.getLong(5));
+
+          Instrument instrument = InstrumentDB.getInstrument(conn,
+            instrumentId);
+
+          result.add(new NrtStatus(instrument, createdDate, lastRecord, status,
+            statusDate));
+
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting NRT status", e);
+    }
+
+    return result;
+
   }
 }
