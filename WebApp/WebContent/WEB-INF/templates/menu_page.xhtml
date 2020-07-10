@@ -20,6 +20,8 @@
       styleClass="hidden"></p:menuitem>
     <p:menuitem value="Jobs" outcome="/job/job_list.xhtml"
       rendered="#{User.jobManager}"></p:menuitem>
+    <p:menuitem value="NRT Status" outcome="/job/nrt_status.xhtml"
+      rendered="#{User.adminUser}"></p:menuitem>
     <p:menuitem value="Credits" url="/credits.xhtml" styleClass="creditsMenu"></p:menuitem>
     <p:menuitem value="Log Out" url="/logout"></p:menuitem>
   </p:tabMenu>

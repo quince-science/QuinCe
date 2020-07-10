@@ -858,6 +858,17 @@ public class InstrumentDB {
     return result;
   }
 
+  public static Instrument getInstrument(Connection conn, long instrumentId)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException {
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+    RunTypeCategoryConfiguration runTypeConfig = ResourceManager.getInstance()
+      .getRunTypeCategoryConfiguration();
+    return getInstrument(conn, instrumentId, sensorConfig, runTypeConfig);
+
+  }
+
   /**
    * Returns a complete instrument object for the specified instrument ID
    *
