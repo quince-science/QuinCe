@@ -185,4 +185,9 @@ public class ColumnHeading {
     ColumnHeading other = (ColumnHeading) obj;
     return id == other.id;
   }
+
+  @Override
+  public String toString() {
+    return getShortName();
+  }
 }

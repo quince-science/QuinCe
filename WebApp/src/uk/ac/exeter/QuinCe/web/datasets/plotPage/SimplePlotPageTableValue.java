@@ -6,7 +6,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
-public class SimplePlotPageTableColumn implements PlotPageTableColumn {
+public class SimplePlotPageTableValue implements PlotPageTableValue {
 
   /**
    * The displayed value.
@@ -47,7 +47,7 @@ public class SimplePlotPageTableColumn implements PlotPageTableColumn {
    * @param flagNeeded
    *          Whether or not user QC is required.
    */
-  public SimplePlotPageTableColumn(String value, boolean used, Flag qcFlag,
+  public SimplePlotPageTableValue(String value, boolean used, Flag qcFlag,
     String qcMessage, boolean flagNeeded) {
     this.value = StringUtils.formatNumber(value);
     this.used = used;
@@ -62,7 +62,7 @@ public class SimplePlotPageTableColumn implements PlotPageTableColumn {
    * @param time
    *          The timestamp.
    */
-  public SimplePlotPageTableColumn(LocalDateTime time, boolean milliseconds) {
+  public SimplePlotPageTableValue(LocalDateTime time, boolean milliseconds) {
 
     if (milliseconds) {
       this.value = String.valueOf(DateTimeUtils.dateToLong(time));

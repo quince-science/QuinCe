@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -36,13 +37,13 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTableColumn;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableColumn;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableColumn;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableColumn;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
 
 public class ManualQC2Data extends PlotPage2Data {
 
@@ -71,13 +72,13 @@ public class ManualQC2Data extends PlotPage2Data {
    * The list of sensor column IDs in the same order as they are represented in
    * {@link #columnHeaders}.
    */
-  private long[] sensorColumnIds = null;
+  private List<Long> sensorColumnIds = null;
 
   /**
    * The list of diagnostic column IDs in the same order as they are represented
    * in {@link #columnHeaders}.
    */
-  private long[] diagnosticColumnIds = null;
+  private List<Long> diagnosticColumnIds = null;
 
   /**
    * The initial user QC comments generated from the selected values.
@@ -204,20 +205,20 @@ public class ManualQC2Data extends PlotPage2Data {
 
     List<PlotPageColumnHeading> sensorColumnHeadings = new ArrayList<PlotPageColumnHeading>(
       sensorColumns.size());
-    sensorColumnIds = new long[sensorColumns.size()];
+    sensorColumnIds = new ArrayList<Long>(sensorColumns.size());
 
     for (int i = 0; i < sensorColumns.size(); i++) {
 
       SensorAssignment column = sensorColumns.get(i);
       sensorColumnHeadings
         .add(new PlotPageColumnHeading(column.getColumnHeading(), true, true));
-      sensorColumnIds[i] = column.getDatabaseId();
+      sensorColumnIds.add(column.getDatabaseId());
     }
 
     columnHeadings.put(SENSORS_FIELD_GROUP, sensorColumnHeadings);
     extendedColumnHeadings.put(SENSORS_FIELD_GROUP, sensorColumnHeadings);
 
-    diagnosticColumnIds = new long[diagnosticColumns.size()];
+    diagnosticColumnIds = new ArrayList<Long>(diagnosticColumns.size());
     if (diagnosticColumns.size() > 0) {
       List<PlotPageColumnHeading> diagnosticColumnNames = new ArrayList<PlotPageColumnHeading>(
         diagnosticColumns.size());
@@ -228,7 +229,7 @@ public class ManualQC2Data extends PlotPage2Data {
 
         diagnosticColumnNames.add(
           new PlotPageColumnHeading(column.getColumnHeading(), true, true));
-        diagnosticColumnIds[i] = column.getDatabaseId();
+        diagnosticColumnIds.add(column.getDatabaseId());
       }
 
       columnHeadings.put(DIAGNOSTICS_FIELD_GROUP, diagnosticColumnNames);
@@ -384,7 +385,7 @@ public class ManualQC2Data extends PlotPage2Data {
   }
 
   @Override
-  protected List<Long> getRowIDs() {
+  public List<Long> getRowIDs() {
     return rowIDs;
   }
 
@@ -673,17 +674,17 @@ public class ManualQC2Data extends PlotPage2Data {
   }
 
   @Override
-  protected TreeMap<LocalDateTime, PlotPageTableColumn> getColumnValues(
+  protected TreeMap<LocalDateTime, PlotPageTableValue> getColumnValues(
     PlotPageColumnHeading column) throws Exception {
 
-    TreeMap<LocalDateTime, PlotPageTableColumn> result = new TreeMap<LocalDateTime, PlotPageTableColumn>();
+    TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
 
     SensorType sensorType = instrument.getSensorAssignments()
       .getSensorTypeForDBColumn(column.getId());
 
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
       for (LocalDateTime time : sensorValues.getTimes()) {
-        result.put(time, new SimplePlotPageTableColumn(time, true));
+        result.put(time, new SimplePlotPageTableValue(time, true));
       }
     } else if (sensorValues.containsColumn(column.getId())) {
 
@@ -693,7 +694,7 @@ public class ManualQC2Data extends PlotPage2Data {
           .getColumnValues(column.getId())) {
 
           result.put(sensorValue.getTime(),
-            new SensorValuePlotPageTableColumn(sensorValue, false));
+            new SensorValuePlotPageTableValue(sensorValue, false));
         }
       } else {
 
@@ -712,7 +713,7 @@ public class ManualQC2Data extends PlotPage2Data {
             .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
 
             result.put(sensorValue.getTime(),
-              new SensorValuePlotPageTableColumn(sensorValue, false));
+              new SensorValuePlotPageTableValue(sensorValue, false));
           }
         }
       }
@@ -731,7 +732,7 @@ public class ManualQC2Data extends PlotPage2Data {
             .get(measurement.getValue().getId()).get(variable);
           if (null != record) {
             result.put(measurement.getKey(),
-              new DataReductionRecordPlotPageTableColumn(record,
+              new DataReductionRecordPlotPageTableValue(record,
                 parameter.getShortName()));
           }
         }
@@ -776,5 +777,76 @@ public class ManualQC2Data extends PlotPage2Data {
    */
   public int getNeedsFlagCount() {
     return null == sensorValues ? -1 : sensorValues.getNeedsFlagCount();
+  }
+
+  public PlotPageTableValue getColumnValue(long rowId, long columnId)
+    throws InstrumentException, DataReductionException,
+    RecordNotFoundException {
+
+    PlotPageTableValue result = null;
+
+    // The rowId is the row time
+    LocalDateTime rowTime = DateTimeUtils.longToDate(rowId);
+
+    // The time is just the time
+    if (columnId == FileDefinition.TIME_COLUMN_ID) {
+      result = new SimplePlotPageTableValue(rowTime, false);
+
+      // Sensor Value
+    } else if (sensorValues.containsColumn(columnId)) {
+
+      // Get the SensorValue
+      SensorValue sensorValue = sensorValues.getSensorValue(rowTime, columnId);
+      if (null != sensorValue) {
+
+        SensorType sensorType = instrument.getSensorAssignments()
+          .getSensorTypeForDBColumn(columnId);
+
+        // If the sensor has internal calibrations, only add the value if it's
+        // a measurement
+        boolean useValue = true;
+
+        if (sensorType.hasInternalCalibration()) {
+
+          Measurement concurrentMeasurement = measurements
+            .get(measurements.floorKey(sensorValue.getTime()));
+          String runType = null == concurrentMeasurement ? null
+            : concurrentMeasurement.getRunType();
+
+          // Only include the value if the run type is not an internal
+          // calibration
+          if (instrument.getRunTypeCategory(runType)
+            .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+            useValue = false;
+          }
+        }
+
+        if (useValue) {
+          // We aren't bothered about the used flag
+          result = new SensorValuePlotPageTableValue(sensorValue, false);
+        }
+      }
+
+      // Data Reduction value
+    } else {
+      InstrumentVariable variable = DataReducerFactory.getVariable(instrument,
+        columnId);
+      CalculationParameter parameter = DataReducerFactory
+        .getVariableParameter(variable, columnId);
+
+      Measurement measurement = measurements.get(rowTime);
+      if (null != measurement) {
+        if (dataReduction.containsKey(measurement.getId())) {
+          DataReductionRecord record = dataReduction.get(measurement.getId())
+            .get(variable);
+          if (null != record) {
+            result = new DataReductionRecordPlotPageTableValue(record,
+              parameter.getShortName());
+          }
+        }
+      }
+    }
+
+    return result;
   }
 }

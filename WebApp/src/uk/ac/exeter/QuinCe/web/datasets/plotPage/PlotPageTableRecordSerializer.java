@@ -17,7 +17,7 @@ public class PlotPageTableRecordSerializer
 
   static {
     gson = new GsonBuilder().registerTypeHierarchyAdapter(
-      PlotPageTableColumn.class, new PlotPageTableColumnSerializer()).create();
+      PlotPageTableValue.class, new PlotPageTableValueSerializer()).create();
   }
 
   @Override
@@ -27,7 +27,7 @@ public class PlotPageTableRecordSerializer
     JsonObject jsonMap = new JsonObject();
     jsonMap.addProperty(PlotPageTableRecord.ID_KEY, src.getId());
 
-    for (Map.Entry<Integer, PlotPageTableColumn> columnEntry : src.getColumns()
+    for (Map.Entry<Integer, PlotPageTableValue> columnEntry : src.getColumns()
       .entrySet()) {
       jsonMap.add(String.valueOf(columnEntry.getKey()),
         gson.toJsonTree(columnEntry.getValue()));
