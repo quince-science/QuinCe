@@ -11,7 +11,7 @@ buildscript {
        jcenter()
    }
    dependencies {
-       classpath 'org.akhikhl.gretty:gretty:2.0.0'
+       classpath 'org.gretty:gretty:3.0.3'
 
        // Flyway migration needs the mysql connector
        classpath 'mysql:mysql-connector-java:5.1.36'
@@ -26,15 +26,16 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'war'
-apply plugin: 'org.akhikhl.gretty'
+apply plugin: 'org.gretty'
 apply plugin: 'eclipse-wtp'
+apply plugin: 'jacoco'
 
 war {
 	webAppDirName = 'WebApp/WebContent'
 }
 
 gretty {
-  servletContainer = 'tomcat8'
+  servletContainer = 'tomcat9'
   enableNaming = true
 }
 
@@ -247,4 +248,13 @@ tasks.register("migrationCheck") {
       throw new GradleException("Database migrations mismatch")
     }
 	}
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        xml.destination file("${buildDir}/reports/jacoco/report.xml")
+        csv.enabled false
+        html.enabled false
+    }
 }
