@@ -560,7 +560,7 @@ public abstract class PlotPage2Data {
    *
    * @return The row IDs.
    */
-  protected abstract List<Long> getRowIDs();
+  public abstract List<Long> getRowIDs();
 
   /**
    * Return the list of row IDs as a JSON string array.
@@ -794,7 +794,7 @@ public abstract class PlotPage2Data {
    *          The column.
    * @return The column values.
    */
-  protected abstract TreeMap<LocalDateTime, PlotPageTableColumn> getColumnValues(
+  protected abstract TreeMap<LocalDateTime, PlotPageTableValue> getColumnValues(
     PlotPageColumnHeading column) throws Exception;
 
   /**

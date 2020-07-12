@@ -7,11 +7,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-public class PlotPageTableColumnSerializer
-  implements JsonSerializer<PlotPageTableColumn> {
+public class PlotPageTableValueSerializer
+  implements JsonSerializer<PlotPageTableValue> {
 
   @Override
-  public JsonElement serialize(PlotPageTableColumn src, Type typeOfSrc,
+  public JsonElement serialize(PlotPageTableValue src, Type typeOfSrc,
     JsonSerializationContext context) {
 
     JsonObject json = new JsonObject();

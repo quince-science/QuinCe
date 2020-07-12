@@ -136,10 +136,10 @@ public class Plot2 {
 
   protected void makePlotValues() throws Exception {
 
-    TreeMap<LocalDateTime, PlotPageTableColumn> xValues = data
+    TreeMap<LocalDateTime, PlotPageTableValue> xValues = data
       .getColumnValues(xAxis);
 
-    TreeMap<LocalDateTime, PlotPageTableColumn> yValues = data
+    TreeMap<LocalDateTime, PlotPageTableValue> yValues = data
       .getColumnValues(yAxis);
 
     plotValues = new TreeSet<PlotValue>();
@@ -147,8 +147,8 @@ public class Plot2 {
     for (LocalDateTime time : xValues.keySet()) {
       if (yValues.containsKey(time)) {
 
-        PlotPageTableColumn x = xValues.get(time);
-        PlotPageTableColumn y = yValues.get(time);
+        PlotPageTableValue x = xValues.get(time);
+        PlotPageTableValue y = yValues.get(time);
 
         PlotValue plotValue = null;
 

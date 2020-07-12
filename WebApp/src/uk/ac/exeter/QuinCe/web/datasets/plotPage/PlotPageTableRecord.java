@@ -35,7 +35,7 @@ public class PlotPageTableRecord {
   /**
    * The record's columns
    */
-  private Map<Integer, PlotPageTableColumn> columns = new HashMap<Integer, PlotPageTableColumn>();
+  private Map<Integer, PlotPageTableValue> columns = new HashMap<Integer, PlotPageTableValue>();
 
   /**
    * The column index to give to the next added column.
@@ -71,11 +71,11 @@ public class PlotPageTableRecord {
    *          Indicates whether or not a user QC flag is needed.
    */
   public void addColumn(LocalDateTime value) {
-    addColumn(new SimplePlotPageTableColumn(value, false));
+    addColumn(new SimplePlotPageTableValue(value, false));
   }
 
   public void addColumn(SensorValue sensorValue, boolean used) {
-    addColumn(new SensorValuePlotPageTableColumn(sensorValue, used));
+    addColumn(new SensorValuePlotPageTableValue(sensorValue, used));
   }
 
   /**
@@ -95,11 +95,11 @@ public class PlotPageTableRecord {
   public void addColumn(String value, boolean used, Flag qcFlag,
     String qcMessage, boolean flagNeeded) {
 
-    addColumn(new SimplePlotPageTableColumn(value, used, qcFlag, qcMessage,
+    addColumn(new SimplePlotPageTableValue(value, used, qcFlag, qcMessage,
       flagNeeded));
   }
 
-  public void addColumn(PlotPageTableColumn column) {
+  public void addColumn(PlotPageTableValue column) {
     columns.put(nextColumnIndex, column);
     nextColumnIndex++;
   }
@@ -116,7 +116,7 @@ public class PlotPageTableRecord {
    * @param columns
    *          The columns to add.
    */
-  public void addAll(Collection<PlotPageTableColumn> columns) {
+  public void addAll(Collection<PlotPageTableValue> columns) {
     columns.forEach(c -> addColumn(c));
   }
 
@@ -134,7 +134,7 @@ public class PlotPageTableRecord {
     return id;
   }
 
-  protected Map<Integer, PlotPageTableColumn> getColumns() {
+  public Map<Integer, PlotPageTableValue> getColumns() {
     return columns;
   }
 }

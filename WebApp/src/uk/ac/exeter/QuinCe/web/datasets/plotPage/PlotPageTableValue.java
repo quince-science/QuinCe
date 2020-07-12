@@ -9,7 +9,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
  * @author Steve Jones
  *
  */
-public interface PlotPageTableColumn {
+public interface PlotPageTableValue {
 
   /**
    * Get the unique ID for this column value.
