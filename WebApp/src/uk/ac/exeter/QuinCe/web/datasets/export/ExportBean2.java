@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -40,6 +41,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @ManagedBean
@@ -306,57 +308,96 @@ public class ExportBean2 extends BaseManagedBean {
       StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
     output.append('\n');
 
-    /*
-     *
-     * // Headers List<String> headers = new ArrayList<String>();
-     * headers.add(exportOption.getTimestampHeader());
-     *
-     * List<ExportField> exportFields = new ArrayList<ExportField>();
-     *
-     * for (FieldSet fieldSet : data.getFieldSets().keySet()) {
-     *
-     * if (fieldSet.getId() <= 0 ||
-     * exportOption.getVariables().contains(fieldSet.getId())) { for (Field
-     * field : data.getFieldSets().get(fieldSet)) { ExportField exportField =
-     * (ExportField) field; if (!exportField.isDiagnostic()) {
-     * exportFields.add(exportField); String header = exportField.getFullName();
-     * headers.add(header); if (exportField.hasQC()) { headers.add(header +
-     * exportOption.getQcFlagSuffix()); if (exportOption.includeQCComments()) {
-     * headers.add(header + exportOption.getQcCommentSuffix()); } } } } } }
-     *
-     * output.append( StringUtils.collectionToDelimited(headers,
-     * exportOption.getSeparator())); output.append('\n');
-     *
-     * for (LocalDateTime rowId : data.keySet()) {
-     *
-     * output.append(DateTimeUtils.toIsoDate(rowId));
-     *
-     * for (Map.Entry<Field, FieldValue> entry : data.get(rowId).entrySet()) {
-     * ExportField field = (ExportField) entry.getKey(); if
-     * (!field.isDiagnostic()) { if (exportFields.contains(field)) { FieldValue
-     * fieldValue = entry.getValue();
-     * output.append(exportOption.getSeparator()); if (null == fieldValue ||
-     * fieldValue.isNaN() || fieldValue.isGhost()) {
-     * output.append(exportOption.getMissingValue()); } else {
-     * output.append(numberFormatter.format(fieldValue.getValue())); }
-     *
-     * if (field.hasQC()) { output.append(exportOption.getSeparator()); if (null
-     * == fieldValue || fieldValue.isGhost()) {
-     * output.append(exportOption.getMissingValue()); } else { if
-     * (!dataset.isNrt() && fieldValue.needsFlag()) {
-     * output.append(Flag.NEEDED.getWoceValue()); } else {
-     * output.append(fieldValue.getQcFlag().getWoceValue()); } }
-     *
-     * if (exportOption.includeQCComments()) {
-     * output.append(exportOption.getSeparator()); if (null == fieldValue ||
-     * fieldValue.isGhost()) { output.append(""); } else { output.append(
-     * StringUtils.makeCsvString(fieldValue.getQcComment())); } } } } } }
-     *
-     * output.append('\n'); }
-     *
-     */
+    // Process each row of the data
+    for (Long rowId : data.getRowIDs()) {
+
+      boolean firstColumn = true;
+
+      // Sensor columns
+      for (PlotPageColumnHeading column : exportColumns) {
+
+        // Separator management. Add a separator before the column details,
+        // unless we're on the first column
+        if (firstColumn) {
+          firstColumn = false;
+        } else {
+          output.append(exportOption.getSeparator());
+        }
+
+        PlotPageTableValue value = data.getColumnValue(rowId, column.getId());
+        addValueToOutput(output, exportOption, column.getId(), value,
+          column.getId() != FileDefinition.TIME_COLUMN_ID);
+      }
+
+      for (InstrumentVariable variable : exportOption.getVariables()) {
+        if (instrument.getVariables().contains(variable)) {
+
+          List<CalculationParameter> params = DataReducerFactory
+            .getCalculationParameters(variable,
+              exportOption.includeCalculationColumns());
+
+          for (CalculationParameter param : params) {
+            // Separator management. Add a separator before the column details,
+            // unless we're on the first column
+            if (firstColumn) {
+              firstColumn = false;
+            } else {
+              output.append(exportOption.getSeparator());
+            }
+
+            PlotPageTableValue value = data.getColumnValue(rowId,
+              param.getId());
+            addValueToOutput(output, exportOption, param.getId(), value,
+              param.isResult());
+          }
+        }
+      }
+
+      output.append("\n");
+    }
 
     return output.toString().getBytes();
+  }
+
+  private static void addValueToOutput(StringBuilder output,
+    ExportOption exportOption, long columnId, PlotPageTableValue value,
+    boolean includeQcColumns) {
+
+    if (null == value) {
+      // Value
+      output.append(exportOption.getMissingValue());
+      output.append(exportOption.getSeparator());
+
+      // QC Flag
+      if (includeQcColumns) {
+        output.append(Flag.VALUE_NO_QC);
+
+        // QC Comment if required
+        if (exportOption.includeQCComments()) {
+          output.append(exportOption.getSeparator());
+        }
+      }
+    } else {
+
+      // Value
+      if (null == value.getValue()) {
+        output.append(exportOption.getMissingValue());
+      } else {
+        output.append(exportOption.format(value.getValue()));
+      }
+
+      // QC Flag
+      if (columnId != FileDefinition.TIME_COLUMN_ID) {
+        output.append(exportOption.getSeparator());
+        output.append(value.getQcFlag().getWoceValue());
+
+        // QC Comment
+        if (exportOption.includeQCComments()) {
+          output.append(exportOption.getSeparator());
+          output.append(exportOption.format(value.getQcMessage()));
+        }
+      }
+    }
   }
 
   private static void addHeader(List<String> headers, ExportOption exportOption,

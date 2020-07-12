@@ -27,7 +27,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableColumn;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageDataStructure;
 
@@ -184,7 +184,7 @@ public class InternalCalibration2Data extends PlotPage2Data {
   }
 
   @Override
-  protected List<Long> getRowIDs() {
+  public List<Long> getRowIDs() {
     List<Long> result = null;
 
     if (null != dataStructure) {
@@ -202,7 +202,7 @@ public class InternalCalibration2Data extends PlotPage2Data {
   }
 
   @Override
-  protected TreeMap<LocalDateTime, PlotPageTableColumn> getColumnValues(
+  protected TreeMap<LocalDateTime, PlotPageTableValue> getColumnValues(
     PlotPageColumnHeading column) throws Exception {
 
     return dataStructure.getColumnValues(column);

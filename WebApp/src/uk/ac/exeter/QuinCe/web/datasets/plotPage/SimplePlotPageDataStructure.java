@@ -20,7 +20,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  *
  * <p>
  * This is a nested map of {@link LocalDateTime} ->
- * {@link PlotPageColumnHeading} -> {@link PlotPageTableColumn}.
+ * {@link PlotPageColumnHeading} -> {@link PlotPageTableValue}.
  * </p>
  *
  * <p>
@@ -54,10 +54,10 @@ public class SimplePlotPageDataStructure {
   /**
    * The main data structure, with columns organised by date and column
    */
-  private TreeMap<LocalDateTime, LinkedHashMap<PlotPageColumnHeading, PlotPageTableColumn>> pageData;
+  private TreeMap<LocalDateTime, LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue>> pageData;
 
   public SimplePlotPageDataStructure(List<PlotPageColumnHeading> list) {
-    pageData = new TreeMap<LocalDateTime, LinkedHashMap<PlotPageColumnHeading, PlotPageTableColumn>>();
+    pageData = new TreeMap<LocalDateTime, LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue>>();
     this.columnHeadings = Collections.unmodifiableList(list);
     timeHeading = getTimeHeading();
   }
@@ -65,11 +65,11 @@ public class SimplePlotPageDataStructure {
   private void addTime(LocalDateTime time) {
 
     // Create an empty map of all the columns
-    LinkedHashMap<PlotPageColumnHeading, PlotPageTableColumn> columns = new LinkedHashMap<PlotPageColumnHeading, PlotPageTableColumn>();
+    LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue> columns = new LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue>();
     columnHeadings.forEach(x -> columns.put(x, null));
 
     if (null != timeHeading) {
-      columns.put(timeHeading, new SimplePlotPageTableColumn(time, false));
+      columns.put(timeHeading, new SimplePlotPageTableValue(time, false));
     }
 
     pageData.put(time, columns);
@@ -116,10 +116,10 @@ public class SimplePlotPageDataStructure {
     return result;
   }
 
-  public TreeMap<LocalDateTime, PlotPageTableColumn> getColumnValues(
+  public TreeMap<LocalDateTime, PlotPageTableValue> getColumnValues(
     PlotPageColumnHeading column) throws Exception {
 
-    TreeMap<LocalDateTime, PlotPageTableColumn> result = new TreeMap<LocalDateTime, PlotPageTableColumn>();
+    TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
 
     for (LocalDateTime time : pageData.keySet()) {
       for (PlotPageColumnHeading heading : pageData.get(time).keySet()) {
@@ -144,7 +144,7 @@ public class SimplePlotPageDataStructure {
    *          The value
    */
   public void add(LocalDateTime time, PlotPageColumnHeading heading,
-    PlotPageTableColumn value) {
+    PlotPageTableValue value) {
 
     if (!pageData.containsKey(time)) {
       // Create the time entry
@@ -169,7 +169,7 @@ public class SimplePlotPageDataStructure {
     }
 
     pageData.get(time).put(heading,
-      new SensorValuePlotPageTableColumn(value, used));
+      new SensorValuePlotPageTableValue(value, used));
   }
 
   private PlotPageColumnHeading getTimeHeading() {
@@ -202,14 +202,14 @@ public class SimplePlotPageDataStructure {
 
     for (LocalDateTime time : times) {
 
-      Map<PlotPageColumnHeading, PlotPageTableColumn> timeEntry = pageData
+      Map<PlotPageColumnHeading, PlotPageTableValue> timeEntry = pageData
         .get(time);
       if (null != timeEntry) {
-        PlotPageTableColumn column = timeEntry.get(heading);
+        PlotPageTableValue column = timeEntry.get(heading);
         if (null != column) {
-          if (column instanceof SensorValuePlotPageTableColumn) {
+          if (column instanceof SensorValuePlotPageTableValue) {
             result
-              .add(((SensorValuePlotPageTableColumn) column).getSensorValue());
+              .add(((SensorValuePlotPageTableValue) column).getSensorValue());
           }
         }
       }

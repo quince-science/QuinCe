@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
-import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 
 /**
  * Holds the properties of a column heading on the plot page.
@@ -163,28 +162,6 @@ public class PlotPageColumnHeading extends ColumnHeading {
   public long getSelectionColumn() {
     return selectionColumn;
   }
-
-  /**
-   * Build a list of {@link ColumnHeader}s from a list of column names with the
-   * specified {@link #numeric} flag.
-   *
-   * @param names
-   *          The column names.
-   * @param numeric
-   *          The {@link #numeric} flag to use for the columns.
-   * @param editable
-   *          The {@link #editable} flag to use for the columns.
-   * @return The list of {@link PlotPageColumnHeading} objects.
-   */
-  /*
-   * public static List<PlotPageColumnHeading> headingList( Map<String, Long>
-   * headings, boolean numeric, boolean editable) {
-   *
-   * return headings.entrySet().stream() .map(x -> new
-   * PlotPageColumnHeading(x.getValue(), x.getKey(), numeric, editable))
-   * .collect(Collectors.toList()); }
-   *
-   */
 
   public Double getReferenceValue() {
     return referenceValue;

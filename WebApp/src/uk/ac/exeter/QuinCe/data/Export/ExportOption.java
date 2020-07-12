@@ -434,7 +434,12 @@ public class ExportOption {
   }
 
   public String getReplacementHeader(String code) {
-    return replacementColumnHeaders.get(code);
+    String result = null;
+    if (null != replacementColumnHeaders
+      && null != replacementColumnHeaders.get(code)) {
+      result = replacementColumnHeaders.get(code);
+    }
+    return result;
   }
 
   /**
@@ -499,5 +504,26 @@ public class ExportOption {
     }
 
     return result;
+  }
+
+  /**
+   * Format a field value to fit the export format.
+   *
+   * <p>
+   * Newlines are replaced with semicolons. Instances of the separator are
+   * replaced with spaces.
+   * </p>
+   *
+   * @param fieldValue
+   * @return
+   */
+  public String format(String fieldValue) {
+    if (null == fieldValue) {
+      return fieldValue;
+    } else {
+      String newlinesRemoved = fieldValue.replaceAll("\n", ";");
+      String separatorsRemoved = newlinesRemoved.replaceAll(separator, " ");
+      return separatorsRemoved;
+    }
   }
 }

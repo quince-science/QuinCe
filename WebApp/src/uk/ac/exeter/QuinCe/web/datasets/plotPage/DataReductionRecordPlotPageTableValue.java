@@ -4,8 +4,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
-public class DataReductionRecordPlotPageTableColumn
-  implements PlotPageTableColumn {
+public class DataReductionRecordPlotPageTableValue
+  implements PlotPageTableValue {
 
   private final DataReductionRecord record;
 
@@ -19,7 +19,7 @@ public class DataReductionRecordPlotPageTableColumn
    * @param parameterName
    *          The parameter.
    */
-  public DataReductionRecordPlotPageTableColumn(DataReductionRecord record,
+  public DataReductionRecordPlotPageTableValue(DataReductionRecord record,
     String parameterName) {
 
     this.record = record;
