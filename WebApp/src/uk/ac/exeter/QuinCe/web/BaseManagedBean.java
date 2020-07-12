@@ -1,7 +1,5 @@
 package uk.ac.exeter.QuinCe.web;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -76,16 +74,6 @@ public abstract class BaseManagedBean {
    * Set this to force reloading the instrument even though it is already set
    */
   private boolean forceInstrumentReload = false;
-
-  /**
-   * Formatter for numeric values All values are displayed to 3 decimal places.
-   */
-  protected static DecimalFormat numberFormatter;
-
-  static {
-    numberFormatter = new DecimalFormat("#0.000");
-    numberFormatter.setRoundingMode(RoundingMode.HALF_UP);
-  }
 
   /**
    * Set a message that can be displayed to the user on a form
