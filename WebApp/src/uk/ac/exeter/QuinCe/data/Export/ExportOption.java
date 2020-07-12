@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
@@ -18,6 +19,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.export.Export2Data;
 
 /**
@@ -518,12 +520,18 @@ public class ExportOption {
    * @return
    */
   public String format(String fieldValue) {
+    String result = null;
+
     if (null == fieldValue) {
-      return fieldValue;
+      result = fieldValue;
+    } else if (NumberUtils.isCreatable(fieldValue)) {
+      result = StringUtils.formatNumber(fieldValue);
     } else {
-      String newlinesRemoved = fieldValue.replaceAll("\n", ";");
+      String newlinesRemoved = fieldValue.replaceAll("[\\r\\n]", " ");
       String separatorsRemoved = newlinesRemoved.replaceAll(separator, " ");
       return separatorsRemoved;
     }
+
+    return result;
   }
 }

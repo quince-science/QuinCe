@@ -674,7 +674,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
       qcComment = "Missing";
       lonOK = false;
     } else {
-      value.append(numberFormatter.format(lonValue));
+      value.append(StringUtils.formatNumber(lonValue));
       flag = lonFieldValue.getQcFlag();
       needsFlag = lonFieldValue.needsFlag();
       qcComment = lonFieldValue.getQcComment();
@@ -689,7 +689,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
       qcComment = "Missing";
       latOK = false;
     } else {
-      value.append(numberFormatter.format(latValue));
+      value.append(StringUtils.formatNumber(latValue));
       flag = latFieldValue.getQcFlag();
       needsFlag = latFieldValue.needsFlag();
       qcComment = latFieldValue.getQcComment();

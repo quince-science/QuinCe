@@ -433,6 +433,16 @@ public final class StringUtils {
     return result;
   }
 
+  public static String formatNumber(Double value) {
+    String result = null;
+
+    if (null != value) {
+      result = threeDecimalPoints.format(value);
+    }
+
+    return result;
+  }
+
   public static String tabToSpace(String in) {
 
     String result = null;
