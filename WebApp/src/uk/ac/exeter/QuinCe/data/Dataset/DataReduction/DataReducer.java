@@ -95,7 +95,17 @@ public abstract class DataReducer {
       allSensorValues, conn);
 
     for (MeasurementValue value : measurementValues.getAllValues()) {
-      record.setQc(value.getQcFlag(), value.getQcMessages());
+
+      List<String> qcMessages = value.getQcMessages();
+
+      Flag cascadeFlag = variable.getCascade(value.getSensorType(),
+        value.getQcFlag(), instrument.getSensorAssignments());
+
+      if (cascadeFlag.equals(Flag.GOOD)) {
+        qcMessages = null;
+      }
+
+      record.setQc(cascadeFlag, qcMessages);
     }
 
     return record;
