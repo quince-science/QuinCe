@@ -26,7 +26,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -366,11 +365,11 @@ public class ExportBean2 extends BaseManagedBean {
     if (null == value) {
       // Value
       output.append(exportOption.getMissingValue());
-      output.append(exportOption.getSeparator());
 
       // QC Flag
-      if (includeQcColumns) {
-        output.append(Flag.VALUE_NO_QC);
+      if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
+        output.append(exportOption.getSeparator());
+        output.append(exportOption.getMissingValue());
 
         // QC Comment if required
         if (exportOption.includeQCComments()) {
@@ -387,7 +386,7 @@ public class ExportBean2 extends BaseManagedBean {
       }
 
       // QC Flag
-      if (columnId != FileDefinition.TIME_COLUMN_ID) {
+      if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
         output.append(exportOption.getSeparator());
         output.append(value.getQcFlag().getWoceValue());
 
