@@ -77,8 +77,12 @@ public class NoEmptyStringList extends ArrayList<String> {
    * @return The filtered and trimmed collection
    */
   private static List<String> filterCollection(Collection<? extends String> c) {
-    return c.stream().filter(NoEmptyStringList::isValid).map(String::trim)
-      .collect(Collectors.toList());
+    if (null == c) {
+      return new ArrayList<String>();
+    } else {
+      return c.stream().filter(NoEmptyStringList::isValid).map(String::trim)
+        .collect(Collectors.toList());
+    }
   }
 
   @Override
