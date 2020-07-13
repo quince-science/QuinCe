@@ -63,7 +63,7 @@ public final class StringUtils {
 
     if (null != collection) {
       result = collection.stream().map(c -> c.toString())
-        .collect(Collectors.joining(null == delimiter ? "" : delimiter.trim()));
+        .collect(Collectors.joining(null == delimiter ? "" : delimiter));
     }
 
     return result;

@@ -312,16 +312,23 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test that
    * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
-   * with an empty/null delimiter joins strings with no delimiter.
+   * with a null delimiter joins strings with no delimiter.
    */
-  @ParameterizedTest
-  @MethodSource("createNullEmptyStrings")
-  public void listToDelimitedNullDelimiterTest(String delimiter) {
+  @Test
+  public void listToDelimitedNullDelimiterTest() {
     ArrayList<String> list = new ArrayList<String>(2);
     list.add("a");
     list.add("b");
 
-    assertTrue("ab".equals(StringUtils.collectionToDelimited(list, delimiter)));
+    assertTrue("ab".equals(StringUtils.collectionToDelimited(list, null)));
+  }
+
+  public void listToDelimitedTabDelimiterTest() {
+    ArrayList<String> list = new ArrayList<String>(2);
+    list.add("a");
+    list.add("b");
+
+    assertTrue("a\tb".equals(StringUtils.collectionToDelimited(list, "\t")));
   }
 
   /**
