@@ -711,6 +711,12 @@ public class DataSetDataDB {
     try (PreparedStatement dataReductionStmt = conn
       .prepareStatement(STORE_DATA_REDUCTION_STATEMENT)) {
       for (DataReductionRecord dataReduction : dataReductionRecords) {
+
+        if (dataReduction instanceof ReadOnlyDataReductionRecord) {
+          throw new DatabaseException(
+            "Attempt to store a read-only DataReductionRecord");
+        }
+
         dataReductionStmt.setLong(1, dataReduction.getMeasurementId());
         dataReductionStmt.setLong(2, dataReduction.getVariableId());
         dataReductionStmt.setString(3, dataReduction.getCalculationJson());

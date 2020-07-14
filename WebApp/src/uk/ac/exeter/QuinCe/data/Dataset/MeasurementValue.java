@@ -143,4 +143,8 @@ public class MeasurementValue {
 
     return result;
   }
+
+  public SensorType getSensorType() {
+    return sensorType;
+  }
 }

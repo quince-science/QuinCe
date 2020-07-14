@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +72,10 @@ public class DataReductionRecord {
     this.qcFlag = qcFlag;
     this.qcMessages = qcMessages;
 
+  }
+
+  public void setQc(Flag flag, String message) {
+    setQc(flag, Arrays.asList(new String[] { message }));
   }
 
   /**

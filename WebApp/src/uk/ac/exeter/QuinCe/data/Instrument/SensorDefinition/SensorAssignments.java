@@ -744,6 +744,15 @@ public class SensorAssignments
     return result;
   }
 
+  public List<Long> getColumnIds(String sensorTypeName)
+    throws SensorTypeNotFoundException {
+
+    SensorType sensorType = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType(sensorTypeName);
+
+    return getColumnIds(sensorType);
+  }
+
   public List<Long> getColumnIds(SensorType sensorType) {
 
     List<Long> result = null;
