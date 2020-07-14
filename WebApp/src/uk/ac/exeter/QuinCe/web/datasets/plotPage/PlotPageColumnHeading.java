@@ -114,7 +114,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
   }
 
   /**
-   * Construct a plot page heading from a calculation parameter
+   * Construct a plot page heading from a generic column heading
    *
    * @param calculationParameter
    *          The calculation parameter
@@ -130,7 +130,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
   }
 
   /**
-   * Construct a plot page heading from a calculation parameter
+   * Construct a plot page heading from a generic column heading
    *
    * @param calculationParameter
    *          The calculation parameter
