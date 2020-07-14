@@ -426,12 +426,12 @@ public class ExportBean2 extends BaseManagedBean {
         throw new ExportException("Unrecognised header mode");
       }
       }
+    }
 
-      if (exportOption.includeUnits()) {
-        headers.add(header + " [" + heading.getUnits() + ']');
-      } else {
-        headers.add(header);
-      }
+    if (exportOption.includeUnits()) {
+      headers.add(header + " [" + heading.getUnits() + ']');
+    } else {
+      headers.add(header);
     }
 
     if (heading.hasQC()) {

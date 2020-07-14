@@ -102,7 +102,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
         "μmol mol-1", false));
       calculationParameters.add(new CalculationParameter(makeParameterId(4),
         "pCO₂ TE Wet", "pCO₂ In Water - Equilibrator Temperature", "PCO2IG02",
-        "μatm", true));
+        "μatm", false));
       calculationParameters.add(new CalculationParameter(makeParameterId(5),
         "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true));
       calculationParameters.add(new CalculationParameter(makeParameterId(6),

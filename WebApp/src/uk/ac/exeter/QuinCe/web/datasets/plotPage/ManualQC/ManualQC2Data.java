@@ -50,7 +50,7 @@ public class ManualQC2Data extends PlotPage2Data {
   /**
    * The Measurement objects for the dataset
    */
-  private TreeMap<LocalDateTime, Measurement> measurements = null;
+  protected TreeMap<LocalDateTime, Measurement> measurements = null;
 
   /**
    * All row IDs for the dataset. Row IDs are the millisecond values of the
@@ -61,12 +61,12 @@ public class ManualQC2Data extends PlotPage2Data {
   /**
    * The dataset's sensor values.
    */
-  private DatasetSensorValues sensorValues = null;
+  protected DatasetSensorValues sensorValues = null;
 
   /**
    * The values calculated by data reduction.
    */
-  private Map<Long, Map<InstrumentVariable, DataReductionRecord>> dataReduction = null;
+  protected Map<Long, Map<InstrumentVariable, DataReductionRecord>> dataReduction = null;
 
   /**
    * The list of sensor column IDs in the same order as they are represented in
@@ -848,5 +848,23 @@ public class ManualQC2Data extends PlotPage2Data {
     }
 
     return result;
+  }
+
+  protected DataReductionRecord getDataReductionRecord(long rowId,
+    InstrumentVariable variable) {
+
+    DataReductionRecord result = null;
+
+    LocalDateTime rowTime = DateTimeUtils.longToDate(rowId);
+    Measurement measurement = measurements.get(rowTime);
+
+    Map<InstrumentVariable, DataReductionRecord> rowRecords = dataReduction
+      .get(measurement.getId());
+    if (null != rowRecords) {
+      result = rowRecords.get(variable);
+    }
+
+    return result;
+
   }
 }

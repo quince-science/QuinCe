@@ -375,12 +375,10 @@ public class Instrument {
    *
    * @param variableId
    *          The variable name
-   * @return The InstrumentVariable
-   * @throws InstrumentException
-   *           If the variable is not found
+   * @return The InstrumentVariable, or null if the instrument does not have the
+   *         variable defined.
    */
-  public InstrumentVariable getVariable(String name)
-    throws InstrumentException {
+  public InstrumentVariable getVariable(String name) {
     InstrumentVariable result = null;
 
     for (InstrumentVariable variable : variables) {
@@ -390,10 +388,6 @@ public class Instrument {
       }
     }
 
-    if (null == result) {
-      throw new InstrumentException(
-        "Variable with name " + name + " is not part of this instrument");
-    }
     return result;
   }
 
