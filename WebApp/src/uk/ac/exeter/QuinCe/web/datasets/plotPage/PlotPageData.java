@@ -93,7 +93,7 @@ public abstract class PlotPageData {
   /**
    * The IDs of the selected rows
    */
-  protected List<Long> selectedRows = null;
+  protected List<Long> selectedRows = new ArrayList<Long>();
 
   /**
    * The ID of the row that was just selected/deselected
