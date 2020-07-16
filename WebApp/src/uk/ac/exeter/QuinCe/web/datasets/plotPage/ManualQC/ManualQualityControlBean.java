@@ -18,7 +18,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 
 @ManagedBean
 @SessionScoped
-public class ManualQCBean extends PlotPageBean {
+public class ManualQualityControlBean extends PlotPageBean {
 
   /**
    * The data for the page
