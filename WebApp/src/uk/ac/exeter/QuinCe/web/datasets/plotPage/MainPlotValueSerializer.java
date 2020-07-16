@@ -45,5 +45,4 @@ public class MainPlotValueSerializer implements JsonSerializer<PlotValue> {
 
     return json;
   }
-
 }

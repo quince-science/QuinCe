@@ -38,8 +38,8 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTableValue;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
@@ -277,8 +277,8 @@ public class ManualQCData extends PlotPageData {
         PlotPageTableRecord record = new PlotPageTableRecord(times.get(i));
 
         // Get the run type from the closest measurement
-        Measurement concurrentMeasurement = measurements
-          .get(measurements.floorKey(times.get(i)));
+        Measurement concurrentMeasurement = getConcurrentMeasurement(
+          times.get(i));
         String runType = null == concurrentMeasurement ? null
           : concurrentMeasurement.getRunType();
 
@@ -317,8 +317,8 @@ public class ManualQCData extends PlotPageData {
             .getSensorTypeForDBColumn(columnId);
 
           if (sensorType.hasInternalCalibration()
-            && instrument.getRunTypeCategory(runType)
-              .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+            && (null == runType || instrument.getRunTypeCategory(runType)
+              .equals(RunTypeCategory.INTERNAL_CALIBRATION))) {
             record.addBlankColumn();
           } else {
             record.addColumn(recordSensorValues.get(columnId), false);
@@ -331,7 +331,12 @@ public class ManualQCData extends PlotPageData {
           }
         }
 
-        Long measurementId = measurements.get(times.get(i)).getId();
+        Long measurementId = null;
+        Measurement measurement = measurements.get(times.get(i));
+        if (null != measurement) {
+          measurementId = measurement.getId();
+        }
+
         Map<InstrumentVariable, DataReductionRecord> dataReductionData = null;
 
         if (null != measurementId) {
@@ -702,14 +707,14 @@ public class ManualQCData extends PlotPageData {
           .getColumnValues(column.getId())) {
 
           // Get the run type from the closest measurement
-          Measurement concurrentMeasurement = measurements
-            .get(measurements.floorKey(sensorValue.getTime()));
+          Measurement concurrentMeasurement = getConcurrentMeasurement(
+            sensorValue.getTime());
           String runType = null == concurrentMeasurement ? null
             : concurrentMeasurement.getRunType();
 
           // Only include the value if the run type is not an internal
           // calibration
-          if (!instrument.getRunTypeCategory(runType)
+          if (null != runType && !instrument.getRunTypeCategory(runType)
             .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
 
             result.put(sensorValue.getTime(),
@@ -808,14 +813,14 @@ public class ManualQCData extends PlotPageData {
 
         if (sensorType.hasInternalCalibration()) {
 
-          Measurement concurrentMeasurement = measurements
-            .get(measurements.floorKey(sensorValue.getTime()));
+          Measurement concurrentMeasurement = getConcurrentMeasurement(
+            sensorValue.getTime());
           String runType = null == concurrentMeasurement ? null
             : concurrentMeasurement.getRunType();
 
           // Only include the value if the run type is not an internal
           // calibration
-          if (instrument.getRunTypeCategory(runType)
+          if (null == runType || instrument.getRunTypeCategory(runType)
             .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
             useValue = false;
           }
@@ -866,5 +871,14 @@ public class ManualQCData extends PlotPageData {
 
     return result;
 
+  }
+
+  private Measurement getConcurrentMeasurement(LocalDateTime time) {
+    Measurement concurrentMeasurement = null;
+    LocalDateTime measurementTime = measurements.floorKey(time);
+    if (null != measurementTime) {
+      concurrentMeasurement = measurements.get(measurementTime);
+    }
+    return concurrentMeasurement;
   }
 }
