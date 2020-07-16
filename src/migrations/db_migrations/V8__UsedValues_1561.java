@@ -144,6 +144,8 @@ public class V8__UsedValues_1561 extends BaseJavaMigration {
           double longitude = measurements.getDouble(4);
           double latitude = measurements.getDouble(5);
 
+          // We used to have multiple measurement records for each variable.
+          // These are now reduced to one measurement record.
           boolean newMeasurement = !(datasetId == currentDataset
             && time == currentTime);
 
@@ -177,46 +179,30 @@ public class V8__UsedValues_1561 extends BaseJavaMigration {
     long trueMeasurementId, long datasetId, long time, double longitude,
     double latitude) throws SQLException, InvalidFlagException {
 
-    // Loop through each sensor_value_id for this measurement
-    try (PreparedStatement sensorValueQuery = conn
-      .prepareStatement("SELECT mv.sensor_value_id, sv.file_column "
+    try (PreparedStatement migrateSensorValuesStmt = conn
+      .prepareStatement("INSERT IGNORE INTO "
+        + "measurement_values (measurement_id, file_column_id, prior) "
+        + "SELECT ?, sv.file_column, mv.sensor_value_id "
         + "FROM measurement_values_old mv "
         + "INNER JOIN sensor_values sv ON mv.sensor_value_id = sv.id "
-        + "INNER JOIN file_column fc on sv.file_column = fc.id "
+        + "INNER JOIN file_column fc ON sv.file_column = fc.id "
         + "WHERE mv.measurement_id = ?")) {
 
-      sensorValueQuery.setLong(1, originalMeasurementId);
+      migrateSensorValuesStmt.setLong(1, trueMeasurementId);
+      migrateSensorValuesStmt.setLong(2, originalMeasurementId);
+      migrateSensorValuesStmt.execute();
 
-      try (ResultSet sensorValueDetails = sensorValueQuery.executeQuery()) {
-
-        while (sensorValueDetails.next()) {
-
-          long sensorValueId = sensorValueDetails.getLong(1);
-          long fileColumnId = sensorValueDetails.getLong(2);
-
-          // See if these details are already in the new table. If not, add
-          // them.
-          if (!newTableContains(conn, trueMeasurementId, fileColumnId)) {
-            addMeasurementValue(conn, trueMeasurementId, fileColumnId,
-              sensorValueId);
-          }
-        }
-      }
     }
 
     // Add the position values
     if (!newTableContains(conn, trueMeasurementId,
       FileDefinition.LONGITUDE_COLUMN_ID)) {
 
-      long lonValueId = getPositionValueId(conn, datasetId, time,
-        FileDefinition.LONGITUDE_COLUMN_ID);
+      long[] posValueIds = getPositionValueIds(conn, datasetId, time);
       addMeasurementValue(conn, trueMeasurementId,
-        FileDefinition.LONGITUDE_COLUMN_ID, lonValueId);
-
-      long latValueId = getPositionValueId(conn, datasetId, time,
-        FileDefinition.LATITUDE_COLUMN_ID);
+        FileDefinition.LONGITUDE_COLUMN_ID, posValueIds[0]);
       addMeasurementValue(conn, trueMeasurementId,
-        FileDefinition.LATITUDE_COLUMN_ID, latValueId);
+        FileDefinition.LATITUDE_COLUMN_ID, posValueIds[1]);
     }
   }
 
@@ -283,23 +269,26 @@ public class V8__UsedValues_1561 extends BaseJavaMigration {
     return false;
   }
 
-  private long getPositionValueId(Connection conn, long datasetId, long time,
-    long positionColumn) throws SQLException, InvalidFlagException {
+  private long[] getPositionValueIds(Connection conn, long datasetId, long time)
+    throws SQLException, InvalidFlagException {
 
-    long result;
+    long[] result = null;
 
     // Transfer the longitude and latitude
     try (PreparedStatement posStmt = conn.prepareStatement(
       "SELECT id FROM sensor_values WHERE dataset_id = ? AND date = ? "
-        + "AND file_column = ?")) {
+        + "AND file_column IN (-1000, -1001) ORDER BY file_column DESC")) {
 
       posStmt.setLong(1, datasetId);
       posStmt.setLong(2, time);
-      posStmt.setLong(3, positionColumn);
 
       try (ResultSet posRecord = posStmt.executeQuery()) {
         posRecord.next();
-        result = posRecord.getLong(1);
+        long lon = posRecord.getLong(1);
+        posRecord.next();
+        long lat = posRecord.getLong(1);
+
+        result = new long[] { lon, lat };
       }
     }
 
