@@ -6,7 +6,7 @@
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/basic_page.xhtml">
   <ui:define name="title">Export</ui:define>
-  <ui:define name="pageTitle">Export Dataset #{exportBean2.dataset.name}</ui:define>
+  <ui:define name="pageTitle">Export Dataset #{exportBean.dataset.name}</ui:define>
   <ui:define name="content">
     <h:form id="exportForm" method="post">
       <div style="text-align: center">
@@ -14,13 +14,13 @@
           want, and then click 'Export'</div>
         <p:outputPanel id="exportOptions">
           <p:selectOneRadio id="exportOption"
-            value="#{exportBean2.chosenExportOption}" layout="custom">
-            <f:selectItems value="#{exportBean2.exportOptions}" var="x"
+            value="#{exportBean.chosenExportOption}" layout="custom">
+            <f:selectItems value="#{exportBean.exportOptions}" var="x"
               itemValue="#{x.index}" itemLabel="" />
           </p:selectOneRadio>
           <table class="minimalCentered">
-            <c:forEach var="option" items="#{exportBean2.exportOptions}">
-              <ui:fragment rendered="#{option.visible or exportBean2.user.adminUser}">
+            <c:forEach var="option" items="#{exportBean.exportOptions}">
+              <ui:fragment rendered="#{option.visible or exportBean.user.adminUser}">
                 <tr>
                   <td><p:radioButton id="exportOption_#{option.index}"
                       for="exportOption" itemIndex="#{option.index}" /></td>
@@ -31,14 +31,14 @@
             </c:forEach>
           </table>
           <p:selectBooleanCheckbox id="includeRaw"
-            value="#{exportBean2.includeRawFiles}" />
+            value="#{exportBean.includeRawFiles}" />
           <p:outputLabel for="@previous"
             value=" Include raw data files in export?" />
         </p:outputPanel>
       </div>
       <h:panelGrid columns="1" styleClass="buttonPanel">
         <p:commandButton value="Export..." ajax="false"
-          action="#{exportBean2.exportDataset}" />
+          action="#{exportBean.exportDataset}" />
       </h:panelGrid>
       <h:panelGrid columns="1" styleClass="buttonPanel">
         <p:commandButton value="Back to Data Sets" ajax="false"

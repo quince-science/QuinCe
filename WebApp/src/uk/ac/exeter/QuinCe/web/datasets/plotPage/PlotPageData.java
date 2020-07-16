@@ -27,7 +27,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
-public abstract class PlotPage2Data {
+public abstract class PlotPageData {
 
   /**
    * Indicates a select action
@@ -113,12 +113,12 @@ public abstract class PlotPage2Data {
   /**
    * Details for the first plot
    */
-  private Plot2 plot1 = null;
+  private Plot plot1 = null;
 
   /**
    * Details for the second plot
    */
-  private Plot2 plot2 = null;
+  private Plot plot2 = null;
 
   /**
    * The indicator of the root field group.
@@ -141,7 +141,7 @@ public abstract class PlotPage2Data {
       PlotPageTableRecord.class, new PlotPageTableRecordSerializer()).create();
   }
 
-  protected PlotPage2Data(DataSource dataSource, Instrument instrument,
+  protected PlotPageData(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
     this.conn = dataSource.getConnection();
     this.instrument = instrument;
@@ -165,8 +165,8 @@ public abstract class PlotPage2Data {
       loadDataAction();
 
       // Initialise the plots
-      plot1 = new Plot2(this, getDefaultXAxis(), getDefaultYAxis1());
-      plot2 = new Plot2(this, getDefaultXAxis(), getDefaultYAxis2());
+      plot1 = new Plot(this, getDefaultXAxis(), getDefaultYAxis1());
+      plot2 = new Plot(this, getDefaultXAxis(), getDefaultYAxis2());
 
       loaded = true;
     } catch (Exception e) {
@@ -531,7 +531,7 @@ public abstract class PlotPage2Data {
    *
    * <p>
    * The format for the JSON string is specified by
-   * {@link PlotPage2Bean#generateTableData()}.
+   * {@link PlotPageBean#generateTableData()}.
    * </p>
    *
    * @param start
@@ -540,7 +540,7 @@ public abstract class PlotPage2Data {
    *          The number of rows to generate.
    * @return The JSON string.
    *
-   * @see PlotPage2Bean#generateTableData()
+   * @see PlotPageBean#generateTableData()
    */
   public String generateTableData(int start, int length) {
 
@@ -595,7 +595,7 @@ public abstract class PlotPage2Data {
    * object.
    *
    * <p>
-   * This is used by {@link PlotPage2Data#getColumnHeadingsJson()} to construct
+   * This is used by {@link PlotPageData#getColumnHeadingsJson()} to construct
    * the JSON object.
    * </p>
    *
@@ -771,14 +771,14 @@ public abstract class PlotPage2Data {
    *
    * @return
    */
-  public Plot2 getPlot1() {
+  public Plot getPlot1() {
     return plot1;
   }
 
   /**
    * Get the details of the second plot
    */
-  public Plot2 getPlot2() {
+  public Plot getPlot2() {
     return plot2;
   }
 

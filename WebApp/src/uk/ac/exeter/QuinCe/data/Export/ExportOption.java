@@ -20,7 +20,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
-import uk.ac.exeter.QuinCe.web.datasets.export.Export2Data;
+import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
 
 /**
  * Class to hold details of a single export configuration
@@ -39,7 +39,7 @@ public class ExportOption {
   private static final String EXPORT_DATA_PACKAGE = "uk.ac.exeter.QuinCe.web.datasets.export.";
 
   private static final String DEFAULT_EXPORT_DATA_CLASS = EXPORT_DATA_PACKAGE
-    + "Export2Data";
+    + "ExportData";
 
   private int index;
 
@@ -68,7 +68,7 @@ public class ExportOption {
    * The export data class to use for this export. Used for custom
    * post-processors
    */
-  private Class<? extends Export2Data> dataClass;
+  private Class<? extends ExportData> dataClass;
 
   /**
    * Indicates whether all sensors will be exported, or just those required for
@@ -329,7 +329,7 @@ public class ExportOption {
     }
 
     try {
-      dataClass = (Class<? extends Export2Data>) Class.forName(className);
+      dataClass = (Class<? extends ExportData>) Class.forName(className);
     } catch (ClassNotFoundException e) {
       // Since we've already checked the class, this shouldn't really happen
       throw new ExportConfigurationException(name, e);
@@ -343,7 +343,7 @@ public class ExportOption {
 
     try {
       Class<? extends Object> testClass = Class.forName(className);
-      Class<Export2Data> rootClass = (Class<Export2Data>) Class
+      Class<ExportData> rootClass = (Class<ExportData>) Class
         .forName(DEFAULT_EXPORT_DATA_CLASS);
 
       if (!rootClass.isAssignableFrom(testClass)) {
@@ -450,7 +450,7 @@ public class ExportOption {
    *
    * @return The export data class
    */
-  public Class<? extends Export2Data> getExportDataClass() {
+  public Class<? extends ExportData> getExportDataClass() {
     return dataClass;
   }
 
@@ -465,15 +465,14 @@ public class ExportOption {
    *          The dataset that will be exported
    * @return The ExportData object
    */
-  public Export2Data makeExportData(DataSource dataSource,
-    Instrument instrument, DataSet dataset)
-    throws ExportConfigurationException {
+  public ExportData makeExportData(DataSource dataSource, Instrument instrument,
+    DataSet dataset) throws ExportConfigurationException {
 
     try {
       Constructor<?> constructor = dataClass.getConstructor(DataSource.class,
         Instrument.class, DataSet.class);
 
-      return (Export2Data) constructor.newInstance(dataSource, instrument,
+      return (ExportData) constructor.newInstance(dataSource, instrument,
         dataset);
     } catch (Exception e) {
       throw new ExportConfigurationException(name,

@@ -21,11 +21,21 @@ public class MainPlotValueSerializer implements JsonSerializer<PlotValue> {
     if (src.xIsTime()) {
       json.add(DateTimeUtils.toIsoDate(src.getXTime()));
     } else {
-      json.add(src.getXDouble());
+      Double x = src.getXDouble();
+      if (x.isNaN()) {
+        json.add(JsonNull.INSTANCE);
+      } else {
+        json.add(src.getXDouble());
+      }
     }
 
     json.add(src.getId());
-    if (src.isGhost()) {
+
+    Double y = src.getY();
+    if (y.isNaN()) {
+      json.add(JsonNull.INSTANCE);
+      json.add(JsonNull.INSTANCE);
+    } else if (src.isGhost()) {
       json.add(src.getY());
       json.add(JsonNull.INSTANCE);
     } else {

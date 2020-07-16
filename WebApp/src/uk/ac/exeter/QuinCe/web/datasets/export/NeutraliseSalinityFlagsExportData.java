@@ -41,7 +41,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * @author Steve Jones
  *
  */
-public class NeutraliseSalinityFlagsExportData extends Export2Data {
+public class NeutraliseSalinityFlagsExportData extends ExportData {
 
   private static final String[] CASCADE_SENSOR_TYPES = { "Intake Temperature",
     "Equilibrator Temperature", "Equilibrator Pressure (absolute)",
