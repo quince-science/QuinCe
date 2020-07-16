@@ -5,23 +5,23 @@
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/plot_page.xhtml">
 
-  <ui:param name="beanName" value="manualQCBean" />
+  <ui:param name="beanName" value="manualQualityControlBean" />
 
   <ui:define name="localHead">
     <h:outputScript name="script/manualQc.js" />
   </ui:define>
 
   <ui:define name="pageStatus">
-    Flags needed: <h:outputText value="#{manualQCBean.neededFlagCount}"/>
+    Flags needed: <h:outputText value="#{manualQualityControlBean.neededFlagCount}"/>
   </ui:define>
 
   <ui:define name="selectionFormEntries">
     <h:inputHidden id="userCommentList"
-      value="#{manualQCBean.userCommentList}" />
+      value="#{manualQualityControlBean.userCommentList}" />
     <h:inputHidden id="worstSelectedFlag"
-      value="#{manualQCBean.worstSelectedFlag}" />
+      value="#{manualQualityControlBean.worstSelectedFlag}" />
 
-    <p:remoteCommand name="submitAutoQC" action="#{manualQCBean.acceptAutoQC}"
+    <p:remoteCommand name="submitAutoQC" action="#{manualQualityControlBean.acceptAutoQC}"
       partialSubmit="true"
       process="selectedColumn selectedRows"
       update=":plotPageForm:error :plot1Form:plot1Flags :plot2Form:plot2Flags :statusForm"
@@ -29,13 +29,13 @@
       oncomplete="qcFlagsAccepted()" />
 
     <p:remoteCommand name="generateUserQCComments"
-      action="#{manualQCBean.generateUserCommentsList}"
+      action="#{manualQualityControlBean.generateUserCommentsList}"
       partialSubmit="true" process="selectedColumn selectedRows"
       update="userCommentList worstSelectedFlag :plotPageForm:error"
       oncomplete="showFlagDialog()" />
 
     <p:remoteCommand name="applyManualFlag"
-      action="#{manualQCBean.applyManualFlag}"
+      action="#{manualQualityControlBean.applyManualFlag}"
       process="selectedColumn selectedRows manualFlag manualComment"
       update=":plotPageForm:error :plot1Form:plot1Flags :plot2Form:plot2Flags :statusForm"
       onstart="itemLoading(UPDATE_DATA)"
@@ -52,14 +52,14 @@
       <h:panelGrid columns="2" width="100%">
         <p:outputLabel for="manualFlag" value="Flag:" />
         <p:selectOneMenu widgetVar="flagMenu" id="manualFlag"
-          value="#{manualQCBean.userFlag}" var="flag"
+          value="#{manualQualityControlBean.userFlag}" var="flag"
           onchange="updateFlagDialogControls()">
           <f:selectItem itemLabel="Good" itemValue="2" />
           <f:selectItem itemLabel="Questionable" itemValue="3" />
           <f:selectItem itemLabel="Bad" itemValue="4" />
         </p:selectOneMenu>
         <p:outputLabel for="manualComment" value="Comment:" />
-        <p:inputTextarea id="manualComment" value="#{manualQCBean.userComment}"
+        <p:inputTextarea id="manualComment" value="#{manualQualityControlBean.userComment}"
           style="width: 95%; height: 150px;"
           onkeyup="updateFlagDialogControls()" />
       </h:panelGrid>
