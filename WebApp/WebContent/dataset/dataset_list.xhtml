@@ -98,9 +98,9 @@
         <p:commandLink id="approveLink" ajax="true"
           action="#{dataSetsBean.approve}" oncomplete="updateList()" />
 
-        <h:inputHidden id="manualQCDatasetId" value="#{manualQCBean.datasetId}" />
+        <h:inputHidden id="manualQCDatasetId" value="#{manualQualityControlBean.datasetId}" />
         <p:commandLink id="manualQCLink" ajax="false"
-          action="#{manualQCBean.start}" />
+          action="#{manualQualityControlBean.start}" />
 
         <p:remoteCommand name="updateList" update="datasets"
           actionListener="#{dataSetsBean.updateDatasetList}" />
