@@ -4,8 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -13,24 +16,33 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.sql.DataSource;
 
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
-@Deprecated
 @ManagedBean
 @SessionScoped
 public class ExportBean extends BaseManagedBean {
@@ -41,7 +53,7 @@ public class ExportBean extends BaseManagedBean {
   private static final String NAV_EXPORT_PAGE = "export";
 
   /**
-   * The database ID of the dataset to be exported
+   * The dataset to be exported
    */
   private DataSet dataset = null;
 
@@ -56,17 +68,9 @@ public class ExportBean extends BaseManagedBean {
   private boolean includeRawFiles = false;
 
   /**
-   * The export data, organised ready for building export files
-   */
-  private ExportData exportData = null;
-
-  /**
    * Initialise the bean
    */
   public String start() {
-    // Reset the export data
-    exportData = null;
-
     return NAV_EXPORT_PAGE;
   }
 
@@ -169,14 +173,11 @@ public class ExportBean extends BaseManagedBean {
    */
   private void exportSingleFile() {
 
-    Connection conn = null;
-
     try {
-      conn = getDataSource().getConnection();
       ExportOption exportOption = getExportOptions().get(chosenExportOption);
 
-      byte[] fileContent = getDatasetExport(conn, getCurrentInstrument(),
-        dataset, exportOption);
+      byte[] fileContent = getDatasetExport(getCurrentInstrument(), dataset,
+        exportOption);
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -201,8 +202,6 @@ public class ExportBean extends BaseManagedBean {
       fc.responseComplete();
     } catch (Exception e) {
       e.printStackTrace();
-    } finally {
-      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -262,74 +261,224 @@ public class ExportBean extends BaseManagedBean {
    * @return The exported dataset
    * @throws Exception
    */
-  private static byte[] getDatasetExport(Connection conn, Instrument instrument,
-    DataSet dataset, ExportOption exportOption) throws Exception {
+  private static byte[] getDatasetExport(Instrument instrument, DataSet dataset,
+    ExportOption exportOption) throws Exception {
 
-    return new byte[] {};
-    /*
-     * DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
-     *
-     * ExportData data = exportOption.makeExportData(dataSource, instrument,
-     * dataset);
-     *
-     * data .addTimes(DataSetDataDB.getSensorValueDates(dataSource,
-     * dataset.getId()));
-     *
-     * DataSetDataDB.loadMeasurementData(dataSource, data, data.getRowIds());
-     *
-     * // Run the post-processor before generating the final output
-     * data.postProcess();
-     *
-     * // Let's make some output StringBuilder output = new StringBuilder();
-     *
-     * // Headers List<String> headers = new ArrayList<String>();
-     * headers.add(exportOption.getTimestampHeader());
-     *
-     * List<ExportField> exportFields = new ArrayList<ExportField>();
-     *
-     * for (FieldSet fieldSet : data.getFieldSets().keySet()) {
-     *
-     * if (fieldSet.getId() <= 0 ||
-     * exportOption.getVariables().contains(fieldSet.getId())) { for (Field
-     * field : data.getFieldSets().get(fieldSet)) { ExportField exportField =
-     * (ExportField) field; if (!exportField.isDiagnostic()) {
-     * exportFields.add(exportField); String header = exportField.getFullName();
-     * headers.add(header); if (exportField.hasQC()) { headers.add(header +
-     * exportOption.getQcFlagSuffix()); if (exportOption.includeQCComments()) {
-     * headers.add(header + exportOption.getQcCommentSuffix()); } } } } } }
-     *
-     * output.append( StringUtils.collectionToDelimited(headers,
-     * exportOption.getSeparator())); output.append('\n');
-     *
-     * for (LocalDateTime rowId : data.keySet()) {
-     *
-     * output.append(DateTimeUtils.toIsoDate(rowId));
-     *
-     * for (Map.Entry<Field, FieldValue> entry : data.get(rowId).entrySet()) {
-     * ExportField field = (ExportField) entry.getKey(); if
-     * (!field.isDiagnostic()) { if (exportFields.contains(field)) { FieldValue
-     * fieldValue = entry.getValue();
-     * output.append(exportOption.getSeparator()); if (null == fieldValue ||
-     * fieldValue.isNaN() || fieldValue.isGhost()) {
-     * output.append(exportOption.getMissingValue()); } else {
-     * output.append(numberFormatter.format(fieldValue.getValue())); }
-     *
-     * if (field.hasQC()) { output.append(exportOption.getSeparator()); if (null
-     * == fieldValue || fieldValue.isGhost()) {
-     * output.append(exportOption.getMissingValue()); } else { if
-     * (!dataset.isNrt() && fieldValue.needsFlag()) {
-     * output.append(Flag.NEEDED.getWoceValue()); } else {
-     * output.append(fieldValue.getQcFlag().getWoceValue()); } }
-     *
-     * if (exportOption.includeQCComments()) {
-     * output.append(exportOption.getSeparator()); if (null == fieldValue ||
-     * fieldValue.isGhost()) { output.append(""); } else { output.append(
-     * StringUtils.makeCsvString(fieldValue.getQcComment())); } } } } } }
-     *
-     * output.append('\n'); }
-     *
-     * return output.toString().getBytes();
-     */
+    DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
+
+    ExportData data = exportOption.makeExportData(dataSource, instrument,
+      dataset);
+    data.loadData();
+
+    // Run the post-processor before generating the final output
+    data.postProcess();
+
+    // Work out which columns we are going to export
+    List<PlotPageColumnHeading> exportColumns = buildExportColumns(data,
+      instrument, exportOption);
+
+    // Let's make some output
+    StringBuilder output = new StringBuilder();
+
+    List<String> headers = new ArrayList<String>();
+
+    for (PlotPageColumnHeading heading : exportColumns) {
+      if (heading.getId() == FileDefinition.TIME_COLUMN_ID) {
+        headers.add(exportOption.getTimestampHeader());
+      } else {
+        addHeader(headers, exportOption, heading);
+      }
+    }
+
+    for (InstrumentVariable variable : exportOption.getVariables()) {
+      if (instrument.getVariables().contains(variable)) {
+
+        List<CalculationParameter> params = DataReducerFactory
+          .getCalculationParameters(variable,
+            exportOption.includeCalculationColumns());
+
+        for (CalculationParameter param : params) {
+          addHeader(headers, exportOption, param);
+        }
+      }
+    }
+
+    output.append(
+      StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
+    output.append('\n');
+
+    // Process each row of the data
+    for (Long rowId : data.getRowIDs()) {
+
+      boolean firstColumn = true;
+
+      // Sensor columns
+      for (PlotPageColumnHeading column : exportColumns) {
+
+        // Separator management. Add a separator before the column details,
+        // unless we're on the first column
+        if (firstColumn) {
+          firstColumn = false;
+        } else {
+          output.append(exportOption.getSeparator());
+        }
+
+        PlotPageTableValue value = data.getColumnValue(rowId, column.getId());
+        addValueToOutput(output, exportOption, column.getId(), value,
+          column.getId() != FileDefinition.TIME_COLUMN_ID);
+      }
+
+      for (InstrumentVariable variable : exportOption.getVariables()) {
+        if (instrument.getVariables().contains(variable)) {
+
+          List<CalculationParameter> params = DataReducerFactory
+            .getCalculationParameters(variable,
+              exportOption.includeCalculationColumns());
+
+          for (CalculationParameter param : params) {
+            // Separator management. Add a separator before the column details,
+            // unless we're on the first column
+            if (firstColumn) {
+              firstColumn = false;
+            } else {
+              output.append(exportOption.getSeparator());
+            }
+
+            PlotPageTableValue value = data.getColumnValue(rowId,
+              param.getId());
+            addValueToOutput(output, exportOption, param.getId(), value,
+              param.isResult());
+          }
+        }
+      }
+
+      output.append("\n");
+    }
+
+    return output.toString().getBytes();
+  }
+
+  private static void addValueToOutput(StringBuilder output,
+    ExportOption exportOption, long columnId, PlotPageTableValue value,
+    boolean includeQcColumns) {
+
+    if (null == value) {
+      // Value
+      output.append(exportOption.getMissingValue());
+
+      // QC Flag
+      if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
+        output.append(exportOption.getSeparator());
+        output.append(exportOption.getMissingValue());
+
+        // QC Comment if required
+        if (exportOption.includeQCComments()) {
+          output.append(exportOption.getSeparator());
+        }
+      }
+    } else {
+
+      // Value
+      if (null == value.getValue()) {
+        output.append(exportOption.getMissingValue());
+      } else {
+        output.append(exportOption.format(value.getValue()));
+      }
+
+      // QC Flag
+      if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
+        output.append(exportOption.getSeparator());
+        output.append(value.getQcFlag().getWoceValue());
+
+        // QC Comment
+        if (exportOption.includeQCComments()) {
+          output.append(exportOption.getSeparator());
+          output.append(exportOption.format(value.getQcMessage()));
+        }
+      }
+    }
+  }
+
+  private static void addHeader(List<String> headers, ExportOption exportOption,
+    ColumnHeading heading) throws ExportException {
+
+    String header = null;
+
+    String replacementHeader = exportOption
+      .getReplacementHeader(heading.getCodeName());
+    if (null != replacementHeader) {
+      header = replacementHeader;
+    } else {
+      switch (exportOption.getHeaderMode()) {
+      case ExportOption.HEADER_MODE_SHORT: {
+        header = heading.getShortName();
+        break;
+      }
+      case ExportOption.HEADER_MODE_LONG: {
+        header = heading.getLongName();
+        break;
+      }
+      case ExportOption.HEADER_MODE_CODE: {
+        header = heading.getCodeName();
+        break;
+      }
+      default: {
+        throw new ExportException("Unrecognised header mode");
+      }
+      }
+    }
+
+    if (exportOption.includeUnits()) {
+      headers.add(header + " [" + heading.getUnits() + ']');
+    } else {
+      headers.add(header);
+    }
+
+    if (heading.hasQC()) {
+      headers.add(header + exportOption.getQcFlagSuffix());
+
+      if (exportOption.includeQCComments()) {
+        headers.add(header + exportOption.getQcCommentSuffix());
+      }
+    }
+  }
+
+  private static List<PlotPageColumnHeading> buildExportColumns(
+    ExportData data, Instrument instrument, ExportOption exportOption)
+    throws Exception {
+
+    List<PlotPageColumnHeading> exportColumns = new ArrayList<PlotPageColumnHeading>();
+
+    LinkedHashMap<String, List<PlotPageColumnHeading>> dataHeadings = data
+      .getExtendedColumnHeadings();
+
+    // Add the base columns - time, position etc
+    exportColumns.addAll(dataHeadings.get(ExportData.ROOT_FIELD_GROUP));
+
+    List<PlotPageColumnHeading> sensorColumns = dataHeadings
+      .get(ExportData.SENSORS_FIELD_GROUP);
+    if (exportOption.includeAllSensors()) {
+      exportColumns.addAll(sensorColumns);
+    } else {
+
+      Set<SensorType> variableSensorTypes = new HashSet<SensorType>();
+
+      // Get the sensors required for the instrument's variables
+      for (InstrumentVariable variable : instrument.getVariables()) {
+        variableSensorTypes.addAll(variable.getAllSensorTypes(false));
+      }
+
+      // Find those columns with the required sensor types
+      for (PlotPageColumnHeading sensorHeading : sensorColumns) {
+        SensorType headingSensorType = instrument.getSensorAssignments()
+          .getSensorTypeForDBColumn(sensorHeading.getId());
+        if (variableSensorTypes.contains(headingSensorType)) {
+          exportColumns.add(sensorHeading);
+        }
+      }
+    }
+
+    return exportColumns;
   }
 
   /**
@@ -460,7 +609,7 @@ public class ExportBean extends BaseManagedBean {
 
       ZipEntry datasetEntry = new ZipEntry(datasetPath);
       zip.putNextEntry(datasetEntry);
-      zip.write(getDatasetExport(conn, instrument, dataset, option));
+      zip.write(getDatasetExport(instrument, dataset, option));
       zip.closeEntry();
     }
 

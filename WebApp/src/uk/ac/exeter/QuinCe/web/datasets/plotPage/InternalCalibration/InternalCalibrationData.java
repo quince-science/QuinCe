@@ -25,13 +25,13 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageDataStructure;
 
-public class InternalCalibration2Data extends PlotPage2Data {
+public class InternalCalibrationData extends PlotPageData {
 
   private PlotPageColumnHeading defaultYAxis1 = null;
 
@@ -57,7 +57,7 @@ public class InternalCalibration2Data extends PlotPage2Data {
    * @throws Exception
    *           If the data cannot be loaded.
    */
-  protected InternalCalibration2Data(DataSource dataSource,
+  protected InternalCalibrationData(DataSource dataSource,
     Instrument instrument, DataSet dataset) throws SQLException {
     super(dataSource, instrument, dataset);
   }
