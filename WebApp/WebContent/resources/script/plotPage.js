@@ -16,7 +16,7 @@ var loadingItems = TABLE_LOADING | PLOT1_LOADING | PLOT2_LOADING;
 
 function plotLoading(index, mode) {
   let item = 0;
-  
+
   if (index == 1) {
     if (mode == PLOT_MODE_PLOT) {
       item = PLOT1_LOADING;
@@ -30,7 +30,7 @@ function plotLoading(index, mode) {
       item = MAP2_LOADING;
     }
   }
-  
+
   itemLoading(item);
 }
 
@@ -59,7 +59,7 @@ const FLAG_FLUSHING = -100;
 
 /*
  * Variables for the plot/table layout
- */ 
+ */
 
 // Timer used to prevent event spamming during page resizes
 var resizeEventTimer = null;
@@ -146,9 +146,9 @@ var updatingDialogButtons = false;
 
 // Initialise the whole page
 function initPage() {
-  
+
   PF('pleaseWait').show();
-  
+
   // When the window is resized, scale the panels
   $(window).resize(function() {
     clearTimeout(resizeEventTimer);
@@ -157,7 +157,7 @@ function initPage() {
 
   // Draw the basic page layout
   layoutPage();
-  
+
   // Trigger data loading on back end
   // PrimeFaces remoteCommand. Calls dataLoaded() when complete.
   loadData();
@@ -165,15 +165,15 @@ function initPage() {
 
 // Check for an error set in the page form and display a dialog if there is one.
 function errorCheck() {
-  
+
   let errorFound = false;
-  
+
   if ($('#plotPageForm\\:error').val()) {
    errorFound = true;
    $('#errorMessageString').html($('#plotPageForm\\:error').val());
    PF('errorMessage').show();
   }
-  
+
   return errorFound;
 }
 
@@ -192,7 +192,7 @@ function layoutPage() {
   });
 }
 
-// Handle table/plot split adjustment 
+// Handle table/plot split adjustment
 function scaleTableSplit() {
   tableSplitProportion = $('#plotPageContent').split().position() / $('#plotPageContent').height();
   resizeAllContent();
@@ -215,15 +215,15 @@ function resizePlot(index) {
     $('#plot' + index + 'Container').width('100%');
     $('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
     window['dataPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
-    
+
     if (null != window['flagPlot' + index]) {
       window['flagPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
     }
-    
+
     if (null != window['selectionPlot' + index]) {
       window['selectionPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
     }
-    
+
     syncZoom(index);
   }
 }
@@ -300,14 +300,14 @@ function dataLoaded() {
 
 // Get the index of the group that the specified column is in
 function getColumnGroup(column) {
-  
+
   let currentIndex = -1;
   let currentGroup = -1;
   while (currentIndex < column) {
     currentGroup++;
     currentIndex += columnHeaders[currentGroup].headings.length;
   }
-  
+
   return currentGroup;
 }
 
@@ -356,9 +356,9 @@ function getTableColumnIndex(columnId) {
 }
 
 function getColumnIndexWork(headers, columnId) {
-  
+
   let result = null;
-  
+
   let currentIndex = -1;
   for (let i = 0; i < headers.length; i++) {
     let groupHeaders = headers[i].headings;
@@ -370,17 +370,17 @@ function getColumnIndexWork(headers, columnId) {
       }
     }
   }
-  
+
   return result;
 }
 
 function getColumnCount() {
   let count = 0;
-  
+
   for (let i = 0; i < columnHeaders.length; i++) {
     count += columnHeaders[i].headings.length;
   }
-  
+
   return count;
 }
 
@@ -394,14 +394,14 @@ function getExtendedColumnIds() {
 
 function getColumnIdsWork(headers) {
   let ids = [];
-  
+
   for (let i = 0; i < headers.length; i++) {
     let groupHeaders = headers[i].headings;
     for (let j = 0; j < groupHeaders.length; j++) {
       ids.push(groupHeaders[j].id);
     }
   }
-  
+
   return ids;
 
 }
@@ -409,7 +409,7 @@ function getColumnIdsWork(headers) {
 /*
  *******************************************************
  * Selection functions
- * 
+ *
  * The selection details are maintained via form inputs
  *******************************************************
  */
@@ -476,7 +476,7 @@ function addRowsToSelection(rows) {
 function removeRowsFromSelection(rows) {
 
   var selectedRows = getSelectedRows();
-  
+
   var rowsIndex = 0;
   var selectionIndex = 0;
 
@@ -490,7 +490,7 @@ function removeRowsFromSelection(rows) {
     }
     selectionIndex++;
   }
-  
+
   setSelectedRows(selectedRows);
 }
 
@@ -506,7 +506,7 @@ function selectionUpdated() {
   drawTableSelection();
   drawSelectionPlot(1);
   drawSelectionPlot(2);
-  
+
   if (getSelectedRows().length == 0) {
     $('#selectionActions :button').each(function(index, value) {
       $(value).prop('disabled', true).addClass('ui-state-disabled');
@@ -516,7 +516,7 @@ function selectionUpdated() {
       $(value).prop('disabled', false).removeClass('ui-state-disabled');
     });
   }
-  
+
 /*
   if (null != map1) {
     drawMap(1);
@@ -546,9 +546,9 @@ function drawTable() {
 
   // Construct the table header
   let html = '<table id="dataTable" class="cell-border stripe compact nowrap" width="100%"><thead>';
-  
+
   columnHeaders.forEach(g => {
-    
+
     g.headings.forEach(h => {
       html += '<th ';
       if (h.numeric) {
@@ -561,10 +561,10 @@ function drawTable() {
   });
 
   html += '</thead></table>';
-  
+
   // Replace the existing table with the new one
   $('#tableContent').html(html);
-  
+
   // And initialise the table itself
   jsDataTable = $('#dataTable').DataTable( {
     ordering: false,
@@ -611,7 +611,7 @@ function drawTable() {
     },
     columnDefs: getColumnDefs()
   });
-  
+
   resizeAllContent();
   clearSelection();
 
@@ -629,7 +629,7 @@ function drawTable() {
       }, scrollEventTimeLimit);
     }
   });
-  
+
   itemNotLoading(TABLE_LOADING);
 }
 
@@ -652,12 +652,12 @@ function setupTableClickHandlers() {
 function clickCellAction(cell, shiftClick) {
 
   let immediateUpdate = true;
-  
+
   let rowIndex = 0;
   let colIndex = 0;
-  
+
   // Normal cells have a _DT_CellIndex property.
-  
+
   // The frozen columns are actually in a separate table drawn over the
   // top of the jsDataTable, and have the ids in the cells' data elements.
   if (cell._DT_CellIndex) {
@@ -696,7 +696,7 @@ function clickCellAction(cell, shiftClick) {
         let loadedRows = jsDataTable.rows().ids();
         if (getPrevClickedRow() < loadedRows[0] ||
             getPrevClickedRow() > loadedRows[loadedRows.length - 1]) {
-          
+
           immediateUpdate = false;
           selectRange(); // PF RemoteCommand
         } else {
@@ -730,7 +730,7 @@ function drawTableSelection() {
   // Clear all selection display. This clears both the main table
   // and the overlaid fixed columns table
   $("td.selected").removeClass('selected');
-  
+
   // Highlight selected cells
   let selectedRows = getSelectedRows();
 
@@ -744,7 +744,7 @@ function drawTableSelection() {
       let row = jsDataTable.row(i);
 
       if ($.inArray(row.data()['DT_RowId'], getSelectedRows()) > -1) {
-        
+
         if (isFixedColumn(getTableColumnIndex(getSelectedColumn().id))) {
           // Set the overlaid fixed columns table
           $($('[data-dt-row=' + i + '][data-dt-column=' + tableColumnIndex + ']')[0]).addClass('selected');
@@ -811,7 +811,7 @@ function getColumnDefs() {
         if (data['flagNeeded']) {
           classes.push('needsFlag');
         }
-        
+
         result = '<div class="' + classes.join(' ') + '"';
 
         if (null != flagClass) {
@@ -905,7 +905,7 @@ function getRowsInRange(startRow, endRow, columnIndex) {
     currentIndex = currentIndex + step;
 
     let rowIndex = jsDataTable.row('#' + rowIDs[currentIndex]).index();
-    
+
     if (canSelectCell(rowIndex, columnIndex)) {
       rows.push(rowIDs[currentIndex]);
     }
@@ -957,18 +957,18 @@ function getPlotLabels(index) {
 
 function drawPlot(index, drawOtherPlots, resetZoom) {
   errorCheck();
-  
+
   let plotVar = 'dataPlot' + index;
-  
+
   // If there's new data, extract it
   let newPlotData = $('#plot' + index + 'Form\\:plot' + index + 'Data').val();
   if (newPlotData) {
     window['dataPlot' + index + 'Data'] = parseJsonWithDates(newPlotData);
     $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
   }
-  
+
   let labels = getPlotLabels(index);
-    
+
   var xAxisRange = null;
   var yAxisRange = null;
 
@@ -981,7 +981,7 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   if (null != window[plotVar]) {
     window[plotVar].destroy();
   }
-  
+
   let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
   // Ghost data and series data colors
   data_options.colors = ['#01752D', '#C0C0C0'];
@@ -1014,7 +1014,7 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   data_options.zoomCallback = function(xMin, xMax, yRange) {
     syncZoom(index);
   };
-  
+
   // Zoom
   if (!resetZoom) {
     data_options.dateWindow = xAxisRange;
@@ -1022,15 +1022,15 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     data_options.yRangePad = 0;
     data_options.xRangePad = 0;
   }
-  
+
   // Reference value
-  let referenceValue = getColumnById($('#plot1Form\\:plot1YAxis').val()).referenceValue;  
+  let referenceValue = getColumnById($('#plot1Form\\:plot1YAxis').val()).referenceValue;
   if (null != referenceValue) {
     data_options.underlayCallback = function(canvas, area, g) {
       let xmin = g.toDomXCoord(g.xAxisExtremes()[0]);
       let xmax = g.toDomXCoord(g.xAxisExtremes()[1]);
       let ycoord = g.toDomYCoord(referenceValue);
-  
+
       canvas.setLineDash([10, 5]);
       canvas.strokeStyle = '#FF0000';
       canvas.lineWidth = 3;
@@ -1048,12 +1048,12 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     window['dataPlot' + index + 'Data'],
     data_options
   );
-  
+
   if (drawOtherPlots) {
     drawFlagPlot(index);
     drawSelectionPlot(index);
   }
-  
+
   // Enable/disable the selection mode controls
   let plotVariable = $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val();
   if (getColumnById(plotVariable).editable) {
@@ -1071,13 +1071,13 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   } else if (index == 2) {
     itemNotLoading(PLOT2_LOADING);
   }
-  
+
 }
 
 function drawFlagPlot(index) {
   window['flagPlot' + index + 'Data'] =
     parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
-  
+
   $('#plot' + index + 'Form\\:plot' + index + 'Flags').val("");
 
   if (null != window['flagPlot' + index]) {
@@ -1110,32 +1110,32 @@ function drawFlagPlot(index) {
     flag_options.xAxisHeight = 20;
     flag_options.interactionModel = null;
     flag_options.animatedZooms = false;
-    
+
     window['flagPlot' + index] = new Dygraph(
       document.getElementById('plot' + index + 'FlagPlot'),
       window['flagPlot' + index + 'Data'],
       flag_options
     );
-    
+
     resizePlot(index);
   }
 }
 
 function drawSelectionPlot(index) {
-  
+
   let plotVar = 'selectionPlot' + index;
-  
+
   if (null != window[plotVar]) {
     window[plotVar].destroy();
     window[plotVar] = null;
   }
-  
+
   let selectionData = getSelectionPlotData(index);
-    
+
   if (selectionData.length > 0) {
 
     let plotLabels = getPlotLabels(index);
-    
+
     // Convert X values to dates if required
     if (plotLabels[0] == "Time") {
       for (let i = 0; i < selectionData.length; i++) {
@@ -1143,7 +1143,7 @@ function drawSelectionPlot(index) {
       }
     }
 
-    
+
     let selection_options = Object.assign({}, BASE_PLOT_OPTIONS);
     selection_options.colors = ['#FFFF00'];
     selection_options.xlabel = ' ';
@@ -1166,26 +1166,26 @@ function drawSelectionPlot(index) {
     selection_options.xAxisHeight = 20;
     selection_options.interactionModel = null;
     selection_options.animatedZooms = false;
-    
+
     window[plotVar] = new Dygraph(
       document.getElementById('plot' + index + 'SelectionPlot'),
       selectionData,
       selection_options
     );
-    
+
     resizePlot(index);
   }
 }
 
 function syncZoom(index) {
-  
+
   let zoomOptions = {
       dateWindow: window['dataPlot' + index].xAxisRange(),
       valueRange: window['dataPlot' + index].yAxisRange(),
       yRangePad: 0,
       xRangePad: 0
     };
-  
+
   if (null != window['flagPlot' + index]) {
     window['flagPlot' + index].updateOptions(zoomOptions);
   }
@@ -1252,11 +1252,11 @@ function getRowId(event, xValue, points) {
 // Get the data for the selection plot
 function getSelectionPlotData(index) {
   let selectionData = [];
-  
+
   let selectedIds = getSelectedRows();
-  
+
   let plotDataVar = 'dataPlot' + index + 'Data';
-  
+
   if (null != window[plotDataVar]) {
     for (let i = 0; i < window[plotDataVar].length; i++) {
       if ($.inArray(window[plotDataVar][i][1], selectedIds) != -1) {
@@ -1267,7 +1267,7 @@ function getSelectionPlotData(index) {
       }
     }
   }
-  
+
   return selectionData;
 }
 
@@ -1283,9 +1283,9 @@ function parseJsonWithDates(json) {
 }
 
 function showVariableDialog(plotIndex) {
-  
+
   currentPlot = plotIndex;
-  
+
   let mode = getPlotMode(plotIndex);
 
   if (mode == PLOT_MODE_PLOT) {
@@ -1323,7 +1323,7 @@ function setupPlotVariables(plotIndex) {
 //Select the specified axis variable in the dialog
 function updateAxisButtons(axis, variable) {
 
-  
+
   if (!updatingDialogButtons) {
     updatingDialogButtons = true;
 
@@ -1346,7 +1346,7 @@ function updateAxisButtons(axis, variable) {
 
 function setupMapVariables(plotIndex) {
   currentPlot = plotIndex;
-  
+
   getExtendedColumnIds().forEach(id => {
     let xWidget = PrimeFaces.widgets['xAxis-' + id];
     if (xWidget) {
@@ -1396,7 +1396,7 @@ function resizeVariablesDialog() {
 
   let maxHeight = $(window).innerHeight() - 200;
   let varsPerColumn = Math.ceil(maxHeight / VARIABLES_DIALOG_ENTRY_HEIGHT);
-  
+
   let variableCount = getColumnCount();
   let columns = Math.ceil(variableCount / varsPerColumn);
 
@@ -1425,7 +1425,7 @@ function applyVariables() {
   var mode = getPlotMode(currentPlot);
 
   plotLoading(currentPlot, mode);
-  
+
   if (mode == PLOT_MODE_PLOT) {
     setPlotAxes(currentPlot);
     initPlot(currentPlot);
@@ -1445,9 +1445,9 @@ function getSelectedYAxis() {
 }
 
 function getSelectedCheckbox(prefix) {
-  
+
   let axis = 0;
-  
+
   let columnIds = getExtendedColumnIds();
   for (let i = 0; i < columnIds.length; i++) {
     let widget = PrimeFaces.widgets[prefix + '-' + columnIds[i]];
@@ -1456,7 +1456,7 @@ function getSelectedCheckbox(prefix) {
       break;
     }
   }
-  
+
   return axis;
 }
 
