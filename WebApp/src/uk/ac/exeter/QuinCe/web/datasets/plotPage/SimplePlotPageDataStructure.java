@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * A basic data structure to be used by classes implementing
- * {@link PlotPage2Data}.
+ * {@link PlotPageData}.
  *
  * <p>
  * This is a nested map of {@link LocalDateTime} ->
@@ -25,12 +25,12 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  *
  * <p>
  * The class contains analogous methods for the following data retrieval methods
- * specified in {@link PlotPage2Data}:
+ * specified in {@link PlotPageData}:
  * <ul>
- * <li>{@link PlotPage2Data#size()} (from the {@link Map} interface)</li>
- * <li>{@link PlotPage2Data#getRowIDs()}</li>
- * <li>{@link PlotPage2Data#generateTableDataRecords(int, int)}</li>
- * <li>{@link PlotPage2Data#getColumnValues(PlotPageColumnHeading)}</li>
+ * <li>{@link PlotPageData#size()} (from the {@link Map} interface)</li>
+ * <li>{@link PlotPageData#getRowIDs()}</li>
+ * <li>{@link PlotPageData#generateTableDataRecords(int, int)}</li>
+ * <li>{@link PlotPageData#getColumnValues(PlotPageColumnHeading)}</li>
  * </p>
  *
  * <p>
@@ -79,7 +79,7 @@ public class SimplePlotPageDataStructure {
    * Get the record times as a list of longs.
    *
    * <p>
-   * Analogous to {@link PlotPage2Data#getRowIDs()}
+   * Analogous to {@link PlotPageData#getRowIDs()}
    * </p>
    *
    * @return The row IDs.

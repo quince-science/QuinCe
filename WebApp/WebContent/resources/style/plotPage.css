@@ -1,3 +1,8 @@
+/*
+ *************************
+ * Page layout
+ *************************
+ */
 .plotPageHeader {
   height: 20px;
   color: #2779AA;
@@ -25,27 +30,10 @@
   user-select: none;
 }
 
-#plots {
-  overflow: hidden;
-}
-
 .plotContainer {
   height: 100%;
   width: 100%;
   overflow: hidden !important;
-}
-
-.plotLabels {
-  position: absolute;
-  bottom: 36px;
-  right: 0px;
-  padding: 2px;
-  background: #DDD;
-  margin: 0px;
-}
-
-#tableContent {
-  overflow: hidden;
 }
 
 /* jQuery splitter overrides */
@@ -65,23 +53,6 @@
     height: 10px;
 }
 
-/* Table row highlighter */
-@keyframes rowFlash {
-    0% {background-color: #fff;}
-   25% {background-color: #fd0;}
-   50% {background-color: #fff;}
-   75% {background-color: #fd0;}
-  100% {background-color: #fff;}
-}
-
-tr.selected {
-  background-color: #FFFF00 !important;
-}
-
-td.selected {
-  background-color: #FFFF00 !important;
-}
-
 .clearSelectionButton {
   background-image: url("#{resource['image/delete_button.svg']}") !important;
   background-size: cover;
@@ -93,6 +64,49 @@ td.selected {
   margin-top: -13px !important;
 }
 
+
+/*
+ *************************
+ * Table
+ *************************
+ */
+td.selected {
+  background-color: #FFFF00 !important;
+}
+
+/*
+ *************************
+ * Plots
+ *************************
+ */
+.plot {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+.dataPlot {
+  z-index: 100;
+}
+
+.flagPlot {
+  z-index: 10;
+}
+
+.selectionPlot {
+  z-index: 50;
+}
+
+.plotLabels {
+  position: absolute;
+  bottom: 36px;
+  right: 0px;
+  padding: 2px;
+  background: #DDD;
+  margin: 0px;
+}
+
+/* Plot footer controls */
 .plotModeButtons .ui-button:nth-child(1) {
   background-image: url("#{resource['image/plot_button.svg']}") !important;
   background-size: 20px;
@@ -139,14 +153,27 @@ td.selected {
   height: 25px !important;
 }
 
+.selectModeButtons .ui-button:nth-child(1) {
+  background-image: url("#{resource['image/zoom_button.svg']}") !important;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  width: 46.77px !important;
+  height: 29.22px !important;
+}
+
+.selectModeButtons .ui-button:nth-child(2) {
+  background-image: url("#{resource['image/mark_button.svg']}") !important;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  width: 46.77px !important;
+  height: 29.22px !important;
+}
+
+/* Variables Dialog */
 #variablesList {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-}
-
-#qcMessage {
-  text-align: right;
 }
 
 .variable {
@@ -215,79 +242,3 @@ td.selected {
   margin-top: -3px;
 }
 
-.mapScale {
-  width: 350px;
-  height: 50px;
-  position: absolute;
-  bottom: 45px;
-  right: 35px;
-  background-color: #8EAAC5EE;
-}
-
-.mapScaleControlContainer {
-  position: absolute;
-  bottom: 40px;
-  right: 8px;
-  width: 23px;
-}
-
-.mapValue {
-  position: absolute;
-  left: 0px;
-  bottom: 41px;
-  z-index: 100;
-  background-color: #E1E1E1;
-}
-
-.mapScaleControlContainer {
-  position: absolute;
-  bottom: 45px;
-  right: 8px;
-  width: 23px;
-  z-index: 100;
-}
-
-.ol-control button {
-  min-width: 0px;
-}
-
-.selectModeButtons .ui-button:nth-child(1) {
-  background-image: url("#{resource['image/zoom_button.svg']}") !important;
-  background-size: 20px;
-  background-repeat: no-repeat;
-  width: 46.77px !important;
-  height: 29.22px !important;
-}
-
-.selectModeButtons .ui-button:nth-child(2) {
-  background-image: url("#{resource['image/mark_button.svg']}") !important;
-  background-size: 20px;
-  background-repeat: no-repeat;
-  width: 46.77px !important;
-  height: 29.22px !important;
-}
-
-/* These styles are lifted from DataTables to provide a consistent look */
-.plotLoading {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: 10000;
-  background: repeating-linear-gradient(45deg, #edeeff, #edeeff 10px, #fff 10px, #fff 20px);
-  padding-top: 50px;
-}
-
-.plotLoadingMessage {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 40px;
-  margin-left: -50%;
-  margin-top: -25px;
-  padding-top: 20px;
-  text-align: center;
-  font-size: 1.2em;
-  background-color: white;
-  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 25%, rgba(255,255,255,0.9) 75%, rgba(255,255,255,0) 100%);
-}

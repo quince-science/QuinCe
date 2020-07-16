@@ -38,14 +38,14 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTableValue;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPage2Data;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
 
-public class ManualQC2Data extends PlotPage2Data {
+public class ManualQCData extends PlotPageData {
 
   /**
    * The Measurement objects for the dataset
@@ -118,7 +118,7 @@ public class ManualQC2Data extends PlotPage2Data {
    * @throws Exception
    *           If the data cannot be loaded.
    */
-  protected ManualQC2Data(DataSource dataSource, Instrument instrument,
+  protected ManualQCData(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
     super(dataSource, instrument, dataset);
   }
