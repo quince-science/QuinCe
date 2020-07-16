@@ -4,13 +4,13 @@ function acceptAutoQc() {
 
 function qcFlagsAccepted() {
   errorCheck();
-  
+
   PF('flagDialog').hide();
-  
+
   drawFlagPlot(1);
   drawFlagPlot(2);
   clearSelection();
-  
+
   // Reload table data
   jsDataTable.ajax.reload(null, false);
   itemNotLoading(UPDATE_DATA);
