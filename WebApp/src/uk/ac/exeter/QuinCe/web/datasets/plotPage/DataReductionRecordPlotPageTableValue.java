@@ -33,7 +33,8 @@ public class DataReductionRecordPlotPageTableValue
 
   @Override
   public String getValue() {
-    return String.valueOf(record.getCalculationValue(parameterName));
+    Double value = record.getCalculationValue(parameterName);
+    return null == value ? null : String.valueOf(value);
   }
 
   @Override

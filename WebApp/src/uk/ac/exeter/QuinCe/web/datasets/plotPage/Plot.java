@@ -152,7 +152,7 @@ public class Plot {
 
         PlotValue plotValue = null;
 
-        if (null != y) {
+        if (null != y && null != y.getValue()) {
 
           if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
