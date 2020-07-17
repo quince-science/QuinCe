@@ -365,10 +365,12 @@ public class ManualQCData extends PlotPageData {
               .getCalculationParameters(variable, true);
 
             for (CalculationParameter param : params) {
-              record.addColumn(
-                String.valueOf(variableDataReduction
-                  .getCalculationValue(param.getShortName())),
-                false, variableDataReduction.getQCFlag(),
+              Double value = variableDataReduction
+                .getCalculationValue(param.getShortName());
+              String stringValue = null == value ? "" : String.valueOf(value);
+
+              record.addColumn(stringValue, false,
+                variableDataReduction.getQCFlag(),
                 variableDataReduction.getQCMessages().toString(), false);
             }
           } else {
