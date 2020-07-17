@@ -67,7 +67,7 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
     if (milliseconds) {
       this.value = String.valueOf(DateTimeUtils.dateToLong(time));
     } else {
-      this.value = DateTimeUtils.formatDateTime(time);
+      this.value = DateTimeUtils.toIsoDate(time);
     }
 
     this.used = true;
