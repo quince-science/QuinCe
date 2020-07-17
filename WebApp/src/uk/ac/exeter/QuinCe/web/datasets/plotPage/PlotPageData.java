@@ -165,8 +165,10 @@ public abstract class PlotPageData {
       loadDataAction();
 
       // Initialise the plots
-      plot1 = new Plot(this, getDefaultXAxis(), getDefaultYAxis1());
-      plot2 = new Plot(this, getDefaultXAxis(), getDefaultYAxis2());
+      plot1 = new Plot(this, getDefaultXAxis(), getDefaultYAxis1(),
+        !dataset.isNrt());
+      plot2 = new Plot(this, getDefaultXAxis(), getDefaultYAxis2(),
+        !dataset.isNrt());
 
       loaded = true;
     } catch (Exception e) {
