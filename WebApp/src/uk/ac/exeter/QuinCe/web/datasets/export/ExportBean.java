@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -41,6 +42,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @ManagedBean
@@ -273,7 +275,9 @@ public class ExportBean extends BaseManagedBean {
     // Run the post-processor before generating the final output
     data.postProcess();
 
-    // Work out which columns we are going to export
+    // Work out which base columns we are going to export. This is just for
+    // Time, Position, and sensors. Variables and fixed columns are handled
+    // separately
     List<PlotPageColumnHeading> exportColumns = buildExportColumns(data,
       instrument, exportOption);
 
@@ -301,6 +305,11 @@ public class ExportBean extends BaseManagedBean {
           addHeader(headers, exportOption, param);
         }
       }
+    }
+
+    for (PlotPageColumnHeading fixedHeading : data.getExtendedColumnHeadings()
+      .get(ExportData.FIXED_GROUP)) {
+      addHeader(headers, exportOption, fixedHeading);
     }
 
     output.append(
@@ -350,6 +359,22 @@ public class ExportBean extends BaseManagedBean {
               param.isResult());
           }
         }
+      }
+
+      for (PlotPageColumnHeading fixedHeading : data.getExtendedColumnHeadings()
+        .get(ExportData.FIXED_GROUP)) {
+        // Separator management. Add a separator before the column details,
+        // unless we're on the first column
+        if (firstColumn) {
+          firstColumn = false;
+        } else {
+          output.append(exportOption.getSeparator());
+        }
+
+        SimplePlotPageTableValue fixedValue = new SimplePlotPageTableValue(
+          data.getFixedValue(fixedHeading), false, Flag.GOOD, null, false);
+        addValueToOutput(output, exportOption, fixedHeading.getId(), fixedValue,
+          false);
       }
 
       output.append("\n");
@@ -443,16 +468,14 @@ public class ExportBean extends BaseManagedBean {
     }
   }
 
-  private static List<PlotPageColumnHeading> buildExportColumns(
-    ExportData data, Instrument instrument, ExportOption exportOption)
-    throws Exception {
+  private static List<PlotPageColumnHeading> buildExportColumns(ExportData data,
+    Instrument instrument, ExportOption exportOption) throws Exception {
 
     List<PlotPageColumnHeading> exportColumns = new ArrayList<PlotPageColumnHeading>();
 
     LinkedHashMap<String, List<PlotPageColumnHeading>> dataHeadings = data
       .getExtendedColumnHeadings();
 
-    // Add the base columns - time, position etc
     exportColumns.addAll(dataHeadings.get(ExportData.ROOT_FIELD_GROUP));
 
     List<PlotPageColumnHeading> sensorColumns = dataHeadings

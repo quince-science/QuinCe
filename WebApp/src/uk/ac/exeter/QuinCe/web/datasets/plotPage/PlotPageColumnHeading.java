@@ -61,6 +61,25 @@ public class PlotPageColumnHeading extends ColumnHeading {
   }
 
   /**
+   * Simple constructor.
+   *
+   * @param heading
+   *          The heading.
+   * @param numeric
+   *          Whether the column is numeric.
+   */
+  public PlotPageColumnHeading(long id, String shortName, String longName,
+    String codeName, String units, boolean numeric, boolean editable,
+    boolean hasQC) {
+
+    super(id, shortName, longName, codeName, units, hasQC);
+    this.numeric = numeric;
+    this.editable = editable;
+    this.selectionColumn = id;
+    this.referenceValue = null;
+  }
+
+  /**
    * Simple constructor with reference value
    *
    * @param heading
