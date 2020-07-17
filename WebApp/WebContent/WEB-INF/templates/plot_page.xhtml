@@ -32,6 +32,8 @@
     <h:inputHidden id="error"
       value="#{sessionScope[beanName].error}" />
 
+    <h:inputHidden id="canEdit" value="#{sessionScope[beanName].canEdit}"/>
+
     <h:inputHidden id="columnHeadings"
       value="#{sessionScope[beanName].data.columnHeadingsJson}" />
     <h:inputHidden id="extendedColumnHeadings"

@@ -503,18 +503,20 @@ function clearSelection() {
 
 function selectionUpdated() {
 
-  drawTableSelection();
-  drawSelectionPlot(1);
-  drawSelectionPlot(2);
+  if (canEdit()) {
+    drawTableSelection();
+    drawSelectionPlot(1);
+    drawSelectionPlot(2);
 
-  if (getSelectedRows().length == 0) {
-    $('#selectionActions :button').each(function(index, value) {
-      $(value).prop('disabled', true).addClass('ui-state-disabled');
-    });
-  } else {
-    $('#selectionActions :button').each(function(index, value) {
-      $(value).prop('disabled', false).removeClass('ui-state-disabled');
-    });
+    if (getSelectedRows().length == 0) {
+      $('#selectionActions :button').each(function(index, value) {
+        $(value).prop('disabled', true).addClass('ui-state-disabled');
+      });
+    } else {
+      $('#selectionActions :button').each(function(index, value) {
+        $(value).prop('disabled', false).removeClass('ui-state-disabled');
+      });
+    }
   }
 
 /*
@@ -727,38 +729,41 @@ function clickCellAction(cell, shiftClick) {
 
 // Highlight the selected table cells
 function drawTableSelection() {
-  // Clear all selection display. This clears both the main table
-  // and the overlaid fixed columns table
-  $("td.selected").removeClass('selected');
 
-  // Highlight selected cells
-  let selectedRows = getSelectedRows();
+  if (canEdit()) {
+    // Clear all selection display. This clears both the main table
+    // and the overlaid fixed columns table
+    $("td.selected").removeClass('selected');
 
-  if (selectedRows.length > 0) {
+    // Highlight selected cells
+    let selectedRows = getSelectedRows();
 
-    // Highlight the rows
-    let tableColumnIndex = getTableColumnIndex(getSelectedColumn().id);
-    let rows = jsDataTable.rows()[0];
+    if (selectedRows.length > 0) {
 
-    for (let i = 0; i < rows.length; i++) {
-      let row = jsDataTable.row(i);
+      // Highlight the rows
+      let tableColumnIndex = getTableColumnIndex(getSelectedColumn().id);
+      let rows = jsDataTable.rows()[0];
 
-      if ($.inArray(row.data()['DT_RowId'], getSelectedRows()) > -1) {
+      for (let i = 0; i < rows.length; i++) {
+        let row = jsDataTable.row(i);
 
-        if (isFixedColumn(getTableColumnIndex(getSelectedColumn().id))) {
-          // Set the overlaid fixed columns table
-          $($('[data-dt-row=' + i + '][data-dt-column=' + tableColumnIndex + ']')[0]).addClass('selected');
-        } else {
-          $(jsDataTable.cell({row : i, column : tableColumnIndex}).node()).addClass('selected');
+        if ($.inArray(row.data()['DT_RowId'], getSelectedRows()) > -1) {
+
+          if (isFixedColumn(getTableColumnIndex(getSelectedColumn().id))) {
+            // Set the overlaid fixed columns table
+            $($('[data-dt-row=' + i + '][data-dt-column=' + tableColumnIndex + ']')[0]).addClass('selected');
+          } else {
+            $(jsDataTable.cell({row : i, column : tableColumnIndex}).node()).addClass('selected');
+          }
         }
       }
-    }
 
-    $('#selectedColumnDisplay').html(getSelectedColumn().shortName);
-    $('#selectedRowsCountDisplay').html(selectedRows.length);
-  } else {
-    $('#selectedColumnDisplay').html('None');
-    $('#selectedRowsCountDisplay').html('');
+      $('#selectedColumnDisplay').html(getSelectedColumn().shortName);
+      $('#selectedRowsCountDisplay').html(selectedRows.length);
+    } else {
+      $('#selectedColumnDisplay').html('None');
+      $('#selectedRowsCountDisplay').html('');
+    }
   }
 }
 
@@ -1055,12 +1060,14 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   }
 
   // Enable/disable the selection mode controls
-  let plotVariable = $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val();
-  if (getColumnById(plotVariable).editable) {
-    PF('plot' + index + 'SelectMode').enable();
-  } else {
-    $('[id^=plot' + index + 'Form\\:plotSelectMode\\:0]').click() // Set to zoom mode
-    PF('plot' + index + 'SelectMode').disable();
+  if (canEdit()) {
+    let plotVariable = $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val();
+    if (getColumnById(plotVariable).editable) {
+      PF('plot' + index + 'SelectMode').enable();
+    } else {
+      $('[id^=plot' + index + 'Form\\:plotSelectMode\\:0]').click() // Set to zoom mode
+      PF('plot' + index + 'SelectMode').disable();
+    }
   }
 
   resizePlot(index);
@@ -1123,57 +1130,59 @@ function drawFlagPlot(index) {
 
 function drawSelectionPlot(index) {
 
-  let plotVar = 'selectionPlot' + index;
+  if (canEdit()) {
+    let plotVar = 'selectionPlot' + index;
 
-  if (null != window[plotVar]) {
-    window[plotVar].destroy();
-    window[plotVar] = null;
-  }
-
-  let selectionData = getSelectionPlotData(index);
-
-  if (selectionData.length > 0) {
-
-    let plotLabels = getPlotLabels(index);
-
-    // Convert X values to dates if required
-    if (plotLabels[0] == "Time") {
-      for (let i = 0; i < selectionData.length; i++) {
-        selectionData[i][0] = new Date(selectionData[i][0]);
-      }
+    if (null != window[plotVar]) {
+      window[plotVar].destroy();
+      window[plotVar] = null;
     }
 
+    let selectionData = getSelectionPlotData(index);
 
-    let selection_options = Object.assign({}, BASE_PLOT_OPTIONS);
-    selection_options.colors = ['#FFFF00'];
-    selection_options.xlabel = ' ';
-    selection_options.ylabel = ' ';
-    selection_options.labels = [' ', ' '];
-    selection_options.pointSize = SELECTION_POINT_SIZE;
-    selection_options.highlightCircleSize = 0;
-    selection_options.selectMode = 'euclidian';
-    selection_options.xRangePad = 0;
-    selection_options.yRangePad = 0;
-    selection_options.axes = {
-      x: {
-        drawGrid: false
-      },
-      y: {
-        drawGrid: false
+    if (selectionData.length > 0) {
+
+      let plotLabels = getPlotLabels(index);
+
+      // Convert X values to dates if required
+      if (plotLabels[0] == "Time") {
+        for (let i = 0; i < selectionData.length; i++) {
+          selectionData[i][0] = new Date(selectionData[i][0]);
+        }
       }
-    };
-    selection_options.axisLabelFontSize = 0;
-    selection_options.xAxisHeight = 20;
-    selection_options.interactionModel = null;
-    selection_options.animatedZooms = false;
 
-    window[plotVar] = new Dygraph(
-      document.getElementById('plot' + index + 'SelectionPlot'),
-      selectionData,
-      selection_options
-    );
 
-    resizePlot(index);
+      let selection_options = Object.assign({}, BASE_PLOT_OPTIONS);
+      selection_options.colors = ['#FFFF00'];
+      selection_options.xlabel = ' ';
+      selection_options.ylabel = ' ';
+      selection_options.labels = [' ', ' '];
+      selection_options.pointSize = SELECTION_POINT_SIZE;
+      selection_options.highlightCircleSize = 0;
+      selection_options.selectMode = 'euclidian';
+      selection_options.xRangePad = 0;
+      selection_options.yRangePad = 0;
+      selection_options.axes = {
+        x: {
+          drawGrid: false
+        },
+        y: {
+          drawGrid: false
+        }
+      };
+      selection_options.axisLabelFontSize = 0;
+      selection_options.xAxisHeight = 20;
+      selection_options.interactionModel = null;
+      selection_options.animatedZooms = false;
+
+      window[plotVar] = new Dygraph(
+        document.getElementById('plot' + index + 'SelectionPlot'),
+        selectionData,
+        selection_options
+      );
+
+      resizePlot(index);
+    }
   }
 }
 
@@ -1581,4 +1590,8 @@ function selectPointsInRect(data, variableId, minX, maxX, minY, maxY) {
 
 function getTrueSelectionColumn(columnId) {
   return getColumnById(columnId).selectionColumn;
+}
+
+function canEdit() {
+  return $('#plotPageForm\\:canEdit').val() === 'true';
 }
