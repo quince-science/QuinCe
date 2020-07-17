@@ -75,6 +75,9 @@ dependencies {
 	compile 'org.apache.myfaces.core:myfaces-impl:2.2.8'
 	compile 'org.apache.myfaces.core:myfaces-bundle:2.2.8'
 
+        // Flyway library for Java-based migrations
+        compile 'org.flywaydb:flyway-core:5.2.4'
+
 	// Google GSON library
 	compile 'com.google.code.gson:gson:2.8.5'
 
