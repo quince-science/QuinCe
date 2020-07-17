@@ -2,6 +2,9 @@ package uk.ac.exeter.QuinCe.web.datasets.export;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -16,6 +19,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
 
 /**
@@ -31,9 +35,25 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
  */
 public class ExportData extends ManualQCData {
 
+  public static final String FIXED_GROUP = "FIXED";
+
+  /**
+   * The fixed Depth field & value
+   */
+  // TODO Replace this with something more generic. See issue #1284
+
+  private static final long DEPTH_ID = -10000L;
+
+  private PlotPageColumnHeading depthHeading;
+
+  private int depth;
+
   public ExportData(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
     super(dataSource, instrument, dataset);
+    depthHeading = new PlotPageColumnHeading(DEPTH_ID, "Depth", "Depth",
+      "ADEPZZ01", "m", true, false, false);
+    depth = instrument.getDepth();
   }
 
   @Override
@@ -44,6 +64,31 @@ public class ExportData extends ManualQCData {
     } catch (Exception e) {
       error("Error while loading dataset data", e);
     }
+  }
+
+  @Override
+  public LinkedHashMap<String, List<PlotPageColumnHeading>> getExtendedColumnHeadings()
+    throws Exception {
+
+    LinkedHashMap<String, List<PlotPageColumnHeading>> result = super.getExtendedColumnHeadings();
+
+    ArrayList<PlotPageColumnHeading> fixedColumns = new ArrayList<PlotPageColumnHeading>();
+    fixedColumns.add(depthHeading);
+    result.put(FIXED_GROUP, fixedColumns);
+    return result;
+  }
+
+  public String getFixedValue(PlotPageColumnHeading heading) {
+    String result = null;
+
+    switch (heading.getCodeName()) {
+    case "ADEPZZ01": {
+      result = String.valueOf(depth);
+      break;
+    }
+    }
+
+    return result;
   }
 
   /**
