@@ -301,9 +301,11 @@ public class ManualQCData extends PlotPageData {
           .get(FileDefinition.LATITUDE_COLUMN_ID);
 
         StringBuilder positionString = new StringBuilder();
-        positionString.append(StringUtils.formatNumber(longitude.getValue()));
-        positionString.append(" | ");
-        positionString.append(StringUtils.formatNumber(latitude.getValue()));
+        if (null != longitude.getValue() && null != latitude.getValue()) {
+          positionString.append(StringUtils.formatNumber(longitude.getValue()));
+          positionString.append(" | ");
+          positionString.append(StringUtils.formatNumber(latitude.getValue()));
+        }
 
         record.addColumn(positionString.toString(), true,
           longitude.getDisplayFlag(), longitude.getDisplayQCMessage(),
