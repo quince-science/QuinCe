@@ -12,7 +12,9 @@
   </ui:define>
 
   <ui:define name="pageStatus">
-    Flags needed: <h:outputText value="#{manualQualityControlBean.neededFlagCount}"/>
+    <ui:fragment rendered="#{manualQualityControlBean.canEdit}">
+      Flags needed: <h:outputText value="#{manualQualityControlBean.neededFlagCount}"/>
+    </ui:fragment>
   </ui:define>
 
   <ui:define name="selectionFormEntries">

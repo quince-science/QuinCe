@@ -32,6 +32,13 @@ public class Plot {
   private final PlotPageData data;
 
   /**
+   * Indicates whether or not NEEDED flags should be displayed.
+   *
+   * If {@code false}, the automatic QC flag is used.
+   */
+  private final boolean useNeededFlags;
+
+  /**
    * The column ID of the X axis
    */
   private PlotPageColumnHeading xAxis = null;
@@ -68,10 +75,11 @@ public class Plot {
    * @throws Exception
    */
   protected Plot(PlotPageData data, PlotPageColumnHeading xAxis,
-    PlotPageColumnHeading yAxis) throws Exception {
+    PlotPageColumnHeading yAxis, boolean useNeededFlags) throws Exception {
     this.data = data;
     this.xAxis = xAxis;
     this.yAxis = yAxis;
+    this.useNeededFlags = useNeededFlags;
   }
 
   /**
@@ -154,17 +162,20 @@ public class Plot {
 
         if (null != y && null != y.getValue()) {
 
+          Flag valueFlag = y.getQcFlag();
+          if (useNeededFlags && y.getFlagNeeded()) {
+            valueFlag = Flag.NEEDED;
+          }
+
           if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
               Double.parseDouble(y.getValue()),
-              y.getQcFlag().equals(Flag.FLUSHING),
-              y.getFlagNeeded() ? Flag.NEEDED : y.getQcFlag());
+              y.getQcFlag().equals(Flag.FLUSHING), valueFlag);
           } else if (null != x) {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time),
               Double.parseDouble(x.getValue()),
               Double.parseDouble(y.getValue()),
-              y.getQcFlag().equals(Flag.FLUSHING),
-              y.getFlagNeeded() ? Flag.NEEDED : y.getQcFlag());
+              y.getQcFlag().equals(Flag.FLUSHING), valueFlag);
           }
         }
 
