@@ -89,7 +89,8 @@
     "includeUnits": false,
     "includeQCComments": false,
     "qcFlagSuffix": "_QC",
-    "timestampHeader": "Timestamp"
+    "timestampHeader": "Timestamp",
+    "headerMode": "code",
   },
   {
     "exportName": "Copernicus No Salinity Flags",
@@ -102,6 +103,7 @@
     "includeQCComments": false,
     "qcFlagSuffix": "_QC",
     "timestampHeader": "Timestamp",
+    "headerMode": "code",
     "exportDataClass": "NeutraliseSalinityFlagsExportData",
     "visible": false
   }
