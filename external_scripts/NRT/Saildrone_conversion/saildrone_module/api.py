@@ -107,7 +107,7 @@ def write_json(data_dir, drone_id, dataset, start, end, token):
 		+ f'{drone_id}?data_set={dataset}&interval=1&start_date={start}&end_date='\
 		+ f'{end}&order_by=asc&limit=1000&offset={offset}&token={token}'
 
-		print(get_data_url)
+		#print(get_data_url)
 
 		# Send request
 		data_request = urllib.request.Request(
@@ -123,13 +123,13 @@ def write_json(data_dir, drone_id, dataset, start, end, token):
 		#
 		# Once that's done, add one second to the last record received to be the
 		# start point for the next request.
-		print('Received ' + str(len(data_dict['data'])))
+		#print('Received ' + str(len(data_dict['data'])))
 		if len(data_dict['data']) < 10:
 			more_to_request = False
 		else:
 			data_list_concat = data_list_concat + data_dict['data']
 			offset = offset + len(data_dict['data'])
-			print('Total length ' + str(len(data_list_concat)))
+			#print('Total length ' + str(len(data_list_concat)))
 
 
 	# Replace the data section of the last json file received with the
