@@ -233,27 +233,72 @@ public final class StringUtils {
    * @return The converted strings
    */
   public static List<String> trimList(List<String> source) {
-    return source.stream().map(s -> trimString(s)).collect(Collectors.toList());
-  }
 
-  public static List<String> trimListAndQuotes(List<String> source) {
+    List<String> result = null;
 
-    List<String> result = new ArrayList<String>(source.size());
-
-    for (int i = 0; i < source.size(); i++) {
-      String noQuotes = source.get(i).replaceAll("^\"|\"$", "");
-      result.add(trimString(noQuotes));
+    if (null != source) {
+      result = source.stream().map(s -> {
+        return trimString(s, "\\s");
+      }).collect(Collectors.toList());
     }
 
     return result;
   }
 
-  private static String trimString(String value) {
-    String trimmedValue = value.trim();
-    if (trimmedValue.startsWith("\\")) {
-      trimmedValue = trimmedValue.substring(1);
+  /**
+   * Trims all items in a list of strings, and remotes any leading and/or
+   * trailing double quotes.
+   *
+   * <ul>
+   * <li>All whitespace and quotes are removed from the beginning and end of the
+   * string.</li>
+   * <li>If a single backslash remains on the front of the string, that is
+   * removed also.</li>
+   * <li>The process is repeated until the string is no longer modified.</li>
+   * </ul>
+   *
+   * @param source
+   *          The source list
+   * @return The trimmed list
+   */
+  public static List<String> trimListAndQuotes(List<String> source) {
+
+    List<String> result = null;
+
+    if (null != source) {
+      result = source.stream().map(s -> {
+        return trimString(s, "\\s\"");
+      }).collect(Collectors.toList());
     }
-    return trimmedValue;
+
+    return result;
+  }
+
+  private static String trimString(String string, String regexChars) {
+
+    String trimmed = null;
+
+    if (null != string) {
+      trimmed = string
+        .replaceAll("^[" + regexChars + "]*|[" + regexChars + "]*$", "");
+
+      boolean done = false;
+      while (!done) {
+        if (trimmed.startsWith("\\\\")) {
+          // If multiple \s, remove the first and stop
+          trimmed = trimmed.substring(1);
+          done = true;
+        } else if (trimmed.startsWith("\\")) {
+          // Trim off the single \ and trim the front again
+          trimmed = trimmed.substring(1).replaceAll("^[" + regexChars + "]*",
+            "");
+        } else {
+          done = true;
+        }
+      }
+    }
+
+    return trimmed;
   }
 
   /**
