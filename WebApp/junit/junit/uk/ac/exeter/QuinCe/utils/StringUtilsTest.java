@@ -1,6 +1,7 @@
 package junit.uk.ac.exeter.QuinCe.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -1033,6 +1034,309 @@ public class StringUtilsTest extends BaseTest {
     assertTrue(checkStringList(
       StringUtils.delimitedToList("flurble,hurble,nurble ", ","), "flurble",
       "hurble", "nurble "));
+  }
+
+  /**
+   * Test that stackTraceToString returns a string with the correct trace.
+   *
+   * <p>
+   * The test is not comprehensive, but does check that the trace contains
+   * details of this class at the least.
+   * </p>
+   */
+  @Test
+  public void stackTraceToStringTest() {
+    Exception e = new Exception("Test Throwable");
+    String string = StringUtils.stackTraceToString(e);
+
+    boolean stringOK = true;
+
+    if (string.indexOf("java.lang.Exception: Test Throwable") == -1) {
+      stringOK = false;
+    }
+
+    if (string.indexOf(
+      "at junit.uk.ac.exeter.QuinCe.utils.StringUtilsTest.stackTraceToStringTest(StringUtilsTest.java:") == -1) {
+      stringOK = false;
+    }
+
+    assertTrue(stringOK);
+  }
+
+  private static List<String> makeTrimListInput() {
+    List<String> list = new ArrayList<String>();
+
+    list.add("plain");
+    list.add(" space front");
+    list.add("space end ");
+    list.add("\\leading backslash");
+    list.add("\\\\two leading backslashes");
+    list.add("any \\ other backslash\\");
+    list.add("\\leading backslash trailing space ");
+    list.add("\\leading backslash trailing tab\t");
+    list.add("\\ leading backlash and space");
+    list.add("\\\tleading backlash and tab");
+    list.add(" \\leading space and backslash");
+    list.add("\t\\leading tab and backslash");
+    list.add("\\\\ two leading backslashes and space");
+    list.add(" \\\\space and two leading backslashes");
+    list.add("   \n\r\tall the whitespace and a backlash");
+    list.add("all the trailing whitespace  \r\n\t  ");
+    list.add("\\ \\spaced backslashes");
+    list.add("\\ \\\\spaced two backslashes");
+
+    // And now all the same things but quoted
+    list.add("\"plain\"");
+    list.add("\" space front\"");
+    list.add("\"space end \"");
+    list.add("\"\\leading backslash\"");
+    list.add("\"\\\\two leading backslashes\"");
+    list.add("\"any \\ other backslash\\\"");
+    list.add("\"\\leading backslash trailing space \"");
+    list.add("\"\\leading backslash trailing tab\t\"");
+    list.add("\"\\ leading backlash and space\"");
+    list.add("\"\\\tleading backlash and tab\"");
+    list.add("\" \\leading space and backslash\"");
+    list.add("\"\t\\leading tab and backslash\"");
+    list.add("\"\\\\ two leading backslashes and space\"");
+    list.add("\" \\\\space and two leading backslashes\"");
+    list.add("\"   \n\r\t\\all the whitespace and a backlash\"");
+    list.add("\"all the trailing whitespace  \r\n\t  \"");
+    list.add("\"\\ \\spaced backslashes\"");
+    list.add("\"\\ \\\\spaced two backslashes\"");
+
+    // Other quote nonsense
+    list.add("\"front quote only");
+    list.add(" \"space and front quote");
+    list.add("\" quote and space");
+    list.add("trailing quote only\"");
+    list.add("trailing quote and space\" ");
+    list.add("trailing space and quote \"");
+    list.add(" \"space and quote at both ends \"");
+    list.add("\" quote and space at both ends\" ");
+    list.add("\"\"two lots of quotes\"\"");
+    list.add("\" \"two quotes with space\" \"");
+
+    // Other general nonsense
+    list.add(""); // ''
+    list.add("\""); // '"'
+    list.add("\"\""); // '""'
+    list.add("\" \""); // '" "'
+    list.add("\"\"\""); // '"""'
+    list.add("\\\""); // '\"'
+    list.add("\\\\\""); // '\\"'
+    list.add("\"  \t\r\""); // ' \t\r"'
+
+    return list;
+  }
+
+  /**
+   * Test the basic {@link StringUtils#trimList(List)} method with a variety of
+   * input strings
+   */
+  @Test
+  public void trimListTest() {
+    List<String> expectedOutput = new ArrayList<String>();
+
+    expectedOutput.add("plain");
+    expectedOutput.add("space front");
+    expectedOutput.add("space end");
+    expectedOutput.add("leading backslash");
+    expectedOutput.add("\\two leading backslashes");
+    expectedOutput.add("any \\ other backslash\\");
+    expectedOutput.add("leading backslash trailing space");
+    expectedOutput.add("leading backslash trailing tab");
+    expectedOutput.add("leading backlash and space");
+    expectedOutput.add("leading backlash and tab");
+    expectedOutput.add("leading space and backslash");
+    expectedOutput.add("leading tab and backslash");
+    expectedOutput.add("\\ two leading backslashes and space");
+    expectedOutput.add("\\space and two leading backslashes");
+    expectedOutput.add("all the whitespace and a backlash");
+    expectedOutput.add("all the trailing whitespace");
+    expectedOutput.add("spaced backslashes");
+    expectedOutput.add("\\spaced two backslashes");
+
+    // And now all the same things but quoted
+    expectedOutput.add("\"plain\"");
+    expectedOutput.add("\" space front\"");
+    expectedOutput.add("\"space end \"");
+    expectedOutput.add("\"\\leading backslash\"");
+    expectedOutput.add("\"\\\\two leading backslashes\"");
+    expectedOutput.add("\"any \\ other backslash\\\"");
+    expectedOutput.add("\"\\leading backslash trailing space \"");
+    expectedOutput.add("\"\\leading backslash trailing tab\t\"");
+    expectedOutput.add("\"\\ leading backlash and space\"");
+    expectedOutput.add("\"\\\tleading backlash and tab\"");
+    expectedOutput.add("\" \\leading space and backslash\"");
+    expectedOutput.add("\"\t\\leading tab and backslash\"");
+    expectedOutput.add("\"\\\\ two leading backslashes and space\"");
+    expectedOutput.add("\" \\\\space and two leading backslashes\"");
+    expectedOutput.add("\"   \n\r\t\\all the whitespace and a backlash\"");
+    expectedOutput.add("\"all the trailing whitespace  \r\n\t  \"");
+    expectedOutput.add("\"\\ \\spaced backslashes\"");
+    expectedOutput.add("\"\\ \\\\spaced two backslashes\"");
+
+    // Other quote nonsense
+    expectedOutput.add("\"front quote only");
+    expectedOutput.add("\"space and front quote");
+    expectedOutput.add("\" quote and space");
+    expectedOutput.add("trailing quote only\"");
+    expectedOutput.add("trailing quote and space\"");
+    expectedOutput.add("trailing space and quote \"");
+    expectedOutput.add("\"space and quote at both ends \"");
+    expectedOutput.add("\" quote and space at both ends\"");
+    expectedOutput.add("\"\"two lots of quotes\"\"");
+    expectedOutput.add("\" \"two quotes with space\" \"");
+
+    // Other general nonsense
+    expectedOutput.add(""); // '' -> ''
+    expectedOutput.add("\""); // '"' -> '"'
+    expectedOutput.add("\"\""); // '""' -> '""'
+    expectedOutput.add("\" \""); // '" "' -> '" "'
+    expectedOutput.add("\"\"\""); // '"""' -> '"""'
+    expectedOutput.add("\""); // '\"' -> '"'
+    expectedOutput.add("\\\""); // '\\"' -> '\"'
+    expectedOutput.add("\"  \t\r\""); // '" \t\r"' -> '" \t\r"'
+
+    List<String> trimmedList = StringUtils.trimList(makeTrimListInput());
+
+    // You can use the below to identify individual failing strings
+    /*
+     * for (int i = 0; i < trimmedList.size(); i++) { System.out.println("Got '"
+     * + trimmedList.get(i) + "' Expected '" + expectedOutput.get(i) + "'");
+     *
+     * assertTrue(trimmedList.get(i).equals(expectedOutput.get(i))); }
+     */
+
+    assertEquals(trimmedList, expectedOutput);
+  }
+
+  /**
+   * Test the basic {@link StringUtils#trimListAndQuotes(List)} method with a
+   * variety of input strings
+   */
+  @Test
+  public void trimListAndQuotesTest() {
+    List<String> expectedOutput = new ArrayList<String>();
+
+    expectedOutput.add("plain");
+    expectedOutput.add("space front");
+    expectedOutput.add("space end");
+    expectedOutput.add("leading backslash");
+    expectedOutput.add("\\two leading backslashes");
+    expectedOutput.add("any \\ other backslash\\");
+    expectedOutput.add("leading backslash trailing space");
+    expectedOutput.add("leading backslash trailing tab");
+    expectedOutput.add("leading backlash and space");
+    expectedOutput.add("leading backlash and tab");
+    expectedOutput.add("leading space and backslash");
+    expectedOutput.add("leading tab and backslash");
+    expectedOutput.add("\\ two leading backslashes and space");
+    expectedOutput.add("\\space and two leading backslashes");
+    expectedOutput.add("all the whitespace and a backlash");
+    expectedOutput.add("all the trailing whitespace");
+    expectedOutput.add("spaced backslashes");
+    expectedOutput.add("\\spaced two backslashes");
+
+    // And now all the same things but quoted
+    expectedOutput.add("plain");
+    expectedOutput.add("space front");
+    expectedOutput.add("space end");
+    expectedOutput.add("leading backslash");
+    expectedOutput.add("\\two leading backslashes");
+    expectedOutput.add("any \\ other backslash\\");
+    expectedOutput.add("leading backslash trailing space");
+    expectedOutput.add("leading backslash trailing tab");
+    expectedOutput.add("leading backlash and space");
+    expectedOutput.add("leading backlash and tab");
+    expectedOutput.add("leading space and backslash");
+    expectedOutput.add("leading tab and backslash");
+    expectedOutput.add("\\ two leading backslashes and space");
+    expectedOutput.add("\\space and two leading backslashes");
+    expectedOutput.add("all the whitespace and a backlash");
+    expectedOutput.add("all the trailing whitespace");
+    expectedOutput.add("spaced backslashes");
+    expectedOutput.add("\\spaced two backslashes");
+
+    // Other quote nonsense
+    expectedOutput.add("front quote only");
+    expectedOutput.add("space and front quote");
+    expectedOutput.add("quote and space");
+    expectedOutput.add("trailing quote only");
+    expectedOutput.add("trailing quote and space");
+    expectedOutput.add("trailing space and quote");
+    expectedOutput.add("space and quote at both ends");
+    expectedOutput.add("quote and space at both ends");
+    expectedOutput.add("two lots of quotes");
+    expectedOutput.add("two quotes with space");
+
+    // Other general nonsense
+    expectedOutput.add(""); // '' -> ''
+    expectedOutput.add(""); // '"' -> ''
+    expectedOutput.add(""); // '""' -> ''
+    expectedOutput.add(""); // '" "' -> ''
+    expectedOutput.add(""); // '"""' -> ''
+    expectedOutput.add(""); // '\"' -> ''
+    expectedOutput.add("\\"); // '\\"' -> '\'
+    expectedOutput.add(""); // '" \t\r"' -> ''
+
+    List<String> trimmedList = StringUtils
+      .trimListAndQuotes(makeTrimListInput());
+
+    // You can use the below to identify individual failing strings
+    /*
+     * for (int i = 0; i < trimmedList.size(); i++) { System.out.println("Got '"
+     * + trimmedList.get(i) + "' Expected '" + expectedOutput.get(i) + "'");
+     *
+     * assertTrue(trimmedList.get(i).equals(expectedOutput.get(i))); }
+     */
+
+    assertEquals(trimmedList, expectedOutput);
+  }
+
+  @Test
+  public void trimListNullListTest() {
+    assertNull(StringUtils.trimList(null));
+  }
+
+  @Test
+  public void trimListEmptyTest() {
+    List<String> list = new ArrayList<String>();
+    assertEquals(0, StringUtils.trimList(list).size());
+  }
+
+  @Test
+  public void trimListNullEntryTest() {
+    List<String> list = new ArrayList<String>();
+    list.add(null);
+
+    List<String> trimmedList = StringUtils.trimList(list);
+
+    assertEquals(1, trimmedList.size());
+    assertNull(trimmedList.get(0));
+  }
+
+  @Test
+  public void trimListAndQuotesNullListTest() {
+    assertNull(StringUtils.trimListAndQuotes(null));
+  }
+
+  @Test
+  public void trimListAndQuotesEmptyTest() {
+    List<String> list = new ArrayList<String>();
+    assertEquals(0, StringUtils.trimListAndQuotes(list).size());
+  }
+
+  @Test
+  public void trimListAndQuotesNullEntryTest() {
+    List<String> list = new ArrayList<String>();
+    list.add(null);
+
+    List<String> trimmedList = StringUtils.trimListAndQuotes(list);
+
+    assertEquals(1, trimmedList.size());
+    assertNull(trimmedList.get(0));
   }
 
   /**
