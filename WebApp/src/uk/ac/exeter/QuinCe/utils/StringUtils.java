@@ -546,6 +546,23 @@ public final class StringUtils {
     }
   }
 
+  /**
+   * Sort a list of {@link String}s by length.
+   *
+   * <p>
+   * Nulls are considered to be shorter than zero-length strings. The ordering
+   * of strings of the same length in the sorted list is not defined.
+   * </p>
+   *
+   * @param list
+   *          The list to be sorted.
+   * @param descending
+   *          Indicates whether the list entries should be sorted by descending
+   *          length.
+   * 
+   * @see DescendingLengthComparator
+   * @see AscendingLengthComparator
+   */
   public static void sortByLength(List<String> list, boolean descending) {
 
     Comparator<String> comparator = descending

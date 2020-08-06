@@ -82,6 +82,33 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
+   * Check that a list of {@link Double}s contains the specified set of values.
+   *
+   * @param list
+   *          The list to check.
+   * @param doubles
+   *          The values that the list should contain.
+   * @return {@code true} if the list contains the specified values;
+   *         {@code false} otherwise.
+   */
+  private boolean checkStringList(List<String> list, String... strings) {
+    boolean ok = true;
+
+    if (list.size() != strings.length) {
+      ok = false;
+    } else {
+      for (int i = 0; i < list.size(); i++) {
+        if (!list.get(i).equals(strings[i])) {
+          ok = false;
+          break;
+        }
+      }
+    }
+
+    return ok;
+  }
+
+  /**
    * Test that empty String values are converted to {@code ""} by
    * {@link StringUtils#makeCsvString(String)}.
    *
@@ -324,6 +351,12 @@ public class StringUtilsTest extends BaseTest {
     assertTrue("ab".equals(StringUtils.collectionToDelimited(list, null)));
   }
 
+  /**
+   * Test
+   * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
+   * with a tab delimiter.
+   */
+  @Test
   public void listToDelimitedTabDelimiterTest() {
     ArrayList<String> list = new ArrayList<String>(2);
     list.add("a");
@@ -335,7 +368,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test
    * {@link StringUtils#collectionToDelimited(java.util.Collection, String)}
-   * with a delimiter.
+   * with a comma delimiter.
    */
   @Test
   public void listToDelimitedOneCharDelimiterTest() {
@@ -1063,6 +1096,15 @@ public class StringUtilsTest extends BaseTest {
     assertTrue(stringOK);
   }
 
+  /**
+   * Generate a list of various strings to be used for testing
+   * {@link StringUtils#trimList(List)} and
+   * {@link StringUtils#trimListAndQuotes(List)}.
+   *
+   * @return The test list
+   * @see #trimListTest()
+   * @see #trimListAndQuotesTest()
+   */
   private static List<String> makeTrimListInput() {
     List<String> list = new ArrayList<String>();
 
@@ -1132,7 +1174,9 @@ public class StringUtilsTest extends BaseTest {
 
   /**
    * Test the basic {@link StringUtils#trimList(List)} method with a variety of
-   * input strings
+   * input strings.
+   *
+   * @see #makeTrimListInput()
    */
   @Test
   public void trimListTest() {
@@ -1215,6 +1259,8 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test the basic {@link StringUtils#trimListAndQuotes(List)} method with a
    * variety of input strings
+   *
+   * @see #makeTrimListInput()
    */
   @Test
   public void trimListAndQuotesTest() {
@@ -1295,17 +1341,27 @@ public class StringUtilsTest extends BaseTest {
     assertEquals(trimmedList, expectedOutput);
   }
 
+  /**
+   * Test {@link StringUtils#trimList(List)} with a {@code null} list.
+   */
   @Test
   public void trimListNullListTest() {
     assertNull(StringUtils.trimList(null));
   }
 
+  /**
+   * Test {@link StringUtils#trimList(List)} with an empty list.
+   */
   @Test
   public void trimListEmptyTest() {
     List<String> list = new ArrayList<String>();
     assertEquals(0, StringUtils.trimList(list).size());
   }
 
+  /**
+   * Test {@link StringUtils#trimList(List)} with list containing a {@code null}
+   * element.
+   */
   @Test
   public void trimListNullEntryTest() {
     List<String> list = new ArrayList<String>();
@@ -1317,17 +1373,27 @@ public class StringUtilsTest extends BaseTest {
     assertNull(trimmedList.get(0));
   }
 
+  /**
+   * Test {@link StringUtils#trimListAndQuotes(List)} with a {@code null} list.
+   */
   @Test
   public void trimListAndQuotesNullListTest() {
     assertNull(StringUtils.trimListAndQuotes(null));
   }
 
+  /**
+   * Test {@link StringUtils#trimListAndQuotes(List)} with an empty list.
+   */
   @Test
   public void trimListAndQuotesEmptyTest() {
     List<String> list = new ArrayList<String>();
     assertEquals(0, StringUtils.trimListAndQuotes(list).size());
   }
 
+  /**
+   * Test {@link StringUtils#trimListAndQuotes(List)} with list containing a
+   * {@code null} element.
+   */
   @Test
   public void trimListAndQuotesNullEntryTest() {
     List<String> list = new ArrayList<String>();
@@ -1340,29 +1406,66 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Check that a list of {@link Double}s contains the specified set of values.
+   * Generate a list of {@link String}s for testing
+   * {@link StringUtils#sortByLength(List, boolean)}.
    *
-   * @param list
-   *          The list to check.
-   * @param doubles
-   *          The values that the list should contain.
-   * @return {@code true} if the list contains the specified values;
-   *         {@code false} otherwise.
+   * @return The list
    */
-  private boolean checkStringList(List<String> list, String... strings) {
-    boolean ok = true;
+  private List<String> makeLengthSortList() {
+    List<String> list = new ArrayList<String>();
 
-    if (list.size() != strings.length) {
-      ok = false;
-    } else {
-      for (int i = 0; i < list.size(); i++) {
-        if (!list.get(i).equals(strings[i])) {
-          ok = false;
-          break;
-        }
-      }
-    }
+    list.add("aaaa");
+    list.add("aa");
+    list.add(null);
+    list.add("bbb");
+    list.add("a");
+    list.add(null);
+    list.add("aa");
 
-    return ok;
+    return list;
+  }
+
+  /**
+   * Test {@link StringUtils#sortByLength(List, boolean)} with ascending order.
+   *
+   * @see #makeLengthSortList()
+   */
+  @Test
+  public void sortByLengthAscendingTest() {
+
+    List<String> expectedOutput = new ArrayList<String>();
+    expectedOutput.add(null);
+    expectedOutput.add(null);
+    expectedOutput.add("a");
+    expectedOutput.add("aa");
+    expectedOutput.add("aa");
+    expectedOutput.add("bbb");
+    expectedOutput.add("aaaa");
+
+    List<String> source = makeLengthSortList();
+    StringUtils.sortByLength(source, false);
+    assertEquals(expectedOutput, source);
+  }
+
+  /**
+   * Test {@link StringUtils#sortByLength(List, boolean)} with descending order.
+   *
+   * @see #makeLengthSortList()
+   */
+  @Test
+  public void sortByLengthDescendingTest() {
+
+    List<String> expectedOutput = new ArrayList<String>();
+    expectedOutput.add("aaaa");
+    expectedOutput.add("bbb");
+    expectedOutput.add("aa");
+    expectedOutput.add("aa");
+    expectedOutput.add("a");
+    expectedOutput.add(null);
+    expectedOutput.add(null);
+
+    List<String> source = makeLengthSortList();
+    StringUtils.sortByLength(source, true);
+    assertEquals(expectedOutput, source);
   }
 }
