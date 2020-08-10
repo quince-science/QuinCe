@@ -559,7 +559,7 @@ public final class StringUtils {
    * @param descending
    *          Indicates whether the list entries should be sorted by descending
    *          length.
-   * 
+   *
    * @see DescendingLengthComparator
    * @see AscendingLengthComparator
    */
