@@ -1,9 +1,13 @@
-import os, sqlite3, datetime
+import os, datetime
+import sqlite3
+import collections
+import pandas as pd
 
 class DatabaseExtractor:
+  """ Functions for dealing with the sqlite database """
 
-  # Constructor and table inisialiser
   def __init__(self, filename, config):
+    """ Constructor """
     if not os.path.isfile(filename):
       print("SQLite file " + filename + " does not exist")
       exit()
@@ -11,139 +15,90 @@ class DatabaseExtractor:
     self._config = config
 
     self._conn = sqlite3.connect(filename)
-    self._conn.row_factory = sqlite3.Row
-
-    self._cursors = []
-    self._next_rows = []
-    self._date_columns = []
 
     if not self._check_config():
       self.disconnect()
       exit()
 
-    self.make_cursors()
+  def __del__(self):
+    self.disconnect()
 
-  # Check the configuration
   def _check_config(self):
+    """ Verify that the input table configuration is valid """
+
     result = True
+    output_names = self._config['output']['columns']
 
-    for table in self._config["input"]["tables"]:
+    for table in self._config['input']['tables']:
 
-      self._date_columns.append(table["datecol"])
+      # Make sure the mapping input columns are in the table, and the named
+      # output columns exist
+      c = self._conn.cursor()
+      c.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='" + table['name'] + "'")
+      if c.fetchone()[0] == 0:
+        print("Table " + table['name'] + " does not exist in database")
+        result = False
+      c.close()
 
-      # Make sure the mapping names exist in the output column list
-      for mapping_column in table["mapping"]:
-        column_found = False
+      # Make sure the specified input columns exist in the table, and the output columns are configured
+      c = self._conn.cursor()
+      c.execute("select * from " + table['name'] + " limit 1")
+      input_names = [description[0] for description in c.description]
+      c.close()
 
-        if len(mapping_column) > 0:
-          for outputcol in self._config["output"]["columns"]:
-            for col in outputcol.split("~"):
-              if col == mapping_column:
-                column_found = True
+      table_outfields = []
 
+      for outfield, infield in table['mapping']:
 
-          if not column_found:
-            print("Mapping " + mapping_column + " in table " + table["name"] +
-                 " not specified in output columns")
-            result = False
+        table_outfields.append(outfield)
+        if outfield not in output_names:
+          print("Output field " + outfield + " not in configured output columns")
+          result = False
+
+        # Combined input fields are split by "~"
+        if infield != "":
+          for sub_infield in infield.split("~"):
+            if sub_infield not in input_names:
+              print("Field " + sub_infield + " is not in table " + table['name'])
+              result = False
+
+      # Check that table_outfields and output_names are identical
+      if collections.Counter(table_outfields) != collections.Counter(output_names):
+        print("Outputs for table " + table['name'] + " do not match main output config")
 
     return result
 
-  # Close all cursors and connections
   def disconnect(self):
-    for cursor in self._cursors:
-      cursor.close()
-
+    """ Close the database connection """
     if self._conn is not None:
       self._conn.close()
 
-  # Create the table cursors to be used during extraction
-  def make_cursors(self):
-    for i in range(0, len(self._config["input"]["tables"])):
-      table = self._config["input"]["tables"][i]
-      cursor = self._conn.execute("SELECT * FROM " + table["name"])
-      self._cursors.append(cursor)
-      self._next_rows.append(None)
-      self.load_next_row(i)
 
+  def get_dataset(self, table_name):
+    """ Generate a dataset from the specified table """
 
-  # Get the next row chosen from all
-  # tables by time
-  def get_next_row_table(self):
-    earliest_date_table = None
-    earliest_date = None
+    result = None
 
-    for i in range(0, len(self._next_rows)):
+    # Build the SQL
+    sql = "SELECT "
 
-      row = self._next_rows[i]
-      if row is not None:
-        row_date = datetime.datetime.strptime(
-            self._next_rows[i][self._date_columns[i]], "%Y-%m-%d %H:%M:%S")
+    for table in self._config['input']['tables']:
+      if table['name'] == table_name:
 
-        if earliest_date is None:
-          earliest_date_table = i
-          earliest_date = row_date
-        elif row_date < earliest_date:
-          earliest_date_table = i
-          earliest_date = row_date
+        selects = []
 
-    return earliest_date_table
+        for outfield, infield in table['mapping']:
+          if infield == "":
+            infield_select = "NULL"
+          else:
+            infield_select = " || '~' || ".join(infield.split("~"))
 
-  # Load the next row from the specified table
-  def load_next_row(self, table_id):
-    row_found = False
+          selects.append(infield_select + " AS '" + outfield + "'")
 
-    while not row_found:
-      next_row = self._cursors[table_id].fetchone()
-      if next_row is None or not self._ignore_row(table_id, next_row):
-        self._next_rows[table_id] = next_row
-        row_found = True
+        sql += ",".join(selects)
 
-  # Determine whether a row should be ignored
-  def _ignore_row(self, table_id, row):
-    result = False
+        sql += " FROM " + table_name
 
-    table_config = self._config["input"]["tables"][table_id]
-
-    if "ignore" in table_config.keys():
-      ignore_col = table_config["ignore"]["column_index"]
-      ignore_val = table_config["ignore"]["value"]
-
-      result = (row[ignore_col] == ignore_val)
+        result = pd.read_sql_query(sql, self._conn)
 
     return result
-
-  # Get the current row from the specified table,
-  # with values mapped to the output columns
-  def get_mapped_row(self, table_id):
-    row = self._next_rows[table_id]
-
-    mapping = self._config["input"]["tables"][table_id]["mapping"]
-
-    out_row = []
-
-    for outcol in self._config["output"]["columns"]:
-      #print(outcol)
-      out_values = []
-
-      for col in outcol.split("~"):
-
-        in_index = None
-
-        try:
-          in_index = mapping.index(col)
-        except ValueError:
-          pass
-
-        if in_index is not None:
-          out_values.append(row[in_index])
-
-      #print(out_values)
-      if len(out_values) == 0:
-        out_row.append(None)
-      elif len(out_values) == 1:
-        out_row.append(out_values[0])
-      else:
-        out_row.append("~".join(str(v) for v in out_values))
-
-    return out_row

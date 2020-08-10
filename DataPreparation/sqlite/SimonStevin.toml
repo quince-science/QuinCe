@@ -1,35 +1,145 @@
-[input]
-  [[input.tables]]
-    name = "IcosData"
-    datecol = 0
-    mapping = ["TimeStamp", "Longitude", "Latitude", "Li7000H2O", "Li7000CO2",
-             "DrainTemperature", "ColumnTemperature", "VaisalaPressure",
-             "SmartTrakFlow", "WaterFlow", "SBE21Serial", "SBE21Salinity",
-             "SBE21Temperature", "SBE38Serial", "SBE38Temperature",
-             "AA4330FSerial", "AA4330FOxygen", "AA4330FAirSat",
-             "AA4330FTemperature", "FLRTSerial", "FLRTChla", "AWSAirPressure",
-             "AWSTemperature", "AWSWindDir", "AWSWindSpeed", "OctansHeave",
-             "SolinoidState", "Multiplexer"]
-
-  [[input.tables]]
-    name = "IcosCalData"
-    datecol = 0
-    mapping = ["TimeStamp", "Longitude", "Latitude", "Li7000H2O", "Li7000CO2",
-             "DrainTemperature", "VaisalaPressure", "SmartTrakFlow", "WaterFlow",
-             "AWSAirPressure", "", "SolinoidState", "Multiplexer"]
-
 [output]
 
   # The column headers for the output file
   # To join two fields add a percent sign (_) between the names
-  columns = ["TimeStamp", "Longitude", "Latitude", "Li7000H2O", "Li7000CO2",
-             "DrainTemperature", "ColumnTemperature", "VaisalaPressure",
-             "SmartTrakFlow", "WaterFlow", "SBE21Serial", "SBE21Salinity",
-             "SBE21Temperature", "SBE38Serial", "SBE38Temperature",
-             "AA4330FSerial", "AA4330FOxygen", "AA4330FAirSat",
-             "AA4330FTemperature", "FLRTSerial", "FLRTChla", "AWSAirPressure",
-             "AWSTemperature", "AWSWindDir", "AWSWindSpeed", "OctansHeave",
-             "SolinoidState~Multiplexer"]
+  columns = [
+    "TimeStamp",
+    "Longitude",
+    "Latitude",
+    "Li7000H2O",
+    "Li7000CO2",
+    "Li7000Temperature",
+    "Li7000CellPressure",
+    "DrainTemperature",
+    "ColumnTemperature",
+    "VaisalaPressure",
+    "SmartTrakFlow",
+    "WaterFlow",
+    "SBE21Serial",
+    "SBE21Salinity",
+    "SBE21Temperature",
+    "SBE38Serial",
+    "SBE38Temperature",
+    "AA4330FSerial",
+    "AA4330FOxygen",
+    "AA4330FAirSat",
+    "AA4330FTemperature",
+    "FLRTSerial",
+    "FLRTChla",
+    "AWSAirPressure",
+    "AWSTemperature",
+    "AWSWindDir",
+    "AWSWindSpeed",
+    "OctansHeave",
+    "Run Type",
+  ]
+
+  # Sort column. This should be the date/time.
+  sort_column = "TimeStamp"
 
   # Value to store in empty columns
   empty_col_value = -9999
+
+[input]
+  [[input.tables]]
+    name = "IcosData"
+
+    # Outfield = Infield
+    mapping = [
+      ["TimeStamp", "TimeStamp"],
+      ["Longitude", "Longitude"],
+      ["Latitude", "Latitude"],
+      ["Li7000H2O", "Li7000H2O"],
+      ["Li7000CO2", "Li7000CO2"],
+      ["Li7000Temperature", "Li7000Temperature"],
+      ["Li7000CellPressure", "Li7000CellPressure"],
+      ["DrainTemperature", "DrainTemperature"],
+      ["ColumnTemperature", "ColumnTemperature"],
+      ["VaisalaPressure", "VaisalaPressure"],
+      ["SmartTrakFlow", "SmartTrakFlow"],
+      ["WaterFlow", "WaterFlow"],
+      ["SBE21Serial", "SBE21Serial"],
+      ["SBE21Salinity", "SBE21Salinity"],
+      ["SBE21Temperature", "SBE21Temperature"],
+      ["SBE38Serial", "SBE38Serial"],
+      ["SBE38Temperature", "SBE38Temperature"],
+      ["AA4330FSerial", "AA4330FSerial"],
+      ["AA4330FOxygen", "AA4330FOxygen"],
+      ["AA4330FAirSat", "AA4330FAirSat"],
+      ["AA4330FTemperature", "AA4330FTemperature"],
+      ["FLRTSerial", "FLRTSerial"],
+      ["FLRTChla", "FLRTChla"],
+      ["AWSAirPressure", "AWSAirPressure"],
+      ["AWSTemperature", "AWSTemperature"],
+      ["AWSWindDir", "AWSWindDir"],
+      ["AWSWindSpeed", "AWSWindSpeed"],
+      ["OctansHeave", "OctansHeave"],
+      ["Run Type", "SolinoidState~Multiplexer"]
+    ]
+
+  [[input.tables]]
+    name = "IcosCalData"
+
+    # Outfield = Infield
+    mapping = [
+      ["TimeStamp", "TimeStamp"],
+      ["Longitude", "Longitude"],
+      ["Latitude", "Latitude"],
+      ["Li7000H2O", "Li7000H2O"],
+      ["Li7000CO2", "Li7000CO2"],
+      ["Li7000Temperature", "Li7000Temperature"],
+      ["Li7000CellPressure", "Li7000CellPressure"],
+      ["DrainTemperature", "DrainTemperature"],
+      ["ColumnTemperature", ""],
+      ["VaisalaPressure", "VaisalaPressure"],
+      ["SmartTrakFlow", "SmartTrakFlow"],
+      ["WaterFlow", "WaterFlow"],
+      ["SBE21Serial", ""],
+      ["SBE21Salinity", ""],
+      ["SBE21Temperature", ""],
+      ["SBE38Serial", ""],
+      ["SBE38Temperature", ""],
+      ["AA4330FSerial", ""],
+      ["AA4330FOxygen", ""],
+      ["AA4330FAirSat", ""],
+      ["AA4330FTemperature", ""],
+      ["FLRTSerial", ""],
+      ["FLRTChla", ""],
+      ["AWSAirPressure", "AWSAirPressure"],
+      ["AWSTemperature", ""],
+      ["AWSWindDir", ""],
+      ["AWSWindSpeed", ""],
+      ["OctansHeave", ""],
+      ["Run Type", "SolinoidState~Multiplexer"]
+    ]
+
+[column_mapping]
+  [[column_mapping.mappings]]
+    column = "Run Type"
+    # From -> To
+    mapping = [
+      ["00000011~1", "mar"],
+      ["00010001~1", "mar"],
+      ["00010001~2", "std1"],
+      ["00010001~3", "std2"],
+      ["00010001~4", "std3"],
+      ["00010001~5", "std4"],
+      ["00010011~1", "mar"],
+      ["00010011~2", "std1"],
+      ["00010011~3", "std2"],
+      ["00010011~4", "std3"],
+      ["00010011~5", "std4"],
+      ["01000000~1", "mar"],
+      ["01000000~2", "std1"],
+      ["01000000~3", "std2"],
+      ["01000000~4", "std3"],
+      ["01000000~5", "std4"],
+      ["01000001~1", "mar"],
+      ["01000001~2", "std1"],
+      ["01000001~3", "std2"],
+      ["01000001~4", "std3"],
+      ["01000001~5", "std4"],
+      ["11010001~1", "atm"]
+    ]
+
+    other = "ign"
