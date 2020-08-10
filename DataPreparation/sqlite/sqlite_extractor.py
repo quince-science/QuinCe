@@ -1,38 +1,22 @@
 import sys, os
 import toml
+import pandas as pd
+import numpy as np
 
-# Local modules
 from DatabaseExtractor import DatabaseExtractor
 
 def check_output_config(config):
-  result = True
+  """ Check that the configuration is valid"""
+  ok = True
 
-  # Output columns
-  try:
-    out_cols = config["output"]["columns"]
-    if (type(out_cols) is not list):
-      print("Output columns must be a list/array")
-      result = False
-    
-    if result:
-      if (len(out_cols) == 0):
-        print("No output columns specified")
-        result = False
-  except KeyError:
-    print("Output columns not specified in config")
-    result = False
+  if config['output']['sort_column'] not in config['output']['columns']:
+    print("Sort column not in output columns list")
+    ok = False
 
-  # Empty column value
-  if result:
-    try:
-      empty_value = config["output"]["empty_col_value"]
-    except KeyError:
-      print("Empty column value not specified")
-      result = False
+  return ok
 
-  return result
 
-#########################################
+##########################################################
 
 config = None
 sqlite_file = None
@@ -49,38 +33,47 @@ except IndexError:
   print("Usage: sqlite_extractor.py [config_file] [sqlite_file] [output_file]")
   exit()
 
+# Check configuration. Error messages printed in check function
 if not check_output_config(config):
   exit()
 
-out_chan = open(out_file, "w")
-for i in range(0, len(config["output"]["columns"])):
-  out_chan.write(config["output"]["columns"][i])
 
-  if i < (len(config["output"]["columns"]) - 1):
-    out_chan.write(",")
+extractor = None
+try:
+  # Initialise the database connection and check database config
+  extractor = DatabaseExtractor(sqlite_file, config)
 
-out_chan.write("\n")
+  # Extract all tables
+  all_datasets = []
+  for table in config['input']['tables']:
+    all_datasets.append(extractor.get_dataset(table['name']))
 
-extractor = DatabaseExtractor(sqlite_file, config)
+  # Join and sort datasets
+  all_data = pd.concat(all_datasets)
+  all_data.sort_values(by=config['output']['sort_column'])
 
-table_id = extractor.get_next_row_table()
-while table_id is not None:
+  # Replace missing values
+  all_data.fillna(value=config['output']['empty_col_value'], inplace=True)
 
-  row = extractor.get_mapped_row(table_id)
-  for i in range(0, len(row)):
-    value = row[i]
-    if value is None:
-      out_chan.write(str(config["output"]["empty_col_value"]))
-    else:
-      out_chan.write(str(row[i]))
-    
-    if i < (len(row) - 1):
-      out_chan.write(",")
-  
-  out_chan.write("\n")
+  # Perform all mappings
+  if 'mappings' in config['column_mapping']:
+    for col_map in config['column_mapping']['mappings']:
 
-  extractor.load_next_row(table_id)
-  table_id = extractor.get_next_row_table()
+      mapped_values = []
 
-out_chan.close()
-extractor.disconnect()
+      for source, dest in col_map['mapping']:
+        all_data[col_map['column']].replace(source, dest, inplace=True)
+        mapped_values.append(dest)
+
+      column_index = all_data.columns.get_loc(col_map['column'])
+
+      for i in range(0, len(all_data[col_map['column']])):
+        if all_data.iloc[i, column_index] not in mapped_values:
+          all_data.iloc[i, column_index] = col_map['other']
+
+  # Write the final CSV
+  all_data.to_csv(out_file, index=False)
+
+finally:
+  if extractor is not None:
+    del extractor
