@@ -90,7 +90,7 @@
     "includeQCComments": false,
     "qcFlagSuffix": "_QC",
     "timestampHeader": "Timestamp",
-    "headerMode": "code",
+    "headerMode": "code"
   },
   {
     "exportName": "Copernicus No Salinity Flags",
