@@ -383,7 +383,8 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     if (foundTarget) {
       // Now keep searching until the run type changes
       boolean runTypeChanged = false;
-      while (!runTypeChanged && searchIndex < timeOrderedMeasurements.size()) {
+      while (!runTypeChanged
+        && searchIndex < timeOrderedMeasurements.size() - 1) {
         searchIndex++;
         if (!timeOrderedMeasurements.get(searchIndex).getRunType()
           .equals(target)) {
@@ -402,7 +403,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     }
 
     List<Measurement> postRunMeasurements;
-    if (rangeStart == -1 || rangeEnd == -1) {
+    if (rangeStart == -1 || rangeEnd == -1 || rangeStart >= rangeEnd) {
       postRunMeasurements = new ArrayList<Measurement>(0);
     } else {
       postRunMeasurements = timeOrderedMeasurements.subList(rangeStart,
