@@ -85,13 +85,13 @@ public class DataReductionJob extends DataSetJob {
       reset(conn);
       DataSet dataSet = getDataset(conn);
       Instrument instrument = getInstrument(conn);
-      DataSetDB.updateDataSet(conn, dataSet);
-
-      conn.setAutoCommit(false);
 
       // Clear messages before executing job
       dataSet.clearMessages();
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
+      DataSetDB.updateDataSet(conn, dataSet);
+
+      conn.setAutoCommit(false);
 
       // Load all the sensor values for this dataset
       DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
