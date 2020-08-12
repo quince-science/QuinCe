@@ -403,7 +403,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     }
 
     List<Measurement> postRunMeasurements;
-    if (rangeStart == -1 || rangeEnd == -1 || rangeStart >= rangeEnd) {
+    if (rangeStart < 0 || rangeEnd < 0 || rangeStart >= rangeEnd) {
       postRunMeasurements = new ArrayList<Measurement>(0);
     } else {
       postRunMeasurements = timeOrderedMeasurements.subList(rangeStart,
