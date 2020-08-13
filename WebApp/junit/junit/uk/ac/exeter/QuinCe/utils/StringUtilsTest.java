@@ -1410,6 +1410,8 @@ public class StringUtilsTest extends BaseTest {
    * {@link StringUtils#sortByLength(List, boolean)}.
    *
    * @return The list
+   * @see #sortByLengthAscendingTest()
+   * @see #sortByLengthDescendingTest()
    */
   private List<String> makeLengthSortList() {
     List<String> list = new ArrayList<String>();
@@ -1467,5 +1469,67 @@ public class StringUtilsTest extends BaseTest {
     List<String> source = makeLengthSortList();
     StringUtils.sortByLength(source, true);
     assertEquals(expectedOutput, source);
+  }
+
+  /**
+   * Generate a list of {@link String}s for testing
+   * {@link StringUtils#sortByLength(List, boolean)}.
+   *
+   * <p>
+   * The list contains strings of length 1, 2, 3, 3, 4. The two three-length
+   * strings will not be ordered, but we can test the lengths of the strings to
+   * ensure they are in the correct order.
+   * </p>
+   *
+   * @return The list
+   * @see #sortBySameLengthAscendingTest()
+   * @see #sortBySameLengthDescendingTest()
+   */
+  private List<String> makeSameLengthSortList() {
+    List<String> list = new ArrayList<String>();
+
+    list.add("aaaa");
+    list.add("aaa");
+    list.add("bbb");
+    list.add("a");
+    list.add("aa");
+
+    return list;
+  }
+
+  /**
+   * Test {@link StringUtils#sortByLength(List, boolean)} with ascending order.
+   *
+   * @see #makeSameLengthSortList()
+   */
+  @Test
+  public void sortBySameLengthAscendingTest() {
+
+    List<String> source = makeSameLengthSortList();
+    StringUtils.sortByLength(source, false);
+
+    assertEquals(source.get(0).length(), 1);
+    assertEquals(source.get(1).length(), 2);
+    assertEquals(source.get(2).length(), 3);
+    assertEquals(source.get(3).length(), 3);
+    assertEquals(source.get(4).length(), 4);
+  }
+
+  /**
+   * Test {@link StringUtils#sortByLength(List, boolean)} with ascending order.
+   *
+   * @see #makeSameLengthSortList()
+   */
+  @Test
+  public void sortBySameLengthDescendingTest() {
+
+    List<String> source = makeSameLengthSortList();
+    StringUtils.sortByLength(source, true);
+
+    assertEquals(source.get(0).length(), 4);
+    assertEquals(source.get(1).length(), 3);
+    assertEquals(source.get(2).length(), 3);
+    assertEquals(source.get(3).length(), 2);
+    assertEquals(source.get(4).length(), 1);
   }
 }
