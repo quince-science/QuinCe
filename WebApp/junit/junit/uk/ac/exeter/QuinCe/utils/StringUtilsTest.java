@@ -30,7 +30,7 @@ public class StringUtilsTest extends BaseTest {
    * @return The delimiters.
    */
   @SuppressWarnings("unused")
-  private static List<String> makeDelimiters() {
+  private static final List<String> makeDelimiters() {
     List<String> delimiters = new ArrayList<String>(3);
     delimiters.add(",");
     delimiters.add(";");
@@ -44,7 +44,7 @@ public class StringUtilsTest extends BaseTest {
    * @return The disallowed delimiters.
    */
   @SuppressWarnings("unused")
-  private static List<String> makeStandardInvalidDelimiters() {
+  private static final List<String> makeStandardInvalidDelimiters() {
     List<String> delimiters = new ArrayList<String>(67);
     delimiters.add(null);
     delimiters.add("\"");
@@ -73,7 +73,7 @@ public class StringUtilsTest extends BaseTest {
    * @return The disallowed delimiters.
    */
   @SuppressWarnings("unused")
-  private static List<String> makeNumericInvalidDelimiters() {
+  private static final List<String> makeNumericInvalidDelimiters() {
     List<String> delimiters = new ArrayList<String>(2);
     delimiters.add(".");
     delimiters.add("-");
@@ -91,7 +91,8 @@ public class StringUtilsTest extends BaseTest {
    * @return {@code true} if the list contains the specified values;
    *         {@code false} otherwise.
    */
-  private boolean checkStringList(List<String> list, String... strings) {
+  private static final boolean checkStringList(List<String> list,
+    String... strings) {
     boolean ok = true;
 
     if (list.size() != strings.length) {
@@ -545,7 +546,7 @@ public class StringUtilsTest extends BaseTest {
    * @return {@code true} if the list contains the specified values;
    *         {@code false} otherwise.
    */
-  private boolean checkLongList(List<Long> list, Long... longs) {
+  private static final boolean checkLongList(List<Long> list, Long... longs) {
     boolean ok = true;
 
     if (list.size() != longs.length) {
@@ -726,7 +727,8 @@ public class StringUtilsTest extends BaseTest {
    * @return {@code true} if the list contains the specified values;
    *         {@code false} otherwise.
    */
-  private boolean checkDoubleList(List<Double> list, Double... doubles) {
+  private static final boolean checkDoubleList(List<Double> list,
+    Double... doubles) {
     boolean ok = true;
 
     if (list.size() != doubles.length) {
@@ -906,7 +908,8 @@ public class StringUtilsTest extends BaseTest {
    * @return {@code true} if the list contains the specified values;
    *         {@code false} otherwise.
    */
-  private boolean checkIntList(List<Integer> list, Integer... ints) {
+  private static final boolean checkIntList(List<Integer> list,
+    Integer... ints) {
     boolean ok = true;
 
     if (list.size() != ints.length) {
@@ -1105,7 +1108,7 @@ public class StringUtilsTest extends BaseTest {
    * @see #trimListTest()
    * @see #trimListAndQuotesTest()
    */
-  private static List<String> makeTrimListInput() {
+  private static final List<String> makeTrimListInput() {
     List<String> list = new ArrayList<String>();
 
     list.add("plain");
@@ -1413,7 +1416,7 @@ public class StringUtilsTest extends BaseTest {
    * @see #sortByLengthAscendingTest()
    * @see #sortByLengthDescendingTest()
    */
-  private List<String> makeLengthSortList() {
+  private static final List<String> makeLengthSortList() {
     List<String> list = new ArrayList<String>();
 
     list.add("aaaa");
@@ -1485,7 +1488,7 @@ public class StringUtilsTest extends BaseTest {
    * @see #sortBySameLengthAscendingTest()
    * @see #sortBySameLengthDescendingTest()
    */
-  private List<String> makeSameLengthSortList() {
+  private static final List<String> makeSameLengthSortList() {
     List<String> list = new ArrayList<String>();
 
     list.add("aaaa");
@@ -1508,11 +1511,11 @@ public class StringUtilsTest extends BaseTest {
     List<String> source = makeSameLengthSortList();
     StringUtils.sortByLength(source, false);
 
-    assertEquals(source.get(0).length(), 1);
-    assertEquals(source.get(1).length(), 2);
-    assertEquals(source.get(2).length(), 3);
-    assertEquals(source.get(3).length(), 3);
-    assertEquals(source.get(4).length(), 4);
+    assertEquals(1, source.get(0).length());
+    assertEquals(2, source.get(1).length());
+    assertEquals(3, source.get(2).length());
+    assertEquals(3, source.get(3).length());
+    assertEquals(4, source.get(4).length());
   }
 
   /**
@@ -1526,10 +1529,86 @@ public class StringUtilsTest extends BaseTest {
     List<String> source = makeSameLengthSortList();
     StringUtils.sortByLength(source, true);
 
-    assertEquals(source.get(0).length(), 4);
-    assertEquals(source.get(1).length(), 3);
-    assertEquals(source.get(2).length(), 3);
-    assertEquals(source.get(3).length(), 2);
-    assertEquals(source.get(4).length(), 1);
+    assertEquals(4, source.get(0).length());
+    assertEquals(3, source.get(1).length());
+    assertEquals(3, source.get(2).length());
+    assertEquals(2, source.get(3).length());
+    assertEquals(1, source.get(4).length());
+  }
+
+  /**
+   * Make the set of test values for {@link #formatDoubleStringTest(String,
+   * String).
+   *
+   * @return The test values
+   */
+  @SuppressWarnings("unused")
+  private static final Object[] getFormatDoubleStringValues() {
+    return new Object[] { new Object[] { "0.0", "0.000" },
+      new Object[] { "0.000000000", "0.000" }, new Object[] { "-0.0", "0.000" },
+      new Object[] { "1", "1.000" }, new Object[] { "1.2", "1.200" },
+      new Object[] { "1.27", "1.270" }, new Object[] { "1.270", "1.270" },
+      new Object[] { "1.2700", "1.270" }, new Object[] { "1.2703", "1.270" },
+      new Object[] { "1.2705", "1.271" }, new Object[] { "1.2707", "1.271" },
+      new Object[] { "-12.3", "-12.300" },
+      new Object[] { "-12.3705", "-12.371" },
+      new Object[] { "123e4", "1230000.000" }, new Object[] { null, null },
+      new Object[] { "", "" }, new Object[] { " ", " " },
+      new Object[] { "letters", "letters" },
+      new Object[] { "123abc", "123abc" } };
+
+  }
+
+  /**
+   * Test {@link StringUtils#formatNumber(String)} with various values.
+   *
+   * @param in
+   *          The input
+   * @param out
+   *          The expected output
+   * @see #getFormatDoubleStringValues()
+   */
+  @ParameterizedTest
+  @MethodSource("getFormatDoubleStringValues")
+  public void formatDoubleStringTest(String in, String out) {
+    assertEquals(out, StringUtils.formatNumber(in));
+  }
+
+  /**
+   * Make the set of test values for
+   * {@link #formatDoubleDoubleTest(Double, String)}.
+   *
+   * @return The test values.
+   */
+  @SuppressWarnings("unused")
+  private static final Object[] getFormatDoubleDoubleValues() {
+    return new Object[] { new Object[] { new Double(0.0), "0.000" },
+      new Object[] { new Double(0.000000000), "0.000" },
+      new Object[] { new Double(-0.00), "-0.000" },
+      new Object[] { new Double(1), "1.000" },
+      new Object[] { new Double(1.2), "1.200" },
+      new Object[] { new Double(1.27), "1.270" },
+      new Object[] { new Double(1.270), "1.270" },
+      new Object[] { new Double(1.2700), "1.270" },
+      new Object[] { new Double(1.2703), "1.270" },
+      new Object[] { new Double(1.2707), "1.271" },
+      new Object[] { new Double(-12.3), "-12.300" },
+      new Object[] { new Double(123e4), "1230000.000" },
+      new Object[] { null, null } };
+  }
+
+  /**
+   * Test {@link StringUtils#formatNumber(Double)} with various values.
+   *
+   * @param in
+   *          The input
+   * @param out
+   *          The expected output
+   * @see #getFormatDoubleDoubleValues()
+   */
+  @ParameterizedTest
+  @MethodSource("getFormatDoubleDoubleValues")
+  public void formatDoubleDoubleTest(Double in, String out) {
+    assertEquals(out, StringUtils.formatNumber(in));
   }
 }

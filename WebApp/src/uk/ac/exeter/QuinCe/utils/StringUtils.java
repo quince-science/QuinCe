@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +36,7 @@ public final class StringUtils {
     threeDecimalPoints.setMinimumFractionDigits(3);
     threeDecimalPoints.setMaximumFractionDigits(3);
     threeDecimalPoints.setGroupingUsed(false);
+    threeDecimalPoints.setRoundingMode(RoundingMode.HALF_UP);
   }
 
   /**
@@ -472,7 +475,7 @@ public final class StringUtils {
     String result = value;
 
     if (NumberUtils.isCreatable(value)) {
-      result = threeDecimalPoints.format(Double.parseDouble(value));
+      result = threeDecimalPoints.format(new BigDecimal(value));
     }
 
     return result;
