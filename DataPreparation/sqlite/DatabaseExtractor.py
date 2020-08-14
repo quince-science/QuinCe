@@ -83,6 +83,7 @@ class DatabaseExtractor:
     sql = "SELECT "
 
     for table in self._config['input']['tables']:
+
       if table['name'] == table_name:
 
         selects = []
@@ -98,6 +99,9 @@ class DatabaseExtractor:
         sql += ",".join(selects)
 
         sql += " FROM " + table_name
+
+        if 'whereclause' in table:
+          sql += " WHERE " + table['whereclause']
 
         result = pd.read_sql_query(sql, self._conn)
 
