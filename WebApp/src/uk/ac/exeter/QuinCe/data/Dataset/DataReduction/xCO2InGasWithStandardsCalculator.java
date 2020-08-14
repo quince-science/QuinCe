@@ -369,15 +369,18 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
 
     // Search for the closest measurement after this with the target run type
     boolean foundTarget = false;
-    searchIndex++;
-    while (!foundTarget && searchIndex < timeOrderedMeasurements.size()) {
-      if (timeOrderedMeasurements.get(searchIndex).getRunType()
-        .equals(target)) {
-        rangeStart = searchIndex;
-        rangeEnd = searchIndex;
-        foundTarget = true;
-      }
+
+    if (searchIndex >= 0) {
       searchIndex++;
+      while (!foundTarget && searchIndex < timeOrderedMeasurements.size()) {
+        if (timeOrderedMeasurements.get(searchIndex).getRunType()
+          .equals(target)) {
+          rangeStart = searchIndex;
+          rangeEnd = searchIndex;
+          foundTarget = true;
+        }
+        searchIndex++;
+      }
     }
 
     if (foundTarget) {
