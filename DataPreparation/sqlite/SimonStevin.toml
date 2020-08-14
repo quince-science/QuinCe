@@ -43,6 +43,7 @@
 [input]
   [[input.tables]]
     name = "IcosData"
+    whereclause = "strftime('%S',TimeStamp) == '00';"
 
     # Outfield = Infield
     mapping = [
@@ -79,6 +80,7 @@
 
   [[input.tables]]
     name = "IcosCalData"
+    whereclause = "strftime('%S',TimeStamp) == '00';"
 
     # Outfield = Infield
     mapping = [
