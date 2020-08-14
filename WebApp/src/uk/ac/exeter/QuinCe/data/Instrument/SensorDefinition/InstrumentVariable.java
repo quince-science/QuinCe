@@ -200,7 +200,9 @@ public class InstrumentVariable {
 
     Flag result = null;
 
-    if (sensorType.equals(coreSensorType)) {
+    if (sensorType.equals(coreSensorType)
+      || sensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)
+      || sensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
       result = flag;
     } else {
       switch (flag.getFlagValue()) {

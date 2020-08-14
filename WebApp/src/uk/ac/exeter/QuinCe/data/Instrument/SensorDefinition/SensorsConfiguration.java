@@ -82,6 +82,7 @@ public class SensorsConfiguration {
       checkParentsAndChildren();
       buildSpecialSensors();
     } catch (Exception e) {
+      e.printStackTrace();
       throw new SensorConfigurationException(
         "Error while loading sensor configuration", e);
     } finally {
