@@ -38,7 +38,7 @@
   sort_column = "TimeStamp"
 
   # Value to store in empty columns
-  empty_col_value = -9999
+  empty_col_value = -999.0
 
 [input]
   [[input.tables]]
