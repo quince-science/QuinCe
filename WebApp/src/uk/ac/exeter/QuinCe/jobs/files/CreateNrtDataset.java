@@ -66,72 +66,66 @@ public class CreateNrtDataset extends Job {
     Connection conn = null;
 
     try {
-
       conn = dataSource.getConnection();
-
       long instrumentId = Long.parseLong(parameters.get(ID_PARAM));
 
-      // If there's multiple NRT datasets, that means other tasks are already
-      // working on them. We should not do anything.
-      if (DataSetDB.getNrtCount(conn, instrumentId) < 2) {
+      Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId,
+        ResourceManager.getInstance().getSensorsConfiguration(),
+        ResourceManager.getInstance().getRunTypeCategoryConfiguration());
 
-        Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId,
-          ResourceManager.getInstance().getSensorsConfiguration(),
-          ResourceManager.getInstance().getRunTypeCategoryConfiguration());
+      // Delete the existing NRT dataset
+      DataSetDB.deleteNrtDataSet(conn, instrumentId);
 
-        // Delete the existing NRT dataset
-        DataSetDB.deleteNrtDataSet(conn, instrumentId);
+      // Now create the new dataset
 
-        // Now create the new dataset
+      // The NRT dataset will start immediately after the last 'real' dataset.
+      // If there isn't one, it will start at the beginning of the first
+      // available
+      // data file.
+      LocalDateTime nrtStartDate = null;
+      DataSet lastDataset = DataSetDB.getLastDataSet(conn,
+        instrument.getDatabaseId(), false);
+      if (null != lastDataset) {
+        nrtStartDate = lastDataset.getEnd().plusSeconds(1);
+      } else {
+        List<DataFile> instrumentFiles = DataFileDB.getFiles(conn,
+          ResourceManager.getInstance().getConfig(),
+          instrument.getDatabaseId());
 
-        // The NRT dataset will start immediately after the last 'real' dataset.
-        // If there isn't one, it will start at the beginning of the first
-        // available
-        // data file.
-        LocalDateTime nrtStartDate = null;
-        DataSet lastDataset = DataSetDB.getLastDataSet(conn,
-          instrument.getDatabaseId(), false);
-        if (null != lastDataset) {
-          nrtStartDate = lastDataset.getEnd().plusSeconds(1);
-        } else {
-          List<DataFile> instrumentFiles = DataFileDB.getFiles(conn,
-            ResourceManager.getInstance().getConfig(),
-            instrument.getDatabaseId());
-
-          // We can only continue if there's at least one file
-          if (instrumentFiles.size() > 0) {
-            nrtStartDate = instrumentFiles.get(0).getStartDate();
-          }
+        // We can only continue if there's at least one file
+        if (instrumentFiles.size() > 0) {
+          nrtStartDate = instrumentFiles.get(0).getStartDate();
         }
+      }
 
-        if (null != nrtStartDate) {
-          LocalDateTime endDate = DataFileDB.getLastFileDate(conn,
-            instrument.getDatabaseId());
+      if (null != nrtStartDate) {
+        LocalDateTime endDate = DataFileDB.getLastFileDate(conn,
+          instrument.getDatabaseId());
 
-          // Only create the NRT dataset if there are records available
-          if (endDate.isAfter(nrtStartDate)) {
-            String nrtDatasetName = buildNrtDatasetName(instrument);
+        // Only create the NRT dataset if there are records available
+        if (endDate.isAfter(nrtStartDate)) {
+          String nrtDatasetName = buildNrtDatasetName(instrument);
 
-            DataSet newDataset = new DataSet(instrument.getDatabaseId(),
-              nrtDatasetName, nrtStartDate, endDate, true);
-            DataSetDB.addDataSet(conn, newDataset);
+          DataSet newDataset = new DataSet(instrument.getDatabaseId(),
+            nrtDatasetName, nrtStartDate, endDate, true);
+          DataSetDB.addDataSet(conn, newDataset);
 
-            // TODO This is a copy of the code in DataSetsBean.addDataSet. Does
-            // it
-            // need collapsing?
-            Map<String, String> params = new HashMap<String, String>();
-            params.put(ExtractDataSetJob.ID_PARAM,
-              String.valueOf(newDataset.getId()));
+          // TODO This is a copy of the code in DataSetsBean.addDataSet. Does
+          // it
+          // need collapsing?
+          Map<String, String> params = new HashMap<String, String>();
+          params.put(ExtractDataSetJob.ID_PARAM,
+            String.valueOf(newDataset.getId()));
 
-            JobManager.addJob(conn,
-              UserDB.getUser(conn, instrument.getOwnerId()),
-              ExtractDataSetJob.class.getCanonicalName(), params);
-          }
+          JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
+            ExtractDataSetJob.class.getCanonicalName(), params);
         }
       }
     } catch (Exception e) {
       e.printStackTrace();
       DatabaseUtils.rollBack(conn);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
     }
 
   }
