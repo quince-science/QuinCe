@@ -605,8 +605,12 @@ public class DataSetDB {
       stmt.setBoolean(2, true);
 
       try (ResultSet records = stmt.executeQuery()) {
-        if (records.next()) {
-          result = dataSetFromRecord(records);
+        while (null == result && records.next()) {
+          DataSet dataset = dataSetFromRecord(records);
+          if (dataset.getStatus() != DataSet.STATUS_DELETE) {
+            result = dataset;
+            break;
+          }
         }
       }
 
@@ -710,6 +714,7 @@ public class DataSetDB {
         conn.setAutoCommit(true);
       }
     } catch (Exception e) {
+      e.printStackTrace();
       if (currentAutoCommitStatus) {
         try {
           conn.rollback();
