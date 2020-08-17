@@ -744,6 +744,7 @@ public class DataSetDataDB {
     MissingParam.checkZeroPositive(datasetId, "datasetId");
 
     PreparedStatement delDataReductionStmt = null;
+    PreparedStatement delMeasurementValuesStmt = null;
     PreparedStatement delMeasurementsStmt = null;
 
     try {
@@ -754,6 +755,11 @@ public class DataSetDataDB {
       delDataReductionStmt.setLong(1, datasetId);
       delDataReductionStmt.execute();
 
+      delMeasurementValuesStmt = conn
+        .prepareStatement(DELETE_MEASUREMENT_VALUES_STATEMENT);
+      delMeasurementValuesStmt.setLong(1, datasetId);
+      delMeasurementValuesStmt.execute();
+
       delMeasurementsStmt = conn
         .prepareStatement(DELETE_MEASUREMENTS_STATEMENT);
       delMeasurementsStmt.setLong(1, datasetId);
@@ -763,7 +769,8 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while deleting measurements", e);
     } finally {
-      DatabaseUtils.closeStatements(delMeasurementsStmt, delDataReductionStmt);
+      DatabaseUtils.closeStatements(delMeasurementsStmt,
+        delMeasurementValuesStmt, delDataReductionStmt);
     }
   }
 

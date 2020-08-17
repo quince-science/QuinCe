@@ -166,6 +166,11 @@ public class JobManager {
   private static final String DELETE_OLD_FINISHED_JOBS_STATEMENT = "DELETE FROM job WHERE status = 'FINISHED' AND ended < (NOW() - INTERVAL ? DAY)";
 
   /**
+   * Query to get the IDs of active jobs of a given job class
+   */
+  private static final String GET_EXISTING_JOBS_QUERY = "SELECT id FROM job WHERE class = ? AND status IN ('WAITING', 'RUNNING')";
+
+  /**
    * Adds a job to the database
    *
    * @param dataSource
@@ -1715,5 +1720,28 @@ public class JobManager {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
     }
+  }
+
+  public static List<Long> getExistingJobs(Connection conn, String jobClass)
+    throws DatabaseException {
+
+    List<Long> result = new ArrayList<Long>();
+
+    try (
+      PreparedStatement stmt = conn.prepareStatement(GET_EXISTING_JOBS_QUERY)) {
+
+      stmt.setString(1, jobClass);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.add(records.getLong(1));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting existing jobs list", e);
+    }
+
+    return result;
   }
 }
