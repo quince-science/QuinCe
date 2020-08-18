@@ -8,7 +8,9 @@
     <div class="contentBox wideContentBox">
       <h1>Sign Up</h1>
       <h:form id="signupForm" method="post" accept-charset="utf8">
-        <p:messages id="messages" autoUpdate="true" />
+        <p:messages id="messages">
+          <p:autoUpdate/>
+        </p:messages>
         <h:panelGrid columns="2" styleClass="inputForm"
           columnClasses="inputLabels,inputInputs" cellpadding="5">
           <h:outputLabel id="emailAddressLabel" for="emailAddress"
