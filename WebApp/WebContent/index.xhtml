@@ -38,7 +38,9 @@
           <h:graphicImage id="logo" alt="logo" value="/resources/image/quince.png" style="margin-right: 20px;"/>
           <span style="font-size: 38px">Q</span>uin<span style="font-size: 38px">C</span>e
         </div>
-        <p:messages id="messages" autoUpdate="true" />
+        <p:messages id="messages">
+          <p:autoUpdate/>
+        </p:messages>
         <div class="errors">
           <h:outputText value="Your session has expired. Please log in again." rendered="#{sessionScope.SESSION_EXPIRED != null}"/>
         </div>
