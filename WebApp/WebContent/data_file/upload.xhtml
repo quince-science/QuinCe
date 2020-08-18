@@ -15,7 +15,9 @@
     <h:form id="uploadForm" method="post" charset="utf8">
       <div class="pageBlock">
         <div id="uploadFile">
-          <p:messages id="messages" autoUpdate="true" closable="true" />
+          <p:messages id="messages" closable="true">
+            <p:autoUpdate/>
+          </p:messages>
           <div id="messages" class="error listBox hidden"></div>
           <p:outputLabel value="Select a file to upload" />
           <p:fileUpload fileUploadListener="#{fileUpload.handleFileUpload}"
