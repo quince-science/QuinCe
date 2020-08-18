@@ -27,6 +27,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -89,12 +90,12 @@ public class ExtractDataSetJob extends DataSetJob {
       conn = dataSource.getConnection();
       reset(conn);
 
-      conn.setAutoCommit(false);
-
       // Get the new data set from the database
       DataSet dataSet = getDataset(conn);
       dataSet.setStatus(DataSet.STATUS_DATA_EXTRACTION);
       DataSetDB.updateDataSet(conn, dataSet);
+
+      conn.setAutoCommit(false);
 
       Instrument instrument = getInstrument(conn);
 
@@ -248,43 +249,47 @@ public class ExtractDataSetJob extends DataSetJob {
       runTypePeriods.finish();
 
       // Now flag all the values that have internal calibrations and are within
-      // the instrument's pre- and post-flushing periods (if they're defined)
-      if (instrument.getPreFlushingTime() > 0
-        || instrument.getPostFlushingTime() > 0) {
+      // the instrument's pre- and post-flushing periods (if they're defined),
+      // or are in an INGORED run type
+      RunTypePeriod currentPeriod = runTypePeriods.get(0);
+      int currentPeriodIndex = 0;
 
-        RunTypePeriod currentPeriod = runTypePeriods.get(0);
-        int currentPeriodIndex = 0;
+      Iterator<SensorValue> valuesIter = sensorValues.iterator();
+      while (valuesIter.hasNext()) {
+        SensorValue value = valuesIter.next();
+        SensorType sensorType = instrument.getSensorAssignments()
+          .getSensorTypeForDBColumn(value.getColumnId());
 
-        Iterator<SensorValue> valuesIter = sensorValues.iterator();
-        while (valuesIter.hasNext()) {
-          SensorValue value = valuesIter.next();
-          SensorType sensorType = instrument.getSensorAssignments()
-            .getSensorTypeForDBColumn(value.getColumnId());
+        if (sensorType.hasInternalCalibration()) {
+          boolean periodFound = false;
 
-          if (sensorType.hasInternalCalibration()) {
-            boolean periodFound = false;
+          // Make sure we have the correct run type period
+          while (!periodFound) {
 
-            // Make sure we have the correct run type period
-            while (!periodFound) {
-
-              // If we have multiple file definitions, it's possible that
-              // timestamps in the file where the run type *isn't* defined will
-              // fall between run types.
-              //
-              // In this case, simply use the next known run type. Otherwise we
-              // find the run type that the timestamp is in.
-              if (value.getTime().isBefore(currentPeriod.getStart())
-                || currentPeriod.encompasses(value.getTime())) {
-                periodFound = true;
-              } else {
-                currentPeriodIndex++;
-                currentPeriod = runTypePeriods.get(currentPeriodIndex);
-              }
+            // If we have multiple file definitions, it's possible that
+            // timestamps in the file where the run type *isn't* defined will
+            // fall between run types.
+            //
+            // In this case, simply use the next known run type. Otherwise we
+            // find the run type that the timestamp is in.
+            if (value.getTime().isBefore(currentPeriod.getStart())
+              || currentPeriod.encompasses(value.getTime())) {
+              periodFound = true;
+            } else {
+              currentPeriodIndex++;
+              currentPeriod = runTypePeriods.get(currentPeriodIndex);
             }
+          }
 
-            if (inFlushingPeriod(value.getTime(), currentPeriod, instrument)) {
-              value.setUserQC(Flag.FLUSHING, "");
-            }
+          // If the current period is an IGNORE run type, remove the value.
+          if (instrument.getRunTypeCategory(currentPeriod.getRunType())
+            .equals(RunTypeCategory.IGNORED)) {
+            value.setValue(null);
+          } else if (inFlushingPeriod(value.getTime(), currentPeriod,
+            instrument)) {
+
+            // Flag flushing values
+            value.setUserQC(Flag.FLUSHING, "");
           }
         }
       }
