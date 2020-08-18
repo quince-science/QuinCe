@@ -219,7 +219,7 @@ public class DataReductionJob extends DataSetJob {
       conn.commit();
     } catch (Exception e) {
       DatabaseUtils.rollBack(conn);
-
+      e.printStackTrace();
       try {
         // Change dataset status to Error, and append an error message
         StringBuffer message = new StringBuffer();

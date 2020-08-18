@@ -543,4 +543,8 @@ public class SensorValue implements Comparable<SensorValue> {
   public String toString() {
     return time + ": " + columnId + " = " + value;
   }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
 }
