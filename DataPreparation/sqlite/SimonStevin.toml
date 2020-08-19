@@ -31,7 +31,7 @@
     "AWSWindDir",
     "AWSWindSpeed",
     "OctansHeave",
-    "Run Type",
+    "Multiplexer",
   ]
 
   # Sort column. This should be the date/time.
@@ -43,7 +43,9 @@
 [input]
   [[input.tables]]
     name = "IcosData"
-    whereclause = "strftime('%S',TimeStamp) == '00';"
+
+    # Only sample every minute
+    whereclause = "strftime('%S',TimeStamp) == '00'"
 
     # Outfield = Infield
     mapping = [
@@ -75,12 +77,14 @@
       ["AWSWindDir", "AWSWindDir"],
       ["AWSWindSpeed", "AWSWindSpeed"],
       ["OctansHeave", "OctansHeave"],
-      ["Run Type", "SolinoidState~Multiplexer"]
+      ["Multiplexer", "Multiplexer"]
     ]
 
   [[input.tables]]
     name = "IcosCalData"
-    whereclause = "strftime('%S',TimeStamp) == '00';"
+
+    # We sample every 15 seconds, and only include gas standards (2-5) and atm values (6)
+    whereclause = "Multiplexer IN (2, 3, 4, 5, 6) AND (strftime('%S',TimeStamp) == '00' OR strftime('%S',TimeStamp) == '15' OR strftime('%S',TimeStamp) == '30' OR strftime('%S',TimeStamp) == '45')"
 
     # Outfield = Infield
     mapping = [
@@ -112,36 +116,20 @@
       ["AWSWindDir", ""],
       ["AWSWindSpeed", ""],
       ["OctansHeave", ""],
-      ["Run Type", "SolinoidState~Multiplexer"]
+      ["Multiplexer", "Multiplexer"]
     ]
 
 [column_mapping]
   [[column_mapping.mappings]]
-    column = "Run Type"
+    column = "Multiplexer"
     # From -> To
     mapping = [
-      ["00000011~1", "mar"],
-      ["00010001~1", "mar"],
-      ["00010001~2", "std1"],
-      ["00010001~3", "std2"],
-      ["00010001~4", "std3"],
-      ["00010001~5", "std4"],
-      ["00010011~1", "mar"],
-      ["00010011~2", "std1"],
-      ["00010011~3", "std2"],
-      ["00010011~4", "std3"],
-      ["00010011~5", "std4"],
-      ["01000000~1", "mar"],
-      ["01000000~2", "std1"],
-      ["01000000~3", "std2"],
-      ["01000000~4", "std3"],
-      ["01000000~5", "std4"],
-      ["01000001~1", "mar"],
-      ["01000001~2", "std1"],
-      ["01000001~3", "std2"],
-      ["01000001~4", "std3"],
-      ["01000001~5", "std4"],
-      ["11000001~6", "atm"]
+      ["1", "mar"],
+      ["2", "std1"],
+      ["3", "std2"],
+      ["4", "std3"],
+      ["5", "std4"],
+      ["6", "atm"]
     ]
 
     other = "ign"
