@@ -61,6 +61,8 @@ try:
 
       mapped_values = []
 
+      all_data[col_map['column']] = all_data[col_map['column']].astype(str)
+
       for source, dest in col_map['mapping']:
         all_data[col_map['column']].replace(source, dest, inplace=True)
         mapped_values.append(dest)
@@ -70,6 +72,9 @@ try:
       for i in range(0, len(all_data[col_map['column']])):
         if all_data.iloc[i, column_index] not in mapped_values:
           all_data.iloc[i, column_index] = col_map['other']
+
+  # Sort the final dataframe
+  all_data.sort_values(by=['TimeStamp'], inplace=True)
 
   # Write the final CSV
   all_data.to_csv(out_file, index=False)
