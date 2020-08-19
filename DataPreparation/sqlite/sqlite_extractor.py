@@ -50,7 +50,7 @@ try:
 
   # Join and sort datasets
   all_data = pd.concat(all_datasets)
-  all_data.sort_values(by=config['output']['sort_column'])
+  all_data.sort_values(by=config['output']['sort_column'], inplace=True)
 
   # Replace missing values
   all_data.fillna(value=config['output']['empty_col_value'], inplace=True)
@@ -72,9 +72,6 @@ try:
       for i in range(0, len(all_data[col_map['column']])):
         if all_data.iloc[i, column_index] not in mapped_values:
           all_data.iloc[i, column_index] = col_map['other']
-
-  # Sort the final dataframe
-  all_data.sort_values(by=['TimeStamp'], inplace=True)
 
   # Write the final CSV
   all_data.to_csv(out_file, index=False)

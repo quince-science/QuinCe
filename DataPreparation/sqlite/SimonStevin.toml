@@ -96,7 +96,7 @@
       ["Li7000Temperature", "Li7000Temperature"],
       ["Li7000CellPressure", "Li7000CellPressure"],
       ["DrainTemperature", "DrainTemperature"],
-      ["ColumnTemperature", ""],
+      ["ColumnTemperature", "ColumnTemperature"],
       ["VaisalaPressure", "VaisalaPressure"],
       ["SmartTrakFlow", "SmartTrakFlow"],
       ["WaterFlow", "WaterFlow"],
