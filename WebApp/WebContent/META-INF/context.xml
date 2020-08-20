@@ -7,7 +7,9 @@
              Set to -1 to wait indefinitely.
   -->
   <Resource name="jdbc/QuinCeDB" auth="Container" type="javax.sql.DataSource"
-     maxTotal="100" maxIdle="30" maxWaitMillis="10000" removeAbandoned="true"
+     factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+     maxTotal="100" maxIdle="30" maxWaitMillis="10000"
+     removeAbandoned="true" logAbandoned="true" removeAbandonedTimeout="3600"
      username="%db_username%" password="%db_password%" driverClassName="com.mysql.jdbc.Driver"
      url="jdbc:mysql://%db_host%:%db_port%/%db_database%?useUnicode=true&amp;characterEncoding=utf-8&amp;rewriteBatchedStatements=true" />
 </Context>
