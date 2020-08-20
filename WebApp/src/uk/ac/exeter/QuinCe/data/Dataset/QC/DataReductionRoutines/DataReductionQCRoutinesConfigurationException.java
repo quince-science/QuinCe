@@ -1,13 +1,14 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReductionRoutines;
 
 /**
- * Exception class for errors encountered in the configuration of QC routines.
+ * Exception class for errors encountered in the configuration of data reduction
+ * QC routines.
  *
  * @author Steve Jones
  *
  */
 @SuppressWarnings("serial")
-public class QCRoutinesConfigurationException extends Exception {
+public class DataReductionQCRoutinesConfigurationException extends Exception {
 
   /**
    * The name of the configuration file in which the error was encountered.
@@ -20,11 +21,6 @@ public class QCRoutinesConfigurationException extends Exception {
   private String itemName;
 
   /**
-   * The line of the config file where the error occurred
-   */
-  private long lineNumber;
-
-  /**
    * Creates an exception that doesn't relate to a specific configuration item
    *
    * @param configFile
@@ -32,46 +28,10 @@ public class QCRoutinesConfigurationException extends Exception {
    * @param message
    *          The error message.
    */
-  public QCRoutinesConfigurationException(String configFile, String message) {
-    super(message);
-    this.configFile = configFile;
-  }
-
-  /**
-   * Creates an exception relating to a specific line
-   *
-   * @param configFile
-   *          The path of the file being worked on when the exception occurred.
-   * @param lineNumber
-   *          The line number of the file on which the error occurred
-   * @param message
-   *          The error message.
-   */
-  public QCRoutinesConfigurationException(String configFile, long lineNumber,
+  public DataReductionQCRoutinesConfigurationException(String configFile,
     String message) {
     super(message);
     this.configFile = configFile;
-    this.lineNumber = lineNumber;
-  }
-
-  /**
-   * Creates an exception relating to a specific line with a root cause
-   *
-   * @param configFile
-   *          The path of the file being worked on when the exception occurred.
-   * @param lineNumber
-   *          The line number of the file on which the error occurred
-   * @param message
-   *          The error message.
-   * @param cause
-   *          The underlying cause of the exception
-   */
-  public QCRoutinesConfigurationException(String configFile, long lineNumber,
-    String message, Throwable cause) {
-
-    super(message, cause);
-    this.configFile = configFile;
-    this.lineNumber = lineNumber;
   }
 
   /**
@@ -87,13 +47,12 @@ public class QCRoutinesConfigurationException extends Exception {
    * @param message
    *          The error message
    */
-  public QCRoutinesConfigurationException(String configFile, String itemName,
-    long lineNumber, String message) {
+  public DataReductionQCRoutinesConfigurationException(String configFile,
+    String itemName, String message) {
 
     super(message);
     this.configFile = configFile;
     this.itemName = itemName;
-    this.lineNumber = lineNumber;
   }
 
   /**
@@ -110,13 +69,12 @@ public class QCRoutinesConfigurationException extends Exception {
    * @param cause
    *          The underlying cause of the exception
    */
-  public QCRoutinesConfigurationException(String configFile, String itemName,
-    long lineNumber, String message, Throwable cause) {
+  public DataReductionQCRoutinesConfigurationException(String configFile,
+    String itemName, String message, Throwable cause) {
 
     super(message, cause);
     this.configFile = configFile;
     this.itemName = itemName;
-    this.lineNumber = lineNumber;
   }
 
   /**
@@ -129,10 +87,25 @@ public class QCRoutinesConfigurationException extends Exception {
    * @param cause
    *          The exception that caused the error.
    */
-  public QCRoutinesConfigurationException(String configFile, String message,
-    Throwable cause) {
+  public DataReductionQCRoutinesConfigurationException(String configFile,
+    String message, Throwable cause) {
 
     super(message, cause);
+    this.configFile = configFile;
+  }
+
+  /**
+   * Create a configuration exception that has an underlying cause
+   *
+   * @param configFile
+   *          The path of the file being worked on when the exception occurred.
+   * @param cause
+   *          The exception that caused the error.
+   */
+  public DataReductionQCRoutinesConfigurationException(String configFile,
+    Throwable cause) {
+
+    super(cause);
     this.configFile = configFile;
   }
 
@@ -151,11 +124,6 @@ public class QCRoutinesConfigurationException extends Exception {
     if (null != itemName) {
       message.append(", ITEM ");
       message.append(itemName);
-    }
-
-    if (-1 != lineNumber) {
-      message.append(", LINE ");
-      message.append(lineNumber);
     }
 
     message.append(": ");
@@ -185,15 +153,6 @@ public class QCRoutinesConfigurationException extends Exception {
    */
   public String getItemName() {
     return itemName;
-  }
-
-  /**
-   * Returns the line number on which the error occurred.
-   *
-   * @return The line number on which the error occurred.
-   */
-  public long getLine() {
-    return lineNumber;
   }
 
   /**

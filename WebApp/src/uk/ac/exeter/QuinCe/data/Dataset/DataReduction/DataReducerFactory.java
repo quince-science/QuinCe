@@ -104,6 +104,41 @@ public class DataReducerFactory {
     return reducer;
   }
 
+  public static Class<? extends DataReducer> getReducerClass(String variable)
+    throws DataReductionException {
+
+    Class<? extends DataReducer> result = null;
+
+    switch (variable) {
+    case "Underway Marine pCO₂": {
+      result = UnderwayMarinePco2Reducer.class;
+      break;
+    }
+    case "Underway Atmospheric pCO₂": {
+      result = UnderwayAtmosphericPco2Reducer.class;
+      break;
+    }
+    case "SailDrone Marine CO₂ NRT": {
+      result = SaildroneMarinePco2Reducer.class;
+      break;
+    }
+    case "SailDrone Atmospheric CO₂ NRT": {
+      result = SaildroneAtmosphericPco2Reducer.class;
+      break;
+    }
+    case "Soderman": {
+      result = NoReductionReducer.class;
+      break;
+    }
+    default: {
+      throw new DataReductionException(
+        "Cannot find reducer for variable " + variable);
+    }
+    }
+
+    return result;
+  }
+
   public static List<CalculationParameter> getCalculationParameters(
     Variable variable, boolean includeCalculationColumns)
     throws DataReductionException {

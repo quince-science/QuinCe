@@ -1,0 +1,20 @@
+[
+  {
+    "variable": "Underway Marine pCO₂",
+    "routines": [
+      {
+        "name": "AbsoluteRangeCheck",
+        "flagged_sensors": [
+          "Equilibrator Temperature",
+          "Equilibrator Pressure",
+          "Diagnostic Water Flow"
+        ],
+        "options": {
+          "parameter": "∆T",
+          "questionable_limit": 1,
+          "bad_limit": 1.5
+        }
+      }
+    ]
+  }
+]
