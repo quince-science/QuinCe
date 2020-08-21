@@ -150,6 +150,9 @@ public class ExportDataset {
       }
     } catch (RecordNotFoundException e) {
       responseCode = Status.NOT_FOUND;
+    } catch (Exception e) {
+      e.printStackTrace();
+      responseCode = Status.INTERNAL_SERVER_ERROR;
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
