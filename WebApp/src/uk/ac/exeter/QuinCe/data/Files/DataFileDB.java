@@ -274,7 +274,12 @@ public class DataFileDB {
           dataFile.getStartDate(), dataFile.getEndDate());
       }
 
-      conn.setAutoCommit(false);
+      boolean initialAutoCommit = conn.getAutoCommit();
+
+      if (initialAutoCommit) {
+        conn.setAutoCommit(false);
+      }
+
       stmt = conn.prepareStatement(ADD_FILE_STATEMENT,
         Statement.RETURN_GENERATED_KEYS);
       stmt.setLong(1, dataFile.getFileDefinition().getDatabaseId());
@@ -295,6 +300,10 @@ public class DataFileDB {
 
         conn.commit();
       }
+
+      if (initialAutoCommit) {
+        conn.setAutoCommit(true);
+      }
     } catch (FileExistsException e) {
       throw e;
     } catch (Exception e) {
@@ -309,7 +318,6 @@ public class DataFileDB {
     } finally {
       DatabaseUtils.closeResultSets(generatedKeys);
       DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -351,7 +359,11 @@ public class DataFileDB {
       }
 
       if (storeFile) {
-        conn.setAutoCommit(false);
+        boolean initialAutoCommit = conn.getAutoCommit();
+
+        if (initialAutoCommit) {
+          conn.setAutoCommit(false);
+        }
         stmt = conn.prepareStatement(REPLACE_FILE_STATEMENT);
         stmt.setString(1, dataFile.getFilename());
         stmt.setLong(2, DateTimeUtils.dateToLong(dataFile.getStartDate()));
@@ -368,6 +380,10 @@ public class DataFileDB {
         FileStore.storeFile(appConfig.getProperty("filestore"), dataFile);
 
         conn.commit();
+
+        if (initialAutoCommit) {
+          conn.setAutoCommit(true);
+        }
       }
     } catch (Exception e) {
       try {
@@ -816,6 +832,11 @@ public class DataFileDB {
       throw new DatabaseException(
         "An error occurred while deleting the data file", e);
     } finally {
+      try {
+        conn.setAutoCommit(true);
+      } catch (SQLException e) {
+        throw new DatabaseException("Unable to reset connection autocommit", e);
+      }
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
     }

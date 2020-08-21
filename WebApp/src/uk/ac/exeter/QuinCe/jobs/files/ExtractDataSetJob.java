@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -340,6 +341,13 @@ public class ExtractDataSetJob extends DataSetJob {
       }
       throw new JobFailedException(id, e);
     } finally {
+      if (null != conn) {
+        try {
+          conn.setAutoCommit(true);
+        } catch (SQLException e) {
+          throw new JobFailedException(id, e);
+        }
+      }
       DatabaseUtils.closeConnection(conn);
     }
   }

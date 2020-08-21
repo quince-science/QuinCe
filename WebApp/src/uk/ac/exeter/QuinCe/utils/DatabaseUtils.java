@@ -102,6 +102,7 @@ public class DatabaseUtils {
         try {
           if (!conn.getAutoCommit()) {
             conn.rollback();
+            conn.setAutoCommit(true);
           }
           conn.close();
         } catch (SQLException e) {

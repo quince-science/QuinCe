@@ -374,6 +374,14 @@ public class InstrumentDB {
       throw new DatabaseException("Exception while storing instrument", e,
         rollbackOK);
     } finally {
+      if (null != conn) {
+        try {
+          conn.setAutoCommit(true);
+        } catch (SQLException e) {
+          throw new DatabaseException("Unable to reset connection autocommit",
+            e);
+        }
+      }
       DatabaseUtils.closeResultSets(keyResultSets);
       DatabaseUtils.closeResultSets(instrumentKey);
       DatabaseUtils.closeStatements(subStatements);
@@ -1594,6 +1602,11 @@ public class InstrumentDB {
       throw new DatabaseException("Error while storing run type assignments",
         e);
     } finally {
+      try {
+        conn.setAutoCommit(true);
+      } catch (SQLException e) {
+        throw new DatabaseException("Unable to reset connection autocommit", e);
+      }
       DatabaseUtils.closeStatements(stmts);
       DatabaseUtils.closeConnection(conn);
     }
