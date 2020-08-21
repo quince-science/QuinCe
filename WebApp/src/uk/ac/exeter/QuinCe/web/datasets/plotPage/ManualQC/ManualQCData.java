@@ -867,14 +867,15 @@ public class ManualQCData extends PlotPageData {
     LocalDateTime rowTime = DateTimeUtils.longToDate(rowId);
     Measurement measurement = measurements.get(rowTime);
 
-    Map<InstrumentVariable, DataReductionRecord> rowRecords = dataReduction
-      .get(measurement.getId());
-    if (null != rowRecords) {
-      result = rowRecords.get(variable);
+    if (null != measurement) {
+      Map<InstrumentVariable, DataReductionRecord> rowRecords = dataReduction
+        .get(measurement.getId());
+      if (null != rowRecords) {
+        result = rowRecords.get(variable);
+      }
     }
 
     return result;
-
   }
 
   private Measurement getConcurrentMeasurement(LocalDateTime time) {
