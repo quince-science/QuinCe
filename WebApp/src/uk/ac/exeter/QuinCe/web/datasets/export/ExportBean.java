@@ -380,6 +380,9 @@ public class ExportBean extends BaseManagedBean {
       output.append("\n");
     }
 
+    // Destroy the ExportData object so it cleans up its resources
+    data.destroy();
+
     return output.toString().getBytes();
   }
 
