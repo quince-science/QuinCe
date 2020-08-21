@@ -1196,6 +1196,14 @@ public class JobManager {
       DatabaseUtils.rollBack(conn);
       // Not much we can do about that.
     } finally {
+      if (null != conn) {
+        try {
+          conn.setAutoCommit(true);
+        } catch (SQLException e) {
+          throw new DatabaseException("Unable to reset connection autocommit",
+            e);
+        }
+      }
       DatabaseUtils.closeResultSets(runningThreadNames);
       DatabaseUtils.closeStatements(threadNamesStmt);
       DatabaseUtils.closeConnection(conn);
@@ -1533,6 +1541,14 @@ public class JobManager {
       throw new DatabaseException(
         "An error occurred while killing job '" + jobId + "'");
     } finally {
+      if (null != conn) {
+        try {
+          conn.setAutoCommit(true);
+        } catch (SQLException e) {
+          throw new DatabaseException("Unable to reset connection autocommit",
+            e);
+        }
+      }
       DatabaseUtils.closeConnection(conn);
     }
   }

@@ -286,6 +286,7 @@ public class DataSetDB {
       conn.setAutoCommit(false);
       saveDataSet(conn, dataSet);
       conn.commit();
+      conn.setAutoCommit(true);
     } catch (SQLException e) {
       throw new DatabaseException("Error opening database connection", e);
     } finally {
