@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.naming.InitialContext;
@@ -19,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
  * Utility class for handling resources required by the web application. The
@@ -67,10 +70,19 @@ public class ResourceManager implements ServletContextListener {
   public void contextInitialized(ServletContextEvent event) {
     ServletContext servletContext = event.getServletContext();
     String databaseName = servletContext.getInitParameter("database.name");
+
+    Connection conn = null;
+
     try {
       dbDataSource = (DataSource) createInitialContext().lookup(databaseName);
     } catch (NamingException e) {
       throw new RuntimeException("Config failed: datasource not found", e);
+    }
+
+    try {
+      conn = dbDataSource.getConnection();
+    } catch (SQLException e) {
+      throw new RuntimeException("Unable to get database connection", e);
     }
 
     try {
@@ -97,8 +109,8 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise run type category configuration
     try {
-      runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(
-        dbDataSource.getConnection(), sensorsConfiguration);
+      runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(conn,
+        sensorsConfiguration);
     } catch (Exception e) {
       throw new RuntimeException("Could not load run type categories", e);
     }
@@ -114,12 +126,14 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise the file export options configuration
     try {
-      ExportConfig.init(dbDataSource.getConnection(), sensorsConfiguration,
+      ExportConfig.init(conn, sensorsConfiguration,
         configuration.getProperty("export.configfile"));
     } catch (Exception e) {
       throw new RuntimeException("Could not initialise export configuration",
         e);
     }
+
+    DatabaseUtils.closeConnection(conn);
 
     instance = this;
   }
