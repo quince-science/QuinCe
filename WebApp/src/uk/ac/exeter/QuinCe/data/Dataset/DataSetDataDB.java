@@ -748,7 +748,10 @@ public class DataSetDataDB {
     PreparedStatement delMeasurementsStmt = null;
 
     try {
-      conn.setAutoCommit(false);
+      boolean initialAutoCommitState = conn.getAutoCommit();
+      if (initialAutoCommitState) {
+        conn.setAutoCommit(false);
+      }
 
       delDataReductionStmt = conn
         .prepareStatement(DELETE_DATA_REDUCTION_STATEMENT);
@@ -766,6 +769,10 @@ public class DataSetDataDB {
       delMeasurementsStmt.execute();
 
       conn.commit();
+
+      if (initialAutoCommitState) {
+        conn.setAutoCommit(true);
+      }
     } catch (SQLException e) {
       throw new DatabaseException("Error while deleting measurements", e);
     } finally {

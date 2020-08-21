@@ -7,6 +7,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
 import uk.ac.exeter.QuinCe.User.UserDB;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -154,6 +155,14 @@ public class ResetPasswordBean extends BaseManagedBean {
         e.printStackTrace();
         DatabaseUtils.rollBack(conn);
       } finally {
+        if (conn != null) {
+          try {
+            conn.setAutoCommit(true);
+          } catch (SQLException e) {
+            throw new DatabaseException("Unable to reset connection autocommit",
+              e);
+          }
+        }
         DatabaseUtils.closeConnection(conn);
       }
     }
