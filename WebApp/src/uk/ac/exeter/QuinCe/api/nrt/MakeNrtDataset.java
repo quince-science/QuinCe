@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.api.nrt;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -97,26 +96,23 @@ public class MakeNrtDataset {
 
     boolean createDataset = false;
 
-    // If any datasets are currently being deleted, don't queue up any more by
-    // trying to generate a new NRT dataset
-    List<DataSet> deletingDataSet = DataSetDB.getDatasetsWithStatus(conn,
-      DataSet.STATUS_DELETE);
+    // Only try to create a new NRT dataset if either (a) there are no existing
+    // NRT datasets or (b) there is an NRT dataset and its status is either
+    // WAITING FOR EXPORT or EXPORT COMPLETE - any other time the NRT is being
+    // processed, so leave it alone.
+    DataSet existingDataset = DataSetDB.getNrtDataSet(conn,
+      instrument.getDatabaseId());
 
-    List<Long> existingNrtJobs = JobManager.getExistingJobs(conn,
-      CreateNrtDataset.class.getCanonicalName());
+    // If there is no NRT dataset, create one
+    if (null == existingDataset) {
+      createDataset = true;
+    } else {
 
-    if (existingNrtJobs.size() == 0 && deletingDataSet.size() == 0) {
-      DataSet existingDataset = DataSetDB.getNrtDataSet(conn,
-        instrument.getDatabaseId());
-
-      // If there is no NRT dataset, create one
-      if (null == existingDataset) {
-        createDataset = true;
-      } else {
+      if (existingDataset.getStatus() == DataSet.STATUS_READY_FOR_EXPORT
+        || existingDataset.getStatus() == DataSet.STATUS_EXPORT_COMPLETE) {
 
         // See if any data files have been uploaded/updated since the NRT
-        // dataset
-        // was created. If so, recreate it.
+        // dataset was created. If so, recreate it.
         LocalDateTime lastFileModification = DataFileDB
           .getLastFileModification(conn, instrument.getDatabaseId());
 
@@ -126,15 +122,15 @@ public class MakeNrtDataset {
           createDataset = true;
         }
       }
+    }
 
-      if (createDataset) {
-        Map<String, String> params = new HashMap<String, String>();
-        params.put(ExtractDataSetJob.ID_PARAM,
-          String.valueOf(instrument.getDatabaseId()));
+    if (createDataset) {
+      Map<String, String> params = new HashMap<String, String>();
+      params.put(ExtractDataSetJob.ID_PARAM,
+        String.valueOf(instrument.getDatabaseId()));
 
-        JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
-          CreateNrtDataset.class.getCanonicalName(), params);
-      }
+      JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
+        CreateNrtDataset.class.getCanonicalName(), params);
     }
 
     return createDataset;
