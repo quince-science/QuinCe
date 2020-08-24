@@ -608,10 +608,8 @@ public class DataSetDB {
       try (ResultSet records = stmt.executeQuery()) {
         while (null == result && records.next()) {
           DataSet dataset = dataSetFromRecord(records);
-          if (dataset.getStatus() != DataSet.STATUS_DELETE) {
-            result = dataset;
-            break;
-          }
+          result = dataset;
+          break;
         }
       }
 
@@ -667,7 +665,7 @@ public class DataSetDB {
     throws MissingParamException, DatabaseException {
 
     DataSet nrtDataset = getNrtDataSet(conn, instrumentId);
-    if (null != nrtDataset) {
+    if (null != nrtDataset && nrtDataset.getStatus() != DataSet.STATUS_DELETE) {
       deleteDataSet(conn, nrtDataset);
     }
   }
