@@ -9,7 +9,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import uk.ac.exeter.QuinCe.api.nrt.MakeNrtDataset;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -197,24 +196,16 @@ public class DataReductionJob extends DataSetJob {
         JobManager.requeueJob(conn, id);
       } else {
 
-        if (dataSet.isNrt()) {
-          dataSet.setStatus(DataSet.STATUS_READY_FOR_EXPORT);
-        } else {
-          if (DataSetDataDB.getFlagsRequired(dataSource, dataSet.getId()) > 0) {
-            dataSet.setStatus(DataSet.STATUS_USER_QC);
-          } else {
-            dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);
-          }
-        }
+        Map<String, String> jobParams = new HashMap<String, String>();
+        jobParams.put(LocateMeasurementsJob.ID_PARAM,
+          String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+        JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
+          DataReductionQCJob.class.getCanonicalName(), jobParams);
 
         // Set the dataset status
+        dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION_QC);
         DataSetDB.updateDataSet(conn, dataSet);
 
-        // Remake the NRT dataset if necessary (and we haven't just processed
-        // it!)
-        if (instrument.getNrt() && !dataSet.isNrt()) {
-          MakeNrtDataset.createNrtDataset(conn, instrument);
-        }
       }
 
       conn.commit();
@@ -274,7 +265,7 @@ public class DataReductionJob extends DataSetJob {
     try {
       DataSetDataDB.deleteDataReduction(conn, getDataset(conn).getId());
       DataSetDB.setDatasetStatus(conn, getDataset(conn).getId(),
-        DataSet.STATUS_WAITING);
+        DataSet.STATUS_DATA_REDUCTION);
     } catch (Exception e) {
       throw new JobFailedException(id, "Error while resetting dataset", e);
     }
