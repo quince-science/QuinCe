@@ -11,7 +11,7 @@ public abstract class DataReductionQCRoutine {
   /**
    * The routine settings
    */
-  private final DataReductionQCRoutineSettings settings;
+  protected final DataReductionQCRoutineSettings settings;
 
   /**
    * Basic constructor.

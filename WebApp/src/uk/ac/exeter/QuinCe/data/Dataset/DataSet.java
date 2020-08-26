@@ -164,6 +164,16 @@ public class DataSet {
   public static final String STATUS_EXPORT_COMPLETE_NAME = "Automatic export complete";
 
   /**
+   * The numeric value for the data reduction QC status
+   */
+  public static final int STATUS_DATA_REDUCTION_QC = 10;
+
+  /**
+   * The string for the export complete status
+   */
+  public static final String STATUS_DATA_REDUCTION_QC_NAME = "Data Reduction QC";
+
+  /**
    * The database ID
    */
   private long id = DatabaseUtils.NO_DATABASE_RECORD;
@@ -435,6 +445,10 @@ public class DataSet {
       result = STATUS_EXPORT_COMPLETE_NAME;
       break;
     }
+    case STATUS_DATA_REDUCTION_QC: {
+      result = STATUS_DATA_REDUCTION_QC_NAME;
+      break;
+    }
     default: {
       result = "UNKNOWN";
     }
@@ -599,7 +613,7 @@ public class DataSet {
    * @return {@code true} if the status is valid; {@code false} if it is not
    */
   public static boolean validateStatus(int status) {
-    return (status >= STATUS_DELETE && status <= STATUS_EXPORT_COMPLETE);
+    return (status >= STATUS_DELETE && status <= STATUS_DATA_REDUCTION_QC);
   }
 
   /**
