@@ -573,6 +573,10 @@ public class DataSet {
     return result;
   }
 
+  public Properties getProperties() {
+    return properties;
+  }
+
   /**
    * Determine whether or not a given status value is valid
    *

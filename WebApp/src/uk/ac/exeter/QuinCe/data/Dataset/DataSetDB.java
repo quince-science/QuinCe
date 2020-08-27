@@ -17,6 +17,8 @@ import javax.sql.DataSource;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
+import com.google.gson.Gson;
+
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -208,7 +210,8 @@ public class DataSetDB {
     int status = record.getInt(6);
     LocalDateTime statusDate = DateTimeUtils.longToDate(record.getLong(7));
     boolean nrt = record.getBoolean(8);
-    Properties properties = null; // 9
+    Properties properties = new Gson().fromJson(record.getString(9),
+      Properties.class);
     LocalDateTime createdDate = DateTimeUtils
       .longToDate(record.getTimestamp(10).getTime());
 
@@ -321,7 +324,7 @@ public class DataSetDB {
       stmt.setInt(5, dataSet.getStatus());
       stmt.setLong(6, DateTimeUtils.dateToLong(dataSet.getStatusDate()));
       stmt.setBoolean(7, dataSet.isNrt());
-      stmt.setNull(8, Types.VARCHAR);
+      stmt.setString(8, new Gson().toJson(dataSet.getProperties()));
       stmt.setLong(9, DateTimeUtils.dateToLong(LocalDateTime.now()));
 
       if (dataSet.getMessageCount() > 0) {
