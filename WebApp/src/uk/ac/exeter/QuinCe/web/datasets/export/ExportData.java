@@ -46,14 +46,14 @@ public class ExportData extends ManualQCData {
 
   private PlotPageColumnHeading depthHeading;
 
-  private int depth;
+  private Integer depth;
 
   public ExportData(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
     super(dataSource, instrument, dataset);
     depthHeading = new PlotPageColumnHeading(DEPTH_ID, "Depth", "Depth",
       "ADEPZZ01", "m", true, false, false);
-    depth = instrument.getDepth();
+    depth = instrument.getIntProperty(Instrument.PROP_DEPTH);
   }
 
   @Override

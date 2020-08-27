@@ -66,16 +66,14 @@ public class InstrumentDB {
    * Statement for inserting an instrument record
    */
   private static final String CREATE_INSTRUMENT_STATEMENT = "INSERT INTO instrument ("
-    + "owner, name," // 2
-    + "pre_flushing_time, post_flushing_time, depth, " // 5
-    + "platform_code, nrt" // 7
-    + ") VALUES (?, ?, ?, ?, ?, ?, ?)";
+    + "owner, name, platform_code, nrt, properties" // 5
+    + ") VALUES (?, ?, ?, ?, ?)";
 
   /**
    * Statement for inserting an instrument variable record
    */
   private static final String CREATE_INSTRUMENT_VARIABLE_STATEMENT = "INSERT INTO "
-    + "instrument_variables (instrument_id, variable_id, attributes) " // 3
+    + "instrument_variables (instrument_id, variable_id, properties) " // 3
     + "VALUES (?, ?, ?)";
 
   /**
@@ -146,9 +144,8 @@ public class InstrumentDB {
   /**
    * SQL query to get an instrument's base record
    */
-  private static final String GET_INSTRUMENT_QUERY = "SELECT " + "name, owner, " // 2
-    + "pre_flushing_time, post_flushing_time, depth, " // 5
-    + "platform_code, nrt " // 7
+  private static final String GET_INSTRUMENT_QUERY = "SELECT name, owner, " // 2
+    + "platform_code, nrt, properties " // 5
     + "FROM instrument WHERE id = ?";
 
   /**
@@ -421,11 +418,9 @@ public class InstrumentDB {
       Statement.RETURN_GENERATED_KEYS);
     stmt.setLong(1, instrument.getOwnerId()); // owner
     stmt.setString(2, instrument.getName()); // name
-    stmt.setInt(3, instrument.getPreFlushingTime()); // pre_flushing_time
-    stmt.setInt(4, instrument.getPostFlushingTime()); // post_flushing_time
-    stmt.setInt(5, instrument.getDepth());
-    stmt.setString(6, instrument.getPlatformCode()); // platform_code
-    stmt.setBoolean(7, instrument.getNrt()); // nrt
+    stmt.setString(3, instrument.getPlatformCode()); // platform_code
+    stmt.setBoolean(4, instrument.getNrt()); // nrt
+    stmt.setString(5, new Gson().toJson(instrument.getProperties())); // attributes
 
     return stmt;
   }
@@ -913,18 +908,6 @@ public class InstrumentDB {
     List<ResultSet> resultSets = new ArrayList<ResultSet>();
 
     try {
-      // Data fields
-      String name;
-      long owner;
-      int preFlushingTime;
-      int postFlushingTime;
-      int depth;
-      String platformCode;
-      boolean nrt;
-      InstrumentFileSet files;
-      List<InstrumentVariable> variables;
-      SensorAssignments sensorAssignments;
-
       // Get the raw instrument data
       PreparedStatement instrStmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
       instrStmt.setLong(1, instrumentId);
@@ -938,27 +921,27 @@ public class InstrumentDB {
           "instrument", instrumentId);
       } else {
         // Read in the instrument details
-        name = instrumentRecord.getString(1);
-        owner = instrumentRecord.getLong(2);
-        preFlushingTime = instrumentRecord.getInt(3);
-        postFlushingTime = instrumentRecord.getInt(4);
-        depth = instrumentRecord.getInt(5);
-        platformCode = instrumentRecord.getString(6);
-        nrt = instrumentRecord.getBoolean(7);
+        String name = instrumentRecord.getString(1);
+        long owner = instrumentRecord.getLong(2);
+        String platformCode = instrumentRecord.getString(3);
+        boolean nrt = instrumentRecord.getBoolean(4);
+        String propertiesJson = instrumentRecord.getString(5);
+
+        Properties properties = new Gson().fromJson(propertiesJson,
+          Properties.class);
 
         // Now get the file definitions
-        files = getFileDefinitions(conn, instrumentId);
+        InstrumentFileSet files = getFileDefinitions(conn, instrumentId);
 
         // The variables
-        variables = getVariables(conn, instrumentId);
+        List<InstrumentVariable> variables = getVariables(conn, instrumentId);
 
         // Now the sensor assignments
-        sensorAssignments = getSensorAssignments(conn, instrumentId, files,
-          sensorConfiguration, runTypeConfiguration);
+        SensorAssignments sensorAssignments = getSensorAssignments(conn,
+          instrumentId, files, sensorConfiguration, runTypeConfiguration);
 
         instrument = new Instrument(instrumentId, owner, name, files, variables,
-          sensorAssignments, preFlushingTime, postFlushingTime, depth,
-          platformCode, nrt);
+          sensorAssignments, platformCode, nrt, properties);
       }
 
     } catch (SQLException e) {
