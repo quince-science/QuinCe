@@ -93,9 +93,14 @@ public class NewInstrumentBean extends FileUploadBean {
   private static final String NAV_RUN_TYPES = "run_types";
 
   /**
-   * Navigation to the other info page
+   * Navigation to the general info page
    */
-  private static final String NAV_OTHER_INFO = "other_info";
+  private static final String NAV_GENERAL_INFO = "general_info";
+
+  /**
+   * Navigation to the variable info page
+   */
+  private static final String NAV_VARIABLE_INFO = "variable_info";
 
   /**
    * Date/Time formatter for previewing extracted dates
@@ -472,6 +477,9 @@ public class NewInstrumentBean extends FileUploadBean {
       sensorAssignments = null;
       instrumentVariables = null;
       variableAttributes = null;
+      preFlushingTime = 0;
+      postFlushingTime = 0;
+      depth = 0;
 
       resetSensorAssignmentValues();
       resetPositionAssignmentValues();
@@ -1563,18 +1571,27 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Go to the Other Info page
+   * Go to the General Info page
    *
-   * @return The navigation to the Other Info page
+   * @return The navigation to the General Info page
    */
-  public String goToOtherInfo() {
+  public String goToGeneralInfo() {
+    return NAV_GENERAL_INFO;
+  }
+
+  /**
+   * Go to the Variable Info page
+   *
+   * @return The navigation to the Variable Info page
+   */
+  public String goToVariableInfo() {
 
     try {
       initVariableAttributes();
     } catch (Exception e) {
       internalError(e);
     }
-    return NAV_OTHER_INFO;
+    return NAV_VARIABLE_INFO;
   }
 
   private void initVariableAttributes() throws VariableNotFoundException {
