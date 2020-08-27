@@ -50,20 +50,20 @@ public class MeasurementValues
 
   public Double getValue(SensorType sensorType,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, DataReducer reducer, Connection conn)
-    throws Exception {
+    DatasetSensorValues allSensorValues, DataReducer reducer,
+    ValueCalculators valueCalculators, Connection conn) throws Exception {
 
     return getValue(sensorType.getName(), allMeasurements, allSensorValues,
-      reducer, conn);
+      reducer, valueCalculators, conn);
   }
 
   public Double getValue(String sensorType,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, DataReducer reducer, Connection conn)
-    throws Exception {
+    DatasetSensorValues allSensorValues, DataReducer reducer,
+    ValueCalculators valueCalculators, Connection conn) throws Exception {
 
-    return ValueCalculators.getInstance().calculateValue(this, sensorType,
-      allMeasurements, allSensorValues, reducer, conn);
+    return valueCalculators.calculateValue(this, sensorType, allMeasurements,
+      allSensorValues, reducer, conn);
   }
 
   public Measurement getMeasurement() {
@@ -107,8 +107,8 @@ public class MeasurementValues
         SearchableSensorValuesList columnValues = allSensorValues
           .getColumnValues(columnId);
 
-        MeasurementValue measurementValue = columnValues
-          .getMeasurementValue(measurement, sensorType, columnId, searchIdPrefix);
+        MeasurementValue measurementValue = columnValues.getMeasurementValue(
+          measurement, sensorType, columnId, searchIdPrefix);
 
         put(sensorType, measurementValue);
       }

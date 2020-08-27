@@ -33,15 +33,16 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     DatasetSensorValues allSensorValues, Connection conn) throws Exception {
 
     Double intakeTemperature = sensorValues.getValue("Intake Temperature",
-      allMeasurements, allSensorValues, this, conn);
+      allMeasurements, allSensorValues, this, valueCalculators, conn);
     Double salinity = sensorValues.getValue("Salinity", allMeasurements,
-      allSensorValues, this, conn);
+      allSensorValues, this, valueCalculators, conn);
     Double equilibratorTemperature = sensorValues.getValue(
-      "Equilibrator Temperature", allMeasurements, allSensorValues, this, conn);
+      "Equilibrator Temperature", allMeasurements, allSensorValues, this,
+      valueCalculators, conn);
     Double equilibratorPressure = sensorValues.getValue("Equilibrator Pressure",
-      allMeasurements, allSensorValues, this, conn);
+      allMeasurements, allSensorValues, this, valueCalculators, conn);
     Double co2InGas = sensorValues.getValue("xCO₂ (with standards)",
-      allMeasurements, allSensorValues, this, conn);
+      allMeasurements, allSensorValues, this, valueCalculators, conn);
 
     Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
     Double pCo2TEWet = Calculators.calcpCO2TEWet(co2InGas, equilibratorPressure,

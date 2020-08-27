@@ -68,6 +68,7 @@ public abstract class DataReducer {
 
     this.variable = variable;
     this.variableAttributes = variableAttributes;
+    this.valueCalculators = new ValueCalculators();
   }
 
   /**
