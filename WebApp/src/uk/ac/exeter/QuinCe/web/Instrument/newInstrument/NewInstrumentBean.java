@@ -1905,8 +1905,13 @@ public class NewInstrumentBean extends FileUploadBean {
       Instrument instrument = new Instrument(getUser(), instrumentName,
         instrumentFiles,
         sensorConfig.getInstrumentVariables(instrumentVariables),
-        sensorAssignments, preFlushingTime, postFlushingTime, depth,
-        platformCode, false);
+        sensorAssignments, platformCode, false);
+
+      instrument.setProperty(Instrument.PROP_PRE_FLUSHING_TIME,
+        preFlushingTime);
+      instrument.setProperty(Instrument.PROP_POST_FLUSHING_TIME,
+        postFlushingTime);
+      instrument.setProperty(Instrument.PROP_DEPTH, depth);
 
       InstrumentDB.storeInstrument(getDataSource(), instrument,
         variableAttributes);
