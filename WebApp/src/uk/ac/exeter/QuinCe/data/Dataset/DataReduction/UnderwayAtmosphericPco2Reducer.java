@@ -35,14 +35,15 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     // We use equilibrator temperature as the presumed most realistic gas
     // temperature
     Double equilibratorTemperature = sensorValues.getValue(
-      "Equilibrator Temperature", allMeasurements, allSensorValues, this, conn);
+      "Equilibrator Temperature", allMeasurements, allSensorValues, this,
+      valueCalculators, conn);
     Double salinity = sensorValues.getValue("Salinity", allMeasurements,
-      allSensorValues, this, conn);
+      allSensorValues, this, valueCalculators, conn);
     Double seaLevelPressure = sensorValues.getValue(
       "Atmospheric Pressure at Sea Level", allMeasurements, allSensorValues,
-      this, conn);
+      this, valueCalculators, conn);
     Double co2InGas = sensorValues.getValue("xCO₂ (with standards)",
-      allMeasurements, allSensorValues, this, conn);
+      allMeasurements, allSensorValues, this, valueCalculators, conn);
 
     Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
 

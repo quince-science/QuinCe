@@ -12,18 +12,8 @@ public class ValueCalculators {
 
   private HashMap<String, ValueCalculator> calculators;
 
-  private static ValueCalculators instance = null;
-
-  private ValueCalculators() {
+  protected ValueCalculators() {
     calculators = new HashMap<String, ValueCalculator>();
-  }
-
-  public static ValueCalculators getInstance() {
-    if (null == instance) {
-      instance = new ValueCalculators();
-    }
-
-    return instance;
   }
 
   public Double calculateValue(MeasurementValues measurementValues,
