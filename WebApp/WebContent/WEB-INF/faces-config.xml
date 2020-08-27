@@ -173,8 +173,13 @@
       <redirect/>
     </navigation-case>
     <navigation-case>
-      <from-outcome>other_info</from-outcome>
-      <to-view-id>/instrument/new/other_info.xhtml</to-view-id>
+      <from-outcome>general_info</from-outcome>
+      <to-view-id>/instrument/new/general_info.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
+    <navigation-case>
+      <from-outcome>variable_info</from-outcome>
+      <to-view-id>/instrument/new/variable_info.xhtml</to-view-id>
       <redirect/>
     </navigation-case>
   </navigation-rule>
