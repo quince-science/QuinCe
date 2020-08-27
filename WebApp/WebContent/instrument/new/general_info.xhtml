@@ -5,7 +5,7 @@
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/new_instrument.xhtml">
   <ui:define name="instrumentHead">
-    <c:set var="instrumentStep" value="4" scope="request" />
+    <c:set var="instrumentStep" value="1" scope="request" />
   </ui:define>
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
@@ -34,27 +34,13 @@
           </tr>
         </table>
       </p:fieldset>
-      <ui:repeat value="#{newInstrumentBean.getVariableAttributes().entrySet()}"
-        var="varAttrEntry">
-        <p:fieldset legend="#{varAttrEntry.key.name}"
-          style="margin-bottom: 20px">
-          <table class="form">
-            <ui:repeat value="#{varAttrEntry.value}" var="attribute">
-              <tr>
-                <td class="labels"><h:outputText value="#{attribute.label}" /></td>
-                <td><p:inputNumber value="#{attribute.value}" /></td>
-              </tr>
-            </ui:repeat>
-          </table>
-        </p:fieldset>
-      </ui:repeat>
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
         <p:commandButton value="Back" ajax="false"
           action="#{newInstrumentBean.goToRunTypes}" immediate="true" />
         <p:commandButton id="nextButton" widgetVar="next" value="Next"
-          ajax="false" action="#{newInstrumentBean.saveInstrument}" />
+          ajax="false" action="#{newInstrumentBean.goToVariables}" />
       </h:panelGrid>
     </h:form>
   </ui:define>
