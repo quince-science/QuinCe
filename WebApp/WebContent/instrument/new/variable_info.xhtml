@@ -31,7 +31,7 @@
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
         <p:commandButton value="Back" ajax="false"
-          action="#{newInstrumentBean.goToRunTypes}" immediate="true" />
+          action="#{newInstrumentBean.goToGeneralInfo}" immediate="true" />
         <p:commandButton id="nextButton" widgetVar="next" value="Finish"
           ajax="false" action="#{newInstrumentBean.saveInstrument}" />
       </h:panelGrid>
