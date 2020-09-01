@@ -41,6 +41,16 @@ public class Instrument {
   public static final String PROP_DEPTH = "depth";
 
   /**
+   * Property name for the fixed longitude
+   */
+  public static final String PROP_LONGITUDE = "longitude";
+
+  /**
+   * Property name for the fixed latitude
+   */
+  public static final String PROP_LATITUDE = "latitude";
+
+  /**
    * The instrument's ID in the database
    */
   private long databaseID = DatabaseUtils.NO_DATABASE_RECORD;
@@ -576,6 +586,18 @@ public class Instrument {
   }
 
   /**
+   * Set a double property on the instrument.
+   *
+   * @param name
+   *          The property name.
+   * @param value
+   *          The property value.
+   */
+  public void setProperty(String name, double value) {
+    properties.setProperty(name, String.valueOf(value));
+  }
+
+  /**
    * Get all the instrument's properties.
    *
    * @return The properties.
@@ -600,7 +622,7 @@ public class Instrument {
   }
 
   /**
-   * Get an intrument property as an {@link Integer}.
+   * Get an instrument property as an {@link Integer}.
    *
    * <p>
    * Returns {@code null} if the property does not exist or its value cannot be
@@ -617,6 +639,32 @@ public class Instrument {
     if (properties.containsKey(name)) {
       try {
         result = Integer.parseInt(properties.getProperty(name));
+      } catch (NumberFormatException e) {
+        // Swallow the exception so we return null
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get an instrument property as an {@link Double}.
+   *
+   * <p>
+   * Returns {@code null} if the property does not exist or its value cannot be
+   * parsed.
+   * </p>
+   *
+   * @param name
+   *          The property name.
+   * @return The property value.
+   */
+  public Double getDoubleProperty(String name) {
+    Double result = null;
+
+    if (properties.containsKey(name)) {
+      try {
+        result = Double.parseDouble(properties.getProperty(name));
       } catch (NumberFormatException e) {
         // Swallow the exception so we return null
       }

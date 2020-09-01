@@ -361,6 +361,22 @@ public class NewInstrumentBean extends FileUploadBean {
   private LinkedHashMap<InstrumentVariable, List<VariableAttribute>> variableAttributes;
 
   /**
+   * Indicates whether or not the instrument has a fixed position (i.e. does not
+   * provide GPS data).
+   */
+  private boolean fixedPosition = false;
+
+  /**
+   * The fixed longitude.
+   */
+  private double longitude;
+
+  /**
+   * The fixed latitude.
+   */
+  private double latitude;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
@@ -480,6 +496,10 @@ public class NewInstrumentBean extends FileUploadBean {
       preFlushingTime = 0;
       postFlushingTime = 0;
       depth = 0;
+      platformCode = "";
+      fixedPosition = false;
+      longitude = 0;
+      latitude = 0;
 
       resetSensorAssignmentValues();
       resetPositionAssignmentValues();
@@ -1930,6 +1950,11 @@ public class NewInstrumentBean extends FileUploadBean {
         postFlushingTime);
       instrument.setProperty(Instrument.PROP_DEPTH, depth);
 
+      if (fixedPosition) {
+        instrument.setProperty(Instrument.PROP_LONGITUDE, longitude);
+        instrument.setProperty(Instrument.PROP_LATITUDE, latitude);
+      }
+
       InstrumentDB.storeInstrument(getDataSource(), instrument,
         variableAttributes);
       setCurrentInstrumentId(instrument.getDatabaseId());
@@ -2033,5 +2058,65 @@ public class NewInstrumentBean extends FileUploadBean {
   @Override
   protected List<Long> getInstrumentVariableIDs() {
     return instrumentVariables;
+  }
+
+  /**
+   * Get the flag indicating whether or not this instrument has a fixed
+   * position.
+   *
+   * @return {@code true} if the position is fixed; {@code false} otherwise.
+   */
+  public boolean getFixedPosition() {
+    return fixedPosition;
+  }
+
+  /**
+   * Set the fixed position flag.
+   *
+   * @param fixedPosition
+   *          The flag value.
+   */
+  public void setFixedPosition(boolean fixedPosition) {
+    this.fixedPosition = fixedPosition;
+  }
+
+  /**
+   * Get the fixed longitude
+   *
+   * @return The fixed longitude
+   */
+  public double getLongitude() {
+    return longitude;
+  }
+
+  /**
+   * Set the fixed longitude.
+   *
+   * @param longitude
+   */
+  public void setLongitude(double longitude) {
+    this.longitude = longitude;
+  }
+
+  /**
+   * Get the fixed latitude.
+   *
+   * @return The fixed latitude.
+   */
+  public double getLatitude() {
+    return latitude;
+  }
+
+  /**
+   * Set the fixed latitude.
+   *
+   * <p>
+   * Values greater than 180 degrees are switched to negative values.
+   *
+   * @param latitude
+   *          The latitude.
+   */
+  public void setLatitude(double latitude) {
+    this.latitude = latitude;
   }
 }
