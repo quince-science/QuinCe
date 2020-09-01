@@ -634,32 +634,34 @@ function buildMainAssignmentMenu(file, column) {
           column, 'dateTimeMenu');
     }
 
-    if (fileSpecificAssignments[file]['longitude']['valueColumn'] != -1) {
-      menuHtml += makeDisabledMenuItem('Longitude');
-    } else {
-      menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
-    }
-
-
-    if (hemisphereRequired(file, 'longitude')) {
-      if (fileSpecificAssignments[file]['longitude']['hemisphereColumn'] != -1) {
-        menuHtml += makeDisabledMenuItem('Longitude - Hemisphere');
+    if (!fixedPosition) {
+      if (fileSpecificAssignments[file]['longitude']['valueColumn'] != -1) {
+        menuHtml += makeDisabledMenuItem('Longitude');
       } else {
-        menuHtml += makeMenuItem('POS_longitude_hemisphere', 'Longitude - Hemisphere', file, column);
+        menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
       }
-    }
 
-    if (fileSpecificAssignments[file]['latitude']['valueColumn'] != -1) {
-      menuHtml += makeDisabledMenuItem('Latitude');
-    } else {
-      menuHtml += makeMenuItem('POS_latitude', 'Latitude', file, column);
-    }
 
-    if (hemisphereRequired(file, 'latitude')) {
-      if (fileSpecificAssignments[file]['latitude']['hemisphereColumn'] != -1) {
-        menuHtml += makeDisabledMenuItem('Latitude - Hemisphere');
+      if (hemisphereRequired(file, 'longitude')) {
+        if (fileSpecificAssignments[file]['longitude']['hemisphereColumn'] != -1) {
+          menuHtml += makeDisabledMenuItem('Longitude - Hemisphere');
+        } else {
+          menuHtml += makeMenuItem('POS_longitude_hemisphere', 'Longitude - Hemisphere', file, column);
+        }
+      }
+
+      if (fileSpecificAssignments[file]['latitude']['valueColumn'] != -1) {
+        menuHtml += makeDisabledMenuItem('Latitude');
       } else {
-        menuHtml += makeMenuItem('POS_latitude_hemisphere', 'Latitude - Hemisphere', file, column);
+        menuHtml += makeMenuItem('POS_latitude', 'Latitude', file, column);
+      }
+
+      if (hemisphereRequired(file, 'latitude')) {
+        if (fileSpecificAssignments[file]['latitude']['hemisphereColumn'] != -1) {
+          menuHtml += makeDisabledMenuItem('Latitude - Hemisphere');
+        } else {
+          menuHtml += makeMenuItem('POS_latitude_hemisphere', 'Latitude - Hemisphere', file, column);
+        }
       }
     }
 
