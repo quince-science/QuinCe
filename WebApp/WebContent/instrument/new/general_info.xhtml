@@ -6,10 +6,50 @@
   template="/WEB-INF/templates/new_instrument.xhtml">
   <ui:define name="instrumentHead">
     <c:set var="instrumentStep" value="1" scope="request" />
+    <script>
+
+      // Note that greater than/less than are HTML encoded because this is a
+      // JSF page
+      function fixedPositionChange() {
+        
+        if (PF('fixedPosition').isChecked()) {
+          PF('longitude').enable();
+          PF('latitude').enable();
+        } else {
+          PF('longitude').disable();
+          PF('latitude').disable();
+        }
+      }
+      
+      function validateLongitude() {
+        let enteredValue = PF('longitude').getValue();
+        if (enteredValue &gt; 180) {
+          enteredValue = (360 - enteredValue) * -1;
+        }
+                
+        if (enteredValue &lt; -180) {
+          PF('longitude').setValue(-180);
+        } else if (enteredValue &gt; 180) {
+          PF('longitude').setValue(180);
+        } else {
+          PF('longitude').setValue(enteredValue);
+        }
+      }
+
+      function validateLatitude() {
+        let enteredValue = PF('latitude').getValue();
+        if (enteredValue &lt; -90) {
+          PF('latitude').setValue(-90);
+        } else if (enteredValue &gt; 90) {
+          PF('latitude').setValue(90);
+        }
+      }
+      
+    </script>
   </ui:define>
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
-      <p:fieldset id="instrumentFields" legend="Instrument"
+      <p:fieldset id="platformFields" legend="Platform Details"
         style="margin-bottom: 20px">
         <table class="form">
           <tr>
@@ -17,6 +57,16 @@
             <td><p:inputText id="platformCode"
                 value="#{newInstrumentBean.platformCode}" /></td>
           </tr>
+          <tr>
+            <td class="labels">Instrument/Intake Depth (metres)</td>
+            <td><p:inputNumber id="depth"
+                value="#{newInstrumentBean.depth}" decimalPlaces="0" /></td>
+          </tr>
+        </table>
+      </p:fieldset>
+      <p:fieldset id="instrumentSetup" legend="Instrument Configuration"
+        style="margin-bottom: 20px">
+        <table class="form">
           <tr>
             <td class="labels">Pre-flushing time (seconds)</td>
             <td><p:inputNumber id="preFlushing"
@@ -27,10 +77,28 @@
             <td><p:inputNumber id="postFlushing"
                 value="#{newInstrumentBean.postFlushingTime}" decimalPlaces="0" /></td>
           </tr>
+        </table>
+      </p:fieldset>
+      <p:fieldset id="positionInfo" legend="Position" style="margin-bottom: 20px">
+        <table class="form">
           <tr>
-            <td class="labels">Instrument/Intake Depth (metres)</td>
-            <td><p:inputNumber id="depth"
-                value="#{newInstrumentBean.depth}" decimalPlaces="0" /></td>
+            <td class="labels">Is instrument in a fixed position?</td>
+            <td>
+              <p:selectBooleanCheckbox widgetVar="fixedPosition" id="fixedPos"
+                value="#{newInstrumentBean.fixedPosition}" onchange="fixedPositionChange()"/>
+              </td>
+          </tr>
+          <tr>
+            <td class="labels">Longitude</td>
+            <td><p:inputNumber widgetVar="longitude" id="longitude"
+                value="#{newInstrumentBean.longitude}" decimalPlaces="6"
+                onchange="validateLongitude()"/></td>
+          </tr>
+          <tr>
+            <td class="labels">Latitude</td>
+            <td><p:inputNumber widgetVar="latitude" id="latitude"
+                value="#{newInstrumentBean.latitude}" decimalPlaces="6"
+                onchange="validateLatitude()"/></td>
           </tr>
         </table>
       </p:fieldset>
@@ -38,10 +106,15 @@
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
         <p:commandButton value="Back" ajax="false"
-          action="#{newInstrumentBean.goToRunTypes}" immediate="true" />
+          action="#{newInstrumentBean.goToName}" immediate="true" />
         <p:commandButton id="nextButton" widgetVar="next" value="Next"
           ajax="false" action="#{newInstrumentBean.goToVariables}" />
       </h:panelGrid>
     </h:form>
+    <script type="text/javascript">    
+      $(document).ready(function() {
+        fixedPositionChange();
+      });
+    </script>
   </ui:define>
 </ui:composition>

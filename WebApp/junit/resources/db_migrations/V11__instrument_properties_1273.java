@@ -78,5 +78,11 @@ public class V11__instrument_properties_1273 extends BaseJavaMigration {
       .prepareStatement("ALTER TABLE instrument DROP COLUMN depth");
     dropDepthStmt.execute();
     dropDepthStmt.close();
+
+    // Rename instrument_variables attributes to properties for consistency
+    PreparedStatement instrVarPropsStmt = conn.prepareStatement(
+      "ALTER TABLE instrument_variables CHANGE attributes properties MEDIUMTEXT");
+    instrVarPropsStmt.execute();
+    instrVarPropsStmt.close();
   }
 }
