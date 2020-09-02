@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,7 +19,6 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
@@ -36,13 +34,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableAttribute;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -152,7 +149,7 @@ public class InstrumentDB {
    * Query to get the variables measured by an instrument
    */
   private static final String GET_INSTRUMENT_VARIABLES_QUERY = "SELECT "
-    + "variable_id FROM instrument_variables WHERE instrument_id = ?";
+    + "variable_id, properties FROM instrument_variables WHERE instrument_id = ?";
 
   /**
    * SQL query to get the file definitions for an instrument
@@ -225,10 +222,6 @@ public class InstrumentDB {
     + "WHERE fd.instrument_id = ? "
     + "ORDER BY st.display_order, st.name, fc.sensor_name";
 
-  private static final String GET_VARIABLE_ATTRIBUTES_QUERY = "SELECT "
-    + "attributes FROM instrument_variables "
-    + "WHERE instrument_id = ? AND variable_id = ?";
-
   /**
    * Store a new instrument in the database
    *
@@ -247,10 +240,8 @@ public class InstrumentDB {
    *           database
    */
   public static void storeInstrument(DataSource dataSource,
-    Instrument instrument,
-    LinkedHashMap<Variable, List<VariableAttribute>> variableAttributes)
-    throws MissingParamException, InstrumentException, DatabaseException,
-    IOException {
+    Instrument instrument) throws MissingParamException, InstrumentException,
+    DatabaseException, IOException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(instrument, "instrument");
@@ -286,7 +277,7 @@ public class InstrumentDB {
           variableStmt.setLong(1, instrumentId);
           variableStmt.setLong(2, variable.getId());
           variableStmt.setString(3,
-            makeVariableAttributesJson(variableAttributes.get(variable)));
+            new Gson().toJson(instrument.getVariableProperties(variable)));
           variableStmt.execute();
           subStatements.add(variableStmt);
         }
@@ -385,20 +376,6 @@ public class InstrumentDB {
       DatabaseUtils.closeStatements(instrumentStatement);
       DatabaseUtils.closeConnection(conn);
     }
-  }
-
-  private static String makeVariableAttributesJson(
-    List<VariableAttribute> attributes) {
-    LinkedHashMap<String, Float> attributesMap = new LinkedHashMap<String, Float>();
-
-    if (null != attributes) {
-      for (VariableAttribute attribute : attributes) {
-        attributesMap.put(attribute.getId(), attribute.getValue());
-      }
-    }
-
-    // TODO Auto-generated method stub
-    return new Gson().toJson(attributesMap);
   }
 
   /**
@@ -934,14 +911,17 @@ public class InstrumentDB {
         InstrumentFileSet files = getFileDefinitions(conn, instrumentId);
 
         // The variables
-        List<Variable> variables = getVariables(conn, instrumentId);
+        List<Variable> variables = new ArrayList<Variable>();
+        Map<Variable, Properties> variableProperties = new HashMap<Variable, Properties>();
+        loadInstrumentVariables(conn, instrumentId, variables,
+          variableProperties);
 
         // Now the sensor assignments
         SensorAssignments sensorAssignments = getSensorAssignments(conn,
           instrumentId, files, sensorConfiguration, runTypeConfiguration);
 
         instrument = new Instrument(instrumentId, owner, name, files, variables,
-          sensorAssignments, platformCode, nrt, properties);
+          variableProperties, sensorAssignments, platformCode, nrt, properties);
       }
 
     } catch (SQLException e) {
@@ -1183,8 +1163,7 @@ public class InstrumentDB {
    * @throws VariableNotFoundException
    *           If an invalid variable is configured for the instrument
    */
-  public static List<Variable> getVariables(Connection conn,
-    long instrumentId)
+  public static List<Variable> getVariables(Connection conn, long instrumentId)
     throws MissingParamException, VariableNotFoundException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
@@ -1212,6 +1191,36 @@ public class InstrumentDB {
     }
 
     return variables;
+  }
+
+  private static void loadInstrumentVariables(Connection conn,
+    long instrumentId, List<Variable> variables,
+    Map<Variable, Properties> variableProperties)
+    throws DatabaseException, VariableNotFoundException {
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(GET_INSTRUMENT_VARIABLES_QUERY)) {
+
+      stmt.setLong(1, instrumentId);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          Variable variable = sensorConfig
+            .getInstrumentVariable(records.getLong(1));
+          variables.add(variable);
+          variableProperties.put(variable,
+            new Gson().fromJson(records.getString(2), Properties.class));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting instrument variable details",
+        e);
+    }
+
   }
 
   /**
@@ -1912,43 +1921,5 @@ public class InstrumentDB {
     return getSensorColumns(dataSource, instrumentId).stream()
       .filter(x -> x.getSensorType().hasInternalCalibration())
       .collect(Collectors.toList());
-  }
-
-  public static Map<String, Float> getVariableAttributes(Connection conn,
-    long instrumentId, long variableId)
-    throws DatabaseException, MissingParamException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
-    MissingParam.checkZeroPositive(variableId, "variableId");
-
-    Map<String, Float> result = new HashMap<String, Float>();
-
-    PreparedStatement stmt = null;
-    ResultSet records = null;
-
-    try {
-      stmt = conn.prepareStatement(GET_VARIABLE_ATTRIBUTES_QUERY);
-      stmt.setLong(1, instrumentId);
-      stmt.setLong(2, variableId);
-
-      records = stmt.executeQuery();
-
-      while (records.next()) {
-        String attributesJson = records.getString(1);
-        Type mapType = new TypeToken<HashMap<String, Float>>() {
-        }.getType();
-        result = new Gson().fromJson(attributesJson, mapType);
-      }
-
-    } catch (SQLException e) {
-      throw new DatabaseException("Exception while getting variable attributes",
-        e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-    }
-
-    return result;
   }
 }

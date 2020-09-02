@@ -83,12 +83,11 @@ public class Variable {
    * @throws InvalidFlagException
    *           If any cascade flags are invalid
    */
-  protected Variable(SensorsConfiguration sensorConfig, long id,
-    String name, LinkedHashMap<String, String> attributes,
-    long coreSensorTypeId, List<Long> requiredSensorTypeIds,
-    List<Integer> questionableCascades, List<Integer> badCascades)
-    throws SensorTypeNotFoundException, SensorConfigurationException,
-    InvalidFlagException {
+  protected Variable(SensorsConfiguration sensorConfig, long id, String name,
+    LinkedHashMap<String, String> attributes, long coreSensorTypeId,
+    List<Long> requiredSensorTypeIds, List<Integer> questionableCascades,
+    List<Integer> badCascades) throws SensorTypeNotFoundException,
+    SensorConfigurationException, InvalidFlagException {
 
     this.id = id;
     this.name = name;
@@ -290,15 +289,8 @@ public class Variable {
     return attributes.size() > 0;
   }
 
-  public List<VariableAttribute> generateAttributes() {
-    List<VariableAttribute> result = new ArrayList<VariableAttribute>(
-      attributes.size());
-
-    for (Map.Entry<String, String> entry : attributes.entrySet()) {
-      result.add(new VariableAttribute(entry.getKey(), entry.getValue()));
-    }
-
-    return result;
+  public LinkedHashMap<String, String> getAttributes() {
+    return attributes;
   }
 
   public static boolean sensorTypeRequired(List<Variable> variables,

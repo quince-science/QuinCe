@@ -22,9 +22,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.MeasurementValues;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -162,11 +161,11 @@ public class DataReductionJob extends DataSetJob {
                 // reduction
                 DataReducer reducer = reducers.get(variable);
                 if (null == reducer) {
-                  Map<String, Float> variableAttributes = InstrumentDB
-                    .getVariableAttributes(conn, instrument.getDatabaseId(),
-                      variable.getId());
+                  Properties variableProperties = instrument
+                    .getVariableProperties(variable);
+
                   reducer = DataReducerFactory.getReducer(conn, instrument,
-                    variable, variableAttributes);
+                    variable, variableProperties);
                   reducers.put(variable, reducer);
                 }
 

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
@@ -20,10 +21,8 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
   private static List<CalculationParameter> calculationParameters = null;
 
-  public UnderwayMarinePco2Reducer(Variable variable,
-    Map<String, Float> variableAttributes) {
-
-    super(variable, variableAttributes);
+  public UnderwayMarinePco2Reducer(Variable variable, Properties properties) {
+    super(variable, properties);
   }
 
   @Override
