@@ -21,7 +21,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -108,11 +108,11 @@ public class LocateMeasurementsJob extends DataSetJob {
 
       // Get all the times that the core sensor for one of the instrument's
       // variables has a value.
-      List<InstrumentVariable> variables = instrument.getVariables();
+      List<Variable> variables = instrument.getVariables();
 
       Set<Long> measurementColumnIds = new HashSet<Long>(variables.size());
 
-      for (InstrumentVariable variable : variables) {
+      for (Variable variable : variables) {
         SensorType sensorType = variable.getCoreSensorType();
         List<Long> columns = instrument.getSensorAssignments()
           .getColumnIds(sensorType);

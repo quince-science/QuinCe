@@ -8,7 +8,7 @@ import java.util.Map;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Data Reduction class for underway marine pCO₂
@@ -20,7 +20,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   private static List<CalculationParameter> calculationParameters = null;
 
-  public UnderwayAtmosphericPco2Reducer(InstrumentVariable variable,
+  public UnderwayAtmosphericPco2Reducer(Variable variable,
     Map<String, Float> variableAttributes) {
 
     super(variable, variableAttributes);

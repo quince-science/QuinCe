@@ -9,7 +9,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
@@ -61,7 +61,7 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
 
     List<Long> cascadeColumns = getCascadeColumns();
 
-    InstrumentVariable variable = instrument
+    Variable variable = instrument
       .getVariable("Underway Marine pCO₂");
 
     if (null != variable) {

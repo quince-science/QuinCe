@@ -36,7 +36,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -248,7 +248,7 @@ public class InstrumentDB {
    */
   public static void storeInstrument(DataSource dataSource,
     Instrument instrument,
-    LinkedHashMap<InstrumentVariable, List<VariableAttribute>> variableAttributes)
+    LinkedHashMap<Variable, List<VariableAttribute>> variableAttributes)
     throws MissingParamException, InstrumentException, DatabaseException,
     IOException {
 
@@ -280,7 +280,7 @@ public class InstrumentDB {
         instrument.setDatabaseId(instrumentId);
 
         // Store the instrument's variables
-        for (InstrumentVariable variable : instrument.getVariables()) {
+        for (Variable variable : instrument.getVariables()) {
           PreparedStatement variableStmt = conn
             .prepareStatement(CREATE_INSTRUMENT_VARIABLE_STATEMENT);
           variableStmt.setLong(1, instrumentId);
@@ -934,7 +934,7 @@ public class InstrumentDB {
         InstrumentFileSet files = getFileDefinitions(conn, instrumentId);
 
         // The variables
-        List<InstrumentVariable> variables = getVariables(conn, instrumentId);
+        List<Variable> variables = getVariables(conn, instrumentId);
 
         // Now the sensor assignments
         SensorAssignments sensorAssignments = getSensorAssignments(conn,
@@ -1146,14 +1146,14 @@ public class InstrumentDB {
    * @throws VariableNotFoundException
    *           If an invalid variable is configured for the instrument
    */
-  public static List<InstrumentVariable> getVariables(long instrumentId)
+  public static List<Variable> getVariables(long instrumentId)
     throws MissingParamException, DatabaseException, VariableNotFoundException {
 
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
     DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
     Connection conn = null;
-    List<InstrumentVariable> result = null;
+    List<Variable> result = null;
 
     try {
       conn = dataSource.getConnection();
@@ -1183,14 +1183,14 @@ public class InstrumentDB {
    * @throws VariableNotFoundException
    *           If an invalid variable is configured for the instrument
    */
-  public static List<InstrumentVariable> getVariables(Connection conn,
+  public static List<Variable> getVariables(Connection conn,
     long instrumentId)
     throws MissingParamException, VariableNotFoundException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
-    List<InstrumentVariable> variables = new ArrayList<InstrumentVariable>();
+    List<Variable> variables = new ArrayList<Variable>();
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
     PreparedStatement stmt = null;
@@ -1785,7 +1785,7 @@ public class InstrumentDB {
    *           If any required parameters are missing
    * @throws VariableNotFoundException
    */
-  public static List<InstrumentVariable> getAllVariables(DataSource dataSource)
+  public static List<Variable> getAllVariables(DataSource dataSource)
     throws DatabaseException, MissingParamException, VariableNotFoundException {
     Connection conn = null;
 
@@ -1799,7 +1799,7 @@ public class InstrumentDB {
     }
   }
 
-  public static List<InstrumentVariable> getAllVariables(Connection conn)
+  public static List<Variable> getAllVariables(Connection conn)
     throws MissingParamException, DatabaseException, VariableNotFoundException {
 
     return getAllVariables(conn,
@@ -1818,13 +1818,13 @@ public class InstrumentDB {
    *           If any required parameters are missing
    * @throws VariableNotFoundException
    */
-  public static List<InstrumentVariable> getAllVariables(Connection conn,
+  public static List<Variable> getAllVariables(Connection conn,
     SensorsConfiguration sensorConfig)
     throws MissingParamException, DatabaseException, VariableNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
 
-    List<InstrumentVariable> variables = new ArrayList<InstrumentVariable>();
+    List<Variable> variables = new ArrayList<Variable>();
 
     PreparedStatement stmt = null;
     ResultSet records = null;

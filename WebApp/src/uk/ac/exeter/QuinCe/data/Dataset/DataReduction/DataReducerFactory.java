@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Factory class for Data Reducers
@@ -29,7 +29,7 @@ public class DataReducerFactory {
    *           If the reducer cannot be retreived
    */
   public static DataReducer getReducer(Connection conn, Instrument instrument,
-    InstrumentVariable variable, Map<String, Float> variableAttributes)
+    Variable variable, Map<String, Float> variableAttributes)
     throws DataReductionException {
 
     DataReducer reducer;
@@ -70,7 +70,7 @@ public class DataReducerFactory {
     return reducer;
   }
 
-  private static DataReducer getSkeletonReducer(InstrumentVariable variable)
+  private static DataReducer getSkeletonReducer(Variable variable)
     throws DataReductionException {
 
     DataReducer reducer = null;
@@ -106,7 +106,7 @@ public class DataReducerFactory {
   }
 
   public static List<CalculationParameter> getCalculationParameters(
-    InstrumentVariable variable, boolean includeCalculationColumns)
+    Variable variable, boolean includeCalculationColumns)
     throws DataReductionException {
 
     DataReducer reducer = getSkeletonReducer(variable);
@@ -123,12 +123,12 @@ public class DataReducerFactory {
     return result;
   }
 
-  public static Map<InstrumentVariable, List<CalculationParameter>> getCalculationParameters(
-    Collection<InstrumentVariable> variables) throws DataReductionException {
+  public static Map<Variable, List<CalculationParameter>> getCalculationParameters(
+    Collection<Variable> variables) throws DataReductionException {
 
-    Map<InstrumentVariable, List<CalculationParameter>> result = new HashMap<InstrumentVariable, List<CalculationParameter>>();
+    Map<Variable, List<CalculationParameter>> result = new HashMap<Variable, List<CalculationParameter>>();
 
-    for (InstrumentVariable variable : variables) {
+    for (Variable variable : variables) {
       DataReducer reducer = getSkeletonReducer(variable);
       result.put(variable, reducer.getCalculationParameters());
     }
@@ -136,19 +136,19 @@ public class DataReducerFactory {
     return result;
   }
 
-  protected static long makeParameterId(InstrumentVariable variable,
+  protected static long makeParameterId(Variable variable,
     int sequence) {
     return variable.getId() * 10000 + sequence;
   }
 
-  public static InstrumentVariable getVariable(Instrument instrument,
+  public static Variable getVariable(Instrument instrument,
     long parameterId) throws InstrumentException {
 
     return instrument.getVariable(parameterId / 10000);
   }
 
   public static CalculationParameter getVariableParameter(
-    InstrumentVariable variable, long parameterId)
+    Variable variable, long parameterId)
     throws DataReductionException {
 
     int parameterIndex = (int) (parameterId % 10000);

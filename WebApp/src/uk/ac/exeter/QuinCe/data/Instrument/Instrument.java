@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -78,7 +78,7 @@ public class Instrument {
   /**
    * The variables measured by this instrument
    */
-  private List<InstrumentVariable> variables = null;
+  private List<Variable> variables = null;
 
   /**
    * The assignment of columns in data files to sensors
@@ -123,7 +123,7 @@ public class Instrument {
    *          The instrument's properties.
    */
   public Instrument(long databaseId, long ownerId, String name,
-    InstrumentFileSet fileDefinitions, List<InstrumentVariable> variables,
+    InstrumentFileSet fileDefinitions, List<Variable> variables,
     SensorAssignments sensorAssignments, String platformCode, boolean nrt,
     Properties properties) {
 
@@ -160,7 +160,7 @@ public class Instrument {
    *          The instrument's properties.
    */
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
-    List<InstrumentVariable> variables, SensorAssignments sensorAssignments,
+    List<Variable> variables, SensorAssignments sensorAssignments,
     String platformCode, boolean nrt, Properties properties) {
 
     this.ownerId = owner.getDatabaseID();
@@ -193,7 +193,7 @@ public class Instrument {
    *          time.
    */
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
-    List<InstrumentVariable> variables, SensorAssignments sensorAssignments,
+    List<Variable> variables, SensorAssignments sensorAssignments,
     String platformCode, boolean nrt) {
 
     this.ownerId = owner.getDatabaseID();
@@ -314,7 +314,7 @@ public class Instrument {
    *
    * @return
    */
-  public List<InstrumentVariable> getVariables() {
+  public List<Variable> getVariables() {
     return variables;
   }
 
@@ -344,11 +344,11 @@ public class Instrument {
    * @throws InstrumentException
    *           If the variable is not found
    */
-  public InstrumentVariable getVariable(long variableId)
+  public Variable getVariable(long variableId)
     throws InstrumentException {
-    InstrumentVariable result = null;
+    Variable result = null;
 
-    for (InstrumentVariable variable : variables) {
+    for (Variable variable : variables) {
       if (variable.getId() == variableId) {
         result = variable;
         break;
@@ -370,10 +370,10 @@ public class Instrument {
    * @return The InstrumentVariable, or null if the instrument does not have the
    *         variable defined.
    */
-  public InstrumentVariable getVariable(String name) {
-    InstrumentVariable result = null;
+  public Variable getVariable(String name) {
+    Variable result = null;
 
-    for (InstrumentVariable variable : variables) {
+    for (Variable variable : variables) {
       if (variable.getName().equals(name)) {
         result = variable;
         break;
@@ -391,7 +391,7 @@ public class Instrument {
    * @return
    */
   public Map<Long, List<String>> getVariableRunTypes(
-    InstrumentVariable variable) {
+    Variable variable) {
     Map<Long, List<String>> result = new HashMap<Long, List<String>>();
 
     for (FileDefinition fileDefinition : fileDefinitions) {
@@ -425,11 +425,11 @@ public class Instrument {
    * @param sensorType
    * @return
    */
-  public List<InstrumentVariable> getSensorVariables(SensorType sensorType) {
-    List<InstrumentVariable> result = new ArrayList<InstrumentVariable>(
+  public List<Variable> getSensorVariables(SensorType sensorType) {
+    List<Variable> result = new ArrayList<Variable>(
       variables.size());
 
-    for (InstrumentVariable variable : variables) {
+    for (Variable variable : variables) {
       List<SensorType> variableSensorTypes = variable.getAllSensorTypes(false);
       for (SensorType type : variableSensorTypes) {
         if (type.equals(sensorType)) {
@@ -465,7 +465,7 @@ public class Instrument {
   public List<String> getMeasurementRunTypes() {
     List<String> result = new ArrayList<String>();
 
-    for (InstrumentVariable variable : variables) {
+    for (Variable variable : variables) {
       Map<Long, List<String>> variableRunTypes = getVariableRunTypes(variable);
       if (variableRunTypes.size() > 0
         && variableRunTypes.containsKey(variable.getId())) {
@@ -506,7 +506,7 @@ public class Instrument {
   public boolean hasInternalCalibrations() {
     boolean result = false;
 
-    for (InstrumentVariable variable : variables) {
+    for (Variable variable : variables) {
       if (variable.hasInternalCalibrations()) {
         result = true;
         break;
@@ -548,7 +548,7 @@ public class Instrument {
    *          The run type
    * @return
    */
-  public boolean isRunTypeForVariable(InstrumentVariable variable,
+  public boolean isRunTypeForVariable(Variable variable,
     String runType) {
     boolean result = false;
 
