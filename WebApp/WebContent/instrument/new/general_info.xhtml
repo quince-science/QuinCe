@@ -11,7 +11,7 @@
       // Note that greater than/less than are HTML encoded because this is a
       // JSF page
       function fixedPositionChange() {
-        
+
         if (PF('fixedPosition').isChecked()) {
           PF('longitude').enable();
           PF('latitude').enable();
@@ -20,13 +20,13 @@
           PF('latitude').disable();
         }
       }
-      
+
       function validateLongitude() {
         let enteredValue = PF('longitude').getValue();
         if (enteredValue &gt; 180) {
           enteredValue = (360 - enteredValue) * -1;
         }
-                
+
         if (enteredValue &lt; -180) {
           PF('longitude').setValue(-180);
         } else if (enteredValue &gt; 180) {
@@ -44,7 +44,7 @@
           PF('latitude').setValue(90);
         }
       }
-      
+
     </script>
   </ui:define>
   <ui:define name="new_instrument_content">
@@ -111,7 +111,7 @@
           ajax="false" action="#{newInstrumentBean.goToVariables}" />
       </h:panelGrid>
     </h:form>
-    <script type="text/javascript">    
+    <script type="text/javascript">
       $(document).ready(function() {
         fixedPositionChange();
       });
