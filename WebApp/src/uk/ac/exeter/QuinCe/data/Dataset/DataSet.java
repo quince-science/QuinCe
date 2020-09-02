@@ -11,7 +11,7 @@ import org.primefaces.json.JSONArray;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -685,7 +685,7 @@ public class DataSet {
       fieldSetsByName.put(DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME,
         DataSetDataDB.DIAGNOSTICS_FIELDSET);
 
-      for (InstrumentVariable variable : InstrumentDB
+      for (Variable variable : InstrumentDB
         .getVariables(instrumentId)) {
         fieldSetsByName.put(variable.getName(), variable.getId());
       }

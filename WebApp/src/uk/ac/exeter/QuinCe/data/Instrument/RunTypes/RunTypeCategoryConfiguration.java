@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 
 /**
@@ -41,7 +41,7 @@ public class RunTypeCategoryConfiguration {
     try {
       categories = new TreeSet<RunTypeCategory>();
 
-      for (InstrumentVariable variable : InstrumentDB.getAllVariables(conn,
+      for (Variable variable : InstrumentDB.getAllVariables(conn,
         sensorConfig)) {
 
         categories

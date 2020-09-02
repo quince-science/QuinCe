@@ -34,7 +34,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -294,7 +294,7 @@ public class ExportBean extends BaseManagedBean {
       }
     }
 
-    for (InstrumentVariable variable : exportOption.getVariables()) {
+    for (Variable variable : exportOption.getVariables()) {
       if (instrument.getVariables().contains(variable)) {
 
         List<CalculationParameter> params = DataReducerFactory
@@ -337,7 +337,7 @@ public class ExportBean extends BaseManagedBean {
           column.getId() != FileDefinition.TIME_COLUMN_ID);
       }
 
-      for (InstrumentVariable variable : exportOption.getVariables()) {
+      for (Variable variable : exportOption.getVariables()) {
         if (instrument.getVariables().contains(variable)) {
 
           List<CalculationParameter> params = DataReducerFactory
@@ -490,7 +490,7 @@ public class ExportBean extends BaseManagedBean {
       Set<SensorType> variableSensorTypes = new HashSet<SensorType>();
 
       // Get the sensors required for the instrument's variables
-      for (InstrumentVariable variable : instrument.getVariables()) {
+      for (Variable variable : instrument.getVariables()) {
         variableSensorTypes.addAll(variable.getAllSensorTypes(false));
       }
 

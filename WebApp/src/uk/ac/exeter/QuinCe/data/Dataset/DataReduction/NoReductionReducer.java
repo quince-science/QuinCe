@@ -8,7 +8,7 @@ import java.util.Map;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * No data reduction performed.
@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
  */
 public class NoReductionReducer extends DataReducer {
 
-  public NoReductionReducer(InstrumentVariable variable,
+  public NoReductionReducer(Variable variable,
     Map<String, Float> variableAttributes) {
 
     super(variable, variableAttributes);

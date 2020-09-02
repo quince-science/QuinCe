@@ -17,7 +17,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
@@ -138,7 +138,7 @@ public class ExportData extends ManualQCData {
 
       // Data Reduction value
     } else {
-      InstrumentVariable variable = DataReducerFactory.getVariable(instrument,
+      Variable variable = DataReducerFactory.getVariable(instrument,
         columnId);
 
       Measurement measurement = measurements.get(rowTime);

@@ -15,7 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -36,7 +36,7 @@ public abstract class DataReducer {
   /**
    * The variable that this reducer works on
    */
-  protected InstrumentVariable variable;
+  protected Variable variable;
 
   /**
    * The variable attributes
@@ -63,7 +63,7 @@ public abstract class DataReducer {
    */
   protected ValueCalculators valueCalculators;
 
-  public DataReducer(InstrumentVariable variable,
+  public DataReducer(Variable variable,
     Map<String, Float> variableAttributes) {
 
     this.variable = variable;
