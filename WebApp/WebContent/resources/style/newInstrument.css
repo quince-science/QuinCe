@@ -27,7 +27,7 @@
 }
 
 .ui-steps .ui-steps-item {
-    width: calc(100% / 6);
+    width: calc(100% / 5);
 }
 
 #nameForm {

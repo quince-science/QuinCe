@@ -1,6 +1,6 @@
-package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
+package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
-public class VariableAttribute {
+public class VariableProperty {
 
   private final String id;
 
@@ -8,7 +8,7 @@ public class VariableAttribute {
 
   private Float value = 0F;
 
-  protected VariableAttribute(String id, String label) {
+  protected VariableProperty(String id, String label) {
     this.id = id;
     this.label = label;
   }

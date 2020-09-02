@@ -49,7 +49,7 @@ public class AtmosphericPressureAtSeaLevelCalculator extends ValueCalculator {
     Double temperature = tempValueCalculator.calculateValue(measurementValues,
       allMeasurements, allSensorValues, reducer, conn);
 
-    Float sensorHeight = reducer.getVariableAttribute("atm_pres_sensor_height");
+    Float sensorHeight = reducer.getFloatProperty("atm_pres_sensor_height");
 
     Double correction = (pressure * MOLAR_MASS_AIR)
       / (Calculators.kelvin(temperature) * 8.314) * 9.8 * sensorHeight;

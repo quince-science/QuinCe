@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,12 +16,12 @@ import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -41,7 +42,7 @@ public abstract class DataReducer {
   /**
    * The variable attributes
    */
-  protected Map<String, Float> variableAttributes;
+  protected Properties properties;
 
   /**
    * All the measurements from the current data set
@@ -63,11 +64,10 @@ public abstract class DataReducer {
    */
   protected ValueCalculators valueCalculators;
 
-  public DataReducer(Variable variable,
-    Map<String, Float> variableAttributes) {
+  public DataReducer(Variable variable, Properties properties) {
 
     this.variable = variable;
-    this.variableAttributes = variableAttributes;
+    this.properties = properties;
     this.valueCalculators = new ValueCalculators();
   }
 
@@ -300,8 +300,17 @@ public abstract class DataReducer {
     return result;
   }
 
-  public Float getVariableAttribute(String attribute) {
-    return variableAttributes.get(attribute);
+  public Float getFloatProperty(String property) {
+    Float result = null;
+
+    try {
+      result = Float.parseFloat(properties.getProperty(property));
+    } catch (NumberFormatException e) {
+      e.printStackTrace();
+      // Swallow the exception so that the result is null
+    }
+
+    return result;
   }
 
   protected abstract String[] getRequiredTypeStrings();

@@ -5,10 +5,11 @@ import java.sql.Connection;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 
 import javax.faces.bean.ManagedBean;
@@ -33,15 +34,13 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableAttribute;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
@@ -356,9 +355,15 @@ public class NewInstrumentBean extends FileUploadBean {
   private List<Long> instrumentVariables;
 
   /**
-   * The attributes for all selected variables
+   * The properties for the selected variables, structured for input from the
+   * front end.
+   *
+   * <p>
+   * These will be restructured into the required Properties objects when the
+   * instrument is saved.
+   * </p>
    */
-  private LinkedHashMap<Variable, List<VariableAttribute>> variableAttributes;
+  private Map<Variable, List<VariableProperty>> variableProperties;
 
   /**
    * Indicates whether or not the instrument has a fixed position (i.e. does not
@@ -492,7 +497,7 @@ public class NewInstrumentBean extends FileUploadBean {
       instrumentFiles = new NewInstrumentFileSet();
       sensorAssignments = null;
       instrumentVariables = null;
-      variableAttributes = null;
+      variableProperties = null;
       preFlushingTime = 0;
       postFlushingTime = 0;
       depth = 0;
@@ -538,8 +543,29 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   public void setInstrumentVariables(List<Long> instrumentVariables) {
-    this.instrumentVariables = instrumentVariables;
+
     try {
+      this.instrumentVariables = instrumentVariables;
+      variableProperties = new HashMap<Variable, List<VariableProperty>>();
+
+      SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+        .getSensorsConfiguration();
+      for (Variable var : sensorConfig
+        .getInstrumentVariables(instrumentVariables)) {
+
+        if (var.hasAttributes()) {
+          List<VariableProperty> varProps = new ArrayList<VariableProperty>();
+          for (Map.Entry<String, String> attribute : var.getAttributes()
+            .entrySet()) {
+
+            varProps.add(
+              new VariableProperty(attribute.getKey(), attribute.getValue()));
+          }
+
+          variableProperties.put(var, varProps);
+        }
+      }
+
       sensorAssignments = new SensorAssignments(getDataSource(),
         instrumentVariables);
     } catch (Exception e) {
@@ -551,8 +577,7 @@ public class NewInstrumentBean extends FileUploadBean {
     Map<Long, String> variables = new HashMap<Long, String>();
 
     try {
-      for (Variable variable : InstrumentDB
-        .getAllVariables(getDataSource())) {
+      for (Variable variable : InstrumentDB.getAllVariables(getDataSource())) {
         variables.put(variable.getId(), variable.getName());
       }
     } catch (Exception e) {
@@ -1600,38 +1625,13 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Go to the Variable Info page
+   * Go to the Variable Info page, or skip straight to files if there are no
+   * attributes to be assigned
    *
-   * @return The navigation to the Variable Info page
+   * @return The navigation target
    */
   public String goToVariableInfo() {
-
-    try {
-      initVariableAttributes();
-    } catch (Exception e) {
-      internalError(e);
-    }
-    return NAV_VARIABLE_INFO;
-  }
-
-  private void initVariableAttributes() throws VariableNotFoundException {
-    if (null == variableAttributes) {
-      variableAttributes = new LinkedHashMap<Variable, List<VariableAttribute>>();
-
-      SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-        .getSensorsConfiguration();
-
-      for (long varId : instrumentVariables) {
-        Variable variable = sensorConfig.getInstrumentVariable(varId);
-        if (variable.hasAttributes()) {
-          variableAttributes.put(variable, variable.generateAttributes());
-        }
-      }
-    }
-  }
-
-  public LinkedHashMap<Variable, List<VariableAttribute>> getVariableAttributes() {
-    return variableAttributes;
+    return variableProperties.size() > 0 ? NAV_VARIABLE_INFO : NAV_UPLOAD_FILE;
   }
 
   /**
@@ -1939,10 +1939,25 @@ public class NewInstrumentBean extends FileUploadBean {
           sensorAssignment);
       }
 
+      // Convert user-entered properties to the format in which they'll be
+      // stored
+      Map<Variable, Properties> storedVariableProperties = new HashMap<Variable, Properties>();
+
+      for (Map.Entry<Variable, List<VariableProperty>> inputProperties : variableProperties
+        .entrySet()) {
+        Properties props = new Properties();
+        for (VariableProperty prop : inputProperties.getValue()) {
+          props.put(prop.getId(), prop.getValue());
+        }
+
+        storedVariableProperties.put(inputProperties.getKey(), props);
+      }
+
+      // Create the new Instrument object
       Instrument instrument = new Instrument(getUser(), instrumentName,
         instrumentFiles,
         sensorConfig.getInstrumentVariables(instrumentVariables),
-        sensorAssignments, platformCode, false);
+        storedVariableProperties, sensorAssignments, platformCode, false);
 
       instrument.setProperty(Instrument.PROP_PRE_FLUSHING_TIME,
         preFlushingTime);
@@ -1955,8 +1970,7 @@ public class NewInstrumentBean extends FileUploadBean {
         instrument.setProperty(Instrument.PROP_LATITUDE, latitude);
       }
 
-      InstrumentDB.storeInstrument(getDataSource(), instrument,
-        variableAttributes);
+      InstrumentDB.storeInstrument(getDataSource(), instrument);
       setCurrentInstrumentId(instrument.getDatabaseId());
 
       // Reinitialise beans to update their instrument lists
@@ -2118,5 +2132,9 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public void setLatitude(double latitude) {
     this.latitude = latitude;
+  }
+
+  public Map<Variable, List<VariableProperty>> getVariableProperties() {
+    return variableProperties;
   }
 }
