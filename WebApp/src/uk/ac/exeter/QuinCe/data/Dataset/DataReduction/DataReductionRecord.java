@@ -10,7 +10,7 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 import uk.ac.exeter.QuinCe.utils.NoEmptyStringList;
 
@@ -50,7 +50,7 @@ public class DataReductionRecord {
    *          The measurement
    */
   public DataReductionRecord(Measurement measurement,
-    InstrumentVariable variable, List<String> parameterNames) {
+    Variable variable, List<String> parameterNames) {
     this.measurementId = measurement.getId();
     this.variableId = variable.getId();
     this.parameterNames = Collections.unmodifiableList(parameterNames);

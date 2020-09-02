@@ -23,7 +23,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.MeasurementValues;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -106,7 +106,7 @@ public class DataReductionJob extends DataSetJob {
         .getMeasurementsByRunType(conn, instrument, dataSet.getId());
 
       // Cache of data reducers
-      Map<InstrumentVariable, DataReducer> reducers = new HashMap<InstrumentVariable, DataReducer>();
+      Map<Variable, DataReducer> reducers = new HashMap<Variable, DataReducer>();
 
       ArrayList<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>();
 
@@ -114,7 +114,7 @@ public class DataReductionJob extends DataSetJob {
       for (String runType : allMeasurements.keySet()) {
 
         // Loop through each variable
-        for (InstrumentVariable variable : instrument.getVariables()) {
+        for (Variable variable : instrument.getVariables()) {
 
           // Process each measurement
           dataReductionRecords.ensureCapacity(

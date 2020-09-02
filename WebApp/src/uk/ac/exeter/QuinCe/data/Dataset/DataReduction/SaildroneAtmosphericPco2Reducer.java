@@ -8,7 +8,7 @@ import java.util.Map;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Data Reduction class for NRT Atmospheric fCO₂ from SailDrones.
@@ -27,7 +27,7 @@ public class SaildroneAtmosphericPco2Reducer extends DataReducer {
    */
   private static List<CalculationParameter> calculationParameters = null;
 
-  public SaildroneAtmosphericPco2Reducer(InstrumentVariable variable,
+  public SaildroneAtmosphericPco2Reducer(Variable variable,
     Map<String, Float> variableAttributes) {
 
     super(variable, variableAttributes);

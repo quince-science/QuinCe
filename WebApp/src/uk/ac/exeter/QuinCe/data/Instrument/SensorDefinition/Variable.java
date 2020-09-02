@@ -26,7 +26,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
-public class InstrumentVariable {
+public class Variable {
 
   /**
    * The variable's database ID
@@ -83,7 +83,7 @@ public class InstrumentVariable {
    * @throws InvalidFlagException
    *           If any cascade flags are invalid
    */
-  protected InstrumentVariable(SensorsConfiguration sensorConfig, long id,
+  protected Variable(SensorsConfiguration sensorConfig, long id,
     String name, LinkedHashMap<String, String> attributes,
     long coreSensorTypeId, List<Long> requiredSensorTypeIds,
     List<Integer> questionableCascades, List<Integer> badCascades)
@@ -278,9 +278,9 @@ public class InstrumentVariable {
    *          The variables
    * @return The variable IDs
    */
-  public static List<Long> getIDsList(List<InstrumentVariable> variables) {
+  public static List<Long> getIDsList(List<Variable> variables) {
     List<Long> ids = new ArrayList<Long>(variables.size());
-    for (InstrumentVariable variable : variables) {
+    for (Variable variable : variables) {
       ids.add(variable.getId());
     }
     return ids;
@@ -301,11 +301,11 @@ public class InstrumentVariable {
     return result;
   }
 
-  public static boolean sensorTypeRequired(List<InstrumentVariable> variables,
+  public static boolean sensorTypeRequired(List<Variable> variables,
     SensorType sensorType) {
     boolean result = false;
 
-    for (InstrumentVariable variable : variables) {
+    for (Variable variable : variables) {
       if (variable.requiredSensorTypes.contains(sensorType)) {
         result = true;
         break;
@@ -339,9 +339,9 @@ public class InstrumentVariable {
       return true;
     if (obj == null)
       return false;
-    if (!(obj instanceof InstrumentVariable))
+    if (!(obj instanceof Variable))
       return false;
-    InstrumentVariable other = (InstrumentVariable) obj;
+    Variable other = (Variable) obj;
     return id == other.id;
   }
 }

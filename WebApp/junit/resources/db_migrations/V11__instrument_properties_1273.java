@@ -84,5 +84,11 @@ public class V11__instrument_properties_1273 extends BaseJavaMigration {
       "ALTER TABLE instrument_variables CHANGE attributes properties MEDIUMTEXT");
     instrVarPropsStmt.execute();
     instrVarPropsStmt.close();
+
+    // Redefine dataset properties
+    PreparedStatement datasetPropsStmt = conn.prepareStatement(
+      "ALTER TABLE dataset CHANGE properties properties MEDIUMTEXT");
+    datasetPropsStmt.execute();
+    datasetPropsStmt.close();
   }
 }

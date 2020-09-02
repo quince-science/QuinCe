@@ -33,7 +33,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -358,7 +358,7 @@ public class NewInstrumentBean extends FileUploadBean {
   /**
    * The attributes for all selected variables
    */
-  private LinkedHashMap<InstrumentVariable, List<VariableAttribute>> variableAttributes;
+  private LinkedHashMap<Variable, List<VariableAttribute>> variableAttributes;
 
   /**
    * Indicates whether or not the instrument has a fixed position (i.e. does not
@@ -551,7 +551,7 @@ public class NewInstrumentBean extends FileUploadBean {
     Map<Long, String> variables = new HashMap<Long, String>();
 
     try {
-      for (InstrumentVariable variable : InstrumentDB
+      for (Variable variable : InstrumentDB
         .getAllVariables(getDataSource())) {
         variables.put(variable.getId(), variable.getName());
       }
@@ -1616,13 +1616,13 @@ public class NewInstrumentBean extends FileUploadBean {
 
   private void initVariableAttributes() throws VariableNotFoundException {
     if (null == variableAttributes) {
-      variableAttributes = new LinkedHashMap<InstrumentVariable, List<VariableAttribute>>();
+      variableAttributes = new LinkedHashMap<Variable, List<VariableAttribute>>();
 
       SensorsConfiguration sensorConfig = ResourceManager.getInstance()
         .getSensorsConfiguration();
 
       for (long varId : instrumentVariables) {
-        InstrumentVariable variable = sensorConfig.getInstrumentVariable(varId);
+        Variable variable = sensorConfig.getInstrumentVariable(varId);
         if (variable.hasAttributes()) {
           variableAttributes.put(variable, variable.generateAttributes());
         }
@@ -1630,7 +1630,7 @@ public class NewInstrumentBean extends FileUploadBean {
     }
   }
 
-  public LinkedHashMap<InstrumentVariable, List<VariableAttribute>> getVariableAttributes() {
+  public LinkedHashMap<Variable, List<VariableAttribute>> getVariableAttributes() {
     return variableAttributes;
   }
 

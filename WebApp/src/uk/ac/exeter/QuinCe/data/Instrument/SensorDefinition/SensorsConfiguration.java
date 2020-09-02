@@ -66,7 +66,7 @@ public class SensorsConfiguration {
   /**
    * The set of variables an instrument can measure
    */
-  private Map<Long, InstrumentVariable> instrumentVariables;
+  private Map<Long, Variable> instrumentVariables;
 
   public SensorsConfiguration(DataSource dataSource)
     throws SensorConfigurationException, MissingParamException {
@@ -139,7 +139,7 @@ public class SensorsConfiguration {
     throws DatabaseException, SensorTypeNotFoundException,
     SensorConfigurationException, InvalidFlagException {
 
-    instrumentVariables = new HashMap<Long, InstrumentVariable>();
+    instrumentVariables = new HashMap<Long, Variable>();
 
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -164,7 +164,7 @@ public class SensorsConfiguration {
           if (currentVariable > -1) {
             // Write the old variable
             instrumentVariables.put(currentVariable,
-              new InstrumentVariable(this, currentVariable, name, attributes,
+              new Variable(this, currentVariable, name, attributes,
                 coreSensorType, requiredSensorTypes, questionableCascades,
                 badCascades));
           }
@@ -192,7 +192,7 @@ public class SensorsConfiguration {
 
       // Write the last variable
       instrumentVariables.put(currentVariable,
-        new InstrumentVariable(this, currentVariable, name, attributes,
+        new Variable(this, currentVariable, name, attributes,
           coreSensorType, requiredSensorTypes, questionableCascades,
           badCascades));
     } catch (SQLException e) {
@@ -387,7 +387,7 @@ public class SensorsConfiguration {
     List<SensorType> result = new ArrayList<SensorType>(varIds.size());
 
     for (long varId : varIds) {
-      InstrumentVariable variable = instrumentVariables.get(varId);
+      Variable variable = instrumentVariables.get(varId);
       if (null == variable) {
         throw new SensorConfigurationException(
           "Cannot find variable with ID " + varId);
@@ -462,7 +462,7 @@ public class SensorsConfiguration {
 
     boolean core = false;
 
-    for (InstrumentVariable variable : instrumentVariables.values()) {
+    for (Variable variable : instrumentVariables.values()) {
       if (variable.getCoreSensorType().equals(sensorType)) {
         core = true;
         break;
@@ -555,7 +555,7 @@ public class SensorsConfiguration {
     boolean required = false;
 
     for (long varId : variableIds) {
-      InstrumentVariable variable = instrumentVariables.get(varId);
+      Variable variable = instrumentVariables.get(varId);
       if (null == variable) {
         throw new SensorConfigurationException("Unknown variable ID " + varId);
       } else {
@@ -582,7 +582,7 @@ public class SensorsConfiguration {
    *           If the sensor configuration is internally inconsistent
    */
   public boolean requiredForVariable(SensorType sensorType,
-    InstrumentVariable variable) throws SensorConfigurationException {
+    Variable variable) throws SensorConfigurationException {
 
     boolean required = false;
 
@@ -633,7 +633,7 @@ public class SensorsConfiguration {
     Set<SensorType> sensorTypes = new HashSet<SensorType>();
 
     for (long varId : variableIds) {
-      InstrumentVariable variable = instrumentVariables.get(varId);
+      Variable variable = instrumentVariables.get(varId);
       if (null == variable) {
         throw new SensorConfigurationException("Unknown variable ID " + varId);
       } else {
@@ -706,9 +706,9 @@ public class SensorsConfiguration {
    * @throws VariableNotFoundException
    *           If the ID isn't found
    */
-  public InstrumentVariable getInstrumentVariable(long variableId)
+  public Variable getInstrumentVariable(long variableId)
     throws VariableNotFoundException {
-    InstrumentVariable result = instrumentVariables.get(variableId);
+    Variable result = instrumentVariables.get(variableId);
     if (null == result) {
       throw new VariableNotFoundException(variableId);
     }
@@ -724,13 +724,13 @@ public class SensorsConfiguration {
    * @throws VariableNotFoundException
    *           If any IDs aren't found
    */
-  public List<InstrumentVariable> getInstrumentVariables(List<Long> variableIds)
+  public List<Variable> getInstrumentVariables(List<Long> variableIds)
     throws VariableNotFoundException {
 
-    List<InstrumentVariable> variables = new ArrayList<InstrumentVariable>(
+    List<Variable> variables = new ArrayList<Variable>(
       variableIds.size());
     for (long id : variableIds) {
-      InstrumentVariable variable = instrumentVariables.get(id);
+      Variable variable = instrumentVariables.get(id);
       if (null == variable) {
         throw new VariableNotFoundException(id);
       }

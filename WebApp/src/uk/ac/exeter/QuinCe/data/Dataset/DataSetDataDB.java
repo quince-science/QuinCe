@@ -28,7 +28,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -896,7 +896,7 @@ public class DataSetDataDB {
     return result;
   }
 
-  public static Map<Long, Map<InstrumentVariable, DataReductionRecord>> getDataReductionData(
+  public static Map<Long, Map<Variable, DataReductionRecord>> getDataReductionData(
     Connection conn, Instrument instrument, DataSet dataSet)
     throws MissingParamException, DatabaseException {
 
@@ -904,7 +904,7 @@ public class DataSetDataDB {
     MissingParam.checkMissing(instrument, "instrument");
     MissingParam.checkMissing(dataSet, "dataSet");
 
-    Map<Long, Map<InstrumentVariable, DataReductionRecord>> result = new HashMap<Long, Map<InstrumentVariable, DataReductionRecord>>();
+    Map<Long, Map<Variable, DataReductionRecord>> result = new HashMap<Long, Map<Variable, DataReductionRecord>>();
 
     try (PreparedStatement stmt = conn
       .prepareStatement(GET_DATA_REDUCTION_QUERY)) {
@@ -933,7 +933,7 @@ public class DataSetDataDB {
 
           if (measurementId != currentMeasurement) {
             result.put(measurementId,
-              new HashMap<InstrumentVariable, DataReductionRecord>());
+              new HashMap<Variable, DataReductionRecord>());
             currentMeasurement = measurementId;
           }
 

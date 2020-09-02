@@ -28,7 +28,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -66,7 +66,7 @@ public class ManualQCData extends PlotPageData {
   /**
    * The values calculated by data reduction.
    */
-  protected Map<Long, Map<InstrumentVariable, DataReductionRecord>> dataReduction = null;
+  protected Map<Long, Map<Variable, DataReductionRecord>> dataReduction = null;
 
   /**
    * The list of sensor column IDs in the same order as they are represented in
@@ -238,7 +238,7 @@ public class ManualQCData extends PlotPageData {
     }
 
     // Each of the instrument variables
-    for (InstrumentVariable variable : instrument.getVariables()) {
+    for (Variable variable : instrument.getVariables()) {
       try {
         List<CalculationParameter> variableHeadings = DataReducerFactory
           .getCalculationParameters(variable, true);
@@ -339,7 +339,7 @@ public class ManualQCData extends PlotPageData {
           measurementId = measurement.getId();
         }
 
-        Map<InstrumentVariable, DataReductionRecord> dataReductionData = null;
+        Map<Variable, DataReductionRecord> dataReductionData = null;
 
         if (null != measurementId) {
           // Retrieve the data reduction data
@@ -351,14 +351,14 @@ public class ManualQCData extends PlotPageData {
         // calibration mode), make a blank data reduction set.
         if (null == dataReductionData) {
           // Make a blank set
-          dataReductionData = new HashMap<InstrumentVariable, DataReductionRecord>();
-          for (InstrumentVariable variable : instrument.getVariables()) {
+          dataReductionData = new HashMap<Variable, DataReductionRecord>();
+          for (Variable variable : instrument.getVariables()) {
             dataReductionData.put(variable, null);
           }
         }
 
         // Variables
-        for (InstrumentVariable variable : instrument.getVariables()) {
+        for (Variable variable : instrument.getVariables()) {
           DataReductionRecord variableDataReduction = dataReductionData
             .get(variable);
 
@@ -728,7 +728,7 @@ public class ManualQCData extends PlotPageData {
       }
     } else {
 
-      InstrumentVariable variable = DataReducerFactory.getVariable(instrument,
+      Variable variable = DataReducerFactory.getVariable(instrument,
         column.getId());
       CalculationParameter parameter = DataReducerFactory
         .getVariableParameter(variable, column.getId());
@@ -764,7 +764,7 @@ public class ManualQCData extends PlotPageData {
 
     // The core sensor value for the first variable, or if there isn't one,
     // The second sensor
-    InstrumentVariable variable = instrument.getVariables().get(0);
+    Variable variable = instrument.getVariables().get(0);
     SensorType sensorType = variable.getCoreSensorType();
 
     if (null != sensorType) {
@@ -838,7 +838,7 @@ public class ManualQCData extends PlotPageData {
 
       // Data Reduction value
     } else {
-      InstrumentVariable variable = DataReducerFactory.getVariable(instrument,
+      Variable variable = DataReducerFactory.getVariable(instrument,
         columnId);
       CalculationParameter parameter = DataReducerFactory
         .getVariableParameter(variable, columnId);
@@ -860,7 +860,7 @@ public class ManualQCData extends PlotPageData {
   }
 
   protected DataReductionRecord getDataReductionRecord(long rowId,
-    InstrumentVariable variable) {
+    Variable variable) {
 
     DataReductionRecord result = null;
 
@@ -868,7 +868,7 @@ public class ManualQCData extends PlotPageData {
     Measurement measurement = measurements.get(rowTime);
 
     if (null != measurement) {
-      Map<InstrumentVariable, DataReductionRecord> rowRecords = dataReduction
+      Map<Variable, DataReductionRecord> rowRecords = dataReduction
         .get(measurement.getId());
       if (null != rowRecords) {
         result = rowRecords.get(variable);

@@ -17,7 +17,7 @@ import org.primefaces.json.JSONObject;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
@@ -62,7 +62,7 @@ public class ExportOption {
    * The variables to be exported as part of this export. If any instrument does
    * not contain a given variable it will be ignored
    */
-  private List<InstrumentVariable> variables;
+  private List<Variable> variables;
 
   /**
    * The export data class to use for this export. Used for custom
@@ -164,7 +164,7 @@ public class ExportOption {
     return missingValue;
   }
 
-  public List<InstrumentVariable> getVariables() {
+  public List<Variable> getVariables() {
     return variables;
   }
 
@@ -219,7 +219,7 @@ public class ExportOption {
     }
 
     // Variables
-    List<InstrumentVariable> allVariables;
+    List<Variable> allVariables;
     try {
       allVariables = InstrumentDB.getAllVariables(conn, sensorConfig);
     } catch (Exception e) {
@@ -237,14 +237,14 @@ public class ExportOption {
       if (varArray.length() == 0) {
         variables = allVariables;
       } else {
-        variables = new ArrayList<InstrumentVariable>(varArray.length());
+        variables = new ArrayList<Variable>(varArray.length());
 
         Iterator<Object> iter = json.getJSONArray("variables").iterator();
         while (iter.hasNext()) {
           String varName = (String) iter.next();
 
           boolean variableFound = false;
-          for (InstrumentVariable variable : allVariables) {
+          for (Variable variable : allVariables) {
             if (varName.equals(variable.getName())) {
               variables.add(variable);
               variableFound = true;

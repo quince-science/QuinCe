@@ -79,12 +79,12 @@ public class SensorAssignments
    * @return The SensorAssignments object
    */
   public static SensorAssignments makeSensorAssignmentsFromVariables(
-    Connection conn, List<InstrumentVariable> variables)
+    Connection conn, List<Variable> variables)
     throws DatabaseException, SensorConfigurationException,
     SensorTypeNotFoundException {
 
     List<Long> ids = new ArrayList<Long>(variables.size());
-    for (InstrumentVariable variable : variables) {
+    for (Variable variable : variables) {
       ids.add(variable.getId());
     }
 

@@ -21,7 +21,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
@@ -1049,7 +1049,7 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Test that an {@link InstrumentVariable} can be retrieved using its ID.
+   * Test that an {@link Variable} can be retrieved using its ID.
    *
    * @throws Exception
    *           If the {@link SensorsConfiguration} cannot be accessed.
@@ -1059,12 +1059,12 @@ public class SensorsConfigurationTest extends BaseTest {
   @FlywayTest
   @Test
   public void getInstrumentVariableTest() throws Exception {
-    InstrumentVariable variable = getConfig().getInstrumentVariable(1L);
+    Variable variable = getConfig().getInstrumentVariable(1L);
     assertEquals(1L, variable.getId());
   }
 
   /**
-   * Test that attempting to retrieve a non-existent {@link InstrumentVariable}
+   * Test that attempting to retrieve a non-existent {@link Variable}
    * throws a {@link VariableNotFoundException}.
    *
    * @throws Exception
@@ -1081,7 +1081,7 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Test that retrieving multiple {@link InstrumentVariable}s works.
+   * Test that retrieving multiple {@link Variable}s works.
    *
    * @throws Exception
    *           If the {@link SensorsConfiguration} cannot be accessed.
@@ -1093,16 +1093,16 @@ public class SensorsConfigurationTest extends BaseTest {
   public void getInstrumentVariablesTest() throws Exception {
     initVarList();
     initTestVarList();
-    List<InstrumentVariable> variables = getConfig()
+    List<Variable> variables = getConfig()
       .getInstrumentVariables(bothVarsList);
-    for (InstrumentVariable variable : variables) {
+    for (Variable variable : variables) {
       assertTrue(variable.getName().equals("Underway Marine pCO₂")
         || variable.getName().equals("testVar"));
     }
   }
 
   /**
-   * Test that retrieving multiple {@link InstrumentVariable}s where one or more
+   * Test that retrieving multiple {@link Variable}s where one or more
    * variables doesn't exist throws a {@link VariableNotFoundException}.
    *
    * @throws Exception
