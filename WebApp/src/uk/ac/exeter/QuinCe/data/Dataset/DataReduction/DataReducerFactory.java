@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -29,7 +30,7 @@ public class DataReducerFactory {
    *           If the reducer cannot be retreived
    */
   public static DataReducer getReducer(Connection conn, Instrument instrument,
-    Variable variable, Map<String, Float> variableAttributes)
+    Variable variable, Properties variableProperties)
     throws DataReductionException {
 
     DataReducer reducer;
@@ -37,25 +38,25 @@ public class DataReducerFactory {
     try {
       switch (variable.getName()) {
       case "Underway Marine pCO₂": {
-        reducer = new UnderwayMarinePco2Reducer(variable, variableAttributes);
+        reducer = new UnderwayMarinePco2Reducer(variable, variableProperties);
         break;
       }
       case "Underway Atmospheric pCO₂": {
         reducer = new UnderwayAtmosphericPco2Reducer(variable,
-          variableAttributes);
+          variableProperties);
         break;
       }
       case "SailDrone Marine CO₂ NRT": {
-        reducer = new SaildroneMarinePco2Reducer(variable, variableAttributes);
+        reducer = new SaildroneMarinePco2Reducer(variable, variableProperties);
         break;
       }
       case "SailDrone Atmospheric CO₂ NRT": {
         reducer = new SaildroneAtmosphericPco2Reducer(variable,
-          variableAttributes);
+          variableProperties);
         break;
       }
       case "Soderman": {
-        reducer = new NoReductionReducer(variable, variableAttributes);
+        reducer = new NoReductionReducer(variable, variableProperties);
         break;
       }
       default: {
@@ -136,20 +137,18 @@ public class DataReducerFactory {
     return result;
   }
 
-  protected static long makeParameterId(Variable variable,
-    int sequence) {
+  protected static long makeParameterId(Variable variable, int sequence) {
     return variable.getId() * 10000 + sequence;
   }
 
-  public static Variable getVariable(Instrument instrument,
-    long parameterId) throws InstrumentException {
+  public static Variable getVariable(Instrument instrument, long parameterId)
+    throws InstrumentException {
 
     return instrument.getVariable(parameterId / 10000);
   }
 
-  public static CalculationParameter getVariableParameter(
-    Variable variable, long parameterId)
-    throws DataReductionException {
+  public static CalculationParameter getVariableParameter(Variable variable,
+    long parameterId) throws DataReductionException {
 
     int parameterIndex = (int) (parameterId % 10000);
     return getSkeletonReducer(variable).getCalculationParameters()

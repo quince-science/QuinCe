@@ -5,20 +5,20 @@
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/new_instrument.xhtml">
   <ui:define name="instrumentHead">
-    <c:set var="instrumentStep" value="5" scope="request" />
+    <c:set var="instrumentStep" value="2" scope="request" />
   </ui:define>
   <ui:define name="new_instrument_content">
     <div class="instructions">
-      If any selected variables require extra information, they will be listed below.
-      If none are listed, simply click Finish to complete instrument configuration.
+      One or more of your selected variables require extra information.
     </div>
     <h:form id="newInstrumentForm" method="post" charset="utf8">
-      <ui:repeat value="#{newInstrumentBean.getVariableAttributes().entrySet()}"
-        var="varAttrEntry">
-        <p:fieldset legend="#{varAttrEntry.key.name}"
+      <ui:repeat value="#{newInstrumentBean.getVariableProperties().entrySet()}"
+        var="varPropEntry">
+        <p:fieldset legend="#{varPropEntry.key.name}"
           style="margin-bottom: 20px">
+
           <table class="form">
-            <ui:repeat value="#{varAttrEntry.value}" var="attribute">
+            <ui:repeat value="#{varPropEntry.value}" var="attribute">
               <tr>
                 <td class="labels"><h:outputText value="#{attribute.label}" /></td>
                 <td><p:inputNumber value="#{attribute.value}" /></td>
@@ -31,9 +31,9 @@
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
         <p:commandButton value="Back" ajax="false"
-          action="#{newInstrumentBean.goToGeneralInfo}" immediate="true" />
-        <p:commandButton id="nextButton" widgetVar="next" value="Finish"
-          ajax="false" action="#{newInstrumentBean.saveInstrument}" />
+          action="#{newInstrumentBean.goToVariables}" immediate="true" />
+        <p:commandButton id="nextButton" widgetVar="next" value="Next"
+          ajax="false" action="#{newInstrumentBean.goToFiles}" />
       </h:panelGrid>
     </h:form>
   </ui:define>
