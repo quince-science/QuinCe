@@ -1,0 +1,1 @@
+pandoc -s -f markdown+smart -t pdf --metadata=title:"QuinCe Overview For Coders" --mathml --toc -o ~/temp/Overview.pdf Overview.md
