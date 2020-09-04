@@ -1,5 +1,11 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+/**
+ * Provides static methods for common calculations in data reduction.
+ *
+ * @author Steve Jones
+ *
+ */
 public class Calculators {
 
   /**

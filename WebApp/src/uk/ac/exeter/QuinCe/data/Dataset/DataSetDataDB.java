@@ -155,7 +155,7 @@ public class DataSetDataDB {
     + " WHERE dataset_id = ? AND file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY date ASC";
 
-  private static final String STORE_MEASUREMENT_VALUE_STATEMENT = "INSERT INTO "
+  private static final String STORE_MEASUREMENT_VALUE_STATEMENT = "INSERT IGNORE INTO "
     + "measurement_values (measurement_id, file_column_id, "
     + "prior, post) VALUES (?, ?, ?, ?)";
 
@@ -1037,6 +1037,10 @@ public class DataSetDataDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(values, "values", false);
 
+    // Note that it's possible for a MeasurementValue to be produced multiple
+    // times for multiple variables in the DataReductionJob. This is entirely
+    // reasonable, so the STORE_MEASUREMENT_VALUE_STATEMENT uses INSERT IGNORE
+    // to ensure that only one copy ends up in the database.
     try (PreparedStatement stmt = conn
       .prepareStatement(STORE_MEASUREMENT_VALUE_STATEMENT)) {
 
