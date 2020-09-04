@@ -252,45 +252,47 @@ public class ExtractDataSetJob extends DataSetJob {
       // Now flag all the values that have internal calibrations and are within
       // the instrument's pre- and post-flushing periods (if they're defined),
       // or are in an INGORED run type
-      RunTypePeriod currentPeriod = runTypePeriods.get(0);
-      int currentPeriodIndex = 0;
+      if (runTypePeriods.size() > 0) {
+        RunTypePeriod currentPeriod = runTypePeriods.get(0);
+        int currentPeriodIndex = 0;
 
-      Iterator<SensorValue> valuesIter = sensorValues.iterator();
-      while (valuesIter.hasNext()) {
-        SensorValue value = valuesIter.next();
-        SensorType sensorType = instrument.getSensorAssignments()
-          .getSensorTypeForDBColumn(value.getColumnId());
+        Iterator<SensorValue> valuesIter = sensorValues.iterator();
+        while (valuesIter.hasNext()) {
+          SensorValue value = valuesIter.next();
+          SensorType sensorType = instrument.getSensorAssignments()
+            .getSensorTypeForDBColumn(value.getColumnId());
 
-        if (sensorType.hasInternalCalibration()) {
-          boolean periodFound = false;
+          if (sensorType.hasInternalCalibration()) {
+            boolean periodFound = false;
 
-          // Make sure we have the correct run type period
-          while (!periodFound) {
+            // Make sure we have the correct run type period
+            while (!periodFound) {
 
-            // If we have multiple file definitions, it's possible that
-            // timestamps in the file where the run type *isn't* defined will
-            // fall between run types.
-            //
-            // In this case, simply use the next known run type. Otherwise we
-            // find the run type that the timestamp is in.
-            if (value.getTime().isBefore(currentPeriod.getStart())
-              || currentPeriod.encompasses(value.getTime())) {
-              periodFound = true;
-            } else {
-              currentPeriodIndex++;
-              currentPeriod = runTypePeriods.get(currentPeriodIndex);
+              // If we have multiple file definitions, it's possible that
+              // timestamps in the file where the run type *isn't* defined will
+              // fall between run types.
+              //
+              // In this case, simply use the next known run type. Otherwise we
+              // find the run type that the timestamp is in.
+              if (value.getTime().isBefore(currentPeriod.getStart())
+                || currentPeriod.encompasses(value.getTime())) {
+                periodFound = true;
+              } else {
+                currentPeriodIndex++;
+                currentPeriod = runTypePeriods.get(currentPeriodIndex);
+              }
             }
-          }
 
-          // If the current period is an IGNORE run type, remove the value.
-          if (instrument.getRunTypeCategory(currentPeriod.getRunType())
-            .equals(RunTypeCategory.IGNORED)) {
-            value.setValue(null);
-          } else if (inFlushingPeriod(value.getTime(), currentPeriod,
-            instrument)) {
+            // If the current period is an IGNORE run type, remove the value.
+            if (instrument.getRunTypeCategory(currentPeriod.getRunType())
+              .equals(RunTypeCategory.IGNORED)) {
+              value.setValue(null);
+            } else if (inFlushingPeriod(value.getTime(), currentPeriod,
+              instrument)) {
 
-            // Flag flushing values
-            value.setUserQC(Flag.FLUSHING, "");
+              // Flag flushing values
+              value.setUserQC(Flag.FLUSHING, "");
+            }
           }
         }
       }

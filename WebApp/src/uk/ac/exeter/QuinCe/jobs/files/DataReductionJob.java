@@ -130,6 +130,10 @@ public class DataReductionJob extends DataSetJob {
               MeasurementValues measurementSensorValues = new MeasurementValues(
                 instrument, measurement, searchIdPrefix);
 
+              // Note that it's possible for a MeasurementValue to be produced
+              // multiple times for multiple variables here. We don't mind,
+              // because DataSetDataDB.storeMeasurementValues ensures that
+              // duplicate records aren't created in the database.
               for (SensorType sensorType : variable.getAllSensorTypes(true)) {
                 measurementSensorValues.loadSensorValues(allSensorValues,
                   sensorType);

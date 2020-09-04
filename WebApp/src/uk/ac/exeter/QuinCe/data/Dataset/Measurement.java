@@ -161,4 +161,9 @@ public class Measurement implements Comparable<Measurement> {
     Measurement other = (Measurement) obj;
     return datasetId == other.datasetId && Objects.equals(time, other.time);
   }
+
+  @Override
+  public String toString() {
+    return "Measurement " + id;
+  }
 }
