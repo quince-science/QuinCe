@@ -28,9 +28,9 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -162,9 +162,12 @@ public class ManualQCData extends PlotPageData {
       3);
     rootColumns.add(new PlotPageColumnHeading(
       FileDefinition.TIME_COLUMN_HEADING, false, false));
-    rootColumns
-      .add(new PlotPageColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
-        "Position", "Position", "POSITION", null, false, true));
+
+    if (!dataset.fixedPosition()) {
+      rootColumns
+        .add(new PlotPageColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
+          "Position", "Position", "POSITION", null, false, true));
+    }
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
 
@@ -173,11 +176,14 @@ public class ManualQCData extends PlotPageData {
       3);
     extendedRootColumns.add(new PlotPageColumnHeading(
       FileDefinition.TIME_COLUMN_HEADING, false, false));
-    extendedRootColumns.add(new PlotPageColumnHeading(
-      FileDefinition.LONGITUDE_COLUMN_HEADING, false, true));
-    extendedRootColumns
-      .add(new PlotPageColumnHeading(FileDefinition.LATITUDE_COLUMN_HEADING,
-        false, true, FileDefinition.LONGITUDE_COLUMN_ID));
+
+    if (!dataset.fixedPosition()) {
+      extendedRootColumns.add(new PlotPageColumnHeading(
+        FileDefinition.LONGITUDE_COLUMN_HEADING, false, true));
+      extendedRootColumns
+        .add(new PlotPageColumnHeading(FileDefinition.LATITUDE_COLUMN_HEADING,
+          false, true, FileDefinition.LONGITUDE_COLUMN_ID));
+    }
 
     extendedColumnHeadings.put(ROOT_FIELD_GROUP, extendedRootColumns);
 
@@ -288,28 +294,32 @@ public class ManualQCData extends PlotPageData {
         Map<Long, SensorValue> recordSensorValues = sensorValues
           .get(times.get(i));
 
-        // Lon and Lat
+        if (!dataset.fixedPosition()) {
+          // Lon and Lat
 
-        // We assume there's only one position - the UI won't allow users to
-        // enter more than one.
-        //
-        // The position is combined into a single column.
+          // We assume there's only one position - the UI won't allow users to
+          // enter more than one.
+          //
+          // The position is combined into a single column.
 
-        SensorValue longitude = recordSensorValues
-          .get(FileDefinition.LONGITUDE_COLUMN_ID);
-        SensorValue latitude = recordSensorValues
-          .get(FileDefinition.LATITUDE_COLUMN_ID);
+          SensorValue longitude = recordSensorValues
+            .get(FileDefinition.LONGITUDE_COLUMN_ID);
+          SensorValue latitude = recordSensorValues
+            .get(FileDefinition.LATITUDE_COLUMN_ID);
 
-        StringBuilder positionString = new StringBuilder();
-        if (null != longitude.getValue() && null != latitude.getValue()) {
-          positionString.append(StringUtils.formatNumber(longitude.getValue()));
-          positionString.append(" | ");
-          positionString.append(StringUtils.formatNumber(latitude.getValue()));
+          StringBuilder positionString = new StringBuilder();
+          if (null != longitude.getValue() && null != latitude.getValue()) {
+            positionString
+              .append(StringUtils.formatNumber(longitude.getValue()));
+            positionString.append(" | ");
+            positionString
+              .append(StringUtils.formatNumber(latitude.getValue()));
+          }
+
+          record.addColumn(positionString.toString(), true,
+            longitude.getDisplayFlag(), longitude.getDisplayQCMessage(),
+            longitude.flagNeeded());
         }
-
-        record.addColumn(positionString.toString(), true,
-          longitude.getDisplayFlag(), longitude.getDisplayQCMessage(),
-          longitude.flagNeeded());
 
         for (long columnId : sensorColumnIds) {
 
@@ -838,8 +848,7 @@ public class ManualQCData extends PlotPageData {
 
       // Data Reduction value
     } else {
-      Variable variable = DataReducerFactory.getVariable(instrument,
-        columnId);
+      Variable variable = DataReducerFactory.getVariable(instrument, columnId);
       CalculationParameter parameter = DataReducerFactory
         .getVariableParameter(variable, columnId);
 

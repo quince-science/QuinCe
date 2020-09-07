@@ -133,7 +133,8 @@ public class DataReductionJob extends DataSetJob {
               // multiple times for multiple variables here. We don't mind,
               // because DataSetDataDB.storeMeasurementValues ensures that
               // duplicate records aren't created in the database.
-              for (SensorType sensorType : variable.getAllSensorTypes(true)) {
+              for (SensorType sensorType : variable
+                .getAllSensorTypes(!dataSet.fixedPosition())) {
                 measurementSensorValues.loadSensorValues(allSensorValues,
                   sensorType);
               }

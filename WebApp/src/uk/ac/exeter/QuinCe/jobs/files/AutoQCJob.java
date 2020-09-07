@@ -148,21 +148,25 @@ public class AutoQCJob extends DataSetJob {
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
         instrument, dataSet.getId(), true);
 
-      // First run the position QC. This will potentially set QC flags on all
-      // sensor values, and those values will then be skipped by the 'normal'
-      // routines later on.
+      // First run the position QC, unless the instrument has a fixed position.
+      // This will potentially set QC flags on all sensor values, and those
+      // values will then be skipped by the 'normal' routines later on.
       //
       // Note that this routine uses a different API - the constructor is given
       // all values, and therefore doesn't need to pass any to the actual QC
       // call.
-      List<Long> dataSensorColumnIds = sensorAssignments.getSensorColumnIds();
 
-      PositionQCRoutine positionQC = new PositionQCRoutine(
-        sensorValues.getColumnValues(FileDefinition.LONGITUDE_COLUMN_ID),
-        sensorValues.getColumnValues(FileDefinition.LATITUDE_COLUMN_ID),
-        dataSensorColumnIds, sensorValues);
+      if (!dataSet.fixedPosition()) {
 
-      positionQC.qcValues(null);
+        List<Long> dataSensorColumnIds = sensorAssignments.getSensorColumnIds();
+
+        PositionQCRoutine positionQC = new PositionQCRoutine(
+          sensorValues.getColumnValues(FileDefinition.LONGITUDE_COLUMN_ID),
+          sensorValues.getColumnValues(FileDefinition.LATITUDE_COLUMN_ID),
+          dataSensorColumnIds, sensorValues);
+
+        positionQC.qcValues(null);
+      }
 
       // Run the routines for each column
       for (long columnId : sensorValues.getColumnIds()) {
