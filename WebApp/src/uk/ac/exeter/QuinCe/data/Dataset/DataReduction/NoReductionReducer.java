@@ -17,7 +17,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  */
 public class NoReductionReducer extends DataReducer {
 
-  public NoReductionReducer(Variable variable, Properties properties) {
+  public NoReductionReducer(Variable variable,
+    Map<String, Properties> properties) {
 
     super(variable, properties);
   }

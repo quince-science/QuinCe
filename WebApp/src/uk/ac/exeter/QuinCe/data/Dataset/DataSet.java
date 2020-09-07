@@ -3,13 +3,16 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.primefaces.json.JSONArray;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
@@ -30,6 +33,14 @@ public class DataSet {
   public static final long TIMEPOS_FIELDSET_ID = 0L;
 
   public static final String TIMEPOS_FIELDSET_NAME = "Time/Position";
+
+  /**
+   * Special key for the dataset properties that holds the overarching
+   * properties for the instrument.
+   *
+   * @see #getProperty(String, String)
+   */
+  public static final String INSTRUMENT_PROPERTIES_KEY = "_INSTRUMENT";
 
   /**
    * The numeric value for the delete status.
@@ -178,9 +189,9 @@ public class DataSet {
   private LocalDateTime end;
 
   /**
-   * Additional properties of the data set
+   * Properties for each of the measured variables
    */
-  private Properties properties;
+  private Map<String, Properties> properties;
 
   /**
    * The time that this Dataset was created in the database
@@ -267,7 +278,7 @@ public class DataSet {
    */
   protected DataSet(long id, long instrumentId, String name,
     LocalDateTime start, LocalDateTime end, int status,
-    LocalDateTime statusDate, boolean nrt, Properties properties,
+    LocalDateTime statusDate, boolean nrt, Map<String, Properties> properties,
     LocalDateTime createdDate, LocalDateTime lastTouched,
     List<Message> messages, double minLon, double minLat, double maxLon,
     double maxLat) {
@@ -295,9 +306,20 @@ public class DataSet {
    * @param instrumentId
    *          The database ID of the instrument to which the data set belongs
    */
-  public DataSet(long instrumentId) {
-    this.instrumentId = instrumentId;
+  public DataSet(Instrument instrument) {
+    this.instrumentId = instrument.getDatabaseId();
+
+    // Copy in the properties from the instrument definition
+    this.properties = new HashMap<String, Properties>();
+    properties.put(INSTRUMENT_PROPERTIES_KEY, instrument.getProperties());
+    for (Map.Entry<Variable, Properties> entry : instrument
+      .getAllVariableProperties().entrySet()) {
+
+      properties.put(entry.getKey().getName(), entry.getValue());
+    }
+
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
+
   }
 
   /**
@@ -539,42 +561,24 @@ public class DataSet {
   }
 
   /**
-   * Set a property on the data set.
+   * Get a property variables's property from the data set
    *
-   * @param key
-   *          The key
-   * @param value
-   *          The value
-   * @see Properties#setProperty(String, String)
-   */
-  public void setProperty(String key, String value) {
-    if (null == properties) {
-      properties = new Properties();
-    }
-
-    properties.setProperty(key, value);
-  }
-
-  /**
-   * Get a property from the data set
-   *
+   * @param variable
+   *          The variables whose properties are to be searched
    * @param key
    *          The key
    * @return The value
    * @see Properties#getProperty(String)
+   * @see #INSTRUMENT_PROPERTIES_KEY
    */
-  public String getProperty(String key) {
+  public String getProperty(String variable, String key) {
     String result = null;
 
     if (null != properties) {
-      result = properties.getProperty(key);
+      result = properties.get(variable).getProperty(key);
     }
 
     return result;
-  }
-
-  public Properties getProperties() {
-    return properties;
   }
 
   /**
@@ -685,8 +689,7 @@ public class DataSet {
       fieldSetsByName.put(DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME,
         DataSetDataDB.DIAGNOSTICS_FIELDSET);
 
-      for (Variable variable : InstrumentDB
-        .getVariables(instrumentId)) {
+      for (Variable variable : InstrumentDB.getVariables(instrumentId)) {
         fieldSetsByName.put(variable.getName(), variable.getId());
       }
     }
@@ -786,5 +789,9 @@ public class DataSet {
     if (id != other.id)
       return false;
     return true;
+  }
+
+  public Map<String, Properties> getAllProperties() {
+    return properties;
   }
 }

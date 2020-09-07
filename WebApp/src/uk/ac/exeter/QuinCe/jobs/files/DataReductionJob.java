@@ -161,11 +161,8 @@ public class DataReductionJob extends DataSetJob {
                 // reduction
                 DataReducer reducer = reducers.get(variable);
                 if (null == reducer) {
-                  Properties variableProperties = instrument
-                    .getVariableProperties(variable);
-
                   reducer = DataReducerFactory.getReducer(conn, instrument,
-                    variable, variableProperties);
+                    variable, dataSet.getAllProperties());
                   reducers.put(variable, reducer);
                 }
 

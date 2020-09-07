@@ -30,7 +30,7 @@ public class DataReducerFactory {
    *           If the reducer cannot be retreived
    */
   public static DataReducer getReducer(Connection conn, Instrument instrument,
-    Variable variable, Properties variableProperties)
+    Variable variable, Map<String, Properties> properties)
     throws DataReductionException {
 
     DataReducer reducer;
@@ -38,25 +38,23 @@ public class DataReducerFactory {
     try {
       switch (variable.getName()) {
       case "Underway Marine pCO₂": {
-        reducer = new UnderwayMarinePco2Reducer(variable, variableProperties);
+        reducer = new UnderwayMarinePco2Reducer(variable, properties);
         break;
       }
       case "Underway Atmospheric pCO₂": {
-        reducer = new UnderwayAtmosphericPco2Reducer(variable,
-          variableProperties);
+        reducer = new UnderwayAtmosphericPco2Reducer(variable, properties);
         break;
       }
       case "SailDrone Marine CO₂ NRT": {
-        reducer = new SaildroneMarinePco2Reducer(variable, variableProperties);
+        reducer = new SaildroneMarinePco2Reducer(variable, properties);
         break;
       }
       case "SailDrone Atmospheric CO₂ NRT": {
-        reducer = new SaildroneAtmosphericPco2Reducer(variable,
-          variableProperties);
+        reducer = new SaildroneAtmosphericPco2Reducer(variable, properties);
         break;
       }
       case "Soderman": {
-        reducer = new NoReductionReducer(variable, variableProperties);
+        reducer = new NoReductionReducer(variable, properties);
         break;
       }
       default: {

@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,6 +9,7 @@ import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,6 +20,7 @@ import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -210,8 +213,12 @@ public class DataSetDB {
     int status = record.getInt(6);
     LocalDateTime statusDate = DateTimeUtils.longToDate(record.getLong(7));
     boolean nrt = record.getBoolean(8);
-    Properties properties = new Gson().fromJson(record.getString(9),
-      Properties.class);
+
+    Type propertiesType = new TypeToken<Map<String, Properties>>() {
+    }.getType();
+    Map<String, Properties> properties = new Gson()
+      .fromJson(record.getString(9), propertiesType);
+
     LocalDateTime createdDate = DateTimeUtils
       .longToDate(record.getTimestamp(10).getTime());
 
@@ -324,7 +331,7 @@ public class DataSetDB {
       stmt.setInt(5, dataSet.getStatus());
       stmt.setLong(6, DateTimeUtils.dateToLong(dataSet.getStatusDate()));
       stmt.setBoolean(7, dataSet.isNrt());
-      stmt.setString(8, new Gson().toJson(dataSet.getProperties()));
+      stmt.setString(8, new Gson().toJson(dataSet.getAllProperties()));
       stmt.setLong(9, DateTimeUtils.dateToLong(LocalDateTime.now()));
 
       if (dataSet.getMessageCount() > 0) {
