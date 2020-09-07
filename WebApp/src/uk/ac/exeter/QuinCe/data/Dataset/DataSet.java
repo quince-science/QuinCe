@@ -794,4 +794,15 @@ public class DataSet {
   public Map<String, Properties> getAllProperties() {
     return properties;
   }
+
+  /**
+   * Convenience method to determine whether or not this dataset has a fixed
+   * position (i.e. does not have lat/lon data values).
+   *
+   * @return {@code true} if the dataset has a fixed position; {@code false}
+   *         otherwise.
+   */
+  public boolean fixedPosition() {
+    return null != getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "longitude");
+  }
 }
