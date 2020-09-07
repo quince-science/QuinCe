@@ -22,7 +22,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   private static List<CalculationParameter> calculationParameters = null;
 
   public UnderwayAtmosphericPco2Reducer(Variable variable,
-    Properties properties) {
+    Map<String, Properties> properties) {
 
     super(variable, properties);
   }
