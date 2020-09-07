@@ -110,7 +110,7 @@ public class DataSetsBean extends BaseManagedBean {
    */
   public String startNewDataset() {
     initialise();
-    newDataSet = new DataSet(getCurrentInstrument().getDatabaseId());
+    newDataSet = new DataSet(getCurrentInstrument());
     fileDefinitionsJson = null;
     timelineEntriesJson = null;
     validCalibration = true;

@@ -42,7 +42,7 @@ public abstract class DataReducer {
   /**
    * The variable attributes
    */
-  protected Properties properties;
+  protected Map<String, Properties> properties;
 
   /**
    * All the measurements from the current data set
@@ -64,7 +64,7 @@ public abstract class DataReducer {
    */
   protected ValueCalculators valueCalculators;
 
-  public DataReducer(Variable variable, Properties properties) {
+  public DataReducer(Variable variable, Map<String, Properties> properties) {
 
     this.variable = variable;
     this.properties = properties;
@@ -304,8 +304,9 @@ public abstract class DataReducer {
     Float result = null;
 
     try {
-      result = Float.parseFloat(properties.getProperty(property));
-    } catch (NumberFormatException e) {
+      result = Float
+        .parseFloat(properties.get(variable.getName()).getProperty(property));
+    } catch (NullPointerException | NumberFormatException e) {
       e.printStackTrace();
       // Swallow the exception so that the result is null
     }

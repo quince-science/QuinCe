@@ -25,7 +25,8 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
 
   private static List<CalculationParameter> calculationParameters = null;
 
-  public SaildroneMarinePco2Reducer(Variable variable, Properties properties) {
+  public SaildroneMarinePco2Reducer(Variable variable,
+    Map<String, Properties> properties) {
 
     super(variable, properties);
   }

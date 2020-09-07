@@ -682,4 +682,8 @@ public class Instrument {
   public Properties getVariableProperties(Variable variable) {
     return variableProperties.get(variable);
   }
+
+  public Map<Variable, Properties> getAllVariableProperties() {
+    return variableProperties;
+  }
 }

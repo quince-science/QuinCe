@@ -21,7 +21,8 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
   private static List<CalculationParameter> calculationParameters = null;
 
-  public UnderwayMarinePco2Reducer(Variable variable, Properties properties) {
+  public UnderwayMarinePco2Reducer(Variable variable,
+    Map<String, Properties> properties) {
     super(variable, properties);
   }
 
