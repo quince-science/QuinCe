@@ -144,11 +144,13 @@ public class DataReductionJob extends DataSetJob {
               // reduction
               boolean flushing = false;
 
-              for (MeasurementValue measurementValue : measurementSensorValues
-                .get(variable.getCoreSensorType())) {
-                if (measurementValue.isFlushing(allSensorValues)) {
-                  flushing = true;
-                  break;
+              if (null != variable.getCoreSensorType()) {
+                for (MeasurementValue measurementValue : measurementSensorValues
+                  .get(variable.getCoreSensorType())) {
+                  if (measurementValue.isFlushing(allSensorValues)) {
+                    flushing = true;
+                    break;
+                  }
                 }
               }
 

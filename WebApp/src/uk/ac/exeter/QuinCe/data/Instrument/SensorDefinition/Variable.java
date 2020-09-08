@@ -93,10 +93,14 @@ public class Variable {
     this.name = name;
     this.attributes = attributes;
 
-    coreSensorType = sensorConfig.getSensorType(coreSensorTypeId);
-    if (coreSensorType.hasParent()) {
-      throw new SensorConfigurationException(
-        "Core sensor type cannot be a child (ID " + coreSensorTypeId + ")");
+    if (coreSensorTypeId == -1) {
+      coreSensorType = null;
+    } else {
+      coreSensorType = sensorConfig.getSensorType(coreSensorTypeId);
+      if (coreSensorType.hasParent()) {
+        throw new SensorConfigurationException(
+          "Core sensor type cannot be a child (ID " + coreSensorTypeId + ")");
+      }
     }
 
     if (questionableCascades.size() != requiredSensorTypeIds.size()) {
@@ -164,7 +168,10 @@ public class Variable {
    */
   public List<SensorType> getAllSensorTypes(boolean includePosition) {
     List<SensorType> result = new ArrayList<SensorType>(requiredSensorTypes);
-    result.add(coreSensorType);
+
+    if (null != coreSensorType) {
+      result.add(coreSensorType);
+    }
 
     if (includePosition) {
       result.add(SensorType.LONGITUDE_SENSOR_TYPE);
