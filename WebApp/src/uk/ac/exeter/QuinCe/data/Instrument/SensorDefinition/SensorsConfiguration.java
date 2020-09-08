@@ -153,7 +153,6 @@ public class SensorsConfiguration {
       LinkedHashMap<String, String> attributes = null;
       long coreSensorType = -1;
       List<Long> requiredSensorTypes = new ArrayList<Long>();
-      ;
       List<Integer> questionableCascades = new ArrayList<Integer>();
       List<Integer> badCascades = new ArrayList<Integer>();
 
@@ -173,6 +172,7 @@ public class SensorsConfiguration {
           currentVariable = newVariable;
           name = records.getString(2);
           attributes = makeAttributesMap(records.getString(3));
+          coreSensorType = -1;
           requiredSensorTypes = new ArrayList<Long>();
           questionableCascades = new ArrayList<Integer>();
           badCascades = new ArrayList<Integer>();
@@ -192,9 +192,8 @@ public class SensorsConfiguration {
 
       // Write the last variable
       instrumentVariables.put(currentVariable,
-        new Variable(this, currentVariable, name, attributes,
-          coreSensorType, requiredSensorTypes, questionableCascades,
-          badCascades));
+        new Variable(this, currentVariable, name, attributes, coreSensorType,
+          requiredSensorTypes, questionableCascades, badCascades));
     } catch (SQLException e) {
       throw new DatabaseException("Error while loading instrument variables",
         e);
@@ -463,7 +462,9 @@ public class SensorsConfiguration {
     boolean core = false;
 
     for (Variable variable : instrumentVariables.values()) {
-      if (variable.getCoreSensorType().equals(sensorType)) {
+      if (null != variable.getCoreSensorType()
+        && variable.getCoreSensorType().equals(sensorType)) {
+
         core = true;
         break;
       }
@@ -581,8 +582,8 @@ public class SensorsConfiguration {
    * @throws SensorConfigurationException
    *           If the sensor configuration is internally inconsistent
    */
-  public boolean requiredForVariable(SensorType sensorType,
-    Variable variable) throws SensorConfigurationException {
+  public boolean requiredForVariable(SensorType sensorType, Variable variable)
+    throws SensorConfigurationException {
 
     boolean required = false;
 
@@ -727,8 +728,7 @@ public class SensorsConfiguration {
   public List<Variable> getInstrumentVariables(List<Long> variableIds)
     throws VariableNotFoundException {
 
-    List<Variable> variables = new ArrayList<Variable>(
-      variableIds.size());
+    List<Variable> variables = new ArrayList<Variable>(variableIds.size());
     for (long id : variableIds) {
       Variable variable = instrumentVariables.get(id);
       if (null == variable) {

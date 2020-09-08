@@ -401,8 +401,12 @@ public abstract class PlotPageData {
 
         // Each column group must contain at least one column
         if (null == groupColumns || groupColumns.size() == 0) {
-          error("Empty column group detected",
-            new Exception("Empty column group '" + group.getKey() + "'"));
+          // Variables that have no calculations will have an empty column
+          // group, so we'll ignore this issue for now. Maybe we'll have to fix
+          // it in the future though.
+
+          // error("Empty column group detected",
+          // new Exception("Empty column group '" + group.getKey() + "'"));
         } else {
 
           for (int i = 0; i < groupColumns.size(); i++) {

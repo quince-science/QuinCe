@@ -21,8 +21,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -113,10 +113,20 @@ public class LocateMeasurementsJob extends DataSetJob {
       Set<Long> measurementColumnIds = new HashSet<Long>(variables.size());
 
       for (Variable variable : variables) {
-        SensorType sensorType = variable.getCoreSensorType();
-        List<Long> columns = instrument.getSensorAssignments()
-          .getColumnIds(sensorType);
-        measurementColumnIds.addAll(columns);
+        SensorType coreSensorType = variable.getCoreSensorType();
+        if (null != coreSensorType) {
+          List<Long> columns = instrument.getSensorAssignments()
+            .getColumnIds(coreSensorType);
+          measurementColumnIds.addAll(columns);
+        } else {
+
+          // If there's no core sensor type, use any of the sensor values
+          for (SensorType sensorType : variable.getAllSensorTypes(false)) {
+            List<Long> columns = instrument.getSensorAssignments()
+              .getColumnIds(sensorType);
+            measurementColumnIds.addAll(columns);
+          }
+        }
       }
 
       List<SensorValue> sensorValues = DataSetDataDB.getSensorValuesForColumns(
