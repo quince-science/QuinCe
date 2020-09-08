@@ -79,9 +79,8 @@ public class SensorAssignments
    * @return The SensorAssignments object
    */
   public static SensorAssignments makeSensorAssignmentsFromVariables(
-    Connection conn, List<Variable> variables)
-    throws DatabaseException, SensorConfigurationException,
-    SensorTypeNotFoundException {
+    Connection conn, List<Variable> variables) throws DatabaseException,
+    SensorConfigurationException, SensorTypeNotFoundException {
 
     List<Long> ids = new ArrayList<Long>(variables.size());
     for (Variable variable : variables) {
@@ -146,11 +145,14 @@ public class SensorAssignments
     }
 
     for (SensorType coreType : sensorConfig.getCoreSensors(variableIDs)) {
-      put(coreType, new ArrayList<SensorAssignment>());
+      if (null != coreType) {
+        put(coreType, new ArrayList<SensorAssignment>());
 
-      // Add the Run Type if required
-      if (coreType.hasInternalCalibration()) {
-        put(SensorType.RUN_TYPE_SENSOR_TYPE, new ArrayList<SensorAssignment>());
+        // Add the Run Type if required
+        if (coreType.hasInternalCalibration()) {
+          put(SensorType.RUN_TYPE_SENSOR_TYPE,
+            new ArrayList<SensorAssignment>());
+        }
       }
     }
   }
