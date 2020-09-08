@@ -854,4 +854,8 @@ public abstract class PlotPageData {
   public void destroy() {
     DatabaseUtils.closeConnection(conn);
   }
+
+  public DataSet getDataset() {
+    return dataset;
+  }
 }

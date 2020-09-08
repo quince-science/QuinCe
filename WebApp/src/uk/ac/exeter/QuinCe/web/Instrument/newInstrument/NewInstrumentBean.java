@@ -330,6 +330,11 @@ public class NewInstrumentBean extends FileUploadBean {
   private int postFlushingTime = 0;
 
   /**
+   * Indicates whether or not intake depth is specified for the instrument
+   */
+  private boolean hasDepth = true;
+
+  /**
    * The instrument/intake depth
    */
   private int depth;
@@ -1963,7 +1968,10 @@ public class NewInstrumentBean extends FileUploadBean {
         preFlushingTime);
       instrument.setProperty(Instrument.PROP_POST_FLUSHING_TIME,
         postFlushingTime);
-      instrument.setProperty(Instrument.PROP_DEPTH, depth);
+
+      if (hasDepth) {
+        instrument.setProperty(Instrument.PROP_DEPTH, depth);
+      }
 
       if (fixedPosition) {
         instrument.setProperty(Instrument.PROP_LONGITUDE, longitude);
@@ -2136,5 +2144,13 @@ public class NewInstrumentBean extends FileUploadBean {
 
   public Map<Variable, List<VariableProperty>> getVariableProperties() {
     return variableProperties;
+  }
+
+  public boolean getHasDepth() {
+    return hasDepth;
+  }
+
+  public void setHasDepth(boolean hasDepth) {
+    this.hasDepth = hasDepth;
   }
 }
