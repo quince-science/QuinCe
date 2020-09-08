@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.web.datasets.export;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -19,7 +18,9 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
 
 /**
@@ -35,25 +36,23 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
  */
 public class ExportData extends ManualQCData {
 
-  public static final String FIXED_GROUP = "FIXED";
+  // TODO Replace this with something more generic. See issue #1845
 
-  /**
-   * The fixed Depth field & value
-   */
-  // TODO Replace this with something more generic. See issue #1284
+  private static final long LON_ID = -10000L;
 
-  private static final long DEPTH_ID = -10000L;
+  private static final long LAT_ID = -10001L;
 
-  private PlotPageColumnHeading depthHeading;
+  private static final long DEPTH_ID = -10002L;
 
-  private Integer depth;
+  private FixedPlotPageTableValue lonValue = null;
+
+  private FixedPlotPageTableValue latValue = null;
+
+  private FixedPlotPageTableValue depthValue = null;
 
   public ExportData(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
     super(dataSource, instrument, dataset);
-    depthHeading = new PlotPageColumnHeading(DEPTH_ID, "Depth", "Depth",
-      "ADEPZZ01", "m", true, false, false);
-    depth = instrument.getIntProperty(Instrument.PROP_DEPTH);
   }
 
   @Override
@@ -70,25 +69,62 @@ public class ExportData extends ManualQCData {
   public LinkedHashMap<String, List<PlotPageColumnHeading>> getExtendedColumnHeadings()
     throws Exception {
 
-    LinkedHashMap<String, List<PlotPageColumnHeading>> result = super.getExtendedColumnHeadings();
+    LinkedHashMap<String, List<PlotPageColumnHeading>> headings = super.getExtendedColumnHeadings();
 
-    ArrayList<PlotPageColumnHeading> fixedColumns = new ArrayList<PlotPageColumnHeading>();
-    fixedColumns.add(depthHeading);
-    result.put(FIXED_GROUP, fixedColumns);
-    return result;
+    List<PlotPageColumnHeading> rootColumns = headings.get(ROOT_FIELD_GROUP);
+
+    // Manually add the position headings if the dataset has fixed position
+    // properties
+    if (dataset.fixedPosition()) {
+      PlotPageColumnHeading lonColumn = new PlotPageColumnHeading(LON_ID,
+        "Longitude", "Longitude", "ALONGP01", "degrees_east", true, false,
+        true);
+      PlotPageColumnHeading latColumn = new PlotPageColumnHeading(LAT_ID,
+        "Latitude", "Latitude", "ALATGP01", "degrees_north", true, false, true);
+      rootColumns.add(lonColumn);
+      rootColumns.add(latColumn);
+
+      // Set up the fixed values ready for later
+      lonValue = new FixedPlotPageTableValue(
+        dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "longitude"));
+      latValue = new FixedPlotPageTableValue(
+        dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "latitude"));
+
+    }
+    // Add the depth heading if the dataset has the depth property
+    if (null != dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY,
+      "depth")) {
+      PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(DEPTH_ID,
+        "Depth", "Depth", "ADEPZZ01", "m", true, false, true);
+      rootColumns.add(depthHeading);
+
+      // Set up the fixed value ready for later
+      depthValue = new FixedPlotPageTableValue(
+        dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "depth"));
+    }
+    return headings;
   }
 
-  public String getFixedValue(PlotPageColumnHeading heading) {
-    String result = null;
+  @Override
+  public PlotPageTableValue getColumnValue(long rowId, long columnId)
+    throws InstrumentException, DataReductionException,
+    RecordNotFoundException {
 
-    switch (heading.getCodeName()) {
-    case "ADEPZZ01": {
-      result = String.valueOf(depth);
-      break;
-    }
+    // TODO Replace this with something more generic. See issue #1845
+    PlotPageTableValue value = null;
+
+    if (columnId == LON_ID) {
+      value = lonValue;
+    } else if (columnId == LAT_ID) {
+      value = latValue;
+    } else if (columnId == DEPTH_ID) {
+      value = depthValue;
+    } else {
+      value = super.getColumnValue(rowId, columnId);
     }
 
-    return result;
+    return value;
+
   }
 
   /**
@@ -138,8 +174,7 @@ public class ExportData extends ManualQCData {
 
       // Data Reduction value
     } else {
-      Variable variable = DataReducerFactory.getVariable(instrument,
-        columnId);
+      Variable variable = DataReducerFactory.getVariable(instrument, columnId);
 
       Measurement measurement = measurements.get(rowTime);
       if (null != measurement) {

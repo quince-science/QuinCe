@@ -11,7 +11,6 @@
       // Note that greater than/less than are HTML encoded because this is a
       // JSF page
       function fixedPositionChange() {
-
         if (PF('fixedPosition').isChecked()) {
           PF('longitude').enable();
           PF('latitude').enable();
@@ -44,6 +43,15 @@
           PF('latitude').setValue(90);
         }
       }
+      
+      function hasDepthChange() {
+        if (PF('hasDepth').isChecked()) {
+          PF('depth').enable();
+        } else {
+          PF('depth').disable();
+        }
+      }
+      
 
     </script>
   </ui:define>
@@ -59,8 +67,13 @@
           </tr>
           <tr>
             <td class="labels">Instrument/Intake Depth (metres)</td>
-            <td><p:inputNumber id="depth"
-                value="#{newInstrumentBean.depth}" decimalPlaces="0" /></td>
+            <td>
+              <p:selectBooleanCheckbox widgetVar="hasDepth" id="hasDepth"
+                value="#{newInstrumentBean.hasDepth}" onchange="hasDepthChange()"/>
+              &#160;
+              <p:inputNumber widgetVar="depth" id="depth"
+                value="#{newInstrumentBean.depth}" decimalPlaces="0" />
+            </td>
           </tr>
         </table>
       </p:fieldset>
@@ -114,6 +127,7 @@
     <script type="text/javascript">
       $(document).ready(function() {
         fixedPositionChange();
+        hasDepthChange();
       });
     </script>
   </ui:define>
