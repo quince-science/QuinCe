@@ -1,4 +1,4 @@
-package db_migrations;
+package resources.db_migrations;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,7 +22,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
  * @author Steve Jones
  *
  */
-public class V11__instrument_dataset_properties_1273 extends BaseJavaMigration {
+public class V9__instrument_dataset_properties_1273 extends BaseJavaMigration {
 
   @Override
   public void migrate(Context context) throws Exception {
