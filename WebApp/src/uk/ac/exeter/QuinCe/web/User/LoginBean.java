@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.web.User;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
@@ -208,12 +207,12 @@ public class LoginBean extends BaseManagedBean {
       result = null;
     } else {
       UserDB.generatePasswordResetCode(getDataSource(), user);
-      Map<String, String> emailJobParams = new HashMap<String, String>(1);
-      emailJobParams.put(SendPasswordResetMailJob.EMAIL_KEY, emailAddress);
+      Properties jobProperties = new Properties();
+      jobProperties.put(SendPasswordResetMailJob.EMAIL_KEY, emailAddress);
       JobManager.addInstantJob(ServletUtils.getResourceManager(),
         ServletUtils.getAppConfig(), user,
         "uk.ac.exeter.QuinCe.jobs.user.SendPasswordResetMailJob",
-        emailJobParams);
+        jobProperties);
     }
 
     return result;

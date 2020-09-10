@@ -2,9 +2,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.User.UserDB;
@@ -55,9 +53,9 @@ public class CreateNrtDataset extends Job {
    * @see JobManager#getNextJob(ResourceManager, Properties)
    */
   public CreateNrtDataset(ResourceManager resourceManager, Properties config,
-    long jobId, Map<String, String> parameters) throws MissingParamException,
+    long jobId, Properties properties) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-    super(resourceManager, config, jobId, parameters);
+    super(resourceManager, config, jobId, properties);
   }
 
   @Override
@@ -67,7 +65,7 @@ public class CreateNrtDataset extends Job {
 
     try {
       conn = dataSource.getConnection();
-      long instrumentId = Long.parseLong(parameters.get(ID_PARAM));
+      long instrumentId = Long.parseLong(properties.getProperty(ID_PARAM));
 
       Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId,
         ResourceManager.getInstance().getSensorsConfiguration(),
@@ -111,14 +109,13 @@ public class CreateNrtDataset extends Job {
           DataSetDB.addDataSet(conn, newDataset);
 
           // TODO This is a copy of the code in DataSetsBean.addDataSet. Does
-          // it
-          // need collapsing?
-          Map<String, String> params = new HashMap<String, String>();
-          params.put(ExtractDataSetJob.ID_PARAM,
+          // it need collapsing?
+          Properties jobProperties = new Properties();
+          jobProperties.setProperty(ExtractDataSetJob.ID_PARAM,
             String.valueOf(newDataset.getId()));
 
           JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
-            ExtractDataSetJob.class.getCanonicalName(), params);
+            ExtractDataSetJob.class.getCanonicalName(), jobProperties);
         }
       }
     } catch (Exception e) {

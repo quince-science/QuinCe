@@ -2,8 +2,7 @@ package uk.ac.exeter.QuinCe.api.nrt;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 import javax.ws.rs.FormParam;
@@ -125,12 +124,12 @@ public class MakeNrtDataset {
     }
 
     if (createDataset) {
-      Map<String, String> params = new HashMap<String, String>();
-      params.put(ExtractDataSetJob.ID_PARAM,
+      Properties jobProperties = new Properties();
+      jobProperties.setProperty(ExtractDataSetJob.ID_PARAM,
         String.valueOf(instrument.getDatabaseId()));
 
       JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
-        CreateNrtDataset.class.getCanonicalName(), params);
+        CreateNrtDataset.class.getCanonicalName(), jobProperties);
     }
 
     return createDataset;

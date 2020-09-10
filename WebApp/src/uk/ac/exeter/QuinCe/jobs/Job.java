@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.jobs;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -76,7 +75,7 @@ public abstract class Job {
   /**
    * The set of parameters passed to the job
    */
-  protected Map<String, String> parameters;
+  protected Properties properties;
 
   /**
    * Indicates the state that caused the thread to complete.
@@ -111,7 +110,7 @@ public abstract class Job {
    *           If any required parameters are missing
    */
   public Job(ResourceManager resourceManager, Properties config, long id,
-    Map<String, String> parameters)
+    Properties properties)
     throws MissingParamException, InvalidJobParametersException {
 
     MissingParam.checkMissing(resourceManager, "resourceManager");
@@ -119,7 +118,7 @@ public abstract class Job {
     this.resourceManager = resourceManager;
     this.config = config;
     this.id = id;
-    this.parameters = parameters;
+    this.properties = properties;
 
     // Extract the data source into its own variable, since it's what we use
     // most
@@ -305,7 +304,7 @@ public abstract class Job {
    * Destroys the job object, releasing the database connection.
    */
   protected void destroy() {
-    parameters = null;
+    properties = null;
     destroyed = true;
     dataSource = null;
   }

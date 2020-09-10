@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.jobs.user;
 
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.mail.EmailException;
@@ -46,9 +45,9 @@ public abstract class SendCodeJob extends Job {
    *           If the job parameters are invalid
    */
   public SendCodeJob(ResourceManager resourceManager, Properties config,
-    long id, Map<String, String> params)
+    long id, Properties properties)
     throws MissingParamException, InvalidJobParametersException {
-    super(resourceManager, config, id, params);
+    super(resourceManager, config, id, properties);
   }
 
   @Override
@@ -60,8 +59,8 @@ public abstract class SendCodeJob extends Job {
     emailText.append("\n");
 
     try {
-      EmailSender.sendEmail(config, parameters.get(EMAIL_KEY), getSubject(),
-        emailText.toString());
+      EmailSender.sendEmail(config, properties.getProperty(EMAIL_KEY),
+        getSubject(), emailText.toString());
     } catch (EmailException e) {
       throw new JobFailedException(id, e);
     }
@@ -76,13 +75,13 @@ public abstract class SendCodeJob extends Job {
    * a string.
    */
   protected void validateParameters() throws InvalidJobParametersException {
-    if (parameters.size() != 1) {
+    if (properties.size() != 1) {
       throw new InvalidJobParametersException("Incorrect number of parameters");
     }
 
     User dbUser;
     try {
-      dbUser = UserDB.getUser(dataSource, parameters.get(EMAIL_KEY));
+      dbUser = UserDB.getUser(dataSource, properties.getProperty(EMAIL_KEY));
       if (null == dbUser) {
         throw new InvalidJobParametersException(
           "The specified user doesn't exist in the database");
@@ -107,7 +106,7 @@ public abstract class SendCodeJob extends Job {
    */
   private String buildLink(Properties config) throws JobFailedException {
 
-    String emailAddress = parameters.get(EMAIL_KEY);
+    String emailAddress = properties.getProperty(EMAIL_KEY);
 
     StringBuffer link = new StringBuffer();
 
