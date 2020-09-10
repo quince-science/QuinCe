@@ -69,10 +69,10 @@ public class DataReductionJob extends DataSetJob {
    *           If the job cannot be found in the database
    */
   public DataReductionJob(ResourceManager resourceManager, Properties config,
-    long jobId, Map<String, String> parameters) throws MissingParamException,
+    long jobId, Properties properties) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 
-    super(resourceManager, config, jobId, parameters);
+    super(resourceManager, config, jobId, properties);
   }
 
   @Override

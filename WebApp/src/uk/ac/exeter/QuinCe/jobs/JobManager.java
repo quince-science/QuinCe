@@ -19,6 +19,8 @@ import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
+import com.google.gson.Gson;
+
 import uk.ac.exeter.QuinCe.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
@@ -198,8 +200,8 @@ public class JobManager {
    *           If an unknown problem is found with the specified job class
    */
   public static long addJob(DataSource dataSource, User owner, String jobClass,
-    Map<String, String> parameters) throws DatabaseException,
-    MissingParamException, NoSuchUserException, JobClassNotFoundException,
+    Properties properties) throws DatabaseException, MissingParamException,
+    NoSuchUserException, JobClassNotFoundException,
     InvalidJobClassTypeException, InvalidJobConstructorException, JobException {
 
     long result = -1;
@@ -207,7 +209,7 @@ public class JobManager {
 
     try {
       conn = dataSource.getConnection();
-      result = addJob(conn, owner, jobClass, parameters);
+      result = addJob(conn, owner, jobClass, properties);
     } catch (SQLException e) {
       throw new DatabaseException("An error occurred while adding the job", e);
     } catch (DatabaseException | MissingParamException | NoSuchUserException
@@ -249,14 +251,14 @@ public class JobManager {
    *           If an unknown problem is found with the specified job class
    */
   public static long addJob(Connection conn, User owner, String jobClass,
-    Map<String, String> parameters) throws DatabaseException,
-    MissingParamException, NoSuchUserException, JobClassNotFoundException,
+    Properties properties) throws DatabaseException, MissingParamException,
+    NoSuchUserException, JobClassNotFoundException,
     InvalidJobClassTypeException, InvalidJobConstructorException, JobException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(owner, "owner");
     MissingParam.checkMissing(jobClass, "jobClass");
-    MissingParam.checkMissing(parameters, "parameters");
+    MissingParam.checkMissing(properties, "properties");
 
     long addedID = DatabaseUtils.NO_DATABASE_RECORD;
 
@@ -282,9 +284,10 @@ public class JobManager {
       long fileId = -1;
       try {
         if (isFileJob(jobClass)) {
-          String fileIdString = parameters.get(FileJob.FILE_ID_KEY);
+          String fileIdString = properties.getProperty(FileJob.FILE_ID_KEY);
           if (null != fileIdString) {
-            fileId = Long.parseLong(parameters.get(FileJob.FILE_ID_KEY));
+            fileId = Long
+              .parseLong(properties.getProperty(FileJob.FILE_ID_KEY));
             if (!DataFileDB.fileExists(conn, fileId)) {
               throw new JobException("Data file with ID " + fileId
                 + " does not exist. Job cannot be queued.");
@@ -311,7 +314,7 @@ public class JobManager {
 
         stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
         stmt.setString(3, jobClass);
-        stmt.setString(4, StringUtils.mapToDelimited(parameters));
+        stmt.setString(4, new Gson().toJson(properties));
 
         stmt.execute();
 
@@ -381,10 +384,10 @@ public class JobManager {
    *           If the job mysteriously vanishes between being created and run
    */
   public static void addInstantJob(ResourceManager resourceManager,
-    Properties config, User owner, String jobClass,
-    Map<String, String> parameters) throws DatabaseException,
-    MissingParamException, NoSuchUserException, JobClassNotFoundException,
-    InvalidJobClassTypeException, InvalidJobConstructorException, JobException,
+    Properties config, User owner, String jobClass, Properties properties)
+    throws DatabaseException, MissingParamException, NoSuchUserException,
+    JobClassNotFoundException, InvalidJobClassTypeException,
+    InvalidJobConstructorException, JobException,
     JobThreadPoolNotInitialisedException, NoSuchJobException,
     JobFailedException {
 
@@ -392,7 +395,7 @@ public class JobManager {
 
     try {
       conn = resourceManager.getDBDataSource().getConnection();
-      long jobID = addJob(conn, owner, jobClass, parameters);
+      long jobID = addJob(conn, owner, jobClass, properties);
       JobThread jobThread = JobThreadPool.getInstance()
         .getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
       logJobStarted(conn, jobID, jobThread.getName());
@@ -613,8 +616,10 @@ public class JobManager {
       Class<?> jobClazz = Class.forName(result.getString(2));
       Constructor<?> jobConstructor = jobClazz.getConstructor(
         ResourceManager.class, Properties.class, long.class, Map.class);
+
       return (Job) jobConstructor.newInstance(resourceManager, config,
-        result.getLong(1), StringUtils.delimitedToMap(result.getString(3)));
+        result.getLong(1),
+        new Gson().fromJson(result.getString(3), Properties.class));
     } catch (SQLException e) {
       throw e;
     } catch (Throwable e) {
@@ -1666,9 +1671,10 @@ public class JobManager {
       while (jobs.next()) {
         String jobClass = jobs.getString(2);
         if (isFileJob(jobClass)) {
-          Map<String, String> parameters = StringUtils
-            .delimitedToMap(jobs.getString(3));
-          long jobFileId = Long.parseLong(parameters.get(FileJob.FILE_ID_KEY));
+          Properties properties = new Gson().fromJson(jobs.getString(3),
+            Properties.class);
+          long jobFileId = Long
+            .parseLong(properties.getProperty(FileJob.FILE_ID_KEY));
 
           int fileListIndex = fileIds.indexOf(jobFileId);
           if (fileListIndex > -1) {

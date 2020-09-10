@@ -3,10 +3,8 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeSet;
@@ -76,9 +74,9 @@ public class ExtractDataSetJob extends DataSetJob {
    *           If a database error occurs
    */
   public ExtractDataSetJob(ResourceManager resourceManager, Properties config,
-    long jobId, Map<String, String> parameters) throws MissingParamException,
+    long jobId, Properties properties) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-    super(resourceManager, config, jobId, parameters);
+    super(resourceManager, config, jobId, properties);
   }
 
   @Override
@@ -316,11 +314,11 @@ public class ExtractDataSetJob extends DataSetJob {
       // Trigger the Auto QC job
       dataSet.setStatus(DataSet.STATUS_AUTO_QC);
       DataSetDB.updateDataSet(conn, dataSet);
-      Map<String, String> jobParams = new HashMap<String, String>();
-      jobParams.put(AutoQCJob.ID_PARAM,
-        String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+      Properties jobProperties = new Properties();
+      jobProperties.setProperty(AutoQCJob.ID_PARAM,
+        String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
       JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
-        AutoQCJob.class.getCanonicalName(), jobParams);
+        AutoQCJob.class.getCanonicalName(), jobProperties);
 
       conn.commit();
     } catch (Exception e) {

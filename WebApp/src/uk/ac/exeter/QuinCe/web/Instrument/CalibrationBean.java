@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 
 import org.primefaces.json.JSONArray;
@@ -280,12 +281,13 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
           DataSetDB.setDatasetStatus(getDataSource(), dataSet.getId(),
             getReprocessStatus());
-          Map<String, String> jobParams = new HashMap<String, String>();
+          Properties jobProperties = new Properties();
 
           // See GitHub Issue #1369
-          jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(dataSet.getId()));
+          jobProperties.setProperty(AutoQCJob.ID_PARAM,
+            String.valueOf(dataSet.getId()));
           JobManager.addJob(getDataSource(), getUser(),
-            reprocessJobClass.getCanonicalName(), jobParams);
+            reprocessJobClass.getCanonicalName(), jobProperties);
 
         }
       }
@@ -401,8 +403,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
       JSONObject group = new JSONObject();
       group.put("id", StringUtils.tabToSpace(target));
       group.put("order", counter);
-      group.put("content",
-        StringUtils.tabToSpace(getTargets().get(target)));
+      group.put("content", StringUtils.tabToSpace(getTargets().get(target)));
 
       groups.put(group);
       counter++;
@@ -436,10 +437,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
         JSONObject calibrationJson = new JSONObject();
         calibrationJson.put("id", calibration.getId());
         calibrationJson.put("type", "box");
-        calibrationJson.put("target",
-          StringUtils.tabToSpace(key));
-        calibrationJson.put("group",
-          StringUtils.tabToSpace(key));
+        calibrationJson.put("target", StringUtils.tabToSpace(key));
+        calibrationJson.put("group", StringUtils.tabToSpace(key));
         calibrationJson.put("start",
           DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
         calibrationJson.put("content",

@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.InternalCalibration;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -57,10 +56,11 @@ public class InternalCalibrationBean extends PlotPageBean {
     try {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId,
         DataSet.STATUS_AUTO_QC);
-      Map<String, String> jobParams = new HashMap<String, String>();
-      jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
+      Properties jobProperties = new Properties();
+      jobProperties.setProperty(DataReductionJob.ID_PARAM,
+        String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(),
-        AutoQCJob.class.getCanonicalName(), jobParams);
+        AutoQCJob.class.getCanonicalName(), jobProperties);
     } catch (Exception e) {
       e.printStackTrace();
     }

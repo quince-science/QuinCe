@@ -1,8 +1,8 @@
 package uk.ac.exeter.QuinCe.web.jobs;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -152,10 +152,10 @@ public class JobsBean extends BaseManagedBean {
    * @see #submitJob()
    * @see #submitImmediateJob()
    */
-  private Map<String, String> getNewJobParams() {
-    Map<String, String> parameters = new HashMap<String, String>(1);
-    parameters.put(TenSecondJob.CHUNK_KEY, String.valueOf(chunkCount));
-    return parameters;
+  private Properties getNewJobParams() {
+    Properties properties = new Properties();
+    properties.put(TenSecondJob.CHUNK_KEY, String.valueOf(chunkCount));
+    return properties;
   }
 
   /**

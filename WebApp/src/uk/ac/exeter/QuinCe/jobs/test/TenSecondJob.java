@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.jobs.test;
 
-import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -51,10 +50,10 @@ public class TenSecondJob extends Job {
    *           If any required parameters are missing
    */
   public TenSecondJob(ResourceManager resourceManager, Properties config,
-    long id, Map<String, String> parameters)
+    long id, Properties properties)
     throws MissingParamException, InvalidJobParametersException {
-    super(resourceManager, config, id, parameters);
-    chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
+    super(resourceManager, config, id, properties);
+    chunkCount = Integer.parseInt(properties.getProperty(CHUNK_KEY));
   }
 
   @Override
@@ -75,13 +74,13 @@ public class TenSecondJob extends Job {
   @Override
   protected void validateParameters() throws InvalidJobParametersException {
     // For the test, we expect exactly one string, which is an integer
-    if (null == parameters) {
+    if (null == properties) {
       throw new InvalidJobParametersException("parameters are null");
-    } else if (parameters.size() != 1) {
+    } else if (properties.size() != 1) {
       throw new InvalidJobParametersException("Wrong number of parameters");
     } else {
       try {
-        chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
+        chunkCount = Integer.parseInt(properties.getProperty(CHUNK_KEY));
       } catch (NumberFormatException e) {
         throw new InvalidJobParametersException("It's not a number!");
       }

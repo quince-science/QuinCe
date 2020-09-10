@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.web.datasets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -334,12 +335,12 @@ public class DataSetsBean extends BaseManagedBean {
         DataSet.STATUS_DELETE);
       DataSetDB.addDataSet(getDataSource(), newDataSet);
 
-      Map<String, String> params = new HashMap<String, String>();
-      params.put(ExtractDataSetJob.ID_PARAM,
+      Properties jobProperties = new Properties();
+      jobProperties.setProperty(ExtractDataSetJob.ID_PARAM,
         String.valueOf(newDataSet.getId()));
 
       JobManager.addJob(getDataSource(), getUser(),
-        ExtractDataSetJob.class.getCanonicalName(), params);
+        ExtractDataSetJob.class.getCanonicalName(), jobProperties);
 
       loadDataSets();
     } catch (Exception e) {
@@ -399,10 +400,10 @@ public class DataSetsBean extends BaseManagedBean {
     try {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId,
         DataSet.STATUS_AUTO_QC);
-      Map<String, String> jobParams = new HashMap<String, String>();
-      jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
+      Properties properties = new Properties();
+      properties.setProperty(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(),
-        AutoQCJob.class.getCanonicalName(), jobParams);
+        AutoQCJob.class.getCanonicalName(), properties);
     } catch (Exception e) {
       e.printStackTrace();
     }

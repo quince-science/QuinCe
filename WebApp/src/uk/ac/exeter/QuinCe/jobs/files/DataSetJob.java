@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
-import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
@@ -48,13 +47,13 @@ public abstract class DataSetJob extends Job {
    *           If a database error occurs
    */
   public DataSetJob(ResourceManager resourceManager, Properties config,
-    long jobId, Map<String, String> parameters) throws MissingParamException,
+    long jobId, Properties properties) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-    super(resourceManager, config, jobId, parameters);
+    super(resourceManager, config, jobId, properties);
   }
 
   protected long getDatsetId() {
-    return Long.parseLong(parameters.get(ID_PARAM));
+    return Long.parseLong(properties.getProperty(ID_PARAM));
   }
 
   protected DataSet getDataset(Connection conn) throws JobFailedException {
@@ -89,7 +88,7 @@ public abstract class DataSetJob extends Job {
   @Override
   protected void validateParameters() throws InvalidJobParametersException {
 
-    String datasetIdString = parameters.get(ID_PARAM);
+    String datasetIdString = properties.getProperty(ID_PARAM);
     if (null == datasetIdString) {
       throw new InvalidJobParametersException(ID_PARAM + "is missing");
     }

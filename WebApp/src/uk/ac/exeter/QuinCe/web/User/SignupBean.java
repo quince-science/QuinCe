@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.web.User;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
@@ -174,14 +173,14 @@ public class SignupBean extends BaseManagedBean {
           emailAddress, password1.toCharArray(), givenName, surname, true);
 
         // Build and start the job to send out the verification email
-        Map<String, String> emailJobParams = new HashMap<String, String>(1);
-        emailJobParams.put(SendEmailVerificationMailJob.EMAIL_KEY,
+        Properties jobProperties = new Properties();
+        jobProperties.setProperty(SendEmailVerificationMailJob.EMAIL_KEY,
           emailAddress);
 
         JobManager.addInstantJob(ServletUtils.getResourceManager(),
           ServletUtils.getAppConfig(), newUser,
           "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob",
-          emailJobParams);
+          jobProperties);
       } catch (UserExistsException e) {
         setMessage(getComponentID("emailAddress"),
           "A user already exists with that email address");
