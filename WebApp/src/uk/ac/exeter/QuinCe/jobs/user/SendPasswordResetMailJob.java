@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.jobs.user;
 
-import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.User.User;
@@ -39,9 +38,9 @@ public class SendPasswordResetMailJob extends SendCodeJob {
    *           If the job parameters are invalid
    */
   public SendPasswordResetMailJob(ResourceManager resourceManager,
-    Properties config, long id, Map<String, String> params)
+    Properties config, long id, Properties properties)
     throws MissingParamException, InvalidJobParametersException {
-    super(resourceManager, config, id, params);
+    super(resourceManager, config, id, properties);
   }
 
   @Override

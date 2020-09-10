@@ -12,9 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -302,67 +300,6 @@ public final class StringUtils {
     }
 
     return trimmed;
-  }
-
-  /**
-   * Convert a String-to-String lookup map into a String.
-   * <p>
-   * Each map entry is converted to a {@code key=value} pair. Each entry is
-   * separated by a semi-colon.
-   * </p>
-   * <p>
-   * <b>Note:</b> There is no handling of {@code =} or {@code ;} in the keys or
-   * values.
-   * </p>
-   *
-   * @param map
-   *          The Map to be converted
-   * @return The String representation of the Map
-   */
-  public static String mapToDelimited(Map<String, String> map) {
-
-    StringBuilder result = new StringBuilder();
-
-    int counter = 0;
-    for (Map.Entry<String, String> entry : map.entrySet()) {
-      counter++;
-      result.append(entry.getKey());
-      result.append('=');
-      result.append(entry.getValue());
-
-      if (counter < map.size()) {
-        result.append(';');
-      }
-    }
-
-    return result.toString();
-  }
-
-  /**
-   * Convert a semi-colon-delimited list of {@code key=value} pairs into a Map.
-   *
-   * @param values
-   *          The String
-   * @return The Map
-   * @throws StringFormatException
-   *           If the String is not formatted correctly
-   */
-  public static Map<String, String> delimitedToMap(String values)
-    throws StringFormatException {
-
-    Map<String, String> result = new HashMap<String, String>();
-
-    for (String entry : values.split(";", 0)) {
-
-      String[] entrySplit = entry.split("=", 0);
-      if (entrySplit.length != 2) {
-        throw new StringFormatException("Invalid map format", entry);
-      } else {
-        result.put(entrySplit[0], entrySplit[1]);
-      }
-    }
-
-    return result;
   }
 
   /**

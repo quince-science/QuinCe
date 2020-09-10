@@ -105,9 +105,9 @@ public class AutoQCJob extends DataSetJob {
    * @see JobManager#getNextJob(ResourceManager, Properties)
    */
   public AutoQCJob(ResourceManager resourceManager, Properties config,
-    long jobId, Map<String, String> parameters) throws MissingParamException,
+    long jobId, Properties properties) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-    super(resourceManager, config, jobId, parameters);
+    super(resourceManager, config, jobId, properties);
   }
 
   /**
@@ -245,11 +245,11 @@ public class AutoQCJob extends DataSetJob {
       // Trigger the Build Measurements job
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
-      Map<String, String> jobParams = new HashMap<String, String>();
-      jobParams.put(LocateMeasurementsJob.ID_PARAM,
-        String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+      Properties jobProperties = new Properties();
+      jobProperties.setProperty(LocateMeasurementsJob.ID_PARAM,
+        String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
       JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
-        LocateMeasurementsJob.class.getCanonicalName(), jobParams);
+        LocateMeasurementsJob.class.getCanonicalName(), jobProperties);
 
       conn.commit();
 
