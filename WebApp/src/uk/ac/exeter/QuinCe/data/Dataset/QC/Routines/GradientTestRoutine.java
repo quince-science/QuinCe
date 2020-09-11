@@ -60,8 +60,8 @@ public class GradientTestRoutine extends Routine {
       nextValue = filteredValues.get(i + 1);
 
       // time-increment
-      double tDiff = ChronoUnit.SECONDS.between(prevValue.getTime(),
-        currValue.getTime()) / 60.0;
+      double tDiff = ChronoUnit.NANOS.between(prevValue.getTime(),
+        currValue.getTime()) / (60.0 * 1000000000);
 
       double delta = Math
         .abs(currValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
@@ -83,8 +83,8 @@ public class GradientTestRoutine extends Routine {
             currValue = filteredValues.get(i);
             prevValue = filteredValues.get(i - 1);
 
-            tDiff = ChronoUnit.SECONDS.between(prevValue.getTime(),
-              currValue.getTime()) / 60.0;
+            tDiff = ChronoUnit.NANOS.between(prevValue.getTime(),
+              currValue.getTime()) / (60.0 * 1000000000);
 
             delta = Math.abs(
               currValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
