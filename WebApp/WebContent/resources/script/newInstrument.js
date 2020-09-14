@@ -1220,6 +1220,21 @@ function removeFile(fileName) {
   return false;
 }
 
+function renameFile(fileDescription) {
+  $('#newInstrumentForm\\:renameOldFile').val(fileDescription);
+  PF('renameNewFile').jq.val(fileDescription);
+  PF('renameFileDialog').show();
+  return false;
+}
+
+function renameFileInputMonitor() {
+  if (PF('renameNewFile').jq.val().length == 0) {
+    PF('renameFileButton').disable();
+  } else {
+    PF('renameFileButton').enable();
+  }
+}
+
 /*******************************************************
 *
 * RUN TYPES PAGE
