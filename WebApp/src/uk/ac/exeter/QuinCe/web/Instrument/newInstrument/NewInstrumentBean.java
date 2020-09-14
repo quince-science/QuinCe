@@ -387,6 +387,16 @@ public class NewInstrumentBean extends FileUploadBean {
   private double latitude;
 
   /**
+   * The file description of a file that is to be renamed.
+   */
+  private String renameOldFile;
+
+  /**
+   * The new file description for a file being renamed.
+   */
+  private String renameNewFile;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
@@ -446,7 +456,7 @@ public class NewInstrumentBean extends FileUploadBean {
     } else {
       if (null == currentInstrumentFile) {
         currentInstrumentFile = FileDefinitionBuilder
-          .copy((FileDefinitionBuilder) instrumentFiles.get(0));
+          .copy(instrumentFiles.get(0));
       }
       result = NAV_ASSIGN_VARIABLES;
     }
@@ -1444,17 +1454,6 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Get the list of registered file descriptions and their columns as a JSON
-   * string
-   *
-   * @return The file names
-   * @see NewInstrumentFileSet#getFilesAndColumns()
-   */
-  public String getFilesAndColumns() {
-    return instrumentFiles.getFilesAndColumns();
-  }
-
-  /**
    * Get the time and position column assignments for all files related to this
    * instrument. Required because {@link NewInstrumentFileSet} is a list, so JSF
    * can't access named properties.
@@ -1525,8 +1524,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
     boolean unassigned = false;
 
-    FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles
-      .get(unassignFile);
+    FileDefinitionBuilder fileDefinition = instrumentFiles.get(unassignFile);
 
     if (null != fileDefinition) {
 
@@ -2152,5 +2150,32 @@ public class NewInstrumentBean extends FileUploadBean {
 
   public void setHasDepth(boolean hasDepth) {
     this.hasDepth = hasDepth;
+  }
+
+  public String getRenameOldFile() {
+    return renameOldFile;
+  }
+
+  public void setRenameOldFile(String renameOldFile) {
+    this.renameOldFile = renameOldFile;
+  }
+
+  public String getRenameNewFile() {
+    return renameNewFile;
+  }
+
+  public void setRenameNewFile(String renameNewFile) {
+    this.renameNewFile = renameNewFile;
+  }
+
+  public String renameFile() {
+    FileDefinitionBuilder fileDefinition = instrumentFiles
+      .getByDescription(renameOldFile);
+
+    if (null != fileDefinition) {
+      fileDefinition.setFileDescription(renameNewFile);
+    }
+
+    return NAV_ASSIGN_VARIABLES;
   }
 }
