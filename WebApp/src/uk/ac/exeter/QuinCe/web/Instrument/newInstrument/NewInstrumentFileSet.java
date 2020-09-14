@@ -36,6 +36,23 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
     return result;
   }
 
+  @Override
+  public FileDefinitionBuilder get(int index) {
+    return (FileDefinitionBuilder) super.get(index);
+  }
+
+  protected FileDefinitionBuilder getByDescription(String fileDescription) {
+    FileDefinitionBuilder result = null;
+
+    for (FileDefinition file : this) {
+      if (file.getFileDescription().equals(fileDescription)) {
+        result = (FileDefinitionBuilder) file;
+      }
+    }
+
+    return result;
+  }
+
   /**
    * Get the time and position column assignments for all files related to this
    * instrument.
@@ -83,39 +100,6 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
 
     json.append(']');
 
-    return json.toString();
-  }
-
-  /**
-   * Get the list of registered file descriptions and their columns as a JSON
-   * string
-   *
-   * @return The file names
-   */
-  public String getFilesAndColumns() {
-    StringBuilder json = new StringBuilder();
-
-    json.append('[');
-
-    int count = 0;
-    for (FileDefinition file : this) {
-      FileDefinitionBuilder fileBuilder = (FileDefinitionBuilder) file;
-      count++;
-
-      json.append('{');
-
-      json.append("'description':'");
-      json.append(fileBuilder.getFileDescription());
-      json.append("','columns':");
-      json.append(fileBuilder.getFileColumns());
-      json.append('}');
-
-      if (count < size()) {
-        json.append(',');
-      }
-    }
-
-    json.append(']');
     return json.toString();
   }
 }

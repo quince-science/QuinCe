@@ -366,14 +366,15 @@ public class FileDefinitionBuilder extends FileDefinition {
    *
    * @return The file columns
    */
-  public String getFileColumns() {
+  public List<FileColumn> getFileColumns() {
 
     // TODO Only regenerate the columns when the file spec is changed. Don't do
     // it
     // on demand like this.
-    List<String> columns = new ArrayList<String>();
+    List<String> columns;
 
     if (getColumnHeaderRows() == 0) {
+      columns = new ArrayList<String>(getColumnCount());
       for (int i = 0; i < getColumnCount(); i++) {
         columns.add("Column " + (i + 1));
       }
@@ -382,23 +383,14 @@ public class FileDefinitionBuilder extends FileDefinition {
       columns = extractFields(columnHeaders);
     }
 
-    StringBuilder result = new StringBuilder();
-
-    result.append('[');
+    List<FileColumn> result = new ArrayList<FileColumn>(columns.size());
 
     for (int i = 0; i < columns.size(); i++) {
-      result.append('"');
-      result.append(columns.get(i).replaceAll("'", "\\'"));
-      result.append('"');
-
-      if (i < columns.size() - 1) {
-        result.append(',');
-      }
+      String exampleValue = "EXAMPLE";
+      result.add(new FileColumn(i, columns.get(i), exampleValue));
     }
 
-    result.append(']');
-
-    return result.toString();
+    return result;
   }
 
   /**

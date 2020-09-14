@@ -90,129 +90,24 @@
  * SENSOR ASSIGNMENT
  *
  */
-.assignmentsList {
+#assignmentsLayout {
   display: flex;
-  flex-wrap: wrap;
-}
-
-#mainAssignmentMenu {
-  position: absolute;
-  left: 0px;
-  right: 0px;
-  font-size: 0.8em;
-  z-index: 1000;
-}
-
-#dateTimeMenu {
-  position: absolute;
-  left: 0px;
-  right: 0px;
-  font-size: 0.8em;
-  z-index: 1000;
-}
-
-#diagnosticMenu {
-  position: absolute;
-  left: 0px;
-  right: 0px;
-  font-size: 0.8em;
-  z-index: 1000;
-}
-
-.assignmentListEntry {
-  --entry_color: #2779AA;
-  display: flex;
-  border: 2px solid black;
-  border-radius: 5px;
-  margin: 4px;
-  border-color: var(--entry_color);
-  background-color: var(--entry_color);
-  color: var(--entry_color);
-  width: 300px;
-}
-
-.assignmentRequired {
-  --entry_color: #FF0000;
-}
-
-.assignmentLabel {
-  display: inline;
-  background-color: white;
-  padding: 0px 4px 0px 1px;
-  border-radius: 3px;
-  width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.assignmentCount {
-  text-align: center;
-  position: relative;
-  display: inline;
-  right: 0px;
-  color: white;
-  width: 45px;
-  cursor: pointer;
-}
-
-table.sampleData {
-  font-size: 0.8em;
-  margin: 0px !important;
-}
-
-.sampleDataTableContainer {
-  width: 900px;
-}
-
-.fileTab {
-  display: flex;
-}
-
-.fileAssignments {
-  min-width: 400px;
-  flex-grow: 1000;
-  margin-right: 20px;
-}
-
-.invalidFileAssignment {
-  border: 2px solid red;
-}
-
-.assignmentCol {
-  cursor: pointer;
-}
-
-.assignmentColAssigned {
-  opacity:.35;filter:Alpha(Opacity=35);background-image:none; /* Copied from PrimeFaces theme */
-  cursor: pointer;
-}
-
-.assignmentMenuEntry {
-  display: flex !important;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
   align-items: center;
+  align-content: center;
+  height: 500px;
 }
 
-.assignmentMenuEntryText {
-  flex-grow: 1000;
+#fileColumns {
+  flex-grow: 1;
 }
 
-.assignmentMenuEntryTextDisabled {
-  text-decoration: line-through !important;
+#assignColumns {
+  flex-grow: 0;
 }
 
-.assignmentMenuEntryIcon {
-  padding-right: 3px;
-}
-
-.otherAssignmentIcon {
-  padding-left: 3px;
-}
-
-.highlight {
-  color: #00AAFF;
-}
-
-#runTypeFiles {
-  display: flex;
-  flex-wrap: wrap;
+#assignemnts {
+  flex-grow: 1;
 }
