@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
@@ -19,6 +20,8 @@ import javax.faces.bean.SessionScoped;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONException;
 import org.primefaces.json.JSONObject;
+import org.primefaces.model.DefaultTreeNode;
+import org.primefaces.model.TreeNode;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -357,7 +360,7 @@ public class NewInstrumentBean extends FileUploadBean {
   /**
    * The variables that the new instrument will measure
    */
-  private List<Long> instrumentVariables;
+  private List<Variable> instrumentVariables;
 
   /**
    * The properties for the selected variables, structured for input from the
@@ -553,20 +556,22 @@ public class NewInstrumentBean extends FileUploadBean {
     this.instrumentName = instrumentName;
   }
 
-  public List<Long> getInstrumentVariables() {
+  public List<Variable> getInstrumentVariables() {
     return instrumentVariables;
   }
 
   public void setInstrumentVariables(List<Long> instrumentVariables) {
 
     try {
-      this.instrumentVariables = instrumentVariables;
-      variableProperties = new HashMap<Variable, List<VariableProperty>>();
-
       SensorsConfiguration sensorConfig = ResourceManager.getInstance()
         .getSensorsConfiguration();
-      for (Variable var : sensorConfig
-        .getInstrumentVariables(instrumentVariables)) {
+
+      this.instrumentVariables = sensorConfig
+        .getInstrumentVariables(instrumentVariables);
+
+      variableProperties = new HashMap<Variable, List<VariableProperty>>();
+
+      for (Variable var : this.instrumentVariables) {
 
         if (var.hasAttributes()) {
           List<VariableProperty> varProps = new ArrayList<VariableProperty>();
@@ -1958,9 +1963,8 @@ public class NewInstrumentBean extends FileUploadBean {
 
       // Create the new Instrument object
       Instrument instrument = new Instrument(getUser(), instrumentName,
-        instrumentFiles,
-        sensorConfig.getInstrumentVariables(instrumentVariables),
-        storedVariableProperties, sensorAssignments, platformCode, false);
+        instrumentFiles, instrumentVariables, storedVariableProperties,
+        sensorAssignments, platformCode, false);
 
       instrument.setProperty(Instrument.PROP_PRE_FLUSHING_TIME,
         preFlushingTime);
@@ -2077,7 +2081,8 @@ public class NewInstrumentBean extends FileUploadBean {
 
   @Override
   protected List<Long> getInstrumentVariableIDs() {
-    return instrumentVariables;
+    return instrumentVariables.stream().map(x -> x.getId())
+      .collect(Collectors.toList());
   }
 
   /**
@@ -2177,5 +2182,38 @@ public class NewInstrumentBean extends FileUploadBean {
     }
 
     return NAV_ASSIGN_VARIABLES;
+  }
+
+  public TreeNode getAssignmentsTree() throws Exception {
+
+    TreeNode root = new DefaultTreeNode("Root", null);
+
+    try {
+      SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+        .getSensorsConfiguration();
+
+      for (Variable var : instrumentVariables) {
+
+        TreeNode varNode = new DefaultTreeNode("UNFINISHED_VARIABLE",
+          var.getName(), root);
+
+        for (SensorType sensorType : sensorConfig.getSensorTypes(var.getId(),
+          false)) {
+
+          if (sensorAssignments.isAssignmentRequired(sensorType)) {
+            new DefaultTreeNode("UNASSIGNED_SENSOR_TYPE",
+              "* " + sensorType.getName(), varNode);
+          } else {
+            TreeNode sensorTypeNode = new DefaultTreeNode(
+              "ASSIGNED_SENSOR_TYPE", sensorType.getName(), varNode);
+          }
+
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return root;
   }
 }

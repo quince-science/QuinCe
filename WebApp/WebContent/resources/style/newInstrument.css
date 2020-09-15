@@ -101,18 +101,31 @@
 }
 
 #fileColumns {
-  flex-grow: 1;
+  width: 40%;
 }
 
 #assignColumns {
-  flex-grow: 0;
 }
 
 #assignemnts {
-  flex-grow: 1;
+  width: 40%;
+}
+
+.assignmentsTree {
+  height: 400px;
 }
 
 .exampleValue {
   font-style: italic;
   text-align: right;
+}
+
+.unfinishedVariable {
+  color: red;
+  font-weight: bold;
+}
+
+.unassignedSensorType {
+  font-weight: normal;
+  color: red;
 }
