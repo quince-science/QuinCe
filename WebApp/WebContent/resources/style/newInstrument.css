@@ -111,3 +111,8 @@
 #assignemnts {
   flex-grow: 1;
 }
+
+.exampleValue {
+  font-style: italic;
+  text-align: right;
+}

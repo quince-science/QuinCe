@@ -47,6 +47,11 @@ public class FileDefinitionBuilder extends FileDefinition {
   private List<String> fileContents = null;
 
   /**
+   * The list of file columns, used during assignment.
+   */
+  private List<FileColumn> fileColumns = null;
+
+  /**
    * Create a new file definition with the default description
    *
    * @param fileSet
@@ -358,19 +363,10 @@ public class FileDefinitionBuilder extends FileDefinition {
   }
 
   /**
-   * Get the set of column definitions for this file definition as a JSON array
-   * <p>
-   * If the file has column header rows, the column names will be taken from the
-   * first of those rows. Otherwise, they will be Column 1, Column 2 etc.
-   * </p>
-   *
-   * @return The file columns
+   * Build the list of {@link FileColumn} objects used during sensor assignment.
    */
-  public List<FileColumn> getFileColumns() {
+  private void makeFileColumns() {
 
-    // TODO Only regenerate the columns when the file spec is changed. Don't do
-    // it
-    // on demand like this.
     List<String> columns;
 
     if (getColumnHeaderRows() == 0) {
@@ -383,11 +379,83 @@ public class FileDefinitionBuilder extends FileDefinition {
       columns = extractFields(columnHeaders);
     }
 
-    List<FileColumn> result = new ArrayList<FileColumn>(columns.size());
+    fileColumns = FileColumn.makeFileColumns(columns, getSampleColumnValues());
+  }
 
-    for (int i = 0; i < columns.size(); i++) {
-      String exampleValue = "EXAMPLE";
-      result.add(new FileColumn(i, columns.get(i), exampleValue));
+  /**
+   * Get the list of {@link FileColumn} objects to be used during sensor
+   * assignment.
+   *
+   * @return The file columns.
+   */
+  public List<FileColumn> getFileColumns() {
+    if (null == fileColumns) {
+      makeFileColumns();
+    }
+
+    return fileColumns;
+  }
+
+  /**
+   * Get a sample value for each column in the data file.
+   *
+   * <p>
+   * The sample value is the first value in the file that isn't a common missing
+   * value. If no such value is found for a column, an empty string will be
+   * used.
+   * </p>
+   *
+   * @return The sample values for each column.
+   * @see FileColumn#isMissingValue(String)
+   */
+  private List<String> getSampleColumnValues() {
+
+    List<String> values = new ArrayList<String>(getColumnCount());
+    List<Boolean> complete = new ArrayList<Boolean>(getColumnCount());
+
+    for (int i = 0; i < getColumnCount(); i++) {
+      values.add("");
+      complete.add(false);
+    }
+
+    // Loop through the fileContents lines, finding non-missing values
+    // for each column. Keep going until we have values for all columns
+    // or we fall off the end of the file.
+    int currentLine = getFirstDataRow();
+    while (anyFalse(complete) && currentLine < fileContents.size()) {
+      List<String> row = extractFields(fileContents.get(currentLine));
+
+      for (int i = 0; i < getColumnCount(); i++) {
+        if (!complete.get(i)) {
+          if (!FileColumn.isMissingValue(row.get(i))) {
+            values.set(i, row.get(i));
+            complete.set(i, true);
+          }
+        }
+      }
+
+      currentLine++;
+    }
+
+    return values;
+  }
+
+  /**
+   * Determine whether any value in a list of booleans is {@code false}.
+   *
+   * @param list
+   *          The list
+   * @return {@code true} if any value is {@code false}; {@code false} if all
+   *         values are {@code true}.
+   */
+  private boolean anyFalse(List<Boolean> list) {
+    boolean result = false;
+
+    for (Boolean bool : list) {
+      if (!bool) {
+        result = true;
+        break;
+      }
     }
 
     return result;
@@ -424,7 +492,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
     result.append('[');
 
-    int firstDataRow = getHeaderLength() + getColumnHeaderRows();
+    int firstDataRow = getFirstDataRow();
     int lastRow = firstDataRow + MAX_DISPLAY_LINES;
     if (lastRow > fileContents.size()) {
       lastRow = fileContents.size();
@@ -534,5 +602,14 @@ public class FileDefinitionBuilder extends FileDefinition {
   public HighlightedString getHeaderLine(String prefix, String suffix)
     throws HighlightedStringException {
     return super.getHeaderLine(fileContents, prefix, suffix);
+  }
+
+  /**
+   * Get the first row that contains data.
+   *
+   * @return The first data row.
+   */
+  private int getFirstDataRow() {
+    return getHeaderLength() + getColumnHeaderRows();
   }
 }
