@@ -655,6 +655,13 @@ public class SensorsConfiguration {
     return sensorTypes;
   }
 
+  public Set<SensorType> getSensorTypes(long variableId,
+    boolean replaceParentsWithChildren) throws SensorConfigurationException {
+    List<Long> varList = new ArrayList<Long>(1);
+    varList.add(variableId);
+    return getSensorTypes(varList, replaceParentsWithChildren);
+  }
+
   /**
    * Convenience method to see if a SensorType has a parent. Simply calls
    * {@link SensorType#hasParent()}.

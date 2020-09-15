@@ -12,7 +12,7 @@
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
       <div id="assignmentsLayout">
-        <div id="fileColumns">
+        <p:fieldset legend="File Columns" id="fileColumns">
           <p:tabView value="#{newInstrumentBean.instrumentFiles}" var="iFile"
             widgetVar="fileTabs">
             <p:tab>
@@ -39,13 +39,27 @@
               </p:dataTable>
             </p:tab>
           </p:tabView>
-        </div>
+          <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+            <p:commandButton value="Add File" ajax="false"
+              action="#{newInstrumentBean.addFile}" immediate="true" />
+          </h:panelGrid>
+        </p:fieldset>
         <div id="assignButtons">
           Assign &gt;&gt;
         </div>
-        <div id="assignments">
-         Assignments
-        </div>
+        <p:fieldset legend="Assignments" id="assignments">
+          <p:tree value="#{newInstrumentBean.assignmentsTree}" var="node" styleClass="assignmentsTree">
+            <p:treeNode type="UNFINISHED_VARIABLE" styleClass="unfinishedVariable">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="UNASSIGNED_SENSOR_TYPE" styleClass="unassignedSensorType">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="ASSIGNED_SENSOR_TYPE" styleClass="assignedSensorType">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+          </p:tree>
+        </p:fieldset>
       </div>
 
       <!-- Remove File -->
@@ -78,10 +92,6 @@
         
       </p:dialog>
 
-      <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
-        <p:commandButton value="Add File" ajax="false"
-          action="#{newInstrumentBean.addFile}" immediate="true" />
-      </h:panelGrid>
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
