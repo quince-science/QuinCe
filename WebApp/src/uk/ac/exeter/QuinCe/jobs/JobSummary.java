@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.jobs;
 
 import java.util.Date;
 
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import uk.ac.exeter.QuinCe.User.User;
 
