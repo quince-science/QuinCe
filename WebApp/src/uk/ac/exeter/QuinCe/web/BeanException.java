@@ -6,6 +6,7 @@ package uk.ac.exeter.QuinCe.web;
  * @author Steve Jones
  *
  */
+@SuppressWarnings("serial")
 public class BeanException extends Exception {
 
   public BeanException(String message) {
