@@ -29,7 +29,6 @@ public class StringUtilsTest extends BaseTest {
    *
    * @return The delimiters.
    */
-  @SuppressWarnings("unused")
   private static final List<String> makeDelimiters() {
     List<String> delimiters = new ArrayList<String>(3);
     delimiters.add(",");
@@ -43,7 +42,6 @@ public class StringUtilsTest extends BaseTest {
    *
    * @return The disallowed delimiters.
    */
-  @SuppressWarnings("unused")
   private static final List<String> makeStandardInvalidDelimiters() {
     List<String> delimiters = new ArrayList<String>(67);
     delimiters.add(null);
@@ -72,7 +70,6 @@ public class StringUtilsTest extends BaseTest {
    *
    * @return The disallowed delimiters.
    */
-  @SuppressWarnings("unused")
   private static final List<String> makeNumericInvalidDelimiters() {
     List<String> delimiters = new ArrayList<String>(2);
     delimiters.add(".");
@@ -220,7 +217,7 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void doubleFromStringIntegerTest() {
-    assertEquals(new Double(7.0), StringUtils.doubleFromString("7"));
+    assertEquals(Double.valueOf(7.0), StringUtils.doubleFromString("7"));
   }
 
   /**
@@ -229,7 +226,7 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void doubleFromStringZeroIntegerTest() {
-    assertEquals(new Double(0.0), StringUtils.doubleFromString("0"));
+    assertEquals(Double.valueOf(0.0), StringUtils.doubleFromString("0"));
   }
 
   /**
@@ -238,7 +235,7 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void doubleFromStringNegativeIntegerTest() {
-    assertEquals(new Double(-7.0), StringUtils.doubleFromString("-7"));
+    assertEquals(Double.valueOf(-7.0), StringUtils.doubleFromString("-7"));
   }
 
   /**
@@ -247,7 +244,7 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void doubleFromStringDoubleTest() {
-    assertEquals(new Double(7.657), StringUtils.doubleFromString("7.657"));
+    assertEquals(Double.valueOf(7.657), StringUtils.doubleFromString("7.657"));
   }
 
   /**
@@ -256,7 +253,7 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void doubleFromStringZeroDoubleTest() {
-    assertEquals(new Double(0.0), StringUtils.doubleFromString("0.0"));
+    assertEquals(Double.valueOf(0.0), StringUtils.doubleFromString("0.0"));
   }
 
   /**
@@ -265,7 +262,7 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void doubleFromStringNegativeDoubleTest() {
-    assertEquals(new Double(-7.657), StringUtils.doubleFromString("-7.657"));
+    assertEquals(Double.valueOf(-7.657), StringUtils.doubleFromString("-7.657"));
   }
 
   /**
@@ -274,7 +271,7 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void doubleFromStringThousandsTest() {
-    assertEquals(new Double(7547.54), StringUtils.doubleFromString("7,547.54"));
+    assertEquals(Double.valueOf(7547.54), StringUtils.doubleFromString("7,547.54"));
   }
 
   /**
@@ -283,7 +280,7 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void doubleFromStringNegativeThousandsTest() {
-    assertEquals(new Double(-7547.54),
+    assertEquals(Double.valueOf(-7547.54),
       StringUtils.doubleFromString("-7,547.54"));
   }
 
@@ -1542,7 +1539,6 @@ public class StringUtilsTest extends BaseTest {
    *
    * @return The test values
    */
-  @SuppressWarnings("unused")
   private static final Object[] getFormatDoubleStringValues() {
     return new Object[] { new Object[] { "0.0", "0.000" },
       new Object[] { "0.000000000", "0.000" }, new Object[] { "-0.0", "0.000" },
@@ -1580,20 +1576,19 @@ public class StringUtilsTest extends BaseTest {
    *
    * @return The test values.
    */
-  @SuppressWarnings("unused")
   private static final Object[] getFormatDoubleDoubleValues() {
-    return new Object[] { new Object[] { new Double(0.0), "0.000" },
-      new Object[] { new Double(0.000000000), "0.000" },
-      new Object[] { new Double(-0.00), "-0.000" },
-      new Object[] { new Double(1), "1.000" },
-      new Object[] { new Double(1.2), "1.200" },
-      new Object[] { new Double(1.27), "1.270" },
-      new Object[] { new Double(1.270), "1.270" },
-      new Object[] { new Double(1.2700), "1.270" },
-      new Object[] { new Double(1.2703), "1.270" },
-      new Object[] { new Double(1.2707), "1.271" },
-      new Object[] { new Double(-12.3), "-12.300" },
-      new Object[] { new Double(123e4), "1230000.000" },
+    return new Object[] { new Object[] { Double.valueOf(0.0), "0.000" },
+      new Object[] { Double.valueOf(0.000000000), "0.000" },
+      new Object[] { Double.valueOf(-0.00), "-0.000" },
+      new Object[] { Double.valueOf(1), "1.000" },
+      new Object[] { Double.valueOf(1.2), "1.200" },
+      new Object[] { Double.valueOf(1.27), "1.270" },
+      new Object[] { Double.valueOf(1.270), "1.270" },
+      new Object[] { Double.valueOf(1.2700), "1.270" },
+      new Object[] { Double.valueOf(1.2703), "1.270" },
+      new Object[] { Double.valueOf(1.2707), "1.271" },
+      new Object[] { Double.valueOf(-12.3), "-12.300" },
+      new Object[] { Double.valueOf(123e4), "1230000.000" },
       new Object[] { null, null } };
   }
 
