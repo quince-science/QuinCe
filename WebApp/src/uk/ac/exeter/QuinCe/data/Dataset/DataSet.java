@@ -338,9 +338,9 @@ public class DataSet {
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
     loadProperties(instrument);
   }
-  
+
   private void loadProperties(Instrument instrument) {
-    
+
     // Copy in the properties from the instrument definition
     this.properties = new HashMap<String, Properties>();
     properties.put(INSTRUMENT_PROPERTIES_KEY, instrument.getProperties());
