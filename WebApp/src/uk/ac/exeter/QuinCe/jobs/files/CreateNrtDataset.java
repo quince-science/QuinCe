@@ -106,8 +106,8 @@ public class CreateNrtDataset extends Job {
         if (endDate.isAfter(nrtStartDate)) {
           String nrtDatasetName = buildNrtDatasetName(instrument);
 
-          DataSet newDataset = new DataSet(instrument.getDatabaseId(),
-            nrtDatasetName, nrtStartDate, endDate, true);
+          DataSet newDataset = new DataSet(instrument, nrtDatasetName,
+            nrtStartDate, endDate, true);
           DataSetDB.addDataSet(conn, newDataset);
 
           // TODO This is a copy of the code in DataSetsBean.addDataSet. Does
