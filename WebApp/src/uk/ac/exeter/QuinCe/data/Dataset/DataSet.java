@@ -308,18 +308,8 @@ public class DataSet {
    */
   public DataSet(Instrument instrument) {
     this.instrumentId = instrument.getDatabaseId();
-
-    // Copy in the properties from the instrument definition
-    this.properties = new HashMap<String, Properties>();
-    properties.put(INSTRUMENT_PROPERTIES_KEY, instrument.getProperties());
-    for (Map.Entry<Variable, Properties> entry : instrument
-      .getAllVariableProperties().entrySet()) {
-
-      properties.put(entry.getKey().getName(), entry.getValue());
-    }
-
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
-
+    loadProperties(instrument);
   }
 
   /**
@@ -338,14 +328,27 @@ public class DataSet {
    * @param nrt
    *          Indicates whether or not this is a NRT dataset
    */
-  public DataSet(long instrumentId, String name, LocalDateTime start,
+  public DataSet(Instrument instrument, String name, LocalDateTime start,
     LocalDateTime end, boolean nrt) {
-    this.instrumentId = instrumentId;
+    this.instrumentId = instrument.getDatabaseId();
     this.name = name;
     this.start = start;
     this.end = end;
     this.nrt = nrt;
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
+    loadProperties(instrument);
+  }
+  
+  private void loadProperties(Instrument instrument) {
+    
+    // Copy in the properties from the instrument definition
+    this.properties = new HashMap<String, Properties>();
+    properties.put(INSTRUMENT_PROPERTIES_KEY, instrument.getProperties());
+    for (Map.Entry<Variable, Properties> entry : instrument
+      .getAllVariableProperties().entrySet()) {
+
+      properties.put(entry.getKey().getName(), entry.getValue());
+    }
   }
 
   /**
