@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -91,25 +90,11 @@ public class DataSetsBean extends BaseManagedBean {
   private String validCalibrationMessage = null;
 
   /**
-   * Initialise/Reset the bean
-   */
-  @PostConstruct
-  public void initialise() {
-    try {
-      initialiseInstruments();
-      loadDataSets();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
-  /**
    * Start the dataset definition procedure
    *
    * @return The navigation to the dataset definition page
    */
   public String startNewDataset() {
-    initialise();
     newDataSet = new DataSet(getCurrentInstrument());
     fileDefinitionsJson = null;
     timelineEntriesJson = null;
@@ -504,5 +489,9 @@ public class DataSetsBean extends BaseManagedBean {
 
   public boolean getHasFiles() {
     return hasFiles;
+  }
+
+  public void setHasFiles(boolean dummy) {
+    // Ignore any attempt to set this value
   }
 }

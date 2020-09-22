@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.web.files;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -32,14 +31,6 @@ public class DataFilesBean extends FileUploadBean {
 
   @Override
   public void processUploadedFile() {
-  }
-
-  /**
-   * Initialise/reset the bean
-   */
-  @PostConstruct
-  public void initialise() {
-    initialiseInstruments();
   }
 
   /**

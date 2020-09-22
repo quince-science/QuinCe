@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -58,7 +57,6 @@ public class InstrumentListBean extends BaseManagedBean {
   /**
    * Initialises the bean by pre-loading the list of instruments
    */
-  @PostConstruct
   public void init() {
     // Load the instrument list
     try {
@@ -76,6 +74,10 @@ public class InstrumentListBean extends BaseManagedBean {
    * @return The instruments owned by the current user
    */
   public List<InstrumentStub> getInstrumentList() {
+    if (null == instrumentList) {
+      init();
+    }
+
     return instrumentList;
   }
 
