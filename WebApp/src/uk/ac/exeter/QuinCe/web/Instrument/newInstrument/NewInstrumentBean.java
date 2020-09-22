@@ -1983,8 +1983,8 @@ public class NewInstrumentBean extends FileUploadBean {
 
       // Reinitialise beans to update their instrument lists
       instrumentListBean.init();
-      dataFilesBean.initialise();
-      dataSetsBean.initialise();
+      dataFilesBean.initialiseInstruments();
+      dataSetsBean.initialiseInstruments();
     } catch (Exception e) {
       e.printStackTrace();
       throw e;

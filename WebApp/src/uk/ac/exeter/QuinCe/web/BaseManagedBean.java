@@ -244,7 +244,7 @@ public abstract class BaseManagedBean {
   /**
    * Initialise/reset the bean
    */
-  protected void initialiseInstruments() {
+  public void initialiseInstruments() {
     // Load the instruments list. Set the current instrument if it isn't already
     // set.
     try {
@@ -451,7 +451,7 @@ public abstract class BaseManagedBean {
    * @return The variable IDs
    */
   protected List<Long> getInstrumentVariableIDs() {
-    return getCurrentInstrument().getVariables().stream()
-      .map(Variable::getId).collect(Collectors.toList());
+    return getCurrentInstrument().getVariables().stream().map(Variable::getId)
+      .collect(Collectors.toList());
   }
 }
