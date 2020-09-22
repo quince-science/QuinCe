@@ -53,7 +53,7 @@
       $(document).ready(function() {
         updateList(); // PF Command
       });
-      
+
       function updateControls() {
         if ($('#datasetListForm\\:hasFiles').val() == "true") {
           $('#noFiles').hide();
@@ -77,7 +77,7 @@
       </h:form>
       <h:form id="datasetListForm" method="post" charset="utf8">
         <h:inputHidden id="hasFiles" value="#{dataSetsBean.hasFiles}"/>
-      
+
         <h:panelGrid columns="3" cellpadding="5" class="buttonPanel contentList">
           <p:outputLabel for="instrument" value="Select Instrument:" />
           <p:selectOneMenu id="instrument"
