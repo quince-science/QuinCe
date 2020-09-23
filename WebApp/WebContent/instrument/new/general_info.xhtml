@@ -62,8 +62,10 @@
         <table class="form">
           <tr>
             <td class="labels">Platform Code</td>
-            <td><p:inputText id="platformCode"
-                value="#{newInstrumentBean.platformCode}" /></td>
+            <td><p:inputText id="platformCode" required="true"
+              requiredMessage="Platform Code is required"
+              value="#{newInstrumentBean.platformCode}" />
+            </td>
           </tr>
           <tr>
             <td class="labels">Instrument/Intake Depth (metres)</td>
@@ -115,6 +117,7 @@
           </tr>
         </table>
       </p:fieldset>
+      <p:messages/>
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
