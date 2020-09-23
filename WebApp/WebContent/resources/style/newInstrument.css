@@ -125,7 +125,15 @@
   font-weight: bold;
 }
 
+.finishedVariable {
+  font-weight: bold;
+}
+
 .unassignedSensorType {
-  font-weight: normal;
   color: red;
+  font-weight: normal;
+}
+
+.assignedSensorType {
+  font-weight: normal;
 }

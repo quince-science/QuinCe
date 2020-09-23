@@ -2194,8 +2194,16 @@ public class NewInstrumentBean extends FileUploadBean {
 
       for (Variable var : instrumentVariables) {
 
-        TreeNode varNode = new DefaultTreeNode("UNFINISHED_VARIABLE",
-          var.getName(), root);
+        TreeNode varNode;
+
+        if (sensorAssignments.variableComplete(var)) {
+          varNode = new DefaultTreeNode("FINISHED_VARIABLE", var.getName(),
+            root);
+        } else {
+          varNode = new DefaultTreeNode("UNFINISHED_VARIABLE",
+            "* " + var.getName(), root);
+          varNode.setExpanded(true);
+        }
 
         for (SensorType sensorType : sensorConfig.getSensorTypes(var.getId(),
           false)) {

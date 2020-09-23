@@ -132,10 +132,7 @@ public class SensorAssignments
   private void populateAssignments(Connection conn) throws DatabaseException,
     SensorTypeNotFoundException, SensorConfigurationException {
 
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-      .getSensorsConfiguration();
-
-    for (SensorType type : sensorConfig.getNonCoreSensors(conn)) {
+    for (SensorType type : getSensorConfig().getNonCoreSensors(conn)) {
       put(type, new ArrayList<SensorAssignment>());
 
       // Add the Run Type if required
@@ -144,7 +141,7 @@ public class SensorAssignments
       }
     }
 
-    for (SensorType coreType : sensorConfig.getCoreSensors(variableIDs)) {
+    for (SensorType coreType : getSensorConfig().getCoreSensors(variableIDs)) {
       if (null != coreType) {
         put(coreType, new ArrayList<SensorAssignment>());
 
@@ -797,5 +794,33 @@ public class SensorAssignments
     }
 
     return result;
+  }
+
+  /**
+   * Determines whether or not all sensor types required for a given variable
+   * have been assigned.
+   * 
+   * @param variable
+   *          The variable to be checked.
+   * @return {@code true} if all required sensor types are assigned;
+   *         {@code false} otherwise.
+   * @throws SensorConfigurationException
+   */
+  public boolean variableComplete(Variable variable)
+    throws SensorConfigurationException {
+
+    boolean complete = true;
+
+    Set<SensorType> requiredSensorTypes = getSensorConfig()
+      .getSensorTypes(variable.getId(), false);
+
+    for (SensorType sensorType : requiredSensorTypes) {
+      if (!isAssigned(sensorType)) {
+        complete = false;
+        break;
+      }
+    }
+
+    return complete;
   }
 }
