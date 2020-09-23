@@ -148,7 +148,7 @@ public class SensorsConfiguration {
       stmt = conn.prepareStatement(GET_VARIABLES_SENSOR_TYPES_QUERY);
       records = stmt.executeQuery();
 
-      long currentVariable = -1;
+      long currentVariableId = -1;
       String name = null;
       LinkedHashMap<String, String> attributes = null;
       long coreSensorType = -1;
@@ -159,17 +159,17 @@ public class SensorsConfiguration {
       while (records.next()) {
 
         long newVariable = records.getLong(1);
-        if (newVariable != currentVariable) {
-          if (currentVariable > -1) {
+        if (newVariable != currentVariableId) {
+          if (currentVariableId > -1) {
             // Write the old variable
-            instrumentVariables.put(currentVariable,
-              new Variable(this, currentVariable, name, attributes,
+            instrumentVariables.put(currentVariableId,
+              new Variable(this, currentVariableId, name, attributes,
                 coreSensorType, requiredSensorTypes, questionableCascades,
                 badCascades));
           }
 
           // Set up the new variable
-          currentVariable = newVariable;
+          currentVariableId = newVariable;
           name = records.getString(2);
           attributes = makeAttributesMap(records.getString(3));
           coreSensorType = -1;
@@ -191,8 +191,8 @@ public class SensorsConfiguration {
       }
 
       // Write the last variable
-      instrumentVariables.put(currentVariable,
-        new Variable(this, currentVariable, name, attributes, coreSensorType,
+      instrumentVariables.put(currentVariableId,
+        new Variable(this, currentVariableId, name, attributes, coreSensorType,
           requiredSensorTypes, questionableCascades, badCascades));
     } catch (SQLException e) {
       throw new DatabaseException("Error while loading instrument variables",

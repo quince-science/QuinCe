@@ -49,6 +49,9 @@
         </div>
         <p:fieldset legend="Assignments" id="assignments">
           <p:tree value="#{newInstrumentBean.assignmentsTree}" var="node" styleClass="assignmentsTree">
+            <p:treeNode type="FINISHED_VARIABLE" styleClass="finishedVariable">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
             <p:treeNode type="UNFINISHED_VARIABLE" styleClass="unfinishedVariable">
               <h:outputText value="#{node}"/>
             </p:treeNode>
