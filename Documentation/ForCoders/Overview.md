@@ -18,7 +18,7 @@ Other important folders include:
 - **`DataPreparation`** - Various standalone scripts and programs for pre-processing data before it is ingested into QuinCe. Although we aim to handle any incoming data format, this is not always a practical goal.
 - **`external_scripts`** - Scripts that handle data processing around the QuinCe software, e.g. collecting data for ingestion from external sources and exporting processed data for publication.
 - **`src`** - Not to be confused with `WebApp/src`, this contains database migrations and external code libraries.
-- **`configuration` - All the configuration files for the application are stored here.
+- **`configuration`** - All the configuration files for the application are stored here.
 
 ### WebApp
 
@@ -57,7 +57,7 @@ Three tables in the database are populated independently of the running applicat
 - **`variables`** contains the variables that QuinCe knows how to calculate - Underway Marine pCO~2~, Contros pH, etc. Each of these variables will have a corresponding `DataReducer` in the code to perform the required calculations (described later).
 - **`variable_sensors`** lists which sensors are *required* for a given variable to be calculated.
 
-These tables are populatd through the database migration system, and cannot be edited via the application itself.
+These tables are populated through the database migration system, and cannot be edited via the application itself.
 
 Note the difference between these bootstrapped database tables managed through database migrations, and the configuration files in the `configuration` folder. The database tables are intended to be relatively static across multiple deployments of QuinCe and rarely change, while entries in configuration files may change more frequently, either between different deployments or to make fine-grained adjustments to system parameters.
 
@@ -65,7 +65,7 @@ Note the difference between these bootstrapped database tables managed through d
 When the application starts, a special `ResourceManager` object is created. This is a singleton class accessed through `ResourceManager.getInstance()` and provides access to all aspects of the application configuration that are not linked to any specific entities (instruments, users etc.) in the system. It also provides access to a `DataSource` through which database connections can be obtained.
 
 ## Instruments
-The instrument is central entity that users will work with in the application, and the first thing a new user must define. The configuration of an instrument is stored across a number of database tables reflecting its various component parts (from an application standpoint). However, when you retrieve an `Instrument` object from the database, it will contain all these parts so multiple requests for them are not required.
+The instrument is the central entity that users will work with in the application, and the first thing a new user must define. The configuration of an instrument is stored across a number of database tables reflecting its various component parts (from an application standpoint). However, when you retrieve an `Instrument` object from the database, it will contain all these parts so multiple requests for them are not required.
 
 The components of an Instrument in QuinCe are as follows:
 
@@ -76,13 +76,13 @@ The components of an Instrument in QuinCe are as follows:
 *Note:* An instrument may produce data in more than one file (e.g. one file from the CO~2~ measuring system, and one from a separate thermosalinograph). Thus an instrument may have multiple file definitions.
 
 ### Ownership
-Each instrument is owned by one user. At the time of writing, only an instrument's owner can see their instruments (apart from administrators who can see everything).
+Each instrument is owned by one user. At the time of writing, only an instrument's owner can see it (apart from administrators who can see everything).
 
 ## Calibrations
 There are two types of calibration possible for an instrument in QuinCe:
 
-- Sensor Calibrations, used to adjust recorded sensor values. These are applied as values are read from the data files.
-- Internal Calibrations (*aka* External Standards or Gas Standards)[^externalstandards] - measurements taken from sources of known values (usually gas bottles) which are then used to calibrate recorded values. These are applied during data reduction.
+- **Sensor Calibrations** - used to adjust recorded sensor values. These are applied as values are read from the data files.
+- **Internal Calibrations** (*aka* External Standards or Gas Standards)[^externalstandards] - measurements taken from sources of known values (usually gas bottles) which are then used to calibrate recorded values. These are applied during data reduction.
 
 Each of these calibrations are implemented for a specific date - either the date that the sensor was calibrated and the adjustment coefficients calculated, or the date that the external standard was installed. Both types of calibration are stored in the `calibration` table.
 
@@ -107,7 +107,7 @@ The file itself is stored in a directory known as the File Store. This has the f
 
 Within the `FILE_STORE`, each sub-directory is the database ID of a record in the `file_definition` table. **Note that, since an instrument can have more than one file definition, the `file_definition` ID *is not necessarily* the same as the `instrument` ID.**
 
-Within each file definition folder, the uploaded files are stored. They are not given their original filenames. Instead, they are named with the database ID of the corresponding record in the `data_file` table in the database.
+The uploaded files are stored within each file definition folder. They are not given their original filenames. Instead, they are named with the database ID of the corresponding record in the `data_file` table in the database.
 
 Note that when a file is uploaded, QuinCe does not read data from the file into the database. This is only done when datasets are being processed.
 
