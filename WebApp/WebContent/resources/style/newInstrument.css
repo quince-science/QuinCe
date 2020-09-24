@@ -94,30 +94,32 @@
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  justify-content: space-evenly;
+  justify-content: center;
   align-items: center;
   align-content: center;
   height: 500px;
 }
 
-#fileColumns {
-  width: 40%;
+.fileColumnsTable {
+  width: 400px !important;
 }
 
-#assignColumns {
-}
-
-#assignemnts {
-  width: 40%;
+#assignInstructions {
+  font-weight: bold;
+  white-space: nowrap;
+  padding: 10px;
 }
 
 .assignmentsTree {
-  height: 400px;
+  height: 450px;
+}
+
+.exampleValueCol {
+  text-align: right;
 }
 
 .exampleValue {
   font-style: italic;
-  text-align: right;
 }
 
 .unfinishedVariable {
