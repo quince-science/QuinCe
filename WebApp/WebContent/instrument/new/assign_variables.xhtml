@@ -23,18 +23,18 @@
                   <p:menuitem value="Delete" onclick="removeFile('#{iFile.fileDescription}')"/>
                 </p:contextMenu>
               </f:facet>
-              <p:dataTable value="#{iFile.fileColumns}" var="column" scrollable="true" scrollHeight="300">
+              <p:dataTable value="#{iFile.fileColumns}" var="column" scrollable="true" scrollHeight="300" tableStyleClass="fileColumnsTable">
                 <p:column>
                   <f:facet name="header">
                     <h:outputText value="Column"/>
                   </f:facet>
                   <h:outputText value="#{column.name}"/>
                 </p:column>
-                <p:column styleClass="exampleValue">
+                <p:column styleClass="exampleValueCol">
                   <f:facet name="header">
-                    <h:outputText value="Sample"/>
+                    <h:outputText value="Sample Value"/>
                   </f:facet>
-                  <h:outputText value="#{column.exampleValue}"/>
+                  <h:outputText styleClass="exampleValue" value="#{column.exampleValue}"/>
                 </p:column>
               </p:dataTable>
             </p:tab>
@@ -44,8 +44,10 @@
               action="#{newInstrumentBean.addFile}" immediate="true" />
           </h:panelGrid>
         </p:fieldset>
-        <div id="assignButtons">
-          Assign &gt;&gt;
+        <div id="assignInstructions">
+          Drag and drop 
+          <br/>
+          column name &gt;&gt;
         </div>
         <p:fieldset legend="Assignments" id="assignments">
           <p:tree value="#{newInstrumentBean.assignmentsTree}" var="node" styleClass="assignmentsTree">
