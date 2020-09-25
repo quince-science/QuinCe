@@ -29,6 +29,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationE
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -131,6 +133,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * </p>
    */
   private List<Long> varIds = null;
+
+  /**
+   * The underway marine pCO2 variable
+   */
+  private Variable co2Var = null;
 
   // Created by assignmentsInit()
   /**
@@ -268,10 +275,12 @@ public class SensorAssignmentsTest extends BaseTest {
    *           database
    * @throws SQLException
    *           If a database error occurs
+   * @throws VariableNotFoundException
+   *           If the marine pCO2 variable is not in the database
    */
   @BeforeEach
-  public void sensorConfigInit()
-    throws DatabaseException, SensorTypeNotFoundException, SQLException {
+  public void sensorConfigInit() throws DatabaseException,
+    SensorTypeNotFoundException, SQLException, VariableNotFoundException {
     initResourceManager();
     config = ResourceManager.getInstance().getSensorsConfiguration();
     varIds = new ArrayList<Long>(1);
@@ -291,6 +300,8 @@ public class SensorAssignmentsTest extends BaseTest {
           "'Underway Marine pCO₂' variable does not exist");
       } else {
         varIds.add(record.getLong(1));
+        co2Var = ResourceManager.getInstance().getSensorsConfiguration()
+          .getInstrumentVariable(record.getLong(1));
       }
     } catch (SQLException e) {
       throw e;
@@ -771,5 +782,293 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments.addAssignment(co2Id, makeAssignment(DATA_FILE_NAME, 2, true));
 
     assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
+  }
+
+  /**
+   * Test that a variable with no sensors assigned registers as incomplete.
+   *
+   * @throws SensorConfigurationException
+   *           If the configuration is invalid
+   * @throws SensorTypeNotFoundException
+   *           If the an assigned {@link SensorType} is not found
+   */
+  @Test
+  public void variableCompleteNoAssignmentsTest()
+    throws SensorConfigurationException, SensorTypeNotFoundException {
+    assertFalse(assignments.variableComplete(co2Var));
+  }
+
+  /**
+   * Test that a variable with one sensor type assigned is not complete.
+   *
+   * @throws SensorTypeNotFoundException
+   *           If the an assigned {@link SensorType} is not found
+   * @throws SensorAssignmentException
+   *           If an assignment fails
+   * @throws SensorConfigurationException
+   *           If the configuration is invalid
+   */
+  @Test
+  public void variableCompleteOneAssignmentTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    SensorConfigurationException {
+
+    SensorType sensorType = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Intake Temperature");
+
+    assignments.addAssignment(sensorType.getId(),
+      makeAssignment(DATA_FILE_NAME, 1, true));
+
+    assertFalse(assignments.variableComplete(co2Var));
+  }
+
+  /**
+   * Test that a fully assigned variable with no dependents is complete.
+   *
+   * @throws SensorTypeNotFoundException
+   *           If the an assigned {@link SensorType} is not found
+   * @throws SensorAssignmentException
+   *           If an assignment fails
+   * @throws SensorConfigurationException
+   *           If the configuration is invalid
+   */
+  @Test
+  public void variableCompleteNoDependsTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    SensorConfigurationException {
+    SensorType intakeTemp = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Intake Temperature");
+    assignments.addAssignment(intakeTemp.getId(),
+      makeAssignment(DATA_FILE_NAME, 1, true));
+
+    SensorType salinity = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Salinity");
+    assignments.addAssignment(salinity.getId(),
+      makeAssignment(DATA_FILE_NAME, 2, true));
+
+    SensorType eqTemp = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("Equilibrator Temperature");
+    assignments.addAssignment(eqTemp.getId(),
+      makeAssignment(DATA_FILE_NAME, 3, true));
+
+    SensorType eqPresAbs = ResourceManager.getInstance()
+      .getSensorsConfiguration()
+      .getSensorType("Equilibrator Pressure (absolute)");
+    assignments.addAssignment(eqPresAbs.getId(),
+      makeAssignment(DATA_FILE_NAME, 4, true));
+
+    SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("xCO₂ (with standards)");
+    assignments.addAssignment(co2.getId(),
+      makeAssignment(DATA_FILE_NAME, 5, true));
+
+    assertTrue(assignments.variableComplete(co2Var));
+  }
+
+  /**
+   * Test that a fully assigned variable with an unassigned dependent is
+   * incomplete.
+   *
+   * @throws SensorTypeNotFoundException
+   *           If the an assigned {@link SensorType} is not found
+   * @throws SensorAssignmentException
+   *           If an assignment fails
+   * @throws SensorConfigurationException
+   *           If the configuration is invalid
+   */
+  @Test
+  public void variableCompleteDependsNotSetTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    SensorConfigurationException {
+    SensorType intakeTemp = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Intake Temperature");
+    assignments.addAssignment(intakeTemp.getId(),
+      makeAssignment(DATA_FILE_NAME, 1, true));
+
+    SensorType salinity = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Salinity");
+    assignments.addAssignment(salinity.getId(),
+      makeAssignment(DATA_FILE_NAME, 2, true));
+
+    SensorType eqTemp = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("Equilibrator Temperature");
+    assignments.addAssignment(eqTemp.getId(),
+      makeAssignment(DATA_FILE_NAME, 3, true));
+
+    SensorType eqPresAbs = ResourceManager.getInstance()
+      .getSensorsConfiguration()
+      .getSensorType("Equilibrator Pressure (differential)");
+    assignments.addAssignment(eqPresAbs.getId(),
+      makeAssignment(DATA_FILE_NAME, 4, true));
+
+    SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("xCO₂ (with standards)");
+    assignments.addAssignment(co2.getId(),
+      makeAssignment(DATA_FILE_NAME, 5, true));
+
+    assertFalse(assignments.variableComplete(co2Var));
+  }
+
+  /**
+   * Test that a fully assigned variable with an assigned dependent is complete.
+   *
+   * @throws SensorTypeNotFoundException
+   *           If the an assigned {@link SensorType} is not found
+   * @throws SensorAssignmentException
+   *           If an assignment fails
+   * @throws SensorConfigurationException
+   *           If the configuration is invalid
+   */
+  @Test
+  public void variableCompleteDependsSetTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    SensorConfigurationException {
+    SensorType intakeTemp = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Intake Temperature");
+    assignments.addAssignment(intakeTemp.getId(),
+      makeAssignment(DATA_FILE_NAME, 1, true));
+
+    SensorType salinity = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Salinity");
+    assignments.addAssignment(salinity.getId(),
+      makeAssignment(DATA_FILE_NAME, 2, true));
+
+    SensorType eqTemp = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("Equilibrator Temperature");
+    assignments.addAssignment(eqTemp.getId(),
+      makeAssignment(DATA_FILE_NAME, 3, true));
+
+    SensorType eqPresAbs = ResourceManager.getInstance()
+      .getSensorsConfiguration()
+      .getSensorType("Equilibrator Pressure (differential)");
+    assignments.addAssignment(eqPresAbs.getId(),
+      makeAssignment(DATA_FILE_NAME, 4, true));
+
+    SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("xCO₂ (with standards)");
+    assignments.addAssignment(co2.getId(),
+      makeAssignment(DATA_FILE_NAME, 5, true));
+
+    SensorType instrPres = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Pressure at instrument");
+    assignments.addAssignment(instrPres.getId(),
+      makeAssignment(DATA_FILE_NAME, 6, true));
+
+    assertTrue(assignments.variableComplete(co2Var));
+  }
+
+  /**
+   * Test that a fully assigned variable with an answered depends question but
+   * no dependent set is incomplete.
+   * 
+   * <p>
+   * {@link #variableCompleteNoDependsTest} already tests when the depends
+   * question answer is no.
+   * </p>
+   *
+   * @throws SensorTypeNotFoundException
+   *           If the an assigned {@link SensorType} is not found
+   * @throws SensorAssignmentException
+   *           If an assignment fails
+   * @throws SensorConfigurationException
+   *           If the configuration is invalid
+   */
+  @Test
+  public void variableCompleteDependsQuestionNotSetTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    SensorConfigurationException {
+    SensorType intakeTemp = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Intake Temperature");
+    assignments.addAssignment(intakeTemp.getId(),
+      makeAssignment(DATA_FILE_NAME, 1, true));
+
+    SensorType salinity = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Salinity");
+    assignments.addAssignment(salinity.getId(),
+      makeAssignment(DATA_FILE_NAME, 2, true));
+
+    SensorType eqTemp = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("Equilibrator Temperature");
+    assignments.addAssignment(eqTemp.getId(),
+      makeAssignment(DATA_FILE_NAME, 3, true));
+
+    SensorType eqPresAbs = ResourceManager.getInstance()
+      .getSensorsConfiguration()
+      .getSensorType("Equilibrator Pressure (differential)");
+    assignments.addAssignment(eqPresAbs.getId(),
+      makeAssignment(DATA_FILE_NAME, 4, true));
+
+    SensorType instrPres = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Pressure at instrument");
+    assignments.addAssignment(instrPres.getId(),
+      makeAssignment(DATA_FILE_NAME, 6, true));
+
+    SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("xCO₂ (with standards)");
+    SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME, 5,
+      co2, "Assignment", true, true, "NaN");
+    assignments.addAssignment(co2.getId(), co2Assignment);
+
+    assertFalse(assignments.variableComplete(co2Var));
+  }
+
+  /**
+   * Test that a fully assigned variable with an answered depends question and
+   * the dependent set is complete.
+   * 
+   * <p>
+   * {@link #variableCompleteNoDependsTest} already tests when the depends
+   * question answer is no.
+   * </p>
+   *
+   * @throws SensorTypeNotFoundException
+   *           If the an assigned {@link SensorType} is not found
+   * @throws SensorAssignmentException
+   *           If an assignment fails
+   * @throws SensorConfigurationException
+   *           If the configuration is invalid
+   */
+  @Test
+  public void variableCompleteDependsQuestionSetTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    SensorConfigurationException {
+    SensorType intakeTemp = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Intake Temperature");
+    assignments.addAssignment(intakeTemp.getId(),
+      makeAssignment(DATA_FILE_NAME, 1, true));
+
+    SensorType salinity = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Salinity");
+    assignments.addAssignment(salinity.getId(),
+      makeAssignment(DATA_FILE_NAME, 2, true));
+
+    SensorType eqTemp = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("Equilibrator Temperature");
+    assignments.addAssignment(eqTemp.getId(),
+      makeAssignment(DATA_FILE_NAME, 3, true));
+
+    SensorType eqPresAbs = ResourceManager.getInstance()
+      .getSensorsConfiguration()
+      .getSensorType("Equilibrator Pressure (differential)");
+    assignments.addAssignment(eqPresAbs.getId(),
+      makeAssignment(DATA_FILE_NAME, 4, true));
+
+    SensorType instrPres = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Pressure at instrument");
+    assignments.addAssignment(instrPres.getId(),
+      makeAssignment(DATA_FILE_NAME, 6, true));
+
+    SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("xCO₂ (with standards)");
+    SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME, 5,
+      co2, "Assignment", true, true, "NaN");
+    assignments.addAssignment(co2.getId(), co2Assignment);
+
+    SensorType xh2o = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("xH₂O (with standards)");
+    assignments.addAssignment(xh2o.getId(),
+      makeAssignment(DATA_FILE_NAME, 7, true));
+
+    assertTrue(assignments.variableComplete(co2Var));
   }
 }

@@ -112,6 +112,7 @@
 
 .assignmentsTree {
   height: 450px;
+  width: 350px !important;
 }
 
 .exampleValueCol {
@@ -133,9 +134,11 @@
 
 .unassignedSensorType {
   color: red;
+  font-style: italic;
   font-weight: normal;
 }
 
 .assignedSensorType {
+  color: black;
   font-weight: normal;
 }

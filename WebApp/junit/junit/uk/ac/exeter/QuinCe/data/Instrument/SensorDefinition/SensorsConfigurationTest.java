@@ -21,11 +21,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -611,7 +611,8 @@ public class SensorsConfigurationTest extends BaseTest {
     assertNotNull(config);
 
     // Make sure the correct sensors are in the set
-    Set<SensorType> testSensorTypes = config.getSensorTypes(var2List, false);
+    Set<SensorType> testSensorTypes = config.getSensorTypes(var2List, false,
+      false);
     assertTrue(
       testSensorTypes.contains(config.getSensorType("Intake Temperature")));
     assertTrue(testSensorTypes.contains(config.getSensorType("Salinity")));
@@ -636,7 +637,7 @@ public class SensorsConfigurationTest extends BaseTest {
     initVarList();
     SensorsConfiguration config = getConfig();
 
-    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false);
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false, false);
     assertTrue(
       sensorTypes.contains(config.getSensorType("Equilibrator Pressure")));
     assertFalse(sensorTypes
@@ -661,7 +662,7 @@ public class SensorsConfigurationTest extends BaseTest {
     initVarList();
     SensorsConfiguration config = getConfig();
 
-    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true);
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true, false);
     assertFalse(
       sensorTypes.contains(config.getSensorType("Equilibrator Pressure")));
     assertTrue(sensorTypes
@@ -998,7 +999,7 @@ public class SensorsConfigurationTest extends BaseTest {
     initVarList();
     SensorsConfiguration config = getConfig();
     assertThrows(SensorConfigurationException.class, () -> {
-      config.getSensorTypes(invalidVarList, false);
+      config.getSensorTypes(invalidVarList, false, false);
     });
   }
 
@@ -1064,8 +1065,8 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Test that attempting to retrieve a non-existent {@link Variable}
-   * throws a {@link VariableNotFoundException}.
+   * Test that attempting to retrieve a non-existent {@link Variable} throws a
+   * {@link VariableNotFoundException}.
    *
    * @throws Exception
    *           If the {@link SensorsConfiguration} cannot be accessed.
@@ -1093,8 +1094,7 @@ public class SensorsConfigurationTest extends BaseTest {
   public void getInstrumentVariablesTest() throws Exception {
     initVarList();
     initTestVarList();
-    List<Variable> variables = getConfig()
-      .getInstrumentVariables(bothVarsList);
+    List<Variable> variables = getConfig().getInstrumentVariables(bothVarsList);
     for (Variable variable : variables) {
       assertTrue(variable.getName().equals("Underway Marine pCO₂")
         || variable.getName().equals("testVar"));
@@ -1102,8 +1102,8 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Test that retrieving multiple {@link Variable}s where one or more
-   * variables doesn't exist throws a {@link VariableNotFoundException}.
+   * Test that retrieving multiple {@link Variable}s where one or more variables
+   * doesn't exist throws a {@link VariableNotFoundException}.
    *
    * @throws Exception
    *           If the {@link SensorsConfiguration} cannot be accessed.
@@ -1116,5 +1116,76 @@ public class SensorsConfigurationTest extends BaseTest {
     assertThrows(VariableNotFoundException.class, () -> {
       getConfig().getInstrumentVariables(invalidVarList);
     });
+  }
+
+  /**
+   * Test that
+   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean)} with
+   * {@code includeDependents == false} does not return dependents
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
+  @FlywayTest
+  @Test
+  public void getSensorTypesWithNoDependentsTest() throws Exception {
+    initVarList();
+    SensorsConfiguration config = getConfig();
+
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false, false);
+    assertFalse(
+      sensorTypes.contains(config.getSensorType("xH₂O (with standards)")));
+  }
+
+  /**
+   * Test that
+   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean)} with
+   * {@code includeDependents == true} and
+   * {@code replaceParentsWithChildren == false} returns dependents for normal
+   * sensors but not children
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
+  @FlywayTest
+  @Test
+  public void getSensorTypesWithNonChildDependentsTest() throws Exception {
+    initVarList();
+    SensorsConfiguration config = getConfig();
+
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false, true);
+    assertTrue(
+      sensorTypes.contains(config.getSensorType("xH₂O (with standards)")));
+    assertFalse(
+      sensorTypes.contains(config.getSensorType("Pressure at instrument")));
+  }
+
+  /**
+   * Test that
+   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean)} with
+   * {@code includeDependents == true} and
+   * {@code replaceParentsWithChildren == true} returns dependents for normal
+   * sensors and child sensor types
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
+  @FlywayTest
+  @Test
+  public void getSensorTypesWithChildDependentsTest() throws Exception {
+    initVarList();
+    SensorsConfiguration config = getConfig();
+
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true, true);
+    assertTrue(
+      sensorTypes.contains(config.getSensorType("xH₂O (with standards)")));
+    assertTrue(
+      sensorTypes.contains(config.getSensorType("Pressure at instrument")));
   }
 }
