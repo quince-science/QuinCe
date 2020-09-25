@@ -627,25 +627,33 @@ public class SensorsConfiguration {
    * @return The SensorTypes required by the variables
    * @throws SensorConfigurationException
    *           If any variable IDs do not exist
+   * @throws SensorTypeNotFoundException
    */
   public Set<SensorType> getSensorTypes(List<Long> variableIds,
-    boolean replaceParentsWithChildren) throws SensorConfigurationException {
+    boolean replaceParentsWithChildren, boolean includeDependents)
+    throws SensorConfigurationException, SensorTypeNotFoundException {
 
-    Set<SensorType> sensorTypes = new HashSet<SensorType>();
+    Set<SensorType> sensorTypes = new TreeSet<SensorType>();
 
     for (long varId : variableIds) {
       Variable variable = instrumentVariables.get(varId);
       if (null == variable) {
         throw new SensorConfigurationException("Unknown variable ID " + varId);
       } else {
-        if (!replaceParentsWithChildren) {
-          sensorTypes.addAll(variable.getAllSensorTypes(false));
-        } else {
-          for (SensorType tempType : variable.getAllSensorTypes(false)) {
-            if (!isParent(tempType)) {
-              sensorTypes.add(tempType);
-            } else {
-              sensorTypes.addAll(getChildren(tempType));
+
+        for (SensorType sensorType : variable.getAllSensorTypes(false)) {
+
+          if (!isParent(sensorType) || !replaceParentsWithChildren) {
+            sensorTypes.add(sensorType);
+            if (includeDependents && sensorType.dependsOnOtherType()) {
+              sensorTypes.add(getSensorType(sensorType.getDependsOn()));
+            }
+          } else {
+            for (SensorType childType : getChildren(sensorType)) {
+              sensorTypes.add(childType);
+              if (includeDependents && childType.dependsOnOtherType()) {
+                sensorTypes.add(getSensorType(childType.getDependsOn()));
+              }
             }
           }
         }
@@ -656,10 +664,12 @@ public class SensorsConfiguration {
   }
 
   public Set<SensorType> getSensorTypes(long variableId,
-    boolean replaceParentsWithChildren) throws SensorConfigurationException {
+    boolean replaceParentsWithChildren, boolean includeDependents)
+    throws SensorConfigurationException, SensorTypeNotFoundException {
     List<Long> varList = new ArrayList<Long>(1);
     varList.add(variableId);
-    return getSensorTypes(varList, replaceParentsWithChildren);
+    return getSensorTypes(varList, replaceParentsWithChildren,
+      includeDependents);
   }
 
   /**
