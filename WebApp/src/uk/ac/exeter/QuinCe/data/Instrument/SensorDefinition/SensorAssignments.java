@@ -799,28 +799,82 @@ public class SensorAssignments
   /**
    * Determines whether or not all sensor types required for a given variable
    * have been assigned.
-   * 
+   *
    * @param variable
    *          The variable to be checked.
    * @return {@code true} if all required sensor types are assigned;
    *         {@code false} otherwise.
    * @throws SensorConfigurationException
+   * @throws SensorTypeNotFoundException
    */
   public boolean variableComplete(Variable variable)
-    throws SensorConfigurationException {
+    throws SensorConfigurationException, SensorTypeNotFoundException {
 
     boolean complete = true;
 
     Set<SensorType> requiredSensorTypes = getSensorConfig()
-      .getSensorTypes(variable.getId(), false);
+      .getSensorTypes(variable.getId(), false, false);
 
     for (SensorType sensorType : requiredSensorTypes) {
-      if (!isAssigned(sensorType)) {
-        complete = false;
-        break;
+
+      // For a Parent sensor type, check its children
+      if (getSensorConfig().isParent(sensorType)) {
+        boolean anyChildAssigned = false;
+        for (SensorType childType : getSensorConfig().getChildren(sensorType)) {
+          if (variableCompleteSensorTypeCheck(childType)) {
+            anyChildAssigned = true;
+            break;
+          }
+        }
+        if (!anyChildAssigned) {
+          complete = false;
+          break;
+        }
+      } else {
+        if (!variableCompleteSensorTypeCheck(sensorType)) {
+          complete = false;
+          break;
+        }
       }
     }
 
     return complete;
+  }
+
+  private boolean variableCompleteSensorTypeCheck(SensorType sensorType)
+    throws SensorTypeNotFoundException {
+    boolean result = true;
+
+    if (!isAssigned(sensorType)) {
+      // If the sensor type isn't assigned, we can stop
+      result = false;
+    } else if (sensorType.dependsOnOtherType()) {
+
+      boolean checkDependsOn = false;
+
+      // If there's no depends question, we can directly check the dependsOn
+      if (!sensorType.hasDependsQuestion()) {
+        checkDependsOn = true;
+      } else {
+
+        // We only need to check dependsOn if the depends question has been
+        // answered True for any assignment
+        for (SensorAssignment assignment : get(sensorType)) {
+          if (assignment.getDependsQuestionAnswer()) {
+            checkDependsOn = true;
+          }
+        }
+      }
+
+      if (checkDependsOn) {
+        SensorType dependsOn = getSensorConfig()
+          .getSensorType(sensorType.getDependsOn());
+        if (!isAssigned(dependsOn)) {
+          result = false;
+        }
+      }
+    }
+
+    return result;
   }
 }

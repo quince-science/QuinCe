@@ -45,7 +45,7 @@
           </h:panelGrid>
         </p:fieldset>
         <div id="assignInstructions">
-          Drag and drop 
+          Drag and drop
           <br/>
           column name &gt;&gt;
         </div>
@@ -77,14 +77,14 @@
         <p:commandButton value="Cancel"
           onclick="PF('removeFileConfirm').hide()" />
       </p:confirmDialog>
-  
+
       <!-- Rename File -->
       <p:dialog header="Rename File" widgetVar="renameFileDialog"
         modal="true">
-        
+
         <h:inputHidden id="renameOldFile"
           value="#{newInstrumentBean.renameOldFile}" />
-        
+
         <p:inputText widgetVar="renameNewFile"
           value="#{newInstrumentBean.renameNewFile}" onkeyup="renameFileInputMonitor()"/>
 
@@ -94,7 +94,7 @@
           <p:commandButton value="Cancel"
             onclick="PF('renameFileDialog').hide(); return false;" />
         </h:panelGrid>
-        
+
       </p:dialog>
 
       <!--  The cancel include has a 2 entries (1 is invisible) -->
