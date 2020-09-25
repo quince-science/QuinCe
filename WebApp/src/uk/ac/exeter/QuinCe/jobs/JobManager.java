@@ -1,8 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -615,7 +613,7 @@ public class JobManager {
       jobId = result.getLong(1);
       Class<?> jobClazz = Class.forName(result.getString(2));
       Constructor<?> jobConstructor = jobClazz.getConstructor(
-        ResourceManager.class, Properties.class, long.class, Map.class);
+        ResourceManager.class, Properties.class, long.class, Properties.class);
 
       return (Job) jobConstructor.newInstance(resourceManager, config,
         result.getLong(1),
@@ -927,31 +925,8 @@ public class JobManager {
         checkResult = CLASS_CHECK_NOT_JOB_CLASS;
       } else {
         // Is there a constructor that takes the right parameters?
-        // We also check that the List is designated to contain String objects
-        Constructor<?> jobConstructor = jobClazz.getConstructor(
-          ResourceManager.class, Properties.class, long.class, Map.class);
-        Type[] constructorGenericTypes = jobConstructor
-          .getGenericParameterTypes();
-        if (constructorGenericTypes.length != 4) {
-          checkResult = CLASS_CHECK_INVALID_CONSTRUCTOR;
-        } else {
-          if (!(constructorGenericTypes[3] instanceof ParameterizedType)) {
-            checkResult = CLASS_CHECK_INVALID_CONSTRUCTOR;
-          } else {
-            Type[] actualTypeArguments = ((ParameterizedType) constructorGenericTypes[3])
-              .getActualTypeArguments();
-            if (actualTypeArguments.length != 2) {
-              checkResult = CLASS_CHECK_INVALID_CONSTRUCTOR;
-            } else {
-              for (int i = 0; i < actualTypeArguments.length; i++) {
-                Class<?> typeArgumentClass = (Class<?>) actualTypeArguments[i];
-                if (!typeArgumentClass.equals(String.class)) {
-                  checkResult = CLASS_CHECK_INVALID_CONSTRUCTOR;
-                }
-              }
-            }
-          }
-        }
+        jobClazz.getConstructor(ResourceManager.class, Properties.class,
+          long.class, Properties.class);
       }
     } catch (ClassNotFoundException e) {
       checkResult = CLASS_CHECK_NO_SUCH_CLASS;
