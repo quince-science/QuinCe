@@ -21,7 +21,7 @@
   <h:outputScript name="script/plotPage.js" />
 </h:head>
 
-<h:body class="fullPage" onload="initPage()">
+<h:body class="fullPage">
   <ui:include src="/WEB-INF/templates/keep_alive.xhtml" />
   <!--  The main stylesheet goes here because it can then override PrimeFaces styles -->
   <h:outputStylesheet name="style/main.css" />
@@ -337,5 +337,11 @@
       </div>
     </f:facet>
   </p:toolbar>
+
+    <script>
+      $(document).ready(function (){
+        initPage();
+      });
+    </script>
 </h:body>
 </html>
