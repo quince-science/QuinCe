@@ -70,7 +70,7 @@ public class JobManager {
   /**
    * SQL statement to create a job record
    */
-  private static final String CREATE_JOB_STATEMENT = "INSERT INTO job (owner, created, class, parameters) VALUES (?, ?, ?, ?)";
+  private static final String CREATE_JOB_STATEMENT = "INSERT INTO job (owner, created, class, properties) VALUES (?, ?, ?, ?)";
 
   /**
    * SQL statement to see if a job with a given ID exists
@@ -120,12 +120,12 @@ public class JobManager {
   /**
    * SQL statement to retrieve a job's class and paremeters
    */
-  private static final String GET_JOB_QUERY = "SELECT id, class, parameters FROM job WHERE id = ?";
+  private static final String GET_JOB_QUERY = "SELECT id, class, properties FROM job WHERE id = ?";
 
   /**
    * SQL statement to retrieve the next queued job
    */
-  private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job WHERE status='WAITING' ORDER BY created ASC LIMIT 1";
+  private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, properties FROM job WHERE status='WAITING' ORDER BY created ASC LIMIT 1";
 
   /**
    * Statement to get the number of jobs of each status
@@ -157,7 +157,7 @@ public class JobManager {
   /**
    * Query to get the details of jobs that are either running or waiting to run
    */
-  private static final String GET_QUEUED_RUNNING_JOBS_QUERY = "SELECT id, class, parameters FROM job WHERE status = 'WAITING' OR status = 'RUNNING'";
+  private static final String GET_QUEUED_RUNNING_JOBS_QUERY = "SELECT id, class, properties FROM job WHERE status = 'WAITING' OR status = 'RUNNING'";
 
   /**
    * Statement to delete finished jobs that are older than a specified number of
