@@ -143,6 +143,10 @@
   font-weight: normal;
 }
 
+.sensorAssignment {
+  color: blue;
+}
+
 .columnDropTargetHover {
   background: #FF0 !important;
 }

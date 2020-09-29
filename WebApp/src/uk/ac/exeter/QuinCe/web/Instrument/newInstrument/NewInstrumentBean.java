@@ -2128,14 +2128,20 @@ public class NewInstrumentBean extends FileUploadBean {
         for (SensorType sensorType : sensorConfig.getSensorTypes(var.getId(),
           true, true)) {
 
+          TreeNode sensorTypeNode;
+
           if (sensorAssignments.isAssignmentRequired(sensorType)) {
-            new DefaultTreeNode("UNASSIGNED_SENSOR_TYPE", sensorType.getName(),
-              varNode);
+            sensorTypeNode = new DefaultTreeNode("UNASSIGNED_SENSOR_TYPE",
+              sensorType.getName(), varNode);
           } else {
-            TreeNode sensorTypeNode = new DefaultTreeNode(
-              "ASSIGNED_SENSOR_TYPE", sensorType.getName(), varNode);
+            sensorTypeNode = new DefaultTreeNode("ASSIGNED_SENSOR_TYPE",
+              sensorType.getName(), varNode);
           }
 
+          for (SensorAssignment assignment : sensorAssignments
+            .get(sensorType)) {
+            new DefaultTreeNode("ASSIGNMENT", assignment, sensorTypeNode);
+          }
         }
       }
     } catch (Exception e) {
