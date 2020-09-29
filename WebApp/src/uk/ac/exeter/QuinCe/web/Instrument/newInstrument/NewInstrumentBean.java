@@ -2144,6 +2144,21 @@ public class NewInstrumentBean extends FileUploadBean {
           }
         }
       }
+
+      TreeNode diagnosticsNode = new DefaultTreeNode("FINISHED_VARIABLE",
+        "Diagnostics", root);
+
+      for (SensorType diagnosticType : sensorConfig
+        .getDiagnosticSensorTypes()) {
+
+        TreeNode diagnosticNode = new DefaultTreeNode("ASSIGNED_SENSOR_TYPE",
+          diagnosticType.getName(), diagnosticsNode);
+
+        for (SensorAssignment assignment : sensorAssignments
+          .get(diagnosticType)) {
+          new DefaultTreeNode("ASSIGNMENT", assignment, diagnosticNode);
+        }
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -2165,6 +2180,8 @@ public class NewInstrumentBean extends FileUploadBean {
         sensorTypes.add(sensorType);
       }
     }
+
+    sensorTypes.addAll(sensorConfig.getDiagnosticSensorTypes());
 
     return new Gson().toJson(sensorTypes);
   }
