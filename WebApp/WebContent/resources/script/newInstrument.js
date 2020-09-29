@@ -421,22 +421,6 @@ function openHemisphereDialog(coordinate, file, column) {
   PF('hemisphereAssignmentDialog').show();
 }
 
-function showDateTimeSubmenu(event, file, column) {
-  event.stopPropagation();
-  hideDiagnosticMenu();
-  buildDateTimeAssignmentMenu(file, column);
-  positionDateTimeAssignmentMenu();
-  $('#dateTimeMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
-}
-
-function showDiagnosticSubmenu(event, file, column) {
-  event.stopPropagation();
-  hideDateTimeMenu();
-  buildDiagnosticAssignmentMenu(file, column);
-  positionDiagnosticAssignmentMenu();
-  $('#diagnosticMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
-}
-
 function openDateTimeDialog(item, file, column) {
   $('#newInstrumentForm\\:dateTimeFile').val(filesAndColumns[file]['description']);
   $('#newInstrumentForm\\:dateTimeColumn').val(column);

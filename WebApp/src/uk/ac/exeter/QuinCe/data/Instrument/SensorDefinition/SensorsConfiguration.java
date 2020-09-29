@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -756,5 +757,10 @@ public class SensorsConfiguration {
 
     return variables;
 
+  }
+
+  public List<SensorType> getDiagnosticSensorTypes() {
+    return getSensorTypes().stream().filter(t -> t.isDiagnostic())
+      .collect(Collectors.toList());
   }
 }
