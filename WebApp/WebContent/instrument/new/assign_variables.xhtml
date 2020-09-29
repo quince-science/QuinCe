@@ -157,6 +157,9 @@
             <p:treeNode type="ASSIGNED_SENSOR_TYPE" styleClass="columnDropTarget assignedSensorType">
               <h:outputText value="#{node}"/>
             </p:treeNode>
+            <p:treeNode type="ASSIGNMENT" styleClass="sensorAssignment">
+              <h:outputText value="#{node.sensorName}"/>
+            </p:treeNode>
           </p:tree>
         </p:fieldset>
       </div>

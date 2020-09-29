@@ -895,16 +895,24 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments.addAssignment(eqTemp.getId(),
       makeAssignment(DATA_FILE_NAME, 3, true));
 
+    // Both Absolute and Differential are set, but Pressure At Instrument
+    // (which differential depends on) is not set
     SensorType eqPresAbs = ResourceManager.getInstance()
       .getSensorsConfiguration()
-      .getSensorType("Equilibrator Pressure (differential)");
+      .getSensorType("Equilibrator Pressure (absolute)");
     assignments.addAssignment(eqPresAbs.getId(),
       makeAssignment(DATA_FILE_NAME, 4, true));
+
+    SensorType eqPresDiff = ResourceManager.getInstance()
+      .getSensorsConfiguration()
+      .getSensorType("Equilibrator Pressure (differential)");
+    assignments.addAssignment(eqPresDiff.getId(),
+      makeAssignment(DATA_FILE_NAME, 5, true));
 
     SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
       .getSensorType("xCO₂ (with standards)");
     assignments.addAssignment(co2.getId(),
-      makeAssignment(DATA_FILE_NAME, 5, true));
+      makeAssignment(DATA_FILE_NAME, 6, true));
 
     assertFalse(assignments.variableComplete(co2Var));
   }
@@ -940,19 +948,25 @@ public class SensorAssignmentsTest extends BaseTest {
 
     SensorType eqPresAbs = ResourceManager.getInstance()
       .getSensorsConfiguration()
-      .getSensorType("Equilibrator Pressure (differential)");
+      .getSensorType("Equilibrator Pressure (absolute)");
     assignments.addAssignment(eqPresAbs.getId(),
       makeAssignment(DATA_FILE_NAME, 4, true));
+
+    SensorType eqPresDiff = ResourceManager.getInstance()
+      .getSensorsConfiguration()
+      .getSensorType("Equilibrator Pressure (differential)");
+    assignments.addAssignment(eqPresDiff.getId(),
+      makeAssignment(DATA_FILE_NAME, 5, true));
 
     SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
       .getSensorType("xCO₂ (with standards)");
     assignments.addAssignment(co2.getId(),
-      makeAssignment(DATA_FILE_NAME, 5, true));
+      makeAssignment(DATA_FILE_NAME, 6, true));
 
     SensorType instrPres = ResourceManager.getInstance()
       .getSensorsConfiguration().getSensorType("Pressure at instrument");
     assignments.addAssignment(instrPres.getId(),
-      makeAssignment(DATA_FILE_NAME, 6, true));
+      makeAssignment(DATA_FILE_NAME, 7, true));
 
     assertTrue(assignments.variableComplete(co2Var));
   }

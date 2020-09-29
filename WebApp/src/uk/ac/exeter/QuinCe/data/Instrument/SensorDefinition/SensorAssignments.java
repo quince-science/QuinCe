@@ -31,6 +31,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class SensorAssignments
   extends TreeMap<SensorType, List<SensorAssignment>> {
 
+  private static final int FULLY_ASSIGNED = 1;
+
+  private static final int ASSIGNED_WITHOUT_DEPENDENT = -1;
+
+  private static final int NOT_ASSIGNED = 0;
+
   /**
    * The database IDs of the variables that this set of assignments is targeting
    */
@@ -819,19 +825,26 @@ public class SensorAssignments
 
       // For a Parent sensor type, check its children
       if (getSensorConfig().isParent(sensorType)) {
+
         boolean anyChildAssigned = false;
+        boolean anyChildDependentsRequired = false;
+
         for (SensorType childType : getSensorConfig().getChildren(sensorType)) {
-          if (variableCompleteSensorTypeCheck(childType)) {
+
+          int assigned = variableCompleteSensorTypeCheck(childType);
+
+          if (assigned == FULLY_ASSIGNED) {
             anyChildAssigned = true;
-            break;
+          } else if (assigned == ASSIGNED_WITHOUT_DEPENDENT) {
+            anyChildDependentsRequired = true;
           }
         }
-        if (!anyChildAssigned) {
+        if (!anyChildAssigned || anyChildDependentsRequired) {
           complete = false;
           break;
         }
       } else {
-        if (!variableCompleteSensorTypeCheck(sensorType)) {
+        if (variableCompleteSensorTypeCheck(sensorType) != FULLY_ASSIGNED) {
           complete = false;
           break;
         }
@@ -841,13 +854,14 @@ public class SensorAssignments
     return complete;
   }
 
-  private boolean variableCompleteSensorTypeCheck(SensorType sensorType)
+  private int variableCompleteSensorTypeCheck(SensorType sensorType)
     throws SensorTypeNotFoundException {
-    boolean result = true;
+
+    int result = FULLY_ASSIGNED;
 
     if (!isAssigned(sensorType)) {
       // If the sensor type isn't assigned, we can stop
-      result = false;
+      result = NOT_ASSIGNED;
     } else if (sensorType.dependsOnOtherType()) {
 
       boolean checkDependsOn = false;
@@ -870,7 +884,7 @@ public class SensorAssignments
         SensorType dependsOn = getSensorConfig()
           .getSensorType(sensorType.getDependsOn());
         if (!isAssigned(dependsOn)) {
-          result = false;
+          result = ASSIGNED_WITHOUT_DEPENDENT;
         }
       }
     }
