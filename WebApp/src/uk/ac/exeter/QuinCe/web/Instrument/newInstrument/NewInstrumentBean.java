@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -18,10 +19,11 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 
 import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONException;
 import org.primefaces.json.JSONObject;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
+
+import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -38,10 +40,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -166,7 +168,7 @@ public class NewInstrumentBean extends FileUploadBean {
   /**
    * The name of the sensor being assigned
    */
-  private String sensorAssignmentSensorType = null;
+  private Long sensorAssignmentSensorType = null;
 
   /**
    * Sensor assignment - the answer to the Depends Question
@@ -661,88 +663,6 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Get the current set of sensor assignments as a JSON string.
-   *
-   * <p>
-   * The format of the JSON is as follows:
-   * </p>
-   *
-   * <pre>
-   * [
-   *   {
-   *     "name": "&lt;sensor type name&gt;",
-   *     "required": &lt;true/false&gt;,
-   *     "assignments": [
-   *       "file": "&lt;data file name&gt;",
-   *       "column": &lt;column index&gt;
-   *     ]
-   *   }
-   * ]
-   * </pre>
-   *
-   * @return The sensor assignments
-   * @throws SensorAssignmentException
-   *           If the sensor assignments are internally invalid
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws JSONException
-   *           If the JSON construction is invalid
-   * @throws SensorConfigurationException
-   */
-  public String getSensorAssignments() throws SensorAssignmentException,
-    JSONException, DatabaseException, SensorConfigurationException {
-
-    JSONArray json = new JSONArray();
-
-    for (SensorType sensorType : sensorAssignments.keySet()) {
-      JSONObject sensorTypeJson = new JSONObject();
-      sensorTypeJson.put("name", sensorType.getName());
-      sensorTypeJson.put("required",
-        sensorAssignments.isAssignmentRequired(sensorType));
-      sensorTypeJson.put("diagnostic", sensorType.isDiagnostic());
-      sensorTypeJson.put("systemType", sensorType.isSystemType());
-      if (null == sensorType.getDependsQuestion()) {
-        sensorTypeJson.put("dependsQuestion", JSONObject.NULL);
-      } else {
-        sensorTypeJson.put("dependsQuestion", sensorType.getDependsQuestion());
-      }
-
-      // The columns assigned to the sensor type
-      List<SensorAssignment> assignments = sensorAssignments.get(sensorType);
-      JSONArray assignmentsJson = new JSONArray();
-      if (null != assignments) {
-        for (SensorAssignment assignment : assignments) {
-
-          JSONObject assignmentJson = new JSONObject();
-          assignmentJson.put("file", assignment.getDataFile());
-          assignmentJson.put("column", assignment.getColumn());
-          assignmentJson.put("sensorName", assignment.getSensorName());
-          assignmentJson.put("primary", assignment.isPrimary());
-
-          assignmentsJson.put(assignmentJson);
-        }
-      }
-
-      sensorTypeJson.put("assignments", assignmentsJson);
-
-      json.put(sensorTypeJson);
-    }
-
-    return json.toString();
-  }
-
-  /**
-   * Dummy method for setting sensor assignments. It doesn't actually do
-   * anything, but it's needed for the JSF communications to work.
-   *
-   * @param assignments
-   *          The assignments. They are ignored.
-   */
-  public void setSensorAssignments(String assignments) {
-    // Do nothing
-  }
-
-  /**
    * Dummy method for setting time and position assignments. It doesn't actually
    * do anything, but it's needed for the JSF communications to work.
    *
@@ -815,7 +735,7 @@ public class NewInstrumentBean extends FileUploadBean {
    *
    * @return The sensor type
    */
-  public String getSensorAssignmentSensorType() {
+  public Long getSensorAssignmentSensorType() {
     return sensorAssignmentSensorType;
   }
 
@@ -825,7 +745,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * @param sensorAssignmentSensorType
    *          The sensor type
    */
-  public void setSensorAssignmentSensorType(String sensorAssignmentSensorType) {
+  public void setSensorAssignmentSensorType(Long sensorAssignmentSensorType) {
     this.sensorAssignmentSensorType = sensorAssignmentSensorType;
   }
 
@@ -2223,5 +2143,23 @@ public class NewInstrumentBean extends FileUploadBean {
     }
 
     return root;
+  }
+
+  public String getSensorTypesJson()
+    throws SensorConfigurationException, SensorTypeNotFoundException {
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+
+    HashSet<SensorType> sensorTypes = new HashSet<SensorType>();
+
+    for (Variable var : instrumentVariables) {
+      for (SensorType sensorType : sensorConfig.getSensorTypes(var.getId(),
+        true, true)) {
+        sensorTypes.add(sensorType);
+      }
+    }
+
+    return new Gson().toJson(sensorTypes);
   }
 }
