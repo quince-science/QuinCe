@@ -11,6 +11,98 @@
   </ui:define>
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
+      <h:inputHidden id="sensorTypes"
+        value="#{newInstrumentBean.sensorTypesJson}" />
+
+      <!-- Sensor Assignment Dialog -->
+      <p:dialog header="Assign Column To Sensor"
+        widgetVar="sensorAssignmentDialog" modal="true">
+        <h:inputHidden id="sensorAssignmentFile"
+          value="#{newInstrumentBean.sensorAssignmentFile}" />
+        <h:inputHidden id="sensorAssignmentColumn"
+          value="#{newInstrumentBean.sensorAssignmentColumn}" />
+        <h:inputHidden id="sensorAssignmentSensorType"
+          value="#{newInstrumentBean.sensorAssignmentSensorType}" />
+        <div class="dialogSection">
+          <table>
+            <tr>
+              <td><p:outputLabel value="Assigning" /></td>
+              <td><div id="sensorAssignmentFileName" class="variableText"></div>,
+                <div id="sensorAssignmentColumnName" class="variableText"></div></td>
+            </tr>
+            <tr>
+              <td><p:outputLabel value="To" /></td>
+              <td><div id="sensorAssignmentSensorTypeText"
+                  class="variableText"></div></td>
+            </tr>
+          </table>
+        </div>
+        <div id="sensorAssignmentNameContainer" class="dialogSection">
+          <table>
+            <tr>
+              <td><p:outputLabel value="Sensor Name: " /></td>
+              <td><p:inputText id="sensorAssignmentName"
+                  widgetVar="sensorName"
+                  value="#{newInstrumentBean.sensorAssignmentName}" size="20"
+                  onkeyup="checkSensorName()" /></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><div id="sensorNameMessage" class="errorBox">You
+                  must provide a unique sensor name</div></td>
+            </tr>
+          </table>
+        </div>
+        <div id="sensorAssignmentPrimaryContainer" class="dialogSection">
+          <div class="hidden">
+            <p:outputLabel value="Is this a primary or fallback sensor? " />
+            <i>??</i>
+          </div>
+          <div>
+            <p:selectOneRadio id="sensorAssignmentPrimary" widgetVar="primary"
+              value="#{newInstrumentBean.sensorAssignmentPrimary}">
+              <f:selectItem itemLabel="Primary" itemValue="true" />
+              <f:selectItem itemLabel="Fallback" itemValue="false" />
+            </p:selectOneRadio>
+          </div>
+        </div>
+        <div id="sensorAssignmentDependsQuestionContainer" class="dialogSection">
+          <label id="sensorAssignmentDependsQuestion"
+            class="ui-outputlabel ui-widget"></label>
+          <div>
+            <p:selectOneRadio id="sensorAssignmentDependsQuestionAnswer"
+              value="#{newInstrumentBean.sensorAssignmentDependsQuestionAnswer}">
+              <f:selectItem itemLabel="Yes" itemValue="true" />
+              <f:selectItem itemLabel="No" itemValue="false" />
+            </p:selectOneRadio>
+          </div>
+        </div>
+        <div class="dialogSection">
+          <table>
+            <tr>
+              <td><p:outputLabel value="'Missing' Value: " /></td>
+              <td><p:inputText id="sensorAssignmentMissingValue"
+                  value="#{newInstrumentBean.sensorAssignmentMissingValue}" /></td>
+            </tr>
+          </table>
+        </div>
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:commandButton widgetVar="sensorAssignmentAssignButton"
+            value="Assign" ajax="true"
+            action="#{newInstrumentBean.storeSensorAssignment}"
+            process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue"
+            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue assignmentsTree"
+            oncomplete="sensorAssigned();" />
+          <p:commandButton value="Cancel" ajax="true"
+            action="#{newInstrumentBean.resetSensorAssignmentValues}"
+            process="@none"
+            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue"
+            oncomplete="PF('sensorAssignmentDialog').hide();" />
+        </h:panelGrid>
+      </p:dialog>
+
+
+
       <div id="assignmentsLayout">
         <p:fieldset legend="File Columns" id="fileColumns">
           <p:tabView value="#{newInstrumentBean.instrumentFiles}" var="iFile"
@@ -28,7 +120,9 @@
                   <f:facet name="header">
                     <h:outputText value="Column"/>
                   </f:facet>
-                  <h:outputText value="#{column.name}"/>
+                  <div id="col---#{iFile.fileDescription}---#{column.index}---#{column.name}" draggable="true">
+                    <h:outputText value="#{column.name}"/>
+                  </div>
                 </p:column>
                 <p:column styleClass="exampleValueCol">
                   <f:facet name="header">
@@ -50,17 +144,17 @@
           column name &gt;&gt;
         </div>
         <p:fieldset legend="Assignments" id="assignments">
-          <p:tree value="#{newInstrumentBean.assignmentsTree}" var="node" styleClass="assignmentsTree">
+          <p:tree id="assignmentsTree" value="#{newInstrumentBean.assignmentsTree}" var="node" styleClass="assignmentsTree">
             <p:treeNode type="FINISHED_VARIABLE" styleClass="finishedVariable">
               <h:outputText value="#{node}"/>
             </p:treeNode>
             <p:treeNode type="UNFINISHED_VARIABLE" styleClass="unfinishedVariable">
               <h:outputText value="#{node}"/>
             </p:treeNode>
-            <p:treeNode type="UNASSIGNED_SENSOR_TYPE" styleClass="unassignedSensorType">
+            <p:treeNode type="UNASSIGNED_SENSOR_TYPE" styleClass="columnDropTarget unassignedSensorType">
               <h:outputText value="#{node}"/>
             </p:treeNode>
-            <p:treeNode type="ASSIGNED_SENSOR_TYPE" styleClass="assignedSensorType">
+            <p:treeNode type="ASSIGNED_SENSOR_TYPE" styleClass="columnDropTarget assignedSensorType">
               <h:outputText value="#{node}"/>
             </p:treeNode>
           </p:tree>
@@ -106,5 +200,9 @@
           ajax="false" action="#{newInstrumentBean.goToRunTypes}" />
       </h:panelGrid>
     </h:form>
+
+    <script type="text/javascript">
+      assignVariablesInit();
+    </script>
   </ui:define>
 </ui:composition>

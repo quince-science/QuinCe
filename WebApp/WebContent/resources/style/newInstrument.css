@@ -142,3 +142,7 @@
   color: black;
   font-weight: normal;
 }
+
+.columnDropTargetHover {
+  background: #FF0 !important;
+}
