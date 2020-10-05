@@ -21,7 +21,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * Holds details of the assigned sensors in tree form for the
  * {@code assign_variables.xhtml} page.
- * 
+ *
  * @author stevej
  *
  */
