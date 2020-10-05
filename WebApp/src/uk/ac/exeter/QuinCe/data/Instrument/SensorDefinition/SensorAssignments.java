@@ -813,7 +813,7 @@ public class SensorAssignments
    * @throws SensorConfigurationException
    * @throws SensorTypeNotFoundException
    */
-  public boolean variableComplete(Variable variable)
+  public boolean isVariableComplete(Variable variable)
     throws SensorConfigurationException, SensorTypeNotFoundException {
 
     boolean complete = true;

@@ -101,8 +101,6 @@
         </h:panelGrid>
       </p:dialog>
 
-
-
       <div id="assignmentsLayout">
         <p:fieldset legend="File Columns" id="fileColumns">
           <p:tabView value="#{newInstrumentBean.instrumentFiles}" var="iFile"
@@ -145,6 +143,8 @@
         </div>
         <p:fieldset legend="Assignments" id="assignments">
           <p:tree id="assignmentsTree" value="#{newInstrumentBean.assignmentsTree}" var="node" styleClass="assignmentsTree" animate="true">
+            <p:ajax event="expand" listener="#{newInstrumentBean.treeNodeExpand}"/>
+            <p:ajax event="collapse" listener="#{newInstrumentBean.treeNodeCollapse}"/>
             <p:treeNode type="FINISHED_VARIABLE" styleClass="finishedVariable">
               <h:outputText value="#{node}"/>
             </p:treeNode>
@@ -158,7 +158,7 @@
               <h:outputText value="#{node}"/>
             </p:treeNode>
             <p:treeNode type="ASSIGNMENT" styleClass="sensorAssignment">
-              <h:outputText value="#{node.sensorName}"/>
+              <h:outputText value="#{node}"/>
             </p:treeNode>
           </p:tree>
         </p:fieldset>

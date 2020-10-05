@@ -20,7 +20,6 @@ import javax.faces.bean.SessionScoped;
 
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
-import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
 import com.google.gson.Gson;
@@ -144,6 +143,11 @@ public class NewInstrumentBean extends FileUploadBean {
    * The assignments of sensors to data file columns
    */
   private SensorAssignments sensorAssignments;
+
+  /**
+   * The data for the assignments tree in {@code assign_variables.xhtml}.
+   */
+  private AssignmentsTree assignmentsTree;
 
   /**
    * The sample file that is currently being edited
@@ -516,6 +520,7 @@ public class NewInstrumentBean extends FileUploadBean {
       instrumentName = null;
       instrumentFiles = new NewInstrumentFileSet();
       sensorAssignments = null;
+      assignmentsTree = null;
       instrumentVariables = null;
       variableProperties = null;
       preFlushingTime = 0;
@@ -590,6 +595,8 @@ public class NewInstrumentBean extends FileUploadBean {
 
       sensorAssignments = new SensorAssignments(getDataSource(),
         instrumentVariables);
+      assignmentsTree = new AssignmentsTree(this.instrumentVariables,
+        sensorAssignments);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -827,6 +834,7 @@ public class NewInstrumentBean extends FileUploadBean {
       sensorAssignmentMissingValue);
 
     sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
+    assignmentsTree.addAssignment(assignment);
 
     // Reset the assign dialog values, because it's so damn hard to do in
     // Javascript
@@ -2105,65 +2113,7 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   public TreeNode getAssignmentsTree() throws Exception {
-
-    TreeNode root = new DefaultTreeNode("Root", null);
-
-    try {
-      SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-        .getSensorsConfiguration();
-
-      for (Variable var : instrumentVariables) {
-
-        TreeNode varNode;
-
-        if (sensorAssignments.variableComplete(var)) {
-          varNode = new DefaultTreeNode("FINISHED_VARIABLE", var.getName(),
-            root);
-        } else {
-          varNode = new DefaultTreeNode("UNFINISHED_VARIABLE", var.getName(),
-            root);
-          varNode.setExpanded(true);
-        }
-
-        for (SensorType sensorType : sensorConfig.getSensorTypes(var.getId(),
-          true, true)) {
-
-          TreeNode sensorTypeNode;
-
-          if (sensorAssignments.isAssignmentRequired(sensorType)) {
-            sensorTypeNode = new DefaultTreeNode("UNASSIGNED_SENSOR_TYPE",
-              sensorType.getName(), varNode);
-          } else {
-            sensorTypeNode = new DefaultTreeNode("ASSIGNED_SENSOR_TYPE",
-              sensorType.getName(), varNode);
-          }
-
-          for (SensorAssignment assignment : sensorAssignments
-            .get(sensorType)) {
-            new DefaultTreeNode("ASSIGNMENT", assignment, sensorTypeNode);
-          }
-        }
-      }
-
-      TreeNode diagnosticsNode = new DefaultTreeNode("FINISHED_VARIABLE",
-        "Diagnostics", root);
-
-      for (SensorType diagnosticType : sensorConfig
-        .getDiagnosticSensorTypes()) {
-
-        TreeNode diagnosticNode = new DefaultTreeNode("ASSIGNED_SENSOR_TYPE",
-          diagnosticType.getName(), diagnosticsNode);
-
-        for (SensorAssignment assignment : sensorAssignments
-          .get(diagnosticType)) {
-          new DefaultTreeNode("ASSIGNMENT", assignment, diagnosticNode);
-        }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    return root;
+    return assignmentsTree.getRoot();
   }
 
   public String getSensorTypesJson()
