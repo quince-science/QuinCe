@@ -584,7 +584,7 @@ function renameFileInputMonitor() {
 }
 
 function assignVariablesInit() {
-  window.sensorTypes = JSON.parse($('#newInstrumentForm\\:sensorTypes').val());
+  window.sensorTypes = JSON.parse($('#referenceDataForm\\:sensorTypes').val());
   setupDragDropEvents();
 }
 

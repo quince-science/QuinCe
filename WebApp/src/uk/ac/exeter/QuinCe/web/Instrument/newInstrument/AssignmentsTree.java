@@ -97,4 +97,28 @@ public class AssignmentsTree {
       sensorTypeNode.setExpanded(true);
     }
   }
+
+  protected void removeAssignmentNodes(String fileName) {
+
+    for (List<SensorTypeTreeNode> sensorTypeNodes : sensorTypeNodes.values()) {
+      for (SensorTypeTreeNode sensorTypeNode : sensorTypeNodes) {
+
+        List<SensorAssignmentTreeNode> assignmentNodes = (List<SensorAssignmentTreeNode>) (Object) sensorTypeNode
+          .getChildren();
+
+        List<TreeNode> filteredChildren = new ArrayList<TreeNode>(
+          assignmentNodes.size());
+
+        for (SensorAssignmentTreeNode node : assignmentNodes) {
+          if (!node.getTargetFile().equals(fileName)) {
+            filteredChildren.add(node);
+          }
+        }
+
+        sensorTypeNode.setChildren(filteredChildren);
+      }
+
+    }
+
+  }
 }
