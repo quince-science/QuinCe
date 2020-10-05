@@ -113,6 +113,7 @@
 .assignmentsTree {
   height: 450px;
   width: 350px !important;
+  overflow: auto;
 }
 
 .exampleValueCol {
