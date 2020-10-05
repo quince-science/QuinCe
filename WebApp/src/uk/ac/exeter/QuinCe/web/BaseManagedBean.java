@@ -10,6 +10,9 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
+import org.primefaces.event.NodeCollapseEvent;
+import org.primefaces.event.NodeExpandEvent;
+
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserPreferences;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -456,6 +459,43 @@ public abstract class BaseManagedBean {
   }
 
   /**
+   * Event handler for node expansion in a PrimeFaces Tree.
+   * 
+   * <p>
+   * Sets the node's expanded status so it persists through tree updates.
+   * Activated with the following:
+   * </p>
+   * <p>
+   * {@code <p:ajax event="expand" listener= "#{[beanName].treeNodeExpand}"/>}
+   * </p>
+   * 
+   * @param event
+   *          The node expansion event.
+   */
+  public void treeNodeExpand(NodeExpandEvent event) {
+    event.getTreeNode().setExpanded(true);
+  }
+
+  /**
+   * Event handler for node collapse in a PrimeFaces Tree.
+   * 
+   * <p>
+   * Sets the node's expanded status so it persists through tree updates.
+   * Activated with the following:
+   * </p>
+   * <p>
+   * {@code <p:ajax event="collapse" listener=
+   * "#{[beanName].treeNodeCollapse}"/>}
+   * </p>
+   * 
+   * @param event
+   *          The node collapse event.
+   */
+  public void treeNodeCollapse(NodeCollapseEvent event) {
+    event.getTreeNode().setExpanded(false);
+  }
+
+  /**
    * A special little method that will trigger an error.
    *
    * <p>
@@ -466,4 +506,5 @@ public abstract class BaseManagedBean {
   public String throwError() {
     return internalError(new BeanException("Test exception"));
   }
+
 }

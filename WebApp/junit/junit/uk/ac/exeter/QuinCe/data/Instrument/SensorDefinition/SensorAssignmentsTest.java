@@ -795,7 +795,7 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteNoAssignmentsTest()
     throws SensorConfigurationException, SensorTypeNotFoundException {
-    assertFalse(assignments.variableComplete(co2Var));
+    assertFalse(assignments.isVariableComplete(co2Var));
   }
 
   /**
@@ -819,7 +819,7 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments.addAssignment(sensorType.getId(),
       makeAssignment(DATA_FILE_NAME, 1, true));
 
-    assertFalse(assignments.variableComplete(co2Var));
+    assertFalse(assignments.isVariableComplete(co2Var));
   }
 
   /**
@@ -862,7 +862,7 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments.addAssignment(co2.getId(),
       makeAssignment(DATA_FILE_NAME, 5, true));
 
-    assertTrue(assignments.variableComplete(co2Var));
+    assertTrue(assignments.isVariableComplete(co2Var));
   }
 
   /**
@@ -914,7 +914,7 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments.addAssignment(co2.getId(),
       makeAssignment(DATA_FILE_NAME, 6, true));
 
-    assertFalse(assignments.variableComplete(co2Var));
+    assertFalse(assignments.isVariableComplete(co2Var));
   }
 
   /**
@@ -968,7 +968,7 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments.addAssignment(instrPres.getId(),
       makeAssignment(DATA_FILE_NAME, 7, true));
 
-    assertTrue(assignments.variableComplete(co2Var));
+    assertTrue(assignments.isVariableComplete(co2Var));
   }
 
   /**
@@ -1023,7 +1023,7 @@ public class SensorAssignmentsTest extends BaseTest {
       co2, "Assignment", true, true, "NaN");
     assignments.addAssignment(co2.getId(), co2Assignment);
 
-    assertFalse(assignments.variableComplete(co2Var));
+    assertFalse(assignments.isVariableComplete(co2Var));
   }
 
   /**
@@ -1083,6 +1083,6 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments.addAssignment(xh2o.getId(),
       makeAssignment(DATA_FILE_NAME, 7, true));
 
-    assertTrue(assignments.variableComplete(co2Var));
+    assertTrue(assignments.isVariableComplete(co2Var));
   }
 }
