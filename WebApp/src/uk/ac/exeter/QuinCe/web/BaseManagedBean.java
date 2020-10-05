@@ -460,7 +460,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Event handler for node expansion in a PrimeFaces Tree.
-   * 
+   *
    * <p>
    * Sets the node's expanded status so it persists through tree updates.
    * Activated with the following:
@@ -468,7 +468,7 @@ public abstract class BaseManagedBean {
    * <p>
    * {@code <p:ajax event="expand" listener= "#{[beanName].treeNodeExpand}"/>}
    * </p>
-   * 
+   *
    * @param event
    *          The node expansion event.
    */
@@ -478,7 +478,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Event handler for node collapse in a PrimeFaces Tree.
-   * 
+   *
    * <p>
    * Sets the node's expanded status so it persists through tree updates.
    * Activated with the following:
@@ -487,7 +487,7 @@ public abstract class BaseManagedBean {
    * {@code <p:ajax event="collapse" listener=
    * "#{[beanName].treeNodeCollapse}"/>}
    * </p>
-   * 
+   *
    * @param event
    *          The node collapse event.
    */

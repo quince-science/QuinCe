@@ -590,7 +590,7 @@ function assignVariablesInit() {
 
 function setupDragDropEvents() {
   $('div[id^=col-]').on('dragstart', handleColumnDragStart);
-  
+
   $('.columnDropTarget')
     .on('dragover', handleColumnDragOver)
     .on('dragenter', handleColumnDragEnter)
@@ -620,7 +620,7 @@ function handleColumnDragOver(e) {
 function handleColumnDrop(e) {
   e.preventDefault();
   $(this).removeClass('columnDropTargetHover');
-  
+
   // Get sensor type
   let sensorTypeName = $(this).find('span[class~="ui-treenode-content"] > span[class~="ui-treenode-label"]').html();
   let sensorTypeId = getSensorTypeID(sensorTypeName);
@@ -637,10 +637,10 @@ function getSensorTypeID(typeName) {
   let result = null;
 
   for (let i = 0; i < window.sensorTypes.length; i++) {
-	if (window.sensorTypes[i].name == typeName) {
-	  result = window.sensorTypes[i].id;
+  if (window.sensorTypes[i].name == typeName) {
+    result = window.sensorTypes[i].id;
       break;
-	}
+  }
   }
 
   return result;
