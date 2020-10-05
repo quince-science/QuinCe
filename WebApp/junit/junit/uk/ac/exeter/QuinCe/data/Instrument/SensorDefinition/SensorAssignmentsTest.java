@@ -974,7 +974,7 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test that a fully assigned variable with an answered depends question but
    * no dependent set is incomplete.
-   * 
+   *
    * <p>
    * {@link #variableCompleteNoDependsTest} already tests when the depends
    * question answer is no.
@@ -1029,7 +1029,7 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test that a fully assigned variable with an answered depends question and
    * the dependent set is complete.
-   * 
+   *
    * <p>
    * {@link #variableCompleteNoDependsTest} already tests when the depends
    * question answer is no.
