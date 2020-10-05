@@ -316,4 +316,8 @@ public class SensorAssignment {
       sensorType.getColumnHeading(), sensorType.getCode(),
       sensorType.getUnits(), true);
   }
+
+  public SensorType getSensorType() {
+    return sensorType;
+  }
 }
