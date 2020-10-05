@@ -18,7 +18,12 @@ public class SensorAssignmentTreeNode extends DefaultTreeNode {
     this.assignment = assignment;
   }
 
-  protected SensorAssignment getAssignment() {
-    return assignment;
+  @Override
+  public Object getData() {
+    return assignment.getTarget();
+  }
+
+  protected String getTargetFile() {
+    return assignment.getDataFile();
   }
 }
