@@ -20,7 +20,7 @@ public class SensorAssignment {
   /**
    * The data file
    */
-  private final String dataFile;
+  private String dataFile;
 
   /**
    * The column number (zero-based)
@@ -319,5 +319,9 @@ public class SensorAssignment {
 
   public SensorType getSensorType() {
     return sensorType;
+  }
+
+  protected void setDataFile(String dataFile) {
+    this.dataFile = dataFile;
   }
 }

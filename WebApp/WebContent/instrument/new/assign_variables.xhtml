@@ -10,9 +10,11 @@
     <h:outputStylesheet name="style/datatables.min.css" />
   </ui:define>
   <ui:define name="new_instrument_content">
-    <h:form id="newInstrumentForm" method="post" charset="utf8">
+    <h:form id="referenceDataForm" method="post" charset="utf8">
       <h:inputHidden id="sensorTypes"
         value="#{newInstrumentBean.sensorTypesJson}" />
+    </h:form>
+    <h:form id="newInstrumentForm" method="post" charset="utf8">
 
       <!-- Sensor Assignment Dialog -->
       <p:dialog header="Assign Column To Sensor"

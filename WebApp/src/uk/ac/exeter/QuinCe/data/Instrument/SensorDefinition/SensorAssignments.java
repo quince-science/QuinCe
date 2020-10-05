@@ -891,4 +891,14 @@ public class SensorAssignments
 
     return result;
   }
+
+  public void renameFile(String oldName, String newName) {
+    for (List<SensorAssignment> assignments : values()) {
+      for (SensorAssignment assignment : assignments) {
+        if (assignment.getDataFile().equals(oldName)) {
+          assignment.setDataFile(newName);
+        }
+      }
+    }
+  }
 }

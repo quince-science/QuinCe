@@ -1512,6 +1512,7 @@ public class NewInstrumentBean extends FileUploadBean {
     if (null != removeFileName) {
       instrumentFiles.remove(removeFileName);
       sensorAssignments.removeFileAssignments(removeFileName);
+      assignmentsTree.removeAssignmentNodes(removeFileName);
     }
 
     if (instrumentFiles.size() == 0) {
@@ -2107,6 +2108,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
     if (null != fileDefinition) {
       fileDefinition.setFileDescription(renameNewFile);
+      sensorAssignments.renameFile(renameOldFile, renameNewFile);
     }
 
     return NAV_ASSIGN_VARIABLES;
