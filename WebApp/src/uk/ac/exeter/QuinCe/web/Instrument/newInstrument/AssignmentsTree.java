@@ -55,7 +55,7 @@ public class AssignmentsTree {
       TreeNode varNode = new VariableTreeNode(root, var, assignments);
 
       for (SensorType sensorType : sensorConfig.getSensorTypes(var.getId(),
-        true, true)) {
+        true, true, true)) {
 
         addSensorTypeNode(sensorType,
           new SensorTypeTreeNode(varNode, sensorType, assignments));
