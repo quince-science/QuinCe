@@ -631,7 +631,8 @@ public class SensorsConfiguration {
    * @throws SensorTypeNotFoundException
    */
   public Set<SensorType> getSensorTypes(List<Long> variableIds,
-    boolean replaceParentsWithChildren, boolean includeDependents)
+    boolean replaceParentsWithChildren, boolean includeDependents,
+    boolean includeRunType)
     throws SensorConfigurationException, SensorTypeNotFoundException {
 
     Set<SensorType> sensorTypes = new TreeSet<SensorType>();
@@ -643,6 +644,10 @@ public class SensorsConfiguration {
       } else {
 
         for (SensorType sensorType : variable.getAllSensorTypes(false)) {
+
+          if (sensorType.hasInternalCalibration() && includeRunType) {
+            sensorTypes.add(SensorType.RUN_TYPE_SENSOR_TYPE);
+          }
 
           if (!isParent(sensorType) || !replaceParentsWithChildren) {
             sensorTypes.add(sensorType);
@@ -665,12 +670,14 @@ public class SensorsConfiguration {
   }
 
   public Set<SensorType> getSensorTypes(long variableId,
-    boolean replaceParentsWithChildren, boolean includeDependents)
+    boolean replaceParentsWithChildren, boolean includeDependents,
+    boolean includeRunType)
     throws SensorConfigurationException, SensorTypeNotFoundException {
+
     List<Long> varList = new ArrayList<Long>(1);
     varList.add(variableId);
     return getSensorTypes(varList, replaceParentsWithChildren,
-      includeDependents);
+      includeDependents, includeRunType);
   }
 
   /**

@@ -749,7 +749,44 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments.addAssignment(makeAssignment(
       getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 5, true));
 
+    assignments.addAssignment(
+      makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE, DATA_FILE_NAME, 6, true));
+
     assertTrue(assignments.isVariableComplete(co2Var));
+  }
+
+  /**
+   * Test that a fully assigned variable with no dependents is complete.
+   *
+   * @throws SensorTypeNotFoundException
+   *           If the an assigned {@link SensorType} is not found
+   * @throws SensorAssignmentException
+   *           If an assignment fails
+   * @throws SensorConfigurationException
+   *           If the configuration is invalid
+   */
+  @Test
+  public void variableCompleteRunTypeNotSetTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    SensorConfigurationException {
+
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
+
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
+
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
+
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Equilibrator Pressure (absolute)"),
+        DATA_FILE_NAME, 4, true));
+
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 5, true));
+
+    assertFalse(assignments.isVariableComplete(co2Var));
   }
 
   /**
@@ -829,6 +866,9 @@ public class SensorAssignmentsTest extends BaseTest {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("Pressure at instrument"), DATA_FILE_NAME, 7, true));
+
+    assignments.addAssignment(
+      makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE, DATA_FILE_NAME, 8, true));
 
     assertTrue(assignments.isVariableComplete(co2Var));
   }
@@ -921,6 +961,85 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments.addAssignment(makeAssignment(
       getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 7, true));
 
+    assignments.addAssignment(
+      makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE, DATA_FILE_NAME, 8, true));
+
     assertTrue(assignments.isVariableComplete(co2Var));
+  }
+
+  /**
+   * Test the the 'Run Type' sensor type is not required if no
+   * {@link SensorType} has been assigned.
+   * 
+   * @throws SensorConfigurationException
+   * @throws SensorAssignmentException
+   */
+  @Test
+  public void runTypeRequiredNoSensorTypesTest()
+    throws SensorAssignmentException, SensorConfigurationException {
+    assertFalse(
+      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
+  }
+
+  /**
+   * Test the the 'Run Type' sensor type is not required if no
+   * {@link SensorType} with internal calibrations has been assigned.
+   * 
+   * @throws SensorConfigurationException
+   * @throws SensorAssignmentException
+   * @throws SensorTypeNotFoundException
+   */
+  @Test
+  public void runTypeRequiredNoInternalCalibrationsAssignedTest()
+    throws SensorAssignmentException, SensorConfigurationException,
+    SensorTypeNotFoundException {
+
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
+
+    assertFalse(
+      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
+  }
+
+  /**
+   * Test the the 'Run Type' sensor type is not required if no
+   * {@link SensorType} with internal calibrations has been assigned.
+   * 
+   * @throws SensorConfigurationException
+   * @throws SensorAssignmentException
+   * @throws SensorTypeNotFoundException
+   */
+  @Test
+  public void runTypeRequiredInternalCalibrationsAssignedTest()
+    throws SensorAssignmentException, SensorConfigurationException,
+    SensorTypeNotFoundException {
+
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, true));
+
+    assertTrue(
+      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
+  }
+
+  /**
+   * Test the the 'Run Type' sensor type is not required if no
+   * {@link SensorType} with internal calibrations has been assigned.
+   * 
+   * @throws SensorConfigurationException
+   * @throws SensorAssignmentException
+   * @throws SensorTypeNotFoundException
+   */
+  @Test
+  public void runTypeAssignedInternalCalibrationsAssignedTest()
+    throws SensorAssignmentException, SensorConfigurationException,
+    SensorTypeNotFoundException {
+
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, true));
+
+    assignments.addAssignment(
+      makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE, DATA_FILE_NAME, 2, true));
+
+    assertFalse(
+      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
   }
 }

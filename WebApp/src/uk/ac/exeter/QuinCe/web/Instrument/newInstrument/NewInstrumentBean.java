@@ -2059,10 +2059,8 @@ public class NewInstrumentBean extends FileUploadBean {
     HashSet<SensorType> sensorTypes = new HashSet<SensorType>();
 
     for (Variable var : instrumentVariables) {
-      for (SensorType sensorType : sensorConfig.getSensorTypes(var.getId(),
-        true, true)) {
-        sensorTypes.add(sensorType);
-      }
+      sensorTypes
+        .addAll(sensorConfig.getSensorTypes(var.getId(), true, true, true));
     }
 
     sensorTypes.addAll(sensorConfig.getDiagnosticSensorTypes());

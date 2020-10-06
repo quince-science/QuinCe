@@ -5,6 +5,7 @@
 allTimesOK = false;
 drawingPage = false;
 
+RUN_TYPE_SENSOR_TYPE_ID = -1;
 ALIAS_RUN_TYPE = '-2';
 
 //************************************************
@@ -300,9 +301,12 @@ function startAssign(event, item, file, column) {
 }
 
 function assignRunType(file, column) {
-  $('#newInstrumentForm\\:runTypeFile').val(filesAndColumns[file]['description']);
-  $('#newInstrumentForm\\:runTypeColumn').val(column);
-  $('#newInstrumentForm\\:runTypeLink').click();
+  $('#newInstrumentForm\\:sensorAssignmentFile').val(file);
+  $('#newInstrumentForm\\:sensorAssignmentColumn').val(column);
+  $('#newInstrumentForm\\:sensorAssignmentSensorType').val(RUN_TYPE_SENSOR_TYPE_ID);
+  $('#newInstrumentForm\\:sensorAssignmentName').val('Run Type');
+  $('#newInstrumentForm\\:sensorAssignmentMissingValue').val('');
+  PF('sensorAssignmentAssignButton').jq.click();
 }
 
 function openAssignSensorDialog(sensorType, file, columnIndex, columnName) {
@@ -630,7 +634,16 @@ function handleColumnDrop(e) {
   let colExtractor = /.*---(.*)---(.*)---(.*)/;
   let match = colExtractor.exec(colElementId);
 
-  openAssignSensorDialog(getSensorType(sensorTypeId), match[1], match[2], match[3]);
+
+  switch (sensorTypeId) {
+  case -1: {
+	assignRunType(match[1], match[2]);
+	break;
+  }
+  default: {
+    openAssignSensorDialog(getSensorType(sensorTypeId), match[1], match[2], match[3]);	
+  }
+  }
 }
 
 function getSensorTypeID(typeName) {
