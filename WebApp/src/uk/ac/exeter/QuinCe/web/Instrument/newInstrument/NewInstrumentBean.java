@@ -838,7 +838,7 @@ public class NewInstrumentBean extends FileUploadBean {
       sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer,
       sensorAssignmentMissingValue);
 
-    sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
+    sensorAssignments.addAssignment(assignment);
     assignmentsTree.addAssignment(assignment);
 
     // Reset the assign dialog values, because it's so damn hard to do in
@@ -1805,8 +1805,7 @@ public class NewInstrumentBean extends FileUploadBean {
           getRunTypeFile(), getRunTypeColumn(), SensorType.RUN_TYPE_SENSOR_TYPE,
           "Run Type", true, false, null);
 
-        sensorAssignments.addAssignment(SensorType.RUN_TYPE_ID,
-          sensorAssignment);
+        sensorAssignments.addAssignment(sensorAssignment);
       }
 
       // Convert user-entered properties to the format in which they'll be

@@ -446,29 +446,8 @@ public class SensorAssignments
   }
 
   /**
-   * Add a sensor assignment using the name of a sensor type
-   *
-   * @param sensorType
-   *          The sensor type
-   * @param assignment
-   *          The assignment details
-   * @throws SensorTypeNotFoundException
-   *           If the named sensor does not exist
-   * @throws SensorAssignmentException
-   *           If the file column has already been assigned
-   */
-  public void addAssignment(String typeName, SensorAssignment assignment)
-    throws SensorTypeNotFoundException, SensorAssignmentException {
-
-    SensorType sensorType = getSensorConfig().getSensorType(typeName);
-    addAssignment(sensorType.getId(), assignment);
-  }
-
-  /**
    * Add a sensor assignment using the ID of a sensor type
    *
-   * @param sensorTypeId
-   *          The sensor type
    * @param assignment
    *          The assignment details
    * @throws SensorTypeNotFoundException
@@ -476,12 +455,10 @@ public class SensorAssignments
    * @throws SensorAssignmentException
    *           If the file column has already been assigned
    */
-  public void addAssignment(long sensorTypeId, SensorAssignment assignment)
+  public void addAssignment(SensorAssignment assignment)
     throws SensorTypeNotFoundException, SensorAssignmentException {
 
-    SensorType sensorType = getSensorConfig().getSensorType(sensorTypeId);
-
-    if (getSensorConfig().isParent(sensorType)) {
+    if (getSensorConfig().isParent(assignment.getSensorType())) {
       throw new SensorAssignmentException("Cannot assign parent sensor types");
     }
 
@@ -490,12 +467,12 @@ public class SensorAssignments
         + "', column " + assignment.getColumn() + " has already been assigned");
     }
 
-    List<SensorAssignment> assignments = get(sensorType);
+    List<SensorAssignment> assignments = get(assignment.getSensorType());
     if (null == assignments) {
       // The sensor is not valid for this instrument, so it has not
       // been added to the assignments list
-      throw new SensorAssignmentException(
-        sensorType + " is not valid for this instrument");
+      throw new SensorAssignmentException(assignment.getSensorType().getName()
+        + " is not valid for this instrument");
     }
     assignments.add(assignment);
   }

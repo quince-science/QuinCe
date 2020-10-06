@@ -101,11 +101,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class SensorAssignmentsTest extends BaseTest {
 
   /**
-   * An invalid sensor ID.
-   */
-  private static final long INVALID_SENSOR_ID = -1000L;
-
-  /**
    * The filename for the first test file.
    */
   protected static final String DATA_FILE_NAME = "Data File";
@@ -149,52 +144,6 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   private SensorAssignments assignments = null;
 
-  // Sensor type IDs. Populated by classInit()
-  /**
-   * The ID of the Intake Temperature {@link SensorType}.
-   *
-   * <p>
-   * Loaded by {@link #sensorConfigInit()}.
-   * </p>
-   */
-  private long intakeTemperatureId = -1L;
-
-  /**
-   * The ID of the Salinity {@link SensorType}.
-   *
-   * <p>
-   * Loaded by {@link #sensorConfigInit()}.
-   * </p>
-   */
-  private long salinityId = -1L;
-
-  /**
-   * The ID of the parent Equilibrator Pressure {@link SensorType}.
-   *
-   * <p>
-   * Loaded by {@link #sensorConfigInit()}.
-   * </p>
-   */
-  private long equilibratorPressureParentId = -1L;
-
-  /**
-   * The ID of the xH₂O {@link SensorType}.
-   *
-   * <p>
-   * Loaded by {@link #sensorConfigInit()}.
-   * </p>
-   */
-  private long xh2oId = -1L;
-
-  /**
-   * The ID of the CO₂ {@link SensorType}.
-   *
-   * <p>
-   * Loaded by {@link #sensorConfigInit()}.
-   * </p>
-   */
-  private long co2Id = -1L;
-
   /**
    * Get the total number of assignments made in the test.
    *
@@ -224,12 +173,19 @@ public class SensorAssignmentsTest extends BaseTest {
    * @throws SensorTypeNotFoundException
    * @throws SensorAssignmentException
    */
+  protected static SensorAssignment makeAssignment(SensorType sensorType,
+    String file, int column, boolean primary)
+    throws SensorTypeNotFoundException, SensorAssignmentException {
+
+    return new SensorAssignment(file, column, sensorType, "Assignment", primary,
+      false, "NaN");
+  }
+
   protected static SensorAssignment makeAssignment(String file, int column,
     boolean primary)
     throws SensorTypeNotFoundException, SensorAssignmentException {
 
-    return new SensorAssignment(file, column, getTestSensorType(), "Assignment",
-      primary, false, "NaN");
+    return makeAssignment(getTestSensorType(), file, column, primary);
   }
 
   private static SensorType getTestSensorType()
@@ -247,18 +203,19 @@ public class SensorAssignmentsTest extends BaseTest {
    * @throws SensorTypeNotFoundException
    *           If the name is not found
    */
-  private long getSensorTypeId(String typeName)
+  private SensorType getSensorType(String typeName)
     throws SensorTypeNotFoundException {
 
-    long result = -1;
+    SensorType result = null;
 
     for (SensorType type : config.getSensorTypes()) {
       if (type.getName().equals(typeName)) {
-        result = type.getId();
+        result = type;
+        break;
       }
     }
 
-    if (result == -1) {
+    if (null == result) {
       throw new SensorTypeNotFoundException(typeName);
     }
 
@@ -310,12 +267,6 @@ public class SensorAssignmentsTest extends BaseTest {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
     }
-
-    intakeTemperatureId = getSensorTypeId("Intake Temperature");
-    salinityId = getSensorTypeId("Salinity");
-    equilibratorPressureParentId = getSensorTypeId("Equilibrator Pressure");
-    xh2oId = getSensorTypeId("xH₂O (with standards)");
-    co2Id = getSensorTypeId("xCO₂ (with standards)");
   }
 
   /**
@@ -381,75 +332,29 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void basicAssignmentTest()
     throws SensorTypeNotFoundException, SensorAssignmentException {
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     Map<SensorType, List<SensorAssignment>> allAssignments = assignments;
     List<SensorAssignment> sensorAssignments = allAssignments
       .get(config.getSensorType(1));
     assertEquals(1, sensorAssignments.size());
     assertEquals(makeAssignment(DATA_FILE_NAME, 1, true),
       sensorAssignments.toArray()[0]);
-  }
-
-  /**
-   * Test that attempting to assign a {@link SensorType} with an ID that does
-   * not exist fails.
-   */
-  @Test
-  public void assignToInvalidSensorTypeTest() {
-    assertThrows(SensorTypeNotFoundException.class, () -> {
-      assignments.addAssignment(INVALID_SENSOR_ID,
-        makeAssignment(DATA_FILE_NAME, 1, true));
-    });
-  }
-
-  /**
-   * Test that a basic sensor can be assigned using the {@link SensorType} name.
-   *
-   * <p>
-   * Adds an assignment for an Intake Temperature sensor.
-   * </p>
-   *
-   * @throws SensorTypeNotFoundException
-   *           If the {@link SensorType} is not found in the database
-   * @throws SensorAssignmentException
-   *           If the assignment action fails
-   */
-  @Test
-  public void assignByNameTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
-    assignments.addAssignment("Intake Temperature",
-      makeAssignment(DATA_FILE_NAME, 1, true));
-    Map<SensorType, List<SensorAssignment>> allAssignments = assignments;
-    List<SensorAssignment> sensorAssignments = allAssignments
-      .get(config.getSensorType(1));
-    assertEquals(1, sensorAssignments.size());
-    assertEquals(makeAssignment(DATA_FILE_NAME, 1, true),
-      sensorAssignments.toArray()[0]);
-  }
-
-  /**
-   * Test that attempting to assign a {@link SensorType} with a name that does
-   * not exist fails.
-   */
-  @Test
-  public void assignByNonExistentNameTest() throws Exception {
-    assertThrows(SensorTypeNotFoundException.class, () -> {
-      assignments.addAssignment("Flurble",
-        makeAssignment(DATA_FILE_NAME, 1, true));
-    });
   }
 
   /**
    * Test that attempting to assign a parent {@link SensorType} fails.
+   * 
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
    */
   @Test
-  public void assignParentTest() {
+  public void assignParentTest()
+    throws SensorTypeNotFoundException, SensorAssignmentException {
 
     // Parents cannot be assigned; only their children
     assertThrows(SensorAssignmentException.class, () -> {
-      assignments.addAssignment(equilibratorPressureParentId,
-        makeAssignment(DATA_FILE_NAME, 1, true));
+      assignments.addAssignment(makeAssignment(
+        getSensorType("Equilibrator Pressure"), DATA_FILE_NAME, 1, true));
     });
   }
 
@@ -466,11 +371,9 @@ public class SensorAssignmentsTest extends BaseTest {
   public void duplicateColumnSameSensorTest()
     throws SensorTypeNotFoundException, SensorAssignmentException {
     // The same column can't be assigned more than once
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     assertThrows(SensorAssignmentException.class, () -> {
-      assignments.addAssignment(intakeTemperatureId,
-        makeAssignment(DATA_FILE_NAME, 1, true));
+      assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     });
   }
 
@@ -487,11 +390,9 @@ public class SensorAssignmentsTest extends BaseTest {
   public void duplicateColumnDifferentSensorTest()
     throws SensorTypeNotFoundException, SensorAssignmentException {
     // The same column can't be assigned more than once
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     assertThrows(SensorAssignmentException.class, () -> {
-      assignments.addAssignment(salinityId,
-        makeAssignment(DATA_FILE_NAME, 1, true));
+      assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     });
   }
 
@@ -506,11 +407,10 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void duplicateColumnDifferentFileTest()
     throws SensorTypeNotFoundException, SensorAssignmentException {
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     SensorAssignment assignment2 = new SensorAssignment(DATA_FILE_2_NAME, 1,
       getTestSensorType(), "Second file sensor", true, false, "NaN");
-    assignments.addAssignment(salinityId, assignment2);
+    assignments.addAssignment(assignment2);
 
     assertEquals(2, countAllAssignments());
   }
@@ -533,11 +433,11 @@ public class SensorAssignmentsTest extends BaseTest {
     throws SensorTypeNotFoundException, SensorAssignmentException {
 
     SensorAssignment assignment = makeAssignment(DATA_FILE_NAME, 1, true);
-    assignments.addAssignment(intakeTemperatureId, assignment);
+    assignments.addAssignment(assignment);
 
     SensorAssignment removedAssignment = assignments
       .removeAssignment(getTestSensorType(), DATA_FILE_NAME, 1);
-    
+
     assertEquals(0, countAllAssignments());
     assertEquals(assignment, removedAssignment);
   }
@@ -559,12 +459,9 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void removeFileAssignmentsTest()
     throws SensorTypeNotFoundException, SensorAssignmentException {
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 1, true));
-    assignments.addAssignment(salinityId,
-      makeAssignment(DATA_FILE_NAME, 2, true));
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_2_NAME, 1, false));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_2_NAME, 1, false));
     assignments.removeFileAssignments(DATA_FILE_NAME);
     assertEquals(1, countAllAssignments());
   }
@@ -581,22 +478,14 @@ public class SensorAssignmentsTest extends BaseTest {
   public void addMultipleAssignments()
     throws SensorTypeNotFoundException, SensorAssignmentException {
     // Add multiple assignments to sensor types
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 1, true));
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 2, false));
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 3, true));
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 4, false));
-    assignments.addAssignment(salinityId,
-      makeAssignment(DATA_FILE_NAME, 5, true));
-    assignments.addAssignment(salinityId,
-      makeAssignment(DATA_FILE_NAME, 6, false));
-    assignments.addAssignment(salinityId,
-      makeAssignment(DATA_FILE_NAME, 7, true));
-    assignments.addAssignment(salinityId,
-      makeAssignment(DATA_FILE_NAME, 8, false));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 2, false));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 3, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 4, false));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 5, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 6, false));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 7, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 8, false));
     assertEquals(8, countAllAssignments());
 
   }
@@ -623,7 +512,8 @@ public class SensorAssignmentsTest extends BaseTest {
   public void coreSensorAssignedPrimaryTest()
     throws SensorConfigurationException, SensorTypeNotFoundException,
     SensorAssignmentException {
-    assignments.addAssignment(co2Id, makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, true));
     assertTrue(assignments.coreSensorAssigned(DATA_FILE_NAME, true));
     assertFalse(assignments.coreSensorAssigned(DATA_FILE_2_NAME, true));
   }
@@ -643,10 +533,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void coreSensorNotAssignedTest() throws SensorTypeNotFoundException,
     SensorAssignmentException, SensorConfigurationException {
-    assignments.addAssignment(salinityId,
-      makeAssignment(DATA_FILE_NAME, 1, true));
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 2, true));
 
     assertFalse(assignments.coreSensorAssigned(DATA_FILE_NAME, true));
     assertFalse(assignments.coreSensorAssigned(DATA_FILE_2_NAME, true));
@@ -674,7 +562,8 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   @Test
   public void coreSensorSecondaryAssignedTest() throws Exception {
-    assignments.addAssignment(co2Id, makeAssignment(DATA_FILE_NAME, 1, false));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, false));
     assertTrue(assignments.coreSensorAssigned(DATA_FILE_NAME, false));
     assertFalse(assignments.coreSensorAssigned(DATA_FILE_NAME, true));
   }
@@ -684,17 +573,19 @@ public class SensorAssignmentsTest extends BaseTest {
    * the instrument does not measure.
    *
    * @throws SensorTypeNotFoundException
-   *           If the core {@link SensorType} is not found
+   *           If the core {@link SensorType} is not found.
+   * @throws SensorAssignmentException
+   *           If the test {@link SensorAssignment} cannot be created.
    */
   @Test
   public void assignCoreSensorForDisallowedVariableTest()
-    throws SensorTypeNotFoundException {
+    throws SensorTypeNotFoundException, SensorAssignmentException {
     // You're not allowed to assign a core sensor for a
     // variable that your instrument doesn't measure.
-    long testSensorId = getSensorTypeId("testSensor");
+
     assertThrows(SensorAssignmentException.class, () -> {
-      assignments.addAssignment(testSensorId,
-        makeAssignment(DATA_FILE_NAME, 1, true));
+      assignments.addAssignment(
+        makeAssignment(getSensorType("testSensor"), DATA_FILE_NAME, 1, true));
     });
   }
 
@@ -717,8 +608,7 @@ public class SensorAssignmentsTest extends BaseTest {
     throws SensorTypeNotFoundException, SensorAssignmentException {
     // Run type is not required if no sensor with internal calibration is
     // assigned
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
 
     assertFalse(assignments.runTypeRequired(DATA_FILE_NAME));
     assertFalse(assignments.runTypeRequired(DATA_FILE_2_NAME));
@@ -743,7 +633,9 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void runTypeRequiredOneInternalCalibTest()
     throws SensorTypeNotFoundException, SensorAssignmentException {
-    assignments.addAssignment(xh2oId, makeAssignment(DATA_FILE_NAME, 1, true));
+
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, true));
 
     assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
     assertFalse(assignments.runTypeRequired(DATA_FILE_2_NAME));
@@ -762,9 +654,10 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void runTypeRequiredTwoInternalCalibTest()
     throws SensorTypeNotFoundException, SensorAssignmentException {
-    assignments.addAssignment(xh2oId, makeAssignment(DATA_FILE_NAME, 1, true));
-    assignments.addAssignment(xh2oId,
-      makeAssignment(DATA_FILE_2_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xH₂O (with standards)"), DATA_FILE_2_NAME, 1, true));
 
     assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
     assertTrue(assignments.runTypeRequired(DATA_FILE_2_NAME));
@@ -783,8 +676,10 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void runTypeRequiredBothInternalCalibTest()
     throws SensorTypeNotFoundException, SensorAssignmentException {
-    assignments.addAssignment(xh2oId, makeAssignment(DATA_FILE_NAME, 1, true));
-    assignments.addAssignment(co2Id, makeAssignment(DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 2, true));
 
     assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
   }
@@ -818,12 +713,8 @@ public class SensorAssignmentsTest extends BaseTest {
     throws SensorTypeNotFoundException, SensorAssignmentException,
     SensorConfigurationException {
 
-    SensorType sensorType = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Intake Temperature");
-
-    assignments.addAssignment(sensorType.getId(),
-      makeAssignment(DATA_FILE_NAME, 1, true));
-
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
     assertFalse(assignments.isVariableComplete(co2Var));
   }
 
@@ -841,31 +732,22 @@ public class SensorAssignmentsTest extends BaseTest {
   public void variableCompleteNoDependsTest()
     throws SensorTypeNotFoundException, SensorAssignmentException,
     SensorConfigurationException {
-    SensorType intakeTemp = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Intake Temperature");
-    assignments.addAssignment(intakeTemp.getId(),
-      makeAssignment(DATA_FILE_NAME, 1, true));
 
-    SensorType salinity = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Salinity");
-    assignments.addAssignment(salinity.getId(),
-      makeAssignment(DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
 
-    SensorType eqTemp = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("Equilibrator Temperature");
-    assignments.addAssignment(eqTemp.getId(),
-      makeAssignment(DATA_FILE_NAME, 3, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
 
-    SensorType eqPresAbs = ResourceManager.getInstance()
-      .getSensorsConfiguration()
-      .getSensorType("Equilibrator Pressure (absolute)");
-    assignments.addAssignment(eqPresAbs.getId(),
-      makeAssignment(DATA_FILE_NAME, 4, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
 
-    SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("xCO₂ (with standards)");
-    assignments.addAssignment(co2.getId(),
-      makeAssignment(DATA_FILE_NAME, 5, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Equilibrator Pressure (absolute)"),
+        DATA_FILE_NAME, 4, true));
+
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 5, true));
 
     assertTrue(assignments.isVariableComplete(co2Var));
   }
@@ -885,39 +767,27 @@ public class SensorAssignmentsTest extends BaseTest {
   public void variableCompleteDependsNotSetTest()
     throws SensorTypeNotFoundException, SensorAssignmentException,
     SensorConfigurationException {
-    SensorType intakeTemp = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Intake Temperature");
-    assignments.addAssignment(intakeTemp.getId(),
-      makeAssignment(DATA_FILE_NAME, 1, true));
 
-    SensorType salinity = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Salinity");
-    assignments.addAssignment(salinity.getId(),
-      makeAssignment(DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
 
-    SensorType eqTemp = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("Equilibrator Temperature");
-    assignments.addAssignment(eqTemp.getId(),
-      makeAssignment(DATA_FILE_NAME, 3, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
+
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
 
     // Both Absolute and Differential are set, but Pressure At Instrument
     // (which differential depends on) is not set
-    SensorType eqPresAbs = ResourceManager.getInstance()
-      .getSensorsConfiguration()
-      .getSensorType("Equilibrator Pressure (absolute)");
-    assignments.addAssignment(eqPresAbs.getId(),
-      makeAssignment(DATA_FILE_NAME, 4, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Equilibrator Pressure (absolute)"),
+        DATA_FILE_NAME, 4, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Equilibrator Pressure (differential)"),
+        DATA_FILE_NAME, 5, true));
 
-    SensorType eqPresDiff = ResourceManager.getInstance()
-      .getSensorsConfiguration()
-      .getSensorType("Equilibrator Pressure (differential)");
-    assignments.addAssignment(eqPresDiff.getId(),
-      makeAssignment(DATA_FILE_NAME, 5, true));
-
-    SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("xCO₂ (with standards)");
-    assignments.addAssignment(co2.getId(),
-      makeAssignment(DATA_FILE_NAME, 6, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 6, true));
 
     assertFalse(assignments.isVariableComplete(co2Var));
   }
@@ -936,42 +806,29 @@ public class SensorAssignmentsTest extends BaseTest {
   public void variableCompleteDependsSetTest()
     throws SensorTypeNotFoundException, SensorAssignmentException,
     SensorConfigurationException {
-    SensorType intakeTemp = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Intake Temperature");
-    assignments.addAssignment(intakeTemp.getId(),
-      makeAssignment(DATA_FILE_NAME, 1, true));
 
-    SensorType salinity = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Salinity");
-    assignments.addAssignment(salinity.getId(),
-      makeAssignment(DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
 
-    SensorType eqTemp = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("Equilibrator Temperature");
-    assignments.addAssignment(eqTemp.getId(),
-      makeAssignment(DATA_FILE_NAME, 3, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
 
-    SensorType eqPresAbs = ResourceManager.getInstance()
-      .getSensorsConfiguration()
-      .getSensorType("Equilibrator Pressure (absolute)");
-    assignments.addAssignment(eqPresAbs.getId(),
-      makeAssignment(DATA_FILE_NAME, 4, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
 
-    SensorType eqPresDiff = ResourceManager.getInstance()
-      .getSensorsConfiguration()
-      .getSensorType("Equilibrator Pressure (differential)");
-    assignments.addAssignment(eqPresDiff.getId(),
-      makeAssignment(DATA_FILE_NAME, 5, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Equilibrator Pressure (absolute)"),
+        DATA_FILE_NAME, 4, true));
 
-    SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("xCO₂ (with standards)");
-    assignments.addAssignment(co2.getId(),
-      makeAssignment(DATA_FILE_NAME, 6, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Equilibrator Pressure (differential)"),
+        DATA_FILE_NAME, 5, true));
 
-    SensorType instrPres = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Pressure at instrument");
-    assignments.addAssignment(instrPres.getId(),
-      makeAssignment(DATA_FILE_NAME, 7, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 6, true));
+
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Pressure at instrument"), DATA_FILE_NAME, 7, true));
 
     assertTrue(assignments.isVariableComplete(co2Var));
   }
@@ -996,37 +853,26 @@ public class SensorAssignmentsTest extends BaseTest {
   public void variableCompleteDependsQuestionNotSetTest()
     throws SensorTypeNotFoundException, SensorAssignmentException,
     SensorConfigurationException {
-    SensorType intakeTemp = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Intake Temperature");
-    assignments.addAssignment(intakeTemp.getId(),
-      makeAssignment(DATA_FILE_NAME, 1, true));
 
-    SensorType salinity = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Salinity");
-    assignments.addAssignment(salinity.getId(),
-      makeAssignment(DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
 
-    SensorType eqTemp = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("Equilibrator Temperature");
-    assignments.addAssignment(eqTemp.getId(),
-      makeAssignment(DATA_FILE_NAME, 3, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
 
-    SensorType eqPresAbs = ResourceManager.getInstance()
-      .getSensorsConfiguration()
-      .getSensorType("Equilibrator Pressure (differential)");
-    assignments.addAssignment(eqPresAbs.getId(),
-      makeAssignment(DATA_FILE_NAME, 4, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
 
-    SensorType instrPres = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Pressure at instrument");
-    assignments.addAssignment(instrPres.getId(),
-      makeAssignment(DATA_FILE_NAME, 6, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Equilibrator Pressure (differential)"),
+        DATA_FILE_NAME, 4, true));
 
-    SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("xCO₂ (with standards)");
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Pressure at instrument"), DATA_FILE_NAME, 6, true));
+
     SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME, 5,
-      co2, "Assignment", true, true, "NaN");
-    assignments.addAssignment(co2.getId(), co2Assignment);
+      getSensorType("xCO₂ (with standards)"), "Assignment", true, true, "NaN");
+    assignments.addAssignment(co2Assignment);
 
     assertFalse(assignments.isVariableComplete(co2Var));
   }
@@ -1051,42 +897,29 @@ public class SensorAssignmentsTest extends BaseTest {
   public void variableCompleteDependsQuestionSetTest()
     throws SensorTypeNotFoundException, SensorAssignmentException,
     SensorConfigurationException {
-    SensorType intakeTemp = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Intake Temperature");
-    assignments.addAssignment(intakeTemp.getId(),
-      makeAssignment(DATA_FILE_NAME, 1, true));
 
-    SensorType salinity = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Salinity");
-    assignments.addAssignment(salinity.getId(),
-      makeAssignment(DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
 
-    SensorType eqTemp = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("Equilibrator Temperature");
-    assignments.addAssignment(eqTemp.getId(),
-      makeAssignment(DATA_FILE_NAME, 3, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
 
-    SensorType eqPresAbs = ResourceManager.getInstance()
-      .getSensorsConfiguration()
-      .getSensorType("Equilibrator Pressure (differential)");
-    assignments.addAssignment(eqPresAbs.getId(),
-      makeAssignment(DATA_FILE_NAME, 4, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
 
-    SensorType instrPres = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Pressure at instrument");
-    assignments.addAssignment(instrPres.getId(),
-      makeAssignment(DATA_FILE_NAME, 6, true));
+    assignments.addAssignment(
+      makeAssignment(getSensorType("Equilibrator Pressure (differential)"),
+        DATA_FILE_NAME, 4, true));
 
-    SensorType co2 = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("xCO₂ (with standards)");
+    assignments.addAssignment(makeAssignment(
+      getSensorType("Pressure at instrument"), DATA_FILE_NAME, 6, true));
+
     SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME, 5,
-      co2, "Assignment", true, true, "NaN");
-    assignments.addAssignment(co2.getId(), co2Assignment);
+      getSensorType("xCO₂ (with standards)"), "Assignment", true, true, "NaN");
+    assignments.addAssignment(co2Assignment);
 
-    SensorType xh2o = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("xH₂O (with standards)");
-    assignments.addAssignment(xh2o.getId(),
-      makeAssignment(DATA_FILE_NAME, 7, true));
+    assignments.addAssignment(makeAssignment(
+      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 7, true));
 
     assertTrue(assignments.isVariableComplete(co2Var));
   }
