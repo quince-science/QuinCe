@@ -1283,10 +1283,9 @@ public class InstrumentDB {
           boolean dependsQuestionAnswer = columns.getBoolean(6);
           String missingValue = columns.getString(7);
 
-          assignments.addAssignment(sensorType.getId(),
-            new SensorAssignment(assignmentId, file.getFileDescription(),
-              fileColumn, sensorType, sensorName, primarySensor,
-              dependsQuestionAnswer, missingValue));
+          assignments.addAssignment(new SensorAssignment(assignmentId,
+            file.getFileDescription(), fileColumn, sensorType, sensorName,
+            primarySensor, dependsQuestionAnswer, missingValue));
 
           // Add the run type assignments to the file definition
           if (sensorType.getId() == SensorType.RUN_TYPE_ID) {
