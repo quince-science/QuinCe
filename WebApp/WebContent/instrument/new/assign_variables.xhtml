@@ -209,7 +209,7 @@
         value="#{newInstrumentBean.removeAssignmentColumn}"/>
       <p:remoteCommand name="removeAssignmentCommand" action="#{newInstrumentBean.removeAssignment}"
         process="removeAssignmentSensorType removeAssignmentDataFile removeAssignmentColumn"
-        update="assignmentsTree"/>
+        update="assignmentsTree" oncomplete="sensorAssigned();"/>
 
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">

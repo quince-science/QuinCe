@@ -176,17 +176,47 @@ public class SensorAssignments
   public boolean isAssignmentRequired(SensorType sensorType)
     throws SensorAssignmentException, SensorConfigurationException {
 
-    // Is the sensor required for the variables being measured?
-    boolean required = getSensorConfig().requiredForVariables(sensorType,
-      variableIDs);
+    boolean result;
 
-    // Do other required sensors depend on this SensorType?
-    if (hasAssignedDependents(sensorType)) {
-      required = true;
+    if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
+      result = isRunTypeSensorTypeRequired();
+    } else {
+      // Is the sensor required for the variables being measured?
+      boolean required = getSensorConfig().requiredForVariables(sensorType,
+        variableIDs);
+
+      // Do other required sensors depend on this SensorType?
+      if (hasAssignedDependents(sensorType)) {
+        required = true;
+      }
+
+      // If it's required and primary not assigned, return true
+      result = (required && !isAssigned(sensorType, true, true));
     }
 
-    // If it's required and primary not assigned, return true
-    return (required && !isAssigned(sensorType, true, true));
+    return result;
+  }
+
+  /**
+   * Determine whether or not the special
+   * {@link SensorType#RUN_TYPE_SENSOR_TYPE} is required.
+   * 
+   * @return {@code true} if the {@link SensorType#RUN_TYPE_SENSOR_TYPE} is
+   *         required; {@code false} otherwise.
+   */
+  private boolean isRunTypeSensorTypeRequired() {
+    boolean result = false;
+
+    if (!isAssigned(SensorType.RUN_TYPE_SENSOR_TYPE)) {
+      for (SensorType sensorType : keySet()) {
+        if (sensorType.hasInternalCalibration() && get(sensorType).size() > 0) {
+          result = true;
+          break;
+        }
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -793,7 +823,7 @@ public class SensorAssignments
     boolean complete = true;
 
     Set<SensorType> requiredSensorTypes = getSensorConfig()
-      .getSensorTypes(variable.getId(), false, false);
+      .getSensorTypes(variable.getId(), false, false, true);
 
     for (SensorType sensorType : requiredSensorTypes) {
 

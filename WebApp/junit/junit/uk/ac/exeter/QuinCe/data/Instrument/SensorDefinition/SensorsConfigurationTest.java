@@ -21,6 +21,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
@@ -29,6 +30,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -612,7 +614,7 @@ public class SensorsConfigurationTest extends BaseTest {
 
     // Make sure the correct sensors are in the set
     Set<SensorType> testSensorTypes = config.getSensorTypes(var2List, false,
-      false);
+      false, false);
     assertTrue(
       testSensorTypes.contains(config.getSensorType("Intake Temperature")));
     assertTrue(testSensorTypes.contains(config.getSensorType("Salinity")));
@@ -637,7 +639,8 @@ public class SensorsConfigurationTest extends BaseTest {
     initVarList();
     SensorsConfiguration config = getConfig();
 
-    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false, false);
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false, false,
+      false);
     assertTrue(
       sensorTypes.contains(config.getSensorType("Equilibrator Pressure")));
     assertFalse(sensorTypes
@@ -662,7 +665,8 @@ public class SensorsConfigurationTest extends BaseTest {
     initVarList();
     SensorsConfiguration config = getConfig();
 
-    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true, false);
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true, false,
+      false);
     assertFalse(
       sensorTypes.contains(config.getSensorType("Equilibrator Pressure")));
     assertTrue(sensorTypes
@@ -999,7 +1003,7 @@ public class SensorsConfigurationTest extends BaseTest {
     initVarList();
     SensorsConfiguration config = getConfig();
     assertThrows(SensorConfigurationException.class, () -> {
-      config.getSensorTypes(invalidVarList, false, false);
+      config.getSensorTypes(invalidVarList, false, false, false);
     });
   }
 
@@ -1134,7 +1138,8 @@ public class SensorsConfigurationTest extends BaseTest {
     initVarList();
     SensorsConfiguration config = getConfig();
 
-    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false, false);
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false, false,
+      false);
     assertFalse(
       sensorTypes.contains(config.getSensorType("xH₂O (with standards)")));
   }
@@ -1157,7 +1162,8 @@ public class SensorsConfigurationTest extends BaseTest {
     initVarList();
     SensorsConfiguration config = getConfig();
 
-    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false, true);
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false, true,
+      false);
     assertTrue(
       sensorTypes.contains(config.getSensorType("xH₂O (with standards)")));
     assertFalse(
@@ -1182,10 +1188,102 @@ public class SensorsConfigurationTest extends BaseTest {
     initVarList();
     SensorsConfiguration config = getConfig();
 
-    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true, true);
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true, true,
+      false);
     assertTrue(
       sensorTypes.contains(config.getSensorType("xH₂O (with standards)")));
     assertTrue(
       sensorTypes.contains(config.getSensorType("Pressure at instrument")));
+  }
+
+  /**
+   * Test that getting the list of {@link SensorType} for a variable with
+   * internal calibrations does not return the 'Run Type' type if we don't ask
+   * for it.
+   * 
+   * @throws Exception
+   */
+  @FlywayTest
+  @Test
+  public void getSensorTypesExcludeRunTypeTest() throws Exception {
+    initVarList();
+    SensorsConfiguration config = getConfig();
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true, true,
+      false);
+    assertFalse(sensorTypes.contains(SensorType.RUN_TYPE_SENSOR_TYPE));
+  }
+
+  /**
+   * Test that getting the list of {@link SensorType} for a variable with
+   * internal calibrations returns the 'Run Type' type if we ask for it.
+   * 
+   * @throws Exception
+   */
+  @FlywayTest
+  @Test
+  public void getSensorTypesIncludeRunTypeTest() throws Exception {
+    initVarList();
+    SensorsConfiguration config = getConfig();
+    Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true, true,
+      true);
+    assertTrue(sensorTypes.contains(SensorType.RUN_TYPE_SENSOR_TYPE));
+  }
+
+  /**
+   * Test that getting the list of {@link SensorType} for a variable with
+   * internal calibrations does not return the 'Run Type' type if we don't ask
+   * for it.
+   * 
+   * @throws Exception
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/variableWithNoInternalCalibrations" })
+  @Test
+  public void getSensorTypesNoInternalCalibrationExcludeRunTypeTest()
+    throws Exception {
+
+    SensorsConfiguration config = getConfig();
+    Variable var = getVariable(getDataSource().getConnection(), config,
+      "No Internal Calibration");
+
+    Set<SensorType> sensorTypes = config.getSensorTypes(var.getId(), true, true,
+      true);
+    assertFalse(sensorTypes.contains(SensorType.RUN_TYPE_SENSOR_TYPE));
+  }
+
+  /**
+   * Test that getting the list of {@link SensorType} for a variable with
+   * internal calibrations returns the 'Run Type' type if we ask for it.
+   * 
+   * @throws Exception
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/variableWithNoInternalCalibrations" })
+  @Test
+  public void getSensorTypesNoInternalCalibrationIncludeRunTypeTest()
+    throws Exception {
+
+    SensorsConfiguration config = getConfig();
+    Variable var = getVariable(getDataSource().getConnection(), config,
+      "No Internal Calibration");
+
+    Set<SensorType> sensorTypes = config.getSensorTypes(var.getId(), true, true,
+      true);
+    assertFalse(sensorTypes.contains(SensorType.RUN_TYPE_SENSOR_TYPE));
+  }
+
+  private Variable getVariable(Connection conn,
+    SensorsConfiguration sensorConfig, String varName)
+    throws MissingParamException, VariableNotFoundException, DatabaseException {
+    Variable result = null;
+
+    for (Variable var : InstrumentDB.getAllVariables(conn, sensorConfig)) {
+      if (var.getName().equals(varName)) {
+        result = var;
+        break;
+      }
+    }
+
+    return result;
   }
 }
