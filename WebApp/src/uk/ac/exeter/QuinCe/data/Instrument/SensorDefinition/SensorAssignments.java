@@ -511,25 +511,22 @@ public class SensorAssignments
    *          The column index
    * @return {@code true} if an assignment was removed; {@code false} if not
    */
-  public boolean removeAssignment(String fileDescription, int columnIndex) {
+  public SensorAssignment removeAssignment(SensorType sensorType,
+    String fileDescription, int columnIndex) {
 
-    boolean assignmentRemoved = false;
+    SensorAssignment removed = null;
 
-    for (Map.Entry<SensorType, List<SensorAssignment>> entry : entrySet()) {
-
-      List<SensorAssignment> assignments = entry.getValue();
-      for (SensorAssignment assignment : assignments) {
-        if (assignment.getDataFile().equalsIgnoreCase(fileDescription)
-          && assignment.getColumn() == columnIndex) {
-          assignments.remove(assignment);
-          assignmentRemoved = true;
-          break;
-        }
+    for (SensorAssignment assignment : get(sensorType)) {
+      if (assignment.getDataFile().equalsIgnoreCase(fileDescription)
+        && assignment.getColumn() == columnIndex) {
+        get(sensorType).remove(assignment);
+        removed = assignment;
+        break;
       }
 
     }
 
-    return assignmentRemoved;
+    return removed;
   }
 
   /**
