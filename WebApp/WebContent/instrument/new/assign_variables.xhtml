@@ -160,7 +160,11 @@
               <h:outputText value="#{node}"/>
             </p:treeNode>
             <p:treeNode type="ASSIGNMENT" styleClass="sensorAssignment">
-              <h:outputText value="#{node}"/>
+              <h:outputText id="nodeLabel" value="#{node.target}"/>
+              <p:contextMenu for="nodeLabel">
+                <p:menuitem value="Remove" 
+                  onclick="removeAssignment('#{node.sensorType.id}', '#{node.dataFile}', '#{node.column}')"/>
+              </p:contextMenu>
             </p:treeNode>
           </p:tree>
         </p:fieldset>
@@ -195,6 +199,17 @@
         </h:panelGrid>
 
       </p:dialog>
+      
+      <!-- Remove assignment -->
+      <h:inputHidden id="removeAssignmentSensorType"
+        value="#{newInstrumentBean.removeAssignmentSensorType}"/>
+      <h:inputHidden id="removeAssignmentDataFile"
+        value="#{newInstrumentBean.removeAssignmentDataFile}"/>
+      <h:inputHidden id="removeAssignmentColumn"
+        value="#{newInstrumentBean.removeAssignmentColumn}"/>
+      <p:remoteCommand name="removeAssignmentCommand" action="#{newInstrumentBean.removeAssignment}"
+        process="removeAssignmentSensorType removeAssignmentDataFile removeAssignmentColumn"
+        update="assignmentsTree"/>
 
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">

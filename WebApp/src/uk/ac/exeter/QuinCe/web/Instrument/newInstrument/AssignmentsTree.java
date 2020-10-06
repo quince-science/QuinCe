@@ -98,11 +98,12 @@ public class AssignmentsTree {
     }
   }
 
-  protected void removeAssignmentNodes(String fileName) {
+  protected void removeFileAssignmentNodes(String fileName) {
 
     for (List<SensorTypeTreeNode> sensorTypeNodes : sensorTypeNodes.values()) {
       for (SensorTypeTreeNode sensorTypeNode : sensorTypeNodes) {
 
+        @SuppressWarnings("unchecked")
         List<SensorAssignmentTreeNode> assignmentNodes = (List<SensorAssignmentTreeNode>) (Object) sensorTypeNode
           .getChildren();
 
@@ -117,7 +118,15 @@ public class AssignmentsTree {
 
         sensorTypeNode.setChildren(filteredChildren);
       }
+    }
+  }
 
+  protected void removeAssignment(SensorAssignment assignment) {
+
+    List<SensorTypeTreeNode> typeNodes = sensorTypeNodes
+      .get(assignment.getSensorType());
+    for (SensorTypeTreeNode node : typeNodes) {
+      node.removeAssignment(assignment);
     }
 
   }

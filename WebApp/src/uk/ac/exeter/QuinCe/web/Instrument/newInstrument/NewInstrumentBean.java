@@ -294,16 +294,6 @@ public class NewInstrumentBean extends FileUploadBean {
   private String startTimeDate = null;
 
   /**
-   * The index of the file to be unassigned
-   */
-  private int unassignFile = -1;
-
-  /**
-   * The index of the column to be unassigned
-   */
-  private int unassignColumn = -1;
-
-  /**
    * The name of the file to be removed
    */
   private String removeFileName = null;
@@ -404,6 +394,21 @@ public class NewInstrumentBean extends FileUploadBean {
    * The new file description for a file being renamed.
    */
   private String renameNewFile;
+
+  /**
+   * The ID of the sensor type for which an assignment is to be removed.
+   */
+  private long removeAssignmentSensorType;
+
+  /**
+   * The data file for which an assignment is being removed.
+   */
+  private String removeAssignmentDataFile;
+
+  /**
+   * The column for which an assignment is being removed.
+   */
+  private int removeAssignmentColumn;
 
   /**
    * Begin a new instrument definition
@@ -1413,74 +1418,6 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Get the index of the file to unassign
-   *
-   * @return The file index
-   */
-  public int getUnassignFile() {
-    return unassignFile;
-  }
-
-  /**
-   * Set the index of the file to unassign
-   *
-   * @param unassignFile
-   *          The file index
-   */
-  public void setUnassignFile(int unassignFile) {
-    this.unassignFile = unassignFile;
-  }
-
-  /**
-   * Get the index of the column to unassign
-   *
-   * @return The column index
-   */
-  public int getUnassignColumn() {
-    return unassignColumn;
-  }
-
-  /**
-   * Set the index of the column to unassign
-   *
-   * @param unassignColumn
-   *          The column index
-   */
-  public void setUnassignColumn(int unassignColumn) {
-    this.unassignColumn = unassignColumn;
-  }
-
-  /**
-   * Remove a variable assignment
-   */
-  public void unassignVariable() {
-
-    boolean unassigned = false;
-
-    FileDefinitionBuilder fileDefinition = instrumentFiles.get(unassignFile);
-
-    if (null != fileDefinition) {
-
-      if (fileDefinition.getRunTypeColumn() == unassignColumn) {
-        fileDefinition.setRunTypeColumn(-1);
-      } else {
-        unassigned = sensorAssignments.removeAssignment(
-          fileDefinition.getFileDescription(), unassignColumn);
-
-        if (!unassigned) {
-          unassigned = fileDefinition.removeAssignment(unassignColumn);
-        }
-
-        // If the run type column is no longer required, unassign it
-        if (!sensorAssignments
-          .runTypeRequired(fileDefinition.getFileDescription())) {
-          fileDefinition.setRunTypeColumn(-1);
-        }
-      }
-    }
-  }
-
-  /**
    * Get the name of the file to be removed
    *
    * @return The file name
@@ -1512,7 +1449,7 @@ public class NewInstrumentBean extends FileUploadBean {
     if (null != removeFileName) {
       instrumentFiles.remove(removeFileName);
       sensorAssignments.removeFileAssignments(removeFileName);
-      assignmentsTree.removeAssignmentNodes(removeFileName);
+      assignmentsTree.removeFileAssignmentNodes(removeFileName);
     }
 
     if (instrumentFiles.size() == 0) {
@@ -1858,10 +1795,6 @@ public class NewInstrumentBean extends FileUploadBean {
     InstrumentException, DatabaseException, IOException {
 
     try {
-
-      SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-        .getSensorsConfiguration();
-
       /*
        * Adding a Run Type sensor assignment
        */
@@ -2136,5 +2069,45 @@ public class NewInstrumentBean extends FileUploadBean {
     sensorTypes.addAll(sensorConfig.getDiagnosticSensorTypes());
 
     return new Gson().toJson(sensorTypes);
+  }
+
+  public long getRemoveAssignmentSensorType() {
+    return removeAssignmentSensorType;
+  }
+
+  public void setRemoveAssignmentSensorType(long removeAssignmentSensorType) {
+    this.removeAssignmentSensorType = removeAssignmentSensorType;
+  }
+
+  public String getRemoveAssignmentDataFile() {
+    return removeAssignmentDataFile;
+  }
+
+  public void setRemoveAssignmentDataFile(String removeAssignmentDataFile) {
+    this.removeAssignmentDataFile = removeAssignmentDataFile;
+  }
+
+  public int getRemoveAssignmentColumn() {
+    return removeAssignmentColumn;
+  }
+
+  public void setRemoveAssignmentColumn(int removeAssignmentColumn) {
+    this.removeAssignmentColumn = removeAssignmentColumn;
+  }
+
+  public void removeAssignment() {
+
+    try {
+      SensorType sensorType = ResourceManager.getInstance()
+        .getSensorsConfiguration().getSensorType(removeAssignmentSensorType);
+
+      SensorAssignment removed = sensorAssignments.removeAssignment(sensorType,
+        removeAssignmentDataFile, removeAssignmentColumn);
+
+      assignmentsTree.removeAssignment(removed);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }

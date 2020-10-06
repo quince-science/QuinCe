@@ -531,10 +531,15 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void removeAssignmentTest()
     throws SensorTypeNotFoundException, SensorAssignmentException {
-    assignments.addAssignment(intakeTemperatureId,
-      makeAssignment(DATA_FILE_NAME, 1, true));
-    assignments.removeAssignment(DATA_FILE_NAME, 1);
+
+    SensorAssignment assignment = makeAssignment(DATA_FILE_NAME, 1, true);
+    assignments.addAssignment(intakeTemperatureId, assignment);
+
+    SensorAssignment removedAssignment = assignments
+      .removeAssignment(getTestSensorType(), DATA_FILE_NAME, 1);
+    
     assertEquals(0, countAllAssignments());
+    assertEquals(assignment, removedAssignment);
   }
 
   /**

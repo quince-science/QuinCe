@@ -9,21 +9,13 @@ public class SensorAssignmentTreeNode extends DefaultTreeNode {
 
   private static final String ASSIGNMENT = "ASSIGNMENT";
 
-  private SensorAssignment assignment;
-
   protected SensorAssignmentTreeNode(SensorTypeTreeNode parent,
     SensorAssignment assignment) {
 
-    super(ASSIGNMENT, assignment.getTarget(), parent);
-    this.assignment = assignment;
-  }
-
-  @Override
-  public Object getData() {
-    return assignment.getTarget();
+    super(ASSIGNMENT, assignment, parent);
   }
 
   protected String getTargetFile() {
-    return assignment.getDataFile();
+    return ((SensorAssignment) getData()).getDataFile();
   }
 }
