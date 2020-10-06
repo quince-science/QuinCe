@@ -256,18 +256,32 @@ public class SensorAssignment {
   }
 
   @Override
+  public String toString() {
+    return "ID " + databaseId + ": " + sensorName;
+  }
+
+  public ColumnHeading getColumnHeading() {
+    return new ColumnHeading(databaseId, sensorName,
+      sensorType.getColumnHeading(), sensorType.getCode(),
+      sensorType.getUnits(), true);
+  }
+
+  public SensorType getSensorType() {
+    return sensorType;
+  }
+
+  protected void setDataFile(String dataFile) {
+    this.dataFile = dataFile;
+  }
+
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
     result = prime * result + column;
     result = prime * result + ((dataFile == null) ? 0 : dataFile.hashCode());
-    result = prime * result + (int) (databaseId ^ (databaseId >>> 32));
-    result = prime * result + (dependsQuestionAnswer ? 1231 : 1237);
     result = prime * result
-      + ((missingValue == null) ? 0 : missingValue.hashCode());
-    result = prime * result + (primary ? 1231 : 1237);
-    result = prime * result
-      + ((sensorName == null) ? 0 : sensorName.hashCode());
+      + ((sensorType == null) ? 0 : sensorType.hashCode());
     return result;
   }
 
@@ -287,41 +301,11 @@ public class SensorAssignment {
         return false;
     } else if (!dataFile.equals(other.dataFile))
       return false;
-    if (databaseId != other.databaseId)
-      return false;
-    if (dependsQuestionAnswer != other.dependsQuestionAnswer)
-      return false;
-    if (missingValue == null) {
-      if (other.missingValue != null)
+    if (sensorType == null) {
+      if (other.sensorType != null)
         return false;
-    } else if (!missingValue.equals(other.missingValue))
-      return false;
-    if (primary != other.primary)
-      return false;
-    if (sensorName == null) {
-      if (other.sensorName != null)
-        return false;
-    } else if (!sensorName.equals(other.sensorName))
+    } else if (!sensorType.equals(other.sensorType))
       return false;
     return true;
-  }
-
-  @Override
-  public String toString() {
-    return "ID " + databaseId + ": " + sensorName;
-  }
-
-  public ColumnHeading getColumnHeading() {
-    return new ColumnHeading(databaseId, sensorName,
-      sensorType.getColumnHeading(), sensorType.getCode(),
-      sensorType.getUnits(), true);
-  }
-
-  public SensorType getSensorType() {
-    return sensorType;
-  }
-
-  protected void setDataFile(String dataFile) {
-    this.dataFile = dataFile;
   }
 }

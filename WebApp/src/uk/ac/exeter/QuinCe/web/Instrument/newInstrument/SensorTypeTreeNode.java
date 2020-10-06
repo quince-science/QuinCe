@@ -1,8 +1,12 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
@@ -42,4 +46,17 @@ public class SensorTypeTreeNode extends DefaultTreeNode {
     return result;
   }
 
+  protected void removeAssignment(SensorAssignment assignment) {
+
+    List<TreeNode> updatedChildren = new ArrayList<TreeNode>(
+      getChildren().size());
+
+    for (TreeNode child : getChildren()) {
+      if (!assignment.equals(child.getData())) {
+        updatedChildren.add(child);
+      }
+    }
+
+    setChildren(updatedChildren);
+  }
 }
