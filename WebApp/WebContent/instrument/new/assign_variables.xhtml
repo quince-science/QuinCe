@@ -162,7 +162,7 @@
             <p:treeNode type="ASSIGNMENT" styleClass="sensorAssignment">
               <h:outputText id="nodeLabel" value="#{node.target}"/>
               <p:contextMenu for="nodeLabel">
-                <p:menuitem value="Remove" 
+                <p:menuitem value="Remove"
                   onclick="removeAssignment('#{node.sensorType.id}', '#{node.dataFile}', '#{node.column}')"/>
               </p:contextMenu>
             </p:treeNode>
@@ -199,7 +199,7 @@
         </h:panelGrid>
 
       </p:dialog>
-      
+
       <!-- Remove assignment -->
       <h:inputHidden id="removeAssignmentSensorType"
         value="#{newInstrumentBean.removeAssignmentSensorType}"/>
