@@ -343,7 +343,7 @@ public class SensorAssignmentsTest extends BaseTest {
 
   /**
    * Test that attempting to assign a parent {@link SensorType} fails.
-   * 
+   *
    * @throws SensorTypeNotFoundException
    * @throws SensorAssignmentException
    */
@@ -970,7 +970,7 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test the the 'Run Type' sensor type is not required if no
    * {@link SensorType} has been assigned.
-   * 
+   *
    * @throws SensorConfigurationException
    * @throws SensorAssignmentException
    */
@@ -984,7 +984,7 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test the the 'Run Type' sensor type is not required if no
    * {@link SensorType} with internal calibrations has been assigned.
-   * 
+   *
    * @throws SensorConfigurationException
    * @throws SensorAssignmentException
    * @throws SensorTypeNotFoundException
@@ -1003,7 +1003,7 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test the the 'Run Type' sensor type is not required if no
    * {@link SensorType} with internal calibrations has been assigned.
-   * 
+   *
    * @throws SensorConfigurationException
    * @throws SensorAssignmentException
    * @throws SensorTypeNotFoundException
@@ -1023,7 +1023,7 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test the the 'Run Type' sensor type is not required if no
    * {@link SensorType} with internal calibrations has been assigned.
-   * 
+   *
    * @throws SensorConfigurationException
    * @throws SensorAssignmentException
    * @throws SensorTypeNotFoundException

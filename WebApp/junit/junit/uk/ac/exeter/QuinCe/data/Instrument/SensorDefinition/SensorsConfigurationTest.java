@@ -1200,7 +1200,7 @@ public class SensorsConfigurationTest extends BaseTest {
    * Test that getting the list of {@link SensorType} for a variable with
    * internal calibrations does not return the 'Run Type' type if we don't ask
    * for it.
-   * 
+   *
    * @throws Exception
    */
   @FlywayTest
@@ -1216,7 +1216,7 @@ public class SensorsConfigurationTest extends BaseTest {
   /**
    * Test that getting the list of {@link SensorType} for a variable with
    * internal calibrations returns the 'Run Type' type if we ask for it.
-   * 
+   *
    * @throws Exception
    */
   @FlywayTest
@@ -1233,7 +1233,7 @@ public class SensorsConfigurationTest extends BaseTest {
    * Test that getting the list of {@link SensorType} for a variable with
    * internal calibrations does not return the 'Run Type' type if we don't ask
    * for it.
-   * 
+   *
    * @throws Exception
    */
   @FlywayTest(locationsForMigrate = {
@@ -1254,7 +1254,7 @@ public class SensorsConfigurationTest extends BaseTest {
   /**
    * Test that getting the list of {@link SensorType} for a variable with
    * internal calibrations returns the 'Run Type' type if we ask for it.
-   * 
+   *
    * @throws Exception
    */
   @FlywayTest(locationsForMigrate = {
