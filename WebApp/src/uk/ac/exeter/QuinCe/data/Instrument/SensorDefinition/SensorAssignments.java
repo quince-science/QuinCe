@@ -200,7 +200,7 @@ public class SensorAssignments
   /**
    * Determine whether or not the special
    * {@link SensorType#RUN_TYPE_SENSOR_TYPE} is required.
-   * 
+   *
    * @return {@code true} if the {@link SensorType#RUN_TYPE_SENSOR_TYPE} is
    *         required; {@code false} otherwise.
    */

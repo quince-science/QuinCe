@@ -636,12 +636,12 @@ function handleColumnDrop(e) {
 
 
   switch (sensorTypeId) {
-  case -1: {
-	assignRunType(match[1], match[2]);
-	break;
+  case RUN_TYPE_SENSOR_TYPE_ID: {
+    assignRunType(match[1], match[2]);
+    break;
   }
   default: {
-    openAssignSensorDialog(getSensorType(sensorTypeId), match[1], match[2], match[3]);	
+    openAssignSensorDialog(getSensorType(sensorTypeId), match[1], match[2], match[3]);
   }
   }
 }
