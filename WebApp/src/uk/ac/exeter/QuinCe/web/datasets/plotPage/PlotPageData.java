@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.lang.reflect.Type;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 public abstract class PlotPageData {
@@ -42,7 +40,7 @@ public abstract class PlotPageData {
   /**
    * The database connection for retrieving data
    */
-  protected Connection conn = null;
+  protected DataSource dataSource = null;
 
   /**
    * The dataset whose data is represented.
@@ -143,7 +141,7 @@ public abstract class PlotPageData {
 
   protected PlotPageData(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
-    this.conn = dataSource.getConnection();
+    this.dataSource = dataSource;
     this.instrument = instrument;
     this.dataset = dataset;
   }
@@ -856,7 +854,6 @@ public abstract class PlotPageData {
    * Clean up the data
    */
   public void destroy() {
-    DatabaseUtils.closeConnection(conn);
   }
 
   public DataSet getDataset() {
