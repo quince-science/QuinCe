@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -133,22 +134,25 @@ public class ManualQCData extends PlotPageData {
    */
   @Override
   public void loadDataAction() throws Exception {
-    sensorValues = DataSetDataDB.getSensorValues(conn, instrument,
-      dataset.getId(), false);
 
-    List<Measurement> measurementsList = DataSetDataDB.getMeasurements(conn,
-      dataset.getId());
+    try (Connection conn = dataSource.getConnection()) {
+      sensorValues = DataSetDataDB.getSensorValues(conn, instrument,
+        dataset.getId(), false);
 
-    measurements = new TreeMap<LocalDateTime, Measurement>();
+      List<Measurement> measurementsList = DataSetDataDB.getMeasurements(conn,
+        dataset.getId());
 
-    measurementsList.forEach(x -> measurements.put(x.getTime(), x));
+      measurements = new TreeMap<LocalDateTime, Measurement>();
 
-    dataReduction = DataSetDataDB.getDataReductionData(conn, instrument,
-      dataset);
+      measurementsList.forEach(x -> measurements.put(x.getTime(), x));
 
-    // Build the row IDs
-    rowIDs = sensorValues.getTimes().stream()
-      .map(t -> DateTimeUtils.dateToLong(t)).collect(Collectors.toList());
+      dataReduction = DataSetDataDB.getDataReductionData(conn, instrument,
+        dataset);
+
+      // Build the row IDs
+      rowIDs = sensorValues.getTimes().stream()
+        .map(t -> DateTimeUtils.dateToLong(t)).collect(Collectors.toList());
+    }
   }
 
   @Override
@@ -433,7 +437,9 @@ public class ManualQCData extends PlotPageData {
         sensorValues.addAll(propagatePositionQC(sensorValues));
       }
 
-      DataSetDataDB.storeSensorValues(conn, sensorValues);
+      try (Connection conn = dataSource.getConnection()) {
+        DataSetDataDB.storeSensorValues(conn, sensorValues);
+      }
       initPlots();
     } catch (Exception e) {
       error("Error while updating QC flags", e);
@@ -562,7 +568,9 @@ public class ManualQCData extends PlotPageData {
       }
 
       // Store the updated sensor values
-      DataSetDataDB.storeSensorValues(conn, selectedValues);
+      try (Connection conn = dataSource.getConnection()) {
+        DataSetDataDB.storeSensorValues(conn, selectedValues);
+      }
 
       initPlots();
 

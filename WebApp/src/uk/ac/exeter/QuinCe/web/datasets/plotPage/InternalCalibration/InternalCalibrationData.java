@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.InternalCalibration;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,10 +26,10 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageDataStructure;
 
 public class InternalCalibrationData extends PlotPageData {
@@ -65,15 +66,17 @@ public class InternalCalibrationData extends PlotPageData {
   @Override
   protected void loadDataAction() throws Exception {
 
-    List<RunTypeSensorValue> sensorValues = DataSetDataDB
-      .getInternalCalibrationSensorValues(conn, instrument, dataset.getId());
+    try (Connection conn = dataSource.getConnection()) {
+      List<RunTypeSensorValue> sensorValues = DataSetDataDB
+        .getInternalCalibrationSensorValues(conn, instrument, dataset.getId());
 
-    dataStructure = new SimplePlotPageDataStructure(getColumnHeadingsList());
+      dataStructure = new SimplePlotPageDataStructure(getColumnHeadingsList());
 
-    for (RunTypeSensorValue value : sensorValues) {
-      long columnId = makeColumnId(value.getRunType(), value.getColumnId());
-      dataStructure.add(value.getTime(), getColumnHeading(columnId), value,
-        false);
+      for (RunTypeSensorValue value : sensorValues) {
+        long columnId = makeColumnId(value.getRunType(), value.getColumnId());
+        dataStructure.add(value.getTime(), getColumnHeading(columnId), value,
+          false);
+      }
     }
   }
 
@@ -83,57 +86,62 @@ public class InternalCalibrationData extends PlotPageData {
 
     columnHeadings = new LinkedHashMap<String, List<PlotPageColumnHeading>>();
 
-    CalibrationSet calibrations = ExternalStandardDB.getInstance()
-      .getStandardsSet(conn, instrument.getDatabaseId(), dataset.getStart());
+    try (Connection conn = dataSource.getConnection()) {
+      CalibrationSet calibrations = ExternalStandardDB.getInstance()
+        .getStandardsSet(conn, instrument.getDatabaseId(), dataset.getStart());
 
-    // Time
-    List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
-      1);
-    rootColumns.add(new PlotPageColumnHeading(
-      FileDefinition.TIME_COLUMN_HEADING, false, false));
+      // Time
+      List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
+        1);
+      rootColumns.add(new PlotPageColumnHeading(
+        FileDefinition.TIME_COLUMN_HEADING, false, false));
 
-    columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
+      columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
 
-    List<String> runTypes = instrument
-      .getRunTypes(RunTypeCategory.INTERNAL_CALIBRATION_TYPE);
+      List<String> runTypes = instrument
+        .getRunTypes(RunTypeCategory.INTERNAL_CALIBRATION_TYPE);
 
-    int columnCount = 0;
+      int columnCount = 0;
 
-    // Each SensorType with internal calibrations goes in its own group
-    for (SensorType sensorType : instrument.getSensorAssignments().keySet()) {
-      if (sensorType.hasInternalCalibration()) {
+      // Each SensorType with internal calibrations goes in its own group
+      for (SensorType sensorType : instrument.getSensorAssignments().keySet()) {
+        if (sensorType.hasInternalCalibration()) {
 
-        List<PlotPageColumnHeading> sensorTypeColumns = new ArrayList<PlotPageColumnHeading>();
+          List<PlotPageColumnHeading> sensorTypeColumns = new ArrayList<PlotPageColumnHeading>();
 
-        List<SensorAssignment> assignments = instrument.getSensorAssignments()
-          .get(sensorType);
+          List<SensorAssignment> assignments = instrument.getSensorAssignments()
+            .get(sensorType);
 
-        // Each sensor assigned to that SensorType becomes a set of columns,
-        // one for each calibration run type
-        for (SensorAssignment assignment : assignments) {
-          for (String runType : runTypes) {
+          // Each sensor assigned to that SensorType becomes a set of columns,
+          // one for each calibration run type
+          for (SensorAssignment assignment : assignments) {
+            for (String runType : runTypes) {
 
-            Double calibrationValue = calibrations.getCalibrationValue(runType,
-              sensorType.getName());
+              Double calibrationValue = calibrations
+                .getCalibrationValue(runType, sensorType.getName());
 
-            long columnId = makeColumnId(runType, assignment);
-            String columnName = runType + ":" + assignment.getSensorName();
+              long columnId = makeColumnId(runType, assignment);
+              String columnName = runType + ":" + assignment.getSensorName();
 
-            PlotPageColumnHeading heading = new PlotPageColumnHeading(columnId,
-              columnName, sensorType.getColumnHeading(), sensorType.getCode(),
-              sensorType.getUnits(), true, true, calibrationValue);
-            sensorTypeColumns.add(heading);
-            columnCount++;
-            if (columnCount == 1) {
-              defaultYAxis1 = heading;
-            } else if (columnCount == 2) {
-              defaultYAxis2 = heading;
+              PlotPageColumnHeading heading = new PlotPageColumnHeading(
+                columnId, columnName, sensorType.getColumnHeading(),
+                sensorType.getCode(), sensorType.getUnits(), true, true,
+                calibrationValue);
+              sensorTypeColumns.add(heading);
+              columnCount++;
+              if (columnCount == 1) {
+                defaultYAxis1 = heading;
+              } else if (columnCount == 2) {
+                defaultYAxis2 = heading;
+              }
             }
           }
-        }
 
-        columnHeadings.put(sensorType.getName(), sensorTypeColumns);
+          columnHeadings.put(sensorType.getName(), sensorTypeColumns);
+        }
       }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting column headings", e);
     }
   }
 
@@ -231,7 +239,11 @@ public class InternalCalibrationData extends PlotPageData {
     sensorValues.forEach(v -> v.setUserQC(flag, message));
 
     // Store the updated sensor values
-    DataSetDataDB.storeSensorValues(conn, sensorValues);
+    try (Connection conn = dataSource.getConnection()) {
+      DataSetDataDB.storeSensorValues(conn, sensorValues);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while applying QC flag", e);
+    }
 
     initPlots();
   }
