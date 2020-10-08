@@ -73,7 +73,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
         .add(new CalculationParameter(makeParameterId(0), "Sea Level Pressure",
           "Atmospheric Pressure At Sea Level", "CAPAZZ01", "hPa", false));
       calculationParameters.add(new CalculationParameter(makeParameterId(1),
-        "pH₂O", "Atmosphere Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
+        "pH₂O", "Atmosphere Water Vapour Pressure", "CPVPZZ01", "hPa", false));
       calculationParameters.add(new CalculationParameter(makeParameterId(2),
         "Calibrated CO₂", "xCO₂ In Atmosphere - Calibrated In Dry Air",
         "XCO2DCMA", "μmol mol-1", false));
