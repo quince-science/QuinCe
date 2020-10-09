@@ -529,6 +529,6 @@ public class SensorTypeTest extends BaseTest {
   @Test
   public void toStringTest() throws Exception {
     SensorType type = getBasicSensorType();
-    assertEquals("Sensor Type: Name", type.toString());
+    assertEquals("Name", type.toString());
   }
 }
