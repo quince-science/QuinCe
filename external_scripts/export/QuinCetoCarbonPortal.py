@@ -1,8 +1,10 @@
 
-# QuinCe to Carbon Portal
 ''' 
-This script downloads data and metadata from QuinCe and uploads the content 
-to the Carbon Portal (CP)
+
+This script fetches datasets available for export from QuinCe and exports them to the locations listed in the accompanying manifest.
+
+
+Maren K. Karlsen 
 '''
 import logging 
 import toml
@@ -11,36 +13,27 @@ import os
 import traceback
 from slacker import Slacker
 
-from py_func.quince_comm import get_export_list, report_abandon_export, report_complete_export
-from py_func.meta_handling import process_dataset 
+from py_func.quince_comm import get_export_list, report_abandon_export, report_complete_export, process_dataset 
 from py_func.carbon import get_auth_cookie, export_file_to_cp 
 from py_func.copernicus import build_dataproduct, upload_to_copernicus
 
-
-config_file = 'config.toml'
-config_file_copernicus = 'config_copernicus.toml'
-config_file_carbon = 'config_carbon.toml'
-platform_lookup_file = 'platforms.toml'
-
-with open(config_file) as f: basicConfig = toml.load(f)
-with open(config_file_copernicus) as f: config_copernicus = toml.load(f)
-with open(config_file_carbon) as f: config_carbon = toml.load(f)
-with open(platform_lookup_file) as f: platform = toml.load(f)
+with open('config.toml') as f: basicConfig = toml.load(f)
+with open('config_copernicus.toml') as f: config_copernicus = toml.load(f)
+with open('config_carbon.toml') as f: config_carbon = toml.load(f)
+with open('platforms.toml') as f: platform = toml.load(f)
 
 if not os.path.isdir('log'): os.mkdir('log')
-#logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.INFO)
 logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 slack = Slacker(basicConfig['slack']['api_token'])
 upload = True # for debugging purposes, when False no data is exported.
 
 def main():
-  logging.info('***** Starting QuinCe NRT export *****')    
-  logging.debug('Obtaining IDs of datasets ready for export from QuinCe')
+  logging.info('***** Starting QuinCe NRT export ***** \n Obtaining IDs of datasets ready for export from QuinCe')
   try:
     export_list = get_export_list(basicConfig) 
     if not export_list:
-      logging.info('Terminating script, no datasets to be exported.')
+      logging.info('Terminating script, no datasets available for export.')
     else: 
       cp_cookie = get_auth_cookie(config_carbon)
       for dataset in export_list: 
@@ -51,7 +44,7 @@ def main():
 
         platform_code = manifest['manifest']['metadata']['platformCode']              
         export_destination = platform[platform_code]['export'] 
-        logging.debug(export_destination)
+        logging.debug('Exporting to:' export_destination)
         key = '/'
         if '26NA' in platform_code: key = ' No Salinity Flags' + key
         successful_upload_CP = -1
