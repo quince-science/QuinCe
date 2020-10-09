@@ -275,9 +275,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
       }
 
       calibratedValue = regression.predict(value);
-    } catch (
-
-    Exception e) {
+    } catch (Exception e) {
       throw new ValueCalculatorException(sensorType,
         "Error while calculating calibrated value", e);
     }
@@ -475,6 +473,11 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     CalibrationTimeValue() {
       this.time = null;
       this.value = null;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
     }
   }
 }

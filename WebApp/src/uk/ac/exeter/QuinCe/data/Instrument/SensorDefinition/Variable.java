@@ -343,4 +343,9 @@ public class Variable {
     Variable other = (Variable) obj;
     return id == other.id;
   }
+
+  @Override
+  public String toString() {
+    return name;
+  }
 }
