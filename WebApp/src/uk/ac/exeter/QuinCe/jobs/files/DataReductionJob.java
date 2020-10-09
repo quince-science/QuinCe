@@ -97,9 +97,6 @@ public class DataReductionJob extends DataSetJob {
       DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
         instrument, dataSet.getId(), false);
 
-      // The prefix used for SensorValue searches
-      String searchIdPrefix = "DataReductionJob_" + dataSet.getId();
-
       // Get all the measurements grouped by run type
       Map<String, ArrayList<Measurement>> allMeasurements = DataSetDataDB
         .getMeasurementsByRunType(conn, instrument, dataSet.getId());
@@ -114,6 +111,10 @@ public class DataReductionJob extends DataSetJob {
 
         // Loop through each variable
         for (Variable variable : instrument.getVariables()) {
+
+          // The prefix used for SensorValue searches
+          String searchIdPrefix = "DataReductionJob_" + dataSet.getId() + "_"
+            + runType + "_" + variable.getId();
 
           // Process each measurement
           dataReductionRecords.ensureCapacity(
@@ -179,16 +180,16 @@ public class DataReductionJob extends DataSetJob {
 
             }
           }
+
+          // Ideally we wouldn't need this. When the MeasurementValues objects
+          // are destroyed then it should clean up the searches that it created,
+          // but there is no reliable destructor mechanism in Java 8.
+          //
+          // In Java 9 there is the Cleaner mechanism that can handle this.
+          // TODO Implement in Java 9. GitHub issue #1653
+          allSensorValues.destroySearchesWithPrefix(searchIdPrefix);
         }
       }
-
-      // Ideally we wouldn't need this. When the MeasurementValues objects
-      // are destroyed then it should clean up the searches that it created, but
-      // there is no reliable destructor mechanism in Java 8.
-      //
-      // In Java 9 there is the Cleaner mechanism that can handle this.
-      // TODO Implement in Java 9. GitHub issue #1653
-      allSensorValues.destroySearchesWithPrefix(searchIdPrefix);
 
       DataSetDataDB.storeDataReduction(conn, dataReductionRecords);
 

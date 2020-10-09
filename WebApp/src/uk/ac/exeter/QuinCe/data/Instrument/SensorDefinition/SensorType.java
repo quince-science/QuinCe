@@ -500,7 +500,7 @@ public class SensorType implements Comparable<SensorType> {
 
   @Override
   public String toString() {
-    return "Sensor Type: " + getName();
+    return getName();
   }
 
   /**
