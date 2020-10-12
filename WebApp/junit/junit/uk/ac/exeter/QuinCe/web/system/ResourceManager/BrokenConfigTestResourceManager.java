@@ -8,6 +8,13 @@ import javax.sql.DataSource;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.TestResourceManager;
 
+/**
+ * This class mimics a {@link ResourceManager} with various types of invalid
+ * configuration.
+ *
+ * @author stevej
+ *
+ */
 public class BrokenConfigTestResourceManager extends TestResourceManager {
 
   /**
@@ -55,16 +62,28 @@ public class BrokenConfigTestResourceManager extends TestResourceManager {
    */
   private int failureFile = FAILURE_FILE_NONE;
 
-  public BrokenConfigTestResourceManager(DataSource dataSource, int failureFile) {
+  /**
+   * Create the resource manager with and indicator to stating which file
+   * configuration will fail.
+   *
+   * @param dataSource
+   *          A data source.
+   * @param failureFile
+   *          The configuration file failure indicator.
+   */
+  public BrokenConfigTestResourceManager(DataSource dataSource,
+    int failureFile) {
     super(dataSource);
     this.failureFile = failureFile;
   }
 
   /**
-   * Create a fixed set of configuration properties
+   * Create a fixed set of configuration properties. Use the
+   * {@link #failureFile} identifier to misconfigure one of the files.
    */
   @Override
-  protected Properties loadConfiguration(String filePath) throws FileNotFoundException, IOException {
+  protected Properties loadConfiguration(String filePath)
+    throws FileNotFoundException, IOException {
 
     Properties config = new Properties();
 
@@ -76,12 +95,18 @@ public class BrokenConfigTestResourceManager extends TestResourceManager {
     config.setProperty("email.fromname", "QuinCe");
     config.setProperty("email.fromaddress", "quince@uib.no");
     config.setProperty("filestore", getFileStorePath());
-    config.setProperty("extract_routines.configfile", CONFIG_PATH_ROOT + "extract_routines_config.csv");
-    config.setProperty("qc_routines.configfile", CONFIG_PATH_ROOT + "qc_routines_config.csv");
-    config.setProperty("columns.configfile", CONFIG_PATH_ROOT + "eqpco2_column_config.csv");
-    config.setProperty("export.configfile", CONFIG_PATH_ROOT + "export_config.csv");
-    config.setProperty("sensors.configfile", CONFIG_PATH_ROOT + "sensor_config.csv");
-    config.setProperty("runtypes.configfile", CONFIG_PATH_ROOT + "run_types_config.csv");
+    config.setProperty("extract_routines.configfile",
+      CONFIG_PATH_ROOT + "extract_routines_config.csv");
+    config.setProperty("qc_routines.configfile",
+      CONFIG_PATH_ROOT + "qc_routines_config.csv");
+    config.setProperty("columns.configfile",
+      CONFIG_PATH_ROOT + "eqpco2_column_config.csv");
+    config.setProperty("export.configfile",
+      CONFIG_PATH_ROOT + "export_config.csv");
+    config.setProperty("sensors.configfile",
+      CONFIG_PATH_ROOT + "sensor_config.csv");
+    config.setProperty("runtypes.configfile",
+      CONFIG_PATH_ROOT + "run_types_config.csv");
     config.setProperty("map.max_points", "1000");
 
     String failureFileId = null;
