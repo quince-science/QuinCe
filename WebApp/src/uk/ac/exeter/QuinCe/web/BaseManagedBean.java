@@ -454,4 +454,16 @@ public abstract class BaseManagedBean {
     return getCurrentInstrument().getVariables().stream().map(Variable::getId)
       .collect(Collectors.toList());
   }
+
+  /**
+   * A special little method that will trigger an error.
+   * 
+   * <p>
+   * Used for testing the error page. There is a link on the login page that's
+   * usually hidden. Unhide it to throw an error on demand.
+   * </p>
+   */
+  public String throwError() {
+    return internalError(new BeanException("Test exception"));
+  }
 }
