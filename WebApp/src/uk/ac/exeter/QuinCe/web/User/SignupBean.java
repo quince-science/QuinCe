@@ -222,4 +222,8 @@ public class SignupBean extends BaseManagedBean {
     return "signupForm";
   }
 
+  public String cancel() {
+    return "Cancel";
+  }
+
 }

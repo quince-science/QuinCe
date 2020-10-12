@@ -37,7 +37,9 @@
             required="true" requiredMessage="Password is required"
             styleClass="inputFormInput" />
         </h:panelGrid>
-        <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:commandButton id="cancelButton" value="Cancel"
+            action="#{signupBean.cancel}" immediate="true" />
           <p:commandButton id="signupButton" value="Sign Up"
             action="#{signupBean.signUp}" />
         </h:panelGrid>
