@@ -92,8 +92,8 @@ public class DatabaseUtils {
   }
 
   /**
-   * Close a database connection, ignoring any errors. All connections have
-   * their auto-commit flag set to true.
+   * Close a database connection, rolling back any transactions and ignoring any
+   * errors. All connections have their auto-commit flag set to true.
    *
    * @param conn
    *          The database connection
