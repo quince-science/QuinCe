@@ -37,7 +37,8 @@ public class ResourceManagerTest extends BaseTest {
     resourceManager.contextInitialized(servletContextEvent);
 
     // Check that the instance has been created
-    assertNotNull(ResourceManager.getInstance(), "ResourceManager instance not created");
+    assertNotNull(ResourceManager.getInstance(),
+      "ResourceManager instance not created");
 
     // Check that the job thread pool has been initialised
     try {
@@ -46,12 +47,20 @@ public class ResourceManagerTest extends BaseTest {
       fail("Job Thread Pool not initialised by ResourceManager");
     }
 
-    // Check that all the elements that should be accessible from the ResourceManager
+    // Check that all the elements that should be accessible from the
+    // ResourceManager
     // are available
-    assertNotNull(ResourceManager.getInstance().getConfig(), "Application Configuration not available from ResourceManager");
-    assertNotNull(ResourceManager.getInstance().getDBDataSource(), "DataSource not available from ResourceManager");
-    assertNotNull(ResourceManager.getInstance().getSensorsConfiguration(), "SensorsConfiguration not available from ResourceManager");
-    assertNotNull(ResourceManager.getInstance().getRunTypeCategoryConfiguration(), "RunTypeCategoryConfiguration not available from ResourceManager");
+    assertNotNull(ResourceManager.getInstance().getConfig(),
+      "Application Configuration not available from ResourceManager");
+    assertNotNull(ResourceManager.getInstance().getDBDataSource(),
+      "DataSource not available from ResourceManager");
+    assertNotNull(ResourceManager.getInstance().getSensorsConfiguration(),
+      "SensorsConfiguration not available from ResourceManager");
+    assertNotNull(
+      ResourceManager.getInstance().getRunTypeCategoryConfiguration(),
+      "RunTypeCategoryConfiguration not available from ResourceManager");
+    assertNotNull(ResourceManager.getInstance().getQCRoutinesConfiguration(),
+      "QCRoutinesConfiguration not available from ResourceManager");
   }
 
   /**
@@ -60,9 +69,9 @@ public class ResourceManagerTest extends BaseTest {
   @Test
   public void testInitResourceManagerBadExtractConfig() {
     assertThrows(RuntimeException.class, () -> {
-      ResourceManager badResourceManager =
-          new BrokenConfigTestResourceManager(getDataSource(),
-              BrokenConfigTestResourceManager.FAILURE_FILE_EXTRACT_ROUTINES_CONFIG);
+      ResourceManager badResourceManager = new BrokenConfigTestResourceManager(
+        getDataSource(),
+        BrokenConfigTestResourceManager.FAILURE_FILE_EXTRACT_ROUTINES_CONFIG);
 
       badResourceManager.contextInitialized(servletContextEvent);
     });
@@ -74,9 +83,9 @@ public class ResourceManagerTest extends BaseTest {
   @Test
   public void testInitResourceManagerBadQcConfig() {
     assertThrows(RuntimeException.class, () -> {
-      ResourceManager badResourceManager =
-        new BrokenConfigTestResourceManager(getDataSource(),
-            BrokenConfigTestResourceManager.FAILURE_FILE_QC_ROUTINES_CONFIG);
+      ResourceManager badResourceManager = new BrokenConfigTestResourceManager(
+        getDataSource(),
+        BrokenConfigTestResourceManager.FAILURE_FILE_QC_ROUTINES_CONFIG);
 
       badResourceManager.contextInitialized(servletContextEvent);
     });
@@ -88,9 +97,9 @@ public class ResourceManagerTest extends BaseTest {
   @Test
   public void testInitResourceManagerBadColumnConfig() {
     assertThrows(RuntimeException.class, () -> {
-      ResourceManager badResourceManager =
-        new BrokenConfigTestResourceManager(getDataSource(),
-          BrokenConfigTestResourceManager.FAILURE_FILE_COLUMNS_CONFIG);
+      ResourceManager badResourceManager = new BrokenConfigTestResourceManager(
+        getDataSource(),
+        BrokenConfigTestResourceManager.FAILURE_FILE_COLUMNS_CONFIG);
 
       badResourceManager.contextInitialized(servletContextEvent);
     });
@@ -102,9 +111,9 @@ public class ResourceManagerTest extends BaseTest {
   @Test
   public void testInitResourceManagerBadExportConfig() {
     assertThrows(RuntimeException.class, () -> {
-      ResourceManager badResourceManager =
-        new BrokenConfigTestResourceManager(getDataSource(),
-          BrokenConfigTestResourceManager.FAILURE_FILE_EXPORT_CONFIG);
+      ResourceManager badResourceManager = new BrokenConfigTestResourceManager(
+        getDataSource(),
+        BrokenConfigTestResourceManager.FAILURE_FILE_EXPORT_CONFIG);
 
       badResourceManager.contextInitialized(servletContextEvent);
     });
@@ -116,9 +125,9 @@ public class ResourceManagerTest extends BaseTest {
   @Test
   public void testInitResourceManagerBadSensorConfig() {
     assertThrows(RuntimeException.class, () -> {
-      ResourceManager badResourceManager =
-        new BrokenConfigTestResourceManager(getDataSource(),
-          BrokenConfigTestResourceManager.FAILURE_FILE_SENSOR_CONFIG);
+      ResourceManager badResourceManager = new BrokenConfigTestResourceManager(
+        getDataSource(),
+        BrokenConfigTestResourceManager.FAILURE_FILE_SENSOR_CONFIG);
 
       badResourceManager.contextInitialized(servletContextEvent);
     });
@@ -130,9 +139,9 @@ public class ResourceManagerTest extends BaseTest {
   @Test
   public void testInitResourceManagerBadRunTypesConfig() {
     assertThrows(RuntimeException.class, () -> {
-      ResourceManager badResourceManager =
-        new BrokenConfigTestResourceManager(getDataSource(),
-          BrokenConfigTestResourceManager.FAILURE_FILE_RUN_TYPES);
+      ResourceManager badResourceManager = new BrokenConfigTestResourceManager(
+        getDataSource(),
+        BrokenConfigTestResourceManager.FAILURE_FILE_RUN_TYPES);
 
       badResourceManager.contextInitialized(servletContextEvent);
     });
