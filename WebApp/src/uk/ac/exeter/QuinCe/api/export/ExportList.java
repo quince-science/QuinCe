@@ -97,6 +97,7 @@ public class ExportList {
       }
       result = json.toString();
     } catch (Exception e) {
+      e.printStackTrace();
       throw e;
     } finally {
       DatabaseUtils.closeConnection(conn);
