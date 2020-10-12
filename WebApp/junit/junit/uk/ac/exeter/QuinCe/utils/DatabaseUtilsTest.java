@@ -1,0 +1,617 @@
+package junit.uk.ac.exeter.QuinCe.utils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.flywaydb.test.annotation.FlywayTest;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+
+/**
+ * Tests for the {@link DatabaseUtils} class.
+ *
+ * @author stevej
+ *
+ */
+public class DatabaseUtilsTest extends BaseTest {
+
+  /**
+   * A simple SQL query we can use for the tests
+   */
+  private static final String BASIC_QUERY = "SELECT * FROM sensor_types";
+
+  /**
+   * Create a test table to store {@code long} values.
+   *
+   * @param conn
+   *          A database connection.
+   * @throws SQLException
+   *           If the table cannot be created.
+   */
+  private void createLongTable(Connection conn) throws SQLException {
+    try (PreparedStatement createStmt = conn
+      .prepareStatement("CREATE TABLE test_longs (long  INT(11))");) {
+      createStmt.execute();
+    }
+  }
+
+  /**
+   * Add a value to the test Longs table.
+   *
+   * <p>
+   * {@link #createLongTable(Connection)} must be called before this method.
+   * </p>
+   *
+   * @param conn
+   *          A database connection.
+   * @param value
+   *          The value to add.
+   * @throws SQLException
+   *           If the record cannot be created.
+   * @see #createLongTable(Connection)
+   */
+  private void addLongRecord(Connection conn, Long value) throws SQLException {
+    try (PreparedStatement insertStmt = conn
+      .prepareStatement("INSERT INTO test_longs VALUES (?)");) {
+
+      if (null == value) {
+        insertStmt.setNull(1, Types.INTEGER);
+      } else {
+        insertStmt.setLong(1, value);
+      }
+      insertStmt.execute();
+    }
+  }
+
+  /**
+   * Retrieve a Long value from the test Longs table using
+   * {@link DatabaseUtils#getNullableLong(ResultSet, int)}.
+   *
+   * <p>
+   * The method assumes there is one record in the table, and returns the first
+   * value from a simple {@code SELECT *} statement.
+   * </p>
+   *
+   * @param conn
+   *          A database connection.
+   * @return The Long value of the first record.
+   * @throws SQLException
+   *           If no record can be retrieved.
+   * @see #addLongRecord(Connection, Long)
+   */
+  private Long getLongRecord(Connection conn) throws SQLException {
+    try (
+      PreparedStatement stmt = conn
+        .prepareStatement("SELECT * FROM test_longs");
+      ResultSet records = stmt.executeQuery()) {
+
+      records.next();
+      return DatabaseUtils.getNullableLong(records, 1);
+    }
+  }
+
+  /**
+   * Test that closing an empty list of {@link ResultSet}s runs without error.
+   */
+  @Test
+  public void closeResultSetsEmptyListTest() {
+    DatabaseUtils.closeResultSets(new ArrayList<ResultSet>());
+  }
+
+  /**
+   * Test that sending a list containing a {@code null} value to
+   * {@link DatabaseUtils#closeResultSets(List)} does not throw an error.
+   */
+  @Test
+  public void closeResultSetsNullListTest() {
+    List<ResultSet> nullList = new ArrayList<ResultSet>();
+    nullList.add(null);
+    DatabaseUtils.closeResultSets(nullList);
+  }
+
+  /**
+   * Test that a list of {@link ResultSet}s with one entry can be closed.
+   *
+   * @throws SQLException
+   *           If the {@link ResultSet} cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void closeResultSetsOneListTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();
+      PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);) {
+
+      ResultSet records = stmt.executeQuery();
+      assertFalse(records.isClosed());
+
+      List<ResultSet> setsToClose = new ArrayList<ResultSet>();
+      setsToClose.add(records);
+      DatabaseUtils.closeResultSets(setsToClose);
+
+      assertTrue(records.isClosed());
+    }
+  }
+
+  /**
+   * Test that a list of {@link ResultSet}s with two entries can be closes both
+   * entries.
+   *
+   * @throws SQLException
+   *           If the {@link ResultSet} cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void closeResultSetsTwoListTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();
+      PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);
+      PreparedStatement stmt2 = conn.prepareStatement(BASIC_QUERY);) {
+
+      ResultSet records = stmt.executeQuery();
+      assertFalse(records.isClosed());
+
+      ResultSet records2 = stmt2.executeQuery();
+      assertFalse(records.isClosed());
+
+      List<ResultSet> setsToClose = new ArrayList<ResultSet>();
+      setsToClose.add(records);
+      setsToClose.add(records2);
+      DatabaseUtils.closeResultSets(setsToClose);
+
+      assertTrue(records.isClosed());
+      assertTrue(records2.isClosed());
+    }
+  }
+
+  /**
+   * Test that closing a single {@link ResultSet} via a parameter call works.
+   *
+   * @throws SQLException
+   *           If the {@link ResultSet} cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void closeResultSetsOneParamTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();
+      PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);) {
+
+      ResultSet records = stmt.executeQuery();
+      assertFalse(records.isClosed());
+
+      DatabaseUtils.closeResultSets(records);
+
+      assertTrue(records.isClosed());
+    }
+  }
+
+  /**
+   * Test that closing multiple {@link ResultSet}s via a parameter call works.
+   *
+   * @throws SQLException
+   *           If the {@link ResultSet} cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void closeResultSetsTwoParamsTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();
+      PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);
+      PreparedStatement stmt2 = conn.prepareStatement(BASIC_QUERY);) {
+
+      ResultSet records = stmt.executeQuery();
+      assertFalse(records.isClosed());
+
+      ResultSet records2 = stmt2.executeQuery();
+      assertFalse(records.isClosed());
+
+      DatabaseUtils.closeResultSets(records, records2);
+
+      assertTrue(records.isClosed());
+      assertTrue(records2.isClosed());
+    }
+  }
+
+  /**
+   * Test that closing a {@link ResultSet} that is already closed does not throw
+   * an error.
+   *
+   * <p>
+   * We only need to test the parameter version of the method, since it calls
+   * the list version anyway.
+   * </p>
+   *
+   * @throws SQLException
+   *           If the {@link ResultSet} cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void closeResultSetsClosedSetTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();
+      PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);) {
+
+      ResultSet records = stmt.executeQuery();
+      records.close();
+
+      DatabaseUtils.closeResultSets(records);
+    }
+  }
+
+  /**
+   * Test that closing an empty list of {@link PreparedStatement}s runs without
+   * error.
+   */
+  @Test
+  public void closeStatementsEmptyListTest() {
+    DatabaseUtils.closeStatements(new ArrayList<PreparedStatement>());
+  }
+
+  /**
+   * Test that sending a list containing a {@code null} value to
+   * {@link DatabaseUtils#closeStatements(List)} does not throw an error.
+   */
+  @Test
+  public void closeStatementsNullListTest() {
+    List<PreparedStatement> nullList = new ArrayList<PreparedStatement>();
+    nullList.add(null);
+    DatabaseUtils.closeStatements(nullList);
+  }
+
+  /**
+   * Test that a list of {@link PreparedStatement}s with one entry can be
+   * closed.
+   *
+   * @throws SQLException
+   *           If the {@link PreparedStatement} cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void closeStatementsOneListTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();) {
+
+      PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);
+      assertFalse(stmt.isClosed());
+
+      List<PreparedStatement> stmtsToClose = new ArrayList<PreparedStatement>();
+      stmtsToClose.add(stmt);
+      DatabaseUtils.closeStatements(stmtsToClose);
+
+      assertTrue(stmt.isClosed());
+    }
+  }
+
+  /**
+   * Test that a list of {@link PreparedStatement}s with two entries can be
+   * closes both entries.
+   *
+   * @throws SQLException
+   *           If the {@link PreparedStatement} cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void closeStatementsTwoListTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();) {
+
+      PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);
+      assertFalse(stmt.isClosed());
+
+      PreparedStatement stmt2 = conn.prepareStatement(BASIC_QUERY);
+      assertFalse(stmt.isClosed());
+
+      List<PreparedStatement> stmtsToClose = new ArrayList<PreparedStatement>();
+      stmtsToClose.add(stmt);
+      stmtsToClose.add(stmt2);
+      DatabaseUtils.closeStatements(stmtsToClose);
+
+      assertTrue(stmt.isClosed());
+      assertTrue(stmt2.isClosed());
+    }
+  }
+
+  /**
+   * Test that closing a single {@link PreparedStatement} via a parameter call
+   * works.
+   *
+   * @throws SQLException
+   *           If the {@link PreparedStatement} cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void closeStatementsOneParamTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();) {
+
+      PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);
+      assertFalse(stmt.isClosed());
+
+      DatabaseUtils.closeStatements(stmt);
+
+      assertTrue(stmt.isClosed());
+    }
+  }
+
+  /**
+   * Test that closing multiple {@link PreparedStatement}s via a parameter call
+   * works.
+   *
+   * @throws SQLException
+   *           If the {@link PreparedStatement} cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void closeStatementsTwoParamsTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();) {
+
+      PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);
+      assertFalse(stmt.isClosed());
+
+      PreparedStatement stmt2 = conn.prepareStatement(BASIC_QUERY);
+      assertFalse(stmt2.isClosed());
+
+      DatabaseUtils.closeStatements(stmt, stmt2);
+
+      assertTrue(stmt.isClosed());
+      assertTrue(stmt2.isClosed());
+    }
+  }
+
+  /**
+   * Test that closing a {@link PreparedStatement} that is already closed does
+   * not throw an error.
+   *
+   * <p>
+   * We only need to test the parameter version of the method, since it calls
+   * the list version anyway.
+   * </p>
+   *
+   * @throws SQLException
+   *           If the {@link PreparedStatement} cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void closeSatementsClosedSetTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();) {
+
+      PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);
+      stmt.close();
+
+      DatabaseUtils.closeStatements(stmt);
+    }
+  }
+
+  /**
+   * Test that {@link DatabaseUtils#getNullableLong(ResultSet, int)} correctly
+   * retrieves a normal Long value.
+   *
+   * @throws SQLException
+   *           If the test records cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void getNullableLongNumberTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();) {
+
+      createLongTable(conn);
+      addLongRecord(conn, Long.valueOf(23L));
+
+      assertEquals(Long.valueOf(23L), getLongRecord(conn));
+    }
+  }
+
+  /**
+   * Test that {@link DatabaseUtils#getNullableLong(ResultSet, int)} correctly
+   * retrieves a zero Long value.
+   *
+   * @throws SQLException
+   *           If the test records cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void getNullableLongZeroTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();) {
+
+      createLongTable(conn);
+      addLongRecord(conn, Long.valueOf(0L));
+
+      assertEquals(Long.valueOf(0L), getLongRecord(conn));
+    }
+  }
+
+  /**
+   * Test that {@link DatabaseUtils#getNullableLong(ResultSet, int)} correctly
+   * retrieves a zero Long value.
+   *
+   * @throws SQLException
+   *           If the test records cannot be created.
+   */
+  @FlywayTest
+  @Test
+  public void getNullableLongNullTest() throws SQLException {
+
+    try (Connection conn = getDataSource().getConnection();) {
+
+      createLongTable(conn);
+      addLongRecord(conn, null);
+
+      assertNull(getLongRecord(conn));
+    }
+  }
+
+  /**
+   * Test that rolling back a connection works.
+   *
+   * @throws SQLException
+   *           If the database actions fail.
+   */
+  @FlywayTest
+  @Test
+  public void rollbackTest() throws SQLException {
+
+    // Execute a statement to empty the sensor_types table, but roll back the
+    // transaction.
+    try (Connection conn = getDataSource().getConnection()) {
+
+      conn.setAutoCommit(false);
+
+      try (PreparedStatement stmt = conn
+        .prepareStatement("DELETE FROM variable_sensors")) {
+        stmt.execute();
+      }
+
+      DatabaseUtils.rollBack(conn);
+
+    }
+
+    // Check that there are still sensor_types records.
+    try (Connection conn = getDataSource().getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement("SELECT * FROM variable_sensors");
+      ResultSet records = stmt.executeQuery()) {
+
+      assertTrue(records.next());
+
+    }
+  }
+
+  /**
+   * Test that rolling back an auto-commit connection does not throw an error.
+   * Also check that the rollback call does not affect the attempted actions.
+   *
+   * @throws SQLException
+   *           If the database actions fail.
+   */
+  @FlywayTest
+  @Test
+  public void rollBackAutoCommitTest() throws SQLException {
+    // Execute a statement to empty the sensor_types table, but roll back the
+    // transaction.
+    try (Connection conn = getDataSource().getConnection()) {
+
+      try (PreparedStatement stmt = conn
+        .prepareStatement("DELETE FROM variable_sensors")) {
+        stmt.execute();
+      }
+
+      DatabaseUtils.rollBack(conn);
+
+    }
+
+    // Check that there are still sensor_types records.
+    try (Connection conn = getDataSource().getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement("SELECT * FROM variable_sensors");
+      ResultSet records = stmt.executeQuery()) {
+
+      assertFalse(records.next());
+    }
+  }
+
+  /**
+   * Test that rolling back a {@code null} test does not fail.
+   */
+  @Test
+  public void rollbackNullTest() {
+    DatabaseUtils.rollBack(null);
+  }
+
+  /**
+   * Test that a single connection can be closed.
+   *
+   * @throws SQLException
+   *           If the connection cannot be retrieved.
+   */
+  @Test
+  public void closeConnectionSingleTest() throws SQLException {
+    Connection conn = getDataSource().getConnection();
+    assertFalse(conn.isClosed());
+
+    DatabaseUtils.closeConnection(conn);
+    assertTrue(conn.isClosed());
+  }
+
+  /**
+   * Test that a single connection can be closed.
+   *
+   * @throws SQLException
+   *           If the connection cannot be retrieved.
+   */
+  @Test
+  public void closeConnectionMultipleTest() throws SQLException {
+    Connection conn = getDataSource().getConnection();
+    Connection conn2 = getDataSource().getConnection();
+    assertFalse(conn.isClosed());
+    assertFalse(conn2.isClosed());
+
+    DatabaseUtils.closeConnection(conn, conn2);
+    assertTrue(conn.isClosed());
+    assertTrue(conn2.isClosed());
+  }
+
+  /**
+   * Check that a connection with {@code autoCommit == false} has its changes
+   * rolled back on close.
+   *
+   * @throws SQLException
+   *           If the database operations fail.
+   */
+  @FlywayTest
+  @Test
+  public void closeConnectionRollbackTest() throws SQLException {
+
+    Connection conn = getDataSource().getConnection();
+    conn.setAutoCommit(false);
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement("DELETE FROM variable_sensors")) {
+      stmt.execute();
+    }
+
+    DatabaseUtils.closeConnection(conn);
+
+    // Check that the connection is close
+    assertTrue(conn.isClosed());
+
+    // Check that the changes weren't committed
+    try (Connection conn2 = getDataSource().getConnection();
+      PreparedStatement stmt = conn2
+        .prepareStatement("SELECT * FROM variable_sensors");
+      ResultSet records = stmt.executeQuery()) {
+
+      assertTrue(records.next());
+    }
+  }
+
+  /**
+   * Test that the autoCommit flag is set when connections are closed.
+   *
+   * @throws SQLException
+   *           If the connection manipulation fails.
+   */
+  @Test
+  public void closeConnectionSetAutoCommitTest() throws SQLException {
+    Connection conn = Mockito.mock(Connection.class);
+    DatabaseUtils.closeConnection(conn);
+    Mockito.verify(conn).setAutoCommit(true);
+  }
+}
