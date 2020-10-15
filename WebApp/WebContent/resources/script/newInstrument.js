@@ -5,8 +5,22 @@
 allTimesOK = false;
 drawingPage = false;
 
-RUN_TYPE_SENSOR_TYPE_ID = -1;
-ALIAS_RUN_TYPE = '-2';
+const RUN_TYPE_SENSOR_TYPE_ID = -1;
+const ALIAS_RUN_TYPE = '-2';
+
+// DATE-TIME types
+const DATE_TIME = '0';
+const HOURS_FROM_START = '1';
+const DATE = '2';
+const YEAR = '3';
+const JDAY_TIME = '4';
+const JDAY = '5';
+const MONTH = '6';
+const DAY = '7';
+const TIME = '8';
+const HOUR = '9';
+const MINUTE = '10';
+const SECOND = '11';
 
 //************************************************
 //
@@ -278,28 +292,6 @@ function getColumnAssignment(fileIndex, column) {
   return assigned;
 }
 
-function startAssign(event, item, file, column) {
-  if (item == 'DATETIMESUBMENU') {
-    showDateTimeSubmenu(event, file, column);
-  } else if (item == 'DIAGNOSTICSUBMENU') {
-    showDiagnosticSubmenu(event, file, column);
-  } else if (item.startsWith('DATETIME_')) {
-    openDateTimeDialog(item, file, column);
-  } else if (item == 'POS_longitude') {
-    openLongitudeDialog(file, column);
-  } else if (item == 'POS_longitude_hemisphere') {
-    openHemisphereDialog('longitude', file, column);
-  } else if (item == 'POS_latitude') {
-    openLatitudeDialog(file, column);
-  } else if (item == 'POS_latitude_hemisphere') {
-    openHemisphereDialog('latitude', file, column);
-  } else if (item == 'OTHER_runType') {
-    assignRunType(file, column);
-  } else {
-    openAssignSensorDialog(item, file, column);
-  }
-}
-
 function assignRunType(file, column) {
   $('#newInstrumentForm\\:sensorAssignmentFile').val(file);
   $('#newInstrumentForm\\:sensorAssignmentColumn').val(column);
@@ -309,17 +301,17 @@ function assignRunType(file, column) {
   PF('sensorAssignmentAssignButton').jq.click();
 }
 
-function openAssignSensorDialog(sensorType, file, columnIndex, columnName) {
+function openAssignSensorDialog(sensorType, column) {
 
-  $('#newInstrumentForm\\:sensorAssignmentFile').val(file);
-  $('#newInstrumentForm\\:sensorAssignmentColumn').val(columnIndex);
+  $('#newInstrumentForm\\:sensorAssignmentFile').val(column.dataFile);
+  $('#newInstrumentForm\\:sensorAssignmentColumn').val(column.colIndex);
   $('#newInstrumentForm\\:sensorAssignmentSensorType').val(sensorType.id);
 
-  $('#sensorAssignmentFileName').text(file);
-  $('#sensorAssignmentColumnName').text(columnName);
+  $('#sensorAssignmentFileName').text(column.dataFile);
+  $('#sensorAssignmentColumnName').text(column.colName);
   $('#sensorAssignmentSensorTypeText').text(sensorType.name);
 
-  $('#newInstrumentForm\\:sensorAssignmentName').val(columnName);
+  $('#newInstrumentForm\\:sensorAssignmentName').val(column.colName);
 
   if (null == sensorType.dependsQuestion) {
     $('#sensorAssignmentDependsQuestionContainer').hide();
@@ -332,6 +324,73 @@ function openAssignSensorDialog(sensorType, file, columnIndex, columnName) {
 
   PF('sensorAssignmentAssignButton').enable();
   PF('sensorAssignmentDialog').show();
+}
+
+function openDateTimeAssignDialog(column) {
+
+  $('#newInstrumentForm\\:dateTimeFile').val(column.dataFile);
+  $('#dateTimeFileLabel').html(column.dataFile);
+  $('#newInstrumentForm\\:dateTimeColumn').val(column.colIndex);
+  $('#dateTimeColumnLabel').html(column.colName);
+  
+  PF('dateTimeType').selectValue(DATE_TIME);
+  let hoursFromStart = $(PF('dateTimeType').itemsContainer).find('li[data-label="Hours From Start Of File"]');
+  if (window.fileInfo[column.dataFile].headerLines > 0) {
+	hoursFromStart.show();
+  } else {
+	hoursFromStart.hide();
+  }
+
+  window.suspendEvents = true;
+  PF('dateTimeFormat').selectValue('yyyy-MM-dd HH:mm:ss');
+  PF('dateFormat').selectValue('yyyy-MM-dd');
+  PF('timeFormat').selectValue('HH:mm:ss');
+  PF('startTimePrefix').jq.val('');
+  PF('startTimeSuffix').jq.val('');
+  PF('startTimeFormat').selectValue('MMM dd yyyy HH:mm:ss');
+  $('#newInstrumentForm\\:startTimeLine').val('');
+  $('#newInstrumentForm\\:startTimeDate').val('');
+  $('#startTimeExtractedLine').text('');
+  $('#startTimeExtractedDate').text('');
+  window.suspendEvents = false;
+
+  updateDateTimeAssignDialog()
+  PF('dateTimeAssignmentDialog').show();
+}
+
+function updateDateTimeAssignDialog() {
+  let selectedItem = PF('dateTimeType').getSelectedValue();
+
+  $('#dateTimeFormatContainer').hide();
+  $('#dateFormatContainer').hide();
+  $('#timeFormatContainer').hide();
+  $('#hoursFromStartContainer').hide();
+
+  switch (selectedItem) {
+  case DATE_TIME: {
+	$('#dateTimeFormatContainer').show();
+	PF('dateTimeAssignButton').enable();
+	break;
+  }	
+  case DATE: {
+	$('#dateFormatContainer').show();
+	PF('dateTimeAssignButton').enable();
+	break;
+  }	
+  case TIME: {
+	$('#timeFormatContainer').show();
+	PF('dateTimeAssignButton').enable();
+	break;
+  }	
+  case HOURS_FROM_START: {
+	$('#hoursFromStartContainer').show();
+    updateStartTime();
+	break;
+  }
+  default: {
+	PF('dateTimeAssignButton').enable();
+  }
+  }  
 }
 
 function getSensorType(sensorId) {
@@ -465,54 +524,57 @@ function openDateTimeDialog(item, file, column) {
   }
 
   if (variableName == 'Hours from start of file') {
-    PF('dateTimeAssign').disable();
+    PF('dateTimeAssignButton').disable();
   } else {
-    PF('dateTimeAssign').enable();
+    PF('dateTimeAssignButton').enable();
   }
 
   PF('dateTimeAssignmentDialog').show();
 }
 
 function updateStartTime() {
-  var lineJson = $('#newInstrumentForm\\:startTimeLine').val();
-
-  if (null == lineJson || lineJson == "") {
-    $('#startTimeExtractedLine').text("No matching line found in header");
-    $('#startTimeExtractedLine').addClass("error");
-  } else {
-    var line = JSON.parse(lineJson);
-    if (line['string'] == "") {
+  
+  if (!window.suspendEvents) {
+    var lineJson = $('#newInstrumentForm\\:startTimeLine').val();
+	
+    if (null == lineJson || lineJson == "") {
       $('#startTimeExtractedLine').text("No matching line found in header");
       $('#startTimeExtractedLine').addClass("error");
     } else {
-      var lineHtml = "";
+      var line = JSON.parse(lineJson);
+      if (line['string'] == "") {
+        $('#startTimeExtractedLine').text("No matching line found in header");
+        $('#startTimeExtractedLine').addClass("error");
+      } else {
+        var lineHtml = "";
 
-      if (line['highlightStart'] > 0) {
-        lineHtml += line['string'].substring(0, line['highlightStart']);
+        if (line['highlightStart'] > 0) {
+          lineHtml += line['string'].substring(0, line['highlightStart']);
+        }
+
+        lineHtml += '<span class="highlight">';
+        lineHtml += line['string'].substring(line['highlightStart'], line['highlightEnd']);
+        lineHtml += '</span>';
+
+        lineHtml += line['string'].substring(line['highlightEnd'], line['string'].length);
+
+        $('#startTimeExtractedLine').html(lineHtml);
+        $('#startTimeExtractedLine').removeClass("error");
       }
-
-      lineHtml += '<span class="highlight">';
-      lineHtml += line['string'].substring(line['highlightStart'], line['highlightEnd']);
-      lineHtml += '</span>';
-
-      lineHtml += line['string'].substring(line['highlightEnd'], line['string'].length);
-
-      $('#startTimeExtractedLine').html(lineHtml);
-      $('#startTimeExtractedLine').removeClass("error");
     }
-  }
 
-  var extractedDate = $('#newInstrumentForm\\:startTimeDate').val();
-  if (null == extractedDate || extractedDate == "") {
-    $('#startTimeExtractedDate').text("Could not extract date from header line");
-    $('#startTimeExtractedDate').addClass("error");
-    $('#startTimeExtractedDate').removeClass("highlight");
-    PF('dateTimeAssign').disable();
-  } else {
-    $('#startTimeExtractedDate').text(extractedDate);
-    $('#startTimeExtractedDate').removeClass("error");
-    $('#startTimeExtractedDate').addClass("highlight");
-    PF('dateTimeAssign').enable();
+    var extractedDate = $('#newInstrumentForm\\:startTimeDate').val();
+    if (null == extractedDate || extractedDate == "") {
+      $('#startTimeExtractedDate').text("Could not extract date from header line");
+      $('#startTimeExtractedDate').addClass("error");
+      $('#startTimeExtractedDate').removeClass("highlight");
+      PF('dateTimeAssignButton').disable();
+    } else {
+      $('#startTimeExtractedDate').text(extractedDate);
+      $('#startTimeExtractedDate').removeClass("error");
+      $('#startTimeExtractedDate').addClass("highlight");
+      PF('dateTimeAssignButton').enable();
+    }
   }
 }
 
@@ -589,17 +651,25 @@ function renameFileInputMonitor() {
 
 function assignVariablesInit() {
   window.sensorTypes = JSON.parse($('#referenceDataForm\\:sensorTypes').val());
+  window.fileInfo = JSON.parse($('#referenceDataForm\\:fileInfo').val());
+  window.suspendEvents = false;
   setupDragDropEvents();
 }
 
 function setupDragDropEvents() {
   $('div[id^=col-]').on('dragstart', handleColumnDragStart);
 
-  $('.columnDropTarget')
+  $('.sensorTypeDropTarget')
     .on('dragover', handleColumnDragOver)
     .on('dragenter', handleColumnDragEnter)
     .on('dragleave', handleColumnDragLeave)
-    .on('drop', handleColumnDrop);
+    .on('drop', handleSensorTypeColumnDrop);
+
+  $('.dateTimeDropTarget')
+    .on('dragover', handleColumnDragOver)
+    .on('dragenter', handleColumnDragEnter)
+    .on('dragleave', handleColumnDragLeave)
+    .on('drop', handleDateTimeColumnDrop);
 }
 
 function handleColumnDragStart(e) {
@@ -608,42 +678,55 @@ function handleColumnDragStart(e) {
 }
 
 function handleColumnDragEnter(e) {
-  $(this).addClass('columnDropTargetHover');
+  $(this).addClass('dropTargetHover');
 }
 
 function handleColumnDragLeave(e) {
-  $(this).removeClass('columnDropTargetHover');
+  $(this).removeClass('dropTargetHover');
 }
 
 function handleColumnDragOver(e) {
   e.preventDefault();
-  $(this).addClass('columnDropTargetHover');
+  $(this).addClass('dropTargetHover');
   e.originalEvent.dataTransfer.dropEffect = "link";
 }
 
-function handleColumnDrop(e) {
+function handleSensorTypeColumnDrop(e) {
   e.preventDefault();
-  $(this).removeClass('columnDropTargetHover');
+  $(this).removeClass('dropTargetHover');
 
   // Get sensor type
-  let sensorTypeName = $(this).find('span[class~="ui-treenode-content"] > span[class~="ui-treenode-label"]').html();
+  let sensorTypeName = $(this)[0].innerText;
   let sensorTypeId = getSensorTypeID(sensorTypeName);
 
   // Get column details
+  let column = getDragColumn(e);
+
+  switch (sensorTypeId) {
+  case RUN_TYPE_SENSOR_TYPE_ID: {
+    assignRunType(column.dataFile, column.colName);
+    break;
+  }
+  default: {
+    openAssignSensorDialog(getSensorType(sensorTypeId), column);
+  }
+  }
+}
+
+function handleDateTimeColumnDrop(e) {
+  e.preventDefault();
+  $(this).removeClass('dropTargetHover');
+
+  let column = getDragColumn(e);
+  openDateTimeAssignDialog(column);
+}
+
+function getDragColumn(e) {
   let colElementId = e.originalEvent.dataTransfer.getData("text/plain");
   let colExtractor = /.*---(.*)---(.*)---(.*)/;
   let match = colExtractor.exec(colElementId);
 
-
-  switch (sensorTypeId) {
-  case RUN_TYPE_SENSOR_TYPE_ID: {
-    assignRunType(match[1], match[2]);
-    break;
-  }
-  default: {
-    openAssignSensorDialog(getSensorType(sensorTypeId), match[1], match[2], match[3]);
-  }
-  }
+  return {'dataFile': match[1], 'colIndex': match[2], 'colName': match[3]};
 }
 
 function getSensorTypeID(typeName) {

@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -23,6 +24,7 @@ import org.primefaces.json.JSONObject;
 import org.primefaces.model.TreeNode;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -64,6 +66,18 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 @ManagedBean
 @SessionScoped
 public class NewInstrumentBean extends FileUploadBean {
+
+  public static final String DATETIME_COMBINED = "DATETIME_COMBINED";
+  public static final String DATETIME_HOURS_FROM_START = "DATETIME_HOURS_FROM_START";
+  public static final String DATETIME_YEAR = "DATETIME_YEAR";
+  public static final String DATETIME_MONTH = "DATETIME_MONTH";
+  public static final String DATETIME_DAY = "DATETIME_DAY";
+  public static final String DATETIME_JULIAN_DAY = "DATETIME_JULIAN_DAY";
+  public static final String DATETIME_JULIAN_DAY_TIME = "DATETIME_JULIAN_DAY_TIME";
+  public static final String DATETIME_TIME = "DATETIME_TIME";
+  public static final String DATETIME_HOUR = "DATETIME_HOUR";
+  public static final String DATETIME_MINUTE = "DATETIME_MINUTE";
+  public static final String DATETIME_SECOND = "DATETIME_SECOND";
 
   /**
    * Navigation to start definition of a new instrument
@@ -250,7 +264,7 @@ public class NewInstrumentBean extends FileUploadBean {
   /**
    * The date/time variable being set
    */
-  private String dateTimeVariable = null;
+  private String dateTimeVariable = DATETIME_COMBINED;
 
   /**
    * The format of the date/time string
@@ -657,6 +671,7 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public String useFile() {
     instrumentFiles.add(currentInstrumentFile);
+    assignmentsTree.addFile(currentInstrumentFile.getFileDescription());
     clearFile();
     return NAV_ASSIGN_VARIABLES;
   }
@@ -1264,6 +1279,7 @@ public class NewInstrumentBean extends FileUploadBean {
     }
     }
 
+    assignmentsTree.setDateTimeAssignment(dateTimeFile, dateTimeSpec);
     resetDateTimeAssignmentValues();
   }
 
@@ -2068,6 +2084,15 @@ public class NewInstrumentBean extends FileUploadBean {
     return new Gson().toJson(sensorTypes);
   }
 
+  public String getFileInfo() {
+    Gson gson = new GsonBuilder()
+      .registerTypeHierarchyAdapter(NewInstrumentFileSet.class,
+        new NewInstrumentFileSetSerializer())
+      .create();
+
+    return gson.toJson(instrumentFiles);
+  }
+
   public long getRemoveAssignmentSensorType() {
     return removeAssignmentSensorType;
   }
@@ -2106,5 +2131,9 @@ public class NewInstrumentBean extends FileUploadBean {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public LinkedHashMap<String, Integer> getDateTimeTypes() {
+    return DateTimeSpecification.getDateTimeTypes();
   }
 }

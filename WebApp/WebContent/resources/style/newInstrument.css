@@ -148,6 +148,10 @@
   color: blue;
 }
 
-.columnDropTargetHover {
+.dropTargetHover {
   background: #FF0 !important;
+}
+
+.highlight {
+  color: #00AAFF;
 }
