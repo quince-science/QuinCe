@@ -7,7 +7,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 @SuppressWarnings("serial")
 public class SensorAssignmentTreeNode extends DefaultTreeNode {
 
-  private static final String ASSIGNMENT = "ASSIGNMENT";
+  private static final String ASSIGNMENT = "SENSOR_TYPE_ASSIGNMENT";
 
   protected SensorAssignmentTreeNode(SensorTypeTreeNode parent,
     SensorAssignment assignment) {

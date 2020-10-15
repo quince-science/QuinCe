@@ -8,6 +8,7 @@ import java.util.Map;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -27,9 +28,17 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public class AssignmentsTree {
 
-  private TreeNode root;
+  private static final String DATETIME_UNFINISHED = "UNFINISHED_DATETIME";
+
+  private static final String DATETIME_FINISHED = "FINISHED_DATETIME";
 
   private final SensorAssignments assignments;
+
+  private DefaultTreeNode root;
+
+  private DefaultTreeNode dateTimeNode;
+
+  private Map<String, TreeNode> dateTimeNodes;
 
   private Map<SensorType, List<SensorTypeTreeNode>> sensorTypeNodes;
 
@@ -47,6 +56,11 @@ public class AssignmentsTree {
   private void buildTree(List<Variable> variables)
     throws SensorConfigurationException, SensorTypeNotFoundException,
     SensorAssignmentException {
+
+    dateTimeNode = new DefaultTreeNode(VariableTreeNode.VAR_UNFINISHED,
+      "Date/Time", root);
+    dateTimeNode.setExpanded(true);
+    dateTimeNodes = new HashMap<String, TreeNode>();
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
@@ -100,6 +114,20 @@ public class AssignmentsTree {
 
   protected void removeFileAssignmentNodes(String fileName) {
 
+    // Remove the date/time nodes for the file
+    List<TreeNode> filteredDateTimeFileNodes = new ArrayList<TreeNode>(
+      dateTimeNode.getChildCount() - 1);
+
+    for (TreeNode dateTimeFileNode : dateTimeNode.getChildren()) {
+      if (!dateTimeFileNode.getData().equals(fileName)) {
+        filteredDateTimeFileNodes.add(dateTimeFileNode);
+      }
+    }
+
+    dateTimeNode.setChildren(filteredDateTimeFileNodes);
+    dateTimeNodes.remove(fileName);
+
+    // Remove any sensor type nodes assigned from the file
     for (List<SensorTypeTreeNode> sensorTypeNodes : sensorTypeNodes.values()) {
       for (SensorTypeTreeNode sensorTypeNode : sensorTypeNodes) {
 
@@ -122,12 +150,27 @@ public class AssignmentsTree {
   }
 
   protected void removeAssignment(SensorAssignment assignment) {
-
     List<SensorTypeTreeNode> typeNodes = sensorTypeNodes
       .get(assignment.getSensorType());
     for (SensorTypeTreeNode node : typeNodes) {
       node.removeAssignment(assignment);
     }
+  }
+
+  protected void addFile(String file) {
+    DefaultTreeNode fileDateTimeNode = new DefaultTreeNode(DATETIME_UNFINISHED,
+      file, dateTimeNode);
+
+    dateTimeNodes.put(file, fileDateTimeNode);
+  }
+
+  protected void setDateTimeAssignment(String file,
+    DateTimeSpecification dateTimeSpec) {
+
+    DefaultTreeNode parent = (DefaultTreeNode) dateTimeNodes.get(file);
+
+    // Remove all existing nodes
+    parent.setChildren(new ArrayList<TreeNode>());
 
   }
 }

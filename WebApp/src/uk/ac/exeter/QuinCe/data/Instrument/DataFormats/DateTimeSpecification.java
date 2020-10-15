@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -145,6 +146,11 @@ public class DateTimeSpecification {
   public static final String SECOND_NAME = "Second";
 
   /**
+   * The mapping of date/time types to their names
+   */
+  private static final LinkedHashMap<String, Integer> DATE_TIME_TYPES;
+
+  /**
    * The largest assignment index
    */
   private static final int MAX_INDEX = 11;
@@ -159,6 +165,22 @@ public class DateTimeSpecification {
    * header
    */
   private boolean fileHasHeader;
+
+  static {
+    DATE_TIME_TYPES = new LinkedHashMap<String, Integer>();
+    DATE_TIME_TYPES.put(DATE_TIME_NAME, DATE_TIME);
+    DATE_TIME_TYPES.put(HOURS_FROM_START_NAME, HOURS_FROM_START);
+    DATE_TIME_TYPES.put(DATE_NAME, DATE);
+    DATE_TIME_TYPES.put(YEAR_NAME, YEAR);
+    DATE_TIME_TYPES.put(JDAY_TIME_NAME, JDAY_TIME);
+    DATE_TIME_TYPES.put(JDAY_NAME, JDAY);
+    DATE_TIME_TYPES.put(MONTH_NAME, MONTH);
+    DATE_TIME_TYPES.put(DAY_NAME, DAY);
+    DATE_TIME_TYPES.put(TIME_NAME, TIME);
+    DATE_TIME_TYPES.put(HOUR_NAME, HOUR);
+    DATE_TIME_TYPES.put(MINUTE_NAME, MINUTE);
+    DATE_TIME_TYPES.put(SECOND_NAME, SECOND);
+  }
 
   /**
    * Constructs an empty specification
@@ -1149,5 +1171,9 @@ public class DateTimeSpecification {
     }
 
     return result;
+  }
+
+  public static LinkedHashMap<String, Integer> getDateTimeTypes() {
+    return DATE_TIME_TYPES;
   }
 }
