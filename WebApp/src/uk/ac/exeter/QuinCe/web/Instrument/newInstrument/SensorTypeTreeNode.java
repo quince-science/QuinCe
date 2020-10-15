@@ -13,9 +13,9 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 @SuppressWarnings("serial")
 public class SensorTypeTreeNode extends DefaultTreeNode {
 
-  private static final String SENSOR_UNASSIGNED = "UNASSIGNED_SENSOR_TYPE";
+  protected static final String SENSOR_UNASSIGNED = "UNASSIGNED_SENSOR_TYPE";
 
-  private static final String SENSOR_ASSIGNED = "ASSIGNED_SENSOR_TYPE";
+  protected static final String SENSOR_ASSIGNED = "ASSIGNED_SENSOR_TYPE";
 
   private final SensorType sensorType;
 
