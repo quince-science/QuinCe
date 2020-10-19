@@ -13,8 +13,6 @@
     <h:form id="referenceDataForm" method="post" charset="utf8">
       <h:inputHidden id="sensorTypes"
         value="#{newInstrumentBean.sensorTypesJson}" />
-      <h:inputHidden id="fileInfo"
-        value="#{newInstrumentBean.fileInfo}"/>
     </h:form>
     <h:form id="newInstrumentForm" method="post" charset="utf8">
 
@@ -107,10 +105,10 @@
 
       <p:dialog header="Assign Date/Time"
         widgetVar="dateTimeAssignmentDialog" modal="true">
-        
+
         <h:inputHidden id="dateTimeFile" value="#{newInstrumentBean.dateTimeFile}"/>
         <h:inputHidden id="dateTimeColumn" value="#{newInstrumentBean.dateTimeColumn}"/>
-        
+
         <div id="dateTimeAssignmentSummary">
           <table>
             <tr>
@@ -120,17 +118,13 @@
             </tr>
             <tr>
               <td><p:outputLabel value="To" /></td>
-              <td>
-                <p:selectOneMenu widgetVar="dateTimeType" id="dateTimeType" value="#{newInstrumentBean.dateTimeVariable}"
-                  onchange="updateDateTimeAssignDialog()">
-                  
-                  <f:selectItems value="#{newInstrumentBean.dateTimeTypes}"/>            
-                </p:selectOneMenu>
-              </td>
+              <td><div id="dateTimeTypeText"
+                  class="variableText"></div></td>
             </tr>
           </table>
         </div>
 
+        <h:inputHidden id="dateTimeType" value="#{newInstrumentBean.dateTimeVariable}"/>
         <div id="dateTimeFormatContainer" class="dialogSection">
           <table>
             <tr>
@@ -325,18 +319,27 @@
             <p:treeNode type="ASSIGNED_SENSOR_TYPE" styleClass="sensorTypeDropTarget assignedSensorType">
               <h:outputText value="#{node}"/>
             </p:treeNode>
-            <p:treeNode type="UNFINISHED_DATETIME" styleClass="dateTimeDropTarget unassignedSensorType">
-              <h:outputText value="#{node}"/>
-            </p:treeNode>
-            <p:treeNode type="FINISHED_DATETIME" styleClass="assignedSensorType">
-              <h:outputText value="#{node}"/>
-            </p:treeNode>
             <p:treeNode type="SENSOR_TYPE_ASSIGNMENT" styleClass="sensorAssignment">
               <h:outputText id="nodeLabel" value="#{node.target}"/>
               <p:contextMenu for="nodeLabel">
                 <p:menuitem value="Remove"
                   onclick="removeAssignment('#{node.sensorType.id}', '#{node.dataFile}', '#{node.column}')"/>
               </p:contextMenu>
+            </p:treeNode>
+            <p:treeNode type="UNFINISHED_DATETIME" styleClass="unassignedSensorType">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="FINISHED_DATETIME" styleClass="assignedSensorType">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="UNASSIGNED_DATETIME" styleClass="unassignedDateTimeType dateTimeDropTarget">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="ASSIGNED_DATETIME" styleClass="assignedDateTimeType">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="DATETIME_ASSIGNMENT" styleClass="dateTimeAssignment">
+              <h:outputText value="#{node}"/>
             </p:treeNode>
           </p:tree>
         </p:fieldset>

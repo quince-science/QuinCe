@@ -148,6 +148,20 @@
   color: blue;
 }
 
+.unassignedDateTimeType {
+  color: red;
+  font-style: italic;
+  font-weight: normal;
+}
+
+.assignedDateTimeType {
+  color: black;
+}
+
+.dateTimeAssignment {
+  color: blue;
+}
+
 .dropTargetHover {
   background: #FF0 !important;
 }

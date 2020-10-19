@@ -326,71 +326,132 @@ function openAssignSensorDialog(sensorType, column) {
   PF('sensorAssignmentDialog').show();
 }
 
-function openDateTimeAssignDialog(column) {
+function openDateTimeAssignDialog(dateTimeType, column) {
 
   $('#newInstrumentForm\\:dateTimeFile').val(column.dataFile);
-  $('#dateTimeFileLabel').html(column.dataFile);
   $('#newInstrumentForm\\:dateTimeColumn').val(column.colIndex);
-  $('#dateTimeColumnLabel').html(column.colName);
-  
-  PF('dateTimeType').selectValue(DATE_TIME);
-  let hoursFromStart = $(PF('dateTimeType').itemsContainer).find('li[data-label="Hours From Start Of File"]');
-  if (window.fileInfo[column.dataFile].headerLines > 0) {
-	hoursFromStart.show();
-  } else {
-	hoursFromStart.hide();
-  }
+  $('#newInstrumentForm\\:dateTimeType').val(getDateTimeTypeIndex(dateTimeType));
 
   window.suspendEvents = true;
-  PF('dateTimeFormat').selectValue('yyyy-MM-dd HH:mm:ss');
-  PF('dateFormat').selectValue('yyyy-MM-dd');
-  PF('timeFormat').selectValue('HH:mm:ss');
-  PF('startTimePrefix').jq.val('');
-  PF('startTimeSuffix').jq.val('');
-  PF('startTimeFormat').selectValue('MMM dd yyyy HH:mm:ss');
-  $('#newInstrumentForm\\:startTimeLine').val('');
-  $('#newInstrumentForm\\:startTimeDate').val('');
-  $('#startTimeExtractedLine').text('');
-  $('#startTimeExtractedDate').text('');
-  window.suspendEvents = false;
-
-  updateDateTimeAssignDialog()
-  PF('dateTimeAssignmentDialog').show();
-}
-
-function updateDateTimeAssignDialog() {
-  let selectedItem = PF('dateTimeType').getSelectedValue();
+  let showDialog = false;
 
   $('#dateTimeFormatContainer').hide();
   $('#dateFormatContainer').hide();
   $('#timeFormatContainer').hide();
   $('#hoursFromStartContainer').hide();
 
-  switch (selectedItem) {
+  switch ($('#newInstrumentForm\\:dateTimeType').val()) {
   case DATE_TIME: {
-	$('#dateTimeFormatContainer').show();
-	PF('dateTimeAssignButton').enable();
-	break;
-  }	
+    PF('dateTimeFormat').selectValue('yyyy-MM-dd HH:mm:ss');
+    $('#dateTimeFormatContainer').show();
+    PF('dateTimeAssignButton').enable();
+    showDialog = true;
+    break;
+  }
   case DATE: {
-	$('#dateFormatContainer').show();
-	PF('dateTimeAssignButton').enable();
-	break;
-  }	
+    PF('dateFormat').selectValue('yyyy-MM-dd');
+    $('#dateFormatContainer').show();
+    PF('dateTimeAssignButton').enable();
+    showDialog = true;
+    break;
+  }
   case TIME: {
-	$('#timeFormatContainer').show();
-	PF('dateTimeAssignButton').enable();
-	break;
-  }	
+    PF('timeFormat').selectValue('HH:mm:ss');
+    $('#timeFormatContainer').show();
+    PF('dateTimeAssignButton').enable();
+    showDialog = true;
+    break;
+  }
   case HOURS_FROM_START: {
-	$('#hoursFromStartContainer').show();
+    PF('startTimePrefix').jq.val('');
+    PF('startTimeSuffix').jq.val('');
+    PF('startTimeFormat').selectValue('MMM dd yyyy HH:mm:ss');
+    $('#newInstrumentForm\\:startTimeLine').val('');
+    $('#newInstrumentForm\\:startTimeDate').val('');
+    $('#startTimeExtractedLine').text('');
+    $('#startTimeExtractedDate').text('');
+    $('#hoursFromStartContainer').show();
     updateStartTime();
-	break;
+    showDialog = true;
+    break;
   }
   default: {
-	PF('dateTimeAssignButton').enable();
+    showDialog = false;
   }
-  }  
+  }
+
+  window.suspendEvents = false;
+  
+  if (showDialog) {
+    $('#dateTimeFileLabel').html(column.dataFile);
+    $('#dateTimeColumnLabel').html(column.colName);
+    $('#dateTimeTypeText').html(dateTimeType);
+    PF('dateTimeAssignmentDialog').initPosition();
+    PF('dateTimeAssignmentDialog').show();
+  } else {
+    PF('dateTimeAssignButton').jq.click();	
+  }
+}
+
+function getDateTimeTypeIndex(dateTimeType) {
+	
+	let result = -1;
+	
+	switch (dateTimeType) {
+    case 'Combined Date and Time': {
+	  result = DATE_TIME;
+      break;
+    }
+    case 'Hours from start of file': {
+	  result = HOURS_FROM_START;
+      break;
+    }
+    case 'Date': {
+	  result = DATE;
+      break;
+    }
+    case 'Year': {
+	  result = YEAR;
+      break;
+    }
+    case 'Julian Day with Time': {
+	  result = JDAY_TIME;
+      break;
+    }
+    case 'Julian Day': {
+	  result = JDAY;
+      break;
+    }
+    case 'Month': {
+	  result = MONTH;
+      break;
+    }
+    case 'Day': {
+	  result = DAY;
+      break;
+    }
+    case 'Time': {
+	  result = TIME;
+      break;
+    }
+    case 'Hour': {
+	  result = HOUR;
+      break;
+    }
+    case 'Minute': {
+	  result = MINUTE;
+      break;
+    }
+    case 'Second': {
+	  result = SECOND;
+      break;
+    }
+    default: {
+	  result = -1;
+    }
+	}
+	
+	return result;
 }
 
 function getSensorType(sensorId) {
@@ -428,9 +489,9 @@ function sensorAssigned() {
   setupDragDropEvents();
 }
 
-function timePositionAssigned(dialogName) {
-  PF(dialogName).hide();
-  renderAssignments();
+function dateTimeAssigned() {
+  PF('dateTimeAssignmentDialog').hide();
+  setupDragDropEvents();
 }
 
 function openLongitudeDialog(file, column) {
@@ -533,10 +594,10 @@ function openDateTimeDialog(item, file, column) {
 }
 
 function updateStartTime() {
-  
+
   if (!window.suspendEvents) {
     var lineJson = $('#newInstrumentForm\\:startTimeLine').val();
-	
+
     if (null == lineJson || lineJson == "") {
       $('#startTimeExtractedLine').text("No matching line found in header");
       $('#startTimeExtractedLine').addClass("error");
@@ -651,7 +712,6 @@ function renameFileInputMonitor() {
 
 function assignVariablesInit() {
   window.sensorTypes = JSON.parse($('#referenceDataForm\\:sensorTypes').val());
-  window.fileInfo = JSON.parse($('#referenceDataForm\\:fileInfo').val());
   window.suspendEvents = false;
   setupDragDropEvents();
 }
@@ -718,7 +778,7 @@ function handleDateTimeColumnDrop(e) {
   $(this).removeClass('dropTargetHover');
 
   let column = getDragColumn(e);
-  openDateTimeAssignDialog(column);
+  openDateTimeAssignDialog($(this)[0].innerText, column);
 }
 
 function getDragColumn(e) {
