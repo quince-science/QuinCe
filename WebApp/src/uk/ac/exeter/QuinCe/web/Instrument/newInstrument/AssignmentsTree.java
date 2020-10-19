@@ -8,7 +8,9 @@ import java.util.Map;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -31,6 +33,12 @@ public class AssignmentsTree {
   private static final String DATETIME_UNFINISHED = "UNFINISHED_DATETIME";
 
   private static final String DATETIME_FINISHED = "FINISHED_DATETIME";
+
+  private static final String DATETIME_UNASSIGNED = "UNASSIGNED_DATETIME";
+
+  private static final String DATETIME_ASSIGNED = "ASSIGNED_DATETIME";
+
+  private static final String DATETIME_ASSIGNMENT = "DATETIME_ASSIGNMENT";
 
   private final SensorAssignments assignments;
 
@@ -157,20 +165,63 @@ public class AssignmentsTree {
     }
   }
 
-  protected void addFile(String file) {
+  protected void addFile(FileDefinitionBuilder file)
+    throws DateTimeSpecificationException {
     DefaultTreeNode fileDateTimeNode = new DefaultTreeNode(DATETIME_UNFINISHED,
-      file, dateTimeNode);
+      file.getFileDescription(), dateTimeNode);
+    fileDateTimeNode.setExpanded(true);
 
-    dateTimeNodes.put(file, fileDateTimeNode);
+    dateTimeNodes.put(file.getFileDescription(), fileDateTimeNode);
+    setDateTimeAssignment(file, file.getDateTimeSpecification());
   }
 
-  protected void setDateTimeAssignment(String file,
-    DateTimeSpecification dateTimeSpec) {
+  protected void setDateTimeAssignment(FileDefinitionBuilder file,
+    DateTimeSpecification dateTimeSpec) throws DateTimeSpecificationException {
 
-    DefaultTreeNode parent = (DefaultTreeNode) dateTimeNodes.get(file);
+    DefaultTreeNode parent = (DefaultTreeNode) dateTimeNodes
+      .get(file.getFileDescription());
 
     // Remove all existing nodes
     parent.setChildren(new ArrayList<TreeNode>());
 
+    // Build set of nodes for date/time
+    if (dateTimeSpec.assignmentComplete()) {
+      parent.setType(DATETIME_FINISHED);
+    }
+
+    for (Map.Entry<String, Boolean> entry : dateTimeSpec
+      .getAssignedAndRequiredEntries().entrySet()) {
+
+      if (entry.getValue()) {
+        new DefaultTreeNode(DATETIME_UNASSIGNED, entry.getKey(), parent);
+      } else {
+        TreeNode child = new DefaultTreeNode(DATETIME_ASSIGNED, entry.getKey(),
+          parent);
+        child.setExpanded(true);
+
+        DateTimeColumnAssignment assignment = dateTimeSpec.getAssignment(
+          DateTimeSpecification.getAssignmentIndex(entry.getKey()));
+
+        new DefaultTreeNode(DATETIME_ASSIGNMENT,
+          file.getFileColumns().get(assignment.getColumn()).getName(), child);
+
+      }
+    }
+
+    updateDateTimeNode();
+  }
+
+  private void updateDateTimeNode() {
+    boolean dateTimeFinished = true;
+
+    for (TreeNode node : dateTimeNodes.values()) {
+      if (node.getType().equals(DATETIME_UNFINISHED)) {
+        dateTimeFinished = false;
+        break;
+      }
+    }
+
+    dateTimeNode.setType(dateTimeFinished ? VariableTreeNode.VAR_FINISHED
+      : VariableTreeNode.VAR_UNFINISHED);
   }
 }
