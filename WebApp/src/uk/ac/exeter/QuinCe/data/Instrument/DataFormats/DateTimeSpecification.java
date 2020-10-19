@@ -146,11 +146,6 @@ public class DateTimeSpecification {
   public static final String SECOND_NAME = "Second";
 
   /**
-   * The mapping of date/time types to their names
-   */
-  private static final LinkedHashMap<String, Integer> DATE_TIME_TYPES;
-
-  /**
    * The largest assignment index
    */
   private static final int MAX_INDEX = 11;
@@ -165,22 +160,6 @@ public class DateTimeSpecification {
    * header
    */
   private boolean fileHasHeader;
-
-  static {
-    DATE_TIME_TYPES = new LinkedHashMap<String, Integer>();
-    DATE_TIME_TYPES.put(DATE_TIME_NAME, DATE_TIME);
-    DATE_TIME_TYPES.put(HOURS_FROM_START_NAME, HOURS_FROM_START);
-    DATE_TIME_TYPES.put(DATE_NAME, DATE);
-    DATE_TIME_TYPES.put(YEAR_NAME, YEAR);
-    DATE_TIME_TYPES.put(JDAY_TIME_NAME, JDAY_TIME);
-    DATE_TIME_TYPES.put(JDAY_NAME, JDAY);
-    DATE_TIME_TYPES.put(MONTH_NAME, MONTH);
-    DATE_TIME_TYPES.put(DAY_NAME, DAY);
-    DATE_TIME_TYPES.put(TIME_NAME, TIME);
-    DATE_TIME_TYPES.put(HOUR_NAME, HOUR);
-    DATE_TIME_TYPES.put(MINUTE_NAME, MINUTE);
-    DATE_TIME_TYPES.put(SECOND_NAME, SECOND);
-  }
 
   /**
    * Constructs an empty specification
@@ -559,7 +538,7 @@ public class DateTimeSpecification {
    * @throws DateTimeSpecificationException
    *           If the index is not recognised
    */
-  private String getAssignmentName(int index)
+  public static String getAssignmentName(int index)
     throws DateTimeSpecificationException {
     String result = null;
 
@@ -704,12 +683,11 @@ public class DateTimeSpecification {
    * @throws DateTimeSpecificationException
    *           Is the assignment cannot be made
    */
-  public void assign(String variable, int column, String format)
+  public void assign(int assignmentIndex, int column, String format)
     throws DateTimeSpecificationException {
-    int assignmentIndex = getAssignmentIndex(variable);
     if (assignmentIndex == HOURS_FROM_START) {
       throw new DateTimeSpecificationException(
-        "Cannot use assign with " + variable + "; use assignHoursFromStart");
+        "Cannot use assign with Hours From Start Of File; use assignHoursFromStart");
     }
 
     DateTimeColumnAssignment assignment = assignments.get(assignmentIndex);
@@ -1173,7 +1151,155 @@ public class DateTimeSpecification {
     return result;
   }
 
-  public static LinkedHashMap<String, Integer> getDateTimeTypes() {
-    return DATE_TIME_TYPES;
+  public List<Integer> getRequiredTypes() {
+    List<Integer> result = new ArrayList<Integer>();
+
+    boolean dateTimeRequired = !isAssigned(DATE_TIME);
+    boolean hoursFromStartRequired = fileHasHeader
+      && !isAssigned(HOURS_FROM_START);
+    boolean dateRequired = !isAssigned(DATE);
+    boolean yearRequired = !isAssigned(YEAR);
+    boolean jdayTimeRequired = !isAssigned(JDAY_TIME);
+    boolean jdayRequired = !isAssigned(JDAY);
+    boolean monthRequired = !isAssigned(MONTH);
+    boolean dayRequired = !isAssigned(DAY);
+    boolean timeRequired = !isAssigned(TIME);
+    boolean hourRequired = !isAssigned(HOUR);
+    boolean minuteRequired = !isAssigned(MINUTE);
+    boolean secondRequired = !isAssigned(SECOND);
+
+    if (isAssigned(DATE_TIME) || isAssigned(HOURS_FROM_START)) {
+      dateTimeRequired = false;
+      hoursFromStartRequired = false;
+      dateRequired = false;
+      yearRequired = false;
+      jdayTimeRequired = false;
+      jdayRequired = false;
+      monthRequired = false;
+      dayRequired = false;
+      timeRequired = false;
+      hourRequired = false;
+      minuteRequired = false;
+      secondRequired = false;
+    }
+
+    if (isAssigned(DATE)) {
+      dateTimeRequired = false;
+      hoursFromStartRequired = false;
+      yearRequired = false;
+      jdayTimeRequired = false;
+      jdayRequired = false;
+      monthRequired = false;
+      dayRequired = false;
+    }
+
+    if (isAssigned(YEAR)) {
+      dateTimeRequired = false;
+      hoursFromStartRequired = false;
+      dateRequired = false;
+    }
+
+    if (isAssigned(JDAY_TIME)) {
+      dateTimeRequired = false;
+      hoursFromStartRequired = false;
+      dateRequired = false;
+      jdayRequired = false;
+      monthRequired = false;
+      dayRequired = false;
+      timeRequired = false;
+      hourRequired = false;
+      minuteRequired = false;
+      secondRequired = false;
+    }
+
+    if (isAssigned(JDAY)) {
+      dateTimeRequired = false;
+      hoursFromStartRequired = false;
+      dateRequired = false;
+      jdayTimeRequired = false;
+      monthRequired = false;
+      dayRequired = false;
+    }
+
+    if (isAssigned(MONTH) || isAssigned(DAY)) {
+      dateTimeRequired = false;
+      hoursFromStartRequired = false;
+      dateRequired = false;
+      jdayTimeRequired = false;
+      jdayRequired = false;
+    }
+
+    if (isAssigned(TIME)) {
+      dateTimeRequired = false;
+      hoursFromStartRequired = false;
+      jdayTimeRequired = false;
+      hourRequired = false;
+      minuteRequired = false;
+      secondRequired = false;
+    }
+
+    if (isAssigned(HOUR) || isAssigned(MINUTE) || isAssigned(SECOND)) {
+      dateTimeRequired = false;
+      hoursFromStartRequired = false;
+      jdayTimeRequired = false;
+      timeRequired = false;
+    }
+
+    if (dateTimeRequired) {
+      result.add(DATE_TIME);
+    }
+    if (hoursFromStartRequired) {
+      result.add(HOURS_FROM_START);
+    }
+    if (dateRequired) {
+      result.add(DATE);
+    }
+    if (yearRequired) {
+      result.add(YEAR);
+    }
+    if (jdayTimeRequired) {
+      result.add(JDAY_TIME);
+    }
+    if (jdayRequired) {
+      result.add(JDAY);
+    }
+    if (monthRequired) {
+      result.add(MONTH);
+    }
+    if (dayRequired) {
+      result.add(DAY);
+    }
+    if (timeRequired) {
+      result.add(TIME);
+    }
+    if (hourRequired) {
+      result.add(HOUR);
+    }
+    if (minuteRequired) {
+      result.add(MINUTE);
+    }
+    if (secondRequired) {
+      result.add(SECOND);
+    }
+
+    return result;
+  }
+
+  public LinkedHashMap<String, Boolean> getAssignedAndRequiredEntries()
+    throws DateTimeSpecificationException {
+
+    LinkedHashMap<String, Boolean> result = new LinkedHashMap<String, Boolean>();
+
+    List<Integer> requiredTypes = getRequiredTypes();
+
+    for (int i = 0; i <= MAX_INDEX; i++) {
+      if (isAssigned(i)) {
+        result.put(getAssignmentName(i), false);
+      } else if (requiredTypes.contains(i)) {
+        result.put(getAssignmentName(i), true);
+      }
+    }
+
+    return result;
   }
 }
