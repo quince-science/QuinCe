@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
@@ -20,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundEx
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
+import uk.ac.exeter.QuinCe.web.ui.EditableTreeNode;
 
 /**
  * Holds details of the assigned sensors in tree form for the
@@ -46,7 +48,7 @@ public class AssignmentsTree {
 
   private DefaultTreeNode dateTimeNode;
 
-  private Map<String, TreeNode> dateTimeNodes;
+  private Map<String, EditableTreeNode> dateTimeNodes;
 
   private Map<SensorType, List<SensorTypeTreeNode>> sensorTypeNodes;
 
@@ -68,7 +70,7 @@ public class AssignmentsTree {
     dateTimeNode = new DefaultTreeNode(VariableTreeNode.VAR_UNFINISHED,
       "Date/Time", root);
     dateTimeNode.setExpanded(true);
-    dateTimeNodes = new HashMap<String, TreeNode>();
+    dateTimeNodes = new TreeMap<String, EditableTreeNode>();
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
@@ -167,16 +169,24 @@ public class AssignmentsTree {
 
   protected void addFile(FileDefinitionBuilder file)
     throws DateTimeSpecificationException {
-    DefaultTreeNode fileDateTimeNode = new DefaultTreeNode(DATETIME_UNFINISHED,
-      file.getFileDescription(), dateTimeNode);
+
+    makeDateTimeNode(file, true);
+  }
+
+  private void makeDateTimeNode(FileDefinitionBuilder file, boolean expanded)
+    throws DateTimeSpecificationException {
+    EditableTreeNode fileDateTimeNode = new EditableTreeNode(
+      DATETIME_UNFINISHED, file.getFileDescription(), dateTimeNode);
     fileDateTimeNode.setExpanded(true);
 
     dateTimeNodes.put(file.getFileDescription(), fileDateTimeNode);
-    setDateTimeAssignment(file, file.getDateTimeSpecification());
+    setDateTimeAssignment(file);
   }
 
-  protected void setDateTimeAssignment(FileDefinitionBuilder file,
-    DateTimeSpecification dateTimeSpec) throws DateTimeSpecificationException {
+  protected void setDateTimeAssignment(FileDefinitionBuilder file)
+    throws DateTimeSpecificationException {
+
+    DateTimeSpecification dateTimeSpec = file.getDateTimeSpecification();
 
     DefaultTreeNode parent = (DefaultTreeNode) dateTimeNodes
       .get(file.getFileDescription());
@@ -223,5 +233,17 @@ public class AssignmentsTree {
 
     dateTimeNode.setType(dateTimeFinished ? VariableTreeNode.VAR_FINISHED
       : VariableTreeNode.VAR_UNFINISHED);
+  }
+
+  protected void renameFile(String oldName, FileDefinitionBuilder renamedFile)
+    throws DateTimeSpecificationException {
+
+    // We only need to update the date/time assignments;
+    // sensor assignments are updated in the SensorAssignment objects
+
+    // Get expanded status from old file
+    EditableTreeNode node = dateTimeNodes.remove(oldName);
+    node.setData(renamedFile.getFileDescription());
+    dateTimeNodes.put(renamedFile.getFileDescription(), node);
   }
 }
