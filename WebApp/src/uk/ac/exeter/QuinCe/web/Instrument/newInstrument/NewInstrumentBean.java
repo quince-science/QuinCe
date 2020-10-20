@@ -1451,7 +1451,7 @@ public class NewInstrumentBean extends FileUploadBean {
     if (null != removeFileName) {
       instrumentFiles.remove(removeFileName);
       sensorAssignments.removeFileAssignments(removeFileName);
-      assignmentsTree.removeFileAssignmentNodes(removeFileName);
+      assignmentsTree.removeFile(removeFileName);
     }
 
     if (instrumentFiles.size() == 0) {
