@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -122,20 +123,17 @@ public class AssignmentsTree {
     }
   }
 
-  protected void removeFileAssignmentNodes(String fileName) {
+  protected void removeFile(String fileName) {
 
-    // Remove the date/time nodes for the file
-    List<TreeNode> filteredDateTimeFileNodes = new ArrayList<TreeNode>(
-      dateTimeNode.getChildCount() - 1);
+    dateTimeNodes.remove(fileName);
 
-    for (TreeNode dateTimeFileNode : dateTimeNode.getChildren()) {
-      if (!dateTimeFileNode.getData().equals(fileName)) {
-        filteredDateTimeFileNodes.add(dateTimeFileNode);
+    Iterator<TreeNode> nodeSearch = dateTimeNode.getChildren().iterator();
+    while (nodeSearch.hasNext()) {
+      TreeNode node = nodeSearch.next();
+      if (node.getData().equals(fileName)) {
+        nodeSearch.remove();
       }
     }
-
-    dateTimeNode.setChildren(filteredDateTimeFileNodes);
-    dateTimeNodes.remove(fileName);
 
     // Remove any sensor type nodes assigned from the file
     for (List<SensorTypeTreeNode> sensorTypeNodes : sensorTypeNodes.values()) {
@@ -240,8 +238,6 @@ public class AssignmentsTree {
 
     // We only need to update the date/time assignments;
     // sensor assignments are updated in the SensorAssignment objects
-
-    // Get expanded status from old file
     EditableTreeNode node = dateTimeNodes.remove(oldName);
     node.setData(renamedFile.getFileDescription());
     dateTimeNodes.put(renamedFile.getFileDescription(), node);
