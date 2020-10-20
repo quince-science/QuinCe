@@ -1263,8 +1263,8 @@ public class NewInstrumentBean extends FileUploadBean {
     }
     }
 
-    assignmentsTree.setDateTimeAssignment(
-      instrumentFiles.getByDescription(dateTimeFile), dateTimeSpec);
+    assignmentsTree
+      .setDateTimeAssignment(instrumentFiles.getByDescription(dateTimeFile));
 
     resetDateTimeAssignmentValues();
   }
@@ -2036,13 +2036,14 @@ public class NewInstrumentBean extends FileUploadBean {
     this.renameNewFile = renameNewFile;
   }
 
-  public String renameFile() {
+  public String renameFile() throws DateTimeSpecificationException {
     FileDefinitionBuilder fileDefinition = instrumentFiles
       .getByDescription(renameOldFile);
 
     if (null != fileDefinition) {
       fileDefinition.setFileDescription(renameNewFile);
       sensorAssignments.renameFile(renameOldFile, renameNewFile);
+      assignmentsTree.renameFile(renameOldFile, fileDefinition);
     }
 
     return NAV_ASSIGN_VARIABLES;
