@@ -241,8 +241,9 @@ def makenetcdf(datasetname, fieldconfig, platform, records):
   #  + "Copernicus project and the programs that contribute to it."
   nc.citation = (platform[platform_code]['author_list'] 
     + "(" + str( datetime.datetime.now().year) 
-    + "): NRT data from " + platform[platform_code]['name'] +  
-    ". Made available through the Copernicus project.")
+    + "): NRT data from " + platform[platform_code]['name'] + "."
+    + "https://hdl.handle.net/" + "CP_pid"
+    + " Made available through the Copernicus project.")
   nc.distribution_statement = ("These data follow Copernicus standards; they " 
     + "are public and free of charge. User assumes all risk for use of data. " 
     + "User must display citation in any publication or product using data. " 
