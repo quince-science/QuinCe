@@ -7,8 +7,6 @@ import sys
 import os
 import re
 import io
-import hashlib
-import datetime
 from slacker import Slacker
 
 from xml.etree import ElementTree as ET
@@ -99,3 +97,14 @@ def post_slack_msg(message,status=0):
     
     slack = Slacker(CONFIG['slack']['api_token'])
     slack.chat.post_message('#'+CONFIG['slack'][workspace],f'{message}')
+
+def slack_export_report(destination,successful_upload,err_msg):
+
+  slack_msg = platform_name + ' : ' + dataset['name'] + ' - ' + destination + ' - '
+  if successful_upload == 0: 
+    slack_msg += 'Export failed. ' + str(err_msg)
+  elif successful_upload == 1: slack_msg += 'Successfully exported.'
+  elif successful_upload == 2: slack_msg += 'No new data.'
+  else: slack_msg += 'Something went wrong. Check log.'
+  post_slack_msg(slack_msg)
+       
