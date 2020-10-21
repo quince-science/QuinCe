@@ -75,3 +75,16 @@ call_sign = ''
 export = ['ICOS']
 creation_date = '2020-05-20T00:00:00Z'
 author_list = ''
+
+[11SS]
+name = 'Simon Stevin'
+submitter_id = 'OTC'
+cp_url = 'https://meta.icos-cp.eu/resources/stations/OS_11SS'
+category_code = '31'
+call_sign = 'ORBS'
+export = ['ICOS','CMEMS']
+creation_date = '2020-09-01T00:00:00Z'
+author_list = ''
+
+[ORBS]
+platform_id = '11SS'
