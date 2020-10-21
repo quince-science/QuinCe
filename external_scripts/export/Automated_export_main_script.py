@@ -13,9 +13,10 @@ import os
 import traceback
 from slacker import Slacker
 
-from py_func.Export_QuinCe import get_export_list, report_abandon_export, report_complete_export, process_dataset, post_slack_msg
-from py_func.carbon import get_auth_cookie, export_file_to_cp 
-from py_func.copernicus import build_dataproduct, upload_to_copernicus
+from modules.Local.API_calls import get_export_list, report_abandon_export, report_complete_export, post_slack_msg
+from modules.Local.data_processing import process_dataset
+from modules.CarbonPortal.Export_CarbonPortal import get_auth_cookie, export_file_to_cp 
+from modules.CMEMS.Export_CMEMS import build_dataproduct, upload_to_copernicus
 
 with open('config_copernicus.toml') as f: config_copernicus = toml.load(f)
 with open('config_carbon.toml') as f: config_carbon = toml.load(f)
@@ -108,9 +109,9 @@ def main():
         if CMEMS_slack_msg: post_slack_msg(CMEMS_slack_msg)
 
         if successful_upload:
-          report_complete_export(basicConfig,dataset['id'])
+          report_complete_export(dataset['id'])
         else: 
-          report_abandon_export(basicConfig,dataset['id'])
+          report_abandon_export(dataset['id'])
 
   except Exception as e: 
     exc_type, exc_obj, exc_tb = sys.exc_info()
