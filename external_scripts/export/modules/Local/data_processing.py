@@ -5,10 +5,48 @@ import sys
 import os
 import re
 import io
+import hashlib
+import datetime
+import toml
 
 from zipfile import ZipFile
 
 from modules.Local.API_calls import get_export_dataset
+
+with open('platforms.toml') as f: platform = toml.load(f)
+
+def get_platform(platform_code):
+    return platform[platform_code]
+
+def get_export_destination(platform_code):
+    return platform[platform_code]['export']
+
+def get_start_date(manifest):
+  return datetime.datetime.strptime(
+    manifest['manifest']['metadata']['startdate'],
+    '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y%m%d')
+
+def get_platform_code(manifest):
+  return manifest['manifest']['metadata']['platformCode']
+
+def get_platform_name(platform_code):
+  return platform[platform_code]['name']
+
+def is_NRT(manifest):
+  return manifest['manifest']['metadata']['nrt'] # True/False
+  
+def get_L1_filename(manifest):
+  platform_code = get_platform_code(manifest)
+  start_date = get_start_date(manifest)
+  L1_filename = platform_code + '_NRT_' + start_date + '.csv'
+
+def get_export_filename(file,manifest,level):
+  # Setting export name
+  L1_filename = get_L1_filename(manifest)
+  if 'L1' in level:
+    export_filename = L1_filename
+  else: 
+    export_filename = os.path.split(file)[-1]
 
 
 def process_dataset(dataset):
@@ -57,3 +95,10 @@ def get_file_from_zip(zip_folder,filename):
   with ZipFile(io.BytesIO(zip_folder),'r') as zip: 
     file = zip.extract(filename, path='tmp')
   return file
+
+def get_hashsum(filename):
+  ''' returns a 256 hashsum corresponding to input file. '''
+  logging.debug(f'Generating hashsum for datafile {filename}')
+  with open(filename) as f: content = f.read()
+
+  return hashlib.sha256(content.encode('utf-8')).hexdigest()
