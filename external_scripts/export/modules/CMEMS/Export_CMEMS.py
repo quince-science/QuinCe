@@ -58,14 +58,14 @@ import datetime
 import pandas as pd
 import numpy as np
 import netCDF4
-from py_func.cmems_converter import buildnetcdfs 
+from modules.CMEMS.cmems_converter import buildnetcdfs 
+from modules.Local.data_processing import get_file_from_zip
 
 import xml.etree.ElementTree as ET
 import sqlite3
 import json
 import time
 
-from py_func.carbon import get_file_from_zip
 # Upload result codes
 UPLOAD_OK = 0
 FILE_EXISTS = 2
