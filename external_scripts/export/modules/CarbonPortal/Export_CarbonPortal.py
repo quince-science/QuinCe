@@ -12,6 +12,8 @@ import datetime
 from zipfile import ZipFile
 import io
 
+from modules.Local.data_processing import get_file_from_zip
+
 #from py_func.meta_handling import get_hashsum, get_file_from_zip
 '''Carbon Portal submission process
 https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-instructions
@@ -290,8 +292,3 @@ def create_connection(CP_DB):
               )''')
   return c
 
-def get_file_from_zip(zip_folder,filename):
-  ''' opens zip folder and returns file '''
-  with ZipFile(io.BytesIO(zip_folder),'r') as zip: 
-    file = zip.extract(filename, path='tmp')
-  return file
