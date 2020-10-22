@@ -98,7 +98,7 @@ def post_slack_msg(message,status=0):
     slack = Slacker(CONFIG['slack']['api_token'])
     slack.chat.post_message('#'+CONFIG['slack'][workspace],f'{message}')
 
-def slack_export_report(destination,successful_upload,err_msg):
+def slack_export_report(destination,platform_name,dataset,successful_upload,err_msg):
 
   slack_msg = platform_name + ' : ' + dataset['name'] + ' - ' + destination + ' - '
   if successful_upload == 0: 

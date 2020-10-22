@@ -12,7 +12,7 @@ import os
 import traceback
 from slacker import Slacker
 
-from modules.Local.API_calls import get_export_list, report_abandon_export, report_complete_export, post_slack_msg
+from modules.Local.API_calls import get_export_list, report_abandon_export, report_complete_export, post_slack_msg, slack_export_report
 from modules.Local.data_processing import process_dataset, get_platform_code, get_platform_name, get_export_destination, construct_datafilename
 from modules.CarbonPortal.Export_CarbonPortal_http import get_auth_cookie
 from modules.CarbonPortal.Export_CarbonPortal_main import export_file_to_cp  
@@ -84,10 +84,11 @@ def main():
               logging.error('Exception occurred: ', exc_info=True)
               successful_upload_CMEMS = 0
         
+        successful_upload = False
         if (successful_upload_CP & successful_upload_CMEMS): successful_upload = True
 
-        slack_export_report('Carbon Portal',successful_upload_CP,cp_err_msg)
-        slack_export_report('CMEMS',successful_upload_CMEMS,cmems_err_msg)
+        slack_export_report('Carbon Portal',platform_name,dataset,successful_upload_CP,cp_err_msg)
+        slack_export_report('CMEMS',platform_name,dataset,successful_upload_CMEMS,cmems_err_msg)
 
         if successful_upload:
           report_complete_export(dataset['id'])
