@@ -14,7 +14,7 @@ import io
 from modules.Local.data_processing import get_file_from_zip, get_hashsum, get_platform_code, is_NRT, get_L1_filename, get_export_filename
 from modules.CarbonPortal.Export_CarbonPortal_metadata import  build_metadata_package
 from modules.CarbonPortal.Export_CarbonPortal_SQL import sql_investigate, sql_commit
-from modules.CarbonPortal.Export_CarbonPortal_external import upload_to_cp
+from modules.CarbonPortal.Export_CarbonPortal_http import upload_to_cp
 
 #from py_func.meta_handling import get_hashsum, get_file_from_zip
 '''Carbon Portal submission process
