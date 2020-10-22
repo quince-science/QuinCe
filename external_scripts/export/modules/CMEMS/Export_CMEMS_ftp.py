@@ -10,8 +10,6 @@ import datetime
 import pandas as pd
 import numpy as np
 import netCDF4
-from modules.CMEMS.cmems_converter import buildnetcdfs 
-from modules.Local.data_processing import get_file_from_zip
 
 import xml.etree.ElementTree as ET
 import sqlite3
@@ -294,7 +292,9 @@ def get_response(ftp,dnt_filepath,folder_local):
   ftp.download(source,target)
   with open(target,'r') as response_file:
     response = response_file.read()
-  return responsedef abort_upload(error,ftp,nrt_dir,c,curr_date):
+  return response
+
+def abort_upload(error,ftp,nrt_dir,c,curr_date):
   # Remove currently updated files on ftp-server
   uningested_files = clean_directory(ftp, nrt_dir)
 
