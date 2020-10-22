@@ -15,8 +15,17 @@ from modules.Local.API_calls import get_export_dataset
 
 with open('platforms.toml') as f: platform = toml.load(f)
 
-def get_platform(platform_code):
+def construct_datafilename(dataset,destination,key):
+  if destination == 'CP': directory = 'ICOS OTC'
+  if destination == 'CMEMS': directory = 'Copernicus'
+
+  data_filename = dataset['name'] + '/dataset/' + directory + key + dataset['name'] + '.csv'
+  return data_filename
+
+def get_platform(platform_code=0):
+    if platform_code == 0: return platform
     return platform[platform_code]
+
 
 def get_export_destination(platform_code):
     return platform[platform_code]['export']
@@ -57,7 +66,7 @@ def process_dataset(dataset):
   
   dataset_zip = get_export_dataset(str(dataset['id']))      
   [data_filenames, raw_filenames] = (extract_filelist(dataset_zip))
-  manifest = (extract_manifest(dataset_zip,dataset['name']))
+  manifest = extract_manifest(dataset_zip,dataset['name'])
 
   return dataset_zip, manifest, data_filenames, raw_filenames
 
