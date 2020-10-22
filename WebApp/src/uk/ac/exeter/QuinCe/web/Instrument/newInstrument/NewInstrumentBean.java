@@ -2095,7 +2095,7 @@ public class NewInstrumentBean extends FileUploadBean {
     this.removeAssignmentColumn = removeAssignmentColumn;
   }
 
-  public void removeAssignment() {
+  public void removeSensorAssignment() {
 
     try {
       SensorType sensorType = ResourceManager.getInstance()
@@ -2109,5 +2109,17 @@ public class NewInstrumentBean extends FileUploadBean {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public void removeDateTimeAssignment() throws DateTimeSpecificationException {
+    DateTimeSpecification dateTimeSpec = instrumentFiles.get(dateTimeFile)
+      .getDateTimeSpecification();
+
+    dateTimeSpec.removeAssignment(dateTimeColumn);
+
+    assignmentsTree
+      .setDateTimeAssignment(instrumentFiles.getByDescription(dateTimeFile));
+
+    resetDateTimeAssignmentValues();
   }
 }

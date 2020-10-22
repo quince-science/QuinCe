@@ -260,6 +260,11 @@
             oncomplete="dateTimeAssigned();" />
           <p:commandButton value="Cancel"
             onclick="PF('dateTimeAssignmentDialog').hide(); return false;" />
+          
+          <p:remoteCommand name="removeDateTimeAssignmentAction" action="#{newInstrumentBean.removeDateTimeAssignment}"
+            process="dateTimeFile dateTimeColumn"
+            update="dateTimeFile dateTimeColumn dateTimeType dateTimeFormat dateFormat timeFormat assignmentsTree"
+            oncomplete="dateTimeAssigned();" />
         </h:panelGrid>
       </p:dialog>
 
@@ -323,7 +328,7 @@
               <h:outputText id="nodeLabel" value="#{node.target}"/>
               <p:contextMenu for="nodeLabel">
                 <p:menuitem value="Remove"
-                  onclick="removeAssignment('#{node.sensorType.id}', '#{node.dataFile}', '#{node.column}')"/>
+                  onclick="removeSensorAssignment('#{node.sensorType.id}', '#{node.dataFile}', '#{node.column}')"/>
               </p:contextMenu>
             </p:treeNode>
             <p:treeNode type="UNFINISHED_DATETIME" styleClass="unassignedSensorType">
@@ -339,7 +344,11 @@
               <h:outputText value="#{node}"/>
             </p:treeNode>
             <p:treeNode type="DATETIME_ASSIGNMENT" styleClass="dateTimeAssignment">
-              <h:outputText value="#{node}"/>
+              <h:outputText id="dateTimeLabel" value="#{node.columnName}"/>
+              <p:contextMenu for="dateTimeLabel">
+                <p:menuitem value="Remove"
+                  onclick="removeDateTimeAssignment('#{node.file}', #{node.columnIndex})"/>
+              </p:contextMenu>
             </p:treeNode>
           </p:tree>
         </p:fieldset>
@@ -382,7 +391,7 @@
         value="#{newInstrumentBean.removeAssignmentDataFile}"/>
       <h:inputHidden id="removeAssignmentColumn"
         value="#{newInstrumentBean.removeAssignmentColumn}"/>
-      <p:remoteCommand name="removeAssignmentCommand" action="#{newInstrumentBean.removeAssignment}"
+      <p:remoteCommand name="removeSensorAssignmentCommand" action="#{newInstrumentBean.removeSensorAssignment}"
         process="removeAssignmentSensorType removeAssignmentDataFile removeAssignmentColumn"
         update="assignmentsTree" oncomplete="sensorAssigned();"/>
 
