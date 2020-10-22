@@ -802,11 +802,17 @@ function getSensorTypeID(typeName) {
   return result;
 }
 
-function removeAssignment(sensorType, file, column) {
+function removeSensorAssignment(sensorType, file, column) {
   $('#newInstrumentForm\\:removeAssignmentSensorType').val(sensorType);
   $('#newInstrumentForm\\:removeAssignmentDataFile').val(file);
   $('#newInstrumentForm\\:removeAssignmentColumn').val(column);
-  removeAssignmentCommand(); // PrimeFaces remoteCommand
+  removeSensorAssignmentCommand(); // PrimeFaces remoteCommand
+}
+
+function removeDateTimeAssignment(file, column) {
+  $('#newInstrumentForm\\:dateTimeFile').val(file);
+  $('#newInstrumentForm\\:dateTimeColumn').val(column);
+  removeDateTimeAssignmentAction(); // PF RemoteCommand
 }
 
 /*******************************************************

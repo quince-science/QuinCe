@@ -211,17 +211,15 @@ public class AssignmentsTree {
           DateTimeSpecification.getAssignmentIndex(entry.getKey()));
 
         new DefaultTreeNode(DATETIME_ASSIGNMENT,
-          file.getFileColumns().get(assignment.getColumn()).getName(), child);
+          new DateTimeNodeInfo(file.getFileDescription(),
+            assignment.getColumn(),
+            file.getFileColumns().get(assignment.getColumn()).getName()),
+          child);
 
       }
     }
 
-    updateDateTimeNode();
-  }
-
-  private void updateDateTimeNode() {
     boolean dateTimeFinished = true;
-
     for (TreeNode node : dateTimeNodes.values()) {
       if (node.getType().equals(DATETIME_UNFINISHED)) {
         dateTimeFinished = false;
@@ -241,5 +239,31 @@ public class AssignmentsTree {
     EditableTreeNode node = dateTimeNodes.remove(oldName);
     node.setData(renamedFile.getFileDescription());
     dateTimeNodes.put(renamedFile.getFileDescription(), node);
+  }
+
+  public class DateTimeNodeInfo {
+    private final String file;
+
+    private final int columnIndex;
+
+    private final String columnName;
+
+    private DateTimeNodeInfo(String file, int columnIndex, String columnName) {
+      this.file = file;
+      this.columnIndex = columnIndex;
+      this.columnName = columnName;
+    }
+
+    public String getFile() {
+      return file;
+    }
+
+    public int getColumnIndex() {
+      return columnIndex;
+    }
+
+    public String getColumnName() {
+      return columnName;
+    }
   }
 }
