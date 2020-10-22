@@ -21,10 +21,7 @@ https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-i
 1. post metadata package describing the data-object (JSON object)
 2. put dataobject
 '''
-def construct_datafilename(dataset,key):
-  data_filename = dataset["name"] + '/dataset/' + "ICOS OTC" + key + dataset["name"] + '.csv'
-  return data_filename
-            
+
 
 def build_metadata_package(file,manifest,index,hashsum,
   obj_spec,level,L0_hashsums,is_next_version):
