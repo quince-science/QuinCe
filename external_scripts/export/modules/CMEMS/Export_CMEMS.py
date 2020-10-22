@@ -58,8 +58,6 @@ import datetime
 import pandas as pd
 import numpy as np
 import netCDF4
-from modules.CMEMS.cmems_converter import buildnetcdfs 
-from modules.Local.data_processing import get_file_from_zip
 
 import xml.etree.ElementTree as ET
 import sqlite3
@@ -67,7 +65,12 @@ import json
 import time
 import toml
 
-with open('config_copernicus.toml') as f: config_copernicus = toml.load(f)
+
+from modules.CMEMS.Export_CMEMS_metadata import build_netCDFs, write_nc_bytes_to_file, update_global_attributes, create_metadata_object
+from modules.CMEMS.Export_CMEMS_ftp import upload_to_copernicus
+from modules.CMEMS.Export_CMEMS_sql import sql_commit, create_connection
+
+with open('config_copernicus.toml') as f: config = toml.load(f)
 
 # Response codes
 UPLOADED = 1
@@ -88,86 +91,33 @@ index_dir = '/' + product_id + '/' + dataset_id
 
 local_folder = 'latest'
 
-def build_dataproduct(dataset_zip,dataset,key,destination_filename,platform):
+def build_dataproduct(dataset_zip,dataset,key):
   '''
-  transforms csv-file to daily netCDF-files.
-  Creates dictionary containing info on each netCDF file extracted
-  requires: zip-folder, dataset-name and specific filename of csv-file.
-  returns: dictionary
+  - Transforms csv-file to daily netCDF-files.
+  - Creates metadata dictionary containing info on each netCDF file extracted
+  - Writes metadata to local sql database
+  requires: zip-folder, dataset-object and key
   '''
-  # BUILD netCDF FILES
-
-  data_filename = (dataset['name'] + '/dataset/' + "Copernicus" + key 
-  + dataset['name'] + '.csv')
-
-  # Load field config
-  fieldconfig = pd.read_csv('fields.csv', delimiter=',', quotechar='\'')
-
-  csv_file = get_file_from_zip(dataset_zip, destination_filename)  
-  
-  curr_date = datetime.datetime.now().strftime("%Y%m%d")
-  
   if not os.path.exists(local_folder): os.mkdir(local_folder)
 
-  logging.info(f'Creating netcdf-files based on {csv_file} to send to CMEMS')
-
-  filedata = pd.read_csv(csv_file, delimiter=',')
-  nc_files = buildnetcdfs(dataset_name, fieldconfig, filedata,platform)
+  nc_tuples = build_netCDFs(dataset,key,dataset_zip)
    
   nc_dict = {}
-  for nc_file in nc_files:
-    (nc_filename, nc_content) = nc_file
-    hashsum = hashlib.md5(nc_content).hexdigest()
-    logging.debug(f'Processing netCDF file {nc_filename}')
+  for nc_tuple in nc_tuples:
+    (nc_name, nc_content) = nc_tuple
+    logging.debug(f'Processing netCDF file {nc_name}')
 
-    # ASSIGN DATE-VARIABLES TO netCDF FILE
-    nc_filepath = local_folder + '/' + nc_filename + '.nc'   
+    nc_filepath = write_nc_bytes_to_file(nc_name,nc_content)
 
-    with open(nc_filepath,'wb') as f: f.write(nc_content)
+    nc = netCDF4.Dataset(nc_filepath,mode = 'r+') # Reading netCDF file to memory
+    update_global_attributes(nc) # Adds last update date and history
 
-    # reading netCDF file to memory
-    nc = netCDF4.Dataset(nc_filepath,mode = 'r+')
-    datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    nc_dict[nc_name] = create_metadata_object(nc,nc_name,nc_content,nc_filepath,dataset)
 
-    nc.date_update = datasetdate
-    nc.history = datasetdate + " : Creation"
-
-    platform_code = nc.platform_code
-    last_lat = nc.last_latitude_observation
-    last_lon = nc.last_longitude_observation
-    last_dt = nc.last_date_observation 
-
-    #get list of parameters from netCDF file
-    var_list = nc.variables.keys()
-    var_list = list(filter(lambda x: '_' not in x, var_list))
-    var_list = list(filter(lambda x: 'TIME' not in x, var_list))
-    var_list = list(filter(lambda x: 'LATITUDE' not in x, var_list))
-    var_list = list(filter(lambda x: 'LONGITUDE' not in x, var_list))
-    parameters = ' '.join(var_list)
-    nc.close()
-
-    # create dictionary object
-    date = nc_filename.split('_')[-1]
-    date = datetime.datetime.strptime(date,'%Y%m%d')
-    hashsum = hashlib.md5(nc_content).hexdigest()
-    nc_dict[nc_filename] = ({
-      'filepath':nc_filepath, 
-      'hashsum': hashsum, 
-      'date': date, 
-      'dataset':dataset_name,
-      'uploaded':False,
-      'platform': platform_code,
-      'parameters':parameters,
-      'last_lat':last_lat,
-      'last_lon':last_lon,
-      'last_dt':last_dt})
-
-  logging.debug(f'Commiting metadata to local SQL database {cmems_db}')
   sql_commit(nc_dict)
-  return str(curr_date)
 
 
-def upload_to_copernicus(ftp_config,server,dataset,curr_date,platform):
+def upload_to_copernicus(server,dataset,platform):
   '''
   - Creates a FTP-connection
   - Uploads netCDF files
@@ -176,6 +126,8 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date,platform):
 
   ftp_config contains login information
   '''
+  curr_date = datetime.datetime.now().strftime("%Y%m%d")
+
   status = 0
   error = curr_date
   error_msg = ''
@@ -183,9 +135,9 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date,platform):
 
   # create ftp-connection
   with ftputil.FTPHost(
-    host=ftp_config['Copernicus'][server],
-    user=ftp_config['Copernicus']['user'],
-    passwd=ftp_config['Copernicus']['password'])as ftp:
+    host=config['Copernicus'][server],
+    user=config['Copernicus']['user'],
+    passwd=config['Copernicus']['password'])as ftp:
 
     c = create_connection(cmems_db)
 

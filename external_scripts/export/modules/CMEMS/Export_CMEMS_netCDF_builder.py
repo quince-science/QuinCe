@@ -11,6 +11,7 @@ from io import BytesIO
 from zipfile import ZipFile
 from netCDF4 import Dataset
 from re import match
+import logging
 
 TIME_BASE = datetime.datetime(1950, 1, 1, 0, 0, 0)
 QC_LONG_NAME = "quality flag"
@@ -36,6 +37,7 @@ PLATFORM_CODES = {
 
 def buildnetcdfs(datasetname, fieldconfig, filedata,platform):
   ''' Construct CMEMS complient netCDF files from filedata'''
+  logging.info(f'Constructing netcdf-files based on {datasetname} to send to CMEMS')
 
   result = []
   currentline = 0
