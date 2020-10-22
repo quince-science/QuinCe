@@ -13,7 +13,7 @@ import traceback
 from slacker import Slacker
 
 from modules.Local.API_calls import get_export_list, report_abandon_export, report_complete_export, post_slack_msg
-from modules.Local.data_processing import process_dataset, get_platform_code, get_platform_name, get_export_destination
+from modules.Local.data_processing import process_dataset, get_platform_code, get_platform_name, get_export_destination, construct_datafilename
 from modules.CarbonPortal.Export_CarbonPortal_external import get_auth_cookie
 from modules.CarbonPortal.Export_CarbonPortal_main import export_file_to_cp 
 from modules.CMEMS.Export_CMEMS import build_dataproduct, upload_to_copernicus
@@ -54,8 +54,9 @@ def main():
 
         for destination in export_destination:
           if 'ICOS' in destination: 
-            #--- Processing L0 files
             successful_upload_CP = 0; cp_err_msg = '';
+
+            #--- Processing L0 files
             L0_hashsums = []
             for index, raw_filename in enumerate(raw_filenames):
               successful_upload_CP, L0_hashsum, cp_err_msg = export_file_to_cp(manifest, raw_filename, dataset_zip, index, cp_cookie,'L0',upload,cp_err_msg)
@@ -65,8 +66,9 @@ def main():
             #--- Processing L1 files            
             index = -1 # used in export of L0, not needed for L1
             try:
+              data_filename = construct_datafilename(dataset,'CP',key)
               successful_upload_CP, L1_hashsum, cp_err_msg = export_file_to_cp(
-                manifest, dataset, key, dataset_zip, index, cp_cookie, 'L1', upload, cp_err_msg,L0_hashsums)
+                manifest, data_filename, dataset_zip, index, cp_cookie, 'L1', upload, cp_err_msg,L0_hashsums)
             except Exception as e:
               logging.error('Carbon Portal export failed. \n', exc_info=True)
 
