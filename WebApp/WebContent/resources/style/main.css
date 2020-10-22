@@ -348,6 +348,10 @@ div.fullPage {
   padding: 5px;
 }
 
+.disabled {
+  color: #999 !important;
+}
+
 table.shrink {
   table-layout: unset;
 }

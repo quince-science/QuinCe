@@ -718,6 +718,7 @@ function assignVariablesInit() {
 
 function setupDragDropEvents() {
   $('div[id^=col-]').on('dragstart', handleColumnDragStart);
+  $('div[id^=col-]').on('dragend', handleColumnDragEnd);
 
   $('.sensorTypeDropTarget')
     .on('dragover', handleColumnDragOver)
@@ -735,10 +736,17 @@ function setupDragDropEvents() {
 function handleColumnDragStart(e) {
   e.originalEvent.dataTransfer.setData("text/plain", e.target.id);
   e.originalEvent.dataTransfer.dropEffect = "link";
+  disableOtherDateTimeNodes(getDragColumn(e).dataFile);
+}
+
+function handleColumnDragEnd(e) {
+  enableAllDateTimeNodes();
 }
 
 function handleColumnDragEnter(e) {
-  $(this).addClass('dropTargetHover');
+  if ($(this).hasClass('disabled') == false) {
+    $(this).addClass('dropTargetHover');
+  }
 }
 
 function handleColumnDragLeave(e) {
@@ -747,8 +755,10 @@ function handleColumnDragLeave(e) {
 
 function handleColumnDragOver(e) {
   e.preventDefault();
-  $(this).addClass('dropTargetHover');
-  e.originalEvent.dataTransfer.dropEffect = "link";
+  if ($(this).hasClass('disabled') == false) {
+    $(this).addClass('dropTargetHover');
+    e.originalEvent.dataTransfer.dropEffect = "link";
+  }
 }
 
 function handleSensorTypeColumnDrop(e) {
@@ -777,8 +787,10 @@ function handleDateTimeColumnDrop(e) {
   e.preventDefault();
   $(this).removeClass('dropTargetHover');
 
-  let column = getDragColumn(e);
-  openDateTimeAssignDialog($(this)[0].innerText, column);
+  if ($(this).hasClass('disabled') == false) {
+    let column = getDragColumn(e);
+    openDateTimeAssignDialog($(this)[0].innerText, column);
+  }
 }
 
 function getDragColumn(e) {
@@ -813,6 +825,26 @@ function removeDateTimeAssignment(file, column) {
   $('#newInstrumentForm\\:dateTimeFile').val(file);
   $('#newInstrumentForm\\:dateTimeColumn').val(column);
   removeDateTimeAssignmentAction(); // PF RemoteCommand
+}
+
+function disableOtherDateTimeNodes(dataFile) {
+  $('[data-nodetype$="FINISHED_DATETIME"]').each(function() {
+	nodeDataFile = $(this)[0].innerText.split('\n')[0];
+
+    if (nodeDataFile != dataFile) {
+      $(this).find('.unassignedDateTimeType').each(function() {
+	    $(this).addClass('disabled');
+      });
+    }
+  });
+}
+
+function enableAllDateTimeNodes() {
+  $('[data-nodetype$="FINISHED_DATETIME"]')
+    .find('.unassignedDateTimeType').each(function() {
+  
+    $(this).removeClass('disabled');
+  });
 }
 
 /*******************************************************
