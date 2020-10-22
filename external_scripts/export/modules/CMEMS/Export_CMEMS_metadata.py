@@ -11,119 +11,91 @@ import datetime
 import pandas as pd
 import numpy as np
 import netCDF4
-from modules.CMEMS.cmems_converter import buildnetcdfs 
-from modules.Local.data_processing import get_file_from_zip
+from modules.CMEMS.Export_CMEMS_netCDF_builder import buildnetcdfs 
+from modules.Local.data_processing import get_file_from_zip, get_platform, construct_datafilename
 
 import xml.etree.ElementTree as ET
 import sqlite3
 import json
 import time
 
-# Upload result codes
-UPLOAD_OK = 0
-FILE_EXISTS = 2
-
-# Response codes
-UPLOADED = 1
-NOT_UPLOADED = 0
-FAILED_INGESTION = -1
-
 dnt_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
 
 log_file = 'log/cmems_log.txt'
 not_ingested = 'log/log_uningested_files.csv'
-cmems_db = 'files_cmems.db'
 
 product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
 dataset_id = 'NRT_202003'
 institution = 'University of Bergen Geophysical Institute'
 institution_edmo = '4595'
 
-nrt_dir = '/' + product_id + '/' + dataset_id + '/latest'
-dnt_dir = '/' + product_id + '/DNT'
-index_dir = '/' + product_id + '/' + dataset_id
-
 local_folder = 'latest'
 
-def build_dataproduct(dataset_zip,dataset,key,destination_filename,platform):
-  '''
-  transforms csv-file to daily netCDF-files.
-  Creates dictionary containing info on each netCDF file extracted
-  requires: zip-folder, dataset-name and specific filename of csv-file.
-  returns: dictionary
-  '''
-  # BUILD netCDF FILES
+def build_netCDFs(dataset,key,dataset_zip):
+  ''' Returns tuple of netCDF filename and bytes'''
+  dataset_name = construct_datafilename(dataset,'CMEMS',key)
+  platform = get_platform()
 
-  data_filename = (dataset['name'] + '/dataset/' + "Copernicus" + key 
-  + dataset['name'] + '.csv')
-
-  # Load field config
+  # Load field config - contains info on variables to be included in netCDF
   fieldconfig = pd.read_csv('fields.csv', delimiter=',', quotechar='\'')
-
-  csv_file = get_file_from_zip(dataset_zip, destination_filename)  
   
-  curr_date = datetime.datetime.now().strftime("%Y%m%d")
-  
-  if not os.path.exists(local_folder): os.mkdir(local_folder)
-
-  logging.info(f'Creating netcdf-files based on {csv_file} to send to CMEMS')
-
+  # Read csv file
+  csv_file = get_file_from_zip(dataset_zip, dataset_name)  
   filedata = pd.read_csv(csv_file, delimiter=',')
-  nc_files = buildnetcdfs(dataset_name, fieldconfig, filedata,platform)
-   
-  nc_dict = {}
-  for nc_file in nc_files:
-    (nc_filename, nc_content) = nc_file
-    hashsum = hashlib.md5(nc_content).hexdigest()
-    logging.debug(f'Processing netCDF file {nc_filename}')
+  
+  # Build netCDF from filecontent
+  nc_files = buildnetcdfs(dataset['name'], fieldconfig, filedata, platform)
 
-    # ASSIGN DATE-VARIABLES TO netCDF FILE
-    nc_filepath = local_folder + '/' + nc_filename + '.nc'   
+  return nc_files
 
-    with open(nc_filepath,'wb') as f: f.write(nc_content)
+def write_nc_bytes_to_file(nc_name,nc_content):
+  nc_filepath = local_folder + '/' + nc_name + '.nc'   
+  with open(nc_filepath,'wb') as f: f.write(nc_content)
+  return nc_filepath
 
-    # reading netCDF file to memory
-    nc = netCDF4.Dataset(nc_filepath,mode = 'r+')
-    datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+def update_global_attributes(nc):
+  # Adding history and last update date to global attributes
+  datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+  nc.date_update = datasetdate
+  nc.history = datasetdate + " : Creation"
 
-    nc.date_update = datasetdate
-    nc.history = datasetdate + " : Creation"
+def create_metadata_object(nc,nc_name,nc_content,nc_filepath,dataset):
+  ''' Creates metadata dictionary object based on each netCDF''' 
+  # Extracting metadata for index-file
+  platform_code = nc.platform_code
+  # time and position
+  last_lat = nc.last_latitude_observation
+  last_lon = nc.last_longitude_observation
+  last_dt = nc.last_date_observation 
 
-    platform_code = nc.platform_code
-    last_lat = nc.last_latitude_observation
-    last_lon = nc.last_longitude_observation
-    last_dt = nc.last_date_observation 
+  # list of parameters/variables from netCDF file
+  var_list = nc.variables.keys()
+  var_list = list(filter(lambda x: '_' not in x, var_list))
+  var_list = list(filter(lambda x: 'TIME' not in x, var_list))
+  var_list = list(filter(lambda x: 'LATITUDE' not in x, var_list))
+  var_list = list(filter(lambda x: 'LONGITUDE' not in x, var_list))
+  parameters = ' '.join(var_list)
+  nc.close()
 
-    #get list of parameters from netCDF file
-    var_list = nc.variables.keys()
-    var_list = list(filter(lambda x: '_' not in x, var_list))
-    var_list = list(filter(lambda x: 'TIME' not in x, var_list))
-    var_list = list(filter(lambda x: 'LATITUDE' not in x, var_list))
-    var_list = list(filter(lambda x: 'LONGITUDE' not in x, var_list))
-    parameters = ' '.join(var_list)
-    nc.close()
+  # create metadata dictionary object
+  date = nc_name.split('_')[-1]
+  date = datetime.datetime.strptime(date,'%Y%m%d')
+  hashsum = hashlib.md5(nc_content).hexdigest()
 
-    # create dictionary object
-    date = nc_filename.split('_')[-1]
-    date = datetime.datetime.strptime(date,'%Y%m%d')
-    hashsum = hashlib.md5(nc_content).hexdigest()
-    nc_dict[nc_filename] = ({
-      'filepath':nc_filepath, 
-      'hashsum': hashsum, 
-      'date': date, 
-      'dataset':dataset_name,
-      'uploaded':False,
-      'platform': platform_code,
-      'parameters':parameters,
-      'last_lat':last_lat,
-      'last_lon':last_lon,
-      'last_dt':last_dt})
+  nc_dict = ({
+    'filepath':nc_filepath, 
+    'hashsum': hashsum, 
+    'date': date, 
+    'dataset':dataset['name'],
+    'uploaded':False,
+    'platform': platform_code,
+    'parameters':parameters,
+    'last_lat':last_lat,
+    'last_lon':last_lon,
+    'last_dt':last_dt})
 
-  logging.debug(f'Commiting metadata to local SQL database {cmems_db}')
-  sql_commit(nc_dict)
-  return str(curr_date)
-
+  return nc_dict
 
 def build_DNT(dnt_upload,dnt_delete):
   ''' Generates delivery note for NetCDF file upload, 
