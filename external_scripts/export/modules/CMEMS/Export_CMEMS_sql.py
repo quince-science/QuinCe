@@ -11,8 +11,6 @@ import datetime
 import pandas as pd
 import numpy as np
 import netCDF4
-from modules.CMEMS.cmems_converter import buildnetcdfs 
-from modules.Local.data_processing import get_file_from_zip
 
 import xml.etree.ElementTree as ET
 import sqlite3
@@ -77,6 +75,8 @@ def sql_commit(nc_dict):
   date = datetime.datetime.now().strftime(dnt_datetime_format)
 
   for key in nc_dict:
+    logging.debug(f'Commiting {nc_dict[key]["filepath"]} to local SQL database {cmems_db}')
+ 
     if nc_dict[key]['uploaded']: 
       uploaded = 1
     else: 

@@ -72,10 +72,10 @@ def main():
             except Exception as e:
               logging.error('Carbon Portal export failed. \n', exc_info=True)
 
-          if 'CMEMS' in destination: 
 
+          if 'CMEMS' in destination: 
             successful_upload_CMEMS = 0; cmems_err_msg = '';
-            curr_date  = build_dataproduct(dataset_zip,dataset,key)
+            build_dataproduct(dataset_zip,dataset,key)
             try: 
               if upload:
                   successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus(
