@@ -14,8 +14,8 @@ from slacker import Slacker
 
 from modules.Local.API_calls import get_export_list, report_abandon_export, report_complete_export, post_slack_msg
 from modules.Local.data_processing import process_dataset, get_platform_code, get_platform_name, get_export_destination, construct_datafilename
-from modules.CarbonPortal.Export_CarbonPortal_external import get_auth_cookie
-from modules.CarbonPortal.Export_CarbonPortal_main import export_file_to_cp 
+from modules.CarbonPortal.Export_CarbonPortal_http import get_auth_cookie
+from modules.CarbonPortal.Export_CarbonPortal_main import export_file_to_cp  
 from modules.CMEMS.Export_CMEMS import build_dataproduct, upload_to_copernicus
 
 with open('config_copernicus.toml') as f: config_copernicus = toml.load(f)
