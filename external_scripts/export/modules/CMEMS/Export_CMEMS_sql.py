@@ -17,32 +17,34 @@ import sqlite3
 import json
 import time
 
-# Upload result codes
-UPLOAD_OK = 0
-FILE_EXISTS = 2
 
 # Response codes
 UPLOADED = 1
 NOT_UPLOADED = 0
 FAILED_INGESTION = -1
 
-dnt_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
-server_location = 'ftp://nrt.cmems-du.eu/Core'
+DNT_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
-log_file = 'log/cmems_log.txt'
-not_ingested = 'log/log_uningested_files.csv'
-cmems_db = 'files_cmems.db'
+CURRENT_DATE = datetime.datetime.now().strftime("%Y%m%d")
 
-product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
-dataset_id = 'NRT_202003'
-institution = 'University of Bergen Geophysical Institute'
-institution_edmo = '4595'
 
-nrt_dir = '/' + product_id + '/' + dataset_id + '/latest'
-dnt_dir = '/' + product_id + '/DNT'
-index_dir = '/' + product_id + '/' + dataset_id
+def update_db_new_submission(UPLOADED,filepath_ftp,filename):
+  c.execute("UPDATE latest \
+    SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
+    WHERE filename = ?", 
+    [UPLOADED, filepath_ftp, CURRENT_DATE ,filename])
 
-local_folder = 'latest'
+def update_db_dnt(dnt_local_filepath):
+  logging.debug('Updating database to include DNT filename')
+  sql_rec = "UPDATE latest SET dnt_file = ? WHERE dnt_file = ?"
+  sql_var = [dnt_local_filepath, CURRENT_DATE]
+  c.execute(sql_rec,sql_var)
+
+def abort_upload_db(error_msg):
+  sql_req = ("UPDATE latest \
+    SET uploaded = ?, ftp_filepath = ?, dnt_file = ?, comment = ? \
+    WHERE dnt_file = ?")
+  sql_var = [0,None,None,error_msg, CURRENT_DATE]
 
 def create_connection(DB):
   ''' creates connection and database if not already created '''
@@ -67,15 +69,14 @@ def create_connection(DB):
               )''')
   return c
 
-def sql_commit(nc_dict):
+def sql_commit(nc_dict,c):
   '''  creates SQL table if non exists
   adds new netCDF files, listed in nc_dict, to new or existing SQL-table 
   '''
-  c = create_connection(cmems_db)
-  date = datetime.datetime.now().strftime(dnt_datetime_format)
+  date = datetime.datetime.now().strftime(DNT_DATETIME_FORMAT)
 
   for key in nc_dict:
-    logging.debug(f'Commiting {nc_dict[key]["filepath"]} to local SQL database {cmems_db}')
+    logging.debug(f'Commiting {nc_dict[key]["filepath"]} to local SQL database')
  
     if nc_dict[key]['uploaded']: 
       uploaded = 1
