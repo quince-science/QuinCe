@@ -13,6 +13,8 @@ import numpy as np
 import netCDF4
 from modules.CMEMS.Export_CMEMS_netCDF_builder import buildnetcdfs 
 from modules.Local.data_processing import get_file_from_zip, get_platform, construct_datafilename
+from modules.CMEMS.Export_CMEMS_ftp import upload_to_ftp
+from modules.CMEMS.Export_CMEMS_sql import update_db_dnt
 
 import xml.etree.ElementTree as ET
 import sqlite3
@@ -22,15 +24,13 @@ import time
 dnt_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
 
-log_file = 'log/cmems_log.txt'
-not_ingested = 'log/log_uningested_files.csv'
+PRODUCT_ID = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
+DATASET_ID = 'NRT_202003'
+INSTITUTION = 'University of Bergen Geophysical Institute'
+INSTITUTION_EDMO = '4595'
 
-product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
-dataset_id = 'NRT_202003'
-institution = 'University of Bergen Geophysical Institute'
-institution_edmo = '4595'
+LOCAL_FOLDER = 'latest'
 
-local_folder = 'latest'
 
 def build_netCDFs(dataset,key,dataset_zip):
   ''' Returns tuple of netCDF filename and bytes'''
@@ -50,7 +50,7 @@ def build_netCDFs(dataset,key,dataset_zip):
   return nc_files
 
 def write_nc_bytes_to_file(nc_name,nc_content):
-  nc_filepath = local_folder + '/' + nc_name + '.nc'   
+  nc_filepath = LOCAL_FOLDER + '/' + nc_name + '.nc'   
   with open(nc_filepath,'wb') as f: f.write(nc_content)
   return nc_filepath
 
@@ -110,11 +110,11 @@ def build_DNT(dnt_upload,dnt_delete):
   dnt = ET.Element('delivery')
   dnt.set('PushingEntity','CopernicusMarine-InSitu-Global')
   dnt.set('date', date)
-  dnt.set('product',product_id)
+  dnt.set('product',PRODUCT_ID)
   dataset = ET.SubElement(dnt,'dataset')
-  dataset.set('DatasetName',dataset_id)
+  dataset.set('DatasetName',DATASET_ID)
 
-  # upload
+  # UPLOAD
   for item in dnt_upload:
     local_filepath = dnt_upload[item]['local_filepath']
     ftp_filepath = dnt_upload[item]['ftp_filepath'].split('/',3)[-1]
@@ -130,7 +130,7 @@ def build_DNT(dnt_upload,dnt_delete):
     file.set('StartUploadTime',start_upload_time)
     file.set('StopUploadTime',stop_upload_time)
 
-  # delete
+  # DELETE
   for item in dnt_delete:
     ftp_filepath = dnt_delete[item].split('/',3)[-1]
 
@@ -141,8 +141,8 @@ def build_DNT(dnt_upload,dnt_delete):
 
   xml_tree = ET.ElementTree(dnt)
 
-  dnt_file = product_id + '_P' + date + '.xml'
-  dnt_folder = 'DNT/' + local_folder + '/'  
+  dnt_file = PRODUCT_ID + '_P' + date + '.xml'
+  dnt_folder = 'DNT/' + LOCAL_FOLDER + '/'  
   dnt_filepath = dnt_folder + dnt_file
 
   if not os.path.isdir(dnt_folder):  os.mkdir(dnt_folder)
@@ -159,9 +159,9 @@ def build_fDNT(dnt_delete):
   dnt = ET.Element('delivery')
   dnt.set('PushingEntity','CopernicusMarine-InSitu-Global')
   dnt.set('date', date)
-  dnt.set('product',product_id)
+  dnt.set('product',PRODUCT_ID)
   dataset = ET.SubElement(dnt,'dataset')
-  dataset.set('DatasetName',dataset_id)
+  dataset.set('DatasetName',DATASET_ID)
 
   # delete
   for item in dnt_delete:
@@ -176,8 +176,8 @@ def build_fDNT(dnt_delete):
   xml_tree = ET.ElementTree(dnt)
   # logging.debug('DNT file:\n' + str(ET.dump(xml_tree)))
 
-  dnt_file = product_id + '_P' + date + '.xml'
-  dnt_folder = 'DNT/' + local_folder + '/'  
+  dnt_file = PRODUCT_ID + '_P' + date + '.xml'
+  dnt_folder = 'DNT/' + LOCAL_FOLDER + '/'  
   dnt_filepath = dnt_folder + dnt_file
 
   try: os.mkdir(dnt_folder); 
@@ -189,51 +189,59 @@ def build_fDNT(dnt_delete):
 
   return dnt_file, dnt_filepath
 
-def build_index(currently_uploaded):
+def build_index(c):
   '''
   Creates index-file of CMEMS directory.
   Lists all files currently uploaded to the CMEMS server. 
   '''
+  try:
+    c.execute("SELECT * FROM latest WHERE uploaded == 1")
+    currently_uploaded = c.fetchall()
 
-  date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
-  index_header = ('# Title : Carbon in-situ observations catalog \n'\
-    + '# Description : catalog of available in-situ observations per platform.\n'\
-    + '# Project : Copernicus \n# Format version : 1.0 \n'\
-    + '# Date of update : ' + date_header +'\n'
-    + '# catalog_id,file_name,geospatial_lat_min,geospatial_lat_max,'\
-    + 'geospatial_lon_min,geospatial_lon_max,time_coverage_start,'\
-    + 'time_coverage_end,provider,date_update,data_mode,parameters\n')
+    index_header = ('# Title : Carbon in-situ observations catalog \n'\
+      + '# Description : catalog of available in-situ observations per platform.\n'\
+      + '# Project : Copernicus \n# Format version : 1.0 \n'\
+      + '# Date of update : ' + date_header +'\n'
+      + '# catalog_id,file_name,geospatial_lat_min,geospatial_lat_max,'\
+      + 'geospatial_lon_min,geospatial_lon_max,time_coverage_start,'\
+      + 'time_coverage_end,provider,date_update,data_mode,parameters\n')
 
-  index_info = ''
-  for file in currently_uploaded:
-    local_filepath = file[2]
-    ftp_filepath = file[6].replace(dataset_id,'NRT') # Upload URL differs from host URL  /NRT_202003/ --> /NRT/
+    index_info = ''
+    for file in currently_uploaded:
+      local_filepath = file[2]
+      ftp_filepath = file[6].replace(DATASET_ID,'NRT') # Upload URL differs from host URL  /NRT_202003/ --> /NRT/
 
-    nc = netCDF4.Dataset(local_filepath,mode='r')
+      nc = netCDF4.Dataset(local_filepath,mode='r')
 
-    lat_min = nc.geospatial_lat_min
-    lat_max = nc.geospatial_lat_max
-    lon_min = nc.geospatial_lon_min
-    lon_max = nc.geospatial_lon_max
-    time_start = nc.time_coverage_start
-    time_end  = nc.time_coverage_end
-    date_update = nc.date_update
-    nc.close()
+      lat_min = nc.geospatial_lat_min
+      lat_max = nc.geospatial_lat_max
+      lon_min = nc.geospatial_lon_min
+      lon_max = nc.geospatial_lon_max
+      time_start = nc.time_coverage_start
+      time_end  = nc.time_coverage_end
+      date_update = nc.date_update
+      nc.close()
 
-    parameters = str(file[11])
+      parameters = str(file[11])
 
-    index_info += ('COP-GLOBAL-01,' + server_location + ftp_filepath + ',' 
-                + lat_min + ',' + lat_max + ',' + lon_min + ',' + lon_max + ',' 
-                + time_start + ',' + time_end  + ',' + institution +',' 
-                + date_update + ',R,' + parameters + '\n')
+      index_info += ('COP-GLOBAL-01,' + server_location + ftp_filepath + ',' 
+                  + lat_min + ',' + lat_max + ',' + lon_min + ',' + lon_max + ',' 
+                  + time_start + ',' + time_end  + ',' + INSTITUTION +',' 
+                  + date_update + ',R,' + parameters + '\n')
 
-  index_latest = index_header + index_info
+    index_latest = index_header + index_info
 
-  index_filename = 'index_latest.txt'
-  with open(index_filename,'wb') as f: f.write(index_latest.encode())
- 
-  logging.debug('index file:\n' + index_latest)
+    index_filename = 'index_latest.txt'
+    with open(index_filename,'wb') as f: f.write(index_latest.encode())
+   
+    logging.debug('index file:\n' + index_latest)
+
+  except Exception as e:
+    logging.error('Building index failed: ', exc_info=True)
+    status = 0
+    error += 'Building index failed: ' + str(e)
 
   return index_filename
 
@@ -242,46 +250,70 @@ def build_index_platform(c,platform):
   Creates index-file of CMEMS directory.
   Lists all platforms uploaded to the CMEMS server. 
   '''
+  try:
+    date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
-  date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    index_header = ('# Title : In Situ platforms catalog \n'\
+      + '# Description : catalog of available In Situ platforms.\n'\
+      + '# Project : Copernicus \n# Format version : 1.0 \n'\
+      + '# Date of update : ' + date_header +'\n'
+      + '# platform_code,creation_date,update_date,wmo_platform_code,data_source,'
+      + 'INSTITUTION,INSTITUTION_EDMO_code,parameter,last_latitude_observation,'
+      + 'last_longitude_observation,last_date_observation \n')
 
-  index_header = ('# Title : In Situ platforms catalog \n'\
-    + '# Description : catalog of available In Situ platforms.\n'\
-    + '# Project : Copernicus \n# Format version : 1.0 \n'\
-    + '# Date of update : ' + date_header +'\n'
-    + '# platform_code,creation_date,update_date,wmo_platform_code,data_source,'
-    + 'institution,institution_edmo_code,parameter,last_latitude_observation,'
-    + 'last_longitude_observation,last_date_observation \n')
+    # Get unique platforms from db
+    c.execute("SELECT DISTINCT platform FROM latest")
+    unique_platforms = c.fetchall()
+    logging.debug(unique_platforms)
+    if (None,) in unique_platforms: unique_platforms.remove((None,))
 
-  # Get unique platforms from db
-  c.execute("SELECT DISTINCT platform FROM latest")
-  unique_platforms = c.fetchall()
-  logging.debug(unique_platforms)
-  if (None,) in unique_platforms: unique_platforms.remove((None,))
+    index_info = ''
+    for unique_platform in unique_platforms:
+      platform_id = platform[unique_platform[0]]['platform_id']
+      # Fetch most recent entry for *platform*
+      c.execute("SELECT * FROM latest WHERE platform = ? ORDER BY last_dt DESC",
+        [unique_platform[0]])
+      db_last = c.fetchone() 
+      
+      index_info += (platform[platform_id]['call_sign'] + ',' 
+        + str(platform[platform_id]['creation_date']) + ','
+        + str(db_last[9]) + ',' 
+        + platform_id + ',' 
+        + 'GL_TS_TS_' + platform[platform_id]['call_sign'] + '_XXXXXX,' 
+        + INSTITUTION + ',' + INSTITUTION_EDMO + ',' 
+        + str(db_last[11]) + ',' 
+        + str(db_last[12]) + ',' 
+        + str(db_last[13]) + ',' 
+        + str(db_last[14]) + '\n')
 
-  index_info = ''
-  for unique_platform in unique_platforms:
-    platform_id = platform[unique_platform[0]]['platform_id']
-    c.execute("SELECT * FROM latest WHERE platform = ? ORDER BY last_dt DESC",
-      [unique_platform[0]])
-    db_last = c.fetchone()
-    
-    index_info += (platform[platform_id]['call_sign'] + ',' 
-      + str(platform[platform_id]['creation_date']) + ','
-      + str(db_last[9]) + ',' 
-      + platform_id + ',' 
-      + 'GL_TS_TS_' + platform[platform_id]['call_sign'] + '_XXXXXX,' 
-      + institution + ',' + institution_edmo + ',' 
-      + str(db_last[11]) + ',' 
-      + str(db_last[12]) + ',' 
-      + str(db_last[13]) + ',' 
-      + str(db_last[14]) + '\n')
+    index_platform = index_header + index_info
 
-  index_platform = index_header + index_info
+    index_filename = 'index_platform.txt'
+    with open(index_filename,'wb') as f: f.write(index_platform.encode())
+    logging.debug('index file:\n' + index_platform)
 
-  index_filename = 'index_platform.txt'
-  with open(index_filename,'wb') as f: f.write(index_platform.encode())
- 
-  logging.debug('index file:\n' + index_platform)
+  except Exception as e:
+    logging.error('Building platform index failed: ', exc_info=True)
+    status = 0
+    error_msg += 'Building platform index failed: ' + str(e)
 
-  return index_filename
+  return index_filename, status, error_msg
+
+def create_dnt_entry(filepath_ftp,start_upload_time,stop_upload_time,filename):
+  entry = {'ftp_filepath':filepath_ftp, 
+            'start_upload_time':start_upload_time, 
+            'stop_upload_time':stop_upload_time,
+            'local_filepath':LOCAL_FOLDER+'/'+filename +'.nc'}
+  logging.debug(f'dnt entry: {entry}')
+  return entry
+
+def building_and_uploading_DNT_file(dnt_upload,dnt_delete):
+
+  dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
+
+  upload_result, dnt, status,error_msg= (
+    upload_to_ftp(ftp, dnt_local_filepath,error_msg))  
+
+  update_db_dnt(dnt_local_filepath)
+
+  return status, error_msg

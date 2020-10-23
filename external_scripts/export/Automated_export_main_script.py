@@ -78,8 +78,7 @@ def main():
             build_dataproduct(dataset_zip,dataset,key)
             try: 
               if upload:
-                  successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus(
-                      config_copernicus,'nrt_server',dataset,curr_date,platform)
+                  successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus('nrt_server',dataset,platform_code)
             except Exception as e:
               logging.error('Exception occurred: ', exc_info=True)
               successful_upload_CMEMS = 0
