@@ -298,6 +298,20 @@ public class AssignmentsTree {
       null != expand && expand.equals("Longitude"));
     latitudeNode = makePositionNodes("Latitude", latitudeNode,
       null != expand && expand.equals("Latitude"));
+
+    boolean allAssigned = true;
+
+    for (TreeNode child : positionNode.getChildren()) {
+      if (child.getType().equals(LONGITUDE_UNASSIGNED)
+        || child.getType().equals(LATITUDE_UNASSIGNED)
+        || child.getType().equals(HEMISPHERE_UNASSIGNED)) {
+        allAssigned = false;
+        break;
+      }
+    }
+
+    positionNode.setType(allAssigned ? VariableTreeNode.VAR_FINISHED
+      : VariableTreeNode.VAR_UNFINISHED);
   }
 
   private DefaultTreeNode makePositionNodes(String positionType,
