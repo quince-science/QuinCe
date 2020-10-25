@@ -162,6 +162,10 @@
   color: blue;
 }
 
+.positionAssignment {
+  color: blue;
+}
+
 .dropTargetHover {
   background: #FF0 !important;
 }
