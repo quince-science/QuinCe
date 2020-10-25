@@ -564,6 +564,9 @@ function setupDragDropEvents() {
     .on('dragenter', handleColumnDragEnter)
     .on('dragleave', handleColumnDragLeave)
     .on('drop', handleHemisphereColumnDrop);
+
+  updateAssignmentsNextButton();
+
 }
 
 function handleColumnDragStart(e) {
@@ -707,6 +710,15 @@ function removePositionAssignment(file, column) {
   $('#newInstrumentForm\\:removeAssignmentColumn').val(column);
   removePositionAssignmentAction(); // PF remote command
 }
+
+function updateAssignmentsNextButton() {
+  if ($('[data-nodetype$="UNFINISHED_VARIABLE"]').length > 0) {
+	PF('next').disable();
+  } else {
+	PF('next').enable();
+  }	
+}
+
 /*******************************************************
 *
 * RUN TYPES PAGE
