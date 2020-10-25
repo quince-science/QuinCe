@@ -678,17 +678,6 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Dummy method for setting time and position assignments. It doesn't actually
-   * do anything, but it's needed for the JSF communications to work.
-   *
-   * @param assignments
-   *          The assignments. They are ignored.
-   */
-  public void setTimePositionAssignments(String assignments) {
-    // Do nothing
-  }
-
-  /**
    * Get the sensor assignment file
    *
    * @return The file
@@ -1399,32 +1388,6 @@ public class NewInstrumentBean extends FileUploadBean {
         startTimeDate = null;
       }
     }
-  }
-
-  /**
-   * Get the time and position column assignments for all files related to this
-   * instrument. Required because {@link NewInstrumentFileSet} is a list, so JSF
-   * can't access named properties.
-   *
-   * @return The time and position assignments
-   * @throws DateTimeSpecificationException
-   *           If an error occurs while generating the date/time string
-   * @see NewInstrumentFileSet#getFileSpecificAssignments(SensorAssignments)
-   */
-  public String getFileSpecificAssignments()
-    throws DateTimeSpecificationException {
-    return instrumentFiles.getFileSpecificAssignments(sensorAssignments);
-  }
-
-  /**
-   * Dummy method for setting fileSpecificAssignments. Does nothing.
-   *
-   * @see #getFileSpecificAssignments()
-   * @param dummy
-   *          Ignored value
-   */
-  public void setFileSpecificAssignments(String dummy) {
-    // Do nothing
   }
 
   /**
