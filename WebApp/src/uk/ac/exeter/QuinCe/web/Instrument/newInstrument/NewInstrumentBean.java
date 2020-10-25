@@ -230,7 +230,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * The coordinate (longitude or latitude) for which the hemisphere is being
    * set
    */
-  private int hemisphereCoordinate = -1;
+  private String hemisphereCoordinate = null;
 
   /**
    * The column index of the hemisphere
@@ -491,8 +491,9 @@ public class NewInstrumentBean extends FileUploadBean {
    * Add a new file to the instrument
    *
    * @return The navigation to the file upload
+   * @throws DateTimeSpecificationException
    */
-  public String addFile() {
+  public String addFile() throws DateTimeSpecificationException {
     currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles);
     return NAV_UPLOAD_FILE;
   }
@@ -601,7 +602,7 @@ public class NewInstrumentBean extends FileUploadBean {
       sensorAssignments = new SensorAssignments(getDataSource(),
         instrumentVariables);
       assignmentsTree = new AssignmentsTree(this.instrumentVariables,
-        sensorAssignments);
+        sensorAssignments, !fixedPosition);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -933,6 +934,7 @@ public class NewInstrumentBean extends FileUploadBean {
       file.getLongitudeSpecification().setHemisphereColumn(-1);
     }
 
+    assignmentsTree.updatePositionNodes("Longitude");
     resetPositionAssignmentValues();
   }
 
@@ -1008,6 +1010,7 @@ public class NewInstrumentBean extends FileUploadBean {
       file.getLatitudeSpecification().setHemisphereColumn(-1);
     }
 
+    assignmentsTree.updatePositionNodes("Latitude");
     resetPositionAssignmentValues();
   }
 
@@ -1054,7 +1057,7 @@ public class NewInstrumentBean extends FileUploadBean {
    *
    * @return The hemipshere coordinate
    */
-  public int getHemisphereCoordinate() {
+  public String getHemisphereCoordinate() {
     return hemisphereCoordinate;
   }
 
@@ -1062,9 +1065,9 @@ public class NewInstrumentBean extends FileUploadBean {
    * Set the coordinate for which the hemisphere is being set
    *
    * @param hemisphereCoordinate
-   *          The hemipshere coordinate
+   *          The hemisphere coordinate
    */
-  public void setHemisphereCoordinate(int hemisphereCoordinate) {
+  public void setHemisphereCoordinate(String hemisphereCoordinate) {
     this.hemisphereCoordinate = hemisphereCoordinate;
   }
 
@@ -1075,15 +1078,20 @@ public class NewInstrumentBean extends FileUploadBean {
     FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles
       .get(hemisphereFile);
 
-    PositionSpecification posSpec = null;
+    PositionSpecification posSpec;
+    String expandType;
 
-    if (hemisphereCoordinate == PositionSpecification.COORD_LONGITUDE) {
+    if (hemisphereCoordinate.equals("Longitude")) {
       posSpec = file.getLongitudeSpecification();
+      expandType = "Longitude";
     } else {
       posSpec = file.getLatitudeSpecification();
+      expandType = "Latitude";
     }
 
     posSpec.setHemisphereColumn(hemisphereColumn);
+
+    assignmentsTree.updatePositionNodes(expandType);
     resetPositionAssignmentValues();
   }
 
@@ -1098,7 +1106,7 @@ public class NewInstrumentBean extends FileUploadBean {
     latitudeColumn = -1;
     latitudeFormat = -1;
     hemisphereFile = null;
-    hemisphereCoordinate = -1;
+    hemisphereCoordinate = null;
     hemisphereColumn = -1;
   }
 
@@ -2121,5 +2129,56 @@ public class NewInstrumentBean extends FileUploadBean {
       .setDateTimeAssignment(instrumentFiles.getByDescription(dateTimeFile));
 
     resetDateTimeAssignmentValues();
+  }
+
+  /**
+   * Remove a position specification.
+   *
+   * <p>
+   * If the main column is removed and the format was hemisphere, the hemisphere
+   * assignment is removed as well.
+   * </p>
+   *
+   * <p>
+   * This cheats a bit and reuses the Remove Sensor Assignment inputs.
+   * <p>
+   *
+   * @throws InvalidPositionFormatException
+   */
+  public void removePositionAssignment() throws InvalidPositionFormatException {
+
+    String expandNode = null;
+
+    FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles
+      .get(removeAssignmentDataFile);
+
+    if (removeColumnFromPositionSpec(file.getLongitudeSpecification(),
+      removeAssignmentColumn)) {
+
+      expandNode = "Longitude";
+    } else if (removeColumnFromPositionSpec(file.getLatitudeSpecification(),
+      removeAssignmentColumn)) {
+
+      expandNode = "Latitude";
+    }
+
+    assignmentsTree.updatePositionNodes(expandNode);
+    resetSensorAssignmentValues();
+  }
+
+  private boolean removeColumnFromPositionSpec(PositionSpecification spec,
+    int column) throws InvalidPositionFormatException {
+
+    boolean removed = false;
+
+    if (spec.getValueColumn() == column) {
+      removed = true;
+      spec.clearValueColumn();
+    } else if (spec.getHemisphereColumn() == column) {
+      removed = true;
+      spec.clearHemisphereColumn();
+    }
+
+    return removed;
   }
 }

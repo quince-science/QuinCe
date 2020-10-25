@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
@@ -13,6 +14,7 @@ import org.primefaces.model.TreeNode;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -43,7 +45,27 @@ public class AssignmentsTree {
 
   private static final String DATETIME_ASSIGNMENT = "DATETIME_ASSIGNMENT";
 
+  private static final String LONGITUDE_UNASSIGNED = "UNASSIGNED_LONGITUDE";
+
+  private static final String LONGITUDE_ASSIGNED = "ASSIGNED_LONGITUDE";
+
+  private static final String LONGITUDE_ASSIGNMENT = "LONGITUDE_ASSIGNMENT";
+
+  private static final String LATITUDE_UNASSIGNED = "UNASSIGNED_LATITUDE";
+
+  private static final String LATITUDE_ASSIGNED = "ASSIGNED_LATITUDE";
+
+  private static final String LATITUDE_ASSIGNMENT = "LATITUDE_ASSIGNMENT";
+
+  private static final String HEMISPHERE_UNASSIGNED = "UNASSIGNED_HEMISPHERE";
+
+  private static final String HEMISPHERE_ASSIGNED = "ASSIGNED_HEMISPHERE";
+
+  private static final String HEMISPHERE_ASSIGNMENT = "HEMISPHERE_ASSIGNMENT";
+
   private final SensorAssignments assignments;
+
+  private final boolean needsPosition;
 
   private DefaultTreeNode root;
 
@@ -51,15 +73,22 @@ public class AssignmentsTree {
 
   private Map<String, EditableTreeNode> dateTimeNodes;
 
+  private DefaultTreeNode positionNode;
+
   private Map<SensorType, List<SensorTypeTreeNode>> sensorTypeNodes;
 
+  private TreeSet<FileDefinitionBuilder> files;
+
   protected AssignmentsTree(List<Variable> variables,
-    SensorAssignments assignments) throws SensorConfigurationException,
-    SensorTypeNotFoundException, SensorAssignmentException {
+    SensorAssignments assignments, boolean needsPosition)
+    throws SensorConfigurationException, SensorTypeNotFoundException,
+    SensorAssignmentException {
 
     root = new DefaultTreeNode("Root", null);
     this.assignments = assignments;
+    this.needsPosition = needsPosition;
     sensorTypeNodes = new HashMap<SensorType, List<SensorTypeTreeNode>>();
+    files = new TreeSet<FileDefinitionBuilder>();
 
     buildTree(variables);
   }
@@ -72,6 +101,13 @@ public class AssignmentsTree {
       "Date/Time", root);
     dateTimeNode.setExpanded(true);
     dateTimeNodes = new TreeMap<String, EditableTreeNode>();
+
+    if (needsPosition) {
+      positionNode = new DefaultTreeNode(VariableTreeNode.VAR_UNFINISHED,
+        "Position", root);
+      positionNode.setExpanded(true);
+      updatePositionNodes(null);
+    }
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
@@ -95,7 +131,6 @@ public class AssignmentsTree {
       addSensorTypeNode(diagnosticType,
         new SensorTypeTreeNode(diagnosticsNode, diagnosticType, assignments));
     }
-
   }
 
   private void addSensorTypeNode(SensorType sensorType,
@@ -155,6 +190,17 @@ public class AssignmentsTree {
         sensorTypeNode.setChildren(filteredChildren);
       }
     }
+
+    Iterator<FileDefinitionBuilder> fileSearch = files.iterator();
+    while (fileSearch.hasNext()) {
+      FileDefinitionBuilder file = fileSearch.next();
+      if (file.getFileDescription().equals(fileName)) {
+        fileSearch.remove();
+        break;
+      }
+    }
+
+    updatePositionNodes(null);
   }
 
   protected void removeAssignment(SensorAssignment assignment) {
@@ -169,6 +215,8 @@ public class AssignmentsTree {
     throws DateTimeSpecificationException {
 
     makeDateTimeNode(file, true);
+    files.add(file);
+    updatePositionNodes(null);
   }
 
   private void makeDateTimeNode(FileDefinitionBuilder file, boolean expanded)
@@ -211,8 +259,7 @@ public class AssignmentsTree {
           DateTimeSpecification.getAssignmentIndex(entry.getKey()));
 
         new DefaultTreeNode(DATETIME_ASSIGNMENT,
-          new DateTimeNodeInfo(file.getFileDescription(),
-            assignment.getColumn(),
+          new FileAndColumn(file.getFileDescription(), assignment.getColumn(),
             file.getFileColumns().get(assignment.getColumn()).getName()),
           child);
 
@@ -241,14 +288,89 @@ public class AssignmentsTree {
     dateTimeNodes.put(renamedFile.getFileDescription(), node);
   }
 
-  public class DateTimeNodeInfo {
+  protected void updatePositionNodes(String expand) {
+    positionNode.setChildren(new ArrayList<TreeNode>());
+
+    DefaultTreeNode longitudeNode = null;
+    DefaultTreeNode latitudeNode = null;
+
+    longitudeNode = makePositionNodes("Longitude", longitudeNode,
+      null != expand && expand.equals("Longitude"));
+    latitudeNode = makePositionNodes("Latitude", latitudeNode,
+      null != expand && expand.equals("Latitude"));
+  }
+
+  private DefaultTreeNode makePositionNodes(String positionType,
+    DefaultTreeNode mainNode, boolean expand) {
+
+    String hemisphereNodeName = positionType + " Hemisphere";
+    String unassignedType;
+    String assignedType;
+    String assignmentNodeType;
+
+    for (FileDefinitionBuilder file : files) {
+      PositionSpecification posSpec;
+
+      if (positionType.equals("Longitude")) {
+        posSpec = file.getLongitudeSpecification();
+        unassignedType = LONGITUDE_UNASSIGNED;
+        assignedType = LONGITUDE_ASSIGNED;
+        assignmentNodeType = LONGITUDE_ASSIGNMENT;
+      } else {
+        posSpec = file.getLatitudeSpecification();
+        unassignedType = LATITUDE_UNASSIGNED;
+        assignedType = LATITUDE_ASSIGNED;
+        assignmentNodeType = LATITUDE_ASSIGNMENT;
+      }
+
+      if (null == mainNode) {
+        mainNode = new DefaultTreeNode(unassignedType, positionType,
+          positionNode);
+        if (expand) {
+          mainNode.setExpanded(true);
+        }
+      }
+
+      if (posSpec.getValueColumn() > -1) {
+
+        new DefaultTreeNode(assignmentNodeType,
+          new FileAndColumn(file.getFileDescription(), posSpec.getValueColumn(),
+            file.getFileColumns().get(posSpec.getValueColumn()).getName()),
+          mainNode);
+
+        mainNode.setType(assignedType);
+
+        if (posSpec.hemisphereRequired()
+          && posSpec.getHemisphereColumn() == -1) {
+          new DefaultTreeNode(HEMISPHERE_UNASSIGNED, hemisphereNodeName,
+            positionNode);
+
+        } else if (posSpec.getHemisphereColumn() > -1) {
+          DefaultTreeNode hemisphereNode = new DefaultTreeNode(
+            HEMISPHERE_ASSIGNED, hemisphereNodeName, positionNode);
+          if (expand) {
+            hemisphereNode.setExpanded(true);
+          }
+
+          new DefaultTreeNode(HEMISPHERE_ASSIGNMENT, new FileAndColumn(
+            file.getFileDescription(), posSpec.getHemisphereColumn(),
+            file.getFileColumns().get(posSpec.getHemisphereColumn()).getName()),
+            hemisphereNode);
+        }
+      }
+    }
+
+    return mainNode;
+  }
+
+  public class FileAndColumn {
     private final String file;
 
     private final int columnIndex;
 
     private final String columnName;
 
-    private DateTimeNodeInfo(String file, int columnIndex, String columnName) {
+    private FileAndColumn(String file, int columnIndex, String columnName) {
       this.file = file;
       this.columnIndex = columnIndex;
       this.columnName = columnName;

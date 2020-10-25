@@ -16,6 +16,18 @@
     </h:form>
     <h:form id="newInstrumentForm" method="post" charset="utf8">
 
+      <h:inputHidden id="hemisphereFile"
+        value="#{newInstrumentBean.hemisphereFile}" />
+      <h:inputHidden id="hemisphereCoordinate"
+        value="#{newInstrumentBean.hemisphereCoordinate}" />
+      <h:inputHidden id="hemisphereColumn"
+        value="#{newInstrumentBean.hemisphereColumn}" />
+
+      <p:remoteCommand name="assignHemisphereAction" action="#{newInstrumentBean.assignHemisphere}"
+        process="hemisphereFile hemisphereCoordinate hemisphereColumn"
+        update="hemisphereFile hemisphereCoordinate hemisphereColumn assignmentsTree"
+        oncomplete="positionAssigned();" />
+
       <!-- Sensor Assignment Dialog -->
       <p:dialog header="Assign Column To Sensor"
         widgetVar="sensorAssignmentDialog" modal="true">
@@ -100,6 +112,92 @@
             process="@none"
             update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue"
             oncomplete="PF('sensorAssignmentDialog').hide();" />
+        </h:panelGrid>
+      </p:dialog>
+
+      <p:dialog header="Assign Longitude" widgetVar="longitudeAssignmentDialog"
+        modal="true">
+        <h:inputHidden id="longitudeFile"
+          value="#{newInstrumentBean.longitudeFile}" />
+        <h:inputHidden id="longitudeColumn"
+          value="#{newInstrumentBean.longitudeColumn}" />
+        <table>
+          <tr>
+            <td><p:outputLabel value="Assigning" /></td>
+            <td><div id="longitudeAssignmentFile" class="variableText"></div>,
+              <div id="longitudeAssignmentColumn" class="variableText"></div></td>
+          </tr>
+          <tr>
+            <td><p:outputLabel value="To sensor" /></td>
+            <td><div class="variableText">Longitude</div></td>
+          </tr>
+        </table>
+        <div class="dialogSection">
+          <table>
+            <tr>
+              <td><p:outputLabel value="Format:" /></td>
+              <td><p:selectOneMenu id="longitudeFormat"
+                  value="#{newInstrumentBean.longitudeFormat}">
+                  <f:selectItem itemLabel="-180° to 180°" itemValue="1" />
+                  <f:selectItem itemLabel="0° to 360°" itemValue="0" />
+                  <f:selectItem
+                    itemLabel="0° to 180° (hemisphere specified separately)"
+                    itemValue="2" />
+                  <f:selectItem itemLabel="Hemisphere, degrees, decimal minutes" itemValue="3"/>
+                </p:selectOneMenu></td>
+            </tr>
+          </table>
+        </div>
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:commandButton value="Assign" ajax="true"
+            action="#{newInstrumentBean.assignLongitude}"
+            process="longitudeFile longitudeColumn longitudeFormat"
+            update="longitudeFile longitudeColumn longitudeFormat assignmentsTree"
+            oncomplete="positionAssigned();" />
+          <p:commandButton value="Cancel"
+            onclick="PF('longitudeAssignmentDialog').hide(); return false;" />
+        </h:panelGrid>
+      </p:dialog>
+      <p:dialog header="Assign Latitude" widgetVar="latitudeAssignmentDialog"
+        modal="true">
+        <h:inputHidden id="latitudeFile"
+          value="#{newInstrumentBean.latitudeFile}" />
+        <h:inputHidden id="latitudeColumn"
+          value="#{newInstrumentBean.latitudeColumn}" />
+        <table>
+          <tr>
+            <td><p:outputLabel value="Assigning" /></td>
+            <td><div id="latitudeAssignmentFile" class="variableText"></div>,
+              <div id="latitudeAssignmentColumn" class="variableText"></div></td>
+          </tr>
+          <tr>
+            <td><p:outputLabel value="To sensor" /></td>
+            <td><div class="variableText">Latitude</div></td>
+          </tr>
+        </table>
+        <div class="dialogSection">
+          <table>
+            <tr>
+              <td><p:outputLabel value="Format:" /></td>
+              <td><p:selectOneMenu id="latitudeFormat"
+                  value="#{newInstrumentBean.latitudeFormat}">
+                  <f:selectItem itemLabel="-90° to 90°" itemValue="0" />
+                  <f:selectItem
+                    itemLabel="0° to 90° (hemisphere specified separately)"
+                    itemValue="1" />
+                  <f:selectItem itemLabel="Hemisphere, degrees, decimal minutes" itemValue="2"/>
+                </p:selectOneMenu></td>
+            </tr>
+          </table>
+        </div>
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:commandButton value="Assign" ajax="true"
+            action="#{newInstrumentBean.assignLatitude}"
+            process="latitudeFile latitudeColumn latitudeFormat"
+            update="latitudeFile latitudeColumn latitudeFormat assignmentsTree"
+            oncomplete="positionAssigned();" />
+          <p:commandButton value="Cancel"
+            onclick="PF('latitudeAssignmentDialog').hide(); return false;" />
         </h:panelGrid>
       </p:dialog>
 
@@ -260,7 +358,7 @@
             oncomplete="dateTimeAssigned();" />
           <p:commandButton value="Cancel"
             onclick="PF('dateTimeAssignmentDialog').hide(); return false;" />
-          
+
           <p:remoteCommand name="removeDateTimeAssignmentAction" action="#{newInstrumentBean.removeDateTimeAssignment}"
             process="dateTimeFile dateTimeColumn"
             update="dateTimeFile dateTimeColumn dateTimeType dateTimeFormat dateFormat timeFormat assignmentsTree"
@@ -350,6 +448,45 @@
                   onclick="removeDateTimeAssignment('#{node.file}', #{node.columnIndex})"/>
               </p:contextMenu>
             </p:treeNode>
+            <p:treeNode type="UNASSIGNED_LONGITUDE" styleClass="unassignedSensorType longitudeDropTarget">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="ASSIGNED_LONGITUDE" styleClass="assignedSensorType">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="UNASSIGNED_LATITUDE" styleClass="unassignedSensorType latitudeDropTarget">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="ASSIGNED_LATITUDE" styleClass="assignedSensorType">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="UNASSIGNED_HEMISPHERE" styleClass="unassignedSensorType hemisphereDropTarget">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="ASSIGNED_HEMISPHERE" styleClass="assignedSensorType">
+              <h:outputText value="#{node}"/>
+            </p:treeNode>
+            <p:treeNode type="LONGITUDE_ASSIGNMENT" styleClass="positionAssignment">
+              <h:outputText id="longitudeLabel" value="#{node.file}: #{node.columnName}"/>
+              <p:contextMenu for="longitudeLabel">
+                <p:menuitem value="Remove"
+                  onclick="removePositionAssignment('#{node.file}', #{node.columnIndex})"/>
+              </p:contextMenu>
+            </p:treeNode>
+            <p:treeNode type="LATITUDE_ASSIGNMENT" styleClass="positionAssignment">
+              <h:outputText id="latitudeLabel" value="#{node.file}: #{node.columnName}"/>
+              <p:contextMenu for="latitudeLabel">
+                <p:menuitem value="Remove"
+                  onclick="removePositionAssignment('#{node.file}', #{node.columnIndex})"/>
+              </p:contextMenu>
+            </p:treeNode>
+            <p:treeNode type="HEMISPHERE_ASSIGNMENT" styleClass="positionAssignment">
+              <h:outputText id="hemisphereLabel" value="#{node.file}: #{node.columnName}"/>
+              <p:contextMenu for="hemisphereLabel">
+                <p:menuitem value="Remove"
+                  onclick="removePositionAssignment('#{node.file}', #{node.columnIndex})"/>
+              </p:contextMenu>
+            </p:treeNode>
           </p:tree>
         </p:fieldset>
       </div>
@@ -391,9 +528,15 @@
         value="#{newInstrumentBean.removeAssignmentDataFile}"/>
       <h:inputHidden id="removeAssignmentColumn"
         value="#{newInstrumentBean.removeAssignmentColumn}"/>
-      <p:remoteCommand name="removeSensorAssignmentCommand" action="#{newInstrumentBean.removeSensorAssignment}"
+      <p:remoteCommand name="removeSensorAssignmentCommand"
+        action="#{newInstrumentBean.removeSensorAssignment}"
         process="removeAssignmentSensorType removeAssignmentDataFile removeAssignmentColumn"
         update="assignmentsTree" oncomplete="sensorAssigned();"/>
+
+      <p:remoteCommand name="removePositionAssignmentAction"
+        action="#{newInstrumentBean.removePositionAssignment}"
+        process="removeAssignmentDataFile removeAssignmentColumn"
+        update="assignmentsTree" oncomplete="positionAssigned();"/>
 
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
