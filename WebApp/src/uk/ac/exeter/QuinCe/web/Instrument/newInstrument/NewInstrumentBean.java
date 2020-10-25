@@ -1902,14 +1902,19 @@ public class NewInstrumentBean extends FileUploadBean {
    * Set the Run Type column for a file
    * 
    * @throws SensorAssignmentException
+   * @throws SensorTypeNotFoundException
    */
-  public void assignRunType() throws SensorAssignmentException {
+  public void assignRunType()
+    throws SensorAssignmentException, SensorTypeNotFoundException {
     FileDefinition file = instrumentFiles.get(runTypeFile);
     file.setRunTypeColumn(runTypeColumn);
 
-    assignmentsTree.addAssignment(new SensorAssignment(runTypeFile,
+    SensorAssignment sensorAssignment = new SensorAssignment(runTypeFile,
       runTypeColumn, SensorType.RUN_TYPE_SENSOR_TYPE,
-      SensorType.RUN_TYPE_SENSOR_TYPE.getName(), true, false, null));
+      SensorType.RUN_TYPE_SENSOR_TYPE.getName(), true, false, null);
+
+    sensorAssignments.addAssignment(sensorAssignment);
+    assignmentsTree.addAssignment(sensorAssignment);
   }
 
   public int getDepth() {
@@ -2079,18 +2084,13 @@ public class NewInstrumentBean extends FileUploadBean {
       SensorType sensorType = ResourceManager.getInstance()
         .getSensorsConfiguration().getSensorType(removeAssignmentSensorType);
 
+      SensorAssignment removed = sensorAssignments.removeAssignment(sensorType,
+        removeAssignmentDataFile, removeAssignmentColumn);
+      assignmentsTree.removeAssignment(removed);
+
       if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
         instrumentFiles.get(removeAssignmentDataFile).setRunTypeColumn(-1);
-        assignmentsTree.removeAssignment(new SensorAssignment(runTypeFile,
-          runTypeColumn, SensorType.RUN_TYPE_SENSOR_TYPE,
-          SensorType.RUN_TYPE_SENSOR_TYPE.getName(), true, false, null));
-      } else {
-        SensorAssignment removed = sensorAssignments.removeAssignment(
-          sensorType, removeAssignmentDataFile, removeAssignmentColumn);
-
-        assignmentsTree.removeAssignment(removed);
       }
-
     } catch (Exception e) {
       e.printStackTrace();
     }
