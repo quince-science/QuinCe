@@ -521,6 +521,16 @@
 
       </p:dialog>
 
+      <!-- Run Type -->
+      <h:inputHidden id="runTypeFile" value="#{newInstrumentBean.runTypeFile}" />
+      <h:inputHidden id="runTypeColumn"
+        value="#{newInstrumentBean.runTypeColumn}" />
+      <p:remoteCommand name="assignRunTypeAction"
+        action="#{newInstrumentBean.assignRunType}"
+        process="runTypeFile runTypeColumn" update="assignmentsTree"
+        oncomplete="sensorAssigned();" />
+      
+      
       <!-- Remove assignment -->
       <h:inputHidden id="removeAssignmentSensorType"
         value="#{newInstrumentBean.removeAssignmentSensorType}"/>

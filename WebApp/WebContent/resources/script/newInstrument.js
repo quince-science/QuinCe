@@ -208,12 +208,9 @@ function useFile() {
 //
 //************************************************
 function assignRunType(file, column) {
-  $('#newInstrumentForm\\:sensorAssignmentFile').val(file);
-  $('#newInstrumentForm\\:sensorAssignmentColumn').val(column);
-  $('#newInstrumentForm\\:sensorAssignmentSensorType').val(RUN_TYPE_SENSOR_TYPE_ID);
-  $('#newInstrumentForm\\:sensorAssignmentName').val('Run Type');
-  $('#newInstrumentForm\\:sensorAssignmentMissingValue').val('');
-  PF('sensorAssignmentAssignButton').jq.click();
+  $('#newInstrumentForm\\:runTypeFile').val(file);
+  $('#newInstrumentForm\\:runTypeColumn').val(column);
+  assignRunTypeAction(); // PF remote command
 }
 
 function openAssignSensorDialog(sensorType, column) {
@@ -610,7 +607,7 @@ function handleSensorTypeColumnDrop(e) {
 
   switch (sensorTypeId) {
   case RUN_TYPE_SENSOR_TYPE_ID: {
-    assignRunType(column.dataFile, column.colName);
+    assignRunType(column.dataFile, column.colIndex);
     break;
   }
   default: {

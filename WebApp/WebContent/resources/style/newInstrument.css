@@ -90,6 +90,47 @@
  * SENSOR ASSIGNMENT
  *
  */
+.assignmentsList {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.assignmentListEntry {
+  --entry_color: #2779AA;
+  display: flex;
+  border: 2px solid black;
+  border-radius: 5px;
+  margin: 4px;
+  border-color: var(--entry_color);
+  background-color: var(--entry_color);
+  color: var(--entry_color);
+  width: 300px;
+}
+
+.assignmentRequired {
+  --entry_color: #FF0000;
+}
+
+.assignmentLabel {
+  display: inline;
+  background-color: white;
+  padding: 0px 4px 0px 1px;
+  border-radius: 3px;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.assignmentCount {
+  text-align: center;
+  position: relative;
+  display: inline;
+  right: 0px;
+  color: white;
+  width: 45px;
+  cursor: pointer;
+}
+
 #assignmentsLayout {
   display: flex;
   flex-direction: row;
@@ -172,4 +213,9 @@
 
 .highlight {
   color: #00AAFF;
+}
+
+#runTypeFiles {
+  display: flex;
+  flex-wrap: wrap;
 }

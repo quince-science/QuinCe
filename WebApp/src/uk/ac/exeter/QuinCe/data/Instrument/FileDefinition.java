@@ -13,6 +13,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -709,6 +710,8 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the Run Type column, and initialise the assignments
+   * 
+   * @throws SensorAssignmentException
    */
   public void setRunTypeColumn(int runTypeColumn) {
     if (runTypeColumn == -1) {

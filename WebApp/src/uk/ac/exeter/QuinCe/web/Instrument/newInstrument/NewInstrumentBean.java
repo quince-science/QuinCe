@@ -39,6 +39,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -1899,10 +1900,16 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the Run Type column for a file
+   * 
+   * @throws SensorAssignmentException
    */
-  public void assignRunType() {
+  public void assignRunType() throws SensorAssignmentException {
     FileDefinition file = instrumentFiles.get(runTypeFile);
     file.setRunTypeColumn(runTypeColumn);
+
+    assignmentsTree.addAssignment(new SensorAssignment(runTypeFile,
+      runTypeColumn, SensorType.RUN_TYPE_SENSOR_TYPE,
+      SensorType.RUN_TYPE_SENSOR_TYPE.getName(), true, false, null));
   }
 
   public int getDepth() {
@@ -2072,10 +2079,17 @@ public class NewInstrumentBean extends FileUploadBean {
       SensorType sensorType = ResourceManager.getInstance()
         .getSensorsConfiguration().getSensorType(removeAssignmentSensorType);
 
-      SensorAssignment removed = sensorAssignments.removeAssignment(sensorType,
-        removeAssignmentDataFile, removeAssignmentColumn);
+      if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
+        instrumentFiles.get(removeAssignmentDataFile).setRunTypeColumn(-1);
+        assignmentsTree.removeAssignment(new SensorAssignment(runTypeFile,
+          runTypeColumn, SensorType.RUN_TYPE_SENSOR_TYPE,
+          SensorType.RUN_TYPE_SENSOR_TYPE.getName(), true, false, null));
+      } else {
+        SensorAssignment removed = sensorAssignments.removeAssignment(
+          sensorType, removeAssignmentDataFile, removeAssignmentColumn);
 
-      assignmentsTree.removeAssignment(removed);
+        assignmentsTree.removeAssignment(removed);
+      }
 
     } catch (Exception e) {
       e.printStackTrace();
