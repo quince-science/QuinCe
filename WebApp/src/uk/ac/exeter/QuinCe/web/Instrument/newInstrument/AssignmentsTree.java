@@ -241,9 +241,8 @@ public class AssignmentsTree {
     parent.setChildren(new ArrayList<TreeNode>());
 
     // Build set of nodes for date/time
-    if (dateTimeSpec.assignmentComplete()) {
-      parent.setType(DATETIME_FINISHED);
-    }
+    parent.setType(dateTimeSpec.assignmentComplete() ? DATETIME_FINISHED
+      : DATETIME_UNFINISHED);
 
     for (Map.Entry<String, Boolean> entry : dateTimeSpec
       .getAssignedAndRequiredEntries().entrySet()) {
