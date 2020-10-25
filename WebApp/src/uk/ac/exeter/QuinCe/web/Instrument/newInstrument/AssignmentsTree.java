@@ -119,7 +119,7 @@ public class AssignmentsTree {
         true, true, true)) {
 
         addSensorTypeNode(sensorType,
-          new SensorTypeTreeNode(varNode, sensorType, assignments));
+          new SensorTypeTreeNode(varNode, files, sensorType, assignments));
       }
     }
 
@@ -128,8 +128,8 @@ public class AssignmentsTree {
 
     for (SensorType diagnosticType : sensorConfig.getDiagnosticSensorTypes()) {
 
-      addSensorTypeNode(diagnosticType,
-        new SensorTypeTreeNode(diagnosticsNode, diagnosticType, assignments));
+      addSensorTypeNode(diagnosticType, new SensorTypeTreeNode(diagnosticsNode,
+        files, diagnosticType, assignments));
     }
   }
 
