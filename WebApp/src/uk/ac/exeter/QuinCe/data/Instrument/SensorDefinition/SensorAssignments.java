@@ -530,7 +530,6 @@ public class SensorAssignments
         removed = assignment;
         break;
       }
-
     }
 
     return removed;
