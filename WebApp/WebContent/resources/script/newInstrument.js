@@ -381,7 +381,7 @@ function openDateTimeAssignDialog(dateTimeType, column) {
   }
 
   window.suspendEvents = false;
-  
+
   if (showDialog) {
     $('#dateTimeFileLabel').html(column.dataFile);
     $('#dateTimeColumnLabel').html(column.colName);
@@ -389,69 +389,69 @@ function openDateTimeAssignDialog(dateTimeType, column) {
     PF('dateTimeAssignmentDialog').initPosition();
     PF('dateTimeAssignmentDialog').show();
   } else {
-    PF('dateTimeAssignButton').jq.click();	
+    PF('dateTimeAssignButton').jq.click();
   }
 }
 
 function getDateTimeTypeIndex(dateTimeType) {
-	
-	let result = -1;
-	
-	switch (dateTimeType) {
+
+  let result = -1;
+
+  switch (dateTimeType) {
     case 'Combined Date and Time': {
-	  result = DATE_TIME;
+    result = DATE_TIME;
       break;
     }
     case 'Hours from start of file': {
-	  result = HOURS_FROM_START;
+    result = HOURS_FROM_START;
       break;
     }
     case 'Date': {
-	  result = DATE;
+    result = DATE;
       break;
     }
     case 'Year': {
-	  result = YEAR;
+    result = YEAR;
       break;
     }
     case 'Julian Day with Time': {
-	  result = JDAY_TIME;
+    result = JDAY_TIME;
       break;
     }
     case 'Julian Day': {
-	  result = JDAY;
+    result = JDAY;
       break;
     }
     case 'Month': {
-	  result = MONTH;
+    result = MONTH;
       break;
     }
     case 'Day': {
-	  result = DAY;
+    result = DAY;
       break;
     }
     case 'Time': {
-	  result = TIME;
+    result = TIME;
       break;
     }
     case 'Hour': {
-	  result = HOUR;
+    result = HOUR;
       break;
     }
     case 'Minute': {
-	  result = MINUTE;
+    result = MINUTE;
       break;
     }
     case 'Second': {
-	  result = SECOND;
+    result = SECOND;
       break;
     }
     default: {
-	  result = -1;
+    result = -1;
     }
-	}
-	
-	return result;
+  }
+
+  return result;
 }
 
 function getSensorType(sensorId) {
@@ -494,23 +494,31 @@ function dateTimeAssigned() {
   setupDragDropEvents();
 }
 
-function openLongitudeDialog(file, column) {
-  $('#newInstrumentForm\\:longitudeFile').val(filesAndColumns[file]['description']);
-  $('#newInstrumentForm\\:longitudeColumn').val(column);
+function positionAssigned() {
+  PF('longitudeAssignmentDialog').hide();
+  PF('latitudeAssignmentDialog').hide();
+  setupDragDropEvents();
+}
 
-  $('#longitudeAssignmentFile').text(filesAndColumns[file]['description']);
-  $('#longitudeAssignmentColumn').text(filesAndColumns[file]['columns'][column]);
+function openLongitudeDialog(column) {
+  $('#newInstrumentForm\\:longitudeFile').val(column.dataFile);
+  $('#newInstrumentForm\\:longitudeColumn').val(column.colIndex);
 
+  $('#longitudeAssignmentFile').text(column.dataFile);
+  $('#longitudeAssignmentColumn').text(column.colName);
+
+  PF('longitudeAssignmentDialog').initPosition();
   PF('longitudeAssignmentDialog').show();
 }
 
-function openLatitudeDialog(file, column) {
-  $('#newInstrumentForm\\:latitudeFile').val(filesAndColumns[file]['description']);
-  $('#newInstrumentForm\\:latitudeColumn').val(column);
+function openLatitudeDialog(column) {
+  $('#newInstrumentForm\\:latitudeFile').val(column.dataFile);
+  $('#newInstrumentForm\\:latitudeColumn').val(column.colIndex);
 
-  $('#latitudeAssignmentFile').text(filesAndColumns[file]['description']);
-  $('#latitudeAssignmentColumn').text(filesAndColumns[file]['columns'][column]);
+  $('#latitudeAssignmentFile').text(column.dataFile);
+  $('#latitudeAssignmentColumn').text(column.colName);
 
+  PF('latitudeAssignmentDialog').initPosition();
   PF('latitudeAssignmentDialog').show();
 }
 
@@ -731,6 +739,24 @@ function setupDragDropEvents() {
     .on('dragenter', handleColumnDragEnter)
     .on('dragleave', handleColumnDragLeave)
     .on('drop', handleDateTimeColumnDrop);
+
+  $('.longitudeDropTarget')
+    .on('dragover', handleColumnDragOver)
+    .on('dragenter', handleColumnDragEnter)
+    .on('dragleave', handleColumnDragLeave)
+    .on('drop', handleLongitudeColumnDrop);
+
+  $('.latitudeDropTarget')
+    .on('dragover', handleColumnDragOver)
+    .on('dragenter', handleColumnDragEnter)
+    .on('dragleave', handleColumnDragLeave)
+    .on('drop', handleLatitudeColumnDrop);
+
+  $('.hemisphereDropTarget')
+    .on('dragover', handleColumnDragOver)
+    .on('dragenter', handleColumnDragEnter)
+    .on('dragleave', handleColumnDragLeave)
+    .on('drop', handleHemisphereColumnDrop);
 }
 
 function handleColumnDragStart(e) {
@@ -793,6 +819,28 @@ function handleDateTimeColumnDrop(e) {
   }
 }
 
+function handleLongitudeColumnDrop(e) {
+  e.preventDefault();
+  openLongitudeDialog(getDragColumn(e));
+}
+
+function handleLatitudeColumnDrop(e) {
+  e.preventDefault();
+  openLatitudeDialog(getDragColumn(e));
+}
+
+function handleHemisphereColumnDrop(e) {
+  e.preventDefault();
+
+  let column = getDragColumn(e);
+  let hemisphereCoordinate = $(this)[0].innerText.split(' ')[0];
+
+  $('#newInstrumentForm\\:hemisphereFile').val(column.dataFile);
+  $('#newInstrumentForm\\:hemisphereColumn').val(column.colIndex);
+  $('#newInstrumentForm\\:hemisphereCoordinate').val(hemisphereCoordinate);
+  assignHemisphereAction(); // PF remotecommand
+}
+
 function getDragColumn(e) {
   let colElementId = e.originalEvent.dataTransfer.getData("text/plain");
   let colExtractor = /.*---(.*)---(.*)---(.*)/;
@@ -829,11 +877,11 @@ function removeDateTimeAssignment(file, column) {
 
 function disableOtherDateTimeNodes(dataFile) {
   $('[data-nodetype$="FINISHED_DATETIME"]').each(function() {
-	nodeDataFile = $(this)[0].innerText.split('\n')[0];
+  nodeDataFile = $(this)[0].innerText.split('\n')[0];
 
     if (nodeDataFile != dataFile) {
       $(this).find('.unassignedDateTimeType').each(function() {
-	    $(this).addClass('disabled');
+      $(this).addClass('disabled');
       });
     }
   });
@@ -842,11 +890,16 @@ function disableOtherDateTimeNodes(dataFile) {
 function enableAllDateTimeNodes() {
   $('[data-nodetype$="FINISHED_DATETIME"]')
     .find('.unassignedDateTimeType').each(function() {
-  
+
     $(this).removeClass('disabled');
   });
 }
 
+function removePositionAssignment(file, column) {
+  $('#newInstrumentForm\\:removeAssignmentDataFile').val(file);
+  $('#newInstrumentForm\\:removeAssignmentColumn').val(column);
+  removePositionAssignmentAction(); // PF remote command
+}
 /*******************************************************
 *
 * RUN TYPES PAGE
