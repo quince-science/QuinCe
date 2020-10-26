@@ -710,7 +710,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the Run Type column, and initialise the assignments
-   * 
+   *
    * @throws SensorAssignmentException
    */
   public void setRunTypeColumn(int runTypeColumn) {

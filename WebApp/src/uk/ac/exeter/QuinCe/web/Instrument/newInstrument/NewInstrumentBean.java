@@ -1900,7 +1900,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the Run Type column for a file
-   * 
+   *
    * @throws SensorAssignmentException
    * @throws SensorTypeNotFoundException
    */
