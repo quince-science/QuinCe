@@ -713,10 +713,10 @@ function removePositionAssignment(file, column) {
 
 function updateAssignmentsNextButton() {
   if ($('[data-nodetype$="UNFINISHED_VARIABLE"]').length > 0) {
-	PF('next').disable();
+  PF('next').disable();
   } else {
-	PF('next').enable();
-  }	
+  PF('next').enable();
+  }
 }
 
 /*******************************************************
