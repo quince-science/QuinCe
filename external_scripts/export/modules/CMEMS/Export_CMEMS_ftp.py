@@ -16,9 +16,7 @@ import sqlite3
 import json
 import time
 
-from modules.CMEMS.Export_CMEMS_metadata import create_dnt_entry
 from modules.CMEMS.Export_CMEMS_sql import update_db_new_submission, abort_upload_db
-
 
 # Upload result codes
 UPLOAD_OK = 0
@@ -42,6 +40,7 @@ NRT_DIR = '/' + PRODUCT_ID + '/' + DATASET_ID + '/latest'
 DNT_DIR = '/' + PRODUCT_ID + '/DNT'
 INDEX_DIR = '/' + PRODUCT_ID + '/' + DATASET_ID
 
+LOCAL_FOLDER = 'latest'
 
 def delete_files_older_than_30days(c):
   logging.debug('Checking local database')
@@ -58,7 +57,7 @@ def delete_files_older_than_30days(c):
       WHERE filename = ?", [NOT_UPLOADED, filename])
   return dnt_delete
 
-def get_files_ready_for_upload(c,status)
+def get_files_ready_for_upload(c,status):
   c.execute("SELECT * FROM latest \
     WHERE (nc_date >= date('now','-30 day') \
     AND NOT uploaded == ?)",[UPLOADED]) 
@@ -250,3 +249,10 @@ def clean_directory(ftp,NRT_DIR):
   return uningested_files
 
 
+def create_dnt_entry(filepath_ftp,start_upload_time,stop_upload_time,filename):
+  entry = {'ftp_filepath':filepath_ftp, 
+            'start_upload_time':start_upload_time, 
+            'stop_upload_time':stop_upload_time,
+            'local_filepath':LOCAL_FOLDER+'/'+filename +'.nc'}
+  logging.debug(f'dnt entry: {entry}')
+  return entry
