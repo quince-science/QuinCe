@@ -66,7 +66,7 @@ import time
 import toml
 
 from modules.CMEMS.Export_CMEMS_metadata import build_netCDFs, write_nc_bytes_to_file, update_global_attributes, create_metadata_object,build_index,build_index_platform,building_and_uploading_DNT_file,build_fDNT
-from modules.CMEMS.Export_CMEMS_ftp import upload_to_copernicus,empty_directory, delete_files_older_than_30days,get_files_ready_for_upload,upload_to_ftp,evaluate_response_file,
+from modules.CMEMS.Export_CMEMS_ftp import empty_directory, delete_files_older_than_30days,get_files_ready_for_upload,upload_to_ftp,evaluate_response_file
 from modules.CMEMS.Export_CMEMS_sql import sql_commit, create_connection
 
 with open('config_copernicus.toml') as f: config = toml.load(f)
@@ -88,7 +88,7 @@ def build_dataproduct(dataset_zip,dataset,key):
   - Writes metadata to local sql database
   requires: zip-folder, dataset-object and key
   '''
-  if not os.path.exists(local_folder): os.mkdir(local_folder)
+  if not os.path.exists(LOCAL_FOLDER): os.mkdir(LOCAL_FOLDER)
 
   nc_tuples = build_netCDFs(dataset,key,dataset_zip)
    
