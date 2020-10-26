@@ -299,14 +299,6 @@ def build_index_platform(c,platform):
 
   return index_filename, status, error_msg
 
-def create_dnt_entry(filepath_ftp,start_upload_time,stop_upload_time,filename):
-  entry = {'ftp_filepath':filepath_ftp, 
-            'start_upload_time':start_upload_time, 
-            'stop_upload_time':stop_upload_time,
-            'local_filepath':LOCAL_FOLDER+'/'+filename +'.nc'}
-  logging.debug(f'dnt entry: {entry}')
-  return entry
-
 def building_and_uploading_DNT_file(dnt_upload,dnt_delete):
 
   dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
