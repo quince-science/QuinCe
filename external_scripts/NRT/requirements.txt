@@ -8,7 +8,7 @@ urllib3==1.24.2
 asn1crypto==0.24.0
 bcrypt==3.1.4
 cffi==1.11.5
-cryptography==2.4.2
+cryptography==3.2
 paramiko==2.4.2
 pyasn1==0.4.4
 pycparser==2.19
