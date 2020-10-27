@@ -65,7 +65,7 @@ import json
 import time
 import toml
 
-from modules.CMEMS.Export_CMEMS_metadata import build_netCDFs, write_nc_bytes_to_file, update_global_attributes, create_metadata_object,build_index,build_index_platform,building_and_uploading_DNT_file,build_fDNT
+from modules.CMEMS.Export_CMEMS_metadata import build_netCDFs, write_nc_bytes_to_file, update_global_attributes, create_metadata_object,build_index,build_index_platform,upload_DNT,build_fDNT,build_DNT
 from modules.CMEMS.Export_CMEMS_ftp import empty_directory, delete_files_older_than_30days,get_files_ready_for_upload,upload_to_ftp,evaluate_response_file
 from modules.CMEMS.Export_CMEMS_sql import sql_commit, create_connection
 
@@ -108,7 +108,7 @@ def build_dataproduct(dataset_zip,dataset,key):
   sql_commit(nc_dict,c)
 
 
-def upload_to_copernicus(server,dataset,platform):
+def upload_to_copernicus(server,dataset,platforms):
   '''
   - Creates a FTP-connection
   - Uploads netCDF files
@@ -118,7 +118,7 @@ def upload_to_copernicus(server,dataset,platform):
   ftp_config contains login information
   '''
 
-  status = 0
+  status = NOT_UPLOADED
   error_msg = ''
 
   # create ftp-connection
@@ -136,64 +136,48 @@ def upload_to_copernicus(server,dataset,platform):
       
       dnt_upload = {}
       for file in ready_for_upload:
+        # netCDF file
         filename, filepath_local  = file[0], file[2]
-        
-        upload_result, dnt_upload[filename], status,error_msg = (
-          upload_to_ftp(ftp, filepath_local,error_msg))
+        upload_result, dnt_upload[filename],error_msg = (
+          upload_to_ftp(ftp, filepath_local,error_msg,c))
+        if upload_result == FAILED_INGESTION:
+          status = upload_result
 
-      if dnt_upload or dnt_delete: # dnt_upload lists all files to be uploaded, dnt_delete to be deleted 
+      if (dnt_upload or dnt_delete) and status != FAILED_INGESTION: # dnt_upload lists all files to be uploaded, dnt_delete to be deleted 
         # INDEX file
         index_filename = build_index(c)
         if index_filename: 
-          upload_result, dnt_upload[index_filename], status,error_msg = upload_to_ftp(ftp, index_filename,error_msg)
+          print(index_filename)
+          upload_result, dnt_upload[index_filename],error_msg = upload_to_ftp(ftp, index_filename,error_msg,c)
 
         # INDEX platform
-        index_platform,status,error_msg = build_index_platform(c,platform,error_msg)
+        index_platform,error_msg = build_index_platform(c,platforms,error_msg)
         if index_platform:
-          upload_result, dnt_upload[index_platform], status,error_msg = upload_to_ftp(ftp, index_platform,error_msg)
+          upload_result, dnt_upload[index_platform], error_msg = upload_to_ftp(ftp, index_platform,error_msg,c)
           logging.debug(f'index platform upload result: {upload_result}')
 
         try:
-          status,error_msg = building_and_uploading_DNT_file(dnt_upload,dnt_delete,error_msg)
-
-          try:
-            response = evaluate_response_file(
-              ftp,dnt_ftp_filepath,dnt_local_filepath.rsplit('/',1)[0],c)
-            logging.debug('cmems dnt-response: {}'.format(response))
-            if len(response) == 0: status = 1
-
-          except Exception as e:
-            logging.error('No response from CMEMS: ', exc_info=True)
-            status = 0
-            error_msg += 'No response from CMEMS: ' + str(e)
+          dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
+          response, error_msg = upload_DNT(dnt_file,dnt_local_filepath,error_msg,ftp,c)
+          if len(response) == 0: status = UPLOADED
 
         except Exception as exception:
-          logging.error('Building DNT failed: ', exc_info=True)
-          status = 0
-          error_msg += 'Building DNT failed: ' + str(exception)
+         logging.error('Building DNT failed: ', exc_info=True)
+         status = FAILED_INGESTION
+         error_msg += 'Building DNT failed: ' + str(exception)
 
         # FOLDER CLEAN UP
         if dnt_delete:
           logging.info('Delete empty directories')
           try: 
-            _, dnt_local_filepath_f = build_fDNT(dnt_delete)
-
-            _, dnt_ftp_filepath_f, _, _,status,error_msg = (
-              upload_to_ftp(ftp, ftp_config, dnt_local_filepath_f,error_msg))  
-            try:
-              response = evaluate_response_file(
-                ftp,dnt_ftp_filepath_f,dnt_local_filepath_f.rsplit('/',1)[0],c)
-              logging.debug('cmems fDNT-response, delete empty folders: {}'.format(response))
-
-            except Exception as e:
-              logging.error('No response from CMEMS: ', exc_info=True)
-              error_msg += 'No response from CMEMS: ' + str(e)
+            dnt_local_filepath_f = build_fDNT(dnt_delete)
+            response, error_msg = uploading_DNT_file(dnt_file,dnt_local_filepath,error_msg,ftp,c)
 
           except Exception as e:
             logging.error('Uploading fDNT failed: ', exc_info=True)
             error_msg += 'Uploading fDNT failed: ' + str(e)
 
-      if status == 0:
+      if status == FAILED_INGESTION:
         logging.error('Upload failed')
         
     return status, error_msg

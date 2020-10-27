@@ -18,13 +18,13 @@ import time
 
 from modules.CMEMS.Export_CMEMS_sql import update_db_new_submission, abort_upload_db
 
-# Upload result codes
+# Http upload result codes
 UPLOAD_OK = 0
 FILE_EXISTS = 2
 
-# Response codes
+# Status codes
 UPLOADED = 1
-NOT_UPLOADED = 0
+NOT_UPLOADED = -9
 FAILED_INGESTION = -1
 
 DNT_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
@@ -69,7 +69,7 @@ def get_files_ready_for_upload(c,status):
     logging.debug(f'Upload {len(results_upload)}: {results_upload}')
   return results_upload,status
 
-def upload_to_ftp(ftp, filepath,error_msg):
+def upload_to_ftp(ftp, filepath,error_msg,c):
   ''' Uploads file with location 'filepath' to an ftp-server, 
   server-location set by 'directory' parameter and config-file, 
   ftp is the ftp-connection
@@ -80,55 +80,59 @@ def upload_to_ftp(ftp, filepath,error_msg):
   start_upload_time and stop_upload_time: timestamps of upload process
   '''
   try:
-    upload_result = UPLOAD_OK
+    upload_result = UPLOAD_OK # default assumption
+    dnt= {}
     if filepath.endswith('.nc'):
       filename = filepath.rsplit('/',1)[-1]
       date = filename.split('_')[-1].split('.')[0]
       ftp_folder = NRT_DIR + '/' + date     
-      ftp_filepath = ftp_folder + '/' +  filename
 
     elif filepath.endswith('.xml'):
+      filename = filepath.rsplit('/',1)[-1]
       ftp_folder = DNT_DIR
-      ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
 
     elif filepath.endswith('.txt'):
       with open(filepath,'rb') as f: 
         file_bytes = f.read() 
+      filename = filepath.rsplit('/',1)[-1]
       ftp_folder = INDEX_DIR
-      ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
+    
+    ftp_filepath = ftp_folder + '/' +  filename
+    print(ftp_filepath)
 
 
-    start_upload_time = datetime.datetime.now().strftime(dnt_datetime_format)
+    start_upload_time = datetime.datetime.now().strftime(DNT_DATETIME_FORMAT)
     if not ftp.path.isdir(ftp_folder):
       ftp.mkdir(ftp_folder)
       ftp.upload(filepath, ftp_filepath)
-    elif ftp.path.isfile(ftp_filepath):
+
+    elif ftp.path.isfile(ftp_filepath) & filepath.endswith('.nc'):
       upload_result = FILE_EXISTS
     else:
       ftp.upload(filepath, ftp_filepath)
-    stop_upload_time = datetime.datetime.now().strftime(dnt_datetime_format)
+    
+    stop_upload_time = datetime.datetime.now().strftime(DNT_DATETIME_FORMAT)
 
     logging.debug(f'upload result: {upload_result}')
 
-    if upload_result == 0: #upload ok
-      # Setting dnt-variable to temp variable: curr_date.
-      # After DNT is created, the DNT-filepath is updated for all  
-      # instances where DNT-filetpath is curr_date
-      update_db_new_submission(UPLOADED,filepath_ftp,filename)
+    if upload_result == UPLOAD_OK:
+      status = UPLOADED
+
+      update_db_new_submission(c,UPLOADED,ftp_filepath,filename)
 
       # create DNT-entry
       dnt = create_dnt_entry(ftp_filepath,start_upload_time,stop_upload_time,filename) 
     else:
       logging.debug(f'upload failed: {upload_result}')
       error_msg += f'upload failed: {upload_result}'
-  
+      upload_result = FAILED_INGESTION  
 
   except Exception as e:
     logging.error(f'Uploading {filepath} failed: ', exc_info=True)
-    status = 0      
+    upload_result = FAILED_INGESTION      
     error_msg += 'Uploading ' + filepath + 'failed: ' + str(e)  
 
-  return upload_result, dnt, status,error_msg
+  return upload_result, dnt, error_msg
 
 def get_response(ftp,dnt_filepath,folder_local):
   '''  Retrieves the status of any file uploaded to CMEMS server
@@ -161,9 +165,10 @@ def abort_upload(error,ftp,NRT_DIR,c,curr_date):
 
   return error_msg
 
-def evaluate_response_file(ftp,dnt_filepath,folder_local,c):
+def evaluate_response_file(ftp,dnt_filename,folder_local,c):
   '''  Retrieves response from cmems-ftp server.
   '''
+  dnt_filepath = DNT_DIR + '/' +  dnt_filename
   response_received = False
   loop_iter = 0
   upload_response_log = ''
@@ -250,9 +255,12 @@ def clean_directory(ftp,NRT_DIR):
 
 
 def create_dnt_entry(filepath_ftp,start_upload_time,stop_upload_time,filename):
+  if filename.endswith('.nc'):
+    local_path =  LOCAL_FOLDER + '/'
+  else: local_path = ''
   entry = {'ftp_filepath':filepath_ftp, 
             'start_upload_time':start_upload_time, 
             'stop_upload_time':stop_upload_time,
-            'local_filepath':LOCAL_FOLDER+'/'+filename +'.nc'}
+            'local_filepath': local_path + filename}
   logging.debug(f'dnt entry: {entry}')
   return entry

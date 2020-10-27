@@ -19,11 +19,11 @@ from modules.CarbonPortal.Export_CarbonPortal_main import export_file_to_cp
 from modules.CMEMS.Export_CMEMS import build_dataproduct, upload_to_copernicus
 
 with open('config_copernicus.toml') as f: config_copernicus = toml.load(f)
-with open('platforms.toml') as f: platform = toml.load(f)
+with open('platforms.toml') as f: platforms = toml.load(f)
 
 if not os.path.isdir('log'): os.mkdir('log')
 #logging.basicConfig(filename='log/console.log',format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s -%(message)s', level=logging.DEBUG)
-logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s -%(message)s', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
 
 upload = False # for debugging purposes, when False no data is exported.
 ERROR = 1 # for differentiating between slack reports and slack errors, slack msg defaults to report
@@ -78,7 +78,7 @@ def main():
             build_dataproduct(dataset_zip,dataset,key)
             try: 
               if upload:
-                  successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus('nrt_server',dataset,platform_code)
+                  successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus('nrt_server',dataset,platforms)
             except Exception as e:
               logging.error('Exception occurred: ', exc_info=True)
               successful_upload_CMEMS = 0
