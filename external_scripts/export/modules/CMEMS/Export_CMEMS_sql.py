@@ -28,19 +28,22 @@ DNT_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 CURRENT_DATE = datetime.datetime.now().strftime("%Y%m%d")
 
 
-def update_db_new_submission(UPLOADED,filepath_ftp,filename):
+def update_db_new_submission(c,UPLOADED,filepath_ftp,filename):
+  # Setting dnt-variable to temp variable: curr_date.
+  # After DNT is created, the DNT-filepath is updated for all  
+  # instances where DNT-filetpath is curr_date
   c.execute("UPDATE latest \
     SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
     WHERE filename = ?", 
     [UPLOADED, filepath_ftp, CURRENT_DATE ,filename])
 
-def update_db_dnt(dnt_local_filepath):
+def update_db_dnt(c,dnt_local_filepath):
   logging.debug('Updating database to include DNT filename')
   sql_rec = "UPDATE latest SET dnt_file = ? WHERE dnt_file = ?"
   sql_var = [dnt_local_filepath, CURRENT_DATE]
   c.execute(sql_rec,sql_var)
 
-def abort_upload_db(error_msg):
+def abort_upload_db(c,error_msg):
   sql_req = ("UPDATE latest \
     SET uploaded = ?, ftp_filepath = ?, dnt_file = ?, comment = ? \
     WHERE dnt_file = ?")

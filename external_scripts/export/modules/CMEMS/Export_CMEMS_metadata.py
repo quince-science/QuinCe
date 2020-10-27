@@ -13,7 +13,7 @@ import numpy as np
 import netCDF4
 from modules.CMEMS.Export_CMEMS_netCDF_builder import buildnetcdfs 
 from modules.Local.data_processing import get_file_from_zip, get_platform, construct_datafilename
-from modules.CMEMS.Export_CMEMS_ftp import upload_to_ftp
+from modules.CMEMS.Export_CMEMS_ftp import upload_to_ftp, evaluate_response_file
 from modules.CMEMS.Export_CMEMS_sql import update_db_dnt
 
 import xml.etree.ElementTree as ET
@@ -116,19 +116,20 @@ def build_DNT(dnt_upload,dnt_delete):
 
   # UPLOAD
   for item in dnt_upload:
-    local_filepath = dnt_upload[item]['local_filepath']
-    ftp_filepath = dnt_upload[item]['ftp_filepath'].split('/',3)[-1]
-    start_upload_time = dnt_upload[item]['start_upload_time'] 
-    stop_upload_time = dnt_upload[item]['stop_upload_time']
-    with open(local_filepath,'rb') as f: 
-      file_bytes = f.read()
+    if dnt_upload[item] != {}:
+      local_filepath = dnt_upload[item]['local_filepath']
+      ftp_filepath = dnt_upload[item]['ftp_filepath'].split('/',3)[-1]
+      start_upload_time = dnt_upload[item]['start_upload_time'] 
+      stop_upload_time = dnt_upload[item]['stop_upload_time']
+      with open(local_filepath,'rb') as f: 
+        file_bytes = f.read()
 
-    file = ET.SubElement(dataset,'file')
-    file.set('Checksum',hashlib.md5(file_bytes).hexdigest())
-    file.set('FileName',ftp_filepath)
-    file.set('FinalStatus','Delivered')
-    file.set('StartUploadTime',start_upload_time)
-    file.set('StopUploadTime',stop_upload_time)
+      file = ET.SubElement(dataset,'file')
+      file.set('Checksum',hashlib.md5(file_bytes).hexdigest())
+      file.set('FileName',ftp_filepath)
+      file.set('FinalStatus','Delivered')
+      file.set('StartUploadTime',start_upload_time)
+      file.set('StopUploadTime',stop_upload_time)
 
   # DELETE
   for item in dnt_delete:
@@ -245,7 +246,7 @@ def build_index(c):
 
   return index_filename
 
-def build_index_platform(c,platform):
+def build_index_platform(c,platforms,error_msg):
   '''
   Creates index-file of CMEMS directory.
   Lists all platforms uploaded to the CMEMS server. 
@@ -269,17 +270,17 @@ def build_index_platform(c,platform):
 
     index_info = ''
     for unique_platform in unique_platforms:
-      platform_id = platform[unique_platform[0]]['platform_id']
+      platform_id = platforms[unique_platform[0]]['platform_id']
       # Fetch most recent entry for *platform*
       c.execute("SELECT * FROM latest WHERE platform = ? ORDER BY last_dt DESC",
         [unique_platform[0]])
       db_last = c.fetchone() 
       
-      index_info += (platform[platform_id]['call_sign'] + ',' 
-        + str(platform[platform_id]['creation_date']) + ','
+      index_info += (platforms[platform_id]['call_sign'] + ',' 
+        + str(platforms[platform_id]['creation_date']) + ','
         + str(db_last[9]) + ',' 
         + platform_id + ',' 
-        + 'GL_TS_TS_' + platform[platform_id]['call_sign'] + '_XXXXXX,' 
+        + 'GL_TS_TS_' + platforms[platform_id]['call_sign'] + '_XXXXXX,' 
         + INSTITUTION + ',' + INSTITUTION_EDMO + ',' 
         + str(db_last[11]) + ',' 
         + str(db_last[12]) + ',' 
@@ -294,18 +295,29 @@ def build_index_platform(c,platform):
 
   except Exception as e:
     logging.error('Building platform index failed: ', exc_info=True)
-    status = 0
     error_msg += 'Building platform index failed: ' + str(e)
 
-  return index_filename, status, error_msg
+  return index_filename, error_msg
 
-def building_and_uploading_DNT_file(dnt_upload,dnt_delete):
 
-  dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
+def upload_DNT(dnt_file,dnt_local_filepath,error_msg,ftp,c):
 
-  upload_result, dnt, status,error_msg= (
-    upload_to_ftp(ftp, dnt_local_filepath,error_msg))  
+  upload_result, dnt, error_msg= (
+    upload_to_ftp(ftp, dnt_local_filepath,error_msg,c))  
 
-  update_db_dnt(dnt_local_filepath)
+  update_db_dnt(c,dnt_local_filepath)
 
-  return status, error_msg
+  dnt_local_folder = dnt_local_filepath.rsplit('/',1)[0]
+  dnt_ftp_filename = dnt_local_filepath.rsplit('/',1)[-1]
+
+  try:
+    response = evaluate_response_file(
+      ftp,dnt_ftp_filename,dnt_local_folder,c)
+
+    logging.debug(f'cmems dnt-response: {response}')
+
+  except Exception as e:
+    logging.error('No response from CMEMS: ', exc_info=True)
+    error_msg += 'No response from CMEMS: ' + str(e)
+
+  return response, error_msg
