@@ -48,6 +48,7 @@ def get_L1_filename(manifest):
   platform_code = get_platform_code(manifest)
   start_date = get_start_date(manifest)
   L1_filename = platform_code + '_NRT_' + start_date + '.csv'
+  return L1_filename
 
 def get_export_filename(file,manifest,level):
   # Setting export name
@@ -56,6 +57,7 @@ def get_export_filename(file,manifest,level):
     export_filename = L1_filename
   else: 
     export_filename = os.path.split(file)[-1]
+  return export_filename
 
 
 def process_dataset(dataset):
