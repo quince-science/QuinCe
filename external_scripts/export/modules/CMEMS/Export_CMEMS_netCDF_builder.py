@@ -15,18 +15,14 @@ import logging
 
 TIME_BASE = datetime.datetime(1950, 1, 1, 0, 0, 0)
 QC_LONG_NAME = "quality flag"
-QC_CONVENTIONS = "OceanSITES reference table 2"
+QC_CONVENTIONS = "Copernicus Marine In Situ reference table 2"
 QC_VALID_MIN = 0
 QC_VALID_MAX = 9
-QC_FILL_VALUE = -128
+QC_FILL_VALUE = -127
 QC_FLAG_VALUES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 QC_FLAG_MEANINGS = "no_qc_performed good_data probably_good_data " \
  + "bad_data_that_are_potentially_correctable bad_data value_changed " \
  + "not_used nominal_value interpolated_value missing_value"
-DM_LONG_NAME = "method of data processing"
-DM_CONVENTIONS = "OceanSITES reference table 5"
-DM_FLAG_VALUES = "R, P, D, M"
-DM_FLAG_MEANINGS = "real-time provisional delayed-mode mixed"
 
 PLATFORM_CODES = {
   "31" : "research vessel",
@@ -79,38 +75,44 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
 
   # Time, lat and lon dimensions are created per record
   timedim = nc.createDimension("TIME", records.shape[0])
-  timevar = nc.createVariable("TIME", "d", ("TIME"), fill_value = 999999.0)
+  timevar = nc.createVariable("TIME", "d", ("TIME"))
   timevar.long_name = "Time"
   timevar.standard_name = "time"
   timevar.units = "days since 1950-01-01T00:00:00Z"
   timevar.valid_min = -90000;
   timevar.valid_max = 90000;
+  timevar.uncertainty = " "
+  timevar.comment = ""
   timevar.axis = "T"
+  timevar.ancillary_variables = "TIME_QC"
+  timevar.calendar = "standard"
 
   latdim = nc.createDimension("LATITUDE", records.shape[0])
-  latvar = nc.createVariable("LATITUDE", "f", ("LATITUDE"), fill_value = 99999.0)
+  latvar = nc.createVariable("LATITUDE", "f", ("LATITUDE"))
 
   latvar.long_name = "Latitude of each location"
   latvar.standard_name = "latitude"
   latvar.units = "degree_north"
   latvar.valid_min = -90
   latvar.valid_max = 90
+  latvar.uncertainty = " "
+  latvar.comment = ""
   latvar.axis = "Y"
-  latvar.reference = "WGS84"
-  latvar.coordinate_reference_frame = "urn:ogc:crs:EPSG::4326"
+  latvar.ancillary_variables = "POSITION_QC"
+  
 
   londim = nc.createDimension("LONGITUDE", records.shape[0])
-  lonvar = nc.createVariable("LONGITUDE", "f", ("LONGITUDE"),
-    fill_value = 99999.0)
+  lonvar = nc.createVariable("LONGITUDE", "f", ("LONGITUDE"))
 
   lonvar.long_name = "Longitude of each location"
   lonvar.standard_name = "longitude"
   lonvar.units = "degree_east"
   lonvar.valid_min = -180
   lonvar.valid_max = 180
+  lonvar.uncertainty = " "
+  lonvar.comment = ""
   lonvar.axis = "X"
-  lonvar.reference = "WGS84"
-  lonvar.coordinate_reference_frame = "urn:ogc:crs:EPSG::4326"
+  lonvar.ancillary_variables = "POSITION_QC"
 
   positiondim = nc.createDimension("POSITION", records.shape[0])
 
@@ -178,10 +180,10 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
     varvalues[:,0] = datavalues
     var[:,:] = varvalues
 
-    # DM variable
-    dmvar = nc.createVariable(field['netCDF Name'] + '_DM', 'c', ("TIME", "DEPTH"), fill_value=' ')
-    assigndmvarattributes(dmvar)
-    dmvar[:,:] = dms
+    # # DM variable
+    # dmvar = nc.createVariable(field['netCDF Name'] + '_DM', 'c', ("TIME", "DEPTH"), fill_value=' ')
+    # assigndmvarattributes(dmvar)
+    # dmvar[:,:] = dms
 
     qcvar = nc.createVariable(field['netCDF Name'] + '_QC', "b", ("TIME", "DEPTH"), \
       fill_value = QC_FILL_VALUE)
@@ -195,12 +197,13 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
   nc.data_type = "OceanSITES trajectory data"
   nc.netcdf_version = "netCDF-4 classic model"
   nc.format_version = "1.4"
-  nc.Conventions = " CF-1.6 Copernicus-Manual-1.0 Copernicus-InSituTAC-SRD-1.4 Copernicus-InSituTAC- ParametersList-3.1.0"
+  nc.Conventions = " CF-1.6 Copernicus-InSituTAC-FormatManual-1.4 Copernicus-InSituTAC-SRD-1.41 Copernicus-InSituTAC-ParametersList-3.2.0"
 
-  nc.cdm_data_type = "Trajectory"
+  nc.cdm_data_type = "trajectory"
   nc.data_mode = "R"
   nc.area = "Global Ocean"
-
+  
+  nc.bottom_depth = " ";
   nc.geospatial_lat_min = str(min(latvar))
   nc.geospatial_lat_max = str(max(latvar))
   nc.geospatial_lon_min = str(min(lonvar))
@@ -213,16 +216,23 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
   nc.time_coverage_start = records['Timestamp'].iloc[[0]].to_numpy()[0]
   nc.time_coverage_end = records['Timestamp'].iloc[[-1]].to_numpy()[0]
 
-  nc.update_interval = "daily"
+  nc.update_interval = "P1D"
 
-  nc.data_assembly_center = "BERGEN"
+  nc.data_assembly_center = "University of Bergen"
   nc.institution = "University of Bergen / Geophysical Institute"
   nc.institution_edmo_code = "4595"
   nc.institution_references = " "
-  nc.contact = "steve.jones@uib.no"
+  nc.contact = "bcdc@uib.no cmems-service@ifremer.fr"
   nc.title = "Global Ocean - In Situ near-real time carbon observation"
   nc.author = "cmems-service"
-  nc.naming_authority = "Copernicus"
+  nc.naming_authority = "Copernicus Marine In Situ"
+  nc.doi = "https://hdl.handle.net/" + CP_pid
+  nc.pi_name = platform[platform_code]['author_list']
+  nc.qc_manual = ""
+  nc.wmo_inst_type = ""
+  nc.wmo_platform_code = ""
+  nc.ices_platform_code = ""
+
 
   nc.platform_code = platform[platform_code]['call_sign']
   nc.site_code = platform[platform_code]['call_sign']
@@ -238,10 +248,12 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
 
   nc.comment = " "
   nc.summary = " "
-  nc.reference = "http://marine.copernicus.eu/, https://www.icos-cp.eu/"
+  nc.references = "http://marine.copernicus.eu http://www.marineinsitu.eu https://www.icos-cp.eu" 
   #nc.citation = "These data were collected and made freely available by the " \
   #  + "Copernicus project and the programs that contribute to it."
-  nc.citation = (platform[platform_code]['author_list'] 
+  nc.citation = (
+    "These data were collected and made freely available by the Copernicus project and the programs that contribute to it."
+    + platform[platform_code]['author_list'] 
     + "(" + str( datetime.datetime.now().year) 
     + "): NRT data from " + platform[platform_code]['name'] + "."
     + " PID: https://hdl.handle.net/" + CP_pid
