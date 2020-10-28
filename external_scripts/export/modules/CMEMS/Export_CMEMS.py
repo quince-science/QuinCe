@@ -76,7 +76,7 @@ UPLOADED = 1
 NOT_UPLOADED = 0
 FAILED_INGESTION = -1
 
-CMEMS_DB = 'files_cmems.db'
+CMEMS_DB = 'database_cmems.db'
 
 LOCAL_FOLDER = 'latest'
 
