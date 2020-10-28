@@ -208,8 +208,8 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
   nc.geospatial_lat_max = str(max(latvar))
   nc.geospatial_lon_min = str(min(lonvar))
   nc.geospatial_lon_max = str(max(lonvar))
-  nc.geospatial_vertical_min = "5.00"
-  nc.geospatial_vertical_max = "5.00"
+  nc.geospatial_vertical_min = str(min(records['ADEPZZ01'].to_numpy()))
+  nc.geospatial_vertical_max = str(max(records['ADEPZZ01'].to_numpy()))
   nc.last_latitude_observation = str(records['ALATGP01'].iloc[[-1]].to_numpy()[0])
   nc.last_longitude_observation = str(records['ALONGP01'].iloc[[-1]].to_numpy()[0])
   nc.last_date_observation = records['Timestamp'].iloc[[-1]].to_numpy()[0]
@@ -226,12 +226,18 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
   nc.title = "Global Ocean - In Situ near-real time carbon observation"
   nc.author = "cmems-service"
   nc.naming_authority = "Copernicus Marine In Situ"
-  nc.doi = "https://hdl.handle.net/" + CP_pid
   nc.pi_name = platform[platform_code]['author_list']
   nc.qc_manual = ""
   nc.wmo_inst_type = ""
   nc.wmo_platform_code = ""
   nc.ices_platform_code = ""
+  
+
+  if len(CP_pid)>0:
+    PID = "https://hdl.handle.net/" + CP_pid
+  else:
+    PID = ""
+  nc.doi = PID
 
 
   nc.platform_code = platform[platform_code]['call_sign']
@@ -256,7 +262,7 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
     + platform[platform_code]['author_list'] 
     + "(" + str( datetime.datetime.now().year) 
     + "): NRT data from " + platform[platform_code]['name'] + "."
-    + " PID: https://hdl.handle.net/" + CP_pid
+    + PID
     + " Made available through the Copernicus project.")
   nc.distribution_statement = ("These data follow Copernicus standards; they " 
     + "are public and free of charge. User assumes all risk for use of data. " 
