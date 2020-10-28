@@ -38,7 +38,7 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,level,uplo
   '''
   success = 0;
 
-  logging.debug(f'Processing {level} file: {filename}')
+  logging.debug(f'\n\n --- Processing {level} file: {filename}')
     
   file = get_file_from_zip(dataset_zip,filename)
   

@@ -71,6 +71,7 @@ def main():
                 manifest, data_filename, dataset_zip, index, cp_cookie, 'L1', upload, cp_err_msg,L0_hashsums)
             except Exception as e:
               logging.error('Carbon Portal export failed. \n', exc_info=True)
+              successful_upload_CP = 0
 
 
           if 'CMEMS' in destination: 
