@@ -22,10 +22,9 @@
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8"
       enctype="multipart/form-data">
-      <p:defaultCommand target="useFile" />
       <h:inputHidden id="sampleFileContent"
         value="#{newInstrumentBean.currentInstrumentFile.filePreview}" />
-      <p:commandLink id="guessFileLayout" ajax="true" process="@this"
+      <p:remoteCommand name="guessFileLayout" ajax="true" process="@this"
         update="headerType headerLineCount headerEndString separator columnHeaderRows columnCount sampleFileContent"
         action="#{newInstrumentBean.currentInstrumentFile.guessFileLayout}"
         oncomplete="updateFileContentDisplay()" />
@@ -137,9 +136,10 @@
                   update="headerType headerLineCount headerEndString separator columnHeaderRows columnCount sampleFileContent"
                   oncomplete="discardUploadedFile();return false;"
                   immediate="true" />
-                <p:button id="useFile" widgetVar="useFileButton"
-                  value="Use File" onclick="useFile(); return false;"
-                  disabled="true" />
+                <p:commandButton id="useFile" widgetVar="useFileButton"
+                  action="#{newInstrumentBean.useFile}"
+                  process="headerType headerLineCount headerEndString columnHeaderRows separator"
+                  value="Use File"/>
               </h:panelGrid>
             </div>
           </div>
@@ -153,10 +153,6 @@
         <p:commandButton value="Next" ajax="false"
           action="#{newInstrumentBean.goToFiles}" disabled="true" />
       </h:panelGrid>
-    </h:form>
-    <h:form id="useFileForm">
-      <h:commandLink id="useFileLink" style="invisible"
-        action="#{newInstrumentBean.useFile}" />
     </h:form>
   </ui:define>
 </ui:composition>

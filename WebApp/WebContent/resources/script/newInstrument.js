@@ -34,7 +34,7 @@ const SECOND = '11';
 function showProcessingMessage() {
   $('#uploadFile').hide();
   $('#processingFileMessage').show();
-  $('#newInstrumentForm\\:guessFileLayout').click();
+  guessFileLayout(); // PF Remote Command
 }
 
 // Once the file has been processed, display the file contents and
@@ -196,10 +196,6 @@ function updateUseFileButton() {
   } else {
     PF('useFileButton').disable();
   }
-}
-
-function useFile() {
-  $('#useFileForm\\:useFileLink').click()
 }
 
 //************************************************
