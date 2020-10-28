@@ -59,24 +59,26 @@ def main():
             #--- Processing L0 files
             L0_hashsums = []
             for index, raw_filename in enumerate(raw_filenames):
-              successful_upload_CP, L0_hashsum, cp_err_msg = export_file_to_cp(manifest, raw_filename, dataset_zip, index, cp_cookie,'L0',upload,cp_err_msg)
+              successful_upload_CP, L0_hashsum, cp_err_msg, CP_pid = export_file_to_cp(manifest, raw_filename, dataset_zip, index, cp_cookie,'L0',upload,cp_err_msg)
               if L0_hashsum:
                 L0_hashsums += [L0_hashsum]
             
             #--- Processing L1 files            
             index = -1 # used in export of L0, not needed for L1
+            data_filename = construct_datafilename(dataset,'CP',key)
             try:
-              data_filename = construct_datafilename(dataset,'CP',key)
-              successful_upload_CP, L1_hashsum, cp_err_msg = export_file_to_cp(
+              successful_upload_CP, L1_hashsum, cp_err_msg, CP_pid = export_file_to_cp(
                 manifest, data_filename, dataset_zip, index, cp_cookie, 'L1', upload, cp_err_msg,L0_hashsums)
             except Exception as e:
               logging.error('Carbon Portal export failed. \n', exc_info=True)
               successful_upload_CP = 0
-
+              
 
           if 'CMEMS' in destination: 
             successful_upload_CMEMS = 0; cmems_err_msg = '';
-            build_dataproduct(dataset_zip,dataset,key)
+
+            #--- Creating netCDFs
+            build_dataproduct(dataset_zip,dataset,key,CP_pid)
             try: 
               if upload:
                   successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus('nrt_server',dataset,platforms)

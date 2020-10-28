@@ -60,7 +60,7 @@ def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
       logging.error(f'failed to upload datafile: {resp}')
       success = False
 
-  return success
+  return success, resp
 
 def push_object(url,data,auth_cookie,content_type,method):
   '''  http-posts/puts data-object to url with content-type and auth_cookie  '''
