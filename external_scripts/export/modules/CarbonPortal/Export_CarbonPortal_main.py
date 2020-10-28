@@ -36,7 +36,9 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,level,uplo
   for L1 exports. Currently not in use on request by Oleg.
 
   '''
-  success = 0;
+  success = 0
+  response = ''
+  CP_pid = ''
 
   logging.debug(f'\n\n --- Processing {level} file: {filename}')
     
@@ -61,7 +63,7 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,level,uplo
     
     if upload:
       try:
-        upload_status = upload_to_cp(
+        upload_status, response = upload_to_cp(
           auth_cookie, file, hashsum, meta, OBJ_SPEC_URI[level])
         logging.debug(f'Upload status: {upload_status}')
         if upload_status:
@@ -69,8 +71,9 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,level,uplo
           db_status = sql_commit(
             export_filename, hashsum,filename,level,L1_filename)
           logging.debug(f'{export_filename}: SQL commit {db_status}')
+          CP_pid = response.decode('utf-8')
       except Exception as e:
         err_msg += (f'Failed to upload: {export_filename}, \nException: {e}')
     else: success = 2
 
-  return success, hashsum, err_msg
+  return success, hashsum, err_msg, CP_pid

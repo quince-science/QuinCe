@@ -81,7 +81,7 @@ CMEMS_DB = 'files_cmems.db'
 LOCAL_FOLDER = 'latest'
 
 
-def build_dataproduct(dataset_zip,dataset,key):
+def build_dataproduct(dataset_zip,dataset,key,CP_pid):
   '''
   - Transforms csv-file to daily netCDF-files.
   - Creates metadata dictionary containing info on each netCDF file extracted
@@ -90,7 +90,7 @@ def build_dataproduct(dataset_zip,dataset,key):
   '''
   if not os.path.exists(LOCAL_FOLDER): os.mkdir(LOCAL_FOLDER)
 
-  nc_tuples = build_netCDFs(dataset,key,dataset_zip)
+  nc_tuples = build_netCDFs(dataset,key,dataset_zip,CP_pid)
    
   nc_dict = {}
   for nc_tuple in nc_tuples:
