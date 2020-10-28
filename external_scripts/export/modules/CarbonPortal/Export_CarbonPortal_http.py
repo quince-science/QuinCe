@@ -14,6 +14,8 @@ import toml
 
 
 from modules.Local.data_processing import get_file_from_zip
+from modules.Local.API_calls import post_slack_msg
+
 
 #from py_func.meta_handling import get_hashsum, get_file_from_zip
 '''Carbon Portal submission process
@@ -56,7 +58,7 @@ def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
       data = f.read().encode('utf-8')
     resp = push_object(object_url,data,auth_cookie,OBJECT_CONTENT_TYPE,'PUT')
     logging.info(f'{file} Upload response: {resp}')
-    if 'IngestionFailure' in str(resp): 
+    if 'IngestionFailure' in str(resp) or 'already has new version' in str(resp): 
       logging.error(f'failed to upload datafile: {resp}')
       success = False
 
@@ -70,10 +72,17 @@ def push_object(url,data,auth_cookie,content_type,method):
   try:
     response = urllib.request.urlopen(req)
     logging.debug(f'Post response: {response.read()}')
+  except urllib.error.HTTPError as e:
+    code = e.code
+    msg = e.read()
+    post_slack_msg(f'HTTP error:  {code} {method} failed,\n {data} not sent. \n\n Error message: {msg}\n',status=1)
+    logging.exception(f'HTTP error:  {code} {method} failed,\n {data} not sent. \n\n Error message: {msg}\n')
   except Exception as e:
-    logging.error(e.code)
-    logging.error(e.read())
-    raise Exception(f'{e.code} {method} failed,\n {data} not sent, {e.read()}')
+    msg = e.read()
+    post_slack_msg(f'{method} failed. Error message: {msg}\n',status=1)
+    logging.exception(f'{method} failed,\n {data} not sent, {msg}')
+
+
   return response.read()
 
 def get_auth_cookie():   
