@@ -42,7 +42,7 @@ def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
   '''Uploads metadata and data object to Carbon Portal  '''
   success = True
 
-  logging.debug(f'POSTING {file} metadata-object to {META_URL}')
+  logging.debug(f'\nPOSTING {file} metadata-object to {META_URL}')
   resp = push_object(
     META_URL,meta.encode('utf-8'),auth_cookie,META_CONTENT_TYPE,'POST')
   logging.info(f'{file} metadata upload response: {resp}')
