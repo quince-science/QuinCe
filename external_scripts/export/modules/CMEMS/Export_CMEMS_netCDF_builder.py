@@ -261,7 +261,7 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
     "These data were collected and made freely available by the Copernicus project and the programs that contribute to it."
     + platform[platform_code]['author_list'] 
     + "(" + str( datetime.datetime.now().year) 
-    + "): NRT data from " + platform[platform_code]['name'] + "."
+    + "): NRT data from " + platform[platform_code]['name'] + ". "
     + PID
     + " Made available through the Copernicus project.")
   nc.distribution_statement = ("These data follow Copernicus standards; they " 
