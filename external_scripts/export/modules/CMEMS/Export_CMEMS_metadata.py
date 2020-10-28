@@ -32,7 +32,7 @@ INSTITUTION_EDMO = '4595'
 LOCAL_FOLDER = 'latest'
 
 
-def build_netCDFs(dataset,key,dataset_zip):
+def build_netCDFs(dataset,key,dataset_zip,CP_pid):
   ''' Returns tuple of netCDF filename and bytes'''
   dataset_name = construct_datafilename(dataset,'CMEMS',key)
   platform = get_platform()
@@ -45,7 +45,7 @@ def build_netCDFs(dataset,key,dataset_zip):
   filedata = pd.read_csv(csv_file, delimiter=',')
   
   # Build netCDF from filecontent
-  nc_files = buildnetcdfs(dataset['name'], fieldconfig, filedata, platform)
+  nc_files = buildnetcdfs(dataset['name'], fieldconfig, filedata, platform,CP_pid)
 
   return nc_files
 

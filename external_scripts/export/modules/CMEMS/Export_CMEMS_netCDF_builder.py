@@ -35,7 +35,7 @@ PLATFORM_CODES = {
   "3B" : "autonomous surface water vehicle"
 }
 
-def buildnetcdfs(datasetname, fieldconfig, filedata,platform):
+def buildnetcdfs(datasetname, fieldconfig, filedata,platform,CP_pid):
   ''' Construct CMEMS complient netCDF files from filedata'''
   logging.info(f'Constructing netcdf-files based on {datasetname} to send to CMEMS')
 
@@ -49,7 +49,7 @@ def buildnetcdfs(datasetname, fieldconfig, filedata,platform):
     linedate = getlinedate(filedata.iloc[[currentline]])
     if linedate != currentdate:
       if currentdate:
-        result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline + 1]))
+        result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline + 1],CP_pid))
 
       currentdate = linedate
       daystartline = currentline
@@ -59,11 +59,11 @@ def buildnetcdfs(datasetname, fieldconfig, filedata,platform):
 
   # Make the last netCDF
   if dayendline:
-    result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline+1]))
+    result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline+1],CP_pid))
 
   return result
 
-def makenetcdf(datasetname, fieldconfig, platform, records):
+def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
   filedate = getlinedate(records.iloc[[0]])
   ncbytes = None
 
@@ -244,7 +244,7 @@ def makenetcdf(datasetname, fieldconfig, platform, records):
   nc.citation = (platform[platform_code]['author_list'] 
     + "(" + str( datetime.datetime.now().year) 
     + "): NRT data from " + platform[platform_code]['name'] + "."
-    + "https://hdl.handle.net/" + "CP_pid"
+    + " PID: https://hdl.handle.net/" + CP_pid
     + " Made available through the Copernicus project.")
   nc.distribution_statement = ("These data follow Copernicus standards; they " 
     + "are public and free of charge. User assumes all risk for use of data. " 
