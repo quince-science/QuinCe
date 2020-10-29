@@ -1,6 +1,10 @@
+'''
+CMEMS module
+Contains functions related to local data handling.
 
+Maren K. Karlsen 2020.10.29
 '''
-'''
+
 import logging 
 import ftputil 
 import os
@@ -11,6 +15,7 @@ import datetime
 import pandas as pd
 import numpy as np
 import netCDF4
+
 from modules.CMEMS.Export_CMEMS_netCDF_builder import buildnetcdfs 
 from modules.Local.data_processing import get_file_from_zip, get_platform, construct_datafilename
 from modules.CMEMS.Export_CMEMS_ftp import upload_to_ftp, evaluate_response_file
@@ -52,16 +57,19 @@ def build_netCDFs(dataset,key,dataset_zip,CP_pid):
 
   return nc_files
 
+
 def write_nc_bytes_to_file(nc_name,nc_content):
   nc_filepath = LOCAL_FOLDER + '/' + nc_name + '.nc'   
   with open(nc_filepath,'wb') as f: f.write(nc_content)
   return nc_filepath
+
 
 def update_global_attributes(nc):
   # Adding history and last update date to global attributes
   datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
   nc.date_update = datasetdate
   nc.history = datasetdate + " : Creation"
+
 
 def create_metadata_object(nc,nc_name,nc_content,nc_filepath,dataset):
   ''' Creates metadata dictionary object based on each netCDF''' 
@@ -99,6 +107,7 @@ def create_metadata_object(nc,nc_name,nc_content,nc_filepath,dataset):
     'last_dt':last_dt})
 
   return nc_dict
+
 
 def build_DNT(dnt_upload,dnt_delete):
   ''' Generates delivery note for NetCDF file upload, 
@@ -156,6 +165,7 @@ def build_DNT(dnt_upload,dnt_delete):
 
   return dnt_file, dnt_filepath
 
+
 def build_fDNT(dnt_delete):
   ''' Generates delivery note for NetCDF folder clean up '''
   date = datetime.datetime.now().strftime(dnt_datetime_format)
@@ -192,6 +202,7 @@ def build_fDNT(dnt_delete):
     xml_tree.write(xml,xml_declaration=True,method='xml')
 
   return dnt_file, dnt_filepath
+
 
 def build_index(c):
   '''
@@ -248,6 +259,7 @@ def build_index(c):
     error += 'Building index failed: ' + str(e)
 
   return index_filename
+
 
 def build_index_platform(c,platforms,error_msg):
   '''
