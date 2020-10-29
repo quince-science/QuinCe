@@ -1,3 +1,10 @@
+'''
+Carbon Portal module
+Contains functions related to http-calls
+
+Maren K. Karlsen 2020.10.29
+'''
+
 import urllib
 import http.cookiejar
 import json
@@ -11,7 +18,6 @@ import sqlite3
 from zipfile import ZipFile
 import io
 import toml
-
 
 from modules.Local.data_processing import get_file_from_zip
 from modules.Local.API_calls import post_slack_msg
