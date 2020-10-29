@@ -1,3 +1,13 @@
+'''
+CMEMS module 
+Builds copernicus formatted daily netCDFs from a single pandas dataframe/csv.  
+Originally written by Steve Jones.
+
+Modified to better interact with export routine
+
+Maren K. Karlsen 2020.10.29
+'''
+
 import sys, os
 import tempfile
 import datetime
@@ -31,6 +41,7 @@ PLATFORM_CODES = {
   "3B" : "autonomous surface water vehicle"
 }
 
+
 def buildnetcdfs(datasetname, fieldconfig, filedata,platform,CP_pid):
   ''' Construct CMEMS complient netCDF files from filedata'''
   logging.info(f'Constructing netcdf-files based on {datasetname} to send to CMEMS')
@@ -58,6 +69,7 @@ def buildnetcdfs(datasetname, fieldconfig, filedata,platform,CP_pid):
     result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline+1],CP_pid))
 
   return result
+
 
 def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
   filedate = getlinedate(records.iloc[[0]])
@@ -281,6 +293,7 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
 
   return [filenameroot, ncbytes]
 
+
 def makeqcvalues(values, qc):
 
   result = np.empty(len(values))
@@ -292,11 +305,13 @@ def makeqcvalues(values, qc):
 
   return result
 
+
 def assigndmvarattributes(dmvar):
   dmvar.long_name = DM_LONG_NAME
   dmvar.conventions = DM_CONVENTIONS
   dmvar.flag_values = DM_FLAG_VALUES
   dmvar.flag_meanings = DM_FLAG_MEANINGS
+
 
 def assignqcvarattributes(qcvar):
   qcvar.long_name = QC_LONG_NAME
@@ -306,11 +321,13 @@ def assignqcvarattributes(qcvar):
   qcvar.flag_values = QC_FLAG_VALUES
   qcvar.flag_meanings = QC_FLAG_MEANINGS
 
+
 def maketimefield(timestr):
   timeobj = maketimeobject(timestr)
 
   diff = timeobj - TIME_BASE
   return diff.days + diff.seconds / 86400
+
 
 def maketimeobject(timestr):
   timeobj = datetime.datetime(int(timestr[0:4]), int(timestr[5:7]), \
@@ -318,6 +335,7 @@ def maketimeobject(timestr):
     int(timestr[17:19]))
 
   return timeobj
+
 
 def makeqcvalue(flag):
   result = 9 # Missing
@@ -333,8 +351,10 @@ def makeqcvalue(flag):
 
   return result
 
+
 def getlinedate(line):
   return pd.to_datetime(line.Timestamp).iloc[0].date().strftime('%Y%m%d')
+
 
 def getplatformcode(datasetname):
   platform_code = None
@@ -356,6 +376,7 @@ def getplatformcode(datasetname):
     platform_code = matched.group(1)
 
   return platform_code
+
 
 
 def main():

@@ -1,9 +1,13 @@
-
 '''
-Functions specific to communication with Copernicus.
+CMEMS module main-script. 
+
+Triage for CMEMS
+
+Maren K. Karlsen 2020.10.29
+
+CMEMS specific export details:
 
 Files to Copernicus must be on netcdf format.
-
 Files are sent to Copernicus by FTP. 
 
 The Copernicus FTP requires an Index file and a DNT file describing all 
