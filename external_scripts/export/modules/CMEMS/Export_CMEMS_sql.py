@@ -1,5 +1,8 @@
-
 '''
+CMEMS module
+Contains CMEMS functions related to SQL-queries
+
+Maren K. Karlsen 2020.10.29
 '''
 import logging 
 import ftputil 
@@ -16,7 +19,6 @@ import xml.etree.ElementTree as ET
 import sqlite3
 import json
 import time
-
 
 # Response codes
 UPLOADED = 1
@@ -37,17 +39,20 @@ def update_db_new_submission(c,UPLOADED,filepath_ftp,filename):
     WHERE filename = ?", 
     [UPLOADED, filepath_ftp, CURRENT_DATE ,filename])
 
+
 def update_db_dnt(c,dnt_local_filepath):
   logging.debug('Updating database to include DNT filename')
   sql_rec = "UPDATE latest SET dnt_file = ? WHERE dnt_file = ?"
   sql_var = [dnt_local_filepath, CURRENT_DATE]
   c.execute(sql_rec,sql_var)
 
+
 def abort_upload_db(c,error_msg):
   sql_req = ("UPDATE latest \
     SET uploaded = ?, ftp_filepath = ?, dnt_file = ?, comment = ? \
     WHERE dnt_file = ?")
   sql_var = [0,None,None,error_msg, CURRENT_DATE]
+
 
 def create_connection(DB):
   ''' creates connection and database if not already created '''
@@ -71,6 +76,7 @@ def create_connection(DB):
               last_dt TEXT
               )''')
   return c
+
 
 def sql_commit(nc_dict,c):
   '''  creates SQL table if non exists
