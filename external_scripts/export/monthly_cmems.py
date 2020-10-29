@@ -25,7 +25,8 @@ import re
 
 if not os.path.isdir('log'):  os.mkdir('log')
 log = 'log/console_monthly.log'
-logging.basicConfig(filename=log,format='%(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename='log/monthly_console.log',format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
+#logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
 
 VESSELS = {'LMEL': 'G.O.Sars','OXYH2':'Nuka Arctica'} 
 SOURCE_DIR = 'latest' 
