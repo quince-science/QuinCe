@@ -204,10 +204,10 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
   nc.area = "Global Ocean"
   
   nc.bottom_depth = " ";
-  nc.geospatial_lat_min = str(min(latvar))
-  nc.geospatial_lat_max = str(max(latvar))
-  nc.geospatial_lon_min = str(min(lonvar))
-  nc.geospatial_lon_max = str(max(lonvar))
+  nc.geospatial_lat_min = str(np.nanmin(latvar))
+  nc.geospatial_lat_max = str(np.nanmax(latvar))
+  nc.geospatial_lon_min = str(np.nanmin(lonvar))
+  nc.geospatial_lon_max = str(np.nanmax(lonvar))
   nc.geospatial_vertical_min = str(min(records['ADEPZZ01'].to_numpy()))
   nc.geospatial_vertical_max = str(max(records['ADEPZZ01'].to_numpy()))
   nc.last_latitude_observation = str(records['ALATGP01'].iloc[[-1]].to_numpy()[0])
