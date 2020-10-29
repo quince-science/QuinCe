@@ -1769,19 +1769,6 @@ public class NewInstrumentBean extends FileUploadBean {
     InstrumentException, DatabaseException, IOException {
 
     try {
-      /*
-       * Adding a Run Type sensor assignment
-       */
-
-      // TODO This shouldn't have to be a special case
-      if (getRunTypeColumn() > -1) {
-        SensorAssignment sensorAssignment = new SensorAssignment(
-          getRunTypeFile(), getRunTypeColumn(), SensorType.RUN_TYPE_SENSOR_TYPE,
-          "Run Type", true, false, null);
-
-        sensorAssignments.addAssignment(sensorAssignment);
-      }
-
       // Convert user-entered properties to the format in which they'll be
       // stored
       Map<Variable, Properties> storedVariableProperties = new HashMap<Variable, Properties>();
