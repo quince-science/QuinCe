@@ -1,10 +1,27 @@
-
-''' 
-
-This script fetches datasets available for export from QuinCe and exports them to the locations listed in the accompanying manifest.
-
-Maren K. Karlsen 
 '''
+Automated export main script
+
+- Retrieves NRT, L2 and raw data from QuinCe.
+- Extracts relevant metadata from manifest and toml file platforms.toml
+- Export each datafile to destinations listed in manifest.
+- Carbon Portal: 
+    - Exports raw data files and NRT/L2 data file
+    -  Creates metadata json object for each file 
+    -  Exports the metadata and data using http-requests.
+    -  Carbon Portal PID is returned in the event of a successful ingestion.
+         This PID is used to create CMEMS citation string.
+- CMEMS:
+    - Exports NRT data as day-length netCDF files.
+    -  Creates netCDFs from retrieved csv-file
+    -  Uploads netCDF file to 'production' FTP-server
+    -  Uploads index file, detailing current content of FTP-server
+    -  Uploads ready for ingestion 'delivery notice', DNT.
+    -  Retrieves and investigates return DNT to evaluatate successful ingestion  
+- Export success/failure, and exceptions, are reported to Slack channel 'reports' and 'errors'  
+
+Maren K. Karlsen 2020.10.29
+'''
+
 import logging 
 import toml
 import sys
@@ -16,16 +33,16 @@ from modules.Local.API_calls import get_export_list, report_abandon_export, repo
 from modules.Local.data_processing import process_dataset, get_platform_code, get_platform_name, get_export_destination, construct_datafilename
 from modules.CarbonPortal.Export_CarbonPortal_http import get_auth_cookie
 from modules.CarbonPortal.Export_CarbonPortal_main import export_file_to_cp  
-from modules.CMEMS.Export_CMEMS import build_dataproduct, upload_to_copernicus
+from modules.CMEMS.Export_CMEMS_main import build_dataproduct, upload_to_copernicus
 
 with open('config_copernicus.toml') as f: config_copernicus = toml.load(f)
 with open('platforms.toml') as f: platforms = toml.load(f)
 
 if not os.path.isdir('log'): os.mkdir('log')
-#logging.basicConfig(filename='log/console.log',format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s -%(message)s', level=logging.DEBUG)
-logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename='log/console.log',format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
+#logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
 
-upload = False # for debugging purposes, when False no data is exported.
+upload = True # for debugging purposes, when False no data is exported.
 ERROR = 1 # for differentiating between slack reports and slack errors, slack msg defaults to report
 
 def main():
@@ -37,6 +54,7 @@ def main():
     else: 
       cp_cookie = get_auth_cookie()
       for dataset in export_list: 
+        #dataset = {'name':'26NA20190327','id':0}
         [dataset_zip,
         manifest, 
         data_filenames, 
@@ -55,7 +73,7 @@ def main():
         for destination in export_destination:
           if 'ICOS' in destination: 
             successful_upload_CP = 0; cp_err_msg = '';
-
+            
             #--- Processing L0 files
             L0_hashsums = []
             for index, raw_filename in enumerate(raw_filenames):
@@ -72,7 +90,6 @@ def main():
             except Exception as e:
               logging.error('Carbon Portal export failed. \n', exc_info=True)
               successful_upload_CP = 0
-              
 
           if 'CMEMS' in destination: 
             successful_upload_CMEMS = 0; cmems_err_msg = '';
