@@ -43,6 +43,9 @@ def build_netCDFs(dataset,key,dataset_zip,CP_pid):
   # Read csv file
   csv_file = get_file_from_zip(dataset_zip, dataset_name)  
   filedata = pd.read_csv(csv_file, delimiter=',')
+  # Remove datarows with nan position
+  filedata.drop(filedata[ (filedata['ALONGP01'].isnull()) |
+   (filedata['ALATGP01'].isnull()) ].index,inplace=True)
   
   # Build netCDF from filecontent
   nc_files = buildnetcdfs(dataset['name'], fieldconfig, filedata, platform,CP_pid)
