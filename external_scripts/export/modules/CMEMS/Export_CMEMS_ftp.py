@@ -30,7 +30,6 @@ FAILED_INGESTION = -1
 DNT_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
 
-LOG_FILE = 'log/cmems_log.txt'
 NOT_INGESTED = 'log/log_uningested_files.csv'
 
 PRODUCT_ID = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
@@ -171,8 +170,6 @@ def evaluate_response_file(ftp,dnt_filename,folder_local,c):
   dnt_filepath = DNT_DIR + '/' +  dnt_filename
   response_received = False
   loop_iter = 0
-  upload_response_log = ''
-  rejected_list = []
 
   logging.debug('waiting for dnt-response')
   while response_received == False and loop_iter < 50 :
@@ -195,32 +192,18 @@ def evaluate_response_file(ftp,dnt_filename,folder_local,c):
         'FileName=(.+?)RejectionReason=(.+?)Status',cmems_response)
       if rejected:
         rejected_file, rejected_reason = [rejected.group(1), rejected.group(2)]
-        logging.info('Rejected: {}, {}'.format(rejected_file, rejected_reason))
-
-        rejected_list += [[rejected_file,rejected_reason]] 
+        logging.error('Rejected: {}, {}'.format(rejected_file, rejected_reason))
         rejected_filename = rejected_file.split('/')[-1].split('.')[0]
 
         sql_req = "UPDATE latest SET uploaded=?,comment=? WHERE filename=?"
         sql_var = ([-1,rejected_reason, rejected_filename])
         c.execute(sql_req,sql_var)
-
     else:
       logging.info('All files ingested')
-
-    date = datetime.datetime.now().strftime('%Y-%m-%d')
-    upload_response_log += (date + ',' + folder_local + ',' + 
-      dnt_filepath + ',' + cmems_response + ',\n')
   
-  if os.path.isfile(LOG_FILE):
-    with open(LOG_FILE,'a+') as log: 
-      log.write(upload_response_log)
-  else: 
-    with open(LOG_FILE,'w') as log: 
-      log.write('date, local filepath, cmems filepath, cmems response\n')
-      log.write(upload_response_log)
-      logging.debug(f'log-message: {upload_response_log}')
-
-  return rejected_list
+  logging.info({'local folder':folder_local,'dnt_filepath':dnt_filepath,'cmems-response':cmems_response})
+ 
+  return cmems_response
   
 def empty_directory(ftp):
   '''   Cleans out empty folders, checks if main directory is empty. 
