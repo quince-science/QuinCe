@@ -1,3 +1,10 @@
+'''
+Carbon Portal module
+Contains functions related to SQL-queries
+
+Maren K. Karlsen 2020.10.29
+'''
+
 import urllib
 import http.cookiejar
 import json
@@ -12,14 +19,6 @@ from zipfile import ZipFile
 import io
 
 from modules.Local.data_processing import get_file_from_zip
-
-#from py_func.meta_handling import get_hashsum, get_file_from_zip
-'''Carbon Portal submission process
-https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-instructions
-
-1. post metadata package describing the data-object (JSON object)
-2. put dataobject
-'''
 
 CP_DB = 'database_carbon_portal.db'
 

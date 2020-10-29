@@ -1,3 +1,9 @@
+'''
+Carbon Portal module 
+Metadata package construction
+
+Maren K. Karlsen 2020.10.29
+'''
 import urllib
 import http.cookiejar
 import json
@@ -11,17 +17,7 @@ import sqlite3
 from zipfile import ZipFile
 import io
 
-
 from modules.Local.data_processing import get_file_from_zip, extract_filelist, get_platform_code, get_platform, get_export_filename
-
-#from py_func.meta_handling import get_hashsum, get_file_from_zip
-'''Carbon Portal submission process
-https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-instructions
-
-1. post metadata package describing the data-object (JSON object)
-2. put dataobject
-'''
-
 
 def build_metadata_package(file,manifest,index,hashsum,
   obj_spec,level,L0_hashsums,is_next_version):
