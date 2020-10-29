@@ -342,22 +342,40 @@ def upload_to_copernicus():
         else:
           logging.debug(f'upload failed: {upload_result}')
 
-      # Create Index file
-      c.execute("SELECT * FROM monthly WHERE uploaded == 1")
+      # Create Monthly Index file
+      c.execute("SELECT * FROM monthly WHERE (uploaded == 1 and month != 'history')")
       currently_uploaded = c.fetchall()
-      index_filename = build_index(currently_uploaded)
+      monthly_index_filename = build_index(currently_uploaded,'index_monthly.txt')
 
       try:
         upload_result, ftp_filepath, t_start, t_stop = (
-          upload_to_ftp(ftp,ftp_config, index_filename))
+          upload_to_ftp(ftp,ftp_config, monthly_index_filename))
       except Exception as e:
-        logging.error('Uploading index failed: ', exc_info=True)
+        logging.error('Uploading monthly index failed: ', exc_info=True)
 
       # Adding index file to DNT-list:
-      dnt_upload[index_filename] = ({
+      dnt_upload[monthly_index_filename] = ({
         'ftp_filepath':ftp_filepath, 
         't_start':t_start, 't_stop':t_stop,
-        'local_filepath': index_filename
+        'local_filepath': monthly_index_filename
+        })
+
+      # Create History Index file
+      c.execute("SELECT * FROM monthly WHERE (uploaded == 1 and month == 'history')")
+      currently_uploaded = c.fetchall()
+      history_index_filename = build_index(currently_uploaded,'index_history.txt')
+
+      try:
+        upload_result, ftp_filepath, t_start, t_stop = (
+          upload_to_ftp(ftp,ftp_config, history_index_filename))
+      except Exception as e:
+        logging.error('Uploading history index failed: ', exc_info=True)
+
+      # Adding index file to DNT-list:
+      dnt_upload[history_index_filename] = ({
+        'ftp_filepath':ftp_filepath, 
+        't_start':t_start, 't_stop':t_stop,
+        'local_filepath': history_index_filename
         })
 
       # BUILD AND UPLOAD DNT-FILE
@@ -478,11 +496,9 @@ def build_DNT(dnt_upload):
     ftp_filepath = dnt_upload[item]['ftp_filepath'].split('/',3)[-1]
     t_start = dnt_upload[item]['t_start'] 
     t_stop = dnt_upload[item]['t_stop']
-    with open(local_filepath,'rb') as f: 
-      file_bytes = f.read()
 
     file = ET.SubElement(dataset,'file')
-    file.set('Checksum',hashlib.md5(file_bytes).hexdigest())
+    file.set('Checksum',hashlib.md5(open(local_filepath,'rb').read()).hexdigest())
     file.set('FileName',ftp_filepath)
     file.set('FinalStatus','Delivered')
     file.set('StartUploadTime',t_start)
@@ -496,7 +512,7 @@ def build_DNT(dnt_upload):
   return dnt_file, dnt_filepath
 
 
-def build_index(results_uploaded):
+def build_index(results_uploaded,index_filename):
   '''  Creates index-file over CMEMS SOURCE_DIR.
   Lists all files currently uploaded to the CMEMS server. 
   '''
@@ -540,7 +556,6 @@ def build_index(results_uploaded):
                 + date_update + ',R,' + parameters + '\n')
 
   index = index_header + index_info
-  index_filename = 'index_monthly.txt'
   with open(index_filename,'wb') as f: f.write(index.encode())
   logging.debug('index file:\n' + index)
 
