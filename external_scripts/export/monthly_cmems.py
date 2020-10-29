@@ -27,31 +27,27 @@ if not os.path.isdir('log'):  os.mkdir('log')
 log = 'log/console_monthly.log'
 logging.basicConfig(filename=log,format='%(asctime)s %(message)s', level=logging.DEBUG)
 
-vesselnames= {'LMEL': 'G.O.Sars','OXYH2':'Nuka Arctica'} 
-source_dir = 'latest' 
-dim_tot = {}
-file_nr = {}
-daily_files = {}
+VESSELS = {'LMEL': 'G.O.Sars','OXYH2':'Nuka Arctica'} 
+SOURCE_DIR = 'latest' 
 
-cmems_db = 'files_cmems.db'
-log_file = 'log/cmems_log.txt'
+CMEMS_DB = 'database_cmems.db'
 
-dnt_datetime_format = '%Y%m%dT%H%M%SZ'
+DNT_DATETIME_FORMAT = '%Y%m%dT%H%M%SZ'
 
-server_location = 'ftp://nrt.cmems-du.eu/Core'
+SERVER_LOCATION = 'ftp://nrt.cmems-du.eu/Core'
 
-product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
-nc_dir_monthly = '/' + product_id + '/NRT_202003/monthly/vessel'
-nc_dir_history = '/' + product_id + '/NRT_202003/history/vessel'
-dnt_dir = '/' + product_id + '/DNT'
-index_dir = '/' + product_id + '/NRT_202003'
-monthly_folder = 'monthly'
-history_folder = 'history'
-dnt_folder = 'DNT/monthly_historical/'  
+PRODUCT_ID = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
+NC_DIR_MONTHLY = '/' + PRODUCT_ID + '/NRT_202003/monthly/vessel'
+NC_DIR_HISTORY = '/' + PRODUCT_ID + '/NRT_202003/history/vessel'
+DNT_DIR = '/' + PRODUCT_ID + '/DNT'
+INDEX_DIR = '/' + PRODUCT_ID + '/NRT_202003'
+MONTHLY_FOLDER = 'monthly'
+HISTORY_FOLDER = 'history'
+DNT_FOLDER = 'DNT/monthly_historical/'  
 
-if not os.path.isdir(monthly_folder):  os.mkdir(monthly_folder)
-if not os.path.isdir(history_folder): os.mkdir(history_folder)
-if not os.path.isdir(dnt_folder):  os.mkdir(dnt_folder)
+if not os.path.isdir(MONTHLY_FOLDER):  os.mkdir(MONTHLY_FOLDER)
+if not os.path.isdir(HISTORY_FOLDER): os.mkdir(HISTORY_FOLDER)
+if not os.path.isdir(DNT_FOLDER):  os.mkdir(DNT_FOLDER)
 
 # Upload result codes
 UPLOAD_OK = 0
@@ -64,18 +60,21 @@ FAILED_INGESTION = -1
 config_file_copernicus = 'config_copernicus.toml'
 with open(config_file_copernicus) as f: ftp_config = toml.load(f)
 
+daily_files = {}
+dim_tot = {}
+file_nr = {}
+
 def main():
   nc_dict = {}
   
   # Creating monthly netCDF files
-  months = pd.date_range('2019-03-01',DT.datetime.today()-
-    DT.timedelta(days=14), freq='MS').strftime("%Y%m").tolist()
+  months = (pd.date_range('2019-03-01',DT.datetime.today() 
+    - DT.timedelta(days=14), freq='MS').strftime("%Y%m").tolist())
   for month in months:
-    # Creating monthly netCDF based on daily netCDFs
-    nc_dict = generating_monthly_netCDF(vesselnames,source_dir,month,nc_dict)
+    nc_dict = generating_monthly_netCDF(VESSELS,SOURCE_DIR,month,nc_dict)
 
   # Creating historical netCDF files
-  nc_dict = generating_history_netCDF(vesselnames,source_dir,nc_dict)
+  nc_dict = generating_history_netCDF(VESSELS,SOURCE_DIR,nc_dict)
 
   # Add new netCDFs to SQL database
   sql_commit(nc_dict)
@@ -84,50 +83,52 @@ def main():
   upload_to_copernicus()
 
 
-def generating_monthly_netCDF(vesselnames,source_dir,month,nc_dict):
-    ''' Creates netCDF file(s) of data based on month and vessel(s), returns dicionary containing list of file(s) created'''
-  for vessel in vesselnames.keys():
+def generating_monthly_netCDF(VESSELS,SOURCE_DIR,month,nc_dict):
+  ''' Creates netCDF file(s) of data based on month and vessel(s), returns dicionary containing list of file(s) created'''
+  for vessel in VESSELS.keys():
     logging.debug(f'Retrieving list of daily netCDF files for {month} {vessel}')
     daily_files[vessel], file_nr[vessel], dataset, dim_tot = (
-      get_daily_files(source_dir,month,vessel))
+      get_daily_files(SOURCE_DIR,month,vessel))
+
     if file_nr[vessel] > 0:
-      logging.info(f'Creating monthly netCDF file for {vesselnames[vessel]} [{vessel}], month: {month}')
+      logging.info(f'Creating monthly netCDF file for {VESSELS[vessel]} [{vessel}], month: {month}')
       nc_name, dataset_m = create_empty_dataset(month,vessel,dim_tot)
       dataset_m = assign_attributes(dataset,dataset_m)
-      dataset_m = populate_netCDF(dataset,dataset_m,daily_files[vessel],source_dir)
+      dataset_m = populate_netCDF(dataset,dataset_m,daily_files[vessel],SOURCE_DIR)
       dataset_m = set_global_attributes(dataset,dataset_m)
       dataset_m.close()
-      logging.info(f'Monthly netCDF file for {vesselnames[vessel]} completed')
+      logging.info(f'Monthly netCDF file for {VESSELS[vessel]} completed')
       nc_dict[vessel+'_'+month] = sql_entry(nc_name,month)
   return nc_dict
 
 
-def generating_history_netCDF(vesselnames,source_dir,nc_dict):
-    ''' Creates netCDF file(s) of all data associated with vessel(s), returns dicionary containing list of file(s) created'''
-  for vessel in vesselnames.keys():
+def generating_history_netCDF(VESSELS,SOURCE_DIR,nc_dict):
+  ''' Creates netCDF file(s) of all data associated with vessel(s), returns dicionary containing list of file(s) created'''
+  for vessel in VESSELS.keys():
     logging.debug(f'Retrieving list of all daily netCDF files for {vessel}')
     daily_files[vessel], file_nr[vessel], dataset, dim_tot = (
-      get_daily_files(source_dir,'history',vessel))
+      get_daily_files(SOURCE_DIR,'history',vessel))
+
     if file_nr[vessel] > 0:
-      logging.info(f'Creating historical netCDF file for {vesselnames[vessel]} [{vessel}]')
+      logging.info(f'Creating historical netCDF file for {VESSELS[vessel]} [{vessel}]')
       nc_name, dataset_m = create_empty_dataset('history',vessel,dim_tot)
       dataset_m = assign_attributes(dataset,dataset_m)
-      dataset_m = populate_netCDF(dataset,dataset_m,daily_files[vessel],source_dir)
+      dataset_m = populate_netCDF(dataset,dataset_m,daily_files[vessel],SOURCE_DIR)
       dataset_m = set_global_attributes(dataset,dataset_m)
       dataset_m.close()
-      logging.info(f'Historical netCDF file for {vesselnames[vessel]} completed')
+      logging.info(f'Historical netCDF file for {VESSELS[vessel]} completed')
       nc_dict[vessel+'_history'] = sql_entry(nc_name,'history')
   return nc_dict
 
 
-def get_daily_files(source_dir,month,vessel):
-  ''' Fetches applicable daily files from source_dir
+def get_daily_files(SOURCE_DIR,month,vessel):
+  ''' Fetches applicable daily files from SOURCE_DIR
   returns filenames, number of files, last dataset 
   and combined dimension of all files
   '''
   file_nr = 0
   filenames =[]
-  for root, dirs, files in os.walk( source_dir, topdown=False):
+  for root, dirs, files in os.walk( SOURCE_DIR, topdown=False):
     dim_tot=0
     for name in sorted(files):
       if (month in name or month == 'history') and vessel in name:
@@ -181,7 +182,7 @@ def assign_attributes(dataset,dataset_m):
   return dataset_m
 
 
-def populate_netCDF(dataset,dataset_m,daily_files,source_dir):
+def populate_netCDF(dataset,dataset_m,daily_files,SOURCE_DIR):
   ''' For each variable in each daily netCDF file:
   extract data from daily file; save data to new dataset; dataset_m.
   '''
@@ -191,7 +192,7 @@ def populate_netCDF(dataset,dataset_m,daily_files,source_dir):
   for var in dataset.variables.keys():        
     start[var]=0
     for file in sorted(daily_files):
-      dataset_d = netCDF4.Dataset(os.path.join(source_dir, file))
+      dataset_d = netCDF4.Dataset(os.path.join(SOURCE_DIR, file))
       dim_len = len(dataset_d[var].dimensions) 
       if dim_len == 1:
         array = dataset_d[var][:]
@@ -252,8 +253,8 @@ def sql_commit(nc_dict):
   '''  creates SQL table if non exists
   adds new netCDF files, listed in nc_dict, to new or existing SQL-table 
   '''
-  c = create_connection(cmems_db)
-  date = DT.datetime.now().strftime(dnt_datetime_format)
+  c = create_connection(CMEMS_DB)
+  date = DT.datetime.now().strftime(DNT_DATETIME_FORMAT)
 
   for key in nc_dict:
     if nc_dict[key]['uploaded']: 
@@ -305,17 +306,17 @@ def upload_to_copernicus():
     host=ftp_config['Copernicus']['nrt_server'],
     user=ftp_config['Copernicus']['user'],
     passwd=ftp_config['Copernicus']['password'])as ftp:
-    c = create_connection(cmems_db)
+    c = create_connection(CMEMS_DB)
 
   # CHECK IF FTP IS EMPTY 
     logging.debug('Checking FTP directory')
-    directory_empty = check_directory(ftp, nc_dir_monthly) 
+    directory_empty = check_directory(ftp, NC_DIR_MONTHLY) 
     if not directory_empty:
       logging.error('Monthly: Previous export has failed, \
         clean up remanent files before re-exporting. Aborting export')
       return False 
 
-    directory_empty = check_directory(ftp, nc_dir_history) 
+    directory_empty = check_directory(ftp, NC_DIR_HISTORY) 
     if not directory_empty:
       logging.error('History: Previous export has failed, \
         clean up remanent files before re-exporting. Aborting export')
@@ -372,7 +373,7 @@ def upload_to_copernicus():
 
         try:
           evaluate_response_file(
-            ftp,dnt_ftp_filepath,dnt_local_filepath.rsplit('/',1)[0],cmems_db)
+            ftp,dnt_ftp_filepath,dnt_local_filepath.rsplit('/',1)[0],CMEMS_DB)
 
         except Exception as e:
           logging.error('No response from CMEMS: ', exc_info=True)
@@ -423,7 +424,7 @@ def upload_to_ftp(ftp, ftp_config, filepath,dest_folder=None):
   logging.debug(f'Ready for upload: {filepath}')
   ftp_folder,ftp_filepath = get_destination(filepath,dest_folder)
 
-  t_start = DT.datetime.now().strftime(dnt_datetime_format)
+  t_start = DT.datetime.now().strftime(DNT_DATETIME_FORMAT)
   if not ftp.path.isdir(ftp_folder):
     ftp.mkdir(ftp_folder)
     ftp.upload(filepath, ftp_filepath)
@@ -431,7 +432,7 @@ def upload_to_ftp(ftp, ftp_config, filepath,dest_folder=None):
     upload_result = FILE_EXISTS
   else:
     ftp.upload(filepath, ftp_filepath)
-  t_stop = DT.datetime.now().strftime(dnt_datetime_format)
+  t_stop = DT.datetime.now().strftime(DNT_DATETIME_FORMAT)
   logging.debug(f'upload result: {upload_result}')
   return upload_result, ftp_filepath, t_start, t_stop
 
@@ -440,17 +441,17 @@ def get_destination(filepath,dest_folder):
   if filepath.endswith('.nc'):
     filename = filepath.rsplit('/',1)[-1]
     if 'history' in filepath:
-        ftp_folder = nc_dir_history
+        ftp_folder = NC_DIR_HISTORY
     else:
-        ftp_folder = nc_dir + '/' + dest_folder     
+        ftp_folder = NC_DIR_MONTHLY + '/' + dest_folder     
     ftp_filepath = ftp_folder + '/' +  filename
   elif filepath.endswith('.xml'):
-    ftp_folder = dnt_dir
+    ftp_folder = DNT_DIR
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
   elif filepath.endswith('.txt'):
     with open(filepath,'rb') as f: 
       file_bytes = f.read() 
-    ftp_folder = index_dir
+    ftp_folder = INDEX_DIR
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
   return ftp_folder, ftp_filepath
 
@@ -460,15 +461,15 @@ def build_DNT(dnt_upload):
   note needed by Copernicus in order to move .nc-file to public-ftp
   dnt_upload contains list of files uploaded to the ftp-server
   '''
-  date = DT.datetime.now().strftime(dnt_datetime_format)
+  date = DT.datetime.now().strftime(DNT_DATETIME_FORMAT)
   curr_month = (DT.datetime.today() - DT.timedelta(days=14)).strftime('%Y%m')
-  dnt_file = product_id + '_P' + curr_month + '.xml'
-  dnt_filepath = dnt_folder + dnt_file
+  dnt_file = PRODUCT_ID + '_P' + curr_month + '.xml'
+  dnt_filepath = DNT_FOLDER + dnt_file
 
   dnt = ET.Element('delivery')
   dnt.set('PushingEntity','CopernicusMarine-InSitu-Global')
   dnt.set('date', date)
-  dnt.set('product',product_id)
+  dnt.set('product',PRODUCT_ID)
   dataset = ET.SubElement(dnt,'dataset')
   dataset.set('DatasetName','NRT_202003')
 
@@ -496,7 +497,7 @@ def build_DNT(dnt_upload):
 
 
 def build_index(results_uploaded):
-  '''  Creates index-file over CMEMS source_dir.
+  '''  Creates index-file over CMEMS SOURCE_DIR.
   Lists all files currently uploaded to the CMEMS server. 
   '''
   date_header = DT.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -531,7 +532,7 @@ def build_index(results_uploaded):
     nc.close()
     parameters = ' '.join(var_list)
 
-    index_info += ('COP-GLOBAL-01,' + server_location + ftp_filepath + ',' 
+    index_info += ('COP-GLOBAL-01,' + SERVER_LOCATION + ftp_filepath + ',' 
                 + str(lat_min) + ',' + str(lat_max) + ',' 
                 + str(lon_min) + ',' + str(lon_max) + ',' 
                 + time_start + ',' + time_end  
@@ -546,7 +547,7 @@ def build_index(results_uploaded):
   return index_filename
 
 
-def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
+def evaluate_response_file(ftp,dnt_filepath,folder_local,CMEMS_DB):
   '''  Retrieves response from cmems-ftp server.  '''
   response_received = False
   loop_iter = 0
@@ -560,7 +561,7 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
     try:
       cmems_response = get_response(ftp,dnt_filepath,folder_local)
       response_received = True
-      logging.debug('cmems response: ' + cmems_response)
+      logging.info('cmems response: ' + cmems_response)
     except:
       response_received = False
       logging.debug('no response found')
@@ -579,7 +580,7 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
         rejected_list += [[rejected_file,rejected_reason]] 
         rejected_filename = rejected_file.split('/')[-1].split('.')[0]
 
-        c = create_connection(cmems_db)
+        c = create_connection(CMEMS_DB)
         sql_req = "UPDATE monthly SET uploaded=?,comment=? WHERE filename=?"
         sql_var = ([-1,rejected_reason, rejected_filename])
         c.execute(sql_req,sql_var)
@@ -587,21 +588,9 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
     else:
       logging.info('All files ingested')
     date = DT.datetime.now().strftime('%Y-%m-%d')
-    upload_response_log += ( 
-      date + ',' + 
-      folder_local + ',' + 
-      dnt_filepath + ',' + 
-      cmems_response + ',' + '\n')
+ 
+  logging.info({'date':date,'local folder':folder_local,'dnt_filepath':dnt_filepath,'cmems-response':cmems_response})
   
-  if os.path.isfile(log_file):
-    with open(log_file,'a+') as log: 
-      log.write(upload_response_log)
-  else: 
-    with open(log_file,'w') as log: 
-      log.write('date, local filepath, cmems filepath, cmems response\n')
-      log.write(upload_response_log)
-      logging.debug(f'log-message: {upload_response_log}')
-
   if rejected_list:
     logging.debug('Rejected: {}'.format(rejected_list))
 
