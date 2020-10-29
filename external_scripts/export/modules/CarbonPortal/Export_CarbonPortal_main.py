@@ -1,3 +1,17 @@
+'''
+Carbon Portal main module 
+Carbon Portal triage
+
+Maren K. Karlsen 2020.10.29
+
+Carbon Portal submission process
+https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-instructions
+
+1. post metadata package describing the data-object (JSON object)
+2. put dataobject
+
+'''
+
 import urllib
 import http.cookiejar
 import json
@@ -10,26 +24,19 @@ import sqlite3
 from zipfile import ZipFile
 import io
 
-
 from modules.Local.data_processing import get_file_from_zip, get_hashsum, get_platform_code, is_NRT, get_L1_filename, get_export_filename
 from modules.CarbonPortal.Export_CarbonPortal_metadata import  build_metadata_package
 from modules.CarbonPortal.Export_CarbonPortal_SQL import sql_investigate, sql_commit
 from modules.CarbonPortal.Export_CarbonPortal_http import upload_to_cp
 
-#from py_func.meta_handling import get_hashsum, get_file_from_zip
-'''Carbon Portal submission process
-https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-instructions
 
-1. post metadata package describing the data-object (JSON object)
-2. put dataobject
-'''
 OBJ_SPEC_URI = {}
 OBJ_SPEC_URI['L0'] = 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject'
 OBJ_SPEC_URI['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product_v2' 
 
 def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,level,upload,err_msg,L0_hashsums=[]):
   ''' Upload routine for NRT data files
-
+  
   Uploads both metadata and data object
 
   L0_hashsums is list of L0 hashsums associated with L1 object, only applicable 
