@@ -3,6 +3,7 @@ package junit.uk.ac.exeter.QuinCe.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
@@ -15,10 +16,13 @@ import java.util.List;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Tests for the {@link DatabaseUtils} class.
@@ -613,5 +617,121 @@ public class DatabaseUtilsTest extends BaseTest {
     Connection conn = Mockito.mock(Connection.class);
     DatabaseUtils.closeConnection(conn);
     Mockito.verify(conn).setAutoCommit(true);
+  }
+
+  /**
+   * Test that {@link DatabaseUtils#getDatabaseFieldName(String) replaces things
+   * as it should.
+   */
+  @ParameterizedTest
+  @CsvSource(value = { "java|java", "with space|with_space",
+    "with(brackets)|withbrackets", "with,comma|withcomma" }, delimiter = '|')
+  public void getDatabaseFieldNameTest(String input, String expected) {
+    assertEquals(expected, DatabaseUtils.getDatabaseFieldName(input));
+  }
+
+  /**
+   * Test that {@link DatabaseUtils#getDatabaseFieldName(String) works with null
+   * values.
+   */
+  @Test
+  public void getDatabaseFieldNameNullTest() {
+    assertNull(DatabaseUtils.getDatabaseFieldName(null));
+  }
+
+  /**
+   * Test for exception in
+   * {@link DatabaseUtils#makeInStatementSql(String, int...)} with a null SQL
+   * string.
+   */
+  @Test
+  public void makeInStatementSqlNullStringTest() {
+    assertThrows(MissingParamException.class, () -> {
+      DatabaseUtils.makeInStatementSql(null, 4);
+    });
+  }
+
+  /**
+   * Test for exception in
+   * {@link DatabaseUtils#makeInStatementSql(String, int...)} with a null size
+   * string.
+   */
+  @Test
+  public void makeInStatementSqlNullInSizeTest() {
+    assertThrows(MissingParamException.class, () -> {
+      DatabaseUtils.makeInStatementSql("SELECT * FROM table", null);
+    });
+  }
+
+  /**
+   * Test that a mismatch of IN parameters and sizes (IN < sizes) is correctly
+   * detected in {@link DatabaseUtils#makeInStatementSql(String, int...)}.
+   */
+  @Test
+  public void makeInStatementSqlTooFewInTest() {
+    assertThrows(MissingParamException.class, () -> {
+      DatabaseUtils.makeInStatementSql(
+        "SELECT * FROM table WHERE a IN " + DatabaseUtils.IN_PARAMS_TOKEN, 4,
+        5);
+    });
+  }
+
+  /**
+   * Test that a mismatch of IN parameters and sizes (sizes < IN) is correctly
+   * detected in {@link DatabaseUtils#makeInStatementSql(String, int...)}.
+   */
+  @Test
+  public void makeInStatementSqlTooFewSizesTest() {
+    assertThrows(MissingParamException.class, () -> {
+      DatabaseUtils.makeInStatementSql(
+        "SELECT * FROM table WHERE a IN " + DatabaseUtils.IN_PARAMS_TOKEN
+          + " AND b IN " + DatabaseUtils.IN_PARAMS_TOKEN,
+        4);
+    });
+  }
+
+  /**
+   * Test that a mismatch of IN parameters and sizes (no IN parameters) is
+   * correctly detected in
+   * {@link DatabaseUtils#makeInStatementSql(String, int...)}.
+   */
+  @Test
+  public void makeInStatementSqlZeroInsTest() {
+    assertThrows(MissingParamException.class, () -> {
+      DatabaseUtils.makeInStatementSql("SELECT * FROM table", 4);
+    });
+  }
+
+  /**
+   * Test {@link DatabaseUtils#makeInStatementSql(String, int...)} with one IN
+   * parameter.
+   * 
+   * @throws MissingParamException
+   *           For missing parameters
+   */
+  @Test
+  public void makeInStatementsSqlOneInTest() throws MissingParamException {
+    String input = "SELECT * FROM table WHERE a IN "
+      + DatabaseUtils.IN_PARAMS_TOKEN;
+    String output = "SELECT * FROM table WHERE a IN (?,?,?)";
+
+    assertEquals(output, DatabaseUtils.makeInStatementSql(input, 3));
+  }
+
+  /**
+   * Test {@link DatabaseUtils#makeInStatementSql(String, int...)} with two IN
+   * parameters.
+   * 
+   * @throws MissingParamException
+   *           For missing parameters
+   */
+  @Test
+  public void makeInStatementsSqlTwoInTest() throws MissingParamException {
+    String input = "SELECT * FROM table WHERE a IN "
+      + DatabaseUtils.IN_PARAMS_TOKEN + " AND b IN "
+      + DatabaseUtils.IN_PARAMS_TOKEN;
+    String output = "SELECT * FROM table WHERE a IN (?,?,?) AND b IN (?,?,?,?)";
+
+    assertEquals(output, DatabaseUtils.makeInStatementSql(input, 3, 4));
   }
 }
