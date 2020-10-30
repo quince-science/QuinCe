@@ -198,7 +198,7 @@ public class DatabaseUtils {
   public static String getDatabaseFieldName(String fullName) {
     String result = null;
     if (null != fullName) {
-      result = fullName.replaceAll(" ", "_").replaceAll("[\\(\\)]", "")
+      result = fullName.replaceAll(" ", "_").replaceAll("[,\\(\\)]", "")
         .toLowerCase();
     }
 
