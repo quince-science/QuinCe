@@ -705,7 +705,7 @@ public class DatabaseUtilsTest extends BaseTest {
   /**
    * Test {@link DatabaseUtils#makeInStatementSql(String, int...)} with one IN
    * parameter.
-   * 
+   *
    * @throws MissingParamException
    *           For missing parameters
    */
@@ -721,7 +721,7 @@ public class DatabaseUtilsTest extends BaseTest {
   /**
    * Test {@link DatabaseUtils#makeInStatementSql(String, int...)} with two IN
    * parameters.
-   * 
+   *
    * @throws MissingParamException
    *           For missing parameters
    */
