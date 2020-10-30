@@ -84,7 +84,8 @@ category_code = '31'
 call_sign = 'ORBS'
 export = ['ICOS','CMEMS']
 creation_date = '2020-09-01T00:00:00Z'
-author_list = ''
+author_list = 'Gkritzalis, Thanos; Theetaert, Hannelore; Houthoofdt, Robin; T'Jampens, Michiel'
+affiliation = 'Flanders Marine Institute (VLIZ), Wandelaarkaai 7, 8400, Ostend, BE'
 
 [ORBS]
 platform_id = '11SS'
