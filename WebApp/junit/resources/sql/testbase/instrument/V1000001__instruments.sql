@@ -13,7 +13,7 @@ INSERT INTO file_definition VALUES
    '#Mon Jan 28 14:31:21 CET 2019\nformatString=dd/MM/yy\n',
    -1,NULL,-1,-1,-1,-1,-1,4,
    '#Mon Jan 28 14:31:21 CET 2019\nformatString=HH\\:mm\\:ss\n',
-   -1,-1,-1,'2019-01-28 13:31:21','2019-01-28 14:31:21');
+   -1,-1,-1,-1,'2019-01-28 13:31:21','2019-01-28 14:31:21');
    
 -- File Columns
 

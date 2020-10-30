@@ -45,6 +45,7 @@ public class DateTimeSpecificationRequiredTypeTests extends TestSetTest {
     expected.add(DateTimeSpecification.HOUR);
     expected.add(DateTimeSpecification.MINUTE);
     expected.add(DateTimeSpecification.SECOND);
+    expected.add(DateTimeSpecification.UNIX);
 
     assertTrue(listsEqual(expected, spec.getRequiredTypes()));
   }
@@ -70,6 +71,7 @@ public class DateTimeSpecificationRequiredTypeTests extends TestSetTest {
     expected.add(DateTimeSpecification.HOUR);
     expected.add(DateTimeSpecification.MINUTE);
     expected.add(DateTimeSpecification.SECOND);
+    expected.add(DateTimeSpecification.UNIX);
 
     assertTrue(listsEqual(expected, spec.getRequiredTypes()));
   }

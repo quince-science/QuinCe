@@ -4,6 +4,7 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -146,9 +147,19 @@ public class DateTimeSpecification {
   public static final String SECOND_NAME = "Second";
 
   /**
+   * Key for second
+   */
+  public static final int UNIX = 12;
+
+  /**
+   * Name for second
+   */
+  public static final String UNIX_NAME = "UNIX Time";
+
+  /**
    * The largest assignment index
    */
-  private static final int MAX_INDEX = 11;
+  private static final int MAX_INDEX = 12;
 
   /**
    * The column assignments
@@ -184,6 +195,7 @@ public class DateTimeSpecification {
     assignments.put(HOUR, new DateTimeColumnAssignment(HOUR));
     assignments.put(MINUTE, new DateTimeColumnAssignment(MINUTE));
     assignments.put(SECOND, new DateTimeColumnAssignment(SECOND));
+    assignments.put(UNIX, new DateTimeColumnAssignment(UNIX));
 
     this.fileHasHeader = fileHasHeader;
   }
@@ -233,8 +245,8 @@ public class DateTimeSpecification {
     Properties dateTimeProps, int dateCol, Properties dateProps,
     int hoursFromStartCol, Properties hoursFromStartProps, int jdayTimeCol,
     int jdayCol, int yearCol, int monthCol, int dayCol, int timeCol,
-    Properties timeProps, int hourCol, int minuteCol, int secondCol)
-    throws DateTimeSpecificationException {
+    Properties timeProps, int hourCol, int minuteCol, int secondCol,
+    int unixCol) throws DateTimeSpecificationException {
 
     assignments = new TreeMap<Integer, DateTimeColumnAssignment>();
 
@@ -257,6 +269,7 @@ public class DateTimeSpecification {
       new DateTimeColumnAssignment(MINUTE, minuteCol, null));
     assignments.put(SECOND,
       new DateTimeColumnAssignment(SECOND, secondCol, null));
+    assignments.put(UNIX, new DateTimeColumnAssignment(UNIX, unixCol, null));
 
     this.fileHasHeader = fileHasHeader;
 
@@ -326,7 +339,7 @@ public class DateTimeSpecification {
     boolean timeAssigned = false;
 
     if (isAssigned(DATE_TIME) || isAssigned(JDAY_TIME)
-      || isAssigned(HOURS_FROM_START)) {
+      || isAssigned(HOURS_FROM_START) || isAssigned(UNIX)) {
       dateAssigned = true;
       timeAssigned = true;
     } else {
@@ -591,6 +604,10 @@ public class DateTimeSpecification {
       result = SECOND_NAME;
       break;
     }
+    case UNIX: {
+      result = UNIX_NAME;
+      break;
+    }
     default: {
       throw new DateTimeSpecificationException(
         "Unrecognised specification index " + index);
@@ -660,6 +677,10 @@ public class DateTimeSpecification {
     }
     case SECOND_NAME: {
       result = SECOND;
+      break;
+    }
+    case UNIX_NAME: {
+      result = UNIX;
       break;
     }
     default: {
@@ -779,6 +800,8 @@ public class DateTimeSpecification {
       result = getHoursFromStartDate(headerDate, line);
     } else if (isAssigned(DATE_TIME)) {
       result = getDateTime(line);
+    } else if (isAssigned(UNIX)) {
+      result = getUnixTime(line);
     } else if (isAssigned(JDAY_TIME)) {
       result = getYearJDayTime(line);
     } else {
@@ -872,6 +895,38 @@ public class DateTimeSpecification {
     } else {
       try {
         result = LocalDateTime.parse(fieldValue, assignment.getFormatter());
+      } catch (DateTimeParseException e) {
+        throw new DateTimeSpecificationException(
+          "Invalid date/time value '" + fieldValue + "'");
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get value of a UNIX time field
+   *
+   * @param line
+   *          The line whose date is to be extracted
+   * @return The date/time
+   * @throws DataFileException
+   *           If the date/time field is empty or cannot be parsed
+   */
+  private LocalDateTime getUnixTime(List<String> line)
+    throws DateTimeSpecificationException {
+    LocalDateTime result;
+
+    DateTimeColumnAssignment assignment = getAssignment(UNIX);
+    String fieldValue = DataFile
+      .extractStringFieldValue(line.get(assignment.getColumn()), null);
+
+    if (null == fieldValue) {
+      throw new DateTimeSpecificationException("Date/time column is empty");
+    } else {
+      try {
+        result = LocalDateTime.ofEpochSecond(Integer.parseInt(fieldValue), 0,
+          ZoneOffset.UTC);
       } catch (DateTimeParseException e) {
         throw new DateTimeSpecificationException(
           "Invalid date/time value '" + fieldValue + "'");
@@ -1167,8 +1222,10 @@ public class DateTimeSpecification {
     boolean hourRequired = !isAssigned(HOUR);
     boolean minuteRequired = !isAssigned(MINUTE);
     boolean secondRequired = !isAssigned(SECOND);
+    boolean unixRequired = !isAssigned(UNIX);
 
-    if (isAssigned(DATE_TIME) || isAssigned(HOURS_FROM_START)) {
+    if (isAssigned(DATE_TIME) || isAssigned(HOURS_FROM_START)
+      || isAssigned(UNIX)) {
       dateTimeRequired = false;
       hoursFromStartRequired = false;
       dateRequired = false;
@@ -1181,6 +1238,7 @@ public class DateTimeSpecification {
       hourRequired = false;
       minuteRequired = false;
       secondRequired = false;
+      unixRequired = false;
     }
 
     if (isAssigned(DATE)) {
@@ -1191,12 +1249,14 @@ public class DateTimeSpecification {
       jdayRequired = false;
       monthRequired = false;
       dayRequired = false;
+      unixRequired = false;
     }
 
     if (isAssigned(YEAR)) {
       dateTimeRequired = false;
       hoursFromStartRequired = false;
       dateRequired = false;
+      unixRequired = false;
     }
 
     if (isAssigned(JDAY_TIME)) {
@@ -1210,6 +1270,7 @@ public class DateTimeSpecification {
       hourRequired = false;
       minuteRequired = false;
       secondRequired = false;
+      unixRequired = false;
     }
 
     if (isAssigned(JDAY)) {
@@ -1219,6 +1280,7 @@ public class DateTimeSpecification {
       jdayTimeRequired = false;
       monthRequired = false;
       dayRequired = false;
+      unixRequired = false;
     }
 
     if (isAssigned(MONTH) || isAssigned(DAY)) {
@@ -1227,6 +1289,7 @@ public class DateTimeSpecification {
       dateRequired = false;
       jdayTimeRequired = false;
       jdayRequired = false;
+      unixRequired = false;
     }
 
     if (isAssigned(TIME)) {
@@ -1236,6 +1299,7 @@ public class DateTimeSpecification {
       hourRequired = false;
       minuteRequired = false;
       secondRequired = false;
+      unixRequired = false;
     }
 
     if (isAssigned(HOUR) || isAssigned(MINUTE) || isAssigned(SECOND)) {
@@ -1243,6 +1307,7 @@ public class DateTimeSpecification {
       hoursFromStartRequired = false;
       jdayTimeRequired = false;
       timeRequired = false;
+      unixRequired = false;
     }
 
     if (dateTimeRequired) {
@@ -1281,6 +1346,9 @@ public class DateTimeSpecification {
     if (secondRequired) {
       result.add(SECOND);
     }
+    if (unixRequired) {
+      result.add(UNIX);
+    }
 
     return result;
   }
@@ -1289,7 +1357,6 @@ public class DateTimeSpecification {
     throws DateTimeSpecificationException {
 
     LinkedHashMap<String, Boolean> result = new LinkedHashMap<String, Boolean>();
-
     List<Integer> requiredTypes = getRequiredTypes();
 
     for (int i = 0; i <= MAX_INDEX; i++) {
