@@ -21,6 +21,7 @@ const TIME = '8';
 const HOUR = '9';
 const MINUTE = '10';
 const SECOND = '11';
+const UNIX = '12';
 
 //************************************************
 //
@@ -352,6 +353,10 @@ function getDateTimeTypeIndex(dateTimeType) {
     }
     case 'Second': {
     result = SECOND;
+      break;
+    }
+    case 'UNIX Time': {
+    result = UNIX;
       break;
     }
     default: {
