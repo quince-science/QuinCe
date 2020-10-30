@@ -85,8 +85,8 @@ public class InstrumentDB {
     + "date_time_col, date_time_props, date_col, date_props, " // 18
     + "hours_from_start_col, hours_from_start_props, " // 20
     + "jday_time_col, jday_col, year_col, month_col, day_col, " // 25
-    + "time_col, time_props, hour_col, minute_col, second_col" // 30
-    + ") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    + "time_col, time_props, hour_col, minute_col, second_col, unix_col" // 30
+    + ") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement for inserting a file column definition record
@@ -161,7 +161,7 @@ public class InstrumentDB {
     + "lat_format, lat_value_col, lat_hemisphere_col, " // 14
     + "date_time_col, date_time_props, date_col, date_props, hours_from_start_col, hours_from_start_props, " // 20
     + "jday_time_col, jday_col, year_col, month_col, day_col, " // 25
-    + "time_col, time_props, hour_col, minute_col, second_col " // 30
+    + "time_col, time_props, hour_col, minute_col, second_col, unix_col " // 30
     + "FROM file_definition WHERE instrument_id = ? ORDER BY description";
 
   /**
@@ -469,6 +469,8 @@ public class InstrumentDB {
       dateTimeSpec); // minute_col
     addDateTimeAssignment(stmt, 30, -1, DateTimeSpecification.SECOND,
       dateTimeSpec); // second_col
+    addDateTimeAssignment(stmt, 31, -1, DateTimeSpecification.UNIX,
+      dateTimeSpec); // unix_col
 
     return stmt;
   }
@@ -1106,11 +1108,12 @@ public class InstrumentDB {
     int hourCol = record.getInt(28);
     int minuteCol = record.getInt(29);
     int secondCol = record.getInt(30);
+    int unixCol = record.getInt(31);
 
     return new DateTimeSpecification(headerLines > 0, dateTimeCol,
       dateTimeProps, dateCol, dateProps, hoursFromStartCol, hoursFromStartProps,
       jdayTimeCol, jdayCol, yearCol, monthCol, dayCol, timeCol, timeProps,
-      hourCol, minuteCol, secondCol);
+      hourCol, minuteCol, secondCol, unixCol);
   }
 
   /**
