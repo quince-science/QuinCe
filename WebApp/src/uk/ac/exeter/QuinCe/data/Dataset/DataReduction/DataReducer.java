@@ -126,7 +126,7 @@ public abstract class DataReducer {
    * @param record
    *          The data reduction result
    */
-  protected abstract void doCalculation(Instrument instrument,
+  public abstract void doCalculation(Instrument instrument,
     MeasurementValues sensorValues, DataReductionRecord record,
     Map<String, ArrayList<Measurement>> allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn) throws Exception;
@@ -171,7 +171,7 @@ public abstract class DataReducer {
    *
    * @return The calculation parameters
    */
-  protected List<String> getCalculationParameterNames() {
+  public List<String> getCalculationParameterNames() {
     return getCalculationParameters().stream()
       .map(CalculationParameter::getShortName).collect(Collectors.toList());
   }

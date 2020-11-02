@@ -24,7 +24,7 @@ public class NoReductionReducer extends DataReducer {
   }
 
   @Override
-  protected void doCalculation(Instrument instrument,
+  public void doCalculation(Instrument instrument,
     MeasurementValues sensorValues, DataReductionRecord record,
     Map<String, ArrayList<Measurement>> allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn) throws Exception {
