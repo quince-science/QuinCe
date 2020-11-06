@@ -19,8 +19,8 @@ from zipfile import ZipFile
 import io
 import toml
 
-from modules.Local.data_processing import get_file_from_zip
-from modules.Local.API_calls import post_slack_msg
+from modules.Common.data_processing import get_file_from_zip
+from modules.Common.Slack import post_slack_msg
 
 
 #from py_func.meta_handling import get_hashsum, get_file_from_zip

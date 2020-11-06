@@ -17,7 +17,7 @@ import numpy as np
 import netCDF4
 
 from modules.CMEMS.Export_CMEMS_netCDF_builder import buildnetcdfs 
-from modules.Local.data_processing import get_file_from_zip, get_platform, construct_datafilename
+from modules.Common.data_processing import get_file_from_zip, get_platform, construct_datafilename
 from modules.CMEMS.Export_CMEMS_ftp import upload_to_ftp, evaluate_response_file
 from modules.CMEMS.Export_CMEMS_sql import update_db_dnt
 
