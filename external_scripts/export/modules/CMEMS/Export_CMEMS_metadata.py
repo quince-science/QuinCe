@@ -204,14 +204,14 @@ def build_fDNT(dnt_delete):
   return dnt_file, dnt_filepath
 
 
-def build_index(c):
+def build_index(db):
   '''
   Creates index-file of CMEMS directory.
   Lists all files currently uploaded to the CMEMS server. 
   '''
   try:
-    c.execute("SELECT * FROM latest WHERE uploaded == 1")
-    currently_uploaded = c.fetchall()
+    db.execute("SELECT * FROM latest WHERE uploaded == 1")
+    currently_uploaded = db.fetchall()
 
     date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
@@ -261,7 +261,7 @@ def build_index(c):
   return index_filename
 
 
-def build_index_platform(c,platforms,error_msg):
+def build_index_platform(db,platforms,error_msg):
   '''
   Creates index-file of CMEMS directory.
   Lists all platforms uploaded to the CMEMS server. 
@@ -278,8 +278,8 @@ def build_index_platform(c,platforms,error_msg):
       + 'last_longitude_observation,last_date_observation \n')
 
     # Get unique platforms from db
-    c.execute("SELECT DISTINCT platform FROM latest")
-    unique_platforms = c.fetchall()
+    db.execute("SELECT DISTINCT platform FROM latest")
+    unique_platforms = db.fetchall()
     logging.debug(unique_platforms)
     if (None,) in unique_platforms: unique_platforms.remove((None,))
 
@@ -287,9 +287,9 @@ def build_index_platform(c,platforms,error_msg):
     for unique_platform in unique_platforms:
       platform_id = platforms[unique_platform[0]]['platform_id']
       # Fetch most recent entry for *platform*
-      c.execute("SELECT * FROM latest WHERE platform = ? ORDER BY last_dt DESC",
+      db.execute("SELECT * FROM latest WHERE platform = ? ORDER BY last_dt DESC",
         [unique_platform[0]])
-      db_last = c.fetchone() 
+      db_last = db.fetchone() 
       
       index_info += (platforms[platform_id]['call_sign'] + ',' 
         + str(platforms[platform_id]['creation_date']) + ','
@@ -315,19 +315,19 @@ def build_index_platform(c,platforms,error_msg):
   return index_filename, error_msg
 
 
-def upload_DNT(dnt_file,dnt_local_filepath,error_msg,ftp,c):
+def upload_DNT(dnt_file,dnt_local_filepath,error_msg,ftp,db):
 
   upload_result, dnt, error_msg= (
-    upload_to_ftp(ftp, dnt_local_filepath,error_msg,c))  
+    upload_to_ftp(ftp, dnt_local_filepath,error_msg,db))  
 
-  update_db_dnt(c,dnt_local_filepath)
+  update_db_dnt(db,dnt_local_filepath)
 
   dnt_local_folder = dnt_local_filepath.rsplit('/',1)[0]
   dnt_ftp_filename = dnt_local_filepath.rsplit('/',1)[-1]
 
   try:
     response = evaluate_response_file(
-      ftp,dnt_ftp_filename,dnt_local_folder,c)
+      ftp,dnt_ftp_filename,dnt_local_folder,db)
 
     logging.debug(f'cmems dnt-response: {response}')
 
