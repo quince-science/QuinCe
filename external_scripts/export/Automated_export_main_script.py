@@ -41,9 +41,9 @@ with open('platforms.toml') as f: platforms = toml.load(f)
 
 if not os.path.isdir('log'): os.mkdir('log')
 logging.basicConfig(filename='log/console.log',format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
-#logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
+#logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG) #Logs to console, for debugging only.
 
-upload = True # for debugging purposes, when False no data is exported.
+UPLOAD = True # for debugging purposes, when False no data is exported.
 SLACK_ERROR_MSG = True # for differentiating between slack reports and slack errors, slack msg defaults to report
 
 def main():
@@ -55,7 +55,7 @@ def main():
     else: 
       cp_cookie = get_auth_cookie()
       for dataset in export_list: 
-        #dataset = {'name':'26NA20190327','id':0}
+        #dataset = {'name':'26NA20190327','id':0}  # For testing purposes. Overrides QuinCe; Sets dataset variable manually, replacing QuinCe response. For every dataset in export_list.
         [dataset_zip,
         manifest, 
         data_filenames, 
@@ -79,7 +79,7 @@ def main():
             #--- Processing L0 files
             L0_hashsums = []
             for index, raw_filename in enumerate(raw_filenames):
-              successful_upload_CP, L0_hashsum, cp_err_msg, CP_pid = export_file_to_cp(manifest, raw_filename, dataset_zip, index, cp_cookie,'L0',upload,cp_err_msg)
+              successful_upload_CP, L0_hashsum, cp_err_msg, CP_pid = export_file_to_cp(manifest, raw_filename, dataset_zip, index, cp_cookie,'L0',UPLOAD,cp_err_msg)
               if L0_hashsum:
                 L0_hashsums += [L0_hashsum]
             
@@ -88,7 +88,7 @@ def main():
             data_filename = construct_datafilename(dataset,'CP',key)
             try:
               successful_upload_CP, L1_hashsum, cp_err_msg, CP_pid = export_file_to_cp(
-                manifest, data_filename, dataset_zip, index, cp_cookie, 'L1', upload, cp_err_msg,L0_hashsums)
+                manifest, data_filename, dataset_zip, index, cp_cookie, 'L1', UPLOAD, cp_err_msg,L0_hashsums)
             except Exception as e:
               logging.error('Carbon Portal export failed. \n', exc_info=True)
               successful_upload_CP = 0
@@ -99,7 +99,7 @@ def main():
             #--- Creating netCDFs
             build_dataproduct(dataset_zip,dataset,key,CP_pid)
             try: 
-              if upload:
+              if UPLOAD:
                   successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus('nrt_server',dataset,platforms)
             except Exception as e:
               logging.error('Exception occurred: ', exc_info=True)
