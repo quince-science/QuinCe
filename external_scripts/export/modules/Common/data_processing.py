@@ -23,8 +23,9 @@ with open('platforms.toml') as f: platform = toml.load(f)
 
 def construct_datafilename(dataset,destination,key):
   if destination == 'CP': directory = 'ICOS OTC'
-  if destination == 'CMEMS': directory = 'Copernicus'
-  # else: throw an error 
+  elif destination == 'CMEMS': directory = 'Copernicus'
+  else: 
+    raise Exception('Unknown export destination')
 
   data_filename = dataset['name'] + '/dataset/' + directory + key + dataset['name'] + '.csv'
   return data_filename
@@ -77,7 +78,8 @@ def process_dataset(dataset):
   '''  Retrieves and unpacks dataset from QuinCe 
   returns zip, manifest and list of filenames
   '''
-  logging.info(f'Processing dataset {dataset['name']}, QuinCe-id: {dataset['id']}')
+  print(dataset['name'])
+  logging.info(f'Processing dataset { dataset["name"] }, QuinCe-id: { dataset["id"] }')
   
   dataset_zip = get_export_dataset(str(dataset['id']))   
   #with open('tmp/'+ dataset['name'] + '.zip','rb') as file_data: dataset_zip = file_data.read()
