@@ -46,11 +46,13 @@ DNT_DIR = '/' + PRODUCT_ID + '/DNT'
 INDEX_DIR = '/' + PRODUCT_ID + '/' + DATASET_ID
 
 LOCAL_FOLDER = 'latest'
+LATEST_DAYS = 30
 
-def delete_files_older_than_30days(db):
+def delete_files_older_than_x_days(db):
   logging.debug('Checking local database')
+  latest_time_period = '-' + str(LATEST_DAYS)  + ' day'
   db.execute("SELECT filename,filepath,ftp_filepath FROM latest \
-   WHERE (nc_date < date('now','-30 day') AND uploaded == ?)",[UPLOADED]) 
+   WHERE (nc_date < date('now',?) AND uploaded == ?)",[latest_time_period, UPLOADED]) 
   results_delete = db.fetchall()
   logging.debug(f'delete {len(results_delete)}; {results_delete}')
   
@@ -64,9 +66,10 @@ def delete_files_older_than_30days(db):
 
 
 def get_files_ready_for_upload(db,status):
+  latest_time_period = '-' + str(LATEST_DAYS)  + ' day'
   db.execute("SELECT filename,filepath FROM latest \
-    WHERE (nc_date >= date('now','-30 day') \
-    AND NOT uploaded == ?)",[UPLOADED]) 
+    WHERE (nc_date >= date('now',?) \
+    AND NOT uploaded == ?)",[latest_time_period, UPLOADED]) 
   results_upload = db.fetchall()    
   if len(results_upload) == 0:
     status = 2 
