@@ -244,13 +244,7 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
   nc.wmo_platform_code = ""
   nc.ices_platform_code = ""
   
-
-  if len(CP_pid)>0:
-    PID = "https://hdl.handle.net/" + CP_pid
-  else:
-    PID = ""
-  nc.doi = PID
-
+  nc.doi = CP_PID
 
   nc.platform_code = platform[platform_code]['call_sign']
   nc.site_code = platform[platform_code]['call_sign']
@@ -274,7 +268,7 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
     + platform[platform_code]['author_list'] 
     + "(" + str( datetime.datetime.now().year) 
     + "): NRT data from " + platform[platform_code]['name'] + ". "
-    + PID
+    + CP_PID
     + " Made available through the Copernicus project.")
   nc.distribution_statement = ("These data follow Copernicus standards; they " 
     + "are public and free of charge. User assumes all risk for use of data. " 
