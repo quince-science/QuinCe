@@ -66,6 +66,7 @@ def main():
         export_destination = get_export_destination(platform_code)
 
         key = '/'
+        CP_pid = ''
         if '26NA' in platform_code: key = ' No Salinity Flags' + key
 
         successful_upload_CP = -1
