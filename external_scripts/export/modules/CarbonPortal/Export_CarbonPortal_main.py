@@ -24,7 +24,7 @@ import sqlite3
 from zipfile import ZipFile
 import io
 
-from modules.Local.data_processing import get_file_from_zip, get_hashsum, get_platform_code, is_NRT, get_L1_filename, get_export_filename
+from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_code, is_NRT, get_L1_filename, get_export_filename
 from modules.CarbonPortal.Export_CarbonPortal_metadata import  build_metadata_package
 from modules.CarbonPortal.Export_CarbonPortal_SQL import sql_investigate, sql_commit
 from modules.CarbonPortal.Export_CarbonPortal_http import upload_to_cp

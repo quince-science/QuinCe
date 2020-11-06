@@ -18,7 +18,7 @@ import sqlite3
 from zipfile import ZipFile
 import io
 
-from modules.Local.data_processing import get_file_from_zip
+from modules.Common.data_processing import get_file_from_zip
 
 CP_DB = 'database_carbon_portal.db'
 
