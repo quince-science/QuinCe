@@ -141,7 +141,7 @@ def upload_to_copernicus(server,dataset,platforms):
       dnt_upload = {}
       for file in ready_for_upload:
         # netCDF file
-        filename, filepath_local  = file[0], file[2]
+        filename, filepath_local  = file[0], file[1]
         upload_result, dnt_upload[filename],error_msg = (
           upload_to_ftp(ftp, filepath_local,error_msg,c))
         if upload_result == FAILED_INGESTION:

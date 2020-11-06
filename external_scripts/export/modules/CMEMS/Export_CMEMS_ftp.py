@@ -51,21 +51,22 @@ LOCAL_FOLDER = 'latest'
 def delete_files_older_than_30days(c):
   logging.debug('Checking local database')
   c.execute("SELECT * FROM latest \
+  c.execute("SELECT filename,filepath,ftp_filepath FROM latest \
    WHERE (nc_date < date('now','-30 day') AND uploaded == ?)",[UPLOADED]) 
   results_delete = c.fetchall()
   logging.debug(f'delete {len(results_delete)}; {results_delete}')
   
   dnt_delete = {}
   for item in results_delete: 
-    filename, filepath_local  = item[0], item[2]
-    dnt_delete[filename] = item[6]
+    filename, filepath_local  = item[0], item[1]
+    dnt_delete[filename] = item[2]
     c.execute("UPDATE latest SET uploaded = ? \
       WHERE filename = ?", [NOT_UPLOADED, filename])
   return dnt_delete
 
 
 def get_files_ready_for_upload(c,status):
-  c.execute("SELECT * FROM latest \
+  c.execute("SELECT filename,filepath FROM latest \
     WHERE (nc_date >= date('now','-30 day') \
     AND NOT uploaded == ?)",[UPLOADED]) 
   results_upload = c.fetchall()    
