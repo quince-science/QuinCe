@@ -24,7 +24,6 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
-import uk.ac.exeter.QuinCe.web.Instrument.newInstrument.FileDefinitionBuilder;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -306,7 +305,7 @@ public abstract class UploadedDataFile {
       DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
       InstrumentFileSet fileDefinitions = instrument.getFileDefinitions();
-      String[] lines = getLines();
+      List<String> lines = Arrays.asList(getLines());
       if (null == lines) {
         if (allowEmpty) {
           fileEmpty = true;
@@ -317,21 +316,25 @@ public abstract class UploadedDataFile {
       }
 
       if (!fileEmpty) {
-        FileDefinitionBuilder layoutGuesser = new FileDefinitionBuilder(
-          "Guesser", fileDefinitions);
 
-        layoutGuesser.setFileContents(Arrays.asList(lines));
-        layoutGuesser.guessFileLayout();
+        FileDefinition matchedDefinition = null;
 
-        // See if any of the known definitions match the guessed layout
-        FileDefinition matchedDefinition = fileDefinitions
-          .getMatchingFileDefinition(layoutGuesser).iterator().next();
         // TODO We're assuming we'll get one match. No matches will throw a
         // NoSuchElementException
         // (handled below), and multiple matches just choose the first one
+        for (FileDefinition matchTest : fileDefinitions) {
+          if (matchTest.fileMatches(lines)) {
+            matchedDefinition = matchTest;
+            break;
+          }
+        }
+
+        if (null == matchedDefinition) {
+          throw new NoSuchElementException();
+        }
 
         setDataFile(new DataFile(appConfig.getProperty("filestore"),
-          matchedDefinition, getName(), Arrays.asList(lines)));
+          matchedDefinition, getName(), lines));
         if (getDataFile().getFirstDataLine() >= getDataFile()
           .getContentLineCount()) {
           if (allowEmpty) {

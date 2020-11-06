@@ -978,4 +978,83 @@ public class FileDefinition implements Comparable<FileDefinition> {
     throws FileDefinitionException {
     return getRunType(line, true).getCategory();
   }
+
+  /**
+   * Examine the contents of a file to see if they match the format of this file
+   * definition.
+   * 
+   * @param lines
+   *          The file lines
+   * @return {@code true} if the file contents are compatible with this format;
+   *         {@code false} if not.
+   */
+  public boolean fileMatches(List<String> lines) {
+
+    boolean matches = true;
+
+    int currentLine = 0;
+
+    // Check the header
+    if (headerType == HEADER_TYPE_LINE_COUNT) {
+      currentLine += headerLines;
+    } else if (headerType == HEADER_TYPE_STRING) {
+      boolean headerEndFound = false;
+
+      while (!headerEndFound && currentLine < lines.size()) {
+        if (lines.get(currentLine).equals(headerEndString)) {
+          headerEndFound = true;
+        }
+
+        currentLine++;
+      }
+
+      if (!headerEndFound) {
+        matches = false;
+      }
+    }
+
+    if (matches) {
+
+      // Check that the first column header row contains the correct number
+      // of columns. If it does, skip the total number of header rows.
+      if (columnHeaderRows > 0) {
+        int firstRowColumnCount = extractFields(lines.get(currentLine)).size();
+
+        if (firstRowColumnCount != columnCount) {
+          matches = false;
+        } else {
+          currentLine += columnHeaderRows;
+        }
+      }
+    }
+
+    if (matches) {
+
+      // Check the remaining rows to make sure that most of them contain the
+      // correct number of columns.
+      // The percentage threshold is entirely arbitrary and may need adjustment.
+      int dataRows = lines.size() - currentLine;
+      int correctColumnCountRows = 0;
+
+      if (dataRows > 0) {
+        while (currentLine < lines.size()) {
+          if (extractFields(lines.get(currentLine)).size() == columnCount) {
+            correctColumnCountRows++;
+          }
+          currentLine++;
+        }
+
+        if ((float) correctColumnCountRows / (float) dataRows < 0.75) {
+          matches = false;
+        }
+      }
+    }
+
+    return matches;
+  }
+
+  @Override
+  public String toString() {
+    return fileDescription;
+  }
 }
