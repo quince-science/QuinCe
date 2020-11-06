@@ -982,7 +982,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Examine the contents of a file to see if they match the format of this file
    * definition.
-   * 
+   *
    * @param lines
    *          The file lines
    * @return {@code true} if the file contents are compatible with this format;

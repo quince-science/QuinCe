@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.web.files;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.TreeSet;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -23,7 +22,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
   /**
    * The data file object
    */
-  private ArrayList<UploadedDataFile> dataFiles = new ArrayList<>();
+  private TreeSet<UploadedDataFile> dataFiles = new TreeSet<UploadedDataFile>();
   private String displayClass = "hidden";
 
   @Override
@@ -38,7 +37,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
     setDisplayClass("");
   }
 
-  public List<UploadedDataFile> getUploadedFiles() {
+  public TreeSet<UploadedDataFile> getUploadedFiles() {
     return dataFiles;
   }
 
@@ -104,15 +103,23 @@ public class MultipleFileUploadBean extends FileUploadBean {
    * Called when run types have been updated. This will initiate re-processing
    * of the uploaded files.
    */
-  public void updateRunTypes(int fileIndex) {
-    DataFile dataFile = dataFiles.get(fileIndex).getDataFile();
+  public void updateRunTypes(String fileName) {
+    DataFile dataFile = null;
 
-    try {
-      InstrumentDB.storeFileRunTypes(getDataSource(),
-        dataFile.getFileDefinition().getDatabaseId(),
-        dataFile.getMissingRunTypes());
-    } catch (Exception e) {
-      e.printStackTrace();
+    for (UploadedDataFile file : dataFiles) {
+      if (file.getName().equals(fileName)) {
+        dataFile = file.getDataFile();
+      }
+    }
+
+    if (null != dataFile) {
+      try {
+        InstrumentDB.storeFileRunTypes(getDataSource(),
+          dataFile.getFileDefinition().getDatabaseId(),
+          dataFile.getMissingRunTypes());
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
 
     unsetDataFiles();
@@ -122,8 +129,8 @@ public class MultipleFileUploadBean extends FileUploadBean {
     // Initialize instruments with new run types
     setForceInstrumentReload(true);
     initialiseInstruments();
-    List<UploadedDataFile> tmplist = dataFiles;
-    dataFiles = new ArrayList<>();
+    TreeSet<UploadedDataFile> tmplist = dataFiles;
+    dataFiles = new TreeSet<UploadedDataFile>();
     for (UploadedDataFile file : tmplist) {
       processUploadedFile(
         ((PrimeFacesUploadedDataFile) file).getUploadedFile());

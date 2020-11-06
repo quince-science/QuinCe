@@ -122,7 +122,7 @@
                         </ui:repeat>
                       </table>
                       <p:commandButton icon="ui-icon-save"
-                        actionListener="#{fileUpload.updateRunTypes(rowIndex)}"
+                        actionListener="#{fileUpload.updateRunTypes(uploadedFile.name)}"
                         title="Save Run Types" value="Save Run Types"
                         onclick="PF('runTypesDialog_#{rowIndex}').hide()"
                         update="fileList" oncomplete="reprocessUploadedFiles()" />

@@ -878,4 +878,9 @@ public class DataFile {
     loadContents();
     return fileDefinition.extractFields(contents.get(line));
   }
+
+  @Override
+  public String toString() {
+    return filename;
+  }
 }

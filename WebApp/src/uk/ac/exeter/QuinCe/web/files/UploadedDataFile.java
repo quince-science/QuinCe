@@ -30,7 +30,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Jonas F. Henriksen
  *
  */
-public abstract class UploadedDataFile {
+public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
   /**
    * HTTP Status Code to use for files that can't be processed due to data
@@ -455,4 +455,9 @@ public abstract class UploadedDataFile {
    * @return The file contents
    */
   protected abstract String getFileContents();
+
+  @Override
+  public int compareTo(UploadedDataFile o) {
+    return getName().compareTo(o.getName());
+  }
 }

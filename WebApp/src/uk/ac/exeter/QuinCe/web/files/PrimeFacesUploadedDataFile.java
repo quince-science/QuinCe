@@ -39,4 +39,9 @@ public class PrimeFacesUploadedDataFile extends UploadedDataFile {
   public String getName() {
     return uploadedFile.getFileName();
   }
+
+  @Override
+  public String toString() {
+    return uploadedFile.getFileName();
+  }
 }
