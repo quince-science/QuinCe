@@ -44,7 +44,7 @@ logging.basicConfig(filename='log/console.log',format='%(asctime)s {%(filename)s
 #logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
 
 upload = True # for debugging purposes, when False no data is exported.
-ERROR = 1 # for differentiating between slack reports and slack errors, slack msg defaults to report
+SLACK_ERROR_MSG = True # for differentiating between slack reports and slack errors, slack msg defaults to report
 
 def main():
   logging.info('\n \n***** Starting QuinCe NRT export ***** \n Obtaining IDs of datasets ready for export from QuinCe')
@@ -121,13 +121,13 @@ def main():
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     except_msg = f'Failed to run. Encountered: {e} \n type: {exc_type} \n file name: {fname} \n line number: {exc_tb.tb_lineno}'
 
-    post_slack_msg(except_msg,ERROR)
+    post_slack_msg(except_msg,SLACK_ERROR_MSG)
     logging.error(except_msg)
     try:
       if export_list:
         report_abandon_export(dataset['id'])
     except Exception as e:
-      post_slack_msg(f'Failed to abandon QuinCe export {e}',ERROR)
+      post_slack_msg(f'Failed to abandon QuinCe export {e}',SLACK_ERROR_MSG)
 
 if __name__ == '__main__':
   main()

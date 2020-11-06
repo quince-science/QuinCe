@@ -21,8 +21,8 @@ from zipfile import ZipFile
 with open('config_slack.toml') as f: CONFIG = toml.load(f)
 
 
-def post_slack_msg(message,status=0):
-  if status == 1: workspace = 'err_workspace'
+def post_slack_msg(message,status=False):
+  if status: workspace = 'err_workspace'
   else: workspace = 'rep_workspace' 
 
   slack = Slacker(CONFIG['slack']['api_token'])
