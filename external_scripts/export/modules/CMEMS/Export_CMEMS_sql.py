@@ -30,24 +30,24 @@ DNT_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 CURRENT_DATE = datetime.datetime.now().strftime("%Y%m%d")
 
 
-def update_db_new_submission(c,UPLOADED,filepath_ftp,filename):
+def update_db_new_submission(db,UPLOADED,filepath_ftp,filename):
   # Setting dnt-variable to temp variable: curr_date.
   # After DNT is created, the DNT-filepath is updated for all  
   # instances where DNT-filetpath is curr_date
-  c.execute("UPDATE latest \
+  db.execute("UPDATE latest \
     SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
     WHERE filename = ?", 
     [UPLOADED, filepath_ftp, CURRENT_DATE ,filename])
 
 
-def update_db_dnt(c,dnt_local_filepath):
+def update_db_dnt(db,dnt_local_filepath):
   logging.debug('Updating database to include DNT filename')
   sql_rec = "UPDATE latest SET dnt_file = ? WHERE dnt_file = ?"
   sql_var = [dnt_local_filepath, CURRENT_DATE]
-  c.execute(sql_rec,sql_var)
+  db.execute(sql_rec,sql_var)
 
 
-def abort_upload_db(c,error_msg):
+def abort_upload_db(db,error_msg):
   sql_req = ("UPDATE latest \
     SET uploaded = ?, ftp_filepath = ?, dnt_file = ?, comment = ? \
     WHERE dnt_file = ?")
@@ -57,8 +57,8 @@ def abort_upload_db(c,error_msg):
 def create_connection(DB):
   ''' creates connection and database if not already created '''
   conn = sqlite3.connect(DB, isolation_level=None)
-  c = conn.cursor()
-  c.execute('''CREATE TABLE IF NOT EXISTS latest (
+  db = conn.cursor()
+  db.execute('''CREATE TABLE IF NOT EXISTS latest (
               filename TEXT PRIMARY KEY,
               hashsum TEXT NOT NULL,
               filepath TEXT NOT NULL UNIQUE,
@@ -75,10 +75,10 @@ def create_connection(DB):
               last_lon TEXT,
               last_dt TEXT
               )''')
-  return c
+  return db
 
 
-def sql_commit(nc_dict,c):
+def sql_commit(nc_dict,db):
   '''  creates SQL table if non exists
   adds new netCDF files, listed in nc_dict, to new or existing SQL-table 
   '''
@@ -91,8 +91,8 @@ def sql_commit(nc_dict,c):
       uploaded = 1
     else: 
       uploaded = 0
-    c.execute("SELECT * FROM latest WHERE filename=? ",[key])
-    filename_exists = c.fetchone()
+    db.execute("SELECT * FROM latest WHERE filename=? ",[key])
+    filename_exists = db.fetchone()
     
     if filename_exists: # if netCDF file already in database
       logging.debug(f'Updating: {key}')
@@ -115,4 +115,4 @@ def sql_commit(nc_dict,c):
         date,nc_dict[key]['platform'],nc_dict[key]['parameters'],
         nc_dict[key]['last_lat'],nc_dict[key]['last_lon'],nc_dict[key]['last_dt']])
 
-    c.execute(sql_req,sql_param)
+    db.execute(sql_req,sql_param)

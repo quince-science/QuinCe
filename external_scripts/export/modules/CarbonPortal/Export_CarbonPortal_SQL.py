@@ -26,20 +26,20 @@ def sql_investigate(export_filename, hashsum,level,NRT,platform,err_msg):
   '''  Checks the sql database for identical filenames and hashsums
   returns 'exists', 'new', old_hashsum if 'update' and 'error' if failure. 
   '''
-  c = create_connection(CP_DB)
+  db = create_connection(CP_DB)
   is_next_version = None
 
   status = {}
   try:
 
     if NRT and level == 'L1':
-      c.execute("SELECT hashsum FROM cp_export WHERE export_filename LIKE ? ORDER BY export_date desc",
+      db.execute("SELECT hashsum FROM cp_export WHERE export_filename LIKE ? ORDER BY export_date desc",
         [platform + '%']) # % is wildcard
     else:
-      c.execute("SELECT hashsum FROM cp_export WHERE export_filename=? ORDER BY export_date desc",
+      db.execute("SELECT hashsum FROM cp_export WHERE export_filename=? ORDER BY export_date desc",
         [export_filename])
     
-    filename_exists = c.fetchone()
+    filename_exists = db.fetchone()
     if filename_exists: 
       if filename_exists[0] == hashsum:
         logging.info(f'{export_filename}: PREEXISTING entry')
@@ -69,20 +69,20 @@ def sql_commit(export_filename,hashsum,filename,level,L1_filename):
   status = 'FAILED'
 
   today = datetime.datetime.now().strftime('%Y-%m-%d')
-  c = create_connection(CP_DB)
-  c.execute("SELECT * FROM cp_export WHERE export_filename=? ",[export_filename])
+  db = create_connection(CP_DB)
+  db.execute("SELECT * FROM cp_export WHERE export_filename=? ",[export_filename])
 
   try:
-    filename_exists = c.fetchone() 
+    filename_exists = db.fetchone() 
     if filename_exists:
       logging.debug(f'Update to {export_filename}')
-      c.execute("UPDATE cp_export SET \
+      db.execute("UPDATE cp_export SET \
         hashsum=?,export_date=? WHERE export_filename = ?",\
         (hashsum, today, export_filename))
       logging.debug(f'{export_filename} SQL database update: Success')
       status = 'SUCCESS'
     else:
-      c.execute("INSERT INTO cp_export \
+      db.execute("INSERT INTO cp_export \
         (export_filename,hashsum,filename,level,L1_filename,export_date) \
         VALUES (?,?,?,?,?,?)",
          (export_filename, hashsum, filename, level, L1_filename, today))
@@ -96,8 +96,8 @@ def sql_commit(export_filename,hashsum,filename,level,L1_filename):
 def create_connection(CP_DB):
   ''' creates connection and database if not already created '''
   conn = sqlite3.connect(CP_DB, isolation_level=None)
-  c = conn.cursor()
-  c.execute(''' CREATE TABLE IF NOT EXISTS cp_export (
+  db = conn.cursor()
+  db.execute(''' CREATE TABLE IF NOT EXISTS cp_export (
               export_filename TEXT PRIMARY KEY,
               hashsum TEXT NOT NULL UNIQUE,
               filename TEXT NOT NULL UNIQUE,
@@ -105,5 +105,5 @@ def create_connection(CP_DB):
               L1_filename TEXT,
               export_date TEXT 
               )''')
-  return c
+  return db
 

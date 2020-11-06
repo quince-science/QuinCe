@@ -47,29 +47,27 @@ INDEX_DIR = '/' + PRODUCT_ID + '/' + DATASET_ID
 
 LOCAL_FOLDER = 'latest'
 
-
-def delete_files_older_than_30days(c):
+def delete_files_older_than_30days(db):
   logging.debug('Checking local database')
-  c.execute("SELECT * FROM latest \
-  c.execute("SELECT filename,filepath,ftp_filepath FROM latest \
+  db.execute("SELECT filename,filepath,ftp_filepath FROM latest \
    WHERE (nc_date < date('now','-30 day') AND uploaded == ?)",[UPLOADED]) 
-  results_delete = c.fetchall()
+  results_delete = db.fetchall()
   logging.debug(f'delete {len(results_delete)}; {results_delete}')
   
   dnt_delete = {}
   for item in results_delete: 
     filename, filepath_local  = item[0], item[1]
     dnt_delete[filename] = item[2]
-    c.execute("UPDATE latest SET uploaded = ? \
+    db.execute("UPDATE latest SET uploaded = ? \
       WHERE filename = ?", [NOT_UPLOADED, filename])
   return dnt_delete
 
 
-def get_files_ready_for_upload(c,status):
-  c.execute("SELECT filename,filepath FROM latest \
+def get_files_ready_for_upload(db,status):
+  db.execute("SELECT filename,filepath FROM latest \
     WHERE (nc_date >= date('now','-30 day') \
     AND NOT uploaded == ?)",[UPLOADED]) 
-  results_upload = c.fetchall()    
+  results_upload = db.fetchall()    
   if len(results_upload) == 0:
     status = 2 
     logging.debug('All files already exported')
@@ -78,7 +76,7 @@ def get_files_ready_for_upload(c,status):
   return results_upload,status
 
 
-def upload_to_ftp(ftp, filepath,error_msg,c):
+def upload_to_ftp(ftp, filepath,error_msg,db):
   ''' Uploads file with location 'filepath' to an ftp-server, 
   server-location set by 'directory' parameter and config-file, 
   ftp is the ftp-connection
@@ -127,7 +125,7 @@ def upload_to_ftp(ftp, filepath,error_msg,c):
     if upload_result == UPLOAD_OK:
       status = UPLOADED
 
-      update_db_new_submission(c,UPLOADED,ftp_filepath,filename)
+      update_db_new_submission(db,UPLOADED,ftp_filepath,filename)
 
       # create DNT-entry
       dnt = create_dnt_entry(ftp_filepath,start_upload_time,stop_upload_time,filename) 
@@ -158,12 +156,12 @@ def get_response(ftp,dnt_filepath,folder_local):
   return response
 
 
-def abort_upload(error,ftp,NRT_DIR,c,curr_date):
+def abort_upload(error,ftp,NRT_DIR,db,curr_date):
   # Remove currently updated files on ftp-server
   uningested_files = clean_directory(ftp, NRT_DIR)
 
-  c.execute("SELECT * FROM latest WHERE (dnt_file = ?)",[curr_date])
-  failed_ingestion = c.fetchall()
+  db.execute("SELECT * FROM latest WHERE (dnt_file = ?)",[curr_date])
+  failed_ingestion = db.fetchall()
   
   logging.debug(f'failed ingestion: \n{failed_ingestion}')
   logging.debug(f'uningested files: \n {uningested_files}')
@@ -172,12 +170,12 @@ def abort_upload(error,ftp,NRT_DIR,c,curr_date):
   error_msg = "failed ingestion: " + error 
   abort_upload_db(error_msg)
 
-  c.execute(sql_req,sql_var)
+  db.execute(sql_req,sql_var)
 
   return error_msg
 
 
-def evaluate_response_file(ftp,dnt_filename,folder_local,c):
+def evaluate_response_file(ftp,dnt_filename,folder_local,db):
   '''  Retrieves response from cmems-ftp server.
   '''
   dnt_filepath = DNT_DIR + '/' +  dnt_filename
@@ -210,7 +208,7 @@ def evaluate_response_file(ftp,dnt_filename,folder_local,c):
 
         sql_req = "UPDATE latest SET uploaded=?,comment=? WHERE filename=?"
         sql_var = ([-1,rejected_reason, rejected_filename])
-        c.execute(sql_req,sql_var)
+        db.execute(sql_req,sql_var)
     else:
       logging.info('All files ingested')
   
