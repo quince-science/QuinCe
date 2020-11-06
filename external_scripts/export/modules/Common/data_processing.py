@@ -16,7 +16,7 @@ import datetime
 import toml
 from zipfile import ZipFile
 
-from modules.Local.API_calls import get_export_dataset
+from modules.Common.QuinCe import get_export_dataset
 
 with open('platforms.toml') as f: platform = toml.load(f)
 
@@ -24,6 +24,7 @@ with open('platforms.toml') as f: platform = toml.load(f)
 def construct_datafilename(dataset,destination,key):
   if destination == 'CP': directory = 'ICOS OTC'
   if destination == 'CMEMS': directory = 'Copernicus'
+  # else: throw an error 
 
   data_filename = dataset['name'] + '/dataset/' + directory + key + dataset['name'] + '.csv'
   return data_filename
