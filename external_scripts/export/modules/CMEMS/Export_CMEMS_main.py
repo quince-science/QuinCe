@@ -70,7 +70,7 @@ import time
 import toml
 
 from modules.CMEMS.Export_CMEMS_metadata import build_netCDFs, write_nc_bytes_to_file, update_global_attributes, create_metadata_object,build_index,build_index_platform,upload_DNT,build_fDNT,build_DNT
-from modules.CMEMS.Export_CMEMS_ftp import empty_directory, delete_files_older_than_30days,get_files_ready_for_upload,upload_to_ftp,evaluate_response_file
+from modules.CMEMS.Export_CMEMS_ftp import empty_directory, delete_files_older_than_x_days,get_files_ready_for_upload,upload_to_ftp,evaluate_response_file
 from modules.CMEMS.Export_CMEMS_sql import sql_commit, create_connection
 
 with open('config_copernicus.toml') as f: config = toml.load(f)
@@ -134,7 +134,7 @@ def upload_to_copernicus(server,dataset,platforms):
     c = create_connection(CMEMS_DB)
 
     if empty_directory(ftp): # CHECK IF FTP IS EMPTY 
-      dnt_delete = delete_files_older_than_30days(c) 
+      dnt_delete = delete_files_older_than_x_days(c) 
 
       ready_for_upload,status = get_files_ready_for_upload(c,status)
       
