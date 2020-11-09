@@ -145,12 +145,13 @@ def build_DNT(dnt_upload,dnt_delete):
 
   # DELETE
   for item in dnt_delete:
-    ftp_filepath = dnt_delete[item].split('/',3)[-1]
+    if item is not None:
+      ftp_filepath = dnt_delete[item].split('/',3)[-1]
 
-    file_del = ET.SubElement(dataset,'file')
-    file_del.set('FileName',ftp_filepath)
-    key_word = ET.SubElement(file_del,'KeyWord')
-    key_word.text = 'Delete'
+      file_del = ET.SubElement(dataset,'file')
+      file_del.set('FileName',ftp_filepath)
+      key_word = ET.SubElement(file_del,'KeyWord')
+      key_word.text = 'Delete'
 
   xml_tree = ET.ElementTree(dnt)
 
@@ -179,13 +180,14 @@ def build_fDNT(dnt_delete):
 
   # delete
   for item in dnt_delete:
-    ftp_filepath = dnt_delete[item].split('/',3)[-1]
+    if item is not None:
+      ftp_filepath = dnt_delete[item].split('/',3)[-1]
 
-    file_del = ET.SubElement(dataset,'directory')
-    file_del.set('DestinationFolderName','')
-    file_del.set('SourceFolderName',ftp_filepath.rsplit('/',1)[0])
-    key_word = ET.SubElement(file_del,'KeyWord')
-    key_word.text = 'Delete'
+      file_del = ET.SubElement(dataset,'directory')
+      file_del.set('DestinationFolderName','')
+      file_del.set('SourceFolderName',ftp_filepath.rsplit('/',1)[0])
+      key_word = ET.SubElement(file_del,'KeyWord')
+      key_word.text = 'Delete'
 
   xml_tree = ET.ElementTree(dnt)
   # logging.debug('DNT file:\n' + str(ET.dump(xml_tree)))
