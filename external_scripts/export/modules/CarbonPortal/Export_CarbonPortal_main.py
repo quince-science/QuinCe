@@ -59,7 +59,8 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,level,uplo
   export_filename = get_export_filename(file,manifest,level)
 
   logging.debug(f'Checking for previous export of {export_filename}')
-  [prev_exp,is_next_version,err_msg] = sql_investigate(export_filename,hashsum,level,NRT,platform_code,err_msg)
+  [prev_exp,is_next_version,err_msg] = sql_investigate(
+    export_filename,hashsum,level,NRT,platform_code,err_msg)
 
   if prev_exp['status'] == 'EXISTS':
     success = 2
