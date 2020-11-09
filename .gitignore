@@ -43,3 +43,5 @@ external_scripts/export/index_platform.txt
 Documentation/ForCoders/Overview.pdf
 
 external_scripts/export/index_history.txt
+
+external_scripts/export/config_slack.toml
