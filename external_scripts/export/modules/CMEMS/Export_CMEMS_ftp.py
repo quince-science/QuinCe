@@ -131,7 +131,8 @@ def upload_to_ftp(ftp, filepath,error_msg,db):
       update_db_new_submission(db,UPLOADED,ftp_filepath,filename)
 
       # create DNT-entry
-      dnt = create_dnt_entry(ftp_filepath,start_upload_time,stop_upload_time,filename) 
+      dnt = create_dnt_entry(
+        ftp_filepath,start_upload_time,stop_upload_time,filename) 
     else:
       logging.debug(f'upload failed: {upload_result}')
       error_msg += f'upload failed: {upload_result}'

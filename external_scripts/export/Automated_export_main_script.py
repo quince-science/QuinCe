@@ -79,13 +79,15 @@ def main():
             #--- Processing L0 files
             L0_hashsums = []
             for index, raw_filename in enumerate(raw_filenames):
-              successful_upload_CP, L0_hashsum, cp_err_msg, CP_pid = export_file_to_cp(manifest, raw_filename, dataset_zip, index, cp_cookie,'L0',UPLOAD,cp_err_msg)
+              successful_upload_CP, L0_hashsum, cp_err_msg, CP_pid = export_file_to_cp(
+                manifest, raw_filename, dataset_zip, index, cp_cookie,'L0',UPLOAD,cp_err_msg)
               if L0_hashsum:
                 L0_hashsums += [L0_hashsum]
             
             #--- Processing L1 files            
             index = -1 # used in export of L0, not needed for L1
             data_filename = construct_datafilename(dataset,'CP',key)
+
             try:
               successful_upload_CP, L1_hashsum, cp_err_msg, CP_pid = export_file_to_cp(
                 manifest, data_filename, dataset_zip, index, cp_cookie, 'L1', UPLOAD, cp_err_msg,L0_hashsums)
@@ -119,7 +121,8 @@ def main():
   except Exception as e: 
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    except_msg = f'Failed to run. Encountered: {e} \n type: {exc_type} \n file name: {fname} \n line number: {exc_tb.tb_lineno}'
+    except_msg = (f'Failed to run. Encountered: {e} \n \
+      type: {exc_type} \n file name: {fname} \n line number: {exc_tb.tb_lineno}')
 
     post_slack_msg(except_msg,SLACK_ERROR_MSG)
     logging.error(except_msg)
