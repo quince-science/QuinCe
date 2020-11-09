@@ -109,8 +109,8 @@ def build_dataproduct(dataset_zip,dataset,key,CP_pid):
     nc_dict[nc_name] = create_metadata_object(
       nc,nc_name,nc_content,nc_filepath,dataset)
 
-  c = create_connection(CMEMS_DB)
-  sql_commit(nc_dict,c)
+  db = create_connection(CMEMS_DB)
+  sql_commit(nc_dict,db)
 
 
 def upload_to_copernicus(server,dataset,platforms):
@@ -132,41 +132,41 @@ def upload_to_copernicus(server,dataset,platforms):
     user=config['Copernicus']['user'],
     passwd=config['Copernicus']['password'])as ftp:
 
-    c = create_connection(CMEMS_DB)
+    db = create_connection(CMEMS_DB)
 
     if empty_directory(ftp): # CHECK IF FTP IS EMPTY 
-      dnt_delete = delete_files_older_than_x_days(c) 
+      dnt_delete = delete_files_older_than_x_days(db) 
 
-      ready_for_upload,status = get_files_ready_for_upload(c,status)
+      ready_for_upload,status = get_files_ready_for_upload(db,status)
       
       dnt_upload = {}
       for file in ready_for_upload:
         # netCDF file
         filename, filepath_local  = file[0], file[1]
         upload_result, dnt_upload[filename],error_msg = (
-          upload_to_ftp(ftp, filepath_local,error_msg,c))
+          upload_to_ftp(ftp, filepath_local,error_msg,db))
         if upload_result == FAILED_INGESTION:
           status = upload_result
 
       if (dnt_upload or dnt_delete) and status != FAILED_INGESTION: # dnt_upload lists all files to be uploaded, dnt_delete to be deleted 
         # INDEX file
-        index_filename = build_index(c)
+        index_filename = build_index(db)
         if index_filename: 
           print(index_filename)
           upload_result, dnt_upload[index_filename],error_msg = upload_to_ftp(
-            ftp, index_filename,error_msg,c)
+            ftp, index_filename,error_msg,db)
 
         # INDEX platform
-        index_platform,error_msg = build_index_platform(c,platforms,error_msg)
+        index_platform,error_msg = build_index_platform(db,platforms,error_msg)
         if index_platform:
           upload_result, dnt_upload[index_platform], error_msg = upload_to_ftp(
-            ftp, index_platform,error_msg,c)
+            ftp, index_platform,error_msg,db)
           logging.debug(f'index platform upload result: {upload_result}')
 
         try:
           dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
           response, error_msg = upload_DNT(
-            dnt_file,dnt_local_filepath,error_msg,ftp,c)
+            dnt_file,dnt_local_filepath,error_msg,ftp,db)
           if len(response) == 0: status = UPLOADED
 
         except Exception as exception:
@@ -180,7 +180,7 @@ def upload_to_copernicus(server,dataset,platforms):
           try: 
             dnt_local_filepath_f = build_fDNT(dnt_delete)
             response, error_msg = uploading_DNT_file(
-              dnt_file,dnt_local_filepath,error_msg,ftp,c)
+              dnt_file,dnt_local_filepath,error_msg,ftp,db)
 
           except Exception as e:
             logging.error('Uploading fDNT failed: ', exc_info=True)
