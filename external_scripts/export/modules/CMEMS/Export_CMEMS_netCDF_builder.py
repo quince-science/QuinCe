@@ -56,7 +56,9 @@ def buildnetcdfs(datasetname, fieldconfig, filedata,platform,CP_pid):
     linedate = getlinedate(filedata.iloc[[currentline]])
     if linedate != currentdate:
       if currentdate:
-        result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline + 1],CP_pid))
+        result.append(
+          makenetcdf(datasetname, fieldconfig, platform, \
+            filedata[daystartline:dayendline + 1],CP_pid))
 
       currentdate = linedate
       daystartline = currentline
@@ -66,7 +68,9 @@ def buildnetcdfs(datasetname, fieldconfig, filedata,platform,CP_pid):
 
   # Make the last netCDF
   if dayendline:
-    result.append(makenetcdf(datasetname, fieldconfig, platform, filedata[daystartline:dayendline+1],CP_pid))
+    result.append(
+      makenetcdf(datasetname, fieldconfig, platform, \
+        filedata[daystartline:dayendline+1],CP_pid))
 
   return result
 
@@ -244,7 +248,7 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
   nc.wmo_platform_code = ""
   nc.ices_platform_code = ""
   
-  nc.doi = CP_PID
+  nc.doi = CP_pid
 
   nc.platform_code = platform[platform_code]['call_sign']
   nc.site_code = platform[platform_code]['call_sign']
@@ -268,7 +272,7 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
     + platform[platform_code]['author_list'] 
     + "(" + str( datetime.datetime.now().year) 
     + "): NRT data from " + platform[platform_code]['name'] + ". "
-    + CP_PID
+    + CP_pid
     + " Made available through the Copernicus project.")
   nc.distribution_statement = ("These data follow Copernicus standards; they " 
     + "are public and free of charge. User assumes all risk for use of data. " 

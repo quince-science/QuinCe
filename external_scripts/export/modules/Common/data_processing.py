@@ -79,7 +79,8 @@ def process_dataset(dataset):
   returns zip, manifest and list of filenames
   '''
   print(dataset['name'])
-  logging.info(f'Processing dataset { dataset["name"] }, QuinCe-id: { dataset["id"] }')
+  logging.info(f'Processing dataset { dataset["name"] }, \
+    QuinCe-id: { dataset["id"] }')
   
   dataset_zip = get_export_dataset(str(dataset['id']))   
   #with open('tmp/'+ dataset['name'] + '.zip','rb') as file_data: dataset_zip = file_data.read()

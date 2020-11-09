@@ -106,7 +106,8 @@ def build_dataproduct(dataset_zip,dataset,key,CP_pid):
     nc = netCDF4.Dataset(nc_filepath,mode = 'r+') # Reading netCDF file to memory
     update_global_attributes(nc) # Adds last update date and history
 
-    nc_dict[nc_name] = create_metadata_object(nc,nc_name,nc_content,nc_filepath,dataset)
+    nc_dict[nc_name] = create_metadata_object(
+      nc,nc_name,nc_content,nc_filepath,dataset)
 
   c = create_connection(CMEMS_DB)
   sql_commit(nc_dict,c)
@@ -152,17 +153,20 @@ def upload_to_copernicus(server,dataset,platforms):
         index_filename = build_index(c)
         if index_filename: 
           print(index_filename)
-          upload_result, dnt_upload[index_filename],error_msg = upload_to_ftp(ftp, index_filename,error_msg,c)
+          upload_result, dnt_upload[index_filename],error_msg = upload_to_ftp(
+            ftp, index_filename,error_msg,c)
 
         # INDEX platform
         index_platform,error_msg = build_index_platform(c,platforms,error_msg)
         if index_platform:
-          upload_result, dnt_upload[index_platform], error_msg = upload_to_ftp(ftp, index_platform,error_msg,c)
+          upload_result, dnt_upload[index_platform], error_msg = upload_to_ftp(
+            ftp, index_platform,error_msg,c)
           logging.debug(f'index platform upload result: {upload_result}')
 
         try:
           dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
-          response, error_msg = upload_DNT(dnt_file,dnt_local_filepath,error_msg,ftp,c)
+          response, error_msg = upload_DNT(
+            dnt_file,dnt_local_filepath,error_msg,ftp,c)
           if len(response) == 0: status = UPLOADED
 
         except Exception as exception:
@@ -175,7 +179,8 @@ def upload_to_copernicus(server,dataset,platforms):
           logging.info('Delete empty directories')
           try: 
             dnt_local_filepath_f = build_fDNT(dnt_delete)
-            response, error_msg = uploading_DNT_file(dnt_file,dnt_local_filepath,error_msg,ftp,c)
+            response, error_msg = uploading_DNT_file(
+              dnt_file,dnt_local_filepath,error_msg,ftp,c)
 
           except Exception as e:
             logging.error('Uploading fDNT failed: ', exc_info=True)
