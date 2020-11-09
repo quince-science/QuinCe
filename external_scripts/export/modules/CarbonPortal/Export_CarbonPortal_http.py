@@ -81,9 +81,9 @@ def push_object(url,data,auth_cookie,content_type,method):
   except urllib.error.HTTPError as e:
     code = e.code
     msg = e.read()
-    post_slack_msg(f'HTTP error:  {code} {method} failed,\n {data} not sent. \
+    post_slack_msg(f'\n\nHTTP error:  {code} {method} failed,\n {data} not sent. \
       \n\n Error message: {msg}\n',status=1)
-    logging.exception(f'HTTP error:  {code} {method} failed,\n {data} not sent.\
+    logging.error(f'HTTP error:  {code} {method} failed,\n {data} not sent.\
       \n\n Error message: {msg}\n')
   except Exception as e:
     msg = e.read()
