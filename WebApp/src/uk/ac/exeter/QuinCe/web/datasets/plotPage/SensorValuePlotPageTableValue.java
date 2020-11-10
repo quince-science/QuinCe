@@ -73,4 +73,8 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
     return sensorValue;
   }
 
+  @Override
+  public boolean isNull() {
+    return null == sensorValue;
+  }
 }
