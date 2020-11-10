@@ -52,4 +52,9 @@ public interface PlotPageTableValue {
    * @return The user QC flag.
    */
   public boolean getFlagNeeded();
+
+  /**
+   * See if this value is null.
+   */
+  public boolean isNull();
 }

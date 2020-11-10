@@ -126,4 +126,8 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
     return -1L;
   }
 
+  @Override
+  public boolean isNull() {
+    return null == value;
+  }
 }
