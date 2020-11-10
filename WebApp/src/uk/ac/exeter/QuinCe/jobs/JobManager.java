@@ -741,6 +741,7 @@ public class JobManager {
 
       System.out.println(StringUtils.stackTraceToString(error));
     } catch (SQLException e) {
+      e.printStackTrace();
       throw new DatabaseException(
         "An error occurred while setting the error state of the job", e);
     } finally {

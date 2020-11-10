@@ -299,30 +299,38 @@ public class ManualQCData extends PlotPageData {
           .get(times.get(i));
 
         if (!dataset.fixedPosition()) {
-          // Lon and Lat
 
           // We assume there's only one position - the UI won't allow users to
           // enter more than one.
           //
           // The position is combined into a single column.
-
           SensorValue longitude = recordSensorValues
             .get(FileDefinition.LONGITUDE_COLUMN_ID);
           SensorValue latitude = recordSensorValues
             .get(FileDefinition.LATITUDE_COLUMN_ID);
 
-          StringBuilder positionString = new StringBuilder();
-          if (null != longitude.getValue() && null != latitude.getValue()) {
-            positionString
-              .append(StringUtils.formatNumber(longitude.getValue()));
-            positionString.append(" | ");
-            positionString
-              .append(StringUtils.formatNumber(latitude.getValue()));
-          }
+          // The lon/lat can be null if the instrument has a fixed position
+          // or the file containing the current values doesn't contain a
+          // position.
+          if (null != longitude && null != latitude
+            && null != longitude.getValue() && null != latitude.getValue()) {
 
-          record.addColumn(positionString.toString(), true,
-            longitude.getDisplayFlag(), longitude.getDisplayQCMessage(),
-            longitude.flagNeeded());
+            StringBuilder positionString = new StringBuilder();
+            if (null != longitude.getValue() && null != latitude.getValue()) {
+              positionString
+                .append(StringUtils.formatNumber(longitude.getValue()));
+              positionString.append(" | ");
+              positionString
+                .append(StringUtils.formatNumber(latitude.getValue()));
+            }
+
+            record.addColumn(positionString.toString(), true,
+              longitude.getDisplayFlag(), longitude.getDisplayQCMessage(),
+              longitude.flagNeeded());
+          } else {
+            // Empty position column
+            record.addColumn("", true, Flag.GOOD, null, false);
+          }
         }
 
         for (long columnId : sensorColumnIds) {
