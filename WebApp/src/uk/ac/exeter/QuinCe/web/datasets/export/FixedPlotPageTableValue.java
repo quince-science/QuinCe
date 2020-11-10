@@ -40,4 +40,9 @@ public class FixedPlotPageTableValue implements PlotPageTableValue {
   public boolean getFlagNeeded() {
     return false;
   }
+
+  @Override
+  public boolean isNull() {
+    return false;
+  }
 }

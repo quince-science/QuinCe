@@ -164,6 +164,6 @@ public class Measurement implements Comparable<Measurement> {
 
   @Override
   public String toString() {
-    return "Measurement " + id;
+    return "#" + id + " " + runType;
   }
 }

@@ -56,4 +56,9 @@ public class DataReductionRecordPlotPageTableValue
   public Flag getQcFlag() {
     return record.getQCFlag();
   }
+
+  @Override
+  public boolean isNull() {
+    return null == record;
+  }
 }
