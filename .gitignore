@@ -30,18 +30,27 @@ external_scripts/export/oap_metadata_templates/
 **/*.nc
 
 external_scripts/export/index_monthly.txt
-
 external_scripts/export/monthly/stations.rdf
-
 external_scripts/export/index_latest.txt
+external_scripts/export/index_platform.txt
+external_scripts/export/index_history.txt
 
 # Ignore data directory from saildrone directory
 external_scripts/NRT/Saildrone_conversion/data_files
 
-external_scripts/export/index_platform.txt
-
 Documentation/ForCoders/Overview.pdf
 
-external_scripts/export/index_history.txt
-
 external_scripts/export/config_slack.toml
+external_scripts/export/config_quince.toml
+external_scripts/export/config_copernicus.toml
+external_scripts/export/config_carbon.toml
+
+WebApp/WebContent/META-INF/context.xml
+WebApp/WebContent/WEB-INF/web.xml
+
+external_scripts/NRT/config.toml
+
+*.sublime-workspace
+*.sublime-project
+
+configuration/quince.properties
