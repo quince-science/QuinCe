@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.MathUtils;
 
 public class Plot {
 
@@ -171,10 +172,10 @@ public class Plot {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
               Double.parseDouble(y.getValue()),
               y.getQcFlag().equals(Flag.FLUSHING), valueFlag);
-          } else if (null != x) {
+          } else if (null != x && null != x.getValue() && null != y) {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time),
-              Double.parseDouble(x.getValue()),
-              Double.parseDouble(y.getValue()),
+              MathUtils.nullableParseDouble(x.getValue()),
+              MathUtils.nullableParseDouble(y.getValue()),
               y.getQcFlag().equals(Flag.FLUSHING), valueFlag);
           }
         }
