@@ -20,12 +20,12 @@ class PlotValue implements Comparable<PlotValue> {
   /**
    * The x value
    */
-  private final double xDouble;
+  private final Double xDouble;
 
   /**
    * The y value
    */
-  private final double y;
+  private final Double y;
 
   /**
    * Indicates whether or not this is a ghost value
@@ -51,7 +51,7 @@ class PlotValue implements Comparable<PlotValue> {
    * @param flag
    *          The y value's QC flag.
    */
-  protected PlotValue(long id, double x, double y, boolean ghost, Flag flag) {
+  protected PlotValue(long id, Double x, Double y, boolean ghost, Flag flag) {
     this.id = id;
     this.xDouble = x;
     this.xTime = null;
@@ -74,10 +74,10 @@ class PlotValue implements Comparable<PlotValue> {
    * @param flag
    *          The y value's QC flag.
    */
-  protected PlotValue(long id, LocalDateTime x, double y, boolean ghost,
+  protected PlotValue(long id, LocalDateTime x, Double y, boolean ghost,
     Flag flag) {
     this.id = id;
-    this.xDouble = 0;
+    this.xDouble = 0D;
     this.xTime = x;
     this.y = y;
     this.ghost = ghost;
@@ -96,7 +96,15 @@ class PlotValue implements Comparable<PlotValue> {
     if (xIsTime() && o.xIsTime()) {
       result = xTime.compareTo(o.xTime);
     } else {
-      result = Double.compare(xDouble, o.xDouble);
+      if (null == xDouble && null == o.xDouble) {
+        result = 0;
+      } else if (null == xDouble) {
+        result = -1;
+      } else if (null == o.xDouble) {
+        result = 1;
+      } else {
+        result = Double.compare(xDouble, o.xDouble);
+      }
     }
 
     if (result == 0) {
@@ -123,7 +131,7 @@ class PlotValue implements Comparable<PlotValue> {
     return Objects.equals(id, other.id);
   }
 
-  public double getXDouble() {
+  public Double getXDouble() {
     return xDouble;
   }
 
@@ -131,7 +139,7 @@ class PlotValue implements Comparable<PlotValue> {
     return xTime;
   }
 
-  public double getY() {
+  public Double getY() {
     return y;
   }
 
