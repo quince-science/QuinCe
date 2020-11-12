@@ -44,4 +44,8 @@ public class MathUtils {
 
     return out;
   }
+
+  public static Double nullableParseDouble(String value) {
+    return null == value ? null : Double.parseDouble(value);
+  }
 }

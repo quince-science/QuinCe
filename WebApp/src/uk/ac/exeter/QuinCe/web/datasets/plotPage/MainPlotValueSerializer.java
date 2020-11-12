@@ -22,7 +22,7 @@ public class MainPlotValueSerializer implements JsonSerializer<PlotValue> {
       json.add(DateTimeUtils.toIsoDate(src.getXTime()));
     } else {
       Double x = src.getXDouble();
-      if (x.isNaN()) {
+      if (null == x || x.isNaN()) {
         json.add(JsonNull.INSTANCE);
       } else {
         json.add(src.getXDouble());
@@ -32,7 +32,7 @@ public class MainPlotValueSerializer implements JsonSerializer<PlotValue> {
     json.add(src.getId());
 
     Double y = src.getY();
-    if (y.isNaN()) {
+    if (null == y || y.isNaN()) {
       json.add(JsonNull.INSTANCE);
       json.add(JsonNull.INSTANCE);
     } else if (src.isGhost()) {
