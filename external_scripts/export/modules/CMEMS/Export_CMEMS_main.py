@@ -152,7 +152,6 @@ def upload_to_copernicus(server,dataset,platforms):
         # INDEX file
         index_filename = build_index(db)
         if index_filename: 
-          print(index_filename)
           upload_result, dnt_upload[index_filename],error_msg = upload_to_ftp(
             ftp, index_filename,error_msg,db)
 
