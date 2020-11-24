@@ -108,7 +108,6 @@ def upload_to_ftp(ftp, filepath,error_msg,db):
       ftp_folder = INDEX_DIR
     
     ftp_filepath = ftp_folder + '/' +  filename
-    print(ftp_filepath)
 
 
     start_upload_time = datetime.datetime.now().strftime(DNT_DATETIME_FORMAT)
@@ -201,21 +200,21 @@ def evaluate_response_file(ftp,dnt_filename,folder_local,db):
 
   if response_received == False: 
     return 'No response received'
-  else:
-    if not 'Ingested="True"' in cmems_response: #ingestion failed or partial
-      rejected = re.search(
-        'FileName=(.+?)RejectionReason=(.+?)Status',cmems_response)
-      if rejected:
-        rejected_file, rejected_reason = [rejected.group(1), rejected.group(2)]
-        logging.error('Rejected: {}, {}'.format(rejected_file, rejected_reason))
-        rejected_filename = rejected_file.split('/')[-1].split('.')[0]
+  elif 'Ingested="True"' in cmems_response: 
+    return '' 
+  else: #ingestion failed or partial
+    rejected = re.search(
+      'FileName=(.+?)RejectionReason=(.+?)Status',cmems_response)
+    if rejected:
+      rejected_file, rejected_reason = [rejected.group(1), rejected.group(2)]
+      logging.error('Rejected: {}, {}'.format(rejected_file, rejected_reason))
+      rejected_filename = rejected_file.split('/')[-1].split('.')[0]
 
-        sql_req = "UPDATE latest SET uploaded=?,comment=? WHERE filename=?"
-        sql_var = ([-1,rejected_reason, rejected_filename])
-        db.execute(sql_req,sql_var)
-    else:
-      logging.info('All files ingested')
-  
+      sql_req = "UPDATE latest SET uploaded=?,comment=? WHERE filename=?"
+      sql_var = ([-1,rejected_reason, rejected_filename])
+      db.execute(sql_req,sql_var)
+  else:
+    logging.info('All files ingested')
   logging.info({'local folder':folder_local,'dnt_filepath':dnt_filepath,'cmems-response':cmems_response})
  
   return cmems_response
