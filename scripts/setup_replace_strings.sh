@@ -66,10 +66,7 @@ files=\
 "WebApp/WebContent/WEB-INF/web.xml
 configuration/quince.properties
 WebApp/WebContent/META-INF/context.xml
-external_scripts/NRT/config.toml
-external_scripts/export/config_carbon.toml
-external_scripts/export/config_copernicus.toml
-external_scripts/export/config.toml"
+external_scripts/NRT/config.toml"
 
 while read -r l;
 do

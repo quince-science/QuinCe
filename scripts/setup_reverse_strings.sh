@@ -15,7 +15,4 @@ echo "Run scripts/setup_replace_strings.sh to apply setup "\
 git checkout WebApp/WebContent/META-INF/context.xml \
   WebApp/WebContent/WEB-INF/web.xml \
   configuration/quince.properties \
-  external_scripts/NRT/config.toml \
-  external_scripts/export/config_carbon.toml \
-  external_scripts/export/config_copernicus.toml \
-  external_scripts/export/config.toml
+  external_scripts/NRT/config.toml
