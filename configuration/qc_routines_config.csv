@@ -43,6 +43,5 @@ GradientTest,Atmospheric Pressure,50
 GradientTest,xCO₂ (with standards),20
 GradientTest,"xCO₂ water (dry, no standards)",20
 GradientTest,"xCO₂ atmosphere (dry, no standards)",20
-GradientTest,H₂O Water vapour mixing ratio,360
-GradientTest,Ambient Pressure (Torr),3
-GradientTest,CH₄ Mixing ratio,180
+GradientTest,H₂O Water vapour mixing ratio,2000
+GradientTest,Ambient Pressure (Torr),30
