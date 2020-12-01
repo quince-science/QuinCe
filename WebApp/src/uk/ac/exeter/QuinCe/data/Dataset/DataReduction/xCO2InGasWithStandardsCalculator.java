@@ -435,7 +435,8 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
         MeasurementValues runMeasurementValues = new MeasurementValues(
           instrument, runMeasurement, searchIdPrefix);
 
-        runMeasurementValues.loadSensorValues(allSensorValues, sensorType);
+        runMeasurementValues.loadSensorValues(allSensorValues, sensorType,
+          true);
 
         mean.add(calculator.calculateValue(runMeasurementValues,
           allMeasurements, allSensorValues, reducer, conn));

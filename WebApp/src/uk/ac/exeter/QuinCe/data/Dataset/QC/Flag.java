@@ -341,12 +341,25 @@ public class Flag implements Comparable<Flag> {
   }
 
   @Override
-  public boolean equals(Object compare) {
-    boolean result = false;
-    if (compare instanceof Flag) {
-      result = ((Flag) compare).flagValue == flagValue;
-    }
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + flagValue;
     return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Flag other = (Flag) obj;
+    if (flagValue != other.flagValue)
+      return false;
+    return true;
   }
 
   @Override

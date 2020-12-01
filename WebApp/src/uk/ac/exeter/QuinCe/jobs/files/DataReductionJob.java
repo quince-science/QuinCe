@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 
@@ -21,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.MeasurementValues;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -81,6 +83,10 @@ public class DataReductionJob extends DataSetJob {
     Connection conn = null;
 
     try {
+
+      HashSet<Flag> forbiddenFlags = new HashSet<Flag>();
+      forbiddenFlags.add(Flag.NO_QC);
+
       conn = dataSource.getConnection();
       reset(conn);
       DataSet dataSet = getDataset(conn);
@@ -126,7 +132,15 @@ public class DataReductionJob extends DataSetJob {
             // reduction
             if (instrument.isRunTypeForVariable(variable, runType)) {
 
-              // Get all the sensor values
+              // Get all the sensor values for this measurement.
+              // This searches all the sensor values for each required sensor
+              // type, finding either the sensor value at the same time as the
+              // measurement or the values immediately before and after the
+              // measurement time.
+              // "Immediately" may mean that we try to find a Good value within
+              // a reasonable timespan, or we fall back to a Questionable or Bad
+              // value.
+
               MeasurementValues measurementSensorValues = new MeasurementValues(
                 instrument, measurement, searchIdPrefix);
 
@@ -134,28 +148,46 @@ public class DataReductionJob extends DataSetJob {
               // multiple times for multiple variables here. We don't mind,
               // because DataSetDataDB.storeMeasurementValues ensures that
               // duplicate records aren't created in the database.
+
               for (SensorType sensorType : variable
                 .getAllSensorTypes(!dataSet.fixedPosition())) {
+
+                // Load the sensor value(s) (either at the measurement time or
+                // the values either side of it) for this sensor type that are
+                // to be used for the current measurement.
+                // By default we want good values, but we'll fall back to
+                // questionable/bad if we have to.
+
+                // TODO The comment above describes what we will do eventually.
+                // For now,
+                // we search for and accept any flag to replicate current
+                // non-interpolating behaviour.
+                // Replace with searchFlags with GOOD, ASSUMED_GOOD and FLUSHING
+                // and true with false when we do interpolation
                 measurementSensorValues.loadSensorValues(allSensorValues,
-                  sensorType);
+                  sensorType, false);
               }
 
               // If any of the core sensor values are linked to this measurement
-              // are in a flushing period, then we don't perform the data
-              // reduction
-              boolean flushing = false;
+              // are empty, this means the measurement isn't actually available
+              // (usually because it's in a FLUSHING state). So we don't process
+              // it.
+              boolean hasCoreValue = true;
 
               if (null != variable.getCoreSensorType()) {
+
+                hasCoreValue = false;
+
                 for (MeasurementValue measurementValue : measurementSensorValues
                   .get(variable.getCoreSensorType())) {
-                  if (measurementValue.isFlushing(allSensorValues)) {
-                    flushing = true;
+                  if (measurementValue.hasValue()) {
+                    hasCoreValue = true;
                     break;
                   }
                 }
               }
 
-              if (!flushing) {
+              if (hasCoreValue) {
 
                 // Store the measurement values in the database
                 DataSetDataDB.storeMeasurementValues(conn,

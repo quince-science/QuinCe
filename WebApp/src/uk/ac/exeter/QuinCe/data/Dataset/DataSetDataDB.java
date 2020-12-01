@@ -28,10 +28,10 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -1050,7 +1050,13 @@ public class DataSetDataDB {
 
           stmt.setLong(1, value.getMeasurementId());
           stmt.setLong(2, value.getColumnId());
-          stmt.setLong(3, value.getPrior());
+
+          if (null == value.getPrior()) {
+            stmt.setNull(3, Types.BIGINT);
+          } else {
+            stmt.setLong(3, value.getPrior());
+          }
+
           if (null == value.getPost()) {
             stmt.setNull(4, Types.BIGINT);
           } else {
