@@ -197,12 +197,12 @@ public class AutoQCJob extends DataSetJob {
           runTypeValues.addAll(runTypeValuesTemp);
 
           // Group the sensor values by run type
-          runTypeValues.initDateSearch("runTypeValuesSearch");
+          runTypeValues.initDateSearch("runTypeValuesSearch", false);
 
           for (SensorValue value : sensorValues.getColumnValues(columnId)) {
 
             SensorValue runType = runTypeValues
-              .dateSearch("runTypeValuesSearch", value.getTime());
+              .priorSearch("runTypeValuesSearch", value.getTime());
 
             if (!valuesForQC.containsKey(runType.getValue())) {
               valuesForQC.put(runType.getValue(),

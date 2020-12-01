@@ -41,15 +41,14 @@ public class DefaultValueCalculator extends ValueCalculator {
 
       for (MeasurementValue value : measurementValues.get(sensorType)) {
 
-        SensorValue priorValue = allSensorValues.getById(value.getPrior());
+        SensorValue priorValue = null == value.getPrior() ? null
+          : allSensorValues.getById(value.getPrior());
 
-        if (!value.hasPost()) {
-          mean.add(priorValue.getDoubleValue());
-        } else {
-          SensorValue postValue = allSensorValues.getById(value.getPost());
-          mean.add(interpolate(priorValue, postValue,
-            measurementValues.getMeasurement().getTime()));
-        }
+        SensorValue postValue = null == value.getPost() ? null
+          : allSensorValues.getById(value.getPost());
+
+        mean.add(interpolate(priorValue, postValue,
+          measurementValues.getMeasurement().getTime()));
       }
     }
 

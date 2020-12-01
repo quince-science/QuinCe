@@ -44,15 +44,24 @@ public abstract class ValueCalculator {
     return result;
   }
 
-  protected double interpolate(SensorValue prior, SensorValue post,
+  protected Double interpolate(SensorValue prior, SensorValue post,
     LocalDateTime measurementTime) {
 
-    double x0 = DateTimeUtils.dateToLong(prior.getTime());
-    double y0 = prior.getDoubleValue();
-    double x1 = DateTimeUtils.dateToLong(post.getTime());
-    double y1 = post.getDoubleValue();
+    Double result = null;
 
-    return interpolate(x0, y0, x1, y1, measurementTime);
+    if (null != prior && null != post) {
+      double x0 = DateTimeUtils.dateToLong(prior.getTime());
+      double y0 = prior.getDoubleValue();
+      double x1 = DateTimeUtils.dateToLong(post.getTime());
+      double y1 = post.getDoubleValue();
+      result = interpolate(x0, y0, x1, y1, measurementTime);
+    } else if (null != prior) {
+      result = prior.getDoubleValue();
+    } else if (null != post) {
+      result = post.getDoubleValue();
+    }
+
+    return result;
   }
 
   protected double interpolate(double x0, double y0, double x1, double y1,

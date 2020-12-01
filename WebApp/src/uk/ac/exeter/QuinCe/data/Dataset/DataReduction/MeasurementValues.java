@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @SuppressWarnings("serial")
@@ -77,25 +78,28 @@ public class MeasurementValues
   }
 
   public void loadSensorValues(DatasetSensorValues allSensorValues,
-    SensorType sensorType)
-    throws RoutineException, SensorTypeNotFoundException {
+    SensorType sensorType, boolean goodFlagsOnly)
+    throws RoutineException, SensorTypeNotFoundException, MissingParamException,
+    CloneNotSupportedException {
 
     Set<SensorType> children = ResourceManager.getInstance()
       .getSensorsConfiguration().getChildren(sensorType);
 
     if (children.size() > 0) {
       for (SensorType child : children) {
-        loadSensorValuesAction(allSensorValues, child);
+        loadSensorValuesAction(allSensorValues, child, goodFlagsOnly);
       }
     } else {
-      loadSensorValuesAction(allSensorValues, sensorType);
+      loadSensorValuesAction(allSensorValues, sensorType, goodFlagsOnly);
     }
 
   }
 
   private void loadSensorValuesAction(DatasetSensorValues allSensorValues,
-    SensorType sensorType)
-    throws RoutineException, SensorTypeNotFoundException {
+    SensorType sensorType, boolean goodFlagsOnly)
+    throws RoutineException, SensorTypeNotFoundException, MissingParamException,
+    CloneNotSupportedException {
+
     // If we've already loaded the sensor type, don't bother doing it again
     if (!containsKey(sensorType)) {
 
@@ -108,7 +112,7 @@ public class MeasurementValues
           .getColumnValues(columnId);
 
         MeasurementValue measurementValue = columnValues.getMeasurementValue(
-          measurement, sensorType, columnId, searchIdPrefix);
+          measurement, sensorType, columnId, searchIdPrefix, goodFlagsOnly);
 
         put(sensorType, measurementValue);
       }
@@ -118,7 +122,7 @@ public class MeasurementValues
         .getDependsOn(sensorType);
 
       if (null != dependsOn) {
-        loadSensorValues(allSensorValues, dependsOn);
+        loadSensorValues(allSensorValues, dependsOn, goodFlagsOnly);
       }
     }
   }

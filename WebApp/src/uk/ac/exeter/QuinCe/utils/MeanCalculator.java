@@ -14,7 +14,7 @@ public class MeanCalculator {
   }
 
   public void add(Double value) {
-    if (!value.isNaN()) {
+    if (null != value && !value.isNaN()) {
       sum.add(value);
       count.increment();
     }
