@@ -20,7 +20,12 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * @author Steve Jones
  *
  */
-public class SensorValue implements Comparable<SensorValue> {
+public class SensorValue implements Comparable<SensorValue>, Cloneable {
+
+  /**
+   * Special value indicating a matched SensorValue that has no value.
+   */
+  public static final String NO_VALUE = String.valueOf(Long.MIN_VALUE);
 
   /**
    * The QC comment used for missing values
@@ -541,10 +546,32 @@ public class SensorValue implements Comparable<SensorValue> {
 
   @Override
   public String toString() {
-    return time + ": " + columnId + " = " + value;
+    return time + ": " + columnId + " = "
+      + (value.equals(NO_VALUE) ? "No Value" : value);
   }
 
   public void setValue(String value) {
     this.value = value;
+  }
+
+  public boolean noValue() {
+    return value.equals(NO_VALUE);
+  }
+
+  @Override
+  public Object clone() {
+    SensorValue clone = new SensorValue(id, datasetId, columnId, time, value,
+      autoQC, userQCFlag, userQCMessage);
+    clone.dirty = this.dirty;
+    return clone;
+  }
+
+  public static SensorValue getNoValueSensorValue(SensorValue source)
+    throws CloneNotSupportedException {
+
+    SensorValue clone = (SensorValue) source.clone();
+    clone.setValue(NO_VALUE);
+    clone.setUserQC(Flag.NO_QC, "No Value");
+    return clone;
   }
 }

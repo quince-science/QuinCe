@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * A dummy {@link MeasurementValues} class that returns fixed values
@@ -63,8 +64,9 @@ public class FixedMeasurementValues extends MeasurementValues {
 
   @Override
   public void loadSensorValues(DatasetSensorValues allSensorValues,
-    SensorType sensorType)
-    throws RoutineException, SensorTypeNotFoundException {
+    SensorType sensorType, boolean goodFlagsOnly)
+    throws RoutineException, SensorTypeNotFoundException, MissingParamException,
+    CloneNotSupportedException {
 
     // Do nothing
   }

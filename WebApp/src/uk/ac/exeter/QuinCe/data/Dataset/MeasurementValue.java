@@ -16,7 +16,7 @@ public class MeasurementValue {
 
   private final long columnId;
 
-  private long prior;
+  private Long prior;
 
   private Long post;
 
@@ -39,7 +39,7 @@ public class MeasurementValue {
     return columnId;
   }
 
-  public long getPrior() {
+  public Long getPrior() {
     return prior;
   }
 
@@ -53,11 +53,23 @@ public class MeasurementValue {
 
   public void setValues(SensorValue prior, SensorValue post)
     throws RoutineException {
-    this.prior = prior.getId();
-    addQC(prior);
-    if (null != post) {
+
+    if (prior.noValue()) {
+      this.prior = null;
+    } else {
+      this.prior = prior.getId();
+      addQC(prior);
+    }
+
+    if (null != post && !post.noValue()) {
       this.post = post.getId();
       addQC(post);
+    }
+
+    if (null == this.prior && null == this.post) {
+      worstValueFlag = Flag.NO_QC;
+      qcMessage = new ArrayList<String>(1);
+      qcMessage.add("No value");
     }
   }
 
@@ -120,31 +132,11 @@ public class MeasurementValue {
     return columnId == other.columnId && measurementId == other.measurementId;
   }
 
-  /**
-   * Determines whether or not any registered sensor values for the given
-   * {@link SensorType} have been flagged as {@link Flag#FLUSHING}.
-   *
-   * @return
-   */
-  public boolean isFlushing(DatasetSensorValues allSensorValues) {
-    boolean result = false;
-
-    SensorValue priorSensorValue = allSensorValues.getById(prior);
-    if (priorSensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
-      result = true;
-    } else {
-      if (null != post) {
-        SensorValue postSensorValue = allSensorValues.getById(post);
-        if (postSensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
-          result = true;
-        }
-      }
-    }
-
-    return result;
-  }
-
   public SensorType getSensorType() {
     return sensorType;
+  }
+
+  public boolean hasValue() {
+    return null != prior || null != post;
   }
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * A list of SensorValue objects with stateful search capabilities.
@@ -162,14 +163,16 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     return result;
   }
 
-  public void initDateSearch(String name) {
+  public void initDateSearch(String name, boolean goodFlagsOnly)
+    throws MissingParamException {
 
     if (dateSearches.containsKey(name)) {
       throw new IllegalStateException(
         "Date search '" + name + "' already exists");
     }
 
-    SensorValuesListDateSearch newSearch = new SensorValuesListDateSearch(this);
+    SensorValuesListDateSearch newSearch = new SensorValuesListDateSearch(this,
+      goodFlagsOnly);
     dateSearches.put(name, newSearch);
   }
 
@@ -183,13 +186,24 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     dateSearches.remove(name);
   }
 
-  public SensorValue dateSearch(String name, LocalDateTime time) {
+  public SensorValue priorSearch(String name, LocalDateTime time)
+    throws CloneNotSupportedException {
+
     if (!dateSearches.containsKey(name)) {
       throw new IllegalStateException(
-        "Date search '" + name + "' doesn not exist");
+        "Date search '" + name + "' does not exist");
     }
 
     return dateSearches.get(name).search(time);
+  }
+
+  public SensorValue postSearch(String name) {
+    if (!dateSearches.containsKey(name)) {
+      throw new IllegalStateException(
+        "Date search '" + name + "' does not exist");
+    }
+
+    return dateSearches.get(name).findNextValue();
   }
 
   public boolean hasDateSearch(String name) {
@@ -197,23 +211,24 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   }
 
   public MeasurementValue getMeasurementValue(Measurement measurement,
-    SensorType sensorType, long columnId, String searchId)
-    throws RoutineException {
+    SensorType sensorType, long columnId, String searchId,
+    boolean goodFlagsOnly)
+    throws RoutineException, MissingParamException, CloneNotSupportedException {
 
     String searchName = searchId + "-" + columnId;
 
     if (!hasDateSearch(searchName)) {
-      initDateSearch(searchName);
+      initDateSearch(searchName, goodFlagsOnly);
     }
 
     MeasurementValue result = new MeasurementValue(measurement, sensorType,
       columnId);
 
-    SensorValue prior = dateSearch(searchName, measurement.getTime());
+    SensorValue prior = priorSearch(searchName, measurement.getTime());
     SensorValue post = null;
 
     if (prior.getTime().isBefore(measurement.getTime())) {
-      post = get(dateSearches.get(searchName).nextIndex());
+      post = postSearch(searchName);
     }
 
     result.setValues(prior, post);
