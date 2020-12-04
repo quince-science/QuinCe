@@ -288,29 +288,31 @@ public class AssignmentsTree {
   }
 
   protected void updatePositionNodes(String expand) {
-    positionNode.setChildren(new ArrayList<TreeNode>());
+    if (null != positionNode) {
+      positionNode.setChildren(new ArrayList<TreeNode>());
 
-    DefaultTreeNode longitudeNode = null;
-    DefaultTreeNode latitudeNode = null;
+      DefaultTreeNode longitudeNode = null;
+      DefaultTreeNode latitudeNode = null;
 
-    longitudeNode = makePositionNodes("Longitude", longitudeNode,
-      null != expand && expand.equals("Longitude"));
-    latitudeNode = makePositionNodes("Latitude", latitudeNode,
-      null != expand && expand.equals("Latitude"));
+      longitudeNode = makePositionNodes("Longitude", longitudeNode,
+        null != expand && expand.equals("Longitude"));
+      latitudeNode = makePositionNodes("Latitude", latitudeNode,
+        null != expand && expand.equals("Latitude"));
 
-    boolean allAssigned = true;
+      boolean allAssigned = true;
 
-    for (TreeNode child : positionNode.getChildren()) {
-      if (child.getType().equals(LONGITUDE_UNASSIGNED)
-        || child.getType().equals(LATITUDE_UNASSIGNED)
-        || child.getType().equals(HEMISPHERE_UNASSIGNED)) {
-        allAssigned = false;
-        break;
+      for (TreeNode child : positionNode.getChildren()) {
+        if (child.getType().equals(LONGITUDE_UNASSIGNED)
+          || child.getType().equals(LATITUDE_UNASSIGNED)
+          || child.getType().equals(HEMISPHERE_UNASSIGNED)) {
+          allAssigned = false;
+          break;
+        }
       }
-    }
 
-    positionNode.setType(allAssigned ? VariableTreeNode.VAR_FINISHED
-      : VariableTreeNode.VAR_UNFINISHED);
+      positionNode.setType(allAssigned ? VariableTreeNode.VAR_FINISHED
+        : VariableTreeNode.VAR_UNFINISHED);
+    }
   }
 
   private DefaultTreeNode makePositionNodes(String positionType,

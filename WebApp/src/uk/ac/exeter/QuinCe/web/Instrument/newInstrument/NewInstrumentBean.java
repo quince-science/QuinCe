@@ -1458,9 +1458,21 @@ public class NewInstrumentBean extends FileUploadBean {
    * Initialise the run types selection data and navigate to the page.
    *
    * @return The navigation to the run types selection page
+   * @throws IOException
+   * @throws DatabaseException
+   * @throws InstrumentException
+   * @throws MissingParamException
    */
-  public String goToRunTypes() {
-    return NAV_RUN_TYPES;
+  public String goToRunTypes() throws MissingParamException,
+    InstrumentException, DatabaseException, IOException {
+
+    String result = NAV_RUN_TYPES;
+
+    if (!sensorAssignments.hasInternalCalibrations()) {
+      result = saveInstrument();
+    }
+
+    return result;
   }
 
   /**
