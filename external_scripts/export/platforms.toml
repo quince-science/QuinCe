@@ -28,7 +28,7 @@ platform_id = '26NA'
 [65DK]
 name = 'Cap San Lorenzo'
 submitter_id = 'OTC'
-cp_url = 'https://meta.icos-cp.eu/resources/stations/OS_VOS%20France-Brazil'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_VOS%20France-Brazil'
 category_code = '32'
 call_sign = 'OXOF2'
 export = ['ICOS','CMEMS']
@@ -79,10 +79,10 @@ author_list = ''
 [11SS]
 name = 'Simon Stevin'
 submitter_id = 'OTC'
-cp_url = 'https://meta.icos-cp.eu/resources/stations/OS_11SS'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_11SS'
 category_code = '31'
 call_sign = 'ORBS'
-export = ['ICOS']
+export = ['ICOS','CMEMS']
 creation_date = '2020-09-01T00:00:00Z'
 author_list = "Gkritzalis, Thanos; Theetaert, Hannelore; Houthoofdt, Robin; T'Jampens, Michiel"
 affiliation = 'Flanders Marine Institute (VLIZ), Wandelaarkaai 7, 8400, Ostend, BE'
