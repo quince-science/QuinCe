@@ -555,7 +555,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   }
 
   public boolean noValue() {
-    return value.equals(NO_VALUE);
+    return null == value || value.equals(NO_VALUE);
   }
 
   @Override

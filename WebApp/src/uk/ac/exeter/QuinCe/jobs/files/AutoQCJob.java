@@ -193,26 +193,20 @@ public class AutoQCJob extends DataSetJob {
               .addAll(sensorValues.getColumnValues(column.getDatabaseId()));
           }
 
-          SearchableSensorValuesList runTypeValues = new SearchableSensorValuesList();
-          runTypeValues.addAll(runTypeValuesTemp);
-
-          // Group the sensor values by run type
-          runTypeValues.initDateSearch("runTypeValuesSearch", false);
+          SearchableSensorValuesList runTypeValues = SearchableSensorValuesList
+            .newFromSensorValueCollection(runTypeValuesTemp);
 
           for (SensorValue value : sensorValues.getColumnValues(columnId)) {
 
-            SensorValue runType = runTypeValues
-              .priorSearch("runTypeValuesSearch", value.getTime());
+            SensorValue runType = runTypeValues.timeSearch(value.getTime());
 
             if (!valuesForQC.containsKey(runType.getValue())) {
               valuesForQC.put(runType.getValue(),
-                new SearchableSensorValuesList());
+                new SearchableSensorValuesList(columnId));
             }
 
             valuesForQC.get(runType.getValue()).add(value);
           }
-
-          runTypeValues.destroyDateSearch("runTypeValuesSearch");
         }
 
         // QC each group of sensor values in turn

@@ -118,10 +118,6 @@ public class DataReductionJob extends DataSetJob {
         // Loop through each variable
         for (Variable variable : instrument.getVariables()) {
 
-          // The prefix used for SensorValue searches
-          String searchIdPrefix = "DataReductionJob_" + dataSet.getId() + "_"
-            + runType + "_" + variable.getId();
-
           // Process each measurement
           dataReductionRecords.ensureCapacity(
             dataReductionRecords.size() + allMeasurements.get(runType).size());
@@ -142,7 +138,7 @@ public class DataReductionJob extends DataSetJob {
               // value.
 
               MeasurementValues measurementSensorValues = new MeasurementValues(
-                instrument, measurement, searchIdPrefix);
+                instrument, measurement);
 
               // Note that it's possible for a MeasurementValue to be produced
               // multiple times for multiple variables here. We don't mind,
@@ -155,17 +151,8 @@ public class DataReductionJob extends DataSetJob {
                 // Load the sensor value(s) (either at the measurement time or
                 // the values either side of it) for this sensor type that are
                 // to be used for the current measurement.
-                // By default we want good values, but we'll fall back to
-                // questionable/bad if we have to.
-
-                // TODO The comment above describes what we will do eventually.
-                // For now,
-                // we search for and accept any flag to replicate current
-                // non-interpolating behaviour.
-                // Replace with searchFlags with GOOD, ASSUMED_GOOD and FLUSHING
-                // and true with false when we do interpolation
                 measurementSensorValues.loadSensorValues(allSensorValues,
-                  sensorType, false);
+                  sensorType, true);
               }
 
               // If any of the core sensor values are linked to this measurement
@@ -212,14 +199,6 @@ public class DataReductionJob extends DataSetJob {
 
             }
           }
-
-          // Ideally we wouldn't need this. When the MeasurementValues objects
-          // are destroyed then it should clean up the searches that it created,
-          // but there is no reliable destructor mechanism in Java 8.
-          //
-          // In Java 9 there is the Cleaner mechanism that can handle this.
-          // TODO Implement in Java 9. GitHub issue #1653
-          allSensorValues.destroySearchesWithPrefix(searchIdPrefix);
         }
       }
 
