@@ -1048,7 +1048,7 @@ public class DataSetDataDB {
 
         for (MeasurementValue value : outer) {
 
-          stmt.setLong(1, value.getMeasurementId());
+          stmt.setLong(1, value.getMeasurement().getId());
           stmt.setLong(2, value.getColumnId());
 
           if (null == value.getPrior()) {

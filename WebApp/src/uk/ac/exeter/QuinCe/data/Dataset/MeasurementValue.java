@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
@@ -10,7 +9,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class MeasurementValue {
 
-  private final long measurementId;
+  private final Measurement measurement;
 
   private final SensorType sensorType;
 
@@ -26,13 +25,13 @@ public class MeasurementValue {
 
   public MeasurementValue(Measurement measurement, SensorType sensorType,
     long columnId) {
-    this.measurementId = measurement.getId();
+    this.measurement = measurement;
     this.sensorType = sensorType;
     this.columnId = columnId;
   }
 
-  public long getMeasurementId() {
-    return measurementId;
+  public Measurement getMeasurement() {
+    return measurement;
   }
 
   public long getColumnId() {
@@ -51,25 +50,31 @@ public class MeasurementValue {
     return post != null;
   }
 
+  public boolean hasPrior() {
+    return prior != null;
+  }
+
   public void setValues(SensorValue prior, SensorValue post)
     throws RoutineException {
 
-    if (prior.noValue()) {
+    if (null == prior && null == post) {
+      worstValueFlag = Flag.NO_QC;
+      qcMessage = new ArrayList<String>(1);
+      qcMessage.add("No value");
+    }
+
+    if (null == prior || prior.noValue()) {
       this.prior = null;
     } else {
       this.prior = prior.getId();
       addQC(prior);
     }
 
-    if (null != post && !post.noValue()) {
+    if (null == post || post.noValue()) {
+      this.post = null;
+    } else {
       this.post = post.getId();
       addQC(post);
-    }
-
-    if (null == this.prior && null == this.post) {
-      worstValueFlag = Flag.NO_QC;
-      qcMessage = new ArrayList<String>(1);
-      qcMessage.add("No value");
     }
   }
 
@@ -104,7 +109,7 @@ public class MeasurementValue {
   @Override
   public String toString() {
     StringBuilder string = new StringBuilder('[');
-    string.append(measurementId);
+    string.append(measurement.getId());
     string.append('/');
     string.append(columnId);
     string.append(": ");
@@ -117,7 +122,12 @@ public class MeasurementValue {
 
   @Override
   public int hashCode() {
-    return Objects.hash(columnId, measurementId);
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (int) (columnId ^ (columnId >>> 32));
+    result = prime * result
+      + ((measurement == null) ? 0 : measurement.hashCode());
+    return result;
   }
 
   @Override
@@ -126,10 +136,17 @@ public class MeasurementValue {
       return true;
     if (obj == null)
       return false;
-    if (!(obj instanceof MeasurementValue))
+    if (getClass() != obj.getClass())
       return false;
     MeasurementValue other = (MeasurementValue) obj;
-    return columnId == other.columnId && measurementId == other.measurementId;
+    if (columnId != other.columnId)
+      return false;
+    if (measurement == null) {
+      if (other.measurement != null)
+        return false;
+    } else if (!measurement.equals(other.measurement))
+      return false;
+    return true;
   }
 
   public SensorType getSensorType() {

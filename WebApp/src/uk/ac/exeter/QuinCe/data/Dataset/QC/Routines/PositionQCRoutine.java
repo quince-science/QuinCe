@@ -106,79 +106,76 @@ public class PositionQCRoutine extends Routine {
   @Override
   public void qcValues(List<SensorValue> values) throws RoutineException {
 
-    // Initialise date range searches for all data columns
-    dataColumnIds
-      .forEach(x -> allSensorValues.getColumnValues(x).initRangeSearch());
+    try {
+      int posIndex = 0;
 
-    int posIndex = 0;
+      while (posIndex < lonValues.size()) {
 
-    while (posIndex < lonValues.size()) {
+        SensorValue lon = lonValues.get(posIndex);
+        SensorValue lat = latValues.get(posIndex);
 
-      SensorValue lon = lonValues.get(posIndex);
-      SensorValue lat = latValues.get(posIndex);
+        boolean qcFailed = false;
 
-      boolean qcFailed = false;
+        // The method to use to set QC flags on sensors
+        String qcMessage = null;
 
-      // The method to use to set QC flags on sensors
-      String qcMessage = null;
-
-      // Missing value check
-      if (isMissing(lon) || isMissing(lat)) {
-        setPositionQC("Missing", lon, lat);
-        qcFailed = true;
-        qcMessage = "Missing";
-
-      } else {
-
-        // Range check
-        double lonValue = lon.getDoubleValue();
-        double latValue = lat.getDoubleValue();
-
-        if (lonValue < -180.0 || lonValue > 180.0) {
+        // Missing value check
+        if (isMissing(lon) || isMissing(lat)) {
+          setPositionQC("Missing", lon, lat);
           qcFailed = true;
-        } else if (latValue < -90.0 || latValue > 90.0) {
-          qcFailed = true;
-        }
+          qcMessage = "Missing";
 
-        if (qcFailed) {
-          setPositionQC("Out of range", lon, lat);
-          qcMessage = "Out of range";
-        }
-      }
+        } else {
 
-      // If the position QC failed, apply the same QC flag to each sensor value
-      // between this and the next position (exclusive).
-      // This handles the case where sensor values are not aligned with position
-      // values in time.
-      if (qcFailed) {
-        LocalDateTime currentPosTime = lon.getTime();
-        LocalDateTime nextPosTime = LocalDateTime.MAX;
+          // Range check
+          double lonValue = lon.getDoubleValue();
+          double latValue = lat.getDoubleValue();
 
-        SensorValue nextPos = null;
-        if (posIndex + 1 < lonValues.size()) {
-          nextPos = lonValues.get(posIndex + 1);
-        }
-        if (null != nextPos) {
-          nextPosTime = nextPos.getTime();
-        }
+          if (lonValue < -180.0 || lonValue > 180.0) {
+            qcFailed = true;
+          } else if (latValue < -90.0 || latValue > 90.0) {
+            qcFailed = true;
+          }
 
-        for (long columnId : dataColumnIds) {
-          SearchableSensorValuesList columnValues = allSensorValues
-            .getColumnValues(columnId);
-
-          for (SensorValue value : columnValues.rangeSearch(currentPosTime,
-            nextPosTime)) {
-
-            value.setPositionQC(Flag.BAD, qcMessage);
+          if (qcFailed) {
+            setPositionQC("Out of range", lon, lat);
+            qcMessage = "Out of range";
           }
         }
+
+        // If the position QC failed, apply the same QC flag to each sensor
+        // value between this and the next position (exclusive).
+        // This handles the case where sensor values are not aligned with
+        // position values in time.
+        if (qcFailed) {
+          LocalDateTime currentPosTime = lon.getTime();
+          LocalDateTime nextPosTime = LocalDateTime.MAX;
+
+          SensorValue nextPos = null;
+          if (posIndex + 1 < lonValues.size()) {
+            nextPos = lonValues.get(posIndex + 1);
+          }
+          if (null != nextPos) {
+            nextPosTime = nextPos.getTime();
+          }
+
+          for (long columnId : dataColumnIds) {
+            SearchableSensorValuesList columnValues = allSensorValues
+              .getColumnValues(columnId);
+
+            for (SensorValue value : columnValues.rangeSearch(currentPosTime,
+              nextPosTime)) {
+
+              value.setPositionQC(Flag.BAD, qcMessage);
+            }
+          }
+        }
+
+        posIndex++;
       }
-
-      posIndex++;
+    } catch (Exception e) {
+      throw new RoutineException(e);
     }
-
-    dataColumnIds
-      .forEach(x -> allSensorValues.getColumnValues(x).finishRangeSearch());
   }
 
   /**
