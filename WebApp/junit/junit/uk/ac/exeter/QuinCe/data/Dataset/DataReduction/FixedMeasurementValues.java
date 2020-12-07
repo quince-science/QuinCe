@@ -39,7 +39,7 @@ public class FixedMeasurementValues extends MeasurementValues {
     Measurement measurement, String searchId,
     Map<String, Double> sensorValues) {
 
-    super(instrument, measurement, searchId);
+    super(instrument, measurement);
     this.sensorValues = sensorValues;
   }
 

@@ -24,6 +24,16 @@ public class RoutineException extends Exception {
   }
 
   /**
+   * Simple wrapper for another error
+   *
+   * @param cause
+   *          The original error
+   */
+  public RoutineException(Throwable cause) {
+    super(cause);
+  }
+
+  /**
    * Constructor for an error with an underlying cause
    *
    * @param message

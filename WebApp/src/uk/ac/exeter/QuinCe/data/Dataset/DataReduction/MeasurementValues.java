@@ -27,14 +27,10 @@ public class MeasurementValues
 
   private final Measurement measurement;
 
-  private final String searchIdPrefix;
-
-  public MeasurementValues(Instrument instrument, Measurement measurement,
-    String searchId) {
+  public MeasurementValues(Instrument instrument, Measurement measurement) {
     super();
     this.instrument = instrument;
     this.measurement = measurement;
-    this.searchIdPrefix = searchId;
   }
 
   public Instrument getInstrument() {
@@ -111,8 +107,9 @@ public class MeasurementValues
         SearchableSensorValuesList columnValues = allSensorValues
           .getColumnValues(columnId);
 
-        MeasurementValue measurementValue = columnValues.getMeasurementValue(
-          measurement, sensorType, columnId, searchIdPrefix, goodFlagsOnly);
+        MeasurementValue measurementValue = new MeasurementValue(measurement,
+          sensorType, columnId);
+        columnValues.populateMeasurementValue(measurementValue, goodFlagsOnly);
 
         put(sensorType, measurementValue);
       }

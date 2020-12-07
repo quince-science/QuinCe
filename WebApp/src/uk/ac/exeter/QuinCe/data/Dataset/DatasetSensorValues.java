@@ -89,7 +89,7 @@ public class DatasetSensorValues {
   private void addByColumn(SensorValue sensorValue) {
     long columnId = sensorValue.getColumnId();
     if (!valuesByColumn.containsKey(columnId)) {
-      valuesByColumn.put(columnId, new SearchableSensorValuesList());
+      valuesByColumn.put(columnId, new SearchableSensorValuesList(columnId));
     }
 
     valuesByColumn.get(columnId).add(sensorValue);
@@ -118,33 +118,7 @@ public class DatasetSensorValues {
     times = null;
   }
 
-  /**
-   * Remove all stateful searches with the specified prefix
-   *
-   * @param searchIdPrefix
-   */
-  public void destroySearchesWithPrefix(String searchIdPrefix) {
-
-    for (SearchableSensorValuesList list : valuesByColumn.values()) {
-      list.destroySearchesWithPrefix(searchIdPrefix);
-    }
-  }
-
-  public boolean containsSearchWithPrefix(String searchIdPrefix) {
-    boolean result = false;
-
-    for (SearchableSensorValuesList list : valuesByColumn.values()) {
-      if (list.hasSearchWithPrefix(searchIdPrefix)) {
-        result = true;
-        break;
-      }
-    }
-
-    return result;
-  }
-
   public List<LocalDateTime> getTimes() {
-
     if (null == times) {
       times = new ArrayList<LocalDateTime>(valuesByDateAndColumn.keySet());
     }

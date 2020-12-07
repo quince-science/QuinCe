@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
@@ -118,42 +117,58 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
       MeasurementValue xh2oValue = xh2oIterator.next();
       MeasurementValue xco2Value = xco2Iterator.next();
 
-      SensorValue xh2oPrior = allSensorValues.getById(xh2oValue.getPrior());
-      SensorValue xco2Prior = allSensorValues.getById(xco2Value.getPrior());
+      SensorValue xh2oPrior = null;
+      Double xh2oPriorCalibratedValue = null;
+      SensorValue xco2Prior = null;
+      Double xco2PriorCalibratedValue = null;
 
-      double xh2oPriorCalibratedValue = calibrate(instrument, allMeasurements,
-        allSensorValues, measurementValues, xh2oSensorType, xh2oPrior.getTime(),
-        xh2oPrior.getDoubleValue(), calibrationSet, false, reducer, conn);
+      SensorValue xh2oPost = null;
+      Double xh2oPostCalibratedValue = null;
+      SensorValue xco2Post = null;
+      Double xco2PostCalibratedValue = null;
 
-      double xco2PriorValue = xco2Prior.getDoubleValue();
-      double xco2PriorDriedValue = dry(xco2PriorValue,
-        xh2oPriorCalibratedValue);
+      if (xh2oValue.hasPrior() && xco2Value.hasPrior()) {
+        xh2oPrior = allSensorValues.getById(xh2oValue.getPrior());
+        xh2oPriorCalibratedValue = calibrate(instrument, allMeasurements,
+          allSensorValues, measurementValues, xh2oSensorType,
+          xh2oPrior.getTime(), xh2oPrior.getDoubleValue(), calibrationSet,
+          false, reducer, conn);
 
-      double xco2PriorCalibratedValue = calibrate(instrument, allMeasurements,
-        allSensorValues, measurementValues, xco2SensorType, xco2Prior.getTime(),
-        xco2PriorDriedValue, calibrationSet, true, reducer, conn);
+        xco2Prior = allSensorValues.getById(xco2Value.getPrior());
+        double xco2PriorValue = xco2Prior.getDoubleValue();
+        double xco2PriorDriedValue = dry(xco2PriorValue,
+          xh2oPriorCalibratedValue);
 
-      if (!xco2Value.hasPost()) {
-        mean.add(xco2PriorCalibratedValue);
-      } else {
-        SensorValue xh2oPost = allSensorValues.getById(xh2oValue.getPost());
-        SensorValue xco2Post = allSensorValues.getById(xco2Value.getPost());
+        xco2PriorCalibratedValue = calibrate(instrument, allMeasurements,
+          allSensorValues, measurementValues, xco2SensorType,
+          xco2Prior.getTime(), xco2PriorDriedValue, calibrationSet, true,
+          reducer, conn);
+      }
 
-        double xh2oPostCalibratedValue = calibrate(instrument, allMeasurements,
+      if (xh2oValue.hasPost() && xco2Value.hasPost()) {
+        xh2oPost = allSensorValues.getById(xh2oValue.getPost());
+        xh2oPostCalibratedValue = calibrate(instrument, allMeasurements,
           allSensorValues, measurementValues, xh2oSensorType,
           xh2oPost.getTime(), xh2oPost.getDoubleValue(), calibrationSet, false,
           reducer, conn);
 
+        xco2Post = allSensorValues.getById(xco2Value.getPost());
         double xco2PostValue = xco2Post.getDoubleValue();
         double xco2PostDriedValue = dry(xco2PostValue, xh2oPostCalibratedValue);
 
-        double xco2PostCalibratedValue = calibrate(instrument, allMeasurements,
+        xco2PostCalibratedValue = calibrate(instrument, allMeasurements,
           allSensorValues, measurementValues, xco2SensorType,
           xco2Post.getTime(), xco2PostDriedValue, calibrationSet, true, reducer,
           conn);
+      }
 
+      if (null != xco2PriorCalibratedValue && null != xco2PostCalibratedValue) {
         mean.add(interpolate(xco2Prior.getTime(), xco2PriorCalibratedValue,
           xco2Post.getTime(), xco2PostCalibratedValue, measurementTime));
+      } else if (null != xco2PriorCalibratedValue) {
+        mean.add(xco2PriorCalibratedValue);
+      } else if (null != xco2PostCalibratedValue) {
+        mean.add(xco2PostCalibratedValue);
       }
     }
 
@@ -170,23 +185,32 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
 
     for (MeasurementValue measurementValue : xco2Values) {
 
-      SensorValue prior = allSensorValues.getById(measurementValue.getPrior());
+      SensorValue prior = null;
+      Double priorCalibratedValue = null;
+      SensorValue post = null;
+      Double postCalibratedValue = null;
 
-      double priorCalibratedValue = calibrate(instrument, allMeasurements,
-        allSensorValues, measurementValues, xco2SensorType, prior,
-        calibrationSet, true, reducer, conn);
+      if (measurementValue.hasPrior()) {
+        prior = allSensorValues.getById(measurementValue.getPrior());
+        priorCalibratedValue = calibrate(instrument, allMeasurements,
+          allSensorValues, measurementValues, xco2SensorType, prior,
+          calibrationSet, true, reducer, conn);
+      }
 
-      if (!measurementValue.hasPost()) {
-        mean.add(priorCalibratedValue);
-      } else {
-        SensorValue post = allSensorValues.getById(measurementValue.getPost());
-
-        double postCalibratedValue = calibrate(instrument, allMeasurements,
+      if (measurementValue.hasPost()) {
+        post = allSensorValues.getById(measurementValue.getPost());
+        postCalibratedValue = calibrate(instrument, allMeasurements,
           allSensorValues, measurementValues, xco2SensorType, post,
           calibrationSet, true, reducer, conn);
+      }
 
+      if (null != priorCalibratedValue && null != postCalibratedValue) {
         mean.add(interpolate(prior.getTime(), priorCalibratedValue,
           post.getTime(), postCalibratedValue, measurementTime));
+      } else if (null != priorCalibratedValue) {
+        mean.add(priorCalibratedValue);
+      } else if (null != postCalibratedValue) {
+        mean.add(postCalibratedValue);
       }
     }
 
@@ -248,17 +272,12 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
 
         if (concentration > 0.0 || !ignoreZero) {
 
-          String sensorValueSearchIdPrefix = generateSearchId(allSensorValues);
-
           CalibrationTimeValue priorValue = getPriorCalibrationValue(instrument,
             allMeasurements, allSensorValues, target, time, sensorType, reducer,
-            sensorValueSearchIdPrefix, conn);
+            conn);
           CalibrationTimeValue postValue = getPostCalibrationValue(instrument,
             allMeasurements, allSensorValues, target, time, sensorType, reducer,
-            sensorValueSearchIdPrefix, conn);
-
-          // TODO This shouldn't be needed - see GitHub issue #1653
-          allSensorValues.destroySearchesWithPrefix(sensorValueSearchIdPrefix);
+            conn);
 
           standardMeasurements.put(target,
             interpolate(priorValue.time, priorValue.value, postValue.time,
@@ -283,28 +302,11 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     return calibratedValue;
   }
 
-  private String generateSearchId(DatasetSensorValues allSensorValues) {
-    boolean ok = false;
-    String idBase = "xCO2InGasWithStandardsCalculator";
-
-    String result = null;
-
-    while (!ok) {
-      int random = ThreadLocalRandom.current().nextInt(0, 5000 + 1);
-      if (!allSensorValues.containsSearchWithPrefix(idBase + random)) {
-        result = idBase + random;
-        ok = true;
-      }
-    }
-
-    return result;
-  }
-
   private CalibrationTimeValue getPriorCalibrationValue(Instrument instrument,
     Map<String, ArrayList<Measurement>> allMeasurements,
     DatasetSensorValues allSensorValues, String target, LocalDateTime start,
-    SensorType sensorType, DataReducer reducer, String searchIdPrefix,
-    Connection conn) throws Exception {
+    SensorType sensorType, DataReducer reducer, Connection conn)
+    throws Exception {
 
     int rangeStart = -1;
     int rangeEnd = -1;
@@ -350,15 +352,14 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     }
 
     return calculateCalibrationValue(sensorType, priorRunMeasurements,
-      instrument, allMeasurements, allSensorValues, reducer, searchIdPrefix,
-      conn);
+      instrument, allMeasurements, allSensorValues, reducer, conn);
   }
 
   private CalibrationTimeValue getPostCalibrationValue(Instrument instrument,
     Map<String, ArrayList<Measurement>> allMeasurements,
     DatasetSensorValues allSensorValues, String target, LocalDateTime start,
-    SensorType sensorType, DataReducer reducer, String searchIdPrefix,
-    Connection conn) throws Exception {
+    SensorType sensorType, DataReducer reducer, Connection conn)
+    throws Exception {
 
     int rangeStart = -1;
     int rangeEnd = -1;
@@ -412,15 +413,14 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     }
 
     return calculateCalibrationValue(sensorType, postRunMeasurements,
-      instrument, allMeasurements, allSensorValues, reducer, searchIdPrefix,
-      conn);
+      instrument, allMeasurements, allSensorValues, reducer, conn);
   }
 
   private CalibrationTimeValue calculateCalibrationValue(SensorType sensorType,
     List<Measurement> runMeasurements, Instrument instrument,
     Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, DataReducer reducer,
-    String searchIdPrefix, Connection conn) throws Exception {
+    DatasetSensorValues allSensorValues, DataReducer reducer, Connection conn)
+    throws Exception {
 
     DefaultValueCalculator calculator = new DefaultValueCalculator(sensorType);
 
@@ -433,7 +433,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
 
       for (Measurement runMeasurement : runMeasurements) {
         MeasurementValues runMeasurementValues = new MeasurementValues(
-          instrument, runMeasurement, searchIdPrefix);
+          instrument, runMeasurement);
 
         runMeasurementValues.loadSensorValues(allSensorValues, sensorType,
           true);

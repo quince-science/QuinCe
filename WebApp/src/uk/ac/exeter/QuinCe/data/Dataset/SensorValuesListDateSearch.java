@@ -13,6 +13,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * @author Steve Jones
  *
  */
+@Deprecated
 class SensorValuesListDateSearch {
 
   /**
@@ -39,7 +40,7 @@ class SensorValuesListDateSearch {
   /**
    * Set up the search. See {@link #search(LocalDateTime)} for a detailed
    * description of how the flags work.
-   * 
+   *
    * @param list
    *          The list to be searched.
    * @param preferredFlags
@@ -71,13 +72,13 @@ class SensorValuesListDateSearch {
    * Perform an incremental search for the specified time from the current
    * search state. Returns the latest SensorValue that is before or equal to the
    * specified time.
-   * 
+   *
    * <p>
    * If {@link #preferredFlags} is populated, the search will initially only
    * match records with a user QC flag that is in that list. If no such records
    * are found the behaviour depends on {@link #preferredFlagsOnly}:
    * </p>
-   * 
+   *
    * <ul>
    * <li>If {@link #preferredFlagsOnly} is {@code true}, the method returns
    * {@code null}.</li>
@@ -85,12 +86,12 @@ class SensorValuesListDateSearch {
    * any record whose user QC flag is not in {@link #forbiddenFlags}. If all
    * records have a forbidden flag, {@code null} is returned.</li>
    * </ul>
-   * 
+   *
    * <p>
    * <b>Note:</b> If the same flag is present in both {@link #preferredFlags}
    * and {@link #forbiddenFlags}, the behaviour of this method is undefined.
    * </p>
-   * 
+   *
    * @param time
    *          The time to search for
    * @return The closest value to the search time that matches the flag
@@ -159,12 +160,12 @@ class SensorValuesListDateSearch {
   /**
    * Get the latest value that we've found with a GOOD, QUESTIONABLE or BAD
    * flag.
-   * 
+   *
    * <p>
    * We always return the last GOOD flag if one has been found. If not, we
    * return the found QUESTIONABLE flag, and finally fall back to BAD.
    * </p>
-   * 
+   *
    * @return
    */
   private int getLastFlagValue() {
@@ -181,10 +182,10 @@ class SensorValuesListDateSearch {
 
     /*
      * TODO This is the algorithm we'll use for full interpolation.
-     * 
-     * 
+     *
+     *
      * if (result == -1) { result = lastFlagValues.get(Flag.QUESTIONABLE); }
-     * 
+     *
      * if (result == -1) { result = lastFlagValues.get(Flag.BAD); }
      */
     return result;
@@ -202,13 +203,13 @@ class SensorValuesListDateSearch {
   /**
    * Look ahead in the search list from the current position for the next valid
    * value. The search state is not changed.
-   * 
+   *
    * <p>
    * We find the first available GOOD value, or if there isn't one (and
    * {@code goodFlagsOnly == false}) we look for the first QUESTIONABLE value,
    * then finally the first BAD value.
    * </p>
-   * 
+   *
    * @return The found value.
    */
   protected SensorValue findNextValue() {
