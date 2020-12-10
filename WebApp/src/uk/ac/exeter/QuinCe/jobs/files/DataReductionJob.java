@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 
@@ -22,7 +21,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.MeasurementValues;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -83,10 +81,6 @@ public class DataReductionJob extends DataSetJob {
     Connection conn = null;
 
     try {
-
-      HashSet<Flag> forbiddenFlags = new HashSet<Flag>();
-      forbiddenFlags.add(Flag.NO_QC);
-
       conn = dataSource.getConnection();
       reset(conn);
       DataSet dataSet = getDataset(conn);
@@ -152,7 +146,7 @@ public class DataReductionJob extends DataSetJob {
                 // the values either side of it) for this sensor type that are
                 // to be used for the current measurement.
                 measurementSensorValues.loadSensorValues(allSensorValues,
-                  sensorType, true);
+                  sensorType, false);
               }
 
               // If any of the core sensor values are linked to this measurement
@@ -196,7 +190,6 @@ public class DataReductionJob extends DataSetJob {
 
                 dataReductionRecords.add(dataReductionRecord);
               }
-
             }
           }
         }
