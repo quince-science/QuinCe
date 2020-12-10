@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -308,19 +309,32 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     SensorType sensorType, DataReducer reducer, Connection conn)
     throws Exception {
 
-    int rangeStart = -1;
-    int rangeEnd = -1;
+    MeanCalculator calibrationValues = new MeanCalculator();
+    LocalDateTime priorTime = null;
 
     int searchIndex = Collections.binarySearch(measurementTimes, start);
 
     // Search for the closest measurement before this with the target run type
+    // and a GOOD value for the sensor type
     boolean foundTarget = false;
+
     while (!foundTarget && searchIndex > 0) {
       searchIndex--;
-      if (timeOrderedMeasurements.get(searchIndex).getRunType()
-        .equals(target)) {
-        rangeEnd = searchIndex + 1; // Sublist call below is exclusive
-        foundTarget = true;
+
+      Measurement measurement = timeOrderedMeasurements.get(searchIndex);
+
+      // Check the run type
+      if (measurement.getRunType().equals(target)) {
+
+        // Now get the value for the sensor type
+        Double sensorValue = getGoodSensorValue(instrument, allSensorValues,
+          sensorType, measurement.getTime());
+
+        if (!sensorValue.isNaN()) {
+          calibrationValues.add(sensorValue);
+          priorTime = timeOrderedMeasurements.get(searchIndex).getTime();
+          foundTarget = true;
+        }
       }
     }
 
@@ -329,30 +343,26 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
       boolean runTypeChanged = false;
       while (!runTypeChanged && searchIndex > 0) {
         searchIndex--;
-        if (!timeOrderedMeasurements.get(searchIndex).getRunType()
-          .equals(target)) {
-          runTypeChanged = true;
 
-          // This record is different, so the next is the true range start
-          rangeStart = searchIndex + 1;
+        Measurement measurement = timeOrderedMeasurements.get(searchIndex);
+
+        // Check the run type
+        if (!measurement.getRunType().equals(target)) {
+          runTypeChanged = true;
+        } else {
+
+          // Get the value for the sensor type
+          Double sensorValue = getGoodSensorValue(instrument, allSensorValues,
+            sensorType, measurement.getTime());
+
+          if (!sensorValue.isNaN()) {
+            calibrationValues.add(sensorValue);
+          }
         }
       }
-
-      if (!runTypeChanged) {
-        rangeStart = 0;
-      }
     }
 
-    List<Measurement> priorRunMeasurements;
-    if (rangeStart == -1 || rangeEnd == -1) {
-      priorRunMeasurements = new ArrayList<Measurement>(0);
-    } else {
-      priorRunMeasurements = timeOrderedMeasurements.subList(rangeStart,
-        rangeEnd);
-    }
-
-    return calculateCalibrationValue(sensorType, priorRunMeasurements,
-      instrument, allMeasurements, allSensorValues, reducer, conn);
+    return new CalibrationTimeValue(priorTime, calibrationValues.mean());
   }
 
   private CalibrationTimeValue getPostCalibrationValue(Instrument instrument,
@@ -361,24 +371,34 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     SensorType sensorType, DataReducer reducer, Connection conn)
     throws Exception {
 
-    int rangeStart = -1;
-    int rangeEnd = -1;
+    MeanCalculator calibrationValues = new MeanCalculator();
+    LocalDateTime postTime = null;
 
     int searchIndex = Collections.binarySearch(measurementTimes, start);
 
-    // Search for the closest measurement after this with the target run type
+    // Search for the closest measurement before this with the target run type
+    // and a GOOD value for the sensor type
     boolean foundTarget = false;
 
     if (searchIndex >= 0) {
-      searchIndex++;
-      while (!foundTarget && searchIndex < timeOrderedMeasurements.size()) {
-        if (timeOrderedMeasurements.get(searchIndex).getRunType()
-          .equals(target)) {
-          rangeStart = searchIndex;
-          rangeEnd = searchIndex;
-          foundTarget = true;
-        }
+      while (!foundTarget && searchIndex < timeOrderedMeasurements.size() - 1) {
         searchIndex++;
+
+        Measurement measurement = timeOrderedMeasurements.get(searchIndex);
+
+        // Check the run type
+        if (measurement.getRunType().equals(target)) {
+
+          // Now get the value for the sensor type
+          Double sensorValue = getGoodSensorValue(instrument, allSensorValues,
+            sensorType, measurement.getTime());
+
+          if (!sensorValue.isNaN()) {
+            calibrationValues.add(sensorValue);
+            postTime = timeOrderedMeasurements.get(searchIndex).getTime();
+            foundTarget = true;
+          }
+        }
       }
     }
 
@@ -388,65 +408,50 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
       while (!runTypeChanged
         && searchIndex < timeOrderedMeasurements.size() - 1) {
         searchIndex++;
-        if (!timeOrderedMeasurements.get(searchIndex).getRunType()
-          .equals(target)) {
-          runTypeChanged = true;
 
-          // This record is different, so the previous is the true range end.
-          // But sublist ends are exclusive, so actually we use the current
-          // index. I hate this.
-          rangeEnd = searchIndex;
+        Measurement measurement = timeOrderedMeasurements.get(searchIndex);
+
+        // Check the run type
+        if (!measurement.getRunType().equals(target)) {
+          runTypeChanged = true;
+        } else {
+
+          // Get the value for the sensor type
+          Double sensorValue = getGoodSensorValue(instrument, allSensorValues,
+            sensorType, measurement.getTime());
+          if (!sensorValue.isNaN()) {
+            calibrationValues.add(sensorValue);
+          }
         }
       }
-
-      if (!runTypeChanged) {
-        rangeStart = timeOrderedMeasurements.size();
-      }
     }
 
-    List<Measurement> postRunMeasurements;
-    if (rangeStart < 0 || rangeEnd < 0 || rangeStart >= rangeEnd) {
-      postRunMeasurements = new ArrayList<Measurement>(0);
-    } else {
-      postRunMeasurements = timeOrderedMeasurements.subList(rangeStart,
-        rangeEnd);
-    }
-
-    return calculateCalibrationValue(sensorType, postRunMeasurements,
-      instrument, allMeasurements, allSensorValues, reducer, conn);
+    return new CalibrationTimeValue(postTime, calibrationValues.mean());
   }
 
-  private CalibrationTimeValue calculateCalibrationValue(SensorType sensorType,
-    List<Measurement> runMeasurements, Instrument instrument,
-    Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, DataReducer reducer, Connection conn)
-    throws Exception {
+  private Double getGoodSensorValue(Instrument instrument,
+    DatasetSensorValues allSensorValues, SensorType sensorType,
+    LocalDateTime time) {
 
-    DefaultValueCalculator calculator = new DefaultValueCalculator(sensorType);
+    // #1128 This gets all sensors for the given sensor type.
+    // Should only get the value for the sensor that's being used in the main
+    // measurement
 
-    CalibrationTimeValue result = null;
+    MeanCalculator mean = new MeanCalculator();
 
-    if (runMeasurements.size() == 0) {
-      result = new CalibrationTimeValue();
-    } else {
-      MeanCalculator mean = new MeanCalculator();
+    for (long columnId : instrument.getSensorAssignments()
+      .getColumnIds(sensorType)) {
 
-      for (Measurement runMeasurement : runMeasurements) {
-        MeasurementValues runMeasurementValues = new MeasurementValues(
-          instrument, runMeasurement);
-
-        runMeasurementValues.loadSensorValues(allSensorValues, sensorType,
-          true);
-
-        mean.add(calculator.calculateValue(runMeasurementValues,
-          allMeasurements, allSensorValues, reducer, conn));
+      SensorValue value = allSensorValues.getSensorValue(time, columnId);
+      if (null != value && !value.isNaN()
+        && (value.getUserQCFlag().equals(Flag.GOOD)
+          || value.getUserQCFlag().equals(Flag.ASSUMED_GOOD))) {
+        mean.add(value.getDoubleValue());
       }
 
-      result = new CalibrationTimeValue(
-        runMeasurements.get(runMeasurements.size() - 1).getTime(), mean.mean());
     }
 
-    return result;
+    return mean.mean();
   }
 
   private void makeTimeOrderedMeasurements(
@@ -469,11 +474,6 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     CalibrationTimeValue(LocalDateTime time, Double value) {
       this.time = time;
       this.value = value;
-    }
-
-    CalibrationTimeValue() {
-      this.time = null;
-      this.value = null;
     }
 
     @Override
