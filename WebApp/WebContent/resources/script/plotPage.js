@@ -295,6 +295,10 @@ function dataLoaded() {
     drawTable();
     initPlot(1);
     initPlot(2);
+
+    if (typeof dataLoadedLocal === "function") {
+    dataLoadedLocal();
+    }
   }
 }
 
