@@ -237,6 +237,11 @@ td.selected {
   height: 16px;
 }
 
+.varInfo {
+  padding-right: 4px;
+  font-size: 0.8em;
+}
+
 .ui-selectbooleanbutton .ui-button-text {
   margin-left: -8px;
   margin-top: -3px;

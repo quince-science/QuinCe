@@ -114,6 +114,7 @@
                 <h:outputText value="#{variable.shortName}" />
               </div>
               <div class="variableControls">
+                <div id="varInfo-#{variable.id}" class="varInfo"></div>
                 <p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}"
                   id="mapVarCheckbox"
                   onchange="updateMapCheckboxes(#{variable.id})" />

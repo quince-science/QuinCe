@@ -35,6 +35,8 @@ public class DatasetSensorValues {
 
   private final Instrument instrument;
 
+  public static final long FLAG_TOTAL = -1L;
+
   /**
    * A cache of all the times in the dataset
    *
@@ -214,20 +216,36 @@ public class DatasetSensorValues {
   }
 
   /**
-   * Get the number of {@link SensorValue}s whose QC flag is
-   * {@link Flag#NEEDED}.
+   * Get the number of NEEDED flags in the dataset.
+   *
+   * <p>
+   * The flags are grouped by column ID, with an additional {@link #FLAG_TOTAL}
+   * entry giving the total number of NEEDED flags.
+   * </p>
    *
    * @return The number of NEEDED flags
    */
-  public int getNeedsFlagCount() {
+  public Map<Long, Integer> getNeedsFlagCounts() {
 
-    int result = 0;
+    Map<Long, Integer> result = new HashMap<Long, Integer>();
+    int total = 0;
 
-    for (SensorValue value : valuesById.values()) {
-      if (value.getUserQCFlag().equals(Flag.NEEDED)) {
-        result++;
+    for (Map.Entry<Long, SearchableSensorValuesList> entry : valuesByColumn
+      .entrySet()) {
+
+      int columnFlags = 0;
+
+      for (SensorValue value : entry.getValue()) {
+        if (value.getUserQCFlag().equals(Flag.NEEDED)) {
+          columnFlags++;
+          total++;
+        }
       }
+
+      result.put(entry.getKey(), columnFlags);
     }
+
+    result.put(FLAG_TOTAL, total);
 
     return result;
   }

@@ -12,8 +12,9 @@
   </ui:define>
 
   <ui:define name="pageStatus">
+    <h:inputHidden id="neededFlagCounts" value="#{manualQualityControlBean.neededFlagCounts}"/>
     <ui:fragment rendered="#{manualQualityControlBean.canEdit}">
-      Flags needed: <h:outputText value="#{manualQualityControlBean.neededFlagCount}"/>
+      Flags needed: <span id="totalFlagsNeeded"></span>
     </ui:fragment>
   </ui:define>
 

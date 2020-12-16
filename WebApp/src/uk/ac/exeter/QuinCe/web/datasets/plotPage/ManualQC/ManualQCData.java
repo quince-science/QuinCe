@@ -432,7 +432,7 @@ public class ManualQCData extends PlotPageData {
           sensorValue.getAutoQcResult().getAllMessages());
       }
 
-      // If we QCed, the position, update all related sensor values
+      // If we QCed the position update all related sensor values
       if (FileDefinition.LONGITUDE_COLUMN_ID == selectedColumn) {
         sensorValues.addAll(propagatePositionQC(sensorValues));
       }
@@ -798,12 +798,12 @@ public class ManualQCData extends PlotPageData {
 
   /**
    * Get the number of {@link SensorValue}s whose QC flag is
-   * {@link Flag#NEEDED}.
+   * {@link Flag#NEEDED}, grouped by column ID.
    *
    * @return The number of NEEDED flags
    */
-  public int getNeedsFlagCount() {
-    return null == sensorValues ? -1 : sensorValues.getNeedsFlagCount();
+  public Map<Long, Integer> getNeedsFlagCounts() {
+    return null == sensorValues ? null : sensorValues.getNeedsFlagCounts();
   }
 
   public PlotPageTableValue getColumnValue(long rowId, long columnId)
