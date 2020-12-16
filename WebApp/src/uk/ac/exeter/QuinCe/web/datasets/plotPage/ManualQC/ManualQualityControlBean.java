@@ -7,6 +7,8 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.sql.DataSource;
 
+import com.google.gson.Gson;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -148,7 +150,7 @@ public class ManualQualityControlBean extends PlotPageBean {
     dirty = true;
   }
 
-  public int getNeededFlagCount() {
-    return data.getNeedsFlagCount();
+  public String getNeededFlagCounts() {
+    return new Gson().toJson(data.getNeedsFlagCounts());
   }
 }
