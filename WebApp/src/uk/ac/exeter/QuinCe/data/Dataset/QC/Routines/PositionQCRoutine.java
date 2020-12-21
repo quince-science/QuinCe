@@ -186,7 +186,8 @@ public class PositionQCRoutine extends Routine {
    * @return {@code true} if the value is missing; {@code false} otherwise.
    */
   private boolean isMissing(SensorValue value) {
-    return null == value.getValue();
+    return null == value.getValue() || value.getValue().length() == 0
+      || value.getValue().equals("NaN") || value.getValue().equals("NA");
   }
 
   /**
