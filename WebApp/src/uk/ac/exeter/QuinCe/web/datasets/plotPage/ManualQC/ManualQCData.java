@@ -251,7 +251,7 @@ public class ManualQCData extends PlotPageData {
     for (Variable variable : instrument.getVariables()) {
       try {
         List<CalculationParameter> variableHeadings = DataReducerFactory
-          .getCalculationParameters(variable, true);
+          .getCalculationParameters(variable, true, true);
 
         List<PlotPageColumnHeading> variableQCHeadings = new ArrayList<PlotPageColumnHeading>(
           variableHeadings.size());
@@ -386,7 +386,7 @@ public class ManualQCData extends PlotPageData {
 
           if (null != variableDataReduction) {
             List<CalculationParameter> params = DataReducerFactory
-              .getCalculationParameters(variable, true);
+              .getCalculationParameters(variable, true, true);
 
             for (CalculationParameter param : params) {
               Double value = variableDataReduction

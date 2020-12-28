@@ -1,12 +1,12 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -105,18 +105,31 @@ public class DataReducerFactory {
   }
 
   public static List<CalculationParameter> getCalculationParameters(
-    Variable variable, boolean includeCalculationColumns)
-    throws DataReductionException {
+    Variable variable, boolean includeCalculationColumns,
+    boolean includeInterpolatedSensors) throws DataReductionException {
 
     DataReducer reducer = getSkeletonReducer(variable);
 
-    List<CalculationParameter> result;
+    List<CalculationParameter> allParameters = reducer
+      .getCalculationParameters();
 
-    if (includeCalculationColumns) {
-      result = reducer.getCalculationParameters();
-    } else {
-      result = reducer.getCalculationParameters().stream()
-        .filter(x -> x.isResult()).collect(Collectors.toList());
+    List<CalculationParameter> result = new ArrayList<CalculationParameter>(
+      allParameters.size());
+
+    for (CalculationParameter param : allParameters) {
+      boolean use = true;
+
+      if (!includeCalculationColumns && !param.isResult()) {
+        use = false;
+      }
+
+      if (!includeInterpolatedSensors && param.isInterpolated()) {
+        use = false;
+      }
+
+      if (use) {
+        result.add(param);
+      }
     }
 
     return result;
