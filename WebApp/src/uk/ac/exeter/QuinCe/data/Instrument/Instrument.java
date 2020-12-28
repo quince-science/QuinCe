@@ -457,10 +457,12 @@ public class Instrument {
     List<String> result = new ArrayList<String>();
 
     for (FileDefinition fileDef : fileDefinitions) {
-      for (Map.Entry<String, RunTypeAssignment> entry : fileDef.getRunTypes()
-        .entrySet()) {
-        if (entry.getValue().getCategoryCode() == assignmentType) {
-          result.add(entry.getKey());
+      if (null != fileDef.getRunTypes()) {
+        for (Map.Entry<String, RunTypeAssignment> entry : fileDef.getRunTypes()
+          .entrySet()) {
+          if (entry.getValue().getCategoryCode() == assignmentType) {
+            result.add(entry.getKey());
+          }
         }
       }
     }
@@ -489,20 +491,22 @@ public class Instrument {
 
     for (FileDefinition fileDef : fileDefinitions) {
       RunTypeAssignments assignments = fileDef.getRunTypes();
+      if (null != assignments) {
 
-      for (Map.Entry<String, RunTypeAssignment> assignment : assignments
-        .entrySet()) {
+        for (Map.Entry<String, RunTypeAssignment> assignment : assignments
+          .entrySet()) {
 
-        // Follow aliases
-        RunTypeAssignment checkAssignment = assignment.getValue();
-        if (checkAssignment.isAlias()) {
-          checkAssignment = fileDef.getRunTypes()
-            .get(checkAssignment.getAliasTo());
-        }
+          // Follow aliases
+          RunTypeAssignment checkAssignment = assignment.getValue();
+          if (checkAssignment.isAlias()) {
+            checkAssignment = fileDef.getRunTypes()
+              .get(checkAssignment.getAliasTo());
+          }
 
-        if (checkAssignment.getCategory()
-          .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
-          result.add(assignment.getKey());
+          if (checkAssignment.getCategory()
+            .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+            result.add(assignment.getKey());
+          }
         }
       }
     }
