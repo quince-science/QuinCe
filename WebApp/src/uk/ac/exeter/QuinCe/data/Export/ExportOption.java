@@ -17,8 +17,8 @@ import org.primefaces.json.JSONObject;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
 
@@ -81,6 +81,12 @@ public class ExportOption {
    * just the final calculated value
    */
   private boolean includeCalculationColumns = false;
+
+  /**
+   * Indicates whether interpolated sensor values will be included in the export
+   * file.
+   */
+  private boolean includeInterpolatedSensors = false;
 
   /**
    * Indicates whether to use column codes instead of names
@@ -174,6 +180,10 @@ public class ExportOption {
 
   public boolean includeCalculationColumns() {
     return includeCalculationColumns;
+  }
+
+  public boolean includeInterpolatedSensors() {
+    return includeInterpolatedSensors;
   }
 
   public int getHeaderMode() {
@@ -276,6 +286,11 @@ public class ExportOption {
 
     if (json.has("includeCalculationColumns")) {
       includeCalculationColumns = json.getBoolean("includeCalculationColumns");
+    }
+
+    if (json.has("includeInterpolatedSensors")) {
+      includeInterpolatedSensors = json
+        .getBoolean("includeInterpolatedSensors");
     }
 
     if (json.has("headerMode")) {
