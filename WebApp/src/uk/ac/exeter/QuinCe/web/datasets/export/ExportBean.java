@@ -297,7 +297,8 @@ public class ExportBean extends BaseManagedBean {
 
         List<CalculationParameter> params = DataReducerFactory
           .getCalculationParameters(variable,
-            exportOption.includeCalculationColumns());
+            exportOption.includeCalculationColumns(),
+            exportOption.includeInterpolatedSensors());
 
         for (CalculationParameter param : params) {
           addHeader(headers, exportOption, param);
@@ -335,7 +336,8 @@ public class ExportBean extends BaseManagedBean {
 
           List<CalculationParameter> params = DataReducerFactory
             .getCalculationParameters(variable,
-              exportOption.includeCalculationColumns());
+              exportOption.includeCalculationColumns(),
+              exportOption.includeInterpolatedSensors());
 
           for (CalculationParameter param : params) {
             // Separator management. Add a separator before the column details,
