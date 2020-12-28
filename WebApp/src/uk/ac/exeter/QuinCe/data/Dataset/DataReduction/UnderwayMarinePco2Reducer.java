@@ -34,17 +34,22 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
     Double intakeTemperature = sensorValues.getValue("Intake Temperature",
       allMeasurements, allSensorValues, this, valueCalculators, conn);
+
     Double salinity = sensorValues.getValue("Salinity", allMeasurements,
       allSensorValues, this, valueCalculators, conn);
+
     Double equilibratorTemperature = sensorValues.getValue(
       "Equilibrator Temperature", allMeasurements, allSensorValues, this,
       valueCalculators, conn);
+
     Double equilibratorPressure = sensorValues.getValue("Equilibrator Pressure",
       allMeasurements, allSensorValues, this, valueCalculators, conn);
+
     Double co2InGas = sensorValues.getValue("xCO₂ (with standards)",
       allMeasurements, allSensorValues, this, valueCalculators, conn);
 
     Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
+
     Double pCo2TEWet = Calculators.calcpCO2TEWet(co2InGas, equilibratorPressure,
       pH2O);
     Double fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, co2InGas,
@@ -52,10 +57,15 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
     Double pCO2SST = calcCO2AtSST(pCo2TEWet, equilibratorTemperature,
       intakeTemperature);
+
     Double fCO2 = calcCO2AtSST(fCo2TEWet, equilibratorTemperature,
       intakeTemperature);
 
     // Store the calculated values
+    record.put("Interpolated SST", intakeTemperature);
+    record.put("Interpolated Salinity", salinity);
+    record.put("Interpolated Equilibrator Temperature",
+      equilibratorTemperature);
     record.put("Equilibrator Pressure", equilibratorPressure);
     record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
     record.put("pH₂O", pH2O);
@@ -94,28 +104,48 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   @Override
   public List<CalculationParameter> getCalculationParameters() {
     if (null == calculationParameters) {
-      calculationParameters = new ArrayList<CalculationParameter>(7);
+      calculationParameters = new ArrayList<CalculationParameter>(11);
+
+      calculationParameters.add(new CalculationParameter(makeParameterId(0),
+        "Interpolated SST", "SST_interp", "SSTINTERP", "°C", false, true));
+
       calculationParameters.add(
-        new CalculationParameter(makeParameterId(0), "Equilibrator Pressure",
-          "Equilibrator Pressure", "PRESEQ", "hPa", false));
-      calculationParameters
-        .add(new CalculationParameter(makeParameterId(1), "ΔT",
-          "Water-Equilibrator Temperature Difference", "DELTAT", "°C", false));
+        new CalculationParameter(makeParameterId(1), "Interpolated Salinity",
+          "SSS_interp", "SSSINTERP", "psu", false, true));
+
       calculationParameters.add(new CalculationParameter(makeParameterId(2),
-        "pH₂O", "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
-      calculationParameters.add(new CalculationParameter(makeParameterId(3),
-        "Calibrated CO₂", "xCO₂ In Water - Calibrated In Dry Air", "XCO2DECQ",
-        "μmol mol-1", false));
+        "Interpolated Equilibrator Temperature", "EqT_interp", "EQTINTERP",
+        "°C", false, true));
+
+      calculationParameters.add(
+        new CalculationParameter(makeParameterId(3), "Equilibrator Pressure",
+          "Equilibrator Pressure", "PRESEQ", "hPa", false, false));
+
       calculationParameters.add(new CalculationParameter(makeParameterId(4),
-        "pCO₂ TE Wet", "pCO₂ In Water - Equilibrator Temperature", "PCO2IG02",
-        "μatm", false));
-      calculationParameters.add(new CalculationParameter(makeParameterId(5),
-        "fCO₂ TE Wet", "fCO₂ In Water - Equilibrator Temperature", "FCO2IG02",
-        "μatm", false));
+        "ΔT", "Water-Equilibrator Temperature Difference", "DELTAT", "°C",
+        false, false));
+
+      calculationParameters
+        .add(new CalculationParameter(makeParameterId(5), "pH₂O",
+          "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false, false));
+
       calculationParameters.add(new CalculationParameter(makeParameterId(6),
-        "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true));
+        "Calibrated CO₂", "xCO₂ In Water - Calibrated In Dry Air", "XCO2DECQ",
+        "μmol mol-1", false, false));
+
       calculationParameters.add(new CalculationParameter(makeParameterId(7),
-        "fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true));
+        "pCO₂ TE Wet", "pCO₂ In Water - Equilibrator Temperature", "PCO2IG02",
+        "μatm", false, false));
+
+      calculationParameters.add(new CalculationParameter(makeParameterId(8),
+        "fCO₂ TE Wet", "fCO₂ In Water - Equilibrator Temperature", "FCO2IG02",
+        "μatm", false, false));
+
+      calculationParameters.add(new CalculationParameter(makeParameterId(9),
+        "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true, false));
+
+      calculationParameters.add(new CalculationParameter(makeParameterId(10),
+        "fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true, false));
     }
 
     return calculationParameters;

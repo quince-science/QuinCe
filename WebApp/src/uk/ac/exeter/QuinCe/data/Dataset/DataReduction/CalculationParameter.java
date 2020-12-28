@@ -10,12 +10,18 @@ public class CalculationParameter extends ColumnHeading {
    */
   private final boolean result;
 
+  /**
+   * Indicates whether or not this is an interpolated sensor value.
+   */
+  private final boolean interpolated;
+
   public CalculationParameter(long id, String name, String columnName,
-    String columnCode, String units, boolean result) {
+    String columnCode, String units, boolean result, boolean interpolated) {
 
     // A result field will have a QC value
     super(id, name, columnName, columnCode, units, result);
     this.result = result;
+    this.interpolated = interpolated;
   }
 
   /**
@@ -26,5 +32,14 @@ public class CalculationParameter extends ColumnHeading {
    */
   public boolean isResult() {
     return result;
+  }
+
+  /**
+   * Determine whether or not this parameter is an interpolated sensor value.
+   *
+   * @return {@code true} if it is a interpolated; {@code false} otherwise.
+   */
+  public boolean isInterpolated() {
+    return interpolated;
   }
 }
