@@ -49,8 +49,8 @@ public class DataReductionRecord {
    * @param measurement
    *          The measurement
    */
-  public DataReductionRecord(Measurement measurement,
-    Variable variable, List<String> parameterNames) {
+  public DataReductionRecord(Measurement measurement, Variable variable,
+    List<String> parameterNames) {
     this.measurementId = measurement.getId();
     this.variableId = variable.getId();
     this.parameterNames = Collections.unmodifiableList(parameterNames);
@@ -108,7 +108,7 @@ public class DataReductionRecord {
     throws DataReductionException {
     if (!parameterNames.contains(parameter)) {
       throw new DataReductionException(
-        "Unrecognised calculation parameter '" + parameter);
+        "Unrecognised calculation parameter '" + parameter + "'");
     }
     calculationValues.put(parameter, value);
   }
