@@ -196,9 +196,9 @@ public class DataReductionJob extends DataSetJob {
         JobManager.requeueJob(conn, id);
       } else {
 
-        Map<String, String> jobParams = new HashMap<String, String>();
+        Properties jobParams = new Properties();
         jobParams.put(LocateMeasurementsJob.ID_PARAM,
-          String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+          String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
         JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
           DataReductionQCJob.class.getCanonicalName(), jobParams);
 

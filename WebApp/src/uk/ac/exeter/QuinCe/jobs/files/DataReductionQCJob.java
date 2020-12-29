@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -51,7 +50,7 @@ public class DataReductionQCJob extends DataSetJob {
    *           If the job cannot be found in the database
    */
   public DataReductionQCJob(ResourceManager resourceManager, Properties config,
-    long jobId, Map<String, String> parameters) throws MissingParamException,
+    long jobId, Properties parameters) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 
     super(resourceManager, config, jobId, parameters);
