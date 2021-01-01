@@ -72,7 +72,7 @@ public class AutoQCJob extends DataSetJob {
   /**
    * Name of the job, used for reporting
    */
-  private final String jobName = "Automatic Quality Control";
+  private final String jobName = "Sensor Quality Control";
 
   private List<String> measurementRunTypes;
 
@@ -125,11 +125,14 @@ public class AutoQCJob extends DataSetJob {
       // in the data set
       reset(conn);
 
-      conn.setAutoCommit(false);
-
       // Get the data set from the database
       DataSet dataSet = getDataset(conn);
       Instrument instrument = getInstrument(conn);
+
+      dataSet.setStatus(DataSet.STATUS_SENSOR_QC);
+      DataSetDB.updateDataSet(conn, dataSet);
+
+      conn.setAutoCommit(false);
 
       SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 
