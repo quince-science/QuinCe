@@ -70,7 +70,7 @@ public class ExternalStandardsBean extends CalibrationBean {
 
   @Override
   protected int getReprocessStatus() {
-    return DataSet.STATUS_AUTO_QC;
+    return DataSet.STATUS_SENSOR_QC;
   }
 
   @Override
