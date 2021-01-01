@@ -86,12 +86,12 @@ public class DataSet {
   /**
    * The numeric value for the automatic QC status
    */
-  public static final int STATUS_AUTO_QC = 20;
+  public static final int STATUS_SENSOR_QC = 20;
 
   /**
    * The string for the automatic QC status
    */
-  public static final String STATUS_AUTO_QC_NAME = "Sensor QC";
+  public static final String STATUS_SENSOR_QC_NAME = "Sensor QC";
 
   /**
    * The numeric value for the data reduction status
@@ -172,6 +172,8 @@ public class DataSet {
    * The string for the export complete status
    */
   public static final String STATUS_EXPORT_COMPLETE_NAME = "Automatic Export Complete";
+
+  private static Map<Integer, String> validStatuses;
 
   /**
    * The database ID
@@ -257,6 +259,25 @@ public class DataSet {
    * The maximum latitiude
    */
   private double maxLat = 0.0;
+
+  static {
+    validStatuses = new HashMap<Integer, String>();
+    validStatuses.put(STATUS_DELETE, STATUS_DELETE_NAME);
+    validStatuses.put(STATUS_ERROR, STATUS_ERROR_NAME);
+    validStatuses.put(STATUS_WAITING, STATUS_WAITING_NAME);
+    validStatuses.put(STATUS_DATA_EXTRACTION, STATUS_DATA_EXTRACTION_NAME);
+    validStatuses.put(STATUS_SENSOR_QC, STATUS_SENSOR_QC_NAME);
+    validStatuses.put(STATUS_DATA_REDUCTION, STATUS_DATA_REDUCTION_NAME);
+    validStatuses.put(STATUS_DATA_REDUCTION_QC, STATUS_DATA_REDUCTION_QC_NAME);
+    validStatuses.put(STATUS_USER_QC, STATUS_USER_QC_NAME);
+    validStatuses.put(STATUS_READY_FOR_SUBMISSION,
+      STATUS_READY_FOR_SUBMISSION_NAME);
+    validStatuses.put(STATUS_WAITING_FOR_APPROVAL,
+      STATUS_WAITING_FOR_APPROVAL_NAME);
+    validStatuses.put(STATUS_READY_FOR_EXPORT, STATUS_READY_FOR_EXPORT_NAME);
+    validStatuses.put(STATUS_EXPORTING, STATUS_EXPORTING_NAME);
+    validStatuses.put(STATUS_EXPORT_COMPLETE, STATUS_EXPORT_COMPLETE_NAME);
+  }
 
   /**
    * Constructor for all fields
@@ -394,66 +415,10 @@ public class DataSet {
    * @return The status name
    */
   public static String getStatusName(int statusValue) {
-    String result;
-
-    switch (statusValue) {
-    case STATUS_DELETE: {
-      result = STATUS_DELETE_NAME;
-      break;
-    }
-    case STATUS_ERROR: {
-      result = STATUS_ERROR_NAME;
-      break;
-    }
-    case STATUS_WAITING: {
-      result = STATUS_WAITING_NAME;
-      break;
-    }
-    case STATUS_DATA_EXTRACTION: {
-      result = STATUS_DATA_EXTRACTION_NAME;
-      break;
-    }
-    case STATUS_DATA_REDUCTION: {
-      result = STATUS_DATA_REDUCTION_NAME;
-      break;
-    }
-    case STATUS_AUTO_QC: {
-      result = STATUS_AUTO_QC_NAME;
-      break;
-    }
-    case STATUS_USER_QC: {
-      result = STATUS_USER_QC_NAME;
-      break;
-    }
-    case STATUS_READY_FOR_SUBMISSION: {
-      result = STATUS_READY_FOR_SUBMISSION_NAME;
-      break;
-    }
-    case STATUS_WAITING_FOR_APPROVAL: {
-      result = STATUS_WAITING_FOR_APPROVAL_NAME;
-      break;
-    }
-    case STATUS_READY_FOR_EXPORT: {
-      result = STATUS_READY_FOR_EXPORT_NAME;
-      break;
-    }
-    case STATUS_EXPORTING: {
-      result = STATUS_EXPORTING_NAME;
-      break;
-    }
-    case STATUS_EXPORT_COMPLETE: {
-      result = STATUS_EXPORT_COMPLETE_NAME;
-      break;
-    }
-    case STATUS_DATA_REDUCTION_QC: {
-      result = STATUS_DATA_REDUCTION_QC_NAME;
-      break;
-    }
-    default: {
+    String result = validStatuses.get(statusValue);
+    if (null == result) {
       result = "UNKNOWN";
     }
-    }
-
     return result;
   }
 
@@ -613,7 +578,7 @@ public class DataSet {
    * @return {@code true} if the status is valid; {@code false} if it is not
    */
   public static boolean validateStatus(int status) {
-    return (status >= STATUS_DELETE && status <= STATUS_DATA_REDUCTION_QC);
+    return validStatuses.containsKey(status);
   }
 
   /**

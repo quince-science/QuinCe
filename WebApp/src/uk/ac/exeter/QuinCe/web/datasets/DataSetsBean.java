@@ -399,7 +399,7 @@ public class DataSetsBean extends BaseManagedBean {
   public void recalculate() {
     try {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId,
-        DataSet.STATUS_AUTO_QC);
+        DataSet.STATUS_SENSOR_QC);
       Properties properties = new Properties();
       properties.setProperty(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(),

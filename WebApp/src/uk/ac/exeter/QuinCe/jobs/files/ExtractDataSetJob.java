@@ -323,7 +323,7 @@ public class ExtractDataSetJob extends DataSetJob {
       dataSet.setBounds(minLon, minLat, maxLon, maxLat);
 
       // Trigger the Auto QC job
-      dataSet.setStatus(DataSet.STATUS_AUTO_QC);
+      dataSet.setStatus(DataSet.STATUS_SENSOR_QC);
       DataSetDB.updateDataSet(conn, dataSet);
       Properties jobProperties = new Properties();
       jobProperties.setProperty(AutoQCJob.ID_PARAM,
