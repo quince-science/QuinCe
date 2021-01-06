@@ -95,6 +95,8 @@ def main():
               logging.error('Carbon Portal export failed. \n', exc_info=True)
               successful_upload_CP = 0
 
+            slack_export_report('Carbon Portal',platform_name,dataset,successful_upload_CP,cp_err_msg)
+
           if 'CMEMS' in destination: 
             successful_upload_CMEMS = 0; cmems_err_msg = '';
 
@@ -107,11 +109,11 @@ def main():
               logging.error('Exception occurred: ', exc_info=True)
               successful_upload_CMEMS = 0
         
-        successful_upload = False
-        if (successful_upload_CP & successful_upload_CMEMS): successful_upload = True
+            slack_export_report('CMEMS',platform_name,dataset,successful_upload_CMEMS,cmems_err_msg)
+          else: successful_upload_CMEMS = True # No export => no failure to report to QuinCe
 
-        slack_export_report('Carbon Portal',platform_name,dataset,successful_upload_CP,cp_err_msg)
-        slack_export_report('CMEMS',platform_name,dataset,successful_upload_CMEMS,cmems_err_msg)
+        successful_upload = False
+        if (bool(successful_upload_CP) & bool(successful_upload_CMEMS) ): successful_upload = True
 
         if successful_upload:
           report_complete_export(dataset['id'])
