@@ -1,5 +1,31 @@
 [
   {
+    "exportName": "SOCAT",
+    "separator": "tab",
+    "allSensors": true,
+    "headerMode": "code",
+    "includeCalculationColumns": true,
+    "includeUnits": false,
+    "timestampHeader": "date time [ yyyy-mm-dd hh:mm:ss ]",
+    "replaceColumnHeaders": {
+      "ALATGP01": "latitude  [ deg N ]",
+      "ALONGP01": "longitude [ deg E ]",
+      "PSALPR01": "Salinity [ PSU ]",
+      "TEMPPR01": "SST [ deg C ]",
+      "ACO2XXXX": "pCO2_atm_wet_actual [ uatm ]",
+      "FCO2WTAT": "fCO2_atm_wet_actual [ uatm ]",
+      "TEMPEQMN": "T_equ [ deg C ]",
+      "WMXRZZ01": "xH2O_equi [ umol/mol ]",
+      "XCO2DECQ": "xCO2_water_Tequ_dry [ umol/mol ]",
+      "PCO2IG02": "pCO2_water_Tequ_wet [ uatm ]",
+      "FCO2IG02": "fCO2_water_Tequ_wet [ uatm ]",
+      "PCO2TK02": "pCO2_water_SST_wet [ uatm ]",
+      "FCO2XXXX": "fCO2_water_SST_wet [ uatm ]",
+      "CAPAZZ01": "P_atm [ hPa ]",
+      "XCO2DCMA": "xCO2_atm_dry_actual [ umol/mol ]"
+    }
+  },
+  {
     "exportName": "ICOS OTC",
     "separator": "comma",
     "allSensors": true,
