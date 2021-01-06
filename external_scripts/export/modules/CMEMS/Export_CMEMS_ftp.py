@@ -201,6 +201,7 @@ def evaluate_response_file(ftp,dnt_filename,folder_local,db):
   if response_received == False: 
     return 'No response received'
   elif 'Ingested="True"' in cmems_response: 
+    logging.info('All files ingested')
     return '' 
   else: #ingestion failed or partial
     rejected = re.search(
@@ -213,8 +214,6 @@ def evaluate_response_file(ftp,dnt_filename,folder_local,db):
       sql_req = "UPDATE latest SET uploaded=?,comment=? WHERE filename=?"
       sql_var = ([-1,rejected_reason, rejected_filename])
       db.execute(sql_req,sql_var)
-  else:
-    logging.info('All files ingested')
   logging.info({'local folder':folder_local,'dnt_filepath':dnt_filepath,'cmems-response':cmems_response})
  
   return cmems_response
