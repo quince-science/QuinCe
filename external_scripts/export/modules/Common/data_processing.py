@@ -36,8 +36,13 @@ def get_platform(platform_code=0):
   return platform[platform_code]
 
 
-def get_export_destination(platform_code):
-  return platform[platform_code]['export']
+def get_export_destination(platform_code,NRT):
+  destination = []
+  if NRT:
+    destination = platform[platform_code]['export']['NRT']
+  else:
+    destination = platform[platform_code]['export']['L2']
+  return destination
 
 
 def get_start_date(manifest):

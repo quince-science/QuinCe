@@ -4,12 +4,15 @@ submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_GOSars'
 category_code = '31'
 call_sign = 'LMEL'
-export = ['ICOS','CMEMS']
 creation_date = '2019-03-27T21:01:48Z'
 author_list = 'Skjelvan, Ingunn'
 
-[LMEL]
-platform_id = '58GS'
+	[58GS.export]
+	NRT = ['ICOS','CMEMS']
+	L2 = ['ICOS']
+
+	[LMEL]
+	platform_id = '58GS'
 
 
 [26NA]
@@ -18,12 +21,15 @@ submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_26NA'
 category_code = '31'
 call_sign = 'OXYH2'
-export = ['ICOS','CMEMS']
 creation_date = '2019-03-27T14:54:38Z'
 author_list = 'Becker, Meike; Olsen, Are'
 
-[OXYH2]
-platform_id = '26NA'
+	[26NA.export]
+	NRT = ['ICOS','CMEMS']
+	L2 = ['ICOS']
+
+	[OXYH2]
+	platform_id = '26NA'
 
 [65DK]
 name = 'Cap San Lorenzo'
@@ -35,8 +41,8 @@ export = ['ICOS','CMEMS']
 creation_date = '2019-03-27T14:54:38Z'
 author_list = 'Lefèvre, Nathalie'
 
-[OXOF2]
-platform_id = '65DK'
+	[OXOF2]
+	platform_id = '65DK'
 
 
 [SD1030]
@@ -49,8 +55,8 @@ export = ['ICOS']
 creation_date = '2020-03-01T00:00:00Z'
 author_list = ''
 
-[5801955]
-platform_id = 'SD1030'
+	[5801955]
+	platform_id = 'SD1030'
 
 
 [SD1053]
@@ -63,8 +69,8 @@ export = ['ICOS']
 creation_date = '2020-03-01T00:00:00Z'
 author_list = ''
 
-[1801573]
-platform_id = 'SD1053'
+	[1801573]
+	platform_id = 'SD1053'
 
 [48MB]
 name = 'PALOMA'
@@ -82,10 +88,13 @@ submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_11SS'
 category_code = '31'
 call_sign = 'ORBS'
-export = ['ICOS','CMEMS']
 creation_date = '2020-09-01T00:00:00Z'
 author_list = "Gkritzalis, Thanos; Theetaert, Hannelore; Houthoofdt, Robin; T'Jampens, Michiel"
 affiliation = 'Flanders Marine Institute (VLIZ), Wandelaarkaai 7, 8400, Ostend, BE'
 
-[ORBS]
-platform_id = '11SS'
+	[11SS.export]
+	NRT = ['ICOS','CMEMS']
+	L2 = ['ICOS']
+
+	[ORBS]
+	platform_id = '11SS'
