@@ -6,6 +6,7 @@ category_code = '31'
 call_sign = 'LMEL'
 creation_date = '2019-03-27T21:01:48Z'
 author_list = 'Skjelvan, Ingunn'
+NRT = 'True'
 
 	[58GS.export]
 	NRT = ['ICOS','CMEMS']
@@ -23,6 +24,7 @@ category_code = '31'
 call_sign = 'OXYH2'
 creation_date = '2019-03-27T14:54:38Z'
 author_list = 'Becker, Meike; Olsen, Are'
+NRT = 'True'
 
 	[26NA.export]
 	NRT = ['ICOS','CMEMS']
@@ -91,6 +93,7 @@ call_sign = 'ORBS'
 creation_date = '2020-09-01T00:00:00Z'
 author_list = "Gkritzalis, Thanos; Theetaert, Hannelore; Houthoofdt, Robin; T'Jampens, Michiel"
 affiliation = 'Flanders Marine Institute (VLIZ), Wandelaarkaai 7, 8400, Ostend, BE'
+NRT = 'True'
 
 	[11SS.export]
 	NRT = ['ICOS','CMEMS']

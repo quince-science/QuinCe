@@ -28,7 +28,7 @@ log = 'log/console_monthly.log'
 logging.basicConfig(filename='log/monthly_console.log',format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
 #logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
 
-VESSELS = {'LMEL': 'G.O.Sars','OXYH2':'Nuka Arctica'} 
+#VESSELS = {'LMEL': 'G.O.Sars','OXYH2':'Nuka Arctica'} 
 SOURCE_DIR = 'latest' 
 
 CMEMS_DB = 'database_cmems.db'
@@ -60,22 +60,24 @@ FAILED_INGESTION = -1
 
 config_file_copernicus = 'config_copernicus.toml'
 with open(config_file_copernicus) as f: ftp_config = toml.load(f)
+with open('platforms.toml') as f: platforms = toml.load(f)
 
 daily_files = {}
 dim_tot = {}
 file_nr = {}
 
 def main():
+  vessels = get_vessels()
   nc_dict = {}
   
   # Creating monthly netCDF files
   months = (pd.date_range('2019-03-01',DT.datetime.today() 
     - DT.timedelta(days=14), freq='MS').strftime("%Y%m").tolist())
   for month in months:
-    nc_dict = generating_monthly_netCDF(VESSELS,SOURCE_DIR,month,nc_dict)
+    nc_dict = generating_monthly_netCDF(vessels,SOURCE_DIR,month,nc_dict)
 
   # Creating historical netCDF files
-  nc_dict = generating_history_netCDF(VESSELS,SOURCE_DIR,nc_dict)
+  nc_dict = generating_history_netCDF(vessels,SOURCE_DIR,nc_dict)
 
   # Add new netCDFs to SQL database
   sql_commit(nc_dict)
@@ -84,40 +86,51 @@ def main():
   upload_to_copernicus()
 
 
-def generating_monthly_netCDF(VESSELS,SOURCE_DIR,month,nc_dict):
+def get_vessels():
+  ''' Retrieves dictionary of call-sign:name pairs from all NRT-supplying entries in platforms.toml'''
+  vessels = {}
+  for vessel in platforms.keys():
+    nrt_vessel = platforms[vessel].get('NRT')
+    if nrt_vessel:
+      vessels[platforms[vessel]['call_sign']] = platforms[vessel]['name']
+
+  return vessels
+
+
+def generating_monthly_netCDF(vessels,SOURCE_DIR,month,nc_dict):
   ''' Creates netCDF file(s) of data based on month and vessel(s), returns dicionary containing list of file(s) created'''
-  for vessel in VESSELS.keys():
+  for vessel in vessels.keys():
     logging.debug(f'Retrieving list of daily netCDF files for {month} {vessel}')
     daily_files[vessel], file_nr[vessel], dataset, dim_tot = (
       get_daily_files(SOURCE_DIR,month,vessel))
 
     if file_nr[vessel] > 0:
-      logging.info(f'Creating monthly netCDF file for {VESSELS[vessel]} [{vessel}], month: {month}')
+      logging.info(f'Creating monthly netCDF file for {vessels[vessel]} [{vessel}], month: {month}')
       nc_name, dataset_m = create_empty_dataset(month,vessel,dim_tot)
       dataset_m = assign_attributes(dataset,dataset_m)
       dataset_m = populate_netCDF(dataset,dataset_m,daily_files[vessel],SOURCE_DIR)
       dataset_m = set_global_attributes(dataset,dataset_m)
       dataset_m.close()
-      logging.info(f'Monthly netCDF file for {VESSELS[vessel]} completed')
+      logging.info(f'Monthly netCDF file for {vessels[vessel]} completed')
       nc_dict[vessel+'_'+month] = sql_entry(nc_name,month)
   return nc_dict
 
 
-def generating_history_netCDF(VESSELS,SOURCE_DIR,nc_dict):
+def generating_history_netCDF(vessels,SOURCE_DIR,nc_dict):
   ''' Creates netCDF file(s) of all data associated with vessel(s), returns dicionary containing list of file(s) created'''
-  for vessel in VESSELS.keys():
+  for vessel in vessels.keys():
     logging.debug(f'Retrieving list of all daily netCDF files for {vessel}')
     daily_files[vessel], file_nr[vessel], dataset, dim_tot = (
       get_daily_files(SOURCE_DIR,'history',vessel))
 
     if file_nr[vessel] > 0:
-      logging.info(f'Creating historical netCDF file for {VESSELS[vessel]} [{vessel}]')
+      logging.info(f'Creating historical netCDF file for {vessels[vessel]} [{vessel}]')
       nc_name, dataset_m = create_empty_dataset('history',vessel,dim_tot)
       dataset_m = assign_attributes(dataset,dataset_m)
       dataset_m = populate_netCDF(dataset,dataset_m,daily_files[vessel],SOURCE_DIR)
       dataset_m = set_global_attributes(dataset,dataset_m)
       dataset_m.close()
-      logging.info(f'Historical netCDF file for {VESSELS[vessel]} completed')
+      logging.info(f'Historical netCDF file for {vessels[vessel]} completed')
       nc_dict[vessel+'_history'] = sql_entry(nc_name,'history')
   return nc_dict
 
@@ -147,9 +160,10 @@ def get_daily_files(SOURCE_DIR,month,vessel):
 def create_empty_dataset(month,vessel,dim_tot):
   ''' Creates empty netCDF file with correct dimensions '''
   if month == 'history': 
-    nc_name = 'history/GL_TS_'+ vessel + '.nc'
+    nc_name = 'history/GL_TS_TS_' + vessel + '.nc'
   else:
-    nc_name = 'monthly/GL_' + str(month) + '_TS_TS_'  + vessel + '.nc'
+    nc_name = 'monthly/GL_TS_TS_' + vessel + '_' + str(month) + '.nc'
+
   logging.debug(f'Creating new empty file: {nc_name}')
   dataset_m = netCDF4.Dataset(nc_name,'w',format='NETCDF4_CLASSIC')
 
