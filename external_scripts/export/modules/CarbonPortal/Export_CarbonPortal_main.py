@@ -33,6 +33,7 @@ from modules.CarbonPortal.Export_CarbonPortal_http import upload_to_cp
 OBJ_SPEC_URI = {}
 OBJ_SPEC_URI['L0'] = 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject'
 OBJ_SPEC_URI['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product_v2' 
+OBJ_SPEC_URI['L2'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product_v2' 
 
 def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,level,upload,err_msg,L0_hashsums=[]):
   ''' Upload routine for NRT data files
