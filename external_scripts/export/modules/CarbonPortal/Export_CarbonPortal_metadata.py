@@ -40,7 +40,7 @@ def build_metadata_package(file,manifest,index,hashsum,
     'objectSpecification': obj_spec
     }
 
-  if 'L1' in level:  # L1 specific metadata
+  if 'L1' or 'L2' in level:  # L1 and L2 specific metadata
     meta['fileName'] = export_filename
     meta['specificInfo']['nRows'] = manifest['manifest']['metadata']['records']
     meta['specificInfo']['production'] = (
