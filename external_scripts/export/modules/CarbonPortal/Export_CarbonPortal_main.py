@@ -33,9 +33,9 @@ from modules.CarbonPortal.Export_CarbonPortal_http import upload_to_cp
 OBJ_SPEC_URI = {}
 OBJ_SPEC_URI['L0'] = 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject'
 OBJ_SPEC_URI['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product_v2' 
-OBJ_SPEC_URI['L2'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product_v2' 
+OBJ_SPEC_URI['L2'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product' 
 
-def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,level,upload,err_msg,L0_hashsums=[]):
+def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,upload,err_msg,L0,L0_hashsums=[]):
   ''' Upload routine for NRT data files
   
   Uploads both metadata and data object
@@ -47,8 +47,6 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,level,uplo
   success = 0
   response = ''
   CP_pid = ''
-
-  logging.debug(f'\n\n --- Processing {level} file: {filename}')
     
   file = get_file_from_zip(dataset_zip,filename)
   
@@ -56,6 +54,12 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,level,uplo
   platform_code = get_platform_code(manifest)
   NRT = is_NRT(manifest) # True/False
   L1_filename = get_L1_filename(manifest)
+  if L0: level = 'L0'
+  else:  
+    if NRT: level = 'L1'
+    else: level = 'L2'
+
+  logging.debug(f'\n\n --- Processing {level} file: {filename}')
 
   export_filename = get_export_filename(file,manifest,level)
 
