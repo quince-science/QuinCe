@@ -80,17 +80,17 @@ def main():
             L0_hashsums = []
             for index, raw_filename in enumerate(raw_filenames):
               successful_upload_CP, L0_hashsum, cp_err_msg, CP_pid = export_file_to_cp(
-                manifest, raw_filename, dataset_zip, index, cp_cookie,'L0',UPLOAD,cp_err_msg)
+                manifest, raw_filename, dataset_zip, index, cp_cookie,UPLOAD,cp_err_msg,True)
               if L0_hashsum:
                 L0_hashsums += [L0_hashsum]
             
-            #--- Processing L1 files            
+            #--- Processing L1 and L2 files            
             index = -1 # used in export of L0, not needed for L1
             data_filename = construct_datafilename(dataset,'CP',key)
 
             try:
               successful_upload_CP, L1_hashsum, cp_err_msg, CP_pid = export_file_to_cp(
-                manifest, data_filename, dataset_zip, index, cp_cookie, 'L1', UPLOAD, cp_err_msg,L0_hashsums)
+                manifest, data_filename, dataset_zip, index, cp_cookie, UPLOAD, cp_err_msg,False,L0_hashsums)
             except Exception as e:
               logging.error('Carbon Portal export failed. \n', exc_info=True)
               successful_upload_CP = 0
