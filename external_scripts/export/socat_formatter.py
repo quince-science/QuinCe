@@ -57,7 +57,6 @@ def build_metadata(filename):
   date = m[2]
   metadata['expocode'] = f'{platform}{date}'
 
-
   try:
     platform_info = platforms[platform]
     metadata['vessel_name'] = platform_info['name']
@@ -71,8 +70,10 @@ def build_metadata(filename):
   return metadata
 
 def get_platform_type_name(code):
-  if code == '31' or code == '32':
-    return 'Ship'
+  if code == '31':
+    return 'Ship-based time series (vessel)'
+  elif code == '32':
+    return 'Voluntary Observing Ship '
   elif code == '3B':
     return 'Saildrone'
   else:

@@ -22,7 +22,8 @@
       "PCO2TK02": "pCO2_water_SST_wet [ uatm ]",
       "FCO2XXXX": "fCO2_water_SST_wet [ uatm ]",
       "CAPAZZ01": "P_atm [ hPa ]",
-      "XCO2DCMA": "xCO2_atm_dry_actual [ umol/mol ]"
+      "XCO2DCMA": "xCO2_atm_dry_actual [ umol/mol ]",
+      "ADEPZZ01": "Depth [ m ]"
     }
   },
   {
