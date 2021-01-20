@@ -246,7 +246,7 @@ def makenetcdf(datasetname, fieldconfig, platform, records,CP_pid):
   nc.qc_manual = ""
   nc.wmo_inst_type = ""
   nc.wmo_platform_code = ""
-  nc.ices_platform_code = ""
+  nc.ices_platform_code = str(platform_code)
   
   nc.doi = CP_pid
 

@@ -1,3 +1,4 @@
+# Old ICES code for G O Sars, deprecated 2018 at ICES, stopped here Jan 2021
 [58GS]
 name = 'G. O. Sars'
 submitter_id = 'OTC'
@@ -6,14 +7,29 @@ category_code = '31'
 call_sign = 'LMEL'
 creation_date = '2019-03-27T21:01:48Z'
 author_list = 'Skjelvan, Ingunn'
-NRT = 'True'
+NRT = 'False'
 
 	[58GS.export]
 	NRT = ['ICOS','CMEMS']
 	L2 = ['ICOS']
 
+# New ICES code for G O Sars - in use from Jan 2021
+[58G2]
+name = 'G. O. Sars'
+submitter_id = 'OTC'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_GOSars'
+category_code = '31'
+call_sign = 'LMEL'
+creation_date = '2021-01-20T09:24:23Z'
+author_list = 'Skjelvan, Ingunn'
+NRT = 'True'
+
+	[58G2.export]
+	NRT = ['ICOS','CMEMS']
+	L2 = ['ICOS']
+
 	[LMEL]
-	platform_id = '58GS'
+	platform_id = '58G2'
 
 
 [26NA]
