@@ -125,8 +125,6 @@ def upload_to_ftp(ftp, filepath,error_msg,db):
     logging.debug(f'upload result: {upload_result}')
 
     if upload_result == UPLOAD_OK:
-      status = UPLOADED
-
       update_db_new_submission(db,UPLOADED,ftp_filepath,filename)
 
       # create DNT-entry

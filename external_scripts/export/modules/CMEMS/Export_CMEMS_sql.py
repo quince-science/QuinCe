@@ -34,10 +34,11 @@ def update_db_new_submission(db,UPLOADED,filepath_ftp,filename):
   # Setting dnt-variable to temp variable: curr_date.
   # After DNT is created, the DNT-filepath is updated for all  
   # instances where DNT-filetpath is curr_date
+  root, extension = os.path.splitext(filename)
   db.execute("UPDATE latest \
     SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
     WHERE filename = ?", 
-    [UPLOADED, filepath_ftp, CURRENT_DATE ,filename])
+    [UPLOADED, filepath_ftp, CURRENT_DATE ,root])
 
 
 def update_db_dnt(db,dnt_local_filepath):
