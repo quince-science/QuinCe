@@ -84,7 +84,10 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,upload,err
           db_status = sql_commit(
             export_filename, hashsum,filename,level,L1_filename)
           logging.debug(f'{export_filename}: SQL commit {db_status}')
-          CP_pid = "https://hdl.handle.net/" + response.decode('utf-8')
+          if (response.decode('utf-8')):
+              CP_pid = "https://hdl.handle.net/" + response.decode('utf-8')
+          else:
+              CP_pid = ''
       except Exception as e:
         err_msg += (f'Failed to upload: {export_filename}, \nException: {e}')
     else: success = 2
