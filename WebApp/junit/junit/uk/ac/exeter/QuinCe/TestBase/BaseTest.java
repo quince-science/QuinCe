@@ -35,7 +35,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <li>A global {@link ApplicationContext}</li>
  * <li>A mock WebApp context with an H2 database setup and other required items.
  * This is initialised before each test class (see
- * {@see #createServletContextEvent}).</li>
+ * {@link #createServletContextEvent}).</li>
  * <li>Setup for tests using the Flyway database migration framework.</li>
  * </ul>
  *

@@ -152,7 +152,7 @@ public class InstrumentStubTest extends BaseTest {
    * {@link #getFullInstrumentMissingIDAndNameTest()}.
    * </p>
    *
-   * @param id
+   * @param name
    *          The invalid name
    *
    * @see #createNullEmptyStrings()
@@ -169,8 +169,8 @@ public class InstrumentStubTest extends BaseTest {
    * {@link InstrumentStub} object.
    *
    * <p>
-   * Constructs an {@link InstrumentStub} based on the {@code id} and {@name} of
-   * the test base instrument in the database, and then calls
+   * Constructs an {@link InstrumentStub} based on the {@code id} and
+   * {@code name} of the test base instrument in the database, and then calls
    * {@link InstrumentStub#getFullInstrument()} to retrieve the full
    * {@link Instrument} object.
    * </p>
@@ -182,6 +182,8 @@ public class InstrumentStubTest extends BaseTest {
    * {@link InstrumentDB}.
    * </p>
    *
+   * @throws MissingParamException
+   *           If any required parameters are missing
    * @throws DatabaseException
    *           If an error occurs while retrieving the full Instrument from the
    *           database
@@ -192,6 +194,8 @@ public class InstrumentStubTest extends BaseTest {
    *           {@link ResourceManager}
    * @throws InstrumentException
    *           If any instrument details are invalid
+   * @throws SQLException
+   *           If any database actions fail
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument" })

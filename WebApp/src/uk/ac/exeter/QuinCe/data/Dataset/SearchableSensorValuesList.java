@@ -20,13 +20,12 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  *
  * <p>
  * There are two search types that can be performed:
- * <p>
+ * </p>
  * <ul>
- * <li><b>rangeSearch:</b> Search for the set of values within a range of dates,
- * such that {@code date1 <= valueDate < date2}</li>
- * <li><b>getMeasurementValue:</b>Take in a {@link MeasurementValue} and
- * populate it with either the value at the measurement's time, or the closest
- * prior and post values.</li>
+ * <li>{@code rangeSearch}: Search for the set of values within a range of
+ * dates, such that {@code date1 <= valueDate < date2}</li>
+ * <li>{@code timeSearch}: Find the value on or immediately before a specified
+ * time.</li>
  * </ul>
  *
  * <p>

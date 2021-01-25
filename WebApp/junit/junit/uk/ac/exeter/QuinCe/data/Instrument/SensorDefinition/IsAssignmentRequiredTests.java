@@ -149,7 +149,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * The application's {@link SensorAssignments} configuration.
    *
    * <p>
-   * Loaded by {@link #assignmentsInit()}.
+   * Loaded by {@link #init()}.
    * </p>
    */
   private SensorAssignments assignments = null;
@@ -159,7 +159,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * The application's sensor configuration.
    *
    * <p>
-   * Loaded by {@link #sensorConfigInit()}.
+   * Loaded by {@link #init()}.
    * </p>
    */
   private SensorsConfiguration config = null;
@@ -236,84 +236,86 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * </p>
    *
    * <table>
+   * <caption>Columns required for the {@code isAssignmentRequired} test
+   * set</caption>
    * <tr>
-   * <td><b>Column Name</b></td>
-   * <td><b>Purpose</b></td>
+   * <th>Column Name</th>
+   * <th>Purpose</th>
    * </tr>
    * <tr>
-   * <td>Sensor Type</td>
+   * <td style="vertical-align: top">Sensor Type</td>
    * <td>The central {@link SensorType} of the test</td>
    * </tr>
    * <tr>
-   * <td>Assigned Primary</td>
+   * <td style="vertical-align: top">Assigned Primary</td>
    * <td>Indicates whether a Primary assignment of the main {@link SensorType}
    * should be made</td>
    * </tr>
    * <tr>
-   * <td>Assigned Secondary</td>
+   * <td style="vertical-align: top">Assigned Secondary</td>
    * <td>Indicates whether a Secondary assignment of the main {@link SensorType}
    * should be made</td>
    * </tr>
    * <tr>
-   * <td>Relation</td>
+   * <td style="vertical-align: top">Relation</td>
    * <td>A related (i.e. sibling) {@link SensorType} to assign</td>
    * </tr>
    * <tr>
-   * <td>Sibling Assigned Primary</td>
+   * <td style="vertical-align: top">Sibling Assigned Primary</td>
    * <td>Indicates whether a Primary assignment of the sibling
    * {@link SensorType} should be made</td>
    * </tr>
    * <tr>
-   * <td>Sibling Assigned Secondary</td>
+   * <td style="vertical-align: top">Sibling Assigned Secondary</td>
    * <td>Indicates whether a Secondary assignment of the sibling
    * {@link SensorType} should be made</td>
    * </tr>
    * <tr>
-   * <td>Dependent</td>
+   * <td style="vertical-align: top">Dependent</td>
    * <td>A dependent {@link SensorType} (dependent on the main
    * {@link SensorType} to assign</td>
    * </tr>
    * <tr>
-   * <td>Has Depends Question</td>
+   * <td style="vertical-align: top">Has Depends Question</td>
    * <td>Indicates whether this has a Depends Question (a question where
    * answering {@code true} makes the sensor dependent, while {@code false} does
    * not).</td>
    * </tr>
    * <tr>
-   * <td>Dependent Assigned Primary</td>
+   * <td style="vertical-align: top">Dependent Assigned Primary</td>
    * <td>Indicates whether a Primary assignment of the dependent
    * {@link SensorType} should be made</td>
    * </tr>
    * <tr>
-   * <td>Depends Question Answer</td>
+   * <td style="vertical-align: top">Depends Question Answer</td>
    * <td>The answer to the Depends Question for the Primary assignment</td>
    * </tr>
    * <tr>
-   * <td>Dependent Assigned Secondary</td>
+   * <td style="vertical-align: top">Dependent Assigned Secondary</td>
    * <td>Indicates whether a Primary assignment of the dependent
    * {@link SensorType} should be made</td>
    * </tr>
    * <tr>
-   * <td>Depends Question Answer</td>
+   * <td style="vertical-align: top">Depends Question Answer</td>
    * <td>The answer to the Depends Question for the Secondary assignment</td>
    * </tr>
    * <tr>
-   * <td>Dependent Has Relation?</td>
+   * <td style="vertical-align: top">Dependent Has Relation?</td>
    * <td>Indicates the relation (sibling) to the dependent sensor to be
    * assigned, if any.</td>
    * </tr>
    * <tr>
-   * <td>Dependent Sibling Assigned Primary</td>
+   * <td style="vertical-align: top">Dependent Sibling Assigned Primary</td>
    * <td>Indicates whether a Primary assignment of the relation to the dependent
    * {@link SensorType} should be made</td>
    * </tr>
    * <tr>
-   * <td>Dependent Sibling Assigned Secondary</td>
+   * <td style="vertical-align: top">Dependent Sibling Assigned Secondary</td>
    * <td>Indicates whether a Secondary assignment of the relation to the
    * dependent {@link SensorType} should be made</td>
    * </tr>
    * <tr>
-   * <td>Sensor Type Required</td>
+   * <td style="vertical-align: top">Sensor Type Required</td>
    * <td>The expected result of the
    * {@link SensorAssignments#isAssignmentRequired(SensorType)} function</td>
    * </tr>
@@ -330,7 +332,6 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * @throws TestLineException
    *           If one of the test lines cannot be processed
    * @see TestSetLine
-   * @see #getAssignmentRequiredTestSet()
    * @see #assignMainSensorType(TestSetLine)
    * @see #assignRelation(TestSetLine)
    * @see #assignDependent(TestSetLine)

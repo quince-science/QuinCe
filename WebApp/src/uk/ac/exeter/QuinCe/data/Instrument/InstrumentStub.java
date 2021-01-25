@@ -33,8 +33,6 @@ public class InstrumentStub {
    *          The instrument's database ID
    * @param name
    *          The instrument's name
-   * @param calibratableSensors
-   *          Indicates the presence of sensors requiring calibration
    * @throws MissingParamException
    *           If the {@code id} is invalid or the {@code name} is missing
    */
