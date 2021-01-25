@@ -19,19 +19,20 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * {@link PlotPageData}.
  *
  * <p>
- * This is a nested map of {@link LocalDateTime} ->
- * {@link PlotPageColumnHeading} -> {@link PlotPageTableValue}.
+ * This is a nested map of {@link LocalDateTime} -&gt;
+ * {@link PlotPageColumnHeading} -&gt; {@link PlotPageTableValue}.
  * </p>
  *
  * <p>
  * The class contains analogous methods for the following data retrieval methods
  * specified in {@link PlotPageData}:
+ * </p>
  * <ul>
  * <li>{@link PlotPageData#size()} (from the {@link Map} interface)</li>
  * <li>{@link PlotPageData#getRowIDs()}</li>
  * <li>{@link PlotPageData#generateTableDataRecords(int, int)}</li>
  * <li>{@link PlotPageData#getColumnValues(PlotPageColumnHeading)}</li>
- * </p>
+ * </ul>
  *
  * <p>
  * The data structure can be built using the {@link #add} method.

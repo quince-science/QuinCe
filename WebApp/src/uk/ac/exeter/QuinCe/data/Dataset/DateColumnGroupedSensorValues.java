@@ -18,9 +18,9 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  * and sensor type. Primarily used for determining which sensor values to use
  * during data reduction of a data set.
  *
- * The structure is a three level tree of Time -> Sensor Type -> Values, thus
- * holding all values for all variables (grouped by sensor type) at each time
- * stamp.
+ * The structure is a three level tree of Time -&gt; Sensor Type -&gt; Values,
+ * thus holding all values for all variables (grouped by sensor type) at each
+ * time stamp.
  *
  * The time stamps are stored in order; sensor types and values can be in any
  * order within a time stamp.

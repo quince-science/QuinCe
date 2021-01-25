@@ -23,10 +23,10 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  * <p>
  * <b>Parameters:</b>
+ * </p>
  * <ul>
  * <li>{@code id}: The dataset's database ID</li>
  * </ul>
- * </p>
  *
  * <p>
  * If the dataset is not found in the database, the API call will return

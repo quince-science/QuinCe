@@ -1,18 +1,20 @@
 package uk.ac.exeter.QuinCe.User;
 
-import java.security.SecureRandom;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.SecretKeyFactory;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Random;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 /**
  * <p>
  * Password Hashing With PBKDF2 (<a href=
- * "http://crackstation.net/hashing-security.htm">http://crackstation.net/hashing-security.htm</a>).
- * Copyright (c) 2013, Taylor Hornby All rights reserved.
+ * "https://web.archive.org/web/20210124042229/https://crackstation.net/hashing-security.htm">
+ * http://crackstation.net/hashing-security.htm</a>). Copyright (c) 2013, Taylor
+ * Hornby All rights reserved.
  * </p>
  * <p>
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +41,8 @@ import java.util.Random;
  * POSSIBILITY OF SUCH DAMAGE.
  * </p>
  *
- * @author: havoc AT defuse.ca
- * @author: Steve Jones
+ * @author havoc AT defuse.ca
+ * @author Steve Jones
  */
 public class PasswordHash {
   /**

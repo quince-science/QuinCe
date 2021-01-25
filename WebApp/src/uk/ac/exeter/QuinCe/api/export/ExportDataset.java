@@ -58,7 +58,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  * <p>
  * The {@code manifest.json} file will contain the following information:
- * <p>
+ * </p>
  *
  * <pre>
  * {

@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.jobs;
  *
  * @author Steve Jones
  * @see Job#Job(uk.ac.exeter.QuinCe.web.system.ResourceManager,
- *      java.util.Properties, long, java.util.Map)
+ *      java.util.Properties, long, java.util.Properties)
  */
 public class InvalidJobConstructorException extends Exception {
 

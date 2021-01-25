@@ -3,7 +3,6 @@ package junit.uk.ac.exeter.QuinCe.TestBase;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -23,9 +22,9 @@ public abstract class TestSetTest extends BaseTest {
   }
 
   /**
-   * Get the name of the test set
+   * Get the name of the test set.
    *
-   * @return
+   * @return The test set name.
    */
   protected abstract String getTestSetName();
 
@@ -60,11 +59,9 @@ public abstract class TestSetTest extends BaseTest {
    *
    * @see TestSetLine
    *
-   * @param testSet
-   *          The base name of the test set file
    * @return The {@link Stream} of lines from the file as {@link TestSetLine}
    *         objects
-   * @throws IOException
+   * @throws TestSetException
    *           If the file cannot be read
    */
   private List<TestSetLine> getTestSetLines() throws TestSetException {

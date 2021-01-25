@@ -19,7 +19,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * A dummy {@link MeasurementValues} class that returns fixed values
- *
  */
 @SuppressWarnings("serial")
 public class FixedMeasurementValues extends MeasurementValues {
@@ -30,10 +29,14 @@ public class FixedMeasurementValues extends MeasurementValues {
    * Initialise the object for a given measurement and the specified sensor
    * values.
    *
+   * @param instrument
+   *          The instrument that the values belong to.
    * @param measurement
-   *          The measurement.
-   * @param values
-   *          The sensor values.
+   *          The measurement that the values are linked to.
+   * @param searchId
+   *          The search ID.
+   * @param sensorValues
+   *          The sensor values to use.
    */
   protected FixedMeasurementValues(Instrument instrument,
     Measurement measurement, String searchId,

@@ -225,9 +225,9 @@ public class SearchableSensorValuesListTest extends BaseTest {
   }
 
   /**
-   * Make a list containing all GOOD values
+   * Make a list containing all {@link Flag#GOOD} values
    *
-   * @return
+   * @return A list containing only {@link Flag#GOOD} values.
    */
   private SearchableSensorValuesList goodList() {
     SearchableSensorValuesList list = new SearchableSensorValuesList(1);
@@ -260,14 +260,14 @@ public class SearchableSensorValuesListTest extends BaseTest {
   }
 
   /**
-   * Make a list where one of the limits of the list is GOOD.
+   * Make a list where one of the limits of the list is {@link Flag#GOOD}.
    *
    * <p>
-   * Some flags are ASSUMED_GOOD and some are NEEDED to test detection of
-   * correct flags.
+   * Some flags are {@link Flag#ASSUMED_GOOD} and some are {@link Flag#NEEDED}
+   * to test detection of correct flags.
    * </p>
    *
-   * @return
+   * @return A list where one of the limits of the list is {@link Flag#GOOD}.
    */
   private SearchableSensorValuesList goodLimitList() {
     SearchableSensorValuesList list = new SearchableSensorValuesList(1);
@@ -328,14 +328,15 @@ public class SearchableSensorValuesListTest extends BaseTest {
   }
 
   /**
-   * Make a list where one of the limits of the list is GOOD.
+   * Make a list where neither of the limits of the list is {@link Flag#GOOD}.
    *
    * <p>
-   * Some flags are ASSUMED_GOOD and some are NEEDED to test detection of
-   * correct flags.
+   * Some flags are {@link Flag#ASSUMED_GOOD} and some are {@link Flag#NEEDED}
+   * to test detection of correct flags.
    * </p>
    *
-   * @return
+   * @return A list where neither of the limits of the list is
+   *         {@link Flag#GOOD}.
    */
   private SearchableSensorValuesList noGoodLimitList() {
     SearchableSensorValuesList list = new SearchableSensorValuesList(1);

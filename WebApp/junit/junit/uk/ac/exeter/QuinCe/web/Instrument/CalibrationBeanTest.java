@@ -42,9 +42,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </p>
  *
  * <p>
- * Tests for invalid calls to
- * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
- * are provided by this class. Tests for valid calls are provided by
+ * Tests for invalid calls to {@link CalibrationBean#getAffectedDatasets()} are
+ * provided by this class. Tests for valid calls are provided by
  * {@link GetAffectedDatasetsPriorsRequiredTests}.
  * </p>
  *
