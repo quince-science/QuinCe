@@ -8,7 +8,7 @@
     "includeUnits": false,
     "timestampHeader": "date time [ yyyy-mm-dd hh:mm:ss ]",
     "replaceColumnHeaders": {
-      "ALATGP01": "latitude  [ deg N ]",
+      "ALATGP01": "latitude [ deg N ]",
       "ALONGP01": "longitude [ deg E ]",
       "PSALPR01": "Salinity [ PSU ]",
       "TEMPPR01": "SST [ deg C ]",

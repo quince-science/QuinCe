@@ -5,7 +5,7 @@ package junit.uk.ac.exeter.QuinCe.TestBase;
  * processing a {@link TestSetLine}.
  *
  * @see TestSetLine
- * @see BaseTest#getTestSet(String)
+ * @see TestSetTest#getLines()
  *
  * @author Steve Jones
  */

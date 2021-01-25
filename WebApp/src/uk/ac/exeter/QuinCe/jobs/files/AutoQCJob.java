@@ -19,6 +19,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.Routine;
@@ -45,21 +46,15 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </p>
  *
  * <p>
- * Once the QC has been completed, the QC Flag and QC Message are set. The QC
- * flag will be set to {@link Flag#GOOD}, {@link Flag#QUESTIONABLE} or
- * {@link Flag#BAD}. In the latter two cases, the QC Message will contain
- * details of the fault(s) that were found.
- * </p>
- *
- * <p>
- * If the QC flag was set to {@link Flag#GOOD}, the WOCE flag for the record
- * will be set to {@link Flag#ASSUMED_GOOD}, to indicate that the software will
- * assume that the record is good unless the user overrides it. Otherwise the
- * WOCE Flag will be set to {@link Flag#NEEDED}. The user will be required to
- * manually choose a value for the WOCE Flag, either by accepting the suggestion
- * from the QC job, or overriding the flag and choosing their own. The WOCE
- * Comment will default to being identical to the QC Message, but this can also
- * be changed if required.
+ * Once the QC has been completed, {@link AutoQCResult} is set. If the QC result
+ * was {@link Flag#GOOD}, the WOCE flag for the record will be set to
+ * {@link Flag#ASSUMED_GOOD}, to indicate that the software will assume that the
+ * record is good unless the user overrides it. Otherwise the WOCE Flag will be
+ * set to {@link Flag#NEEDED}. The user will be required to manually choose a
+ * value for the WOCE Flag, either by accepting the suggestion from the QC job,
+ * or overriding the flag and choosing their own. The WOCE Comment will default
+ * to being identical to the QC Message, but this can also be changed if
+ * required.
  * </p>
  *
  * <p>
@@ -70,8 +65,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </p>
  *
  * @author Steve Jones
- * @see Flag
- * @see Message
+ * @see AutoQCResult
  */
 public class AutoQCJob extends DataSetJob {
 

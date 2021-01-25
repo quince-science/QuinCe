@@ -31,7 +31,7 @@ import org.junit.jupiter.params.ParameterizedTest;
  * read for its own purposes.
  * </p>
  *
- * @see BaseTest#getTestSet(String)
+ * @see TestSetTest#getLines()
  *
  * @author Steve Jones
  *
