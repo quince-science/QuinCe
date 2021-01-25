@@ -1,4 +1,7 @@
 '''
+NB THIS IS NOT PART OF THE MAIN EXPORT SCRIPT - IT JUST USES SOME OF
+THE LIBRARIES
+
 Formats export files from QuinCe for submission to SOCAT
 
 Files exported from QuinCe in the SOCAT format need some changes before they
@@ -28,10 +31,15 @@ import pandas as pd
 def main(infile):
   metadata = build_metadata(infile)
 
-  # Load the csv file and make required changes
+  # Load the input file
+  data = pd.read_table(infile)
+
+  # Fix column data types - read_table doesn't get them all right
+  for col in data.columns:
+    if col.endswith('QC Flag'):
+      data = data.astype({col : 'Int64'})
 
   # Reformat date/time
-  data = pd.read_table(infile)
   data.iloc[:, 0] = pd.to_datetime(data.iloc[:,0]) \
     .dt.strftime('%Y-%m-%d %H:%M:%S.%f')
 
