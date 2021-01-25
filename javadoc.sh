@@ -12,13 +12,15 @@ classPath="${classPath}:${jarsDir}/aopalliance-repackaged-2.5.0-b42.jar"
 classPath="${classPath}:${jarsDir}/commons-beanutils-1.8.3.jar"
 classPath="${classPath}:${jarsDir}/commons-codec-1.3.jar"
 classPath="${classPath}:${jarsDir}/commons-collections-3.2.1.jar"
+classPath="${classPath}:${jarsDir}/commons-csv-1.7.jar"
 classPath="${classPath}:${jarsDir}/commons-digester-1.8.1.jar"
 classPath="${classPath}:${jarsDir}/commons-email-1.4.jar"
 classPath="${classPath}:${jarsDir}/commons-fileupload-1.3.1.jar"
 classPath="${classPath}:${jarsDir}/commons-io-2.2.jar"
-classPath="${classPath}:${jarsDir}/commons-lang3-3.4.jar"
+classPath="${classPath}:${jarsDir}/commons-lang3-3.11.jar"
 classPath="${classPath}:${jarsDir}/commons-logging-1.2.jar"
 classPath="${classPath}:${jarsDir}/commons-math3-3.6.jar"
+classPath="${classPath}:${jarsDir}/commons-text-1.9.jar"
 classPath="${classPath}:${jarsDir}/commons-validator-1.4.1.jar"
 classPath="${classPath}:${jarsDir}/cupertino-1.0.10.jar"
 classPath="${classPath}:${jarsDir}/geronimo-atinject_1.0_spec-1.0.jar"
@@ -33,7 +35,7 @@ classPath="${classPath}:${jarsDir}/javax.inject-1.jar"
 classPath="${classPath}:${jarsDir}/javax.inject-2.5.0-b42.jar"
 classPath="${classPath}:${jarsDir}/javax.json-1.0.4.jar"
 classPath="${classPath}:${jarsDir}/javax.mail-1.5.2.jar"
-classPath="${classPath}:${jarsDir}/javax.ws.rs-api-2.1.jar"
+classPath="${classPath}:${jarsDir}/javax.ws.rs-api-2.1.1.jar"
 classPath="${classPath}:${jarsDir}/jersey-client-2.27.jar"
 classPath="${classPath}:${jarsDir}/jersey-common-2.27.jar"
 classPath="${classPath}:${jarsDir}/jersey-container-servlet-2.27.jar"
@@ -42,7 +44,7 @@ classPath="${classPath}:${jarsDir}/jersey-entity-filtering-2.27.jar"
 classPath="${classPath}:${jarsDir}/jersey-hk2-2.27.jar"
 classPath="${classPath}:${jarsDir}/jersey-media-jaxb-2.27.jar"
 classPath="${classPath}:${jarsDir}/jersey-media-moxy-2.27.jar"
-classPath="${classPath}:${jarsDir}/jersey-media-multipart-2.27.jar"
+classPath="${classPath}:${jarsDir}/jersey-media-multipart-2.31.jar"
 classPath="${classPath}:${jarsDir}/jersey-server-2.27.jar"
 classPath="${classPath}:${jarsDir}/joda-time-2.7.jar"
 classPath="${classPath}:${jarsDir}/mimepull-1.9.6.jar"
@@ -62,26 +64,25 @@ classPath="${classPath}:${jarsDir}/validation-api-1.1.0.Final.jar"
 classPath="${classPath}:${jarsDir}/servlet-api.jar" # Copied from tomcat/libs
 
 # JUnit libraries
-classPath="${classPath}:${jarsDir}/flyway-spring5-test-5.2.1.jar"
-classPath="${classPath}:${jarsDir}/junit-jupiter-api-5.5.2.jar"
-classPath="${classPath}:${jarsDir}/junit-jupiter-params-5.0.0.jar"
-classPath="${classPath}:${jarsDir}/mockito-all-1.10.19.jar"
-classPath="${classPath}:${jarsDir}/org.springframework.context.jar"
-classPath="${classPath}:${jarsDir}/spring-beans-5.1.0.RELEASE.jar"
-classPath="${classPath}:${jarsDir}/spring-test-5.1.0.RELEASE.jar"
-
+classPath="${classPath}:${jarsDir}/flyway-spring5-test-5.2.4.jar"
+classPath="${classPath}:${jarsDir}/junit-jupiter-api-5.7.0.jar"
+classPath="${classPath}:${jarsDir}/junit-jupiter-params-5.7.0-all.jar"
+classPath="${classPath}:${jarsDir}/apiguardian-api-1.1.0.jar"
+classPath="${classPath}:${jarsDir}/mockito-core-3.5.10.jar"
+classPath="${classPath}:${jarsDir}/spring-context-5.2.0.RELEASE.jar"
+classPath="${classPath}:${jarsDir}/spring-test-5.2.0.RELEASE.jar"
+classPath="${classPath}:${jarsDir}/spring-beans-5.2.0.RELEASE.jar"
 
 javadoc -sourcepath "$sourcePath" -d "$output" \
         -subpackages uk.ac.exeter.QuinCe:junit.uk.ac.exeter.QuinCe \
-        -source 1.8 -private \
+        -source 11 -private \
         -windowtitle "QuinCe Javadoc" -doctitle "QuinCe Javadoc" \
         -classpath "$classPath" \
-        -link https://docs.oracle.com/javase/8/docs/api/ \
-        -link https://docs.oracle.com/javaee/7/api/ \
+        -link https://docs.oracle.com/en/java/javase/11/docs/api \
         -link http://www.joda.org/joda-time/apidocs/ \
         -link http://www.primefaces.org/docs/api/6.1/ \
         -link https://commons.apache.org/proper/commons-email/javadocs/api-release/ \
-        -link https://junit.org/junit5/docs/current/api/ \
+        -link https://junit.org/junit5/docs/5.7.0/api/ \
         -link https://docs.spring.io/spring-framework/docs/current/javadoc-api/ \
         -link https://static.javadoc.io/org.mockito/mockito-core/2.15.0/ \
 
