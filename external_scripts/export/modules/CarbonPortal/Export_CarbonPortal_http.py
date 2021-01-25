@@ -76,8 +76,8 @@ def push_object(url,data,auth_cookie,content_type,method):
   headers = {'Content-Type':content_type,'Cookie':'cpauthToken=' + auth_cookie,}
   req = urllib.request.Request(url, data=data, headers=headers, method=method)
   try:
-    response = urllib.request.urlopen(req)
-    logging.debug(f'Post response: {response.read()}')
+    response = urllib.request.urlopen(req).read()
+    logging.debug(f'Post response: {response}')
   except urllib.error.HTTPError as e:
     code = e.code
     msg = e.read()
@@ -91,7 +91,7 @@ def push_object(url,data,auth_cookie,content_type,method):
     logging.exception(f'{method} failed,\n {data} not sent, {msg}')
 
 
-  return response.read()
+  return response
 
 def get_auth_cookie():   
   '''   Returns authentication cookie from Carbon Portal.   '''

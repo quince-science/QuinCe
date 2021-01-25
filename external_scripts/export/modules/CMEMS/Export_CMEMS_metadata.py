@@ -276,7 +276,7 @@ def build_index_platform(db,platforms,error_msg):
       + '# Project : Copernicus \n# Format version : 1.0 \n'\
       + '# Date of update : ' + date_header +'\n'
       + '# platform_code,creation_date,update_date,wmo_platform_code,data_source,'
-      + 'INSTITUTION,INSTITUTION_EDMO_code,parameter,last_latitude_observation,'
+      + 'institution,institution_edmo_code,parameter,last_latitude_observation,'
       + 'last_longitude_observation,last_date_observation \n')
 
     # Get unique platforms from db
