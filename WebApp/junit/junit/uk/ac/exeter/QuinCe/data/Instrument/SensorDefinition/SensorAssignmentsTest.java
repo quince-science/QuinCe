@@ -25,12 +25,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -163,33 +161,32 @@ public class SensorAssignmentsTest extends BaseTest {
    * Make a {@link SensorAssignment} for a given file, column and primary
    * status.
    *
+   * @param sensorType
+   *          The {@link SensorType} to assign.
    * @param file
-   *          The file
+   *          The file.
    * @param column
-   *          The column index
+   *          The column index.
    * @param primary
-   *          The primary/secondary status
-   * @return The {@link SensorAssignment} object
-   * @throws SensorTypeNotFoundException
-   * @throws SensorAssignmentException
+   *          The primary/secondary status.
+   * @return The {@link SensorAssignment} object.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   protected static SensorAssignment makeAssignment(SensorType sensorType,
-    String file, int column, boolean primary)
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+    String file, int column, boolean primary) throws Exception {
 
     return new SensorAssignment(file, column, sensorType, "Assignment", primary,
       false, "NaN");
   }
 
   protected static SensorAssignment makeAssignment(String file, int column,
-    boolean primary)
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+    boolean primary) throws Exception {
 
     return makeAssignment(getTestSensorType(), file, column, primary);
   }
 
-  private static SensorType getTestSensorType()
-    throws SensorTypeNotFoundException {
+  private static SensorType getTestSensorType() throws Exception {
     return ResourceManager.getInstance().getSensorsConfiguration()
       .getSensorType("Intake Temperature");
   }
@@ -200,11 +197,10 @@ public class SensorAssignmentsTest extends BaseTest {
    * @param typeName
    *          The {@link SensorType}'s name
    * @return The {@link SensorType}'s ID
-   * @throws SensorTypeNotFoundException
-   *           If the name is not found
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
-  private SensorType getSensorType(String typeName)
-    throws SensorTypeNotFoundException {
+  private SensorType getSensorType(String typeName) throws Exception {
 
     SensorType result = null;
 
@@ -225,19 +221,11 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Read the variable and sensor configuration from the database.
    *
-   * @throws DatabaseException
-   *           If the data retrieval methods fail
-   * @throws SensorTypeNotFoundException
-   *           If any of the expected {@link SensorType}s are not in the
-   *           database
-   * @throws SQLException
-   *           If a database error occurs
-   * @throws VariableNotFoundException
-   *           If the marine pCO2 variable is not in the database
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @BeforeEach
-  public void sensorConfigInit() throws DatabaseException,
-    SensorTypeNotFoundException, SQLException, VariableNotFoundException {
+  public void sensorConfigInit() throws Exception {
     initResourceManager();
     config = ResourceManager.getInstance().getSensorsConfiguration();
     varIds = new ArrayList<Long>(1);
@@ -273,19 +261,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * Initialises a {@link SensorAssignments} object for the configured variables
    * ready to be populated by the tests.
    *
-   * @throws SQLException
-   *           If a database error occurs
-   * @throws DatabaseException
-   *           If any of the data retrieval methods fail
-   * @throws SensorTypeNotFoundException
-   *           If any expected {@link SensorType}s are not in the database
-   * @throws SensorConfigurationException
-   *           If the variable and sensor configuration is internally
-   *           inconsistent in the database
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @BeforeEach
-  public void assignmentsInit() throws SensorConfigurationException,
-    SensorTypeNotFoundException, DatabaseException, SQLException {
+  public void assignmentsInit() throws Exception {
     assignments = new SensorAssignments(getDataSource().getConnection(),
       varIds);
   }
@@ -324,14 +304,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * Adds an assignment for an Intake Temperature sensor.
    * </p>
    *
-   * @throws SensorTypeNotFoundException
-   *           If the {@link SensorType} is not found in the database
-   * @throws SensorAssignmentException
-   *           If the assignment action fails
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void basicAssignmentTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void basicAssignmentTest() throws Exception {
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     Map<SensorType, List<SensorAssignment>> allAssignments = assignments;
     List<SensorAssignment> sensorAssignments = allAssignments
@@ -343,14 +320,9 @@ public class SensorAssignmentsTest extends BaseTest {
 
   /**
    * Test that attempting to assign a parent {@link SensorType} fails.
-   *
-   * @throws SensorTypeNotFoundException
-   * @throws SensorAssignmentException
    */
   @Test
-  public void assignParentTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
-
+  public void assignParentTest() {
     // Parents cannot be assigned; only their children
     assertThrows(SensorAssignmentException.class, () -> {
       assignments.addAssignment(makeAssignment(
@@ -362,14 +334,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * Test that attempting to assign the same column to the same
    * {@link SensorType} fails.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the {@link SensorType} is not found in the database
-   * @throws SensorAssignmentException
-   *           If the initial assignment fails for any reason
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void duplicateColumnSameSensorTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void duplicateColumnSameSensorTest() throws Exception {
     // The same column can't be assigned more than once
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     assertThrows(SensorAssignmentException.class, () -> {
@@ -381,14 +350,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * Test that attempting to assign the same column to two different
    * {@link SensorType}s fails.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the {@link SensorType} is not found in the database
-   * @throws SensorAssignmentException
-   *           If the initial assignment fails for any reason
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void duplicateColumnDifferentSensorTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void duplicateColumnDifferentSensorTest() throws Exception {
     // The same column can't be assigned more than once
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     assertThrows(SensorAssignmentException.class, () -> {
@@ -399,14 +365,11 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test that assigning the same column number from different files succeeds.
    *
-   * @throws SensorTypeNotFoundException
-   *           If a {@link SensorType} is not found in the database
-   * @throws SensorAssignmentException
-   *           If the assignments fail for any reason
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void duplicateColumnDifferentFileTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void duplicateColumnDifferentFileTest() throws Exception {
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     SensorAssignment assignment2 = new SensorAssignment(DATA_FILE_2_NAME, 1,
       getTestSensorType(), "Second file sensor", true, false, "NaN");
@@ -422,15 +385,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * Makes an assignment, and then removes it.
    * </p>
    *
-   * @throws SensorTypeNotFoundException
-   *           If the assignment fails because the {@link SensorType} is not
-   *           found in the database
-   * @throws SensorAssignmentException
-   *           If the assignment fails for any reason
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void removeAssignmentTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void removeAssignmentTest() throws Exception {
 
     SensorAssignment assignment = makeAssignment(DATA_FILE_NAME, 1, true);
     assignments.addAssignment(assignment);
@@ -450,15 +409,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * them.
    * </p>
    *
-   * @throws SensorTypeNotFoundException
-   *           If the assignment fails because the {@link SensorType} is not
-   *           found in the database
-   * @throws SensorAssignmentException
-   *           If the assignment fails for any reason
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void removeFileAssignmentsTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void removeFileAssignmentsTest() throws Exception {
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 2, true));
     assignments.addAssignment(makeAssignment(DATA_FILE_2_NAME, 1, false));
@@ -469,14 +424,11 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test that a large set of various assignments works correctly.
    *
-   * @throws SensorTypeNotFoundException
-   *           If any of the assigned {@link SensorType}s are not found
-   * @throws SensorAssignmentException
-   *           If any of the assignments fail
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void addMultipleAssignments()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void addMultipleAssignments() throws Exception {
     // Add multiple assignments to sensor types
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 2, false));
@@ -501,17 +453,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * any other file.
    * </p>
    *
-   * @throws SensorTypeNotFoundException
-   *           If the core {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If the assignment fails
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void coreSensorAssignedPrimaryTest()
-    throws SensorConfigurationException, SensorTypeNotFoundException,
-    SensorAssignmentException {
+  public void coreSensorAssignedPrimaryTest() throws Exception {
     assignments.addAssignment(makeAssignment(
       getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, true));
     assertTrue(assignments.coreSensorAssigned(DATA_FILE_NAME, true));
@@ -521,18 +467,11 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test that non-core sensor assignments are not detected as core assignments.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
-   *
    * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void coreSensorNotAssignedTest() throws SensorTypeNotFoundException,
-    SensorAssignmentException, SensorConfigurationException {
+  public void coreSensorNotAssignedTest() throws Exception {
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 2, true));
 
@@ -553,12 +492,8 @@ public class SensorAssignmentsTest extends BaseTest {
    * versa.
    * </p>
    *
-   * @throws SensorTypeNotFoundException
-   *           If the core {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If the assignment fails
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
   public void coreSensorSecondaryAssignedTest() throws Exception {
@@ -572,14 +507,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * Test that a core {@link SensorType} cannot be assigned for a variable that
    * the instrument does not measure.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the core {@link SensorType} is not found.
-   * @throws SensorAssignmentException
-   *           If the test {@link SensorAssignment} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void assignCoreSensorForDisallowedVariableTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void assignCoreSensorForDisallowedVariableTest() throws Exception {
     // You're not allowed to assign a core sensor for a
     // variable that your instrument doesn't measure.
 
@@ -598,14 +530,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * calibrations, and a file with no assignments at all.
    * </p>
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void runTypeNotRequiredNoInternalCalibTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void runTypeNotRequiredNoInternalCalibTest() throws Exception {
     // Run type is not required if no sensor with internal calibration is
     // assigned
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
@@ -625,14 +554,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * second.
    * </p>
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void runTypeRequiredOneInternalCalibTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void runTypeRequiredOneInternalCalibTest() throws Exception {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, true));
@@ -646,14 +572,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * of which is assigned a {@link SensorType} that has requires internal
    * calibrations.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void runTypeRequiredTwoInternalCalibTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void runTypeRequiredTwoInternalCalibTest() throws Exception {
     assignments.addAssignment(makeAssignment(
       getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, true));
     assignments.addAssignment(makeAssignment(
@@ -668,14 +591,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * than one {@link SensorType} that has requires internal calibrations has
    * been assigned.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void runTypeRequiredBothInternalCalibTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  public void runTypeRequiredBothInternalCalibTest() throws Exception {
     assignments.addAssignment(makeAssignment(
       getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, true));
     assignments.addAssignment(makeAssignment(
@@ -687,31 +607,22 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test that a variable with no sensors assigned registers as incomplete.
    *
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void variableCompleteNoAssignmentsTest()
-    throws SensorConfigurationException, SensorTypeNotFoundException {
+  public void variableCompleteNoAssignmentsTest() throws Exception {
     assertFalse(assignments.isVariableComplete(co2Var));
   }
 
   /**
    * Test that a variable with one sensor type assigned is not complete.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void variableCompleteOneAssignmentTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException,
-    SensorConfigurationException {
+  public void variableCompleteOneAssignmentTest() throws Exception {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
@@ -721,17 +632,11 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test that a fully assigned variable with no dependents is complete.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void variableCompleteNoDependsTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException,
-    SensorConfigurationException {
+  public void variableCompleteNoDependsTest() throws Exception {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
@@ -758,17 +663,11 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test that a fully assigned variable with no dependents is complete.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void variableCompleteRunTypeNotSetTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException,
-    SensorConfigurationException {
+  public void variableCompleteRunTypeNotSetTest() throws Exception {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
@@ -793,17 +692,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * Test that a fully assigned variable with an unassigned dependent is
    * incomplete.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void variableCompleteDependsNotSetTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException,
-    SensorConfigurationException {
+  public void variableCompleteDependsNotSetTest() throws Exception {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
@@ -832,17 +725,11 @@ public class SensorAssignmentsTest extends BaseTest {
   /**
    * Test that a fully assigned variable with an assigned dependent is complete.
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void variableCompleteDependsSetTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException,
-    SensorConfigurationException {
+  public void variableCompleteDependsSetTest() throws Exception {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
@@ -882,17 +769,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * question answer is no.
    * </p>
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void variableCompleteDependsQuestionNotSetTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException,
-    SensorConfigurationException {
+  public void variableCompleteDependsQuestionNotSetTest() throws Exception {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
@@ -926,17 +807,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * question answer is no.
    * </p>
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   * @throws SensorConfigurationException
-   *           If the configuration is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void variableCompleteDependsQuestionSetTest()
-    throws SensorTypeNotFoundException, SensorAssignmentException,
-    SensorConfigurationException {
+  public void variableCompleteDependsQuestionSetTest() throws Exception {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
@@ -971,12 +846,11 @@ public class SensorAssignmentsTest extends BaseTest {
    * Test the the 'Run Type' sensor type is not required if no
    * {@link SensorType} has been assigned.
    *
-   * @throws SensorConfigurationException
-   * @throws SensorAssignmentException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void runTypeRequiredNoSensorTypesTest()
-    throws SensorAssignmentException, SensorConfigurationException {
+  public void runTypeRequiredNoSensorTypesTest() throws Exception {
     assertFalse(
       assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
   }
@@ -985,14 +859,12 @@ public class SensorAssignmentsTest extends BaseTest {
    * Test the the 'Run Type' sensor type is not required if no
    * {@link SensorType} with internal calibrations has been assigned.
    *
-   * @throws SensorConfigurationException
-   * @throws SensorAssignmentException
-   * @throws SensorTypeNotFoundException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
   public void runTypeRequiredNoInternalCalibrationsAssignedTest()
-    throws SensorAssignmentException, SensorConfigurationException,
-    SensorTypeNotFoundException {
+    throws Exception {
 
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
 
@@ -1004,14 +876,12 @@ public class SensorAssignmentsTest extends BaseTest {
    * Test the the 'Run Type' sensor type is not required if no
    * {@link SensorType} with internal calibrations has been assigned.
    *
-   * @throws SensorConfigurationException
-   * @throws SensorAssignmentException
-   * @throws SensorTypeNotFoundException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
   public void runTypeRequiredInternalCalibrationsAssignedTest()
-    throws SensorAssignmentException, SensorConfigurationException,
-    SensorTypeNotFoundException {
+    throws Exception {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, true));
@@ -1024,14 +894,12 @@ public class SensorAssignmentsTest extends BaseTest {
    * Test the the 'Run Type' sensor type is not required if no
    * {@link SensorType} with internal calibrations has been assigned.
    *
-   * @throws SensorConfigurationException
-   * @throws SensorAssignmentException
-   * @throws SensorTypeNotFoundException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
   public void runTypeAssignedInternalCalibrationsAssignedTest()
-    throws SensorAssignmentException, SensorConfigurationException,
-    SensorTypeNotFoundException {
+    throws Exception {
 
     assignments.addAssignment(makeAssignment(
       getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, true));

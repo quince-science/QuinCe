@@ -233,11 +233,11 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
    * @param line
    *          The line
    * @return The affected datasets
-   * @throws TestLineException
-   *           If the datasets and statuses do not match
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   private Map<String, Boolean> getExpectedAffectedDatasets(TestSetLine line)
-    throws TestLineException {
+    throws Exception {
 
     Map<String, Boolean> result = new HashMap<String, Boolean>();
 
@@ -267,15 +267,17 @@ public abstract class GetAffectedDatasetsTests extends TestSetTest {
    * @param line
    *          The line.
    * @return The affected datasets status.
+   * @throws Exception
+   *           If any internal errors are encountered.
    * @see CalibrationBean#getAffectedDatasetsStatus()
    */
   private int getExpectedAffectedDatasetsStatus(TestSetLine line)
-    throws TestLineException {
+    throws Exception {
 
     return line.getIntField(DATASETS_STATUS_FIELD);
   }
 
-  protected void runTest(TestSetLine line) throws TestLineException {
+  protected void runTest(TestSetLine line) throws Exception {
 
     try {
       CalibrationBean bean = CalibrationBeanTest.initBean(getDbInstance(),

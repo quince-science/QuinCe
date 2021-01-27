@@ -129,12 +129,12 @@ public class DatabaseUtilsTest extends BaseTest {
   /**
    * Test that a list of {@link ResultSet}s with one entry can be closed.
    *
-   * @throws SQLException
-   *           If the {@link ResultSet} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void closeResultSetsOneListTest() throws SQLException {
+  public void closeResultSetsOneListTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();
       PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);) {
@@ -154,12 +154,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test that a list of {@link ResultSet}s with two entries can be closes both
    * entries.
    *
-   * @throws SQLException
-   *           If the {@link ResultSet} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void closeResultSetsTwoListTest() throws SQLException {
+  public void closeResultSetsTwoListTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();
       PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);
@@ -184,12 +184,12 @@ public class DatabaseUtilsTest extends BaseTest {
   /**
    * Test that closing a single {@link ResultSet} via a parameter call works.
    *
-   * @throws SQLException
-   *           If the {@link ResultSet} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void closeResultSetsOneParamTest() throws SQLException {
+  public void closeResultSetsOneParamTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();
       PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);) {
@@ -206,12 +206,12 @@ public class DatabaseUtilsTest extends BaseTest {
   /**
    * Test that closing multiple {@link ResultSet}s via a parameter call works.
    *
-   * @throws SQLException
-   *           If the {@link ResultSet} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void closeResultSetsTwoParamsTest() throws SQLException {
+  public void closeResultSetsTwoParamsTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();
       PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);
@@ -239,12 +239,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * the list version anyway.
    * </p>
    *
-   * @throws SQLException
-   *           If the {@link ResultSet} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void closeResultSetsClosedSetTest() throws SQLException {
+  public void closeResultSetsClosedSetTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();
       PreparedStatement stmt = conn.prepareStatement(BASIC_QUERY);) {
@@ -280,12 +280,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test that a list of {@link PreparedStatement}s with one entry can be
    * closed.
    *
-   * @throws SQLException
-   *           If the {@link PreparedStatement} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered. s
    */
   @FlywayTest
   @Test
-  public void closeStatementsOneListTest() throws SQLException {
+  public void closeStatementsOneListTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();) {
 
@@ -304,12 +304,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test that a list of {@link PreparedStatement}s with two entries can be
    * closes both entries.
    *
-   * @throws SQLException
-   *           If the {@link PreparedStatement} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void closeStatementsTwoListTest() throws SQLException {
+  public void closeStatementsTwoListTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();) {
 
@@ -333,12 +333,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test that closing a single {@link PreparedStatement} via a parameter call
    * works.
    *
-   * @throws SQLException
-   *           If the {@link PreparedStatement} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void closeStatementsOneParamTest() throws SQLException {
+  public void closeStatementsOneParamTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();) {
 
@@ -355,12 +355,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test that closing multiple {@link PreparedStatement}s via a parameter call
    * works.
    *
-   * @throws SQLException
-   *           If the {@link PreparedStatement} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void closeStatementsTwoParamsTest() throws SQLException {
+  public void closeStatementsTwoParamsTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();) {
 
@@ -386,12 +386,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * the list version anyway.
    * </p>
    *
-   * @throws SQLException
-   *           If the {@link PreparedStatement} cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void closeSatementsClosedSetTest() throws SQLException {
+  public void closeSatementsClosedSetTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();) {
 
@@ -406,12 +406,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test that {@link DatabaseUtils#getNullableLong(ResultSet, int)} correctly
    * retrieves a normal Long value.
    *
-   * @throws SQLException
-   *           If the test records cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getNullableLongNumberTest() throws SQLException {
+  public void getNullableLongNumberTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();) {
 
@@ -426,12 +426,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test that {@link DatabaseUtils#getNullableLong(ResultSet, int)} correctly
    * retrieves a zero Long value.
    *
-   * @throws SQLException
-   *           If the test records cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getNullableLongZeroTest() throws SQLException {
+  public void getNullableLongZeroTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();) {
 
@@ -446,12 +446,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test that {@link DatabaseUtils#getNullableLong(ResultSet, int)} correctly
    * retrieves a zero Long value.
    *
-   * @throws SQLException
-   *           If the test records cannot be created.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getNullableLongNullTest() throws SQLException {
+  public void getNullableLongNullTest() throws Exception {
 
     try (Connection conn = getDataSource().getConnection();) {
 
@@ -465,12 +465,12 @@ public class DatabaseUtilsTest extends BaseTest {
   /**
    * Test that rolling back a connection works.
    *
-   * @throws SQLException
-   *           If the database actions fail.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void rollbackTest() throws SQLException {
+  public void rollbackTest() throws Exception {
 
     // Execute a statement to empty the sensor_types table, but roll back the
     // transaction.
@@ -502,12 +502,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test that rolling back an auto-commit connection does not throw an error.
    * Also check that the rollback call does not affect the attempted actions.
    *
-   * @throws SQLException
-   *           If the database actions fail.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void rollBackAutoCommitTest() throws SQLException {
+  public void rollBackAutoCommitTest() throws Exception {
     // Execute a statement to empty the sensor_types table, but roll back the
     // transaction.
     try (Connection conn = getDataSource().getConnection()) {
@@ -542,11 +542,11 @@ public class DatabaseUtilsTest extends BaseTest {
   /**
    * Test that a single connection can be closed.
    *
-   * @throws SQLException
-   *           If the connection cannot be retrieved.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void closeConnectionSingleTest() throws SQLException {
+  public void closeConnectionSingleTest() throws Exception {
     Connection conn = getDataSource().getConnection();
     assertFalse(conn.isClosed());
 
@@ -557,11 +557,11 @@ public class DatabaseUtilsTest extends BaseTest {
   /**
    * Test that a single connection can be closed.
    *
-   * @throws SQLException
-   *           If the connection cannot be retrieved.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void closeConnectionMultipleTest() throws SQLException {
+  public void closeConnectionMultipleTest() throws Exception {
     Connection conn = getDataSource().getConnection();
     Connection conn2 = getDataSource().getConnection();
     assertFalse(conn.isClosed());
@@ -576,12 +576,12 @@ public class DatabaseUtilsTest extends BaseTest {
    * Check that a connection with {@code autoCommit == false} has its changes
    * rolled back on close.
    *
-   * @throws SQLException
-   *           If the database operations fail.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void closeConnectionRollbackTest() throws SQLException {
+  public void closeConnectionRollbackTest() throws Exception {
 
     Connection conn = getDataSource().getConnection();
     conn.setAutoCommit(false);
@@ -609,11 +609,11 @@ public class DatabaseUtilsTest extends BaseTest {
   /**
    * Test that the autoCommit flag is set when connections are closed.
    *
-   * @throws SQLException
-   *           If the connection manipulation fails.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void closeConnectionSetAutoCommitTest() throws SQLException {
+  public void closeConnectionSetAutoCommitTest() throws Exception {
     Connection conn = Mockito.mock(Connection.class);
     DatabaseUtils.closeConnection(conn);
     Mockito.verify(conn).setAutoCommit(true);
@@ -706,11 +706,11 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test {@link DatabaseUtils#makeInStatementSql(String, int...)} with one IN
    * parameter.
    *
-   * @throws MissingParamException
-   *           For missing parameters
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void makeInStatementsSqlOneInTest() throws MissingParamException {
+  public void makeInStatementsSqlOneInTest() throws Exception {
     String input = "SELECT * FROM table WHERE a IN "
       + DatabaseUtils.IN_PARAMS_TOKEN;
     String output = "SELECT * FROM table WHERE a IN (?,?,?)";
@@ -722,11 +722,11 @@ public class DatabaseUtilsTest extends BaseTest {
    * Test {@link DatabaseUtils#makeInStatementSql(String, int...)} with two IN
    * parameters.
    *
-   * @throws MissingParamException
-   *           For missing parameters
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void makeInStatementsSqlTwoInTest() throws MissingParamException {
+  public void makeInStatementsSqlTwoInTest() throws Exception {
     String input = "SELECT * FROM table WHERE a IN "
       + DatabaseUtils.IN_PARAMS_TOKEN + " AND b IN "
       + DatabaseUtils.IN_PARAMS_TOKEN;
