@@ -249,4 +249,8 @@ public class DatasetSensorValues {
 
     return result;
   }
+
+  public Instrument getInstrument() {
+    return instrument;
+  }
 }

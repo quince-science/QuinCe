@@ -7,6 +7,9 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 
@@ -159,14 +162,47 @@ public class PositionQCRoutine extends Routine {
             nextPosTime = nextPos.getTime();
           }
 
+          // Get the Run Type values if they exist
+          Instrument instrument = allSensorValues.getInstrument();
+
+          List<Long> runTypeColumns = instrument.getSensorAssignments()
+            .getColumnIds(SensorType.RUN_TYPE_SENSOR_TYPE);
+
+          SearchableSensorValuesList runTypeValues = null;
+          if (null != runTypeColumns && runTypeColumns.size() > 0) {
+            // Assume only one run type column
+            runTypeValues = allSensorValues
+              .getColumnValues(runTypeColumns.get(0));
+          }
+
           for (long columnId : dataColumnIds) {
+
+            // Get the sensor type for the column
+            SensorType sensorType = instrument.getSensorAssignments()
+              .getSensorTypeForDBColumn(columnId);
+
             SearchableSensorValuesList columnValues = allSensorValues
               .getColumnValues(columnId);
 
             for (SensorValue value : columnValues.rangeSearch(currentPosTime,
               nextPosTime)) {
 
-              value.setPositionQC(Flag.BAD, qcMessage);
+              boolean flagValue = true;
+              if (sensorType.hasInternalCalibration()) {
+                SensorValue runType = runTypeValues.timeSearch(value.getTime());
+                RunTypeCategory runTypeCategory = instrument
+                  .getRunTypeCategory(runType.getValue());
+
+                if (runTypeCategory.equals(RunTypeCategory.INTERNAL_CALIBRATION)
+                  || runTypeCategory.equals(RunTypeCategory.IGNORED)) {
+                  flagValue = false;
+                }
+
+              }
+
+              if (flagValue) {
+                value.setPositionQC(Flag.BAD, qcMessage);
+              }
             }
           }
         }
