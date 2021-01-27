@@ -13,8 +13,6 @@ import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Complex combination tests for the
@@ -63,19 +61,14 @@ public class UserDBCodeCheckTest extends TestSetTest {
    * Tests for code checks on users with various combinations of email and
    * password reset codes.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws TestLineException
-   *           If the test set line is invalid.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/data/User/UserDBTest/codeCheckTests" })
   @ParameterizedTest
   @MethodSource("getLines")
-  public void codeCheckTests(TestSetLine line)
-    throws MissingParamException, DatabaseException, TestLineException {
+  public void codeCheckTests(TestSetLine line) throws Exception {
 
     User user = UserDB.getUser(getDataSource(), getEmail(line));
     assertEquals(getEmailCodeResult(line), UserDB.checkEmailVerificationCode(
@@ -104,12 +97,11 @@ public class UserDBCodeCheckTest extends TestSetTest {
    * @param line
    *          The test set line
    * @return The email verification code
-   * @throws TestLineException
-   *           If the test set line is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    * @see #getCode(User, TestSetLine, int)
    */
-  private String getEmailCode(User user, TestSetLine line)
-    throws TestLineException {
+  private String getEmailCode(User user, TestSetLine line) throws Exception {
     return getCode(user, line, EMAIL_CODE_FIELD);
   }
 
@@ -132,12 +124,11 @@ public class UserDBCodeCheckTest extends TestSetTest {
    * @param line
    *          The test set line
    * @return The password reset code
-   * @throws TestLineException
-   *           If the test set line is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    * @see #getCode(User, TestSetLine, int)
    */
-  private String getPasswordCode(User user, TestSetLine line)
-    throws TestLineException {
+  private String getPasswordCode(User user, TestSetLine line) throws Exception {
     return getCode(user, line, PASSWORD_CODE_FIELD);
   }
 
@@ -186,11 +177,11 @@ public class UserDBCodeCheckTest extends TestSetTest {
    * @param line
    *          The test set line
    * @return The code to pass in the test
-   * @throws TestLineException
-   *           If the code specification in the test set line is invalid.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   private String getCode(User user, TestSetLine line, int field)
-    throws TestLineException {
+    throws Exception {
 
     String result = null;
 

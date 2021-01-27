@@ -102,21 +102,21 @@ public class SearchableSensorValuesListTest extends BaseTest {
   }
 
   @Test
-  public void rangeSearchAllBeforeTest() throws MissingParamException {
+  public void rangeSearchAllBeforeTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(0),
       makeTime(10));
     assertEquals(0, searchResult.size());
   }
 
   @Test
-  public void rangeSearchAllAfterTest() throws MissingParamException {
+  public void rangeSearchAllAfterTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(50),
       makeTime(55));
     assertEquals(0, searchResult.size());
   }
 
   @Test
-  public void rangeSearchFullRangeTest() throws MissingParamException {
+  public void rangeSearchFullRangeTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(10),
       makeTime(55));
     assertTrue(
@@ -124,49 +124,49 @@ public class SearchableSensorValuesListTest extends BaseTest {
   }
 
   @Test
-  public void rangeSearchMiddleMissTest() throws MissingParamException {
+  public void rangeSearchMiddleMissTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(31),
       makeTime(34));
     assertEquals(0, searchResult.size());
   }
 
   @Test
-  public void rangeSearchInexactStartTest() throws MissingParamException {
+  public void rangeSearchInexactStartTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(27),
       makeTime(50));
     assertTrue(checkSearchResultIds(searchResult, new long[] { 3, 4, 5, 6 }));
   }
 
   @Test
-  public void rangeSearchExactStartTest() throws MissingParamException {
+  public void rangeSearchExactStartTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(30),
       makeTime(50));
     assertTrue(checkSearchResultIds(searchResult, new long[] { 3, 4, 5, 6 }));
   }
 
   @Test
-  public void rangeSearchInexactEndTest() throws MissingParamException {
+  public void rangeSearchInexactEndTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(30),
       makeTime(42));
     assertTrue(checkSearchResultIds(searchResult, new long[] { 3, 4, 5 }));
   }
 
   @Test
-  public void rangeSearchExactEndTest() throws MissingParamException {
+  public void rangeSearchExactEndTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(30),
       makeTime(40));
     assertTrue(checkSearchResultIds(searchResult, new long[] { 3, 4 }));
   }
 
   @Test
-  public void rangeSearchStartBeforeTest() throws MissingParamException {
+  public void rangeSearchStartBeforeTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(10),
       makeTime(40));
     assertTrue(checkSearchResultIds(searchResult, new long[] { 1, 2, 3, 4 }));
   }
 
   @Test
-  public void rangeSearchEndAfterTest() throws MissingParamException {
+  public void rangeSearchEndAfterTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(25),
       makeTime(55));
     assertTrue(
@@ -174,7 +174,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
   }
 
   @Test
-  public void rangeSearchLastEntryTest() throws MissingParamException {
+  public void rangeSearchLastEntryTest() throws Exception {
     List<SensorValue> searchResult = rangeTestList().rangeSearch(makeTime(45),
       makeTime(55));
     assertTrue(checkSearchResultIds(searchResult, new long[] { 6 }));

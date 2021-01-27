@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.sql.SQLException;
-
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,9 +16,7 @@ import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
-import uk.ac.exeter.QuinCe.User.UserExistsException;
 import uk.ac.exeter.QuinCe.User.UserPreferences;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
@@ -83,15 +79,10 @@ public class UserDBTest extends BaseTest {
    *
    * @param emailCode
    *          Indicates whether or not the email verification code should be set
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
-  private User createUser(boolean emailCode)
-    throws MissingParamException, UserExistsException, DatabaseException {
+  private User createUser(boolean emailCode) throws Exception {
     return UserDB.createUser(getDataSource(), TEST_USER_EMAIL,
       TEST_USER_PASSWORD, "Testy", "McTestFace", emailCode);
   }
@@ -102,20 +93,15 @@ public class UserDBTest extends BaseTest {
    *
    * @param email
    *          The empty email address (generated)
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    *
    * @see #createNullEmptyStrings()
    */
   @FlywayTest
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
-  public void authenticateMissingEmailTest(String email)
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void authenticateMissingEmailTest(String email) throws Exception {
     createUser(false);
     assertEquals(UserDB.AUTHENTICATE_FAILED,
       UserDB.authenticate(getDataSource(), email, TEST_USER_PASSWORD));
@@ -128,12 +114,8 @@ public class UserDBTest extends BaseTest {
    * @param password
    *          The empty password (generated)
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    *
    * @see #createNullEmptyStrings()
    */
@@ -141,7 +123,7 @@ public class UserDBTest extends BaseTest {
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
   public void authenticateMissingPasswordTest(String password)
-    throws MissingParamException, UserExistsException, DatabaseException {
+    throws Exception {
     createUser(false);
     assertEquals(UserDB.AUTHENTICATE_FAILED,
       UserDB.authenticate(getDataSource(), TEST_USER_EMAIL,
@@ -152,17 +134,12 @@ public class UserDBTest extends BaseTest {
    * Test that an exception is thrown when authenticating user without providing
    * a {@link DataSource}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void authenticateMissingDataSourceTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void authenticateMissingDataSourceTest() throws Exception {
     createUser(false);
     assertThrows(MissingParamException.class, () -> {
       UserDB.authenticate(null, TEST_USER_EMAIL, TEST_USER_PASSWORD);
@@ -172,17 +149,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that a user can be authenticated with the correct email and password.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void authenticateSuccessfulTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void authenticateSuccessfulTest() throws Exception {
     createUser(false);
     assertEquals(UserDB.AUTHENTICATE_OK, UserDB.authenticate(getDataSource(),
       TEST_USER_EMAIL, TEST_USER_PASSWORD));
@@ -192,17 +164,12 @@ public class UserDBTest extends BaseTest {
    * Test that authentication fails for an email address that isn't in the
    * database.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void authenticateBadEmailTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void authenticateBadEmailTest() throws Exception {
     createUser(false);
     assertEquals(UserDB.AUTHENTICATE_FAILED, UserDB
       .authenticate(getDataSource(), "flib@flibble.com", TEST_USER_PASSWORD));
@@ -211,17 +178,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that authentication fails when an incorrect password is supplied.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void authenticateBadPasswordTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void authenticateBadPasswordTest() throws Exception {
     createUser(false);
     assertEquals(UserDB.AUTHENTICATE_FAILED, UserDB
       .authenticate(getDataSource(), TEST_USER_EMAIL, "flibble".toCharArray()));
@@ -230,17 +192,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that a user can be authenticated with the correct email and password.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void authenticateVerificationCodeSetTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void authenticateVerificationCodeSetTest() throws Exception {
     createUser(true);
     assertEquals(UserDB.AUTHENTICATE_EMAIL_CODE_SET, UserDB
       .authenticate(getDataSource(), TEST_USER_EMAIL, TEST_USER_PASSWORD));
@@ -250,19 +207,12 @@ public class UserDBTest extends BaseTest {
    * Test that the password reset code is removed if the user authenticates with
    * their existing password.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws UserExistsException
-   *           If the test user has already been created
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void authenticateWithPasswordCodeTest() throws MissingParamException,
-    NoSuchUserException, DatabaseException, UserExistsException {
+  public void authenticateWithPasswordCodeTest() throws Exception {
     User user = createUser(false);
     UserDB.generatePasswordResetCode(getDataSource(), user);
 
@@ -368,17 +318,12 @@ public class UserDBTest extends BaseTest {
    * Test that retrieving a user via a {@link DataSource} and email address that
    * doesn't exist returns {@code null}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getNonExistentUserEmailDataSourceTest()
-    throws MissingParamException, DatabaseException, UserExistsException {
+  public void getNonExistentUserEmailDataSourceTest() throws Exception {
     createUser(false);
     assertNull(UserDB.getUser(getDataSource(), "flib@flibble.com"));
   }
@@ -387,20 +332,12 @@ public class UserDBTest extends BaseTest {
    * Test that retrieving a user via a {@link Connection} and email address that
    * doesn't exist returns {@code null}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If a database connection cannot be obtained
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getNonExistentUserEmailConnectionTest()
-    throws MissingParamException, DatabaseException, UserExistsException,
-    SQLException {
+  public void getNonExistentUserEmailConnectionTest() throws Exception {
     createUser(false);
     assertNull(
       UserDB.getUser(getDataSource().getConnection(), "flib@flibble.com"));
@@ -410,17 +347,12 @@ public class UserDBTest extends BaseTest {
    * Test that retrieving a user via a {@link DataSource} and ID that doesn't
    * exist returns {@code null}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getNonExistentUserIDDataSourceTest()
-    throws MissingParamException, DatabaseException, UserExistsException {
+  public void getNonExistentUserIDDataSourceTest() throws Exception {
     createUser(false);
     assertNull(UserDB.getUser(getDataSource(), 1000L));
   }
@@ -429,19 +361,10 @@ public class UserDBTest extends BaseTest {
    * Test that retrieving a user via a {@link Connection} and ID that doesn't
    * exist returns {@code null}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If a database connection cannot be obtained
    */
   @FlywayTest
   @Test
-  public void getNonExistentUserIDConnectionTest() throws MissingParamException,
-    DatabaseException, UserExistsException, SQLException {
+  public void getNonExistentUserIDConnectionTest() throws Exception {
     createUser(false);
     assertNull(UserDB.getUser(getDataSource().getConnection(), 1000L));
   }
@@ -451,17 +374,12 @@ public class UserDBTest extends BaseTest {
    * correctly retrieved from the database via a {@link DataSource} and email
    * address.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getBasicUserDataSourceEmailTest()
-    throws MissingParamException, DatabaseException, UserExistsException {
+  public void getBasicUserDataSourceEmailTest() throws Exception {
 
     createUser(false);
     User user = UserDB.getUser(getDataSource(), TEST_USER_EMAIL);
@@ -475,19 +393,12 @@ public class UserDBTest extends BaseTest {
    * correctly retrieved from the database via a {@link Connection} and email
    * address.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If a database connection cannot be obtained
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getBasicUserConnectionEmailTest() throws MissingParamException,
-    DatabaseException, UserExistsException, SQLException {
+  public void getBasicUserConnectionEmailTest() throws Exception {
 
     createUser(false);
     User user = UserDB.getUser(getDataSource().getConnection(),
@@ -502,17 +413,12 @@ public class UserDBTest extends BaseTest {
    * correctly retrieved from the database via a {@link DataSource} and email
    * address.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getBasicUserDataSourceIDTest()
-    throws MissingParamException, DatabaseException, UserExistsException {
+  public void getBasicUserDataSourceIDTest() throws Exception {
 
     User testUser = createUser(false);
     User user = UserDB.getUser(getDataSource(), testUser.getDatabaseID());
@@ -526,19 +432,12 @@ public class UserDBTest extends BaseTest {
    * correctly retrieved from the database via a {@link Connection} and email
    * address.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If a database connection cannot be obtained
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getBasicUserConnectionIDTest() throws MissingParamException,
-    DatabaseException, UserExistsException, SQLException {
+  public void getBasicUserConnectionIDTest() throws Exception {
 
     User testUser = createUser(false);
     User user = UserDB.getUser(getDataSource().getConnection(),
@@ -554,17 +453,12 @@ public class UserDBTest extends BaseTest {
    * and the email verification code set has the email code set in the returned
    * object.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void createWithVerificationCodeTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void createWithVerificationCodeTest() throws Exception {
     User user = createUser(true);
     testEmailVerificationCode(user, true);
   }
@@ -575,17 +469,12 @@ public class UserDBTest extends BaseTest {
    * and the email verification not code set has no code set in the returned
    * object.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void createWithoutVerificationCodeTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void createWithoutVerificationCodeTest() throws Exception {
     User user = createUser(false);
     testEmailVerificationCode(user, false);
   }
@@ -595,17 +484,13 @@ public class UserDBTest extends BaseTest {
    * {@link User} object returned by
    * {@link UserDB#getUser(javax.sql.DataSource, String)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
   public void createWithVerificationCodeRetrieveByDataSourceEmailTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+    throws Exception {
 
     createUser(true);
     User user = UserDB.getUser(getDataSource(), TEST_USER_EMAIL);
@@ -617,17 +502,13 @@ public class UserDBTest extends BaseTest {
    * {@link User} object returned by
    * {@link UserDB#getUser(javax.sql.DataSource, long)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
   public void createWithVerificationCodeRetrieveByDataSourceIDTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+    throws Exception {
 
     User testUser = createUser(true);
     User user = UserDB.getUser(getDataSource(), testUser.getDatabaseID());
@@ -639,20 +520,13 @@ public class UserDBTest extends BaseTest {
    * {@link User} object returned by
    * {@link UserDB#getUser(java.sql.Connection, String)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If the database connection cannot be retrieved
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
   public void createWithVerificationCodeRetrieveByConnectionEmailTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    SQLException {
+    throws Exception {
 
     createUser(true);
     User user = UserDB.getUser(getDataSource().getConnection(),
@@ -665,20 +539,13 @@ public class UserDBTest extends BaseTest {
    * {@link User} object returned by
    * {@link UserDB#getUser(javax.sql.DataSource, long)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If the database connection cannot be retrieved
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
   public void createWithVerificationCodeRetrieveByConnectionIDTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    SQLException {
+    throws Exception {
 
     User testUser = createUser(true);
     User user = UserDB.getUser(getDataSource().getConnection(),
@@ -691,17 +558,13 @@ public class UserDBTest extends BaseTest {
    * {@link User} object returned by
    * {@link UserDB#getUser(javax.sql.DataSource, String)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
   public void createWithoutVerificationCodeRetrieveByDataSourceEmailTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+    throws Exception {
 
     createUser(false);
     User user = UserDB.getUser(getDataSource(), TEST_USER_EMAIL);
@@ -713,17 +576,13 @@ public class UserDBTest extends BaseTest {
    * {@link User} object returned by
    * {@link UserDB#getUser(javax.sql.DataSource, long)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
   public void createWithoutVerificationCodeRetrieveByDataSourceIDTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+    throws Exception {
 
     User testUser = createUser(false);
     User user = UserDB.getUser(getDataSource(), testUser.getDatabaseID());
@@ -735,20 +594,13 @@ public class UserDBTest extends BaseTest {
    * {@link User} object returned by
    * {@link UserDB#getUser(java.sql.Connection, String)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If the database connection cannot be retrieved
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
   public void createWithoutVerificationCodeRetrieveByConnectionEmailTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    SQLException {
+    throws Exception {
 
     createUser(false);
     User user = UserDB.getUser(getDataSource().getConnection(),
@@ -761,20 +613,13 @@ public class UserDBTest extends BaseTest {
    * {@link User} object returned by
    * {@link UserDB#getUser(java.sql.Connection, long)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If the database connection cannot be retrieved
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
   public void createWithoutVerificationCodeRetrieveByConnectionIDTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    SQLException {
+    throws Exception {
 
     User testUser = createUser(false);
     User user = UserDB.getUser(getDataSource().getConnection(),
@@ -785,19 +630,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that setting a password reset code updates the {@link User} object.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void addPasswordCodeCheckObjectTest() throws MissingParamException,
-    UserExistsException, DatabaseException, NoSuchUserException {
+  public void addPasswordCodeCheckObjectTest() throws Exception {
     User testUser = createUser(false);
     UserDB.generatePasswordResetCode(getDataSource(), testUser);
     testPasswordResetCode(testUser, true);
@@ -807,20 +645,12 @@ public class UserDBTest extends BaseTest {
    * Test that adding a password reset code to a user updates the database and
    * can be retrieved with {@link UserDB#getUser(javax.sql.DataSource, String)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void addPasswordCodeRetrieveByDataSourceEmailTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    NoSuchUserException {
+  public void addPasswordCodeRetrieveByDataSourceEmailTest() throws Exception {
 
     User testUser = createUser(false);
     UserDB.generatePasswordResetCode(getDataSource(), testUser);
@@ -833,20 +663,12 @@ public class UserDBTest extends BaseTest {
    * Test that adding a password reset code to a user updates the database and
    * can be retrieved with {@link UserDB#getUser(javax.sql.DataSource, long)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void addPasswordCodeRetrieveByDataSourceIDTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    NoSuchUserException {
+  public void addPasswordCodeRetrieveByDataSourceIDTest() throws Exception {
 
     User testUser = createUser(false);
     UserDB.generatePasswordResetCode(getDataSource(), testUser);
@@ -859,22 +681,12 @@ public class UserDBTest extends BaseTest {
    * Test that adding a password reset code to a user updates the database and
    * can be retrieved with {@link UserDB#getUser(java.sql.Connection, String)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If the database connection cannot be retrieved
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void addPasswordCodeRetrieveByConnectionEmailTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    SQLException, NoSuchUserException {
+  public void addPasswordCodeRetrieveByConnectionEmailTest() throws Exception {
 
     User testUser = createUser(false);
     UserDB.generatePasswordResetCode(getDataSource(), testUser);
@@ -888,22 +700,12 @@ public class UserDBTest extends BaseTest {
    * Test that adding a password reset code to a user updates the database and
    * can be retrieved with {@link UserDB#getUser(java.sql.Connection, long)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If the database connection cannot be retrieved
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void addPasswordCodeRetrieveByConnectionIDTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    SQLException, NoSuchUserException {
+  public void addPasswordCodeRetrieveByConnectionIDTest() throws Exception {
 
     User testUser = createUser(false);
     UserDB.generatePasswordResetCode(getDataSource(), testUser);
@@ -917,19 +719,12 @@ public class UserDBTest extends BaseTest {
    * Test that setting an email verification code updates the {@link User}
    * object.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void addVerificationCodeCheckObjectTest() throws MissingParamException,
-    UserExistsException, DatabaseException, NoSuchUserException {
+  public void addVerificationCodeCheckObjectTest() throws Exception {
     User testUser = createUser(false);
     UserDB.generateEmailVerificationCode(getDataSource(), testUser);
     testEmailVerificationCode(testUser, true);
@@ -939,20 +734,13 @@ public class UserDBTest extends BaseTest {
    * Test that adding a verification code to a user updates the database and can
    * be retrieved with {@link UserDB#getUser(javax.sql.DataSource, String)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
   public void addVerificationCodeRetrieveByDataSourceEmailTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    NoSuchUserException {
+    throws Exception {
 
     User testUser = createUser(false);
     UserDB.generateEmailVerificationCode(getDataSource(), testUser);
@@ -965,20 +753,12 @@ public class UserDBTest extends BaseTest {
    * Test that adding a verification code to a user updates the database and can
    * be retrieved with {@link UserDB#getUser(javax.sql.DataSource, long)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void addVerificationCodeRetrieveByDataSourceIDTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    NoSuchUserException {
+  public void addVerificationCodeRetrieveByDataSourceIDTest() throws Exception {
 
     User testUser = createUser(false);
     UserDB.generateEmailVerificationCode(getDataSource(), testUser);
@@ -991,22 +771,13 @@ public class UserDBTest extends BaseTest {
    * Test that adding a verification code to a user updates the database and can
    * be retrieved with {@link UserDB#getUser(java.sql.Connection, String)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If the database connection cannot be retrieved
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
   public void addVerificationCodeRetrieveByConnectionEmailTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    SQLException, NoSuchUserException {
+    throws Exception {
 
     User testUser = createUser(false);
     UserDB.generateEmailVerificationCode(getDataSource(), testUser);
@@ -1020,22 +791,12 @@ public class UserDBTest extends BaseTest {
    * Test that adding a verification code to a user updates the database and can
    * be retrieved with {@link UserDB#getUser(java.sql.Connection, long)}.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If the database connection cannot be retrieved
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void addVerificationCodeRetrieveByConnectionIDTest()
-    throws MissingParamException, UserExistsException, DatabaseException,
-    SQLException, NoSuchUserException {
+  public void addVerificationCodeRetrieveByConnectionIDTest() throws Exception {
 
     User testUser = createUser(false);
     UserDB.generateEmailVerificationCode(getDataSource(), testUser);
@@ -1101,15 +862,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that verifying an email code for a non-existent user fails.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void checkEmailCodeNonExistentUser()
-    throws MissingParamException, DatabaseException {
+  public void checkEmailCodeNonExistentUser() throws Exception {
     assertEquals(UserDB.CODE_FAILED, UserDB.checkEmailVerificationCode(
       getDataSource(), "idontexist@test.com", "anything"));
   }
@@ -1117,15 +875,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that verifying a password reset code for a non-existent user fails.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void checkPasswordCodeNonExistentUser()
-    throws MissingParamException, DatabaseException {
+  public void checkPasswordCodeNonExistentUser() throws Exception {
     assertEquals(UserDB.CODE_FAILED, UserDB.checkPasswordResetCode(
       getDataSource(), "idontexist@test.com", "anything"));
   }
@@ -1136,18 +891,13 @@ public class UserDBTest extends BaseTest {
    *
    * @param code
    *          The empty code
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
-  public void checkEmptyEmailCodeSetTest(String code)
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void checkEmptyEmailCodeSetTest(String code) throws Exception {
     createUser(true);
     assertEquals(UserDB.CODE_FAILED, UserDB
       .checkEmailVerificationCode(getDataSource(), TEST_USER_EMAIL, code));
@@ -1159,18 +909,13 @@ public class UserDBTest extends BaseTest {
    *
    * @param code
    *          The empty code
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
-  public void checkEmptyEmailCodeNotSetTest(String code)
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void checkEmptyEmailCodeNotSetTest(String code) throws Exception {
     createUser(false);
     assertEquals(UserDB.CODE_FAILED, UserDB
       .checkEmailVerificationCode(getDataSource(), TEST_USER_EMAIL, code));
@@ -1182,21 +927,11 @@ public class UserDBTest extends BaseTest {
    *
    * @param code
    *          The empty code
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user does not exist
    */
   @FlywayTest
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
-  public void checkEmptyPasswordCodeSetTest(String code)
-    throws MissingParamException, UserExistsException, DatabaseException,
-    NoSuchUserException {
+  public void checkEmptyPasswordCodeSetTest(String code) throws Exception {
     User user = createUser(false);
     UserDB.generatePasswordResetCode(getDataSource(), user);
     assertEquals(UserDB.CODE_FAILED,
@@ -1209,20 +944,11 @@ public class UserDBTest extends BaseTest {
    *
    * @param code
    *          The empty code
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user does not exist
    */
   @FlywayTest
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
-  public void checkEmptyPasswordCodeNotSetTest(String code)
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void checkEmptyPasswordCodeNotSetTest(String code) throws Exception {
     createUser(false);
     assertEquals(UserDB.CODE_FAILED,
       UserDB.checkPasswordResetCode(getDataSource(), TEST_USER_EMAIL, code));
@@ -1231,17 +957,11 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that checking a valid email verification code that has expired will
    * fail.
-   *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/data/User/UserDBTest/expiredCodes" })
   @Test
-  public void expiredValidEmailCodeTest()
-    throws MissingParamException, DatabaseException {
+  public void expiredValidEmailCodeTest() throws Exception {
     assertEquals(UserDB.CODE_EXPIRED, UserDB.checkEmailVerificationCode(
       getDataSource(), "expiredcodes@test.com", "IAMACODE"));
   }
@@ -1250,16 +970,13 @@ public class UserDBTest extends BaseTest {
    * Test that checking an invalid email verification code that has expired will
    * fail.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/data/User/UserDBTest/expiredCodes" })
   @Test
-  public void expiredInvalidEmailCodeTest()
-    throws MissingParamException, DatabaseException {
+  public void expiredInvalidEmailCodeTest() throws Exception {
     assertNotEquals(UserDB.CODE_OK, UserDB.checkEmailVerificationCode(
       getDataSource(), "expiredcodes@test.com", "IAMACODE"));
   }
@@ -1268,16 +985,13 @@ public class UserDBTest extends BaseTest {
    * Test that checking a valid email verification code that has expired will
    * fail.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/data/User/UserDBTest/expiredCodes" })
   @Test
-  public void expiredValidPasswordCodeTest()
-    throws MissingParamException, DatabaseException {
+  public void expiredValidPasswordCodeTest() throws Exception {
     assertEquals(UserDB.CODE_EXPIRED, UserDB.checkPasswordResetCode(
       getDataSource(), "expiredcodes@test.com", "IAMACODE"));
   }
@@ -1286,16 +1000,13 @@ public class UserDBTest extends BaseTest {
    * Test that checking an invalid email verification code that has expired will
    * fail.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/data/User/UserDBTest/expiredCodes" })
   @Test
-  public void expiredInvalidPasswordCodeTest()
-    throws MissingParamException, DatabaseException {
+  public void expiredInvalidPasswordCodeTest() throws Exception {
     assertNotEquals(UserDB.CODE_OK, UserDB.checkPasswordResetCode(
       getDataSource(), "expiredcodes@test.com", "IAMACODE"));
   }
@@ -1303,21 +1014,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that changing a password correctly changes the authentication results
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If the database connection cannot be retrieved
-   * @throws NoSuchUserException
-   *           If the test user does not exist
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void changePasswordTest() throws MissingParamException,
-    UserExistsException, DatabaseException, SQLException {
+  public void changePasswordTest() throws Exception {
 
     User user = createUser(false);
     char[] newPassword = "NewPassword".toCharArray();
@@ -1344,19 +1046,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that clearing the email verification code works.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user has not been created
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void clearEmailVerificationCodeTest() throws MissingParamException,
-    UserExistsException, DatabaseException, NoSuchUserException {
+  public void clearEmailVerificationCodeTest() throws Exception {
     User user = createUser(false);
     UserDB.generateEmailVerificationCode(getDataSource(), user);
 
@@ -1376,21 +1071,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that clearing the password reset code works.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws SQLException
-   *           If a database connection cannot be obtained
-   * @throws NoSuchUserException
-   *           If the test user has not been created
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void clearPasswordResetCodeTest() throws MissingParamException,
-    UserExistsException, DatabaseException, SQLException, NoSuchUserException {
+  public void clearPasswordResetCodeTest() throws Exception {
     User user = createUser(false);
     UserDB.generatePasswordResetCode(getDataSource(), user);
 
@@ -1412,17 +1098,12 @@ public class UserDBTest extends BaseTest {
    * Test that trying to retrieve user prefs with a missing {@link DataSource}
    * fails.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getPrefsMissingDataSourceTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void getPrefsMissingDataSourceTest() throws Exception {
     User user = createUser(false);
     assertThrows(MissingParamException.class, () -> {
       UserDB.getPreferences(null, user.getDatabaseID());
@@ -1432,18 +1113,13 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that trying to retrieve user prefs with a an invalid user ID fails.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @ParameterizedTest
   @MethodSource("createInvalidReferences")
-  public void getPrefsInvalidIdTest(long id)
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void getPrefsInvalidIdTest(long id) throws Exception {
 
     assertThrows(MissingParamException.class, () -> {
       UserDB.getPreferences(getDataSource(), id);
@@ -1454,17 +1130,12 @@ public class UserDBTest extends BaseTest {
    * Test that trying to retrieve user prefs with a missing {@link DataSource}
    * fails.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getPrefsNonExistentUserTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void getPrefsNonExistentUserTest() throws Exception {
 
     assertThrows(NoSuchUserException.class, () -> {
       UserDB.getPreferences(getDataSource(), 1000000L);
@@ -1475,19 +1146,12 @@ public class UserDBTest extends BaseTest {
    * Test that retrieving the preferences for a user with no stored preferences
    * returns an empty {@link UserPreferences} object.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user has not been created
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void getPrefsUserWithNoPrefs() throws MissingParamException,
-    UserExistsException, DatabaseException, NoSuchUserException {
+  public void getPrefsUserWithNoPrefs() throws Exception {
     // A newly created user has no preferences
     User user = createUser(false);
     UserPreferences prefs = UserDB.getPreferences(getDataSource(),
@@ -1498,19 +1162,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that user preferences can be correctly stored and retrieved.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
-   * @throws NoSuchUserException
-   *           If the test user has not been created
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void setSetAndRetrievePrefs() throws MissingParamException,
-    UserExistsException, DatabaseException, NoSuchUserException {
+  public void setSetAndRetrievePrefs() throws Exception {
     User user = createUser(false);
     UserPreferences prefs = UserDB.getPreferences(getDataSource(),
       user.getDatabaseID());
@@ -1527,17 +1184,12 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that setting user preferences with a missing {@link DataSource} fails.
    *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
-  public void setPrefsMissingDataSourceTest()
-    throws MissingParamException, UserExistsException, DatabaseException {
+  public void setPrefsMissingDataSourceTest() throws Exception {
     User user = createUser(false);
     assertThrows(MissingParamException.class, () -> UserDB.savePreferences(null,
       new UserPreferences(user.getDatabaseID())));
@@ -1546,13 +1198,6 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that setting user preferences with a missing {@link UserPreferences}
    * object fails.
-   *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
    */
   @FlywayTest
   @Test
@@ -1564,13 +1209,6 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that setting user preferences with a missing {@link UserPreferences}
    * object fails.
-   *
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws UserExistsException
-   *           If the test user has already been created
-   * @throws MissingParamException
-   *           If the method fails to pass required information to the back end.
    */
   @FlywayTest
   @Test

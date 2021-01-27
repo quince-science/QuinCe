@@ -103,7 +103,7 @@ public class SensorsConfigurationTest extends BaseTest {
    * initialise a {@link SensorsConfiguration} object. This will be returned
    * from the method.
    *
-   * @return The {@link SenssorsConfiguration} object.
+   * @return The {@link SensorsConfiguration} object.
    * @throws Exception
    *           If the {@link ResourceManager} cannot be created.
    */
@@ -294,7 +294,7 @@ public class SensorsConfigurationTest extends BaseTest {
    * name is included in the input list.
    *
    * @throws Exception
-   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *           If any internal errors are encountered.
    *
    * @see #getConfig()
    */
@@ -649,9 +649,10 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Test that {@link SensorsConfiguration#getSensorTypes(List, boolean)} with
-   * {@code replaceParentsWithChildren == true} returns parent types without
-   * their children.
+   * Test that
+   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean, boolean)}
+   * with {@code replaceParentsWithChildren == true} returns parent types
+   * without their children.
    *
    * @throws Exception
    *           If the {@link SensorsConfiguration} cannot be accessed.
@@ -675,9 +676,10 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Test that {@link SensorsConfiguration#getSensorTypes(List, boolean)} with
-   * {@code replaceParentsWithChildren == false} returns child types without
-   * their parents.
+   * Test that
+   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean, boolean)}
+   * with {@code replaceParentsWithChildren == false} returns child types
+   * without their parents.
    *
    * @throws Exception
    *           If the {@link SensorsConfiguration} cannot be accessed.
@@ -1043,7 +1045,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @FlywayTest(locationsForMigrate = {
     "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/dependentParent" })
   @Test
-  public void dependentParentTest() throws Exception {
+  public void dependentParentTest() {
     assertThrows(SensorConfigurationException.class, () -> {
       getConfig();
     });
@@ -1150,8 +1152,8 @@ public class SensorsConfigurationTest extends BaseTest {
 
   /**
    * Test that
-   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean)} with
-   * {@code includeDependents == false} does not return dependents
+   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean, boolean)}
+   * with {@code includeDependents == false} does not return dependents
    *
    * @throws Exception
    *           If the {@link SensorsConfiguration} cannot be accessed.
@@ -1172,8 +1174,8 @@ public class SensorsConfigurationTest extends BaseTest {
 
   /**
    * Test that
-   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean)} with
-   * {@code includeDependents == true} and
+   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean, boolean)}
+   * with {@code includeDependents == true} and
    * {@code replaceParentsWithChildren == false} returns dependents for normal
    * sensors but not children
    *
@@ -1198,8 +1200,8 @@ public class SensorsConfigurationTest extends BaseTest {
 
   /**
    * Test that
-   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean)} with
-   * {@code includeDependents == true} and
+   * {@link SensorsConfiguration#getSensorTypes(List, boolean, boolean, boolean)}
+   * with {@code includeDependents == true} and
    * {@code replaceParentsWithChildren == true} returns dependents for normal
    * sensors and child sensor types
    *
@@ -1228,6 +1230,7 @@ public class SensorsConfigurationTest extends BaseTest {
    * for it.
    *
    * @throws Exception
+   *           If any internal errors are encountered
    */
   @FlywayTest
   @Test
@@ -1244,6 +1247,7 @@ public class SensorsConfigurationTest extends BaseTest {
    * internal calibrations returns the 'Run Type' type if we ask for it.
    *
    * @throws Exception
+   *           If any internal errors are encountered
    */
   @FlywayTest
   @Test
@@ -1261,6 +1265,7 @@ public class SensorsConfigurationTest extends BaseTest {
    * for it.
    *
    * @throws Exception
+   *           If any internal errors are encountered
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/variableWithNoInternalCalibrations" })
@@ -1282,6 +1287,7 @@ public class SensorsConfigurationTest extends BaseTest {
    * internal calibrations returns the 'Run Type' type if we ask for it.
    *
    * @throws Exception
+   *           If any internal errors are encountered
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/variableWithNoInternalCalibrations" })

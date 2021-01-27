@@ -20,11 +20,8 @@ import junit.uk.ac.exeter.QuinCe.TestBase.TestLineException;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -167,19 +164,11 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   /**
    * Read the variable and sensor configuration from the database.
    *
-   * @throws DatabaseException
-   *           If the data retrieval methods fail
-   * @throws SensorTypeNotFoundException
-   *           If any of the expected {@link SensorType}s are not in the
-   *           database
-   * @throws SQLException
-   *           If a database error occurs
-   * @throws SensorConfigurationException
-   *           If the sensor configuration is invalid
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @BeforeEach
-  public void init() throws DatabaseException, SensorTypeNotFoundException,
-    SQLException, SensorConfigurationException {
+  public void init() throws Exception {
     initResourceManager();
     config = ResourceManager.getInstance().getSensorsConfiguration();
     ArrayList<Long> varIds = new ArrayList<Long>(1);
@@ -329,8 +318,8 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    *
    * @param line
    *          A line from the Test Set file
-   * @throws TestLineException
-   *           If one of the test lines cannot be processed
+   * @throws Exception
+   *           If any internal errors are encountered.
    * @see TestSetLine
    * @see #assignMainSensorType(TestSetLine)
    * @see #assignRelation(TestSetLine)
@@ -340,8 +329,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    */
   @ParameterizedTest
   @MethodSource("getLines")
-  public void isAssignmentRequiredTests(TestSetLine line)
-    throws TestLineException {
+  public void isAssignmentRequiredTests(TestSetLine line) throws Exception {
 
     try {
       assignMainSensorType(line);
@@ -359,8 +347,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
 
   }
 
-  private SensorType getSensorType(TestSetLine line, int col)
-    throws SensorTypeNotFoundException {
+  private SensorType getSensorType(TestSetLine line, int col) throws Exception {
     return config.getSensorType(line.getStringField(col, true));
   }
 
@@ -371,13 +358,10 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * @param line
    *          The Test Set line
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
-  private void assignMainSensorType(TestSetLine line)
-    throws SensorTypeNotFoundException, SensorAssignmentException, Exception {
+  private void assignMainSensorType(TestSetLine line) throws Exception {
     if (line.getBooleanField(SENSOR_ASSIGN_PRIMARY_COL)) {
       assignments.addAssignment(SensorAssignmentsTest.makeAssignment(
         getSensorType(line, SENSOR_TYPE_COL),
@@ -396,13 +380,10 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * @param line
    *          The Test Set line
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
-  private void assignRelation(TestSetLine line)
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  private void assignRelation(TestSetLine line) throws Exception {
     if (!line.isFieldEmpty(RELATION_COL)) {
       if (line.getBooleanField(SIBLING_ASSIGNED_PRIMARY_COL)) {
         assignments.addAssignment(SensorAssignmentsTest.makeAssignment(
@@ -424,13 +405,10 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * @param line
    *          The Test Set line
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
-  private void assignDependent(TestSetLine line)
-    throws SensorTypeNotFoundException, SensorAssignmentException {
+  private void assignDependent(TestSetLine line) throws Exception {
     if (!line.isFieldEmpty(DEPENDENT_COL)) {
       if (line.getBooleanField(DEPENDENT_ASSIGNED_PRIMARY_COL)) {
 
@@ -471,10 +449,8 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * @param line
    *          The Test Set line
    *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   private void assignDependentSibling(TestSetLine line) throws Exception {
     if (!line.isFieldEmpty(DEPENDENT_SIBLING_COL)) {
