@@ -28,6 +28,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
+@SuppressWarnings("serial")
 public class SensorAssignments
   extends TreeMap<SensorType, List<SensorAssignment>> {
 
@@ -43,13 +44,13 @@ public class SensorAssignments
   private List<Long> variableIDs;
 
   /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = 7750520470025596480L;
-
-  /**
-   * Build the list of assignments based on the supplied list of variable IDs
+   * Initialise the assignments for the specified list of {@link Variable}s,
+   * using a database {@link Connection}.
    *
+   * @param conn
+   *          A database connection
+   * @param variableIDs
+   *          The variable IDs
    * @throws DatabaseException
    *           If any database lookups fail
    * @throws SensorConfigurationException
@@ -66,6 +67,21 @@ public class SensorAssignments
     populateAssignments(conn);
   }
 
+  /**
+   * Initialise the assignments for the specified list of {@link Variable}s
+   * using a {@link DataSource}.
+   *
+   * @param dataSource
+   *          A data source
+   * @param variableIDs
+   *          The variable IDs
+   * @throws DatabaseException
+   *           If any database lookups fail
+   * @throws SensorConfigurationException
+   *           If any variables can't be found
+   * @throws SensorTypeNotFoundException
+   *           If any internally listed SensorTypes don't exist
+   */
   public SensorAssignments(DataSource dataSource, List<Long> variableIDs)
     throws SensorTypeNotFoundException, SensorConfigurationException,
     DatabaseException {
@@ -83,6 +99,12 @@ public class SensorAssignments
    * @param variables
    *          The instrument variables
    * @return The SensorAssignments object
+   * @throws DatabaseException
+   *           If any database lookups fail
+   * @throws SensorConfigurationException
+   *           If any variables can't be found
+   * @throws SensorTypeNotFoundException
+   *           If any internally listed SensorTypes don't exist
    */
   public static SensorAssignments makeSensorAssignmentsFromVariables(
     Connection conn, List<Variable> variables) throws DatabaseException,
@@ -97,10 +119,11 @@ public class SensorAssignments
   }
 
   /**
-   * Initialise the data structure
+   * Initialise the data structure. Passes through to
+   * {@link #populateAssignments(Connection)}.
    *
-   * @param conn
-   *          A database connection
+   * @param dataSource
+   *          A data source
    * @throws DatabaseException
    *           If any database lookups fail
    * @throws SensorConfigurationException
@@ -225,10 +248,9 @@ public class SensorAssignments
    *
    * @param sensorType
    *          The SensorType
-   * @param variableIDs
-   *          The variables' database IDs
    * @return {@code true} if there are required dependents; {@code false} if not
    * @throws SensorConfigurationException
+   *           If the sensorType's dependents cannot be established.
    */
   private boolean hasAssignedDependents(SensorType sensorType)
     throws SensorConfigurationException {
@@ -284,6 +306,25 @@ public class SensorAssignments
    * @param primaryOnly
    *          If only primary assignments are to be checked
    * @return {@code true} if the sensor has been assigned; {@code false} if not
+   */
+
+  /**
+   * Determine whether a {@link SensorType} has been assigned. Checking can
+   * optionally include siblings/child sensor types. Optionally only check
+   * whether a primary sensor have been assigned.
+   *
+   * @param sensorType
+   *          The {@link SensorType} to check.
+   * @param dataFileName
+   *          The file whose assignments are to be checked.
+   * @param primaryOnly
+   *          Indicates whether or not only primary assignments should be
+   *          included.
+   * @param includeRelations
+   *          Indicates whether child or sibling {@link SensorType}s should be
+   *          included.
+   * @return {@code true} if the {@link SensorType} is assigned; {@code false}
+   *         if not.
    */
   private boolean isAssigned(SensorType sensorType, String dataFileName,
     boolean primaryOnly, boolean includeRelations) {
@@ -348,12 +389,14 @@ public class SensorAssignments
 
   /**
    * Check the internal data structure to see if a SensorType has been assigned.
-   * Used by {{@link #isAssigned(SensorType, boolean)}
+   * Used by the {@code isAssigned} methods.
    *
    * @param sensorType
-   *          The SensorType
+   *          The {@link SensorType} to be checked.
+   * @param dataFileName
+   *          The data file whose assignments are to be checked.
    * @param primaryOnly
-   *          If only primary assignments are to be checked
+   *          If only primary assignments are to be checked.
    * @return {@code true} if the sensor has been assigned; {@code false} if not
    */
   private boolean checkAssignment(SensorType sensorType, String dataFileName,
@@ -509,15 +552,18 @@ public class SensorAssignments
   }
 
   /**
-   * De-assign a file/column from this set of assignments. The assignment
-   * doesn't have to exist; the method will return a {@code boolean} indicating
-   * whether or not a matching assignment was found and removed.
+   * Remove the assignment of a {@link SensorType} from a specified file/column.
+   * The assignment doesn't have to exist; the method will return the remove
+   * {@link SensorAssignment} object.
    *
+   * @param sensorType
+   *          The {@link} SensorType to be unassigned.
    * @param fileDescription
-   *          The file description
+   *          The file from which the assignment is to be removed.
    * @param columnIndex
-   *          The column index
-   * @return {@code true} if an assignment was removed; {@code false} if not
+   *          The column index.
+   * @return The removed assignment, or {@code null} if there was no assignment
+   *         to remove.
    */
   public SensorAssignment removeAssignment(SensorType sensorType,
     String fileDescription, int columnIndex) {
@@ -667,9 +713,9 @@ public class SensorAssignments
   }
 
   /**
-   * Get the column IDs for the Run Type columns
+   * Get the database IDs for the columns assigned as Run Type.
    *
-   * @return
+   * @return The Run Type assignment IDs.
    */
   public List<Long> getRunTypeColumnIDs() {
     List<Long> result = new ArrayList<Long>();
@@ -815,7 +861,10 @@ public class SensorAssignments
    * @return {@code true} if all required sensor types are assigned;
    *         {@code false} otherwise.
    * @throws SensorConfigurationException
+   *           If the sensor types for the variable cannot be retrieved.
    * @throws SensorTypeNotFoundException
+   *           If a referenced {@link SensorType} does not exist in the
+   *           database.
    */
   public boolean isVariableComplete(Variable variable)
     throws SensorConfigurationException, SensorTypeNotFoundException {

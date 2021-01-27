@@ -12,11 +12,9 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import junit.uk.ac.exeter.QuinCe.TestBase.TestLineException;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class DateTimeSpecificationRequiredTypeTests extends TestSetTest {
@@ -77,8 +75,7 @@ public class DateTimeSpecificationRequiredTypeTests extends TestSetTest {
   }
 
   @Test
-  public void getRequiredTypesHoursFromStartAssignedTest()
-    throws DateTimeSpecificationException {
+  public void getRequiredTypesHoursFromStartAssignedTest() throws Exception {
     DateTimeSpecification spec = new DateTimeSpecification(true);
     spec.assignHoursFromStart(0, "", "", "");
     assertEquals(0, spec.getRequiredTypes().size());
@@ -86,8 +83,7 @@ public class DateTimeSpecificationRequiredTypeTests extends TestSetTest {
 
   @ParameterizedTest
   @MethodSource("getLines")
-  public void getRequiredTypesTests(TestSetLine line)
-    throws TestLineException, DateTimeSpecificationException {
+  public void getRequiredTypesTests(TestSetLine line) throws Exception {
 
     List<Integer> assigned = pipesToList(
       line.getStringField(ASSIGNED_COL, false));

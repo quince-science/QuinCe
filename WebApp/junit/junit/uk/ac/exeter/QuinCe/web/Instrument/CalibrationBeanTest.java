@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
@@ -155,17 +154,14 @@ public class CalibrationBeanTest extends BaseTest {
    * Specific tests for getters and setters are in separate tests.
    * </p>
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void initBeanTest() throws MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException {
+  public void initBeanTest() throws Exception {
     CalibrationBean bean = initBean();
     assertNotNull(bean);
   }
@@ -173,17 +169,14 @@ public class CalibrationBeanTest extends BaseTest {
   /**
    * Test that {@link CalibrationBean#getInstrumentId()} works.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void getInstrumentIdTest() throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException {
+  public void getInstrumentIdTest() throws Exception {
     CalibrationBean bean = initBean();
     assertEquals(INSTRUMENT_ID, bean.getInstrumentId());
   }
@@ -191,17 +184,14 @@ public class CalibrationBeanTest extends BaseTest {
   /**
    * Test that {@link CalibrationBean#getInstrumentName()} works.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void getInstrumentNameTest() throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException {
+  public void getInstrumentNameTest() throws Exception {
     CalibrationBean bean = initBean();
     assertEquals(INSTRUMENT_NAME, bean.getInstrumentName());
   }
@@ -209,17 +199,14 @@ public class CalibrationBeanTest extends BaseTest {
   /**
    * Test that {@link CalibrationBean#setInstrumentId()} works.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void setInstrumentIdTest() throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException {
+  public void setInstrumentIdTest() throws Exception {
     CalibrationBean bean = initBean();
     bean.setInstrumentId(1000L);
     assertEquals(1000L, bean.getInstrumentId());
@@ -228,17 +215,14 @@ public class CalibrationBeanTest extends BaseTest {
   /**
    * Test that {@link CalibrationBean#setInstrumentName()} works.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void setInstrumentNameTest() throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException {
+  public void setInstrumentNameTest() throws Exception {
     CalibrationBean bean = initBean();
     bean.setInstrumentName("NEW NAME");
     assertEquals("NEW NAME", bean.getInstrumentName());
@@ -254,18 +238,14 @@ public class CalibrationBeanTest extends BaseTest {
    * with a {@code null} {@code newTime} and a present {@code newTarget} throws
    * an exception.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void getAffectedDatasetsNullTimeOnlyTest()
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+  public void getAffectedDatasetsNullTimeOnlyTest() throws Exception {
     CalibrationBean bean = initBean(EXISTING_CALIBRATION, null, "TARGET1");
     assertThrows(InvalidCalibrationEditException.class, () -> {
       bean.calcAffectedDataSets();
@@ -278,18 +258,14 @@ public class CalibrationBeanTest extends BaseTest {
    * with a {@code null} {@code newTime} and a present {@code newTarget} throws
    * an exception.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void getAffectedDatasetsNullTargetOnlyTest()
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+  public void getAffectedDatasetsNullTargetOnlyTest() throws Exception {
     CalibrationBean bean = initBean(EXISTING_CALIBRATION,
       LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")), null);
     assertThrows(InvalidCalibrationEditException.class, () -> {
@@ -302,18 +278,15 @@ public class CalibrationBeanTest extends BaseTest {
    * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
    * to make a new calibration with a non-existent target throws an exception.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsNewWithNonExistentTargetTest()
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+    throws Exception {
     CalibrationBean bean = initBean(-1L,
       LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")), "Flurble");
     assertThrows(InvalidCalibrationTargetException.class, () -> {
@@ -326,18 +299,15 @@ public class CalibrationBeanTest extends BaseTest {
    * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
    * to make edit a calibration with a non-existent target throws an exception.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
   public void getAffectedDatasetsEditWithNonExistentTargetTest()
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+    throws Exception {
     CalibrationBean bean = initBean(EXISTING_CALIBRATION,
       LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")), "Flurble");
     assertThrows(InvalidCalibrationTargetException.class, () -> {
@@ -350,18 +320,14 @@ public class CalibrationBeanTest extends BaseTest {
    * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
    * to make a new calibration with a date in the future throws an exception.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void getAffectedDatasetsNewWithFutureDateTest()
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+  public void getAffectedDatasetsNewWithFutureDateTest() throws Exception {
 
     LocalDateTime future = LocalDateTime
       .ofInstant(Instant.now(), ZoneId.of("UTC")).plusDays(1);
@@ -378,18 +344,14 @@ public class CalibrationBeanTest extends BaseTest {
    * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
    * to make edit a calibration with a date in the future throws an exception.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void getAffectedDatasetsEditWithFutureDateTest()
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+  public void getAffectedDatasetsEditWithFutureDateTest() throws Exception {
 
     LocalDateTime future = LocalDateTime
       .ofInstant(Instant.now(), ZoneId.of("UTC")).plusDays(1);
@@ -406,18 +368,14 @@ public class CalibrationBeanTest extends BaseTest {
    * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
    * to delete a calibration with a negative ID throws an exception.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void getAffectedDatasetsDeleteNegativeIDTest()
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+  public void getAffectedDatasetsDeleteNegativeIDTest() throws Exception {
     CalibrationBean bean = initBean(-1, null, null);
 
     assertThrows(InvalidCalibrationEditException.class, () -> {
@@ -430,17 +388,14 @@ public class CalibrationBeanTest extends BaseTest {
    * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
    * to delete non-existent calibration throws an exception.
    *
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws MissingParamException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
   @Test
-  public void selectNonExistentCalibrationTest() throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException {
+  public void selectNonExistentCalibrationTest() throws Exception {
     CalibrationBean bean = initBean();
 
     bean.setSelectedCalibrationId(NON_EXISTENT_CALIBRATION);
@@ -453,21 +408,15 @@ public class CalibrationBeanTest extends BaseTest {
    * Test that adding the first calibration for a target before all datasets
    * works and all datasets are affected (and can be recalculated).
    *
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws InvalidCalibrationEditException
-   * @throws MissingParamException
-   * @throws InvalidCalibrationDateException
-   * @throws InvalidCalibrationTargetException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
   @Test
   public void addFirstCalibrationBeforeAllPriorsRequiredTest()
-    throws RecordNotFoundException, InvalidCalibrationTargetException,
-    InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException {
+    throws Exception {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 1, 0, 0, 0),
@@ -487,21 +436,14 @@ public class CalibrationBeanTest extends BaseTest {
    * Test that adding the first calibration for a target after all datasets
    * works and all datasets are affected (and can be recalculated).
    *
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws InvalidCalibrationEditException
-   * @throws MissingParamException
-   * @throws InvalidCalibrationDateException
-   * @throws InvalidCalibrationTargetException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
   @Test
-  public void addFirstCalibrationAfterAllPriorsRequiredTest()
-    throws RecordNotFoundException, InvalidCalibrationTargetException,
-    InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException {
+  public void addFirstCalibrationAfterAllPriorsRequiredTest() throws Exception {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 20, 0, 0, 0),
@@ -520,21 +462,14 @@ public class CalibrationBeanTest extends BaseTest {
    * Test that adding the first calibration for a target between datasets works
    * and all datasets are affected (and can be recalculated).
    *
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws InvalidCalibrationEditException
-   * @throws MissingParamException
-   * @throws InvalidCalibrationDateException
-   * @throws InvalidCalibrationTargetException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
   @Test
-  public void addFirstCalibrationBetweenPriorsRequiredTest()
-    throws RecordNotFoundException, InvalidCalibrationTargetException,
-    InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException {
+  public void addFirstCalibrationBetweenPriorsRequiredTest() throws Exception {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 7, 0, 0, 0),
@@ -553,21 +488,15 @@ public class CalibrationBeanTest extends BaseTest {
    * Test that adding the first calibration for a target before all datasets
    * works and all datasets are affected (and can be recalculated).
    *
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws InvalidCalibrationEditException
-   * @throws MissingParamException
-   * @throws InvalidCalibrationDateException
-   * @throws InvalidCalibrationTargetException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
   @Test
   public void addFirstCalibrationBeforeAllPriorsNotRequiredTest()
-    throws RecordNotFoundException, InvalidCalibrationTargetException,
-    InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException {
+    throws Exception {
 
     CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 1, 0, 0, 0),
@@ -587,21 +516,15 @@ public class CalibrationBeanTest extends BaseTest {
    * Test that adding the first calibration for a target after all datasets
    * works and all datasets are affected (and can be recalculated).
    *
-   * @throws RecordNotFoundException
-   * @throws DatabaseException
-   * @throws InvalidCalibrationEditException
-   * @throws MissingParamException
-   * @throws InvalidCalibrationDateException
-   * @throws InvalidCalibrationTargetException
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
   @Test
   public void addFirstCalibrationAfterAllPriorsNotRequiredTest()
-    throws RecordNotFoundException, InvalidCalibrationTargetException,
-    InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException {
+    throws Exception {
 
     CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 20, 0, 0, 0),

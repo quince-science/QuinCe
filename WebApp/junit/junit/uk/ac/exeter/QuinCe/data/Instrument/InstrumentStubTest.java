@@ -18,13 +18,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -81,7 +78,7 @@ public class InstrumentStubTest extends BaseTest {
    * database.
    *
    * @throws SQLException
-   *           If the instrument details cannot be retrieved
+   *           If any internal errors are encountered.
    */
   private void loadDBInstrument() throws SQLException {
     initResourceManager();
@@ -113,11 +110,11 @@ public class InstrumentStubTest extends BaseTest {
    * {@link InstrumentStub#getName()} methods work.
    * </p>
    *
-   * @throws MissingParamException
-   *           If the {@link InstrumentStub} is given invalid values
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @Test
-  public void validConstructorTest() throws MissingParamException {
+  public void validConstructorTest() throws Exception {
     InstrumentStub stub = new InstrumentStub(1L, TEST_INSTRUMENT_NAME);
     assertTrue(stub.getId() == 1L);
     assertTrue(stub.getName().equals(TEST_INSTRUMENT_NAME));
@@ -182,27 +179,13 @@ public class InstrumentStubTest extends BaseTest {
    * {@link InstrumentDB}.
    * </p>
    *
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws DatabaseException
-   *           If an error occurs while retrieving the full Instrument from the
-   *           database
-   * @throws RecordNotFoundException
-   *           If the instrument record cannot be found in the database
-   * @throws ResourceException
-   *           If the data source cannot be retrieved from the
-   *           {@link ResourceManager}
-   * @throws InstrumentException
-   *           If any instrument details are invalid
-   * @throws SQLException
-   *           If any database actions fail
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument" })
   @Test
-  public void getFullInstrumentTest()
-    throws SQLException, MissingParamException, DatabaseException,
-    RecordNotFoundException, ResourceException, InstrumentException {
+  public void getFullInstrumentTest() throws Exception {
 
     loadDBInstrument();
 
@@ -217,16 +200,13 @@ public class InstrumentStubTest extends BaseTest {
    * Test that {@link InstrumentStub#getFullInstrument()} with an ID not in the
    * database fails.
    *
-   * @throws SQLException
-   *           If the test instrument details cannot be retrieved
-   * @throws MissingParamException
-   *           If the {@link InstrumentStub} is given invalid values
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument" })
   @Test
-  public void getFullInstrumentIdNotInDatabaseTest()
-    throws SQLException, MissingParamException {
+  public void getFullInstrumentIdNotInDatabaseTest() throws Exception {
     loadDBInstrument();
 
     InstrumentStub stub = new InstrumentStub(badInstrumentId, dbInstrumentName);
@@ -242,16 +222,13 @@ public class InstrumentStubTest extends BaseTest {
    * to ensure that the retrieved instrument name matches the name in the stub.
    * </p>
    *
-   * @throws SQLException
-   *           If the test instrument details cannot be retrieved
-   * @throws MissingParamException
-   *           If the {@link InstrumentStub} is given invalid values
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument" })
   @Test
-  public void getFullInstrumentMismatchedIDAndNameTest()
-    throws SQLException, MissingParamException {
+  public void getFullInstrumentMismatchedIDAndNameTest() throws Exception {
     loadDBInstrument();
 
     InstrumentStub stub = new InstrumentStub(dbInstrumentId, badInstrumentName);
@@ -262,16 +239,13 @@ public class InstrumentStubTest extends BaseTest {
    * Test that {@link InstrumentStub#getFullInstrument()} with neither an ID nor
    * a name in the database fails.
    *
-   * @throws SQLException
-   *           If the test instrument details cannot be retrieved
-   * @throws MissingParamException
-   *           If the {@link InstrumentStub} is given invalid values
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument" })
   @Test
-  public void getFullInstrumentMissingIDAndNameTest()
-    throws SQLException, MissingParamException {
+  public void getFullInstrumentMissingIDAndNameTest() throws Exception {
     loadDBInstrument();
 
     InstrumentStub stub = new InstrumentStub(badInstrumentId,
