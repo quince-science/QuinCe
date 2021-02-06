@@ -36,10 +36,14 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
       .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
     Double salinity = measurement.getMeasurementValue("Salinity")
       .getCalculatedValue();
-    Double seaLevelPressure = measurement
+    Double atmosphericPressure = measurement
       .getMeasurementValue("Atmospheric Pressure").getCalculatedValue();
     Double co2InGas = measurement.getMeasurementValue("xCO₂ (with standards)")
       .getCalculatedValue();
+
+    Double seaLevelPressure = Calculators.calcSeaLevelPressure(
+      atmosphericPressure, equilibratorTemperature,
+      getFloatProperty("atm_pres_sensor_height"));
 
     Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
 
@@ -47,6 +51,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     Double fCO2 = Calculators.calcfCO2(pCO2, co2InGas, seaLevelPressure,
       equilibratorTemperature);
 
+    record.put("Sea Level Pressure", seaLevelPressure);
     record.put("pH₂O", pH2O);
     record.put("Calibrated CO₂", co2InGas);
     record.put("pCO₂", pCO2);
@@ -62,20 +67,24 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   @Override
   public List<CalculationParameter> getCalculationParameters() {
     if (null == calculationParameters) {
-      calculationParameters = new ArrayList<CalculationParameter>(7);
+      calculationParameters = new ArrayList<CalculationParameter>(5);
 
       calculationParameters
-        .add(new CalculationParameter(makeParameterId(3), "pH₂O",
+        .add(new CalculationParameter(makeParameterId(1), "Sea Level Pressure",
+          "Sea Level Pressure", "CAPASS01", "hPa", false, false));
+
+      calculationParameters
+        .add(new CalculationParameter(makeParameterId(2), "pH₂O",
           "Atmosphere Water Vapour Pressure", "CPVPZZ01", "hPa", false, false));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(4),
+      calculationParameters.add(new CalculationParameter(makeParameterId(3),
         "Calibrated CO₂", "xCO₂ In Atmosphere - Calibrated In Dry Air",
         "XCO2DCMA", "μmol mol-1", false, false));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(5),
+      calculationParameters.add(new CalculationParameter(makeParameterId(4),
         "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true, false));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(6),
+      calculationParameters.add(new CalculationParameter(makeParameterId(5),
         "fCO₂", "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true, false));
     }
 
