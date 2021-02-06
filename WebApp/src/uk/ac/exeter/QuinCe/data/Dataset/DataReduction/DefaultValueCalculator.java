@@ -6,12 +6,9 @@ import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
-import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class DefaultValueCalculator extends ValueCalculator {
@@ -35,23 +32,25 @@ public class DefaultValueCalculator extends ValueCalculator {
     DatasetSensorValues allSensorValues, DataReducer reducer, Connection conn)
     throws Exception {
 
-    MeanCalculator mean = new MeanCalculator();
+    return -12D;
 
-    if (null != measurementValues.get(sensorType)) {
-
-      for (MeasurementValue value : measurementValues.get(sensorType)) {
-
-        SensorValue priorValue = null == value.getPrior() ? null
-          : allSensorValues.getById(value.getPrior());
-
-        SensorValue postValue = null == value.getPost() ? null
-          : allSensorValues.getById(value.getPost());
-
-        mean.add(interpolate(priorValue, postValue,
-          measurementValues.getMeasurement().getTime()));
-      }
-    }
-
-    return mean.mean();
+    /*
+     * MeanCalculator mean = new MeanCalculator();
+     * 
+     * if (null != measurementValues.get(sensorType)) {
+     * 
+     * for (MeasurementValue value : measurementValues.get(sensorType)) {
+     * 
+     * SensorValue priorValue = null == value.getPrior() ? null :
+     * allSensorValues.getById(value.getPrior());
+     * 
+     * SensorValue postValue = null == value.getPost() ? null :
+     * allSensorValues.getById(value.getPost());
+     * 
+     * mean.add(interpolate(priorValue, postValue,
+     * measurementValues.getMeasurement().getTime())); } }
+     * 
+     * return mean.mean();
+     */
   }
 }

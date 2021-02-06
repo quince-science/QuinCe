@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -108,72 +107,62 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     LinkedHashSet<MeasurementValue> xh2oValues, CalibrationSet calibrationSet,
     DataReducer reducer, Connection conn) throws ValueCalculatorException {
 
-    MeanCalculator mean = new MeanCalculator();
+    return -13D;
 
-    Iterator<MeasurementValue> xco2Iterator = xco2Values.iterator();
-    Iterator<MeasurementValue> xh2oIterator = xh2oValues.iterator();
-
-    while (xco2Iterator.hasNext()) {
-
-      MeasurementValue xh2oValue = xh2oIterator.next();
-      MeasurementValue xco2Value = xco2Iterator.next();
-
-      SensorValue xh2oPrior = null;
-      Double xh2oPriorCalibratedValue = null;
-      SensorValue xco2Prior = null;
-      Double xco2PriorCalibratedValue = null;
-
-      SensorValue xh2oPost = null;
-      Double xh2oPostCalibratedValue = null;
-      SensorValue xco2Post = null;
-      Double xco2PostCalibratedValue = null;
-
-      if (xh2oValue.hasPrior() && xco2Value.hasPrior()) {
-        xh2oPrior = allSensorValues.getById(xh2oValue.getPrior());
-        xh2oPriorCalibratedValue = calibrate(instrument, allMeasurements,
-          allSensorValues, measurementValues, xh2oSensorType,
-          xh2oPrior.getTime(), xh2oPrior.getDoubleValue(), calibrationSet,
-          false, reducer, conn);
-
-        xco2Prior = allSensorValues.getById(xco2Value.getPrior());
-        double xco2PriorValue = xco2Prior.getDoubleValue();
-        double xco2PriorDriedValue = dry(xco2PriorValue,
-          xh2oPriorCalibratedValue);
-
-        xco2PriorCalibratedValue = calibrate(instrument, allMeasurements,
-          allSensorValues, measurementValues, xco2SensorType,
-          xco2Prior.getTime(), xco2PriorDriedValue, calibrationSet, true,
-          reducer, conn);
-      }
-
-      if (xh2oValue.hasPost() && xco2Value.hasPost()) {
-        xh2oPost = allSensorValues.getById(xh2oValue.getPost());
-        xh2oPostCalibratedValue = calibrate(instrument, allMeasurements,
-          allSensorValues, measurementValues, xh2oSensorType,
-          xh2oPost.getTime(), xh2oPost.getDoubleValue(), calibrationSet, false,
-          reducer, conn);
-
-        xco2Post = allSensorValues.getById(xco2Value.getPost());
-        double xco2PostValue = xco2Post.getDoubleValue();
-        double xco2PostDriedValue = dry(xco2PostValue, xh2oPostCalibratedValue);
-
-        xco2PostCalibratedValue = calibrate(instrument, allMeasurements,
-          allSensorValues, measurementValues, xco2SensorType,
-          xco2Post.getTime(), xco2PostDriedValue, calibrationSet, true, reducer,
-          conn);
-      }
-
-      if (null != xco2PriorCalibratedValue && null != xco2PostCalibratedValue) {
-        mean.add(interpolate(xco2Prior.getTime(), xco2PriorCalibratedValue,
-          xco2Post.getTime(), xco2PostCalibratedValue, measurementTime));
-      } else if (null != xco2PriorCalibratedValue) {
-        mean.add(xco2PriorCalibratedValue);
-      } else if (null != xco2PostCalibratedValue) {
-        mean.add(xco2PostCalibratedValue);
-      }
-    }
-
-    return mean.mean();
+    /*
+     * MeanCalculator mean = new MeanCalculator();
+     * 
+     * Iterator<MeasurementValue> xco2Iterator = xco2Values.iterator();
+     * Iterator<MeasurementValue> xh2oIterator = xh2oValues.iterator();
+     * 
+     * while (xco2Iterator.hasNext()) {
+     * 
+     * MeasurementValue xh2oValue = xh2oIterator.next(); MeasurementValue
+     * xco2Value = xco2Iterator.next();
+     * 
+     * SensorValue xh2oPrior = null; Double xh2oPriorCalibratedValue = null;
+     * SensorValue xco2Prior = null; Double xco2PriorCalibratedValue = null;
+     * 
+     * SensorValue xh2oPost = null; Double xh2oPostCalibratedValue = null;
+     * SensorValue xco2Post = null; Double xco2PostCalibratedValue = null;
+     * 
+     * if (xh2oValue.hasPrior() && xco2Value.hasPrior()) { xh2oPrior =
+     * allSensorValues.getById(xh2oValue.getPrior()); xh2oPriorCalibratedValue =
+     * calibrate(instrument, allMeasurements, allSensorValues,
+     * measurementValues, xh2oSensorType, xh2oPrior.getTime(),
+     * xh2oPrior.getDoubleValue(), calibrationSet, false, reducer, conn);
+     * 
+     * xco2Prior = allSensorValues.getById(xco2Value.getPrior()); double
+     * xco2PriorValue = xco2Prior.getDoubleValue(); double xco2PriorDriedValue =
+     * dry(xco2PriorValue, xh2oPriorCalibratedValue);
+     * 
+     * xco2PriorCalibratedValue = calibrate(instrument, allMeasurements,
+     * allSensorValues, measurementValues, xco2SensorType, xco2Prior.getTime(),
+     * xco2PriorDriedValue, calibrationSet, true, reducer, conn); }
+     * 
+     * if (xh2oValue.hasPost() && xco2Value.hasPost()) { xh2oPost =
+     * allSensorValues.getById(xh2oValue.getPost()); xh2oPostCalibratedValue =
+     * calibrate(instrument, allMeasurements, allSensorValues,
+     * measurementValues, xh2oSensorType, xh2oPost.getTime(),
+     * xh2oPost.getDoubleValue(), calibrationSet, false, reducer, conn);
+     * 
+     * xco2Post = allSensorValues.getById(xco2Value.getPost()); double
+     * xco2PostValue = xco2Post.getDoubleValue(); double xco2PostDriedValue =
+     * dry(xco2PostValue, xh2oPostCalibratedValue);
+     * 
+     * xco2PostCalibratedValue = calibrate(instrument, allMeasurements,
+     * allSensorValues, measurementValues, xco2SensorType, xco2Post.getTime(),
+     * xco2PostDriedValue, calibrationSet, true, reducer, conn); }
+     * 
+     * if (null != xco2PriorCalibratedValue && null != xco2PostCalibratedValue)
+     * { mean.add(interpolate(xco2Prior.getTime(), xco2PriorCalibratedValue,
+     * xco2Post.getTime(), xco2PostCalibratedValue, measurementTime)); } else if
+     * (null != xco2PriorCalibratedValue) { mean.add(xco2PriorCalibratedValue);
+     * } else if (null != xco2PostCalibratedValue) {
+     * mean.add(xco2PostCalibratedValue); } }
+     * 
+     * return mean.mean();
+     */
   }
 
   private Double nonDryingCalculation(LocalDateTime measurementTime,
@@ -182,40 +171,37 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
     LinkedHashSet<MeasurementValue> xco2Values, CalibrationSet calibrationSet,
     DataReducer reducer, Connection conn) throws ValueCalculatorException {
 
-    MeanCalculator mean = new MeanCalculator();
+    return -13D;
 
-    for (MeasurementValue measurementValue : xco2Values) {
-
-      SensorValue prior = null;
-      Double priorCalibratedValue = null;
-      SensorValue post = null;
-      Double postCalibratedValue = null;
-
-      if (measurementValue.hasPrior()) {
-        prior = allSensorValues.getById(measurementValue.getPrior());
-        priorCalibratedValue = calibrate(instrument, allMeasurements,
-          allSensorValues, measurementValues, xco2SensorType, prior,
-          calibrationSet, true, reducer, conn);
-      }
-
-      if (measurementValue.hasPost()) {
-        post = allSensorValues.getById(measurementValue.getPost());
-        postCalibratedValue = calibrate(instrument, allMeasurements,
-          allSensorValues, measurementValues, xco2SensorType, post,
-          calibrationSet, true, reducer, conn);
-      }
-
-      if (null != priorCalibratedValue && null != postCalibratedValue) {
-        mean.add(interpolate(prior.getTime(), priorCalibratedValue,
-          post.getTime(), postCalibratedValue, measurementTime));
-      } else if (null != priorCalibratedValue) {
-        mean.add(priorCalibratedValue);
-      } else if (null != postCalibratedValue) {
-        mean.add(postCalibratedValue);
-      }
-    }
-
-    return mean.mean();
+    /*
+     * 
+     * MeanCalculator mean = new MeanCalculator();
+     * 
+     * for (MeasurementValue measurementValue : xco2Values) {
+     * 
+     * SensorValue prior = null; Double priorCalibratedValue = null; SensorValue
+     * post = null; Double postCalibratedValue = null;
+     * 
+     * if (measurementValue.hasPrior()) { prior =
+     * allSensorValues.getById(measurementValue.getPrior());
+     * priorCalibratedValue = calibrate(instrument, allMeasurements,
+     * allSensorValues, measurementValues, xco2SensorType, prior,
+     * calibrationSet, true, reducer, conn); }
+     * 
+     * if (measurementValue.hasPost()) { post =
+     * allSensorValues.getById(measurementValue.getPost()); postCalibratedValue
+     * = calibrate(instrument, allMeasurements, allSensorValues,
+     * measurementValues, xco2SensorType, post, calibrationSet, true, reducer,
+     * conn); }
+     * 
+     * if (null != priorCalibratedValue && null != postCalibratedValue) {
+     * mean.add(interpolate(prior.getTime(), priorCalibratedValue,
+     * post.getTime(), postCalibratedValue, measurementTime)); } else if (null
+     * != priorCalibratedValue) { mean.add(priorCalibratedValue); } else if
+     * (null != postCalibratedValue) { mean.add(postCalibratedValue); } }
+     * 
+     * return mean.mean();
+     */
   }
 
   /**

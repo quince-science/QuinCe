@@ -471,18 +471,26 @@ public class SensorType implements Comparable<SensorType> {
     return result;
   }
 
-  /**
-   * Equality is based on the sensor type ID
-   */
   @Override
-  public boolean equals(Object o) {
-    boolean equal = false;
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (int) (id ^ (id >>> 32));
+    return result;
+  }
 
-    if (null != o && o instanceof SensorType) {
-      equal = ((SensorType) o).id == this.id;
-    }
-
-    return equal;
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    SensorType other = (SensorType) obj;
+    if (id != other.id)
+      return false;
+    return true;
   }
 
   @Override

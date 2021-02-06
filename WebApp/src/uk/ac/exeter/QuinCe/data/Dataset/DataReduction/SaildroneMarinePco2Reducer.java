@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -32,20 +31,19 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
   }
 
   @Override
-  public void doCalculation(Instrument instrument,
-    MeasurementValues sensorValues, DataReductionRecord record,
-    Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn) throws Exception {
+  public void doCalculation(Instrument instrument, Measurement measurement,
+    DataReductionRecord record, Connection conn) throws Exception {
 
-    Double intakeTemperature = sensorValues.getValue("Intake Temperature",
-      allMeasurements, allSensorValues, this, valueCalculators, conn);
-    Double salinity = sensorValues.getValue("Salinity", allMeasurements,
-      allSensorValues, this, valueCalculators, conn);
-    Double licorPressure = sensorValues.getValue(
-      "LICOR Pressure (Equilibrator)", allMeasurements, allSensorValues, this,
-      valueCalculators, conn);
-    Double co2InGas = sensorValues.getValue("xCO₂ water (dry, no standards)",
-      allMeasurements, allSensorValues, this, valueCalculators, conn);
+    Double intakeTemperature = measurement
+      .getMeasurementValue("Intake Temperature").getCalculatedValue();
+    Double salinity = measurement.getMeasurementValue("Salinity")
+      .getCalculatedValue();
+    Double licorPressure = measurement
+      .getMeasurementValue("LICOR Pressure (Equilibrator)")
+      .getCalculatedValue();
+    Double co2InGas = measurement
+      .getMeasurementValue("xCO₂ water (dry, no standards)")
+      .getCalculatedValue();
 
     Double pH2O = Calculators.calcPH2O(salinity, intakeTemperature);
     Double pCO2 = Calculators.calcpCO2TEWet(co2InGas, licorPressure, pH2O);

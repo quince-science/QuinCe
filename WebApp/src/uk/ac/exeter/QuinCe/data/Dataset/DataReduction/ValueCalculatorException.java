@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
+@Deprecated
 @SuppressWarnings("serial")
 public class ValueCalculatorException extends Exception {
 

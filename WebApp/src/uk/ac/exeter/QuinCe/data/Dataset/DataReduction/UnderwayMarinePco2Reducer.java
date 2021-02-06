@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -27,26 +26,19 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   }
 
   @Override
-  public void doCalculation(Instrument instrument,
-    MeasurementValues sensorValues, DataReductionRecord record,
-    Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn) throws Exception {
+  public void doCalculation(Instrument instrument, Measurement measurement,
+    DataReductionRecord record, Connection conn) throws Exception {
 
-    Double intakeTemperature = sensorValues.getValue("Intake Temperature",
-      allMeasurements, allSensorValues, this, valueCalculators, conn);
-
-    Double salinity = sensorValues.getValue("Salinity", allMeasurements,
-      allSensorValues, this, valueCalculators, conn);
-
-    Double equilibratorTemperature = sensorValues.getValue(
-      "Equilibrator Temperature", allMeasurements, allSensorValues, this,
-      valueCalculators, conn);
-
-    Double equilibratorPressure = sensorValues.getValue("Equilibrator Pressure",
-      allMeasurements, allSensorValues, this, valueCalculators, conn);
-
-    Double co2InGas = sensorValues.getValue("xCO₂ (with standards)",
-      allMeasurements, allSensorValues, this, valueCalculators, conn);
+    Double intakeTemperature = measurement
+      .getMeasurementValue("Intake Temperature").getCalculatedValue();
+    Double salinity = measurement.getMeasurementValue("Salinity")
+      .getCalculatedValue();
+    Double equilibratorTemperature = measurement
+      .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
+    Double equilibratorPressure = measurement
+      .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
+    Double co2InGas = measurement.getMeasurementValue("xCO₂ (with standards)")
+      .getCalculatedValue();
 
     Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
 
@@ -62,11 +54,6 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       intakeTemperature);
 
     // Store the calculated values
-    record.put("Interpolated SST", intakeTemperature);
-    record.put("Interpolated Salinity", salinity);
-    record.put("Interpolated Equilibrator Temperature",
-      equilibratorTemperature);
-    record.put("Equilibrator Pressure", equilibratorPressure);
     record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
     record.put("pH₂O", pH2O);
     record.put("Calibrated CO₂", co2InGas);
@@ -105,21 +92,6 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   public List<CalculationParameter> getCalculationParameters() {
     if (null == calculationParameters) {
       calculationParameters = new ArrayList<CalculationParameter>(11);
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(0),
-        "Interpolated SST", "SST_interp", "SSTINTERP", "°C", false, true));
-
-      calculationParameters.add(
-        new CalculationParameter(makeParameterId(1), "Interpolated Salinity",
-          "SSS_interp", "SSSINTERP", "psu", false, true));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(2),
-        "Interpolated Equilibrator Temperature", "EqT_interp", "EQTINTERP",
-        "°C", false, true));
-
-      calculationParameters.add(
-        new CalculationParameter(makeParameterId(3), "Equilibrator Pressure",
-          "Equilibrator Pressure", "PRESEQ", "hPa", false, false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(4),
         "ΔT", "Water-Equilibrator Temperature Difference", "DELTAT", "°C",

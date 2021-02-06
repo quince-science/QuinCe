@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -24,10 +23,8 @@ public class NoReductionReducer extends DataReducer {
   }
 
   @Override
-  public void doCalculation(Instrument instrument,
-    MeasurementValues sensorValues, DataReductionRecord record,
-    Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn) throws Exception {
+  public void doCalculation(Instrument instrument, Measurement measurement,
+    DataReductionRecord record, Connection conn) throws Exception {
   }
 
   @Override

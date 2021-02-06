@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -28,23 +27,19 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   }
 
   @Override
-  public void doCalculation(Instrument instrument,
-    MeasurementValues sensorValues, DataReductionRecord record,
-    Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn) throws Exception {
+  public void doCalculation(Instrument instrument, Measurement measurement,
+    DataReductionRecord record, Connection conn) throws Exception {
 
     // We use equilibrator temperature as the presumed most realistic gas
     // temperature
-    Double equilibratorTemperature = sensorValues.getValue(
-      "Equilibrator Temperature", allMeasurements, allSensorValues, this,
-      valueCalculators, conn);
-    Double salinity = sensorValues.getValue("Salinity", allMeasurements,
-      allSensorValues, this, valueCalculators, conn);
-    Double seaLevelPressure = sensorValues.getValue(
-      "Atmospheric Pressure at Sea Level", allMeasurements, allSensorValues,
-      this, valueCalculators, conn);
-    Double co2InGas = sensorValues.getValue("xCO₂ (with standards)",
-      allMeasurements, allSensorValues, this, valueCalculators, conn);
+    Double equilibratorTemperature = measurement
+      .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
+    Double salinity = measurement.getMeasurementValue("Salinity")
+      .getCalculatedValue();
+    Double seaLevelPressure = measurement
+      .getMeasurementValue("Atmospheric Pressure").getCalculatedValue();
+    Double co2InGas = measurement.getMeasurementValue("xCO₂ (with standards)")
+      .getCalculatedValue();
 
     Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
 
@@ -52,7 +47,6 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     Double fCO2 = Calculators.calcfCO2(pCO2, co2InGas, seaLevelPressure,
       equilibratorTemperature);
 
-    record.put("Sea Level Pressure", seaLevelPressure);
     record.put("pH₂O", pH2O);
     record.put("Calibrated CO₂", co2InGas);
     record.put("pCO₂", pCO2);
@@ -69,18 +63,6 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   public List<CalculationParameter> getCalculationParameters() {
     if (null == calculationParameters) {
       calculationParameters = new ArrayList<CalculationParameter>(7);
-
-      calculationParameters.add(
-        new CalculationParameter(makeParameterId(0), "Interpolated Salinity",
-          "SSS_interp", "SSSINTERP", "psu", false, true));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(1),
-        "Interpolated Equilibrator Temperature", "EqT_interp", "EQTINTERP",
-        "°C", false, true));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(2),
-        "Sea Level Pressure", "Atmospheric Pressure At Sea Level", "CAPAZZ01",
-        "hPa", false, false));
 
       calculationParameters
         .add(new CalculationParameter(makeParameterId(3), "pH₂O",
