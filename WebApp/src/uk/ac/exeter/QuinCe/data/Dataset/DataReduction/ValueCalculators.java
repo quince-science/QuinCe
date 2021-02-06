@@ -8,6 +8,7 @@ import java.util.Map;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 
+@Deprecated
 public class ValueCalculators {
 
   private HashMap<String, ValueCalculator> calculators;

@@ -1,9 +1,14 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Objects;
 
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Root object for a single measurement in a dataset
@@ -12,6 +17,8 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
  *
  */
 public class Measurement implements Comparable<Measurement> {
+
+  public static final MeasurementTimeComparator TIME_COMPARATOR = new MeasurementTimeComparator();
 
   /**
    * The measurement's database ID
@@ -34,6 +41,11 @@ public class Measurement implements Comparable<Measurement> {
   private final String runType;
 
   /**
+   * The values used to perform data reduction for this measurement.
+   */
+  private HashMap<Long, MeasurementValue> measurementValues;
+
+  /**
    * Constructor for a brand new measurement that is not yet in the database
    *
    * @param datasetId
@@ -53,6 +65,7 @@ public class Measurement implements Comparable<Measurement> {
     this.datasetId = datasetId;
     this.time = time;
     this.runType = runType;
+    this.measurementValues = new HashMap<Long, MeasurementValue>();
   }
 
   /**
@@ -78,6 +91,26 @@ public class Measurement implements Comparable<Measurement> {
     this.datasetId = datasetId;
     this.time = time;
     this.runType = runType;
+    this.measurementValues = new HashMap<Long, MeasurementValue>();
+  }
+
+  /**
+   * Constructor for a dummy Measurement with just a time.
+   * 
+   * <p>
+   * Used by {@link #dummyTimeMeasurement(LocalDateTime)} for the
+   * {@link #TIME_COMPARATOR}.
+   * </p>
+   * 
+   * @param time
+   *          The measurement time.
+   */
+  private Measurement(LocalDateTime time) {
+    this.id = DatabaseUtils.NO_DATABASE_RECORD;
+    this.datasetId = DatabaseUtils.NO_DATABASE_RECORD;
+    this.time = time;
+    this.runType = null;
+    this.measurementValues = null;
   }
 
   /**
@@ -141,10 +174,33 @@ public class Measurement implements Comparable<Measurement> {
     return result;
   }
 
+  public void setMeasurementValue(MeasurementValue measurementValue) {
+    measurementValues.put(measurementValue.getSensorType().getId(),
+      measurementValue);
+  }
+
+  public MeasurementValue getMeasurementValue(SensorType sensorType) {
+    return measurementValues.get(sensorType.getId());
+  }
+
+  public MeasurementValue getMeasurementValue(String sensorType)
+    throws SensorTypeNotFoundException {
+    return getMeasurementValue(ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType(sensorType));
+  }
+
+  public boolean hasMeasurementValue(SensorType sensorType) {
+    return measurementValues.containsKey(sensorType.getId());
+  }
+
+  public String getMeasurementValuesJson() {
+    return "MUST MAKE JSON Measurement.java:177";
+    // return new Gson().toJson(measurementValues);
+  }
+
   /*
    * Equals & hashCode use the dataset ID and time
    */
-
   @Override
   public int hashCode() {
     return Objects.hash(datasetId, time);
@@ -165,5 +221,16 @@ public class Measurement implements Comparable<Measurement> {
   @Override
   public String toString() {
     return "#" + id + " " + runType;
+  }
+
+  public static Measurement dummyTimeMeasurement(LocalDateTime time) {
+    return new Measurement(time);
+  }
+}
+
+class MeasurementTimeComparator implements Comparator<Measurement> {
+  @Override
+  public int compare(Measurement o1, Measurement o2) {
+    return o1.getTime().compareTo(o2.getTime());
   }
 }

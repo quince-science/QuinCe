@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
+@Deprecated
 public abstract class ValueCalculator {
 
   public abstract Double calculateValue(MeasurementValues measurementValues,

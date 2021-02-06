@@ -11,7 +11,6 @@ import java.util.Set;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -19,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundEx
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+@Deprecated
 @SuppressWarnings("serial")
 public class MeasurementValues
   extends HashMap<SensorType, LinkedHashSet<MeasurementValue>> {
@@ -96,31 +96,31 @@ public class MeasurementValues
     throws RoutineException, SensorTypeNotFoundException, MissingParamException,
     CloneNotSupportedException {
 
-    // If we've already loaded the sensor type, don't bother doing it again
-    if (!containsKey(sensorType)) {
-
-      put(sensorType, new LinkedHashSet<MeasurementValue>());
-
-      for (long columnId : instrument.getSensorAssignments()
-        .getColumnIds(sensorType)) {
-
-        SearchableSensorValuesList columnValues = allSensorValues
-          .getColumnValues(columnId);
-
-        MeasurementValue measurementValue = new MeasurementValue(measurement,
-          sensorType, columnId);
-        columnValues.populateMeasurementValue(measurementValue, goodFlagsOnly);
-
-        put(sensorType, measurementValue);
-      }
-
-      // If this SensorType depends on another, add that too.
-      SensorType dependsOn = instrument.getSensorAssignments()
-        .getDependsOn(sensorType);
-
-      if (null != dependsOn) {
-        loadSensorValues(allSensorValues, dependsOn, goodFlagsOnly);
-      }
-    }
+    /*
+     * 
+     * // If we've already loaded the sensor type, don't bother doing it again
+     * if (!containsKey(sensorType)) {
+     * 
+     * put(sensorType, new LinkedHashSet<MeasurementValue>());
+     * 
+     * for (long columnId : instrument.getSensorAssignments()
+     * .getColumnIds(sensorType)) {
+     * 
+     * SearchableSensorValuesList columnValues = allSensorValues
+     * .getColumnValues(columnId);
+     * 
+     * MeasurementValue measurementValue = new MeasurementValue(measurement,
+     * sensorType, columnId);
+     * columnValues.populateMeasurementValue(measurementValue, goodFlagsOnly);
+     * 
+     * put(sensorType, measurementValue); }
+     * 
+     * // If this SensorType depends on another, add that too. SensorType
+     * dependsOn = instrument.getSensorAssignments() .getDependsOn(sensorType);
+     * 
+     * if (null != dependsOn) { loadSensorValues(allSensorValues, dependsOn,
+     * goodFlagsOnly); } }
+     * 
+     */
   }
 }

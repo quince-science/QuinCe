@@ -1,132 +1,248 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
+/**
+ * Holds the calculated value of a given {@link SensorType} for a measurement.
+ * 
+ * <p>
+ * The calculated value is derived from one or more {@link SensorValue}s,
+ * depending on the configuration of the instrument, the relative time of the
+ * measurement and available {@link SensorValues}, and whether bad/questionable
+ * values are being ignored.
+ * </p>
+ * 
+ * <p>
+ * This class implements the most common calculation of a measurement value.
+ * Some {@link SensorTypes} require more complex calculations (e.g. xCO2 with
+ * standards, which also requires xH2O). These can be implemented by overriding
+ * classes.
+ * </p>
+ * 
+ * @author Steve Jones
+ *
+ */
 public class MeasurementValue {
 
-  private final Measurement measurement;
-
+  /**
+   * The {@link SensorType} that this measurement value is for.
+   */
   private final SensorType sensorType;
 
-  private final long columnId;
+  /**
+   * The IDs of the {@link SensorValue}s used to calculate the value.
+   * 
+   * <p>
+   * Note that the sensor values may not all belong to the specified
+   * {@link #sensorType}: some {@link SensorType}s require calculation based on
+   * other sensors (e.g. CO2 requires xH2O).
+   * </p>
+   */
+  private List<Long> sensorValueIds = new ArrayList<Long>();
 
-  private Long prior;
+  /**
+   * The IDs of {@link SensorValue}s used to support the value calculation.
+   * 
+   * <p>
+   * This can be used for values that aren't directly used in the calculation,
+   * such as those used in calibrations.
+   * </p>
+   */
+  private List<Long> supportingSensorValueIds = new ArrayList<Long>();
 
-  private Long post;
+  /**
+   * The number of calculations used to build this value.
+   * 
+   * <p>
+   * This is useful for combining multiple values, where a weighted mean is
+   * often required.
+   * </p>
+   */
+  private int memberCount = 0;
 
-  private Flag worstValueFlag = Flag.ASSUMED_GOOD;
+  /**
+   * The calculated value for the sensor type.
+   */
+  private Double calculatedValue = Double.NaN;
 
+  /**
+   * The QC flag for this value, derived from the contributing
+   * {@link SensorValues}.
+   */
+  private Flag flag = Flag.ASSUMED_GOOD;
+
+  /**
+   * The QC message for this value, derived from the contributing
+   * {@link SensorValues}.
+   */
   private List<String> qcMessage = new ArrayList<String>();
 
-  public MeasurementValue(Measurement measurement, SensorType sensorType,
-    long columnId) {
-    this.measurement = measurement;
+  /**
+   * Creates a stub value with no assigned {@link SensorValue}s.
+   * 
+   * @param sensorType
+   *          The sensor type that the value is calculated for.
+   */
+  public MeasurementValue(SensorType sensorType) {
     this.sensorType = sensorType;
-    this.columnId = columnId;
   }
 
-  public Measurement getMeasurement() {
-    return measurement;
+  /**
+   * Create a {@code MeasurementValue} based on the contents of existing
+   * {@code MeasurementValue} objects.
+   * 
+   * @param sensorType
+   * @param sourceValues
+   */
+
+  /**
+   * Create a fully populated {@code MeasurementValue}.
+   * 
+   * @param sensorType
+   *          The sensor type.
+   * @param sourceValues
+   *          The contributing {@link SensorValue}s.
+   * @param calculatedValue
+   *          The calculated value.
+   * @param memberCount
+   *          The member count.
+   */
+  public MeasurementValue(SensorType sensorType,
+    Collection<SensorValue> sensorValues, Double calculatedValue,
+    int memberCount) {
+
+    this.sensorType = sensorType;
+    this.calculatedValue = calculatedValue;
+    this.memberCount = memberCount;
+    addSensorValues(sensorValues);
   }
 
-  public long getColumnId() {
-    return columnId;
+  public void addSensorValues(Collection<SensorValue> values) {
+    values.forEach(this::addSensorValue);
   }
 
-  public Long getPrior() {
-    return prior;
+  /**
+   * Add the sensor values used in the specified {@code MeasurementValue}s.
+   * 
+   * @param sourceValues
+   *          The source {@code MeasurementValue}s.
+   */
+  public void addSensorValues(Collection<MeasurementValue> sourceValues,
+    DatasetSensorValues allSensorValues) {
+
+    sourceValues.forEach(x -> addSensorValues(x, allSensorValues));
   }
 
-  public Long getPost() {
-    return post;
-  }
-
-  public boolean hasPost() {
-    return post != null;
-  }
-
-  public boolean hasPrior() {
-    return prior != null;
-  }
-
-  public void setValues(SensorValue prior, SensorValue post)
-    throws RoutineException {
-
-    if (null == prior && null == post) {
-      worstValueFlag = Flag.NO_QC;
-      qcMessage = new ArrayList<String>(1);
-      qcMessage.add("No value");
+  /**
+   * Add the sensor values used in the specified {@code MeasurementValue}.
+   * 
+   * @param sourceValues
+   *          The source {@code MeasurementValue}.
+   */
+  public void addSensorValues(MeasurementValue sourceValue,
+    DatasetSensorValues allSensorValues) {
+    for (Long sensorValueId : sourceValue.getSensorValueIds()) {
+      addSensorValue(allSensorValues.getById(sensorValueId));
     }
+  }
 
-    if (null == prior || prior.noValue()) {
-      this.prior = null;
-    } else {
-      this.prior = prior.getId();
-      addQC(prior);
-    }
+  /**
+   * Add a {@link SensorValue} to the value.
+   * 
+   * <p>
+   * Adds the {@link SensorValue}'s ID and updates the QC information.
+   * </p>
+   * 
+   * @param value
+   *          The value to add.
+   */
+  public void addSensorValue(SensorValue value) {
+    if (!sensorValueIds.contains(value.getId())) {
+      sensorValueIds.add(value.getId());
 
-    if (null == post || post.noValue()) {
-      this.post = null;
-    } else {
-      this.post = post.getId();
-      addQC(post);
+      Flag valueFlag = value.getDisplayFlag();
+      if (valueFlag.equals(flag)) {
+        qcMessage.add(value.getUserQCMessage());
+      } else if (valueFlag.moreSignificantThan(flag)) {
+        flag = valueFlag;
+        qcMessage.clear();
+        qcMessage.add(value.getUserQCMessage());
+      }
     }
   }
 
-  private void addQC(SensorValue sensorValue) throws RoutineException {
+  public void addSupportingSensorValue(SensorValue value) {
+    supportingSensorValueIds.add(value.getId());
+  }
 
-    if (sensorValue.getUserQCFlag(true).moreSignificantThan(worstValueFlag)) {
-      worstValueFlag = sensorValue.getUserQCFlag(true);
-    }
+  public void setCalculatedValue(Double caluclatedValue) {
+    this.calculatedValue = caluclatedValue;
+  }
 
-    String valueQCMessage = sensorValue.getUserQCMessage(true);
-
-    String messagePrefix = sensorType.getName();
-
-    // The latitude is ignored so we don't need to worry about that.
-    if (sensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
-      messagePrefix = "Position";
-    }
-
-    if (valueQCMessage.length() > 0) {
-      qcMessage.add(messagePrefix + ": " + valueQCMessage);
-    }
+  public Double getCalculatedValue() {
+    return calculatedValue;
   }
 
   public Flag getQcFlag() {
-    return worstValueFlag;
+    return flag;
   }
 
   public List<String> getQcMessages() {
     return qcMessage;
   }
 
-  @Override
-  public String toString() {
-    StringBuilder string = new StringBuilder('[');
-    string.append(measurement.getId());
-    string.append('/');
-    string.append(columnId);
-    string.append(": ");
-    string.append(prior);
-    string.append('/');
-    string.append(post);
-    string.append(']');
-    return string.toString();
+  public SensorType getSensorType() {
+    return sensorType;
+  }
+
+  public boolean hasValue() {
+    return sensorValueIds.size() > 0;
+  }
+
+  public void incrMemberCount(int count) {
+    memberCount += count;
+  }
+
+  public void incrMemberCount() {
+    memberCount++;
+  }
+
+  public void setMemberCount(int memberCount) {
+    this.memberCount = memberCount;
+  }
+
+  public int getMemberCount() {
+    return memberCount;
+  }
+
+  public List<Long> getSensorValueIds() {
+    return sensorValueIds;
+  }
+
+  public void addQC(Flag flag, String comment) {
+    if (flag.moreSignificantThan(this.flag)) {
+      qcMessage.clear();
+      qcMessage.add(comment);
+    } else if (flag.equals(this.flag)) {
+      qcMessage.add(comment);
+    }
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + (int) (columnId ^ (columnId >>> 32));
     result = prime * result
-      + ((measurement == null) ? 0 : measurement.hashCode());
+      + ((calculatedValue == null) ? 0 : calculatedValue.hashCode());
+    result = prime * result
+      + ((sensorType == null) ? 0 : sensorType.hashCode());
+    result = prime * result
+      + ((sensorValueIds == null) ? 0 : sensorValueIds.hashCode());
     return result;
   }
 
@@ -139,21 +255,21 @@ public class MeasurementValue {
     if (getClass() != obj.getClass())
       return false;
     MeasurementValue other = (MeasurementValue) obj;
-    if (columnId != other.columnId)
-      return false;
-    if (measurement == null) {
-      if (other.measurement != null)
+    if (calculatedValue == null) {
+      if (other.calculatedValue != null)
         return false;
-    } else if (!measurement.equals(other.measurement))
+    } else if (!calculatedValue.equals(other.calculatedValue))
+      return false;
+    if (sensorType == null) {
+      if (other.sensorType != null)
+        return false;
+    } else if (!sensorType.equals(other.sensorType))
+      return false;
+    if (sensorValueIds == null) {
+      if (other.sensorValueIds != null)
+        return false;
+    } else if (!sensorValueIds.equals(other.sensorValueIds))
       return false;
     return true;
-  }
-
-  public SensorType getSensorType() {
-    return sensorType;
-  }
-
-  public boolean hasValue() {
-    return null != prior || null != post;
   }
 }

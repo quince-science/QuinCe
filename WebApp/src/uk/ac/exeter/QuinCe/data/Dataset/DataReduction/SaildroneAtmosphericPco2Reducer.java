@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -35,19 +34,18 @@ public class SaildroneAtmosphericPco2Reducer extends DataReducer {
   }
 
   @Override
-  public void doCalculation(Instrument instrument,
-    MeasurementValues sensorValues, DataReductionRecord record,
-    Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn) throws Exception {
+  public void doCalculation(Instrument instrument, Measurement measurement,
+    DataReductionRecord record, Connection conn) throws Exception {
 
-    Double airTemperature = sensorValues.getValue("Air Temperature",
-      allMeasurements, allSensorValues, this, valueCalculators, conn);
-    Double salinity = sensorValues.getValue("Salinity", allMeasurements,
-      allSensorValues, this, valueCalculators, conn);
-    Double licorPressure = sensorValues.getValue("LICOR Pressure (Atmosphere)",
-      allMeasurements, allSensorValues, this, valueCalculators, conn);
-    Double xCo2 = sensorValues.getValue("xCO₂ atmosphere (dry, no standards)",
-      allMeasurements, allSensorValues, this, valueCalculators, conn);
+    Double airTemperature = measurement.getMeasurementValue("Air Temperature")
+      .getCalculatedValue();
+    Double salinity = measurement.getMeasurementValue("Salinity")
+      .getCalculatedValue();
+    Double licorPressure = measurement
+      .getMeasurementValue("LICOR Pressure (Atmosphere)").getCalculatedValue();
+    Double xCo2 = measurement
+      .getMeasurementValue("xCO₂ atmosphere (dry, no standards)")
+      .getCalculatedValue();
 
     Double pH2O = Calculators.calcPH2O(salinity, airTemperature);
 
