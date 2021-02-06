@@ -9,7 +9,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
@@ -59,16 +58,10 @@ public abstract class DataReducer {
    */
   protected CalibrationSet calibrationSet;
 
-  /**
-   * The value calculators being used by this reducer
-   */
-  protected ValueCalculators valueCalculators;
-
   public DataReducer(Variable variable, Map<String, Properties> properties) {
 
     this.variable = variable;
     this.properties = properties;
-    this.valueCalculators = new ValueCalculators();
   }
 
   /**
@@ -85,17 +78,16 @@ public abstract class DataReducer {
    * @return The data reduction result
    */
   public DataReductionRecord performDataReduction(Instrument instrument,
-    Measurement measurement, MeasurementValues measurementValues,
-    Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn) throws Exception {
+    Measurement measurement, Connection conn) throws Exception {
 
     DataReductionRecord record = new DataReductionRecord(measurement, variable,
       getCalculationParameterNames());
 
-    doCalculation(instrument, measurementValues, record, allMeasurements,
-      allSensorValues, conn);
+    doCalculation(instrument, measurement, record, conn);
 
-    for (MeasurementValue value : measurementValues.getAllValues()) {
+    for (SensorType sensorType : variable.getAllSensorTypes(true)) {
+
+      MeasurementValue value = measurement.getMeasurementValue(sensorType);
 
       List<String> qcMessages = value.getQcMessages();
 
@@ -127,9 +119,8 @@ public abstract class DataReducer {
    *          The data reduction result
    */
   public abstract void doCalculation(Instrument instrument,
-    MeasurementValues sensorValues, DataReductionRecord record,
-    Map<String, ArrayList<Measurement>> allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn) throws Exception;
+    Measurement measurement, DataReductionRecord record, Connection conn)
+    throws Exception;
 
   /**
    * Set the state for a non-calculated record (used for unused run types etc)

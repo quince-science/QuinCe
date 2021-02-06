@@ -2,10 +2,13 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -190,76 +193,6 @@ public class CalibrationSet extends TreeSet<Calibration> {
   }
 
   /**
-   * Get the target name of the calibration whose coefficient is immediately
-   * below the specified value. This assumes that the calibrations have a single
-   * coefficient, and picks the first one in the list
-   *
-   * @param value
-   *          The value
-   * @param allowEqualValue
-   *          Indicates whether exactly equal matches count as 'below'
-   * @return The calibration below the specified value
-   */
-  public String getCalibrationBelow(double value, boolean allowEqualValue) {
-
-    String targetBelow = null;
-    double targetValue = Double.MIN_VALUE * -1;
-
-    for (Calibration calibration : this) {
-      double calibrationValue = calibration.coefficients.get(0).getValue();
-
-      boolean matchFound = false;
-
-      if (calibrationValue > targetValue) {
-        matchFound = (calibrationValue < value)
-          || (allowEqualValue && calibrationValue == value);
-      }
-
-      if (matchFound) {
-        targetBelow = calibration.getTarget();
-        targetValue = calibration.coefficients.get(0).getValue();
-      }
-    }
-
-    return targetBelow;
-  }
-
-  /**
-   * Get the target name of the calibration whose coefficient is immediately
-   * above the specified value. This assumes that the calibrations have a single
-   * coefficient, and picks the first one in the list
-   *
-   * @param value
-   *          The value
-   * @param allowEqualValue
-   *          Indicates whether exactly equal matches count as 'above'
-   * @return The calibration above the specified value
-   */
-  public String getCalibrationAbove(double value, boolean allowEqualValue) {
-
-    String targetAbove = null;
-    double targetValue = Double.MAX_VALUE;
-
-    for (Calibration calibration : this) {
-      double calibrationValue = calibration.coefficients.get(0).getValue();
-
-      boolean matchFound = false;
-
-      if (calibrationValue < targetValue) {
-        matchFound = (calibrationValue > value)
-          || (allowEqualValue && calibrationValue == value);
-      }
-
-      if (matchFound) {
-        targetAbove = calibration.getTarget();
-        targetValue = calibration.coefficients.get(0).getValue();
-      }
-    }
-
-    return targetAbove;
-  }
-
-  /**
    * Get the value of the named calibration. Assumes that there is only one
    * coefficient.
    *
@@ -317,5 +250,59 @@ public class CalibrationSet extends TreeSet<Calibration> {
    */
   public Map<String, String> getTargets() {
     return targets;
+  }
+
+  /**
+   * Get the closest standards to a specified value for the specified
+   * {@link SensorType}.
+   * 
+   * <p>
+   * Attempts to return the three closest standards. If some standards are an
+   * equal distance from the value, exactly which three are returned is
+   * undefined (and it shouldn't matter for calibration calculations). If the
+   * CalibrationSet contains fewer than three standards then all will be
+   * returned.
+   * </p>
+   * 
+   * @param value
+   *          The value.
+   * @return The closest standards to the value.
+   */
+  public Map<String, Double> getClosestStandards(SensorType sensorType,
+    Double value) {
+
+    // Build the list of standards ordered according to their offset from the
+    // specified value
+    TreeMap<Double, String> differenceOrderedStandards = new TreeMap<Double, String>();
+
+    for (String target : targets.keySet()) {
+      try {
+        Double calibrationValue = getCalibrationValue(target,
+          sensorType.getName());
+
+        differenceOrderedStandards.put(Math.abs(calibrationValue - value),
+          target);
+
+      } catch (RecordNotFoundException e) {
+        // Do nothing - if we can't find the standard, then it can't be used to
+        // calibrate.
+      }
+    }
+
+    // Now we get the three first standards and return them
+    HashMap<String, Double> result = new HashMap<String, Double>();
+
+    for (String target : differenceOrderedStandards.values()) {
+      try {
+        result.put(target, getCalibrationValue(target, sensorType.getName()));
+        if (result.size() >= 3) {
+          break;
+        }
+      } catch (RecordNotFoundException e) {
+        // Do nothing - this exception can't be thrown at this stage.
+      }
+    }
+
+    return result;
   }
 }

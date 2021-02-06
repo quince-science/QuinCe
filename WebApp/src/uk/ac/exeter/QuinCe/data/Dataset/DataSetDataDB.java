@@ -155,13 +155,8 @@ public class DataSetDataDB {
     + " WHERE dataset_id = ? AND file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY date ASC";
 
-  private static final String STORE_MEASUREMENT_VALUE_STATEMENT = "INSERT IGNORE INTO "
-    + "measurement_values (measurement_id, file_column_id, "
-    + "prior, post) VALUES (?, ?, ?, ?)";
-
-  private static final String DELETE_MEASUREMENT_VALUES_STATEMENT = "DELETE "
-    + "FROM measurement_values WHERE measurement_id IN "
-    + "(SELECT id FROM measurements WHERE dataset_id = ?)";
+  private static final String STORE_MEASUREMENT_VALUES_STATEMENT = "UPDATE measurements "
+    + "SET measurement_values = ? WHERE id = ?";
 
   private static final String GET_INTERNAL_CALIBRATION_SENSOR_VALUES_QUERY = "SELECT "
     + "sv.id, sv.file_column, sv.date, sv.value, sv.auto_qc, "
@@ -557,8 +552,8 @@ public class DataSetDataDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static Map<String, ArrayList<Measurement>> getMeasurementsByRunType(
-    Connection conn, Instrument instrument, long datasetId)
+  public static DatasetMeasurements getMeasurementsByRunType(Connection conn,
+    Instrument instrument, long datasetId)
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
@@ -567,7 +562,7 @@ public class DataSetDataDB {
     PreparedStatement stmt = null;
     ResultSet records = null;
 
-    Map<String, ArrayList<Measurement>> measurements = new HashMap<String, ArrayList<Measurement>>();
+    DatasetMeasurements measurements = new DatasetMeasurements();
 
     try {
 
@@ -581,12 +576,8 @@ public class DataSetDataDB {
         LocalDateTime time = DateTimeUtils.longToDate(records.getLong(2));
         String runType = records.getString(3);
 
-        if (!measurements.containsKey(runType)) {
-          measurements.put(runType, new ArrayList<Measurement>());
-        }
-
-        measurements.get(runType)
-          .add(new Measurement(id, datasetId, time, runType));
+        measurements.addMeasurement(runType,
+          new Measurement(id, datasetId, time, runType));
       }
 
     } catch (Exception e) {
@@ -757,11 +748,6 @@ public class DataSetDataDB {
         .prepareStatement(DELETE_DATA_REDUCTION_STATEMENT);
       delDataReductionStmt.setLong(1, datasetId);
       delDataReductionStmt.execute();
-
-      delMeasurementValuesStmt = conn
-        .prepareStatement(DELETE_MEASUREMENT_VALUES_STATEMENT);
-      delMeasurementValuesStmt.setLong(1, datasetId);
-      delMeasurementValuesStmt.execute();
 
       delMeasurementsStmt = conn
         .prepareStatement(DELETE_MEASUREMENTS_STATEMENT);
@@ -1031,43 +1017,16 @@ public class DataSetDataDB {
   }
 
   public static void storeMeasurementValues(Connection conn,
-    Collection<? extends Collection<MeasurementValue>> values)
-    throws MissingParamException, DatabaseException {
+    Measurement measurement) throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(values, "values", false);
+    MissingParam.checkMissing(measurement, "measurement");
 
-    // Note that it's possible for a MeasurementValue to be produced multiple
-    // times for multiple variables in the DataReductionJob. This is entirely
-    // reasonable, so the STORE_MEASUREMENT_VALUE_STATEMENT uses INSERT IGNORE
-    // to ensure that only one copy ends up in the database.
     try (PreparedStatement stmt = conn
-      .prepareStatement(STORE_MEASUREMENT_VALUE_STATEMENT)) {
-
-      for (Collection<MeasurementValue> outer : values) {
-
-        for (MeasurementValue value : outer) {
-
-          stmt.setLong(1, value.getMeasurement().getId());
-          stmt.setLong(2, value.getColumnId());
-
-          if (null == value.getPrior()) {
-            stmt.setNull(3, Types.BIGINT);
-          } else {
-            stmt.setLong(3, value.getPrior());
-          }
-
-          if (null == value.getPost()) {
-            stmt.setNull(4, Types.BIGINT);
-          } else {
-            stmt.setLong(4, value.getPost());
-          }
-
-          stmt.addBatch();
-        }
-      }
-
-      stmt.executeBatch();
+      .prepareStatement(STORE_MEASUREMENT_VALUES_STATEMENT)) {
+      stmt.setString(1, measurement.getMeasurementValuesJson());
+      stmt.setLong(2, measurement.getId());
+      stmt.execute();
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing measurement values", e);
     }
@@ -1079,15 +1038,8 @@ public class DataSetDataDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(datasetId, "datasetId");
 
-    try (
-      PreparedStatement mvStmt = conn
-        .prepareStatement(DELETE_MEASUREMENT_VALUES_STATEMENT);
-
-      PreparedStatement drStmt = conn
-        .prepareStatement(DELETE_DATA_REDUCTION_STATEMENT);) {
-
-      mvStmt.setLong(1, datasetId);
-      mvStmt.execute();
+    try (PreparedStatement drStmt = conn
+      .prepareStatement(DELETE_DATA_REDUCTION_STATEMENT);) {
 
       drStmt.setLong(1, datasetId);
       drStmt.execute();

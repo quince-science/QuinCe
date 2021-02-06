@@ -245,13 +245,13 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     return getUserQCMessage(false);
   }
 
-  public String getUserQCMessage(boolean ignoreNeeded) {
+  public String getUserQCMessage(boolean ignorePosition) {
 
     String result = (null == userQCMessage ? "" : userQCMessage);
 
     // If we're ignoring the position, clear the QC message if it's from the
     // position QC
-    if (result.startsWith(POSITION_QC_PREFIX) && true
+    if (result.startsWith(POSITION_QC_PREFIX) && ignorePosition
       && columnId != FileDefinition.LONGITUDE_COLUMN_ID) {
       result = "";
     }

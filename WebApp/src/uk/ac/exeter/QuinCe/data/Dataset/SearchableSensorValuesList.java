@@ -11,7 +11,6 @@ import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -197,68 +196,172 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     return result;
   }
 
-  public void populateMeasurementValue(MeasurementValue value,
-    boolean goodFlagsOnly) throws RoutineException, MissingParamException {
+  public SensorValue get(LocalDateTime time) {
+    int valueIndex = Collections.binarySearch(this, dummySensorValue(time),
+      TIME_COMPARATOR);
 
-    MissingParam.checkMissing(value, "value");
-
-    if (!columnIds.contains(value.getColumnId())) {
-      throw new IllegalArgumentException(
-        "Column ID for measurement value does not match list column ID");
+    SensorValue result = valueIndex >= 0 ? get(valueIndex) : null;
+    if (result.getUserQCFlag().equals(Flag.FLUSHING)) {
+      result = null;
     }
 
-    // Search for the closest point to the measurement time
-    int startPoint = Collections.binarySearch(this,
-      dummySensorValue(value.getMeasurement().getTime()), TIME_COMPARATOR);
+    return result;
+  }
 
-    boolean searchForSurrounds = true;
+  /**
+   * Get the {@link SensorValue}(s) most relevant for the specified time.
+   * 
+   * <p>
+   * If there is a {@link SensorValue} at the specified time, that value is
+   * returned. Otherwise an array of the closes prior and post values is
+   * returned. If there is an exact match and its QC flag is
+   * {@link Flag#FLUSHING}, an empty array is returned to indicate that the
+   * value should not be used.
+   * </p>
+   * 
+   * <p>
+   * The above logic is overridden by {@code preferGoodFlags}. If this is set
+   * and any selected value is {@link Flag#QUESTIONABLE} or {@link Flag#BAD},
+   * the interpolation continues until a {@link Flag#GOOD} value is found. If no
+   * {@link Flag#GOOD} values are found, the closest {@link Flag#QUESTIONABLE}
+   * value is used, finally falling back to a {@link Flag#BAD} value.
+   * </p>
+   * 
+   * @param time
+   *          The time to search for
+   * @param preferGoodFlags
+   *          Only return values with {@link Flag#GOOD} QC flags if possible.
+   * @return An array of either one {@link SensorValue} (if it exactly matches
+   *         the specified time) or two (for the closest matches either side of
+   *         the time).
+   */
+  public List<SensorValue> getWithInterpolation(LocalDateTime time,
+    boolean preferGoodFlags) {
+
+    List<SensorValue> result;
+
+    int startPoint = Collections.binarySearch(this, dummySensorValue(time),
+      TIME_COMPARATOR);
+
+    SensorValue exactTimeValue = null;
+    List<SensorValue> priorPostValues = null;
+    boolean useExactValue = true;
 
     // If we get a positive result, we hit the measurement exactly.
     if (startPoint >= 0) {
 
-      if (getQCFlag(startPoint).equals(Flag.FLUSHING)) {
+      exactTimeValue = get(startPoint);
+      Flag exactTimeFlag = getQCFlag(startPoint);
 
-        // If we hit a FLUSHING value, we treat this as our match but return an
-        // empty value.
-        value.setValues(null, null);
-        searchForSurrounds = false;
-      } else if (!goodFlagsOnly || getQCFlag(startPoint).equals(Flag.GOOD)
-        || getQCFlag(startPoint).equals(Flag.ASSUMED_GOOD)) {
+      // We can use the exact time value if:
+      // (a) The flag is FLUSHING (it won't actually be used but we work that
+      // out later)
+      // (b) The flag is GOOD
+      // (c) The flag is BAD or QUESTIONABLE but we don't mind
+      if (!exactTimeFlag.equals(Flag.FLUSHING)
+        || (!exactTimeFlag.isGood() && preferGoodFlags)) {
 
-        // If we have a GOOD flag, or GOOD flags are not required, just use the
-        // value we found
-        value.setValues(get(startPoint), null);
-        searchForSurrounds = false;
+        priorPostValues = getPriorPost(startPoint, true);
       }
+    } else {
+      priorPostValues = getPriorPost(startPoint, false);
+      useExactValue = false;
     }
 
-    // We need to search for the prior and post
-    if (searchForSurrounds) {
+    // Now we decide what to put in our returned list
+    if (useExactValue) {
+      result = new ArrayList<SensorValue>();
 
-      // First set the start point to the list in the right place
-
-      // If the search result is -(list size), the search point is off the end
-      // of the list.
-      if (startPoint == (size() + 1) * -1) {
-        startPoint = size();
+      // A FLUSHING value means an empty list. Otherwise put in the exact time
+      // value.
+      if (!exactTimeValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+        result.add(exactTimeValue);
       }
-
-      // If the result is negative, then we haven't found an exact time match.
-      // The start point will therefore be the absolute result - 1, which is the
-      // point immediately after the search time
-      if (startPoint < 0) {
-        startPoint = Math.abs(startPoint) - 1;
-      }
-
-      int priorIndex = priorSearch(startPoint - 1, goodFlagsOnly);
-      int postIndex = postSearch(startPoint, goodFlagsOnly);
-
-      SensorValue prior = priorIndex == -1 ? null : get(priorIndex);
-      SensorValue post = postIndex == -1 ? null : get(postIndex);
-
-      value.setValues(prior, post);
+    } else {
+      result = priorPostValues;
     }
+
+    return result;
   }
+
+  private List<SensorValue> getPriorPost(int startPoint, boolean goodOnly) {
+    // First set the start point to the list in the right place
+
+    // If the search result is -(list size), the search point is off the end
+    // of the list.
+    if (startPoint == (size() + 1) * -1) {
+      startPoint = size();
+    }
+
+    // If the result is negative, then we haven't found an exact time match.
+    // The start point will therefore be the absolute result - 1, which is the
+    // point immediately after the search time
+    if (startPoint < 0) {
+      startPoint = Math.abs(startPoint) - 1;
+    }
+
+    int priorIndex = priorSearch(startPoint - 1, goodOnly);
+    int postIndex = postSearch(startPoint, goodOnly);
+
+    SensorValue prior = priorIndex == -1 ? null : get(priorIndex);
+    SensorValue post = postIndex == -1 ? null : get(postIndex);
+
+    List<SensorValue> result = new ArrayList<SensorValue>(2);
+    result.add(prior);
+    result.add(post);
+    return result;
+  }
+
+  /*
+   * public void populateMeasurementValue(MeasurementValue value, boolean
+   * goodFlagsOnly) throws RoutineException, MissingParamException {
+   * 
+   * MissingParam.checkMissing(value, "value");
+   * 
+   * if (!columnIds.contains(value.getColumnId())) { throw new
+   * IllegalArgumentException(
+   * "Column ID for measurement value does not match list column ID"); }
+   * 
+   * // Search for the closest point to the measurement time int startPoint =
+   * Collections.binarySearch(this,
+   * dummySensorValue(value.getMeasurement().getTime()), TIME_COMPARATOR);
+   * 
+   * boolean searchForSurrounds = true;
+   * 
+   * // If we get a positive result, we hit the measurement exactly. if
+   * (startPoint >= 0) {
+   * 
+   * if (getQCFlag(startPoint).equals(Flag.FLUSHING)) {
+   * 
+   * // If we hit a FLUSHING value, we treat this as our match but return an //
+   * empty value. value.setValues(null, null); searchForSurrounds = false; }
+   * else if (!goodFlagsOnly || getQCFlag(startPoint).equals(Flag.GOOD) ||
+   * getQCFlag(startPoint).equals(Flag.ASSUMED_GOOD)) {
+   * 
+   * // If we have a GOOD flag, or GOOD flags are not required, just use the //
+   * value we found value.setValues(get(startPoint), null); searchForSurrounds =
+   * false; } }
+   * 
+   * // We need to search for the prior and post if (searchForSurrounds) {
+   * 
+   * // First set the start point to the list in the right place
+   * 
+   * // If the search result is -(list size), the search point is off the end //
+   * of the list. if (startPoint == (size() + 1) * -1) { startPoint = size(); }
+   * 
+   * // If the result is negative, then we haven't found an exact time match. //
+   * The start point will therefore be the absolute result - 1, which is the //
+   * point immediately after the search time if (startPoint < 0) { startPoint =
+   * Math.abs(startPoint) - 1; }
+   * 
+   * int priorIndex = priorSearch(startPoint - 1, goodFlagsOnly); int postIndex
+   * = postSearch(startPoint, goodFlagsOnly);
+   * 
+   * SensorValue prior = priorIndex == -1 ? null : get(priorIndex); SensorValue
+   * post = postIndex == -1 ? null : get(postIndex);
+   * 
+   * value.setValues(prior, post); } }
+   */
 
   private int priorSearch(int startPoint, boolean goodFlagsOnly) {
     return search(startPoint, goodFlagsOnly, -1, (x) -> x > -1);
@@ -323,6 +426,14 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     return result;
   }
 
+  /**
+   * Generate a dummy {@link SensorValue} for a specified time, for use with
+   * {@link #TIME_COMPARATOR}.
+   * 
+   * @param time
+   *          The time to use.
+   * @return The dummy {@link SensorValue}.
+   */
   private SensorValue dummySensorValue(LocalDateTime time) {
     return new SensorValue(-1, -1, time, null);
   }

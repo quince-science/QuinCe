@@ -13,14 +13,14 @@ import uk.ac.exeter.QuinCe.api.nrt.MakeNrtDataset;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetMeasurements;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCalculatorFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.MeasurementValues;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -98,7 +98,7 @@ public class DataReductionJob extends DataSetJob {
         instrument, dataSet.getId(), false);
 
       // Get all the measurements grouped by run type
-      Map<String, ArrayList<Measurement>> allMeasurements = DataSetDataDB
+      DatasetMeasurements allMeasurements = DataSetDataDB
         .getMeasurementsByRunType(conn, instrument, dataSet.getId());
 
       // Cache of data reducers
@@ -107,16 +107,17 @@ public class DataReductionJob extends DataSetJob {
       ArrayList<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>();
 
       // Loop through each run type
-      for (String runType : allMeasurements.keySet()) {
+      for (String runType : allMeasurements.getRunTypes()) {
 
         // Loop through each variable
         for (Variable variable : instrument.getVariables()) {
 
           // Process each measurement
-          dataReductionRecords.ensureCapacity(
-            dataReductionRecords.size() + allMeasurements.get(runType).size());
+          dataReductionRecords.ensureCapacity(dataReductionRecords.size()
+            + allMeasurements.getMeasurements(runType).size());
 
-          for (Measurement measurement : allMeasurements.get(runType)) {
+          for (Measurement measurement : allMeasurements
+            .getMeasurements(runType)) {
 
             // If the run type is applicable to this variable, perform the data
             // reduction
@@ -131,22 +132,17 @@ public class DataReductionJob extends DataSetJob {
               // a reasonable timespan, or we fall back to a Questionable or Bad
               // value.
 
-              MeasurementValues measurementSensorValues = new MeasurementValues(
-                instrument, measurement);
-
-              // Note that it's possible for a MeasurementValue to be produced
-              // multiple times for multiple variables here. We don't mind,
-              // because DataSetDataDB.storeMeasurementValues ensures that
-              // duplicate records aren't created in the database.
-
               for (SensorType sensorType : variable
                 .getAllSensorTypes(!dataSet.fixedPosition())) {
 
-                // Load the sensor value(s) (either at the measurement time or
-                // the values either side of it) for this sensor type that are
-                // to be used for the current measurement.
-                measurementSensorValues.loadSensorValues(allSensorValues,
-                  sensorType, false);
+                // Create the MeasurementValue for this SensorType if we haven't
+                // already done it.
+                if (!measurement.hasMeasurementValue(sensorType)) {
+                  measurement
+                    .setMeasurementValue(MeasurementValueCalculatorFactory
+                      .calculateMeasurementValue(instrument, measurement,
+                        sensorType, allMeasurements, allSensorValues, conn));
+                }
               }
 
               // If any of the core sensor values are linked to this measurement
@@ -155,24 +151,22 @@ public class DataReductionJob extends DataSetJob {
               // it.
               boolean hasCoreValue = true;
 
-              if (null != variable.getCoreSensorType()) {
+              SensorType coreSensorType = variable.getCoreSensorType();
+              if (null != coreSensorType) {
 
                 hasCoreValue = false;
 
-                for (MeasurementValue measurementValue : measurementSensorValues
-                  .get(variable.getCoreSensorType())) {
-                  if (measurementValue.hasValue()) {
-                    hasCoreValue = true;
-                    break;
-                  }
+                if (null != measurement.getMeasurementValue(coreSensorType)
+                  && measurement.getMeasurementValue(coreSensorType)
+                    .hasValue()) {
+                  hasCoreValue = true;
                 }
               }
 
               if (hasCoreValue) {
 
                 // Store the measurement values in the database
-                DataSetDataDB.storeMeasurementValues(conn,
-                  measurementSensorValues.values());
+                DataSetDataDB.storeMeasurementValues(conn, measurement);
 
                 // Get the data reducer for this variable and perform data
                 // reduction
@@ -184,9 +178,7 @@ public class DataReductionJob extends DataSetJob {
                 }
 
                 DataReductionRecord dataReductionRecord = reducer
-                  .performDataReduction(instrument, measurement,
-                    measurementSensorValues, allMeasurements, allSensorValues,
-                    conn);
+                  .performDataReduction(instrument, measurement, conn);
 
                 dataReductionRecords.add(dataReductionRecord);
               }

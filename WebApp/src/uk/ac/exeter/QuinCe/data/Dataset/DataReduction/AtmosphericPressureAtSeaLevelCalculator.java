@@ -11,6 +11,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundEx
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+@Deprecated
 public class AtmosphericPressureAtSeaLevelCalculator extends ValueCalculator {
 
   private final SensorType atmosPressureSensorType;
