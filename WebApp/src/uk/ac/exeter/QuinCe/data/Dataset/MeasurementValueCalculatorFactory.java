@@ -31,8 +31,6 @@ public class MeasurementValueCalculatorFactory {
         result = new DiffEqPresMeasurementValueCalculator();
       } else if (sensorType.getName().equals("xCO₂ (with standards)")) {
         result = new XCO2MeasurementValueCalculator();
-      } else if (sensorType.getName().equals("Atmospheric Pressure")) {
-        result = new AtmosphericPressureMeasurementValueCalculator();
       } else if (sensorConfig.isParent(sensorType)) {
         result = new ParentSensorTypeMeasurementValueCalculator();
       } else {

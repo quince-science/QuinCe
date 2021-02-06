@@ -13,6 +13,8 @@ public class Calculators {
    */
   private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
 
+  private static final double MOLAR_MASS_AIR = 28.97e-3;
+
   /**
    * Convert a temperature in °C to °K
    *
@@ -90,5 +92,12 @@ public class Calculators {
     double kelvin = Calculators.kelvin(temperature);
     return Math.exp(24.4543 - 67.4509 * (100 / kelvin)
       - 4.8489 * Math.log(kelvin / 100) - 0.000544 * salinity);
+  }
+
+  public static Double calcSeaLevelPressure(Double measuredPressure,
+    Double temperature, Float sensorHeight) {
+    Double correction = (measuredPressure * MOLAR_MASS_AIR)
+      / (Calculators.kelvin(temperature) * 8.314) * 9.8 * sensorHeight;
+    return measuredPressure + correction;
   }
 }
