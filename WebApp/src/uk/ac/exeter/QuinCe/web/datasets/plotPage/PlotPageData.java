@@ -53,7 +53,7 @@ public abstract class PlotPageData {
   protected final Instrument instrument;
 
   /**
-   * Json serialization type for lists of strings
+   * Json serialization type for lists of longs
    */
   Type longList = new TypeToken<List<Long>>() {
   }.getType();

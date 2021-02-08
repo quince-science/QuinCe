@@ -167,17 +167,26 @@ public class MeasurementValue {
 
       Flag valueFlag = value.getDisplayFlag();
       if (valueFlag.equals(flag)) {
-        qcMessage.add(value.getUserQCMessage());
+        if (value.getUserQCMessage().trim().length() > 0) {
+          qcMessage.add(value.getUserQCMessage());
+        }
       } else if (valueFlag.moreSignificantThan(flag)) {
         flag = valueFlag;
         qcMessage.clear();
-        qcMessage.add(value.getUserQCMessage());
+
+        if (value.getUserQCMessage().trim().length() > 0) {
+          qcMessage.add(value.getUserQCMessage());
+        }
       }
     }
   }
 
   public void addSupportingSensorValue(SensorValue value) {
     supportingSensorValueIds.add(value.getId());
+  }
+
+  public List<Long> getSupportingSensorValueIds() {
+    return supportingSensorValueIds;
   }
 
   public void setCalculatedValue(Double caluclatedValue) {

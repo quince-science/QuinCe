@@ -1,9 +1,13 @@
+
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Objects;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
@@ -19,6 +23,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class Measurement implements Comparable<Measurement> {
 
   public static final MeasurementTimeComparator TIME_COMPARATOR = new MeasurementTimeComparator();
+
+  private static Gson gson;
 
   /**
    * The measurement's database ID
@@ -44,6 +50,13 @@ public class Measurement implements Comparable<Measurement> {
    * The values used to perform data reduction for this measurement.
    */
   private HashMap<Long, MeasurementValue> measurementValues;
+
+  static {
+    gson = new GsonBuilder()
+      .registerTypeAdapter(new HashMap<Long, MeasurementValue>().getClass(),
+        new MeasurementValuesSerializer())
+      .create();
+  }
 
   /**
    * Constructor for a brand new measurement that is not yet in the database
@@ -194,8 +207,7 @@ public class Measurement implements Comparable<Measurement> {
   }
 
   public String getMeasurementValuesJson() {
-    return "MUST MAKE JSON Measurement.java:177";
-    // return new Gson().toJson(measurementValues);
+    return gson.toJson(measurementValues);
   }
 
   /*
