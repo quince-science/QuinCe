@@ -125,77 +125,93 @@ public class DefaultMeasurementValueCalculator
           .getMostRecentCalibrations(conn, instrument.getDatabaseId(),
             measurement.getTime());
 
+        if (calibrationSet.size() < 3) {
+          value.addQC(Flag.BAD, "Fewer than 3 standards used for calibration");
+        }
+
         // Get the standards closest to the measured value, with their
         // concentrations.
         Map<String, Double> closestStandards = calibrationSet
           .getClosestStandards(sensorType, value.getCalculatedValue());
 
-        if (closestStandards.size() < 3) {
-          value.addQC(Flag.BAD, "Fewer than 3 standards used for calibration");
-        }
+        if (closestStandards.size() > 0) {
+          // For each external standard target, calculate the offset from the
+          // external standard at the measurement time.
+          //
+          // We get the offset at the prior and post measurements of that
+          // standard,
+          // and then interpolate to get the offset at the measurement time.
+          Map<String, Double> standardOffsets = new HashMap<String, Double>();
 
-        // For each external standard target, calculate the offset from the
-        // external standard at the measurement time.
-        //
-        // We get the offset at the prior and post measurements of that
-        // standard,
-        // and then interpolate to get the offset at the measurement time.
-        Map<String, Double> standardOffsets = new HashMap<String, Double>();
+          for (Map.Entry<String, Double> standard : closestStandards
+            .entrySet()) {
+            String target = standard.getKey();
+            double standardConcentration = standard.getValue();
 
-        for (Map.Entry<String, Double> standard : closestStandards.entrySet()) {
-          String target = standard.getKey();
-          double standardConcentration = standard.getValue();
+            SensorValue priorCalibrationValue = getPriorCalibrationValue(
+              measurement.getTime(), allMeasurements.getMeasurements(target),
+              sensorValues);
 
-          SensorValue priorCalibrationValue = getPriorCalibrationValue(
-            measurement.getTime(), allMeasurements.getMeasurements(target),
-            sensorValues);
+            SensorValue postCalibrationValue = getPostCalibrationValue(
+              measurement.getTime(), allMeasurements.getMeasurements(target),
+              sensorValues);
 
-          SensorValue postCalibrationValue = getPostCalibrationValue(
-            measurement.getTime(), allMeasurements.getMeasurements(target),
-            sensorValues);
+            LocalDateTime priorTime = null;
+            Double priorOffset = null;
 
-          LocalDateTime priorTime = null;
-          Double priorOffset = null;
+            if (null != priorCalibrationValue) {
+              priorTime = priorCalibrationValue.getTime();
+              priorOffset = priorCalibrationValue.getDoubleValue()
+                - standardConcentration;
+              value.addSupportingSensorValue(priorCalibrationValue);
+            }
 
-          if (null != priorCalibrationValue) {
-            priorTime = priorCalibrationValue.getTime();
-            priorOffset = priorCalibrationValue.getDoubleValue()
-              - standardConcentration;
-            value.addSupportingSensorValue(priorCalibrationValue);
+            LocalDateTime postTime = null;
+            Double postOffset = null;
+
+            if (null != postCalibrationValue) {
+              postTime = postCalibrationValue.getTime();
+              postOffset = postCalibrationValue.getDoubleValue()
+                - standardConcentration;
+              value.addSupportingSensorValue(postCalibrationValue);
+            }
+
+            standardOffsets.put(target, interpolate(priorTime, priorOffset,
+              postTime, postOffset, measurement.getTime()));
           }
 
-          LocalDateTime postTime = null;
-          Double postOffset = null;
+          // If all the standards are for the concentration (which happens for
+          // moisture in gas standards because they're all 100% dry) then we'll
+          // only get one offset. But that's fine because the offset in the
+          // sensors will measure the same regardless of which standard we're
+          // using.
+          if (standardOffsets.size() == 1) {
+            Double offset = standardOffsets.values().iterator().next();
+            value.setCalculatedValue(value.getCalculatedValue() - offset);
+          } else {
 
-          if (null != postCalibrationValue) {
-            postTime = postCalibrationValue.getTime();
-            postOffset = postCalibrationValue.getDoubleValue()
-              - standardConcentration;
-            value.addSupportingSensorValue(postCalibrationValue);
+            // Make a regression of the offsets to calculate the offset at the
+            // measurement time
+            SimpleRegression regression = new SimpleRegression(true);
+            for (String target : standardOffsets.keySet()) {
+              regression.addData(
+                calibrationSet.getCalibrationValue(target,
+                  value.getSensorType().getName()),
+                standardOffsets.get(target));
+            }
+
+            double calibrationOffset = regression
+              .predict(value.getCalculatedValue());
+
+            // Now apply the offset to the measured value.
+            // TODO #732/#410 Add excessive calibration adjustment check to this
+            // method - it will set the flag on the MeasurementValue. Needs to
+            // be
+            // defined per sensor type.
+            value.setCalculatedValue(
+              value.getCalculatedValue() - calibrationOffset);
           }
-
-          standardOffsets.put(target, interpolate(priorTime, priorOffset,
-            postTime, postOffset, measurement.getTime()));
         }
-
-        // Make a regression of the offsets to calculate the offset at the
-        // measurement time
-        SimpleRegression regression = new SimpleRegression(true);
-        for (String target : standardOffsets.keySet()) {
-          regression.addData(calibrationSet.getCalibrationValue(target,
-            value.getSensorType().getName()), standardOffsets.get(target));
-        }
-
-        double calibrationOffset = regression
-          .predict(value.getCalculatedValue());
-
-        // Now apply the offset to the measured value.
-        // TODO #732/#410 Add excessive calibration adjustment check to this
-        // method - it will set the flag on the MeasurementValue. Needs to be
-        // defined per sensor type.
-        value
-          .setCalculatedValue(value.getCalculatedValue() - calibrationOffset);
-
       } catch (Exception e) {
         throw new MeasurementValueCalculatorException(
           "Error while calculating calibrated value", e);
