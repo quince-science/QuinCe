@@ -11,7 +11,6 @@ import java.util.TreeSet;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -33,6 +32,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public class DefaultMeasurementValueCalculator
   extends MeasurementValueCalculator {
+
+  public static final String CALIBRATION_COUNT_PROPERTY = "CalibrationCount";
 
   // TODO Need limits on how far interpolation goes before giving up.
 
@@ -127,9 +128,8 @@ public class DefaultMeasurementValueCalculator
           .getMostRecentCalibrations(conn, instrument.getDatabaseId(),
             measurement.getTime());
 
-        if (calibrationSet.size() < 3) {
-          value.addQC(Flag.BAD, "Fewer than 3 standards used for calibration");
-        }
+        value.setProperty(CALIBRATION_COUNT_PROPERTY,
+          String.valueOf(calibrationSet.size()));
 
         // Get the standards closest to the measured value, with their
         // concentrations.

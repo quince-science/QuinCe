@@ -63,6 +63,9 @@ public class MeasurementValuesSerializer
       valueJson.add("qcComments", qcComments);
 
       json.add(String.valueOf(entry.getKey()), valueJson);
+
+      // Properties
+      valueJson.add("props", gson.toJsonTree(value.getProperties()));
     }
 
     return json;
