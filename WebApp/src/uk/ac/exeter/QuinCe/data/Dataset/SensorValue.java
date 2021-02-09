@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -11,6 +12,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
@@ -573,5 +575,63 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     clone.setValue(NO_VALUE);
     clone.setUserQC(Flag.NO_QC, "No Value");
     return clone;
+  }
+
+  /**
+   * Calculate the mean time of a collection of SensorValues, optionally
+   * ignoring those with a NaN value.
+   * 
+   * <p>
+   * Works by calculating the mean of the millisecond values. The division may
+   * result in rounding, but a millisecond offset is not going to affect things
+   * for our purposes.
+   * </p>
+   * 
+   * @param values
+   *          The values.
+   * @param includeNan
+   *          Indicates whether NaN values should be ignored.
+   * @return The mean time.
+   */
+  public static LocalDateTime getMeanTime(Collection<SensorValue> values,
+    boolean includeNan) {
+
+    BigInteger millisTotal = BigInteger.ZERO;
+    int count = 0;
+
+    for (SensorValue value : values) {
+      if (includeNan || !value.isNaN()) {
+        long time = DateTimeUtils.dateToLong(value.getTime());
+        millisTotal = millisTotal.add(new BigInteger(String.valueOf(time)));
+        count++;
+      }
+    }
+
+    BigInteger mean = millisTotal.divide(new BigInteger(String.valueOf(count)));
+    return DateTimeUtils.longToDate(Long.parseLong(mean.toString()));
+  }
+
+  /**
+   * Calculate the mean value from a collection of SensorValues. NaN values are
+   * ignored.
+   * 
+   * @param values
+   *          The values.
+   * @return The mean value.
+   */
+  public static Double getMeanValue(Collection<SensorValue> values) {
+
+    Double total = 0D;
+    int count = 0;
+
+    for (SensorValue value : values) {
+      if (!value.isNaN()) {
+        total = total + value.getDoubleValue();
+        count++;
+      }
+    }
+
+    return total / count;
+
   }
 }
