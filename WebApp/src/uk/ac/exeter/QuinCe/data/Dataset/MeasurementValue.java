@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -81,6 +82,11 @@ public class MeasurementValue {
    * {@link SensorValues}.
    */
   private List<String> qcMessage = new ArrayList<String>();
+
+  /**
+   * Miscellaneous properties
+   */
+  private Properties properties = new Properties();
 
   /**
    * Creates a stub value with no assigned {@link SensorValue}s.
@@ -237,13 +243,16 @@ public class MeasurementValue {
     return sensorValueIds;
   }
 
-  public void addQC(Flag flag, String comment) {
-    if (flag.moreSignificantThan(this.flag)) {
-      qcMessage.clear();
-      qcMessage.add(comment);
-    } else if (flag.equals(this.flag)) {
-      qcMessage.add(comment);
-    }
+  protected Properties getProperties() {
+    return properties;
+  }
+
+  public void setProperty(String key, String value) {
+    properties.setProperty(key, value);
+  }
+
+  public String getProperty(String key) {
+    return properties.getProperty(key);
   }
 
   @Override
