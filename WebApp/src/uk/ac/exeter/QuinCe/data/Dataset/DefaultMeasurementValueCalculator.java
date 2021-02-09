@@ -33,7 +33,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class DefaultMeasurementValueCalculator
   extends MeasurementValueCalculator {
 
-  public static final String CALIBRATION_COUNT_PROPERTY = "CalibrationCount";
+  public static final String STANDARDS_COUNT_PROPERTY = "stdcount";
 
   // TODO Need limits on how far interpolation goes before giving up.
 
@@ -128,7 +128,7 @@ public class DefaultMeasurementValueCalculator
           .getMostRecentCalibrations(conn, instrument.getDatabaseId(),
             measurement.getTime());
 
-        value.setProperty(CALIBRATION_COUNT_PROPERTY,
+        value.setProperty(STANDARDS_COUNT_PROPERTY,
           String.valueOf(calibrationSet.size()));
 
         // Get the standards closest to the measured value, with their
