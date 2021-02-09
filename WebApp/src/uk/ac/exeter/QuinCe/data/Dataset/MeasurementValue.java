@@ -185,6 +185,10 @@ public class MeasurementValue {
     supportingSensorValueIds.add(value.getId());
   }
 
+  public void addSupportingSensorValues(Collection<SensorValue> values) {
+    values.forEach(this::addSupportingSensorValue);
+  }
+
   public List<Long> getSupportingSensorValueIds() {
     return supportingSensorValueIds;
   }
