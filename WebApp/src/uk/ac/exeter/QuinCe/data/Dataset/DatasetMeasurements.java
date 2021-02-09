@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * The set of measurements for a given {@link Dataset}.
@@ -116,4 +117,43 @@ public class DatasetMeasurements {
     measurementTimes = Collections.unmodifiableList(times);
   }
 
+  public TreeSet<Measurement> getMeasurementsInSameRun(Measurement start) {
+
+    TreeSet<Measurement> result = new TreeSet<Measurement>(
+      Measurement.TIME_COMPARATOR);
+    result.add(start);
+
+    int startPos = getTimeOrderedMeasurements().indexOf(start);
+
+    // Search backwards until will find a measurement that has a different run
+    // type
+    boolean sameRunType = true;
+    int searchPos = startPos;
+    while (sameRunType) {
+      searchPos--;
+      if (searchPos < 0 || !getTimeOrderedMeasurements().get(searchPos)
+        .getRunType().equals(start.getRunType())) {
+        sameRunType = false;
+      } else {
+        result.add(getTimeOrderedMeasurements().get(searchPos));
+      }
+    }
+
+    // Search forwards until will find a measurement that has a different run
+    // type
+    sameRunType = true;
+    searchPos = startPos;
+    while (sameRunType) {
+      searchPos++;
+      if (searchPos >= getTimeOrderedMeasurements().size()
+        || !getTimeOrderedMeasurements().get(searchPos).getRunType()
+          .equals(start.getRunType())) {
+        sameRunType = false;
+      } else {
+        result.add(getTimeOrderedMeasurements().get(searchPos));
+      }
+    }
+
+    return result;
+  }
 }

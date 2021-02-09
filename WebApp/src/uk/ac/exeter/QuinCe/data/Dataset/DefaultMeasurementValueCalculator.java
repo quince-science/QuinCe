@@ -2,10 +2,12 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
@@ -148,32 +150,31 @@ public class DefaultMeasurementValueCalculator
             String target = standard.getKey();
             double standardConcentration = standard.getValue();
 
-            SensorValue priorCalibrationValue = getPriorCalibrationValue(
-              measurement.getTime(), allMeasurements.getMeasurements(target),
-              sensorValues);
+            List<SensorValue> priorCalibrationValues = getPriorCalibrationValues(
+              measurement.getTime(), allMeasurements, target, sensorValues);
 
-            SensorValue postCalibrationValue = getPostCalibrationValue(
-              measurement.getTime(), allMeasurements.getMeasurements(target),
-              sensorValues);
+            List<SensorValue> postCalibrationValues = getPostCalibrationValues(
+              measurement.getTime(), allMeasurements, target, sensorValues);
 
             LocalDateTime priorTime = null;
             Double priorOffset = null;
 
-            if (null != priorCalibrationValue) {
-              priorTime = priorCalibrationValue.getTime();
-              priorOffset = priorCalibrationValue.getDoubleValue()
+            if (priorCalibrationValues.size() > 0) {
+              priorTime = SensorValue.getMeanTime(priorCalibrationValues,
+                false);
+              priorOffset = SensorValue.getMeanValue(priorCalibrationValues)
                 - standardConcentration;
-              value.addSupportingSensorValue(priorCalibrationValue);
+              value.addSupportingSensorValues(priorCalibrationValues);
             }
 
             LocalDateTime postTime = null;
             Double postOffset = null;
 
-            if (null != postCalibrationValue) {
-              postTime = postCalibrationValue.getTime();
-              postOffset = postCalibrationValue.getDoubleValue()
+            if (postCalibrationValues.size() > 0) {
+              postTime = SensorValue.getMeanTime(postCalibrationValues, false);
+              postOffset = SensorValue.getMeanValue(postCalibrationValues)
                 - standardConcentration;
-              value.addSupportingSensorValue(postCalibrationValue);
+              value.addSupportingSensorValues(postCalibrationValues);
             }
 
             standardOffsets.put(target, interpolate(priorTime, priorOffset,
@@ -231,8 +232,11 @@ public class DefaultMeasurementValueCalculator
    *          The list of sensor values for the desired data column.
    * @return The SensorValue for the calibration measurement.
    */
-  private SensorValue getPriorCalibrationValue(LocalDateTime startTime,
-    List<Measurement> measurements, SearchableSensorValuesList sensorValues) {
+  private List<SensorValue> getPriorCalibrationValues(LocalDateTime startTime,
+    DatasetMeasurements allMeasurements, String target,
+    SearchableSensorValuesList sensorValues) {
+
+    List<SensorValue> result = new ArrayList<SensorValue>();
 
     // Work out where we're starting in the list of measurements for the target
     // standard.
@@ -240,7 +244,10 @@ public class DefaultMeasurementValueCalculator
     // will not be in the calibration run type. But we handle the case where
     // it's positive just in case. (See documentation for binarySearch.)
 
-    int startPoint = Collections.binarySearch(measurements,
+    List<Measurement> targetMeasurements = allMeasurements
+      .getMeasurements(target);
+
+    int startPoint = Collections.binarySearch(targetMeasurements,
       Measurement.dummyTimeMeasurement(startTime), Measurement.TIME_COMPARATOR);
 
     if (startPoint >= 0) {
@@ -249,18 +256,32 @@ public class DefaultMeasurementValueCalculator
       startPoint = (startPoint * -1) - 2;
     }
 
-    SensorValue result = null;
+    // If the start point is still negative, then there will be no prior
+    // calibrations
+    if (startPoint >= 0) {
+      int searchPoint = startPoint;
+      while (searchPoint >= 0) {
+        LocalDateTime testTime = targetMeasurements.get(searchPoint).getTime();
+        SensorValue testValue = sensorValues.get(testTime);
+        if (null != testValue && testValue.getUserQCFlag().isGood()) {
+          result.add(testValue);
+          break;
+        }
 
-    int searchPoint = startPoint;
-    while (searchPoint >= 0) {
-      LocalDateTime testTime = measurements.get(startPoint).getTime();
-      SensorValue testValue = sensorValues.get(testTime);
-      if (null != testValue && testValue.getUserQCFlag().isGood()) {
-        result = testValue;
-        break;
+        searchPoint--;
       }
 
-      searchPoint--;
+      // Now we've found the closest measurement, find others from the same run
+      // type sequence.
+      TreeSet<Measurement> runMeasurements = allMeasurements
+        .getMeasurementsInSameRun(targetMeasurements.get(startPoint));
+
+      for (Measurement measurement : runMeasurements) {
+        SensorValue valueCandidate = sensorValues.get(measurement.getTime());
+        if (null != valueCandidate && valueCandidate.getUserQCFlag().isGood()) {
+          result.add(valueCandidate);
+        }
+      }
     }
 
     return result;
@@ -278,8 +299,11 @@ public class DefaultMeasurementValueCalculator
    *          The list of sensor values for the desired data column.
    * @return The SensorValue for the calibration measurement.
    */
-  private SensorValue getPostCalibrationValue(LocalDateTime startTime,
-    List<Measurement> measurements, SearchableSensorValuesList sensorValues) {
+  private List<SensorValue> getPostCalibrationValues(LocalDateTime startTime,
+    DatasetMeasurements allMeasurements, String target,
+    SearchableSensorValuesList sensorValues) {
+
+    List<SensorValue> result = new ArrayList<SensorValue>();
 
     // Work out where we're starting in the list of measurements for the target
     // standard.
@@ -287,7 +311,10 @@ public class DefaultMeasurementValueCalculator
     // will not be in the calibration run type. But we handle the case where
     // it's positive just in case. (See documentation for binarySearch.)
 
-    int startPoint = Collections.binarySearch(measurements,
+    List<Measurement> targetMeasurements = allMeasurements
+      .getMeasurements(target);
+
+    int startPoint = Collections.binarySearch(targetMeasurements,
       Measurement.dummyTimeMeasurement(startTime), Measurement.TIME_COMPARATOR);
 
     if (startPoint >= 0) {
@@ -296,18 +323,30 @@ public class DefaultMeasurementValueCalculator
       startPoint = (startPoint * -1) - 1;
     }
 
-    SensorValue result = null;
+    if (startPoint < targetMeasurements.size()) {
+      int searchPoint = startPoint;
+      while (searchPoint < targetMeasurements.size()) {
+        LocalDateTime testTime = targetMeasurements.get(searchPoint).getTime();
+        SensorValue testValue = sensorValues.get(testTime);
+        if (null != testValue && testValue.getUserQCFlag().isGood()) {
+          result.add(testValue);
+          break;
+        }
 
-    int searchPoint = startPoint;
-    while (searchPoint < measurements.size()) {
-      LocalDateTime testTime = measurements.get(startPoint).getTime();
-      SensorValue testValue = sensorValues.get(testTime);
-      if (null != testValue && testValue.getUserQCFlag().isGood()) {
-        result = testValue;
-        break;
+        searchPoint--;
       }
 
-      searchPoint++;
+      // Now we've found the closest measurement, find others from the same run
+      // type sequence.
+      TreeSet<Measurement> runMeasurements = allMeasurements
+        .getMeasurementsInSameRun(targetMeasurements.get(startPoint));
+
+      for (Measurement measurement : runMeasurements) {
+        SensorValue valueCandidate = sensorValues.get(measurement.getTime());
+        if (null != valueCandidate && valueCandidate.getUserQCFlag().isGood()) {
+          result.add(valueCandidate);
+        }
+      }
     }
 
     return result;
