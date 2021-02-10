@@ -477,4 +477,13 @@ public class Flag implements Comparable<Flag> {
   public boolean equalSignificance(Flag otherFlag) {
     return otherFlag.getWoceValue() == getWoceValue();
   }
+
+  /**
+   * Get the fully simplified version of the Flag.
+   * 
+   * @return
+   */
+  public Flag getSimpleFlag() {
+    return this;
+  }
 }

@@ -64,12 +64,12 @@ public class DatasetMeasurements {
     return measurements.get(runType);
   }
 
-  public void addMeasurement(String runType, Measurement measurement) {
-    if (!measurements.containsKey(runType)) {
-      measurements.put(runType, new ArrayList<Measurement>());
+  public void addMeasurement(Measurement measurement) {
+    if (!measurements.containsKey(measurement.getRunType())) {
+      measurements.put(measurement.getRunType(), new ArrayList<Measurement>());
     }
 
-    measurements.get(runType).add(measurement);
+    measurements.get(measurement.getRunType()).add(measurement);
     timeOrderedMeasurements = null;
     measurementTimes = null;
   }

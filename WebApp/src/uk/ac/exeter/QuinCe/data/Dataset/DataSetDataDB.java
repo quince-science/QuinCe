@@ -107,8 +107,8 @@ public class DataSetDataDB {
    * Query to get all measurement records for a dataset
    */
   private static final String GET_MEASUREMENTS_QUERY = "SELECT "
-    + "id, date, run_type " + "FROM measurements WHERE dataset_id = ? "
-    + "ORDER BY date ASC";
+    + "id, date, run_type, measurement_values "
+    + "FROM measurements WHERE dataset_id = ? " + "ORDER BY date ASC";
 
   private static final String GET_MEASUREMENT_TIMES_QUERY = "SELECT "
     + "id, date FROM measurements WHERE dataset_id = ? " + "AND run_type IN "
@@ -571,13 +571,8 @@ public class DataSetDataDB {
 
       records = stmt.executeQuery();
       while (records.next()) {
-        long id = records.getLong(1);
-        // We already have the dataset id
-        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(2));
-        String runType = records.getString(3);
-
-        measurements.addMeasurement(runType,
-          new Measurement(id, datasetId, time, runType));
+        Measurement measurement = measurementFromResultSet(datasetId, records);
+        measurements.addMeasurement(measurement);
       }
 
     } catch (Exception e) {
@@ -623,12 +618,7 @@ public class DataSetDataDB {
 
       records = stmt.executeQuery();
       while (records.next()) {
-        long id = records.getLong(1);
-        // We already have the dataset id
-        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(2));
-        String runType = records.getString(3);
-
-        measurements.add(new Measurement(id, datasetId, time, runType));
+        measurements.add(measurementFromResultSet(datasetId, records));
       }
 
     } catch (Exception e) {
@@ -639,6 +629,22 @@ public class DataSetDataDB {
     }
 
     return measurements;
+  }
+
+  private static Measurement measurementFromResultSet(long datasetId,
+    ResultSet record) throws SQLException {
+
+    long id = record.getLong(1);
+    LocalDateTime time = DateTimeUtils.longToDate(record.getLong(2));
+    String runType = record.getString(3);
+    String measurementValuesJson = record.getString(4);
+
+    HashMap<Long, MeasurementValue> measurementValues = null == measurementValuesJson
+      ? null
+      : Measurement.gson.fromJson(measurementValuesJson,
+        Measurement.MEASUREMENT_VALUES_TYPE);
+
+    return new Measurement(id, datasetId, time, runType, measurementValues);
   }
 
   /**

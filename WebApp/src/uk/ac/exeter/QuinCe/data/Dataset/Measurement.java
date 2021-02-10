@@ -1,6 +1,7 @@
 
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.Objects;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
@@ -24,7 +26,9 @@ public class Measurement implements Comparable<Measurement> {
 
   public static final MeasurementTimeComparator TIME_COMPARATOR = new MeasurementTimeComparator();
 
-  private static Gson gson;
+  protected static Gson gson;
+
+  protected static Type MEASUREMENT_VALUES_TYPE;
 
   /**
    * The measurement's database ID
@@ -56,6 +60,9 @@ public class Measurement implements Comparable<Measurement> {
       .registerTypeAdapter(new HashMap<Long, MeasurementValue>().getClass(),
         new MeasurementValuesSerializer())
       .create();
+
+    MEASUREMENT_VALUES_TYPE = new TypeToken<HashMap<Long, MeasurementValue>>() {
+    }.getType();
   }
 
   /**
@@ -105,6 +112,21 @@ public class Measurement implements Comparable<Measurement> {
     this.time = time;
     this.runType = runType;
     this.measurementValues = new HashMap<Long, MeasurementValue>();
+  }
+
+  public Measurement(long id, long datasetId, LocalDateTime time,
+    String runType, HashMap<Long, MeasurementValue> measurementValues) {
+
+    this.id = id;
+    this.datasetId = datasetId;
+    this.time = time;
+    this.runType = runType;
+
+    if (null == measurementValues) {
+      this.measurementValues = new HashMap<Long, MeasurementValue>();
+    } else {
+      this.measurementValues = measurementValues;
+    }
   }
 
   /**
