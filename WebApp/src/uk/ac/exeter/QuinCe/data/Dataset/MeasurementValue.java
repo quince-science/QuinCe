@@ -7,6 +7,8 @@ import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Holds the calculated value of a given {@link SensorType} for a measurement.
@@ -44,7 +46,7 @@ public class MeasurementValue {
    * other sensors (e.g. CO2 requires xH2O).
    * </p>
    */
-  private List<Long> sensorValueIds = new ArrayList<Long>();
+  private List<Long> sensorValueIds;
 
   /**
    * The IDs of {@link SensorValue}s used to support the value calculation.
@@ -54,7 +56,7 @@ public class MeasurementValue {
    * such as those used in calibrations.
    * </p>
    */
-  private List<Long> supportingSensorValueIds = new ArrayList<Long>();
+  private List<Long> supportingSensorValueIds;
 
   /**
    * The number of calculations used to build this value.
@@ -81,12 +83,12 @@ public class MeasurementValue {
    * The QC message for this value, derived from the contributing
    * {@link SensorValues}.
    */
-  private List<String> qcMessage = new ArrayList<String>();
+  private List<String> qcMessage;
 
   /**
    * Miscellaneous properties
    */
-  private Properties properties = new Properties();
+  private Properties properties;
 
   /**
    * Creates a stub value with no assigned {@link SensorValue}s.
@@ -96,36 +98,58 @@ public class MeasurementValue {
    */
   public MeasurementValue(SensorType sensorType) {
     this.sensorType = sensorType;
+    this.sensorValueIds = new ArrayList<Long>();
+    this.supportingSensorValueIds = new ArrayList<Long>();
+    this.qcMessage = new ArrayList<String>();
+    this.properties = new Properties();
   }
 
   /**
-   * Create a {@code MeasurementValue} based on the contents of existing
-   * {@code MeasurementValue} objects.
+   * Construct a MeasurementValue using a full set of fields.
    * 
-   * @param sensorType
-   * @param sourceValues
+   * @param sensorTypeId
+   * @param sensorValueIds
+   * @param supportingSensorValueIds
+   * @param calculatedValue
+   * @param flag
+   * @param qcComments
+   * @param properties
+   * @throws SensorTypeNotFoundException
    */
+  public MeasurementValue(long sensorTypeId, List<Long> sensorValueIds,
+    List<Long> supportingSensorValueIds, Double calculatedValue, Flag flag,
+    List<String> qcComments, Properties properties)
+    throws SensorTypeNotFoundException {
+
+    this.sensorType = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType(sensorTypeId);
+    this.sensorValueIds = sensorValueIds;
+    this.supportingSensorValueIds = supportingSensorValueIds;
+    this.calculatedValue = calculatedValue;
+    this.flag = flag;
+    this.qcMessage = qcComments;
+    this.properties = properties;
+  }
 
   /**
-   * Create a fully populated {@code MeasurementValue}.
+   * Construct a MeasurementValue, calculating the QC details from the supplied
+   * {@link SensorValue}s.
    * 
    * @param sensorType
-   *          The sensor type.
-   * @param sourceValues
-   *          The contributing {@link SensorValue}s.
+   * @param sensorValues
    * @param calculatedValue
-   *          The calculated value.
    * @param memberCount
-   *          The member count.
    */
-  public MeasurementValue(SensorType sensorType,
-    Collection<SensorValue> sensorValues, Double calculatedValue,
-    int memberCount) {
+  public MeasurementValue(SensorType sensorType, List<SensorValue> sensorValues,
+    Double calculatedValue, int memberCount) {
 
     this.sensorType = sensorType;
-    this.calculatedValue = calculatedValue;
-    this.memberCount = memberCount;
+    this.sensorValueIds = new ArrayList<Long>();
     addSensorValues(sensorValues);
+    this.supportingSensorValueIds = new ArrayList<Long>();
+    this.calculatedValue = calculatedValue;
+    this.qcMessage = new ArrayList<String>();
+    this.properties = new Properties();
   }
 
   public void addSensorValues(Collection<SensorValue> values) {
@@ -171,7 +195,8 @@ public class MeasurementValue {
     if (!sensorValueIds.contains(value.getId())) {
       sensorValueIds.add(value.getId());
 
-      Flag valueFlag = value.getDisplayFlag();
+      Flag valueFlag = value.getDisplayFlag().getSimpleFlag();
+
       if (valueFlag.equals(flag)) {
         if (value.getUserQCMessage().trim().length() > 0) {
           qcMessage.add(value.getUserQCMessage());

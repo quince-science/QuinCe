@@ -485,7 +485,17 @@ public class SensorsConfiguration {
    */
   public SensorType getSensorType(long sensorId)
     throws SensorTypeNotFoundException {
-    SensorType result = sensorTypes.get(sensorId);
+
+    SensorType result = null;
+
+    if (sensorId == SensorType.LONGITUDE_ID) {
+      result = SensorType.LONGITUDE_SENSOR_TYPE;
+    } else if (sensorId == SensorType.LATITUDE_ID) {
+      result = SensorType.LATITUDE_SENSOR_TYPE;
+    } else {
+      result = sensorTypes.get(sensorId);
+    }
+
     if (null == result) {
       throw new SensorTypeNotFoundException(sensorId);
     }

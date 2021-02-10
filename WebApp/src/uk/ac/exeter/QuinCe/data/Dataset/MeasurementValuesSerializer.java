@@ -1,25 +1,47 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagSerializer;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 
 public class MeasurementValuesSerializer
-  implements JsonSerializer<HashMap<Long, MeasurementValue>> {
+  implements JsonSerializer<HashMap<Long, MeasurementValue>>,
+  JsonDeserializer<HashMap<Long, MeasurementValue>> {
 
   private static final Gson gson;
+
+  private static final String SENSOR_VALUE_IDS_KEY = "svids";
+
+  private static final String SUPPORTING_VALUE_IDS_KEY = "suppids";
+
+  private static final String VALUE_KEY = "value";
+
+  private static final String FLAG_KEY = "flag";
+
+  private static final String QC_COMMENT_KEY = "qcComments";
+
+  private static final String PROPERTIES_KEY = "props";
+
+  private static final Double NAN_VALUE = -999999999.9D;
 
   static {
     gson = new GsonBuilder()
@@ -42,32 +64,102 @@ public class MeasurementValuesSerializer
       JsonArray sensorValueIds = new JsonArray(
         value.getSensorValueIds().size());
       value.getSensorValueIds().forEach(sensorValueIds::add);
-      valueJson.add("svids", sensorValueIds);
+      valueJson.add(SENSOR_VALUE_IDS_KEY, sensorValueIds);
 
       // Supporting Sensor Value IDs
       JsonArray supportingSensorValueIds = new JsonArray(
         value.getSupportingSensorValueIds().size());
       value.getSupportingSensorValueIds()
         .forEach(supportingSensorValueIds::add);
-      valueJson.add("suppids", supportingSensorValueIds);
+      valueJson.add(SUPPORTING_VALUE_IDS_KEY, supportingSensorValueIds);
 
       // Calculated value
-      valueJson.add("value", new JsonPrimitive(value.getCalculatedValue()));
+      JsonPrimitive valuePrimitive;
+      if (value.getCalculatedValue().isNaN()) {
+        valuePrimitive = new JsonPrimitive(NAN_VALUE);
+      } else {
+        valuePrimitive = new JsonPrimitive(value.getCalculatedValue());
+      }
+
+      valueJson.add(VALUE_KEY, valuePrimitive);
 
       // Flag
-      valueJson.add("flag", gson.toJsonTree(value.getQcFlag()));
+      valueJson.add(FLAG_KEY, gson.toJsonTree(value.getQcFlag()));
 
       // QC Comments
       JsonArray qcComments = new JsonArray(value.getQcMessages().size());
       value.getQcMessages().forEach(qcComments::add);
-      valueJson.add("qcComments", qcComments);
+      valueJson.add(QC_COMMENT_KEY, qcComments);
 
       json.add(String.valueOf(entry.getKey()), valueJson);
 
       // Properties
-      valueJson.add("props", gson.toJsonTree(value.getProperties()));
+      valueJson.add(PROPERTIES_KEY, gson.toJsonTree(value.getProperties()));
     }
 
     return json;
+  }
+
+  @Override
+  public HashMap<Long, MeasurementValue> deserialize(JsonElement json,
+    Type typeOfT, JsonDeserializationContext context)
+    throws JsonParseException {
+
+    HashMap<Long, MeasurementValue> result = new HashMap<Long, MeasurementValue>();
+
+    for (Map.Entry<String, JsonElement> entry : ((JsonObject) json)
+      .entrySet()) {
+
+      long sensorTypeId = Long.parseLong(entry.getKey());
+
+      MeasurementValue measurementValue = makeMeasurementValue(sensorTypeId,
+        (JsonObject) entry.getValue());
+
+      result.put(sensorTypeId, measurementValue);
+    }
+
+    return result;
+  }
+
+  private MeasurementValue makeMeasurementValue(long sensorTypeId,
+    JsonObject json) throws JsonParseException {
+
+    try {
+      JsonArray sensorValueIdsElement = json
+        .getAsJsonArray(SENSOR_VALUE_IDS_KEY);
+      List<Long> sensorValueIds = new ArrayList<Long>(
+        sensorValueIdsElement.size());
+
+      sensorValueIdsElement.forEach(e -> sensorValueIds.add(e.getAsLong()));
+
+      JsonArray supportingValueIdsElement = json
+        .getAsJsonArray(SUPPORTING_VALUE_IDS_KEY);
+      List<Long> supportingValueIds = new ArrayList<Long>(
+        supportingValueIdsElement.size());
+
+      supportingValueIdsElement
+        .forEach(e -> supportingValueIds.add(e.getAsLong()));
+
+      Double value = json.get(VALUE_KEY).getAsDouble();
+      if (value == NAN_VALUE) {
+        value = Double.NaN;
+      }
+
+      Flag flag = gson.fromJson(json.get(FLAG_KEY), Flag.class);
+
+      JsonArray qcCommentsElement = json.getAsJsonArray(QC_COMMENT_KEY);
+      List<String> qcComments = new ArrayList<String>(qcCommentsElement.size());
+
+      qcCommentsElement.forEach(e -> qcComments.add(e.getAsString()));
+
+      Properties properties = gson.fromJson(json.get(PROPERTIES_KEY),
+        Properties.class);
+
+      return new MeasurementValue(sensorTypeId, sensorValueIds,
+        supportingValueIds, value, flag, qcComments, properties);
+    } catch (SensorTypeNotFoundException e) {
+      throw new JsonParseException(e);
+    }
+
   }
 }
