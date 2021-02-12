@@ -3,16 +3,15 @@ package junit.uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
+import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.MeasurementValues;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.UnderwayMarinePco2Reducer;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -27,17 +26,15 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * </p>
  *
  */
-public class UnderwayMarinePco2ReducerTest extends BaseTest {
+public class UnderwayMarinePco2ReducerTest extends DataReducerTest {
 
+  @FlywayTest
   @Test
   public void testReduction() throws Exception {
 
     // Mock objects
     Instrument instrument = Mockito.mock(Instrument.class);
     Mockito.when(instrument.getDatabaseId()).thenReturn(1L);
-
-    Measurement measurement = Mockito.mock(Measurement.class);
-    Mockito.when(measurement.getId()).thenReturn(1L);
 
     Variable variable = Mockito.mock(Variable.class);
     Mockito.when(variable.getId()).thenReturn(1L);
@@ -46,26 +43,31 @@ public class UnderwayMarinePco2ReducerTest extends BaseTest {
     UnderwayMarinePco2Reducer reducer = new UnderwayMarinePco2Reducer(variable,
       new HashMap<String, Properties>());
 
+    MeasurementValue intakeTemp = makeMeasurementValue("Intake Temperature",
+      11.912D);
+
+    MeasurementValue salinity = makeMeasurementValue("Salinity", 35.224D);
+
+    MeasurementValue eqTemp = makeMeasurementValue("Equilibrator Temperature",
+      12.37D);
+
+    MeasurementValue eqPressure = makeMeasurementValue("Equilibrator Pressure",
+      999.23D);
+
+    MeasurementValue xco2 = makeMeasurementValue("xCO₂ (with standards)",
+      374.977D);
+
+    Measurement measurement = makeMeasurement(intakeTemp, salinity, eqTemp,
+      eqPressure, xco2);
+
     // Make a record to work with
     DataReductionRecord record = new DataReductionRecord(measurement, variable,
       reducer.getCalculationParameterNames());
 
-    Map<String, Double> values = new HashMap<String, Double>();
-    values.put("Intake Temperature", 11.912D);
-    values.put("Salinity", 35.224D);
-    values.put("Equilibrator Temperature", 12.37D);
-    values.put("Equilibrator Pressure", 999.23D);
-    values.put("xCO₂ (with standards)", 374.977D);
-
-    // Mock object to give sensor values to the reducer
-    MeasurementValues sensorValues = new FixedMeasurementValues(instrument,
-      measurement, "Test", values);
-
-    reducer.doCalculation(instrument, sensorValues, record, null, null, null);
+    reducer.doCalculation(instrument, measurement, record,
+      getDataSource().getConnection());
 
     // Check the calculated values in the record
-    assertEquals(999.23D, record.getCalculationValue("Equilibrator Pressure"),
-      0.0001);
     assertEquals(0.458D, record.getCalculationValue("ΔT"), 0.0001);
     assertEquals(0.01389918297D, record.getCalculationValue("pH₂O"), 0.0001);
     assertEquals(374.977D, record.getCalculationValue("Calibrated CO₂"),

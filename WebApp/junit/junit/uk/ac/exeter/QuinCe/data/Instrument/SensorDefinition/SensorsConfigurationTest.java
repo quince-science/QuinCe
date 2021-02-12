@@ -547,6 +547,31 @@ public class SensorsConfigurationTest extends BaseTest {
     }
   }
 
+  @FlywayTest
+  @Test
+  public void getLatitudeByIdTest() throws Exception {
+    try {
+      SensorType sensorType = getConfig().getSensorType(SensorType.LATITUDE_ID);
+      assertEquals(SensorType.LATITUDE_SENSOR_TYPE, sensorType);
+    } catch (SensorTypeNotFoundException e) {
+      // This exception should not be thrown
+      fail("SensorTypeNotFoundException thrown when it shouldn't have been");
+    }
+  }
+
+  @FlywayTest
+  @Test
+  public void getLongitudeByIdTest() throws Exception {
+    try {
+      SensorType sensorType = getConfig()
+        .getSensorType(SensorType.LONGITUDE_ID);
+      assertEquals(SensorType.LONGITUDE_SENSOR_TYPE, sensorType);
+    } catch (SensorTypeNotFoundException e) {
+      // This exception should not be thrown
+      fail("SensorTypeNotFoundException thrown when it shouldn't have been");
+    }
+  }
+
   /**
    * Test that retrieving a {@link SensorType} with an invalid ID throws a
    * {@link SensorTypeNotFoundException}.
@@ -557,7 +582,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @Test
   public void getInvalidSensorTypeByIdTest() {
     assertThrows(SensorTypeNotFoundException.class, () -> {
-      getConfig().getSensorType(-1000);
+      getConfig().getSensorType(-9999999L);
     });
   }
 
