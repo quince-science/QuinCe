@@ -74,8 +74,7 @@ public class InternalCalibrationData extends PlotPageData {
 
       for (RunTypeSensorValue value : sensorValues) {
         long columnId = makeColumnId(value.getRunType(), value.getColumnId());
-        dataStructure.add(value.getTime(), getColumnHeading(columnId), value,
-          false);
+        dataStructure.add(value.getTime(), getColumnHeading(columnId), value);
       }
     }
   }

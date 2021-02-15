@@ -8,8 +8,6 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
 
   private final SensorValue sensorValue;
 
-  private boolean used;
-
   /**
    * Builds a {@link PlotPageTableValue} from a {@link SensorValue}.
    *
@@ -20,9 +18,8 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
    * @throws RoutineException
    *           If the QC message cannot be extracted.
    */
-  public SensorValuePlotPageTableValue(SensorValue sensorValue, boolean used) {
+  public SensorValuePlotPageTableValue(SensorValue sensorValue) {
     this.sensorValue = sensorValue;
-    this.used = used;
   }
 
   @Override
@@ -33,11 +30,6 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
   @Override
   public String getValue() {
     return sensorValue.getValue();
-  }
-
-  @Override
-  public boolean getUsed() {
-    return used;
   }
 
   @Override
