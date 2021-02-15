@@ -345,13 +345,13 @@ public class ManualQCData extends PlotPageData {
               .equals(RunTypeCategory.INTERNAL_CALIBRATION))) {
             record.addBlankColumn();
           } else {
-            record.addColumn(recordSensorValues.get(columnId), false);
+            record.addColumn(recordSensorValues.get(columnId));
           }
         }
 
         if (null != diagnosticColumnIds) {
           for (long columnId : diagnosticColumnIds) {
-            record.addColumn(recordSensorValues.get(columnId), false);
+            record.addColumn(recordSensorValues.get(columnId));
           }
         }
 
@@ -729,7 +729,7 @@ public class ManualQCData extends PlotPageData {
           .getColumnValues(column.getId())) {
 
           result.put(sensorValue.getTime(),
-            new SensorValuePlotPageTableValue(sensorValue, false));
+            new SensorValuePlotPageTableValue(sensorValue));
         }
       } else {
 
@@ -748,7 +748,7 @@ public class ManualQCData extends PlotPageData {
             .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
 
             result.put(sensorValue.getTime(),
-              new SensorValuePlotPageTableValue(sensorValue, false));
+              new SensorValuePlotPageTableValue(sensorValue));
           }
         }
       }
@@ -858,7 +858,7 @@ public class ManualQCData extends PlotPageData {
 
         if (useValue) {
           // We aren't bothered about the used flag
-          result = new SensorValuePlotPageTableValue(sensorValue, false);
+          result = new SensorValuePlotPageTableValue(sensorValue);
         }
       }
 

@@ -26,13 +26,6 @@ public interface PlotPageTableValue {
   public String getValue();
 
   /**
-   * Get the flag indicating whether the value is used in a calculation.
-   *
-   * @return The used flag.
-   */
-  public boolean getUsed();
-
-  /**
    * Get the QC flag.
    *
    * @return The QC flag.

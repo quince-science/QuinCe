@@ -38,11 +38,6 @@ public class DataReductionRecordPlotPageTableValue
   }
 
   @Override
-  public boolean getUsed() {
-    return false;
-  }
-
-  @Override
   public String getQcMessage() {
     return StringUtils.collectionToDelimited(record.getQCMessages(), ";");
   }

@@ -316,10 +316,6 @@ li.menuitem:hover, li.smallMenuitem:hover {
   color: #999999;
 }
 
-.unused {
-  font-style: italic;
-}
-
 .needsFlag {
   background: #D7D6FF;
 }

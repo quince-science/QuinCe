@@ -159,7 +159,7 @@ public class SimplePlotPageDataStructure {
   }
 
   public void add(LocalDateTime time, PlotPageColumnHeading heading,
-    SensorValue value, boolean used) throws RoutineException {
+    SensorValue value) throws RoutineException {
 
     if (!pageData.containsKey(time)) {
       // Create the time entry
@@ -169,8 +169,7 @@ public class SimplePlotPageDataStructure {
       rowIds = null;
     }
 
-    pageData.get(time).put(heading,
-      new SensorValuePlotPageTableValue(value, used));
+    pageData.get(time).put(heading, new SensorValuePlotPageTableValue(value));
   }
 
   private PlotPageColumnHeading getTimeHeading() {

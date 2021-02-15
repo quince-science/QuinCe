@@ -74,8 +74,8 @@ public class PlotPageTableRecord {
     addColumn(new SimplePlotPageTableValue(value, false));
   }
 
-  public void addColumn(SensorValue sensorValue, boolean used) {
-    addColumn(new SensorValuePlotPageTableValue(sensorValue, used));
+  public void addColumn(SensorValue sensorValue) {
+    addColumn(new SensorValuePlotPageTableValue(sensorValue));
   }
 
   /**
@@ -95,8 +95,8 @@ public class PlotPageTableRecord {
   public void addColumn(String value, boolean used, Flag qcFlag,
     String qcMessage, boolean flagNeeded) {
 
-    addColumn(new SimplePlotPageTableValue(value, used, qcFlag, qcMessage,
-      flagNeeded));
+    addColumn(
+      new SimplePlotPageTableValue(value, used, qcFlag, qcMessage, flagNeeded));
   }
 
   public void addColumn(PlotPageTableValue column) {

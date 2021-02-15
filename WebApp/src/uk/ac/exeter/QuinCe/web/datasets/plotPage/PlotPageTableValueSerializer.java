@@ -19,13 +19,11 @@ public class PlotPageTableValueSerializer
 
     if (null == src || src.isNull()) {
       json.add("value", JsonNull.INSTANCE);
-      json.add("used", JsonNull.INSTANCE);
       json.add("qcFlag", JsonNull.INSTANCE);
       json.add("qcMessage", JsonNull.INSTANCE);
       json.add("flagNeeded", JsonNull.INSTANCE);
     } else {
       json.addProperty("value", src.getValue());
-      json.addProperty("used", src.getUsed());
       json.addProperty("qcFlag", src.getQcFlag().getFlagValue());
       json.addProperty("qcMessage", src.getQcMessage());
       json.addProperty("flagNeeded", src.getFlagNeeded());
