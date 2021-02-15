@@ -87,16 +87,6 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
   }
 
   /**
-   * Get the flag indicating whether the value is used in a calculation.
-   *
-   * @return The used flag.
-   */
-  @Override
-  public boolean getUsed() {
-    return used;
-  }
-
-  /**
    * Get the QC flag.
    *
    * @return The QC flag.

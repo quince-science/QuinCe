@@ -22,11 +22,6 @@ public class FixedPlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
-  public boolean getUsed() {
-    return false;
-  }
-
-  @Override
   public Flag getQcFlag() {
     return Flag.GOOD;
   }

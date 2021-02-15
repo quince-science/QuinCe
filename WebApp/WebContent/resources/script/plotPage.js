@@ -809,10 +809,6 @@ function getColumnDefs() {
           classes.push('numericCol');
         }
 
-        if (!data['used']) {
-          classes.push('unused');
-        }
-
         if (null != flagClass) {
           classes.push(flagClass);
         }
