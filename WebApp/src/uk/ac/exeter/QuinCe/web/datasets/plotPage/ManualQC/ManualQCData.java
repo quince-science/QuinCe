@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -39,6 +40,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.NullPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
@@ -52,6 +54,17 @@ public class ManualQCData extends PlotPageData {
    * The Measurement objects for the dataset
    */
   protected TreeMap<LocalDateTime, Measurement> measurements = null;
+
+  /**
+   * The set of {@link SensorType}s used by the measurements in this dataset.
+   * 
+   * <p>
+   * Used to display interpolated values from
+   * </p>
+   * 
+   * @see Measurement#getMeasurementValue(SensorType)
+   */
+  private TreeSet<SensorType> measurementSensorTypes = null;
 
   /**
    * All row IDs for the dataset. Row IDs are the millisecond values of the
@@ -144,7 +157,7 @@ public class ManualQCData extends PlotPageData {
 
       measurements = new TreeMap<LocalDateTime, Measurement>();
 
-      measurementsList.forEach(x -> measurements.put(x.getTime(), x));
+      measurementsList.forEach(m -> measurements.put(m.getTime(), m));
 
       dataReduction = DataSetDataDB.getDataReductionData(conn, instrument,
         dataset);
@@ -247,8 +260,22 @@ public class ManualQCData extends PlotPageData {
         diagnosticColumnNames);
     }
 
+    // Drop the Measurement Values in the correct place in the column heading
+    // maps.
+    // We will fill it in properly later
+    columnHeadings.put(MEASUREMENTVALUES_FIELD_GROUP, null);
+    extendedColumnHeadings.put(MEASUREMENTVALUES_FIELD_GROUP, null);
+
+    // We use a TreeSet to maintain order and uniqueness
+    measurementSensorTypes = new TreeSet<SensorType>();
+
     // Each of the instrument variables
     for (Variable variable : instrument.getVariables()) {
+
+      // Get the SensorTypes for this variable
+      variable.getAllSensorTypes(true).forEach(measurementSensorTypes::add);
+
+      // Now the calculation parameters
       try {
         List<CalculationParameter> variableHeadings = DataReducerFactory
           .getCalculationParameters(variable, true, true);
@@ -264,6 +291,16 @@ public class ManualQCData extends PlotPageData {
         error("Error getting variable headers", e);
       }
     }
+
+    // Now we can fill in the proper MeasurementValue column headings
+    List<PlotPageColumnHeading> measurementValueColumnNames = measurementSensorTypes
+      .stream().map(x -> new PlotPageColumnHeading(x))
+      .collect(Collectors.toList());
+
+    columnHeadings.put(MEASUREMENTVALUES_FIELD_GROUP,
+      measurementValueColumnNames);
+    extendedColumnHeadings.put(MEASUREMENTVALUES_FIELD_GROUP,
+      measurementValueColumnNames);
   }
 
   @Override
@@ -349,6 +386,7 @@ public class ManualQCData extends PlotPageData {
           }
         }
 
+        // Diagnostic values
         if (null != diagnosticColumnIds) {
           for (long columnId : diagnosticColumnIds) {
             record.addColumn(recordSensorValues.get(columnId));
@@ -359,6 +397,18 @@ public class ManualQCData extends PlotPageData {
         Measurement measurement = measurements.get(times.get(i));
         if (null != measurement) {
           measurementId = measurement.getId();
+        }
+
+        if (null == measurement) {
+          record.addBlankColumns(measurementSensorTypes.size());
+        } else {
+          // MeasurementValues
+          measurementSensorTypes.forEach(s -> {
+
+            record.addColumn(measurement.containsMeasurementValue(s)
+              ? measurement.getMeasurementValue(s)
+              : new NullPlotPageTableValue());
+          });
         }
 
         Map<Variable, DataReductionRecord> dataReductionData = null;
@@ -857,7 +907,6 @@ public class ManualQCData extends PlotPageData {
         }
 
         if (useValue) {
-          // We aren't bothered about the used flag
           result = new SensorValuePlotPageTableValue(sensorValue);
         }
       }

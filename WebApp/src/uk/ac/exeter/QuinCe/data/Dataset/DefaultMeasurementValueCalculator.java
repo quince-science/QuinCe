@@ -197,7 +197,7 @@ public class DefaultMeasurementValueCalculator
             for (String target : standardOffsets.keySet()) {
               regression.addData(
                 calibrationSet.getCalibrationValue(target,
-                  value.getSensorType().getName()),
+                  value.getSensorType().getShortName()),
                 standardOffsets.get(target));
             }
 

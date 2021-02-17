@@ -209,7 +209,7 @@ public class SensorAssignmentsTest extends BaseTest {
     SensorType result = null;
 
     for (SensorType type : config.getSensorTypes()) {
-      if (type.getName().equals(typeName)) {
+      if (type.getShortName().equals(typeName)) {
         result = type;
         break;
       }

@@ -8,6 +8,9 @@ import java.util.Properties;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -30,7 +33,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
-public class MeasurementValue {
+public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * The {@link SensorType} that this measurement value is for.
@@ -148,6 +151,7 @@ public class MeasurementValue {
     addSensorValues(sensorValues);
     this.supportingSensorValueIds = new ArrayList<Long>();
     this.calculatedValue = calculatedValue;
+    this.memberCount = memberCount;
     this.qcMessage = new ArrayList<String>();
     this.properties = new Properties();
   }
@@ -318,5 +322,30 @@ public class MeasurementValue {
     } else if (!sensorValueIds.equals(other.sensorValueIds))
       return false;
     return true;
+  }
+
+  @Override
+  public long getId() {
+    return DatabaseUtils.NO_DATABASE_RECORD;
+  }
+
+  @Override
+  public String getValue() {
+    return String.valueOf(calculatedValue);
+  }
+
+  @Override
+  public String getQcMessage() {
+    return StringUtils.collectionToDelimited(qcMessage, ";");
+  }
+
+  @Override
+  public boolean getFlagNeeded() {
+    return false;
+  }
+
+  @Override
+  public boolean isNull() {
+    return false;
   }
 }

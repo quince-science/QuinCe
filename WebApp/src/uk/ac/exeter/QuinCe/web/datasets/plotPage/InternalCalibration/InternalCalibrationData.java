@@ -117,14 +117,14 @@ public class InternalCalibrationData extends PlotPageData {
             for (String runType : runTypes) {
 
               Double calibrationValue = calibrations
-                .getCalibrationValue(runType, sensorType.getName());
+                .getCalibrationValue(runType, sensorType.getShortName());
 
               long columnId = makeColumnId(runType, assignment);
               String columnName = runType + ":" + assignment.getSensorName();
 
               PlotPageColumnHeading heading = new PlotPageColumnHeading(
-                columnId, columnName, sensorType.getColumnHeading(),
-                sensorType.getCode(), sensorType.getUnits(), true, true,
+                columnId, columnName, sensorType.getLongName(),
+                sensorType.getCodeName(), sensorType.getUnits(), true, true,
                 calibrationValue);
               sensorTypeColumns.add(heading);
               columnCount++;
@@ -136,7 +136,7 @@ public class InternalCalibrationData extends PlotPageData {
             }
           }
 
-          columnHeadings.put(sensorType.getName(), sensorTypeColumns);
+          columnHeadings.put(sensorType.getShortName(), sensorTypeColumns);
         }
       }
     } catch (SQLException e) {

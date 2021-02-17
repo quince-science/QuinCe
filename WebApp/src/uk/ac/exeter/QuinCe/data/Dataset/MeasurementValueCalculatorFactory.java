@@ -27,9 +27,10 @@ public class MeasurementValueCalculatorFactory {
       SensorsConfiguration sensorConfig = ResourceManager.getInstance()
         .getSensorsConfiguration();
 
-      if (sensorType.getName().equals("Equilibrator Pressure (differential)")) {
+      if (sensorType.getShortName()
+        .equals("Equilibrator Pressure (differential)")) {
         result = new DiffEqPresMeasurementValueCalculator();
-      } else if (sensorType.getName().equals("xCO₂ (with standards)")) {
+      } else if (sensorType.getShortName().equals("xCO₂ (with standards)")) {
         result = new XCO2MeasurementValueCalculator();
       } else if (sensorConfig.isParent(sensorType)) {
         result = new ParentSensorTypeMeasurementValueCalculator();
@@ -40,7 +41,8 @@ public class MeasurementValueCalculatorFactory {
       return result;
     } catch (Exception e) {
       throw new MeasurementValueCalculatorException(
-        "Error getting MeasurementValueCalculator for " + sensorType.getName(),
+        "Error getting MeasurementValueCalculator for "
+          + sensorType.getShortName(),
         e);
     }
   }
