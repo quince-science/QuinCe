@@ -83,8 +83,6 @@ public class PlotPageTableRecord {
    *
    * @param value
    *          The time value.
-   * @param used
-   *          Whether or not the value is used in a calculation.
    * @param qcFlag
    *          The QC flag.
    * @param qcMessage
@@ -92,11 +90,11 @@ public class PlotPageTableRecord {
    * @param flagNeeded
    *          Indicates whether or not a user QC flag is needed.
    */
-  public void addColumn(String value, boolean used, Flag qcFlag,
-    String qcMessage, boolean flagNeeded) {
+  public void addColumn(String value, Flag qcFlag, String qcMessage,
+    boolean flagNeeded) {
 
     addColumn(
-      new SimplePlotPageTableValue(value, used, qcFlag, qcMessage, flagNeeded));
+      new SimplePlotPageTableValue(value, qcFlag, qcMessage, flagNeeded));
   }
 
   public void addColumn(PlotPageTableValue column) {
@@ -121,7 +119,7 @@ public class PlotPageTableRecord {
   }
 
   public void addBlankColumn() {
-    addColumn("", false, Flag.GOOD, null, false);
+    addColumn("", Flag.GOOD, null, false);
   }
 
   public void addBlankColumns(int count) {

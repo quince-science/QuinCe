@@ -14,11 +14,6 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
   private final String value;
 
   /**
-   * Indicates whether or not the value is used in a calculation.
-   */
-  private final boolean used;
-
-  /**
    * The value's QC flag.
    */
   private final Flag qcFlag;
@@ -47,10 +42,9 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    * @param flagNeeded
    *          Whether or not user QC is required.
    */
-  public SimplePlotPageTableValue(String value, boolean used, Flag qcFlag,
-    String qcMessage, boolean flagNeeded) {
+  public SimplePlotPageTableValue(String value, Flag qcFlag, String qcMessage,
+    boolean flagNeeded) {
     this.value = StringUtils.formatNumber(value);
-    this.used = used;
     this.qcFlag = qcFlag;
     this.qcMessage = qcMessage;
     this.flagNeeded = flagNeeded;
@@ -70,7 +64,6 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
       this.value = DateTimeUtils.toIsoDate(time);
     }
 
-    this.used = true;
     this.qcFlag = Flag.GOOD;
     this.qcMessage = "";
     this.flagNeeded = false;

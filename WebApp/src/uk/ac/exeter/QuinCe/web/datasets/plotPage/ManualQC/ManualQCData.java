@@ -361,12 +361,12 @@ public class ManualQCData extends PlotPageData {
                 .append(StringUtils.formatNumber(latitude.getValue()));
             }
 
-            record.addColumn(positionString.toString(), true,
+            record.addColumn(positionString.toString(),
               longitude.getDisplayFlag(), longitude.getDisplayQCMessage(),
               longitude.flagNeeded());
           } else {
             // Empty position column
-            record.addColumn("", true, Flag.GOOD, null, false);
+            record.addColumn("", Flag.GOOD, null, false);
           }
         }
 
@@ -443,8 +443,7 @@ public class ManualQCData extends PlotPageData {
                 .getCalculationValue(param.getShortName());
               String stringValue = null == value ? "" : String.valueOf(value);
 
-              record.addColumn(stringValue, false,
-                variableDataReduction.getQCFlag(),
+              record.addColumn(stringValue, variableDataReduction.getQCFlag(),
                 variableDataReduction.getQCMessages().toString(), false);
             }
           } else {
