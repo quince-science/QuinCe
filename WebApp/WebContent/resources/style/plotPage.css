@@ -1,5 +1,34 @@
 /*
  *************************
+ * Override DataTables classes
+ *************************
+ */
+table.dataTable.compact td {
+  padding: 0px !important;
+}
+
+.plotPageCell {
+  padding: 4px;
+}
+
+.oddColGroupOddRow {
+  background-color: #ffffff;
+}
+
+.oddColGroupEvenRow {
+  background-color: #f6f6ff;
+}
+
+.evenColGroupOddRow {
+  background-color: #f6f6ff;
+}
+
+.evenColGroupEvenRow {
+  background-color: #e9e9f9;
+}
+
+/*
+ *************************
  * Page layout
  *************************
  */
@@ -70,7 +99,7 @@
  * Table
  *************************
  */
-td.selected {
+td.selected > div {
   background-color: #FFFF00 !important;
 }
 

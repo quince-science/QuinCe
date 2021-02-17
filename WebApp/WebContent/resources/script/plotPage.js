@@ -551,7 +551,7 @@ function selectionUpdated() {
 function drawTable() {
 
   // Construct the table header
-  let html = '<table id="dataTable" class="cell-border stripe compact nowrap" width="100%"><thead>';
+  let html = '<table id="dataTable" class="cell-border compact nowrap" width="100%"><thead>';
 
   columnHeaders.forEach(g => {
 
@@ -780,7 +780,7 @@ function isFixedColumn(columnIndex) {
 function getColumnDefs() {
 
   return [
-    {"defaultContent": "",
+    {"defaultContent": "&nbsp;",
       "targets": '_all'
     },
     {"render":
@@ -804,7 +804,16 @@ function getColumnDefs() {
           }
         }
 
-        let classes = []
+        let classes = ['plotPageCell'];
+        
+        // Cell coloring
+        let columnGroup = getColumnGroup(meta.col);
+	  	if (columnGroup % 2 == 0) {
+		  classes.push(meta.row % 2 == 0 ? 'evenColGroupEvenRow' : 'evenColGroupOddRow');
+		} else {
+		  classes.push(meta.row % 2 == 0 ? 'oddColGroupEvenRow' : 'oddColGroupOddRow');
+		}
+
         if ($.isNumeric(data['value'])) {
           classes.push('numericCol');
         }
@@ -824,7 +833,9 @@ function getColumnDefs() {
         }
 
         result += '>';
-        if (null != data['value']) {
+        if (null == data['value'] || data['value'] == '') {
+	      result += '&nbsp;';
+        } else {
           result += (data['value']);
         }
         result += '</div>';
@@ -883,7 +894,7 @@ function highlightRow(rowId) {
   if (null != rowId) {
     setTimeout(function() {
       var rowNode = $('#' + rowId)[0];
-      $(rowNode).css('animationName', 'rowFlash').css('animationDuration', '1s');
+      $(rowNode).find('div').css('animationName', 'rowFlash').css('animationDuration', '1s');
       setTimeout(function() {
         $(rowNode).css('animationName', '');
         drawTableSelection();
