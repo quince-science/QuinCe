@@ -331,7 +331,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   @Override
   public String getValue() {
-    return String.valueOf(calculatedValue);
+    return StringUtils.formatNumber(calculatedValue);
   }
 
   @Override
