@@ -223,7 +223,7 @@ public class SensorsConfigurationTest extends BaseTest {
     boolean runTypeFound = false;
     for (SensorType type : config.getSensorTypes()) {
       if (type.getId() == SensorType.RUN_TYPE_ID) {
-        if (type.getName().equals("Run Type")) {
+        if (type.getShortName().equals("Run Type")) {
           runTypeFound = true;
           break;
         }
@@ -284,7 +284,7 @@ public class SensorsConfigurationTest extends BaseTest {
     List<SensorType> testTypes = types.subList(types.size() - 4, types.size());
 
     for (int i = 0; i < testTypes.size(); i++) {
-      assertEquals("DisplayOrder " + i, testTypes.get(i).getName());
+      assertEquals("DisplayOrder " + i, testTypes.get(i).getShortName());
     }
   }
 
@@ -353,7 +353,7 @@ public class SensorsConfigurationTest extends BaseTest {
 
     // Get the 'child' type
     for (SensorType type : config.getSensorTypes()) {
-      if (type.getName().equals("Test Orphan")) {
+      if (type.getShortName().equals("Test Orphan")) {
         orphan = type;
         break;
       }
@@ -380,14 +380,14 @@ public class SensorsConfigurationTest extends BaseTest {
 
     // Get the 'child' type
     for (SensorType type : config.getSensorTypes()) {
-      if (type.getName().equals("Test Child")) {
+      if (type.getShortName().equals("Test Child")) {
         child = type;
         break;
       }
     }
 
     assertNotNull(config.getParent(child));
-    assertEquals("Test Parent", config.getParent(child).getName());
+    assertEquals("Test Parent", config.getParent(child).getShortName());
   }
 
   /**
@@ -408,7 +408,7 @@ public class SensorsConfigurationTest extends BaseTest {
 
     // Get the 'child' type
     for (SensorType type : config.getSensorTypes()) {
-      if (type.getName().equals("Test Orphan")) {
+      if (type.getShortName().equals("Test Orphan")) {
         orphan = type;
         break;
       }
@@ -465,7 +465,7 @@ public class SensorsConfigurationTest extends BaseTest {
 
     // Get the 'child' type
     for (SensorType type : config.getSensorTypes()) {
-      if (type.getName().equals("Test Child")) {
+      if (type.getShortName().equals("Test Child")) {
         child = type;
         break;
       }
@@ -474,7 +474,7 @@ public class SensorsConfigurationTest extends BaseTest {
     List<SensorType> siblings = config.getSiblings(child);
     assertEquals(2, config.getSiblings(child).size());
     siblings.stream()
-      .forEach(c -> assertTrue(c.getName().startsWith("Sibling")));
+      .forEach(c -> assertTrue(c.getShortName().startsWith("Sibling")));
   }
 
   /**
@@ -716,7 +716,8 @@ public class SensorsConfigurationTest extends BaseTest {
     SensorsConfiguration config = getConfig();
     List<SensorType> coreSensors = config.getCoreSensors(var1List);
     assertEquals(1, coreSensors.size());
-    assertTrue(coreSensors.get(0).getName().equals("xCO₂ (with standards)"));
+    assertTrue(
+      coreSensors.get(0).getShortName().equals("xCO₂ (with standards)"));
   }
 
   /**

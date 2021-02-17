@@ -279,7 +279,7 @@ public class SensorsConfiguration {
       boolean found = false;
 
       for (SensorType sensorType : sensorTypes.values()) {
-        if (sensorType.getName().equalsIgnoreCase(name)) {
+        if (sensorType.getShortName().equalsIgnoreCase(name)) {
           found = true;
           break;
         }
@@ -517,7 +517,7 @@ public class SensorsConfiguration {
     SensorType result = null;
 
     for (SensorType type : sensorTypes.values()) {
-      if (type.getName().equals(typeName)) {
+      if (type.getShortName().equals(typeName)) {
         result = type;
         break;
       }

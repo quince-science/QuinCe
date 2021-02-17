@@ -501,8 +501,9 @@ public class SensorAssignments
     if (null == assignments) {
       // The sensor is not valid for this instrument, so it has not
       // been added to the assignments list
-      throw new SensorAssignmentException(assignment.getSensorType().getName()
-        + " is not valid for this instrument");
+      throw new SensorAssignmentException(
+        assignment.getSensorType().getShortName()
+          + " is not valid for this instrument");
     }
     assignments.add(assignment);
   }

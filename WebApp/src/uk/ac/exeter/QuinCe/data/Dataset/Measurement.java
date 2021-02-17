@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -13,6 +15,7 @@ import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -218,6 +221,10 @@ public class Measurement implements Comparable<Measurement> {
     return measurementValues.get(sensorType.getId());
   }
 
+  public boolean containsMeasurementValue(SensorType sensorType) {
+    return measurementValues.containsKey(sensorType.getId());
+  }
+
   public MeasurementValue getMeasurementValue(String sensorType)
     throws SensorTypeNotFoundException {
     return getMeasurementValue(ResourceManager.getInstance()
@@ -230,6 +237,18 @@ public class Measurement implements Comparable<Measurement> {
 
   public String getMeasurementValuesJson() {
     return gson.toJson(measurementValues);
+  }
+
+  public Set<SensorType> getMeasurementValueSensorTypes()
+    throws SensorTypeNotFoundException {
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+
+    Set<SensorType> sensorTypes = new TreeSet<SensorType>();
+    for (long id : measurementValues.keySet()) {
+      sensorTypes.add(sensorConfig.getSensorType(id));
+    }
+    return sensorTypes;
   }
 
   /*

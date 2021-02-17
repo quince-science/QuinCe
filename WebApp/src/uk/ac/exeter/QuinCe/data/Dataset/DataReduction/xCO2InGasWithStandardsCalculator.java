@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration
 import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+@Deprecated
 public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
 
   private final SensorType xco2SensorType;
@@ -255,7 +256,7 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
       for (String target : calibrationSet.getTargets().keySet()) {
 
         double concentration = calibrationSet.getCalibrationValue(target,
-          sensorType.getName());
+          sensorType.getShortName());
 
         if (concentration > 0.0 || !ignoreZero) {
 
@@ -276,8 +277,8 @@ public class xCO2InGasWithStandardsCalculator extends ValueCalculator {
       // measured concentration
       SimpleRegression regression = new SimpleRegression(true);
       for (String target : standardMeasurements.keySet()) {
-        regression.addData(standardMeasurements.get(target),
-          calibrationSet.getCalibrationValue(target, sensorType.getName()));
+        regression.addData(standardMeasurements.get(target), calibrationSet
+          .getCalibrationValue(target, sensorType.getShortName()));
       }
 
       calibratedValue = regression.predict(value);

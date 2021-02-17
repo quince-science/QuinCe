@@ -28,7 +28,7 @@ public class SensorTypeTreeNode extends DefaultTreeNode {
     Set<FileDefinitionBuilder> files, SensorType sensorType,
     SensorAssignments sensorAssignments) {
 
-    super(sensorType.getName(), parent);
+    super(sensorType.getShortName(), parent);
     this.files = files;
     this.sensorType = sensorType;
     this.sensorAssignments = sensorAssignments;

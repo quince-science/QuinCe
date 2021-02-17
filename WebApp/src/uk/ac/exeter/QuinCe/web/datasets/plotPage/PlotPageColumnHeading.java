@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
  * Holds the properties of a column heading on the plot page.
@@ -129,6 +130,15 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.numeric = true;
     this.editable = false;
     this.selectionColumn = calculationParameter.getId();
+    this.referenceValue = null;
+  }
+
+  public PlotPageColumnHeading(SensorType sensorType) {
+    super(sensorType);
+
+    this.numeric = true;
+    this.editable = false;
+    this.selectionColumn = sensorType.getId();
     this.referenceValue = null;
   }
 

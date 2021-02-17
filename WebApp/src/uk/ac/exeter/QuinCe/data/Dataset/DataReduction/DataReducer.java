@@ -151,7 +151,7 @@ public abstract class DataReducer {
     }
 
     for (SensorType type : missingTypes) {
-      qcMessages.add("Missing " + type.getName());
+      qcMessages.add("Missing " + type.getShortName());
     }
 
     record.setQc(Flag.NO_QC, qcMessages);
@@ -201,14 +201,14 @@ public abstract class DataReducer {
             instrumentAssignments)) {
             throw new DataReductionException(
               "No assignments present for children of Sensor Type "
-                + baseSensorType.getName() + " or their dependents");
+                + baseSensorType.getShortName() + " or their dependents");
           }
         } else {
           if (!addSensorTypeAndDependsOn(result, baseSensorType,
             instrumentAssignments)) {
             throw new DataReductionException(
               "No assignments present for Sensor Type "
-                + baseSensorType.getName() + " or its dependents");
+                + baseSensorType.getShortName() + " or its dependents");
           }
         }
       }

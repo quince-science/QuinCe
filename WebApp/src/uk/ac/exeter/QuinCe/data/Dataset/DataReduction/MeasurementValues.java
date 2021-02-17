@@ -50,7 +50,7 @@ public class MeasurementValues
     DatasetSensorValues allSensorValues, DataReducer reducer,
     ValueCalculators valueCalculators, Connection conn) throws Exception {
 
-    return getValue(sensorType.getName(), allMeasurements, allSensorValues,
+    return getValue(sensorType.getShortName(), allMeasurements, allSensorValues,
       reducer, valueCalculators, conn);
   }
 
