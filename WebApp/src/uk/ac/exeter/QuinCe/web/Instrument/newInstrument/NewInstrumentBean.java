@@ -1910,7 +1910,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
     SensorAssignment sensorAssignment = new SensorAssignment(runTypeFile,
       runTypeColumn, SensorType.RUN_TYPE_SENSOR_TYPE,
-      SensorType.RUN_TYPE_SENSOR_TYPE.getName(), true, false, null);
+      SensorType.RUN_TYPE_SENSOR_TYPE.getShortName(), true, false, null);
 
     sensorAssignments.addAssignment(sensorAssignment);
     assignmentsTree.addAssignment(sensorAssignment);

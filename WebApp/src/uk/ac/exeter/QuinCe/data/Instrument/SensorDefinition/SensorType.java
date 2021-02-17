@@ -3,10 +3,9 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
-import uk.ac.exeter.QuinCe.utils.MissingParam;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -14,7 +13,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  * @author Steve Jones
  */
-public class SensorType implements Comparable<SensorType> {
+public class SensorType extends ColumnHeading
+  implements Comparable<SensorType> {
 
   /**
    * Value to use when a SensorType has no parent
@@ -74,22 +74,6 @@ public class SensorType implements Comparable<SensorType> {
    * Dummy latitude sensor type
    */
   public static SensorType LATITUDE_SENSOR_TYPE;
-
-  /**
-   * The database ID of this sensor type
-   */
-  private long id;
-
-  /**
-   * The name of the sensor type
-   */
-  private final String name;
-
-  private final String columnHeading;
-
-  private final String code;
-
-  private final String units;
 
   /**
    * The variable group to which this SensorType belongs
@@ -156,71 +140,6 @@ public class SensorType implements Comparable<SensorType> {
   }
 
   /**
-   * Create a SensorType object. Only minimal checking is performed
-   *
-   * @param id
-   * @param name
-   * @param parent
-   * @param dependsOn2
-   * @param dependsQuestion2
-   * @param internalCalibration
-   * @param diagnostic2
-   * @throws MissingParamException
-   *           If the ID is not a positive number
-   */
-  public SensorType(long id, String name, String group, Long parent,
-    Long dependsOn, String dependsQuestion, boolean internalCalibration,
-    boolean diagnostic, int displayOrder, String units, String columnCode,
-    String columnHeading)
-    throws MissingParamException, SensorConfigurationException {
-
-    MissingParam.checkPositive(id, "id");
-    MissingParam.checkMissing(name, "name", false);
-    MissingParam.checkMissing(group, "group", false);
-    MissingParam.checkNullPositive(parent, "parent");
-    MissingParam.checkNullPositive(dependsOn, "dependsOn");
-
-    this.id = id;
-    this.name = name;
-    this.columnHeading = columnHeading;
-    this.code = columnCode;
-    this.units = units;
-    this.group = group;
-
-    if (null == parent) {
-      this.parent = NO_PARENT;
-    } else if (parent == id) {
-      throw new SensorConfigurationException(id,
-        "A sensor type cannot be its own parent");
-    } else {
-      this.parent = parent;
-    }
-
-    if (null == dependsOn) {
-      this.dependsOn = NO_DEPENDS_ON;
-    } else if (dependsOn == id) {
-      throw new SensorConfigurationException(id,
-        "A sensor type cannot depend on itself");
-    } else {
-      this.dependsOn = dependsOn;
-    }
-
-    if (null == dependsQuestion || dependsQuestion.trim().length() == 0) {
-      this.dependsQuestion = null;
-    } else if (!this.dependsOnOtherType()) {
-      throw new SensorConfigurationException(id,
-        "Cannot have a Depends Question without depending on another sensor type");
-    } else {
-      this.dependsQuestion = dependsQuestion.trim();
-    }
-
-    this.internalCalibration = internalCalibration;
-    this.diagnostic = diagnostic;
-    this.systemType = false;
-    this.displayOrder = displayOrder;
-  }
-
-  /**
    * Internal constructor for special sensor types
    *
    * @param id
@@ -230,8 +149,9 @@ public class SensorType implements Comparable<SensorType> {
    */
   private SensorType(long id, String name, String group, int displayOrder,
     String units, String columnCode) {
-    this.id = id;
-    this.name = name;
+
+    super(id, name, name, columnCode, units, false);
+
     this.group = group;
     this.parent = NO_PARENT;
     this.dependsOn = NO_DEPENDS_ON;
@@ -240,9 +160,6 @@ public class SensorType implements Comparable<SensorType> {
     this.diagnostic = false;
     this.systemType = true;
     this.displayOrder = displayOrder;
-    this.columnHeading = name;
-    this.code = columnCode;
-    this.units = units;
   }
 
   /**
@@ -258,15 +175,16 @@ public class SensorType implements Comparable<SensorType> {
   protected SensorType(ResultSet record)
     throws SQLException, SensorConfigurationException {
 
-    this.id = record.getLong(1);
-    this.name = record.getString(2);
+    super(record.getLong(1), record.getString(2), record.getString(12),
+      record.getString(11), record.getString(10), true);
+
     this.group = record.getString(3);
 
     Long parent = DatabaseUtils.getNullableLong(record, 4);
     if (null == parent) {
       this.parent = NO_PARENT;
-    } else if (parent == id) {
-      throw new SensorConfigurationException(id,
+    } else if (parent == getId()) {
+      throw new SensorConfigurationException(getId(),
         "A sensor type cannot be its own parent");
     } else {
       this.parent = parent;
@@ -275,8 +193,8 @@ public class SensorType implements Comparable<SensorType> {
     Long dependsOn = DatabaseUtils.getNullableLong(record, 5);
     if (null == dependsOn) {
       this.dependsOn = NO_DEPENDS_ON;
-    } else if (dependsOn == id) {
-      throw new SensorConfigurationException(id,
+    } else if (dependsOn == getId()) {
+      throw new SensorConfigurationException(getId(),
         "A sensor type cannot depend on itself");
     } else {
       this.dependsOn = dependsOn;
@@ -286,7 +204,7 @@ public class SensorType implements Comparable<SensorType> {
     if (null == dependsQuestion || dependsQuestion.trim().length() == 0) {
       this.dependsQuestion = null;
     } else if (!this.dependsOnOtherType()) {
-      throw new SensorConfigurationException(id,
+      throw new SensorConfigurationException(getId(),
         "Cannot have a Depends Question without depending on another sensor type");
     } else {
       this.dependsQuestion = dependsQuestion.trim();
@@ -295,27 +213,6 @@ public class SensorType implements Comparable<SensorType> {
     this.internalCalibration = record.getBoolean(7);
     this.diagnostic = record.getBoolean(8);
     this.displayOrder = record.getInt(9);
-    this.columnHeading = record.getString(12);
-    this.code = record.getString(11);
-    this.units = record.getString(10);
-  }
-
-  /**
-   * Get the database ID of this type
-   *
-   * @return The database ID
-   */
-  public long getId() {
-    return id;
-  }
-
-  /**
-   * Get the name of this sensor type
-   *
-   * @return The name of the sensor type
-   */
-  public String getName() {
-    return name;
   }
 
   /**
@@ -426,12 +323,12 @@ public class SensorType implements Comparable<SensorType> {
 
     // TODO These are temporary until the sensor values are moved to
     // a different table in future updates.
-    if (name.equals("CO₂ in gas")) {
+    if (getShortName().equals("CO₂ in gas")) {
       result = "co2";
-    } else if (name.equals("xH₂O in gas")) {
+    } else if (getShortName().equals("xH₂O in gas")) {
       result = "xh2o";
     } else {
-      result = DatabaseUtils.getDatabaseFieldName(name);
+      result = DatabaseUtils.getDatabaseFieldName(getShortName());
     }
 
     return result;
@@ -475,7 +372,7 @@ public class SensorType implements Comparable<SensorType> {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + (int) (id ^ (id >>> 32));
+    result = prime * result + (int) (getId() ^ (getId() >>> 32));
     return result;
   }
 
@@ -488,7 +385,7 @@ public class SensorType implements Comparable<SensorType> {
     if (getClass() != obj.getClass())
       return false;
     SensorType other = (SensorType) obj;
-    if (id != other.id)
+    if (getId() != other.getId())
       return false;
     return true;
   }
@@ -500,7 +397,7 @@ public class SensorType implements Comparable<SensorType> {
     int result = this.displayOrder - o.displayOrder;
 
     if (result == 0) {
-      result = name.compareTo(o.name);
+      result = getShortName().compareTo(o.getShortName());
     }
 
     return result;
@@ -508,7 +405,7 @@ public class SensorType implements Comparable<SensorType> {
 
   @Override
   public String toString() {
-    return getName();
+    return getShortName();
   }
 
   /**
@@ -533,18 +430,6 @@ public class SensorType implements Comparable<SensorType> {
    *         otherwise.
    */
   public boolean isSensor() {
-    return !isDiagnostic() && !isSystemType() && !isPosition(id);
-  }
-
-  public String getColumnHeading() {
-    return columnHeading;
-  }
-
-  public String getCode() {
-    return code;
-  }
-
-  public String getUnits() {
-    return units;
+    return !isDiagnostic() && !isSystemType() && !isPosition(getId());
   }
 }

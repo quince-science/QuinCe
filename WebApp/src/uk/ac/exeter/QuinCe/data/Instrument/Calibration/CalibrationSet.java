@@ -278,7 +278,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
     for (String target : targets.keySet()) {
       try {
         Double calibrationValue = getCalibrationValue(target,
-          sensorType.getName());
+          sensorType.getShortName());
 
         differenceOrderedStandards.put(Math.abs(calibrationValue - value),
           target);
@@ -294,7 +294,8 @@ public class CalibrationSet extends TreeSet<Calibration> {
 
     for (String target : differenceOrderedStandards.values()) {
       try {
-        result.put(target, getCalibrationValue(target, sensorType.getName()));
+        result.put(target,
+          getCalibrationValue(target, sensorType.getShortName()));
         if (result.size() >= 3) {
           break;
         }

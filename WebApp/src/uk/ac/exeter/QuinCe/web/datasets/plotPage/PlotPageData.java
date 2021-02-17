@@ -133,6 +133,8 @@ public abstract class PlotPageData {
 
   public static final String DIAGNOSTICS_FIELD_GROUP = "Diagnostics";
 
+  public static final String MEASUREMENTVALUES_FIELD_GROUP = "Measurement Values";
+
   static {
     // Initialise Gson builder
     tableDataGson = new GsonBuilder().registerTypeAdapter(
