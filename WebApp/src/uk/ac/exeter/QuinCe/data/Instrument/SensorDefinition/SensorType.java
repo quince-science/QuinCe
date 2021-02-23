@@ -150,7 +150,7 @@ public class SensorType extends ColumnHeading
   private SensorType(long id, String name, String group, int displayOrder,
     String units, String columnCode) {
 
-    super(id, name, name, columnCode, units, false, false);
+    super(id, name, name, columnCode, units, false, true);
 
     this.group = group;
     this.parent = NO_PARENT;

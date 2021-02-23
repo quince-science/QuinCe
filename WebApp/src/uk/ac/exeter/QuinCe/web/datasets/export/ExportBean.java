@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -406,17 +405,18 @@ public class ExportBean extends BaseManagedBean {
     List<String> headers = new ArrayList<String>();
 
     // Time and position
-    List<PlotPageColumnHeading> baseHeadings = data.getExtendedColumnHeadings()
-      .get(ExportData.ROOT_FIELD_GROUP);
-
-    for (PlotPageColumnHeading heading : baseHeadings) {
+    for (PlotPageColumnHeading heading : data.getExtendedColumnHeadings()
+      .get(ExportData.ROOT_FIELD_GROUP)) {
       addHeader(headers, exportOption, heading);
     }
 
     // Measurement Sensor Types - these are the calculated sensor values
     // used as input for the data reducers
-    for (SensorType sensorType : data.getMeasurementSensorTypes()) {
-      addHeader(headers, exportOption, sensorType);
+    for (PlotPageColumnHeading measurementValueHeading : data
+      .getExtendedColumnHeadings()
+      .get(ExportData.MEASUREMENTVALUES_FIELD_GROUP)) {
+
+      addHeader(headers, exportOption, measurementValueHeading);
     }
 
     // Headers for each variable
@@ -577,37 +577,6 @@ public class ExportBean extends BaseManagedBean {
     }
 
     return header;
-  }
-
-  private static List<PlotPageColumnHeading> buildExportColumns(ExportData data,
-    Instrument instrument, ExportOption exportOption) throws Exception {
-
-    List<PlotPageColumnHeading> exportColumns = new ArrayList<PlotPageColumnHeading>();
-
-    LinkedHashMap<String, List<PlotPageColumnHeading>> dataHeadings = data
-      .getExtendedColumnHeadings();
-
-    exportColumns.addAll(dataHeadings.get(ExportData.ROOT_FIELD_GROUP));
-    /*
-     * List<PlotPageColumnHeading> sensorColumns = dataHeadings
-     * .get(ExportData.SENSORS_FIELD_GROUP); if
-     * (exportOption.includeAllSensors()) { exportColumns.addAll(sensorColumns);
-     * } else {
-     * 
-     * Set<SensorType> variableSensorTypes = new HashSet<SensorType>();
-     * 
-     * // Get the sensors required for the instrument's variables for (Variable
-     * variable : instrument.getVariables()) {
-     * variableSensorTypes.addAll(variable.getAllSensorTypes(false)); }
-     * 
-     * // Find those columns with the required sensor types for
-     * (PlotPageColumnHeading sensorHeading : sensorColumns) { SensorType
-     * headingSensorType = instrument.getSensorAssignments()
-     * .getSensorTypeForDBColumn(sensorHeading.getId()); if
-     * (variableSensorTypes.contains(headingSensorType)) {
-     * exportColumns.add(sensorHeading); } } }
-     */
-    return exportColumns;
   }
 
   /**

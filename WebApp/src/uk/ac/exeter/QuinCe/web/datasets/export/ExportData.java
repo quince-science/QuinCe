@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -16,12 +17,15 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A representation of a dataset's data for export.
@@ -110,6 +114,14 @@ public class ExportData extends ManualQCData {
           dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "depth"));
       }
 
+      // Check the Measurement Values. If any are also in the ROOT group,
+      // we don't want them.
+      List<PlotPageColumnHeading> filteredMeasurementValueColumns = headingsWithProperties
+        .get(MEASUREMENTVALUES_FIELD_GROUP).stream()
+        .filter(c -> !rootColumns.contains(c)).collect(Collectors.toList());
+
+      headingsWithProperties.put(MEASUREMENTVALUES_FIELD_GROUP,
+        filteredMeasurementValueColumns);
     }
 
     return headingsWithProperties;
@@ -130,7 +142,28 @@ public class ExportData extends ManualQCData {
     } else if (columnId == DEPTH_ID) {
       value = depthValue;
     } else {
-      value = super.getColumnValue(rowId, columnId);
+
+      // Things like position are in the Root group, but sometimes overridden
+      // in Measurement Values. We always prefer the Measurement Value
+      if (headingGroupContains(PlotPageData.ROOT_FIELD_GROUP, columnId)) {
+
+        if (headingGroupContains(PlotPageData.MEASUREMENTVALUES_FIELD_GROUP,
+          columnId)) {
+          Measurement measurement = getMeasurement(getRowTime(rowId));
+          if (null != measurement) {
+            SensorType sensorType = ResourceManager.getInstance()
+              .getSensorsConfiguration().getSensorType(columnId);
+            if (measurement.containsMeasurementValue(sensorType)) {
+              value = measurement.getMeasurementValue(sensorType);
+            }
+          }
+        }
+
+        // If there wasn't a Measurement Value, we use the 'normal' value
+        if (null == value) {
+          value = super.getColumnValue(rowId, columnId);
+        }
+      }
     }
 
     return value;

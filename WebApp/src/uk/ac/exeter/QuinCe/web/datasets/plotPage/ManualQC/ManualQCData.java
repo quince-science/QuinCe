@@ -867,6 +867,20 @@ public class ManualQCData extends PlotPageData {
     return null == sensorValues ? null : sensorValues.getNeedsFlagCounts();
   }
 
+  /**
+   * Get a value for a {@link SensorValue} or a {@link CalculationParameter}
+   * from Data Reduction. Note that Measurement Values must be retrieved
+   * directly from the Measurement object.
+   * 
+   * @param rowId
+   *          The row ID
+   * @param columnId
+   *          The column/paramtere ID
+   * @return The value
+   * @throws InstrumentException
+   * @throws DataReductionException
+   * @throws RecordNotFoundException
+   */
   public PlotPageTableValue getColumnValue(long rowId, long columnId)
     throws InstrumentException, DataReductionException,
     RecordNotFoundException {
@@ -974,5 +988,19 @@ public class ManualQCData extends PlotPageData {
 
   public Measurement getMeasurement(LocalDateTime time) {
     return measurements.get(time);
+  }
+
+  protected boolean headingGroupContains(String group, long columnId) {
+    boolean result = false;
+
+    for (PlotPageColumnHeading heading : extendedColumnHeadings.get(group)) {
+
+      if (heading.getId() == columnId) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
   }
 }
