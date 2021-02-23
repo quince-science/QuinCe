@@ -1,7 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
-import java.util.Objects;
-
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 
 /**
@@ -70,13 +68,13 @@ public class ColumnHeading {
    *          The source heading
    */
   public ColumnHeading(ColumnHeading heading) {
-    this.id = heading.id;
-    this.shortName = heading.shortName;
-    this.longName = heading.longName;
-    this.codeName = heading.codeName;
-    this.units = heading.units;
-    this.hasQC = heading.hasQC;
-    this.includeType = heading.includeType;
+    this.id = heading.getId();
+    this.shortName = heading.getShortName();
+    this.longName = heading.getLongName();
+    this.codeName = heading.getCodeName();
+    this.units = heading.getUnits();
+    this.hasQC = heading.hasQC();
+    this.includeType = heading.includeType();
   }
 
   /**
@@ -179,7 +177,11 @@ public class ColumnHeading {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((codeName == null) ? 0 : codeName.hashCode());
+    result = prime * result + (int) (id ^ (id >>> 32));
+    return result;
   }
 
   @Override
@@ -188,10 +190,17 @@ public class ColumnHeading {
       return true;
     if (obj == null)
       return false;
-    if (!(obj instanceof ColumnHeading))
+    if (getClass() != obj.getClass())
       return false;
     ColumnHeading other = (ColumnHeading) obj;
-    return id == other.id;
+    if (codeName == null) {
+      if (other.codeName != null)
+        return false;
+    } else if (!codeName.equals(other.codeName))
+      return false;
+    if (id != other.id)
+      return false;
+    return true;
   }
 
   @Override
