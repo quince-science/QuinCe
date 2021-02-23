@@ -59,6 +59,11 @@ public class ExportOption {
   private String missingValue = "NaN";
 
   /**
+   * The string to use for QC flags of missing values
+   */
+  private String missingQcFlag = "";
+
+  /**
    * The variables to be exported as part of this export. If any instrument does
    * not contain a given variable it will be ignored
    */
@@ -71,22 +76,15 @@ public class ExportOption {
   private Class<? extends ExportData> dataClass;
 
   /**
-   * Indicates whether all sensors will be exported, or just those required for
-   * the variables being exported
+   * Indicates whether raw sensors will be exported
    */
-  private boolean allSensors = true;
+  private boolean includeRawSensors = false;
 
   /**
    * Indicates whether all intermediate calculation columns will be exported, or
    * just the final calculated value
    */
   private boolean includeCalculationColumns = false;
-
-  /**
-   * Indicates whether interpolated sensor values will be included in the export
-   * file.
-   */
-  private boolean includeInterpolatedSensors = false;
 
   /**
    * Indicates whether to use column codes instead of names
@@ -170,20 +168,20 @@ public class ExportOption {
     return missingValue;
   }
 
+  public String getMissingQcFlag() {
+    return missingQcFlag;
+  }
+
   public List<Variable> getVariables() {
     return variables;
   }
 
-  public boolean includeAllSensors() {
-    return allSensors;
+  public boolean includeRawSensors() {
+    return includeRawSensors;
   }
 
   public boolean includeCalculationColumns() {
     return includeCalculationColumns;
-  }
-
-  public boolean includeInterpolatedSensors() {
-    return includeInterpolatedSensors;
   }
 
   public int getHeaderMode() {
@@ -280,17 +278,16 @@ public class ExportOption {
       missingValue = json.getString("missingValue");
     }
 
-    if (json.has("allSensors")) {
-      allSensors = json.getBoolean("allSensors");
+    if (json.has("missingQCFlag")) {
+      missingQcFlag = json.getString("missingQCFlag");
+    }
+
+    if (json.has("includeRawSensors")) {
+      includeRawSensors = json.getBoolean("includeRawSensors");
     }
 
     if (json.has("includeCalculationColumns")) {
       includeCalculationColumns = json.getBoolean("includeCalculationColumns");
-    }
-
-    if (json.has("includeInterpolatedSensors")) {
-      includeInterpolatedSensors = json
-        .getBoolean("includeInterpolatedSensors");
     }
 
     if (json.has("headerMode")) {

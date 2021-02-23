@@ -4,11 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -24,6 +22,8 @@ import org.primefaces.json.JSONObject;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
@@ -273,53 +273,23 @@ public class ExportBean extends BaseManagedBean {
     // Run the post-processor before generating the final output
     data.postProcess();
 
-    // Work out which base columns we are going to export. This is just for
-    // Time, Position, and sensors. Variables and fixed columns are handled
-    // separately
-    List<PlotPageColumnHeading> exportColumns = buildExportColumns(data,
-      instrument, exportOption);
-
-    // Let's make some output
+    // Initialise the output
     StringBuilder output = new StringBuilder();
 
-    List<String> headers = new ArrayList<String>();
-
-    for (PlotPageColumnHeading heading : exportColumns) {
-      if (heading.getId() == FileDefinition.TIME_COLUMN_ID) {
-        headers.add(exportOption.getTimestampHeader());
-      } else {
-        addHeader(headers, exportOption, heading);
-      }
-    }
-
-    for (Variable variable : exportOption.getVariables()) {
-      if (instrument.getVariables().contains(variable)) {
-
-        List<CalculationParameter> params = DataReducerFactory
-          .getCalculationParameters(variable,
-            exportOption.includeCalculationColumns(),
-            exportOption.includeInterpolatedSensors());
-
-        for (CalculationParameter param : params) {
-          addHeader(headers, exportOption, param);
-        }
-      }
-    }
-
+    List<String> headers = makeHeaders(instrument, data, exportOption, output);
     output.append(
       StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
     output.append('\n');
 
     // Process each row of the data
     for (Long rowId : data.getRowIDs()) {
-
       boolean firstColumn = true;
 
-      // Sensor columns
-      for (PlotPageColumnHeading column : exportColumns) {
+      // Time and position
+      List<PlotPageColumnHeading> baseColumns = data.getExtendedColumnHeadings()
+        .get(ExportData.ROOT_FIELD_GROUP);
 
-        // Separator management. Add a separator before the column details,
-        // unless we're on the first column
+      for (PlotPageColumnHeading column : baseColumns) {
         if (firstColumn) {
           firstColumn = false;
         } else {
@@ -327,31 +297,51 @@ public class ExportBean extends BaseManagedBean {
         }
 
         PlotPageTableValue value = data.getColumnValue(rowId, column.getId());
+
         addValueToOutput(output, exportOption, column.getId(), value,
-          column.getId() != FileDefinition.TIME_COLUMN_ID);
+          column.hasQC(), column.includeType());
       }
 
+      // Measurement values
+      Measurement measurement = data.getMeasurement(data.getRowTime(rowId));
+
+      List<PlotPageColumnHeading> measurementValueColumns = data
+        .getExtendedColumnHeadings()
+        .get(ExportData.MEASUREMENTVALUES_FIELD_GROUP);
+
+      if (null == measurement) {
+        for (PlotPageColumnHeading column : measurementValueColumns) {
+          output.append(exportOption.getSeparator());
+          addValueToOutput(output, exportOption, column.getId(), null, true,
+            true);
+        }
+      } else {
+        for (PlotPageColumnHeading column : measurementValueColumns) {
+          output.append(exportOption.getSeparator());
+
+          SensorType sensorType = ResourceManager.getInstance()
+            .getSensorsConfiguration().getSensorType(column.getId());
+          MeasurementValue measurementValue = measurement
+            .getMeasurementValue(sensorType);
+          addValueToOutput(output, exportOption, column.getId(),
+            measurementValue, true, true);
+        }
+      }
+
+      // Data Reduction for all variables
       for (Variable variable : exportOption.getVariables()) {
         if (instrument.getVariables().contains(variable)) {
-
           List<CalculationParameter> params = DataReducerFactory
             .getCalculationParameters(variable,
-              exportOption.includeCalculationColumns(),
-              exportOption.includeInterpolatedSensors());
+              exportOption.includeCalculationColumns());
 
           for (CalculationParameter param : params) {
-            // Separator management. Add a separator before the column details,
-            // unless we're on the first column
-            if (firstColumn) {
-              firstColumn = false;
-            } else {
-              output.append(exportOption.getSeparator());
-            }
+            output.append(exportOption.getSeparator());
 
             PlotPageTableValue value = data.getColumnValue(rowId,
               param.getId());
             addValueToOutput(output, exportOption, param.getId(), value,
-              param.isResult());
+              param.isResult(), false);
           }
         }
       }
@@ -359,15 +349,118 @@ public class ExportBean extends BaseManagedBean {
       output.append("\n");
     }
 
+    /*
+     * 
+     * // Process each row of the data for (Long rowId : data.getRowIDs()) {
+     * 
+     * boolean firstColumn = true;
+     * 
+     * // Sensor columns for (PlotPageColumnHeading column : exportColumns) {
+     * 
+     * // Separator management. Add a separator before the column details, //
+     * unless we're on the first column if (firstColumn) { firstColumn = false;
+     * } else { output.append(exportOption.getSeparator()); }
+     * 
+     * PlotPageTableValue value = data.getColumnValue(rowId, column.getId());
+     * addValueToOutput(output, exportOption, column.getId(), value,
+     * column.getId() != FileDefinition.TIME_COLUMN_ID, column.includeType()); }
+     * 
+     * /* for (Variable variable : exportOption.getVariables()) { if
+     * (instrument.getVariables().contains(variable)) {
+     * 
+     * List<CalculationParameter> params = DataReducerFactory
+     * .getCalculationParameters(variable,
+     * exportOption.includeCalculationColumns());
+     * 
+     * for (CalculationParameter param : params) { // Separator management. Add
+     * a separator before the column details, // unless we're on the first
+     * column if (firstColumn) { firstColumn = false; } else {
+     * output.append(exportOption.getSeparator()); }
+     * 
+     * PlotPageTableValue value = data.getColumnValue(rowId, param.getId());
+     * addValueToOutput(output, exportOption, param.getId(), value,
+     * param.isResult(), false); } } }
+     * 
+     * output.append("\n"); }
+     */
+
     // Destroy the ExportData object so it cleans up its resources
     data.destroy();
 
     return output.toString().getBytes();
   }
 
+  /**
+   * Create the header line in an output string.
+   * 
+   * @param data
+   *          The source data.
+   * @param output
+   *          The output.
+   * @throws Exception
+   */
+  private static List<String> makeHeaders(Instrument instrument,
+    ExportData data, ExportOption exportOption, StringBuilder output)
+    throws Exception {
+
+    List<String> headers = new ArrayList<String>();
+
+    // Time and position
+    List<PlotPageColumnHeading> baseHeadings = data.getExtendedColumnHeadings()
+      .get(ExportData.ROOT_FIELD_GROUP);
+
+    for (PlotPageColumnHeading heading : baseHeadings) {
+      addHeader(headers, exportOption, heading);
+    }
+
+    // Measurement Sensor Types - these are the calculated sensor values
+    // used as input for the data reducers
+    for (SensorType sensorType : data.getMeasurementSensorTypes()) {
+      addHeader(headers, exportOption, sensorType);
+    }
+
+    // Headers for each variable
+    for (Variable variable : exportOption.getVariables()) {
+      if (instrument.getVariables().contains(variable)) {
+
+        List<CalculationParameter> params = DataReducerFactory
+          .getCalculationParameters(variable,
+            exportOption.includeCalculationColumns());
+
+        for (CalculationParameter param : params) {
+          addHeader(headers, exportOption, param);
+        }
+      }
+    }
+
+    // Raw sensors, if required. These always use the Short name, which
+    // is the sensor name defined for the instrument. Includes diagnostics.
+    if (exportOption.includeRawSensors()) {
+      List<PlotPageColumnHeading> sensorHeadings = data
+        .getExtendedColumnHeadings().get(ExportData.SENSORS_FIELD_GROUP);
+
+      for (PlotPageColumnHeading heading : sensorHeadings) {
+        addHeader(headers, exportOption, heading,
+          ExportOption.HEADER_MODE_SHORT);
+      }
+
+      List<PlotPageColumnHeading> diagnosticHeadings = data
+        .getExtendedColumnHeadings().get(ExportData.DIAGNOSTICS_FIELD_GROUP);
+
+      if (null != diagnosticHeadings) {
+        for (PlotPageColumnHeading heading : diagnosticHeadings) {
+          addHeader(headers, exportOption, heading,
+            ExportOption.HEADER_MODE_SHORT);
+        }
+      }
+    }
+
+    return headers;
+  }
+
   private static void addValueToOutput(StringBuilder output,
     ExportOption exportOption, long columnId, PlotPageTableValue value,
-    boolean includeQcColumns) {
+    boolean includeQcColumns, boolean includeType) {
 
     if (null == value) {
       // Value
@@ -376,12 +469,17 @@ public class ExportBean extends BaseManagedBean {
       // QC Flag
       if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
         output.append(exportOption.getSeparator());
-        output.append(exportOption.getMissingValue());
+        output.append(exportOption.getMissingQcFlag());
 
         // QC Comment if required
         if (exportOption.includeQCComments()) {
           output.append(exportOption.getSeparator());
         }
+      }
+
+      // Type
+      if (includeType) {
+        output.append(exportOption.getSeparator());
       }
     } else {
 
@@ -403,39 +501,40 @@ public class ExportBean extends BaseManagedBean {
           output.append('"' + exportOption.format(value.getQcMessage()) + '"');
         }
       }
+
+      if (includeType) {
+        output.append(exportOption.getSeparator());
+        output.append(value.getType());
+      }
     }
   }
 
   private static void addHeader(List<String> headers, ExportOption exportOption,
     ColumnHeading heading) throws ExportException {
+    addHeader(headers, exportOption, heading, null);
+  }
+
+  private static void addHeader(List<String> headers, ExportOption exportOption,
+    ColumnHeading heading, Integer mode) throws ExportException {
 
     String header = null;
 
-    String replacementHeader = exportOption
-      .getReplacementHeader(heading.getCodeName());
-    if (null != replacementHeader) {
-      header = replacementHeader;
+    if (null != mode) {
+      header = getModeHeader(heading, (int) mode);
     } else {
-      switch (exportOption.getHeaderMode()) {
-      case ExportOption.HEADER_MODE_SHORT: {
-        header = heading.getShortName();
-        break;
-      }
-      case ExportOption.HEADER_MODE_LONG: {
-        header = heading.getLongName();
-        break;
-      }
-      case ExportOption.HEADER_MODE_CODE: {
-        header = heading.getCodeName();
-        break;
-      }
-      default: {
-        throw new ExportException("Unrecognised header mode");
-      }
+      String replacementHeader = exportOption
+        .getReplacementHeader(heading.getCodeName());
+      if (null != replacementHeader) {
+        header = replacementHeader;
+      } else {
+        header = getModeHeader(heading, exportOption.getHeaderMode());
       }
     }
 
-    if (exportOption.includeUnits()) {
+    if (exportOption.includeUnits() && null != heading.getUnits()
+      && heading.getUnits().length() > 0)
+
+    {
       headers.add(header + " [" + heading.getUnits() + ']');
     } else {
       headers.add(header);
@@ -448,6 +547,36 @@ public class ExportBean extends BaseManagedBean {
         headers.add(header + exportOption.getQcCommentSuffix());
       }
     }
+
+    if (heading.includeType()) {
+      headers.add(header + " Type");
+    }
+  }
+
+  private static String getModeHeader(ColumnHeading heading, int mode)
+    throws ExportException {
+
+    String header;
+
+    switch (mode) {
+    case ExportOption.HEADER_MODE_SHORT: {
+      header = heading.getShortName();
+      break;
+    }
+    case ExportOption.HEADER_MODE_LONG: {
+      header = heading.getLongName();
+      break;
+    }
+    case ExportOption.HEADER_MODE_CODE: {
+      header = heading.getCodeName();
+      break;
+    }
+    default: {
+      throw new ExportException("Unrecognised header mode");
+    }
+    }
+
+    return header;
   }
 
   private static List<PlotPageColumnHeading> buildExportColumns(ExportData data,
@@ -459,30 +588,25 @@ public class ExportBean extends BaseManagedBean {
       .getExtendedColumnHeadings();
 
     exportColumns.addAll(dataHeadings.get(ExportData.ROOT_FIELD_GROUP));
-
-    List<PlotPageColumnHeading> sensorColumns = dataHeadings
-      .get(ExportData.SENSORS_FIELD_GROUP);
-    if (exportOption.includeAllSensors()) {
-      exportColumns.addAll(sensorColumns);
-    } else {
-
-      Set<SensorType> variableSensorTypes = new HashSet<SensorType>();
-
-      // Get the sensors required for the instrument's variables
-      for (Variable variable : instrument.getVariables()) {
-        variableSensorTypes.addAll(variable.getAllSensorTypes(false));
-      }
-
-      // Find those columns with the required sensor types
-      for (PlotPageColumnHeading sensorHeading : sensorColumns) {
-        SensorType headingSensorType = instrument.getSensorAssignments()
-          .getSensorTypeForDBColumn(sensorHeading.getId());
-        if (variableSensorTypes.contains(headingSensorType)) {
-          exportColumns.add(sensorHeading);
-        }
-      }
-    }
-
+    /*
+     * List<PlotPageColumnHeading> sensorColumns = dataHeadings
+     * .get(ExportData.SENSORS_FIELD_GROUP); if
+     * (exportOption.includeAllSensors()) { exportColumns.addAll(sensorColumns);
+     * } else {
+     * 
+     * Set<SensorType> variableSensorTypes = new HashSet<SensorType>();
+     * 
+     * // Get the sensors required for the instrument's variables for (Variable
+     * variable : instrument.getVariables()) {
+     * variableSensorTypes.addAll(variable.getAllSensorTypes(false)); }
+     * 
+     * // Find those columns with the required sensor types for
+     * (PlotPageColumnHeading sensorHeading : sensorColumns) { SensorType
+     * headingSensorType = instrument.getSensorAssignments()
+     * .getSensorTypeForDBColumn(sensorHeading.getId()); if
+     * (variableSensorTypes.contains(headingSensorType)) {
+     * exportColumns.add(sensorHeading); } } }
+     */
     return exportColumns;
   }
 

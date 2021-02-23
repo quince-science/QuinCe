@@ -64,9 +64,8 @@ public class DefaultMeasurementValueCalculator
       if (sensorConfig.isCoreSensor(sensorType)) {
         SensorValue sensorValue = sensorValues.get(measurement.getTime());
         if (null != sensorValue) {
-          result.addSensorValue(sensorValue);
+          result.addSensorValue(sensorValue, true);
           result.setCalculatedValue(sensorValue.getDoubleValue());
-          result.setMemberCount(1);
         }
       } else {
 
@@ -79,21 +78,18 @@ public class DefaultMeasurementValueCalculator
         case 0: {
           // We should not use a value here
           result.setCalculatedValue(Double.NaN);
-          result.setMemberCount(0);
           break;
         }
         case 1: {
           // Value from exact time - use it directly
-          result.addSensorValue(valuesToUse.get(0));
+          result.addSensorValue(valuesToUse.get(0), true);
           result.setCalculatedValue(valuesToUse.get(0).getDoubleValue());
-          result.setMemberCount(1);
           break;
         }
         case 2: {
-          result.addSensorValues(valuesToUse);
+          result.addSensorValues(valuesToUse, true);
           result.setCalculatedValue(interpolate(valuesToUse.get(0),
             valuesToUse.get(1), measurement.getTime()));
-          result.setMemberCount(1);
           break;
         }
         default: {

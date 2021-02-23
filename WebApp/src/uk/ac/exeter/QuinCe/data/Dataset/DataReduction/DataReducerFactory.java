@@ -105,8 +105,8 @@ public class DataReducerFactory {
   }
 
   public static List<CalculationParameter> getCalculationParameters(
-    Variable variable, boolean includeCalculationColumns,
-    boolean includeInterpolatedSensors) throws DataReductionException {
+    Variable variable, boolean includeCalculationColumns)
+    throws DataReductionException {
 
     DataReducer reducer = getSkeletonReducer(variable);
 
@@ -120,10 +120,6 @@ public class DataReducerFactory {
       boolean use = true;
 
       if (!includeCalculationColumns && !param.isResult()) {
-        use = false;
-      }
-
-      if (!includeInterpolatedSensors && param.isInterpolated()) {
         use = false;
       }
 

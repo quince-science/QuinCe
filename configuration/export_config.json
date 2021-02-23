@@ -1,8 +1,13 @@
 [
   {
+    "exportName": "Interpolation",
+    "separator": "comma",
+    "includeCalculationColumns": true,
+    "includeRawSensors": true
+  },
+  {
     "exportName": "SOCAT",
     "separator": "tab",
-    "allSensors": true,
     "headerMode": "code",
     "includeCalculationColumns": true,
     "includeUnits": false,
@@ -29,7 +34,6 @@
   {
     "exportName": "ICOS OTC",
     "separator": "comma",
-    "allSensors": true,
     "headerMode": "short",
     "includeCalculationColumns": true,
     "includeUnits": false,
@@ -71,7 +75,6 @@
   {
     "exportName": "ICOS OTC No Salinity Flags",
     "separator": "comma",
-    "allSensors": true,
     "includeCalculationColumns": true,
     "exportDataClass": "NeutraliseSalinityFlagsExportData",
     "visible": false,
@@ -114,7 +117,6 @@
     "exportName": "Copernicus",
     "separator": "comma",
     "variables": ["Underway Marine pCO₂","SailDrone Marine CO₂ NRT"],
-    "allSensors": true,
     "includeCalculationColumns": false,
     "useColumnCodes": true,
     "includeUnits": false,
@@ -127,7 +129,6 @@
     "exportName": "Copernicus No Salinity Flags",
     "separator": "comma",
     "variables": ["Underway Marine pCO₂"],
-    "allSensors": true,
     "includeCalculationColumns": false,
     "useColumnCodes": true,
     "includeUnits": false,

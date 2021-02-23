@@ -42,7 +42,9 @@ public class ColumnHeading {
    */
   private final String codeName;
 
-  public final boolean hasQC;
+  private final boolean hasQC;
+
+  private final boolean includeType;
 
   /**
    * The units for the column.
@@ -50,7 +52,7 @@ public class ColumnHeading {
   private final String units;
 
   public ColumnHeading(long id, String shortName, String longName,
-    String codeName, String units, boolean hasQC) {
+    String codeName, String units, boolean hasQC, boolean includeType) {
 
     this.id = id;
     this.shortName = shortName;
@@ -58,6 +60,7 @@ public class ColumnHeading {
     this.codeName = codeName;
     this.units = units;
     this.hasQC = hasQC;
+    this.includeType = includeType;
   }
 
   /**
@@ -73,6 +76,7 @@ public class ColumnHeading {
     this.codeName = heading.codeName;
     this.units = heading.units;
     this.hasQC = heading.hasQC;
+    this.includeType = heading.includeType;
   }
 
   /**
@@ -167,6 +171,10 @@ public class ColumnHeading {
     }
 
     return result.toString();
+  }
+
+  public boolean includeType() {
+    return includeType;
   }
 
   @Override

@@ -33,6 +33,8 @@ public class MeasurementValuesSerializer
 
   private static final String SUPPORTING_VALUE_IDS_KEY = "suppids";
 
+  private static final String MEMBER_COUNT_KEY = "memberCount";
+
   private static final String VALUE_KEY = "value";
 
   private static final String FLAG_KEY = "flag";
@@ -72,6 +74,9 @@ public class MeasurementValuesSerializer
       value.getSupportingSensorValueIds()
         .forEach(supportingSensorValueIds::add);
       valueJson.add(SUPPORTING_VALUE_IDS_KEY, supportingSensorValueIds);
+
+      valueJson.add(MEMBER_COUNT_KEY,
+        new JsonPrimitive(value.getMemberCount()));
 
       // Calculated value
       JsonPrimitive valuePrimitive;
@@ -140,6 +145,8 @@ public class MeasurementValuesSerializer
       supportingValueIdsElement
         .forEach(e -> supportingValueIds.add(e.getAsLong()));
 
+      int memberCount = json.get(MEMBER_COUNT_KEY).getAsInt();
+
       Double value = json.get(VALUE_KEY).getAsDouble();
       if (value == NAN_VALUE) {
         value = Double.NaN;
@@ -156,7 +163,7 @@ public class MeasurementValuesSerializer
         Properties.class);
 
       return new MeasurementValue(sensorTypeId, sensorValueIds,
-        supportingValueIds, value, flag, qcComments, properties);
+        supportingValueIds, memberCount, value, flag, qcComments, properties);
     } catch (SensorTypeNotFoundException e) {
       throw new JsonParseException(e);
     }

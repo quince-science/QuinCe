@@ -124,8 +124,8 @@ public class InternalCalibrationData extends PlotPageData {
 
               PlotPageColumnHeading heading = new PlotPageColumnHeading(
                 columnId, columnName, sensorType.getLongName(),
-                sensorType.getCodeName(), sensorType.getUnits(), true, true,
-                calibrationValue);
+                sensorType.getCodeName(), sensorType.getUnits(), false, true,
+                true, calibrationValue);
               sensorTypeColumns.add(heading);
               columnCount++;
               if (columnCount == 1) {
