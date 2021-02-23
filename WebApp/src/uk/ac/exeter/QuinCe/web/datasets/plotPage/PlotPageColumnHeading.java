@@ -18,7 +18,8 @@ public class PlotPageColumnHeading extends ColumnHeading {
   private final boolean numeric;
 
   /**
-   * The reference value for this column
+   * The reference value for this column - used primarily in gas standards page
+   * to show reference gas concentration.
    */
   private final Double referenceValue;
 
@@ -52,9 +53,10 @@ public class PlotPageColumnHeading extends ColumnHeading {
    *          Whether the column is numeric.
    */
   public PlotPageColumnHeading(long id, String shortName, String longName,
-    String codeName, String units, boolean numeric, boolean editable) {
+    String codeName, String units, boolean includeType, boolean numeric,
+    boolean editable) {
 
-    super(id, shortName, longName, codeName, units, true);
+    super(id, shortName, longName, codeName, units, true, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
@@ -70,10 +72,10 @@ public class PlotPageColumnHeading extends ColumnHeading {
    *          Whether the column is numeric.
    */
   public PlotPageColumnHeading(long id, String shortName, String longName,
-    String codeName, String units, boolean numeric, boolean editable,
-    boolean hasQC) {
+    String codeName, String units, boolean includeType, boolean numeric,
+    boolean editable, boolean hasQC) {
 
-    super(id, shortName, longName, codeName, units, hasQC);
+    super(id, shortName, longName, codeName, units, hasQC, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
@@ -89,10 +91,10 @@ public class PlotPageColumnHeading extends ColumnHeading {
    *          Whether the column is numeric.
    */
   public PlotPageColumnHeading(long id, String shortName, String longName,
-    String codeName, String units, boolean numeric, boolean editable,
-    Double referenceValue) {
+    String codeName, String units, boolean includeType, boolean numeric,
+    boolean editable, Double referenceValue) {
 
-    super(id, shortName, longName, codeName, units, true);
+    super(id, shortName, longName, codeName, units, true, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
@@ -108,10 +110,10 @@ public class PlotPageColumnHeading extends ColumnHeading {
    *          Whether the column is numeric.
    */
   public PlotPageColumnHeading(long id, String shortName, String longName,
-    String codeName, String units, boolean numeric, boolean editable,
-    long selectionColumn) {
+    String codeName, String units, boolean includeType, boolean numeric,
+    boolean editable, long selectionColumn) {
 
-    super(id, shortName, longName, codeName, units, true);
+    super(id, shortName, longName, codeName, units, true, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = selectionColumn;

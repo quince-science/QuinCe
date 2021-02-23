@@ -67,13 +67,12 @@ public class SaildroneAtmosphericPco2Reducer extends DataReducer {
   public List<CalculationParameter> getCalculationParameters() {
     if (null == calculationParameters) {
       calculationParameters = new ArrayList<CalculationParameter>(3);
-      calculationParameters
-        .add(new CalculationParameter(makeParameterId(0), "pH₂O",
-          "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false, false));
+      calculationParameters.add(new CalculationParameter(makeParameterId(0),
+        "pH₂O", "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
       calculationParameters.add(new CalculationParameter(makeParameterId(1),
-        "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true, false));
+        "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
       calculationParameters.add(new CalculationParameter(makeParameterId(2),
-        "fCO₂", "fCO₂ In Atmoshpere", "FCO2WTAT", "μatm", true, false));
+        "fCO₂", "fCO₂ In Atmoshpere", "FCO2WTAT", "μatm", true));
     }
 
     return calculationParameters;

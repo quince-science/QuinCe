@@ -56,4 +56,9 @@ public class DataReductionRecordPlotPageTableValue
   public boolean isNull() {
     return null == record;
   }
+
+  @Override
+  public char getType() {
+    return PlotPageTableValue.DATA_REDUCTION_TYPE;
+  }
 }

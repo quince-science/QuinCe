@@ -28,6 +28,8 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    */
   private final boolean flagNeeded;
 
+  private final char type;
+
   /**
    * Simple constructor with all values.
    *
@@ -43,11 +45,12 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    *          Whether or not user QC is required.
    */
   public SimplePlotPageTableValue(String value, Flag qcFlag, String qcMessage,
-    boolean flagNeeded) {
+    boolean flagNeeded, char type) {
     this.value = StringUtils.formatNumber(value);
     this.qcFlag = qcFlag;
     this.qcMessage = qcMessage;
     this.flagNeeded = flagNeeded;
+    this.type = type;
   }
 
   /**
@@ -67,6 +70,7 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
     this.qcFlag = Flag.GOOD;
     this.qcMessage = "";
     this.flagNeeded = false;
+    this.type = PlotPageTableValue.MEASURED_TYPE;
   }
 
   /**
@@ -112,5 +116,10 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
   @Override
   public boolean isNull() {
     return null == value;
+  }
+
+  @Override
+  public char getType() {
+    return type;
   }
 }

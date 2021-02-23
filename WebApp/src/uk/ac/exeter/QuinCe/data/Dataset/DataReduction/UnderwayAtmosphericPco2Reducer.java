@@ -69,23 +69,21 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     if (null == calculationParameters) {
       calculationParameters = new ArrayList<CalculationParameter>(5);
 
-      calculationParameters
-        .add(new CalculationParameter(makeParameterId(1), "Sea Level Pressure",
-          "Sea Level Pressure", "CAPASS01", "hPa", false, false));
+      calculationParameters.add(new CalculationParameter(makeParameterId(1),
+        "Sea Level Pressure", "Sea Level Pressure", "CAPASS01", "hPa", false));
 
-      calculationParameters
-        .add(new CalculationParameter(makeParameterId(2), "pH₂O",
-          "Atmosphere Water Vapour Pressure", "CPVPZZ01", "hPa", false, false));
+      calculationParameters.add(new CalculationParameter(makeParameterId(2),
+        "pH₂O", "Atmosphere Water Vapour Pressure", "CPVPZZ01", "hPa", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(3),
         "Calibrated CO₂", "xCO₂ In Atmosphere - Calibrated In Dry Air",
-        "XCO2DCMA", "μmol mol-1", false, false));
+        "XCO2DCMA", "μmol mol-1", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(4),
-        "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true, false));
+        "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(5),
-        "fCO₂", "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true, false));
+        "fCO₂", "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true));
     }
 
     return calculationParameters;

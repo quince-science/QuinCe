@@ -93,31 +93,30 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     if (null == calculationParameters) {
       calculationParameters = new ArrayList<CalculationParameter>(7);
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(1),
-        "ΔT", "Water-Equilibrator Temperature Difference", "DELTAT", "°C",
-        false, false));
-
       calculationParameters
-        .add(new CalculationParameter(makeParameterId(2), "pH₂O",
-          "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false, false));
+        .add(new CalculationParameter(makeParameterId(0), "ΔT",
+          "Water-Equilibrator Temperature Difference", "DELTAT", "°C", false));
+
+      calculationParameters.add(new CalculationParameter(makeParameterId(1),
+        "pH₂O", "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
+
+      calculationParameters.add(new CalculationParameter(makeParameterId(2),
+        "Calibrated CO₂", "xCO₂ In Water - Calibrated In Dry Air", "XCO2DECQ",
+        "μmol mol-1", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(3),
-        "Calibrated CO₂", "xCO₂ In Water - Calibrated In Dry Air", "XCO2DECQ",
-        "μmol mol-1", false, false));
+        "pCO₂ TE Wet", "pCO₂ In Water - Equilibrator Temperature", "PCO2IG02",
+        "μatm", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(4),
-        "pCO₂ TE Wet", "pCO₂ In Water - Equilibrator Temperature", "PCO2IG02",
-        "μatm", false, false));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(5),
         "fCO₂ TE Wet", "fCO₂ In Water - Equilibrator Temperature", "FCO2IG02",
-        "μatm", false, false));
+        "μatm", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(5),
-        "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true, false));
+        "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(7),
-        "fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true, false));
+      calculationParameters.add(new CalculationParameter(makeParameterId(6),
+        "fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true));
     }
 
     return calculationParameters;

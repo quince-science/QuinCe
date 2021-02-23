@@ -91,10 +91,10 @@ public class PlotPageTableRecord {
    *          Indicates whether or not a user QC flag is needed.
    */
   public void addColumn(String value, Flag qcFlag, String qcMessage,
-    boolean flagNeeded) {
+    boolean flagNeeded, char type) {
 
     addColumn(
-      new SimplePlotPageTableValue(value, qcFlag, qcMessage, flagNeeded));
+      new SimplePlotPageTableValue(value, qcFlag, qcMessage, flagNeeded, type));
   }
 
   public void addColumn(PlotPageTableValue column) {
@@ -118,13 +118,13 @@ public class PlotPageTableRecord {
     columns.forEach(c -> addColumn(c));
   }
 
-  public void addBlankColumn() {
-    addColumn("", Flag.GOOD, null, false);
+  public void addBlankColumn(char type) {
+    addColumn("", Flag.GOOD, null, false, type);
   }
 
-  public void addBlankColumns(int count) {
+  public void addBlankColumns(int count, char type) {
     for (int i = 0; i < count; i++) {
-      addBlankColumn();
+      addBlankColumn(type);
     }
   }
 

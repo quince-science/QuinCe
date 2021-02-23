@@ -11,6 +11,15 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
  */
 public interface PlotPageTableValue {
 
+  public static final char MEASURED_TYPE = 'M';
+
+  public static final char INTERPOLATED_TYPE = 'I';
+
+  public static final char DATA_REDUCTION_TYPE = 'R';
+
+  // For fixed values, e.g. position/depth that isn't measured
+  public static final char NOMINAL_TYPE = 'N';
+
   /**
    * Get the unique ID for this column value.
    *
@@ -50,4 +59,11 @@ public interface PlotPageTableValue {
    * See if this value is null.
    */
   public boolean isNull();
+
+  /**
+   * Get the type of value (measured, interpolated etc)
+   * 
+   * @return
+   */
+  public char getType();
 }

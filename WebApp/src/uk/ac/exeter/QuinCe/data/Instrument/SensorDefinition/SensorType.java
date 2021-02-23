@@ -150,7 +150,7 @@ public class SensorType extends ColumnHeading
   private SensorType(long id, String name, String group, int displayOrder,
     String units, String columnCode) {
 
-    super(id, name, name, columnCode, units, false);
+    super(id, name, name, columnCode, units, false, false);
 
     this.group = group;
     this.parent = NO_PARENT;
@@ -176,7 +176,7 @@ public class SensorType extends ColumnHeading
     throws SQLException, SensorConfigurationException {
 
     super(record.getLong(1), record.getString(2), record.getString(12),
-      record.getString(11), record.getString(10), true);
+      record.getString(11), record.getString(10), true, false);
 
     this.group = record.getString(3);
 
@@ -431,5 +431,10 @@ public class SensorType extends ColumnHeading
    */
   public boolean isSensor() {
     return !isDiagnostic() && !isSystemType() && !isPosition(getId());
+  }
+
+  @Override
+  public boolean includeType() {
+    return true;
   }
 }

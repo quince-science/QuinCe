@@ -40,4 +40,9 @@ public class FixedPlotPageTableValue implements PlotPageTableValue {
   public boolean isNull() {
     return false;
   }
+
+  @Override
+  public char getType() {
+    return PlotPageTableValue.NOMINAL_TYPE;
+  }
 }
