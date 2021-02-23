@@ -183,7 +183,7 @@ public class ManualQCData extends PlotPageData {
     if (!dataset.fixedPosition()) {
       rootColumns
         .add(new PlotPageColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
-          "Position", "Position", "POSITION", null, false, true));
+          "Position", "Position", "POSITION", null, true, false, true, false));
     }
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
@@ -278,7 +278,7 @@ public class ManualQCData extends PlotPageData {
       // Now the calculation parameters
       try {
         List<CalculationParameter> variableHeadings = DataReducerFactory
-          .getCalculationParameters(variable, true, true);
+          .getCalculationParameters(variable, true);
 
         List<PlotPageColumnHeading> variableQCHeadings = new ArrayList<PlotPageColumnHeading>(
           variableHeadings.size());
@@ -363,10 +363,11 @@ public class ManualQCData extends PlotPageData {
 
             record.addColumn(positionString.toString(),
               longitude.getDisplayFlag(), longitude.getDisplayQCMessage(),
-              longitude.flagNeeded());
+              longitude.flagNeeded(), PlotPageTableValue.MEASURED_TYPE);
           } else {
             // Empty position column
-            record.addColumn("", Flag.GOOD, null, false);
+            record.addColumn("", Flag.GOOD, null, false,
+              PlotPageTableValue.MEASURED_TYPE);
           }
         }
 
@@ -380,7 +381,7 @@ public class ManualQCData extends PlotPageData {
           if (sensorType.hasInternalCalibration()
             && (null == runType || instrument.getRunTypeCategory(runType)
               .equals(RunTypeCategory.INTERNAL_CALIBRATION))) {
-            record.addBlankColumn();
+            record.addBlankColumn(PlotPageTableValue.MEASURED_TYPE);
           } else {
             record.addColumn(recordSensorValues.get(columnId));
           }
@@ -400,7 +401,8 @@ public class ManualQCData extends PlotPageData {
         }
 
         if (null == measurement) {
-          record.addBlankColumns(measurementSensorTypes.size());
+          record.addBlankColumns(measurementSensorTypes.size(),
+            PlotPageTableValue.MEASURED_TYPE);
         } else {
           // MeasurementValues
           measurementSensorTypes.forEach(s -> {
@@ -436,7 +438,7 @@ public class ManualQCData extends PlotPageData {
 
           if (null != variableDataReduction) {
             List<CalculationParameter> params = DataReducerFactory
-              .getCalculationParameters(variable, true, true);
+              .getCalculationParameters(variable, true);
 
             for (CalculationParameter param : params) {
               Double value = variableDataReduction
@@ -444,12 +446,14 @@ public class ManualQCData extends PlotPageData {
               String stringValue = null == value ? "" : String.valueOf(value);
 
               record.addColumn(stringValue, variableDataReduction.getQCFlag(),
-                variableDataReduction.getQCMessages().toString(), false);
+                variableDataReduction.getQCMessages().toString(), false,
+                PlotPageTableValue.DATA_REDUCTION_TYPE);
             }
           } else {
             // Make blank columns
-            record
-              .addBlankColumns(columnHeadings.get(variable.getName()).size());
+            record.addBlankColumns(
+              columnHeadings.get(variable.getName()).size(),
+              PlotPageTableValue.DATA_REDUCTION_TYPE);
           }
         }
 
@@ -958,5 +962,17 @@ public class ManualQCData extends PlotPageData {
       concurrentMeasurement = measurements.get(measurementTime);
     }
     return concurrentMeasurement;
+  }
+
+  public TreeSet<SensorType> getMeasurementSensorTypes() {
+    return measurementSensorTypes;
+  }
+
+  public LocalDateTime getRowTime(long rowId) {
+    return DateTimeUtils.longToDate(rowId);
+  }
+
+  public Measurement getMeasurement(LocalDateTime time) {
+    return measurements.get(time);
   }
 }

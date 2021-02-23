@@ -51,9 +51,8 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
             allSensorValues, conn);
 
         result = new MeasurementValue(xco2SensorType);
-        result.addSensorValues(xCO2, allSensorValues);
-        result.addSensorValues(xH2O, allSensorValues);
-        result.incrMemberCount(xCO2.getMemberCount());
+        result.addSensorValues(xCO2, allSensorValues, true);
+        result.addSensorValues(xH2O, allSensorValues, false);
 
         result.setCalculatedValue(
           dry(xCO2.getCalculatedValue(), xH2O.getCalculatedValue()));

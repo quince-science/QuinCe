@@ -120,14 +120,15 @@ public class MeasurementValue implements PlotPageTableValue {
    * @throws SensorTypeNotFoundException
    */
   public MeasurementValue(long sensorTypeId, List<Long> sensorValueIds,
-    List<Long> supportingSensorValueIds, Double calculatedValue, Flag flag,
-    List<String> qcComments, Properties properties)
-    throws SensorTypeNotFoundException {
+    List<Long> supportingSensorValueIds, int memberCount,
+    Double calculatedValue, Flag flag, List<String> qcComments,
+    Properties properties) throws SensorTypeNotFoundException {
 
     this.sensorType = ResourceManager.getInstance().getSensorsConfiguration()
       .getSensorType(sensorTypeId);
     this.sensorValueIds = sensorValueIds;
     this.supportingSensorValueIds = supportingSensorValueIds;
+    this.memberCount = memberCount;
     this.calculatedValue = calculatedValue;
     this.flag = flag;
     this.qcMessage = qcComments;
@@ -148,7 +149,8 @@ public class MeasurementValue implements PlotPageTableValue {
 
     this.sensorType = sensorType;
     this.sensorValueIds = new ArrayList<Long>();
-    addSensorValues(sensorValues);
+    addSensorValues(sensorValues, false);
+    this.memberCount = memberCount;
     this.supportingSensorValueIds = new ArrayList<Long>();
     this.calculatedValue = calculatedValue;
     this.memberCount = memberCount;
@@ -156,8 +158,9 @@ public class MeasurementValue implements PlotPageTableValue {
     this.properties = new Properties();
   }
 
-  public void addSensorValues(Collection<SensorValue> values) {
-    values.forEach(this::addSensorValue);
+  public void addSensorValues(Collection<SensorValue> values,
+    boolean incrMemberCount) {
+    values.forEach(v -> addSensorValue(v, incrMemberCount));
   }
 
   /**
@@ -167,9 +170,10 @@ public class MeasurementValue implements PlotPageTableValue {
    *          The source {@code MeasurementValue}s.
    */
   public void addSensorValues(Collection<MeasurementValue> sourceValues,
-    DatasetSensorValues allSensorValues) {
+    DatasetSensorValues allSensorValues, boolean incrMemberCount) {
 
-    sourceValues.forEach(x -> addSensorValues(x, allSensorValues));
+    sourceValues
+      .forEach(x -> addSensorValues(x, allSensorValues, incrMemberCount));
   }
 
   /**
@@ -179,9 +183,9 @@ public class MeasurementValue implements PlotPageTableValue {
    *          The source {@code MeasurementValue}.
    */
   public void addSensorValues(MeasurementValue sourceValue,
-    DatasetSensorValues allSensorValues) {
+    DatasetSensorValues allSensorValues, boolean incrMemberCount) {
     for (Long sensorValueId : sourceValue.getSensorValueIds()) {
-      addSensorValue(allSensorValues.getById(sensorValueId));
+      addSensorValue(allSensorValues.getById(sensorValueId), incrMemberCount);
     }
   }
 
@@ -194,8 +198,11 @@ public class MeasurementValue implements PlotPageTableValue {
    * 
    * @param value
    *          The value to add.
+   * @param incrMemberCount
+   *          Indicates whether or not this value should contribute to the
+   *          member count.
    */
-  public void addSensorValue(SensorValue value) {
+  public void addSensorValue(SensorValue value, boolean incrMemberCount) {
     if (!sensorValueIds.contains(value.getId())) {
       sensorValueIds.add(value.getId());
 
@@ -212,6 +219,10 @@ public class MeasurementValue implements PlotPageTableValue {
         if (value.getUserQCMessage().trim().length() > 0) {
           qcMessage.add(value.getUserQCMessage());
         }
+      }
+
+      if (incrMemberCount) {
+        memberCount++;
       }
     }
   }
@@ -250,18 +261,6 @@ public class MeasurementValue implements PlotPageTableValue {
 
   public boolean hasValue() {
     return sensorValueIds.size() > 0;
-  }
-
-  public void incrMemberCount(int count) {
-    memberCount += count;
-  }
-
-  public void incrMemberCount() {
-    memberCount++;
-  }
-
-  public void setMemberCount(int memberCount) {
-    this.memberCount = memberCount;
   }
 
   public int getMemberCount() {
@@ -348,5 +347,11 @@ public class MeasurementValue implements PlotPageTableValue {
   @Override
   public boolean isNull() {
     return calculatedValue.isNaN();
+  }
+
+  @Override
+  public char getType() {
+    return memberCount > 1 ? PlotPageTableValue.INTERPOLATED_TYPE
+      : PlotPageTableValue.MEASURED_TYPE;
   }
 }

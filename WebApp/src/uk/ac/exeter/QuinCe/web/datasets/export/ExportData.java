@@ -36,11 +36,13 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
  */
 public class ExportData extends ManualQCData {
 
+  LinkedHashMap<String, List<PlotPageColumnHeading>> headingsWithProperties = null;
+
   // TODO Replace this with something more generic. See issue #1845
 
-  private static final long LON_ID = -10000L;
+  private static final long FIXED_LON_ID = -10000L;
 
-  private static final long LAT_ID = -10001L;
+  private static final long FIXED_LAT_ID = -10001L;
 
   private static final long DEPTH_ID = -10002L;
 
@@ -65,44 +67,52 @@ public class ExportData extends ManualQCData {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public LinkedHashMap<String, List<PlotPageColumnHeading>> getExtendedColumnHeadings()
     throws Exception {
 
-    LinkedHashMap<String, List<PlotPageColumnHeading>> headings = super.getExtendedColumnHeadings();
+    if (null == headingsWithProperties) {
+      headingsWithProperties = (LinkedHashMap<String, List<PlotPageColumnHeading>>) super.getExtendedColumnHeadings()
+        .clone();
 
-    List<PlotPageColumnHeading> rootColumns = headings.get(ROOT_FIELD_GROUP);
+      List<PlotPageColumnHeading> rootColumns = headingsWithProperties
+        .get(ROOT_FIELD_GROUP);
 
-    // Manually add the position headings if the dataset has fixed position
-    // properties
-    if (dataset.fixedPosition()) {
-      PlotPageColumnHeading lonColumn = new PlotPageColumnHeading(LON_ID,
-        "Longitude", "Longitude", "ALONGP01", "degrees_east", true, false,
-        true);
-      PlotPageColumnHeading latColumn = new PlotPageColumnHeading(LAT_ID,
-        "Latitude", "Latitude", "ALATGP01", "degrees_north", true, false, true);
-      rootColumns.add(lonColumn);
-      rootColumns.add(latColumn);
+      // Manually add the position headings if the dataset has fixed position
+      // properties
+      if (dataset.fixedPosition()) {
+        PlotPageColumnHeading lonColumn = new PlotPageColumnHeading(
+          FIXED_LON_ID, "Longitude", "Longitude", "ALONGP01", "degrees_east",
+          true, true, false, true);
+        PlotPageColumnHeading latColumn = new PlotPageColumnHeading(
+          FIXED_LAT_ID, "Latitude", "Latitude", "ALATGP01", "degrees_north",
+          true, true, false, true);
+        rootColumns.add(lonColumn);
+        rootColumns.add(latColumn);
 
-      // Set up the fixed values ready for later
-      lonValue = new FixedPlotPageTableValue(
-        dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "longitude"));
-      latValue = new FixedPlotPageTableValue(
-        dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "latitude"));
+        // Set up the fixed values ready for later
+        lonValue = new FixedPlotPageTableValue(
+          dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "longitude"));
+        latValue = new FixedPlotPageTableValue(
+          dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "latitude"));
+
+      }
+      // Add the depth heading if the dataset has the depth property
+      if (null != dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY,
+        "depth")) {
+        PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(DEPTH_ID,
+          "Depth", "Depth", "ADEPZZ01", "m", true, false, true);
+        rootColumns.add(depthHeading);
+
+        // Set up the fixed value ready for later
+        depthValue = new FixedPlotPageTableValue(
+          dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "depth"));
+      }
 
     }
-    // Add the depth heading if the dataset has the depth property
-    if (null != dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY,
-      "depth")) {
-      PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(DEPTH_ID,
-        "Depth", "Depth", "ADEPZZ01", "m", true, false, true);
-      rootColumns.add(depthHeading);
 
-      // Set up the fixed value ready for later
-      depthValue = new FixedPlotPageTableValue(
-        dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "depth"));
-    }
-    return headings;
+    return headingsWithProperties;
   }
 
   @Override
@@ -113,9 +123,9 @@ public class ExportData extends ManualQCData {
     // TODO Replace this with something more generic. See issue #1845
     PlotPageTableValue value = null;
 
-    if (columnId == LON_ID) {
+    if (columnId == FIXED_LON_ID) {
       value = lonValue;
-    } else if (columnId == LAT_ID) {
+    } else if (columnId == FIXED_LAT_ID) {
       value = latValue;
     } else if (columnId == DEPTH_ID) {
       value = depthValue;

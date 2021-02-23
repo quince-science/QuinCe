@@ -41,4 +41,9 @@ public class NullPlotPageTableValue implements PlotPageTableValue {
     return true;
   }
 
+  @Override
+  public char getType() {
+    return PlotPageTableValue.MEASURED_TYPE;
+  }
+
 }
