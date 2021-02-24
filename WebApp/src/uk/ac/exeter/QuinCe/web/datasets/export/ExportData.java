@@ -163,6 +163,9 @@ public class ExportData extends ManualQCData {
         if (null == value) {
           value = super.getColumnValue(rowId, columnId);
         }
+        // Otherwise we just grab the value as normal
+      } else {
+        value = super.getColumnValue(rowId, columnId);
       }
     }
 
