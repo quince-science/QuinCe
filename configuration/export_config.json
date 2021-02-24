@@ -2,8 +2,8 @@
   {
     "exportName": "Interpolation",
     "separator": "comma",
-    "includeCalculationColumns": true,
-    "includeRawSensors": true
+    "includeCalculationColumns": false,
+    "includeRawSensors": false
   },
   {
     "exportName": "SOCAT",
