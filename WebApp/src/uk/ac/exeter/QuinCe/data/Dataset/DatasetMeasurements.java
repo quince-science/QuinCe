@@ -10,13 +10,13 @@ import java.util.TreeSet;
 
 /**
  * The set of measurements for a given {@link Dataset}.
- * 
+ *
  * <p>
  * The main object is a map grouping the measurements by run type, but a second
  * view of all measurements in time order is accessible through
  * {@link #getTimeOrderedMeasurements()}.
  * </p>
- * 
+ *
  * @author stevej
  *
  */
@@ -46,7 +46,7 @@ public class DatasetMeasurements {
 
   /**
    * Get the Run Types in this set of measurements.
-   * 
+   *
    * @return The Run Types.
    */
   public Set<String> getRunTypes() {
@@ -55,7 +55,7 @@ public class DatasetMeasurements {
 
   /**
    * Get the measurements for a specified run type.
-   * 
+   *
    * @param runType
    *          The run type.
    * @return The measurements.
@@ -76,7 +76,7 @@ public class DatasetMeasurements {
 
   /**
    * Get all measurements in time order.
-   * 
+   *
    * @return The time-ordered measurements.
    */
   public List<Measurement> getTimeOrderedMeasurements() {
@@ -89,7 +89,7 @@ public class DatasetMeasurements {
 
   /**
    * Get the times of all measurements.
-   * 
+   *
    * @return The measurement times.
    */
   public List<LocalDateTime> getMeasurementTimes() {

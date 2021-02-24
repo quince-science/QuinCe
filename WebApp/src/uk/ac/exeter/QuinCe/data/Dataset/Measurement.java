@@ -134,12 +134,12 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Constructor for a dummy Measurement with just a time.
-   * 
+   *
    * <p>
    * Used by {@link #dummyTimeMeasurement(LocalDateTime)} for the
    * {@link #TIME_COMPARATOR}.
    * </p>
-   * 
+   *
    * @param time
    *          The measurement time.
    */

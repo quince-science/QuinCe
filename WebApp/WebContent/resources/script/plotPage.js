@@ -805,14 +805,14 @@ function getColumnDefs() {
         }
 
         let classes = ['plotPageCell'];
-        
+
         // Cell coloring
         let columnGroup = getColumnGroup(meta.col);
-	  	if (columnGroup % 2 == 0) {
-		  classes.push(meta.row % 2 == 0 ? 'evenColGroupEvenRow' : 'evenColGroupOddRow');
-		} else {
-		  classes.push(meta.row % 2 == 0 ? 'oddColGroupEvenRow' : 'oddColGroupOddRow');
-		}
+      if (columnGroup % 2 == 0) {
+      classes.push(meta.row % 2 == 0 ? 'evenColGroupEvenRow' : 'evenColGroupOddRow');
+    } else {
+      classes.push(meta.row % 2 == 0 ? 'oddColGroupEvenRow' : 'oddColGroupOddRow');
+    }
 
         if ($.isNumeric(data['value'])) {
           classes.push('numericCol');
@@ -834,7 +834,7 @@ function getColumnDefs() {
 
         result += '>';
         if (null == data['value'] || data['value'] == '') {
-	      result += '&nbsp;';
+        result += '&nbsp;';
         } else {
           result += (data['value']);
         }

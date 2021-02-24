@@ -15,21 +15,21 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Holds the calculated value of a given {@link SensorType} for a measurement.
- * 
+ *
  * <p>
  * The calculated value is derived from one or more {@link SensorValue}s,
  * depending on the configuration of the instrument, the relative time of the
  * measurement and available {@link SensorValues}, and whether bad/questionable
  * values are being ignored.
  * </p>
- * 
+ *
  * <p>
  * This class implements the most common calculation of a measurement value.
  * Some {@link SensorTypes} require more complex calculations (e.g. xCO2 with
  * standards, which also requires xH2O). These can be implemented by overriding
  * classes.
  * </p>
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -42,7 +42,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * The IDs of the {@link SensorValue}s used to calculate the value.
-   * 
+   *
    * <p>
    * Note that the sensor values may not all belong to the specified
    * {@link #sensorType}: some {@link SensorType}s require calculation based on
@@ -53,7 +53,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * The IDs of {@link SensorValue}s used to support the value calculation.
-   * 
+   *
    * <p>
    * This can be used for values that aren't directly used in the calculation,
    * such as those used in calibrations.
@@ -63,7 +63,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * The number of calculations used to build this value.
-   * 
+   *
    * <p>
    * This is useful for combining multiple values, where a weighted mean is
    * often required.
@@ -95,7 +95,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * Creates a stub value with no assigned {@link SensorValue}s.
-   * 
+   *
    * @param sensorType
    *          The sensor type that the value is calculated for.
    */
@@ -109,7 +109,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * Construct a MeasurementValue using a full set of fields.
-   * 
+   *
    * @param sensorTypeId
    * @param sensorValueIds
    * @param supportingSensorValueIds
@@ -138,7 +138,7 @@ public class MeasurementValue implements PlotPageTableValue {
   /**
    * Construct a MeasurementValue, calculating the QC details from the supplied
    * {@link SensorValue}s.
-   * 
+   *
    * @param sensorType
    * @param sensorValues
    * @param calculatedValue
@@ -165,7 +165,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * Add the sensor values used in the specified {@code MeasurementValue}s.
-   * 
+   *
    * @param sourceValues
    *          The source {@code MeasurementValue}s.
    */
@@ -178,7 +178,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * Add the sensor values used in the specified {@code MeasurementValue}.
-   * 
+   *
    * @param sourceValues
    *          The source {@code MeasurementValue}.
    */
@@ -191,11 +191,11 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * Add a {@link SensorValue} to the value.
-   * 
+   *
    * <p>
    * Adds the {@link SensorValue}'s ID and updates the QC information.
    * </p>
-   * 
+   *
    * @param value
    *          The value to add.
    * @param incrMemberCount
