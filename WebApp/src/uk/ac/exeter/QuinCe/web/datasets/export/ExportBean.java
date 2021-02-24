@@ -345,6 +345,34 @@ public class ExportBean extends BaseManagedBean {
         }
       }
 
+      if (exportOption.includeRawSensors()) {
+        List<PlotPageColumnHeading> sensorHeadings = data
+          .getExtendedColumnHeadings().get(ExportData.SENSORS_FIELD_GROUP);
+
+        for (PlotPageColumnHeading heading : sensorHeadings) {
+          output.append(exportOption.getSeparator());
+
+          PlotPageTableValue value = data.getColumnValue(rowId,
+            heading.getId());
+          addValueToOutput(output, exportOption, heading.getId(), value, true,
+            false);
+        }
+
+        List<PlotPageColumnHeading> diagnosticHeadings = data
+          .getExtendedColumnHeadings().get(ExportData.DIAGNOSTICS_FIELD_GROUP);
+
+        if (null != diagnosticHeadings) {
+          for (PlotPageColumnHeading heading : diagnosticHeadings) {
+            output.append(exportOption.getSeparator());
+
+            PlotPageTableValue value = data.getColumnValue(rowId,
+              heading.getId());
+            addValueToOutput(output, exportOption, heading.getId(), value, true,
+              false);
+          }
+        }
+      }
+
       output.append("\n");
     }
 
