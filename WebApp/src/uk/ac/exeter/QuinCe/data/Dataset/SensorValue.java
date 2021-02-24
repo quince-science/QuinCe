@@ -580,13 +580,13 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   /**
    * Calculate the mean time of a collection of SensorValues, optionally
    * ignoring those with a NaN value.
-   * 
+   *
    * <p>
    * Works by calculating the mean of the millisecond values. The division may
    * result in rounding, but a millisecond offset is not going to affect things
    * for our purposes.
    * </p>
-   * 
+   *
    * @param values
    *          The values.
    * @param includeNan
@@ -614,7 +614,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   /**
    * Calculate the mean value from a collection of SensorValues. NaN values are
    * ignored.
-   * 
+   *
    * @param values
    *          The values.
    * @return The mean value.

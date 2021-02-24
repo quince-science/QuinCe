@@ -12,7 +12,7 @@ import com.google.gson.JsonSerializer;
 
 /**
  * JSON serializer for QC flags - just stores the numeric value
- * 
+ *
  * @author stevej
  *
  */

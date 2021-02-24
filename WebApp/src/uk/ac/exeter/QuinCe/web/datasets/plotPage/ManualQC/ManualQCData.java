@@ -57,11 +57,11 @@ public class ManualQCData extends PlotPageData {
 
   /**
    * The set of {@link SensorType}s used by the measurements in this dataset.
-   * 
+   *
    * <p>
    * Used to display interpolated values from
    * </p>
-   * 
+   *
    * @see Measurement#getMeasurementValue(SensorType)
    */
   private TreeSet<SensorType> measurementSensorTypes = null;
@@ -871,7 +871,7 @@ public class ManualQCData extends PlotPageData {
    * Get a value for a {@link SensorValue} or a {@link CalculationParameter}
    * from Data Reduction. Note that Measurement Values must be retrieved
    * directly from the Measurement object.
-   * 
+   *
    * @param rowId
    *          The row ID
    * @param columnId

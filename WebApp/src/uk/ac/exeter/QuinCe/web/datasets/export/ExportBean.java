@@ -400,7 +400,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Create the header line in an output string.
-   * 
+   *
    * @param data
    *          The source data.
    * @param output
