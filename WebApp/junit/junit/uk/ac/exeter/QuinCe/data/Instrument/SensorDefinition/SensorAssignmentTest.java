@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
@@ -46,8 +47,16 @@ public class SensorAssignmentTest {
 
   private SensorType getTestSensorType() throws SensorTypeNotFoundException,
     MissingParamException, SensorConfigurationException {
-    return new SensorType(1L, "Test Sensor", "Test Group", null, null, null,
-      false, false, 0, "units", "code", "heading");
+
+    SensorType result = Mockito.mock(SensorType.class);
+    Mockito.when(result.getId()).thenReturn(1L);
+    Mockito.when(result.getShortName()).thenReturn("Test Sensor");
+    Mockito.when(result.getGroup()).thenReturn("Test Group");
+    Mockito.when(result.getUnits()).thenReturn("ewe knit");
+    Mockito.when(result.getLongName()).thenReturn("Test Sensor (long name)");
+    Mockito.when(result.getCodeName()).thenReturn("Code");
+
+    return result;
   }
 
   /**
