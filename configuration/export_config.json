@@ -3,7 +3,7 @@
     "exportName": "Interpolation",
     "separator": "comma",
     "includeCalculationColumns": false,
-    "includeRawSensors": false
+    "includeRawSensors": true
   },
   {
     "exportName": "SOCAT",

@@ -308,13 +308,10 @@ public class ExportBean extends BaseManagedBean {
         .getExtendedColumnHeadings()
         .get(ExportData.MEASUREMENTVALUES_FIELD_GROUP);
 
-      if (null == measurement) {
-        for (PlotPageColumnHeading column : measurementValueColumns) {
-          output.append(exportOption.getSeparator());
-          addValueToOutput(output, exportOption, column.getId(), null, true,
-            true);
-        }
-      } else {
+      // If there's a measurement, we get the Measurement Value for the sensor
+      // type. If not, we go and get any raw sensor values we can find for that
+      // sensor type.
+      if (null != measurement) {
         for (PlotPageColumnHeading column : measurementValueColumns) {
           output.append(exportOption.getSeparator());
 
@@ -324,6 +321,25 @@ public class ExportBean extends BaseManagedBean {
             .getMeasurementValue(sensorType);
           addValueToOutput(output, exportOption, column.getId(),
             measurementValue, true, true);
+        }
+      } else {
+
+        for (PlotPageColumnHeading column : measurementValueColumns) {
+          output.append(exportOption.getSeparator());
+
+          SensorType sensorType = ResourceManager.getInstance()
+            .getSensorsConfiguration().getSensorType(column.getId());
+
+          List<Long> columnIds = instrument.getSensorAssignments()
+            .getColumnIds(sensorType);
+
+          if (columnIds.size() > 0) {
+            // TODO #1128 Handle multiple/fallback sensors
+            PlotPageTableValue value = data.getColumnValue(rowId,
+              columnIds.get(0));
+            addValueToOutput(output, exportOption, column.getId(), value, true,
+              true);
+          }
         }
       }
 
@@ -375,41 +391,6 @@ public class ExportBean extends BaseManagedBean {
 
       output.append("\n");
     }
-
-    /*
-     * 
-     * // Process each row of the data for (Long rowId : data.getRowIDs()) {
-     * 
-     * boolean firstColumn = true;
-     * 
-     * // Sensor columns for (PlotPageColumnHeading column : exportColumns) {
-     * 
-     * // Separator management. Add a separator before the column details, //
-     * unless we're on the first column if (firstColumn) { firstColumn = false;
-     * } else { output.append(exportOption.getSeparator()); }
-     * 
-     * PlotPageTableValue value = data.getColumnValue(rowId, column.getId());
-     * addValueToOutput(output, exportOption, column.getId(), value,
-     * column.getId() != FileDefinition.TIME_COLUMN_ID, column.includeType()); }
-     * 
-     * /* for (Variable variable : exportOption.getVariables()) { if
-     * (instrument.getVariables().contains(variable)) {
-     * 
-     * List<CalculationParameter> params = DataReducerFactory
-     * .getCalculationParameters(variable,
-     * exportOption.includeCalculationColumns());
-     * 
-     * for (CalculationParameter param : params) { // Separator management. Add
-     * a separator before the column details, // unless we're on the first
-     * column if (firstColumn) { firstColumn = false; } else {
-     * output.append(exportOption.getSeparator()); }
-     * 
-     * PlotPageTableValue value = data.getColumnValue(rowId, param.getId());
-     * addValueToOutput(output, exportOption, param.getId(), value,
-     * param.isResult(), false); } } }
-     * 
-     * output.append("\n"); }
-     */
 
     // Destroy the ExportData object so it cleans up its resources
     data.destroy();
