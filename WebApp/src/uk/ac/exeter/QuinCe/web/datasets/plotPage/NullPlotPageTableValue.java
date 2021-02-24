@@ -5,7 +5,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
  * Stub {@link PlotPageTableValue} for a null value.
- * 
+ *
  * @author Steve Jones
  *
  */

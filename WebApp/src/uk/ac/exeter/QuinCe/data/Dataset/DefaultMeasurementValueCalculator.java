@@ -21,12 +21,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * The default implementation of {@link MeasurementValueCalculator}.
- * 
+ *
  * <p>
  * Applies interpolation based on quality flags, and standard calibration as
  * needed.
  * </p>
- * 
+ *
  * @author stevej
  *
  */
@@ -218,7 +218,7 @@ public class DefaultMeasurementValueCalculator
 
   /**
    * Get the closest GOOD calibration value before a given time.
-   * 
+   *
    * @param startTime
    *          The start time.
    * @param measurements
@@ -285,7 +285,7 @@ public class DefaultMeasurementValueCalculator
 
   /**
    * Get the closest GOOD calibration value after a given time.
-   * 
+   *
    * @param startTime
    *          The start time.
    * @param measurements

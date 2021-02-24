@@ -480,7 +480,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Get the fully simplified version of the Flag.
-   * 
+   *
    * @return
    */
   public Flag getSimpleFlag() {

@@ -255,7 +255,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
   /**
    * Get the closest standards to a specified value for the specified
    * {@link SensorType}.
-   * 
+   *
    * <p>
    * Attempts to return the three closest standards. If some standards are an
    * equal distance from the value, exactly which three are returned is
@@ -263,7 +263,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
    * CalibrationSet contains fewer than three standards then all will be
    * returned.
    * </p>
-   * 
+   *
    * @param value
    *          The value.
    * @return The closest standards to the value.

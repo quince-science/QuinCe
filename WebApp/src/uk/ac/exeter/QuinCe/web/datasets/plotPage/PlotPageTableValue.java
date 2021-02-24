@@ -62,7 +62,7 @@ public interface PlotPageTableValue {
 
   /**
    * Get the type of value (measured, interpolated etc)
-   * 
+   *
    * @return
    */
   public char getType();
