@@ -147,6 +147,10 @@ public class BaseTest {
     return Stream.of(null, "", " ", "  ", "\t", "\n");
   }
 
+  protected static Stream<Boolean> booleans() {
+    return Stream.of(true, false);
+  }
+
   /**
    * Create a set of invalid references for {@link SensorType} IDs ({@code 0}
    * and {@code -1}).
