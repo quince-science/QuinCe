@@ -56,7 +56,7 @@ public class ColumnHeading {
     this.shortName = shortName;
     this.longName = longName;
     this.codeName = codeName;
-    this.units = units;
+    this.units = null == units ? null : units.trim();
     this.hasQC = hasQC;
     this.includeType = includeType;
   }
