@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
@@ -43,11 +44,41 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTabl
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.NullPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
 
+/**
+ * A version of {@link PlotPageData} used for the main manual QC page.
+ * 
+ * <h4>A note on positions:</h4>
+ * <p>
+ * Positions can be stored in two places: in the {@link SensorValue}s and in the
+ * {@link MeasurementValue}s. The former contains the raw, measured position
+ * from the sensors, and the latter contains the calculated position for a
+ * measurement. For instruments with one input file, these will be the same. For
+ * other files, though, they will not. The {@link MeasurementValue} may store an
+ * interpolated position, and some data rows with no measurements may not
+ * contain a position at all if that's measured in a different data file.
+ * </p>
+ * <p>
+ * Because of this, positions are present in the ROOT column group, but are
+ * populated as follows:
+ * </p>
+ * <ol>
+ * <li>If there is a measurement at the time of the row, then use the
+ * {@link MeasurementValue} position.</li>
+ * <li>If there is no measurement but there is position data in the row's
+ * {@link SensorValue}s, use those.</li>
+ * <li>Finally, interpolate the position using the closest available position
+ * {@link SensorValue}s.
+ * </ol>
+ * 
+ * @author Steve Jones
+ *
+ */
 public class ManualQCData extends PlotPageData {
 
   /**
@@ -212,9 +243,7 @@ public class ManualQCData extends PlotPageData {
       .getSensorAssignments().entrySet()) {
 
       // Skip the position
-      if (!entry.getKey().equals(SensorType.LONGITUDE_SENSOR_TYPE)
-        && !entry.getKey().equals(SensorType.LATITUDE_SENSOR_TYPE)) {
-
+      if (!entry.getKey().isPosition()) {
         for (SensorAssignment assignment : entry.getValue()) {
 
           if (entry.getKey().isSensor()) {
@@ -292,10 +321,11 @@ public class ManualQCData extends PlotPageData {
       }
     }
 
-    // Now we can fill in the proper MeasurementValue column headings
+    // Now we can fill in the proper MeasurementValue column headings.
+    // Skip the positions though - see main class description
     List<PlotPageColumnHeading> measurementValueColumnNames = measurementSensorTypes
-      .stream().map(x -> new PlotPageColumnHeading(x))
-      .collect(Collectors.toList());
+      .stream().filter(s -> !s.isPosition())
+      .map(s -> new PlotPageColumnHeading(s)).collect(Collectors.toList());
 
     columnHeadings.put(MEASUREMENTVALUES_FIELD_GROUP,
       measurementValueColumnNames);
@@ -337,18 +367,12 @@ public class ManualQCData extends PlotPageData {
 
         if (!dataset.fixedPosition()) {
 
-          // We assume there's only one position - the UI won't allow users to
-          // enter more than one.
-          //
-          // The position is combined into a single column.
-          SensorValue longitude = recordSensorValues
-            .get(FileDefinition.LONGITUDE_COLUMN_ID);
-          SensorValue latitude = recordSensorValues
-            .get(FileDefinition.LATITUDE_COLUMN_ID);
+          PlotPageTableValue longitude = getInterpolatedPositionValue(
+            SensorType.LONGITUDE_SENSOR_TYPE, times.get(i));
+          PlotPageTableValue latitude = getInterpolatedPositionValue(
+            SensorType.LATITUDE_SENSOR_TYPE, times.get(i));
 
           // The lon/lat can be null if the instrument has a fixed position
-          // or the file containing the current values doesn't contain a
-          // position.
           if (null != longitude && null != latitude
             && null != longitude.getValue() && null != latitude.getValue()) {
 
@@ -361,9 +385,9 @@ public class ManualQCData extends PlotPageData {
                 .append(StringUtils.formatNumber(latitude.getValue()));
             }
 
-            record.addColumn(positionString.toString(),
-              longitude.getDisplayFlag(), longitude.getDisplayQCMessage(),
-              longitude.flagNeeded(), PlotPageTableValue.MEASURED_TYPE);
+            record.addColumn(positionString.toString(), longitude.getQcFlag(),
+              longitude.getQcMessage(), longitude.getFlagNeeded(),
+              longitude.getType());
           } else {
             // Empty position column
             record.addColumn("", Flag.GOOD, null, false,
@@ -407,9 +431,12 @@ public class ManualQCData extends PlotPageData {
           // MeasurementValues
           measurementSensorTypes.forEach(s -> {
 
-            record.addColumn(measurement.containsMeasurementValue(s)
-              ? measurement.getMeasurementValue(s)
-              : new NullPlotPageTableValue());
+            if (!s.isPosition()) {
+              record.addColumn(measurement.containsMeasurementValue(s)
+                ? measurement.getMeasurementValue(s)
+                : new NullPlotPageTableValue());
+            }
+
           });
         }
 
@@ -882,69 +909,84 @@ public class ManualQCData extends PlotPageData {
    * @throws RecordNotFoundException
    */
   public PlotPageTableValue getColumnValue(long rowId, long columnId)
-    throws InstrumentException, DataReductionException,
-    RecordNotFoundException {
+    throws PlotPageDataException {
 
     PlotPageTableValue result = null;
 
-    // The rowId is the row time
-    LocalDateTime rowTime = DateTimeUtils.longToDate(rowId);
+    try {
+      // The rowId is the row time
+      LocalDateTime rowTime = DateTimeUtils.longToDate(rowId);
 
-    // The time is just the time
-    if (columnId == FileDefinition.TIME_COLUMN_ID) {
-      result = new SimplePlotPageTableValue(rowTime, false);
+      // The time is just the time
+      if (columnId == FileDefinition.TIME_COLUMN_ID) {
+        result = new SimplePlotPageTableValue(rowTime, false);
 
-      // Sensor Value
-    } else if (sensorValues.containsColumn(columnId)) {
+      } else if (columnId == FileDefinition.LONGITUDE_COLUMN_ID) {
+        result = getInterpolatedPositionValue(SensorType.LONGITUDE_SENSOR_TYPE,
+          DateTimeUtils.longToDate(rowId));
 
-      // Get the SensorValue
-      SensorValue sensorValue = sensorValues.getSensorValue(rowTime, columnId);
-      if (null != sensorValue) {
+      } else if (columnId == FileDefinition.LATITUDE_COLUMN_ID) {
+        result = getInterpolatedPositionValue(SensorType.LATITUDE_SENSOR_TYPE,
+          DateTimeUtils.longToDate(rowId));
 
-        SensorType sensorType = instrument.getSensorAssignments()
-          .getSensorTypeForDBColumn(columnId);
+        // Sensor Value
+      } else if (sensorValues.containsColumn(columnId)) {
 
-        // If the sensor has internal calibrations, only add the value if it's
-        // a measurement
-        boolean useValue = true;
+        // Get the SensorValue
+        SensorValue sensorValue = sensorValues.getSensorValue(rowTime,
+          columnId);
+        if (null != sensorValue) {
 
-        if (sensorType.hasInternalCalibration()) {
+          SensorType sensorType = instrument.getSensorAssignments()
+            .getSensorTypeForDBColumn(columnId);
 
-          Measurement concurrentMeasurement = getConcurrentMeasurement(
-            sensorValue.getTime());
-          String runType = null == concurrentMeasurement ? null
-            : concurrentMeasurement.getRunType();
+          // If the sensor has internal calibrations, only add the value if it's
+          // a measurement
+          boolean useValue = true;
 
-          // Only include the value if the run type is not an internal
-          // calibration
-          if (null == runType || instrument.getRunTypeCategory(runType)
-            .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
-            useValue = false;
+          if (sensorType.hasInternalCalibration()) {
+
+            Measurement concurrentMeasurement = getConcurrentMeasurement(
+              sensorValue.getTime());
+            String runType = null == concurrentMeasurement ? null
+              : concurrentMeasurement.getRunType();
+
+            // Only include the value if the run type is not an internal
+            // calibration
+            if (null == runType || instrument.getRunTypeCategory(runType)
+              .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+              useValue = false;
+            }
+          }
+
+          if (useValue) {
+            result = new SensorValuePlotPageTableValue(sensorValue);
           }
         }
 
-        if (useValue) {
-          result = new SensorValuePlotPageTableValue(sensorValue);
-        }
-      }
+        // Data Reduction value
+      } else {
+        Variable variable = DataReducerFactory.getVariable(instrument,
+          columnId);
+        CalculationParameter parameter = DataReducerFactory
+          .getVariableParameter(variable, columnId);
 
-      // Data Reduction value
-    } else {
-      Variable variable = DataReducerFactory.getVariable(instrument, columnId);
-      CalculationParameter parameter = DataReducerFactory
-        .getVariableParameter(variable, columnId);
-
-      Measurement measurement = measurements.get(rowTime);
-      if (null != measurement) {
-        if (dataReduction.containsKey(measurement.getId())) {
-          DataReductionRecord record = dataReduction.get(measurement.getId())
-            .get(variable);
-          if (null != record) {
-            result = new DataReductionRecordPlotPageTableValue(record,
-              parameter.getShortName());
+        Measurement measurement = measurements.get(rowTime);
+        if (null != measurement) {
+          if (dataReduction.containsKey(measurement.getId())) {
+            DataReductionRecord record = dataReduction.get(measurement.getId())
+              .get(variable);
+            if (null != record) {
+              result = new DataReductionRecordPlotPageTableValue(record,
+                parameter.getShortName());
+            }
           }
         }
       }
+    } catch (PlotPageDataException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new PlotPageDataException("Error getting column value", e);
     }
 
     return result;
@@ -999,6 +1041,74 @@ public class ManualQCData extends PlotPageData {
         result = true;
         break;
       }
+    }
+
+    return result;
+  }
+
+  private PlotPageTableValue getInterpolatedPositionValue(SensorType sensorType,
+    LocalDateTime time) throws PlotPageDataException {
+
+    PlotPageTableValue result = null;
+
+    if (sensorType.isPosition()) {
+      // If there is a measurement at this time, try using the value from that
+      Measurement measurement = measurements.get(time);
+
+      if (null != measurement) {
+        if (measurement.containsMeasurementValue(sensorType)) {
+          result = measurement.getMeasurementValue(sensorType);
+        }
+      }
+
+      // Try getting SensorValues from the current row
+      if (null == result) {
+        Map<Long, SensorValue> recordSensorValues = sensorValues.get(time);
+        SensorValue sensorValue = recordSensorValues.get(sensorType.getId());
+        if (null != sensorValue && null != sensorValue.getValue()) {
+          result = new SensorValuePlotPageTableValue(sensorValue);
+        }
+      }
+
+      // Now just try to get an interpolated value
+      long columnId = instrument.getSensorAssignments().getColumnIds(sensorType)
+        .get(0);
+
+      List<SensorValue> valuesToUse = sensorValues.getColumnValues(columnId)
+        .getWithInterpolation(time, false);
+
+      switch (valuesToUse.size()) {
+      case 0: {
+        // Flushing value - do nothing
+        break;
+      }
+      case 1: {
+        // Value from exact time - use it directly
+        result = new SensorValuePlotPageTableValue(valuesToUse.get(0));
+        break;
+      }
+      case 2: {
+        Double value = SensorValue.interpolate(valuesToUse.get(0),
+          valuesToUse.get(1), time);
+
+        try {
+          result = new SimplePlotPageTableValue(String.valueOf(value),
+            SensorValue.getCombinedDisplayFlag(valuesToUse),
+            SensorValue.getCombinedQcComment(valuesToUse), false,
+            PlotPageTableValue.INTERPOLATED_TYPE);
+        } catch (RoutineException e) {
+          throw new PlotPageDataException("Unable to get SensorValue QC Comments",
+            e);
+        }
+
+        break;
+      }
+      default: {
+        throw new PlotPageDataException(
+          "Invalid number of values in sensor value search");
+      }
+      }
+
     }
 
     return result;

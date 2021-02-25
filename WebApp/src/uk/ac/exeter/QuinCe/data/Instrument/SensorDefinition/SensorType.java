@@ -437,4 +437,8 @@ public class SensorType extends ColumnHeading
   public boolean includeType() {
     return true;
   }
+
+  public boolean isPosition() {
+    return equals(LONGITUDE_SENSOR_TYPE) || equals(LATITUDE_SENSOR_TYPE);
+  }
 }

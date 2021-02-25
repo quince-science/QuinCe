@@ -122,4 +122,9 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
   public char getType() {
     return type;
   }
+
+  @Override
+  public String toString() {
+    return value;
+  }
 }
