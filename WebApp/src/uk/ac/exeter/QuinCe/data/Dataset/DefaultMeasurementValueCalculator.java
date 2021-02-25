@@ -88,7 +88,7 @@ public class DefaultMeasurementValueCalculator
         }
         case 2: {
           result.addSensorValues(valuesToUse, true);
-          result.setCalculatedValue(interpolate(valuesToUse.get(0),
+          result.setCalculatedValue(SensorValue.interpolate(valuesToUse.get(0),
             valuesToUse.get(1), measurement.getTime()));
           break;
         }
@@ -173,8 +173,8 @@ public class DefaultMeasurementValueCalculator
               value.addSupportingSensorValues(postCalibrationValues);
             }
 
-            standardOffsets.put(target, interpolate(priorTime, priorOffset,
-              postTime, postOffset, measurement.getTime()));
+            standardOffsets.put(target, SensorValue.interpolate(priorTime,
+              priorOffset, postTime, postOffset, measurement.getTime()));
           }
 
           // If all the standards are for the concentration (which happens for

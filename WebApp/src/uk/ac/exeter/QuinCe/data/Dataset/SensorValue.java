@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -633,5 +634,83 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
     return total / count;
 
+  }
+
+  public static Double interpolate(SensorValue prior, SensorValue post,
+    LocalDateTime measurementTime) {
+
+    Double result = null;
+
+    if (null != prior && null != post) {
+      double x0 = DateTimeUtils.dateToLong(prior.getTime());
+      double y0 = prior.getDoubleValue();
+      double x1 = DateTimeUtils.dateToLong(post.getTime());
+      double y1 = post.getDoubleValue();
+      result = interpolate(x0, y0, x1, y1,
+        DateTimeUtils.dateToLong(measurementTime));
+    } else if (null != prior) {
+      result = prior.getDoubleValue();
+    } else if (null != post) {
+      result = post.getDoubleValue();
+    }
+
+    return result;
+  }
+
+  public static Double interpolate(LocalDateTime time0, Double y0,
+    LocalDateTime time1, Double y1, LocalDateTime measurementTime) {
+    Double result = null;
+
+    if (null != y0 && null != y1) {
+      double x0 = DateTimeUtils.dateToLong(time0);
+      double x1 = DateTimeUtils.dateToLong(time1);
+      result = interpolate(x0, y0, x1, y1,
+        DateTimeUtils.dateToLong(measurementTime));
+    } else if (null != y0) {
+      result = y0;
+    } else if (null != y1) {
+      result = y1;
+    }
+
+    return result;
+  }
+
+  private static double interpolate(double x0, double y0, double x1, double y1,
+    double x) {
+
+    return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+  }
+
+  public static Flag getCombinedDisplayFlag(
+    Collection<SensorValue> sensorValues) {
+
+    Flag result = Flag.GOOD;
+
+    for (SensorValue sensorValue : sensorValues) {
+      if (null != sensorValue) {
+        if (sensorValue.getDisplayFlag().moreSignificantThan(result)) {
+          result = sensorValue.getDisplayFlag();
+        }
+      }
+    }
+
+    return result;
+  }
+
+  public static String getCombinedQcComment(
+    Collection<SensorValue> sensorValues) throws RoutineException {
+
+    List<String> comments = new ArrayList<String>(sensorValues.size());
+
+    for (SensorValue sensorValue : sensorValues) {
+      if (null != sensorValue) {
+        String comment = sensorValue.getDisplayQCMessage();
+        if (null != comment && comment.trim().length() > 0) {
+          comments.add(comment.trim());
+        }
+      }
+    }
+
+    return StringUtils.collectionToDelimited(comments, ";");
   }
 }
