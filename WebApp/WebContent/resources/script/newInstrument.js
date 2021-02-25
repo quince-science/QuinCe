@@ -664,7 +664,7 @@ function getSensorTypeID(typeName) {
   let result = null;
 
   for (let i = 0; i < window.sensorTypes.length; i++) {
-  if (window.sensorTypes[i].name == typeName) {
+  if (window.sensorTypes[i].shortName == typeName) {
     result = window.sensorTypes[i].id;
       break;
   }
