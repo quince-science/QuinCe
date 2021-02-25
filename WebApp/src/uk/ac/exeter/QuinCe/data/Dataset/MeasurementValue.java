@@ -149,13 +149,13 @@ public class MeasurementValue implements PlotPageTableValue {
 
     this.sensorType = sensorType;
     this.sensorValueIds = new ArrayList<Long>();
-    addSensorValues(sensorValues, false);
     this.memberCount = memberCount;
     this.supportingSensorValueIds = new ArrayList<Long>();
     this.calculatedValue = calculatedValue;
     this.memberCount = memberCount;
     this.qcMessage = new ArrayList<String>();
     this.properties = new Properties();
+    addSensorValues(sensorValues, false);
   }
 
   public void addSensorValues(Collection<SensorValue> values,
