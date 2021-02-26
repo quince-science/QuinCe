@@ -103,6 +103,10 @@ td.selected > div {
   background-color: #FFFF00 !important;
 }
 
+.interpolated {
+  font-style: italic;
+}
+
 /*
  *************************
  * Plots

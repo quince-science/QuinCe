@@ -808,11 +808,11 @@ function getColumnDefs() {
 
         // Cell coloring
         let columnGroup = getColumnGroup(meta.col);
-      if (columnGroup % 2 == 0) {
-      classes.push(meta.row % 2 == 0 ? 'evenColGroupEvenRow' : 'evenColGroupOddRow');
-    } else {
-      classes.push(meta.row % 2 == 0 ? 'oddColGroupEvenRow' : 'oddColGroupOddRow');
-    }
+        if (columnGroup % 2 == 0) {
+          classes.push(meta.row % 2 == 0 ? 'evenColGroupEvenRow' : 'evenColGroupOddRow');
+        } else {
+          classes.push(meta.row % 2 == 0 ? 'oddColGroupEvenRow' : 'oddColGroupOddRow');
+        }
 
         if ($.isNumeric(data['value'])) {
           classes.push('numericCol');
@@ -820,6 +820,10 @@ function getColumnDefs() {
 
         if (null != flagClass) {
           classes.push(flagClass);
+        }
+
+        if (data['type'] == 'I') {
+	      classes.push('interpolated');
         }
 
         if (data['flagNeeded']) {
@@ -949,7 +953,7 @@ function canSelectCell(rowIndex, colIndex) {
     let cellData = jsDataTable.cell(rowIndex, colIndex).data();
     if (null == cellData || null == cellData.value || "" == cellData.value) {
       result = false;
-    } else if (jsDataTable.cell(rowIndex, colIndex).data().qcFlag == FLAG_FLUSHING) {
+    } else if (cellData.qcFlag == FLAG_FLUSHING || cellData.type == 'I') {
       result = false;
     }
   }
