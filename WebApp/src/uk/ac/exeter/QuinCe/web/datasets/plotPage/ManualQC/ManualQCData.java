@@ -33,6 +33,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -49,6 +50,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A version of {@link PlotPageData} used for the main manual QC page.
@@ -794,14 +796,14 @@ public class ManualQCData extends PlotPageData {
 
     TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
 
-    SensorType sensorType = instrument.getSensorAssignments()
-      .getSensorTypeForDBColumn(column.getId());
-
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
       for (LocalDateTime time : sensorValues.getTimes()) {
         result.put(time, new SimplePlotPageTableValue(time, true));
       }
     } else if (sensorValues.containsColumn(column.getId())) {
+
+      SensorType sensorType = instrument.getSensorAssignments()
+        .getSensorTypeForDBColumn(column.getId());
 
       // If the sensor type doesn't have internal calibrations, add all values
       if (!sensorType.hasInternalCalibration()) {
@@ -834,21 +836,41 @@ public class ManualQCData extends PlotPageData {
       }
     } else {
 
-      Variable variable = DataReducerFactory.getVariable(instrument,
-        column.getId());
-      CalculationParameter parameter = DataReducerFactory
-        .getVariableParameter(variable, column.getId());
+      // See if we have a Sensor Type - if so, this is a Measurement Value plot
+      SensorType sensorType = null;
 
-      for (Map.Entry<LocalDateTime, Measurement> measurement : measurements
-        .entrySet()) {
+      try {
+        sensorType = ResourceManager.getInstance().getSensorsConfiguration()
+          .getSensorType(column.getId());
+      } catch (SensorTypeNotFoundException e) {
+        // This just means we're not using a SensorType
+      }
 
-        if (dataReduction.containsKey(measurement.getValue().getId())) {
-          DataReductionRecord record = dataReduction
-            .get(measurement.getValue().getId()).get(variable);
-          if (null != record) {
-            result.put(measurement.getKey(),
-              new DataReductionRecordPlotPageTableValue(record,
-                parameter.getShortName()));
+      if (null != sensorType) {
+        for (Map.Entry<LocalDateTime, Measurement> entry : measurements
+          .entrySet()) {
+          if (entry.getValue().hasMeasurementValue(sensorType)) {
+            result.put(entry.getKey(),
+              entry.getValue().getMeasurementValue(sensorType));
+          }
+        }
+      } else {
+        Variable variable = DataReducerFactory.getVariable(instrument,
+          column.getId());
+        CalculationParameter parameter = DataReducerFactory
+          .getVariableParameter(variable, column.getId());
+
+        for (Map.Entry<LocalDateTime, Measurement> measurement : measurements
+          .entrySet()) {
+
+          if (dataReduction.containsKey(measurement.getValue().getId())) {
+            DataReductionRecord record = dataReduction
+              .get(measurement.getValue().getId()).get(variable);
+            if (null != record) {
+              result.put(measurement.getKey(),
+                new DataReductionRecordPlotPageTableValue(record,
+                  parameter.getShortName()));
+            }
           }
         }
       }
@@ -1097,8 +1119,8 @@ public class ManualQCData extends PlotPageData {
             SensorValue.getCombinedQcComment(valuesToUse), false,
             PlotPageTableValue.INTERPOLATED_TYPE);
         } catch (RoutineException e) {
-          throw new PlotPageDataException("Unable to get SensorValue QC Comments",
-            e);
+          throw new PlotPageDataException(
+            "Unable to get SensorValue QC Comments", e);
         }
 
         break;
