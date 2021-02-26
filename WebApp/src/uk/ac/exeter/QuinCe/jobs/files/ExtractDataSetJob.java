@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -138,106 +139,116 @@ public class ExtractDataSetJob extends DataSetJob {
         int currentLine = file.getFirstDataLine();
         while (currentLine < file.getContentLineCount()) {
 
-          List<String> line = file.getLine(currentLine);
-          LocalDateTime time = file.getDate(line);
+          try {
 
-          if ((time.equals(dataSet.getStart())
-            || time.isAfter(dataSet.getStart()))
-            && (time.isBefore(dataSet.getEnd())
-              || time.isEqual(dataSet.getEnd()))) {
+            List<String> line = file.getLine(currentLine);
+            LocalDateTime time = file.getDate(line);
 
-            if (null == realStartTime && null != time) {
-              realStartTime = time;
-            }
+            if ((time.equals(dataSet.getStart())
+              || time.isAfter(dataSet.getStart()))
+              && (time.isBefore(dataSet.getEnd())
+                || time.isEqual(dataSet.getEnd()))) {
 
-            realEndTime = time;
-
-            if (null != fileDefinition.getLongitudeSpecification()) {
-
-              String longitude = file.getLongitude(line);
-
-              sensorValues.add(new SensorValue(dataSet.getId(),
-                FileDefinition.LONGITUDE_COLUMN_ID, time, longitude));
-
-              if (null != longitude) {
-                try {
-                  double lonDouble = Double.parseDouble(longitude);
-                  if (lonDouble < minLon) {
-                    minLon = lonDouble;
-                  }
-
-                  if (lonDouble > maxLon) {
-                    maxLon = lonDouble;
-                  }
-                } catch (NumberFormatException e) {
-                  // Ignore it now. QC will pick it up later.
-                }
+              if (null == realStartTime && null != time) {
+                realStartTime = time;
               }
-            }
 
-            if (null != fileDefinition.getLatitudeSpecification()) {
+              realEndTime = time;
 
-              String latitude = file.getLatitude(line);
+              if (null != fileDefinition.getLongitudeSpecification()) {
 
-              sensorValues.add(new SensorValue(dataSet.getId(),
-                FileDefinition.LATITUDE_COLUMN_ID, time, latitude));
+                String longitude = file.getLongitude(line);
 
-              if (null != latitude) {
-                try {
-                  double latDouble = Double.parseDouble(latitude);
-                  if (latDouble < minLat) {
-                    minLat = latDouble;
-                  }
+                sensorValues.add(new SensorValue(dataSet.getId(),
+                  FileDefinition.LONGITUDE_COLUMN_ID, time, longitude));
 
-                  if (latDouble > maxLat) {
-                    maxLat = latDouble;
-                  }
-                } catch (NumberFormatException e) {
-                  // Ignore it now. QC will pick it up later.
-                }
-              }
-            }
-
-            // Assigned columns
-            for (Entry<SensorType, List<SensorAssignment>> entry : instrument
-              .getSensorAssignments().entrySet()) {
-
-              for (SensorAssignment assignment : entry.getValue()) {
-                if (assignment.getDataFile()
-                  .equals(fileDefinition.getFileDescription())) {
-
-                  // For run types, follow all aliases
-                  if (entry.getKey().equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-                    String runType = file.getFileDefinition()
-                      .getRunType(line, true).getRunName();
-
-                    sensorValues.add(new SensorValue(dataSet.getId(),
-                      assignment.getDatabaseId(), time, runType));
-
-                    runTypePeriods.add(runType, time);
-                  } else {
-
-                    // Create the SensorValue object
-                    SensorValue value = new SensorValue(dataSet.getId(),
-                      assignment.getDatabaseId(), time,
-                      file.getStringValue(line, assignment.getColumn(),
-                        assignment.getMissingValue()));
-
-                    // Apply calibration if required
-                    Calibration sensorCalibration = sensorCalibrations
-                      .getTargetCalibration(
-                        String.valueOf(assignment.getDatabaseId()));
-
-                    if (null != sensorCalibration) {
-                      value.calibrateValue(sensorCalibration);
+                if (null != longitude) {
+                  try {
+                    double lonDouble = Double.parseDouble(longitude);
+                    if (lonDouble < minLon) {
+                      minLon = lonDouble;
                     }
 
-                    // Add to storage list
-                    sensorValues.add(value);
+                    if (lonDouble > maxLon) {
+                      maxLon = lonDouble;
+                    }
+                  } catch (NumberFormatException e) {
+                    // Ignore it now. QC will pick it up later.
+                  }
+                }
+              }
+
+              if (null != fileDefinition.getLatitudeSpecification()) {
+
+                String latitude = file.getLatitude(line);
+
+                sensorValues.add(new SensorValue(dataSet.getId(),
+                  FileDefinition.LATITUDE_COLUMN_ID, time, latitude));
+
+                if (null != latitude) {
+                  try {
+                    double latDouble = Double.parseDouble(latitude);
+                    if (latDouble < minLat) {
+                      minLat = latDouble;
+                    }
+
+                    if (latDouble > maxLat) {
+                      maxLat = latDouble;
+                    }
+                  } catch (NumberFormatException e) {
+                    // Ignore it now. QC will pick it up later.
+                  }
+                }
+              }
+
+              // Assigned columns
+              for (Entry<SensorType, List<SensorAssignment>> entry : instrument
+                .getSensorAssignments().entrySet()) {
+
+                for (SensorAssignment assignment : entry.getValue()) {
+                  if (assignment.getDataFile()
+                    .equals(fileDefinition.getFileDescription())) {
+
+                    // For run types, follow all aliases
+                    if (entry.getKey()
+                      .equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
+                      String runType = file.getFileDefinition()
+                        .getRunType(line, true).getRunName();
+
+                      sensorValues.add(new SensorValue(dataSet.getId(),
+                        assignment.getDatabaseId(), time, runType));
+
+                      runTypePeriods.add(runType, time);
+                    } else {
+
+                      // Create the SensorValue object
+                      SensorValue value = new SensorValue(dataSet.getId(),
+                        assignment.getDatabaseId(), time,
+                        file.getStringValue(line, assignment.getColumn(),
+                          assignment.getMissingValue()));
+
+                      // Apply calibration if required
+                      Calibration sensorCalibration = sensorCalibrations
+                        .getTargetCalibration(
+                          String.valueOf(assignment.getDatabaseId()));
+
+                      if (null != sensorCalibration) {
+                        value.calibrateValue(sensorCalibration);
+                      }
+
+                      // Add to storage list
+                      sensorValues.add(value);
+                    }
                   }
                 }
               }
             }
+          } catch (DateTimeSpecificationException e) {
+            // Log the error but continue with the next line
+            System.out.println(
+              "*** DATA EXTRACTION ERROR IN FILE " + file.getDatabaseId() + "("
+                + file.getFilename() + ") line " + currentLine);
+            e.printStackTrace();
           }
 
           currentLine++;
