@@ -22,11 +22,13 @@ public class PlotPageTableValueSerializer
       json.add("qcFlag", JsonNull.INSTANCE);
       json.add("qcMessage", JsonNull.INSTANCE);
       json.add("flagNeeded", JsonNull.INSTANCE);
+      json.add("type", JsonNull.INSTANCE);
     } else {
       json.addProperty("value", src.getValue());
       json.addProperty("qcFlag", src.getQcFlag().getFlagValue());
       json.addProperty("qcMessage", src.getQcMessage());
       json.addProperty("flagNeeded", src.getFlagNeeded());
+      json.addProperty("type", src.getType());
     }
 
     return json;
