@@ -148,7 +148,7 @@ public class MeasurementValuesSerializer
       int memberCount = json.get(MEMBER_COUNT_KEY).getAsInt();
 
       Double value = json.get(VALUE_KEY).getAsDouble();
-      if (value == NAN_VALUE) {
+      if (Math.abs(value - NAN_VALUE) < 1) {
         value = Double.NaN;
       }
 

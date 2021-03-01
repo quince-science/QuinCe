@@ -2,12 +2,14 @@ package uk.ac.exeter.QuinCe.web.datasets.export;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
@@ -17,12 +19,14 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A representation of a dataset's data for export.
@@ -111,14 +115,28 @@ public class ExportData extends ManualQCData {
           dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "depth"));
       }
 
-      // Check the Measurement Values. If any are also in the ROOT group,
-      // we don't want them.
-      List<PlotPageColumnHeading> filteredMeasurementValueColumns = headingsWithProperties
-        .get(MEASUREMENTVALUES_FIELD_GROUP).stream()
-        .filter(c -> !rootColumns.contains(c)).collect(Collectors.toList());
+      // Sensor Types used for Measurement Values may need to be split according
+      // to which Variable they're used for
+      LinkedHashSet<PlotPageColumnHeading> measurementValuesHeadings = new LinkedHashSet<PlotPageColumnHeading>();
+
+      for (PlotPageColumnHeading sourceHeading : headingsWithProperties
+        .get(MEASUREMENTVALUES_FIELD_GROUP)) {
+
+        SensorType sensorType = ResourceManager.getInstance()
+          .getSensorsConfiguration().getSensorType(sourceHeading.getId());
+
+        for (Variable variable : instrument.getVariables()) {
+          ColumnHeading variableHeading = variable.getColumnHeading(sensorType);
+          if (null != variableHeading) {
+
+            measurementValuesHeadings
+              .add(new PlotPageColumnHeading(variableHeading, true, false));
+          }
+        }
+      }
 
       headingsWithProperties.put(MEASUREMENTVALUES_FIELD_GROUP,
-        filteredMeasurementValueColumns);
+        new ArrayList<PlotPageColumnHeading>(measurementValuesHeadings));
     }
 
     return headingsWithProperties;

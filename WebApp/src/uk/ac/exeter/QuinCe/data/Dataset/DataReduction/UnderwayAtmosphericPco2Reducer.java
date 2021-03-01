@@ -53,7 +53,6 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
     record.put("Sea Level Pressure", seaLevelPressure);
     record.put("pH₂O", pH2O);
-    record.put("Calibrated CO₂", co2InGas);
     record.put("pCO₂", pCO2);
     record.put("fCO₂", fCO2);
   }
@@ -67,7 +66,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   @Override
   public List<CalculationParameter> getCalculationParameters() {
     if (null == calculationParameters) {
-      calculationParameters = new ArrayList<CalculationParameter>(5);
+      calculationParameters = new ArrayList<CalculationParameter>(4);
 
       calculationParameters.add(new CalculationParameter(makeParameterId(0),
         "Sea Level Pressure", "Sea Level Pressure", "CAPASS01", "hPa", false));
@@ -76,13 +75,9 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
         "pH₂O", "Atmosphere Water Vapour Pressure", "CPVPZZ01", "hPa", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(2),
-        "Calibrated CO₂", "xCO₂ In Atmosphere - Calibrated In Dry Air",
-        "XCO2DCMA", "μmol mol-1", false));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(3),
         "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(4),
+      calculationParameters.add(new CalculationParameter(makeParameterId(3),
         "fCO₂", "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true));
     }
 
