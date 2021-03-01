@@ -823,7 +823,7 @@ function getColumnDefs() {
         }
 
         if (data['type'] == 'I') {
-	      classes.push('interpolated');
+          classes.push('interpolated');
         }
 
         if (data['flagNeeded']) {

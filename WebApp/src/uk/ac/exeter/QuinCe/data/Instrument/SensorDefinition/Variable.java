@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -66,6 +68,12 @@ public class Variable {
   private Map<SensorType, Flag> badCascades;
 
   /**
+   * Column headings to use in export files. These override the settings in the
+   * parent {@link SensorType} object.
+   */
+  private Map<SensorType, ColumnHeading> columnHeadings;
+
+  /**
    * Main constructor using SensorType ids
    *
    * @param id
@@ -86,8 +94,9 @@ public class Variable {
   protected Variable(SensorsConfiguration sensorConfig, long id, String name,
     LinkedHashMap<String, String> attributes, long coreSensorTypeId,
     List<Long> requiredSensorTypeIds, List<Integer> questionableCascades,
-    List<Integer> badCascades) throws SensorTypeNotFoundException,
-    SensorConfigurationException, InvalidFlagException {
+    List<Integer> badCascades, Map<SensorType, ColumnHeading> columnHeadings)
+    throws SensorTypeNotFoundException, SensorConfigurationException,
+    InvalidFlagException {
 
     this.id = id;
     this.name = name;
@@ -131,6 +140,8 @@ public class Variable {
         new Flag(questionableCascades.get(i)));
       this.badCascades.put(sensorType, new Flag(badCascades.get(i)));
     }
+
+    this.columnHeadings = columnHeadings;
   }
 
   /**
@@ -347,5 +358,13 @@ public class Variable {
   @Override
   public String toString() {
     return name;
+  }
+
+  public ColumnHeading getColumnHeading(SensorType sensorType) {
+    return columnHeadings.get(sensorType);
+  }
+
+  public Collection<ColumnHeading> getAllColumnHeadings() {
+    return columnHeadings.values();
   }
 }

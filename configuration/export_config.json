@@ -2,8 +2,10 @@
   {
     "exportName": "Interpolation",
     "separator": "comma",
-    "includeCalculationColumns": false,
-    "includeRawSensors": true
+    "headerMode": "code",
+    "includeCalculationColumns": true,
+    "includeRawSensors": false,
+    "includeUnits": false
   },
   {
     "exportName": "SOCAT",
