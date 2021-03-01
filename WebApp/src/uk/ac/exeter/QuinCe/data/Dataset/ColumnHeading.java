@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.util.Collection;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 
 /**
@@ -15,7 +17,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 public class ColumnHeading {
 
   /**
-   * The column's unique identifer.
+   * The column's unique identifier.
    *
    * <p>
    * For sensors or diagnostics, this is the column's database ID. For
@@ -206,5 +208,19 @@ public class ColumnHeading {
   @Override
   public String toString() {
     return getShortName();
+  }
+
+  public static boolean containsColumnWithCode(
+    Collection<? extends ColumnHeading> columns, String code) {
+
+    boolean result = false;
+
+    for (ColumnHeading column : columns) {
+      if (column.getCodeName().equals(code)) {
+        result = true;
+      }
+    }
+
+    return result;
   }
 }

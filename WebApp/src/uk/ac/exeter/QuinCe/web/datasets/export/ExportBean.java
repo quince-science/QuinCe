@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -22,7 +23,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
@@ -308,39 +308,63 @@ public class ExportBean extends BaseManagedBean {
         .getExtendedColumnHeadings()
         .get(ExportData.MEASUREMENTVALUES_FIELD_GROUP);
 
-      // If there's a measurement, we get the Measurement Value for the sensor
-      // type. If not, we go and get any raw sensor values we can find for that
-      // sensor type.
-      if (null != measurement) {
-        for (PlotPageColumnHeading column : measurementValueColumns) {
-          output.append(exportOption.getSeparator());
+      for (PlotPageColumnHeading column : measurementValueColumns) {
 
-          SensorType sensorType = ResourceManager.getInstance()
-            .getSensorsConfiguration().getSensorType(column.getId());
-          MeasurementValue measurementValue = measurement
-            .getMeasurementValue(sensorType);
-          addValueToOutput(output, exportOption, column.getId(),
-            measurementValue, true, true);
-        }
-      } else {
+        SensorType sensorType = ResourceManager.getInstance()
+          .getSensorsConfiguration().getSensorType(column.getId());
 
-        for (PlotPageColumnHeading column : measurementValueColumns) {
-          output.append(exportOption.getSeparator());
+        // Get the value for this SensorType. If there's a measurement and it
+        // contains the SensorType, use that; otherwise get the original
+        // SensorValue.
+        PlotPageTableValue value = null;
 
-          SensorType sensorType = ResourceManager.getInstance()
-            .getSensorsConfiguration().getSensorType(column.getId());
-
-          List<Long> columnIds = instrument.getSensorAssignments()
+        if (null != measurement
+          && measurement.containsMeasurementValue(sensorType)) {
+          value = measurement.getMeasurementValue(sensorType);
+        } else {
+          // TODO #1128 Handle multiple sensors
+          List<Long> sensorTypeColumns = instrument.getSensorAssignments()
             .getColumnIds(sensorType);
 
-          if (columnIds.size() > 0) {
-            // TODO #1128 Handle multiple/fallback sensors
-            PlotPageTableValue value = data.getColumnValue(rowId,
-              columnIds.get(0));
-            addValueToOutput(output, exportOption, column.getId(), value, true,
-              true);
+          if (null != sensorTypeColumns && sensorTypeColumns.size() > 0) {
+            value = data.getColumnValue(rowId, sensorTypeColumns.get(0));
           }
         }
+
+        boolean useValueInThisColumn;
+
+        if (columnsWithId(measurementValueColumns, column.getId()) == 1) {
+
+          // There is only one column registered for this SensorType, so use it
+          useValueInThisColumn = true;
+        } else {
+          // There are multiple columns for this SensorType, so where the value
+          // goes is determined by the measurement's Run Type
+          if (null == measurement) {
+            // There is no measurement, so we leave the column blank
+            useValueInThisColumn = false;
+
+          } else {
+            // If this column is for the Run Type of the measurement, we
+            // populate it. Otherwise we leave it blank - there'll be another
+            // column for the Run Type somewhere (or perhaps not, if it's a
+            // non-measurement run type eg gas standard run)
+            String runType = measurement.getRunType();
+
+            // Look through all the column headings defined for the run type to
+            // see if it contains our current column. If it does, we add the
+            // value. If not, it'll be blank.
+            Set<ColumnHeading> runTypeColumns = instrument
+              .getAllVariableColumnHeadings(runType);
+
+            useValueInThisColumn = ColumnHeading
+              .containsColumnWithCode(runTypeColumns, column.getCodeName());
+          }
+        }
+
+        output.append(exportOption.getSeparator());
+        addValueToOutput(output, exportOption, column.getId(),
+          useValueInThisColumn ? value : null, true, true);
       }
 
       // Data Reduction for all variables
@@ -746,5 +770,10 @@ public class ExportBean extends BaseManagedBean {
     zipOut.close();
 
     return outBytes;
+  }
+
+  private static long columnsWithId(List<PlotPageColumnHeading> columns,
+    long id) {
+    return columns.stream().filter(c -> c.getId() == id).count();
   }
 }

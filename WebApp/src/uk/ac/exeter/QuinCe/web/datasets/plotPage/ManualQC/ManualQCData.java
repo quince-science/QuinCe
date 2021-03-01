@@ -54,7 +54,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A version of {@link PlotPageData} used for the main manual QC page.
- * 
+ *
  * <h4>A note on positions:</h4>
  * <p>
  * Positions can be stored in two places: in the {@link SensorValue}s and in the
@@ -77,7 +77,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <li>Finally, interpolate the position using the closest available position
  * {@link SensorValue}s.
  * </ol>
- * 
+ *
  * @author Steve Jones
  *
  */

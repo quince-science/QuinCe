@@ -70,8 +70,6 @@ public class UnderwayMarinePco2ReducerTest extends DataReducerTest {
     // Check the calculated values in the record
     assertEquals(0.458D, record.getCalculationValue("ΔT"), 0.0001);
     assertEquals(0.01389918297D, record.getCalculationValue("pH₂O"), 0.0001);
-    assertEquals(374.977D, record.getCalculationValue("Calibrated CO₂"),
-      0.0001);
     assertEquals(364.576695236D, record.getCalculationValue("pCO₂ TE Wet"),
       0.0001);
     assertEquals(363.233567921D, record.getCalculationValue("fCO₂ TE Wet"),

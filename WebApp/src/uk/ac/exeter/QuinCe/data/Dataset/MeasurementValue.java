@@ -354,4 +354,9 @@ public class MeasurementValue implements PlotPageTableValue {
     return memberCount > 1 ? PlotPageTableValue.INTERPOLATED_TYPE
       : PlotPageTableValue.MEASURED_TYPE;
   }
+
+  @Override
+  public String toString() {
+    return sensorType.getShortName() + " = " + calculatedValue;
+  }
 }

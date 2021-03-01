@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -55,9 +56,12 @@ public class SensorsConfiguration {
    */
   private static final String GET_VARIABLES_SENSOR_TYPES_QUERY = "SELECT "
     + "v.id, v.name, v.attributes, "
-    + "s.sensor_type, s.core, s.questionable_cascade, s.bad_cascade "
+    + "s.sensor_type, s.core, s.questionable_cascade, s.bad_cascade, "
+    + "COALESCE(s.export_column_short, t.name), "
+    + "COALESCE(s.export_column_long, t.column_heading), "
+    + "COALESCE(s.export_column_code, t.column_code), t.units "
     + "FROM variables v INNER JOIN variable_sensors s ON v.id = s.variable_id "
-    + "ORDER BY v.id";
+    + "INNER JOIN sensor_types t ON s.sensor_type = t.id " + "ORDER BY v.id";
 
   /**
    * The set complete set of sensor types
@@ -156,6 +160,7 @@ public class SensorsConfiguration {
       List<Long> requiredSensorTypes = new ArrayList<Long>();
       List<Integer> questionableCascades = new ArrayList<Integer>();
       List<Integer> badCascades = new ArrayList<Integer>();
+      Map<SensorType, ColumnHeading> columnHeadings = new HashMap<SensorType, ColumnHeading>();
 
       while (records.next()) {
 
@@ -166,7 +171,7 @@ public class SensorsConfiguration {
             instrumentVariables.put(currentVariableId,
               new Variable(this, currentVariableId, name, attributes,
                 coreSensorType, requiredSensorTypes, questionableCascades,
-                badCascades));
+                badCascades, columnHeadings));
           }
 
           // Set up the new variable
@@ -177,6 +182,7 @@ public class SensorsConfiguration {
           requiredSensorTypes = new ArrayList<Long>();
           questionableCascades = new ArrayList<Integer>();
           badCascades = new ArrayList<Integer>();
+          columnHeadings = new HashMap<SensorType, ColumnHeading>();
         }
 
         long sensorTypeId = records.getLong(4);
@@ -189,12 +195,21 @@ public class SensorsConfiguration {
           badCascades.add(records.getInt(7));
         }
 
+        String shortName = records.getString(8);
+        String longName = records.getString(9);
+        String code = records.getString(10);
+        String units = records.getString(11);
+
+        SensorType sensorType = this.getSensorType(sensorTypeId);
+        columnHeadings.put(sensorType, new ColumnHeading(sensorTypeId,
+          shortName, longName, code, units, true, true));
       }
 
       // Write the last variable
       instrumentVariables.put(currentVariableId,
         new Variable(this, currentVariableId, name, attributes, coreSensorType,
-          requiredSensorTypes, questionableCascades, badCascades));
+          requiredSensorTypes, questionableCascades, badCascades,
+          columnHeadings));
     } catch (SQLException e) {
       throw new DatabaseException("Error while loading instrument variables",
         e);

@@ -56,7 +56,6 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     // Store the calculated values
     record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
     record.put("pH₂O", pH2O);
-    record.put("Calibrated CO₂", co2InGas);
     record.put("pCO₂ TE Wet", pCo2TEWet);
     record.put("fCO₂ TE Wet", fCo2TEWet);
     record.put("pCO₂ SST", pCO2SST);
@@ -91,7 +90,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   @Override
   public List<CalculationParameter> getCalculationParameters() {
     if (null == calculationParameters) {
-      calculationParameters = new ArrayList<CalculationParameter>(7);
+      calculationParameters = new ArrayList<CalculationParameter>(6);
 
       calculationParameters
         .add(new CalculationParameter(makeParameterId(0), "ΔT",
@@ -101,21 +100,17 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
         "pH₂O", "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(2),
-        "Calibrated CO₂", "xCO₂ In Water - Calibrated In Dry Air", "XCO2DECQ",
-        "μmol mol-1", false));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(3),
         "pCO₂ TE Wet", "pCO₂ In Water - Equilibrator Temperature", "PCO2IG02",
         "μatm", false));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(4),
+      calculationParameters.add(new CalculationParameter(makeParameterId(3),
         "fCO₂ TE Wet", "fCO₂ In Water - Equilibrator Temperature", "FCO2IG02",
         "μatm", false));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(5),
+      calculationParameters.add(new CalculationParameter(makeParameterId(4),
         "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(6),
+      calculationParameters.add(new CalculationParameter(makeParameterId(5),
         "fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true));
     }
 

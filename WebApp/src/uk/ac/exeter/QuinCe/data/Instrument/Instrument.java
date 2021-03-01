@@ -3,11 +3,14 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -689,5 +692,17 @@ public class Instrument {
 
   public Map<Variable, Properties> getAllVariableProperties() {
     return variableProperties;
+  }
+
+  public Set<ColumnHeading> getAllVariableColumnHeadings(String runType) {
+    Set<ColumnHeading> result = new HashSet<ColumnHeading>();
+
+    variables.forEach(v -> {
+      if (isRunTypeForVariable(v, runType)) {
+        result.addAll(v.getAllColumnHeadings());
+      }
+    });
+
+    return result;
   }
 }
