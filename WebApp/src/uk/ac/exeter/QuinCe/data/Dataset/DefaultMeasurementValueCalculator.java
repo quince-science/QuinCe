@@ -173,8 +173,14 @@ public class DefaultMeasurementValueCalculator
               value.addSupportingSensorValues(postCalibrationValues);
             }
 
-            standardOffsets.put(target, SensorValue.interpolate(priorTime,
-              priorOffset, postTime, postOffset, measurement.getTime()));
+            Double interpolated = SensorValue.interpolate(priorTime,
+              priorOffset, postTime, postOffset, measurement.getTime());
+
+            if (null == interpolated) {
+              interpolated = Double.NaN;
+            }
+
+            standardOffsets.put(target, interpolated);
           }
 
           // If all the standards are for the concentration (which happens for
@@ -321,7 +327,7 @@ public class DefaultMeasurementValueCalculator
 
     if (startPoint < targetMeasurements.size()) {
       int searchPoint = startPoint;
-      while (searchPoint < targetMeasurements.size()) {
+      while (searchPoint >= 0 && searchPoint < targetMeasurements.size()) {
         LocalDateTime testTime = targetMeasurements.get(searchPoint).getTime();
         SensorValue testValue = sensorValues.get(testTime);
         if (null != testValue && testValue.getUserQCFlag().isGood()) {
