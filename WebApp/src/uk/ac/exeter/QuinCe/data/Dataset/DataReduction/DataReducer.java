@@ -85,20 +85,23 @@ public abstract class DataReducer {
 
     doCalculation(instrument, measurement, record, conn);
 
+    // Apply QC flags to the data reduction records
     for (SensorType sensorType : variable.getAllSensorTypes(true)) {
 
       MeasurementValue value = measurement.getMeasurementValue(sensorType);
 
-      List<String> qcMessages = value.getQcMessages();
+      if (null != value) {
+        List<String> qcMessages = value.getQcMessages();
 
-      Flag cascadeFlag = variable.getCascade(value.getSensorType(),
-        value.getQcFlag(), instrument.getSensorAssignments());
+        Flag cascadeFlag = variable.getCascade(value.getSensorType(),
+          value.getQcFlag(), instrument.getSensorAssignments());
 
-      if (cascadeFlag.equals(Flag.GOOD)) {
-        qcMessages = null;
+        if (cascadeFlag.equals(Flag.GOOD)) {
+          qcMessages = null;
+        }
+
+        record.setQc(cascadeFlag, qcMessages);
       }
-
-      record.setQc(cascadeFlag, qcMessages);
     }
 
     return record;
