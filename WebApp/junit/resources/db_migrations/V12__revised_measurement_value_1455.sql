@@ -49,3 +49,10 @@ SELECT
   CONCAT('{"id":"', dataset.id, '"}') AS properties,
   'WAITING' AS status
 FROM dataset;
+
+-- Delete the unused measurement_values table
+DROP TABLE measurement_values;
+
+
+-- Run the query below to reset the dataset statuses after reprocessing
+-- UPDATE dataset d SET status = (SELECT v.status FROM v12_dataset_statuses v WHERE v.id = d.id)
