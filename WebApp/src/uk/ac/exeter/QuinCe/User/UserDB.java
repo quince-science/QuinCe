@@ -232,7 +232,7 @@ public class UserDB {
    * Returns {@code null} if the email address is not found in the database.
    * </p>
    *
-   * @param dataSource
+   * @param conn
    *          A database connection.
    * @param email
    *          The email address.
@@ -288,13 +288,13 @@ public class UserDB {
    *
    * @param dataSource
    *          A data source.
-   * @param email
-   *          The ID.
+   * @param id
+   *          The user's database ID.
    * @return The {@link User} object.
    * @throws DatabaseException
-   *           If a database error occurs
+   *           If a database error occurs.
    * @throws MissingParamException
-   *           If any required parameters are missing
+   *           If any required parameters are missing.
    *
    * @see getUser(Connection, long)
    */
@@ -326,9 +326,9 @@ public class UserDB {
    * Returns {@code null} if the email address is not found in the database.
    * </p>
    *
-   * @param dataSource
+   * @param conn
    *          A database connection.
-   * @param email
+   * @param id
    *          The ID.
    * @return The {@link User} object.
    * @throws DatabaseException
@@ -896,14 +896,14 @@ public class UserDB {
    * code set - it simply executes the database update statement and returns.
    * </p>
    *
-   * @param dataSource
-   *          A data source.
+   * @param conn
+   *          A database connection.
    * @param email
    *          The user's email address.
    * @throws MissingParamException
-   *           If any parameters are missing
+   *           If any parameters are missing.
    * @throws DatabaseException
-   *           If an error occurs while updating the database
+   *           If an error occurs while updating the database.
    *
    * @see #CLEAR_PASSWORD_RESET_CODE_STATEMENT
    */

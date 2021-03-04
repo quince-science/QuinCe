@@ -19,14 +19,14 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <p>
  * The calculated value is derived from one or more {@link SensorValue}s,
  * depending on the configuration of the instrument, the relative time of the
- * measurement and available {@link SensorValues}, and whether bad/questionable
- * values are being ignored.
+ * measurement and available {@link SensorValue}s, and whether
+ * {@link Flag#BAD}/{@link Flag#QUESTIONABLE} values are being ignored.
  * </p>
  *
  * <p>
  * This class implements the most common calculation of a measurement value.
- * Some {@link SensorTypes} require more complex calculations (e.g. xCO2 with
- * standards, which also requires xH2O). These can be implemented by overriding
+ * Some {@link SensorType}s require more complex calculations (e.g. xCO₂ with
+ * standards, which also requires xH₂O). These can be implemented by overriding
  * classes.
  * </p>
  *

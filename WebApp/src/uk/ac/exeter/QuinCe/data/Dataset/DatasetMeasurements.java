@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * The set of measurements for a given {@link Dataset}.
+ * The set of measurements for a given {@link DataSet}.
  *
  * <p>
  * The main object is a map grouping the measurements by run type, but a second

@@ -56,7 +56,7 @@ public class SensorTypeTest extends BaseTest {
   }
 
   /**
-   * Tests that the {@link SensorType#getName()} method works.
+   * Tests that the {@link SensorType#getShortName()} method works.
    *
    * @throws Exception
    *           If the test {@link SensorType} cannot be created.

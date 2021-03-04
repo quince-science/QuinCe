@@ -620,8 +620,13 @@ public class DatabaseUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that {@link DatabaseUtils#getDatabaseFieldName(String) replaces things
-   * as it should.
+   * Test that {@link DatabaseUtils#getDatabaseFieldName(String)} replaces
+   * special characters as it should.
+   * 
+   * @param input
+   *          The input value.
+   * @param expected
+   *          The expected output value.
    */
   @ParameterizedTest
   @CsvSource(value = { "java|java", "with space|with_space",
@@ -631,8 +636,8 @@ public class DatabaseUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that {@link DatabaseUtils#getDatabaseFieldName(String) works with null
-   * values.
+   * Test that {@link DatabaseUtils#getDatabaseFieldName(String)} works with
+   * null values.
    */
   @Test
   public void getDatabaseFieldNameNullTest() {
@@ -664,8 +669,9 @@ public class DatabaseUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that a mismatch of IN parameters and sizes (IN < sizes) is correctly
-   * detected in {@link DatabaseUtils#makeInStatementSql(String, int...)}.
+   * Test that a mismatch of IN parameters and sizes (IN &lt; sizes) is
+   * correctly detected in
+   * {@link DatabaseUtils#makeInStatementSql(String, int...)}.
    */
   @Test
   public void makeInStatementSqlTooFewInTest() {
@@ -677,8 +683,9 @@ public class DatabaseUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that a mismatch of IN parameters and sizes (sizes < IN) is correctly
-   * detected in {@link DatabaseUtils#makeInStatementSql(String, int...)}.
+   * Test that a mismatch of IN parameters and sizes (sizes &lt; IN) is
+   * correctly detected in
+   * {@link DatabaseUtils#makeInStatementSql(String, int...)}.
    */
   @Test
   public void makeInStatementSqlTooFewSizesTest() {

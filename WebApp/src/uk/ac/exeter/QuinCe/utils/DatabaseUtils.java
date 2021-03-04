@@ -25,7 +25,7 @@ public class DatabaseUtils {
    * Token to mark the place where the parameters for an IN clause should be in
    * an SQL string.
    *
-   * @see #makeInStatementSql(String, int)
+   * @see #makeInStatementSql(String, int...)
    */
   public static final String IN_PARAMS_TOKEN = "%%IN_PARAMS%%";
 
@@ -92,11 +92,12 @@ public class DatabaseUtils {
   }
 
   /**
-   * Close a database connection, rolling back any transactions and ignoring any
-   * errors. All connections have their auto-commit flag set to true.
+   * Close a set of database connections, rolling back any transactions and
+   * ignoring any errors. All connections have their auto-commit flag set to
+   * true.
    *
-   * @param conn
-   *          The database connection
+   * @param conns
+   *          The database connections.
    */
   public static void closeConnection(Connection... conns) {
     for (Connection conn : conns) {
@@ -142,6 +143,7 @@ public class DatabaseUtils {
    *          The number of items in the IN parameter(s)
    * @return The generated SQL statement
    * @throws MissingParamException
+   *           If any required parameters are missing.
    */
   public static String makeInStatementSql(String query, int... inSize)
     throws MissingParamException {
@@ -192,8 +194,10 @@ public class DatabaseUtils {
    * spaces replaced by underscores. Brackets and other odd characters that
    * upset MySQL are removed.
    * </p>
-   *
-   * @return The database field name
+   * 
+   * @param fullName
+   *          The human-readable name.
+   * @return The database field name.
    */
   public static String getDatabaseFieldName(String fullName) {
     String result = null;
