@@ -55,7 +55,9 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * A version of {@link PlotPageData} used for the main manual QC page.
  *
- * <h4>A note on positions:</h4>
+ * <p>
+ * <b>A note on positions:</b>
+ * </p>
  * <p>
  * Positions can be stored in two places: in the {@link SensorValue}s and in the
  * {@link MeasurementValue}s. The former contains the raw, measured position

@@ -83,7 +83,7 @@ public class StringUtilsTest extends BaseTest {
    *
    * @param list
    *          The list to check.
-   * @param doubles
+   * @param strings
    *          The values that the list should contain.
    * @return {@code true} if the list contains the specified values;
    *         {@code false} otherwise.
@@ -262,7 +262,8 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void doubleFromStringNegativeDoubleTest() {
-    assertEquals(Double.valueOf(-7.657), StringUtils.doubleFromString("-7.657"));
+    assertEquals(Double.valueOf(-7.657),
+      StringUtils.doubleFromString("-7.657"));
   }
 
   /**
@@ -271,7 +272,8 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void doubleFromStringThousandsTest() {
-    assertEquals(Double.valueOf(7547.54), StringUtils.doubleFromString("7,547.54"));
+    assertEquals(Double.valueOf(7547.54),
+      StringUtils.doubleFromString("7,547.54"));
   }
 
   /**
@@ -407,6 +409,9 @@ public class StringUtilsTest extends BaseTest {
 
   /**
    * Test {@link StringUtils#tabToSpace(String)} with empty strings.
+   * 
+   * @param empty
+   *          The test empty value.
    */
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
@@ -538,7 +543,7 @@ public class StringUtilsTest extends BaseTest {
    *
    * @param list
    *          The list to check.
-   * @param doubles
+   * @param longs
    *          The values that the list should contain.
    * @return {@code true} if the list contains the specified values;
    *         {@code false} otherwise.
@@ -563,6 +568,9 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with an
    * empty String returns an empty list.
+   * 
+   * @param empty
+   *          The test empty values.
    */
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
@@ -648,6 +656,9 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test calling {@link StringUtils#delimitedToDoubleList(String)} with a
    * variety of delimiters.
+   * 
+   * @param delimiter
+   *          The test delimiter.
    */
   @ParameterizedTest
   @MethodSource("makeDelimiters")
@@ -668,6 +679,9 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with
    * invalid delimiters fails.
+   * 
+   * @param delimiter
+   *          The test delimiter.
    */
   @ParameterizedTest
   @MethodSource("makeStandardInvalidDelimiters")
@@ -682,6 +696,9 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with
    * invalid delimiters for numbers fails.
+   * 
+   * @param delimiter
+   *          The test delimiter.
    */
   @ParameterizedTest
   @MethodSource("makeNumericInvalidDelimiters")
@@ -743,8 +760,12 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with
-   * an empty String returns an empty list.
+   * Test that calling
+   * {@link StringUtils#delimitedToIntegerList(String, String)} with an empty
+   * String returns an empty list.
+   * 
+   * @param empty
+   *          The test empty value.
    */
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
@@ -753,8 +774,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToIntegerList(String)} with a
-   * single value.
+   * Test calling {@link StringUtils#delimitedToIntegerList(String, String)}
+   * with a single value.
    */
   @Test
   public void delimitedToIntegerListOneTest() {
@@ -762,8 +783,9 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with a
-   * decimal value fails.
+   * Test that calling
+   * {@link StringUtils#delimitedToIntegerList(String, String)} with a decimal
+   * value fails.
    */
   @Test
   public void delimitedToIntegerListSingleFloatTest() {
@@ -774,8 +796,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToIntegerList(String)} with a
-   * several value.
+   * Test calling {@link StringUtils#delimitedToIntegerList(String, String)}
+   * with a several value.
    */
   @Test
   public void delimitedToIntegerListMultipleTest() {
@@ -784,8 +806,9 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with
-   * spaces between values fails.
+   * Test that calling
+   * {@link StringUtils#delimitedToIntegerList(String, String)} with spaces
+   * between values fails.
    */
   @Test
   public void delimitedToIntegerListSpaceBetweenValuesTest() {
@@ -795,8 +818,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToIntegerList(String)} with a set
-   * of positive and negative values.
+   * Test calling {@link StringUtils#delimitedToIntegerList(String, String)}
+   * with a set of positive and negative values.
    */
   @Test
   public void delimitedToIntegerListPositiveNegativeTest() {
@@ -805,8 +828,9 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with a
-   * string value fails.
+   * Test that calling
+   * {@link StringUtils#delimitedToIntegerList(String, String)} with a string
+   * value fails.
    */
   @Test
   public void delimitedToIntegerListCharTest() {
@@ -816,8 +840,9 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with
-   * an empty value fails.
+   * Test that calling
+   * {@link StringUtils#delimitedToIntegerList(String, String)} with an empty
+   * value fails.
    */
   @Test
   public void delimitedToIntegerListEmptyValueTest() {
@@ -827,8 +852,11 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToIntegerList(String)} with a
-   * variety of delimiters.
+   * Test calling {@link StringUtils#delimitedToIntegerList(String, String)}
+   * with a variety of delimiters.
+   * 
+   * @param delimiter
+   *          The test delimiter.
    */
   @ParameterizedTest
   @MethodSource("makeDelimiters")
@@ -847,8 +875,12 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with
-   * invalid delimiters fails.
+   * Test that calling
+   * {@link StringUtils#delimitedToIntegerList(String, String)} with invalid
+   * delimiters fails.
+   * 
+   * @param delimiter
+   *          The test delimiter.
    */
   @ParameterizedTest
   @MethodSource("makeStandardInvalidDelimiters")
@@ -861,8 +893,12 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with
-   * invalid numeric delimiters fails.
+   * Test that calling
+   * {@link StringUtils#delimitedToIntegerList(String, String)} with invalid
+   * numeric delimiters fails.
+   * 
+   * @param delimiter
+   *          The test delimiter.
    */
   @ParameterizedTest
   @MethodSource("makeNumericInvalidDelimiters")
@@ -875,8 +911,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToIntegerList(String)} with a
-   * space delimiter.
+   * Test calling {@link StringUtils#delimitedToIntegerList(String, String)}
+   * with a space delimiter.
    */
   @Test
   public void delimitedToIntegerListSpaceDelimiterTest() {
@@ -885,8 +921,9 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test that calling {@link StringUtils#delimitedToIntegerList(String)} with a
-   * padded list fails.
+   * Test that calling
+   * {@link StringUtils#delimitedToIntegerList(String, String)} with a padded
+   * list fails.
    */
   @Test
   public void delimitedToIntegerListPaddedListTest() {
@@ -900,7 +937,7 @@ public class StringUtilsTest extends BaseTest {
    *
    * @param list
    *          The list to check.
-   * @param doubles
+   * @param ints
    *          The values that the list should contain.
    * @return {@code true} if the list contains the specified values;
    *         {@code false} otherwise.
@@ -924,9 +961,12 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with a null or
-   * empty string fails, and any other whitespace character gives a list size of
-   * one containing that character.
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with a
+   * null or empty string fails, and any other whitespace character gives a list
+   * size of one containing that character.
+   * 
+   * @param empty
+   *          The test empty value.
    */
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
@@ -941,8 +981,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with a single
-   * value.
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with a
+   * single value.
    */
   @Test
   public void delimitedToListOneTest() {
@@ -951,8 +991,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with several
-   * value.
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with
+   * several value.
    */
   @Test
   public void delimitedToListMultipleTest() {
@@ -962,8 +1002,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with a various
-   * numeric values (all should retain their exact input format).
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with a
+   * various numeric values (all should retain their exact input format).
    */
   @Test
   public void delimitedToListNumbersTest() {
@@ -973,8 +1013,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with a spaces
-   * between values (spaces should be preserved).
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with a
+   * spaces between values (spaces should be preserved).
    */
   @Test
   public void delimitedToListSpaceBetweenValuesTest() {
@@ -984,8 +1024,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with an empty
-   * value (the empty value is retained as an empty string).
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with an
+   * empty value (the empty value is retained as an empty string).
    */
   @Test
   public void delimitedToListEmptyValueTest() {
@@ -995,8 +1035,11 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with a various
-   * delimiters.
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with a
+   * various delimiters.
+   * 
+   * @param delimiter
+   *          The test delimiter.
    */
   @ParameterizedTest
   @MethodSource("makeDelimiters")
@@ -1015,8 +1058,11 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with invalid
-   * delimiters.
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with
+   * invalid delimiters.
+   * 
+   * @param delimiter
+   *          The test delimiter.
    */
   @ParameterizedTest
   @MethodSource("makeStandardInvalidDelimiters")
@@ -1028,8 +1074,11 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with invalid
-   * numeric delimiters (these are allowed for strings).
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with
+   * invalid numeric delimiters (these are allowed for strings).
+   * 
+   * @param delimiter
+   *          The test delimiter.
    */
   @ParameterizedTest
   @MethodSource("makeNumericInvalidDelimiters")
@@ -1048,8 +1097,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with a space
-   * delimiter.
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with a
+   * space delimiter.
    */
   @Test
   public void delimitedToListSpaceDelimiterTest() {
@@ -1059,8 +1108,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Test calling {@link StringUtils#delimitedToList(String)} with a padded list
-   * (the padding is retained in the list values).
+   * Test calling {@link StringUtils#delimitedToList(String, String)} with a
+   * padded list (the padding is retained in the list values).
    */
   @Test
   public void delimitedToListPaddedListTest() {
@@ -1534,8 +1583,8 @@ public class StringUtilsTest extends BaseTest {
   }
 
   /**
-   * Make the set of test values for {@link #formatDoubleStringTest(String,
-   * String).
+   * Make the set of test values for
+   * {@link #formatDoubleStringTest(String, String)}.
    *
    * @return The test values
    */

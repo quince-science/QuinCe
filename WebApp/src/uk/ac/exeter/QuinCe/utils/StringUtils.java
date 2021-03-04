@@ -160,6 +160,8 @@ public final class StringUtils {
    *
    * @param values
    *          The list
+   * @param delimiter
+   *          The delimiter used in the input string.
    * @return The list as integers
    * @see #checkDelimiter(String, String...)
    */

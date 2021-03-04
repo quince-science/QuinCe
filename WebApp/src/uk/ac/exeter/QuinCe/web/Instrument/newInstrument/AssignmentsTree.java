@@ -20,7 +20,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentExce
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -81,8 +80,7 @@ public class AssignmentsTree {
 
   protected AssignmentsTree(List<Variable> variables,
     SensorAssignments assignments, boolean needsPosition)
-    throws SensorConfigurationException, SensorTypeNotFoundException,
-    SensorAssignmentException {
+    throws SensorConfigurationException, SensorAssignmentException {
 
     root = new DefaultTreeNode("Root", null);
     this.assignments = assignments;
@@ -94,8 +92,7 @@ public class AssignmentsTree {
   }
 
   private void buildTree(List<Variable> variables)
-    throws SensorConfigurationException, SensorTypeNotFoundException,
-    SensorAssignmentException {
+    throws SensorConfigurationException, SensorAssignmentException {
 
     dateTimeNode = new DefaultTreeNode(VariableTreeNode.VAR_UNFINISHED,
       "Date/Time", root);

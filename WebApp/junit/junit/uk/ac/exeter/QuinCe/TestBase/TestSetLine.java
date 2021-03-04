@@ -85,6 +85,10 @@ public class TestSetLine {
    *
    * @param fieldNumber
    *          The zero-based field number
+   * @param emptyAsNull
+   *          Indicates whether empty values should be returned as
+   *          ({@code true}) {@code null} or ({@code false}) an empty
+   *          {@link String}.
    * @return The field contents
    */
   public String getStringField(int fieldNumber, boolean emptyAsNull) {
