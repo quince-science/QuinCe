@@ -72,7 +72,6 @@ then
 
   mysql -u$db_user -p"$db_password" $db_name <<EOF
     DELETE FROM data_reduction WHERE measurement_id IN (SELECT id FROM measurements WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
-    DELETE FROM measurement_values WHERE measurement_id IN (SELECT id FROM measurements WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
     DELETE FROM measurements WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
 
     DELETE FROM sensor_values WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
