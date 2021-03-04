@@ -49,3 +49,6 @@ SELECT
   CONCAT('{"id":"', dataset.id, '"}') AS properties,
   'WAITING' AS status
 FROM dataset;
+
+-- Delete the unused measurement_values table
+DROP TABLE measurement_values;
