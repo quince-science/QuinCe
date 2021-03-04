@@ -1,13 +1,5 @@
 [
   {
-    "exportName": "Interpolation",
-    "separator": "comma",
-    "headerMode": "code",
-    "includeCalculationColumns": true,
-    "includeRawSensors": false,
-    "includeUnits": false
-  },
-  {
     "exportName": "SOCAT",
     "separator": "tab",
     "headerMode": "code",
@@ -37,7 +29,7 @@
     "exportName": "ICOS OTC",
     "separator": "comma",
     "headerMode": "short",
-    "includeCalculationColumns": true,
+    "includeCalculationColumns": false,
     "includeUnits": false,
     "replaceColumnHeaders": {
       "ALATGP01": "Latitude",
@@ -62,7 +54,7 @@
       "RH2OX0EQ": "Water Vapour Pressure [hPa]",
       "CPVPZZ01": "Atmosphere Water Vapour Pressure [hPa]",
       "XCO2WBDY": "xCO2 In Water - Dry Air [umol mol-1]",
-      "XCO2DECQ": "xCO2 In Water - Calibrated In Dry Air [umol mol-1]",
+      "XCO2DCEQ": "xCO2 In Water - Calibrated In Dry Air [umol mol-1]",
       "PCO2IG02": "pCO2 In Water - Equilibrator Temperature [uatm]",
       "FCO2IG02": "fCO2 In Water - Equilibrator Temperature [uatm]",
       "AWMXRCORR": "Atmosphere True Moisture [umol mol-1]",
