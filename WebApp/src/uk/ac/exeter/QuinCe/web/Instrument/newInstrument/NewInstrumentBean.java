@@ -2035,8 +2035,7 @@ public class NewInstrumentBean extends FileUploadBean {
     return assignmentsTree.getRoot();
   }
 
-  public String getSensorTypesJson()
-    throws SensorConfigurationException, SensorTypeNotFoundException {
+  public String getSensorTypesJson() throws SensorConfigurationException {
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();

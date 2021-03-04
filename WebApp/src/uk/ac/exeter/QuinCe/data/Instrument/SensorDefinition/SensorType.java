@@ -140,12 +140,20 @@ public class SensorType extends ColumnHeading
   }
 
   /**
-   * Internal constructor for special sensor types
-   *
+   * Create a Sensor Type with the specified values.
+   * 
    * @param id
-   *          The sensor ID
+   *          The database ID.
    * @param name
-   *          The sensor name
+   *          The type name.
+   * @param group
+   *          The group to which the Sensor Type belongs.
+   * @param displayOrder
+   *          The display order.
+   * @param units
+   *          The units measured.
+   * @param columnCode
+   *          The vocabulary code for this Sensor Type.
    */
   private SensorType(long id, String name, String group, int displayOrder,
     String units, String columnCode) {

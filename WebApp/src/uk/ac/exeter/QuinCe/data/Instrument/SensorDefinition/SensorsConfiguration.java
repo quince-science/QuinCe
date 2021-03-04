@@ -99,6 +99,8 @@ public class SensorsConfiguration {
    * Load the sensor type details from the database. Does not perform any checks
    * yet.
    *
+   * @param conn
+   *          A database connection.
    * @throws DatabaseException
    *           If a database error occurs
    * @throws MissingParamException
@@ -137,8 +139,11 @@ public class SensorsConfiguration {
    * @throws DatabaseException
    *           If a database error occurs
    * @throws InvalidFlagException
+   *           If any of the flag cascade values are invalid.
    * @throws SensorConfigurationException
+   *           If the sensor configuration is invalid.
    * @throws SensorTypeNotFoundException
+   *           If any specified {@link SensorType}s cannot be found.
    */
   private void loadInstrumentVariables(Connection conn)
     throws DatabaseException, SensorTypeNotFoundException,
@@ -390,7 +395,7 @@ public class SensorsConfiguration {
   /**
    * Get the core sensor type for a set of variables identified by ID
    *
-   * @param varId
+   * @param varIds
    *          The variable IDs
    * @return The core sensor types
    * @throws SensorConfigurationException
@@ -465,11 +470,13 @@ public class SensorsConfiguration {
   }
 
   /**
-   * Determine whether or not a given SensorType is a core type.
+   * Determine whether or not a given SensorType is a core type for any
+   * {@link Variable}.
    *
-   * @param conn
-   *          A database connection
-   * @return The non-core sensor types
+   * @param sensorType
+   *          The Sensor Type
+   * @return {@code true} If at least one {@link Variable} has the Sensor Type
+   *         as a core type; {@code false} otherwise.
    * @throws DatabaseException
    *           If a database error occurs
    */
@@ -521,7 +528,7 @@ public class SensorsConfiguration {
   /**
    * Get the {@link SensorType} object with the given name
    *
-   * @param sensorId
+   * @param typeName
    *          The sensor type's name
    * @return The SensorType object
    * @throws SensorTypeNotFoundException
@@ -548,7 +555,7 @@ public class SensorsConfiguration {
    * Get the list of {@link SensorType} objects corresponding to the supplied
    * list of names
    *
-   * @param sensorId
+   * @param typeNames
    *          The sensor types' names
    * @return The SensorType objects
    * @throws SensorTypeNotFoundException
@@ -597,13 +604,18 @@ public class SensorsConfiguration {
   }
 
   /**
-   * See if the supplied SensorType is required by any of the listed variables
+   * See if the supplied {@link SensorType} is required by specified
+   * {@link Variable}.
+   * 
+   * The method searches the dependents of the {@link SensorType}s directly
+   * assigned to the {@link Variable}. Any that are dependent, either always or
+   * via a Depends Question, will result in a {@code true} return value.
    *
    * @param sensorType
    *          The SensorType
-   * @param variableIds
-   *          The variables' database IDs
-   * @return {@code true} if any variable requires the SensorType; {@code false}
+   * @param variable
+   *          The Variable
+   * @return {@code true} if the Variable requires the SensorType; {@code false}
    *         if not
    * @throws SensorConfigurationException
    *           If the sensor configuration is internally inconsistent
@@ -652,13 +664,32 @@ public class SensorsConfiguration {
    *          The variables' database IDs
    * @return The SensorTypes required by the variables
    * @throws SensorConfigurationException
-   *           If any variable IDs do not exist
-   * @throws SensorTypeNotFoundException
+   *           If the sensor configuration is invalid.
+   */
+
+  /**
+   * Get the {@link SensorType}s required for the specified {@link Variable}s.
+   * 
+   * @param variableIds
+   *          The {@link Variable}s' database IDs.
+   * @param replaceParentsWithChildren
+   *          Indicates whether parent {@link SensorType}s should be replaced
+   *          with their children. For example, <i>Pressure in Equilibrator</i>
+   *          may be replaced with <i>Absolute Pressure in Equilibrator</i> and
+   *          <i>Relative Pressure in Equilibrator</i>.
+   * @param includeDependents
+   *          Indicates whether or not dependent {@link SensorType}s should be
+   *          included.
+   * @param includeRunType
+   *          Indicates whether or not the special Run Type indicator should be
+   *          included.
+   * @return The required {@link SensorType}s.
+   * @throws SensorConfigurationException
+   *           If the sensor configuration is invaid.
    */
   public Set<SensorType> getSensorTypes(List<Long> variableIds,
     boolean replaceParentsWithChildren, boolean includeDependents,
-    boolean includeRunType)
-    throws SensorConfigurationException, SensorTypeNotFoundException {
+    boolean includeRunType) throws SensorConfigurationException {
 
     Set<SensorType> sensorTypes = new TreeSet<SensorType>();
 
@@ -667,26 +698,30 @@ public class SensorsConfiguration {
       if (null == variable) {
         throw new SensorConfigurationException("Unknown variable ID " + varId);
       } else {
+        try {
+          for (SensorType sensorType : variable.getAllSensorTypes(false)) {
 
-        for (SensorType sensorType : variable.getAllSensorTypes(false)) {
-
-          if (sensorType.hasInternalCalibration() && includeRunType) {
-            sensorTypes.add(SensorType.RUN_TYPE_SENSOR_TYPE);
-          }
-
-          if (!isParent(sensorType) || !replaceParentsWithChildren) {
-            sensorTypes.add(sensorType);
-            if (includeDependents && sensorType.dependsOnOtherType()) {
-              sensorTypes.add(getSensorType(sensorType.getDependsOn()));
+            if (sensorType.hasInternalCalibration() && includeRunType) {
+              sensorTypes.add(SensorType.RUN_TYPE_SENSOR_TYPE);
             }
-          } else {
-            for (SensorType childType : getChildren(sensorType)) {
-              sensorTypes.add(childType);
-              if (includeDependents && childType.dependsOnOtherType()) {
-                sensorTypes.add(getSensorType(childType.getDependsOn()));
+
+            if (!isParent(sensorType) || !replaceParentsWithChildren) {
+              sensorTypes.add(sensorType);
+              if (includeDependents && sensorType.dependsOnOtherType()) {
+                sensorTypes.add(getSensorType(sensorType.getDependsOn()));
+              }
+            } else {
+              for (SensorType childType : getChildren(sensorType)) {
+                sensorTypes.add(childType);
+                if (includeDependents && childType.dependsOnOtherType()) {
+                  sensorTypes.add(getSensorType(childType.getDependsOn()));
+                }
               }
             }
           }
+        } catch (SensorTypeNotFoundException e) {
+          throw new SensorConfigurationException(
+            "Unrecognised SensorType encountered", e);
         }
       }
     }
@@ -694,10 +729,29 @@ public class SensorsConfiguration {
     return sensorTypes;
   }
 
+  /**
+   * Get the {@link SensorType}s required for the specified {@link Variable}.
+   * 
+   * @param variableId
+   *          The {@link Variable}'s database ID.
+   * @param replaceParentsWithChildren
+   *          Indicates whether parent {@link SensorType}s should be replaced
+   *          with their children. For example, <i>Pressure in Equilibrator</i>
+   *          may be replaced with <i>Absolute Pressure in Equilibrator</i> and
+   *          <i>Relative Pressure in Equilibrator</i>.
+   * @param includeDependents
+   *          Indicates whether or not dependent {@link SensorType}s should be
+   *          included.
+   * @param includeRunType
+   *          Indicates whether or not the special Run Type indicator should be
+   *          included.
+   * @return The required {@link SensorType}s.
+   * @throws SensorConfigurationException
+   *           If the sensor configuration is invaid.
+   */
   public Set<SensorType> getSensorTypes(long variableId,
     boolean replaceParentsWithChildren, boolean includeDependents,
-    boolean includeRunType)
-    throws SensorConfigurationException, SensorTypeNotFoundException {
+    boolean includeRunType) throws SensorConfigurationException {
 
     List<Long> varList = new ArrayList<Long>(1);
     varList.add(variableId);
@@ -767,13 +821,13 @@ public class SensorsConfiguration {
   }
 
   /**
-   * Get a list of InstrumentVaraiables using their IDs
+   * Get a list of {@link Variable}s using their IDs.
    *
-   * @param variableId
-   *          The variable IDs
-   * @return The InstrumentVariable objects
+   * @param variableIds
+   *          The variable IDs.
+   * @return The Variable objects.
    * @throws VariableNotFoundException
-   *           If any IDs aren't found
+   *           If any IDs aren't found.
    */
   public List<Variable> getInstrumentVariables(List<Long> variableIds)
     throws VariableNotFoundException {
