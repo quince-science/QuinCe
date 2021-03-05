@@ -114,6 +114,8 @@ public class ExportDataset {
   /**
    * The main processing method for the API call.
    *
+   * @param id
+   *          The dataset ID.
    * @return The export ZIP file.
    * @throws Exception
    *           If any errors occur while retrieving the dataset details. Results

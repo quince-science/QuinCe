@@ -347,9 +347,10 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Get the current instrument
+   * Get the database ID of the instrument that is currently selected by the
+   * user.
    *
-   * @return The current instrument
+   * @return The current instrument ID.
    */
   public long getCurrentInstrumentId() {
 
@@ -363,10 +364,10 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Set the current instrument
+   * Set the instrument that is currently selected by the user.
    *
-   * @param currentInstrument
-   *          The current instrument
+   * @param currentInstrumentId
+   *          The instrument's database ID
    */
   public void setCurrentInstrumentId(long currentInstrumentId) {
 
@@ -408,10 +409,16 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Set to true to make full instrument reload on initialiseInstrument This is
-   * reset to false after running initialiseInstrument
+   * Set to true to make full instrument reload when
+   * {@link #initialiseInstruments()}.
+   * 
+   * <p>
+   * This is automatically reset to {@code false} after
+   * {@link #initialiseInstruments()} is called.
+   * </p>
    *
    * @param forceReload
+   *          The flag value.
    */
   public void setForceInstrumentReload(boolean forceReload) {
     this.forceInstrumentReload = forceReload;
@@ -502,6 +509,8 @@ public abstract class BaseManagedBean {
    * Used for testing the error page. There is a link on the login page that's
    * usually hidden. Unhide it to throw an error on demand.
    * </p>
+   * 
+   * @return The formatted error string.
    */
   public String throwError() {
     return internalError(new BeanException("Test exception"));

@@ -50,8 +50,6 @@ public abstract class Calibration implements Comparable<Calibration> {
   /**
    * The date and time of the deployment. Some calibrations do not have a time,
    * in which case the time portion will be set to midnight.
-   *
-   * @see #hasTime
    */
   private LocalDateTime deploymentDate = LocalDateTime.now(ZoneOffset.UTC)
     .truncatedTo(ChronoUnit.DAYS);
@@ -72,10 +70,12 @@ public abstract class Calibration implements Comparable<Calibration> {
   protected List<CalibrationCoefficient> coefficients = null;
 
   /**
-   * Create an empty calibration for an instrument
+   * Create an empty calibration for an instrument.
    *
    * @param instrumentId
-   *          The instrument's database ID
+   *          The instrument's database ID.
+   * @param type
+   *          The calibration type.
    */
   protected Calibration(long instrumentId, String type) {
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
@@ -369,10 +369,16 @@ public abstract class Calibration implements Comparable<Calibration> {
   public abstract Double calibrateValue(Double rawValue);
 
   /**
-   * Check that this calibration is valid. Most calibrations are valid all the
-   * time, so that's the default response. Otherwise this method is overridden
+   * Check that this calibration is valid.
+   * 
+   * <p>
+   * Most calibrations are valid all the time, so the default implementation
+   * always returns {@code true}. Override the method to provide more
+   * sophisticated logic.
+   * </p>
    *
-   * @return
+   * @return {@code true} if the calibration is valid; {@code false} if it is
+   *         not.
    */
   public boolean isValid() {
     return true;

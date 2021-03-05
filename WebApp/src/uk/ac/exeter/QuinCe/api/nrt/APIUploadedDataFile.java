@@ -41,15 +41,17 @@ public class APIUploadedDataFile extends UploadedDataFile {
   }
 
   /**
-   * Constructor to build a file from an {#InputStream}. Assumes data is in
+   * Constructor to build a file from an {@link InputStream}. Assumes data is in
    * UTF-8.
    *
    * Note that the InputStream is not closed by this constructor.
    *
    * @param filename
-   *          The filename
+   *          The filename.
    * @param inputStream
-   *          The input stream
+   *          The input stream.
+   * @throws IOException
+   *           If the {@link InputStream} contents cannot be read.
    */
   protected APIUploadedDataFile(String filename, InputStream inputStream)
     throws IOException {
