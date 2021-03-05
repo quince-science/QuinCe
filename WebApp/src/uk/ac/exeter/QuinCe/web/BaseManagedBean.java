@@ -411,7 +411,7 @@ public abstract class BaseManagedBean {
   /**
    * Set to true to make full instrument reload when
    * {@link #initialiseInstruments()}.
-   * 
+   *
    * <p>
    * This is automatically reset to {@code false} after
    * {@link #initialiseInstruments()} is called.
@@ -509,7 +509,7 @@ public abstract class BaseManagedBean {
    * Used for testing the error page. There is a link on the login page that's
    * usually hidden. Unhide it to throw an error on demand.
    * </p>
-   * 
+   *
    * @return The formatted error string.
    */
   public String throwError() {

@@ -370,7 +370,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Check that this calibration is valid.
-   * 
+   *
    * <p>
    * Most calibrations are valid all the time, so the default implementation
    * always returns {@code true}. Override the method to provide more

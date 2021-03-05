@@ -409,7 +409,7 @@ public class StringUtilsTest extends BaseTest {
 
   /**
    * Test {@link StringUtils#tabToSpace(String)} with empty strings.
-   * 
+   *
    * @param empty
    *          The test empty value.
    */
@@ -568,7 +568,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with an
    * empty String returns an empty list.
-   * 
+   *
    * @param empty
    *          The test empty values.
    */
@@ -656,7 +656,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test calling {@link StringUtils#delimitedToDoubleList(String)} with a
    * variety of delimiters.
-   * 
+   *
    * @param delimiter
    *          The test delimiter.
    */
@@ -679,7 +679,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with
    * invalid delimiters fails.
-   * 
+   *
    * @param delimiter
    *          The test delimiter.
    */
@@ -696,7 +696,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test that calling {@link StringUtils#delimitedToDoubleList(String)} with
    * invalid delimiters for numbers fails.
-   * 
+   *
    * @param delimiter
    *          The test delimiter.
    */
@@ -763,7 +763,7 @@ public class StringUtilsTest extends BaseTest {
    * Test that calling
    * {@link StringUtils#delimitedToIntegerList(String, String)} with an empty
    * String returns an empty list.
-   * 
+   *
    * @param empty
    *          The test empty value.
    */
@@ -854,7 +854,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test calling {@link StringUtils#delimitedToIntegerList(String, String)}
    * with a variety of delimiters.
-   * 
+   *
    * @param delimiter
    *          The test delimiter.
    */
@@ -878,7 +878,7 @@ public class StringUtilsTest extends BaseTest {
    * Test that calling
    * {@link StringUtils#delimitedToIntegerList(String, String)} with invalid
    * delimiters fails.
-   * 
+   *
    * @param delimiter
    *          The test delimiter.
    */
@@ -896,7 +896,7 @@ public class StringUtilsTest extends BaseTest {
    * Test that calling
    * {@link StringUtils#delimitedToIntegerList(String, String)} with invalid
    * numeric delimiters fails.
-   * 
+   *
    * @param delimiter
    *          The test delimiter.
    */
@@ -964,7 +964,7 @@ public class StringUtilsTest extends BaseTest {
    * Test calling {@link StringUtils#delimitedToList(String, String)} with a
    * null or empty string fails, and any other whitespace character gives a list
    * size of one containing that character.
-   * 
+   *
    * @param empty
    *          The test empty value.
    */
@@ -1037,7 +1037,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test calling {@link StringUtils#delimitedToList(String, String)} with a
    * various delimiters.
-   * 
+   *
    * @param delimiter
    *          The test delimiter.
    */
@@ -1060,7 +1060,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test calling {@link StringUtils#delimitedToList(String, String)} with
    * invalid delimiters.
-   * 
+   *
    * @param delimiter
    *          The test delimiter.
    */
@@ -1076,7 +1076,7 @@ public class StringUtilsTest extends BaseTest {
   /**
    * Test calling {@link StringUtils#delimitedToList(String, String)} with
    * invalid numeric delimiters (these are allowed for strings).
-   * 
+   *
    * @param delimiter
    *          The test delimiter.
    */

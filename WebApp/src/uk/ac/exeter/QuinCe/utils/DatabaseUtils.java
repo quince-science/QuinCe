@@ -194,7 +194,7 @@ public class DatabaseUtils {
    * spaces replaced by underscores. Brackets and other odd characters that
    * upset MySQL are removed.
    * </p>
-   * 
+   *
    * @param fullName
    *          The human-readable name.
    * @return The database field name.
