@@ -363,7 +363,7 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that retrieving a user via a {@link java.sql.Connection} and ID that
    * doesn't exist returns {@code null}.
-   * 
+   *
    * @throws Exception
    *           If any internal errors are encountered.
    */
@@ -966,7 +966,7 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that checking a valid email verification code that has expired will
    * fail.
-   * 
+   *
    * @throws Exception
    *           If any internal errors are encountered.
    */
