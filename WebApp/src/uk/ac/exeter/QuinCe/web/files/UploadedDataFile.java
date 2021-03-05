@@ -144,8 +144,9 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   }
 
   /**
-   * @return the endDate
-   * @throws DataFileException
+   * Get the last date in the file.
+   * 
+   * @return The last date.
    */
   public Date getEndDate() {
     Date date = null;
@@ -159,8 +160,14 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   }
 
   /**
+   * Add a processing message to the file.
+   * 
+   * @param statusCode
+   *          The HTTP status code for the message.
    * @param summary
+   *          The message.
    * @param severityError
+   *          The JavaFaces severity.
    */
   public void putMessage(int statusCode, String summary,
     Severity severityError) {
@@ -269,18 +276,19 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   }
 
   /**
-   * Set the ID of the data file that this file will replace
+   * Set the ID of the data file that this file will replace.
    *
    * @param oldId
+   *          The ID of the file being replaced.
    */
   public void setReplacementFile(long oldId) {
     this.replaceFile = oldId;
   }
 
   /**
-   * Get the ID of the file that this file will replace
+   * Get the ID of the file that this file will replace.
    *
-   * @return
+   * @return The ID of the file being replaced.
    */
   public long getReplacementFile() {
     return replaceFile;
@@ -288,14 +296,16 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
   /**
    * Extract the file contents and ensure that it doesn't clash with existing
-   * files
+   * files.
    *
    * @param instrument
-   *          The instrument to which the file belongs
+   *          The instrument to which the file belongs.
    * @param appConfig
-   *          The application configuration
+   *          The application configuration.
    * @param allowExactDuplicate
-   *          Indicates whether exact duplicate files are accepted
+   *          Indicates whether exact duplicate files are accepted.
+   * @param allowEmpty
+   *          Indicates whether or not empty files are accepted.
    */
   public void extractFile(Instrument instrument, Properties appConfig,
     boolean allowExactDuplicate, boolean allowEmpty) {
