@@ -79,16 +79,16 @@ public class MakeNrtDataset {
   }
 
   /**
-   * Attempt to create a NRT dataset for an instrument
+   * Attempt to create a NRT dataset for an instrument.
    *
    * @param conn
-   *          A database connection
-   * @param instrumentId
-   *          The instrument ID
+   *          A database connection.
+   * @param instrument
+   *          The instrument.
    * @return {@code true} if a new NRT dataset is created; {@code false} if no
    *         dataset is created.
    * @throws Exception
-   *           Any errors are propagated upward
+   *           Any errors are propagated upward.
    */
   public static boolean createNrtDataset(Connection conn, Instrument instrument)
     throws Exception {

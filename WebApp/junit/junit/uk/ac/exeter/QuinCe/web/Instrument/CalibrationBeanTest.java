@@ -82,9 +82,9 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Create an initialised bean using a default {@CalibrationDB} back end. Use
-   * this when the exact back end being used will not affect the outcome of the
-   * test.
+   * Create an initialised bean using a default {@link CalibrationDB} back end.
+   * Use this when the exact back end being used will not affect the outcome of
+   * the test.
    *
    * @return The initialised bean.
    */
@@ -197,7 +197,7 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that {@link CalibrationBean#setInstrumentId()} works.
+   * Test that {@link CalibrationBean#setInstrumentId(long)} works.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -213,7 +213,7 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that {@link CalibrationBean#setInstrumentName()} works.
+   * Test that {@link CalibrationBean#setInstrumentName(String)} works.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -230,13 +230,12 @@ public class CalibrationBeanTest extends BaseTest {
 
   // ******************************************
   //
-  // getAffectedDataSets tests - invalid cases
+  // getAffectedDatasets tests - invalid cases
 
   /**
-   * Test that calling
-   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
-   * with a {@code null} {@code newTime} and a present {@code newTarget} throws
-   * an exception.
+   * Test that calling {@link CalibrationBean#getAffectedDatasets()} with a
+   * {@code null} {@code newTime} and a present {@code newTarget} throws an
+   * exception.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -253,10 +252,9 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that calling
-   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
-   * with a {@code null} {@code newTime} and a present {@code newTarget} throws
-   * an exception.
+   * Test that calling {@link CalibrationBean#getAffectedDatasets()} with a
+   * {@code null} {@code newTime} and a present {@code newTarget} throws an
+   * exception.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -274,9 +272,8 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that calling
-   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
-   * to make a new calibration with a non-existent target throws an exception.
+   * Test that calling {@link CalibrationBean#getAffectedDatasets()} to make a
+   * new calibration with a non-existent target throws an exception.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -295,9 +292,8 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that calling
-   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
-   * to make edit a calibration with a non-existent target throws an exception.
+   * Test that calling {@link CalibrationBean#getAffectedDatasets()} to make
+   * edit a calibration with a non-existent target throws an exception.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -316,9 +312,8 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that calling
-   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
-   * to make a new calibration with a date in the future throws an exception.
+   * Test that calling {@link CalibrationBean#getAffectedDatasets()} to make a
+   * new calibration with a date in the future throws an exception.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -340,9 +335,8 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that calling
-   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
-   * to make edit a calibration with a date in the future throws an exception.
+   * Test that calling {@link CalibrationBean#getAffectedDatasets()} to make
+   * edit a calibration with a date in the future throws an exception.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -364,9 +358,8 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that calling
-   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
-   * to delete a calibration with a negative ID throws an exception.
+   * Test that calling {@link CalibrationBean#getAffectedDatasets()} to delete a
+   * calibration with a negative ID throws an exception.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -384,9 +377,8 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that calling
-   * {@link CalibrationBean#getAffectedDataSets(long, java.time.LocalDateTime, String)}
-   * to delete non-existent calibration throws an exception.
+   * Test that calling {@link CalibrationBean#getAffectedDatasets()} to delete
+   * non-existent calibration throws an exception.
    *
    * @throws Exception
    *           If any internal errors are encountered.
