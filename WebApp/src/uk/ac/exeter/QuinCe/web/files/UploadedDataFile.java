@@ -145,7 +145,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
   /**
    * Get the last date in the file.
-   * 
+   *
    * @return The last date.
    */
   public Date getEndDate() {
@@ -161,7 +161,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
   /**
    * Add a processing message to the file.
-   * 
+   *
    * @param statusCode
    *          The HTTP status code for the message.
    * @param summary

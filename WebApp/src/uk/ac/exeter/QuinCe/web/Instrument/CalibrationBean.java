@@ -421,7 +421,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Generate a new, empty {@link Calibration} object.
-   * 
+   *
    * @return The new object.
    */
   protected abstract Calibration initNewCalibration();

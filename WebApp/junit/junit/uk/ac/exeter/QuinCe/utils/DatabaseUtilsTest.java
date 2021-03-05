@@ -622,7 +622,7 @@ public class DatabaseUtilsTest extends BaseTest {
   /**
    * Test that {@link DatabaseUtils#getDatabaseFieldName(String)} replaces
    * special characters as it should.
-   * 
+   *
    * @param input
    *          The input value.
    * @param expected

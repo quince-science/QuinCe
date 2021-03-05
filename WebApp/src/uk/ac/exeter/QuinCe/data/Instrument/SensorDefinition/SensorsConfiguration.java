@@ -606,7 +606,7 @@ public class SensorsConfiguration {
   /**
    * See if the supplied {@link SensorType} is required by specified
    * {@link Variable}.
-   * 
+   *
    * The method searches the dependents of the {@link SensorType}s directly
    * assigned to the {@link Variable}. Any that are dependent, either always or
    * via a Depends Question, will result in a {@code true} return value.
@@ -669,7 +669,7 @@ public class SensorsConfiguration {
 
   /**
    * Get the {@link SensorType}s required for the specified {@link Variable}s.
-   * 
+   *
    * @param variableIds
    *          The {@link Variable}s' database IDs.
    * @param replaceParentsWithChildren
@@ -731,7 +731,7 @@ public class SensorsConfiguration {
 
   /**
    * Get the {@link SensorType}s required for the specified {@link Variable}.
-   * 
+   *
    * @param variableId
    *          The {@link Variable}'s database ID.
    * @param replaceParentsWithChildren

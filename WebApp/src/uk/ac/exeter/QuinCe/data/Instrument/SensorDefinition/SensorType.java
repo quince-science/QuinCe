@@ -141,7 +141,7 @@ public class SensorType extends ColumnHeading
 
   /**
    * Create a Sensor Type with the specified values.
-   * 
+   *
    * @param id
    *          The database ID.
    * @param name

@@ -24,7 +24,7 @@ public class CalibrationBeanTestStub extends CalibrationBean {
 
   /**
    * Package-protected constructor.
-   * 
+   *
    * @param dbInstance
    *          The {@link CalibrationDB} to use.
    */
