@@ -1034,6 +1034,9 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   data_options.zoomCallback = function(xMin, xMax, yRange) {
     syncZoom(index);
   };
+  data_options.drawCallback = function(g, initial) {
+	resizePlot(index); 
+  };
 
   // Zoom
   if (!resetZoom) {
@@ -1084,8 +1087,6 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
       PF('plot' + index + 'SelectMode').disable();
     }
   }
-
-  resizePlot(index);
 
   // We can't use the window object here because consts don't get put there.
   if (index == 1) {
