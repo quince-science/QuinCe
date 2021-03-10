@@ -376,8 +376,13 @@ public class DataSetDataDB {
    *
    * @param conn
    *          A database connection
+   * @param instrument
+   *          The instrument to which the dataset belongs.
    * @param datasetId
    *          The database ID of the dataset whose values are to be retrieved
+   * @param ignoreFlushing
+   *          Indicates whether or not values in the instrument's flushing
+   *          period should be left out of the result.
    * @return The values
    * @throws RecordNotFoundException
    *           If the instrument configuration does not match the values
@@ -502,10 +507,14 @@ public class DataSetDataDB {
    * Get the number of measurements in a dataset
    *
    * @param conn
+   *          A database connection
    * @param datasetId
-   * @return
-   * @throws MissingParamException
+   *          The dataset's database ID
+   * @return The number of records
    * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static int getRecordCount(Connection conn, long datasetId)
     throws MissingParamException, DatabaseException {
@@ -590,8 +599,6 @@ public class DataSetDataDB {
    *
    * @param conn
    *          A database connection
-   * @param instrument
-   *          The instrument to which the dataset belongs
    * @param datasetId
    *          The database ID of the dataset
    * @return The measurements
@@ -652,9 +659,6 @@ public class DataSetDataDB {
    *
    * @param conn
    *          A database connection
-   * @param values
-   *          The calculation values for the data reduction, as extracted from
-   *          the sensor values
    * @param dataReductionRecords
    *          The data reduction calculations
    * @throws DatabaseException
@@ -725,8 +729,8 @@ public class DataSetDataDB {
    * Remove all measurement details from a data set, ready for them to be
    * recalculated
    *
-   * @param dataSource
-   *          A data source
+   * @param conn
+   *          A database connection
    * @param datasetId
    *          The database ID of the data set
    * @throws DatabaseException
@@ -779,13 +783,11 @@ public class DataSetDataDB {
    *
    * @param conn
    *          A database connection
-   * @param start
-   *          The start date
-   * @param end
-   *          The end date
+   * @param datasetId
+   *          The dataset's database ID
    * @param columnIds
    *          The column IDs
-   * @return
+   * @return The matching {@link SensorValue}s.
    * @throws MissingParamException
    *           If any required parameters are missing
    * @throws DatabaseException

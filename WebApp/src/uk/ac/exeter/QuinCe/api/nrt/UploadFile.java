@@ -33,6 +33,12 @@ public class UploadFile {
   /**
    * Main API method
    *
+   * @param instrumentId
+   *          The instrument ID
+   * @param is
+   *          The file content stream
+   * @param fileDetail
+   *          The file information
    * @return The upload response
    */
   @POST

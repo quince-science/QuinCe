@@ -263,18 +263,27 @@ public class DataSet {
    *          End date
    * @param status
    *          The current status
-   * @param status
+   * @param statusDate
    *          The date that the status was set
    * @param nrt
    *          Indicates whether or not this is a NRT dataset
    * @param properties
    *          Additional properties
+   * @param createdDate
+   *          Date that the dataset was created
    * @param lastTouched
    *          Date that the dataset was last accessed
-   * @param needsFlagCount
-   *          Number of records that need flagging by the user
    * @param messages
    *          List of messages concerning the dataset (errors etc)
+   * @param minLon
+   *          The minimum longitude of the dataset's geographical bounds
+   * @param minLat
+   *          The minimum latitude of the dataset's geographical bounds
+   * @param maxLon
+   *          The maximum longitude of the dataset's geographical bounds
+   * @param maxLat
+   *          The maximum latitude of the dataset's geographical bounds
+   *
    */
   protected DataSet(long id, long instrumentId, String name,
     LocalDateTime start, LocalDateTime end, int status,
@@ -303,8 +312,8 @@ public class DataSet {
   /**
    * Constructor for a new, empty data set
    *
-   * @param instrumentId
-   *          The database ID of the instrument to which the data set belongs
+   * @param instrument
+   *          The instrument to which the data set belongs
    */
   public DataSet(Instrument instrument) {
     this.instrumentId = instrument.getDatabaseId();
@@ -313,12 +322,10 @@ public class DataSet {
   }
 
   /**
-   * Constructor for all fields
+   * Basic constructor for new dataset with only start and end dates.
    *
-   * @param id
-   *          Data set's database ID
-   * @param instrumentId
-   *          Database ID of the instrument to which the data set belongs
+   * @param instrument
+   *          The instrument to which the data set belongs
    * @param name
    *          Dataset name
    * @param start
@@ -644,8 +651,8 @@ public class DataSet {
   /**
    * Get a list of the raw data files used to construct this DataSet
    *
-   * @param dataSource
-   *          A data source
+   * @param conn
+   *          A database connection
    * @return The IDs of the files
    * @throws MissingParamException
    *           If any required parameters are missing
@@ -670,6 +677,9 @@ public class DataSet {
    * Get the available field sets for this dataset keyed by name. Builds the
    * list once, then caches it
    *
+   * @param includeTimePos
+   *          Indicates whether or not the root field set for Time and Position
+   *          is included
    * @return The field sets
    * @throws MissingParamException
    *           If any required parameters are missing
