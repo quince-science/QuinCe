@@ -167,8 +167,8 @@ class PlotValue implements Comparable<PlotValue> {
    *         {@code false} otherwise.
    */
   public boolean inFlagPlot() {
-    return (flag.equals(Flag.BAD) || flag.equals(Flag.QUESTIONABLE)
-      || flag.equals(Flag.NEEDED));
+    return (!xDouble.isNaN() && !y.isNaN() && (flag.equals(Flag.BAD)
+      || flag.equals(Flag.QUESTIONABLE) || flag.equals(Flag.NEEDED)));
   }
 
   /**
