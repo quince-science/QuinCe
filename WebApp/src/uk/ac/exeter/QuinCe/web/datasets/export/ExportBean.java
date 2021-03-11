@@ -554,6 +554,13 @@ public class ExportBean extends BaseManagedBean {
 
     if (null != mode) {
       header = getModeHeader(heading, (int) mode);
+    } else if (heading.getCodeName()
+      .equals(FileDefinition.TIME_COLUMN_HEADING.getCodeName())) {
+      if (null != exportOption.getTimestampHeader()) {
+        header = exportOption.getTimestampHeader();
+      } else {
+        header = heading.getShortName();
+      }
     } else {
       String replacementHeader = exportOption
         .getReplacementHeader(heading.getCodeName());

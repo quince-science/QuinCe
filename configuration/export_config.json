@@ -31,6 +31,7 @@
     "headerMode": "short",
     "includeCalculationColumns": false,
     "includeUnits": false,
+    "timestampHeader": "Date/Time",
     "replaceColumnHeaders": {
       "ALATGP01": "Latitude",
       "ALONGP01": "Longitude",
@@ -72,6 +73,7 @@
     "includeCalculationColumns": true,
     "exportDataClass": "NeutraliseSalinityFlagsExportData",
     "visible": false,
+    "timestampHeader": "Date/Time",
     "replaceColumnHeaders": {
       "ALATGP01": "Latitude",
       "ALONGP01": "Longitude",

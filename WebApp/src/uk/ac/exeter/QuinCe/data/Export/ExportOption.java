@@ -104,7 +104,7 @@ public class ExportOption {
   /**
    * The header for the timestamp column
    */
-  private String timestampHeader = "Date/Time";
+  private String timestampHeader = null;
 
   /**
    * QC Flag header suffix
