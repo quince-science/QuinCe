@@ -17,7 +17,6 @@ import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserPreferences;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -66,7 +65,7 @@ public abstract class BaseManagedBean {
   /**
    * The instruments owned by the user
    */
-  private List<InstrumentStub> instruments;
+  private List<Instrument> instruments;
 
   /**
    * Long date format for displaying dates
@@ -256,7 +255,7 @@ public abstract class BaseManagedBean {
       boolean userInstrumentExists = false;
       long currentUserInstrument = getUserPrefs().getLastInstrument();
       if (currentUserInstrument != -1) {
-        for (InstrumentStub instrument : instruments) {
+        for (Instrument instrument : instruments) {
           if (instrument.getId() == currentUserInstrument) {
             userInstrumentExists = true;
             break;
@@ -282,7 +281,7 @@ public abstract class BaseManagedBean {
       // session,
       // remove it so it will get reloaded on next access
         (null != currentInstrument
-          && currentInstrument.getDatabaseId() != currentUserInstrument)) {
+          && currentInstrument.getId() != currentUserInstrument)) {
         getSession().removeAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
         setForceInstrumentReload(false);
       }
@@ -297,7 +296,7 @@ public abstract class BaseManagedBean {
    *
    * @return The list of instruments
    */
-  public List<InstrumentStub> getInstruments() {
+  public List<Instrument> getInstruments() {
     if (null == instruments) {
       initialiseInstruments();
     }
@@ -315,9 +314,9 @@ public abstract class BaseManagedBean {
       // the user prefs and put it in the session
       if (null == currentFullInstrument) {
         long currentInstrumentId = getUserPrefs().getLastInstrument();
-        for (InstrumentStub instrumentStub : instruments) {
-          if (instrumentStub.getId() == currentInstrumentId) {
-            currentFullInstrument = instrumentStub.getFullInstrument();
+        for (Instrument instrument : instruments) {
+          if (instrument.getId() == currentInstrumentId) {
+            currentFullInstrument = instrument;
             getSession().setAttribute(CURRENT_FULL_INSTRUMENT_ATTR,
               currentFullInstrument);
           }
@@ -329,11 +328,11 @@ public abstract class BaseManagedBean {
           if (instruments.size() == 0) {
             getUserPrefs().setLastInstrument(-1);
           } else {
-            InstrumentStub stub = instruments.get(0);
-            currentFullInstrument = stub.getFullInstrument();
+            currentFullInstrument = instruments.get(0);
             getSession().setAttribute(CURRENT_FULL_INSTRUMENT_ATTR,
               currentFullInstrument);
-            getUserPrefs().setLastInstrument(stub.getId());
+            getUserPrefs()
+              .setLastInstrument(currentFullInstrument.getId());
           }
         }
       }
@@ -357,7 +356,7 @@ public abstract class BaseManagedBean {
     long result = -1;
 
     if (null != getCurrentInstrument()) {
-      result = getCurrentInstrument().getDatabaseId();
+      result = getCurrentInstrument().getId();
     }
 
     return result;
@@ -396,7 +395,7 @@ public abstract class BaseManagedBean {
    * @return {@code true} if the user has any instruments; {@code false} if not.
    */
   public boolean getHasInstruments() {
-    List<InstrumentStub> instruments = getInstruments();
+    List<Instrument> instruments = getInstruments();
     return instruments.size() > 0;
   }
 

@@ -74,9 +74,7 @@ public abstract class DataSetJob extends Job {
     if (null == instrument) {
       try {
         instrument = InstrumentDB.getInstrument(conn,
-          getDataset(conn).getInstrumentId(),
-          ResourceManager.getInstance().getSensorsConfiguration(),
-          ResourceManager.getInstance().getRunTypeCategoryConfiguration());
+          getDataset(conn).getInstrumentId());
       } catch (Exception e) {
         throw new JobFailedException(id, "Error getting instrument", e);
       }

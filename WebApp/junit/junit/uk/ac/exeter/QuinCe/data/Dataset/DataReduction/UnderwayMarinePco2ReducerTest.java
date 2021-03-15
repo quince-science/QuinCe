@@ -34,7 +34,7 @@ public class UnderwayMarinePco2ReducerTest extends DataReducerTest {
 
     // Mock objects
     Instrument instrument = Mockito.mock(Instrument.class);
-    Mockito.when(instrument.getDatabaseId()).thenReturn(1L);
+    Mockito.when(instrument.getId()).thenReturn(1L);
 
     Variable variable = Mockito.mock(Variable.class);
     Mockito.when(variable.getId()).thenReturn(1L);

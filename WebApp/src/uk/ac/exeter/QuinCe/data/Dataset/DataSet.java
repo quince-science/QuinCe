@@ -347,7 +347,7 @@ public class DataSet {
    *          The instrument to which the data set belongs
    */
   public DataSet(Instrument instrument) {
-    this.instrumentId = instrument.getDatabaseId();
+    this.instrumentId = instrument.getId();
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
     loadProperties(instrument);
   }
@@ -368,7 +368,7 @@ public class DataSet {
    */
   public DataSet(Instrument instrument, String name, LocalDateTime start,
     LocalDateTime end, boolean nrt) {
-    this.instrumentId = instrument.getDatabaseId();
+    this.instrumentId = instrument.getId();
     this.name = name;
     this.start = start;
     this.end = end;

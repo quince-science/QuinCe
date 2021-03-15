@@ -205,8 +205,7 @@ public class DataSetDataDB {
       .getSensorsConfiguration();
 
     Instrument instrument = InstrumentDB.getInstrument(conn,
-      dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(),
-      resourceManager.getRunTypeCategoryConfiguration());
+      dataSet.getInstrumentId());
 
     SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 

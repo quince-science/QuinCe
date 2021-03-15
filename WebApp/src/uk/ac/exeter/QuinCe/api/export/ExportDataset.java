@@ -15,8 +15,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportBean;
@@ -135,15 +133,11 @@ public class ExportDataset {
     try {
       ResourceManager resourceManager = ResourceManager.getInstance();
       DataSource dataSource = resourceManager.getDBDataSource();
-      SensorsConfiguration sensorConfig = resourceManager
-        .getSensorsConfiguration();
-      RunTypeCategoryConfiguration runTypeConfig = resourceManager
-        .getRunTypeCategoryConfiguration();
 
       conn = dataSource.getConnection();
       DataSet dataset = DataSetDB.getDataSet(conn, id);
       Instrument instrument = InstrumentDB.getInstrument(conn,
-        dataset.getInstrumentId(), sensorConfig, runTypeConfig);
+        dataset.getInstrumentId());
       if (dataset.getStatus() != DataSet.STATUS_READY_FOR_EXPORT) {
         responseCode = Status.FORBIDDEN;
       } else {

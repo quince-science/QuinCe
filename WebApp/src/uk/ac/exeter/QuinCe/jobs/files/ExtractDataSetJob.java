@@ -119,7 +119,7 @@ public class ExtractDataSetJob extends DataSetJob {
       RunTypePeriods runTypePeriods = new RunTypePeriods();
 
       CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
-        .getMostRecentCalibrations(conn, instrument.getDatabaseId(),
+        .getMostRecentCalibrations(conn, instrument.getId(),
           dataSet.getStart());
 
       // Collect the true start and end times of the dataset based on the

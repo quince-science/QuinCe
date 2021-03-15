@@ -55,8 +55,7 @@ public class UploadFile {
       ResourceManager resourceManager = ResourceManager.getInstance();
       DataSource dataSource = resourceManager.getDBDataSource();
       Instrument instrument = InstrumentDB.getInstrument(dataSource,
-        instrumentId, resourceManager.getSensorsConfiguration(),
-        resourceManager.getRunTypeCategoryConfiguration());
+        instrumentId);
 
       // We don't allow uploads for non-NRT instruments
       if (!instrument.getNrt()) {
