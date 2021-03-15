@@ -32,7 +32,6 @@ import uk.ac.exeter.QuinCe.utils.Message;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Methods for manipulating data sets in the database
@@ -465,7 +464,7 @@ public class DataSetDB {
 
     try (Connection conn = dataSource.getConnection();) {
 
-      DataSet nrtDataset = getNrtDataSet(conn, instrument.getDatabaseId());
+      DataSet nrtDataset = getNrtDataSet(conn, instrument.getId());
       if (null != nrtDataset) {
         setDatasetStatus(conn, nrtDataset.getId(), status);
       }
@@ -811,10 +810,8 @@ public class DataSetDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(dataset, "dataset");
 
-    ResourceManager resourceManager = ResourceManager.getInstance();
     Instrument instrument = InstrumentDB.getInstrument(conn,
-      dataset.getInstrumentId(), resourceManager.getSensorsConfiguration(),
-      resourceManager.getRunTypeCategoryConfiguration());
+      dataset.getInstrumentId());
 
     JSONObject result = new JSONObject();
     result.put("name", dataset.getName());

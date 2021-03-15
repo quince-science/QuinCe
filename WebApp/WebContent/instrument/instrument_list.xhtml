@@ -46,7 +46,12 @@
         value="#{instrumentListBean.instrumentList}" styleClass="pageBlock">
         <p:column>
           <f:facet name="header">Instrument Name</f:facet>
-          <b><h:outputText value="#{instrument.name}" /></b>
+          <b>
+            <ui:fragment rendered="#{User.adminUser}">
+              <h:outputText value="#{instrument.owner.surname}, #{instrument.owner.givenName} - "/>
+            </ui:fragment>
+            <h:outputText value="#{instrument.name}"/>
+          </b>
         </p:column>
         <p:column styleClass="centeredCell">
           <f:facet name="header">Sensor Calibrations</f:facet>

@@ -417,7 +417,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
                 }
               }
             } else if (DataFileDB.hasFileWithName(dataSource,
-              instrument.getDatabaseId(), getName())) {
+              instrument.getId(), getName())) {
 
               // We don't allow duplicate filenames
               fileOK = false;

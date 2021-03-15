@@ -79,13 +79,25 @@
         <h:inputHidden id="hasFiles" value="#{dataSetsBean.hasFiles}"/>
 
         <h:panelGrid columns="3" cellpadding="5" class="buttonPanel contentList">
-          <p:outputLabel for="instrument" value="Select Instrument:" />
-          <p:selectOneMenu id="instrument"
-            value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
-            <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
-              itemValue="#{instrument.id}" itemLabel="#{instrument.name}" />
-            <p:ajax event="change" update="datasets hasFiles" />
-          </p:selectOneMenu>
+          <p:outputLabel for="instrumentAdmin" value="Select Instrument:" />
+          <ui:fragment rendered="#{User.adminUser}">
+            <p:selectOneMenu id="instrumentAdmin"
+              value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
+                <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
+                  itemValue="#{instrument.id}"
+                  itemLabel="#{instrument.owner.surname}, #{instrument.owner.givenName} - #{instrument.name}" />
+              <p:ajax event="change" update="datasets hasFiles" />
+            </p:selectOneMenu>
+          </ui:fragment>
+          <ui:fragment rendered="#{not User.adminUser}">
+            <p:selectOneMenu id="instrumentNonAdmin"
+              value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
+                <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
+                  itemValue="#{instrument.id}"
+                  itemLabel="#{instrument.name}" />
+              <p:ajax event="change" update="datasets hasFiles" />
+            </p:selectOneMenu>
+          </ui:fragment>
           <p:commandButton widgetVar="newDataset" value="Create New Data Set" ajax="false"
             action="#{dataSetsBean.startNewDataset}" />
         </h:panelGrid>

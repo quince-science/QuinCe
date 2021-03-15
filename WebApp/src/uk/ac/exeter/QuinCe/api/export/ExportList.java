@@ -11,13 +11,10 @@ import javax.ws.rs.core.MediaType;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
-import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -68,10 +65,6 @@ public class ExportList {
 
     try {
       ResourceManager resourceManager = ResourceManager.getInstance();
-      SensorsConfiguration sensorConfig = resourceManager
-        .getSensorsConfiguration();
-      RunTypeCategoryConfiguration runTypeConfig = resourceManager
-        .getRunTypeCategoryConfiguration();
 
       conn = resourceManager.getDBDataSource().getConnection();
       List<DataSet> datasets = DataSetDB.getDatasetsWithStatus(conn,
@@ -86,11 +79,10 @@ public class ExportList {
         datasetJson.put("name", dataset.getName());
 
         Instrument instrument = InstrumentDB.getInstrument(conn,
-          dataset.getInstrumentId(), sensorConfig, runTypeConfig);
+          dataset.getInstrumentId());
         JSONObject instrumentJson = new JSONObject();
         instrumentJson.put("name", instrument.getName());
-        instrumentJson.put("user",
-          UserDB.getUser(conn, instrument.getOwnerId()).getFullName());
+        instrumentJson.put("user", instrument.getOwner().getFullName());
         datasetJson.put("instrument", instrumentJson);
 
         json.put(datasetJson);
