@@ -41,7 +41,7 @@ public class FileExistsException extends Exception {
     super();
     try {
       String instrumentName = InstrumentDB
-        .getInstrumentStub(dataSource, instrumentID).getName();
+        .getInstrument(dataSource, instrumentID).getName();
       message = "File '" + fileName + "' already exists for instrument '"
         + instrumentName + "'";
     } catch (Exception e) {

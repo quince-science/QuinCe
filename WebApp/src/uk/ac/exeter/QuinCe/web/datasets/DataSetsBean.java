@@ -140,9 +140,9 @@ public class DataSetsBean extends BaseManagedBean {
     RecordNotFoundException, InstrumentException, ResourceException {
     if (null != getCurrentInstrument()) {
       dataSets = DataSetDB.getDataSets(getDataSource(),
-        getCurrentInstrument().getDatabaseId(), true);
+        getCurrentInstrument().getId(), true);
       hasFiles = DataFileDB.getFileCount(getDataSource(),
-        getCurrentInstrument().getDatabaseId()) > 0;
+        getCurrentInstrument().getId()) > 0;
     } else {
       dataSets = null;
     }
@@ -222,7 +222,7 @@ public class DataSetsBean extends BaseManagedBean {
 
       // Now the actual files
       List<DataFile> dataFiles = DataFileDB.getFiles(getDataSource(),
-        getAppConfig(), getCurrentInstrument().getDatabaseId());
+        getAppConfig(), getCurrentInstrument().getId());
 
       StringBuilder entriesJson = new StringBuilder();
       entriesJson.append('[');

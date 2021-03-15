@@ -56,12 +56,12 @@ public class Instrument {
   /**
    * The instrument's ID in the database
    */
-  private long databaseID = DatabaseUtils.NO_DATABASE_RECORD;
+  private long id = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
    * The ID of the owner of the instrument
    */
-  private long ownerId;
+  private User owner;
 
   /**
    * The name of the instrument
@@ -110,10 +110,10 @@ public class Instrument {
   /**
    * Create an instrument from an existing database record.
    *
+   * @param owner
+   *          The the instrument owner.
    * @param databaseId
    *          The instrument's database ID.
-   * @param ownerId
-   *          The ID of the instrument owner.
    * @param name
    *          The instrument's name.
    * @param fileDefinitions
@@ -130,14 +130,14 @@ public class Instrument {
    * @param properties
    *          The instrument's properties.
    */
-  public Instrument(long databaseId, long ownerId, String name,
+  public Instrument(User owner, long databaseId, String name,
     InstrumentFileSet fileDefinitions, List<Variable> variables,
     Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformCode, boolean nrt,
     Properties properties) {
 
-    this.databaseID = databaseId;
-    this.ownerId = ownerId;
+    this.owner = owner;
+    this.id = databaseId;
     this.name = name;
     this.fileDefinitions = fileDefinitions;
     this.variables = variables;
@@ -174,7 +174,7 @@ public class Instrument {
     SensorAssignments sensorAssignments, String platformCode, boolean nrt,
     Properties properties) {
 
-    this.ownerId = owner.getDatabaseID();
+    this.owner = owner;
     this.name = name;
     this.fileDefinitions = fileDefinitions;
     this.variables = variables;
@@ -208,7 +208,7 @@ public class Instrument {
     List<Variable> variables, Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformCode, boolean nrt) {
 
-    this.ownerId = owner.getDatabaseID();
+    this.owner = owner;
     this.name = name;
     this.fileDefinitions = fileDefinitions;
     this.variables = variables;
@@ -238,8 +238,8 @@ public class Instrument {
    *
    * @return The ID of the instrument in the database
    */
-  public long getDatabaseId() {
-    return databaseID;
+  public long getId() {
+    return id;
   }
 
   /**
@@ -249,7 +249,7 @@ public class Instrument {
    *          The database ID
    */
   public void setDatabaseId(long databaseID) {
-    this.databaseID = databaseID;
+    this.id = databaseID;
   }
 
   /**
@@ -257,8 +257,8 @@ public class Instrument {
    *
    * @return The ID of the owner of the instrument
    */
-  public long getOwnerId() {
-    return ownerId;
+  public User getOwner() {
+    return owner;
   }
 
   /**

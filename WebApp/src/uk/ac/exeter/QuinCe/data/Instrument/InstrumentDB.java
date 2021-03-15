@@ -118,27 +118,6 @@ public class InstrumentDB {
     + ") VALUES (?, ?, ?, ?)";
 
   /**
-   * Query for retrieving the list of instruments owned by a particular user
-   */
-  private static final String GET_SINGLE_USER_INSTRUMENT_LIST_QUERY = "SELECT "
-    + "id, name FROM instrument " + "WHERE owner = ? ORDER BY name ASC";
-
-  /**
-   * Query for retrieving the list of all instruments in the system, grouped by
-   * owner
-   */
-  private static final String GET_ALL_USERS_INSTRUMENT_LIST_QUERY = "SELECT "
-    + "i.id, CONCAT(u.surname, \", \", u.firstname, \" - \", i.name) AS name "
-    + "FROM instrument AS i " + "INNER JOIN user AS u ON i.owner = u.id "
-    + "GROUP BY i.id ORDER BY name ASC";
-
-  /**
-   * Query for retrieving the stub for a specific instrument
-   */
-  private static final String GET_INSTRUMENT_STUB_QUERY = "SELECT name "
-    + "FROM instrument WHERE i.id = ? ";
-
-  /**
    * SQL query to get an instrument's base record
    */
   private static final String GET_INSTRUMENT_QUERY = "SELECT name, owner, " // 2
@@ -221,6 +200,23 @@ public class InstrumentDB {
     + "INNER JOIN file_definition fd ON (fc.file_definition_id = fd.id)"
     + "WHERE fd.instrument_id = ? "
     + "ORDER BY st.display_order, st.name, fc.sensor_name";
+
+  /**
+   * Query to see if an instrument exists with the given owner and name.
+   */
+  private static final String INSTRUMENT_EXISTS_QUERY = "SELECT "
+    + "id FROM instrument WHERE owner = ? AND name = ?";
+
+  private static final String INSTRUMENT_LIST_QUERY_BASE = "SELECT "
+    + "i.id, i.name, i.owner, i.platform_code, i.nrt, i.properties, " // 6
+    + "iv.variable_id, iv.properties, " // 8
+    + "CONCAT(u.surname, \", \", u.firstname) AS owner_name " // 9
+    + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
+    + "INNER JOIN user u on i.owner = u.id";
+
+  private static final String INSTRUMENT_LIST_QUERY_WHERE = " WHERE u.id = ?";
+
+  private static final String INSTRUMENT_LIST_QUERY_ORDER = " ORDER BY owner_name, i.owner, i.name";
 
   /**
    * Store a new instrument in the database
@@ -393,7 +389,7 @@ public class InstrumentDB {
     Connection conn, Instrument instrument) throws SQLException {
     PreparedStatement stmt = conn.prepareStatement(CREATE_INSTRUMENT_STATEMENT,
       Statement.RETURN_GENERATED_KEYS);
-    stmt.setLong(1, instrument.getOwnerId()); // owner
+    stmt.setLong(1, instrument.getOwner().getDatabaseID()); // owner
     stmt.setString(2, instrument.getName()); // name
     stmt.setString(3, instrument.getPlatformCode()); // platform_code
     stmt.setBoolean(4, instrument.getNrt()); // nrt
@@ -580,15 +576,19 @@ public class InstrumentDB {
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurred
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws VariableNotFoundException
    */
-  public static List<InstrumentStub> getInstrumentList(DataSource dataSource,
-    User owner) throws MissingParamException, DatabaseException {
+  public static List<Instrument> getInstrumentList(DataSource dataSource,
+    User owner) throws MissingParamException, DatabaseException,
+    VariableNotFoundException, RecordNotFoundException, InstrumentException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(owner, "owner");
 
     Connection conn = null;
-    List<InstrumentStub> result = null;
+    List<Instrument> result = null;
 
     try {
       conn = dataSource.getConnection();
@@ -621,24 +621,118 @@ public class InstrumentDB {
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurred
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws VariableNotFoundException
    */
-  private static List<InstrumentStub> getInstrumentList(Connection conn,
-    long ownerId) throws MissingParamException, DatabaseException {
+  public static List<Instrument> getInstrumentList(Connection conn,
+    long ownerId) throws MissingParamException, DatabaseException,
+    VariableNotFoundException, RecordNotFoundException, InstrumentException {
+
+    MissingParam.checkMissing(conn, "conn");
+
+    List<Instrument> result = new ArrayList<Instrument>();
 
     PreparedStatement stmt = null;
-    List<InstrumentStub> instrumentList = null;
+    ResultSet records = null;
 
     try {
-      stmt = conn.prepareStatement(GET_SINGLE_USER_INSTRUMENT_LIST_QUERY);
-      stmt.setLong(1, ownerId);
-      instrumentList = runInstrumentListQuery(conn, stmt);
+
+      String sql = INSTRUMENT_LIST_QUERY_BASE;
+      if (ownerId > 0) {
+        sql += INSTRUMENT_LIST_QUERY_WHERE;
+      }
+      sql += INSTRUMENT_LIST_QUERY_ORDER;
+
+      stmt = conn.prepareStatement(sql);
+
+      if (ownerId > 0) {
+        stmt.setLong(1, ownerId);
+      }
+
+      records = stmt.executeQuery();
+
+      long currentInstrument = -1;
+      String name = null;
+      long owner = -1;
+      String platformCode = null;
+      boolean nrt = false;
+      String propertiesJson = null;
+      List<Long> variables = null;
+      Map<Long, String> variableProperties = null;
+
+      while (records.next()) {
+
+        long instrumentId = records.getLong(1);
+        if (instrumentId != currentInstrument) {
+
+          if (currentInstrument != -1) {
+            result.add(
+              createInstrument(conn, owner, currentInstrument, name, variables,
+                variableProperties, platformCode, nrt, propertiesJson));
+          }
+
+          currentInstrument = instrumentId;
+          name = records.getString(2);
+          owner = records.getLong(3);
+          platformCode = records.getString(4);
+          nrt = records.getBoolean(5);
+          propertiesJson = records.getString(6);
+          variables = new ArrayList<Long>();
+          variableProperties = new HashMap<Long, String>();
+        }
+
+        variables.add(records.getLong(7));
+        variableProperties.put(records.getLong(7), records.getString(8));
+      }
+
+      // Create the last instrument
+      result.add(createInstrument(conn, owner, currentInstrument, name,
+        variables, variableProperties, platformCode, nrt, propertiesJson));
+
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving instrument list", e);
     } finally {
+      DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
     }
 
-    return instrumentList;
+    return result;
+  }
+
+  private static Instrument createInstrument(Connection conn, long ownerId,
+    long id, String name, List<Long> variableIds,
+    Map<Long, String> variableProperties, String platformCode, boolean nrt,
+    String propertiesJson) throws MissingParamException, DatabaseException,
+    RecordNotFoundException, InstrumentException, VariableNotFoundException {
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+    RunTypeCategoryConfiguration runTypeConfig = ResourceManager.getInstance()
+      .getRunTypeCategoryConfiguration();
+
+    // Get the file definitions and sensor assignments
+    InstrumentFileSet files = getFileDefinitions(conn, id);
+    SensorAssignments sensorAssignments = getSensorAssignments(conn, id, files,
+      sensorConfig, runTypeConfig);
+
+    List<Variable> variables = new ArrayList<Variable>(variableIds.size());
+    for (long varId : variableIds) {
+      variables.add(sensorConfig.getInstrumentVariable(varId));
+    }
+
+    Map<Variable, Properties> processedVariableProperties = new HashMap<Variable, Properties>();
+    for (Map.Entry<Long, String> entry : variableProperties.entrySet()) {
+      Variable var = sensorConfig.getInstrumentVariable(entry.getKey());
+      Properties props = new Gson().fromJson(entry.getValue(),
+        Properties.class);
+
+      processedVariableProperties.put(var, props);
+    }
+
+    return new Instrument(UserDB.getUser(conn, ownerId), id, name, files,
+      variables, processedVariableProperties, sensorAssignments, platformCode,
+      nrt, new Gson().fromJson(propertiesJson, Properties.class));
   }
 
   /**
@@ -655,111 +749,15 @@ public class InstrumentDB {
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurred
-   */
-  private static List<InstrumentStub> getAllUsersInstrumentList(Connection conn)
-    throws MissingParamException, DatabaseException {
-
-    PreparedStatement stmt = null;
-    List<InstrumentStub> instrumentList = null;
-
-    try {
-      stmt = conn.prepareStatement(GET_ALL_USERS_INSTRUMENT_LIST_QUERY);
-      instrumentList = runInstrumentListQuery(conn, stmt);
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving instrument list", e);
-    } finally {
-      DatabaseUtils.closeStatements(stmt);
-    }
-
-    return instrumentList;
-  }
-
-  /**
-   * Run a query to get a list of instruments. The query must produce three
-   * columns:
-   *
-   * <ol>
-   * <li>Instrument ID</li>
-   * <li>Instrument Name</li>
-   * <li>Number of calibratable sensors</li>
-   * </ol>
-   *
-   * @param conn
-   *          A database connection
-   * @param stmt
-   *          The query to be executed
-   * @return The list of instruments
-   * @throws DatabaseException
-   *           If the query fails
-   * @throws MissingParamException
-   *           If any details are missing from the database results
-   */
-  private static List<InstrumentStub> runInstrumentListQuery(Connection conn,
-    PreparedStatement stmt) throws DatabaseException, MissingParamException {
-
-    ResultSet instruments = null;
-    List<InstrumentStub> instrumentList = new ArrayList<InstrumentStub>();
-    try {
-      instruments = stmt.executeQuery();
-      while (instruments.next()) {
-        InstrumentStub record = new InstrumentStub(instruments.getLong(1),
-          instruments.getString(2));
-        instrumentList.add(record);
-      }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving instrument list", e);
-    } finally {
-      DatabaseUtils.closeResultSets(instruments);
-    }
-
-    return instrumentList;
-  }
-
-  /**
-   * Get an stub object for a specified instrument
-   *
-   * @param dataSource
-   *          A data source
-   * @param instrumentId
-   *          The instrument's database ID
-   * @return The instrument stub
+   * @throws InstrumentException
    * @throws RecordNotFoundException
-   *           If the instrument does not exist
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any details are missing from the database results
+   * @throws VariableNotFoundException
    */
-  public static InstrumentStub getInstrumentStub(DataSource dataSource,
-    long instrumentId)
-    throws RecordNotFoundException, DatabaseException, MissingParamException {
-    InstrumentStub result = null;
+  private static List<Instrument> getAllUsersInstrumentList(Connection conn)
+    throws MissingParamException, DatabaseException, VariableNotFoundException,
+    RecordNotFoundException, InstrumentException {
 
-    Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet record = null;
-
-    try {
-      conn = dataSource.getConnection();
-      stmt = conn.prepareStatement(GET_INSTRUMENT_STUB_QUERY);
-      stmt.setLong(1, instrumentId);
-
-      record = stmt.executeQuery();
-      if (!record.next()) {
-        throw new RecordNotFoundException("Instrument not found", "instrument",
-          instrumentId);
-      } else {
-        result = new InstrumentStub(instrumentId, record.getString(1));
-      }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving instrument list", e);
-    } finally {
-      DatabaseUtils.closeResultSets(record);
-      DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
-    }
-
-    return result;
+    return getInstrumentList(conn, -1);
   }
 
   /**
@@ -785,70 +783,34 @@ public class InstrumentDB {
 
     boolean exists = false;
 
-    for (InstrumentStub instrument : getInstrumentList(dataSource, owner)) {
-      if (instrument.getName().equalsIgnoreCase(name)) {
-        exists = true;
-        break;
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(INSTRUMENT_EXISTS_QUERY);) {
+
+      stmt.setLong(1, owner.getDatabaseID());
+      stmt.setString(2, name);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        if (records.next()) {
+          exists = true;
+        }
       }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting instrument", e);
     }
 
     return exists;
   }
 
-  /**
-   * Retrieve a complete {@link Instrument} from the database
-   *
-   * @param dataSource
-   *          A data source
-   * @param instrumentID
-   *          The instrument's database ID
-   * @param sensorConfiguration
-   *          The sensors configuration
-   * @param runTypeConfiguration
-   *          The run type category configuration
-   * @return The instrument object
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws RecordNotFoundException
-   *           If the instrument ID does not exist
-   * @throws InstrumentException
-   *           If any instrument values are invalid
-   */
   public static Instrument getInstrument(DataSource dataSource,
-    long instrumentID, SensorsConfiguration sensorConfiguration,
-    RunTypeCategoryConfiguration runTypeConfiguration) throws DatabaseException,
-    MissingParamException, RecordNotFoundException, InstrumentException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkPositive(instrumentID, "instrumentID");
-
-    Instrument result = null;
-    Connection conn = null;
-
-    try {
-      conn = dataSource.getConnection();
-      result = getInstrument(conn, instrumentID, sensorConfiguration,
-        runTypeConfiguration);
+    long instrumentId) throws DatabaseException, MissingParamException,
+    RecordNotFoundException, InstrumentException {
+    try (Connection conn = dataSource.getConnection()) {
+      return getInstrument(conn, instrumentId);
     } catch (SQLException e) {
-      throw new DatabaseException("Error while updating record counts", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
+      throw new DatabaseException("Error while getting instrument", e);
     }
-
-    return result;
-  }
-
-  public static Instrument getInstrument(Connection conn, long instrumentId)
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-      .getSensorsConfiguration();
-    RunTypeCategoryConfiguration runTypeConfig = ResourceManager.getInstance()
-      .getRunTypeCategoryConfiguration();
-    return getInstrument(conn, instrumentId, sensorConfig, runTypeConfig);
-
   }
 
   /**
@@ -872,14 +834,17 @@ public class InstrumentDB {
    * @throws InstrumentException
    *           If any instrument values are invalid
    */
-  public static Instrument getInstrument(Connection conn, long instrumentId,
-    SensorsConfiguration sensorConfiguration,
-    RunTypeCategoryConfiguration runTypeConfiguration)
+  public static Instrument getInstrument(Connection conn, long instrumentId)
     throws MissingParamException, DatabaseException, RecordNotFoundException,
     InstrumentException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(instrumentId, "instrumentId");
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+    RunTypeCategoryConfiguration runTypeConfig = ResourceManager.getInstance()
+      .getRunTypeCategoryConfiguration();
 
     Instrument instrument = null;
 
@@ -920,10 +885,11 @@ public class InstrumentDB {
 
         // Now the sensor assignments
         SensorAssignments sensorAssignments = getSensorAssignments(conn,
-          instrumentId, files, sensorConfiguration, runTypeConfiguration);
+          instrumentId, files, sensorConfig, runTypeConfig);
 
-        instrument = new Instrument(instrumentId, owner, name, files, variables,
-          variableProperties, sensorAssignments, platformCode, nrt, properties);
+        instrument = new Instrument(UserDB.getUser(conn, owner), instrumentId,
+          name, files, variables, variableProperties, sensorAssignments,
+          platformCode, nrt, properties);
       }
 
     } catch (SQLException e) {
