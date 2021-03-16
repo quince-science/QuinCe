@@ -89,6 +89,17 @@ public class CalibrationFactory {
       }
       break;
     }
+    case CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE: {
+      try {
+        result = new CalculationCoefficient(id, instrument, target,
+          deploymentDate, coefficients);
+      } catch (CalibrationException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new CalibrationException(e);
+      }
+      break;
+    }
     case SensorCalibrationDB.SENSOR_CALIBRATION_TYPE: {
 
       try {
