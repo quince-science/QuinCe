@@ -184,7 +184,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @return The instrument ID
    */
   public long getInstrumentId() {
-    return instrument.getId();
+    return (null == instrument ? -1 : instrument.getId());
   }
 
   /**
@@ -199,7 +199,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
    */
   public void setInstrumentId(long instrumentId) throws MissingParamException,
     DatabaseException, RecordNotFoundException, InstrumentException {
-    this.instrument = InstrumentDB.getInstrument(getDataSource(), instrumentId);
+    if (instrumentId > 0) {
+      this.instrument = InstrumentDB.getInstrument(getDataSource(),
+        instrumentId);
+    }
   }
 
   /**
@@ -208,7 +211,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @return The instrument name
    */
   public String getInstrumentName() {
-    return instrument.getName();
+    return (null == instrument ? null : instrument.getName());
   }
 
   /**

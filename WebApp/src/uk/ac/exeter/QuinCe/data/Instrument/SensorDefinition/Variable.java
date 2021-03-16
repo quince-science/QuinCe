@@ -30,7 +30,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
-public class Variable {
+public class Variable implements Comparable<Variable> {
 
   /**
    * The variable's database ID
@@ -386,5 +386,15 @@ public class Variable {
 
   public boolean hasCoefficients() {
     return properties.getCoefficients().size() > 0;
+  }
+
+  public List<String> getCoefficients() {
+    return properties.getCoefficients();
+  }
+
+  @Override
+  public int compareTo(Variable o) {
+    // Variables are ordered by name
+    return name.compareTo(o.name);
   }
 }
