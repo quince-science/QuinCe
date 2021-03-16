@@ -11,6 +11,7 @@ import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -80,13 +81,14 @@ public class ExternalStandardDB extends CalibrationDB {
   }
 
   @Override
-  public Map<String, String> getTargets(Connection conn, long instrumentId)
+  public Map<String, String> getTargets(Connection conn, Instrument instrument)
     throws MissingParamException, DatabaseException, RecordNotFoundException {
-    List<String> standardNames = InstrumentDB.getRunTypes(conn, instrumentId,
-      RunTypeCategory.INTERNAL_CALIBRATION.getType());
+    List<String> standardNames = InstrumentDB.getRunTypes(conn,
+      instrument.getId(), RunTypeCategory.INTERNAL_CALIBRATION.getType());
     if (standardNames.size() == 0) {
       throw new RecordNotFoundException(
-        "No external standard names found for instrument " + instrumentId);
+        "No external standard names found for instrument "
+          + instrument.getId());
     }
 
     Map<String, String> result = new TreeMap<String, String>();
@@ -116,7 +118,7 @@ public class ExternalStandardDB extends CalibrationDB {
    *           If the instrument does not exist
    */
   public CalibrationSet getStandardsSet(DataSource dataSource,
-    long instrumentId, LocalDateTime date)
+    Instrument instrument, LocalDateTime date)
     throws DatabaseException, MissingParamException, RecordNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
@@ -126,7 +128,7 @@ public class ExternalStandardDB extends CalibrationDB {
 
     try {
       conn = dataSource.getConnection();
-      result = getStandardsSet(conn, instrumentId, date);
+      result = getStandardsSet(conn, instrument, date);
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving standards set", e);
     } finally {
@@ -154,16 +156,16 @@ public class ExternalStandardDB extends CalibrationDB {
    * @throws RecordNotFoundException
    *           If the instrument does not exist
    */
-  public CalibrationSet getStandardsSet(Connection conn, long instrumentId,
+  public CalibrationSet getStandardsSet(Connection conn, Instrument instrument,
     LocalDateTime date)
     throws DatabaseException, MissingParamException, RecordNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkMissing(instrument, "instrument");
     MissingParam.checkMissing(date, "date");
 
-    CalibrationSet result = new CalibrationSet(instrumentId,
-      EXTERNAL_STANDARD_CALIBRATION_TYPE, getTargets(conn, instrumentId));
+    CalibrationSet result = new CalibrationSet(instrument,
+      EXTERNAL_STANDARD_CALIBRATION_TYPE, getTargets(conn, instrument));
 
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -172,7 +174,7 @@ public class ExternalStandardDB extends CalibrationDB {
 
       stmt = conn.prepareStatement(GET_STANDARD_SET_QUERY);
       stmt.setLong(1, DateTimeUtils.dateToLong(date));
-      stmt.setLong(2, instrumentId);
+      stmt.setLong(2, instrument.getId());
 
       records = stmt.executeQuery();
       while (records.next()) {
@@ -183,7 +185,7 @@ public class ExternalStandardDB extends CalibrationDB {
         String coefficients = records.getString(4);
         String className = records.getString(5);
         result.add(CalibrationFactory.createCalibration(
-          EXTERNAL_STANDARD_CALIBRATION_TYPE, className, id, instrumentId,
+          EXTERNAL_STANDARD_CALIBRATION_TYPE, className, id, instrument,
           standardDate, target, coefficients));
       }
     } catch (SQLException e) {

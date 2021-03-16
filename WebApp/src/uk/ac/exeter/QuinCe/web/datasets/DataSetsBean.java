@@ -426,7 +426,7 @@ public class DataSetsBean extends BaseManagedBean {
 
         // Check sensor calibration equations
         CalibrationSet calibrations = new SensorCalibrationDB()
-          .getMostRecentCalibrations(getDataSource(), getCurrentInstrumentId(),
+          .getMostRecentCalibrations(getDataSource(), getCurrentInstrument(),
             DateTimeUtils.parseDisplayDateTime(startTime));
 
         if (!calibrations.isValid()) {
@@ -440,7 +440,7 @@ public class DataSetsBean extends BaseManagedBean {
 
             // Check internal calibration standards
             CalibrationSet standards = ExternalStandardDB.getInstance()
-              .getStandardsSet(getDataSource(), getCurrentInstrumentId(),
+              .getStandardsSet(getDataSource(), getCurrentInstrument(),
                 DateTimeUtils.parseDisplayDateTime(startTime));
             if (!standards.isComplete()) {
               validCalibration = false;

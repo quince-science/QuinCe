@@ -87,7 +87,7 @@ public class InternalCalibrationData extends PlotPageData {
 
     try (Connection conn = dataSource.getConnection()) {
       CalibrationSet calibrations = ExternalStandardDB.getInstance()
-        .getStandardsSet(conn, instrument.getId(), dataset.getStart());
+        .getStandardsSet(conn, instrument, dataset.getStart());
 
       // Time
       List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(

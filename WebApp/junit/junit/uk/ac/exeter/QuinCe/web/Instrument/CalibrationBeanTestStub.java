@@ -54,7 +54,7 @@ public class CalibrationBeanTestStub extends CalibrationBean {
 
   @Override
   protected Calibration initNewCalibration() {
-    return new CalibrationTestStub(instrumentId);
+    return new CalibrationTestStub(instrument);
   }
 
   @Override
