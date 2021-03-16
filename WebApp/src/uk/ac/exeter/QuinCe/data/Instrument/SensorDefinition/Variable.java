@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.google.gson.Gson;
+
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
@@ -41,9 +43,15 @@ public class Variable {
   private String name;
 
   /**
-   * IDs and Labels for this variable's attributes
+   * IDs and Labels for this variable's attributes, which must be defined by the
+   * user when they create an instrument.
    */
-  LinkedHashMap<String, String> attributes;
+  private LinkedHashMap<String, String> attributes;
+
+  /**
+   * The variable's properties
+   */
+  private final VariableProperties properties;
 
   /**
    * The core SensorType
@@ -92,15 +100,23 @@ public class Variable {
    *           If any cascade flags are invalid
    */
   protected Variable(SensorsConfiguration sensorConfig, long id, String name,
-    LinkedHashMap<String, String> attributes, long coreSensorTypeId,
-    List<Long> requiredSensorTypeIds, List<Integer> questionableCascades,
-    List<Integer> badCascades, Map<SensorType, ColumnHeading> columnHeadings)
+    LinkedHashMap<String, String> attributes, String propertiesJson,
+    long coreSensorTypeId, List<Long> requiredSensorTypeIds,
+    List<Integer> questionableCascades, List<Integer> badCascades,
+    Map<SensorType, ColumnHeading> columnHeadings)
     throws SensorTypeNotFoundException, SensorConfigurationException,
     InvalidFlagException {
 
     this.id = id;
     this.name = name;
     this.attributes = attributes;
+
+    if (null == propertiesJson || propertiesJson.length() == 0) {
+      this.properties = new VariableProperties();
+    } else {
+      this.properties = new Gson().fromJson(propertiesJson,
+        VariableProperties.class);
+    }
 
     if (coreSensorTypeId == -1) {
       coreSensorType = null;
@@ -366,5 +382,9 @@ public class Variable {
 
   public Collection<ColumnHeading> getAllColumnHeadings() {
     return columnHeadings.values();
+  }
+
+  public boolean hasCoefficients() {
+    return properties.getCoefficients().size() > 0;
   }
 }
