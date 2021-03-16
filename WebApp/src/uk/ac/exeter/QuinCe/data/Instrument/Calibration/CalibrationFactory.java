@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -39,14 +40,14 @@ public class CalibrationFactory {
    * @return The Calibration object
    */
   public static Calibration createCalibration(String calibrationType,
-    String calibrationClass, long id, long instrumentId,
+    String calibrationClass, long id, Instrument instrument,
     LocalDateTime deploymentDate, String target, String coefficients) {
 
     try {
       List<Double> parsedCoefficients = StringUtils
         .delimitedToDoubleList(coefficients);
       return createCalibration(calibrationType, calibrationClass, id,
-        instrumentId, deploymentDate, target, parsedCoefficients);
+        instrument, deploymentDate, target, parsedCoefficients);
     } catch (NumberFormatException e) {
       throw new CalibrationException(
         "Invalid coefficients list: " + coefficients);
@@ -72,14 +73,14 @@ public class CalibrationFactory {
    * @return The Calibration object
    */
   public static Calibration createCalibration(String calibrationType,
-    String calibrationClass, long id, long instrumentId,
+    String calibrationClass, long id, Instrument instrument,
     LocalDateTime deploymentDate, String target, List<Double> coefficients) {
     Calibration result;
 
     switch (calibrationType) {
     case ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE: {
       try {
-        result = new ExternalStandard(id, instrumentId, target, deploymentDate,
+        result = new ExternalStandard(id, instrument, target, deploymentDate,
           coefficients);
       } catch (CalibrationException e) {
         throw e;
@@ -95,8 +96,8 @@ public class CalibrationFactory {
         Class<?> clazz = Class.forName(fullClass);
 
         Constructor<?> constructor = clazz.getConstructor(long.class,
-          long.class, String.class, LocalDateTime.class, List.class);
-        result = (Calibration) constructor.newInstance(id, instrumentId, target,
+          Instrument.class, String.class, LocalDateTime.class, List.class);
+        result = (Calibration) constructor.newInstance(id, instrument, target,
           deploymentDate, coefficients);
       } catch (CalibrationException e) {
         throw e;
@@ -124,7 +125,7 @@ public class CalibrationFactory {
   public static Calibration clone(Calibration calibration) {
     return createCalibration(calibration.getType(),
       calibration.getClass().getSimpleName(), calibration.getId(),
-      calibration.getInstrumentId(), calibration.getDeploymentDate(),
+      calibration.getInstrument(), calibration.getDeploymentDate(),
       calibration.getTarget(), calibration.getCoefficientsAsDelimitedList());
   }
 }

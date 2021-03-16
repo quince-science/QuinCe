@@ -121,8 +121,7 @@ public class DefaultMeasurementValueCalculator
 
       try {
         CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
-          .getMostRecentCalibrations(conn, instrument.getId(),
-            measurement.getTime());
+          .getMostRecentCalibrations(conn, instrument, measurement.getTime());
 
         value.setProperty(STANDARDS_COUNT_PROPERTY,
           String.valueOf(calibrationSet.size()));

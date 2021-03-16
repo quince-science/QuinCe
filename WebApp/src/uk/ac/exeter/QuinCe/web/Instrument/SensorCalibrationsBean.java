@@ -61,7 +61,7 @@ public class SensorCalibrationsBean extends CalibrationBean {
 
   @Override
   protected Calibration initNewCalibration() {
-    return new PolynomialSensorCalibration(instrumentId);
+    return new PolynomialSensorCalibration(instrument);
   }
 
   @Override

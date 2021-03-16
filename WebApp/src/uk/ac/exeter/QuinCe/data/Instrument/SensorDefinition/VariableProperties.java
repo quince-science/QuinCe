@@ -5,13 +5,13 @@ import java.util.List;
 
 /**
  * The properties for a variable.
- * 
+ *
  * <p>
  * Instances of this class are built from JSON strings, so there are no
  * traditional constructors - only an empty constructor for the case where the
  * properties stored in the database are empty.
  * </p>
- * 
+ *
  * @author Steve Jones
  *
  */

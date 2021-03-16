@@ -3,12 +3,13 @@ package junit.uk.ac.exeter.QuinCe.web.Instrument;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 
 public class CalibrationTestStub extends Calibration {
 
-  protected CalibrationTestStub(long instrumentId) {
-    super(instrumentId, "TEST_TYPE");
+  protected CalibrationTestStub(Instrument instrument) {
+    super(instrument, "TEST_TYPE");
   }
 
   @Override

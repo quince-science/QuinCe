@@ -1,8 +1,8 @@
 -- Basic instrument setup for all Calibration Bean tests
 
 -- User
-INSERT INTO user (id, email, salt, password)
-  VALUES (1000000, 'test@test.com', 'FF', 'FF');
+INSERT INTO user (id, email, salt, password, firstname, surname, permissions)
+  VALUES (1000000, 'test@test.com', 'FF', 'FF', 'FF', 'FF', 0);
 
 -- Instrument
 INSERT INTO instrument (id, owner, name)

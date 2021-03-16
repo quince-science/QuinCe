@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
@@ -87,8 +88,13 @@ public class CalibrationBeanTest extends BaseTest {
    * the test.
    *
    * @return The initialised bean.
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws DatabaseException
+   * @throws MissingParamException
    */
-  public static CalibrationBean initBean() {
+  public static CalibrationBean initBean() throws MissingParamException,
+    DatabaseException, RecordNotFoundException, InstrumentException {
     return initBean(ExternalStandardDB.getInstance());
   }
 
@@ -107,21 +113,26 @@ public class CalibrationBeanTest extends BaseTest {
    * @param dbInstance
    *          The {@link CalibrationDB} instance to use
    * @return The initialised bean
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws DatabaseException
+   * @throws MissingParamException
    */
-  public static CalibrationBean initBean(CalibrationDB dbInstance) {
+  public static CalibrationBean initBean(CalibrationDB dbInstance)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException {
 
     CalibrationBean bean = new CalibrationBeanTestStub(dbInstance);
 
     // Set the instrument details
     bean.setInstrumentId(INSTRUMENT_ID);
-    bean.setInstrumentName(INSTRUMENT_NAME);
     bean.start();
     return bean;
   }
 
   public static CalibrationBean initBean(long calibrationId,
-    LocalDateTime deploymentDate, String target)
-    throws RecordNotFoundException {
+    LocalDateTime deploymentDate, String target) throws RecordNotFoundException,
+    MissingParamException, DatabaseException, InstrumentException {
     CalibrationBean bean = initBean();
 
     bean.setSelectedCalibrationId(calibrationId);
@@ -134,7 +145,8 @@ public class CalibrationBeanTest extends BaseTest {
 
   public static CalibrationBean initBean(CalibrationDB dbInstance,
     int editAction, long calibrationId, LocalDateTime deploymentDate,
-    String target) throws RecordNotFoundException {
+    String target) throws RecordNotFoundException, MissingParamException,
+    DatabaseException, InstrumentException {
 
     CalibrationBean bean = initBean(dbInstance);
 
@@ -208,24 +220,8 @@ public class CalibrationBeanTest extends BaseTest {
   @Test
   public void setInstrumentIdTest() throws Exception {
     CalibrationBean bean = initBean();
-    bean.setInstrumentId(1000L);
-    assertEquals(1000L, bean.getInstrumentId());
-  }
-
-  /**
-   * Test that {@link CalibrationBean#setInstrumentName(String)} works.
-   *
-   * @throws Exception
-   *           If any internal errors are encountered.
-   */
-  @FlywayTest(locationsForMigrate = {
-    "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/simple" })
-  @Test
-  public void setInstrumentNameTest() throws Exception {
-    CalibrationBean bean = initBean();
-    bean.setInstrumentName("NEW NAME");
-    assertEquals("NEW NAME", bean.getInstrumentName());
+    bean.setInstrumentId(INSTRUMENT_ID);
+    assertEquals(INSTRUMENT_ID, bean.getInstrumentId());
   }
 
   // ******************************************
@@ -538,7 +534,7 @@ public class CalibrationBeanTest extends BaseTest {
   public void addFirstCalibrationBetweenPriorsNotRequiredTest()
     throws RecordNotFoundException, InvalidCalibrationTargetException,
     InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException {
+    InvalidCalibrationEditException, DatabaseException, InstrumentException {
 
     CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 7, 0, 0, 0),
@@ -559,7 +555,7 @@ public class CalibrationBeanTest extends BaseTest {
   public void deleteOnlyCalibrationPriorsRequiredTest()
     throws RecordNotFoundException, InvalidCalibrationTargetException,
     InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException {
+    InvalidCalibrationEditException, DatabaseException, InstrumentException {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.DELETE_ACTION, 1001, null, null);
@@ -578,7 +574,7 @@ public class CalibrationBeanTest extends BaseTest {
   public void deleteOnlyCalibrationPriorsNotRequiredTest()
     throws RecordNotFoundException, InvalidCalibrationTargetException,
     InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException {
+    InvalidCalibrationEditException, DatabaseException, InstrumentException {
 
     CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
       CalibrationBean.DELETE_ACTION, 1001, null, null);
