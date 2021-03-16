@@ -530,6 +530,19 @@ public class Instrument {
     return result;
   }
 
+  public boolean hasCalculationCoefficients() {
+    boolean result = false;
+
+    for (Variable variable : variables) {
+      if (variable.hasCoefficients()) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
+  }
+
   public boolean hasRunTypes() {
     return sensorAssignments.getRunTypeColumnIDs().size() > 0;
   }

@@ -60,8 +60,17 @@
         </p:column>
         <p:column styleClass="centeredCell">
           <f:facet name="header">Calibration Gas Deployments</f:facet>
-          <p:button value="View Deployments" styleClass="inlineButton"
-            onclick="return goToStandards(#{instrument.id}, '#{instrument.name}')" />
+          <ui:fragment rendered="#{instrument.hasInternalCalibrations()}">
+            <p:button value="View Deployments" styleClass="inlineButton"
+              onclick="return goToStandards(#{instrument.id}, '#{instrument.name}')" />
+          </ui:fragment>
+        </p:column>
+        <p:column styleClass="centeredCell">
+          <f:facet name="header">Calculation Coefficients</f:facet>
+          <ui:fragment rendered="#{instrument.hasCalculationCoefficients()}">
+            <p:button value="View Coefficients" styleClass="inlineButton"
+              onclick="return goToCeofficients(#{instrument.id}, '#{instrument.name}')" />
+          </ui:fragment>
         </p:column>
       </p:dataTable>
     </h:form>

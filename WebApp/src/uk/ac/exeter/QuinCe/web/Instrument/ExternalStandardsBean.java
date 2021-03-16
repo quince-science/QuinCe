@@ -55,7 +55,7 @@ public class ExternalStandardsBean extends CalibrationBean {
 
   @Override
   protected Calibration initNewCalibration() {
-    return new ExternalStandard(instrumentId);
+    return new ExternalStandard(instrument);
   }
 
   @Override

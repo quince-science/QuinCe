@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
@@ -40,7 +41,7 @@ public abstract class Calibration implements Comparable<Calibration> {
   /**
    * The instrument to which this calibration belongs
    */
-  private long instrumentId;
+  private Instrument instrument;
 
   /**
    * The calibration type
@@ -77,9 +78,9 @@ public abstract class Calibration implements Comparable<Calibration> {
    * @param type
    *          The calibration type.
    */
-  protected Calibration(long instrumentId, String type) {
+  protected Calibration(Instrument instrument, String type) {
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
-    this.instrumentId = instrumentId;
+    this.instrument = instrument;
     this.type = type;
   }
 
@@ -93,17 +94,17 @@ public abstract class Calibration implements Comparable<Calibration> {
    * @param target
    *          The target
    */
-  protected Calibration(long instrumentId, String type, String target) {
+  protected Calibration(Instrument instrument, String type, String target) {
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
-    this.instrumentId = instrumentId;
+    this.instrument = instrument;
     this.type = type;
     this.target = target;
   }
 
-  protected Calibration(long id, long instrumentId, String type,
+  protected Calibration(long id, Instrument instrument, String type,
     String target) {
     this.id = id;
-    this.instrumentId = instrumentId;
+    this.instrument = instrument;
     this.type = type;
     this.target = target;
   }
@@ -207,8 +208,8 @@ public abstract class Calibration implements Comparable<Calibration> {
    *
    * @return The instrument ID
    */
-  public long getInstrumentId() {
-    return instrumentId;
+  public Instrument getInstrument() {
+    return instrument;
   }
 
   /**
@@ -326,7 +327,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   @Override
   public int compareTo(Calibration o) {
-    int result = (int) (this.instrumentId - o.instrumentId);
+    int result = (int) (this.instrument.getId() - o.instrument.getId());
 
     if (result == 0) {
       result = this.type.compareTo(o.type);

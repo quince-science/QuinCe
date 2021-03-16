@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 import java.sql.Connection;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -55,11 +56,11 @@ public class SensorCalibrationDB extends CalibrationDB {
   }
 
   @Override
-  public Map<String, String> getTargets(Connection conn, long instrumentId)
+  public Map<String, String> getTargets(Connection conn, Instrument instrument)
     throws MissingParamException, DatabaseException, RecordNotFoundException,
     InstrumentException {
 
-    return InstrumentDB.getCalibratableSensors(conn, instrumentId);
+    return InstrumentDB.getCalibratableSensors(conn, instrument.getId());
   }
 
   @Override
