@@ -30,12 +30,23 @@ public class FlagSerializer
   public Flag deserialize(JsonElement json, Type typeOfT,
     JsonDeserializationContext context) throws JsonParseException {
 
+    Flag result;
+
     try {
-      return new Flag(json.getAsInt());
+      // Handle JSON from RoutineFlag instances. Simply ignore the detail and
+      // get the flag value
+
+      if (json.isJsonObject()) {
+        JsonElement flagValueElement = json.getAsJsonObject().get("flagValue");
+        result = new Flag(flagValueElement.getAsInt());
+      } else {
+        result = new Flag(json.getAsInt());
+      }
     } catch (InvalidFlagException e) {
       throw new JsonParseException("Invalid flag value");
     }
 
-  }
+    return result;
 
+  }
 }

@@ -53,14 +53,15 @@ public abstract class DataReductionQCRoutine implements Routine {
 
       List<SensorValue> valuesToFlag = new ArrayList<SensorValue>();
 
-      for (SensorType sensorType : measurement
-        .getMeasurementValueSensorTypes()) {
+      for (SensorType sensorType : settings.getFlaggedSensors()) {
 
         MeasurementValue measurementValue = measurement
           .getMeasurementValue(sensorType);
 
-        valuesToFlag.addAll(measurementValue.getSensorValueIds().stream()
-          .map(allSensorValues::getById).collect(Collectors.toList()));
+        if (null != measurementValue) {
+          valuesToFlag.addAll(measurementValue.getSensorValueIds().stream()
+            .map(allSensorValues::getById).collect(Collectors.toList()));
+        }
       }
 
       if (SensorValue.allUserQCNeeded(valuesToFlag)) {
