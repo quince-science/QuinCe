@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReductionRoutines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction;
 
 /**
  * Exception class for errors encountered in the configuration of data reduction

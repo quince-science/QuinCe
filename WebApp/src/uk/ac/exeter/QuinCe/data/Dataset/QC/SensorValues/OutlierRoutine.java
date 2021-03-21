@@ -1,11 +1,13 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 
-public class OutlierRoutine extends Routine {
+public class OutlierRoutine extends AutoQCRoutine {
 
   /**
    * The maximum number of standard deviations away from the mean a value can be
@@ -21,8 +23,7 @@ public class OutlierRoutine extends Routine {
    * @throws QCRoutinesConfigurationException
    *           If the parameters are invalid
    */
-  public OutlierRoutine(List<String> parameters) throws RoutineException {
-    super(parameters);
+  public OutlierRoutine() {
   }
 
   @Override
@@ -46,7 +47,7 @@ public class OutlierRoutine extends Routine {
   }
 
   @Override
-  public void qcValues(List<SensorValue> values) throws RoutineException {
+  protected void qcAction(List<SensorValue> values) throws RoutineException {
 
     int valueCount = 0;
     double mean = 0.0;
@@ -89,7 +90,8 @@ public class OutlierRoutine extends Routine {
    *
    * @return The short QC message
    */
-  public static String getShortMessage() {
+  @Override
+  public String getShortMessage() {
     return "Standard deviation is too large";
   }
 
@@ -102,9 +104,9 @@ public class OutlierRoutine extends Routine {
    *          The value received by the routine
    * @return The long form message
    */
-  public static String getLongMessage(String requiredValue,
-    String actualValue) {
-    return "Standard deviation is " + actualValue + ", should be <= "
-      + requiredValue;
+  @Override
+  public String getLongMessage(RoutineFlag flag) {
+    return "Standard deviation is " + flag.getActualValue() + ", should be <= "
+      + flag.getRequiredValue();
   }
 }

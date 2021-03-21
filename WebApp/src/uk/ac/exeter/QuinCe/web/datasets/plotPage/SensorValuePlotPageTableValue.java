@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 
 public class SensorValuePlotPageTableValue implements PlotPageTableValue {
 

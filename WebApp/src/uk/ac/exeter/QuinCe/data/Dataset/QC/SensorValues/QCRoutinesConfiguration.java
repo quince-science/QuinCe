@@ -1,9 +1,8 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +11,7 @@ import java.util.Map;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -23,7 +23,13 @@ public class QCRoutinesConfiguration {
   /**
    * The name of the package in which all routine classes will be stored
    */
-  private static final String ROUTINE_CLASS_ROOT = "uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.";
+  private static final String ROUTINE_CLASS_ROOT = "uk.ac.exeter.QuinCe.data.Dataset.QC.";
+
+  /**
+   * The name of the package in which all sensor value routine classes will be
+   * stored (child of {@link #ROUTINE_CLASS_ROOT})
+   */
+  private static final String ROUTINE_CLASS_PACKAGE = "SensorValues";
 
   /**
    * All routine class names must end with the same text
@@ -33,7 +39,7 @@ public class QCRoutinesConfiguration {
   /**
    * The QC routines
    */
-  private Map<SensorType, List<Routine>> routines;
+  private Map<SensorType, List<AutoQCRoutine>> routines;
 
   /**
    * Main constructor - parses supplied config file and builds all Routine
@@ -51,7 +57,7 @@ public class QCRoutinesConfiguration {
     throws QCRoutinesConfigurationException, MissingParamException {
 
     MissingParam.checkMissing(configFile, "configFile");
-    routines = new HashMap<SensorType, List<Routine>>();
+    routines = new HashMap<SensorType, List<AutoQCRoutine>>();
     init(sensorsConfig, configFile);
   }
 
@@ -63,9 +69,9 @@ public class QCRoutinesConfiguration {
    * @param routine
    *          The routine
    */
-  private void addRoutine(SensorType sensorType, Routine routine) {
+  private void addRoutine(SensorType sensorType, AutoQCRoutine routine) {
     if (!routines.containsKey(sensorType)) {
-      routines.put(sensorType, new ArrayList<Routine>());
+      routines.put(sensorType, new ArrayList<AutoQCRoutine>());
     }
 
     routines.get(sensorType).add(routine);
@@ -109,11 +115,9 @@ public class QCRoutinesConfiguration {
             // Instantiate the routine class
             Class<?> routineClass = Class.forName(fullClassName);
 
-            @SuppressWarnings("unchecked")
-            Constructor<Routine> constructor = (Constructor<Routine>) routineClass
-              .getConstructor(List.class);
-
-            Routine instance = constructor.newInstance(parameters);
+            AutoQCRoutine instance = (AutoQCRoutine) routineClass
+              .getDeclaredConstructor().newInstance();
+            instance.setParameters(parameters);
 
             addRoutine(sensorType, instance);
 
@@ -145,10 +149,10 @@ public class QCRoutinesConfiguration {
    *          The sensor type
    * @return The routines to be run
    */
-  public List<Routine> getRoutines(SensorType sensorType) {
-    List<Routine> result = routines.get(sensorType);
+  public List<AutoQCRoutine> getRoutines(SensorType sensorType) {
+    List<AutoQCRoutine> result = routines.get(sensorType);
     if (null == result) {
-      result = new ArrayList<Routine>();
+      result = new ArrayList<AutoQCRoutine>();
     }
 
     return result;
@@ -162,7 +166,15 @@ public class QCRoutinesConfiguration {
    * @return The full class name
    */
   private static String getFullClassName(String routineName) {
-    return ROUTINE_CLASS_ROOT + routineName + ROUTINE_CLASS_TAIL;
+
+    String className = routineName;
+    if (routineName.contains(".")) {
+      String[] split = routineName.split("\\.");
+      className = split[split.length - 1];
+    }
+
+    return ROUTINE_CLASS_ROOT + ROUTINE_CLASS_PACKAGE + "." + className
+      + ROUTINE_CLASS_TAIL;
   }
 
   /**
@@ -176,7 +188,7 @@ public class QCRoutinesConfiguration {
    *          The class
    * @return The shortcut name.
    */
-  public static String getRoutineName(Class<? extends Routine> clazz) {
+  public static String getRoutineName(Class<? extends AutoQCRoutine> clazz) {
     return clazz.getSimpleName().replaceAll("Routine$", "");
   }
 
@@ -191,23 +203,20 @@ public class QCRoutinesConfiguration {
    *          The instance
    * @return The shortcut name.
    */
-  public static String getRoutineName(Routine routine) {
-    return getRoutineName(routine.getClass());
+  public static String getRoutineName(AutoQCRoutine routine) {
+    return ROUTINE_CLASS_PACKAGE + "."
+      + routine.getClass().getSimpleName().replaceAll("Routine$", "");
   }
 
-  /**
-   * Get the Class object for a routine given its name
-   *
-   * @param routineName
-   *          The routine name
-   * @return The Routine class
-   * @throws ClassNotFoundException
-   *           If the class does not exist
-   */
-  @SuppressWarnings("unchecked")
-  public static Class<? extends Routine> getRoutineClass(String routineName)
-    throws ClassNotFoundException {
-    return (Class<? extends Routine>) Class
-      .forName(getFullClassName(routineName));
+  public static AutoQCRoutine getRoutine(String routineName)
+    throws RoutineException {
+
+    try {
+      return (AutoQCRoutine) Class.forName(getFullClassName(routineName))
+        .getDeclaredConstructor().newInstance();
+    } catch (Exception e) {
+      throw new RoutineException(
+        "Cannot get routine instance for '" + routineName + "'", e);
+    }
   }
 }

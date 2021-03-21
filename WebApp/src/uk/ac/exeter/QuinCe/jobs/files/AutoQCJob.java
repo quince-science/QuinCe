@@ -19,10 +19,10 @@ import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.PositionQCRoutine;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.Routine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -159,7 +159,7 @@ public class AutoQCJob extends DataSetJob {
           sensorValues.getColumnValues(FileDefinition.LATITUDE_COLUMN_ID),
           dataSensorColumnIds, sensorValues);
 
-        positionQC.qcValues(null);
+        positionQC.qc(null);
       }
 
       // Run the routines for each column
@@ -218,8 +218,9 @@ public class AutoQCJob extends DataSetJob {
             || measurementRunTypes.contains(values.getKey())) {
             // Loop through all
             // routines
-            for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
-              routine.qcValues(filteredValues);
+            for (AutoQCRoutine routine : qcRoutinesConfig
+              .getRoutines(sensorType)) {
+              routine.qc(filteredValues);
             }
           }
 

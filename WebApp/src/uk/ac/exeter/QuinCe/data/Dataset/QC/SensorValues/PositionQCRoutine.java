@@ -1,15 +1,15 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 
@@ -21,8 +21,8 @@ import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
  * routines, since it operates very differently. The constructor takes the
  * complete set of {@link SensorValue}s from the {@link AutoQCJob} and works
  * with them directly instead of receiving just the position values as a normal
- * {@link Routine} would. This is because the position QC affects the QC all of
- * other measured values in the dataset.
+ * {@link AutoQCRoutine} would. This is because the position QC affects the QC
+ * all of other measured values in the dataset.
  * </p>
  *
  * <p>
@@ -42,7 +42,7 @@ import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
  * @author Steve Jones
  *
  */
-public class PositionQCRoutine extends Routine {
+public class PositionQCRoutine extends AutoQCRoutine {
 
   /**
    * The longitude values
@@ -85,7 +85,8 @@ public class PositionQCRoutine extends Routine {
     List<SensorValue> latValues, List<Long> dataColumnIds,
     DatasetSensorValues allSensorValues) throws RoutineException {
 
-    super(null);
+    super();
+    super.parameters = new ArrayList<String>(); // No parameters needed
 
     if (lonValues.size() != latValues.size()) {
       throw new RoutineException("Longitude and latitude counts are different");
@@ -107,7 +108,7 @@ public class PositionQCRoutine extends Routine {
   }
 
   @Override
-  public void qcValues(List<SensorValue> values) throws RoutineException {
+  protected void qcAction(List<SensorValue> values) throws RoutineException {
 
     try {
       int posIndex = 0;
@@ -162,47 +163,14 @@ public class PositionQCRoutine extends Routine {
             nextPosTime = nextPos.getTime();
           }
 
-          // Get the Run Type values if they exist
-          Instrument instrument = allSensorValues.getInstrument();
-
-          List<Long> runTypeColumns = instrument.getSensorAssignments()
-            .getColumnIds(SensorType.RUN_TYPE_SENSOR_TYPE);
-
-          SearchableSensorValuesList runTypeValues = null;
-          if (null != runTypeColumns && runTypeColumns.size() > 0) {
-            // Assume only one run type column
-            runTypeValues = allSensorValues
-              .getColumnValues(runTypeColumns.get(0));
-          }
-
           for (long columnId : dataColumnIds) {
-
-            // Get the sensor type for the column
-            SensorType sensorType = instrument.getSensorAssignments()
-              .getSensorTypeForDBColumn(columnId);
-
             SearchableSensorValuesList columnValues = allSensorValues
               .getColumnValues(columnId);
 
             for (SensorValue value : columnValues.rangeSearch(currentPosTime,
               nextPosTime)) {
 
-              boolean flagValue = true;
-              if (sensorType.hasInternalCalibration()) {
-                SensorValue runType = runTypeValues.timeSearch(value.getTime());
-                RunTypeCategory runTypeCategory = instrument
-                  .getRunTypeCategory(runType.getValue());
-
-                if (runTypeCategory.equals(RunTypeCategory.INTERNAL_CALIBRATION)
-                  || runTypeCategory.equals(RunTypeCategory.IGNORED)) {
-                  flagValue = false;
-                }
-
-              }
-
-              if (flagValue) {
-                value.setPositionQC(Flag.BAD, qcMessage);
-              }
+              value.setPositionQC(Flag.BAD, qcMessage);
             }
           }
         }
@@ -246,5 +214,15 @@ public class PositionQCRoutine extends Routine {
     for (SensorValue v : value) {
       v.setPositionQC(Flag.BAD, message);
     }
+  }
+
+  @Override
+  public String getShortMessage() {
+    return "Invalid position";
+  }
+
+  @Override
+  public String getLongMessage(RoutineFlag flag) {
+    return "Invalid position";
   }
 }

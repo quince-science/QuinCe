@@ -7,9 +7,9 @@ import java.util.Collection;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -712,5 +712,20 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
 
     return StringUtils.collectionToDelimited(comments, ";");
+  }
+
+  public static boolean allUserQCNeeded(Collection<SensorValue> values) {
+
+    boolean result = true;
+
+    for (SensorValue value : values) {
+      if (!value.getUserQCFlag().equals(Flag.NEEDED)
+        && !value.getUserQCFlag().equals(Flag.ASSUMED_GOOD)) {
+        result = false;
+        break;
+      }
+    }
+
+    return result;
   }
 }
