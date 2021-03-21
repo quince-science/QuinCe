@@ -1,11 +1,13 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 
-public class RangeCheckRoutine extends Routine {
+public class RangeCheckRoutine extends AutoQCRoutine {
 
   /**
    * Questionable minimum parameter index
@@ -68,8 +70,7 @@ public class RangeCheckRoutine extends Routine {
    * @throws QCRoutinesConfigurationException
    *           If the parameters are invalid
    */
-  public RangeCheckRoutine(List<String> parameters) throws RoutineException {
-    super(parameters);
+  public RangeCheckRoutine() {
   }
 
   @Override
@@ -113,7 +114,7 @@ public class RangeCheckRoutine extends Routine {
   }
 
   @Override
-  public void qcValues(List<SensorValue> values) throws RoutineException {
+  protected void qcAction(List<SensorValue> values) throws RoutineException {
     for (SensorValue sensorValue : values) {
       Double value = sensorValue.getDoubleValue();
 
@@ -136,7 +137,8 @@ public class RangeCheckRoutine extends Routine {
    *
    * @return The short QC message
    */
-  public static String getShortMessage() {
+  @Override
+  public String getShortMessage() {
     return "Out of range";
   }
 
@@ -149,9 +151,9 @@ public class RangeCheckRoutine extends Routine {
    *          The value received by the routine
    * @return The long form message
    */
-  public static String getLongMessage(String requiredValue,
-    String actualValue) {
-    return "Out of range - Should be in " + requiredValue + ", actual value is "
-      + actualValue;
+  @Override
+  public String getLongMessage(RoutineFlag flag) {
+    return "Out of range - Should be in " + flag.getRequiredValue()
+      + ", actual value is " + flag.getActualValue();
   }
 }

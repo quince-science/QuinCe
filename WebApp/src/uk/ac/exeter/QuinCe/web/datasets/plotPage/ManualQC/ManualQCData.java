@@ -24,9 +24,10 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -115,7 +116,7 @@ public class ManualQCData extends PlotPageData {
   /**
    * The values calculated by data reduction.
    */
-  protected Map<Long, Map<Variable, DataReductionRecord>> dataReduction = null;
+  protected Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> dataReduction = null;
 
   /**
    * The list of sensor column IDs in the same order as they are represented in
@@ -444,7 +445,7 @@ public class ManualQCData extends PlotPageData {
           });
         }
 
-        Map<Variable, DataReductionRecord> dataReductionData = null;
+        Map<Variable, ReadOnlyDataReductionRecord> dataReductionData = null;
 
         if (null != measurementId) {
           // Retrieve the data reduction data
@@ -456,7 +457,7 @@ public class ManualQCData extends PlotPageData {
         // calibration mode), make a blank data reduction set.
         if (null == dataReductionData) {
           // Make a blank set
-          dataReductionData = new HashMap<Variable, DataReductionRecord>();
+          dataReductionData = new HashMap<Variable, ReadOnlyDataReductionRecord>();
           for (Variable variable : instrument.getVariables()) {
             dataReductionData.put(variable, null);
           }
@@ -1025,7 +1026,7 @@ public class ManualQCData extends PlotPageData {
     Measurement measurement = measurements.get(rowTime);
 
     if (null != measurement) {
-      Map<Variable, DataReductionRecord> rowRecords = dataReduction
+      Map<Variable, ReadOnlyDataReductionRecord> rowRecords = dataReduction
         .get(measurement.getId());
       if (null != rowRecords) {
         result = rowRecords.get(variable);

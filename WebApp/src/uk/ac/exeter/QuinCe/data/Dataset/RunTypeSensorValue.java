@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.time.LocalDateTime;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 
 /**
  * An extended version of the {@link SensorValue} that includes the run type

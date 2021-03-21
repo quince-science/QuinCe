@@ -2,7 +2,10 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -10,7 +13,16 @@ import uk.ac.exeter.QuinCe.api.nrt.MakeNrtDataset;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
@@ -58,7 +70,6 @@ public class DataReductionQCJob extends DataSetJob {
 
   @Override
   protected void execute(JobThread thread) throws JobFailedException {
-    System.out.println("I will do data reduction QC");
 
     Connection conn = null;
 
@@ -68,6 +79,50 @@ public class DataReductionQCJob extends DataSetJob {
       Instrument instrument = getInstrument(conn);
 
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION_QC);
+
+      DataReductionQCRoutinesConfiguration config = resourceManager
+        .getDataReductionQCRoutinesConfiguration();
+
+      // Load all the sensor values for this dataset
+      DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
+        instrument, dataSet.getId(), false);
+
+      List<Measurement> measurements = DataSetDataDB.getMeasurements(conn,
+        dataSet.getId());
+
+      Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> records = DataSetDataDB
+        .getDataReductionData(conn, instrument, dataSet);
+
+      FlaggedItems flaggedItems = new FlaggedItems();
+
+      for (Variable var : instrument.getVariables()) {
+
+        TreeMap<Measurement, ReadOnlyDataReductionRecord> variableRecords = new TreeMap<Measurement, ReadOnlyDataReductionRecord>();
+        for (Measurement measurement : measurements) {
+          Map<Variable, ReadOnlyDataReductionRecord> measurementRecords = records
+            .get(measurement.getId());
+
+          if (null != measurementRecords
+            && measurementRecords.containsKey(var)) {
+            variableRecords.put(measurement, measurementRecords.get(var));
+          }
+        }
+
+        Class<? extends DataReducer> reducer = DataReducerFactory
+          .getReducerClass(var.getName());
+
+        List<DataReductionQCRoutine> routines = config.getRoutines(reducer);
+        if (null != routines) {
+          for (DataReductionQCRoutine routine : routines) {
+            routine.qc(instrument, variableRecords, allSensorValues,
+              flaggedItems);
+          }
+        }
+      }
+
+      DataSetDataDB.storeSensorValues(conn, flaggedItems.getSensorValues());
+      DataSetDataDB.storeDataReductionQC(conn,
+        flaggedItems.getDataReductionRecords());
 
       if (dataSet.isNrt()) {
         dataSet.setStatus(DataSet.STATUS_READY_FOR_EXPORT);

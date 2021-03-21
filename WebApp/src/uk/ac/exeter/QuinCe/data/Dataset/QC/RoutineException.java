@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
 /**
  * Exception for errors raised within QC routines
@@ -6,12 +6,8 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
  * @author Steve Jones
  *
  */
+@SuppressWarnings("serial")
 public class RoutineException extends Exception {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = -9197093855452751110L;
 
   /**
    * Simple constructor for a basic error message
