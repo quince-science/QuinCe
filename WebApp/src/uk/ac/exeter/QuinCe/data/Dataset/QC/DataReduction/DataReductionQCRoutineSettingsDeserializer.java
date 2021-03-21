@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReductionRoutines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction;
 
 import java.lang.reflect.Type;
 import java.util.Map;

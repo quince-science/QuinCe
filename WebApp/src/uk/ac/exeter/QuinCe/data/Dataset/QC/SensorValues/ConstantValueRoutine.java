@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -6,8 +6,10 @@ import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 
-public class ConstantValueRoutine extends Routine {
+public class ConstantValueRoutine extends AutoQCRoutine {
 
   /**
    * The maximum time that a value can remain constant (in minutes)
@@ -22,8 +24,8 @@ public class ConstantValueRoutine extends Routine {
    * @throws QCRoutinesConfigurationException
    *           If the parameters are invalid
    */
-  public ConstantValueRoutine(List<String> parameters) throws RoutineException {
-    super(parameters);
+  public ConstantValueRoutine() throws RoutineException {
+    super();
   }
 
   @Override
@@ -45,7 +47,7 @@ public class ConstantValueRoutine extends Routine {
   }
 
   @Override
-  public void qcValues(List<SensorValue> values) throws RoutineException {
+  protected void qcAction(List<SensorValue> values) throws RoutineException {
 
     List<SensorValue> valueCollection = new ArrayList<SensorValue>();
 
@@ -148,7 +150,8 @@ public class ConstantValueRoutine extends Routine {
    *
    * @return The short QC message
    */
-  public static String getShortMessage() {
+  @Override
+  public String getShortMessage() {
     return "Constant for too long";
   }
 
@@ -161,9 +164,9 @@ public class ConstantValueRoutine extends Routine {
    *          The value received by the routine
    * @return The long form message
    */
-  public static String getLongMessage(String requiredValue,
-    String actualValue) {
-    return "Constant for " + actualValue + " minutes - limit is "
-      + requiredValue + " minutes";
+  @Override
+  public String getLongMessage(RoutineFlag flag) {
+    return "Constant for " + flag.getActualValue() + " minutes - limit is "
+      + flag.getRequiredValue() + " minutes";
   }
 }

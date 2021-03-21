@@ -1,12 +1,14 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 
-public class HighDeltaRoutine extends Routine {
+public class HighDeltaRoutine extends AutoQCRoutine {
 
   /**
    * The maximum delta between values, in units per minute
@@ -21,8 +23,8 @@ public class HighDeltaRoutine extends Routine {
    * @throws QCRoutinesConfigurationException
    *           If the parameters are invalid
    */
-  public HighDeltaRoutine(List<String> parameters) throws RoutineException {
-    super(parameters);
+  public HighDeltaRoutine() {
+    super();
   }
 
   @Override
@@ -44,7 +46,7 @@ public class HighDeltaRoutine extends Routine {
   }
 
   @Override
-  public void qcValues(List<SensorValue> values) throws RoutineException {
+  protected void qcAction(List<SensorValue> values) throws RoutineException {
     SensorValue lastValue = null;
 
     for (SensorValue sensorValue : values) {
@@ -79,7 +81,8 @@ public class HighDeltaRoutine extends Routine {
    *
    * @return The short QC message
    */
-  public static String getShortMessage() {
+  @Override
+  public String getShortMessage() {
     return "Changes too quickly";
   }
 
@@ -92,9 +95,9 @@ public class HighDeltaRoutine extends Routine {
    *          The value received by the routine
    * @return The long form message
    */
-  public static String getLongMessage(String requiredValue,
-    String actualValue) {
-    return "Changes too quickly - " + actualValue + "/min, limit is "
-      + requiredValue + "/min";
+  @Override
+  public String getLongMessage(RoutineFlag flag) {
+    return "Changes too quickly - " + flag.getActualValue() + "/min, limit is "
+      + flag.getRequiredValue() + "/min";
   }
 }

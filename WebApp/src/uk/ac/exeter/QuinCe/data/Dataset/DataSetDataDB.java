@@ -24,7 +24,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -120,6 +120,13 @@ public class DataSetDataDB {
   private static final String STORE_DATA_REDUCTION_STATEMENT = "INSERT INTO "
     + "data_reduction (measurement_id, variable_id, calculation_values, "
     + "qc_flag, qc_message) VALUES (?, ?, ?, ?, ?)";
+
+  /**
+   * Statement to update the QC info for a data reduction record
+   */
+  private static final String STORE_DATA_REDUCTION_QC_STATEMENT = "UPDATE "
+    + "data_reduction SET qc_flag = ?, qc_message = ? WHERE "
+    + "measurement_id = ? AND variable_id = ?";
 
   private static final String DELETE_DATA_REDUCTION_STATEMENT = "DELETE FROM "
     + "data_reduction WHERE measurement_id IN "
@@ -288,7 +295,7 @@ public class DataSetDataDB {
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(sensorValues, "sensorValues");
+    MissingParam.checkMissing(sensorValues, "sensorValues", true);
 
     PreparedStatement addStmt = null;
     PreparedStatement updateStmt = null;
@@ -665,7 +672,8 @@ public class DataSetDataDB {
    *           If the data cannot be stored
    */
   public static void storeDataReduction(Connection conn,
-    List<DataReductionRecord> dataReductionRecords) throws DatabaseException {
+    Collection<DataReductionRecord> dataReductionRecords)
+    throws DatabaseException {
 
     try (PreparedStatement dataReductionStmt = conn
       .prepareStatement(STORE_DATA_REDUCTION_STATEMENT)) {
@@ -691,7 +699,45 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing data reduction", e);
     }
+  }
 
+  /**
+   * Store the results of data reduction in the database
+   *
+   * @param conn
+   *          A database connection
+   * @param values
+   *          The calculation values for the data reduction, as extracted from
+   *          the sensor values
+   * @param dataReductionRecords
+   *          The data reduction calculations
+   * @throws DatabaseException
+   *           If the data cannot be stored
+   */
+  public static void storeDataReductionQC(Connection conn,
+    Collection<ReadOnlyDataReductionRecord> dataReductionRecords)
+    throws DatabaseException {
+
+    try (PreparedStatement dataReductionStmt = conn
+      .prepareStatement(STORE_DATA_REDUCTION_QC_STATEMENT)) {
+      for (ReadOnlyDataReductionRecord dataReduction : dataReductionRecords) {
+
+        if (dataReduction.isDirty()) {
+          dataReductionStmt.setInt(1, dataReduction.getQCFlag().getFlagValue());
+          dataReductionStmt.setString(2, StringUtils
+            .collectionToDelimited(dataReduction.getQCMessages(), ";"));
+          dataReductionStmt.setLong(3, dataReduction.getMeasurementId());
+          dataReductionStmt.setLong(4, dataReduction.getVariableId());
+        }
+
+        dataReductionStmt.addBatch();
+      }
+
+      dataReductionStmt.executeBatch();
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while storing data reduction", e);
+    }
   }
 
   /**
@@ -890,7 +936,27 @@ public class DataSetDataDB {
     return result;
   }
 
-  public static Map<Long, Map<Variable, DataReductionRecord>> getDataReductionData(
+  /**
+   * Get the data reduction data for a dataset.
+   *
+   * <p>
+   * Returns a Map structure of Measurement ID -&gt; Variable -&gt;
+   * DataReductionRecord.
+   * <p>
+   *
+   * @param conn
+   *          A database connection
+   * @param instrument
+   *          The instrument
+   * @param dataSet
+   *          The dataset
+   * @return The data reduction data
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> getDataReductionData(
     Connection conn, Instrument instrument, DataSet dataSet)
     throws MissingParamException, DatabaseException {
 
@@ -898,7 +964,7 @@ public class DataSetDataDB {
     MissingParam.checkMissing(instrument, "instrument");
     MissingParam.checkMissing(dataSet, "dataSet");
 
-    Map<Long, Map<Variable, DataReductionRecord>> result = new HashMap<Long, Map<Variable, DataReductionRecord>>();
+    Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> result = new HashMap<Long, Map<Variable, ReadOnlyDataReductionRecord>>();
 
     try (PreparedStatement stmt = conn
       .prepareStatement(GET_DATA_REDUCTION_QUERY)) {
@@ -922,22 +988,20 @@ public class DataSetDataDB {
           Flag qcFlag = new Flag(records.getInt(4));
           String qcMessage = records.getString(5);
 
-          DataReductionRecord record = ReadOnlyDataReductionRecord.makeRecord(
-            measurementId, variableId, calculationValues, qcFlag, qcMessage);
+          ReadOnlyDataReductionRecord record = ReadOnlyDataReductionRecord
+            .makeRecord(measurementId, variableId, calculationValues, qcFlag,
+              qcMessage);
 
           if (measurementId != currentMeasurement) {
             result.put(measurementId,
-              new HashMap<Variable, DataReductionRecord>());
+              new HashMap<Variable, ReadOnlyDataReductionRecord>());
             currentMeasurement = measurementId;
           }
 
           result.get(currentMeasurement).put(instrument.getVariable(variableId),
             record);
-
         }
-
       }
-
     } catch (Exception e) {
       throw new DatabaseException("Error while retrieving data reduction data",
         e);

@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 /**
  * Exception class for errors encountered in the configuration of QC routines.

@@ -1,22 +1,25 @@
-package uk.ac.exeter.QuinCe.data.Dataset.QC.Routines;
+package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * The base class for a QC routine. These classes will be called to check the
  * data after it's been read and processed for missing/ out of range values.
  */
-public abstract class Routine {
+public abstract class AutoQCRoutine implements Routine {
 
   /**
    * The parameters for the routine
    */
-  protected List<String> parameters;
+  protected List<String> parameters = null;
 
   /**
    * Basic constructor
@@ -26,7 +29,11 @@ public abstract class Routine {
    * @throws RoutineException
    *           If the parameters are invalid
    */
-  public Routine(List<String> parameters) throws RoutineException {
+  protected AutoQCRoutine() {
+  }
+
+  protected void setParameters(List<String> parameters)
+    throws RoutineException {
     this.parameters = parameters;
     validateParameters();
   }
@@ -104,36 +111,35 @@ public abstract class Routine {
   protected abstract void validateParameters() throws RoutineException;
 
   /**
+   * Perform the QC on the specified values.
+   *
+   * <p>
+   * The method ensures that the Routine is correctly configured and then calls
+   * {@link #qcAction(List)} to perform the actual QC.
+   * </p>
+   *
+   * @param values
+   *          The values to be QCed.
+   * @throws RoutineException
+   *           If the Routine is not configured correctly, or fails during
+   *           processing.
+   */
+  public void qc(List<SensorValue> values) throws RoutineException {
+    if (null == parameters) {
+      throw new RoutineException("Routine parameters not set");
+    }
+
+    qcAction(values);
+  }
+
+  /**
    * Perform the QC
    *
    * @param values
    *          The values to be QCed
    */
-  public abstract void qcValues(List<SensorValue> values)
+  protected abstract void qcAction(List<SensorValue> values)
     throws RoutineException;
-
-  /**
-   * Get the short form message for this routine
-   *
-   * @return The short QC message
-   */
-  public static String getShortMessage() {
-    return "DEFAULT SHORT MESSAGE. YOU SHOULD NOT BE SEEING THIS!";
-  }
-
-  /**
-   * Get the long form message for this routine
-   *
-   * @param requiredValue
-   *          The value required be the routine
-   * @param actualValue
-   *          The actual data value
-   * @return The short QC message
-   */
-  public static String getLongMessage(String requiredValue,
-    String actualValue) {
-    return "DEFAULT LONG MESSAGE. YOU SHOULD NOT BE SEEING THIS!";
-  }
 
   /**
    * Filter a list of {@link SensorValue} objects to remove any NaN values.
@@ -144,5 +150,14 @@ public abstract class Routine {
    */
   protected List<SensorValue> filterMissingValues(List<SensorValue> values) {
     return values.stream().filter(x -> !x.isNaN()).collect(Collectors.toList());
+  }
+
+  public abstract String getShortMessage();
+
+  public abstract String getLongMessage(RoutineFlag flag);
+
+  @Override
+  public String getName() {
+    return QCRoutinesConfiguration.getRoutineName(this);
   }
 }

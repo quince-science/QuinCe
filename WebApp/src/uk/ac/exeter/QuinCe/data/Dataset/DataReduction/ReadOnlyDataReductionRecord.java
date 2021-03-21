@@ -72,8 +72,12 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    */
   @Override
   public void setQc(Flag flag, List<String> messages) {
-    overrideQcFlag = flag;
-    overrideQcMessages = new NoEmptyStringList(messages);
+    if (null == overrideQcFlag || flag.moreSignificantThan(overrideQcFlag)) {
+      overrideQcFlag = flag;
+      overrideQcMessages = new NoEmptyStringList(messages);
+    } else if (null != overrideQcFlag && flag.equals(overrideQcFlag)) {
+      overrideQcMessages.addAll(messages);
+    }
   }
 
   /**
@@ -94,4 +98,13 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
     return null != overrideQcFlag ? overrideQcMessages : super.getQCMessages();
   }
 
+  /**
+   * Determines whether or not the QC flag has been overridden, and therefore
+   * the record needs to be saved.
+   *
+   * @return {@code true} if the record needs saving; {@code false) if not.
+   */
+  public boolean isDirty() {
+    return null != overrideQcFlag;
+  }
 }
