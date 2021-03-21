@@ -76,47 +76,57 @@ public class DataSet {
   /**
    * The numeric value for the data extraction status
    */
-  public static final int STATUS_DATA_EXTRACTION = 1;
+  public static final int STATUS_DATA_EXTRACTION = 10;
 
   /**
    * The string for the data extraction status
    */
-  public static final String STATUS_DATA_EXTRACTION_NAME = "Data extraction";
-
-  /**
-   * The numeric value for the data reduction status
-   */
-  public static final int STATUS_DATA_REDUCTION = 2;
-
-  /**
-   * The string for the data extraction status
-   */
-  public static final String STATUS_DATA_REDUCTION_NAME = "Data reduction";
+  public static final String STATUS_DATA_EXTRACTION_NAME = "Data Extraction";
 
   /**
    * The numeric value for the automatic QC status
    */
-  public static final int STATUS_AUTO_QC = 3;
+  public static final int STATUS_AUTO_QC = 20;
 
   /**
    * The string for the automatic QC status
    */
-  public static final String STATUS_AUTO_QC_NAME = "Automatic QC";
+  public static final String STATUS_AUTO_QC_NAME = "Sensor QC";
+
+  /**
+   * The numeric value for the data reduction status
+   */
+  public static final int STATUS_DATA_REDUCTION = 30;
+
+  /**
+   * The string for the data extraction status
+   */
+  public static final String STATUS_DATA_REDUCTION_NAME = "Data Reduction";
+
+  /**
+   * The numeric value for the data reduction QC status
+   */
+  public static final int STATUS_DATA_REDUCTION_QC = 40;
+
+  /**
+   * The string for the export complete status
+   */
+  public static final String STATUS_DATA_REDUCTION_QC_NAME = "Data Reduction QC";
 
   /**
    * The numeric value for the user QC status
    */
-  public static final int STATUS_USER_QC = 4;
+  public static final int STATUS_USER_QC = 50;
 
   /**
    * The string for the user QC status
    */
-  public static final String STATUS_USER_QC_NAME = "Ready for QC";
+  public static final String STATUS_USER_QC_NAME = "Ready for Manual QC";
 
   /**
    * The numeric value for the ready for submission status
    */
-  public static final int STATUS_READY_FOR_SUBMISSION = 5;
+  public static final int STATUS_READY_FOR_SUBMISSION = 100;
 
   /**
    * The string for the ready for submission status
@@ -126,7 +136,7 @@ public class DataSet {
   /**
    * The numeric value for the waiting for approval status
    */
-  public static final int STATUS_WAITING_FOR_APPROVAL = 6;
+  public static final int STATUS_WAITING_FOR_APPROVAL = 110;
 
   /**
    * The string for the waiting for approval status
@@ -136,7 +146,7 @@ public class DataSet {
   /**
    * The numeric value for the ready for export status
    */
-  public static final int STATUS_READY_FOR_EXPORT = 7;
+  public static final int STATUS_READY_FOR_EXPORT = 120;
 
   /**
    * The string for the ready for export status
@@ -146,32 +156,22 @@ public class DataSet {
   /**
    * The numeric value for the exporting status
    */
-  public static final int STATUS_EXPORTING = 8;
+  public static final int STATUS_EXPORTING = 130;
 
   /**
    * The string for the exporting status
    */
-  public static final String STATUS_EXPORTING_NAME = "Automatic export in progress";
+  public static final String STATUS_EXPORTING_NAME = "Automatic Export In Progress";
 
   /**
    * The numeric value for the export complete status
    */
-  public static final int STATUS_EXPORT_COMPLETE = 9;
+  public static final int STATUS_EXPORT_COMPLETE = 140;
 
   /**
    * The string for the export complete status
    */
-  public static final String STATUS_EXPORT_COMPLETE_NAME = "Automatic export complete";
-
-  /**
-   * The numeric value for the data reduction QC status
-   */
-  public static final int STATUS_DATA_REDUCTION_QC = 10;
-
-  /**
-   * The string for the export complete status
-   */
-  public static final String STATUS_DATA_REDUCTION_QC_NAME = "Data Reduction QC";
+  public static final String STATUS_EXPORT_COMPLETE_NAME = "Automatic Export Complete";
 
   /**
    * The database ID
