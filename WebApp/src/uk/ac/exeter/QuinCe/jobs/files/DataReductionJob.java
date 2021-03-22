@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -183,13 +184,12 @@ public class DataReductionJob extends DataSetJob {
           // it.
           boolean hasCoreValue = true;
 
-          SensorType coreSensorType = variable.getCoreSensorType();
-          if (null != coreSensorType) {
+          List<SensorType> coreSensorTypes = variable.getCoreSensorTypes();
+          if (coreSensorTypes.size() > 0) {
 
             hasCoreValue = false;
 
-            if (null != measurement.getMeasurementValue(coreSensorType)
-              && measurement.getMeasurementValue(coreSensorType).hasValue()) {
+            if (measurement.hasMeasurementValue(coreSensorTypes)) {
               hasCoreValue = true;
             }
           }

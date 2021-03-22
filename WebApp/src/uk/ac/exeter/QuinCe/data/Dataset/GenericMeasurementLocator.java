@@ -35,10 +35,10 @@ public class GenericMeasurementLocator implements MeasurementLocator {
 
       for (Variable variable : instrument.getVariables()) {
         if (variable.hasInternalCalibrations()) {
-          SensorType coreSensorType = variable.getCoreSensorType();
-          if (null != coreSensorType) {
+          List<SensorType> coreSensorTypes = variable.getCoreSensorTypes();
+          if (coreSensorTypes.size() > 0) {
             List<Long> columns = instrument.getSensorAssignments()
-              .getColumnIds(coreSensorType);
+              .getColumnIds(coreSensorTypes);
             measurementColumnIds.addAll(columns);
           } else {
 
