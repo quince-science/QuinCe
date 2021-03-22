@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -809,37 +810,46 @@ public class SensorAssignments
   }
 
   public List<Long> getColumnIds(SensorType sensorType) {
+    List<SensorType> sensorTypes = new ArrayList<SensorType>(1);
+    sensorTypes.add(sensorType);
+    return getColumnIds(sensorTypes);
+  }
+
+  public List<Long> getColumnIds(Collection<SensorType> sensorTypes) {
 
     List<Long> result = null;
 
-    if (sensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
-      result = new ArrayList<Long>(1);
-      result.add(FileDefinition.LONGITUDE_COLUMN_ID);
-    } else if (sensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
-      result = new ArrayList<Long>(1);
-      result.add(FileDefinition.LATITUDE_COLUMN_ID);
-    } else {
+    for (SensorType sensorType : sensorTypes) {
 
-      SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-        .getSensorsConfiguration();
-
-      Set<SensorType> sensorTypes;
-
-      if (sensorConfig.isParent(sensorType)) {
-        sensorTypes = sensorConfig.getChildren(sensorType);
+      if (sensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
+        result = new ArrayList<Long>(1);
+        result.add(FileDefinition.LONGITUDE_COLUMN_ID);
+      } else if (sensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
+        result = new ArrayList<Long>(1);
+        result.add(FileDefinition.LATITUDE_COLUMN_ID);
       } else {
-        sensorTypes = new HashSet<SensorType>();
-        sensorTypes.add(sensorType);
-      }
 
-      for (SensorType type : sensorTypes) {
-        List<SensorAssignment> assignments = get(type);
-        if (null != assignments) {
+        SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+          .getSensorsConfiguration();
 
-          result = new ArrayList<Long>(assignments.size());
+        Set<SensorType> localSensorTypes;
 
-          for (SensorAssignment assignment : assignments) {
-            result.add(assignment.getDatabaseId());
+        if (sensorConfig.isParent(sensorType)) {
+          localSensorTypes = sensorConfig.getChildren(sensorType);
+        } else {
+          localSensorTypes = new HashSet<SensorType>();
+          localSensorTypes.add(sensorType);
+        }
+
+        for (SensorType type : localSensorTypes) {
+          List<SensorAssignment> assignments = get(type);
+          if (null != assignments) {
+
+            result = new ArrayList<Long>(assignments.size());
+
+            for (SensorAssignment assignment : assignments) {
+              result.add(assignment.getDatabaseId());
+            }
           }
         }
       }
