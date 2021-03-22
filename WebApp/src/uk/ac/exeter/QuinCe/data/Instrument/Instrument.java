@@ -11,14 +11,18 @@ import java.util.Set;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Object to hold all the details of an instrument
@@ -331,21 +335,72 @@ public class Instrument {
     return variables;
   }
 
+  public RunTypeCategory getRunTypeCategory(
+    Map.Entry<Long, String> runTypeEntry) throws RunTypeCategoryException {
+    return getRunTypeCategory(runTypeEntry.getKey(), runTypeEntry.getValue());
+  }
+
   /**
    * Get the Run Type category for a given Run Type value
    *
    * @param runTypeValue
    *          The Run Type value
    * @return The Run Type category
+   * @throws RunTypeCategoryException
    */
-  public RunTypeCategory getRunTypeCategory(String runTypeValue) {
-    // TODO Maybe we can build a lookup table for this, since the values
-    // are fixed once the instrument's loaded from the database
+  public RunTypeCategory getRunTypeCategory(long variableId,
+    String runTypeValue) throws RunTypeCategoryException {
+
+    RunTypeCategory result = null;
+
+    // Fixed run types are those defined in code (see Measurement.java), and
+    // determined programmatically.
+    // Non-fixed ones are provided as a column in the data
+    boolean useFixedRunTypes = true;
+
+    if (variableId == Measurement.GENERIC_RUN_TYPE_VARIABLE) {
+      useFixedRunTypes = false;
+    }
+
     List<SensorAssignment> runTypeAssignments = getSensorAssignments()
       .get(SensorType.RUN_TYPE_SENSOR_TYPE);
-    FileDefinition fileDef = getFileDefinitions()
-      .get(runTypeAssignments.get(0).getDataFile());
-    return fileDef.getRunTypes().getRunTypeCategory(runTypeValue);
+    if (null != runTypeAssignments && runTypeAssignments.size() > 0) {
+      useFixedRunTypes = false;
+    }
+
+    if (useFixedRunTypes) {
+      switch (runTypeValue) {
+      case Measurement.IGNORED_RUN_TYPE: {
+        result = RunTypeCategory.IGNORED;
+        break;
+      }
+      case Measurement.INTERNAL_CALIBRATION_RUN_TYPE: {
+        result = RunTypeCategory.INTERNAL_CALIBRATION;
+        break;
+      }
+      case Measurement.MEASUREMENT_RUN_TYPE: {
+        try {
+          Variable variable = ResourceManager.getInstance()
+            .getSensorsConfiguration().getInstrumentVariable(variableId);
+          result = new RunTypeCategory(variableId, variable.getName());
+        } catch (VariableNotFoundException e) {
+          throw new RunTypeCategoryException(
+            "Variable not found for variable ID " + variableId);
+        }
+        break;
+      }
+      default: {
+        throw new RunTypeCategoryException(
+          "Unrecognised run type '" + runTypeValue + "'");
+      }
+      }
+    } else {
+      FileDefinition fileDef = getFileDefinitions()
+        .get(runTypeAssignments.get(0).getDataFile());
+      result = fileDef.getRunTypes().getRunTypeCategory(runTypeValue);
+    }
+
+    return result;
   }
 
   /**
@@ -554,34 +609,17 @@ public class Instrument {
    * @param runType
    *          The run type
    * @return
+   * @throws RunTypeCategoryException
    */
-  public boolean isMeasurementRunType(String runType) {
+  public boolean isRunTypeForVariable(Variable variable, String runType)
+    throws RunTypeCategoryException {
     boolean result = false;
 
     if (!hasInternalCalibrations()) {
       result = true;
     } else {
-      result = getRunTypeCategory(runType).isMeasurementType();
-    }
-
-    return result;
-  }
-
-  /**
-   * Determine whether a Measurement object has the correct run type for data
-   * reduction to be performed
-   *
-   * @param runType
-   *          The run type
-   * @return
-   */
-  public boolean isRunTypeForVariable(Variable variable, String runType) {
-    boolean result = false;
-
-    if (!hasInternalCalibrations()) {
-      result = true;
-    } else {
-      result = getRunTypeCategory(runType).getType() == variable.getId();
+      result = getRunTypeCategory(variable.getId(), runType)
+        .getType() == variable.getId();
     }
 
     return result;
@@ -707,14 +745,15 @@ public class Instrument {
     return variableProperties;
   }
 
-  public Set<ColumnHeading> getAllVariableColumnHeadings(String runType) {
+  public Set<ColumnHeading> getAllVariableColumnHeadings(String runType)
+    throws RunTypeCategoryException {
     Set<ColumnHeading> result = new HashSet<ColumnHeading>();
 
-    variables.forEach(v -> {
-      if (isRunTypeForVariable(v, runType)) {
-        result.addAll(v.getAllColumnHeadings());
+    for (Variable variable : variables) {
+      if (isRunTypeForVariable(variable, runType)) {
+        result.addAll(variable.getAllColumnHeadings());
       }
-    });
+    }
 
     return result;
   }

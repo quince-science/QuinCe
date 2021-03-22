@@ -14,12 +14,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
  * @author zuj007
  *
  */
+@SuppressWarnings("serial")
 public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
-
-  /**
-   * Serial version UID
-   */
-  private static final long serialVersionUID = -4123234930155566035L;
 
   /**
    * The Run Type column in the parent file definition

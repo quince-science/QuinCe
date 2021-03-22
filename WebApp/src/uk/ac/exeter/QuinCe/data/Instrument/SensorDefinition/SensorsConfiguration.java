@@ -822,6 +822,22 @@ public class SensorsConfiguration {
     return result;
   }
 
+  public Variable getInstrumentVariable(String name)
+    throws VariableNotFoundException {
+    Variable result = null;
+
+    for (Variable variable : instrumentVariables.values()) {
+      if (variable.getName().equals(name)) {
+        result = variable;
+        break;
+      }
+    }
+    if (null == result) {
+      throw new VariableNotFoundException(name);
+    }
+    return result;
+  }
+
   /**
    * Get a list of {@link Variable}s using their IDs.
    *
