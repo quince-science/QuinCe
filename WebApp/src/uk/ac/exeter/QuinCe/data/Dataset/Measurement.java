@@ -5,6 +5,7 @@ import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -16,6 +17,7 @@ import com.google.gson.reflect.TypeToken;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -33,6 +35,14 @@ public class Measurement implements Comparable<Measurement> {
 
   protected static Type MEASUREMENT_VALUES_TYPE;
 
+  public static final long GENERIC_RUN_TYPE_VARIABLE = -1L;
+
+  public static final String IGNORED_RUN_TYPE = "__I";
+
+  public static final String INTERNAL_CALIBRATION_RUN_TYPE = "__C";
+
+  public static final String MEASUREMENT_RUN_TYPE = "__M";
+
   /**
    * The measurement's database ID
    */
@@ -49,12 +59,20 @@ public class Measurement implements Comparable<Measurement> {
   private final LocalDateTime time;
 
   /**
-   * The run type of the measurement (optional)
+   * The run types of the measurement.
+   *
+   * <p>
+   * Multiple run types may be applicable to different variables. Use
+   * {@link #GENERIC_RUN_TYPE_VARIABLE} for the generic run type.
    */
-  private final String runType;
+  private final Map<Long, String> runTypes;
 
   /**
    * The values used to perform data reduction for this measurement.
+   *
+   * <p>
+   * The {@link Long} is the database ID of a {@link SensorType}.
+   * </p>
    */
   private HashMap<Long, MeasurementValue> measurementValues;
 
@@ -82,12 +100,13 @@ public class Measurement implements Comparable<Measurement> {
    * @param runType
    *          The run type of the measurement
    */
-  public Measurement(long datasetId, LocalDateTime time, String runType) {
+  public Measurement(long datasetId, LocalDateTime time,
+    Map<Long, String> runTypes) {
 
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.datasetId = datasetId;
     this.time = time;
-    this.runType = runType;
+    this.runTypes = runTypes;
     this.measurementValues = new HashMap<Long, MeasurementValue>();
   }
 
@@ -113,17 +132,18 @@ public class Measurement implements Comparable<Measurement> {
     this.id = id;
     this.datasetId = datasetId;
     this.time = time;
-    this.runType = runType;
+    this.runTypes = new HashMap<Long, String>();
     this.measurementValues = new HashMap<Long, MeasurementValue>();
   }
 
   public Measurement(long id, long datasetId, LocalDateTime time,
-    String runType, HashMap<Long, MeasurementValue> measurementValues) {
+    Map<Long, String> runTypes,
+    HashMap<Long, MeasurementValue> measurementValues) {
 
     this.id = id;
     this.datasetId = datasetId;
     this.time = time;
-    this.runType = runType;
+    this.runTypes = runTypes;
 
     if (null == measurementValues) {
       this.measurementValues = new HashMap<Long, MeasurementValue>();
@@ -147,7 +167,7 @@ public class Measurement implements Comparable<Measurement> {
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.datasetId = DatabaseUtils.NO_DATABASE_RECORD;
     this.time = time;
-    this.runType = null;
+    this.runTypes = new HashMap<Long, String>();
     this.measurementValues = null;
   }
 
@@ -193,8 +213,16 @@ public class Measurement implements Comparable<Measurement> {
    *
    * @return The run type
    */
-  public String getRunType() {
-    return runType;
+  public String getRunType(long variableId) {
+    return runTypes.get(variableId);
+  }
+
+  public String getRunType(Variable variable) {
+    return runTypes.get(variable.getId());
+  }
+
+  public Map<Long, String> getRunTypes() {
+    return runTypes;
   }
 
   /*
@@ -273,11 +301,25 @@ public class Measurement implements Comparable<Measurement> {
 
   @Override
   public String toString() {
-    return "#" + id + " " + runType;
+    return "#" + id;
   }
 
   public static Measurement dummyTimeMeasurement(LocalDateTime time) {
     return new Measurement(time);
+  }
+
+  /**
+   * Add the run types from the supplied measurement to this one.
+   *
+   * <p>
+   * Clashing run types are overwritten by the incoming run types.
+   * </p>
+   *
+   * @param incoming
+   *          The source of the new run types
+   */
+  public void addRunTypes(Measurement incoming) {
+    this.runTypes.putAll(incoming.runTypes);
   }
 }
 

@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriod;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
@@ -292,7 +293,11 @@ public class ExtractDataSetJob extends DataSetJob {
             }
 
             // If the current period is an IGNORE run type, remove the value.
-            if (instrument.getRunTypeCategory(currentPeriod.getRunType())
+            // We can only tell this for "Generic" instruments, ie those with a
+            // Run Type column
+            if (instrument
+              .getRunTypeCategory(Measurement.GENERIC_RUN_TYPE_VARIABLE,
+                currentPeriod.getRunType())
               .equals(RunTypeCategory.IGNORED)) {
               value.setValue(null);
             } else if (inFlushingPeriod(value.getTime(), currentPeriod,

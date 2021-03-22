@@ -74,7 +74,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
    * @throws InvalidCategoryTypeException
    *           If the type is invalid
    */
-  protected RunTypeCategory(long type, String description) {
+  public RunTypeCategory(long type, String description) {
     this.type = type;
     this.description = description;
   }

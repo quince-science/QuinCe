@@ -3,24 +3,24 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.GenericMeasurementLocator;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementLocator;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -89,92 +89,26 @@ public class LocateMeasurementsJob extends DataSetJob {
       reset(conn);
       conn.setAutoCommit(false);
 
-      // Get the run types for the dataset
-      TreeMap<LocalDateTime, String> runTypes = null;
+      // Work out which measurement locators we need to use
+      Set<MeasurementLocator> measurementLocators = new HashSet<MeasurementLocator>();
 
       if (instrument.hasRunTypes()) {
-        runTypes = new TreeMap<LocalDateTime, String>();
-
-        List<SensorValue> runTypeSensorValues = DataSetDataDB
-          .getSensorValuesForColumns(conn, dataSet.getId(),
-            instrument.getSensorAssignments().getRunTypeColumnIDs());
-
-        for (SensorValue value : runTypeSensorValues) {
-          runTypes.put(value.getTime(), value.getValue());
-        }
+        measurementLocators.add(new GenericMeasurementLocator());
       }
 
-      // Get all the times that the core sensor for one of the instrument's
-      // variables has a value.
-      List<Variable> variables = instrument.getVariables();
+      instrument.getVariables().stream()
+        .map(MeasurementLocator::getMeasurementLocator).filter(Objects::nonNull)
+        .forEach(measurementLocators::add);
 
-      Set<Long> measurementColumnIds = new HashSet<Long>(variables.size());
+      // Now locate the measurements
+      Map<LocalDateTime, Measurement> measurements = new HashMap<LocalDateTime, Measurement>();
 
-      for (Variable variable : variables) {
-        SensorType coreSensorType = variable.getCoreSensorType();
-        if (null != coreSensorType) {
-          List<Long> columns = instrument.getSensorAssignments()
-            .getColumnIds(coreSensorType);
-          measurementColumnIds.addAll(columns);
-        } else {
-
-          // If there's no core sensor type, use any of the sensor values
-          for (SensorType sensorType : variable.getAllSensorTypes(false)) {
-            List<Long> columns = instrument.getSensorAssignments()
-              .getColumnIds(sensorType);
-            measurementColumnIds.addAll(columns);
-          }
-        }
+      for (MeasurementLocator locator : measurementLocators) {
+        addMeasurements(measurements,
+          locator.locateMeasurements(conn, instrument, dataSet));
       }
 
-      List<SensorValue> sensorValues = DataSetDataDB.getSensorValuesForColumns(
-        conn, dataSet.getId(), new ArrayList<Long>(measurementColumnIds));
-
-      // Now log all the times as new measurements, with the run type from the
-      // same time or immediately before.
-      List<Measurement> measurements = new ArrayList<Measurement>(
-        sensorValues.size());
-
-      ArrayList<LocalDateTime> runTypeTimes = null;
-
-      if (null != runTypes) {
-        runTypeTimes = new ArrayList<LocalDateTime>(runTypes.keySet());
-      }
-
-      int currentRunTypeTime = 0;
-
-      for (SensorValue sensorValue : sensorValues) {
-        if (null != sensorValue.getValue()) {
-          LocalDateTime measurementTime = sensorValue.getTime();
-
-          // Get the run type for this measurement
-          String runType = null;
-          if (null != runTypes) {
-
-            // Find the run type immediately before or at the same time as the
-            // measurement
-            if (runTypeTimes.get(currentRunTypeTime).isAfter(measurementTime)) {
-              // There is no run type for this measurement. This isn't allowed!
-              throw new JobFailedException(id,
-                "No run type available in Dataset " + dataSet.getId()
-                  + " at time " + measurementTime.toString());
-            } else {
-              while (currentRunTypeTime < runTypeTimes.size() - 1
-                && runTypeTimes.get(currentRunTypeTime)
-                  .isBefore(measurementTime)) {
-                currentRunTypeTime++;
-              }
-
-              runType = runTypes.get(runTypeTimes.get(currentRunTypeTime));
-            }
-          }
-
-          measurements
-            .add(new Measurement(dataSet.getId(), measurementTime, runType));
-        }
-      }
-
-      DataSetDataDB.storeMeasurements(conn, measurements);
+      DataSetDataDB.storeMeasurements(conn, measurements.values());
 
       // Trigger the Build Measurements job
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
@@ -186,9 +120,7 @@ public class LocateMeasurementsJob extends DataSetJob {
         DataReductionJob.class.getCanonicalName(), jobProperties);
 
       conn.commit();
-    } catch (
-
-    Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
       DatabaseUtils.rollBack(conn);
       try {
@@ -217,6 +149,19 @@ public class LocateMeasurementsJob extends DataSetJob {
       }
       DatabaseUtils.closeConnection(conn);
     }
+  }
+
+  private void addMeasurements(Map<LocalDateTime, Measurement> target,
+    List<Measurement> newMeasurements) {
+
+    newMeasurements.forEach(m -> {
+      if (target.containsKey(m.getTime())) {
+        target.get(m.getTime()).addRunTypes(m);
+      } else {
+        target.put(m.getTime(), m);
+      }
+    });
+
   }
 
   @Override

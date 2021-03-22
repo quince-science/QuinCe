@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -22,6 +24,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -84,6 +87,8 @@ public class DataReductionJob extends DataSetJob {
       reset(conn);
       DataSet dataSet = getDataset(conn);
       Instrument instrument = getInstrument(conn);
+      SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+        .getSensorsConfiguration();
 
       // Clear messages before executing job
       dataSet.clearMessages();
@@ -105,83 +110,108 @@ public class DataReductionJob extends DataSetJob {
 
       ArrayList<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>();
 
-      // Loop through each run type
-      for (String runType : allMeasurements.getRunTypes()) {
+      // Iterate over each measurement
+      for (Measurement measurement : allMeasurements
+        .getTimeOrderedMeasurements()) {
+
+        // Work out which variables this measurement is relevant for.
+        Set<Variable> variablesToProcess = new TreeSet<Variable>();
+
+        // Get the combinations of Variable/Run Type for the measurement
+        for (Map.Entry<Long, String> runTypeEntry : measurement.getRunTypes()
+          .entrySet()) {
+
+          // See if this run type is for the GENERIC variable - this is a value
+          // from
+          // the Run Type column which determines which variable(s) it belongs
+          // to
+          if (runTypeEntry.getKey() == Measurement.GENERIC_RUN_TYPE_VARIABLE) {
+
+            for (Variable variable : instrument.getVariables()) {
+              if (instrument.isRunTypeForVariable(variable,
+                runTypeEntry.getValue())) {
+
+                variablesToProcess.add(variable);
+
+              }
+            }
+          } else {
+            // The run type entry contains the variable ID so we can add it
+            // directly.
+            variablesToProcess
+              .add(sensorConfig.getInstrumentVariable(runTypeEntry.getKey()));
+          }
+        }
 
         // Loop through each variable
         for (Variable variable : instrument.getVariables()) {
 
           // Process each measurement
-          dataReductionRecords.ensureCapacity(dataReductionRecords.size()
-            + allMeasurements.getMeasurements(runType).size());
+          dataReductionRecords.ensureCapacity(
+            dataReductionRecords.size() + variablesToProcess.size());
 
-          for (Measurement measurement : allMeasurements
-            .getMeasurements(runType)) {
+          // Get all the sensor values for this measurement.
+          // This searches all the sensor values for each required sensor
+          // type, finding either the sensor value at the same time as the
+          // measurement or the values immediately before and after the
+          // measurement time.
+          // "Immediately" may mean that we try to find a Good value
+          // within
+          // a reasonable timespan, or we fall back to a Questionable or
+          // Bad
+          // value.
 
-            // If the run type is applicable to this variable, perform the data
-            // reduction
-            if (instrument.isRunTypeForVariable(variable, runType)) {
+          for (SensorType sensorType : variable
+            .getAllSensorTypes(!dataSet.fixedPosition())) {
 
-              // Get all the sensor values for this measurement.
-              // This searches all the sensor values for each required sensor
-              // type, finding either the sensor value at the same time as the
-              // measurement or the values immediately before and after the
-              // measurement time.
-              // "Immediately" may mean that we try to find a Good value within
-              // a reasonable timespan, or we fall back to a Questionable or Bad
-              // value.
-
-              for (SensorType sensorType : variable
-                .getAllSensorTypes(!dataSet.fixedPosition())) {
-
-                // Create the MeasurementValue for this SensorType if we haven't
-                // already done it.
-                if (!measurement.hasMeasurementValue(sensorType)) {
-                  measurement
-                    .setMeasurementValue(MeasurementValueCalculatorFactory
-                      .calculateMeasurementValue(instrument, measurement,
-                        sensorType, allMeasurements, allSensorValues, conn));
-                }
-              }
-
-              // If any of the core sensor values are linked to this measurement
-              // are empty, this means the measurement isn't actually available
-              // (usually because it's in a FLUSHING state). So we don't process
-              // it.
-              boolean hasCoreValue = true;
-
-              SensorType coreSensorType = variable.getCoreSensorType();
-              if (null != coreSensorType) {
-
-                hasCoreValue = false;
-
-                if (null != measurement.getMeasurementValue(coreSensorType)
-                  && measurement.getMeasurementValue(coreSensorType)
-                    .hasValue()) {
-                  hasCoreValue = true;
-                }
-              }
-
-              if (hasCoreValue) {
-
-                // Store the measurement values in the database
-                DataSetDataDB.storeMeasurementValues(conn, measurement);
-
-                // Get the data reducer for this variable and perform data
-                // reduction
-                DataReducer reducer = reducers.get(variable);
-                if (null == reducer) {
-                  reducer = DataReducerFactory.getReducer(conn, instrument,
-                    variable, dataSet.getAllProperties());
-                  reducers.put(variable, reducer);
-                }
-
-                DataReductionRecord dataReductionRecord = reducer
-                  .performDataReduction(instrument, measurement, conn);
-
-                dataReductionRecords.add(dataReductionRecord);
-              }
+            // Create the MeasurementValue for this SensorType if we
+            // haven't
+            // already done it.
+            if (!measurement.hasMeasurementValue(sensorType)) {
+              measurement.setMeasurementValue(MeasurementValueCalculatorFactory
+                .calculateMeasurementValue(instrument, measurement, sensorType,
+                  allMeasurements, allSensorValues, conn));
             }
+          }
+
+          // If any of the core sensor values are linked to this
+          // measurement
+          // are empty, this means the measurement isn't actually
+          // available
+          // (usually because it's in a FLUSHING state). So we don't
+          // process
+          // it.
+          boolean hasCoreValue = true;
+
+          SensorType coreSensorType = variable.getCoreSensorType();
+          if (null != coreSensorType) {
+
+            hasCoreValue = false;
+
+            if (null != measurement.getMeasurementValue(coreSensorType)
+              && measurement.getMeasurementValue(coreSensorType).hasValue()) {
+              hasCoreValue = true;
+            }
+          }
+
+          if (hasCoreValue) {
+
+            // Store the measurement values in the database
+            DataSetDataDB.storeMeasurementValues(conn, measurement);
+
+            // Get the data reducer for this variable and perform data
+            // reduction
+            DataReducer reducer = reducers.get(variable);
+            if (null == reducer) {
+              reducer = DataReducerFactory.getReducer(conn, instrument,
+                variable, dataSet.getAllProperties());
+              reducers.put(variable, reducer);
+            }
+
+            DataReductionRecord dataReductionRecord = reducer
+              .performDataReduction(instrument, measurement, conn);
+
+            dataReductionRecords.add(dataReductionRecord);
           }
         }
       }
@@ -189,7 +219,9 @@ public class DataReductionJob extends DataSetJob {
       DataSetDataDB.storeDataReduction(conn, dataReductionRecords);
 
       // If the thread was interrupted, undo everything
-      if (thread.isInterrupted()) {
+      if (thread.isInterrupted())
+
+      {
         conn.rollback();
 
         // Requeue the data reduction job
