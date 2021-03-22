@@ -31,7 +31,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
@@ -361,8 +361,6 @@ public class ManualQCData extends PlotPageData {
         // Get the run type from the closest measurement
         Measurement concurrentMeasurement = getConcurrentMeasurement(
           times.get(i));
-        String runType = null == concurrentMeasurement ? null
-          : concurrentMeasurement.getRunType();
 
         // Timestamp
         record.addColumn(times.get(i));
@@ -407,9 +405,9 @@ public class ManualQCData extends PlotPageData {
           SensorType sensorType = instrument.getSensorAssignments()
             .getSensorTypeForDBColumn(columnId);
 
-          if (sensorType.hasInternalCalibration()
-            && (null == runType || instrument.getRunTypeCategory(runType)
-              .equals(RunTypeCategory.INTERNAL_CALIBRATION))) {
+          if (null != concurrentMeasurement
+            && sensorType.hasInternalCalibration()
+            && (!isMeasurementForAnyVariable(concurrentMeasurement))) {
             record.addBlankColumn(PlotPageTableValue.MEASURED_TYPE);
           } else {
             record.addColumn(recordSensorValues.get(columnId));
@@ -498,6 +496,21 @@ public class ManualQCData extends PlotPageData {
     }
 
     return records;
+  }
+
+  private boolean isMeasurementForAnyVariable(Measurement measurement)
+    throws RunTypeCategoryException {
+    boolean result = false;
+
+    for (Map.Entry<Long, String> runTypeEntry : measurement.getRunTypes()
+      .entrySet()) {
+      if (instrument.getRunTypeCategory(runTypeEntry).isMeasurementType()) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
   }
 
   @Override
@@ -824,14 +837,11 @@ public class ManualQCData extends PlotPageData {
           // Get the run type from the closest measurement
           Measurement concurrentMeasurement = getConcurrentMeasurement(
             sensorValue.getTime());
-          String runType = null == concurrentMeasurement ? null
-            : concurrentMeasurement.getRunType();
 
           // Only include the value if the run type is not an internal
           // calibration
-          if (null != runType && !instrument.getRunTypeCategory(runType)
-            .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
-
+          if (null != concurrentMeasurement
+            && isMeasurementForAnyVariable(concurrentMeasurement)) {
             result.put(sensorValue.getTime(),
               new SensorValuePlotPageTableValue(sensorValue));
           }
@@ -973,13 +983,11 @@ public class ManualQCData extends PlotPageData {
 
             Measurement concurrentMeasurement = getConcurrentMeasurement(
               sensorValue.getTime());
-            String runType = null == concurrentMeasurement ? null
-              : concurrentMeasurement.getRunType();
 
             // Only include the value if the run type is not an internal
             // calibration
-            if (null == runType || instrument.getRunTypeCategory(runType)
-              .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+            if (null != concurrentMeasurement
+              && !isMeasurementForAnyVariable(concurrentMeasurement)) {
               useValue = false;
             }
           }

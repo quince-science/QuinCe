@@ -339,18 +339,21 @@ public class ExportBean extends BaseManagedBean {
           // There is only one column registered for this SensorType, so use it
           useValueInThisColumn = true;
         } else {
-          // There are multiple columns for this SensorType, so where the value
-          // goes is determined by the measurement's Run Type
+          // There are multiple columns for this SensorType (e.g. xCO2 is for
+          // underway marine pCO2 and underway atmospheric pCO2, so where the
+          // value goes is determined by the measurement's Run Type
           if (null == measurement) {
             // There is no measurement, so we leave the column blank
             useValueInThisColumn = false;
 
           } else {
+
             // If this column is for the Run Type of the measurement, we
             // populate it. Otherwise we leave it blank - there'll be another
             // column for the Run Type somewhere (or perhaps not, if it's a
             // non-measurement run type eg gas standard run)
-            String runType = measurement.getRunType();
+            String runType = measurement
+              .getRunType(Measurement.GENERIC_RUN_TYPE_VARIABLE);
 
             // Look through all the column headings defined for the run type to
             // see if it contains our current column. If it does, we add the

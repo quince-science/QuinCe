@@ -246,7 +246,7 @@ public class DefaultMeasurementValueCalculator
     // it's positive just in case. (See documentation for binarySearch.)
 
     List<Measurement> targetMeasurements = allMeasurements
-      .getMeasurements(target);
+      .getMeasurements(Measurement.GENERIC_RUN_TYPE_VARIABLE, target);
 
     int startPoint = Collections.binarySearch(targetMeasurements,
       Measurement.dummyTimeMeasurement(startTime), Measurement.TIME_COMPARATOR);
@@ -275,7 +275,8 @@ public class DefaultMeasurementValueCalculator
       // Now we've found the closest measurement, find others from the same run
       // type sequence.
       TreeSet<Measurement> runMeasurements = allMeasurements
-        .getMeasurementsInSameRun(targetMeasurements.get(startPoint));
+        .getMeasurementsInSameRun(Measurement.GENERIC_RUN_TYPE_VARIABLE,
+          targetMeasurements.get(startPoint));
 
       for (Measurement measurement : runMeasurements) {
         SensorValue valueCandidate = sensorValues.get(measurement.getTime());
@@ -313,7 +314,7 @@ public class DefaultMeasurementValueCalculator
     // it's positive just in case. (See documentation for binarySearch.)
 
     List<Measurement> targetMeasurements = allMeasurements
-      .getMeasurements(target);
+      .getMeasurements(Measurement.GENERIC_RUN_TYPE_VARIABLE, target);
 
     int startPoint = Collections.binarySearch(targetMeasurements,
       Measurement.dummyTimeMeasurement(startTime), Measurement.TIME_COMPARATOR);
@@ -340,7 +341,8 @@ public class DefaultMeasurementValueCalculator
       // Now we've found the closest measurement, find others from the same run
       // type sequence.
       TreeSet<Measurement> runMeasurements = allMeasurements
-        .getMeasurementsInSameRun(targetMeasurements.get(startPoint));
+        .getMeasurementsInSameRun(Measurement.GENERIC_RUN_TYPE_VARIABLE,
+          targetMeasurements.get(startPoint));
 
       for (Measurement measurement : runMeasurements) {
         SensorValue valueCandidate = sensorValues.get(measurement.getTime());
