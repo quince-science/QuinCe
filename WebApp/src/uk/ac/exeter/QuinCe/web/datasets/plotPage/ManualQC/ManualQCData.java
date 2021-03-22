@@ -906,11 +906,14 @@ public class ManualQCData extends PlotPageData {
     // The core sensor value for the first variable, or if there isn't one,
     // The second sensor
     Variable variable = instrument.getVariables().get(0);
-    SensorType sensorType = variable.getCoreSensorType();
 
-    if (null != sensorType) {
+    SensorType coreSensorType = variable.getCoreSensorTypes().size() > 0
+      ? variable.getCoreSensorTypes().get(0)
+      : null;
+
+    if (null != coreSensorType) {
       long coreColumn = instrument.getSensorAssignments()
-        .getColumnIds(sensorType).get(0);
+        .getColumnIds(coreSensorType).get(0);
       result = getColumnHeading(coreColumn);
     } else {
       return columnHeadings.get(SENSORS_FIELD_GROUP).get(1);

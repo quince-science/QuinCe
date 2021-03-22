@@ -56,7 +56,7 @@ public class Variable implements Comparable<Variable> {
   /**
    * The core SensorType
    */
-  private SensorType coreSensorType;
+  private List<SensorType> coreSensorTypes;
 
   /**
    * The other sensors required for data reduction
@@ -101,7 +101,7 @@ public class Variable implements Comparable<Variable> {
    */
   protected Variable(SensorsConfiguration sensorConfig, long id, String name,
     LinkedHashMap<String, String> attributes, String propertiesJson,
-    long coreSensorTypeId, List<Long> requiredSensorTypeIds,
+    List<Long> coreSensorTypeIds, List<Long> requiredSensorTypeIds,
     List<Integer> questionableCascades, List<Integer> badCascades,
     Map<SensorType, ColumnHeading> columnHeadings)
     throws SensorTypeNotFoundException, SensorConfigurationException,
@@ -118,13 +118,17 @@ public class Variable implements Comparable<Variable> {
         VariableProperties.class);
     }
 
-    if (coreSensorTypeId == -1) {
-      coreSensorType = null;
-    } else {
-      coreSensorType = sensorConfig.getSensorType(coreSensorTypeId);
-      if (coreSensorType.hasParent()) {
-        throw new SensorConfigurationException(
-          "Core sensor type cannot be a child (ID " + coreSensorTypeId + ")");
+    coreSensorTypes = new ArrayList<SensorType>();
+
+    if (null != coreSensorTypeIds) {
+      for (long coreSensorTypeId : coreSensorTypeIds) {
+        SensorType sensorType = sensorConfig.getSensorType(coreSensorTypeId);
+        if (sensorType.hasParent()) {
+          throw new SensorConfigurationException(
+            "Core sensor type cannot be a child (ID " + coreSensorTypeId + ")");
+        } else {
+          coreSensorTypes.add(sensorType);
+        }
       }
     }
 
@@ -148,7 +152,7 @@ public class Variable implements Comparable<Variable> {
         .getSensorType(requiredSensorTypeIds.get(i));
       if (sensorType.hasParent()) {
         throw new SensorConfigurationException(
-          "Required sensor type cannot be a child (ID " + coreSensorTypeId
+          "Required sensor type cannot be a child (ID " + sensorType.getId()
             + ")");
       }
       requiredSensorTypes.add(sensorType);
@@ -183,8 +187,13 @@ public class Variable implements Comparable<Variable> {
    *
    * @return The core SensorType
    */
-  public SensorType getCoreSensorType() {
-    return coreSensorType;
+  public List<SensorType> getCoreSensorTypes() {
+
+    if (null == coreSensorTypes) {
+      coreSensorTypes = new ArrayList<SensorType>(0);
+    }
+
+    return coreSensorTypes;
   }
 
   /**
@@ -196,8 +205,8 @@ public class Variable implements Comparable<Variable> {
   public List<SensorType> getAllSensorTypes(boolean includePosition) {
     List<SensorType> result = new ArrayList<SensorType>(requiredSensorTypes);
 
-    if (null != coreSensorType) {
-      result.add(coreSensorType);
+    if (null != coreSensorTypes) {
+      result.addAll(coreSensorTypes);
     }
 
     if (includePosition) {
@@ -233,7 +242,7 @@ public class Variable implements Comparable<Variable> {
 
     Flag result = null;
 
-    if (sensorType.equals(coreSensorType)
+    if (coreSensorTypes.contains(sensorType)
       || sensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)
       || sensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
       result = flag;

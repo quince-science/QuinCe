@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -257,6 +258,17 @@ public class Measurement implements Comparable<Measurement> {
     throws SensorTypeNotFoundException {
     return getMeasurementValue(ResourceManager.getInstance()
       .getSensorsConfiguration().getSensorType(sensorType));
+  }
+
+  /**
+   * See if this measurement has values for one or more of the specified sensor
+   * types.
+   * 
+   * @param sensorTypes
+   * @return
+   */
+  public boolean hasMeasurementValue(Collection<SensorType> sensorTypes) {
+    return sensorTypes.stream().anyMatch(this::hasMeasurementValue);
   }
 
   public boolean hasMeasurementValue(SensorType sensorType) {

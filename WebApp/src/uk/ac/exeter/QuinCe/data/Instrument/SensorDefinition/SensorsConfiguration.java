@@ -162,7 +162,7 @@ public class SensorsConfiguration {
       String name = null;
       LinkedHashMap<String, String> attributes = null;
       String propertiesJson = null;
-      long coreSensorType = -1;
+      List<Long> coreSensorTypes = new ArrayList<Long>();
       List<Long> requiredSensorTypes = new ArrayList<Long>();
       List<Integer> questionableCascades = new ArrayList<Integer>();
       List<Integer> badCascades = new ArrayList<Integer>();
@@ -176,7 +176,7 @@ public class SensorsConfiguration {
             // Write the old variable
             instrumentVariables.put(currentVariableId,
               new Variable(this, currentVariableId, name, attributes,
-                propertiesJson, coreSensorType, requiredSensorTypes,
+                propertiesJson, coreSensorTypes, requiredSensorTypes,
                 questionableCascades, badCascades, columnHeadings));
           }
 
@@ -185,7 +185,7 @@ public class SensorsConfiguration {
           name = records.getString(2);
           attributes = makeAttributesMap(records.getString(3));
           propertiesJson = records.getString(4);
-          coreSensorType = -1;
+          coreSensorTypes = new ArrayList<Long>();
           requiredSensorTypes = new ArrayList<Long>();
           questionableCascades = new ArrayList<Integer>();
           badCascades = new ArrayList<Integer>();
@@ -195,7 +195,7 @@ public class SensorsConfiguration {
         long sensorTypeId = records.getLong(5);
         boolean core = records.getBoolean(6);
         if (core) {
-          coreSensorType = sensorTypeId;
+          coreSensorTypes.add(sensorTypeId);
         } else {
           requiredSensorTypes.add(sensorTypeId);
           questionableCascades.add(records.getInt(7));
@@ -215,7 +215,7 @@ public class SensorsConfiguration {
       // Write the last variable
       instrumentVariables.put(currentVariableId,
         new Variable(this, currentVariableId, name, attributes, propertiesJson,
-          coreSensorType, requiredSensorTypes, questionableCascades,
+          coreSensorTypes, requiredSensorTypes, questionableCascades,
           badCascades, columnHeadings));
     } catch (SQLException e) {
       throw new DatabaseException("Error while loading instrument variables",
@@ -415,7 +415,7 @@ public class SensorsConfiguration {
           "Cannot find variable with ID " + varId);
       }
 
-      result.add(variable.getCoreSensorType());
+      result.addAll(variable.getCoreSensorTypes());
     }
 
     return result;
@@ -487,8 +487,8 @@ public class SensorsConfiguration {
     boolean core = false;
 
     for (Variable variable : instrumentVariables.values()) {
-      if (null != variable.getCoreSensorType()
-        && variable.getCoreSensorType().equals(sensorType)) {
+      if (null != variable.getCoreSensorTypes()
+        && variable.getCoreSensorTypes().contains(sensorType)) {
 
         core = true;
         break;
