@@ -64,4 +64,8 @@ public class CalculationCoefficientsBean extends CalibrationBean {
     return "Coefficient";
   }
 
+  @Override
+  public String getCalibrationName() {
+    return "Coefficient";
+  }
 }
