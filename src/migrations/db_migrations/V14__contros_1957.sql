@@ -33,6 +33,9 @@ INSERT INTO sensor_types (name, vargroup, display_order, column_code, column_hea
   VALUES ('Contros pCO₂ Flush Mode', 'Sensor Internal', 1253, 'CONTROSFLUSH', 'CONTROS Flush Mode', NULL);
 
 INSERT INTO sensor_types (name, vargroup, display_order, column_code, column_heading, units)
+  VALUES ('Contros pCO₂ Runtime', 'Sensor Internal', 1254, 'CONTROSRUNTIME', 'CONTROS Runtime', NULL);
+
+INSERT INTO sensor_types (name, vargroup, display_order, column_code, column_heading, units)
   VALUES ('Contros pCO₂ Gas Stream Temperature', 'Temperature', 350, 'CONTROSGASTEMP', 'Temperature of gas stream', '°C');
 
 INSERT INTO sensor_types (name, vargroup, display_order, column_code, column_heading, units)
@@ -46,7 +49,7 @@ INSERT INTO sensor_types (name, vargroup, display_order, column_code, column_hea
 
 -- CONTROS pCO₂ Variable
 INSERT INTO variables (name, attributes, properties)
-  VALUES ('CONTROS pCO₂', NULL, '{"coefficients": ["F", "Tsensor", "f(Tsensor)", "k1", "k2", "k3"]}');
+  VALUES ('CONTROS pCO₂', NULL, '{"coefficients": ["F", "Tsensor", "f(Tsensor)", "k1", "k2", "k3", "Runtime"]}');
 
 -- CONTROS pCO₂ Variable Sensors
 INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
@@ -74,6 +77,13 @@ INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_casca
   VALUES (
     (SELECT id FROM variables WHERE name = 'CONTROS pCO₂'),
     (SELECT id FROM sensor_types WHERE column_code = 'CONTROSFLUSH'),
+    0, 3, 4
+  );
+
+INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  VALUES (
+    (SELECT id FROM variables WHERE name = 'CONTROS pCO₂'),
+    (SELECT id FROM sensor_types WHERE column_code = 'CONTROSRUNTIME'),
     0, 3, 4
   );
 
