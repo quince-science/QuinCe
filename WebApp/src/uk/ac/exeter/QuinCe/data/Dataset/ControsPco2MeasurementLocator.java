@@ -36,11 +36,11 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
         .getSensorType("Contros pCO₂ Reference Signal");
 
       HashSet<LocalDateTime> zeroTimes = DataSetDataDB
-        .getFilteredSensorValueTimes(conn, instrument, dataset, zeroType, "1");
+        .getFilteredSensorValueTimes(conn, instrument, dataset, zeroType, 1D);
 
       HashSet<LocalDateTime> flushingTimes = DataSetDataDB
         .getFilteredSensorValueTimes(conn, instrument, dataset, flushingType,
-          "1");
+          1D);
 
       List<Long> rawColumns = instrument.getSensorAssignments()
         .getColumnIds(rawSensorType);
