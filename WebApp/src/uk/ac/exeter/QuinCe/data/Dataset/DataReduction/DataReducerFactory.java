@@ -1,6 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
-import java.sql.Connection;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,6 +20,20 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  */
 public class DataReducerFactory {
 
+  private static Map<String, Class<? extends DataReducer>> reducers;
+
+  static {
+    reducers = new HashMap<String, Class<? extends DataReducer>>();
+    reducers.put("CONTROS pCO₂", ControsPco2Reducer.class);
+    reducers.put("SailDrone Atmospheric CO₂ NRT",
+      SaildroneAtmosphericPco2Reducer.class);
+    reducers.put("SailDrone Marine CO₂ NRT", SaildroneMarinePco2Reducer.class);
+    reducers.put("Soderman", NoReductionReducer.class);
+    reducers.put("Underway Atmospheric pCO₂",
+      UnderwayAtmosphericPco2Reducer.class);
+    reducers.put("Underway Marine pCO₂", UnderwayMarinePco2Reducer.class);
+  }
+
   /**
    * Get the Data Reducer for a given variable and initialise it
    *
@@ -29,111 +43,36 @@ public class DataReducerFactory {
    * @throws DataReductionException
    *           If the reducer cannot be retreived
    */
-  public static DataReducer getReducer(Connection conn, Instrument instrument,
-    Variable variable, Map<String, Properties> properties)
-    throws DataReductionException {
-
-    DataReducer reducer;
+  public static DataReducer getReducer(Variable variable,
+    Map<String, Properties> properties) throws DataReductionException {
 
     try {
-      switch (variable.getName()) {
-      case "Underway Marine pCO₂": {
-        reducer = new UnderwayMarinePco2Reducer(variable, properties);
-        break;
-      }
-      case "Underway Atmospheric pCO₂": {
-        reducer = new UnderwayAtmosphericPco2Reducer(variable, properties);
-        break;
-      }
-      case "SailDrone Marine CO₂ NRT": {
-        reducer = new SaildroneMarinePco2Reducer(variable, properties);
-        break;
-      }
-      case "SailDrone Atmospheric CO₂ NRT": {
-        reducer = new SaildroneAtmosphericPco2Reducer(variable, properties);
-        break;
-      }
-      case "Soderman": {
-        reducer = new NoReductionReducer(variable, properties);
-        break;
-      }
-      default: {
-        throw new DataReductionException(
-          "Cannot find reducer for variable " + variable.getName());
-      }
-      }
-    } catch (Exception e) {
-      throw new DataReductionException("Cannot initialise data reducer", e);
-    }
+      Class<? extends DataReducer> clazz = getReducerClass(variable.getName());
 
-    return reducer;
+      Constructor<? extends DataReducer> constructor = clazz
+        .getConstructor(Variable.class, Map.class);
+
+      return constructor.newInstance(variable, properties);
+    } catch (Exception e) {
+      throw new DataReductionException(
+        "Cannot get reducer for variable '" + variable.getName() + "'", e);
+    }
   }
 
   private static DataReducer getSkeletonReducer(Variable variable)
     throws DataReductionException {
 
-    DataReducer reducer = null;
-
-    switch (variable.getName()) {
-    case "Underway Marine pCO₂": {
-      reducer = new UnderwayMarinePco2Reducer(variable, null);
-      break;
-    }
-    case "Underway Atmospheric pCO₂": {
-      reducer = new UnderwayAtmosphericPco2Reducer(variable, null);
-      break;
-    }
-    case "SailDrone Marine CO₂ NRT": {
-      reducer = new SaildroneMarinePco2Reducer(variable, null);
-      break;
-    }
-    case "SailDrone Atmospheric CO₂ NRT": {
-      reducer = new SaildroneAtmosphericPco2Reducer(variable, null);
-      break;
-    }
-    case "Soderman": {
-      reducer = new NoReductionReducer(variable, null);
-      break;
-    }
-    default: {
-      throw new DataReductionException(
-        "Cannot find reducer for variable " + variable.getName());
-    }
-    }
-
-    return reducer;
+    return getReducer(variable, null);
   }
 
   public static Class<? extends DataReducer> getReducerClass(String variable)
     throws DataReductionException {
 
-    Class<? extends DataReducer> result = null;
+    Class<? extends DataReducer> result = reducers.get(variable);
 
-    switch (variable) {
-    case "Underway Marine pCO₂": {
-      result = UnderwayMarinePco2Reducer.class;
-      break;
-    }
-    case "Underway Atmospheric pCO₂": {
-      result = UnderwayAtmosphericPco2Reducer.class;
-      break;
-    }
-    case "SailDrone Marine CO₂ NRT": {
-      result = SaildroneMarinePco2Reducer.class;
-      break;
-    }
-    case "SailDrone Atmospheric CO₂ NRT": {
-      result = SaildroneAtmosphericPco2Reducer.class;
-      break;
-    }
-    case "Soderman": {
-      result = NoReductionReducer.class;
-      break;
-    }
-    default: {
+    if (null == result) {
       throw new DataReductionException(
         "Cannot find reducer for variable " + variable);
-    }
     }
 
     return result;
