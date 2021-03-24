@@ -358,7 +358,7 @@ public class ManualQCData extends PlotPageData {
       for (int i = start; i < start + length; i++) {
         PlotPageTableRecord record = new PlotPageTableRecord(times.get(i));
 
-        // Get the run type from the closest measurement
+        // Get the closest measurement
         Measurement concurrentMeasurement = getConcurrentMeasurement(
           times.get(i));
 
@@ -405,12 +405,24 @@ public class ManualQCData extends PlotPageData {
           SensorType sensorType = instrument.getSensorAssignments()
             .getSensorTypeForDBColumn(columnId);
 
-          if (null != concurrentMeasurement
-            && sensorType.hasInternalCalibration()
-            && (!isMeasurementForAnyVariable(concurrentMeasurement))) {
-            record.addBlankColumn(PlotPageTableValue.MEASURED_TYPE);
+          boolean useValue = true;
+
+          if (null == concurrentMeasurement) {
+            if (isCoreSensorType(sensorType)) {
+              useValue = false;
+            }
           } else {
+            if (!isMeasurementForAnyVariable(concurrentMeasurement)
+              && (isCoreSensorType(sensorType)
+                || sensorType.hasInternalCalibration())) {
+              useValue = false;
+            }
+          }
+
+          if (useValue) {
             record.addColumn(recordSensorValues.get(columnId));
+          } else {
+            record.addBlankColumn(PlotPageTableValue.MEASURED_TYPE);
           }
         }
 
@@ -496,6 +508,11 @@ public class ManualQCData extends PlotPageData {
     }
 
     return records;
+  }
+
+  private boolean isCoreSensorType(SensorType sensorType) {
+    return instrument.getVariables().stream()
+      .anyMatch(v -> v.getCoreSensorTypes().contains(sensorType));
   }
 
   private boolean isMeasurementForAnyVariable(Measurement measurement)
