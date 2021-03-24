@@ -67,13 +67,11 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
       for (int i = 0; i < rawSensorValues.size(); i++) {
         SensorValue rawValue = rawSensorValues.get(i);
 
+        HashMap<Long, String> runTypes = new HashMap<Long, String>();
+
         if (zeroTimes.contains(rawValue.getTime())) {
-          HashMap<Long, String> runTypes = new HashMap<Long, String>();
           runTypes.put(variable.getId(),
             Measurement.INTERNAL_CALIBRATION_RUN_TYPE);
-
-          measurements.add(
-            new Measurement(dataset.getId(), rawValue.getTime(), runTypes));
         } else if (flushingTimes.contains(rawValue.getTime())) {
           rawValue.setUserQC(Flag.FLUSHING, "Flushing");
           flaggedSensorValues.add(rawValue);
@@ -81,13 +79,14 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
           SensorValue refValue = refSensorValues.get(i);
           refValue.setUserQC(Flag.FLUSHING, "Flushing");
           flaggedSensorValues.add(refValue);
-        } else {
-          HashMap<Long, String> runTypes = new HashMap<Long, String>();
-          runTypes.put(variable.getId(), Measurement.MEASUREMENT_RUN_TYPE);
 
-          measurements.add(
-            new Measurement(dataset.getId(), rawValue.getTime(), runTypes));
+          runTypes.put(variable.getId(), Measurement.MEASUREMENT_RUN_TYPE);
+        } else {
+          runTypes.put(variable.getId(), Measurement.MEASUREMENT_RUN_TYPE);
         }
+
+        measurements
+          .add(new Measurement(dataset.getId(), rawValue.getTime(), runTypes));
       }
 
       DataSetDataDB.storeSensorValues(conn, flaggedSensorValues);
