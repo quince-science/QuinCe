@@ -1254,4 +1254,39 @@ public class DataSetDataDB {
     return allValues.stream().filter(v -> v.getValue().equals(value))
       .map(v -> v.getTime()).collect(Collectors.toCollection(HashSet::new));
   }
+
+  /**
+   * Get the times for which {@link SensorValue}s of a given {@link SensorType}
+   * contain the specified value.
+   *
+   * <p>
+   * The times are returned as a {@link HashSet} for fast interrogation using
+   * {@link Set#contains}. They are not ordered.
+   * </p>
+   *
+   * @param conn
+   *          A database connection
+   * @param sensorType
+   *          The required {@link SensorType}
+   * @param value
+   *          The value being searched for
+   * @return The times of the {@link SensorValue}s that match the passed in
+   *         value.
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static HashSet<LocalDateTime> getFilteredSensorValueTimes(
+    Connection conn, Instrument instrument, DataSet dataset,
+    SensorType sensorType, double value)
+    throws MissingParamException, DatabaseException {
+
+    List<SensorValue> allValues = getSensorValuesForColumns(conn,
+      dataset.getId(),
+      instrument.getSensorAssignments().getColumnIds(sensorType));
+
+    return allValues.stream().filter(v -> v.getDoubleValue().equals(value))
+      .map(v -> v.getTime()).collect(Collectors.toCollection(HashSet::new));
+  }
 }
