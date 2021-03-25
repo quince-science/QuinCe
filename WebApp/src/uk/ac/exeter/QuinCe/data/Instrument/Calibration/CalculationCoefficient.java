@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 public class CalculationCoefficient extends Calibration {
 
@@ -90,6 +92,21 @@ public class CalculationCoefficient extends Calibration {
   @Override
   public Double calibrateValue(Double rawValue) {
     return rawValue;
+  }
+
+  public static Double getCoefficient(CalibrationSet calibrationSet,
+    Variable variable, String coefficient) {
+
+    Double result;
+
+    try {
+      result = calibrationSet
+        .getCalibrationValue(variable.getId() + "." + coefficient, "Value");
+    } catch (RecordNotFoundException e) {
+      result = null;
+    }
+
+    return result;
   }
 
 }

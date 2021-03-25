@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -106,12 +105,9 @@ public class DataReductionJob extends DataSetJob {
       DatasetMeasurements allMeasurements = DataSetDataDB
         .getMeasurementsByRunType(conn, instrument, dataSet.getId());
 
-      // Cache of data reducers
-      Map<Variable, DataReducer> reducers = new HashMap<Variable, DataReducer>();
-
       ArrayList<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>();
 
-      // Iterate over each measurement
+      // First we calculate measurement values for all measurements
       for (Measurement measurement : allMeasurements
         .getTimeOrderedMeasurements()) {
 
@@ -198,21 +194,24 @@ public class DataReductionJob extends DataSetJob {
 
             // Store the measurement values in the database
             DataSetDataDB.storeMeasurementValues(conn, measurement);
-
-            // Get the data reducer for this variable and perform data
-            // reduction
-            DataReducer reducer = reducers.get(variable);
-            if (null == reducer) {
-              reducer = DataReducerFactory.getReducer(variable,
-                dataSet.getAllProperties());
-              reducers.put(variable, reducer);
-            }
-
-            DataReductionRecord dataReductionRecord = reducer
-              .performDataReduction(instrument, measurement, conn);
-
-            dataReductionRecords.add(dataReductionRecord);
           }
+        }
+      }
+
+      // Now run all the data reducers
+      for (Variable variable : instrument.getVariables()) {
+        DataReducer reducer = DataReducerFactory.getReducer(variable,
+          dataSet.getAllProperties());
+
+        reducer.preprocess(conn, instrument, dataSet,
+          allMeasurements.getTimeOrderedMeasurements());
+
+        for (Measurement measurement : allMeasurements
+          .getTimeOrderedMeasurements()) {
+          DataReductionRecord dataReductionRecord = reducer
+            .performDataReduction(instrument, measurement, conn);
+
+          dataReductionRecords.add(dataReductionRecord);
         }
       }
 
