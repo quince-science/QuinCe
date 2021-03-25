@@ -1213,15 +1213,11 @@ public class JobManager {
     MissingParam.checkPositive(jobId, "jobId");
 
     String result = null;
-    Connection conn = null;
 
-    try {
-      conn = dataSource.getConnection();
+    try (Connection conn = dataSource.getConnection()) {
       result = getJobStatus(conn, jobId);
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving job status", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
     }
 
     return result;

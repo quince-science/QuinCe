@@ -59,6 +59,12 @@ public abstract class CalibrationDB {
     + "instrument_id = ? AND type = ? AND deployment_date <= ? "
     + "ORDER BY deployment_date DESC";
 
+  private static final String GET_POST_CALIBRATIONS_QUERY = "SELECT "
+    + "id, instrument_id, target, deployment_date, coefficients, class "
+    + "FROM calibration WHERE "
+    + "instrument_id = ? AND type = ? AND deployment_date >= ? "
+    + "ORDER BY deployment_date ASC";
+
   /**
    * Query to determine whether a calibration already exists
    *
@@ -262,6 +268,42 @@ public abstract class CalibrationDB {
 
     try {
       stmt = conn.prepareStatement(GET_RECENT_CALIBRATIONS_QUERY);
+      stmt.setLong(1, instrument.getId());
+      stmt.setString(2, getCalibrationType());
+      // Get epoch milliseconds
+      stmt.setLong(3, DateTimeUtils.dateToLong(date));
+      records = stmt.executeQuery();
+      while (!result.isComplete() && records.next()) {
+        String target = records.getString(1);
+
+        if (!result.containsTarget(target)) {
+          result.add(calibrationFromResultSet(records, instrument));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving calibrations", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return result;
+  }
+
+  public CalibrationSet getCalibrationsAfter(Connection conn,
+    Instrument instrument, LocalDateTime date)
+    throws CalibrationException, DatabaseException, MissingParamException,
+    RecordNotFoundException, InstrumentException {
+
+    CalibrationSet result = new CalibrationSet(instrument, getCalibrationType(),
+      getTargets(conn, instrument));
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_POST_CALIBRATIONS_QUERY);
       stmt.setLong(1, instrument.getId());
       stmt.setString(2, getCalibrationType());
       // Get epoch milliseconds
