@@ -32,22 +32,24 @@ public class DeltaTRangeRoutine extends DataReductionQCRoutine {
 
       Double value = record.getCalculationValue("ΔT");
 
-      RoutineFlag flag = null;
+      if (null != value) {
+        RoutineFlag flag = null;
 
-      if (Math.abs(value) > settings.getDoubleOption("bad_limit")) {
-        flag = new RoutineFlag(this, Flag.BAD, settings.getOption("bad_limit"),
-          String.valueOf(value));
+        if (Math.abs(value) > settings.getDoubleOption("bad_limit")) {
+          flag = new RoutineFlag(this, Flag.BAD,
+            settings.getOption("bad_limit"), String.valueOf(value));
 
-        // flag = Flag.BAD;
-      } else if (Math.abs(value) > settings
-        .getDoubleOption("questionable_limit")) {
-        flag = new RoutineFlag(this, Flag.QUESTIONABLE,
-          settings.getOption("questionable_limit"), String.valueOf(value));
-      }
+          // flag = Flag.BAD;
+        } else if (Math.abs(value) > settings
+          .getDoubleOption("questionable_limit")) {
+          flag = new RoutineFlag(this, Flag.QUESTIONABLE,
+            settings.getOption("questionable_limit"), String.valueOf(value));
+        }
 
-      if (null != flag) {
-        flagSensors(instrument, measurement, record, allSensorValues, flag,
-          flaggedItems);
+        if (null != flag) {
+          flagSensors(instrument, measurement, record, allSensorValues, flag,
+            flaggedItems);
+        }
       }
     }
   }
