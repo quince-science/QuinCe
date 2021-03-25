@@ -838,8 +838,17 @@ public class ManualQCData extends PlotPageData {
       SensorType sensorType = instrument.getSensorAssignments()
         .getSensorTypeForDBColumn(column.getId());
 
-      // If the sensor type doesn't have internal calibrations, add all values
-      if (!sensorType.hasInternalCalibration()) {
+      // For some reason doing this in a single if statement didn't work.
+      // ¯\_(ツ)_/¯
+      boolean useAllValues = true;
+      if (isCoreSensorType(sensorType)) {
+        useAllValues = false;
+      }
+      if (sensorType.hasInternalCalibration()) {
+        useAllValues = false;
+      }
+
+      if (useAllValues) {
         for (SensorValue sensorValue : sensorValues
           .getColumnValues(column.getId())) {
 
