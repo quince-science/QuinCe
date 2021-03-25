@@ -170,11 +170,13 @@
             <ui:fragment rendered="#{dataset.status gt DataSet.STATUS_ERROR}">
               <ui:fragment
                 rendered="#{dataset.status ge DataSet.STATUS_USER_QC}">
-                <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
-                  <h:graphicImage value="/resources/image/calibration.svg"
-                    styleClass="actionIcon" alt="Calibration"
-                    title="Calibration" />
-                </p:commandLink>
+                <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
+                  <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/calibration.svg"
+                      styleClass="actionIcon" alt="Calibration"
+                      title="Calibration" />
+                  </p:commandLink>
+                </ui:fragment>
                 <p:commandLink onclick="recalculate(#{dataset.id})">
                   <h:graphicImage value="/resources/image/calculate.svg"
                     styleClass="actionIcon" alt="Recalculate"
