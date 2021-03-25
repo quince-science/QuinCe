@@ -9,12 +9,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -43,21 +42,6 @@ public abstract class DataReducer {
    * The variable attributes
    */
   protected Map<String, Properties> properties;
-
-  /**
-   * All the measurements from the current data set
-   */
-  protected List<Measurement> allMeasurements;
-
-  /**
-   * A local copy of the complete set of sensor values for the current data set
-   */
-  protected DateColumnGroupedSensorValues groupedSensorValues;
-
-  /**
-   * The internal calibrations for the current data set
-   */
-  protected CalibrationSet calibrationSet;
 
   public DataReducer(Variable variable, Map<String, Properties> properties) {
 
@@ -323,5 +307,13 @@ public abstract class DataReducer {
 
   protected long makeParameterId(int parameterNumber) {
     return DataReducerFactory.makeParameterId(variable, parameterNumber);
+  }
+
+  /**
+   * Perform preprocessing actions on the dataset
+   */
+  public void preprocess(Connection conn, Instrument instrument,
+    DataSet dataset, List<Measurement> allMeasurements) throws Exception {
+    // The default is to do nothing
   }
 }
