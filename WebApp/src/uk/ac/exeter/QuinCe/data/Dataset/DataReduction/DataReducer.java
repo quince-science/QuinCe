@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -91,7 +92,15 @@ public abstract class DataReducer {
       MeasurementValue value = measurement.getMeasurementValue(sensorType);
 
       if (null != value) {
-        List<String> qcMessages = value.getQcMessages();
+        List<String> qcMessages = new ArrayList<String>();
+
+        for (String qcMessage : value.getQcMessages()) {
+          List<String> subMessages = StringUtils.delimitedToList(qcMessage,
+            ";");
+          for (String subMessage : subMessages) {
+            qcMessages.add(sensorType.getShortName() + " " + subMessage);
+          }
+        }
 
         Flag cascadeFlag = variable.getCascade(value.getSensorType(),
           value.getQcFlag(), instrument.getSensorAssignments());
