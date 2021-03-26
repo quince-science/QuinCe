@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -515,29 +516,40 @@ public class ExportBean extends BaseManagedBean {
         output.append(exportOption.getSeparator());
       }
     } else {
-
-      // Value
-      if (null == value.getValue()) {
+      if (value.getQcFlag().equals(Flag.FLUSHING)) {
+        // Empty columns
         output.append(exportOption.getMissingValue());
-      } else {
-        output.append(exportOption.format(value.getValue()));
-      }
-
-      // QC Flag
-      if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
-        output.append(exportOption.getSeparator());
-        output.append(value.getQcFlag().getWoceValue());
-
-        // QC Comment
-        if (exportOption.includeQCComments()) {
-          output.append(exportOption.getSeparator());
-          output.append('"' + exportOption.format(value.getQcMessage()) + '"');
+        output.append(exportOption.getSeparator()); // QC Flag
+        output.append(exportOption.getSeparator()); // QC Message
+        if (includeType) {
+          output.append(exportOption.getSeparator()); // Type
         }
-      }
+      } else {
 
-      if (includeType) {
-        output.append(exportOption.getSeparator());
-        output.append(value.getType());
+        // Value
+        if (null == value.getValue()) {
+          output.append(exportOption.getMissingValue());
+        } else {
+          output.append(exportOption.format(value.getValue()));
+        }
+
+        // QC Flag
+        if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
+          output.append(exportOption.getSeparator());
+          output.append(value.getQcFlag().getWoceValue());
+
+          // QC Comment
+          if (exportOption.includeQCComments()) {
+            output.append(exportOption.getSeparator());
+            output
+              .append('"' + exportOption.format(value.getQcMessage()) + '"');
+          }
+        }
+
+        if (includeType) {
+          output.append(exportOption.getSeparator());
+          output.append(value.getType());
+        }
       }
     }
   }
