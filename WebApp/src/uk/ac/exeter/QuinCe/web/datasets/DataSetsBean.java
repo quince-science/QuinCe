@@ -445,10 +445,16 @@ public class DataSetsBean extends BaseManagedBean {
             if (!standards.isComplete()) {
               validCalibration = false;
               validCalibrationMessage = "No complete set of external standards is available";
-            } else if (!ExternalStandardDB.hasZeroStandard(standards)) {
-              validCalibration = false;
-              validCalibrationMessage = "One external standard must have a zero concentration";
             }
+
+            // Disable zero standard check. #2037
+            // May be reinstated for different types of pCO2 system in the
+            // future.
+            /*
+             * else if (!ExternalStandardDB.hasZeroStandard(standards)) {
+             * validCalibration = false; validCalibrationMessage =
+             * "One external standard must have a zero concentration"; }
+             */
           }
 
         }
