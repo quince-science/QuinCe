@@ -519,8 +519,15 @@ public class ExportBean extends BaseManagedBean {
       if (value.getQcFlag().equals(Flag.FLUSHING)) {
         // Empty columns
         output.append(exportOption.getMissingValue());
-        output.append(exportOption.getSeparator()); // QC Flag
-        output.append(exportOption.getSeparator()); // QC Message
+
+        if (includeQcColumns) {
+          output.append(exportOption.getSeparator());
+
+          if (exportOption.includeQCComments()) {
+            output.append(exportOption.getSeparator());
+          }
+        }
+
         if (includeType) {
           output.append(exportOption.getSeparator()); // Type
         }
