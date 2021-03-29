@@ -190,9 +190,11 @@
               </ui:fragment>
               <ui:fragment
                 rendered="#{dataset.status lt DataSet.STATUS_USER_QC}">
-                <h:graphicImage
-                  value="/resources/image/calibration_disabled.svg"
-                  styleClass="actionIcon" alt="Calibration" title="Calibration" />
+                <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
+                  <h:graphicImage
+                    value="/resources/image/calibration_disabled.svg"
+                    styleClass="actionIcon" alt="Calibration" title="Calibration" />
+                </ui:fragment>
                 <h:graphicImage value="/resources/image/calculate_disabled.svg"
                   styleClass="actionIcon" alt="Data Reduction"
                   title="Data Reduction" />

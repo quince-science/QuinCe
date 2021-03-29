@@ -2,10 +2,12 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
+
+import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
@@ -19,6 +21,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class ControsPco2Reducer extends DataReducer {
+
+  public static final String ZEROS_PROP = "contros.zeros";
 
   private static List<CalculationParameter> calculationParameters = null;
 
@@ -58,7 +62,7 @@ public class ControsPco2Reducer extends DataReducer {
       .getCalibrationsAfter(conn, instrument,
         allMeasurements.get(allMeasurements.size() - 1).getTime());
 
-    zeroS2Beams = new HashMap<Double, Double>();
+    zeroS2Beams = new TreeMap<Double, Double>();
 
     allMeasurements.forEach(measurement -> {
       if (measurement.getRunType(variable)
@@ -72,7 +76,7 @@ public class ControsPco2Reducer extends DataReducer {
       }
     });
 
-    System.out.println(zeroS2Beams);
+    dataset.setProperty(variable, ZEROS_PROP, new Gson().toJson(zeroS2Beams));
   }
 
   @Override

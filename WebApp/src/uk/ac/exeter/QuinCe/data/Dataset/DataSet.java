@@ -570,6 +570,21 @@ public class DataSet {
     return result;
   }
 
+  public void setProperty(Variable variable, String key, String value) {
+    if (null == properties) {
+      properties = new HashMap<String, Properties>();
+    }
+
+    Properties varProps;
+
+    if (null == properties.get(variable.getName())) {
+      properties.put(variable.getName(), new Properties());
+    }
+
+    varProps = properties.get(variable.getName());
+    varProps.setProperty(key, value);
+  }
+
   /**
    * Determine whether or not a given status value is valid
    *
