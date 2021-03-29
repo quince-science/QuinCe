@@ -4,8 +4,8 @@ import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -15,6 +15,14 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class ControsPco2MeasurementLocator implements MeasurementLocator {
+
+  private static final int NO_STATUS = -1;
+
+  private static final int ZERO = 0;
+
+  private static final int FLUSHING = 1;
+
+  private static final int MEASUREMENT = 2;
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
@@ -35,58 +43,58 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
       SensorType refSensorType = sensorConfig
         .getSensorType("Contros pCO₂ Reference Signal");
 
-      HashSet<LocalDateTime> zeroTimes = DataSetDataDB
-        .getFilteredSensorValueTimes(conn, instrument, dataset, zeroType, 1D);
+      // Assume one column of each type
+      long zeroColumn = instrument.getSensorAssignments().getColumnIds(zeroType)
+        .get(0);
+      long flushingColumn = instrument.getSensorAssignments()
+        .getColumnIds(flushingType).get(0);
+      long rawColumn = instrument.getSensorAssignments()
+        .getColumnIds(rawSensorType).get(0);
+      long refColumn = instrument.getSensorAssignments()
+        .getColumnIds(refSensorType).get(0);
 
-      HashSet<LocalDateTime> flushingTimes = DataSetDataDB
-        .getFilteredSensorValueTimes(conn, instrument, dataset, flushingType,
-          1D);
+      DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
+        instrument, dataset.getId(), false);
 
-      List<Long> rawColumns = instrument.getSensorAssignments()
-        .getColumnIds(rawSensorType);
-      List<Long> refColumns = instrument.getSensorAssignments()
-        .getColumnIds(refSensorType);
-
-      List<SensorValue> rawSensorValues = DataSetDataDB
-        .getSensorValuesForColumns(conn, dataset.getId(), rawColumns);
-      List<SensorValue> refSensorValues = DataSetDataDB
-        .getSensorValuesForColumns(conn, dataset.getId(), refColumns);
-
-      // I believe that there will always be an equal number of raw and ref
-      // values. If this assumption
-      // ever breaks, we'll get an error and know that we have to deal with it.
-      if (rawSensorValues.size() != refSensorValues.size()) {
-        throw new MeasurementLocatorException(
-          "Raw and Ref sensor values lists are different sizes");
-      }
-
+      // Loop through all the rows, examining the zero/flush columns to decide
+      // what to do
       List<SensorValue> flaggedSensorValues = new ArrayList<SensorValue>();
       List<Measurement> measurements = new ArrayList<Measurement>(
-        rawSensorValues.size());
+        sensorValues.getTimes().size());
 
-      for (int i = 0; i < rawSensorValues.size(); i++) {
-        SensorValue rawValue = rawSensorValues.get(i);
+      LocalDateTime previousRecord = null;
+      int previousRecordStatus = NO_STATUS;
 
-        HashMap<Long, String> runTypes = new HashMap<Long, String>();
+      for (LocalDateTime recordTime : sensorValues.getTimes()) {
+        Map<Long, SensorValue> recordValues = sensorValues.get(recordTime);
 
-        if (zeroTimes.contains(rawValue.getTime())) {
-          runTypes.put(variable.getId(),
-            Measurement.INTERNAL_CALIBRATION_RUN_TYPE);
-        } else if (flushingTimes.contains(rawValue.getTime())) {
-          rawValue.setUserQC(Flag.FLUSHING, "Flushing");
-          flaggedSensorValues.add(rawValue);
+        int recordStatus = getRecordStatus(recordValues, zeroColumn,
+          flushingColumn);
 
-          SensorValue refValue = refSensorValues.get(i);
-          refValue.setUserQC(Flag.FLUSHING, "Flushing");
-          flaggedSensorValues.add(refValue);
+        // If we've moved off the end of a ZERO status,
+        // add the previous record as an Internal Calibration record
+        if (recordStatus != ZERO && previousRecordStatus == ZERO
+          && null != previousRecord) {
+          measurements.add(makeMeasurement(dataset, previousRecord, variable,
+            Measurement.INTERNAL_CALIBRATION_RUN_TYPE));
+        } else if (recordStatus != ZERO) {
 
-          runTypes.put(variable.getId(), Measurement.MEASUREMENT_RUN_TYPE);
-        } else {
-          runTypes.put(variable.getId(), Measurement.MEASUREMENT_RUN_TYPE);
+          if (recordStatus == FLUSHING) {
+            SensorValue rawValue = recordValues.get(rawColumn);
+            SensorValue refValue = recordValues.get(refColumn);
+            rawValue.setUserQC(Flag.FLUSHING, "Flushing");
+            refValue.setUserQC(Flag.FLUSHING, "Flushing");
+            flaggedSensorValues.add(rawValue);
+            flaggedSensorValues.add(refValue);
+          }
+
+          measurements.add(makeMeasurement(dataset, recordTime, variable,
+            Measurement.MEASUREMENT_RUN_TYPE));
+
         }
 
-        measurements
-          .add(new Measurement(dataset.getId(), rawValue.getTime(), runTypes));
+        previousRecord = recordTime;
+        previousRecordStatus = recordStatus;
       }
 
       DataSetDataDB.storeSensorValues(conn, flaggedSensorValues);
@@ -95,5 +103,28 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
     } catch (Exception e) {
       throw new MeasurementLocatorException(e);
     }
+  }
+
+  private int getRecordStatus(Map<Long, SensorValue> record, long zeroColumn,
+    long flushingColumn) {
+    int result;
+
+    if (record.get(zeroColumn).getDoubleValue() == 1D) {
+      result = ZERO;
+    } else if (record.get(flushingColumn).getDoubleValue() == 1D) {
+      result = FLUSHING;
+    } else {
+      result = MEASUREMENT;
+    }
+
+    return result;
+  }
+
+  private Measurement makeMeasurement(DataSet dataset, LocalDateTime time,
+    Variable variable, String runType) {
+
+    HashMap<Long, String> runTypes = new HashMap<Long, String>();
+    runTypes.put(variable.getId(), runType);
+    return new Measurement(dataset.getId(), time, runTypes);
   }
 }
