@@ -613,16 +613,9 @@ public class Instrument {
    */
   public boolean isRunTypeForVariable(Variable variable, String runType)
     throws RunTypeCategoryException {
-    boolean result = false;
 
-    if (!hasInternalCalibrations()) {
-      result = true;
-    } else {
-      result = getRunTypeCategory(variable.getId(), runType)
-        .getType() == variable.getId();
-    }
-
-    return result;
+    return getRunTypeCategory(variable.getId(), runType).getType() == variable
+      .getId();
   }
 
   /**

@@ -11,6 +11,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -172,7 +173,7 @@ public class DefaultMeasurementValueCalculator
               value.addSupportingSensorValues(postCalibrationValues);
             }
 
-            Double interpolated = SensorValue.interpolate(priorTime,
+            Double interpolated = Calculators.interpolate(priorTime,
               priorOffset, postTime, postOffset, measurement.getTime());
 
             if (null == interpolated) {

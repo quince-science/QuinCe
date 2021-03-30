@@ -90,6 +90,13 @@ INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_casca
 INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
   VALUES (
     (SELECT id FROM variables WHERE name = 'CONTROS pCO₂'),
+    (SELECT id FROM sensor_types WHERE column_code = 'CONTROSGASTEMP'),
+    0, 3, 4
+  );
+
+INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  VALUES (
+    (SELECT id FROM variables WHERE name = 'CONTROS pCO₂'),
     (SELECT id FROM sensor_types WHERE column_code = 'CONTROSGASPRES'),
     0, 3, 4
   );

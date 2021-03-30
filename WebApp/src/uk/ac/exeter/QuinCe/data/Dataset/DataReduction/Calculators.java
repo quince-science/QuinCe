@@ -1,5 +1,10 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+
 /**
  * Provides static methods for common calculations in data reduction.
  *
@@ -99,5 +104,82 @@ public class Calculators {
     Double correction = (measuredPressure * MOLAR_MASS_AIR)
       / (Calculators.kelvin(temperature) * 8.314) * 9.8 * sensorHeight;
     return measuredPressure + correction;
+  }
+
+  public static Double interpolate(LocalDateTime time0, Double y0,
+    LocalDateTime time1, Double y1, LocalDateTime measurementTime) {
+    Double result = null;
+
+    if (null != y0 && null != y1) {
+      double x0 = DateTimeUtils.dateToLong(time0);
+      double x1 = DateTimeUtils.dateToLong(time1);
+      result = interpolate(x0, y0, x1, y1,
+        DateTimeUtils.dateToLong(measurementTime));
+    } else if (null != y0) {
+      result = y0;
+    } else if (null != y1) {
+      result = y1;
+    }
+
+    return result;
+  }
+
+  public static double interpolate(double x0, double y0, double x1, double y1,
+    double x) {
+
+    return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+  }
+
+  public static Double interpolate(Map.Entry<Double, Double> prior,
+    Map.Entry<Double, Double> post, Double x) {
+
+    Double result = null;
+
+    if (!isNull(prior) && !isNull(post)) {
+      double x0 = prior.getKey();
+      double y0 = prior.getValue();
+      double x1 = post.getKey();
+      double y1 = post.getValue();
+      result = Calculators.interpolate(x0, y0, x1, y1, x);
+    } else if (!isNull(prior)) {
+      result = prior.getValue();
+    } else if (!isNull(post)) {
+      result = post.getValue();
+    }
+
+    return result;
+  }
+
+  private static boolean isNull(Map.Entry<Double, Double> mapEntry) {
+
+    boolean result = false;
+
+    if (null == mapEntry) {
+      result = true;
+    } else if (null == mapEntry.getKey() || mapEntry.getKey().isNaN()) {
+      result = false;
+    } else if (null == mapEntry.getValue() || mapEntry.getValue().isNaN()) {
+      result = false;
+    }
+
+    return result;
+  }
+
+  /**
+   * Calculates pCO<sub>2</sub> at the intake (sea surface) temperature. From
+   * Takahashi et al. (2009)
+   *
+   * @param pco2TEWet
+   *          The pCO<sub>2</sub> at equilibrator temperature
+   * @param eqt
+   *          The equilibrator temperature
+   * @param sst
+   *          The intake temperature
+   * @return The pCO<sub>2</sub> at intake temperature
+   */
+  public static Double calcCO2AtSST(Double co2AtEquilibrator, Double eqt,
+    Double sst) {
+    return co2AtEquilibrator
+      * Math.exp(0.0423 * (Calculators.kelvin(sst) - Calculators.kelvin(eqt)));
   }
 }
