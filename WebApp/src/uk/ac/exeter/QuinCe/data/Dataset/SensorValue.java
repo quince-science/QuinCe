@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
@@ -646,7 +647,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
       double y0 = prior.getDoubleValue();
       double x1 = DateTimeUtils.dateToLong(post.getTime());
       double y1 = post.getDoubleValue();
-      result = interpolate(x0, y0, x1, y1,
+      result = Calculators.interpolate(x0, y0, x1, y1,
         DateTimeUtils.dateToLong(measurementTime));
     } else if (null != prior) {
       result = prior.getDoubleValue();
@@ -655,30 +656,6 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
 
     return result;
-  }
-
-  public static Double interpolate(LocalDateTime time0, Double y0,
-    LocalDateTime time1, Double y1, LocalDateTime measurementTime) {
-    Double result = null;
-
-    if (null != y0 && null != y1) {
-      double x0 = DateTimeUtils.dateToLong(time0);
-      double x1 = DateTimeUtils.dateToLong(time1);
-      result = interpolate(x0, y0, x1, y1,
-        DateTimeUtils.dateToLong(measurementTime));
-    } else if (null != y0) {
-      result = y0;
-    } else if (null != y1) {
-      result = y1;
-    }
-
-    return result;
-  }
-
-  private static double interpolate(double x0, double y0, double x1, double y1,
-    double x) {
-
-    return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
   }
 
   public static Flag getCombinedDisplayFlag(

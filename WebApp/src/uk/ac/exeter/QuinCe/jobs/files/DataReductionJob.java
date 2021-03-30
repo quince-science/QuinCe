@@ -208,10 +208,15 @@ public class DataReductionJob extends DataSetJob {
 
         for (Measurement measurement : allMeasurements
           .getTimeOrderedMeasurements()) {
-          DataReductionRecord dataReductionRecord = reducer
-            .performDataReduction(instrument, measurement, conn);
 
-          dataReductionRecords.add(dataReductionRecord);
+          if (instrument.isRunTypeForVariable(variable,
+            measurement.getRunType(variable))) {
+
+            DataReductionRecord dataReductionRecord = reducer
+              .performDataReduction(instrument, measurement, conn);
+
+            dataReductionRecords.add(dataReductionRecord);
+          }
         }
       }
 

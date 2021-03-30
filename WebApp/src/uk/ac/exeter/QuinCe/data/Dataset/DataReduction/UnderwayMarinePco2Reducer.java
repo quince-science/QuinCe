@@ -47,10 +47,10 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     Double fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, co2InGas,
       equilibratorPressure, equilibratorTemperature);
 
-    Double pCO2SST = calcCO2AtSST(pCo2TEWet, equilibratorTemperature,
-      intakeTemperature);
+    Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet,
+      equilibratorTemperature, intakeTemperature);
 
-    Double fCO2 = calcCO2AtSST(fCo2TEWet, equilibratorTemperature,
+    Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, equilibratorTemperature,
       intakeTemperature);
 
     // Store the calculated values
@@ -60,24 +60,6 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     record.put("fCO₂ TE Wet", fCo2TEWet);
     record.put("pCO₂ SST", pCO2SST);
     record.put("fCO₂", fCO2);
-  }
-
-  /**
-   * Calculates pCO<sub>2</sub> at the intake (sea surface) temperature. From
-   * Takahashi et al. (2009)
-   *
-   * @param pco2TEWet
-   *          The pCO<sub>2</sub> at equilibrator temperature
-   * @param eqt
-   *          The equilibrator temperature
-   * @param sst
-   *          The intake temperature
-   * @return The pCO<sub>2</sub> at intake temperature
-   */
-  private Double calcCO2AtSST(Double co2AtEquilibrator, Double eqt,
-    Double sst) {
-    return co2AtEquilibrator
-      * Math.exp(0.0423 * (Calculators.kelvin(sst) - Calculators.kelvin(eqt)));
   }
 
   @Override
