@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 public class CalculationCoefficient extends Calibration {
 
@@ -94,19 +94,31 @@ public class CalculationCoefficient extends Calibration {
     return rawValue;
   }
 
-  public static Double getCoefficient(CalibrationSet calibrationSet,
-    Variable variable, String coefficient) {
+  public static CalculationCoefficient getCoefficient(
+    CalibrationSet calibrationSet, Variable variable, String coefficient) {
 
-    Double result;
-
-    try {
-      result = calibrationSet
-        .getCalibrationValue(variable.getId() + "." + coefficient, "Value");
-    } catch (RecordNotFoundException e) {
-      result = null;
-    }
-
-    return result;
+    return (CalculationCoefficient) calibrationSet
+      .getTargetCalibration(getCoeffecientName(variable, coefficient));
   }
 
+  public static String getCoeffecientName(Variable variable,
+    String coefficient) {
+    return variable.getId() + "." + coefficient;
+  }
+
+  public Double getValue() {
+    return getCoefficient("Value");
+  }
+
+  public static Double interpolate(CalculationCoefficient x0,
+    CalculationCoefficient y0, CalculationCoefficient x1,
+    CalculationCoefficient y1, Double x) {
+
+    Double x0Value = null == x0 ? null : x0.getValue();
+    Double y0Value = null == y0 ? null : y0.getValue();
+    Double x1Value = null == x1 ? null : x1.getValue();
+    Double y1Value = null == y1 ? null : y1.getValue();
+
+    return Calculators.interpolate(x0Value, y0Value, x1Value, y1Value, x);
+  }
 }
