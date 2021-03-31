@@ -16,7 +16,7 @@ public class CalibrationCoefficient {
   /**
    * The coefficient value
    */
-  private double value = 0.0;
+  private String value = "0";
 
   /**
    * Creates an empty (zero) coefficient
@@ -36,7 +36,7 @@ public class CalibrationCoefficient {
    * @param value
    *          The value
    */
-  protected CalibrationCoefficient(String name, double value) {
+  protected CalibrationCoefficient(String name, String value) {
     this.name = name;
     this.value = value;
   }
@@ -55,8 +55,12 @@ public class CalibrationCoefficient {
    *
    * @return The value
    */
-  public double getValue() {
+  public String getValue() {
     return value;
+  }
+
+  public Double getDoubleValue() {
+    return Double.parseDouble(value);
   }
 
   /**
@@ -65,7 +69,7 @@ public class CalibrationCoefficient {
    * @param value
    *          The value
    */
-  public void setValue(double value) {
+  public void setValue(String value) {
     this.value = value;
   }
 

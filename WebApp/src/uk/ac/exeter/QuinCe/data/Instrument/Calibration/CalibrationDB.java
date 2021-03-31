@@ -412,8 +412,8 @@ public abstract class CalibrationDB {
     long id = record.getLong(1);
     String target = record.getString(3);
     LocalDateTime deploymentDate = DateTimeUtils.longToDate(record.getLong(4));
-    List<Double> coefficients = StringUtils
-      .delimitedToDoubleList(record.getString(5));
+    List<String> coefficients = StringUtils.delimitedToList(record.getString(5),
+      ";");
     String calibrationClass = record.getString(6);
 
     return CalibrationFactory.createCalibration(getCalibrationType(),
