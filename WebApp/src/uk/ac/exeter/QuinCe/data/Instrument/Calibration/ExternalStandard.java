@@ -66,7 +66,7 @@ public class ExternalStandard extends Calibration {
    *           If the calibration details are invalid
    */
   protected ExternalStandard(long id, Instrument instrument, String target,
-    LocalDateTime deploymentDate, List<Double> coefficients)
+    LocalDateTime deploymentDate, List<String> coefficients)
     throws ParameterException {
     super(id, instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
       target);
@@ -107,7 +107,7 @@ public class ExternalStandard extends Calibration {
       initialiseCoefficients();
     }
 
-    return coefficients.get(0).getValue();
+    return coefficients.get(0).getDoubleValue();
   }
 
   /**
@@ -116,7 +116,7 @@ public class ExternalStandard extends Calibration {
    * @param concentration
    *          The concentration
    */
-  public void setConcentration(double concentration) {
+  public void setConcentration(String concentration) {
     if (null == coefficients) {
       initialiseCoefficients();
     }
@@ -136,7 +136,7 @@ public class ExternalStandard extends Calibration {
         if (getConcentration() < 0) {
           result = false;
         }
-        if (getCoefficients().get(1).getValue() != 0.0) {
+        if (getCoefficients().get(1).getDoubleValue() != 0.0) {
           // xH2O must be zero
           result = false;
         }

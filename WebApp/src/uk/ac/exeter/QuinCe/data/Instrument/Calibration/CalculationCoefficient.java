@@ -59,7 +59,7 @@ public class CalculationCoefficient extends Calibration {
    *           If the calibration details are invalid
    */
   public CalculationCoefficient(long id, Instrument instrument, String target,
-    LocalDateTime deploymentDate, List<Double> coefficients) {
+    LocalDateTime deploymentDate, List<String> coefficients) {
 
     super(id, instrument,
       CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE,
@@ -107,7 +107,7 @@ public class CalculationCoefficient extends Calibration {
   }
 
   public Double getValue() {
-    return getCoefficient("Value");
+    return getDoubleCoefficient("Value");
   }
 
   public static Double interpolate(CalculationCoefficient x0,
