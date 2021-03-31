@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 
 public class ControsPco2Reducer extends DataReducer {
 
@@ -86,16 +87,44 @@ public class ControsPco2Reducer extends DataReducer {
     // Calculate zero Sbeam values
     zeroS2Beams = new TreeMap<Double, Double>();
 
-    for (Measurement measurement : allMeasurements) {
-      if (measurement.getRunType(variable)
-        .equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
+    // We calculate zero beams as averages within their run
+    String currentRunType = "";
+    MeanCalculator runTimes = new MeanCalculator();
+    MeanCalculator s2Beams = new MeanCalculator();
 
-        Double runTime = measurement.getMeasurementValue("Contros pCO₂ Runtime")
+    for (Measurement measurement : allMeasurements) {
+
+      String runType = measurement.getRunType(variable);
+
+      if (!runType.equals(currentRunType)) {
+        if (currentRunType.equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
+          if (runTimes.getCount() > 0) {
+            zeroS2Beams.put(runTimes.mean(), s2Beams.mean());
+            runTimes = new MeanCalculator();
+            s2Beams = new MeanCalculator();
+          }
+        }
+        currentRunType = runType;
+      }
+
+      if (runType.equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
+
+        Double rawSignal = measurement
+          .getMeasurementValue("Contros pCO₂ Raw Detector Signal")
           .getCalculatedValue();
 
-        Double s2Beam = calcS2Beam(measurement);
-        zeroS2Beams.put(runTime, s2Beam);
+        if (!rawSignal.isNaN()) {
+          runTimes.add(measurement.getMeasurementValue("Contros pCO₂ Runtime")
+            .getCalculatedValue());
+          s2Beams.add(calcS2Beam(measurement));
+        }
       }
+    }
+
+    if (runTimes.getCount() > 0) {
+      zeroS2Beams.put(runTimes.mean(), s2Beams.mean());
+      runTimes = new MeanCalculator();
+      s2Beams = new MeanCalculator();
     }
 
     dataset.setProperty(variable, ZEROS_PROP, new Gson().toJson(zeroS2Beams));
