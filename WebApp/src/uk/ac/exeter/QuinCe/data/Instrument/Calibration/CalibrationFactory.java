@@ -44,8 +44,8 @@ public class CalibrationFactory {
     LocalDateTime deploymentDate, String target, String coefficients) {
 
     try {
-      List<Double> parsedCoefficients = StringUtils
-        .delimitedToDoubleList(coefficients);
+      List<String> parsedCoefficients = StringUtils
+        .delimitedToList(coefficients, ";");
       return createCalibration(calibrationType, calibrationClass, id,
         instrument, deploymentDate, target, parsedCoefficients);
     } catch (NumberFormatException e) {
@@ -74,7 +74,7 @@ public class CalibrationFactory {
    */
   public static Calibration createCalibration(String calibrationType,
     String calibrationClass, long id, Instrument instrument,
-    LocalDateTime deploymentDate, String target, List<Double> coefficients) {
+    LocalDateTime deploymentDate, String target, List<String> coefficients) {
     Calibration result;
 
     switch (calibrationType) {

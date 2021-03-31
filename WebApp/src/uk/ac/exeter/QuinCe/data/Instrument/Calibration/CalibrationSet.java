@@ -211,7 +211,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
     for (Calibration calibration : this) {
       if (calibration.getTarget().equals(target)) {
         calibrationFound = true;
-        result = calibration.getCoefficient(sensorName);
+        result = calibration.getDoubleCoefficient(sensorName);
       }
     }
 

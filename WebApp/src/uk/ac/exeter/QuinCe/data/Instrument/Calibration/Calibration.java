@@ -222,7 +222,7 @@ public abstract class Calibration implements Comparable<Calibration> {
       initialiseCoefficients();
     }
 
-    List<Double> values = new ArrayList<Double>(coefficients.size());
+    List<String> values = new ArrayList<String>(coefficients.size());
 
     for (CalibrationCoefficient coefficient : coefficients) {
       values.add(coefficient.getValue());
@@ -273,7 +273,7 @@ public abstract class Calibration implements Comparable<Calibration> {
    * @throws CalibrationException
    *           If an incorrect number of coefficients is supplied
    */
-  public void setCoefficients(List<Double> coefficients)
+  public void setCoefficients(List<String> coefficients)
     throws CalibrationException {
 
     if (coefficients.size() != getCoefficientNames().size()) {
@@ -347,12 +347,12 @@ public abstract class Calibration implements Comparable<Calibration> {
    *          The coefficient name
    * @return The coefficient value
    */
-  public Double getCoefficient(String name) {
+  public Double getDoubleCoefficient(String name) {
     Double result = null;
 
     for (CalibrationCoefficient coefficient : getCoefficients()) {
       if (coefficient.getName().equals(name)) {
-        result = coefficient.getValue();
+        result = Double.parseDouble(coefficient.getValue());
         break;
       }
     }
