@@ -12,6 +12,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class ControsPco2MeasurementLocator implements MeasurementLocator {
@@ -23,6 +24,8 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
   private static final int FLUSHING = 1;
 
   private static final int MEASUREMENT = 2;
+
+  private static final int ZERO_FLUSHING_TIME = 30;
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
@@ -62,8 +65,8 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
       List<Measurement> measurements = new ArrayList<Measurement>(
         sensorValues.getTimes().size());
 
-      LocalDateTime previousRecord = null;
-      int previousRecordStatus = NO_STATUS;
+      int currentStatus = NO_STATUS;
+      LocalDateTime currentStatusStart = null;
 
       for (LocalDateTime recordTime : sensorValues.getTimes()) {
         Map<Long, SensorValue> recordValues = sensorValues.get(recordTime);
@@ -71,30 +74,40 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
         int recordStatus = getRecordStatus(recordValues, zeroColumn,
           flushingColumn);
 
-        // If we've moved off the end of a ZERO status,
-        // add the previous record as an Internal Calibration record
-        if (recordStatus != ZERO && previousRecordStatus == ZERO
-          && null != previousRecord) {
-          measurements.add(makeMeasurement(dataset, previousRecord, variable,
-            Measurement.INTERNAL_CALIBRATION_RUN_TYPE));
-        } else if (recordStatus != ZERO) {
-
-          if (recordStatus == FLUSHING) {
-            SensorValue rawValue = recordValues.get(rawColumn);
-            SensorValue refValue = recordValues.get(refColumn);
-            rawValue.setUserQC(Flag.FLUSHING, "Flushing");
-            refValue.setUserQC(Flag.FLUSHING, "Flushing");
-            flaggedSensorValues.add(rawValue);
-            flaggedSensorValues.add(refValue);
-          }
-
-          measurements.add(makeMeasurement(dataset, recordTime, variable,
-            Measurement.MEASUREMENT_RUN_TYPE));
-
+        if (recordStatus != currentStatus) {
+          currentStatus = recordStatus;
+          currentStatusStart = recordTime;
         }
 
-        previousRecord = recordTime;
-        previousRecordStatus = recordStatus;
+        boolean flushSensors = false;
+        String runType;
+
+        if (currentStatus == ZERO) {
+          if (DateTimeUtils.secondsBetween(currentStatusStart,
+            recordTime) <= ZERO_FLUSHING_TIME) {
+            flushSensors = true;
+          }
+
+          runType = Measurement.INTERNAL_CALIBRATION_RUN_TYPE;
+        } else {
+          if (recordStatus == FLUSHING) {
+            flushSensors = true;
+          }
+
+          runType = Measurement.MEASUREMENT_RUN_TYPE;
+        }
+
+        if (flushSensors) {
+          SensorValue rawValue = recordValues.get(rawColumn);
+          SensorValue refValue = recordValues.get(refColumn);
+          rawValue.setUserQC(Flag.FLUSHING, "Flushing");
+          refValue.setUserQC(Flag.FLUSHING, "Flushing");
+          flaggedSensorValues.add(rawValue);
+          flaggedSensorValues.add(refValue);
+        }
+
+        measurements
+          .add(makeMeasurement(dataset, recordTime, variable, runType));
       }
 
       DataSetDataDB.storeSensorValues(conn, flaggedSensorValues);

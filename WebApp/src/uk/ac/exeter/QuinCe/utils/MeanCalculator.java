@@ -20,6 +20,10 @@ public class MeanCalculator {
     }
   }
 
+  public int getCount() {
+    return count.intValue();
+  }
+
   public Double mean() {
 
     Double mean = Double.NaN;
