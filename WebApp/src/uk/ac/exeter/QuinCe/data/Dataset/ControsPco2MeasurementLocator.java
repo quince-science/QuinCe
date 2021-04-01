@@ -25,8 +25,6 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
 
   private static final int MEASUREMENT = 2;
 
-  private static final int ZERO_FLUSHING_TIME = 30;
-
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
     Instrument instrument, DataSet dataset) throws MeasurementLocatorException {
@@ -36,6 +34,9 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
         .getSensorsConfiguration();
 
       Variable variable = sensorConfig.getInstrumentVariable("CONTROS pCO₂");
+
+      float zeroFlushTime = Float.parseFloat(dataset.getAllProperties()
+        .get(variable.getName()).getProperty("zero_flush"));
 
       SensorType zeroType = sensorConfig
         .getSensorType("Contros pCO₂ Zero Mode");
@@ -84,7 +85,7 @@ public class ControsPco2MeasurementLocator implements MeasurementLocator {
 
         if (currentStatus == ZERO) {
           if (DateTimeUtils.secondsBetween(currentStatusStart,
-            recordTime) <= ZERO_FLUSHING_TIME) {
+            recordTime) <= zeroFlushTime) {
             flushSensors = true;
           }
 
