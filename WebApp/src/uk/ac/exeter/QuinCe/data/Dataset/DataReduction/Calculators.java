@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -128,6 +130,21 @@ public class Calculators {
     double x) {
 
     return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+  }
+
+  public static BigDecimal interpolate(BigDecimal x0, BigDecimal y0,
+    BigDecimal x1, BigDecimal y1, BigDecimal x) {
+
+    BigDecimal X1minusX = x1.subtract(x);
+    BigDecimal XminusX0 = x.subtract(x0);
+    BigDecimal X1minusX0 = x1.subtract(x0);
+
+    BigDecimal Y0timesX1minusX = y0.multiply(X1minusX);
+    BigDecimal Y1timesXminusX0 = y1.multiply(XminusX0);
+
+    BigDecimal top = Y0timesX1minusX.add(Y1timesXminusX0);
+
+    return top.divide(X1minusX0, 10, RoundingMode.HALF_UP);
   }
 
   public static Double interpolate(Map.Entry<Double, Double> prior,
