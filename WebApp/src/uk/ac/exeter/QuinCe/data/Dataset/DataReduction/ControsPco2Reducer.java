@@ -193,9 +193,12 @@ public class ControsPco2Reducer extends DataReducer {
 
       Double sst = measurement.getMeasurementValue("Intake Temperature")
         .getCalculatedValue() + T0;
+      Double membraneTemp = measurement
+        .getMeasurementValue("Contros pCO₂ Membrane Temperature")
+        .getCalculatedValue() + T0;
 
-      Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet, gasTemperature, sst);
-      Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, gasTemperature, sst);
+      Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet, membraneTemp, sst);
+      Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, membraneTemp, sst);
 
       record.put("Zero S₂beam", zeroS2Beam.doubleValue());
       record.put("S₂beam", measurementS2Beam.doubleValue());
@@ -214,8 +217,8 @@ public class ControsPco2Reducer extends DataReducer {
       "Contros pCO₂ Raw Detector Signal", "Contros pCO₂ Reference Signal",
       "Contros pCO₂ Zero Mode", "Contros pCO₂ Flush Mode",
       "Contros pCO₂ Runtime", "Contros pCO₂ Gas Stream Temperature",
-      "Contros pCO₂ Gas Stream Pressure", "Contros pCO₂ Membrane Pressure",
-      "Diagnostic Relative Humidity" };
+      "Contros pCO₂ Gas Stream Pressure", "Contros pCO₂ Membrane Temperature",
+      "Contros pCO₂ Membrane Pressure", "Diagnostic Relative Humidity" };
   }
 
   @Override
