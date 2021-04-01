@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +111,11 @@ public class CalculationCoefficient extends Calibration {
     return getDoubleCoefficient("Value");
   }
 
-  public static Double interpolate(CalculationCoefficient x0,
+  public BigDecimal getBigDecimalValue() {
+    return getBigDecimalCoefficient("Value");
+  }
+
+  public static Double interpolateDouble(CalculationCoefficient x0,
     CalculationCoefficient y0, CalculationCoefficient x1,
     CalculationCoefficient y1, Double x) {
 
@@ -118,6 +123,18 @@ public class CalculationCoefficient extends Calibration {
     Double y0Value = null == y0 ? null : y0.getValue();
     Double x1Value = null == x1 ? null : x1.getValue();
     Double y1Value = null == y1 ? null : y1.getValue();
+
+    return Calculators.interpolate(x0Value, y0Value, x1Value, y1Value, x);
+  }
+
+  public static BigDecimal interpolateBigDecimal(CalculationCoefficient x0,
+    CalculationCoefficient y0, CalculationCoefficient x1,
+    CalculationCoefficient y1, BigDecimal x) {
+
+    BigDecimal x0Value = null == x0 ? null : x0.getBigDecimalValue();
+    BigDecimal y0Value = null == y0 ? null : y0.getBigDecimalValue();
+    BigDecimal x1Value = null == x1 ? null : x1.getBigDecimalValue();
+    BigDecimal y1Value = null == y1 ? null : y1.getBigDecimalValue();
 
     return Calculators.interpolate(x0Value, y0Value, x1Value, y1Value, x);
   }
