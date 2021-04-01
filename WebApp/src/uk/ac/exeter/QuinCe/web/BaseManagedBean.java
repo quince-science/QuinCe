@@ -14,6 +14,7 @@ import org.primefaces.event.NodeCollapseEvent;
 import org.primefaces.event.NodeExpandEvent;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.User.UserPreferences;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -331,8 +332,7 @@ public abstract class BaseManagedBean {
             currentFullInstrument = instruments.get(0);
             getSession().setAttribute(CURRENT_FULL_INSTRUMENT_ATTR,
               currentFullInstrument);
-            getUserPrefs()
-              .setLastInstrument(currentFullInstrument.getId());
+            getUserPrefs().setLastInstrument(currentFullInstrument.getId());
           }
         }
       }
@@ -379,6 +379,13 @@ public abstract class BaseManagedBean {
       // Remove the current instrument from the session;
       // It will be replaced on next access
       getSession().removeAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
+
+      try {
+        UserDB.savePreferences(getDataSource(), getUserPrefs());
+      } catch (Exception e) {
+        // Log exceptions but ignore them
+        e.printStackTrace();
+      }
     }
   }
 
