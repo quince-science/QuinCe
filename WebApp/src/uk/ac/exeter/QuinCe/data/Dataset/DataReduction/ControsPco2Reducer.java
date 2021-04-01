@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -134,59 +136,76 @@ public class ControsPco2Reducer extends DataReducer {
   public void doCalculation(Instrument instrument, Measurement measurement,
     DataReductionRecord record, Connection conn) throws Exception {
 
-    Double F = CalculationCoefficient
-      .getCoefficient(priorCoefficients, variable, "F").getValue();
+    // We use BigDecimals to maintain the precision on the k parameters,
+    // which are on the order of 1e-10
 
-    Double measurementRunTime = measurement
-      .getMeasurementValue("Contros pCO₂ Runtime").getCalculatedValue();
+    BigDecimal F = new BigDecimal(CalculationCoefficient
+      .getCoefficient(priorCoefficients, variable, "F").getValue());
+
+    BigDecimal measurementRunTime = new BigDecimal(measurement
+      .getMeasurementValue("Contros pCO₂ Runtime").getCalculatedValue());
 
     Double measurementS2Beam = calcS2Beam(measurement);
-    Double zeroS2Beam = getInterpZeroS2Beam(measurementRunTime);
 
-    Double sProc = F * (1 - (measurementS2Beam / zeroS2Beam));
+    if (!measurementS2Beam.isNaN()) {
+      BigDecimal bdMeasurementS2Beam = new BigDecimal(measurementS2Beam);
+      BigDecimal zeroS2Beam = new BigDecimal(
+        getInterpZeroS2Beam(measurementRunTime.doubleValue()));
 
-    Double k1Interp = CalculationCoefficient.interpolate(runTimePrior, k1Prior,
-      runTimePost, k1Post, measurementRunTime);
-    Double k2Interp = CalculationCoefficient.interpolate(runTimePrior, k2Prior,
-      runTimePost, k2Post, measurementRunTime);
-    Double k3Interp = CalculationCoefficient.interpolate(runTimePrior, k3Prior,
-      runTimePost, k3Post, measurementRunTime);
+      BigDecimal sProc = F.multiply(new BigDecimal(1D).subtract(
+        (bdMeasurementS2Beam.divide(zeroS2Beam, 10, RoundingMode.HALF_UP))));
 
-    Double xco2ProcPart = (k3Interp * Math.pow(sProc, 3))
-      + (k2Interp * Math.pow(sProc, 2)) + (k1Interp * sProc);
+      BigDecimal k1Interp = CalculationCoefficient.interpolateBigDecimal(
+        runTimePrior, k1Prior, runTimePost, k1Post, measurementRunTime);
+      BigDecimal k2Interp = CalculationCoefficient.interpolateBigDecimal(
+        runTimePrior, k2Prior, runTimePost, k2Post, measurementRunTime);
+      BigDecimal k3Interp = CalculationCoefficient.interpolateBigDecimal(
+        runTimePrior, k3Prior, runTimePost, k3Post, measurementRunTime);
 
-    Double gasTemperature = measurement
-      .getMeasurementValue("Contros pCO₂ Gas Stream Temperature")
-      .getCalculatedValue() + T0;
-    Double gasPressure = measurement
-      .getMeasurementValue("Contros pCO₂ Gas Stream Pressure")
-      .getCalculatedValue();
+      BigDecimal sProcCubed = sProc.pow(3);
+      BigDecimal sProcSquared = sProc.pow(2);
 
-    Double xco2PresTempPart = (P0 * gasTemperature) / (T0 * gasPressure);
+      BigDecimal k3Part = k3Interp.multiply(sProcCubed);
+      BigDecimal k2Part = k2Interp.multiply(sProcSquared);
+      BigDecimal k1Part = k1Interp.multiply(sProc);
 
-    Double xco2 = xco2ProcPart * xco2PresTempPart;
+      // We can drop back to double precision now
+      Double xco2ProcPart = k3Part.add(k2Part).add(k1Part).doubleValue();
 
-    Double membranePressure = measurement
-      .getMeasurementValue("Contros pCO₂ Membrane Pressure")
-      .getCalculatedValue();
+      Double gasTemperature = measurement
+        .getMeasurementValue("Contros pCO₂ Gas Stream Temperature")
+        .getCalculatedValue() + T0;
+      Double gasPressure = measurement
+        .getMeasurementValue("Contros pCO₂ Gas Stream Pressure")
+        .getCalculatedValue();
 
-    Double pCo2TEWet = xco2 * (membranePressure / P0);
-    Double fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, xco2, membranePressure,
-      gasTemperature);
+      Double xco2PresTempPart = (P0 * gasTemperature) / (T0 * gasPressure);
 
-    Double sst = measurement.getMeasurementValue("Intake Temperature")
-      .getCalculatedValue();
+      Double xco2 = xco2ProcPart * xco2PresTempPart;
 
-    Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet, gasTemperature, sst);
-    Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, gasTemperature, sst);
+      Double membranePressure = measurement
+        .getMeasurementValue("Contros pCO₂ Membrane Pressure")
+        .getCalculatedValue();
 
-    record.put("Zero S₂beam", zeroS2Beam);
-    record.put("S₂beam", measurementS2Beam);
-    record.put("Sproc", sProc);
-    record.put("pCO₂ TE Wet", pCo2TEWet);
-    record.put("fCO₂ TE Wet", fCo2TEWet);
-    record.put("pCO₂ SST", pCO2SST);
-    record.put("fCO₂", fCO2);
+      Double pCo2TEWet = xco2 * (membranePressure / P0);
+      Double fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, xco2, membranePressure,
+        gasTemperature);
+
+      Double sst = measurement.getMeasurementValue("Intake Temperature")
+        .getCalculatedValue() + T0;
+
+      Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet, gasTemperature, sst);
+      Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, gasTemperature, sst);
+
+      record.put("Zero S₂beam", zeroS2Beam.doubleValue());
+      record.put("S₂beam", measurementS2Beam.doubleValue());
+      record.put("Sproc", sProc.doubleValue());
+      record.put("xCO₂", xco2);
+      record.put("pCO₂ TE Wet", pCo2TEWet);
+      record.put("fCO₂ TE Wet", fCo2TEWet);
+      record.put("pCO₂ SST", pCO2SST);
+      record.put("fCO₂", fCO2);
+    }
   }
 
   @Override
@@ -202,7 +221,7 @@ public class ControsPco2Reducer extends DataReducer {
   @Override
   public List<CalculationParameter> getCalculationParameters() {
     if (null == calculationParameters) {
-      calculationParameters = new ArrayList<CalculationParameter>(4);
+      calculationParameters = new ArrayList<CalculationParameter>(8);
 
       calculationParameters.add(new CalculationParameter(makeParameterId(0),
         "Zero S₂beam", "Interpolated Zero Signal", "CONZERO2BEAM", "", false));
@@ -210,21 +229,24 @@ public class ControsPco2Reducer extends DataReducer {
       calculationParameters.add(new CalculationParameter(makeParameterId(1),
         "S₂beam", "Two-beam Signal", "CON2BEAM", "", false));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(1),
+      calculationParameters.add(new CalculationParameter(makeParameterId(2),
         "Sproc", "Drift-corrected Signal", "CONSPROC", "", false));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(2),
+      calculationParameters.add(new CalculationParameter(makeParameterId(3),
+        "xCO₂", "xCO₂ In Water", "XCO2WBDY", "μmol/mol", false));
+
+      calculationParameters.add(new CalculationParameter(makeParameterId(4),
         "pCO₂ TE Wet", "pCO₂ In Water - Equilibrator Temperature", "PCO2IG02",
         "μatm", false));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(3),
+      calculationParameters.add(new CalculationParameter(makeParameterId(5),
         "fCO₂ TE Wet", "fCO₂ In Water - Equilibrator Temperature", "FCO2IG02",
         "μatm", false));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(4),
+      calculationParameters.add(new CalculationParameter(makeParameterId(6),
         "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(5),
+      calculationParameters.add(new CalculationParameter(makeParameterId(7),
         "fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true));
     }
 

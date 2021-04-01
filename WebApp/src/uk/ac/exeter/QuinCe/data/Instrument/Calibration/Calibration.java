@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -353,6 +354,19 @@ public abstract class Calibration implements Comparable<Calibration> {
     for (CalibrationCoefficient coefficient : getCoefficients()) {
       if (coefficient.getName().equals(name)) {
         result = Double.parseDouble(coefficient.getValue());
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  public BigDecimal getBigDecimalCoefficient(String name) {
+    BigDecimal result = null;
+
+    for (CalibrationCoefficient coefficient : getCoefficients()) {
+      if (coefficient.getName().equals(name)) {
+        result = new BigDecimal(coefficient.getValue());
         break;
       }
     }
