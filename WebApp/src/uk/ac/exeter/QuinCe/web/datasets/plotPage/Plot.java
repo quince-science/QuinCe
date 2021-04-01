@@ -170,7 +170,7 @@ public class Plot {
 
           if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
-              Double.parseDouble(y.getValue()),
+              MathUtils.nullableParseDouble(y.getValue()),
               y.getQcFlag().equals(Flag.FLUSHING), valueFlag);
           } else if (null != x && null != x.getValue() && null != y) {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time),

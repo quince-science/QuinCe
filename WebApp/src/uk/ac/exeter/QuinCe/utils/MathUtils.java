@@ -46,6 +46,12 @@ public class MathUtils {
   }
 
   public static Double nullableParseDouble(String value) {
-    return null == value ? null : Double.parseDouble(value);
+    Double result = null;
+
+    if (null != value && value.trim().length() > 0) {
+      result = Double.parseDouble(value);
+    }
+
+    return result;
   }
 }
