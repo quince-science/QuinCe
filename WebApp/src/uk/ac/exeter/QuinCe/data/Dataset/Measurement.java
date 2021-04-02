@@ -263,7 +263,7 @@ public class Measurement implements Comparable<Measurement> {
   /**
    * See if this measurement has values for one or more of the specified sensor
    * types.
-   * 
+   *
    * @param sensorTypes
    * @return
    */
