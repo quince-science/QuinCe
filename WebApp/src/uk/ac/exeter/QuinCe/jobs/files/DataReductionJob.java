@@ -210,7 +210,9 @@ public class DataReductionJob extends DataSetJob {
           .getTimeOrderedMeasurements()) {
 
           if (instrument.isRunTypeForVariable(variable,
-            measurement.getRunType(variable))) {
+            measurement.getRunType(variable))
+            || instrument.isRunTypeForVariable(variable,
+              measurement.getRunType(Measurement.GENERIC_RUN_TYPE_VARIABLE))) {
 
             DataReductionRecord dataReductionRecord = reducer
               .performDataReduction(instrument, measurement, conn);
