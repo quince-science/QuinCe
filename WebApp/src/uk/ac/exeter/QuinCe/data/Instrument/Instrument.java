@@ -614,8 +614,9 @@ public class Instrument {
   public boolean isRunTypeForVariable(Variable variable, String runType)
     throws RunTypeCategoryException {
 
-    return getRunTypeCategory(variable.getId(), runType).getType() == variable
-      .getId();
+    return null == runType ? false
+      : getRunTypeCategory(variable.getId(), runType).getType() == variable
+        .getId();
   }
 
   /**
