@@ -606,7 +606,7 @@ public class ManualQCData extends PlotPageData {
         comments.add(sensorValue.getUserQCMessage());
       } else {
         try {
-          comments.addAll(sensorValue.getAutoQcResult().getAllMessagesList());
+          comments.addAll(sensorValue.getAutoQcResult().getAllMessagesSet());
         } catch (RoutineException e) {
           error("Error getting QC comments", e);
         }
