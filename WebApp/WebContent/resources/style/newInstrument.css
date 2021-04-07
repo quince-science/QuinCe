@@ -211,6 +211,10 @@
   background: #FF0 !important;
 }
 
+.draggable {
+  cursor: grab;
+}
+
 .highlight {
   color: #00AAFF;
 }
