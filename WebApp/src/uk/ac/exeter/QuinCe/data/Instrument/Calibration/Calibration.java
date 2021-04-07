@@ -409,7 +409,23 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   @Override
   public String toString() {
-    return id + ";" + getType() + ";" + target;
+    StringBuilder result = new StringBuilder();
+
+    result.append(target);
+    result.append(':');
+
+    if (null == coefficients) {
+      result.append("null");
+    } else {
+      coefficients.stream().forEach(c -> {
+        result.append(c.getName());
+        result.append('=');
+        result.append(c.getValue());
+        result.append(';');
+      });
+    }
+
+    return result.toString();
   }
 
   @Override
