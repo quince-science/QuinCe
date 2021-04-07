@@ -308,16 +308,12 @@ li.menuitem:hover, li.smallMenuitem:hover {
   color: #76D376;
 }
 
-.needsFlagging {
-  color: #817FFF;
-}
-
 .notSet {
   color: #999999;
 }
 
 .needsFlag {
-  background: #D7D6FF;
+  background: #D7D6FF !important;
 }
 
 div.fullPage {
