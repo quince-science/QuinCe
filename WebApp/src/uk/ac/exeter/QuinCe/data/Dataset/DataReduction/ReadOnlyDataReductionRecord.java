@@ -31,14 +31,14 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 public class ReadOnlyDataReductionRecord extends DataReductionRecord {
 
   /**
-   * A local copy of the QC flag, so it can be overridden
+   * An extra QC flag that can be used to add extra QC to the record
    */
-  private Flag overrideQcFlag = null;
+  private Flag extraQcFlag = null;
 
   /**
-   * A local copy of the QC messages, so they can be overridden
+   * Extra QC messages to be added to the record
    */
-  private NoEmptyStringList overrideQcMessages = null;
+  private NoEmptyStringList extraQcMessages = null;
 
   public static ReadOnlyDataReductionRecord makeRecord(long measurementId,
     long variableId, Map<String, Double> calculationValues, Flag qcFlag,
@@ -72,11 +72,11 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    */
   @Override
   public void setQc(Flag flag, List<String> messages) {
-    if (null == overrideQcFlag || flag.moreSignificantThan(overrideQcFlag)) {
-      overrideQcFlag = flag;
-      overrideQcMessages = new NoEmptyStringList(messages);
-    } else if (null != overrideQcFlag && flag.equals(overrideQcFlag)) {
-      overrideQcMessages.addAll(messages);
+    if (null == extraQcFlag || flag.moreSignificantThan(extraQcFlag)) {
+      extraQcFlag = flag;
+      extraQcMessages = new NoEmptyStringList(messages);
+    } else if (null != extraQcFlag && flag.equals(extraQcFlag)) {
+      extraQcMessages.addAll(messages);
     }
   }
 
@@ -86,7 +86,16 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    */
   @Override
   public Flag getQCFlag() {
-    return null != overrideQcFlag ? overrideQcFlag : super.getQCFlag();
+    Flag result;
+
+    if (null != extraQcFlag
+      && extraQcFlag.moreSignificantThan(super.getQCFlag())) {
+      result = extraQcFlag;
+    } else {
+      result = super.getQCFlag();
+    }
+
+    return result;
   }
 
   /**
@@ -95,7 +104,18 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    */
   @Override
   public List<String> getQCMessages() {
-    return null != overrideQcFlag ? overrideQcMessages : super.getQCMessages();
+
+    List<String> result = super.getQCMessages();
+
+    if (null != extraQcFlag) {
+      if (extraQcFlag.moreSignificantThan(super.getQCFlag())) {
+        result = extraQcMessages;
+      } else if (extraQcFlag.equals(super.getQCFlag())) {
+        result.addAll(extraQcMessages);
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -105,6 +125,6 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    * @return {@code true} if the record needs saving; {@code false) if not.
    */
   public boolean isDirty() {
-    return null != overrideQcFlag;
+    return null != extraQcFlag;
   }
 }
