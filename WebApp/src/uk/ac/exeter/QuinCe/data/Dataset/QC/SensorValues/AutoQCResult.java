@@ -1,7 +1,8 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.google.gson.Gson;
 
@@ -95,11 +96,11 @@ public class AutoQCResult extends ArrayList<RoutineFlag> {
    *           If a message cannot be retrieved
    */
   public String getAllMessages() throws RoutineException {
-    return StringUtils.collectionToDelimited(getAllMessagesList(), ";");
+    return StringUtils.collectionToDelimited(getAllMessagesSet(), ";");
   }
 
-  public List<String> getAllMessagesList() throws RoutineException {
-    List<String> messages = new ArrayList<String>(size());
+  public Set<String> getAllMessagesSet() throws RoutineException {
+    Set<String> messages = new HashSet<String>();
     for (int i = 0; i < size(); i++) {
       messages.add(get(i).getShortMessage());
     }
