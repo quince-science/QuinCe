@@ -203,26 +203,28 @@ public class MeasurementValue implements PlotPageTableValue {
    *          member count.
    */
   public void addSensorValue(SensorValue value, boolean incrMemberCount) {
-    if (!sensorValueIds.contains(value.getId())) {
-      sensorValueIds.add(value.getId());
+    if (null != value) {
+      if (!sensorValueIds.contains(value.getId())) {
+        sensorValueIds.add(value.getId());
 
-      Flag valueFlag = value.getDisplayFlag().getSimpleFlag();
+        Flag valueFlag = value.getDisplayFlag().getSimpleFlag();
 
-      if (valueFlag.equals(flag)) {
-        if (value.getUserQCMessage().trim().length() > 0) {
-          qcMessage.add(value.getUserQCMessage());
+        if (valueFlag.equals(flag)) {
+          if (value.getUserQCMessage().trim().length() > 0) {
+            qcMessage.add(value.getUserQCMessage());
+          }
+        } else if (valueFlag.moreSignificantThan(flag)) {
+          flag = valueFlag;
+          qcMessage.clear();
+
+          if (value.getUserQCMessage().trim().length() > 0) {
+            qcMessage.add(value.getUserQCMessage());
+          }
         }
-      } else if (valueFlag.moreSignificantThan(flag)) {
-        flag = valueFlag;
-        qcMessage.clear();
 
-        if (value.getUserQCMessage().trim().length() > 0) {
-          qcMessage.add(value.getUserQCMessage());
+        if (incrMemberCount) {
+          memberCount++;
         }
-      }
-
-      if (incrMemberCount) {
-        memberCount++;
       }
     }
   }
