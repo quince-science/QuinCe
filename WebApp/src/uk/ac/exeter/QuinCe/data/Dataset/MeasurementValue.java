@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -283,6 +284,26 @@ public class MeasurementValue implements PlotPageTableValue {
 
   public String getProperty(String key) {
     return properties.getProperty(key);
+  }
+
+  /**
+   * Replace the existing QC information with the supplied values.
+   *
+   * @param flag
+   *          The new QC flag
+   * @param message
+   *          The new QC message
+   */
+  public void overrideQC(Flag flag, String message) {
+    this.flag = flag;
+    this.qcMessage = Arrays.asList(new String[] { message });
+  }
+
+  public void addQcMessage(String message) {
+    if (null == qcMessage) {
+      qcMessage = new ArrayList<String>();
+    }
+    qcMessage.add(message);
   }
 
   @Override
