@@ -866,6 +866,7 @@ public class DateTimeSpecification {
     try {
       result = headerDate.plusSeconds(lineSeconds);
     } catch (DateTimeException e) {
+      e.printStackTrace();
       throw new DateTimeSpecificationException(
         "Invalid hours value: " + e.getMessage());
     }
@@ -896,6 +897,7 @@ public class DateTimeSpecification {
       try {
         result = LocalDateTime.parse(fieldValue, assignment.getFormatter());
       } catch (DateTimeParseException e) {
+        e.printStackTrace();
         throw new DateTimeSpecificationException(
           "Invalid date/time value '" + fieldValue + "'");
       }
@@ -928,6 +930,7 @@ public class DateTimeSpecification {
         result = LocalDateTime.ofEpochSecond(Integer.parseInt(fieldValue), 0,
           ZoneOffset.UTC);
       } catch (DateTimeParseException e) {
+        e.printStackTrace();
         throw new DateTimeSpecificationException(
           "Invalid date/time value '" + fieldValue + "'");
       }
@@ -985,6 +988,7 @@ public class DateTimeSpecification {
       double secondsFraction = jdayTime - days;
       result = result.plusSeconds((int) (secondsFraction * 86400));
     } catch (DateTimeException e) {
+      e.printStackTrace();
       throw new DateTimeSpecificationException(
         "Invalid date/time value: " + e.getMessage());
     }
@@ -1015,8 +1019,9 @@ public class DateTimeSpecification {
       try {
         result = LocalDate.parse(fieldValue, assignment.getFormatter());
       } catch (DateTimeParseException e) {
+        e.printStackTrace();
         throw new DateTimeSpecificationException(
-          "Invalid date value '" + fieldValue + "': " + e.getMessage());
+          "Invalid date value '" + fieldValue + "'");
       }
     }
 
@@ -1060,6 +1065,7 @@ public class DateTimeSpecification {
     try {
       result = LocalDate.ofYearDay(year, jday);
     } catch (DateTimeException e) {
+      e.printStackTrace();
       throw new DateTimeSpecificationException(
         "Invalid date/time: " + e.getMessage());
     }
@@ -1117,6 +1123,7 @@ public class DateTimeSpecification {
     try {
       result = LocalDate.of(year, month, day);
     } catch (DateTimeException e) {
+      e.printStackTrace();
       throw new DateTimeSpecificationException(
         "Invalid date value: " + e.getMessage());
     }
@@ -1199,6 +1206,7 @@ public class DateTimeSpecification {
     try {
       result = LocalTime.of(hour, minute, second);
     } catch (DateTimeException e) {
+      e.printStackTrace();
       throw new DateTimeSpecificationException(
         "Invalid time value: " + e.getMessage());
     }
