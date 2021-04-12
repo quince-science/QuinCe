@@ -78,24 +78,23 @@ public class CreateNrtDataset extends Job {
       // available
       // data file.
       LocalDateTime nrtStartDate = null;
-      DataSet lastDataset = DataSetDB.getLastDataSet(conn,
-        instrument.getId(), false);
+      DataSet lastDataset = DataSetDB.getLastDataSet(conn, instrument.getId(),
+        false);
       if (null != lastDataset) {
         nrtStartDate = lastDataset.getEnd().plusSeconds(1);
       } else {
         List<DataFile> instrumentFiles = DataFileDB.getFiles(conn,
-          ResourceManager.getInstance().getConfig(),
-          instrument.getId());
+          ResourceManager.getInstance().getConfig(), instrument.getId());
 
         // We can only continue if there's at least one file
         if (instrumentFiles.size() > 0) {
-          nrtStartDate = instrumentFiles.get(0).getStartDate();
+          nrtStartDate = instrumentFiles.get(0).getOffsetStartTime();
         }
       }
 
       if (null != nrtStartDate) {
         LocalDateTime endDate = DataFileDB.getLastFileDate(conn,
-          instrument.getId());
+          instrument.getId(), true);
 
         // Only create the NRT dataset if there are records available
         if (endDate.isAfter(nrtStartDate)) {

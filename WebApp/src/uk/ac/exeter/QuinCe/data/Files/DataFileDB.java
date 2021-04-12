@@ -174,7 +174,7 @@ public class DataFileDB {
    * Query to get the last date covered by any file for an instrument
    */
   private static final String GET_LAST_FILE_DATE_QUERY = "SELECT "
-    + "end_date FROM data_file WHERE file_definition_id IN "
+    + "end_date, properties FROM data_file WHERE file_definition_id IN "
     + "(SELECT id FROM file_definition WHERE instrument_id = ?) "
     + "ORDER BY end_date DESC LIMIT 1";
 
@@ -270,10 +270,10 @@ public class DataFileDB {
 
     try {
       if (fileExistsWithDates(conn,
-        dataFile.getFileDefinition().getDatabaseId(), dataFile.getStartDate(),
-        dataFile.getEndDate())) {
+        dataFile.getFileDefinition().getDatabaseId(),
+        dataFile.getRawStartTime(), dataFile.getRawEndTime())) {
         throw new FileExistsException(dataFile.getFileDescription(),
-          dataFile.getStartDate(), dataFile.getEndDate());
+          dataFile.getRawStartTime(), dataFile.getRawEndTime());
       }
 
       boolean initialAutoCommit = conn.getAutoCommit();
@@ -286,8 +286,8 @@ public class DataFileDB {
         Statement.RETURN_GENERATED_KEYS);
       stmt.setLong(1, dataFile.getFileDefinition().getDatabaseId());
       stmt.setString(2, dataFile.getFilename());
-      stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getStartDate()));
-      stmt.setLong(4, DateTimeUtils.dateToLong(dataFile.getEndDate()));
+      stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getRawStartTime()));
+      stmt.setLong(4, DateTimeUtils.dateToLong(dataFile.getRawEndTime()));
       stmt.setInt(5, dataFile.getRecordCount());
       stmt.setString(6, new Gson().toJson(dataFile.getProperties()));
 
@@ -369,8 +369,8 @@ public class DataFileDB {
         }
         stmt = conn.prepareStatement(REPLACE_FILE_STATEMENT);
         stmt.setString(1, dataFile.getFilename());
-        stmt.setLong(2, DateTimeUtils.dateToLong(dataFile.getStartDate()));
-        stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getEndDate()));
+        stmt.setLong(2, DateTimeUtils.dateToLong(dataFile.getRawStartTime()));
+        stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getRawEndTime()));
         stmt.setInt(4, dataFile.getRecordCount());
         stmt.setLong(5, replacementId);
         stmt.setString(6, new Gson().toJson(dataFile.getProperties()));
@@ -1110,10 +1110,10 @@ public class DataFileDB {
 
             for (int j = 0; j < compareFiles.size() && !result; j++) {
               DataFile compareFile = compareFiles.get(j);
-              if (compareFile.getStartDate()
-                .compareTo(rootFile.getEndDate()) < 0
-                && compareFile.getEndDate()
-                  .compareTo(rootFile.getStartDate()) > 0) {
+              if (compareFile.getRawStartTime()
+                .compareTo(rootFile.getRawEndTime()) < 0
+                && compareFile.getRawEndTime()
+                  .compareTo(rootFile.getRawStartTime()) > 0) {
                 result = true;
               }
             }
@@ -1137,12 +1137,15 @@ public class DataFileDB {
    *          A database connection
    * @param instrumentId
    *          The instrument's database ID
+   * @param applyOffset
+   *          Indicates whether or not file's time offset should be applied
    * @return The last date, or {@code null} if there are no files
    * @throws DatabaseException
    * @throws MissingParamException
    */
   public static LocalDateTime getLastFileDate(Connection conn,
-    long instrumentId) throws MissingParamException, DatabaseException {
+    long instrumentId, boolean applyOffset)
+    throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(instrumentId, "instrumentId");
 
@@ -1158,6 +1161,13 @@ public class DataFileDB {
       records = stmt.executeQuery();
       if (records.next()) {
         result = DateTimeUtils.longToDate(records.getLong(1));
+
+        if (applyOffset) {
+          Properties properties = new Gson().fromJson(records.getString(2),
+            Properties.class);
+          result.plusSeconds(Integer
+            .parseInt(properties.getProperty(DataFile.TIME_OFFSET_PROP)));
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting file dates", e);
