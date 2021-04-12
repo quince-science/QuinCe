@@ -427,9 +427,12 @@ public class FileDefinitionBuilder extends FileDefinition {
 
       for (int i = 0; i < getColumnCount(); i++) {
         if (!complete.get(i)) {
-          if (!FileColumn.isMissingValue(row.get(i))) {
-            values.set(i, row.get(i));
-            complete.set(i, true);
+          // Handle short rows
+          if (row.size() > i) {
+            if (!FileColumn.isMissingValue(row.get(i))) {
+              values.set(i, row.get(i));
+              complete.set(i, true);
+            }
           }
         }
       }
