@@ -35,7 +35,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  */
 public class DataFile {
 
-  private static final String TIME_OFFSET_PROP = "timeOffset";
+  public static final String TIME_OFFSET_PROP = "timeOffset";
 
   /**
    * The database ID of this file
@@ -453,11 +453,12 @@ public class DataFile {
   }
 
   /**
-   * Get the date of the first record in the file
+   * Get the time of the first record in the file. Time offset will not be
+   * applied.
    *
    * @return The date, or null if the date cannot be retrieved
    */
-  public LocalDateTime getStartDate() {
+  public LocalDateTime getRawStartTime() {
     int firstDataLine = -1;
     String message = "";
     if (null == startDate) {
@@ -465,7 +466,7 @@ public class DataFile {
       try {
         loadContents();
         firstDataLine = getFirstDataLine();
-        startDate = getDate(firstDataLine);
+        startDate = getRawTime(firstDataLine);
       } catch (IndexOutOfBoundsException arrex) {
         message = "Date column doesn't exist.";
       } catch (Exception e) {
@@ -485,22 +486,23 @@ public class DataFile {
   }
 
   /**
-   * Get the date of the last record in the file
+   * Get the time of the last record in the file. Time offset will not be
+   * applied.
    *
    * @return The date, or null if the date cannot be retrieved
    * @throws DataFileException
    *           If the file contents could not be loaded
    */
-  public LocalDateTime getEndDate() {
+  public LocalDateTime getRawEndTime() {
     int lastLine = -1;
     String message = null;
     if (null == endDate) {
       try {
         loadContents();
         lastLine = getContentLineCount() - 1;
-        endDate = getDate(lastLine);
+        endDate = getRawTime(lastLine);
       } catch (IndexOutOfBoundsException arrex) {
-        message = "Date column don't exist.";
+        message = "Date column doesn't exist.";
       } catch (Exception e) {
         message = e.getMessage();
       }
@@ -515,23 +517,53 @@ public class DataFile {
     return endDate;
   }
 
+  public LocalDateTime getOffsetStartTime() {
+    return applyTimeOffset(getRawStartTime());
+  }
+
+  public LocalDateTime getOffsetEndTime() {
+    return applyTimeOffset(getRawEndTime());
+  }
+
   /**
-   * Get the date of a line in the file
+   * Get the time of a line in the file, with the define offset applied
    *
    * @param line
    *          The line
-   * @return The date
+   * @return The time
    * @throws DataFileException
    *           If any date/time fields are empty
    */
-  public LocalDateTime getDate(int line)
+  public LocalDateTime getOffsetTime(int line)
     throws DataFileException, DateTimeSpecificationException {
     loadContents();
-    return getDate(fileDefinition.extractFields(contents.get(line)));
+    return getOffsetTime(fileDefinition.extractFields(contents.get(line)));
   }
 
-  public LocalDateTime getDate(List<String> line)
+  /**
+   * Get the time of a line in the file, without the define offset applied
+   *
+   * @param line
+   *          The line
+   * @return The time
+   * @throws DataFileException
+   *           If any date/time fields are empty
+   */
+  public LocalDateTime getRawTime(int line)
     throws DataFileException, DateTimeSpecificationException {
+    loadContents();
+    return getRawTime(fileDefinition.extractFields(contents.get(line)));
+  }
+
+  public LocalDateTime getOffsetTime(List<String> line)
+    throws DataFileException, DateTimeSpecificationException {
+
+    return applyTimeOffset(getRawTime(line));
+  }
+
+  public LocalDateTime getRawTime(List<String> line)
+    throws DateTimeSpecificationException {
+
     return fileDefinition.getDateTimeSpecification().getDateTime(headerDate,
       line);
   }
@@ -906,6 +938,14 @@ public class DataFile {
 
   public int getTimeOffset() {
     return Integer.parseInt(properties.getProperty(TIME_OFFSET_PROP));
+  }
+
+  public boolean hasTimeOffset() {
+    return getTimeOffset() != 0;
+  }
+
+  private LocalDateTime applyTimeOffset(LocalDateTime rawTime) {
+    return rawTime.plusSeconds(getTimeOffset());
   }
 
   @Override
