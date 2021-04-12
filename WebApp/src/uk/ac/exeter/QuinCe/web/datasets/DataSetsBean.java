@@ -235,9 +235,9 @@ public class DataSetsBean extends BaseManagedBean {
         entriesJson.append(
           definitionIds.get(file.getFileDefinition().getFileDescription()));
         entriesJson.append(",\"start\":\"");
-        entriesJson.append(DateTimeUtils.toIsoDate(file.getStartDate()));
+        entriesJson.append(DateTimeUtils.toIsoDate(file.getRawStartTime()));
         entriesJson.append("\",\"end\":\"");
-        entriesJson.append(DateTimeUtils.toIsoDate(file.getEndDate()));
+        entriesJson.append(DateTimeUtils.toIsoDate(file.getRawEndTime()));
         entriesJson.append("\",\"content\":\"");
         entriesJson.append(file.getFilename());
         entriesJson.append("\",\"title\":\"");

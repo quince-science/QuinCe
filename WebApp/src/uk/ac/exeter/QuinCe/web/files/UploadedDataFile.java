@@ -135,7 +135,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   public Date getStartDate() {
     Date date = null;
     if (null != dataFile) {
-      LocalDateTime localDate = dataFile.getStartDate();
+      LocalDateTime localDate = dataFile.getRawStartTime();
       if (null != localDate) {
         date = Date.from(localDate.atZone(ZoneId.of("UTC")).toInstant());
       }
@@ -151,7 +151,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   public Date getEndDate() {
     Date date = null;
     if (null != dataFile) {
-      LocalDateTime localDate = dataFile.getEndDate();
+      LocalDateTime localDate = dataFile.getRawEndTime();
       if (null != localDate) {
         date = Date.from(localDate.atZone(ZoneId.of("UTC")).toInstant());
       }
@@ -361,8 +361,8 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
             getName() + " is empty. File accepted but not processed",
             FacesMessage.SEVERITY_INFO);
         } else {
-          if (null == getDataFile().getStartDate()
-            || null == getDataFile().getEndDate()) {
+          if (null == getDataFile().getRawStartTime()
+            || null == getDataFile().getRawEndTime()) {
             putMessage(UNPROCESSABLE_STATUS, getName()
               + " has date issues, see messages below. Please fix these problems and upload the file again.",
               FacesMessage.SEVERITY_ERROR);
@@ -372,8 +372,8 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
               FacesMessage.SEVERITY_ERROR);
           } else {
             List<DataFile> overlappingFiles = DataFileDB.getFilesWithinDates(
-              dataSource, matchedDefinition, getDataFile().getStartDate(),
-              getDataFile().getEndDate());
+              dataSource, matchedDefinition, getDataFile().getRawStartTime(),
+              getDataFile().getRawEndTime());
 
             boolean fileOK = true;
             String fileMessage = null;
