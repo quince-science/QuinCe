@@ -16,6 +16,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import com.google.gson.Gson;
+
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -55,8 +57,8 @@ public class DataFileDB {
    * @see #storeNewFile(DataSource, Properties, DataFile)
    */
   private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file "
-    + "(file_definition_id, filename, start_date, end_date, record_count) "
-    + "VALUES (?, ?, ?, ?, ?)";
+    + "(file_definition_id, filename, start_date, end_date, record_count, properties) "
+    + "VALUES (?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement to add a data file to the database
@@ -64,7 +66,7 @@ public class DataFileDB {
    * @see #replaceFile(DataSource, Properties, DataFile, long)
    */
   private static final String REPLACE_FILE_STATEMENT = "UPDATE data_file "
-    + "SET filename = ?, start_date = ?, end_date = ?, record_count = ? "
+    + "SET filename = ?, start_date = ?, end_date = ?, record_count = ?, properties = ? "
     + "WHERE id = ?";
 
   /**
@@ -72,7 +74,7 @@ public class DataFileDB {
    */
   private static final String GET_FILENAME_QUERY = "SELECT "
     + "f.id, f.file_definition_id, f.filename, f.start_date, "
-    + "f.end_date, f.record_count, i.id FROM data_file AS f "
+    + "f.end_date, f.record_count, f.properties, i.id FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id " + "WHERE f.id IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY f.start_date ASC";
@@ -83,8 +85,8 @@ public class DataFileDB {
    * @see #getUserFiles(DataSource, User)
    */
   private static final String GET_FILES_QUERY = "SELECT "
-    + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id "
-    + "FROM data_file AS f "
+    + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, "
+    + "f.record_count, f.properties, i.id FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
     + "ORDER BY f.start_date ASC";
@@ -95,8 +97,8 @@ public class DataFileDB {
    * @see #getUserFiles(DataSource, User)
    */
   private static final String GET_FILES_BY_INSTRUMENT_QUERY = "SELECT "
-    + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id "
-    + "FROM data_file AS f "
+    + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, "
+    + "f.record_count, f.properties, i.id FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
     + "WHERE d.instrument_id = ? ORDER BY f.start_date ASC";
@@ -107,8 +109,8 @@ public class DataFileDB {
    * @see #getUserFiles(DataSource, User)
    */
   private static final String GET_FILES_AFTER_DATE_QUERY = "SELECT "
-    + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id "
-    + "FROM data_file AS f "
+    + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, "
+    + "f.record_count, f.properties, i.id FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
     + "WHERE f.file_definition_id = ? AND f.end_date > ?";
@@ -144,7 +146,7 @@ public class DataFileDB {
    * @see #getFiles(DataSource, FileDefinition, LocalDateTime, LocalDateTime)
    */
   private static final String GET_FILES_BY_TYPE_DATE_QUERY = "SELECT "
-    + "id, file_definition_id, filename, start_date, end_date, record_count "
+    + "id, file_definition_id, filename, start_date, end_date, record_count, properties "
     + "FROM data_file WHERE " + "file_definition_id = ? AND "
     + "(start_date <= ? AND end_date > ? OR "
     + "start_date < ? AND end_date >= ?) " + "ORDER BY start_date ASC";
@@ -162,8 +164,8 @@ public class DataFileDB {
    * Query to get data files for a file definition that encompass given dates
    */
   private static final String GET_FILEDEF_FILES_WITHIN_DATES_QUERY = "SELECT "
-    + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id "
-    + "FROM data_file AS f "
+    + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, "
+    + "f.record_count, f.properties, i.id FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
     + "WHERE d.id = ? AND start_date <= ? AND end_date >= ?";
@@ -287,6 +289,7 @@ public class DataFileDB {
       stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getStartDate()));
       stmt.setLong(4, DateTimeUtils.dateToLong(dataFile.getEndDate()));
       stmt.setInt(5, dataFile.getRecordCount());
+      stmt.setString(6, new Gson().toJson(dataFile.getProperties()));
 
       stmt.execute();
 
@@ -370,6 +373,7 @@ public class DataFileDB {
         stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getEndDate()));
         stmt.setInt(4, dataFile.getRecordCount());
         stmt.setLong(5, replacementId);
+        stmt.setString(6, new Gson().toJson(dataFile.getProperties()));
 
         stmt.execute();
 
@@ -777,9 +781,11 @@ public class DataFileDB {
       LocalDateTime startDate = DateTimeUtils.longToDate(record.getLong(4));
       LocalDateTime endDate = DateTimeUtils.longToDate(record.getLong(5));
       int recordCount = record.getInt(6);
+      Properties properties = new Gson().fromJson(record.getString(7),
+        Properties.class);
 
       result = new DataFile(fileStore, id, fileDefinition, filename, startDate,
-        endDate, recordCount);
+        endDate, recordCount, properties);
     } catch (SQLException e) {
       throw e;
     }
