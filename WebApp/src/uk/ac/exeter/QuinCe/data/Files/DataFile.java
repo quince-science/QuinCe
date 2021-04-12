@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -33,6 +34,8 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  *
  */
 public class DataFile {
+
+  private static final String TIME_OFFSET_PROP = "timeOffset";
 
   /**
    * The database ID of this file
@@ -73,6 +76,11 @@ public class DataFile {
    * Messages generated regarding the file
    */
   private TreeSet<DataFileMessage> messages;
+
+  /**
+   * Misc properties
+   */
+  private Properties properties;
 
   /**
    * Max number of messages. Additional messages will be discarded.
@@ -128,6 +136,7 @@ public class DataFile {
     this.fileDefinition = fileDefinition;
     this.filename = filename;
     this.contents = contents;
+    this.properties = defaultProperties();
 
     messages = new TreeSet<DataFileMessage>();
     boolean fileOK = false;
@@ -170,7 +179,7 @@ public class DataFile {
    */
   public DataFile(String fileStore, long id, FileDefinition fileDefinition,
     String filename, LocalDateTime startDate, LocalDateTime endDate,
-    int recordCount) {
+    int recordCount, Properties properties) {
     this.fileStore = fileStore;
     this.databaseId = id;
     this.fileDefinition = fileDefinition;
@@ -178,6 +187,13 @@ public class DataFile {
     this.startDate = startDate;
     this.endDate = endDate;
     this.recordCount = recordCount;
+    this.properties = properties;
+  }
+
+  private Properties defaultProperties() {
+    Properties result = new Properties();
+    result.setProperty(TIME_OFFSET_PROP, "0");
+    return result;
   }
 
   /**
@@ -879,6 +895,18 @@ public class DataFile {
   public List<String> getLine(int line) throws DataFileException {
     loadContents();
     return fileDefinition.extractFields(contents.get(line));
+  }
+
+  public Properties getProperties() {
+    return properties;
+  }
+
+  public void setTimeOffset(int seconds) {
+    properties.setProperty(TIME_OFFSET_PROP, String.valueOf(seconds));
+  }
+
+  public int getTimeOffset() {
+    return Integer.parseInt(properties.getProperty(TIME_OFFSET_PROP));
   }
 
   @Override
