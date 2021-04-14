@@ -23,6 +23,7 @@ import hashlib
 import sqlite3
 from zipfile import ZipFile
 import io
+import traceback
 
 from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_code, is_NRT, get_L1_filename, get_export_filename
 from modules.CarbonPortal.Export_CarbonPortal_metadata import  build_metadata_package
@@ -89,7 +90,8 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,upload,err
           else:
               CP_pid = ''
       except Exception as e:
-        err_msg += (f'Failed to upload: {export_filename}, \nException: {e}')
+        tb = traceback.format_exc()
+        err_msg += (f'Failed to upload: {export_filename}, \nException: {tb}')
     else: success = 2
 
   return success, hashsum, err_msg, CP_pid
