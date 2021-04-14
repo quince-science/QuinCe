@@ -12,6 +12,7 @@ function will know what order to output the fields.
 """
 from datetime import datetime, timezone
 from datetime import timedelta
+import math
 
 MEASUREMENT_START_WORDS = ['NORM', 'FAST']
 
@@ -201,12 +202,19 @@ def read_gps_line(infile):
 
   result = {}
 
-  datestring = f'{fields[0]} {fields[1]}'
-  result['gps_time'] = datetime.strptime(datestring, '%m/%d/%Y %H:%M:%S') \
-    .replace(tzinfo=timezone.utc)
-  result['longitude'] = get_degrees(fields[4], fields[5])
-  result['latitude'] = get_degrees(fields[2], fields[3])
-  result['gps_acquisition_time'] = int(fields[6])
+  # Detect missing GPS data
+  if fields[0] == '00/00/0000':
+    result['gps_time'] = ''
+    result['longitude'] = math.nan
+    result['latitude'] = math.nan
+    result['gps_acquisition_time'] = -1
+  else:
+    datestring = f'{fields[0]} {fields[1]}'
+    result['gps_time'] = datetime.strptime(datestring, '%m/%d/%Y %H:%M:%S') \
+      .replace(tzinfo=timezone.utc)
+    result['longitude'] = get_degrees(fields[4], fields[5])
+    result['latitude'] = get_degrees(fields[2], fields[3])
+    result['gps_acquisition_time'] = int(fields[6])
 
   return result
 
@@ -348,8 +356,17 @@ Write a measurement to a file
 def write_measurement(measurement, outfile):
   outfile.write(f'{measurement["timestamp"].isoformat()},')
   outfile.write(f'{measurement["type"]},')
-  outfile.write(f'{measurement["longitude"]:.4f},')
-  outfile.write(f'{measurement["latitude"]:.4f},')
+
+  if math.isnan(measurement['longitude']):
+    outfile.write('NaN,')
+  else:
+    outfile.write(f'{measurement["longitude"]:.4f},')
+
+  if math.isnan(measurement['latitude']):
+    outfile.write('NaN,')
+  else:
+    outfile.write(f'{measurement["latitude"]:.4f},')
+
   outfile.write(f'{measurement["water_pres_off"]:.2f},')
   outfile.write(f'{measurement["water_xco2_dry"]:.2f},')
   outfile.write(f'{measurement["atm_pres_off"]:.2f},')
@@ -392,7 +409,12 @@ def write_measurement(measurement, outfile):
   outfile.write(f'{measurement["water_rh_temp"]:.1f},')
   outfile.write(f'{measurement["atm_rh"]},')
   outfile.write(f'{measurement["atm_rh_temp"]:.1f},')
-  outfile.write(f'{measurement["gps_time"].isoformat()},')
+
+  if measurement['gps_time'] == '':
+    outfile.write(',')
+  else:
+    outfile.write(f'{measurement["gps_time"].isoformat()},')
+
   outfile.write(f'{measurement["gps_acquisition_time"]},')
   outfile.write(f'{measurement["logic_battery"]:.1f},')
   outfile.write(f'{measurement["transmitter_battery"]:.1f},')
