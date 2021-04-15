@@ -609,7 +609,7 @@ public class UserDB {
       stmt = conn.prepareStatement(CREATE_EMAIL_VERIFICATION_CODE_STATEMENT);
       stmt.setString(1, verificationCode);
       stmt.setTimestamp(2, time);
-      stmt.setInt(3, user.getDatabaseID());
+      stmt.setLong(3, user.getDatabaseID());
       stmt.execute();
 
       user.setEmailVerificationCode(verificationCode, time);
@@ -661,7 +661,7 @@ public class UserDB {
       stmt = conn.prepareStatement(CREATE_PASSWORD_RESET_CODE_STATEMENT);
       stmt.setString(1, resetCode);
       stmt.setTimestamp(2, time);
-      stmt.setInt(3, user.getDatabaseID());
+      stmt.setLong(3, user.getDatabaseID());
       stmt.execute();
 
       user.setPasswordResetCode(resetCode, time);
@@ -794,7 +794,7 @@ public class UserDB {
       stmt = conn.prepareStatement(CHANGE_PASSWORD_STATEMENT);
       stmt.setBytes(1, generatedPassword.salt);
       stmt.setBytes(2, generatedPassword.hashedPassword);
-      stmt.setInt(3, user.getDatabaseID());
+      stmt.setLong(3, user.getDatabaseID());
       stmt.execute();
 
     } catch (SQLException | InvalidKeySpecException

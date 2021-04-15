@@ -36,7 +36,7 @@ public class User {
   /**
    * The user's database record ID
    */
-  private int databaseId;
+  private long databaseId;
 
   /**
    * The user's email address
@@ -103,7 +103,7 @@ public class User {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public User(int databaseId, String emailAddress, String givenName,
+  public User(long databaseId, String emailAddress, String givenName,
     String surname, int permissions, String preferences)
     throws MissingParamException {
 
@@ -225,7 +225,7 @@ public class User {
    *
    * @return The user's database ID
    */
-  public int getDatabaseID() {
+  public long getDatabaseID() {
     return databaseId;
   }
 
