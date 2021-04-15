@@ -141,7 +141,7 @@ public class ExtractDataSetJob extends DataSetJob {
           try {
 
             List<String> line = file.getLine(currentLine);
-            LocalDateTime time = file.getRawTime(line);
+            LocalDateTime time = file.getOffsetTime(line);
 
             if ((time.equals(dataSet.getStart())
               || time.isAfter(dataSet.getStart()))
