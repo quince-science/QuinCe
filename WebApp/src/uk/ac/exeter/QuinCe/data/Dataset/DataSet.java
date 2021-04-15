@@ -655,7 +655,7 @@ public class DataSet {
    */
   public List<Long> getSourceFiles(Connection conn)
     throws MissingParamException, DatabaseException {
-    return DataFileDB.getFilesWithinDates(conn, instrumentId, start, end);
+    return DataFileDB.getFilesWithinDates(conn, instrumentId, start, end, true);
   }
 
   /**
