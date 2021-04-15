@@ -659,7 +659,7 @@ public class DataFileDB {
     DataFile result = null;
 
     try {
-      long instrumentId = record.getLong(7);
+      long instrumentId = record.getLong(8);
       InstrumentFileSet files = InstrumentDB.getFileDefinitions(conn,
         instrumentId);
       result = makeDataFile(record, fileStore, files);
