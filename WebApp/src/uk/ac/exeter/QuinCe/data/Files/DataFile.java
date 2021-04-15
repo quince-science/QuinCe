@@ -525,6 +525,14 @@ public class DataFile {
     return applyTimeOffset(getRawEndTime());
   }
 
+  public LocalDateTime getStartTime(boolean applyOffset) {
+    return applyOffset ? getOffsetStartTime() : getRawStartTime();
+  }
+
+  public LocalDateTime getEndTime(boolean applyOffset) {
+    return applyOffset ? getOffsetEndTime() : getRawEndTime();
+  }
+
   /**
    * Get the time of a line in the file, with the define offset applied
    *

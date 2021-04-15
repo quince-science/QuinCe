@@ -373,7 +373,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
           } else {
             List<DataFile> overlappingFiles = DataFileDB.getFilesWithinDates(
               dataSource, matchedDefinition, getDataFile().getRawStartTime(),
-              getDataFile().getRawEndTime());
+              getDataFile().getRawEndTime(), false);
 
             boolean fileOK = true;
             String fileMessage = null;
