@@ -6,18 +6,18 @@ INSERT INTO instrument VALUES (1,1,'Benguela Stream','BSBS',0,'','2019-01-28 13:
 -- Instrument uses the basic marine pCO2 variable
 INSERT INTO instrument_variables (instrument_id, variable_id)
   VALUES (1, (SELECT id FROM variables WHERE name = 'Underway Marine pCO₂'));
-  
+
 -- File definition
 INSERT INTO file_definition VALUES
-  (1,1,'Data File',' ',0,0,NULL,2,65,2,7,8,1,5,6,-1,NULL,3,
-   '#Mon Jan 28 14:31:21 CET 2019\nformatString=dd/MM/yy\n',
-   -1,NULL,-1,-1,-1,-1,-1,4,
-   '#Mon Jan 28 14:31:21 CET 2019\nformatString=HH\\:mm\\:ss\n',
-   -1,-1,-1,-1,'2019-01-28 13:31:21','2019-01-28 14:31:21');
-   
+  (1,1,'Data File',' ',0,0,NULL,2,65,
+   '{"valueColumn":7,"hemisphereColumn":8,"format":2}',
+   '{"valueColumn":5,"hemisphereColumn":6,"format":1}',
+   '{"assignments":{"0":{"assignmentIndex":0,"column":-1,"properties":{}},"1":{"assignmentIndex":1,"column":-1,"properties":{}},"2":{"assignmentIndex":2,"column":3,"properties":{"formatString":"dd/MM/yy"}},"3":{"assignmentIndex":3,"column":-1,"properties":{}},"4":{"assignmentIndex":4,"column":-1,"properties":{}},"5":{"assignmentIndex":5,"column":-1,"properties":{}},"6":{"assignmentIndex":6,"column":-1,"properties":{}},"7":{"assignmentIndex":7,"column":-1,"properties":{}},"8":{"assignmentIndex":8,"column":4,"properties":{"formatString":"HH:mm:ss"}},"9":{"assignmentIndex":9,"column":-1,"properties":{}},"10":{"assignmentIndex":10,"column":-1,"properties":{}},"11":{"assignmentIndex":11,"column":-1,"properties":{}},"12":{"assignmentIndex":12,"column":-1,"properties":{}}},"fileHasHeader":false}',
+   '2019-01-28 13:31:21','2019-01-28 14:31:21');
+
 -- File Columns
 
--- Intake temperature   
+-- Intake temperature
 INSERT INTO file_column VALUES (1,1,14,1,1,'SWTemp',0,'','2019-01-28 13:31:21','2019-01-28 14:31:21');
 
 -- Salinity
