@@ -489,7 +489,13 @@ public class DateTimeSpecification {
    * @see DateTimeColumnAssignment#isAssigned()
    */
   public boolean isAssigned(int assignmentIndex) {
-    return assignments.get(assignmentIndex).isAssigned();
+    boolean result = false;
+
+    if (assignments.containsKey(assignmentIndex)) {
+      result = assignments.get(assignmentIndex).isAssigned();
+    }
+
+    return result;
   }
 
   /**
