@@ -99,7 +99,7 @@ public class DataFileDB {
    */
   private static final String GET_FILES_BY_INSTRUMENT_QUERY = "SELECT "
     + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, "
-    + "f.record_count, f.properties, i.id FROM data_file AS f "
+    + "f.record_count, f.properties FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
     + "WHERE d.instrument_id = ? ORDER BY f.start_date ASC";
@@ -111,7 +111,7 @@ public class DataFileDB {
    */
   private static final String GET_FILES_BY_DEFINITION_QUERY = "SELECT "
     + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, "
-    + "f.record_count, f.properties, i.id FROM data_file AS f "
+    + "f.record_count, f.properties, d.id FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "WHERE d.id = ? ORDER BY f.start_date ASC";
 
