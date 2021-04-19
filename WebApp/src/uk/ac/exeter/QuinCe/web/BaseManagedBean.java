@@ -403,7 +403,7 @@ public abstract class BaseManagedBean {
    */
   public boolean getHasInstruments() {
     List<Instrument> instruments = getInstruments();
-    return instruments.size() > 0;
+    return (null != instruments && instruments.size() > 0);
   }
 
   /**
