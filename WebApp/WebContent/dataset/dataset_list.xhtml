@@ -47,11 +47,15 @@
       }
 
       var refreshInterval = setInterval(function() {
-        updateList(); // PF Command
+        if (window['updateList']) {
+          updateList(); // PF Command
+        }
       }, 10000);
 
       $(document).ready(function() {
-        updateList(); // PF Command
+        if (window['updateList']) {
+          updateList(); // PF Command
+        }
       });
 
       function updateControls() {
