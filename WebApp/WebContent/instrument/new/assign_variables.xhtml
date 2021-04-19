@@ -28,6 +28,12 @@
         update="hemisphereFile hemisphereCoordinate hemisphereColumn assignmentsTree"
         oncomplete="positionAssigned();" />
 
+      <!-- Multiple assignment error dialog -->
+      <p:confirmDialog widgetVar="tooManyAssignments" header="Too Many Assignments"
+        message="You cannot assign more than one column to this sensor type.">
+        <p:commandButton value="OK" onclick="PF('tooManyAssignments').hide()" />
+      </p:confirmDialog>
+
       <!-- Sensor Assignment Dialog -->
       <p:dialog header="Assign Column To Sensor"
         widgetVar="sensorAssignmentDialog" modal="true">

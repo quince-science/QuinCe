@@ -603,7 +603,7 @@ function handleSensorTypeColumnDrop(e) {
   $(this).removeClass('dropTargetHover');
 
   // Get sensor type
-  let sensorTypeName = $(this)[0].innerText;
+  let sensorTypeName = $(this).find('span[role="treeitem"]')[0].innerText;
   let sensorTypeId = getSensorTypeID(sensorTypeName);
 
   // Get column details
@@ -615,7 +615,13 @@ function handleSensorTypeColumnDrop(e) {
     break;
   }
   default: {
-    openAssignSensorDialog(getSensorType(sensorTypeId), column);
+    let existingEntries = $(this).find('ul[role="group"]').find('li').length;
+    // Only allow one column to be assigned
+    if (existingEntries < 1) {
+      openAssignSensorDialog(getSensorType(sensorTypeId), column);
+    } else {
+      PF('tooManyAssignments').show();
+    }
   }
   }
 }
