@@ -553,9 +553,14 @@ public class FileDefinitionBuilder extends FileDefinition {
 
     TreeSet<String> values = new TreeSet<String>();
 
-    for (int i = getColumnHeaderRows(); i < fileContents.size(); i++) {
+    for (int i = getHeaderLength() + getColumnHeaderRows(); i < fileContents
+      .size(); i++) {
       List<String> columns = extractFields(fileContents.get(i));
-      values.add(columns.get(column));
+
+      // Handle short rows
+      if (columns.size() >= column) {
+        values.add(columns.get(column));
+      }
     }
 
     return values;
