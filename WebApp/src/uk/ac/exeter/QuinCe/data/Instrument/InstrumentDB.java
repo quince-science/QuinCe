@@ -559,9 +559,11 @@ public class InstrumentDB {
         variableProperties.put(records.getLong(7), records.getString(8));
       }
 
-      // Create the last instrument
-      result.add(createInstrument(conn, owner, currentInstrument, name,
-        variables, variableProperties, platformCode, nrt, propertiesJson));
+      // Create the last instrument, if there is one
+      if (currentInstrument != -1) {
+        result.add(createInstrument(conn, owner, currentInstrument, name,
+          variables, variableProperties, platformCode, nrt, propertiesJson));
+      }
 
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving instrument list", e);
