@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -31,7 +32,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 @SuppressWarnings("serial")
 public class SensorAssignments
-  extends TreeMap<SensorType, List<SensorAssignment>> {
+  extends TreeMap<SensorType, TreeSet<SensorAssignment>> {
 
   private static final int FULLY_ASSIGNED = 1;
 
@@ -163,22 +164,21 @@ public class SensorAssignments
     SensorTypeNotFoundException, SensorConfigurationException {
 
     for (SensorType type : getSensorConfig().getNonCoreSensors(conn)) {
-      put(type, new ArrayList<SensorAssignment>());
+      put(type, new TreeSet<SensorAssignment>());
 
       // Add the Run Type if required
       if (type.hasInternalCalibration()) {
-        put(SensorType.RUN_TYPE_SENSOR_TYPE, new ArrayList<SensorAssignment>());
+        put(SensorType.RUN_TYPE_SENSOR_TYPE, new TreeSet<SensorAssignment>());
       }
     }
 
     for (SensorType coreType : getSensorConfig().getCoreSensors(variableIDs)) {
       if (null != coreType) {
-        put(coreType, new ArrayList<SensorAssignment>());
+        put(coreType, new TreeSet<SensorAssignment>());
 
         // Add the Run Type if required
         if (coreType.hasInternalCalibration()) {
-          put(SensorType.RUN_TYPE_SENSOR_TYPE,
-            new ArrayList<SensorAssignment>());
+          put(SensorType.RUN_TYPE_SENSOR_TYPE, new TreeSet<SensorAssignment>());
         }
       }
     }
@@ -374,7 +374,7 @@ public class SensorAssignments
   private boolean isAssigned(String file, int column) {
     boolean assigned = false;
 
-    for (List<SensorAssignment> set : values()) {
+    for (TreeSet<SensorAssignment> set : values()) {
       for (SensorAssignment assignment : set) {
         if (assignment.getDataFile().equals(file)
           && assignment.getColumn() == column) {
@@ -404,7 +404,7 @@ public class SensorAssignments
     boolean primaryOnly) {
     boolean assigned = false;
 
-    List<SensorAssignment> assignments = get(sensorType);
+    TreeSet<SensorAssignment> assignments = get(sensorType);
     if (null != assignments) {
       for (SensorAssignment assignment : get(sensorType)) {
         if (null == dataFileName
@@ -541,7 +541,7 @@ public class SensorAssignments
         + "', column " + assignment.getColumn() + " has already been assigned");
     }
 
-    List<SensorAssignment> assignments = get(assignment.getSensorType());
+    TreeSet<SensorAssignment> assignments = get(assignment.getSensorType());
     if (null == assignments) {
       // The sensor is not valid for this instrument, so it has not
       // been added to the assignments list
@@ -590,11 +590,11 @@ public class SensorAssignments
    *          The file description
    */
   public void removeFileAssignments(String fileDescription) {
-    for (Map.Entry<SensorType, List<SensorAssignment>> entry : entrySet()) {
+    for (Map.Entry<SensorType, TreeSet<SensorAssignment>> entry : entrySet()) {
 
       Set<SensorAssignment> assignmentsToRemove = new HashSet<SensorAssignment>();
 
-      List<SensorAssignment> assignments = entry.getValue();
+      TreeSet<SensorAssignment> assignments = entry.getValue();
       for (SensorAssignment assignment : assignments) {
         if (assignment.getDataFile().equalsIgnoreCase(fileDescription)) {
           assignmentsToRemove.add(assignment);
@@ -730,7 +730,7 @@ public class SensorAssignments
   public List<Long> getFileColumnIDs() {
     List<Long> ids = new ArrayList<Long>();
 
-    for (List<SensorAssignment> typeAssignments : values()) {
+    for (TreeSet<SensorAssignment> typeAssignments : values()) {
       for (SensorAssignment assignment : typeAssignments) {
         ids.add(assignment.getDatabaseId());
       }
@@ -842,7 +842,7 @@ public class SensorAssignments
         }
 
         for (SensorType type : localSensorTypes) {
-          List<SensorAssignment> assignments = get(type);
+          TreeSet<SensorAssignment> assignments = get(type);
           if (null != assignments) {
 
             result = new ArrayList<Long>(assignments.size());
@@ -956,7 +956,7 @@ public class SensorAssignments
   }
 
   public void renameFile(String oldName, String newName) {
-    for (List<SensorAssignment> assignments : values()) {
+    for (TreeSet<SensorAssignment> assignments : values()) {
       for (SensorAssignment assignment : assignments) {
         if (assignment.getDataFile().equals(oldName)) {
           assignment.setDataFile(newName);

@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -295,7 +296,7 @@ public class InstrumentDB {
           }
         }
 
-        for (Map.Entry<SensorType, List<SensorAssignment>> sensorAssignmentsEntry : instrument
+        for (Map.Entry<SensorType, TreeSet<SensorAssignment>> sensorAssignmentsEntry : instrument
           .getSensorAssignments().entrySet()) {
 
           SensorType sensorType = sensorAssignmentsEntry.getKey();

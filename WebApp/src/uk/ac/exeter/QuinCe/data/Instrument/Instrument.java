@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
@@ -362,7 +363,7 @@ public class Instrument {
       useFixedRunTypes = false;
     }
 
-    List<SensorAssignment> runTypeAssignments = getSensorAssignments()
+    TreeSet<SensorAssignment> runTypeAssignments = getSensorAssignments()
       .get(SensorType.RUN_TYPE_SENSOR_TYPE);
     if (null != runTypeAssignments && runTypeAssignments.size() > 0) {
       useFixedRunTypes = false;
@@ -396,7 +397,7 @@ public class Instrument {
       }
     } else {
       FileDefinition fileDef = getFileDefinitions()
-        .get(runTypeAssignments.get(0).getDataFile());
+        .get(runTypeAssignments.first().getDataFile());
       result = fileDef.getRunTypes().getRunTypeCategory(runTypeValue);
     }
 
