@@ -10,6 +10,7 @@ import java.util.TreeSet;
 
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
+import org.primefaces.util.TreeUtils;
 
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
@@ -77,6 +78,12 @@ public class AssignmentsTree {
   private Map<SensorType, List<SensorTypeTreeNode>> sensorTypeNodes;
 
   private TreeSet<FileDefinitionBuilder> files;
+
+  private static SensorAssignmentTreeNodeComparator nodeComparator;
+
+  static {
+    nodeComparator = new SensorAssignmentTreeNodeComparator();
+  }
 
   protected AssignmentsTree(List<Variable> variables,
     SensorAssignments assignments, boolean needsPosition)
@@ -151,6 +158,7 @@ public class AssignmentsTree {
       .get(assignment.getSensorType())) {
 
       new SensorAssignmentTreeNode(sensorTypeNode, assignment);
+      TreeUtils.sortNode(sensorTypeNode, nodeComparator);
       sensorTypeNode.setExpanded(true);
     }
   }
