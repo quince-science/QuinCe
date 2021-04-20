@@ -1905,12 +1905,13 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public void assignRunType()
     throws SensorAssignmentException, SensorTypeNotFoundException {
-    FileDefinition file = instrumentFiles.get(runTypeFile);
+
+    FileDefinitionBuilder file = instrumentFiles.getByDescription(runTypeFile);
     file.setRunTypeColumn(runTypeColumn);
 
     SensorAssignment sensorAssignment = new SensorAssignment(runTypeFile,
       runTypeColumn, SensorType.RUN_TYPE_SENSOR_TYPE,
-      SensorType.RUN_TYPE_SENSOR_TYPE.getShortName(), true, false, null);
+      file.getFileColumns().get(runTypeColumn).getName(), true, false, null);
 
     sensorAssignments.addAssignment(sensorAssignment);
     assignmentsTree.addAssignment(sensorAssignment);
