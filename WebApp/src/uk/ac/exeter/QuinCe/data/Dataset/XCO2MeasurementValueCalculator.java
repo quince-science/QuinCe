@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
-import java.util.List;
+import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -65,7 +65,7 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
   private boolean dryingRequired(Instrument instrument)
     throws MeasurementValueCalculatorException {
 
-    List<SensorAssignment> co2Assignments = instrument.getSensorAssignments()
+    TreeSet<SensorAssignment> co2Assignments = instrument.getSensorAssignments()
       .get(xco2SensorType);
 
     // TODO We assume there's only one CO2 sensor. Handle more.
@@ -74,7 +74,7 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
         "Cannot handle multiple CO2 sensors yet!");
     }
 
-    SensorAssignment assignment = co2Assignments.get(0);
+    SensorAssignment assignment = co2Assignments.first();
 
     return assignment.getDependsQuestionAnswer();
   }

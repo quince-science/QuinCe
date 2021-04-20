@@ -10,7 +10,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
  * @author Steve Jones
  *
  */
-public class SensorAssignment {
+public class SensorAssignment implements Comparable<SensorAssignment> {
 
   /**
    * The database ID of this sensor assignment
@@ -306,5 +306,14 @@ public class SensorAssignment {
     } else if (!sensorType.equals(other.sensorType))
       return false;
     return true;
+  }
+
+  @Override
+  public int compareTo(SensorAssignment o) {
+    int result = dataFile.compareTo(o.dataFile);
+    if (result == 0) {
+      result = column - o.column;
+    }
+    return result;
   }
 }
