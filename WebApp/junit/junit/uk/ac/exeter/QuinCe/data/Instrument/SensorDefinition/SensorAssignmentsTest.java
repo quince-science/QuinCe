@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterAll;
@@ -150,7 +151,7 @@ public class SensorAssignmentsTest extends BaseTest {
   private int countAllAssignments() {
     int count = 0;
 
-    for (List<SensorAssignment> assignmentSet : assignments.values()) {
+    for (TreeSet<SensorAssignment> assignmentSet : assignments.values()) {
       count += assignmentSet.size();
     }
 
@@ -310,8 +311,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void basicAssignmentTest() throws Exception {
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
-    Map<SensorType, List<SensorAssignment>> allAssignments = assignments;
-    List<SensorAssignment> sensorAssignments = allAssignments
+    Map<SensorType, TreeSet<SensorAssignment>> allAssignments = assignments;
+    TreeSet<SensorAssignment> sensorAssignments = allAssignments
       .get(config.getSensorType(1));
     assertEquals(1, sensorAssignments.size());
     assertEquals(makeAssignment(DATA_FILE_NAME, 1, true),

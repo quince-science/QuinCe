@@ -181,7 +181,7 @@ public class AutoQCJob extends DataSetJob {
         } else {
 
           // Get all the run type entries from the data set
-          List<SensorAssignment> runTypeColumns = sensorAssignments
+          TreeSet<SensorAssignment> runTypeColumns = sensorAssignments
             .get(SensorType.RUN_TYPE_SENSOR_TYPE);
 
           TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
