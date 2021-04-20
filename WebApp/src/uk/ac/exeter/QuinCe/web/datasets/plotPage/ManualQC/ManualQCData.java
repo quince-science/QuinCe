@@ -244,7 +244,7 @@ public class ManualQCData extends PlotPageData {
     List<SensorAssignment> sensorColumns = new ArrayList<SensorAssignment>();
     List<SensorAssignment> diagnosticColumns = new ArrayList<SensorAssignment>();
 
-    for (Map.Entry<SensorType, List<SensorAssignment>> entry : instrument
+    for (Map.Entry<SensorType, TreeSet<SensorAssignment>> entry : instrument
       .getSensorAssignments().entrySet()) {
 
       // Skip the position

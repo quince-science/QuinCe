@@ -154,8 +154,7 @@ public class ExtractDataSetJob extends DataSetJob {
 
               realEndTime = time;
 
-              if (null != fileDefinition.getLongitudeSpecification()) {
-
+              if (!dataSet.fixedPosition()) {
                 String longitude = file.getLongitude(line);
 
                 sensorValues.add(new SensorValue(dataSet.getId(),
@@ -175,9 +174,6 @@ public class ExtractDataSetJob extends DataSetJob {
                     // Ignore it now. QC will pick it up later.
                   }
                 }
-              }
-
-              if (null != fileDefinition.getLatitudeSpecification()) {
 
                 String latitude = file.getLatitude(line);
 
@@ -201,7 +197,7 @@ public class ExtractDataSetJob extends DataSetJob {
               }
 
               // Assigned columns
-              for (Entry<SensorType, List<SensorAssignment>> entry : instrument
+              for (Entry<SensorType, TreeSet<SensorAssignment>> entry : instrument
                 .getSensorAssignments().entrySet()) {
 
                 for (SensorAssignment assignment : entry.getValue()) {
