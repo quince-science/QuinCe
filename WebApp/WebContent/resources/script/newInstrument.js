@@ -205,9 +205,15 @@ function updateUseFileButton() {
 //
 //************************************************
 function assignRunType(file, column) {
-  $('#newInstrumentForm\\:runTypeFile').val(file);
-  $('#newInstrumentForm\\:runTypeColumn').val(column);
-  assignRunTypeAction(); // PF remote command
+  
+  let existingRunTypeFile = $('#newInstrumentForm\\:runTypeFile').val();
+  if (existingRunTypeFile != '' && existingRunTypeFile != file) {
+    PF('multiFileRunType').show();
+  } else {
+    $('#newInstrumentForm\\:runTypeFile').val(file);
+    $('#newInstrumentForm\\:runTypeColumn').val(column);
+    assignRunTypeAction(); // PF remote command
+  }	
 }
 
 function openAssignSensorDialog(sensorType, column) {
