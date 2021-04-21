@@ -224,7 +224,8 @@ public class FileDefinitionBuilder extends FileDefinition {
   }
 
   /**
-   * Count the number of instances of a given separator in a string
+   * Count the number of instances of a given separator in a string. Trailing
+   * separators are ignored.
    *
    * @param separator
    *          The separator to search for
@@ -250,6 +251,11 @@ public class FileDefinitionBuilder extends FileDefinition {
     int matchCount = 0;
     while (matcher.find()) {
       matchCount++;
+    }
+
+    // If the string ends with a separator, ignore it
+    if (searchString.endsWith(separator)) {
+      matchCount--;
     }
 
     return matchCount;
