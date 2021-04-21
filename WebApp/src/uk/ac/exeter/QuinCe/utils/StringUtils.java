@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -68,6 +69,18 @@ public final class StringUtils {
     }
 
     return result;
+  }
+
+  public static String listToDelimited(List<String> list,
+    TreeSet<Integer> entries, String delimiter) {
+
+    List<String> selection = new ArrayList<String>();
+
+    entries.forEach(e -> {
+      selection.add(list.get(e));
+    });
+
+    return collectionToDelimited(selection, delimiter);
   }
 
   /**

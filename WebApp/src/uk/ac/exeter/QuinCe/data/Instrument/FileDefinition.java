@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
@@ -708,11 +709,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
    *
    * @return The run type column
    */
-  public int getRunTypeColumn() {
-    int result = -1;
+  public TreeSet<Integer> getRunTypeColumns() {
+    TreeSet<Integer> result = null;
 
     if (null != runTypes) {
-      result = runTypes.getColumn();
+      result = runTypes.getColumns();
     }
 
     return result;
@@ -723,11 +724,20 @@ public class FileDefinition implements Comparable<FileDefinition> {
    *
    * @throws SensorAssignmentException
    */
-  public void setRunTypeColumn(int runTypeColumn) {
-    if (runTypeColumn == -1) {
-      runTypes = null;
-    } else {
+  public void addRunTypeColumn(int runTypeColumn) {
+    if (null == runTypes) {
       runTypes = new RunTypeAssignments(runTypeColumn);
+    } else {
+      runTypes.addColumn(runTypeColumn);
+    }
+  }
+
+  public void removeRunTypeColumn(int column) {
+    if (null != runTypes) {
+      runTypes.removeColumn(column);
+      if (runTypes.getColumnCount() == 0) {
+        runTypes = null;
+      }
     }
   }
 
@@ -966,7 +976,8 @@ public class FileDefinition implements Comparable<FileDefinition> {
     if (!hasRunTypes()) {
       throw new FileDefinitionException("File does not contain run types");
     } else {
-      String runTypeValue = line.get(runTypes.getColumn());
+      String runTypeValue = StringUtils.listToDelimited(line,
+        runTypes.getColumns(), "|");
       if (null != runTypeValue && runTypeValue.length() > 0) {
         result = runTypes.get(runTypeValue, followAlias);
       }
