@@ -45,7 +45,7 @@ public class SensorTypeTreeNode extends DefaultTreeNode {
 
         for (FileDefinitionBuilder file : files) {
           if (sensorAssignments.runTypeRequired(file.getFileDescription())
-            && file.getRunTypeColumn() == -1) {
+            && null == file.getRunTypeColumns()) {
             required = true;
           }
         }
