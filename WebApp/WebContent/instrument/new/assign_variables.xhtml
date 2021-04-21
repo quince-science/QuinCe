@@ -34,6 +34,12 @@
         <p:commandButton value="OK" onclick="PF('tooManyAssignments').hide()" />
       </p:confirmDialog>
 
+      <!-- Multiple assignment error dialog -->
+      <p:confirmDialog widgetVar="multiFileRunType" header="Invalid Run Type"
+        message="You cannot assign run type columns from more than one file.">
+        <p:commandButton value="OK" onclick="PF('multiFileRunType').hide()" />
+      </p:confirmDialog>
+
       <!-- Sensor Assignment Dialog -->
       <p:dialog header="Assign Column To Sensor"
         widgetVar="sensorAssignmentDialog" modal="true">
