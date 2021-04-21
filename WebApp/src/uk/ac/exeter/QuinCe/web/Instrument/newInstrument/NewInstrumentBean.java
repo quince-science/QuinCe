@@ -1907,7 +1907,7 @@ public class NewInstrumentBean extends FileUploadBean {
     throws SensorAssignmentException, SensorTypeNotFoundException {
 
     FileDefinitionBuilder file = instrumentFiles.getByDescription(runTypeFile);
-    file.setRunTypeColumn(runTypeColumn);
+    file.addRunTypeColumn(runTypeColumn);
 
     SensorAssignment sensorAssignment = new SensorAssignment(runTypeFile,
       runTypeColumn, SensorType.RUN_TYPE_SENSOR_TYPE,
@@ -2088,7 +2088,8 @@ public class NewInstrumentBean extends FileUploadBean {
       assignmentsTree.removeAssignment(removed);
 
       if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-        instrumentFiles.get(removeAssignmentDataFile).setRunTypeColumn(-1);
+        instrumentFiles.get(removeAssignmentDataFile)
+          .removeRunTypeColumn(removeAssignmentColumn);
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -2156,5 +2157,18 @@ public class NewInstrumentBean extends FileUploadBean {
     }
 
     return removed;
+  }
+
+  public FileDefinitionBuilder getRunTypeFileDefinition() {
+    FileDefinitionBuilder result = null;
+
+    for (FileDefinition file : instrumentFiles) {
+      if (file.hasRunTypes()) {
+        result = (FileDefinitionBuilder) file;
+        break;
+      }
+    }
+
+    return result;
   }
 }

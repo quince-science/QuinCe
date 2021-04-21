@@ -591,9 +591,8 @@ public class DataFile {
   public String getRunType(int line)
     throws DataFileException, FileDefinitionException {
     String runType = null;
-    int runTypeColumn = fileDefinition.getRunTypeColumn();
 
-    if (runTypeColumn > -1) {
+    if (fileDefinition.hasRunTypes()) {
       loadContents();
       runType = fileDefinition.getRunType(contents.get(line), true)
         .getRunName();
@@ -617,9 +616,8 @@ public class DataFile {
   public RunTypeCategory getRunTypeCategory(int line)
     throws DataFileException, FileDefinitionException {
     RunTypeCategory runType = null;
-    int runTypeColumn = fileDefinition.getRunTypeColumn();
 
-    if (runTypeColumn > -1) {
+    if (fileDefinition.hasRunTypes()) {
       loadContents();
       runType = fileDefinition.getRunTypeCategory(contents.get(line));
     }

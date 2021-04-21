@@ -1,10 +1,13 @@
 package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Holder for a set of run type assignments for a file definition. This class
@@ -17,14 +20,29 @@ import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 @SuppressWarnings("serial")
 public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
 
+  public static final String RUN_TYPE_SEPARATOR = "|";
+
   /**
    * The Run Type column in the parent file definition
    */
-  private int column;
+  private TreeSet<Integer> columns;
 
   public RunTypeAssignments(int column) {
     super();
-    this.column = column;
+    columns = new TreeSet<Integer>();
+    columns.add(column);
+  }
+
+  public void addColumn(int column) {
+    columns.add(column);
+  }
+
+  public void removeColumn(int column) {
+    columns.remove(column);
+  }
+
+  public int getColumnCount() {
+    return columns.size();
   }
 
   /**
@@ -67,8 +85,8 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
    *
    * @return The run type column
    */
-  public int getColumn() {
-    return column;
+  public TreeSet<Integer> getColumns() {
+    return columns;
   }
 
   @Override
@@ -142,5 +160,9 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
     }
 
     return result;
+  }
+
+  public String getRunType(List<String> line) {
+    return StringUtils.listToDelimited(line, columns, RUN_TYPE_SEPARATOR);
   }
 }

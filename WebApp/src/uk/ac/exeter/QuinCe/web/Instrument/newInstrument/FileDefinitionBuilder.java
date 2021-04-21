@@ -548,36 +548,36 @@ public class FileDefinitionBuilder extends FileDefinition {
     super.setColumnCount(calculateColumnCount());
   }
 
-  /**
-   * Get the unique values from a column
-   *
-   * @param column
-   *          The column index
-   * @return The unique values
-   */
-  protected TreeSet<String> getUniqueColumnValues(int column) {
+  protected TreeSet<String> getUniqueRunTypes() {
 
     TreeSet<String> values = new TreeSet<String>();
 
     for (int i = getHeaderLength() + getColumnHeaderRows(); i < fileContents
       .size(); i++) {
       List<String> columns = extractFields(fileContents.get(i));
-
-      // Handle short rows
-      if (columns.size() >= column) {
-        values.add(columns.get(column));
-      }
+      values.add(runTypes.getRunType(columns));
     }
 
     return values;
   }
 
   @Override
-  public void setRunTypeColumn(int runTypeColumn) {
-    super.setRunTypeColumn(runTypeColumn);
+  public void addRunTypeColumn(int runTypeColumn) {
+    super.addRunTypeColumn(runTypeColumn);
 
-    if (runTypeColumn != -1) {
-      for (String runType : getUniqueColumnValues(runTypeColumn)) {
+    runTypes.clear();
+    for (String runType : getUniqueRunTypes()) {
+      setRunTypeCategory(runType, RunTypeCategory.IGNORED);
+    }
+  }
+
+  @Override
+  public void removeRunTypeColumn(int runTypeColumn) {
+    super.removeRunTypeColumn(runTypeColumn);
+
+    if (null != runTypes) {
+      runTypes.clear();
+      for (String runType : getUniqueRunTypes()) {
         setRunTypeCategory(runType, RunTypeCategory.IGNORED);
       }
     }

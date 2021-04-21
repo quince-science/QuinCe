@@ -90,7 +90,7 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
       json.append(",\"runTypeColRequired\":");
       json.append(sensorAssignments.runTypeRequired(file.getFileDescription()));
       json.append(",\"runTypeCol\":");
-      json.append(file.getRunTypeColumn());
+      json.append(file.getRunTypeColumns());
       json.append('}');
 
       if (count < size()) {
