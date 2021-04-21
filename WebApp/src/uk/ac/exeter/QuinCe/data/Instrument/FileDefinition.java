@@ -561,8 +561,18 @@ public class FileDefinition implements Comparable<FileDefinition> {
       dataLine = dataLine.trim().replaceAll("  *", " ");
     }
 
-    values = Arrays.asList(dataLine.split(separator, dataLine.length()));
-    return StringUtils.trimListAndQuotes(values);
+    values = StringUtils.trimListAndQuotes(
+      Arrays.asList(dataLine.split(separator, dataLine.length())));
+
+    // If the column count is one less than the extracted number of columns,
+    // and the last column is empty, assume we have a rogue trailing separator.
+    if (values.size() == getColumnCount() + 1
+      && values.get(values.size() - 1).length() == 0) {
+
+      values.remove(values.size() - 1);
+    }
+
+    return values;
   }
 
   /**
