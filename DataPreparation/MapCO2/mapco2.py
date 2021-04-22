@@ -183,8 +183,8 @@ def read_data_line(in_file):
   result["minute"] = int(fields[0])
   result["licortemp"] = float(fields[1])
   result["licortemp_sd"] = float(fields[2])
-  result["licorpress"] = float(fields[3]) * 10
-  result["licorpress_sd"] = float(fields[4]) * 10
+  result["licorpress"] = float(fields[3])
+  result["licorpress_sd"] = float(fields[4])
   result["xco2"] = float(fields[5])
   result["xco2_sd"] = float(fields[6])
   result["o2"] = float(fields[7])
@@ -235,6 +235,8 @@ def write_header(out_file):
   write_data_headers(out_file, 'On')
   write_data_headers(out_file, 'Off')
   write_data_headers(out_file, 'PostCal')
+
+  out_file.write('Off-On Pressure Difference,')
 
   # xCO2 dry
   out_file.write('xCO2 Dry')
@@ -292,6 +294,9 @@ def write_line(out_file, state, date_line, gps_line, system_line, on_line, off_l
   write_data_columns(out_file, on_line)
   write_data_columns(out_file, off_line)
   write_data_columns(out_file, post_cal_line)
+
+  # On-Off pressure difference
+  out_file.write(f'{(off_line["licorpress"] - on_line["licorpress"]):.2f},')
 
   # xCO2 dry
   if state == 'EQU':
