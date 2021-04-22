@@ -7,7 +7,7 @@ Usage: mapco2_2_csv.py <infile> <outfile>
 
 import sys
 import os
-from mapco2 import extract_measurement, write_header, write_measurement
+from mapco2 import write_header, extract_measurements
 
 """
 Main processing function
@@ -22,14 +22,7 @@ def main(infilename, outfilename):
 
     # Open the input file
     with open(infilename, 'r') as infile:
-
-      finished = False
-      while not finished:
-        measurement = extract_measurement(infile)
-        if measurement is None:
-          finished = True
-        else:
-          write_measurement(measurement, outfile)
+      extract_measurements(infile, outfile)
 
 """
 See if a file can be written.
