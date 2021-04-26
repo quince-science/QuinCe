@@ -29,6 +29,7 @@
     <h:form id="newInstrumentForm" method="post" charset="utf8">
       <div id="variablesForm">
         <p:selectManyCheckbox widgetVar="variables"
+          layout="grid" columns="5"
           value="#{newInstrumentBean.instrumentVariables}"
           onchange="checkSelection()">
           <f:selectItems
