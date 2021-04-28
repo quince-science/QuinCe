@@ -100,8 +100,15 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
           flaggedSensorValues.add(co2);
         }
 
-        measurements.add(new Measurement(dataset.getId(), recordTime,
-          runType.equals(WATER_MODE) ? waterRunTypes : atmRunTypes));
+        if (runType.equals(WATER_MODE) && instrument.hasVariable(waterVar)) {
+          measurements
+            .add(new Measurement(dataset.getId(), recordTime, waterRunTypes));
+        }
+
+        if (runType.equals(ATM_MODE) && instrument.hasVariable(atmVar)) {
+          measurements
+            .add(new Measurement(dataset.getId(), recordTime, atmRunTypes));
+        }
       }
 
       DataSetDataDB.storeSensorValues(conn, flaggedSensorValues);
