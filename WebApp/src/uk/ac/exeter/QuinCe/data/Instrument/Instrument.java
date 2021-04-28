@@ -760,4 +760,8 @@ public class Instrument {
 
     return result;
   }
+
+  public boolean hasVariable(Variable variable) {
+    return variables.contains(variable);
+  }
 }
