@@ -76,6 +76,9 @@ if __name__ == '__main__':
 
   current_arg = 1
 
+  if len(sys.argv) < 2:
+    usage()
+
   while current_arg < len(sys.argv):
     if sys.argv[current_arg] == '-addcolumn':
       if len(sys.argv) < current_arg + 3:
@@ -84,13 +87,15 @@ if __name__ == '__main__':
         colname = sys.argv[current_arg + 1]
         colvalue = sys.argv[current_arg + 2]
         new_columns.append((colname, colvalue))
-        current_arg += 2
+        current_arg += 3
     elif sys.argv[current_arg].startswith('-'):
       usage()
     else:
       in_file = sys.argv[current_arg]
       current_arg += 1
 
+  if in_file is None:
+    usage()
 
   root, ext = os.path.splitext(in_file)
   out_file = f'{root}.singleheader{ext}'
