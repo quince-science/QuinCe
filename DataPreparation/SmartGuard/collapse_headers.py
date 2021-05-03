@@ -9,12 +9,14 @@ HEADER_LENGTH = 7
 SEPARATOR = ";"
 COLUMN_ROW_COUNT = 3
 
-def main(in_file_name, out_file_name, new_columns):
+def main(in_file_name, out_file_name, new_columns, ignore_columns):
 
   in_file = open(in_file_name, 'r')
   out_file = open(out_file_name, 'w')
 
   # Copy header
+  ignored_column_indices = []
+
   for i in range(0, HEADER_LENGTH):
     out_file.write(in_file.readline())
 
@@ -34,10 +36,13 @@ def main(in_file_name, out_file_name, new_columns):
       if header_lines[j][i].strip() != '' and current_header_entries[j] != header_lines[j][i]:
         current_header_entries[j] = header_lines[j][i]
 
-    header = '|'.join(current_header_entries)
-    if header != last_header:
-      headers.append(header)
-      last_header = header
+    if any(item in current_header_entries for item in ignore_columns):
+      ignored_column_indices.append(i)
+    else:
+      header = '|'.join(current_header_entries)
+      if header != last_header:
+        headers.append(header)
+        last_header = header
 
   for col in new_columns:
     headers.append(col[0])
@@ -54,10 +59,15 @@ def main(in_file_name, out_file_name, new_columns):
     else:
       # The last column is empty because of trailing separators. Remove it.
       fields = line.split(SEPARATOR)[:-1]
-      for col in new_columns:
-        fields.append(col[1])
 
-      out_file.write(f'{SEPARATOR.join(fields)}\n')
+      # Remove ingnored indices
+      filtered = [ele for idx, ele in enumerate(fields) \
+        if idx not in ignored_column_indices]
+
+      for col in new_columns:
+        filtered.append(col[1])
+
+      out_file.write(f'{SEPARATOR.join(filtered)}\n')
 
   # Close files
   out_file.close()
@@ -73,6 +83,7 @@ if __name__ == '__main__':
   in_file = None
   out_file = None
   new_columns = []
+  ignore_columns = []
 
   current_arg = 1
 
@@ -88,6 +99,12 @@ if __name__ == '__main__':
         colvalue = sys.argv[current_arg + 2]
         new_columns.append((colname, colvalue))
         current_arg += 3
+    elif sys.argv[current_arg] == '-ignore':
+      if len(sys.argv) < current_arg + 2:
+        usage()
+      else:
+        ignore_columns.append(sys.argv[current_arg + 1])
+        current_arg += 2
     elif sys.argv[current_arg].startswith('-'):
       usage()
     else:
@@ -100,4 +117,4 @@ if __name__ == '__main__':
   root, ext = os.path.splitext(in_file)
   out_file = f'{root}.singleheader{ext}'
 
-  main(in_file, out_file, new_columns)
+  main(in_file, out_file, new_columns, ignore_columns)
