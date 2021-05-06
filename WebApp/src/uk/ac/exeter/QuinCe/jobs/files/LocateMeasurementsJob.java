@@ -16,7 +16,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.GenericMeasurementLocator;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementLocator;
@@ -92,13 +91,16 @@ public class LocateMeasurementsJob extends DataSetJob {
       // Work out which measurement locators we need to use
       Set<MeasurementLocator> measurementLocators = new HashSet<MeasurementLocator>();
 
-      if (instrument.hasRunTypes()) {
-        measurementLocators.add(new GenericMeasurementLocator());
-      }
-
+      // Locators for other variable types are identified here.
+      // Variables with Run Types will be null, so they get filtered out
       instrument.getVariables().stream()
         .map(MeasurementLocator::getMeasurementLocator).filter(Objects::nonNull)
         .forEach(measurementLocators::add);
+
+      if (measurementLocators.size() == 0) {
+        throw new JobFailedException(id,
+          "No measurement locators found for instrument variables");
+      }
 
       // Now locate the measurements
       Map<LocalDateTime, Measurement> measurements = new HashMap<LocalDateTime, Measurement>();
