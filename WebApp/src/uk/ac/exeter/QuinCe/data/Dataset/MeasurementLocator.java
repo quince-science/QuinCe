@@ -28,11 +28,19 @@ public interface MeasurementLocator {
 
     MeasurementLocator result = null;
 
-    switch (variable.getName()) {
-    case "CONTROS pCO₂": {
-      result = new ControsPco2MeasurementLocator();
-      break;
-    }
+    // If the variable has internal calibrations, it has run types
+    if (variable.hasInternalCalibrations()) {
+      result = new RunTypeMeasurementLocator();
+    } else {
+      switch (variable.getName()) {
+      case "CONTROS pCO₂": {
+        result = new ControsPco2MeasurementLocator();
+        break;
+      }
+      default: {
+        result = new SimpleMeasurementLocator(variable);
+      }
+      }
     }
 
     return result;
