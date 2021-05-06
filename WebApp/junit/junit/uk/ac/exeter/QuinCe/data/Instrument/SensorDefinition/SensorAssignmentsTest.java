@@ -192,6 +192,11 @@ public class SensorAssignmentsTest extends BaseTest {
       .getSensorType("Intake Temperature");
   }
 
+  private static SensorType getTestSensorType2() throws Exception {
+    return ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("Salinity");
+  }
+
   /**
    * Get a {@link SensorType}'s database ID using its name.
    *
@@ -349,18 +354,25 @@ public class SensorAssignmentsTest extends BaseTest {
 
   /**
    * Test that attempting to assign the same column to two different
-   * {@link SensorType}s fails.
+   * {@link SensorType}s succeeds.
    *
    * @throws Exception
    *           If any internal errors are encountered.
    */
   @Test
   public void duplicateColumnDifferentSensorTest() throws Exception {
-    // The same column can't be assigned more than once
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
-    assertThrows(SensorAssignmentException.class, () -> {
-      assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
-    });
+
+    SensorAssignment assignment1 = makeAssignment(getTestSensorType(),
+      DATA_FILE_NAME, 1, true);
+    SensorAssignment assignment2 = makeAssignment(getTestSensorType2(),
+      DATA_FILE_NAME, 1, true);
+
+    assignments.addAssignment(assignment1);
+    assignments.addAssignment(assignment2);
+
+    // Check that both assignments are where they should be
+    assertEquals(assignment1, assignments.get(getTestSensorType()).first());
+    assertEquals(assignment2, assignments.get(getTestSensorType2()).first());
   }
 
   /**
