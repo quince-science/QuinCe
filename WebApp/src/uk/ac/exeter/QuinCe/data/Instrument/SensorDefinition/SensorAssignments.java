@@ -371,11 +371,11 @@ public class SensorAssignments
    * @return {@code true} if the file and column have been assigned;
    *         {@code false} if not
    */
-  private boolean isAssigned(String file, int column) {
+  private boolean isAssigned(SensorType sensorType, String file, int column) {
     boolean assigned = false;
 
-    for (TreeSet<SensorAssignment> set : values()) {
-      for (SensorAssignment assignment : set) {
+    if (null != get(sensorType)) {
+      for (SensorAssignment assignment : get(sensorType)) {
         if (assignment.getDataFile().equals(file)
           && assignment.getColumn() == column) {
 
@@ -536,7 +536,8 @@ public class SensorAssignments
       throw new SensorAssignmentException("Cannot assign parent sensor types");
     }
 
-    if (isAssigned(assignment.getDataFile(), assignment.getColumn())) {
+    if (isAssigned(assignment.getSensorType(), assignment.getDataFile(),
+      assignment.getColumn())) {
       throw new SensorAssignmentException("File '" + assignment.getDataFile()
         + "', column " + assignment.getColumn() + " has already been assigned");
     }
