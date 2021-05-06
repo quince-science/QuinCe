@@ -40,37 +40,41 @@
       </p:fieldset>
       <p:fieldset id="runTypesPanel" legend="Assign Run Types"
         style="margin-bottom: 20px">
-        
-        <div class="instructions">
-          Below is a list of values from the selected Run Type columns.
-          Please associate each run type with a measurement category.
-        </div>
-
-        <table class="form">
-          <ui:repeat value="#{newInstrumentBean.runTypeFileDefinition.runTypeValues}"
-            var="runType">
-            
-            <tr>
-              <td class="labelsNoPad">#{runType}</td>
-              <td><p:selectOneMenu
-                  widgetVar="#{fileStatus.index}-#{runType}-menu"
-                  onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
-                  <f:selectItems
-                    value="#{newInstrumentBean.runTypeCategories}"
-                    var="category" itemValue="#{category.type}"
-                    itemLabel="#{category.description}" />
-                </p:selectOneMenu></td>
-              <td id="#{fileStatus.index}-#{runType}-aliasMenu"
-                class="hidden"><p:selectOneMenu
-                  widgetVar="#{fileStatus.index}-#{runType}-alias"
-                  onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
-                  <f:selectItems
-                    value="#{file.getRunTypeValuesWithExclusion(runType)}"
-                    var="runTypeAlias" />
-                </p:selectOneMenu></td>
-            </tr>
+        <div class="instructions">Below is a list of values from the Run
+          Type columns in each file. Please associate each run type with a
+          measurement category.</div>
+        <div id="runTypeFiles">
+          <ui:repeat value="#{newInstrumentBean.instrumentFiles}" var="file"
+            varStatus="fileStatus">
+            <div class="runTypeFile">
+              <p:fieldset legend="#{file.fileDescription}">
+                <table class="form">
+                  <ui:repeat value="#{file.runTypeValues}" var="runType">
+                    <tr>
+                      <td class="labelsNoPad">#{runType}</td>
+                      <td><p:selectOneMenu
+                          widgetVar="#{fileStatus.index}-#{runType}-menu"
+                          onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
+                          <f:selectItems
+                            value="#{newInstrumentBean.runTypeCategories}"
+                            var="category" itemValue="#{category.type}"
+                            itemLabel="#{category.description}" />
+                        </p:selectOneMenu></td>
+                      <td id="#{fileStatus.index}-#{runType}-aliasMenu"
+                        class="hidden"><p:selectOneMenu
+                          widgetVar="#{fileStatus.index}-#{runType}-alias"
+                          onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
+                          <f:selectItems
+                            value="#{file.getRunTypeValuesWithExclusion(runType)}"
+                            var="runTypeAlias" />
+                        </p:selectOneMenu></td>
+                    </tr>
+                  </ui:repeat>
+                </table>
+              </p:fieldset>
+            </div>
           </ui:repeat>
-        </table>
+        </div>
       </p:fieldset>
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
