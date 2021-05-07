@@ -13,7 +13,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
-public class SimpleMeasurementLocator implements MeasurementLocator {
+public class SimpleMeasurementLocator extends MeasurementLocator {
 
   private final Variable variable;
 
