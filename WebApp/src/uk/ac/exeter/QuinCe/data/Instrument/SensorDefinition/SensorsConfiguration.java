@@ -701,8 +701,11 @@ public class SensorsConfiguration {
         throw new SensorConfigurationException("Unknown variable ID " + varId);
       } else {
         try {
-          for (SensorType sensorType : variable.getAllSensorTypes(false)) {
+          if (includeRunType && variable.requiresRunType()) {
+            sensorTypes.add(SensorType.RUN_TYPE_SENSOR_TYPE);
+          }
 
+          for (SensorType sensorType : variable.getAllSensorTypes(false)) {
             if (sensorType.hasInternalCalibration() && includeRunType) {
               sensorTypes.add(SensorType.RUN_TYPE_SENSOR_TYPE);
             }

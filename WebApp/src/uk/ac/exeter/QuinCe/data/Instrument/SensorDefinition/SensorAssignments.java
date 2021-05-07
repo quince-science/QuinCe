@@ -227,15 +227,37 @@ public class SensorAssignments
    *
    * @return {@code true} if the {@link SensorType#RUN_TYPE_SENSOR_TYPE} is
    *         required; {@code false} otherwise.
+   * @throws SensorConfigurationException
+   * @throws VariableNotFoundException
    */
-  private boolean isRunTypeSensorTypeRequired() {
+  private boolean isRunTypeSensorTypeRequired()
+    throws SensorConfigurationException {
     boolean result = false;
 
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+
     if (!isAssigned(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-      for (SensorType sensorType : keySet()) {
-        if (sensorType.hasInternalCalibration() && get(sensorType).size() > 0) {
-          result = true;
-          break;
+
+      try {
+        for (Long id : variableIDs) {
+          if (sensorConfig.getInstrumentVariable(id).requiresRunType()) {
+            result = true;
+            break;
+          }
+        }
+      } catch (VariableNotFoundException e) {
+        throw new SensorConfigurationException("Error getting run type info",
+          e);
+      }
+
+      if (!result) {
+        for (SensorType sensorType : keySet()) {
+          if (sensorType.hasInternalCalibration()
+            && get(sensorType).size() > 0) {
+            result = true;
+            break;
+          }
         }
       }
     }
