@@ -33,7 +33,7 @@ def main(in_file, out_file, year):
 
       data['Year'][index] = current_year
 
-  data.to_csv(out_file, sep="\t")
+  data.to_csv(out_file, sep="\t", index=False)
 
 
 
