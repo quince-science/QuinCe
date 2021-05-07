@@ -14,7 +14,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
-public class RunTypeMeasurementLocator implements MeasurementLocator {
+public class RunTypeMeasurementLocator extends MeasurementLocator {
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
