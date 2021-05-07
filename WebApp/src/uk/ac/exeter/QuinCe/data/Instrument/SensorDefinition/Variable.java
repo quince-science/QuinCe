@@ -401,6 +401,14 @@ public class Variable implements Comparable<Variable> {
     return properties.getCoefficients();
   }
 
+  public boolean requiresRunType() {
+    return null != properties.getRunType();
+  }
+
+  public String getRunType() {
+    return properties.getRunType();
+  }
+
   @Override
   public int compareTo(Variable o) {
     // Variables are ordered by name

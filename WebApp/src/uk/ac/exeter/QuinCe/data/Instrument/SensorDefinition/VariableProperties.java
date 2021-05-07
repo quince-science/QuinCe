@@ -19,11 +19,18 @@ public class VariableProperties {
 
   private final List<String> coefficients;
 
+  private final String runType;
+
   protected VariableProperties() {
     this.coefficients = new ArrayList<String>();
+    this.runType = null;
   }
 
   public List<String> getCoefficients() {
     return coefficients;
+  }
+
+  public String getRunType() {
+    return runType;
   }
 }
