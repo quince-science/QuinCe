@@ -1,12 +1,16 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
-public interface MeasurementLocator {
+public abstract class MeasurementLocator {
 
   /**
    * Get the Measurements from the dataset that apply to the variable(s) that
@@ -14,7 +18,7 @@ public interface MeasurementLocator {
    *
    * @return The measurements
    */
-  public List<Measurement> locateMeasurements(Connection conn,
+  public abstract List<Measurement> locateMeasurements(Connection conn,
     Instrument instrument, DataSet dataset) throws MeasurementLocatorException;
 
   /**
@@ -37,6 +41,16 @@ public interface MeasurementLocator {
         result = new ControsPco2MeasurementLocator();
         break;
       }
+      case "Pro Oceanus CO₂ Water": {
+        result = new ProOceanusCO2MeasurementLocator();
+        break;
+      }
+      case "Pro Oceanus CO₂ Atmosphere": {
+        // The atmospheric measurements are automatically created by the water
+        // measurement locator.
+        result = new DummyMeasurementLocator();
+        break;
+      }
       default: {
         result = new SimpleMeasurementLocator(variable);
       }
@@ -44,5 +58,19 @@ public interface MeasurementLocator {
     }
 
     return result;
+  }
+
+  protected TreeMap<LocalDateTime, String> getRunTypes(Connection conn,
+    DataSet dataset, Instrument instrument)
+    throws MissingParamException, DatabaseException {
+    TreeMap<LocalDateTime, String> runTypes = new TreeMap<LocalDateTime, String>();
+
+    List<SensorValue> runTypeSensorValues = DataSetDataDB
+      .getSensorValuesForColumns(conn, dataset.getId(),
+        instrument.getSensorAssignments().getRunTypeColumnIDs());
+
+    runTypeSensorValues.forEach(v -> runTypes.put(v.getTime(), v.getValue()));
+
+    return runTypes;
   }
 }

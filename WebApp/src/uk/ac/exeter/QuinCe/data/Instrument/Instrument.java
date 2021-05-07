@@ -357,48 +357,46 @@ public class Instrument {
     // Fixed run types are those defined in code (see Measurement.java), and
     // determined programmatically.
     // Non-fixed ones are provided as a column in the data
-    boolean useFixedRunTypes = true;
 
-    if (variableId == Measurement.GENERIC_RUN_TYPE_VARIABLE) {
-      useFixedRunTypes = false;
+    // Start by testing the fixed run types
+    switch (runTypeValue) {
+    case Measurement.IGNORED_RUN_TYPE: {
+      result = RunTypeCategory.IGNORED;
+      break;
     }
-
-    TreeSet<SensorAssignment> runTypeAssignments = getSensorAssignments()
-      .get(SensorType.RUN_TYPE_SENSOR_TYPE);
-    if (null != runTypeAssignments && runTypeAssignments.size() > 0) {
-      useFixedRunTypes = false;
+    case Measurement.INTERNAL_CALIBRATION_RUN_TYPE: {
+      result = RunTypeCategory.INTERNAL_CALIBRATION;
+      break;
     }
-
-    if (useFixedRunTypes) {
-      switch (runTypeValue) {
-      case Measurement.IGNORED_RUN_TYPE: {
-        result = RunTypeCategory.IGNORED;
-        break;
-      }
-      case Measurement.INTERNAL_CALIBRATION_RUN_TYPE: {
-        result = RunTypeCategory.INTERNAL_CALIBRATION;
-        break;
-      }
-      case Measurement.MEASUREMENT_RUN_TYPE: {
-        try {
-          Variable variable = ResourceManager.getInstance()
-            .getSensorsConfiguration().getInstrumentVariable(variableId);
-          result = new RunTypeCategory(variableId, variable.getName());
-        } catch (VariableNotFoundException e) {
-          throw new RunTypeCategoryException(
-            "Variable not found for variable ID " + variableId);
-        }
-        break;
-      }
-      default: {
+    case Measurement.MEASUREMENT_RUN_TYPE: {
+      try {
+        Variable variable = ResourceManager.getInstance()
+          .getSensorsConfiguration().getInstrumentVariable(variableId);
+        result = new RunTypeCategory(variableId, variable.getName());
+      } catch (VariableNotFoundException e) {
         throw new RunTypeCategoryException(
-          "Unrecognised run type '" + runTypeValue + "'");
+          "Variable not found for variable ID " + variableId);
       }
+      break;
+    }
+    default: {
+      // We didn't see anything for the fixed run types. See if there are custom
+      // ones defined.
+      TreeSet<SensorAssignment> runTypeAssignments = getSensorAssignments()
+        .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+      if (null == runTypeAssignments || runTypeAssignments.size() == 0) {
+        throw new RunTypeCategoryException(
+          "No custom run types defined for variable ID " + variableId);
+      } else {
+        FileDefinition fileDef = getFileDefinitions()
+          .get(runTypeAssignments.first().getDataFile());
+        result = fileDef.getRunTypes().getRunTypeCategory(runTypeValue);
+        if (null == result) {
+          throw new RunTypeCategoryException(
+            "Unrecognised run type " + runTypeValue);
+        }
       }
-    } else {
-      FileDefinition fileDef = getFileDefinitions()
-        .get(runTypeAssignments.first().getDataFile());
-      result = fileDef.getRunTypes().getRunTypeCategory(runTypeValue);
+    }
     }
 
     return result;
@@ -615,9 +613,19 @@ public class Instrument {
   public boolean isRunTypeForVariable(Variable variable, String runType)
     throws RunTypeCategoryException {
 
-    return null == runType ? false
-      : getRunTypeCategory(variable.getId(), runType).getType() == variable
-        .getId();
+    boolean result = false;
+
+    if (null != runType) {
+      if (null != variable.getRunType()
+        && variable.getRunType().equals(runType)) {
+        result = true;
+      } else if (getRunTypeCategory(variable.getId(), runType)
+        .getType() == variable.getId()) {
+        result = true;
+      }
+    }
+
+    return result;
   }
 
   /**

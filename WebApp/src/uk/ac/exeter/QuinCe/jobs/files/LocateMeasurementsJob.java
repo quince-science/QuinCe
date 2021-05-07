@@ -91,8 +91,6 @@ public class LocateMeasurementsJob extends DataSetJob {
       // Work out which measurement locators we need to use
       Set<MeasurementLocator> measurementLocators = new HashSet<MeasurementLocator>();
 
-      // Locators for other variable types are identified here.
-      // Variables with Run Types will be null, so they get filtered out
       instrument.getVariables().stream()
         .map(MeasurementLocator::getMeasurementLocator).filter(Objects::nonNull)
         .forEach(measurementLocators::add);

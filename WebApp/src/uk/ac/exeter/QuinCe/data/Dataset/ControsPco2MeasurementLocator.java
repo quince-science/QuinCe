@@ -15,7 +15,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
-public class ControsPco2MeasurementLocator implements MeasurementLocator {
+public class ControsPco2MeasurementLocator extends MeasurementLocator {
 
   private static final int NO_STATUS = -1;
 
