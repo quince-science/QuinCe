@@ -57,3 +57,4 @@ configuration/quince.properties
 
 # Ignore data files in data preparation folders
 DataPreparation/SAMI/*txt
+DataPreparation/SmartGuard/*csv
