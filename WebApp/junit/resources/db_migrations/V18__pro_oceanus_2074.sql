@@ -56,6 +56,18 @@ INSERT INTO variable_sensors (
     0, 3, 4, NULL, NULL, NULL
   );
 
+-- Equilibrator temperature
+INSERT INTO variable_sensors (
+    variable_id, sensor_type, core, questionable_cascade, bad_cascade,
+    export_column_short, export_column_long, export_column_code
+  )
+  VALUES (
+    (SELECT id FROM variables WHERE name = 'Pro Oceanus CO₂ Water'),
+    (SELECT id FROM sensor_types WHERE column_code = 'TEMPEQMN'),
+    0, 3, 4, NULL, NULL, NULL
+  );
+
+  
 -- Pressure at membrane
 INSERT INTO variable_sensors (
     variable_id, sensor_type, core, questionable_cascade, bad_cascade,
