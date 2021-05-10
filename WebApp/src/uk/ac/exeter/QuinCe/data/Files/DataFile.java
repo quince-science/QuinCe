@@ -837,6 +837,7 @@ public class DataFile {
           // See if this is a numeric value. If it isn't, log an error.
           Double.parseDouble(result);
         } catch (NumberFormatException e) {
+          // TODO #1967 Log error to dataset comments
           System.out
             .println("NumberFormatException: Invalid value '" + result + "'");
           result = null;

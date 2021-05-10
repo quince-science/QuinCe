@@ -27,7 +27,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -243,7 +242,8 @@ public class ExtractDataSetJob extends DataSetJob {
                 }
               }
             }
-          } catch (DateTimeSpecificationException e) {
+          } catch (Exception e) {
+            // TODO #1967 Log error to dataset comments
             // Log the error but continue with the next line
             System.out.println(
               "*** DATA EXTRACTION ERROR IN FILE " + file.getDatabaseId() + "("

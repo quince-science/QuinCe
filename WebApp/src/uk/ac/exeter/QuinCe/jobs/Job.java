@@ -281,6 +281,7 @@ public abstract class Job {
     throws DatabaseException, MissingParamException, NoSuchJobException {
     Connection conn = null;
     try {
+      error.printStackTrace();
       conn = dataSource.getConnection();
       JobManager.logJobError(conn, id, error);
     } catch (SQLException e) {
