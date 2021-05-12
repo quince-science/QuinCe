@@ -887,14 +887,27 @@ public class DataFile {
         || result.equals("NaN") || result.equals("NA")) {
         result = null;
       } else {
+
+        Double doubleValue = null;
+        // See if this is a numeric value. If it isn't, log an error.
         try {
-          // See if this is a numeric value. If it isn't, log an error.
-          Double.parseDouble(result);
+
+          doubleValue = Double.parseDouble(result);
         } catch (NumberFormatException e) {
           // TODO #1967 Log error to dataset comments
           System.out
             .println("NumberFormatException: Invalid value '" + result + "'");
           result = null;
+        }
+
+        // If we have a value, check it agains the missing value
+        try {
+          Double numericMissingValue = Double.parseDouble(missingValue);
+          if (doubleValue.equals(numericMissingValue)) {
+            result = null;
+          }
+        } catch (NumberFormatException e) {
+          // Do nothing - the missing value is non-numeric
         }
       }
     }
