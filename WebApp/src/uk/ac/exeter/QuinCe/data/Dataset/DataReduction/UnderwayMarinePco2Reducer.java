@@ -37,7 +37,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
     Double equilibratorPressure = measurement
       .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
-    Double co2InGas = measurement.getMeasurementValue("xCO₂ (with standards)")
+    Double co2InGas = measurement.getMeasurementValue(getXCO2Parameter())
       .getCalculatedValue();
 
     Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
@@ -65,8 +65,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   @Override
   protected String[] getRequiredTypeStrings() {
     return new String[] { "Intake Temperature", "Salinity",
-      "Equilibrator Temperature", "Equilibrator Pressure",
-      "xCO₂ (with standards)" };
+      "Equilibrator Temperature", "Equilibrator Pressure", getXCO2Parameter() };
   }
 
   @Override
@@ -97,5 +96,9 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     }
 
     return calculationParameters;
+  }
+
+  protected String getXCO2Parameter() {
+    return "xCO₂ (with standards)";
   }
 }

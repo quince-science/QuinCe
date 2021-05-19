@@ -38,7 +38,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
       .getCalculatedValue();
     Double atmosphericPressure = measurement
       .getMeasurementValue("Atmospheric Pressure").getCalculatedValue();
-    Double co2InGas = measurement.getMeasurementValue("xCO₂ (with standards)")
+    Double co2InGas = measurement.getMeasurementValue(getXCO2Parameter())
       .getCalculatedValue();
 
     Double seaLevelPressure = Calculators.calcSeaLevelPressure(
@@ -60,7 +60,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   @Override
   protected String[] getRequiredTypeStrings() {
     return new String[] { "Equilibrator Temperature", "Salinity",
-      "Atmospheric Pressure", "xCO₂ (with standards)" };
+      "Atmospheric Pressure", getXCO2Parameter() };
   }
 
   @Override
@@ -82,5 +82,9 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     }
 
     return calculationParameters;
+  }
+
+  protected String getXCO2Parameter() {
+    return "xCO₂ (with standards)";
   }
 }

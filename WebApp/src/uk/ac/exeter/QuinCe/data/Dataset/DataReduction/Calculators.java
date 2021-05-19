@@ -101,11 +101,32 @@ public class Calculators {
       - 4.8489 * Math.log(kelvin / 100) - 0.000544 * salinity);
   }
 
+  /**
+   * Adjust a measured pressure to sea level.
+   * 
+   * If the supplied {@code sensorHeight} is {@code null}, assume that no
+   * correction is required.
+   * 
+   * @param measuredPressure
+   *          The measured pressure.
+   * @param temperature
+   *          The temperature at which the pressure was measured.
+   * @param sensorHeight
+   *          The height of the sensor.
+   * @return The adjusted pressure.
+   */
   public static Double calcSeaLevelPressure(Double measuredPressure,
     Double temperature, Float sensorHeight) {
-    Double correction = (measuredPressure * MOLAR_MASS_AIR)
-      / (Calculators.kelvin(temperature) * 8.314) * 9.8 * sensorHeight;
-    return measuredPressure + correction;
+
+    Double result = measuredPressure;
+
+    if (null != sensorHeight) {
+      Double correction = (measuredPressure * MOLAR_MASS_AIR)
+        / (Calculators.kelvin(temperature) * 8.314) * 9.8 * sensorHeight;
+      result = measuredPressure + correction;
+    }
+
+    return result;
   }
 
   public static Double interpolate(LocalDateTime time0, Double y0,
