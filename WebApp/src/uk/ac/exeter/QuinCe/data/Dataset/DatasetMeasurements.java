@@ -126,11 +126,12 @@ public class DatasetMeasurements {
    */
   private void makeTimeOrderedMeasurements() {
 
-    List<Measurement> orderedMeasurements = new ArrayList<Measurement>();
+    // Make a unique list of all the measurements
+    // Measurements have a natural sort order by time
+    TreeSet<Measurement> orderedMeasurements = new TreeSet<Measurement>();
     measurements.values().forEach(orderedMeasurements::addAll);
 
-    Collections.sort(orderedMeasurements);
-    timeOrderedMeasurements = Collections.unmodifiableList(orderedMeasurements);
+    timeOrderedMeasurements = new ArrayList<Measurement>(orderedMeasurements);
 
     List<LocalDateTime> times = new ArrayList<LocalDateTime>(
       timeOrderedMeasurements.size());

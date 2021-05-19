@@ -291,9 +291,14 @@ public abstract class DataReducer {
     Float result = null;
 
     try {
-      result = Float
-        .parseFloat(properties.get(variable.getName()).getProperty(property));
-    } catch (NullPointerException | NumberFormatException e) {
+      if (properties.containsKey(variable.getName())) {
+        String stringProp = properties.get(variable.getName())
+          .getProperty(property);
+        if (null != stringProp) {
+          result = Float.parseFloat(stringProp);
+        }
+      }
+    } catch (NumberFormatException e) {
       e.printStackTrace();
       // Swallow the exception so that the result is null
     }
