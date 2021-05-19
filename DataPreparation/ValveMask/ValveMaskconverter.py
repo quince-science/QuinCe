@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# labeliseValveMask.py
+# ValveMaskconverter.py
 """
 create column ValveMask_label depending on value of ValveMask, Delta_18_16, and  Delta_D_H
 
@@ -19,6 +19,7 @@ import argparse
 # --- module's variable ------------------------
 # global std
 
+
 # ----------------------------------------------
 class Standard(object):
     """ """
@@ -29,7 +30,7 @@ class Standard(object):
 
         self._fpath = fpath_
         # list of attribute
-        self._attr = ['delta', 'scale_factor', 'offset']
+        self._attr = ['delta', 'scale_factor', 'add_offset']
 
         #
         try:
@@ -43,14 +44,33 @@ class Standard(object):
             raise Exception(f"Something goes wrong when loading parameters file -{self._fpath}-.")
 
         # list all standard known
-        self._set = { *self._param['default']['d18O']['std'],
+        self._set = {*self._param['default']['d18O']['std'],
                      *self._param['default']['dD']['std']
-                     }
+                    }
         self._isokey = self._param['default'].keys()
         #
         self.iso = {}
         # get default value for each
         self.get('default')
+
+    def _unpacked(self):
+        """
+        'unpacked' standard gas concentration
+
+        packed_value = (unpacked_value - add_offset) / scale_factor
+        unpacked_value = (packed_value * scale_factor) + add_offset
+        """
+
+        try:
+            for dx in self._isokey:
+                scale_factor = self.iso[dx]['scale_factor']
+                add_offset = self.iso[dx]['add_offset']
+                for key in self._set:
+                    _ = self.iso[dx][key]
+                    _['unpacked'] = (_['packed'] * scale_factor) + add_offset
+        except Exception:
+            raise Exception(f"Something goes wrong unpacking data")
+
 
     def get(self, instr_):
         """ get parameters of instrument instr_
@@ -67,23 +87,34 @@ class Standard(object):
                     for key in self._attr:
                         if key in _[dx] and bool(_[dx][key]):
                             self.iso[dx][key] = _[dx].get(key)
+
                     if 'std' in _[dx] and bool(_[dx]['std']):
                         for key in self._set:
+                            if key not in self.iso[dx]:
+                                self.iso[dx][key] = {}
                             if bool(_[dx]['std'][key]):
-                                self.iso[dx][key] = _[dx]['std'].get(key)
+                                # assume to be packed value
+                                self.iso[dx][key]['packed'] = _[dx]['std'].get(key)
 
         except KeyError:
             raise KeyError(f"unknown instrument -{instr_}-. Check parameter file {self._fpath}")
         except Exception:
             raise Exception(f"Something goes wrong")
 
+        self._unpacked()
+
     def range(self, name_, std_):
-        """ """
+        """
+        name_ ['d180', 'dD']
+        std_ ['DI', 'GSM1']
+        """
         try:
             d = self.iso[name_]
             try:
-                mi = self.iso[name_][std_] - self.iso[name_]['delta']
-                ma = self.iso[name_][std_] + self.iso[name_]['delta']
+                unpacked_value = self.iso[name_][std_]['unpacked']
+
+                mi = unpacked_value - self.iso[name_]['delta']
+                ma = unpacked_value + self.iso[name_]['delta']
                 return mi, ma
             except KeyError:
                 raise KeyError(f"Uknown standard name -{name_}-")
@@ -160,8 +191,6 @@ def add_ValveMask_label(fin_, fout_, fparam_):
 
 def _parse():
     """set up parameter from command line arguments
-
-    :param logfile_: log filename, useless except to change the default log filename when using checkOntology
     """
     # define parser
     parser = argparse.ArgumentParser(
