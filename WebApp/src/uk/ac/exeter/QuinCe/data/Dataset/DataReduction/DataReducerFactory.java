@@ -36,6 +36,8 @@ public class DataReducerFactory {
     reducers.put("Pro Oceanus CO₂ Atmosphere",
       ProOceanusAtmosphericCO2Reducer.class);
     reducers.put("SAMI CO₂", SamiPco2DataReducer.class);
+    reducers.put("MapCO₂ Water", MapCO2WaterReducer.class);
+    reducers.put("MapCO₂ Atmosphere", MapCO2AtmosphereReducer.class);
   }
 
   /**
@@ -45,7 +47,7 @@ public class DataReducerFactory {
    *          The variable
    * @return The Data Reducer
    * @throws DataReductionException
-   *           If the reducer cannot be retreived
+   *           If the reducer cannot be retrieved
    */
   public static DataReducer getReducer(Variable variable,
     Map<String, Properties> properties) throws DataReductionException {
