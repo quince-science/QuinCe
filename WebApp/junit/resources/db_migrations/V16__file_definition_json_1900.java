@@ -25,7 +25,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 /**
  * Migration to rationalise the many fields in the file_definition table into
  * fewer fields containing JSON
- * 
+ *
  * @author stevej
  *
  */
@@ -48,7 +48,7 @@ public class V16__file_definition_json_1900 extends BaseJavaMigration {
 
   /**
    * Add the new columns for the JSON strings
-   * 
+   *
    * @param conn
    *          A database connection
    * @throws SQLException

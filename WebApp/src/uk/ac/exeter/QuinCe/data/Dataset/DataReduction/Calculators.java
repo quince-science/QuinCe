@@ -103,10 +103,10 @@ public class Calculators {
 
   /**
    * Adjust a measured pressure to sea level.
-   * 
+   *
    * If the supplied {@code sensorHeight} is {@code null}, assume that no
    * correction is required.
-   * 
+   *
    * @param measuredPressure
    *          The measured pressure.
    * @param temperature

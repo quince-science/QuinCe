@@ -8,13 +8,13 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
 /**
  * A dummy {@link MeasurementLocator} that returns no measurements.
- * 
+ *
  * <p>
  * This can be used when multiple variables are processed by a single
  * {@link MeasurementLocator} in one pass, so the other variables don't need
  * processing.
  * </p>
- * 
+ *
  * @author stevej
  *
  */

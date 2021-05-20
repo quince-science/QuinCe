@@ -19,7 +19,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * Measurement locator for Pro Oceanus CO2 sensors. Handles both marine and
  * atmospheric variables (use a dummy locator for the actual Atmospheric
  * variable).
- * 
+ *
  * @author stevej
  *
  */
