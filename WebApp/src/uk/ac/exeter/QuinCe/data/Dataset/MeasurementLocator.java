@@ -45,7 +45,12 @@ public abstract class MeasurementLocator {
         result = new ProOceanusCO2MeasurementLocator();
         break;
       }
-      case "Pro Oceanus CO₂ Atmosphere": {
+      case "ASVCO₂ Water": {
+        result = new ASVCO2MeasurementLocator();
+        break;
+      }
+      case "Pro Oceanus CO₂ Atmosphere":
+      case "ASVCO₂ Atmosphere": {
         // The atmospheric measurements are automatically created by the water
         // measurement locator.
         result = new DummyMeasurementLocator();
