@@ -861,11 +861,11 @@ public class DataFileDB {
   /**
    * Filter a list of files so that only those overlapping a given time period
    * are returned.
-   * 
+   *
    * <p>
    * This function assumes that the passed in list is already sorted.
    * </p>
-   * 
+   *
    * @param files
    *          The files to filter.
    * @param start

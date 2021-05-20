@@ -12,12 +12,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Data reducer for SAMI pCO₂ sensor.
- * 
+ *
  * <p>
  * Note that it is not possible to calculate fCO₂ from the sensor values because
  * we are missing xCO₂ and the pressure in the sensor.
  * </p>
- * 
+ *
  * @author Steve Jones
  *
  */

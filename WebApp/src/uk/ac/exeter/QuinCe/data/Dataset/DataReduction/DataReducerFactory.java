@@ -36,8 +36,8 @@ public class DataReducerFactory {
     reducers.put("Pro Oceanus CO₂ Atmosphere",
       ProOceanusAtmosphericCO2Reducer.class);
     reducers.put("SAMI CO₂", SamiPco2DataReducer.class);
-    reducers.put("MapCO₂ Water", MapCO2WaterReducer.class);
-    reducers.put("MapCO₂ Atmosphere", MapCO2AtmosphereReducer.class);
+    reducers.put("ASVCO₂ Water", ASVCO2WaterReducer.class);
+    reducers.put("ASVCO₂ Atmosphere", ASVCO2AtmosphereReducer.class);
   }
 
   /**

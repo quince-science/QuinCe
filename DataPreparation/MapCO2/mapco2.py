@@ -53,19 +53,19 @@ def extract_measurements(in_file, out_file):
       # Format and write the lines to the out_file
 
       # Zero Line
-      write_line(out_file, 'ZERO', date_line, gps_line, system_line, \
+      write_line(out_file, 'ZP', date_line, gps_line, system_line, \
         zero_on_line, zero_off_line, zero_post_cal_line, None)
 
       # Span line
-      write_line(out_file, 'SPAN', date_line, gps_line, system_line, \
+      write_line(out_file, 'SP', date_line, gps_line, system_line, \
         span_on_line, span_off_line, span_post_cal_line, None)
 
       # Equil line
-      write_line(out_file, 'EQU', date_line, gps_line, system_line, \
+      write_line(out_file, 'EP', date_line, gps_line, system_line, \
         equ_on_line, equ_off_line, None, xco2_line)
 
       # Air line
-      write_line(out_file, 'AIR', date_line, gps_line, system_line, \
+      write_line(out_file, 'AP', date_line, gps_line, system_line, \
         air_on_line, air_off_line, None, xco2_line)
 
 """
@@ -299,9 +299,9 @@ def write_line(out_file, state, date_line, gps_line, system_line, on_line, off_l
   out_file.write(f'{(off_line["licorpress"] - on_line["licorpress"]):.2f},')
 
   # xCO2 dry
-  if state == 'EQU':
+  if state == 'EP':
     out_file.write(f'{xco2_line["equ_xco2_dry"]}')
-  elif state == 'AIR':
+  elif state == 'AP':
     out_file.write(f'{xco2_line["air_xco2_dry"]}')
   else:
     out_file.write('NaN')

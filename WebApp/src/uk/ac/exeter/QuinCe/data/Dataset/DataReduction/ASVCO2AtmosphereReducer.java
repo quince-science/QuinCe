@@ -5,9 +5,9 @@ import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
-public class MapCO2WaterReducer extends UnderwayMarinePco2Reducer {
+public class ASVCO2AtmosphereReducer extends UnderwayAtmosphericPco2Reducer {
 
-  public MapCO2WaterReducer(Variable variable,
+  public ASVCO2AtmosphereReducer(Variable variable,
     Map<String, Properties> properties) {
     super(variable, properties);
   }
