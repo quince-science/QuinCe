@@ -355,7 +355,13 @@ public class ManualQCData extends PlotPageData {
 
       List<LocalDateTime> times = sensorValues.getTimes();
 
-      for (int i = start; i < start + length; i++) {
+      // Make sure we don't fall off the end of the dataset
+      int lastRecord = start + length;
+      if (lastRecord > times.size()) {
+        lastRecord = times.size();
+      }
+
+      for (int i = start; i < lastRecord; i++) {
         PlotPageTableRecord record = new PlotPageTableRecord(times.get(i));
 
         // Get the closest measurement
