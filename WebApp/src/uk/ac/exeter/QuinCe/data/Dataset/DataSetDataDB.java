@@ -1097,7 +1097,7 @@ public class DataSetDataDB {
 
   public static RunTypePeriods getRunTypePeriods(DataSource dataSource,
     Instrument instrument, DataSet dataSet, List<String> allowedRunTypes)
-    throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException, DataSetException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(instrument, "instrument");
