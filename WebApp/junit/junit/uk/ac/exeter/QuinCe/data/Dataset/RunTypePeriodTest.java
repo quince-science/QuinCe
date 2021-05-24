@@ -15,7 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 /**
  * Tests for the {@link RunTypePeriod} class. Note that these can't be create
  * directly, we use {@link RunTypePeriods} to create them.
- * 
+ *
  * @author Steve Jones
  *
  */
