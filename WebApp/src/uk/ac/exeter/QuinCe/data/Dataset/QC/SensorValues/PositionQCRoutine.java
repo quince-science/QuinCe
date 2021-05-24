@@ -12,6 +12,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Auto QC routine for position values.
@@ -80,13 +82,20 @@ public class PositionQCRoutine extends AutoQCRoutine {
    *          The sensor values
    * @throws RoutineException
    *           If the routine cannot be constructed
+   * @throws MissingParamException
    */
   public PositionQCRoutine(List<SensorValue> lonValues,
     List<SensorValue> latValues, List<Long> dataColumnIds,
-    DatasetSensorValues allSensorValues) throws RoutineException {
+    DatasetSensorValues allSensorValues)
+    throws RoutineException, MissingParamException {
 
     super();
     super.parameters = new ArrayList<String>(); // No parameters needed
+
+    MissingParam.checkMissing(lonValues, "lonValues", true);
+    MissingParam.checkMissing(latValues, "latValues", true);
+    MissingParam.checkMissing(dataColumnIds, "dataColumnIds");
+    MissingParam.checkMissing(allSensorValues, "allSensorValues");
 
     if (lonValues.size() != latValues.size()) {
       throw new RoutineException("Longitude and latitude counts are different");
@@ -124,7 +133,7 @@ public class PositionQCRoutine extends AutoQCRoutine {
         String qcMessage = null;
 
         // Missing value check
-        if (isMissing(lon) || isMissing(lat)) {
+        if (lon.isNaN() || lat.isNaN()) {
           setPositionQC("Missing", lon, lat);
           qcFailed = true;
           qcMessage = "Missing";
@@ -180,18 +189,6 @@ public class PositionQCRoutine extends AutoQCRoutine {
     } catch (Exception e) {
       throw new RoutineException(e);
     }
-  }
-
-  /**
-   * Determine whether or not a {@link SensorValue} contains a missing value.
-   *
-   * @param value
-   *          The value to check.
-   * @return {@code true} if the value is missing; {@code false} otherwise.
-   */
-  private boolean isMissing(SensorValue value) {
-    return null == value.getValue() || value.getValue().length() == 0
-      || value.getValue().equals("NaN") || value.getValue().equals("NA");
   }
 
   /**
