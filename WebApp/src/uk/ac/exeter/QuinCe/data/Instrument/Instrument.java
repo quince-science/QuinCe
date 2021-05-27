@@ -571,17 +571,22 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Determine whether or not the instrument has internal calibrations defined.
+   *
+   * <p>
+   * This is determined by whether or not any run types of
+   * {@link RunTypeCategory#INTERNAL_CALIBRATION_TYPE} have been assigned. Even
+   * though some sensor types provide options for Internal Calibration run
+   * types, these are optional - if they aren't provided, QuinCe won't attempt
+   * to perform any calibration.
+   * </p>
+   *
+   * @return {@code true} if internal calibrations are required by the
+   *         instrument; {@code false} if not.
+   */
   public boolean hasInternalCalibrations() {
-    boolean result = false;
-
-    for (Variable variable : variables) {
-      if (variable.hasInternalCalibrations()) {
-        result = true;
-        break;
-      }
-    }
-
-    return result;
+    return getRunTypes(RunTypeCategory.INTERNAL_CALIBRATION_TYPE).size() > 0;
   }
 
   public boolean hasCalculationCoefficients() {
