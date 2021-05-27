@@ -100,7 +100,10 @@ public class DefaultMeasurementValueCalculator
         }
       }
 
-      if (sensorType.hasInternalCalibration()) {
+      // Calibrate the value if (a) the SensorType can have calibrations, and
+      // (b) the instrument has calibration Run Types defined.
+      if (sensorType.hasInternalCalibration()
+        && instrument.hasInternalCalibrations()) {
         calibrate(instrument, measurement, sensorType, result, allMeasurements,
           sensorValues, conn);
       }
