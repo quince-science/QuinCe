@@ -2,6 +2,8 @@ package uk.ac.exeter.QuinCe.jobs;
 
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A thread object that is used to run a job.
@@ -102,6 +104,19 @@ public class JobThread extends Thread implements Comparable<JobThread> {
     } catch (Throwable e) {
       try {
         job.logError(e);
+
+        // Certain types of error are known to be transitory, so we can requeue
+        // the jobs
+        if (e instanceof JobFailedException) {
+          Throwable cause = e.getCause();
+          if (null != cause) {
+            if (StringUtils.stackTraceToString(cause).contains("Deadlock")) {
+              JobManager.setStatus(
+                ResourceManager.getInstance().getDBDataSource(), job.getID(),
+                Job.WAITING_STATUS);
+            }
+          }
+        }
       } catch (Exception e2) {
         e.printStackTrace();
       }
