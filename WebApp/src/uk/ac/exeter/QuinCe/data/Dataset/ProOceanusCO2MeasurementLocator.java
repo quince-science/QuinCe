@@ -99,8 +99,9 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
             lastZero = zero;
           }
 
-          if (recordTime.isEqual(flushingEndTime)
-            || recordTime.isBefore(flushingEndTime)) {
+          if (recordTime.isBefore(flushingEndTime)
+            || (recordTime.isEqual(flushingEndTime) && instrument
+              .getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME) > 0)) {
             SensorValue co2 = recordValues.get(co2Column);
             co2.setUserQC(Flag.FLUSHING, "Flushing");
             flaggedSensorValues.add(co2);
