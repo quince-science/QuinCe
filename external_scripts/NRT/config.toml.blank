@@ -1,0 +1,19 @@
+[QuinCe]
+url=
+user=
+password=
+
+[Database]
+location='nrt.sqlite'
+
+[FTP]
+server='localhost'
+port=22
+user='ftp'
+private_key_file='id_rsa'
+private_key_pass=''
+dir='NRT'
+
+[Logging]
+# DEBUG=10, INFO=20, WARNING=30, ERROR=40, CRITICAL=50
+level=10
