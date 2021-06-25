@@ -531,11 +531,11 @@ public final class StringUtils {
   /**
    * Format a {@link String} so it can be parsed by Javascript in a literal
    * string argument.
-   * 
+   *
    * <p>
    * Replaces {@code '} with {@code \'}.
    * </p>
-   * 
+   *
    * @param string
    *          The String to be converted.
    * @return The converted String.
