@@ -34,6 +34,17 @@ public class Calculators {
   }
 
   /**
+   * Convert a temperature in °K to °C
+   *
+   * @param kelvin
+   *          Kelvin temperature
+   * @return Celsius temperature
+   */
+  public static Double celsius(Double kelvin) {
+    return kelvin - 273.15;
+  }
+
+  /**
    * Convert a pressure in hPa it atmospheres
    *
    * @param hPa
