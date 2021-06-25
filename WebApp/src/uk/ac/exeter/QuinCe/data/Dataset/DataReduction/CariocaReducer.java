@@ -19,13 +19,13 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Data Reducer for Carioca CO2 sensor.
- * 
+ *
  * <p>
  * The calculations are taken from a calibration sheet I was sent. We really
  * need a proper reference for it. In the meantime, the calibration sheet is in
  * the Github repository at {@code Documentation/Calculations/Carioca}.
  * </p>
- * 
+ *
  * @author Steve Jones
  *
  */
