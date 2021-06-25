@@ -70,7 +70,7 @@ INSERT INTO variable_sensors (
     export_column_short, export_column_long, export_column_code
   )
   VALUES (
-    (SELECT id FROM variables WHERE name = 'Carioca'),
+    (SELECT id FROM variables WHERE name = 'Carioca (experimental)'),
     (SELECT id FROM sensor_types WHERE column_code = 'CARTH'),
     0, 3, 4, NULL, NULL, NULL
   );
@@ -80,7 +80,7 @@ INSERT INTO variable_sensors (
     export_column_short, export_column_long, export_column_code
   )
   VALUES (
-    (SELECT id FROM variables WHERE name = 'Carioca'),
+    (SELECT id FROM variables WHERE name = 'Carioca (experimental)'),
     (SELECT id FROM sensor_types WHERE column_code = 'CARREFB'),
     0, 3, 4, NULL, NULL, NULL
   );
@@ -90,7 +90,7 @@ INSERT INTO variable_sensors (
     export_column_short, export_column_long, export_column_code
   )
   VALUES (
-    (SELECT id FROM variables WHERE name = 'Carioca'),
+    (SELECT id FROM variables WHERE name = 'Carioca (experimental)'),
     (SELECT id FROM sensor_types WHERE column_code = 'CARREFH'),
     0, 3, 4, NULL, NULL, NULL
   );
@@ -100,7 +100,7 @@ INSERT INTO variable_sensors (
     export_column_short, export_column_long, export_column_code
   )
   VALUES (
-    (SELECT id FROM variables WHERE name = 'Carioca'),
+    (SELECT id FROM variables WHERE name = 'Carioca (experimental)'),
     (SELECT id FROM sensor_types WHERE column_code = 'CAR810NM'),
     0, 3, 4, NULL, NULL, NULL
   );
@@ -110,7 +110,7 @@ INSERT INTO variable_sensors (
     export_column_short, export_column_long, export_column_code
   )
   VALUES (
-    (SELECT id FROM variables WHERE name = 'Carioca'),
+    (SELECT id FROM variables WHERE name = 'Carioca (experimental)'),
     (SELECT id FROM sensor_types WHERE column_code = 'CAR596NM'),
     0, 3, 4, NULL, NULL, NULL
   );
@@ -120,7 +120,7 @@ INSERT INTO variable_sensors (
     export_column_short, export_column_long, export_column_code
   )
   VALUES (
-    (SELECT id FROM variables WHERE name = 'Carioca'),
+    (SELECT id FROM variables WHERE name = 'Carioca (experimental)'),
     (SELECT id FROM sensor_types WHERE column_code = 'CAR434NM'),
     0, 3, 4, NULL, NULL, NULL
   );
