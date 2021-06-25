@@ -406,7 +406,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
     group.put("content", "Datasets");
     groups.put(group);
 
-    return groups.toString();
+    return StringUtils.javascriptString(groups.toString());
   }
 
   /**
@@ -464,7 +464,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
       items.put(datasetJson);
     }
 
-    return items.toString();
+    return StringUtils.javascriptString(items.toString());
   }
 
   /**

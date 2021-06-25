@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -525,5 +526,21 @@ public final class StringUtils {
       : new AscendingLengthComparator();
 
     Collections.sort(list, comparator);
+  }
+
+  /**
+   * Format a {@link String} so it can be parsed by Javascript in a literal
+   * string argument.
+   * 
+   * <p>
+   * Replaces {@code '} with {@code \'}.
+   * </p>
+   * 
+   * @param string
+   *          The String to be converted.
+   * @return The converted String.
+   */
+  public static String javascriptString(String string) {
+    return string.replaceAll("'", Matcher.quoteReplacement("\\'"));
   }
 }
