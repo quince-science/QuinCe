@@ -1707,6 +1707,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * Reset all data regarding run type assignments
    */
   private void clearRunTypeAssignments() {
+    runTypeFile = null;
     runTypeAssignName = null;
     runTypeAssignCode = RunTypeCategory.IGNORED_TYPE;
   }
