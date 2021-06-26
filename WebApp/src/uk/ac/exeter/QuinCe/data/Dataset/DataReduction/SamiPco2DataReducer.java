@@ -63,7 +63,7 @@ public class SamiPco2DataReducer extends DataReducer {
         .add(new CalculationParameter(makeParameterId(0), "ΔT",
           "Water-Equilibrator Temperature Difference", "DELTAT", "°C", false));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(4),
+      calculationParameters.add(new CalculationParameter(makeParameterId(1),
         "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true));
     }
 
