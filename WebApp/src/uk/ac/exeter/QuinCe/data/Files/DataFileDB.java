@@ -346,8 +346,8 @@ public class DataFileDB {
         stmt.setLong(2, DateTimeUtils.dateToLong(dataFile.getRawStartTime()));
         stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getRawEndTime()));
         stmt.setInt(4, dataFile.getRecordCount());
-        stmt.setLong(5, replacementId);
-        stmt.setString(6, new Gson().toJson(dataFile.getProperties()));
+        stmt.setString(5, new Gson().toJson(dataFile.getProperties()));
+        stmt.setLong(6, replacementId);
 
         stmt.execute();
 
