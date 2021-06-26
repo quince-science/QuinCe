@@ -72,43 +72,48 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
       for (LocalDateTime recordTime : sensorValues.getTimes()) {
         Map<Long, SensorValue> recordValues = sensorValues.get(recordTime);
 
-        int recordStatus = getRecordStatus(recordValues, zeroColumn,
-          flushingColumn);
+        // If this record contains the zero status, then it's a main Contros
+        // record. Otherwise it's not so we skip it
+        if (recordValues.containsKey(zeroColumn)) {
 
-        if (recordStatus != currentStatus) {
-          currentStatus = recordStatus;
-          currentStatusStart = recordTime;
-        }
+          int recordStatus = getRecordStatus(recordValues, zeroColumn,
+            flushingColumn);
 
-        boolean flushSensors = false;
-        String runType;
-
-        if (currentStatus == ZERO) {
-          if (DateTimeUtils.secondsBetween(currentStatusStart,
-            recordTime) <= zeroFlushTime) {
-            flushSensors = true;
+          if (recordStatus != currentStatus) {
+            currentStatus = recordStatus;
+            currentStatusStart = recordTime;
           }
 
-          runType = Measurement.INTERNAL_CALIBRATION_RUN_TYPE;
-        } else {
-          if (recordStatus == FLUSHING) {
-            flushSensors = true;
+          boolean flushSensors = false;
+          String runType;
+
+          if (currentStatus == ZERO) {
+            if (DateTimeUtils.secondsBetween(currentStatusStart,
+              recordTime) <= zeroFlushTime) {
+              flushSensors = true;
+            }
+
+            runType = Measurement.INTERNAL_CALIBRATION_RUN_TYPE;
+          } else {
+            if (recordStatus == FLUSHING) {
+              flushSensors = true;
+            }
+
+            runType = Measurement.MEASUREMENT_RUN_TYPE;
           }
 
-          runType = Measurement.MEASUREMENT_RUN_TYPE;
-        }
+          if (flushSensors) {
+            SensorValue rawValue = recordValues.get(rawColumn);
+            SensorValue refValue = recordValues.get(refColumn);
+            rawValue.setUserQC(Flag.FLUSHING, "Flushing");
+            refValue.setUserQC(Flag.FLUSHING, "Flushing");
+            flaggedSensorValues.add(rawValue);
+            flaggedSensorValues.add(refValue);
+          }
 
-        if (flushSensors) {
-          SensorValue rawValue = recordValues.get(rawColumn);
-          SensorValue refValue = recordValues.get(refColumn);
-          rawValue.setUserQC(Flag.FLUSHING, "Flushing");
-          refValue.setUserQC(Flag.FLUSHING, "Flushing");
-          flaggedSensorValues.add(rawValue);
-          flaggedSensorValues.add(refValue);
+          measurements
+            .add(makeMeasurement(dataset, recordTime, variable, runType));
         }
-
-        measurements
-          .add(makeMeasurement(dataset, recordTime, variable, runType));
       }
 
       DataSetDataDB.storeSensorValues(conn, flaggedSensorValues);
