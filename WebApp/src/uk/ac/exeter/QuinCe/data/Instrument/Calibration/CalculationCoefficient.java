@@ -98,8 +98,17 @@ public class CalculationCoefficient extends Calibration {
   public static CalculationCoefficient getCoefficient(
     CalibrationSet calibrationSet, Variable variable, String coefficient) {
 
-    return (CalculationCoefficient) calibrationSet
-      .getTargetCalibration(getCoeffecientName(variable, coefficient));
+    CalculationCoefficient result = null;
+
+    if (null != calibrationSet) {
+      Calibration retrievedCoefficient = calibrationSet
+        .getTargetCalibration(getCoeffecientName(variable, coefficient));
+      if (!(retrievedCoefficient instanceof EmptyCalibration)) {
+        result = (CalculationCoefficient) retrievedCoefficient;
+      }
+    }
+
+    return result;
   }
 
   public static String getCoeffecientName(Variable variable,
