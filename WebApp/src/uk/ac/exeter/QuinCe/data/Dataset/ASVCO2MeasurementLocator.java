@@ -48,18 +48,19 @@ public class ASVCO2MeasurementLocator extends MeasurementLocator {
 
       for (LocalDateTime recordTime : sensorValues.getTimes()) {
         String runType = runTypes.get(recordTime);
-        if (null == runType) {
-          throw new MeasurementLocatorException("Missing ASVCO₂ run type");
-        }
 
-        if (runType.equals(WATER_MODE) && instrument.hasVariable(waterVar)) {
-          measurements
-            .add(new Measurement(dataset.getId(), recordTime, waterRunTypes));
-        }
+        // Records from external files (i.e. SST/Salinity) will not have run
+        // types. Ignore them.
+        if (null != runType) {
+          if (runType.equals(WATER_MODE) && instrument.hasVariable(waterVar)) {
+            measurements
+              .add(new Measurement(dataset.getId(), recordTime, waterRunTypes));
+          }
 
-        if (runType.equals(ATM_MODE) && instrument.hasVariable(atmVar)) {
-          measurements
-            .add(new Measurement(dataset.getId(), recordTime, atmRunTypes));
+          if (runType.equals(ATM_MODE) && instrument.hasVariable(atmVar)) {
+            measurements
+              .add(new Measurement(dataset.getId(), recordTime, atmRunTypes));
+          }
         }
       }
 
