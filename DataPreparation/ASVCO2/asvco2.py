@@ -3,6 +3,7 @@ Functions for extracting data from MapCO2 'Iridium format' files
 """
 import os
 from datetime import datetime
+import math
 
 """
 Write the CSV header to a file
@@ -122,19 +123,22 @@ def read_mode_stats(f, include_postcal):
   mode_stats = {}
 
   # On line
-  line = f.readline().split(',')
-  mode_stats["time"] = \
-    datetime.fromisoformat(line[2].strip().replace('Z', '+00:00'))
-  mode_stats["on"] = extract_stats_fields(line)
+  line = f.readline().strip()
 
-  # Zero off line
-  line = f.readline().split(',')
-  mode_stats["off"] = extract_stats_fields(line)
+  if len(line) > 0:
+    fields = line.split(',')
+    mode_stats["time"] = \
+      datetime.fromisoformat(fields[2].strip().replace('Z', '+00:00'))
+    mode_stats["on"] = extract_stats_fields(fields)
 
-  if include_postcal:
-    # Zero PostCal line
+    # Zero off line
     line = f.readline().split(',')
-    mode_stats["postcal"] = extract_stats_fields(line)
+    mode_stats["off"] = extract_stats_fields(fields)
+
+    if include_postcal:
+      # Zero PostCal line
+      line = f.readline().split(',')
+      mode_stats["postcal"] = extract_stats_fields(fields)
 
   return mode_stats
 
@@ -166,10 +170,13 @@ def extract_stats_fields(stats_line):
 Extract a coefficient from a STATS file line
 """
 def extract_coefficient(line):
-  return float(line.split(':')[1])
+  if len(line.strip()) == 0:
+    return math.nan
+  else:
+    return float(line.split(':')[1])
 
 """
-Extract data from a DRY file
+Extract data from a DRY sfile
 """
 def extract_dry(dir, filename):
   dry = {}
@@ -181,9 +188,14 @@ def extract_dry(dir, filename):
     f.readline()
 
     # Now the data line
-    fields = f.readline().split(',')
-    dry["water"] = float(fields[1])
-    dry["atmosphere"] = float(fields[2])
+    line = f.readline().strip()
+    if len(line) == 0:
+      dry["water"] = math.nan
+      dry["atmosphere"] = math.nan
+    else:
+      fields = line.split(',')
+      dry["water"] = float(fields[1])
+      dry["atmosphere"] = float(fields[2])
 
   return dry
 
@@ -199,35 +211,42 @@ def write_measurement(outfile, measurement):
 
 
 def write_line(outfile, measurement, mode, modestring, include_postcal, include_dry):
-  outfile.write(f'{measurement["stats"][mode]["time"].isoformat()},')
-  outfile.write(f'{modestring},')
-  outfile.write(f'{measurement["stats"]["zero_coefficient"]},')
-  outfile.write(f'{measurement["stats"]["span_coefficient"]},')
-  outfile.write(f'{measurement["stats"]["span2_coefficient"]},')
-  outfile.write(f'{measurement["stats"]["flags"]},')
+  if 'time' in measurement["stats"][mode]:
+    outfile.write(f'{measurement["stats"][mode]["time"].isoformat()},')
+    outfile.write(f'{modestring},')
+    outfile.write(f'{measurement["stats"]["zero_coefficient"]},')
+    outfile.write(f'{measurement["stats"]["span_coefficient"]},')
+    outfile.write(f'{measurement["stats"]["span2_coefficient"]},')
+    outfile.write(f'{measurement["stats"]["flags"]},')
 
-  write_line_section(outfile, measurement["stats"][mode]["on"])
-  write_line_section(outfile, measurement["stats"][mode]["off"])
+    write_line_section(outfile, measurement["stats"][mode]["on"])
+    write_line_section(outfile, measurement["stats"][mode]["off"])
 
-  if include_postcal:
-    write_line_section(outfile, measurement["stats"][mode]["postcal"])
-  else:
-    write_empty_line_section(outfile)
+    if include_postcal:
+      write_line_section(outfile, measurement["stats"][mode]["postcal"])
+    else:
+      write_empty_line_section(outfile)
 
-  # Pressure difference
-  press_diff = measurement["stats"][mode]["off"]["licor_pres"] - \
-    measurement["stats"][mode]["on"]["licor_pres"]
-  outfile.write(f'{press_diff:.2f},')
+    # Pressure difference
+    press_diff = measurement["stats"][mode]["off"]["licor_pres"] - \
+      measurement["stats"][mode]["on"]["licor_pres"]
+    outfile.write(f'{press_diff:.2f},')
 
-  # Add the Dry fields
-  if not include_dry:
-    outfile.write('NaN')
-  elif modestring == 'EP':
-    outfile.write(f'{measurement["dry"]["water"]}')
-  else:
-    outfile.write(f'{measurement["dry"]["atmosphere"]}')
+    # Add the Dry fields
+    if not include_dry:
+      outfile.write('NaN')
+    elif modestring == 'EP':
+      if math.isnan(measurement["dry"]["water"]):
+        outfile.write('NaN')
+      else:
+        outfile.write(f'{measurement["dry"]["water"]}')
+    else:
+      if math.isnan(measurement["dry"]["atmosphere"]):
+        outfile.write('NaN')
+      else:
+        outfile.write(f'{measurement["dry"]["atmosphere"]}')
 
-  outfile.write('\n')
+    outfile.write('\n')
 
 """
 Write the stats sub-part of a line to the output file
