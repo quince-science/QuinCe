@@ -279,7 +279,9 @@ def write_line(out_file, state, date_line, gps_line, system_line, on_line, off_l
   # GPS Info
   out_file.write(f'{gps_line["longitude"]:.4f},')
   out_file.write(f'{gps_line["latitude"]:.4f},')
-  out_file.write(f'{gps_line["gps_time"].isoformat()},')
+  if len(gps_line["gps_time"]) > 0:
+    out_file.write(f'{gps_line["gps_time"].isoformat()}')
+  out_file.write(',')
   out_file.write(f'{gps_line["gps_acquisition_time"]},')
 
   # System Info
