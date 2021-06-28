@@ -988,10 +988,9 @@ public class DateTimeSpecification {
 
     try {
       result = LocalDateTime.of(year, 1, 1, 0, 0);
-      int days = jdayTime.intValue() - 1;
-      result = result.plusDays(days);
+      result = result.plusDays(jdayTime.intValue() - 1);
 
-      double secondsFraction = jdayTime - days;
+      double secondsFraction = jdayTime - jdayTime.intValue();
       result = result.plusSeconds((int) (secondsFraction * 86400));
     } catch (DateTimeException e) {
       e.printStackTrace();
