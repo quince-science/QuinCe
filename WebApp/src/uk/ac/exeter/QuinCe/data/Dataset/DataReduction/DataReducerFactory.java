@@ -40,7 +40,7 @@ public class DataReducerFactory {
     reducers.put("ASVCO₂ Water", ASVCO2WaterReducer.class);
     reducers.put("ASVCO₂ Atmosphere", ASVCO2AtmosphereReducer.class);
     reducers.put("Japan Custom (temp)", JapanCustomReducer.class);
-    reducers.put("Carioca", CariocaReducer.class);
+    reducers.put("Carioca (experimental)", CariocaReducer.class);
   }
 
   /**
