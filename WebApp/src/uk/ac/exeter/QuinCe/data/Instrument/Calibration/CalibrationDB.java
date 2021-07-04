@@ -274,7 +274,7 @@ public abstract class CalibrationDB {
       stmt.setLong(3, DateTimeUtils.dateToLong(date));
       records = stmt.executeQuery();
       while (!result.isComplete() && records.next()) {
-        String target = records.getString(1);
+        String target = records.getString(3);
 
         if (!result.containsTarget(target)) {
           result.add(calibrationFromResultSet(records, instrument));
