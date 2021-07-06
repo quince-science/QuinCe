@@ -252,40 +252,46 @@ public class DefaultMeasurementValueCalculator
     List<Measurement> targetMeasurements = allMeasurements
       .getMeasurements(Measurement.GENERIC_RUN_TYPE_VARIABLE, target);
 
-    int startPoint = Collections.binarySearch(targetMeasurements,
-      Measurement.dummyTimeMeasurement(startTime), Measurement.TIME_COMPARATOR);
+    if (null != targetMeasurements) {
+      int startPoint = Collections.binarySearch(targetMeasurements,
+        Measurement.dummyTimeMeasurement(startTime),
+        Measurement.TIME_COMPARATOR);
 
-    if (startPoint >= 0) {
-      startPoint--;
-    } else {
-      startPoint = (startPoint * -1) - 2;
-    }
-
-    // If the start point is still negative, then there will be no prior
-    // calibrations
-    if (startPoint >= 0) {
-      int searchPoint = startPoint;
-      while (searchPoint >= 0) {
-        LocalDateTime testTime = targetMeasurements.get(searchPoint).getTime();
-        SensorValue testValue = sensorValues.get(testTime);
-        if (null != testValue && testValue.getUserQCFlag().isGood()) {
-          result.add(testValue);
-          break;
-        }
-
-        searchPoint--;
+      if (startPoint >= 0) {
+        startPoint--;
+      } else {
+        startPoint = (startPoint * -1) - 2;
       }
 
-      // Now we've found the closest measurement, find others from the same run
-      // type sequence.
-      TreeSet<Measurement> runMeasurements = allMeasurements
-        .getMeasurementsInSameRun(Measurement.GENERIC_RUN_TYPE_VARIABLE,
-          targetMeasurements.get(startPoint));
+      // If the start point is still negative, then there will be no prior
+      // calibrations
+      if (startPoint >= 0) {
+        int searchPoint = startPoint;
+        while (searchPoint >= 0) {
+          LocalDateTime testTime = targetMeasurements.get(searchPoint)
+            .getTime();
+          SensorValue testValue = sensorValues.get(testTime);
+          if (null != testValue && testValue.getUserQCFlag().isGood()) {
+            result.add(testValue);
+            break;
+          }
 
-      for (Measurement measurement : runMeasurements) {
-        SensorValue valueCandidate = sensorValues.get(measurement.getTime());
-        if (null != valueCandidate && valueCandidate.getUserQCFlag().isGood()) {
-          result.add(valueCandidate);
+          searchPoint--;
+        }
+
+        // Now we've found the closest measurement, find others from the same
+        // run
+        // type sequence.
+        TreeSet<Measurement> runMeasurements = allMeasurements
+          .getMeasurementsInSameRun(Measurement.GENERIC_RUN_TYPE_VARIABLE,
+            targetMeasurements.get(startPoint));
+
+        for (Measurement measurement : runMeasurements) {
+          SensorValue valueCandidate = sensorValues.get(measurement.getTime());
+          if (null != valueCandidate
+            && valueCandidate.getUserQCFlag().isGood()) {
+            result.add(valueCandidate);
+          }
         }
       }
     }
@@ -320,38 +326,44 @@ public class DefaultMeasurementValueCalculator
     List<Measurement> targetMeasurements = allMeasurements
       .getMeasurements(Measurement.GENERIC_RUN_TYPE_VARIABLE, target);
 
-    int startPoint = Collections.binarySearch(targetMeasurements,
-      Measurement.dummyTimeMeasurement(startTime), Measurement.TIME_COMPARATOR);
+    if (null != targetMeasurements) {
+      int startPoint = Collections.binarySearch(targetMeasurements,
+        Measurement.dummyTimeMeasurement(startTime),
+        Measurement.TIME_COMPARATOR);
 
-    if (startPoint >= 0) {
-      startPoint++;
-    } else {
-      startPoint = (startPoint * -1) - 1;
-    }
-
-    if (startPoint < targetMeasurements.size()) {
-      int searchPoint = startPoint;
-      while (searchPoint >= 0 && searchPoint < targetMeasurements.size()) {
-        LocalDateTime testTime = targetMeasurements.get(searchPoint).getTime();
-        SensorValue testValue = sensorValues.get(testTime);
-        if (null != testValue && testValue.getUserQCFlag().isGood()) {
-          result.add(testValue);
-          break;
-        }
-
-        searchPoint--;
+      if (startPoint >= 0) {
+        startPoint++;
+      } else {
+        startPoint = (startPoint * -1) - 1;
       }
 
-      // Now we've found the closest measurement, find others from the same run
-      // type sequence.
-      TreeSet<Measurement> runMeasurements = allMeasurements
-        .getMeasurementsInSameRun(Measurement.GENERIC_RUN_TYPE_VARIABLE,
-          targetMeasurements.get(startPoint));
+      if (startPoint < targetMeasurements.size()) {
+        int searchPoint = startPoint;
+        while (searchPoint >= 0 && searchPoint < targetMeasurements.size()) {
+          LocalDateTime testTime = targetMeasurements.get(searchPoint)
+            .getTime();
+          SensorValue testValue = sensorValues.get(testTime);
+          if (null != testValue && testValue.getUserQCFlag().isGood()) {
+            result.add(testValue);
+            break;
+          }
 
-      for (Measurement measurement : runMeasurements) {
-        SensorValue valueCandidate = sensorValues.get(measurement.getTime());
-        if (null != valueCandidate && valueCandidate.getUserQCFlag().isGood()) {
-          result.add(valueCandidate);
+          searchPoint--;
+        }
+
+        // Now we've found the closest measurement, find others from the same
+        // run
+        // type sequence.
+        TreeSet<Measurement> runMeasurements = allMeasurements
+          .getMeasurementsInSameRun(Measurement.GENERIC_RUN_TYPE_VARIABLE,
+            targetMeasurements.get(startPoint));
+
+        for (Measurement measurement : runMeasurements) {
+          SensorValue valueCandidate = sensorValues.get(measurement.getTime());
+          if (null != valueCandidate
+            && valueCandidate.getUserQCFlag().isGood()) {
+            result.add(valueCandidate);
+          }
         }
       }
     }
