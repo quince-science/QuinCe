@@ -50,7 +50,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public class DefaultMeasurementValueCalculatorInterpolationTest
-    extends TestSetTest {
+  extends TestSetTest {
 
   private static final long COLUMN_ID = 1L;
 
@@ -60,7 +60,7 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
    * A dummy Auto QC result
    */
   private static final AutoQCResult MOCK_QC_RESULT = Mockito
-      .mock(AutoQCResult.class);
+    .mock(AutoQCResult.class);
 
   private static final int FLAGS_COL = 0;
 
@@ -92,47 +92,47 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
 
     timestamps = new ArrayList<LocalDateTime>(10);
     timestamps.add(LocalDateTime.parse("2021-07-22T00:02:42Z",
-        DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:07:12Z",
-        DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:09:01Z",
-        DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:10:50Z",
-        DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:15:19Z",
-        DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:17:09Z",
-        DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:18:58Z",
-        DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:23:27Z",
-        DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:25:38Z",
-        DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:27:27Z",
-        DateTimeFormatter.ISO_DATE_TIME));
+      DateTimeFormatter.ISO_DATE_TIME));
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:17:12Z",
+      DateTimeFormatter.ISO_DATE_TIME));
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:29:01Z",
+      DateTimeFormatter.ISO_DATE_TIME));
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:40:50Z",
+      DateTimeFormatter.ISO_DATE_TIME));
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:55:19Z",
+      DateTimeFormatter.ISO_DATE_TIME));
+    timestamps.add(LocalDateTime.parse("2021-07-22T01:07:09Z",
+      DateTimeFormatter.ISO_DATE_TIME));
+    timestamps.add(LocalDateTime.parse("2021-07-22T01:18:58Z",
+      DateTimeFormatter.ISO_DATE_TIME));
+    timestamps.add(LocalDateTime.parse("2021-07-22T01:23:27Z",
+      DateTimeFormatter.ISO_DATE_TIME));
+    timestamps.add(LocalDateTime.parse("2021-07-22T01:35:38Z",
+      DateTimeFormatter.ISO_DATE_TIME));
+    timestamps.add(LocalDateTime.parse("2021-07-22T01:47:27Z",
+      DateTimeFormatter.ISO_DATE_TIME));
 
     values = new ArrayList<String>(10);
-    values.add("8.057");
-    values.add("8.051");
-    values.add("8.04");
-    values.add("8.026");
-    values.add("7.986");
-    values.add("7.968");
-    values.add("7.946");
-    values.add("7.93");
-    values.add("7.918");
-    values.add("7.892");
+    values.add("11");
+    values.add("10");
+    values.add("9");
+    values.add("8");
+    values.add("7");
+    values.add("6");
+    values.add("5");
+    values.add("4");
+    values.add("3");
+    values.add("2");
 
     sensorType = ResourceManager.getInstance().getSensorsConfiguration()
-        .getSensorType("Intake Temperature");
+      .getSensorType("Intake Temperature");
 
     List<Long> columnList = new ArrayList<Long>(1);
     columnList.add(COLUMN_ID);
 
     SensorAssignments mockAssignments = Mockito.mock(SensorAssignments.class);
     Mockito.when(mockAssignments.getColumnIds(sensorType))
-        .thenReturn(columnList);
+      .thenReturn(columnList);
 
     instrument = Mockito.mock(Instrument.class);
     Mockito.when(instrument.getSensorAssignments()).thenReturn(mockAssignments);
@@ -162,7 +162,7 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
    * @throws InvalidFlagException
    */
   private DatasetSensorValues makeSensorValues(String flagsString)
-      throws InvalidFlagException {
+    throws InvalidFlagException {
 
     List<SensorValue> sensorValues = new ArrayList<SensorValue>(10);
     for (int i = 0; i < timestamps.size(); i++) {
@@ -175,13 +175,13 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
       }
 
       SensorValue sensorValue = new SensorValue(i, DATASET_ID, COLUMN_ID,
-          timestamps.get(i), values.get(i), MOCK_QC_RESULT, qcFlag, qcMessage);
+        timestamps.get(i), values.get(i), MOCK_QC_RESULT, qcFlag, qcMessage);
 
       sensorValues.add(sensorValue);
     }
 
     SearchableSensorValuesList ssvl = SearchableSensorValuesList
-        .newFromSensorValueCollection(sensorValues);
+      .newFromSensorValueCollection(sensorValues);
 
     DatasetSensorValues mock = Mockito.mock(DatasetSensorValues.class);
     Mockito.when(mock.getColumnValues(Mockito.anyLong())).thenReturn(ssvl);
@@ -195,21 +195,21 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
   public void interpolationTest(TestSetLine line) throws Exception {
 
     DatasetSensorValues sensorValues = makeSensorValues(
-        line.getStringField(FLAGS_COL, true));
+      line.getStringField(FLAGS_COL, true));
     Measurement measurement = Measurement
-        .dummyTimeMeasurement(line.getTimeField(TIMESTAMP_COL));
+      .dummyTimeMeasurement(line.getTimeField(TIMESTAMP_COL));
 
     DefaultMeasurementValueCalculator calculator = new DefaultMeasurementValueCalculator();
 
     MeasurementValue value = calculator.calculate(instrument, measurement,
-        sensorType, null, sensorValues, getDataSource().getConnection());
+      sensorType, null, sensorValues, getDataSource().getConnection());
 
     Double expectedValue = line.getDoubleField(EXPECTED_VALUE_COL);
     Flag expectedFlag = new Flag(line.getIntField(EXPECTED_FLAG_COL));
     String expectedMessage = line.getStringField(EXPECTED_MESSAGE_COL, false);
 
-    assertEquals(value.getCalculatedValue(), expectedValue, 0.0004,
-        "Value mismatch");
+    assertEquals(expectedValue, value.getCalculatedValue(), 0.0004,
+      "Value mismatch");
     assertEquals(expectedFlag, value.getQcFlag(), "Flag mismatch");
     assertEquals(expectedMessage, value.getQcMessage(), "Message mismatch");
   }
