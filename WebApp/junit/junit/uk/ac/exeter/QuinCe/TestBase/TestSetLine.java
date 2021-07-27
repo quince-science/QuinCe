@@ -55,16 +55,14 @@ public class TestSetLine {
 
   static {
     dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss'Z'")
-      .withZone(ZoneOffset.UTC);
+        .withZone(ZoneOffset.UTC);
   }
 
   /**
    * Basic constructor
    *
-   * @param lineNumber
-   *          The position of this line in the Test Set file
-   * @param fields
-   *          The contents of the line split into fields
+   * @param lineNumber The position of this line in the Test Set file
+   * @param fields     The contents of the line split into fields
    */
   protected TestSetLine(int lineNumber, String[] fields) {
     this.lineNumber = lineNumber;
@@ -83,12 +81,10 @@ public class TestSetLine {
   /**
    * Get a field value as a String
    *
-   * @param fieldNumber
-   *          The zero-based field number
-   * @param emptyAsNull
-   *          Indicates whether empty values should be returned as
-   *          ({@code true}) {@code null} or ({@code false}) an empty
-   *          {@link String}.
+   * @param fieldNumber The zero-based field number
+   * @param emptyAsNull Indicates whether empty values should be returned as
+   *                    ({@code true}) {@code null} or ({@code false}) an empty
+   *                    {@link String}.
    * @return The field contents
    */
   public String getStringField(int fieldNumber, boolean emptyAsNull) {
@@ -104,8 +100,7 @@ public class TestSetLine {
   /**
    * Get a field value as a boolean
    *
-   * @param fieldNumber
-   *          The zero-based field number
+   * @param fieldNumber The zero-based field number
    * @return The field value
    */
   public boolean getBooleanField(int fieldNumber) {
@@ -118,8 +113,7 @@ public class TestSetLine {
    * <p>
    * Returns {@code 0} if the field is empty.
    *
-   * @param fieldNumber
-   *          The zero-based field number
+   * @param fieldNumber The zero-based field number
    * @return The field value
    */
   public int getIntField(int fieldNumber) {
@@ -133,10 +127,9 @@ public class TestSetLine {
   }
 
   /**
-   * Get a field value as an long
+   * Get a field value as a long
    *
-   * @param fieldNumber
-   *          The zero-based field number
+   * @param fieldNumber The zero-based field number
    * @return The field value
    */
   public long getLongField(int fieldNumber) {
@@ -150,10 +143,25 @@ public class TestSetLine {
   }
 
   /**
+   * Get a field value as a double
+   *
+   * @param fieldNumber The zero-based field number
+   * @return The field value
+   */
+  public double getDoubleField(int fieldNumber) {
+    double result = 0;
+
+    if (!isFieldEmpty(fieldNumber)) {
+      result = Double.parseDouble(fields[fieldNumber]);
+    }
+
+    return result;
+  }
+
+  /**
    * Get a field value as a {@link LocalDateTime}
    *
-   * @param fieldNumber
-   *          The zero-based field number
+   * @param fieldNumber The zero-based field number
    * @return The field value
    */
   public LocalDateTime getTimeField(int fieldNumber) {
@@ -170,8 +178,7 @@ public class TestSetLine {
   /**
    * See if a field is empty
    *
-   * @param fieldNumber
-   *          The zero-based field number
+   * @param fieldNumber The zero-based field number
    * @return {@code true} if the field is empty; {@code false} if not
    */
   public boolean isFieldEmpty(int fieldNumber) {
