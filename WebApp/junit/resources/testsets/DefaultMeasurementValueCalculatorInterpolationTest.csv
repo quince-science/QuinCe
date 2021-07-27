@@ -1,2 +1,33 @@
-Flags,Measurement Time,Expected Value,Expected Flag,Expected Message
-2222222222,2021-07-22T00:02:42Z,8.057,2,
+Flags,Measurement Time,Expected Value,Expected Flag,Expected Message,Notes
+2222222222,2021-07-22T00:02:42Z,11,2,,First value
+2222222222,2021-07-22T00:55:19Z,7,2,,Middle value
+2222222222,2021-07-22T01:47:27Z,2,2,,Last value
+2222222222,2021-07-22T00:02:20Z,11,2,,Before first value
+2222222222,2021-07-22T01:47:30Z,2,2,,After last value
+2222222222,2021-07-22T01:20:14Z,4.7174,2,,Interpolate value
+3333333333,2021-07-22T00:02:42Z,11,3,Q0,First value; all questionable
+3333333333,2021-07-22T00:55:19Z,7,3,Q4,Middle value; all questionable
+3333333333,2021-07-22T01:47:27Z,2,3,Q9,Last value; all questionable
+3333333333,2021-07-22T00:02:20Z,11,3,Q0,Before first value; all questionable
+3333333333,2021-07-22T01:47:30Z,2,3,Q9,After last value; all questionable
+3333333333,2021-07-22T01:20:14Z,4.7174,3,Q6;Q7,Interpolate value; all questionable
+4444444444,2021-07-22T00:02:42Z,11,4,B0,First value; all bad
+4444444444,2021-07-22T00:55:19Z,7,4,B4,Middle value; all bad
+4444444444,2021-07-22T01:47:27Z,2,4,B9,Last value; all bad
+4444444444,2021-07-22T00:02:20Z,11,4,B0,Before first value; all bad
+4444444444,2021-07-22T01:47:30Z,2,4,B9,After last value; all bad
+4444444444,2021-07-22T01:20:14Z,4.7174,4,B6;B7,Interpolate value; all bad
+4222222222,2021-07-22T00:02:20Z,10,2,,Before first value; first value bad
+4442222222,2021-07-22T00:02:20Z,8,2,,Before first value; first few bad
+2222222224,2021-07-22T01:47:30Z,3,2,,After last value; last value bad
+2222222444,2021-07-22T01:47:30Z,5,2,,After last value; last few bad
+3222222222,2021-07-22T00:02:20Z,10,2,,Before first value; first value questionable
+3332222222,2021-07-22T00:02:20Z,8,2,,Before first value; first few questionable
+2222222223,2021-07-22T01:47:30Z,3,2,,After last value; last value questionable
+2222222333,2021-07-22T01:47:30Z,5,2,,After last value; last few questionable
+2222242222,2021-07-22T01:07:09Z,5.9993,2,,Direct on bad value
+2222232222,2021-07-22T01:07:09Z,5.9993,2,,Direct on questionable value
+4222222222,2021-07-22T00:02:42Z,10,2,,Direct on bad first value
+3222222222,2021-07-22T00:02:42Z,10,2,,Direct on questionable first value
+2222222224,2021-07-22T01:47:27Z,3,2,,Direct on bad last value
+2222222223,2021-07-22T01:47:27Z,3,2,,Direct on questionable last value
