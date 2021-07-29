@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -32,9 +33,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -43,13 +42,11 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class for handling database queries related to dataset data
  *
  * @author Steve Jones
- *
  */
 public class DataSetDataDB {
 
@@ -190,137 +187,74 @@ public class DataSetDataDB {
     + DatabaseUtils.IN_PARAMS_TOKEN;
 
   /**
-   * Take a list of fields, and return those which come from the dataset data.
-   * Any others will come from calculation data and will be left alone.
+   * Store a set of sensor values in the database. Values will only be stored if
+   * their {@code dirty} flag is set. If a sensor value has a database ID, it
+   * will be updated. Otherwise it will be stored as a new record. Note that the
+   * new records will not be given an ID; they must be re-read from the database
+   * afterwards.
    *
    * @param conn
-   *          A database connection
-   * @param dataSet
-   *          The data set to which the fields belong
-   * @param originalFields
-   *          The list of fields
-   * @return The fields that come from dataset data
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws RecordNotFoundException
-   *           If the dataset or its instrument do not exist
-   * @throws InstrumentException
-   *           If the instrument details cannot be retrieved
-   */
-  public static List<String> extractDatasetFields(Connection conn,
-    DataSet dataSet, List<String> originalFields) throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException {
-
-    List<String> datasetFields = new ArrayList<String>();
-
-    ResourceManager resourceManager = ResourceManager.getInstance();
-    SensorsConfiguration sensorConfig = resourceManager
-      .getSensorsConfiguration();
-
-    Instrument instrument = InstrumentDB.getInstrument(conn,
-      dataSet.getInstrumentId());
-
-    SensorAssignments sensorAssignments = instrument.getSensorAssignments();
-
-    for (String originalField : originalFields) {
-
-      switch (originalField) {
-      case "id":
-      case "date": {
-        datasetFields.add(originalField);
-        break;
-      }
-      default: {
-        // Sensor value columns
-        for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-          if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
-            if (originalField.equals(sensorType.getDatabaseFieldName())) {
-              // TODO Eventually this will use the sensor name as the label, and
-              // the sensor type as the group
-              datasetFields.add(originalField);
-              break;
-            }
-          }
-        }
-
-        break;
-      }
-      }
-    }
-
-    return datasetFields;
-  }
-
-  /**
-   * Determine whether or not a given field is a dataset-level field
-   *
-   * @param conn
-   *          A database connection
-   * @param dataset
-   *          The dataset to which the field belongs
-   * @param field
-   *          The field name
-   * @return {@code true} if the field is a dataset field; {@code false} if it
-   *         is not
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws RecordNotFoundException
-   *           If the dataset or its instrument do not exist
-   * @throws InstrumentException
-   *           If the instrument details cannot be retrieved
-   */
-  public static boolean isDatasetField(Connection conn, DataSet dataset,
-    String field) throws MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException {
-
-    List<String> fieldList = new ArrayList<String>(1);
-    fieldList.add(field);
-
-    List<String> detectedDatasetField = extractDatasetFields(conn, dataset,
-      fieldList);
-
-    return (detectedDatasetField.size() > 0);
-  }
-
-  /**
-   * Store a set of sensor values in the database.
-   *
-   * Values will only be stored if their {@code dirty} flag is set.
-   *
-   * If a sensor value has a database ID, it will be updated. Otherwise it will
-   * be stored as a new record. Note that the new records will not be given an
-   * ID; they must be re-read from the database afterwards.
-   *
-   * @param conn
-   *          A database connection
+   *          A database connection.
    * @param sensorValues
-   *          The sensor values
+   *          The sensor values.
    * @throws DatabaseException
-   *           If a database error occurs
+   *           If a database error occurs.
    * @throws MissingParamException
-   *           If any required parameters are missing
+   *           If any required parameters are missing.
+   * @throws InstrumentException
+   *           If the instrument details cannot be retrieved.
+   * @throws InvalidSensorValueException
+   *           If any sensor value contains invalid dataset/column IDs.
    */
   public static void storeSensorValues(Connection conn,
     Collection<SensorValue> sensorValues)
-    throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException,
+    InvalidSensorValueException, RecordNotFoundException, InstrumentException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(sensorValues, "sensorValues", true);
 
-    PreparedStatement addStmt = null;
-    PreparedStatement updateStmt = null;
+    try (
+      PreparedStatement addStmt = conn
+        .prepareStatement(STORE_NEW_SENSOR_VALUE_STATEMENT);
+      PreparedStatement updateStmt = conn
+        .prepareStatement(UPDATE_SENSOR_VALUE_STATEMENT);) {
 
-    try {
-      addStmt = conn.prepareStatement(STORE_NEW_SENSOR_VALUE_STATEMENT);
-      updateStmt = conn.prepareStatement(UPDATE_SENSOR_VALUE_STATEMENT);
+      // Set of dataset IDs/columns we know to be valid
+      HashSet<DatasetColumn> verifiedColumns = new HashSet<DatasetColumn>();
 
       for (SensorValue value : sensorValues) {
-        if (value.isDirty()) {
 
+        DatasetColumn dsCol = new DatasetColumn(value);
+
+        if (!verifiedColumns.contains(dsCol)) {
+
+          // Make sure the dataset exists
+          DataSet dataSet;
+          try {
+            dataSet = DataSetDB.getDataSet(conn, value.getDatasetId());
+          } catch (RecordNotFoundException e) {
+            throw new InvalidSensorValueException(
+              "Dataset specified in SensorValue does not exist", value);
+          }
+
+          // Make sure the column ID is valid for the dataset's instrument
+          Instrument instrument = InstrumentDB.getInstrument(conn,
+            dataSet.getInstrumentId());
+
+          if (!instrument.getSensorAssignments().getSensorColumnIds()
+            .contains(value.getColumnId())) {
+
+            throw new InvalidSensorValueException(
+              "Column specified in SensorValue is not valid for the instrument",
+              value);
+          }
+
+          // If we got to here, we are good to go
+          verifiedColumns.add(dsCol);
+        }
+
+        if (value.isDirty()) {
           if (!value.isInDatabase()) {
             addStmt.setLong(1, value.getDatasetId());
             addStmt.setLong(2, value.getColumnId());
@@ -356,14 +290,12 @@ public class DataSetDataDB {
 
       addStmt.executeBatch();
       updateStmt.executeBatch();
+
+      // Clear the dirty flag on all the sensor values
+      SensorValue.clearDirtyFlag(sensorValues);
     } catch (SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
-    } finally {
-      DatabaseUtils.closeStatements(addStmt, updateStmt);
     }
-
-    // Clear the dirty flag on all the sensor values
-    SensorValue.clearDirtyFlag(sensorValues);
   }
 
   /**
@@ -442,7 +374,6 @@ public class DataSetDataDB {
           values.add(sensorValueFromResultSet(records, datasetId));
         }
       }
-
     } catch (Exception e) {
       throw new DatabaseException("Error while retrieving sensor values", e);
     }
@@ -993,7 +924,6 @@ public class DataSetDataDB {
 
   /**
    * Get the data reduction data for a dataset.
-   *
    * <p>
    * Returns a Map structure of Measurement ID -&gt; Variable -&gt;
    * DataReductionRecord.
@@ -1232,7 +1162,6 @@ public class DataSetDataDB {
   /**
    * Get the times for which {@link SensorValue}s of a given {@link SensorType}
    * contain the specified value.
-   *
    * <p>
    * The times are returned as a {@link HashSet} for fast interrogation using
    * {@link Set#contains}. They are not ordered.
@@ -1245,7 +1174,7 @@ public class DataSetDataDB {
    * @param value
    *          The value being searched for
    * @return The times of the {@link SensorValue}s that match the passed in
-   *         value.
+   *           value.
    * @throws MissingParamException
    *           If any required parameters are missing
    * @throws DatabaseException
@@ -1267,7 +1196,6 @@ public class DataSetDataDB {
   /**
    * Get the times for which {@link SensorValue}s of a given {@link SensorType}
    * contain the specified value.
-   *
    * <p>
    * The times are returned as a {@link HashSet} for fast interrogation using
    * {@link Set#contains}. They are not ordered.
@@ -1280,7 +1208,7 @@ public class DataSetDataDB {
    * @param value
    *          The value being searched for
    * @return The times of the {@link SensorValue}s that match the passed in
-   *         value.
+   *           value.
    * @throws MissingParamException
    *           If any required parameters are missing
    * @throws DatabaseException
@@ -1297,5 +1225,34 @@ public class DataSetDataDB {
 
     return allValues.stream().filter(v -> v.getDoubleValue().equals(value))
       .map(v -> v.getTime()).collect(Collectors.toCollection(HashSet::new));
+  }
+}
+
+class DatasetColumn {
+
+  private long datasetId;
+
+  private long columnId;
+
+  protected DatasetColumn(SensorValue sensorValue) {
+    this.datasetId = sensorValue.getDatasetId();
+    this.columnId = sensorValue.getColumnId();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(columnId, datasetId);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    DatasetColumn other = (DatasetColumn) obj;
+    return columnId == other.columnId && datasetId == other.datasetId;
   }
 }

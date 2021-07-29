@@ -1,5 +1,7 @@
 package junit.uk.ac.exeter.QuinCe.TestBase;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -133,6 +135,16 @@ public class BaseTest {
   }
 
   /**
+   * Get a connection to the H2 test database defined in the {@link #context}.
+   *
+   * @return A database connection.
+   * @throws SQLException If the connection cannot be retrieved.
+   */
+  protected Connection getConnection() throws SQLException {
+    return getDataSource().getConnection();
+  }
+
+  /**
    * Create a {@link Stream} of {@code null} and empty String values
    *
    * <p>
@@ -164,10 +176,8 @@ public class BaseTest {
   /**
    * Check that two lists contain the same values in the same order.
    *
-   * @param list1
-   *          The first list.
-   * @param list2
-   *          The second list.
+   * @param list1 The first list.
+   * @param list2 The second list.
    * @return {@code true} if the lists contain the same values; {@code false}
    *         otherwise.
    */
