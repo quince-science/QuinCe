@@ -21,7 +21,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  * by different lookups.
  *
  * @author Steve Jones
- *
  */
 public class DatasetSensorValues {
 
@@ -139,11 +138,9 @@ public class DatasetSensorValues {
 
   /**
    * Get all sensor values within a specified time range.
-   *
    * <p>
    * The start time is inclusive, while the end time is exclusive.
    * </p>
-   *
    * <p>
    * <strong>Note:</strong> The start time must be present in the dataset for
    * this method to work.
@@ -217,7 +214,6 @@ public class DatasetSensorValues {
 
   /**
    * Get the number of NEEDED flags in the dataset.
-   *
    * <p>
    * The flags are grouped by column ID, with an additional {@link #FLAG_TOTAL}
    * entry giving the total number of NEEDED flags.
@@ -252,5 +248,9 @@ public class DatasetSensorValues {
 
   public Instrument getInstrument() {
     return instrument;
+  }
+
+  public int size() {
+    return valuesById.size();
   }
 }

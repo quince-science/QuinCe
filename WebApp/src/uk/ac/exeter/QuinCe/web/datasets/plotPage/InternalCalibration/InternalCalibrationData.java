@@ -43,7 +43,6 @@ public class InternalCalibrationData extends PlotPageData {
 
   /**
    * Construct the data object.
-   *
    * <p>
    * Initially the object is empty. The data will be loaded by the
    * {@link #load(DataSource)} method.
@@ -147,7 +146,6 @@ public class InternalCalibrationData extends PlotPageData {
 
   /**
    * Generate a unique column ID for a run type/sensor assignment combination.
-   *
    * <p>
    * Calculated as the hash code of the run type plus the assignment's database
    * ID.
@@ -165,7 +163,6 @@ public class InternalCalibrationData extends PlotPageData {
 
   /**
    * Generate a unique column ID for a run type and column ID.
-   *
    * <p>
    * Calculated as the hash code of the run type plus the column ID.
    * </p>
@@ -241,7 +238,7 @@ public class InternalCalibrationData extends PlotPageData {
     // Store the updated sensor values
     try (Connection conn = dataSource.getConnection()) {
       DataSetDataDB.storeSensorValues(conn, sensorValues);
-    } catch (SQLException e) {
+    } catch (Exception e) {
       throw new DatabaseException("Error while applying QC flag", e);
     }
 

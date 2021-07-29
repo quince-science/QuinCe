@@ -22,7 +22,6 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * Represents a single sensor value
  *
  * @author Steve Jones
- *
  */
 public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
@@ -174,9 +173,8 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   /**
    * Get the value as a Double. No error checking is performed. Returns
-   * {@code null} if the value is {@code null}.
-   *
-   * All commas are removed from number before parsing
+   * {@code null} if the value is {@code null}. All commas are removed from
+   * number before parsing
    *
    * @return The value as a Double
    */
@@ -261,7 +259,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * Reset the automatic QC result
    *
    * @throws RecordNotFoundException
-   *           If the value has not yet been stored in the database
+   *         If the value has not yet been stored in the database
    */
   public void clearAutomaticQC() throws RecordNotFoundException {
 
@@ -285,9 +283,10 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * Add a flag from an automatic QC routine to the automatic QC result
    *
    * @param flag
-   *          The flag
+   *        The flag
+   *
    * @throws RecordNotFoundException
-   *           If the value has not yet been stored in the database
+   *         If the value has not yet been stored in the database
    */
   public void addAutoQCFlag(RoutineFlag flag)
     throws RecordNotFoundException, RoutineException {
@@ -313,9 +312,9 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * only set it if the flag is worse than the position flag.
    *
    * @param flag
-   *          The user QC flag
+   *        The user QC flag
    * @param message
-   *          The user QC message
+   *        The user QC message
    */
   public void setUserQC(Flag flag, String message) {
 
@@ -347,21 +346,20 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   /**
    * Set the position QC for this value.
-   *
    * <p>
    * If the position value is GOOD, then it doesn't affect the value's QC. If
    * the value's auto QC is not GOOD, then the user flag is NEEDED.
    * </p>
-   *
    * <p>
    * If the position value is not GOOD, then it replaces the existing user QC if
    * it's either NEEDED or less significant than the position flag.
    * </p>
    *
    * @param positionFlag
-   *          The position QC flag.
+   *        The position QC flag.
    * @param positionMessage
-   *          The position QC message.
+   *        The position QC message.
+   *
    * @throws RoutineException
    */
   public void setPositionQC(Flag positionFlag, String positionMessage)
@@ -457,7 +455,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * Clear the {@code dirty} flag on a collection of SensorValues
    *
    * @param sensorValues
-   *          The values to be cleared
+   *        The values to be cleared
    */
   public static void clearDirtyFlag(Collection<SensorValue> sensorValues) {
     for (SensorValue value : sensorValues) {
@@ -504,7 +502,8 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * Clear the automatic QC information for a set of SensorValues
    *
    * @param values
-   *          The values
+   *        The values
+   *
    * @throws RecordNotFoundException
    */
   public static void clearAutoQC(List<SensorValue> values)
@@ -614,7 +613,6 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   /**
    * Calculate the mean time of a collection of SensorValues, optionally
    * ignoring those with a NaN value.
-   *
    * <p>
    * Works by calculating the mean of the millisecond values. The division may
    * result in rounding, but a millisecond offset is not going to affect things
@@ -622,9 +620,10 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * </p>
    *
    * @param values
-   *          The values.
+   *        The values.
    * @param includeNan
-   *          Indicates whether NaN values should be ignored.
+   *        Indicates whether NaN values should be ignored.
+   *
    * @return The mean time.
    */
   public static LocalDateTime getMeanTime(Collection<SensorValue> values,
@@ -650,7 +649,8 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * ignored.
    *
    * @param values
-   *          The values.
+   *        The values.
+   *
    * @return The mean value.
    */
   public static Double getMeanValue(Collection<SensorValue> values) {
