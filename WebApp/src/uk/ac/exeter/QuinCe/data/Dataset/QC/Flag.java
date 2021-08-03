@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
 /**
  * Represents a Flag placed on a data record.
- *
  * <p>
  * Flags are based on the WOCE flags, with values for Good, Questionable and
  * Bad. All records exported from a system should ultimately have one of these
@@ -147,6 +146,46 @@ public class Flag implements Comparable<Flag> {
     }
 
     this.flagValue = flagValue;
+  }
+
+  public Flag(char flagLetter) throws InvalidFlagException {
+    switch (Character.toUpperCase(flagLetter)) {
+    case 'G':
+    case '2': {
+      this.flagValue = VALUE_GOOD;
+      break;
+    }
+    case 'A': {
+      this.flagValue = VALUE_ASSUMED_GOOD;
+      break;
+    }
+    case 'Q':
+    case '3': {
+      this.flagValue = VALUE_QUESTIONABLE;
+      break;
+    }
+    case 'B':
+    case '4': {
+      this.flagValue = VALUE_BAD;
+      break;
+    }
+    case 'N': {
+      this.flagValue = VALUE_NEEDED;
+      break;
+    }
+    case 'F': {
+      this.flagValue = VALUE_FLUSHING;
+      break;
+    }
+    case 'X': {
+      this.flagValue = VALUE_NO_QC;
+      break;
+    }
+    default: {
+      throw new InvalidFlagException(flagLetter);
+    }
+    }
+
   }
 
   /**
@@ -369,15 +408,13 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Determines whether or not this flag is more significant than the specified
-   * flag.
-   *
-   * The order of significance for flags is (lowest significance first): Not
-   * Set, Good, Questionable, Bad, Needed
+   * flag. The order of significance for flags is (lowest significance first):
+   * Not Set, Good, Questionable, Bad, Needed
    *
    * @param flag
    *          The flag to be compared
    * @return {@code true} if this flag is more significant than the supplied
-   *         flag; {@code false} if it is not.
+   *           flag; {@code false} if it is not.
    */
   public boolean moreSignificantThan(Flag flag) {
     boolean result = false;
@@ -422,7 +459,6 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Return the WOCE value for a given flag value
-   *
    * <ul>
    * <li>Good and Assumed Good will return 2</li>
    * <li>Questionable will return 3</li>
@@ -462,7 +498,6 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Check whether the supplied flag is of equal significance to this flag.
-   *
    * <p>
    * Uses the output of {@link #getWoceValue()} for comparison. A {@code false}
    * result does not indicate which flag is more significant; use
@@ -472,7 +507,7 @@ public class Flag implements Comparable<Flag> {
    * @param otherFlag
    *          The flag to be compared.
    * @return {@code true} if the supplied flag is of equal significance to this
-   *         flag; {@code false} otherwise.
+   *           flag; {@code false} otherwise.
    */
   public boolean equalSignificance(Flag otherFlag) {
     return otherFlag.getWoceValue() == getWoceValue();

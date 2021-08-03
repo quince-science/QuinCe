@@ -34,19 +34,17 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * Tests the interpolation capabilities of
  * {@link DefaultMeasurementValueCalculator#calculate}.
- *
  * <p>
  * The test creates a sequence of {@link SensorValue}s and then requests a
  * {@link MeasurementValue} for a sequence of times. The returned value should
- * be interpolated correctly and have the correct flag.
+ * be interpolated correctly and have the correct flag. The flags are set
+ * according to the first column in the test set CSV file.
  * </p>
- *
  * <p>
  * This test uses a {@link SensorType} that does not have calibrations.
  * </p>
  *
  * @author Steve Jones
- *
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public class DefaultMeasurementValueCalculatorInterpolationTest
@@ -68,9 +66,11 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
 
   private static final int EXPECTED_VALUE_COL = 2;
 
-  private static final int EXPECTED_FLAG_COL = 3;
+  private static final int EXPECTED_TYPE_COL = 3;
 
-  private static final int EXPECTED_MESSAGE_COL = 4;
+  private static final int EXPECTED_FLAG_COL = 4;
+
+  private static final int EXPECTED_MESSAGE_COL = 5;
 
   private List<LocalDateTime> timestamps;
 
@@ -91,38 +91,38 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
     initResourceManager();
 
     timestamps = new ArrayList<LocalDateTime>(10);
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:02:42Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:05:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:17:12Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:15:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:29:01Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:25:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:40:50Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:35:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:55:19Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:45:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T01:07:09Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:55:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T01:18:58Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T01:05:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T01:23:27Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T01:15:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T01:35:38Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T01:25:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T01:47:27Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T01:35:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
 
     values = new ArrayList<String>(10);
-    values.add("11");
-    values.add("10");
-    values.add("9");
-    values.add("8");
-    values.add("7");
-    values.add("6");
-    values.add("5");
-    values.add("4");
-    values.add("3");
     values.add("2");
+    values.add("3");
+    values.add("3.5");
+    values.add("4.5");
+    values.add("5");
+    values.add("6");
+    values.add("7");
+    values.add("8.5");
+    values.add("9");
+    values.add("10");
 
     sensorType = ResourceManager.getInstance().getSensorsConfiguration()
       .getSensorType("Intake Temperature");
@@ -142,22 +142,20 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
   /**
    * Create a mock {@link DatasetSensorValues} object containing the test
    * {@link SensorValue}s.
-   *
    * <p>
    * Ten {@link SensorValue} objects are created, with flags set according to
    * the passed in {@code flagString} which should be ten characters of either
    * 2, 3, or 4 corresponding to {@link Flag#GOOD}, {@link Flag#QUESTIONABLE} or
    * {@link Flag#BAD} respectively.
    * </p>
-   *
    * <p>
    * The QC message applied to {@link Flag#QUESTIONABLE} or {@link Flag#BAD}
    * values will be {@code Qx} or {@code Bx} respectively, where {@code x} is
    * the zero-based index of the {@link SensorValue}.
    * </p>
    *
-   * @param flagsString The QC flags to apply to the {@link SensorValue}s.
-   *
+   * @param flagsString
+   *          The QC flags to apply to the {@link SensorValue}s.
    * @return The {@link DatasetSensorValues} object.
    * @throws InvalidFlagException
    */
@@ -166,7 +164,7 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
 
     List<SensorValue> sensorValues = new ArrayList<SensorValue>(10);
     for (int i = 0; i < timestamps.size(); i++) {
-      Flag qcFlag = new Flag(Character.getNumericValue(flagsString.charAt(i)));
+      Flag qcFlag = new Flag(flagsString.charAt(i));
       String qcMessage = "";
       if (qcFlag.equals(Flag.QUESTIONABLE)) {
         qcMessage = "Q" + i;
@@ -205,11 +203,13 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
       sensorType, null, sensorValues, getDataSource().getConnection());
 
     Double expectedValue = line.getDoubleField(EXPECTED_VALUE_COL);
-    Flag expectedFlag = new Flag(line.getIntField(EXPECTED_FLAG_COL));
+    char expectedType = line.getCharField(EXPECTED_TYPE_COL);
+    Flag expectedFlag = line.getFlagField(EXPECTED_FLAG_COL);
     String expectedMessage = line.getStringField(EXPECTED_MESSAGE_COL, false);
 
     assertEquals(expectedValue, value.getCalculatedValue(), 0.0004,
       "Value mismatch");
+    assertEquals(expectedType, value.getType());
     assertEquals(expectedFlag, value.getQcFlag(), "Flag mismatch");
     assertEquals(expectedMessage, value.getQcMessage(), "Message mismatch");
   }
