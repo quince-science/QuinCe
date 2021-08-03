@@ -4,7 +4,6 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
  * Exception thrown when an invalid numeric flag value is encountered
  *
  * @author Steve Jones
- *
  */
 public class InvalidFlagException extends Exception {
 
@@ -21,5 +20,9 @@ public class InvalidFlagException extends Exception {
    */
   public InvalidFlagException(int flagValue) {
     super("Invalid flag value " + flagValue);
+  }
+
+  public InvalidFlagException(char flagLetter) {
+    super("Invalid flag character " + flagLetter);
   }
 }

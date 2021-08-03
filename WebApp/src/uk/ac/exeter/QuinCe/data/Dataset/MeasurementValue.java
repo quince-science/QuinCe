@@ -16,14 +16,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Holds the calculated value of a given {@link SensorType} for a measurement.
- *
  * <p>
  * The calculated value is derived from one or more {@link SensorValue}s,
  * depending on the configuration of the instrument, the relative time of the
  * measurement and available {@link SensorValue}s, and whether
  * {@link Flag#BAD}/{@link Flag#QUESTIONABLE} values are being ignored.
  * </p>
- *
  * <p>
  * This class implements the most common calculation of a measurement value.
  * Some {@link SensorType}s require more complex calculations (e.g. xCO₂ with
@@ -32,7 +30,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </p>
  *
  * @author Steve Jones
- *
  */
 public class MeasurementValue implements PlotPageTableValue {
 
@@ -43,7 +40,6 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * The IDs of the {@link SensorValue}s used to calculate the value.
-   *
    * <p>
    * Note that the sensor values may not all belong to the specified
    * {@link #sensorType}: some {@link SensorType}s require calculation based on
@@ -54,7 +50,6 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * The IDs of {@link SensorValue}s used to support the value calculation.
-   *
    * <p>
    * This can be used for values that aren't directly used in the calculation,
    * such as those used in calibrations.
@@ -64,7 +59,6 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * The number of calculations used to build this value.
-   *
    * <p>
    * This is useful for combining multiple values, where a weighted mean is
    * often required.
@@ -76,6 +70,11 @@ public class MeasurementValue implements PlotPageTableValue {
    * The calculated value for the sensor type.
    */
   private Double calculatedValue = Double.NaN;
+
+  /**
+   * The value type
+   */
+  private char type = MEASURED_TYPE;
 
   /**
    * The QC flag for this value, derived from the contributing
@@ -159,9 +158,33 @@ public class MeasurementValue implements PlotPageTableValue {
     addSensorValues(sensorValues, false);
   }
 
+  /**
+   * Adds multiple {@link SensorValue}s to this {@code MeasurementValue}.
+   * <p>
+   * If any supplied values are {@code null}, they are not added.
+   * </p>
+   * <p>
+   * Setting {@code incrMemberCount = true} always causes the {@code #type} to
+   * be set to {@code PlotPageTableValue#INTERPOLATED_TYPE}, even if only one
+   * non-{@code null} value is passed. There is an implicit assumption that
+   * calling this method was the result of an attempted interpolation; if a
+   * requested timestamp is outside the bounds of available
+   * {@link SensorValue}s, the first or last value will have been used, but it
+   * should still count as an interpolation since it has been extrapolated.
+   * </p>
+   *
+   * @param values
+   *          The values to be added.
+   * @param incrMemberCount
+   *          Indicates whether or not the member count should be incremented.
+   */
   public void addSensorValues(Collection<SensorValue> values,
     boolean incrMemberCount) {
+
     values.forEach(v -> addSensorValue(v, incrMemberCount));
+    if (incrMemberCount) {
+      type = INTERPOLATED_TYPE;
+    }
   }
 
   /**
@@ -192,7 +215,6 @@ public class MeasurementValue implements PlotPageTableValue {
 
   /**
    * Add a {@link SensorValue} to the value.
-   *
    * <p>
    * Adds the {@link SensorValue}'s ID and updates the QC information.
    * </p>
@@ -225,9 +247,29 @@ public class MeasurementValue implements PlotPageTableValue {
 
         if (incrMemberCount) {
           memberCount++;
+          if (memberCount > 1) {
+            type = INTERPOLATED_TYPE;
+          }
         }
       }
     }
+  }
+
+  /**
+   * Add a {@link SensorValue} to the value and force the {@link #type} to be
+   * {@link PlotPageTableValue#INTERPOLATED_TYPE} regardless of the resulting
+   * {@link #memberCount}.
+   *
+   * @param value
+   *          The value to add.
+   * @param incrMemberCount
+   *          Indicates whether or not this value should contribute to the
+   *          member count.
+   */
+  public void addInterpolatedSensorValue(SensorValue value,
+    boolean incrMemberCount) {
+    addSensorValue(value, incrMemberCount);
+    type = INTERPOLATED_TYPE;
   }
 
   public void addSupportingSensorValue(SensorValue value) {
@@ -374,8 +416,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   @Override
   public char getType() {
-    return memberCount > 1 ? PlotPageTableValue.INTERPOLATED_TYPE
-      : PlotPageTableValue.MEASURED_TYPE;
+    return type;
   }
 
   @Override

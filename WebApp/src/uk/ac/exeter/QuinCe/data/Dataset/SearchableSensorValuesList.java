@@ -11,12 +11,12 @@ import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.utils.CollectionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * A list of SensorValue objects with various search capabilities.
- *
  * <p>
  * There are two search types that can be performed:
  * </p>
@@ -26,14 +26,12 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * <li>{@code timeSearch}: Find the value on or immediately before a specified
  * time.</li>
  * </ul>
- *
  * <p>
  * <b>NOTE: It is the user's responsibility to ensure that entries are added in
  * the correct order.</b>
  * </p>
  *
  * @author Steve Jones
- *
  */
 @SuppressWarnings("serial")
 public class SearchableSensorValuesList extends ArrayList<SensorValue> {
@@ -111,7 +109,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   /**
    * Find the {@link SensorValue} on or closest before the specified time.
    *
-   * @param time The target time
+   * @param time
+   *          The target time
    * @return The matching SensorValue
    * @throws MissingParamException
    */
@@ -139,15 +138,16 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
   /**
    * Find all the {@link SensorValue}s within the specified date range.
-   *
    * <p>
    * The method searches for values where {@code date1 <= valueDate < date2}. If
    * the search does not find any values before the end date, the returned list
    * will be empty.
    * </p>
    *
-   * @param start The first date in the range
-   * @param end   The last date in the range
+   * @param start
+   *          The first date in the range
+   * @param end
+   *          The last date in the range
    * @return The {@link SensorValue}s in the range
    * @throws MissingParamException
    */
@@ -207,7 +207,6 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
   /**
    * Get the {@link SensorValue}(s) most relevant for the specified time.
-   *
    * <p>
    * If there is a {@link SensorValue} at the specified time, that value is
    * returned. Otherwise an array of the closes prior and post values is
@@ -215,7 +214,6 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    * {@link Flag#FLUSHING}, an empty array is returned to indicate that the
    * value should not be used.
    * </p>
-   *
    * <p>
    * The above logic is overridden by {@code preferGoodFlags}. If this is set
    * and any selected value is {@link Flag#QUESTIONABLE} or {@link Flag#BAD},
@@ -224,12 +222,13 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    * value is used, finally falling back to a {@link Flag#BAD} value.
    * </p>
    *
-   * @param time            The time to search for
-   * @param preferGoodFlags Only return values with {@link Flag#GOOD} QC flags
-   *                        if possible.
+   * @param time
+   *          The time to search for
+   * @param preferGoodFlags
+   *          Only return values with {@link Flag#GOOD} QC flags if possible.
    * @return An array of either one {@link SensorValue} (if it exactly matches
-   *         the specified time) or two (for the closest matches either side of
-   *         the time).
+   *           the specified time) or two (for the closest matches either side
+   *           of the time).
    */
   public List<SensorValue> getWithInterpolation(LocalDateTime time,
     boolean preferGoodFlags) {
@@ -258,7 +257,18 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
         && (!exactTimeFlag.isGood() && preferGoodFlags)) {
 
         priorPostValues = getPriorPost(startPoint);
-        useExactValue = false;
+
+        // If the prior and post contain one non-null value and it is our exact
+        // value, that means no interpolation could be performed - usually
+        // because our exact value was not GOOD but there were no other GOOD
+        // values available.
+        if (CollectionUtils.getNonNullCount(priorPostValues) == 1L
+          && CollectionUtils.getFirstNonNull(priorPostValues).getTime()
+            .equals(time)) {
+          useExactValue = true;
+        } else {
+          useExactValue = false;
+        }
       }
     } else {
       priorPostValues = getPriorPost(startPoint);
@@ -404,7 +414,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    * Generate a dummy {@link SensorValue} for a specified time, for use with
    * {@link #TIME_COMPARATOR}.
    *
-   * @param time The time to use.
+   * @param time
+   *          The time to use.
    * @return The dummy {@link SensorValue}.
    */
   private SensorValue dummySensorValue(LocalDateTime time) {

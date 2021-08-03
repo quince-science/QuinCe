@@ -23,14 +23,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * The default implementation of {@link MeasurementValueCalculator}.
- *
  * <p>
  * Applies interpolation based on quality flags, and standard calibration as
  * needed.
  * </p>
  *
  * @author stevej
- *
  */
 public class DefaultMeasurementValueCalculator
   extends MeasurementValueCalculator {
@@ -83,8 +81,15 @@ public class DefaultMeasurementValueCalculator
           break;
         }
         case 1: {
-          // Value from exact time - use it directly
-          result.addSensorValue(valuesToUse.get(0), true);
+          // If the value is not the same as the measurment time, then it's been
+          // interpolated (usually because it's before or after the time range
+          // of the available sensor values)
+          if (!valuesToUse.get(0).getTime().equals(measurement.getTime())) {
+            result.addInterpolatedSensorValue(valuesToUse.get(0), true);
+          } else {
+            result.addSensorValue(valuesToUse.get(0), true);
+          }
+
           result.setCalculatedValue(valuesToUse.get(0).getDoubleValue());
           break;
         }
