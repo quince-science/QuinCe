@@ -32,9 +32,9 @@ QGGGGGGGGG,2021-07-22T00:05:00Z,3,I,G,,Direct on Q first value
 GGGGGGGGGB,2021-07-22T01:35:00Z,9,I,G,,Direct on B last value
 GGGGGGGGGQ,2021-07-22T01:35:00Z,9,I,G,,Direct on Q last value
 BBBBBGGGGG,2021-07-22T00:05:00Z,6,I,G,,Direct on B first value;first few B
-QQQQGGGGGG,2021-07-22T00:05:00Z,5,I,G,,Direct on Q first value;first few B
+QQQQGGGGGG,2021-07-22T00:05:00Z,5,I,G,,Direct on Q first value;first few Q
 GGGGGGBBBB,2021-07-22T01:35:00Z,6,I,G,,Direct on B last value;last few B
-GGGQQQQQQQ,2021-07-22T01:35:00Z,3.5,I,G,,Direct on Q last value;last few B
+GGGQQQQQQQ,2021-07-22T01:35:00Z,3.5,I,G,,Direct on Q last value;last few Q
 GGGQBGGGGG,2021-07-22T00:45:00Z,5.1666,I,G,,On B;One Q before
 GGGGBQGGGG,2021-07-22T00:45:00Z,5.3333,I,G,,On B;One Q after
 QQQQBGGGGG,2021-07-22T00:45:00Z,6,I,G,,On B;All Q before
@@ -63,10 +63,10 @@ QBGGGGGGGG,2021-07-22T00:05:00Z,3.5,I,G,,On Q first;Second B
 QBGGGGGGGG,2021-07-22T00:00:00Z,3.5,I,G,,Before Q first;Second B
 BQGGGGGGGG,2021-07-22T00:05:00Z,3.5,I,G,,On B first;Second Q
 BQGGGGGGGG,2021-07-22T00:00:00Z,3.5,I,G,,Before B first;Second Q
-GGGGGGGGQB,2021-07-22T01:35:00Z,8.5,I,G,,On Q last;Penultimate B
-GGGGGGGGQB,2021-07-22T01:40:00Z,8.5,I,G,,Before Q last;Penultimate B
-GGGGGGGGBQ,2021-07-22T01:35:00Z,8.5,I,G,,On B last;Penultimate Q
-GGGGGGGGBQ,2021-07-22T01:40:00Z,8.5,I,G,,Before B last;Penultimate Q
+GGGGGGGGQB,2021-07-22T01:35:00Z,8.5,I,G,,On B last;Penultimate Q
+GGGGGGGGQB,2021-07-22T01:40:00Z,8.5,I,G,,After B last;Penultimate Q
+GGGGGGGGBQ,2021-07-22T01:35:00Z,8.5,I,G,,On Q last;Penultimate B
+GGGGGGGGBQ,2021-07-22T01:40:00Z,8.5,I,G,,After Q last;Penultimate B
 GGGGGQQGGG,2021-07-22T01:01:00Z,6.8666,I,G,,Between QQ values;Rest G
 GGGGQQQGGG,2021-07-22T01:01:00Z,7.1,I,G,,Between QQ values;One Q before
 GGGGGQQQGG,2021-07-22T01:01:00Z,6.6,I,G,,Between QQ values;One Q after
@@ -132,7 +132,7 @@ BBBBBGBGGG,2021-07-22T01:01:00Z,6.75,I,G,,Between GB values;All B before
 GGGGGGBBBB,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All B after
 BBBBBGBBGG,2021-07-22T01:01:00Z,6.6,I,G,,Between GB values;All B before;One B after
 GGGGBGBBBB,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All B after;One B before
-GGGGGGBGGG,2021-07-22T01:01:00Z,6.75,I,G,,Between GQ values;Rest G
+GGGGGGQGGG,2021-07-22T01:01:00Z,6.75,I,G,,Between GQ values;Rest G
 GGGGQGQGGG,2021-07-22T01:01:00Z,6.75,I,G,,Between GQ values;One Q before
 GGGGGGQQGG,2021-07-22T01:01:00Z,6.6,I,G,,Between GQ values;One Q after
 QQQQQGQGGG,2021-07-22T01:01:00Z,6.75,I,G,,Between GQ values;All Q before
@@ -171,3 +171,188 @@ BBBBBQGGGG,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All B before
 GGGGGQGBBB,2021-07-22T01:01:00Z,6.6,I,G,,Between QG values;All B after
 BBBBBQGBGG,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All B before;One B after
 GGGGBQGBBB,2021-07-22T01:01:00Z,6.6666,I,G,,Between QG values;All B after;One B before
+QQQQQBQQQQ,2021-07-22T00:55:00Z,6,I,Q,Q4;Q6,Direct on B value;All others Q
+QQQQQQQQQQ,2021-07-22T00:55:00Z,6,M,Q,Q5,Direct on Q value;All others Q
+BQQQQQQQQQ,2021-07-22T00:05:00Z,3,I,Q,Q1,Direct on B first value;All others Q
+QQQQQQQQQQ,2021-07-22T00:05:00Z,2,M,Q,Q0,Direct on Q first value;All others Q
+QQQQQQQQQB,2021-07-22T01:35:00Z,9,I,Q,Q8,Direct on B last value;All others Q
+QQQQQQQQQQ,2021-07-22T01:35:00Z,10,M,Q,Q9,Direct on Q last value;All others Q
+BBBBBQQQQQ,2021-07-22T00:05:00Z,6,I,Q,Q5,Direct on B first value;first few B;All others Q
+QQQQQQQQQQ,2021-07-22T00:05:00Z,2,M,Q,Q0,Direct on Q first value;first few Q;All others Q
+QQQQQQBBBB,2021-07-22T01:35:00Z,6,I,Q,Q5,Direct on B last value;last few B;All others Q
+QQQQQQQQQQ,2021-07-22T01:35:00Z,10,M,Q,Q9,Direct on Q last value;last few Q;All others Q
+QQQQBQQQQQ,2021-07-22T00:45:00Z,5.25,I,Q,Q3;Q5,On B;One Q before;All others Q
+QQQBBBQQQQ,2021-07-22T00:45:00Z,5.25,I,Q,Q2;Q6,On B;One B each side;One Q before;All others Q
+QQQBQQQQQQ,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;One B Before;All others Q
+QQQQQBQQQQ,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;One B after;All others Q
+BBBBQQQQQQ,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;All B Before;All others Q
+QQQQQBBBBB,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;All B after;All others Q
+BBBBQBQQQQ,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;All B Before;One B after;All others Q
+QQQBQBBBBB,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;All B after;One B Before;All others Q
+QQBQQQQQQQ,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;One Q each side;One B Before;All others Q
+QQQQQQBQQQ,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;One Q each side;One B after;All others Q
+BBBQQQQQQQ,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;One Q each side;All B Before;All others Q
+QQQQQQBBBB,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;One Q each side;All B after;All others Q
+BBBQQQBQQQ,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;One Q each side;All B Before;One B after;All others Q
+QQBQQQBBBB,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;One Q each side;All B after;One B Before;All others Q
+QBQQQQQQQQ,2021-07-22T00:05:00Z,2,M,Q,Q0,On Q first;Second B;All others Q
+BQQQQQQQQQ,2021-07-22T00:05:00Z,3,I,Q,Q1,On B first;Second Q;All others Q
+BQQQQQQQQQ,2021-07-22T00:00:00Z,3,I,Q,Q1,Before B first;Second Q;All others Q
+QQQQQQQQQB,2021-07-22T01:35:00Z,9,I,Q,Q8,On B last;Penultimate Q;All others Q
+QQQQQQQQQB,2021-07-22T01:40:00Z,9,I,Q,Q8,After B last;Penultimate Q;All others Q
+QQQQQQQQBQ,2021-07-22T01:35:00Z,10,M,Q,Q9,On Q last;Penultimate B;All others Q
+QQQQQQQQBQ,2021-07-22T01:40:00Z,10,I,Q,Q9,After Q last;Penultimate B;All others Q
+QQQQQQQQQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;All others Q
+QQQQBQQQQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;One B before;All others Q
+QQQQQQQBQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;One B after;All others Q
+BBBBBQQQQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;All B before;All others Q
+QQQQQQQBBB,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;All B after;All others Q
+BBBBBQQBQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;All B before;One B after;All others Q
+QQQQBQQBBB,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;All B after;One B before;All others Q
+QQQQQQBQQQ,2021-07-22T01:01:00Z,6.75,I,Q,Q5;Q7,Between QB values;All others Q
+QQQQBQBQQQ,2021-07-22T01:01:00Z,6.75,I,Q,Q5;Q7,Between QB values;One B before;All others Q
+QQQQQQBBQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q8,Between QB values;One B after;All others Q
+BBBBBQBQQQ,2021-07-22T01:01:00Z,6.75,I,Q,Q5;Q7,Between QB values;All B before;All others Q
+QQQQQQBBBB,2021-07-22T01:01:00Z,6,I,Q,Q5,Between QB values;All B after;All others Q
+BBBBBQBBQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q8,Between QB values;All B before;One B after;All others Q
+QQQQBQBBBB,2021-07-22T01:01:00Z,6,I,Q,Q5,Between QB values;All B after;One B before;All others Q
+QQQQQBQQQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q4;Q6,Between BQ values;All others Q
+QQQQBBQQQQ,2021-07-22T01:01:00Z,6.6666,I,Q,Q3;Q6,Between BQ values;One B before;All others Q
+QQQQQBQBQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q4;Q6,Between BQ values;One B after;All others Q
+BBBBBBQQQQ,2021-07-22T01:01:00Z,7,I,Q,Q6,Between BQ values;All B before;All others Q
+QQQQQBQBBB,2021-07-22T01:01:00Z,6.6,I,Q,Q4;Q6,Between BQ values;All B after;All others Q
+BBBBBBQBQQ,2021-07-22T01:01:00Z,7,I,Q,Q6,Between BQ values;All B before;One B after;All others Q
+QQQQBBQBBB,2021-07-22T01:01:00Z,6.6666,I,Q,Q3;Q6,Between BQ values;All B after;One B before;All others Q
+QQQQQBBQQQ,2021-07-22T01:01:00Z,6.8666,I,Q,Q4;Q7,Between BB values;All others Q
+QQQQBBBQQQ,2021-07-22T01:01:00Z,7.1,I,Q,Q3;Q7,Between BB values;One B before;All others Q
+QQQQQBBBQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q4;Q8,Between BB values;One B after;All others Q
+BBBBBBBQQQ,2021-07-22T01:01:00Z,8.5,I,Q,Q7,Between BB values;All B before;All others Q
+QQQQQBBBBB,2021-07-22T01:01:00Z,5,I,Q,Q4,Between BB values;All B after;All others Q
+BBBBBBBBQQ,2021-07-22T01:01:00Z,9,I,Q,Q8,Between BB values;All B before;One B after;All others Q
+QQQQBBBBBB,2021-07-22T01:01:00Z,4.5,I,Q,Q3,Between BB values;All B after;One B before;All others Q
+QQQQQGBQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All others Q
+QQQQBGBQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GB values;One B before;All others Q
+QQQQQGBBQQ,2021-07-22T01:01:00Z,6,I,G,,Between GB values;One B after;All others Q
+BBBBBGBQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All B before;All others Q
+QQQQQGBBBB,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All B after;All others Q
+BBBBBGBBQQ,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All B before;One B after;All others Q
+QQQQBGBBBB,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All B after;One B before;All others Q
+QQQQQGQQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;All others Q
+QQQQBGQQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;One B before;All others Q
+QQQQQGQBQQ,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;One B after;All others Q
+BBBBBGQQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;All B before;All others Q
+QQQQQGQQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;All B after;All others Q
+BBBBBGQBQQ,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;All B before;One B after;All others Q
+QQQQBGQBBB,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;All B after;One B before;All others Q
+QQQQQBGQQQ,2021-07-22T01:01:00Z,7,I,G,,Between BG values;All others Q
+QQQQBBGQQQ,2021-07-22T01:01:00Z,7,I,G,,Between BG values;One B before;All others Q
+QQQQQBGBQQ,2021-07-22T01:01:00Z,7,I,G,,Between BG values;One B after;All others Q
+BBBBBBGQQQ,2021-07-22T01:01:00Z,7,I,G,,Between BG values;All B before;All others Q
+QQQQQBGBBB,2021-07-22T01:01:00Z,7,I,G,,Between BG values;All B after;All others Q
+BBBBBBGBQQ,2021-07-22T01:01:00Z,7,I,G,,Between BG values;All B before;One B after;All others Q
+QQQQBBGBBB,2021-07-22T01:01:00Z,7,I,G,,Between BG values;All B after;One B before;All others Q
+QQQQQQGQQQ,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All others Q
+QQQQBQGQQQ,2021-07-22T01:01:00Z,7,I,G,,Between QG values;One B before;All others Q
+QQQQQQGBQQ,2021-07-22T01:01:00Z,7,I,G,,Between QG values;One B after;All others Q
+BBBBBQGQQQ,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All B before;All others Q
+QQQQQQGBBB,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All B after;All others Q
+BBBBBQGBQQ,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All B before;One B after;All others Q
+QQQQBQGBBB,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All B after;One B before;All others Q
+BBBBBBBBBB,2021-07-22T00:55:00Z,6,M,B,B5,Direct on B value;All others B
+BBBBBQBBBB,2021-07-22T00:55:00Z,6,M,Q,Q5,Direct on Q value;All others B
+BBBBBBBBBB,2021-07-22T00:05:00Z,2,M,B,B0,Direct on B first value;All others B
+QBBBBBBBBB,2021-07-22T00:05:00Z,2,M,Q,Q0,Direct on Q first value;All others B
+BBBBBBBBBB,2021-07-22T01:35:00Z,10,M,B,B9,Direct on B last value;All others B
+BBBBBBBBBQ,2021-07-22T01:35:00Z,10,M,Q,Q9,Direct on Q last value;All others B
+BBBBBBBBBB,2021-07-22T00:05:00Z,2,M,B,B0,Direct on B first value;first few B;All others B
+QQQQBBBBBB,2021-07-22T00:05:00Z,2,M,Q,Q0,Direct on Q first value;first few Q;All others B
+BBBBBBBBBB,2021-07-22T01:35:00Z,10,M,B,B9,Direct on B last value;last few B;All others B
+BBBQQQQQQQ,2021-07-22T01:35:00Z,10,M,Q,Q9,Direct on Q last value;last few Q;All others B
+BBBQBBBBBB,2021-07-22T00:45:00Z,4.5,I,Q,Q3,On B;One Q before;All others B
+BBBBBQBBBB,2021-07-22T00:45:00Z,6,I,Q,Q5,On B;One Q after;All others B
+QQQQBBBBBB,2021-07-22T00:45:00Z,4.5,I,Q,Q3,On B;All Q before;All others B
+BBBBBQQQQQ,2021-07-22T00:45:00Z,6,I,Q,Q5,On B;All Q after;All others B
+QQQQBQBBBB,2021-07-22T00:45:00Z,5.25,I,Q,Q3;Q5,On B;All Q before;One Q after;All others B
+BBBQBQQQQQ,2021-07-22T00:45:00Z,5.25,I,Q,Q3;Q5,On B;All Q after;One Q before;All others B
+BBQBBBBBBB,2021-07-22T00:45:00Z,3.5,I,Q,Q2,On B;One B each side;One Q before;All others B
+BBBBBBQBBB,2021-07-22T00:45:00Z,7,I,Q,Q6,On B;One B each side;One Q after;All others B
+QQQBBBBBBB,2021-07-22T00:45:00Z,3.5,I,Q,Q2,On B;One B each side;All Q before;All others B
+BBBBBBQQQQ,2021-07-22T00:45:00Z,7,I,Q,Q6,On B;One B each side;All Q after;All others B
+QQQBBBQBBB,2021-07-22T00:45:00Z,5.25,I,Q,Q2;Q6,On B;One B each side;All Q before;One Q after;All others B
+BBQBBBQQQQ,2021-07-22T00:45:00Z,5.25,I,Q,Q2;Q6,On B;One B each side;All Q after;One Q before;All others B
+BBBBQBBBBB,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;One B Before;All others B
+BBBQQQBBBB,2021-07-22T00:45:00Z,5,M,Q,Q4,On Q;One Q each side;One B Before;All others B
+QBBBBBBBBB,2021-07-22T00:05:00Z,2,M,Q,Q0,On Q first;Second B;All others B
+QBBBBBBBBB,2021-07-22T00:00:00Z,2,I,Q,Q0,Before Q first;Second B;All others B
+BQBBBBBBBB,2021-07-22T00:05:00Z,3,I,Q,Q1,On B first;Second Q;All others B
+BQBBBBBBBB,2021-07-22T00:00:00Z,3,I,Q,Q1,Before B first;Second Q;All others B
+BBBBBBBBQB,2021-07-22T01:35:00Z,9,I,Q,Q8,On B last;Penultimate Q;All others B
+BBBBBBBBQB,2021-07-22T01:40:00Z,9,I,Q,Q8,After B last;Penultimate Q;All others B
+BBBBBBBBBQ,2021-07-22T01:35:00Z,10,M,Q,Q9,On Q last;Penultimate B;All others B
+BBBBBBBBBQ,2021-07-22T01:40:00Z,10,I,Q,Q9,After Q last;Penultimate B;All others B
+BBBBBQQBBB,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;All others B
+BBBBQQQBBB,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;One Q before;All others B
+BBBBBQQQBB,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;One Q after;All others B
+QQQQQQQBBB,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;All Q before;All others B
+BBBBBQQQQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;All Q after;All others B
+QQQQQQQQBB,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;All Q before;One Q after;All others B
+BBBBQQQQQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;All Q after;One Q before;All others B
+BBBBBQQBBB,2021-07-22T01:01:00Z,6.6,I,Q,Q5;Q6,Between QQ values;One B before;All others B
+BBBBBQBBBB,2021-07-22T01:01:00Z,6,I,Q,Q5,Between QB values;All others B
+BBBBQQBBBB,2021-07-22T01:01:00Z,6,I,Q,Q5,Between QB values;One Q before;All others B
+BBBBBQBQBB,2021-07-22T01:01:00Z,6.75,I,Q,Q5;Q7,Between QB values;One Q after;All others B
+QQQQQQBBBB,2021-07-22T01:01:00Z,6,I,Q,Q5,Between QB values;All Q before;All others B
+BBBBBQBQQQ,2021-07-22T01:01:00Z,6.75,I,Q,Q5;Q7,Between QB values;All Q after;All others B
+QQQQQQBQBB,2021-07-22T01:01:00Z,6.75,I,Q,Q5;Q7,Between QB values;All Q before;One Q after;All others B
+BBBBQQBQQQ,2021-07-22T01:01:00Z,6.75,I,Q,Q5;Q7,Between QB values;All Q after;One Q before;All others B
+BBBBBQBBBB,2021-07-22T01:01:00Z,6,I,Q,Q5,Between QB values;One B before;All others B
+BBBBBBQBBB,2021-07-22T01:01:00Z,7,I,Q,Q6,Between BQ values;All others B
+BBBBQBQBBB,2021-07-22T01:01:00Z,6.6,I,Q,Q4;Q6,Between BQ values;One Q before;All others B
+BBBBBBQQBB,2021-07-22T01:01:00Z,7,I,Q,Q6,Between BQ values;One Q after;All others B
+QQQQQBQBBB,2021-07-22T01:01:00Z,6.6,I,Q,Q4;Q6,Between BQ values;All Q before;All others B
+BBBBBBQQQQ,2021-07-22T01:01:00Z,7,I,Q,Q6,Between BQ values;All Q after;All others B
+QQQQQBQQBB,2021-07-22T01:01:00Z,6.6,I,Q,Q4;Q6,Between BQ values;All Q before;One Q after;All others B
+BBBBQBQQQQ,2021-07-22T01:01:00Z,6.6,I,Q,Q4;Q6,Between BQ values;All Q after;One Q before;All others B
+BBBBBBQBBB,2021-07-22T01:01:00Z,7,I,Q,Q6,Between BQ values;One B before;All others B
+BBBBBBBBBB,2021-07-22T01:01:00Z,6.6,I,B,B5;B6,Between BB values;All others B
+BBBBQBBBBB,2021-07-22T01:01:00Z,5,I,Q,Q4,Between BB values;One Q before;All others B
+BBBBBBBQBB,2021-07-22T01:01:00Z,8.5,I,Q,Q7,Between BB values;One Q after;All others B
+QQQQQBBBBB,2021-07-22T01:01:00Z,5,I,Q,Q4,Between BB values;All Q before;All others B
+BBBBBBBQQQ,2021-07-22T01:01:00Z,8.5,I,Q,Q7,Between BB values;All Q after;All others B
+QQQQQBBQBB,2021-07-22T01:01:00Z,6.8666,I,Q,Q4;Q7,Between BB values;All Q before;One Q after;All others B
+BBBBQBBQQQ,2021-07-22T01:01:00Z,6.8666,I,Q,Q4;Q7,Between BB values;All Q after;One Q before;All others B
+BBBBBBBBBB,2021-07-22T01:01:00Z,6.6,I,B,B5;B6,Between BB values;One B before;All others B
+BBBBBGBBBB,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All others B
+BBBBQGBBBB,2021-07-22T01:01:00Z,6,I,G,,Between GB values;One Q before;All others B
+BBBBBGBQBB,2021-07-22T01:01:00Z,6,I,G,,Between GB values;One Q after;All others B
+QQQQQGBBBB,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All Q before;All others B
+BBBBBGBQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All Q after;All others B
+QQQQQGBQBB,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All Q before;One Q after;All others B
+BBBBQGBQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GB values;All Q after;One Q before;All others B
+BBBBBGBBBB,2021-07-22T01:01:00Z,6,I,G,,Between GB values;One B before;All others B
+BBBBBGQBBB,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;All others B
+BBBBQGQBBB,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;One Q before;All others B
+BBBBBGQQBB,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;One Q after;All others B
+QQQQQGQBBB,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;All Q before;All others B
+BBBBBGQQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;All Q after;All others B
+QQQQQGQQBB,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;All Q before;One Q after;All others B
+BBBBQGQQQQ,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;All Q after;One Q before;All others B
+BBBBBGQBBB,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;One B before;All others B
+BBBBBGQBBB,2021-07-22T01:01:00Z,6,I,G,,Between GQ values;One B after;All others B
+BBBBBBGBBB,2021-07-22T01:01:00Z,7,I,G,,Between BG values;All others B
+BBBBQBGBBB,2021-07-22T01:01:00Z,7,I,G,,Between BG values;One Q before;All others B
+BBBBBBGQBB,2021-07-22T01:01:00Z,7,I,G,,Between BG values;One Q after;All others B
+QQQQQBGBBB,2021-07-22T01:01:00Z,7,I,G,,Between BG values;All Q before;All others B
+BBBBBBGQQQ,2021-07-22T01:01:00Z,7,I,G,,Between BG values;All Q after;All others B
+QQQQQBGQGG,2021-07-22T01:01:00Z,7,I,G,,Between BG values;All Q before;One Q after;All others B
+BBBBQBGQQQ,2021-07-22T01:01:00Z,7,I,G,,Between BG values;All Q after;One Q before;All others B
+BBBBBBGBBB,2021-07-22T01:01:00Z,7,I,G,,Between BG values;One B before;All others B
+GGGGBBGBBB,2021-07-22T01:01:00Z,6.6666,I,G,,Between BG values;All B after;One B before;All others B
+BBBBBQGBBB,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All others B
+BBBBQQGBBB,2021-07-22T01:01:00Z,7,I,G,,Between QG values;One Q before;All others B
+BBBBBQGQBB,2021-07-22T01:01:00Z,7,I,G,,Between QG values;One Q after;All others B
+QQQQQQGBBB,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All Q before;All others B
+BBBBBQGQQQ,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All Q after;All others B
+QQQQQQGQBB,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All Q before;One Q after;All others B
+BBBBQQGQQQ,2021-07-22T01:01:00Z,7,I,G,,Between QG values;All Q after;One Q before;All others B
+BBBBBQGBBB,2021-07-22T01:01:00Z,7,I,G,,Between QG values;One B before;All others B
