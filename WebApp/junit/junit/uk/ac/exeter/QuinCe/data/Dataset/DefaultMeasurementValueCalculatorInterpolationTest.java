@@ -209,7 +209,7 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
 
     assertEquals(expectedValue, value.getCalculatedValue(), 0.0004,
       "Value mismatch");
-    assertEquals(expectedType, value.getType());
+    assertEquals(expectedType, value.getType(), "Value type mismatch");
     assertEquals(expectedFlag, value.getQcFlag(), "Flag mismatch");
     assertEquals(expectedMessage, value.getQcMessage(), "Message mismatch");
   }

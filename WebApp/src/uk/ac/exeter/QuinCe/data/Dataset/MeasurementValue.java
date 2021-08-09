@@ -284,20 +284,34 @@ public class MeasurementValue implements PlotPageTableValue {
     return supportingSensorValueIds;
   }
 
-  public void setCalculatedValue(Double caluclatedValue) {
-    this.calculatedValue = caluclatedValue;
+  public void setCalculatedValue(Double calculatedValue) {
+    this.calculatedValue = null == calculatedValue ? Double.NaN
+      : calculatedValue;
   }
 
   public Double getCalculatedValue() {
     return calculatedValue;
   }
 
+  /**
+   * Get the QC flag for this value. If the {@link #calculatedValue} is
+   * {@link Double#NaN}, the flag is always {@link Flag#BAD}.
+   * 
+   * @return The QC flag.
+   */
   public Flag getQcFlag() {
-    return flag;
+    return calculatedValue.isNaN() ? Flag.BAD : flag;
   }
 
+  /**
+   * Get the QC messages for this value as a {@link List}. If the
+   * {@link #calculatedValue} is {@link Double#NaN}, the list is a single value
+   * of {@code "NaN"}.
+   * 
+   * @return The QC messages.
+   */
   public List<String> getQcMessages() {
-    return qcMessage;
+    return calculatedValue.isNaN() ? Arrays.asList("NaN") : qcMessage;
   }
 
   public SensorType getSensorType() {
@@ -401,7 +415,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   @Override
   public String getQcMessage() {
-    return StringUtils.collectionToDelimited(qcMessage, ";");
+    return StringUtils.collectionToDelimited(getQcMessages(), ";");
   }
 
   @Override
@@ -416,7 +430,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   @Override
   public char getType() {
-    return type;
+    return calculatedValue.isNaN() ? NAN_TYPE : type;
   }
 
   @Override
