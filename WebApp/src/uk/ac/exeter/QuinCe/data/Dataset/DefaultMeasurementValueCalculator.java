@@ -81,7 +81,8 @@ public class DefaultMeasurementValueCalculator
           break;
         }
         case 1: {
-          // If the value is not the same as the measurment time, then it's been
+          // If the value is not the same as the measurement time, then it's
+          // been
           // interpolated (usually because it's before or after the time range
           // of the available sensor values)
           if (!valuesToUse.get(0).getTime().equals(measurement.getTime())) {
