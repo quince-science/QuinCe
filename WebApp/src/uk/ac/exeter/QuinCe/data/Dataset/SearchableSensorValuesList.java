@@ -372,6 +372,10 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
       Flag qcFlag = getQCFlag(currentIndex);
 
       switch (qcFlag.getFlagValue()) {
+      case Flag.VALUE_FLUSHING: {
+        // We stop immediately if we see a Flushing flag
+        break mainLoop;
+      }
       case Flag.VALUE_GOOD:
       case Flag.VALUE_ASSUMED_GOOD: {
         closestGood = currentIndex;

@@ -7,7 +7,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
  *
  * @see PlotPageTableRecord
  * @author Steve Jones
- *
  */
 public interface PlotPageTableValue {
 
@@ -19,6 +18,9 @@ public interface PlotPageTableValue {
 
   // For fixed values, e.g. position/depth that isn't measured
   public static final char NOMINAL_TYPE = 'N';
+
+  // For NaN values
+  public static final char NAN_TYPE = '0';
 
   /**
    * Get the unique ID for this column value.

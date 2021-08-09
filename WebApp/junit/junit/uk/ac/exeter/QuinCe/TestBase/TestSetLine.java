@@ -205,7 +205,8 @@ public class TestSetLine {
   }
 
   public Flag getFlagField(int fieldNumber) throws InvalidFlagException {
-    return new Flag(getCharField(fieldNumber));
+    char flagChar = getCharField(fieldNumber);
+    return flagChar == '\0' ? null : new Flag(flagChar);
   }
 
   /**
