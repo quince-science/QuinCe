@@ -25,6 +25,8 @@
         value="#{newInstrumentBean.hemisphereCoordinate}" />
       <h:inputHidden id="hemisphereColumn"
         value="#{newInstrumentBean.hemisphereColumn}" />
+      <h:inputHidden id="assignedSensorNames"
+        value="#{newInstrumentBean.assignedSensorNames}" />
 
       <p:remoteCommand name="assignHemisphereAction" action="#{newInstrumentBean.assignHemisphere}"
         process="hemisphereFile hemisphereCoordinate hemisphereColumn"
@@ -572,7 +574,7 @@
       <p:remoteCommand name="removeSensorAssignmentCommand"
         action="#{newInstrumentBean.removeSensorAssignment}"
         process="removeAssignmentSensorType removeAssignmentDataFile removeAssignmentColumn"
-        update="assignmentsTree" oncomplete="sensorAssigned();"/>
+        update="assignmentsTree assignedSensorNames" oncomplete="sensorAssigned();"/>
 
       <p:remoteCommand name="removePositionAssignmentAction"
         action="#{newInstrumentBean.removePositionAssignment}"
