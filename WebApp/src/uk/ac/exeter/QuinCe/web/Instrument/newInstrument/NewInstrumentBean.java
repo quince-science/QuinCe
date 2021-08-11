@@ -114,6 +114,8 @@ public class NewInstrumentBean extends FileUploadBean {
   private static final DateTimeFormatter PREVIEW_DATE_TIME_FORMATTER = DateTimeFormatter
     .ofPattern("yyyy-MM-dd HH:mm:ss");
 
+  private static Gson gson = null;
+
   /**
    * The Instrument List Bean
    */
@@ -168,7 +170,7 @@ public class NewInstrumentBean extends FileUploadBean {
   private int sensorAssignmentColumn = -1;
 
   /**
-   * Sensor assignment - column index
+   * Sensor assignment - sensor name
    */
   private String sensorAssignmentName = null;
 
@@ -364,7 +366,6 @@ public class NewInstrumentBean extends FileUploadBean {
   /**
    * The properties for the selected variables, structured for input from the
    * front end.
-   *
    * <p>
    * These will be restructured into the required Properties objects when the
    * instrument is saved.
@@ -449,11 +450,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Navigate to the files step.
-   *
    * <p>
    * The page we navigate to depends on the current status of the instrument.
    * <p>
-   *
    * <p>
    * If no files have been added, we create a new empty file and go to the
    * upload page. Otherwise, we go to the variable assignment page.
@@ -646,7 +645,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * Determines whether or not the file set contains more than one file
    *
    * @return {@code true} if more than one file is in the set; {@code false} if
-   *         there are zero or one files
+   *           there are zero or one files
    */
   public boolean getHasMultipleFiles() {
     return (instrumentFiles.size() > 1);
@@ -1415,7 +1414,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * Remove a file from the instrument
    *
    * @return Navigation to either the upload page (if all files have been
-   *         removed), or the assignment page
+   *           removed), or the assignment page
    */
   @SuppressWarnings("unlikely-arg-type")
   public String removeFile() {
@@ -1981,7 +1980,6 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the fixed latitude.
-   *
    * <p>
    * Values greater than 180 degrees are switched to negative values.
    *
@@ -2111,12 +2109,10 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Remove a position specification.
-   *
    * <p>
    * If the main column is removed and the format was hemisphere, the hemisphere
    * assignment is removed as well.
    * </p>
-   *
    * <p>
    * This cheats a bit and reuses the Remove Sensor Assignment inputs.
    * <p>

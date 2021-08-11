@@ -30,7 +30,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </p>
  *
  * @author Steve Jones
- *
  */
 @SuppressWarnings("serial")
 public class SensorAssignments
@@ -193,7 +192,7 @@ public class SensorAssignments
    * @param sensorType
    *          The sensor type to be checked
    * @return {@code true} if a column must be assigned to the sensor;
-   *         {@code false} if no assignment is needed.
+   *           {@code false} if no assignment is needed.
    * @throws SensorAssignmentException
    *           If the specified sensor type does not exist
    * @throws SensorConfigurationException
@@ -228,7 +227,7 @@ public class SensorAssignments
    * {@link SensorType#RUN_TYPE_SENSOR_TYPE} is required.
    *
    * @return {@code true} if the {@link SensorType#RUN_TYPE_SENSOR_TYPE} is
-   *         required; {@code false} otherwise.
+   *           required; {@code false} otherwise.
    * @throws SensorConfigurationException
    * @throws VariableNotFoundException
    */
@@ -349,7 +348,7 @@ public class SensorAssignments
    *          Indicates whether child or sibling {@link SensorType}s should be
    *          included.
    * @return {@code true} if the {@link SensorType} is assigned; {@code false}
-   *         if not.
+   *           if not.
    */
   private boolean isAssigned(SensorType sensorType, String dataFileName,
     boolean primaryOnly, boolean includeRelations) {
@@ -393,7 +392,7 @@ public class SensorAssignments
    * @param column
    *          The column
    * @return {@code true} if the file and column have been assigned;
-   *         {@code false} if not
+   *           {@code false} if not
    */
   private boolean isAssigned(SensorType sensorType, String file, int column) {
     boolean assigned = false;
@@ -451,16 +450,14 @@ public class SensorAssignments
 
   /**
    * Determines whether or not any of the sensor types in the collection depends
-   * on the supplied sensor type.
-   *
-   * If the sensor type has a Depends Question, this is taken into account.
-   *
-   * The logic of this is quite nasty. Follow the code comments.
+   * on the supplied sensor type. If the sensor type has a Depends Question,
+   * this is taken into account. The logic of this is quite nasty. Follow the
+   * code comments.
    *
    * @param sensorType
    *          The sensor type that other sensors may depend on
    * @return {@code true} if any other sensor types depend on the supplied
-   *         sensor type; {@code false} if there are no dependents
+   *           sensor type; {@code false} if there are no dependents
    * @throws SensorConfigurationException
    *           If the internal configuration is invalid
    */
@@ -605,7 +602,7 @@ public class SensorAssignments
    * @param columnIndex
    *          The column index.
    * @return The removed assignment, or {@code null} if there was no assignment
-   *         to remove.
+   *           to remove.
    */
   public SensorAssignment removeAssignment(SensorType sensorType,
     String fileDescription, int columnIndex) {
@@ -655,7 +652,7 @@ public class SensorAssignments
    *          If {@code true}, only primary assignments are considered;
    *          secondary assignments will return {@code false}.
    * @return {@code true} if the file has had a core sensor assigned;
-   *         {@code false} if it has not
+   *           {@code false} if it has not
    * @throws SensorConfigurationException
    *           If the sensor configuration is invalid
    */
@@ -810,7 +807,7 @@ public class SensorAssignments
    * calibrations.
    *
    * @return {@code true} if any internal calibrations are required;
-   *         {@code false} otherwise.
+   *           {@code false} otherwise.
    */
   public boolean hasInternalCalibrations() {
     boolean result = false;
@@ -915,7 +912,7 @@ public class SensorAssignments
    * @param variable
    *          The variable to be checked.
    * @return {@code true} if all required sensor types are assigned;
-   *         {@code false} otherwise.
+   *           {@code false} otherwise.
    * @throws SensorConfigurationException
    *           If the sensor types for the variable cannot be retrieved.
    * @throws SensorTypeNotFoundException
@@ -1009,6 +1006,16 @@ public class SensorAssignments
         }
       }
     }
+  }
+
+  /**
+   * Get all the assigned sensor names.
+   *
+   * @return The assigned sensor names.
+   */
+  public Set<String> getAllSensorNames() {
+    return values().stream().flatMap(Set::stream).map(a -> a.getSensorName())
+      .collect(Collectors.toSet());
   }
 
   /**
