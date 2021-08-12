@@ -34,12 +34,10 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Methods for handling raw data files.
- *
  * <p>
  * The database stores details of the files, while the files themselves are kept
  * on the file system (see {@link FileStore}).
  * </p>
- *
  * <p>
  * This class provides the API for all raw data handling activities. All methods
  * automatically make the appropriate calls to store and retrieve files on the
@@ -861,7 +859,6 @@ public class DataFileDB {
   /**
    * Filter a list of files so that only those overlapping a given time period
    * are returned.
-   *
    * <p>
    * This function assumes that the passed in list is already sorted.
    * </p>
@@ -880,8 +877,8 @@ public class DataFileDB {
   private static List<DataFile> filterFilesByDates(List<DataFile> files,
     LocalDateTime start, LocalDateTime end, boolean applyOffset) {
 
-    if (end.isEqual(start) || end.isBefore(start)) {
-      throw new IllegalArgumentException("End must be after start date");
+    if (end.isBefore(start)) {
+      throw new IllegalArgumentException("End must be >= start date");
     }
 
     return files.stream()
@@ -937,7 +934,7 @@ public class DataFileDB {
    * @param time
    *          The time boundary
    * @return {@code true} if a complete set of files is available; {@code false}
-   *         if not
+   *           if not
    * @throws RecordNotFoundException
    * @throws DatabaseException
    * @throws MissingParamException
@@ -1153,7 +1150,6 @@ public class DataFileDB {
 
   /**
    * Get the last date that any data file was modified for a given instrument.
-   *
    * <p>
    * Returns {@code null} if there are no data files for the instrument, or the
    * instrument does not exist.
