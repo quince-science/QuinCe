@@ -5,6 +5,7 @@
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/new_instrument.xhtml">
   <ui:define name="instrumentHead">
+    <h:outputScript name="script/newInstrument/uploadFile.js" />
     <c:set var="instrumentStep" value="3" scope="request" />
     <script>
       var hasFileData = #{newInstrumentBean.currentInstrumentFile.hasFileData};
