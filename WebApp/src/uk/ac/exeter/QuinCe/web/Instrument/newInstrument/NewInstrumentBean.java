@@ -2170,12 +2170,18 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   public String getAssignedSensorNames() {
-    JsonArray json = new JsonArray();
-    sensorAssignments.getAllSensorNames().forEach(json::add);
-    return json.toString();
+    return getGson().toJson(sensorAssignments.getAllSensorNames());
   }
 
-  public void setAssignedSensorNames(String name) {
-    // dummy
+  public void setAssignedSensorNames(String dummy) {
+    // Do nothing
+  }
+
+  private Gson getGson() {
+    if (null == gson) {
+      gson = new Gson();
+    }
+
+    return gson;
   }
 }
