@@ -109,6 +109,11 @@ public class NewInstrumentBean extends FileUploadBean {
   private static final String NAV_VARIABLE_INFO = "variable_info";
 
   /**
+   * Navigation to the Sensor Groups page
+   */
+  private static final String NAV_SENSOR_GROUPS = "sensor_groups";
+
+  /**
    * Date/Time formatter for previewing extracted dates
    */
   private static final DateTimeFormatter PREVIEW_DATE_TIME_FORMATTER = DateTimeFormatter
@@ -1469,10 +1474,14 @@ public class NewInstrumentBean extends FileUploadBean {
     String result = NAV_RUN_TYPES;
 
     if (!sensorAssignments.hasInternalCalibrations()) {
-      result = saveInstrument();
+      result = NAV_SENSOR_GROUPS;
     }
 
     return result;
+  }
+
+  public String goToSensorGroups() {
+    return NAV_SENSOR_GROUPS;
   }
 
   /**
