@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -33,6 +34,8 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  *
  */
 public class DataFile {
+
+  public static final String TIME_OFFSET_PROP = "timeOffset";
 
   /**
    * The database ID of this file
@@ -73,6 +76,11 @@ public class DataFile {
    * Messages generated regarding the file
    */
   private TreeSet<DataFileMessage> messages;
+
+  /**
+   * Misc properties
+   */
+  private Properties properties;
 
   /**
    * Max number of messages. Additional messages will be discarded.
@@ -128,6 +136,7 @@ public class DataFile {
     this.fileDefinition = fileDefinition;
     this.filename = filename;
     this.contents = contents;
+    this.properties = defaultProperties();
 
     messages = new TreeSet<DataFileMessage>();
     boolean fileOK = false;
@@ -170,7 +179,7 @@ public class DataFile {
    */
   public DataFile(String fileStore, long id, FileDefinition fileDefinition,
     String filename, LocalDateTime startDate, LocalDateTime endDate,
-    int recordCount) {
+    int recordCount, Properties properties) {
     this.fileStore = fileStore;
     this.databaseId = id;
     this.fileDefinition = fileDefinition;
@@ -178,6 +187,13 @@ public class DataFile {
     this.startDate = startDate;
     this.endDate = endDate;
     this.recordCount = recordCount;
+    this.properties = properties;
+  }
+
+  private Properties defaultProperties() {
+    Properties result = new Properties();
+    result.setProperty(TIME_OFFSET_PROP, "0");
+    return result;
   }
 
   /**
@@ -437,11 +453,12 @@ public class DataFile {
   }
 
   /**
-   * Get the date of the first record in the file
+   * Get the time of the first record in the file. Time offset will not be
+   * applied.
    *
    * @return The date, or null if the date cannot be retrieved
    */
-  public LocalDateTime getStartDate() {
+  public LocalDateTime getRawStartTime() {
     int firstDataLine = -1;
     String message = "";
     if (null == startDate) {
@@ -449,7 +466,7 @@ public class DataFile {
       try {
         loadContents();
         firstDataLine = getFirstDataLine();
-        startDate = getDate(firstDataLine);
+        startDate = getRawTime(firstDataLine);
       } catch (IndexOutOfBoundsException arrex) {
         message = "Date column doesn't exist.";
       } catch (Exception e) {
@@ -469,22 +486,23 @@ public class DataFile {
   }
 
   /**
-   * Get the date of the last record in the file
+   * Get the time of the last record in the file. Time offset will not be
+   * applied.
    *
    * @return The date, or null if the date cannot be retrieved
    * @throws DataFileException
    *           If the file contents could not be loaded
    */
-  public LocalDateTime getEndDate() {
+  public LocalDateTime getRawEndTime() {
     int lastLine = -1;
     String message = null;
     if (null == endDate) {
       try {
         loadContents();
         lastLine = getContentLineCount() - 1;
-        endDate = getDate(lastLine);
+        endDate = getRawTime(lastLine);
       } catch (IndexOutOfBoundsException arrex) {
-        message = "Date column don't exist.";
+        message = "Date column doesn't exist.";
       } catch (Exception e) {
         message = e.getMessage();
       }
@@ -499,23 +517,61 @@ public class DataFile {
     return endDate;
   }
 
+  public LocalDateTime getOffsetStartTime() {
+    return applyTimeOffset(getRawStartTime());
+  }
+
+  public LocalDateTime getOffsetEndTime() {
+    return applyTimeOffset(getRawEndTime());
+  }
+
+  public LocalDateTime getStartTime(boolean applyOffset) {
+    return applyOffset ? getOffsetStartTime() : getRawStartTime();
+  }
+
+  public LocalDateTime getEndTime(boolean applyOffset) {
+    return applyOffset ? getOffsetEndTime() : getRawEndTime();
+  }
+
   /**
-   * Get the date of a line in the file
+   * Get the time of a line in the file, with the define offset applied
    *
    * @param line
    *          The line
-   * @return The date
+   * @return The time
    * @throws DataFileException
    *           If any date/time fields are empty
    */
-  public LocalDateTime getDate(int line)
+  public LocalDateTime getOffsetTime(int line)
     throws DataFileException, DateTimeSpecificationException {
     loadContents();
-    return getDate(fileDefinition.extractFields(contents.get(line)));
+    return getOffsetTime(fileDefinition.extractFields(contents.get(line)));
   }
 
-  public LocalDateTime getDate(List<String> line)
+  /**
+   * Get the time of a line in the file, without the define offset applied
+   *
+   * @param line
+   *          The line
+   * @return The time
+   * @throws DataFileException
+   *           If any date/time fields are empty
+   */
+  public LocalDateTime getRawTime(int line)
     throws DataFileException, DateTimeSpecificationException {
+    loadContents();
+    return getRawTime(fileDefinition.extractFields(contents.get(line)));
+  }
+
+  public LocalDateTime getOffsetTime(List<String> line)
+    throws DataFileException, DateTimeSpecificationException {
+
+    return applyTimeOffset(getRawTime(line));
+  }
+
+  public LocalDateTime getRawTime(List<String> line)
+    throws DateTimeSpecificationException {
+
     return fileDefinition.getDateTimeSpecification().getDateTime(headerDate,
       line);
   }
@@ -535,9 +591,8 @@ public class DataFile {
   public String getRunType(int line)
     throws DataFileException, FileDefinitionException {
     String runType = null;
-    int runTypeColumn = fileDefinition.getRunTypeColumn();
 
-    if (runTypeColumn > -1) {
+    if (fileDefinition.hasRunTypes()) {
       loadContents();
       runType = fileDefinition.getRunType(contents.get(line), true)
         .getRunName();
@@ -561,9 +616,8 @@ public class DataFile {
   public RunTypeCategory getRunTypeCategory(int line)
     throws DataFileException, FileDefinitionException {
     RunTypeCategory runType = null;
-    int runTypeColumn = fileDefinition.getRunTypeColumn();
 
-    if (runTypeColumn > -1) {
+    if (fileDefinition.hasRunTypes()) {
       loadContents();
       runType = fileDefinition.getRunTypeCategory(contents.get(line));
     }
@@ -833,13 +887,27 @@ public class DataFile {
         || result.equals("NaN") || result.equals("NA")) {
         result = null;
       } else {
+
+        Double doubleValue = null;
+        // See if this is a numeric value. If it isn't, log an error.
         try {
-          // See if this is a numeric value. If it isn't, log an error.
-          Double.parseDouble(result);
+
+          doubleValue = Double.parseDouble(result);
         } catch (NumberFormatException e) {
+          // TODO #1967 Log error to dataset comments
           System.out
             .println("NumberFormatException: Invalid value '" + result + "'");
           result = null;
+        }
+
+        // If we have a value, check it agains the missing value
+        try {
+          Double numericMissingValue = Double.parseDouble(missingValue);
+          if (doubleValue.equals(numericMissingValue)) {
+            result = null;
+          }
+        } catch (NumberFormatException e) {
+          // Do nothing - the missing value is non-numeric
         }
       }
     }
@@ -878,6 +946,26 @@ public class DataFile {
   public List<String> getLine(int line) throws DataFileException {
     loadContents();
     return fileDefinition.extractFields(contents.get(line));
+  }
+
+  public Properties getProperties() {
+    return properties;
+  }
+
+  public void setTimeOffset(int seconds) {
+    properties.setProperty(TIME_OFFSET_PROP, String.valueOf(seconds));
+  }
+
+  public int getTimeOffset() {
+    return Integer.parseInt(properties.getProperty(TIME_OFFSET_PROP));
+  }
+
+  public boolean hasTimeOffset() {
+    return getTimeOffset() != 0;
+  }
+
+  private LocalDateTime applyTimeOffset(LocalDateTime rawTime) {
+    return rawTime.plusSeconds(getTimeOffset());
   }
 
   @Override

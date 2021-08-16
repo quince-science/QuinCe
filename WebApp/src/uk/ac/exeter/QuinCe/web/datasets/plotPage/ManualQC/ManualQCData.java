@@ -24,13 +24,14 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
@@ -55,7 +56,9 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * A version of {@link PlotPageData} used for the main manual QC page.
  *
- * <h4>A note on positions:</h4>
+ * <p>
+ * <b>A note on positions:</b>
+ * </p>
  * <p>
  * Positions can be stored in two places: in the {@link SensorValue}s and in the
  * {@link MeasurementValue}s. The former contains the raw, measured position
@@ -113,7 +116,7 @@ public class ManualQCData extends PlotPageData {
   /**
    * The values calculated by data reduction.
    */
-  protected Map<Long, Map<Variable, DataReductionRecord>> dataReduction = null;
+  protected Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> dataReduction = null;
 
   /**
    * The list of sensor column IDs in the same order as they are represented in
@@ -241,7 +244,7 @@ public class ManualQCData extends PlotPageData {
     List<SensorAssignment> sensorColumns = new ArrayList<SensorAssignment>();
     List<SensorAssignment> diagnosticColumns = new ArrayList<SensorAssignment>();
 
-    for (Map.Entry<SensorType, List<SensorAssignment>> entry : instrument
+    for (Map.Entry<SensorType, TreeSet<SensorAssignment>> entry : instrument
       .getSensorAssignments().entrySet()) {
 
       // Skip the position
@@ -352,14 +355,18 @@ public class ManualQCData extends PlotPageData {
 
       List<LocalDateTime> times = sensorValues.getTimes();
 
-      for (int i = start; i < start + length; i++) {
+      // Make sure we don't fall off the end of the dataset
+      int lastRecord = start + length;
+      if (lastRecord > times.size()) {
+        lastRecord = times.size();
+      }
+
+      for (int i = start; i < lastRecord; i++) {
         PlotPageTableRecord record = new PlotPageTableRecord(times.get(i));
 
-        // Get the run type from the closest measurement
+        // Get the closest measurement
         Measurement concurrentMeasurement = getConcurrentMeasurement(
           times.get(i));
-        String runType = null == concurrentMeasurement ? null
-          : concurrentMeasurement.getRunType();
 
         // Timestamp
         record.addColumn(times.get(i));
@@ -404,12 +411,24 @@ public class ManualQCData extends PlotPageData {
           SensorType sensorType = instrument.getSensorAssignments()
             .getSensorTypeForDBColumn(columnId);
 
-          if (sensorType.hasInternalCalibration()
-            && (null == runType || instrument.getRunTypeCategory(runType)
-              .equals(RunTypeCategory.INTERNAL_CALIBRATION))) {
-            record.addBlankColumn(PlotPageTableValue.MEASURED_TYPE);
+          boolean useValue = true;
+
+          if (null == concurrentMeasurement) {
+            if (isCoreSensorType(sensorType)) {
+              useValue = false;
+            }
           } else {
+            if (!isMeasurementForAnyVariable(concurrentMeasurement)
+              && (isCoreSensorType(sensorType)
+                || sensorType.hasInternalCalibration())) {
+              useValue = false;
+            }
+          }
+
+          if (useValue) {
             record.addColumn(recordSensorValues.get(columnId));
+          } else {
+            record.addBlankColumn(PlotPageTableValue.MEASURED_TYPE);
           }
         }
 
@@ -442,7 +461,7 @@ public class ManualQCData extends PlotPageData {
           });
         }
 
-        Map<Variable, DataReductionRecord> dataReductionData = null;
+        Map<Variable, ReadOnlyDataReductionRecord> dataReductionData = null;
 
         if (null != measurementId) {
           // Retrieve the data reduction data
@@ -454,7 +473,7 @@ public class ManualQCData extends PlotPageData {
         // calibration mode), make a blank data reduction set.
         if (null == dataReductionData) {
           // Make a blank set
-          dataReductionData = new HashMap<Variable, DataReductionRecord>();
+          dataReductionData = new HashMap<Variable, ReadOnlyDataReductionRecord>();
           for (Variable variable : instrument.getVariables()) {
             dataReductionData.put(variable, null);
           }
@@ -495,6 +514,26 @@ public class ManualQCData extends PlotPageData {
     }
 
     return records;
+  }
+
+  private boolean isCoreSensorType(SensorType sensorType) {
+    return instrument.getVariables().stream()
+      .anyMatch(v -> v.getCoreSensorTypes().contains(sensorType));
+  }
+
+  private boolean isMeasurementForAnyVariable(Measurement measurement)
+    throws RunTypeCategoryException {
+    boolean result = false;
+
+    for (Map.Entry<Long, String> runTypeEntry : measurement.getRunTypes()
+      .entrySet()) {
+      if (instrument.getRunTypeCategory(runTypeEntry).isMeasurementType()) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
   }
 
   @Override
@@ -573,7 +612,7 @@ public class ManualQCData extends PlotPageData {
         comments.add(sensorValue.getUserQCMessage());
       } else {
         try {
-          comments.addAll(sensorValue.getAutoQcResult().getAllMessagesList());
+          comments.addAll(sensorValue.getAutoQcResult().getAllMessagesSet());
         } catch (RoutineException e) {
           error("Error getting QC comments", e);
         }
@@ -805,8 +844,17 @@ public class ManualQCData extends PlotPageData {
       SensorType sensorType = instrument.getSensorAssignments()
         .getSensorTypeForDBColumn(column.getId());
 
-      // If the sensor type doesn't have internal calibrations, add all values
-      if (!sensorType.hasInternalCalibration()) {
+      // For some reason doing this in a single if statement didn't work.
+      // ¯\_(ツ)_/¯
+      boolean useAllValues = true;
+      if (isCoreSensorType(sensorType)) {
+        useAllValues = false;
+      }
+      if (sensorType.hasInternalCalibration()) {
+        useAllValues = false;
+      }
+
+      if (useAllValues) {
         for (SensorValue sensorValue : sensorValues
           .getColumnValues(column.getId())) {
 
@@ -821,14 +869,11 @@ public class ManualQCData extends PlotPageData {
           // Get the run type from the closest measurement
           Measurement concurrentMeasurement = getConcurrentMeasurement(
             sensorValue.getTime());
-          String runType = null == concurrentMeasurement ? null
-            : concurrentMeasurement.getRunType();
 
           // Only include the value if the run type is not an internal
           // calibration
-          if (null != runType && !instrument.getRunTypeCategory(runType)
-            .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
-
+          if (null != concurrentMeasurement
+            && isMeasurementForAnyVariable(concurrentMeasurement)) {
             result.put(sensorValue.getTime(),
               new SensorValuePlotPageTableValue(sensorValue));
           }
@@ -893,11 +938,14 @@ public class ManualQCData extends PlotPageData {
     // The core sensor value for the first variable, or if there isn't one,
     // The second sensor
     Variable variable = instrument.getVariables().get(0);
-    SensorType sensorType = variable.getCoreSensorType();
 
-    if (null != sensorType) {
+    SensorType coreSensorType = variable.getCoreSensorTypes().size() > 0
+      ? variable.getCoreSensorTypes().get(0)
+      : null;
+
+    if (null != coreSensorType) {
       long coreColumn = instrument.getSensorAssignments()
-        .getColumnIds(sensorType).get(0);
+        .getColumnIds(coreSensorType).get(0);
       result = getColumnHeading(coreColumn);
     } else {
       return columnHeadings.get(SENSORS_FIELD_GROUP).get(1);
@@ -970,13 +1018,11 @@ public class ManualQCData extends PlotPageData {
 
             Measurement concurrentMeasurement = getConcurrentMeasurement(
               sensorValue.getTime());
-            String runType = null == concurrentMeasurement ? null
-              : concurrentMeasurement.getRunType();
 
             // Only include the value if the run type is not an internal
             // calibration
-            if (null == runType || instrument.getRunTypeCategory(runType)
-              .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+            if (null != concurrentMeasurement
+              && !isMeasurementForAnyVariable(concurrentMeasurement)) {
               useValue = false;
             }
           }
@@ -1023,7 +1069,7 @@ public class ManualQCData extends PlotPageData {
     Measurement measurement = measurements.get(rowTime);
 
     if (null != measurement) {
-      Map<Variable, DataReductionRecord> rowRecords = dataReduction
+      Map<Variable, ReadOnlyDataReductionRecord> rowRecords = dataReduction
         .get(measurement.getId());
       if (null != rowRecords) {
         result = rowRecords.get(variable);

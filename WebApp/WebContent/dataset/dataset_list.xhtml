@@ -47,11 +47,15 @@
       }
 
       var refreshInterval = setInterval(function() {
-        updateList(); // PF Command
+        if (window['updateList']) {
+          updateList(); // PF Command
+        }
       }, 10000);
 
       $(document).ready(function() {
-        updateList(); // PF Command
+        if (window['updateList']) {
+          updateList(); // PF Command
+        }
       });
 
       function updateControls() {
@@ -79,13 +83,25 @@
         <h:inputHidden id="hasFiles" value="#{dataSetsBean.hasFiles}"/>
 
         <h:panelGrid columns="3" cellpadding="5" class="buttonPanel contentList">
-          <p:outputLabel for="instrument" value="Select Instrument:" />
-          <p:selectOneMenu id="instrument"
-            value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
-            <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
-              itemValue="#{instrument.id}" itemLabel="#{instrument.name}" />
-            <p:ajax event="change" update="datasets hasFiles" />
-          </p:selectOneMenu>
+          <p:outputLabel for="instrumentAdmin" value="Select Instrument:" />
+          <ui:fragment rendered="#{User.adminUser}">
+            <p:selectOneMenu id="instrumentAdmin"
+              value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
+                <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
+                  itemValue="#{instrument.id}"
+                  itemLabel="#{instrument.owner.surname}, #{instrument.owner.givenName} - #{instrument.name}" />
+              <p:ajax event="change" update="datasets hasFiles" />
+            </p:selectOneMenu>
+          </ui:fragment>
+          <ui:fragment rendered="#{not User.adminUser}">
+            <p:selectOneMenu id="instrumentNonAdmin"
+              value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
+                <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
+                  itemValue="#{instrument.id}"
+                  itemLabel="#{instrument.name}" />
+              <p:ajax event="change" update="datasets hasFiles" />
+            </p:selectOneMenu>
+          </ui:fragment>
           <p:commandButton widgetVar="newDataset" value="Create New Data Set" ajax="false"
             action="#{dataSetsBean.startNewDataset}" />
         </h:panelGrid>
@@ -158,11 +174,13 @@
             <ui:fragment rendered="#{dataset.status gt DataSet.STATUS_ERROR}">
               <ui:fragment
                 rendered="#{dataset.status ge DataSet.STATUS_USER_QC}">
-                <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
-                  <h:graphicImage value="/resources/image/calibration.svg"
-                    styleClass="actionIcon" alt="Calibration"
-                    title="Calibration" />
-                </p:commandLink>
+                <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
+                  <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/calibration.svg"
+                      styleClass="actionIcon" alt="Calibration"
+                      title="Calibration" />
+                  </p:commandLink>
+                </ui:fragment>
                 <p:commandLink onclick="recalculate(#{dataset.id})">
                   <h:graphicImage value="/resources/image/calculate.svg"
                     styleClass="actionIcon" alt="Recalculate"
@@ -176,9 +194,11 @@
               </ui:fragment>
               <ui:fragment
                 rendered="#{dataset.status lt DataSet.STATUS_USER_QC}">
-                <h:graphicImage
-                  value="/resources/image/calibration_disabled.svg"
-                  styleClass="actionIcon" alt="Calibration" title="Calibration" />
+                <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
+                  <h:graphicImage
+                    value="/resources/image/calibration_disabled.svg"
+                    styleClass="actionIcon" alt="Calibration" title="Calibration" />
+                </ui:fragment>
                 <h:graphicImage value="/resources/image/calculate_disabled.svg"
                   styleClass="actionIcon" alt="Data Reduction"
                   title="Data Reduction" />

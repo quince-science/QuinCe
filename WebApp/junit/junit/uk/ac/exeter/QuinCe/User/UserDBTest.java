@@ -52,8 +52,9 @@ public class UserDBTest extends BaseTest {
    *
    * <p>
    * The user has the following properties:
-   * <p>
+   * </p>
    * <table>
+   * <caption>User properties</caption>
    * <tr>
    * <td>Email:</td>
    * <td>test@test.com</td>
@@ -79,6 +80,7 @@ public class UserDBTest extends BaseTest {
    *
    * @param emailCode
    *          Indicates whether or not the email verification code should be set
+   * @return The {@link User} object for the created user.
    * @throws Exception
    *           If any internal errors are encountered.
    */
@@ -109,10 +111,10 @@ public class UserDBTest extends BaseTest {
 
   /**
    * Test that an exception is thrown when authenticating user without providing
-   * a password
+   * a password.
    *
    * @param password
-   *          The empty password (generated)
+   *          The empty password (generated).
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -132,7 +134,7 @@ public class UserDBTest extends BaseTest {
 
   /**
    * Test that an exception is thrown when authenticating user without providing
-   * a {@link DataSource}.
+   * a {@link javax.sql.DataSource}.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -227,8 +229,9 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that retrieving a user via a {@link DataSource} with an email address
-   * throws an throws an exception when the address is missing or empty.
+   * Test that retrieving a user via a {@link javax.sql.DataSource} with an
+   * email address throws an throws an exception when the address is missing or
+   * empty.
    *
    * <p>
    * This does not test valid {@link String}s that are not in the database.
@@ -249,8 +252,8 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that retrieving a user via a {@link Connection} with an email address
-   * throws an throws an exception when the address is missing or empty.
+   * Test that retrieving a user via a {@link java.sql.Connection} with an email
+   * address throws an throws an exception when the address is missing or empty.
    *
    * <p>
    * This does not test valid {@link String}s that are not in the database.
@@ -271,8 +274,8 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that retrieving a user via a {@link DataSource} with an ID throws an
-   * exception when the ID is invalid.
+   * Test that retrieving a user via a {@link javax.sql.DataSource} with an ID
+   * throws an exception when the ID is invalid.
    *
    * <p>
    * This does not test valid IDs that do not exist in the database.
@@ -293,8 +296,8 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that retrieving a user via a {@link Connection} with an ID throws an
-   * exception when the ID is invalid.
+   * Test that retrieving a user via a {@link java.sql.Connection} with an ID
+   * throws an exception when the ID is invalid.
    *
    * <p>
    * This does not test valid IDs that do not exist in the database.
@@ -315,8 +318,8 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that retrieving a user via a {@link DataSource} and email address that
-   * doesn't exist returns {@code null}.
+   * Test that retrieving a user via a {@link javax.sql.DataSource} and email
+   * address that doesn't exist returns {@code null}.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -329,8 +332,8 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that retrieving a user via a {@link Connection} and email address that
-   * doesn't exist returns {@code null}.
+   * Test that retrieving a user via a {@link java.sql.Connection} and email
+   * address that doesn't exist returns {@code null}.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -344,8 +347,8 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that retrieving a user via a {@link DataSource} and ID that doesn't
-   * exist returns {@code null}.
+   * Test that retrieving a user via a {@link javax.sql.DataSource} and ID that
+   * doesn't exist returns {@code null}.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -358,9 +361,11 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that retrieving a user via a {@link Connection} and ID that doesn't
-   * exist returns {@code null}.
+   * Test that retrieving a user via a {@link java.sql.Connection} and ID that
+   * doesn't exist returns {@code null}.
    *
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @Test
@@ -371,8 +376,8 @@ public class UserDBTest extends BaseTest {
 
   /**
    * Test that a user with no email verification or password reset code can be
-   * correctly retrieved from the database via a {@link DataSource} and email
-   * address.
+   * correctly retrieved from the database via a {@link javax.sql.DataSource}
+   * and email address.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -390,8 +395,8 @@ public class UserDBTest extends BaseTest {
 
   /**
    * Test that a user with no email verification or password reset code can be
-   * correctly retrieved from the database via a {@link Connection} and email
-   * address.
+   * correctly retrieved from the database via a {@link java.sql.Connection} and
+   * email address.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -410,8 +415,8 @@ public class UserDBTest extends BaseTest {
 
   /**
    * Test that a user with no email verification or password reset code can be
-   * correctly retrieved from the database via a {@link DataSource} and email
-   * address.
+   * correctly retrieved from the database via a {@link javax.sql.DataSource}
+   * and email address.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -429,8 +434,8 @@ public class UserDBTest extends BaseTest {
 
   /**
    * Test that a user with no email verification or password reset code can be
-   * correctly retrieved from the database via a {@link Connection} and email
-   * address.
+   * correctly retrieved from the database via a {@link java.sql.Connection} and
+   * email address.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -927,6 +932,8 @@ public class UserDBTest extends BaseTest {
    *
    * @param code
    *          The empty code
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @ParameterizedTest
@@ -944,6 +951,8 @@ public class UserDBTest extends BaseTest {
    *
    * @param code
    *          The empty code
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest
   @ParameterizedTest
@@ -957,6 +966,9 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that checking a valid email verification code that has expired will
    * fail.
+   *
+   * @throws Exception
+   *           If any internal errors are encountered.
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/data/User/UserDBTest/expiredCodes" })
@@ -1095,8 +1107,8 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that trying to retrieve user prefs with a missing {@link DataSource}
-   * fails.
+   * Test that trying to retrieve user prefs with a missing
+   * {@link javax.sql.DataSource} fails.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -1113,6 +1125,8 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that trying to retrieve user prefs with a an invalid user ID fails.
    *
+   * @param id
+   *          The test user ID.
    * @throws Exception
    *           If any internal errors are encountered.
    */
@@ -1127,8 +1141,8 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that trying to retrieve user prefs with a missing {@link DataSource}
-   * fails.
+   * Test that trying to retrieve user prefs with a missing
+   * {@link javax.sql.DataSource} fails.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -1182,7 +1196,8 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
-   * Test that setting user preferences with a missing {@link DataSource} fails.
+   * Test that setting user preferences with a missing
+   * {@link javax.sql.DataSource} fails.
    *
    * @throws Exception
    *           If any internal errors are encountered.

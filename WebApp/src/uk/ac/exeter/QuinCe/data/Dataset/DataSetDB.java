@@ -32,7 +32,6 @@ import uk.ac.exeter.QuinCe.utils.Message;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Methods for manipulating data sets in the database
@@ -96,8 +95,8 @@ public class DataSetDB {
    * Make an SQL query for retrieving complete datasets using a specified WHERE
    * clause
    *
-   * @param whereField
-   *          The field to use in the WHERE clause
+   * @param whereFields
+   *          The fields to use in the WHERE clause
    * @return The query SQL
    * @see #DATASET_QUERY_BASE
    */
@@ -119,6 +118,9 @@ public class DataSetDB {
    *          A data source
    * @param instrumentId
    *          The instrument's database ID
+   * @param includeNrt
+   *          Indicates whether or not NRT datasets should be included in the
+   *          result
    * @return The list of data sets
    * @throws DatabaseException
    *           If a database error occurs
@@ -149,10 +151,13 @@ public class DataSetDB {
   /**
    * Get the list of data sets defined for a given instrument
    *
-   * @param dataSource
-   *          A data source
+   * @param conn
+   *          A database connection
    * @param instrumentId
    *          The instrument's database ID
+   * @param includeNrt
+   *          Indicates whether or not NRT datasets should be included in the
+   *          result
    * @return The list of data sets
    * @throws DatabaseException
    *           If a database error occurs
@@ -271,8 +276,8 @@ public class DataSetDB {
    *
    * The created data set's ID is stored in the provided {@link DataSet} object
    *
-   * @param dataSource
-   *          A data source
+   * @param conn
+   *          A database connection
    * @param dataSet
    *          The data set to be stored
    * @throws DatabaseException
@@ -459,7 +464,7 @@ public class DataSetDB {
 
     try (Connection conn = dataSource.getConnection();) {
 
-      DataSet nrtDataset = getNrtDataSet(conn, instrument.getDatabaseId());
+      DataSet nrtDataset = getNrtDataSet(conn, instrument.getId());
       if (null != nrtDataset) {
         setDatasetStatus(conn, nrtDataset.getId(), status);
       }
@@ -498,7 +503,7 @@ public class DataSetDB {
    *
    * @param dataSource
    *          A data source
-   * @param dataSetId
+   * @param datasetId
    *          The data set's database ID
    * @param status
    *          The new status
@@ -533,6 +538,12 @@ public class DataSetDB {
    *           If the status is invalid
    * @throws DatabaseException
    *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws InvalidDataSetStatusException
+   *           If the specified status is invalid
+   * @throws RecordNotFoundException
+   *           If the dataset does not exist
    */
   public static void setDatasetStatus(Connection conn, long datasetId,
     int status) throws MissingParamException, InvalidDataSetStatusException,
@@ -566,7 +577,7 @@ public class DataSetDB {
    *
    * @param conn
    *          A database connection
-   * @param instrument
+   * @param instrumentId
    *          The instrument's database ID
    * @param includeNrt
    *          Indicates whether or not NRT datasets should be included in the
@@ -594,7 +605,7 @@ public class DataSetDB {
    *
    * @param conn
    *          A database connection
-   * @param instrument
+   * @param instrumentId
    *          The instrument's database ID
    * @return The NRT dataset, or {@code null} if there there isn't one
    * @throws MissingParamException
@@ -687,8 +698,10 @@ public class DataSetDB {
    *          A database connection
    * @param dataSet
    *          The dataset to be deleted
-   * @throws DatabaseException
    * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
    */
   public static void deleteDataSet(Connection conn, DataSet dataSet)
     throws MissingParamException, DatabaseException {
@@ -740,6 +753,10 @@ public class DataSetDB {
   /**
    * Generate the metadata portion of the manifest
    *
+   * @param dataSource
+   *          A data source
+   * @param dataset
+   *          The dataset
    * @return The metadata
    * @throws DatabaseException
    *           If a database error occurs
@@ -772,6 +789,10 @@ public class DataSetDB {
   /**
    * Generate the metadata portion of the manifest
    *
+   * @param conn
+   *          A database connection
+   * @param dataset
+   *          The dataset
    * @return The metadata
    * @throws DatabaseException
    *           If a database error occurs
@@ -789,10 +810,8 @@ public class DataSetDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(dataset, "dataset");
 
-    ResourceManager resourceManager = ResourceManager.getInstance();
     Instrument instrument = InstrumentDB.getInstrument(conn,
-      dataset.getInstrumentId(), resourceManager.getSensorsConfiguration(),
-      resourceManager.getRunTypeCategoryConfiguration());
+      dataset.getInstrumentId());
 
     JSONObject result = new JSONObject();
     result.put("name", dataset.getName());
@@ -822,6 +841,8 @@ public class DataSetDB {
    *
    * @param conn
    *          A database connection
+   * @param status
+   *          The status value
    * @return The exportable datasets
    * @throws DatabaseException
    *           If a database error occurs
@@ -878,7 +899,7 @@ public class DataSetDB {
    *          The start date
    * @param end
    *          The end date
-   * @return The matching {@link DataSets}s
+   * @return The matching {@link DataSet}s
    * @throws DatabaseException
    *           If a database error occurs
    * @throws MissingParamException

@@ -54,3 +54,9 @@ external_scripts/NRT/config.toml
 *.sublime-project
 
 configuration/quince.properties
+
+# Ignore data files in data preparation folders
+DataPreparation/SAMI/*txt
+DataPreparation/SmartGuard/*csv
+DataPreparation/MapCO2/*csv
+

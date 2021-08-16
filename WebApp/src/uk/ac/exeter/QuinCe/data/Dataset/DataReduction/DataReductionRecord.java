@@ -14,7 +14,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 import uk.ac.exeter.QuinCe.utils.NoEmptyStringList;
 
-public class DataReductionRecord {
+public class DataReductionRecord implements Comparable<DataReductionRecord> {
 
   /**
    * The database ID of the measurement
@@ -87,7 +87,7 @@ public class DataReductionRecord {
    *          The QC messages
    */
   public void setQc(Flag flag, List<String> messages) {
-    if (flag.equals(qcFlag)) {
+    if (flag.equalSignificance(qcFlag)) {
       qcMessages.addAll(messages);
     } else if (flag.moreSignificantThan(qcFlag)) {
       qcFlag = flag;
@@ -156,5 +156,39 @@ public class DataReductionRecord {
 
   public Double getCalculationValue(String param) {
     return calculationValues.get(param);
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (int) (measurementId ^ (measurementId >>> 32));
+    result = prime * result + (int) (variableId ^ (variableId >>> 32));
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    DataReductionRecord other = (DataReductionRecord) obj;
+    if (measurementId != other.measurementId)
+      return false;
+    if (variableId != other.variableId)
+      return false;
+    return true;
+  }
+
+  @Override
+  public int compareTo(DataReductionRecord o) {
+    int result = ((Long) measurementId).compareTo((Long) o.measurementId);
+    if (result == 0) {
+      result = ((Long) variableId).compareTo((Long) o.variableId);
+    }
+    return result;
   }
 }

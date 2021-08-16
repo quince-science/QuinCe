@@ -135,7 +135,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   public Date getStartDate() {
     Date date = null;
     if (null != dataFile) {
-      LocalDateTime localDate = dataFile.getStartDate();
+      LocalDateTime localDate = dataFile.getRawStartTime();
       if (null != localDate) {
         date = Date.from(localDate.atZone(ZoneId.of("UTC")).toInstant());
       }
@@ -144,13 +144,14 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   }
 
   /**
-   * @return the endDate
-   * @throws DataFileException
+   * Get the last date in the file.
+   *
+   * @return The last date.
    */
   public Date getEndDate() {
     Date date = null;
     if (null != dataFile) {
-      LocalDateTime localDate = dataFile.getEndDate();
+      LocalDateTime localDate = dataFile.getRawEndTime();
       if (null != localDate) {
         date = Date.from(localDate.atZone(ZoneId.of("UTC")).toInstant());
       }
@@ -159,8 +160,14 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   }
 
   /**
+   * Add a processing message to the file.
+   *
+   * @param statusCode
+   *          The HTTP status code for the message.
    * @param summary
+   *          The message.
    * @param severityError
+   *          The JavaFaces severity.
    */
   public void putMessage(int statusCode, String summary,
     Severity severityError) {
@@ -269,18 +276,19 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   }
 
   /**
-   * Set the ID of the data file that this file will replace
+   * Set the ID of the data file that this file will replace.
    *
    * @param oldId
+   *          The ID of the file being replaced.
    */
   public void setReplacementFile(long oldId) {
     this.replaceFile = oldId;
   }
 
   /**
-   * Get the ID of the file that this file will replace
+   * Get the ID of the file that this file will replace.
    *
-   * @return
+   * @return The ID of the file being replaced.
    */
   public long getReplacementFile() {
     return replaceFile;
@@ -288,14 +296,16 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
   /**
    * Extract the file contents and ensure that it doesn't clash with existing
-   * files
+   * files.
    *
    * @param instrument
-   *          The instrument to which the file belongs
+   *          The instrument to which the file belongs.
    * @param appConfig
-   *          The application configuration
+   *          The application configuration.
    * @param allowExactDuplicate
-   *          Indicates whether exact duplicate files are accepted
+   *          Indicates whether exact duplicate files are accepted.
+   * @param allowEmpty
+   *          Indicates whether or not empty files are accepted.
    */
   public void extractFile(Instrument instrument, Properties appConfig,
     boolean allowExactDuplicate, boolean allowEmpty) {
@@ -351,8 +361,8 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
             getName() + " is empty. File accepted but not processed",
             FacesMessage.SEVERITY_INFO);
         } else {
-          if (null == getDataFile().getStartDate()
-            || null == getDataFile().getEndDate()) {
+          if (null == getDataFile().getRawStartTime()
+            || null == getDataFile().getRawEndTime()) {
             putMessage(UNPROCESSABLE_STATUS, getName()
               + " has date issues, see messages below. Please fix these problems and upload the file again.",
               FacesMessage.SEVERITY_ERROR);
@@ -362,8 +372,8 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
               FacesMessage.SEVERITY_ERROR);
           } else {
             List<DataFile> overlappingFiles = DataFileDB.getFilesWithinDates(
-              dataSource, matchedDefinition, getDataFile().getStartDate(),
-              getDataFile().getEndDate());
+              dataSource, matchedDefinition, getDataFile().getRawStartTime(),
+              getDataFile().getRawEndTime(), false);
 
             boolean fileOK = true;
             String fileMessage = null;
@@ -407,7 +417,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
                 }
               }
             } else if (DataFileDB.hasFileWithName(dataSource,
-              instrument.getDatabaseId(), getName())) {
+              instrument.getId(), getName())) {
 
               // We don't allow duplicate filenames
               fileOK = false;

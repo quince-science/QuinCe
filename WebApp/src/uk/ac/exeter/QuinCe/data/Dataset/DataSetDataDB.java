@@ -1,3 +1,4 @@
+
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.lang.reflect.Type;
@@ -11,9 +12,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -24,7 +28,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -101,14 +105,20 @@ public class DataSetDataDB {
    * Statement to store a measurement record
    */
   private static final String STORE_MEASUREMENT_STATEMENT = "INSERT INTO "
-    + "measurements (dataset_id, date, run_type) " + "VALUES (?, ?, ?)";
+    + "measurements (dataset_id, date) " + "VALUES (?, ?)";
+
+  private static final String STORE_RUN_TYPE_STATEMENT = "INSERT INTO "
+    + "measurement_run_types (measurement_id, variable_id, run_type) "
+    + "VALUES (?, ?, ?)";
 
   /**
    * Query to get all measurement records for a dataset
    */
   private static final String GET_MEASUREMENTS_QUERY = "SELECT "
-    + "id, date, run_type, measurement_values "
-    + "FROM measurements WHERE dataset_id = ? " + "ORDER BY date ASC";
+    + "m.id, m.date, m.measurement_values, r.variable_id, r.run_type "
+    + "FROM measurements m "
+    + "LEFT JOIN measurement_run_types r ON r.measurement_id = m.id "
+    + "WHERE dataset_id = ? " + "ORDER BY m.date ASC";
 
   private static final String GET_MEASUREMENT_TIMES_QUERY = "SELECT "
     + "id, date FROM measurements WHERE dataset_id = ? " + "AND run_type IN "
@@ -121,8 +131,19 @@ public class DataSetDataDB {
     + "data_reduction (measurement_id, variable_id, calculation_values, "
     + "qc_flag, qc_message) VALUES (?, ?, ?, ?, ?)";
 
+  /**
+   * Statement to update the QC info for a data reduction record
+   */
+  private static final String STORE_DATA_REDUCTION_QC_STATEMENT = "UPDATE "
+    + "data_reduction SET qc_flag = ?, qc_message = ? WHERE "
+    + "measurement_id = ? AND variable_id = ?";
+
   private static final String DELETE_DATA_REDUCTION_STATEMENT = "DELETE FROM "
     + "data_reduction WHERE measurement_id IN "
+    + "(SELECT id FROM measurements WHERE dataset_id = ?)";
+
+  private static final String DELETE_MEASUREMENT_RUN_TYPES_STATEMENT = "DELETE FROM "
+    + "measurement_run_types WHERE measurement_id IN "
     + "(SELECT id FROM measurements WHERE dataset_id = ?)";
 
   private static final String DELETE_MEASUREMENTS_STATEMENT = "DELETE FROM "
@@ -160,10 +181,11 @@ public class DataSetDataDB {
 
   private static final String GET_INTERNAL_CALIBRATION_SENSOR_VALUES_QUERY = "SELECT "
     + "sv.id, sv.file_column, sv.date, sv.value, sv.auto_qc, "
-    + "sv.user_qc_flag, sv.user_qc_message, m.run_type "
+    + "sv.user_qc_flag, sv.user_qc_message, mrt.run_type "
     + "FROM sensor_values sv "
     + "INNER JOIN measurements m ON m.date = sv.date "
-    + "WHERE m.dataset_id = ? AND m.run_type IN "
+    + "INNER JOIN measurement_run_types mrt ON m.id = mrt.measurement_id "
+    + "WHERE m.dataset_id = ? AND mrt.run_type IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + " AND sv.file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN;
 
@@ -198,8 +220,7 @@ public class DataSetDataDB {
       .getSensorsConfiguration();
 
     Instrument instrument = InstrumentDB.getInstrument(conn,
-      dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(),
-      resourceManager.getRunTypeCategoryConfiguration());
+      dataSet.getInstrumentId());
 
     SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 
@@ -288,7 +309,7 @@ public class DataSetDataDB {
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(sensorValues, "sensorValues");
+    MissingParam.checkMissing(sensorValues, "sensorValues", true);
 
     PreparedStatement addStmt = null;
     PreparedStatement updateStmt = null;
@@ -376,8 +397,13 @@ public class DataSetDataDB {
    *
    * @param conn
    *          A database connection
+   * @param instrument
+   *          The instrument to which the dataset belongs.
    * @param datasetId
    *          The database ID of the dataset whose values are to be retrieved
+   * @param ignoreFlushing
+   *          Indicates whether or not values in the instrument's flushing
+   *          period should be left out of the result.
    * @return The values
    * @throws RecordNotFoundException
    *           If the instrument configuration does not match the values
@@ -459,42 +485,46 @@ public class DataSetDataDB {
    *           If any required parameters are missing
    */
   public static void storeMeasurements(Connection conn,
-    List<Measurement> measurements)
+    Collection<Measurement> measurements)
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(measurements, "measurements");
 
-    PreparedStatement stmt = null;
-    ResultSet createdKeys = null;
+    try (
+      PreparedStatement measurementStmt = conn.prepareStatement(
+        STORE_MEASUREMENT_STATEMENT, Statement.RETURN_GENERATED_KEYS);
 
-    try {
-
-      stmt = conn.prepareStatement(STORE_MEASUREMENT_STATEMENT,
-        Statement.RETURN_GENERATED_KEYS);
+      PreparedStatement runTypeStmt = conn
+        .prepareStatement(STORE_RUN_TYPE_STATEMENT);) {
 
       // Batch up all the measurements
       for (Measurement measurement : measurements) {
-        stmt.setLong(1, measurement.getDatasetId());
-        stmt.setLong(2, DateTimeUtils.dateToLong(measurement.getTime()));
-        stmt.setString(3, measurement.getRunType());
-        stmt.addBatch();
-      }
+        measurementStmt.setLong(1, measurement.getDatasetId());
+        measurementStmt.setLong(2,
+          DateTimeUtils.dateToLong(measurement.getTime()));
+        measurementStmt.execute();
 
-      // Store them, and get the keys back
-      stmt.executeBatch();
-      createdKeys = stmt.getGeneratedKeys();
-      int currentMeasurement = -1;
-      while (createdKeys.next()) {
-        currentMeasurement++;
-        measurements.get(currentMeasurement)
-          .setDatabaseId(createdKeys.getLong(1));
+        try (ResultSet createdKey = measurementStmt.getGeneratedKeys()) {
+          if (!createdKey.next()) {
+            throw new DatabaseException(
+              "Did not get key from created measurement record");
+          }
+
+          measurement.setDatabaseId(createdKey.getLong(1));
+
+          for (Map.Entry<Long, String> runTypeEntry : measurement.getRunTypes()
+            .entrySet()) {
+            runTypeStmt.setLong(1, createdKey.getLong(1));
+            runTypeStmt.setLong(2, runTypeEntry.getKey());
+            runTypeStmt.setString(3, runTypeEntry.getValue());
+
+            runTypeStmt.execute();
+          }
+        }
       }
     } catch (Exception e) {
       throw new DatabaseException("Error while storing measurements", e);
-    } finally {
-      DatabaseUtils.closeResultSets(createdKeys);
-      DatabaseUtils.closeStatements(stmt);
     }
   }
 
@@ -502,10 +532,14 @@ public class DataSetDataDB {
    * Get the number of measurements in a dataset
    *
    * @param conn
+   *          A database connection
    * @param datasetId
-   * @return
-   * @throws MissingParamException
+   *          The dataset's database ID
+   * @return The number of records
    * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static int getRecordCount(Connection conn, long datasetId)
     throws MissingParamException, DatabaseException {
@@ -570,7 +604,8 @@ public class DataSetDataDB {
       stmt.setLong(1, datasetId);
 
       records = stmt.executeQuery();
-      while (records.next()) {
+      records.next();
+      while (!records.isAfterLast()) {
         Measurement measurement = measurementFromResultSet(datasetId, records);
         measurements.addMeasurement(measurement);
       }
@@ -590,8 +625,6 @@ public class DataSetDataDB {
    *
    * @param conn
    *          A database connection
-   * @param instrument
-   *          The instrument to which the dataset belongs
    * @param datasetId
    *          The database ID of the dataset
    * @return The measurements
@@ -617,7 +650,8 @@ public class DataSetDataDB {
       stmt.setLong(1, datasetId);
 
       records = stmt.executeQuery();
-      while (records.next()) {
+      records.next();
+      while (!records.isAfterLast()) {
         measurements.add(measurementFromResultSet(datasetId, records));
       }
 
@@ -634,17 +668,39 @@ public class DataSetDataDB {
   private static Measurement measurementFromResultSet(long datasetId,
     ResultSet record) throws SQLException {
 
+    // Get the main measurement details
     long id = record.getLong(1);
     LocalDateTime time = DateTimeUtils.longToDate(record.getLong(2));
-    String runType = record.getString(3);
-    String measurementValuesJson = record.getString(4);
+    String measurementValuesJson = record.getString(3);
 
     HashMap<Long, MeasurementValue> measurementValues = null == measurementValuesJson
       ? null
       : Measurement.gson.fromJson(measurementValuesJson,
         Measurement.MEASUREMENT_VALUES_TYPE);
 
-    return new Measurement(id, datasetId, time, runType, measurementValues);
+    // Now extract run types
+    Map<Long, String> runTypes = new HashMap<Long, String>();
+
+    boolean extractRunType = true;
+
+    while (extractRunType) {
+
+      // Get the run type details. If the variable Id is null, there is no run
+      // type
+      long variableId = record.getLong(4);
+      if (!record.wasNull()) {
+        runTypes.put(variableId, record.getString(5));
+      }
+
+      record.next();
+      if (record.isAfterLast() || record.getLong(1) != id) {
+        // We've gone off the end of the result set, or we've found
+        // a new measurement. Either way stop reading run types.
+        extractRunType = false;
+      }
+    }
+
+    return new Measurement(id, datasetId, time, runTypes, measurementValues);
   }
 
   /**
@@ -652,16 +708,14 @@ public class DataSetDataDB {
    *
    * @param conn
    *          A database connection
-   * @param values
-   *          The calculation values for the data reduction, as extracted from
-   *          the sensor values
    * @param dataReductionRecords
    *          The data reduction calculations
    * @throws DatabaseException
    *           If the data cannot be stored
    */
   public static void storeDataReduction(Connection conn,
-    List<DataReductionRecord> dataReductionRecords) throws DatabaseException {
+    Collection<DataReductionRecord> dataReductionRecords)
+    throws DatabaseException {
 
     try (PreparedStatement dataReductionStmt = conn
       .prepareStatement(STORE_DATA_REDUCTION_STATEMENT)) {
@@ -687,7 +741,45 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing data reduction", e);
     }
+  }
 
+  /**
+   * Store the results of data reduction in the database
+   *
+   * @param conn
+   *          A database connection
+   * @param values
+   *          The calculation values for the data reduction, as extracted from
+   *          the sensor values
+   * @param dataReductionRecords
+   *          The data reduction calculations
+   * @throws DatabaseException
+   *           If the data cannot be stored
+   */
+  public static void storeDataReductionQC(Connection conn,
+    Collection<ReadOnlyDataReductionRecord> dataReductionRecords)
+    throws DatabaseException {
+
+    try (PreparedStatement dataReductionStmt = conn
+      .prepareStatement(STORE_DATA_REDUCTION_QC_STATEMENT)) {
+      for (ReadOnlyDataReductionRecord dataReduction : dataReductionRecords) {
+
+        if (dataReduction.isDirty()) {
+          dataReductionStmt.setInt(1, dataReduction.getQCFlag().getFlagValue());
+          dataReductionStmt.setString(2, StringUtils
+            .collectionToDelimited(dataReduction.getQCMessages(), ";"));
+          dataReductionStmt.setLong(3, dataReduction.getMeasurementId());
+          dataReductionStmt.setLong(4, dataReduction.getVariableId());
+        }
+
+        dataReductionStmt.addBatch();
+      }
+
+      dataReductionStmt.executeBatch();
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while storing data reduction", e);
+    }
   }
 
   /**
@@ -725,8 +817,8 @@ public class DataSetDataDB {
    * Remove all measurement details from a data set, ready for them to be
    * recalculated
    *
-   * @param dataSource
-   *          A data source
+   * @param conn
+   *          A database connection
    * @param datasetId
    *          The database ID of the data set
    * @throws DatabaseException
@@ -742,6 +834,7 @@ public class DataSetDataDB {
 
     PreparedStatement delDataReductionStmt = null;
     PreparedStatement delMeasurementValuesStmt = null;
+    PreparedStatement delRunTypesStmt = null;
     PreparedStatement delMeasurementsStmt = null;
 
     try {
@@ -754,6 +847,11 @@ public class DataSetDataDB {
         .prepareStatement(DELETE_DATA_REDUCTION_STATEMENT);
       delDataReductionStmt.setLong(1, datasetId);
       delDataReductionStmt.execute();
+
+      delRunTypesStmt = conn
+        .prepareStatement(DELETE_MEASUREMENT_RUN_TYPES_STATEMENT);
+      delRunTypesStmt.setLong(1, datasetId);
+      delRunTypesStmt.execute();
 
       delMeasurementsStmt = conn
         .prepareStatement(DELETE_MEASUREMENTS_STATEMENT);
@@ -768,7 +866,7 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while deleting measurements", e);
     } finally {
-      DatabaseUtils.closeStatements(delMeasurementsStmt,
+      DatabaseUtils.closeStatements(delMeasurementsStmt, delRunTypesStmt,
         delMeasurementValuesStmt, delDataReductionStmt);
     }
   }
@@ -779,13 +877,11 @@ public class DataSetDataDB {
    *
    * @param conn
    *          A database connection
-   * @param start
-   *          The start date
-   * @param end
-   *          The end date
+   * @param datasetId
+   *          The dataset's database ID
    * @param columnIds
    *          The column IDs
-   * @return
+   * @return The matching {@link SensorValue}s.
    * @throws MissingParamException
    *           If any required parameters are missing
    * @throws DatabaseException
@@ -837,7 +933,7 @@ public class DataSetDataDB {
    * @throws DatabaseException
    *           If a database error occurs
    */
-  public static List<LocalDateTime> getSensorValueDates(DataSource dataSource,
+  public static List<LocalDateTime> getSensorValueTimes(DataSource dataSource,
     long datasetId) throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
@@ -888,7 +984,27 @@ public class DataSetDataDB {
     return result;
   }
 
-  public static Map<Long, Map<Variable, DataReductionRecord>> getDataReductionData(
+  /**
+   * Get the data reduction data for a dataset.
+   *
+   * <p>
+   * Returns a Map structure of Measurement ID -&gt; Variable -&gt;
+   * DataReductionRecord.
+   * <p>
+   *
+   * @param conn
+   *          A database connection
+   * @param instrument
+   *          The instrument
+   * @param dataSet
+   *          The dataset
+   * @return The data reduction data
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> getDataReductionData(
     Connection conn, Instrument instrument, DataSet dataSet)
     throws MissingParamException, DatabaseException {
 
@@ -896,7 +1012,7 @@ public class DataSetDataDB {
     MissingParam.checkMissing(instrument, "instrument");
     MissingParam.checkMissing(dataSet, "dataSet");
 
-    Map<Long, Map<Variable, DataReductionRecord>> result = new HashMap<Long, Map<Variable, DataReductionRecord>>();
+    Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> result = new HashMap<Long, Map<Variable, ReadOnlyDataReductionRecord>>();
 
     try (PreparedStatement stmt = conn
       .prepareStatement(GET_DATA_REDUCTION_QUERY)) {
@@ -920,22 +1036,20 @@ public class DataSetDataDB {
           Flag qcFlag = new Flag(records.getInt(4));
           String qcMessage = records.getString(5);
 
-          DataReductionRecord record = ReadOnlyDataReductionRecord.makeRecord(
-            measurementId, variableId, calculationValues, qcFlag, qcMessage);
+          ReadOnlyDataReductionRecord record = ReadOnlyDataReductionRecord
+            .makeRecord(measurementId, variableId, calculationValues, qcFlag,
+              qcMessage);
 
           if (measurementId != currentMeasurement) {
             result.put(measurementId,
-              new HashMap<Variable, DataReductionRecord>());
+              new HashMap<Variable, ReadOnlyDataReductionRecord>());
             currentMeasurement = measurementId;
           }
 
           result.get(currentMeasurement).put(instrument.getVariable(variableId),
             record);
-
         }
-
       }
-
     } catch (Exception e) {
       throw new DatabaseException("Error while retrieving data reduction data",
         e);
@@ -983,7 +1097,7 @@ public class DataSetDataDB {
 
   public static RunTypePeriods getRunTypePeriods(DataSource dataSource,
     Instrument instrument, DataSet dataSet, List<String> allowedRunTypes)
-    throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException, DataSetException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(instrument, "instrument");
@@ -1027,6 +1141,8 @@ public class DataSetDataDB {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(measurement, "measurement");
+
+    measurement.postProcessMeasurementValues();
 
     try (PreparedStatement stmt = conn
       .prepareStatement(STORE_MEASUREMENT_VALUES_STATEMENT)) {
@@ -1104,5 +1220,75 @@ public class DataSetDataDB {
     }
 
     return result;
+  }
+
+  /**
+   * Get the times for which {@link SensorValue}s of a given {@link SensorType}
+   * contain the specified value.
+   *
+   * <p>
+   * The times are returned as a {@link HashSet} for fast interrogation using
+   * {@link Set#contains}. They are not ordered.
+   * </p>
+   *
+   * @param conn
+   *          A database connection
+   * @param sensorType
+   *          The required {@link SensorType}
+   * @param value
+   *          The value being searched for
+   * @return The times of the {@link SensorValue}s that match the passed in
+   *         value.
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static HashSet<LocalDateTime> getFilteredSensorValueTimes(
+    Connection conn, Instrument instrument, DataSet dataset,
+    SensorType sensorType, String value)
+    throws MissingParamException, DatabaseException {
+
+    List<SensorValue> allValues = getSensorValuesForColumns(conn,
+      dataset.getId(),
+      instrument.getSensorAssignments().getColumnIds(sensorType));
+
+    return allValues.stream().filter(v -> v.getValue().equals(value))
+      .map(v -> v.getTime()).collect(Collectors.toCollection(HashSet::new));
+  }
+
+  /**
+   * Get the times for which {@link SensorValue}s of a given {@link SensorType}
+   * contain the specified value.
+   *
+   * <p>
+   * The times are returned as a {@link HashSet} for fast interrogation using
+   * {@link Set#contains}. They are not ordered.
+   * </p>
+   *
+   * @param conn
+   *          A database connection
+   * @param sensorType
+   *          The required {@link SensorType}
+   * @param value
+   *          The value being searched for
+   * @return The times of the {@link SensorValue}s that match the passed in
+   *         value.
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static HashSet<LocalDateTime> getFilteredSensorValueTimes(
+    Connection conn, Instrument instrument, DataSet dataset,
+    SensorType sensorType, double value)
+    throws MissingParamException, DatabaseException {
+
+    List<SensorValue> allValues = getSensorValuesForColumns(conn,
+      dataset.getId(),
+      instrument.getSensorAssignments().getColumnIds(sensorType));
+
+    return allValues.stream().filter(v -> v.getDoubleValue().equals(value))
+      .map(v -> v.getTime()).collect(Collectors.toCollection(HashSet::new));
   }
 }

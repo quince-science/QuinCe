@@ -6,10 +6,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -34,12 +35,6 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * The QC comment used for missing values
    */
   public static final String MISSING_QC_COMMENT = "Missing";
-
-  /**
-   * Prefix applied to QC comments on sensors inherited from positional QC
-   */
-  // TODO Make this private once the old ManualQCBean is deleted
-  public static final String POSITION_QC_PREFIX = "Position QC:";
 
   /**
    * The database ID of this value
@@ -254,7 +249,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
     // If we're ignoring the position, clear the QC message if it's from the
     // position QC
-    if (result.startsWith(POSITION_QC_PREFIX) && ignorePosition
+    if (result.startsWith(Measurement.POSITION_QC_PREFIX) && ignorePosition
       && columnId != FileDefinition.LONGITUDE_COLUMN_ID) {
       result = "";
     }
@@ -332,8 +327,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
       if (userQCFlag.equals(Flag.FLUSHING)) {
         setQC = false;
       } else if (null != userQCMessage
-        && userQCMessage.startsWith(POSITION_QC_PREFIX)
-        && userQCFlag.moreSignificantThan(flag)) {
+        && userQCMessage.contains(Measurement.POSITION_QC_PREFIX)) {
         // Don't override an existing position QC that's worse than what we're
         // trying to set
         setQC = false;
@@ -373,30 +367,69 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   public void setPositionQC(Flag positionFlag, String positionMessage)
     throws RoutineException {
 
-    if (positionFlag.isGood() && userQCMessage.startsWith(POSITION_QC_PREFIX)) {
-      if (!getAutoQcFlag().isGood()) {
-        setUserQCAction(Flag.NEEDED, getAutoQcResult().getAllMessages());
-      } else {
-        setUserQCAction(Flag.ASSUMED_GOOD, null);
+    // If the position flag is Good, revert to the Auto QC if we previously had
+    // a position message. Otherwise leave everything alone.
+    if (positionFlag.isGood()) {
+      if (userQCMessage.contains(Measurement.POSITION_QC_PREFIX)) {
+        // Reset the QC back to the base SensorValue QC
+        revertToAutoQc();
       }
+    } else {
 
-      // Rewrite the user QC if (a) already position QC, (b) NEEDED, or (c)
-      // worse than existing user QC
+      Flag sensorFlag = getUserQCFlag(true);
+      boolean needed = getUserQCFlag(false).equals(Flag.NEEDED);
+      if (sensorFlag.moreSignificantThan(positionFlag)) {
+        if (userQCMessage.contains(Measurement.POSITION_QC_PREFIX)) {
+          // The old flag may have been caused by Position QC, so we revert
+          // to the Auto QC result. Otherwise we leave the flag alone because it
+          // was nothing to do with position so it can remain.
+          revertToAutoQc();
 
-      // If this is already a position QC, just overwrite it
-    } else if (null != userQCMessage
-      && userQCMessage.startsWith(POSITION_QC_PREFIX)) {
+          // See if the position flag is now worse than the auto QC flag
+          if (positionFlag.moreSignificantThan(autoQC.getOverallFlag())) {
+            setUserQCAction(positionFlag,
+              Measurement.POSITION_QC_PREFIX + positionMessage);
+          } else if (positionFlag.equals(autoQC.getOverallFlag())) {
+            userQCFlag = positionFlag; // Remove the NEEDED flag from Auto QC
+            addUserQCMessage(Measurement.POSITION_QC_PREFIX + positionMessage);
+          }
+        }
+      } else if (positionFlag.moreSignificantThan(sensorFlag)) {
+        // Use the position QC
+        setUserQCAction(positionFlag,
+          Measurement.POSITION_QC_PREFIX + positionMessage);
+      } else {
+        // The flags are equal. Add the position QC if it hasn't been already
+        if (!userQCMessage.contains(Measurement.POSITION_QC_PREFIX)) {
+          addUserQCMessage(Measurement.POSITION_QC_PREFIX + positionMessage);
+        }
 
-      setUserQCAction(positionFlag, POSITION_QC_PREFIX + positionMessage);
+        if (needed) {
+          // The position dictates the QC flag, so it's no longer NEEDED
+          userQCFlag = positionFlag;
+        }
 
-      // If the existing flag is NEEDED and the position flag is worse than the
-      // auto qc flag, or the user flag is anything else and the position flag
-      // is worse, use the position QC
-    } else if ((userQCFlag.equals(Flag.NEEDED)
-      && positionFlag.moreSignificantThan(getAutoQcFlag()))
-      || positionFlag.moreSignificantThan(userQCFlag)) {
+        dirty = true;
+      }
+    }
+  }
 
-      setUserQCAction(positionFlag, POSITION_QC_PREFIX + positionMessage);
+  private void addUserQCMessage(String message) {
+    if (null == userQCMessage) {
+      userQCMessage = message;
+    } else {
+      if (userQCMessage.trim().length() > 0) {
+        userQCMessage += ';';
+      }
+      userQCMessage += message;
+    }
+  }
+
+  private void revertToAutoQc() throws RoutineException {
+    if (!getAutoQcFlag().isGood()) {
+      setUserQCAction(Flag.NEEDED, getAutoQcResult().getAllMessages());
+    } else {
+      setUserQCAction(Flag.ASSUMED_GOOD, null);
     }
   }
 
@@ -544,7 +577,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   }
 
   public boolean hasPositionQC() {
-    return userQCMessage.startsWith(POSITION_QC_PREFIX);
+    return userQCMessage.startsWith(Measurement.POSITION_QC_PREFIX);
   }
 
   @Override
@@ -646,7 +679,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
       double y0 = prior.getDoubleValue();
       double x1 = DateTimeUtils.dateToLong(post.getTime());
       double y1 = post.getDoubleValue();
-      result = interpolate(x0, y0, x1, y1,
+      result = Calculators.interpolate(x0, y0, x1, y1,
         DateTimeUtils.dateToLong(measurementTime));
     } else if (null != prior) {
       result = prior.getDoubleValue();
@@ -655,30 +688,6 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
 
     return result;
-  }
-
-  public static Double interpolate(LocalDateTime time0, Double y0,
-    LocalDateTime time1, Double y1, LocalDateTime measurementTime) {
-    Double result = null;
-
-    if (null != y0 && null != y1) {
-      double x0 = DateTimeUtils.dateToLong(time0);
-      double x1 = DateTimeUtils.dateToLong(time1);
-      result = interpolate(x0, y0, x1, y1,
-        DateTimeUtils.dateToLong(measurementTime));
-    } else if (null != y0) {
-      result = y0;
-    } else if (null != y1) {
-      result = y1;
-    }
-
-    return result;
-  }
-
-  private static double interpolate(double x0, double y0, double x1, double y1,
-    double x) {
-
-    return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
   }
 
   public static Flag getCombinedDisplayFlag(
@@ -712,5 +721,20 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
 
     return StringUtils.collectionToDelimited(comments, ";");
+  }
+
+  public static boolean allUserQCNeeded(Collection<SensorValue> values) {
+
+    boolean result = true;
+
+    for (SensorValue value : values) {
+      if (!value.getUserQCFlag().equals(Flag.NEEDED)
+        && !value.getUserQCFlag().equals(Flag.ASSUMED_GOOD)) {
+        result = false;
+        break;
+      }
+    }
+
+    return result;
   }
 }

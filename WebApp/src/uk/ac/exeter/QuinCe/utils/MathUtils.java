@@ -15,7 +15,8 @@ public class MathUtils {
 
     Map<String, Double> out = new HashMap<String, Double>();
     for (Map.Entry<String, Double> entry : map.entrySet()) {
-      if (null != entry.getValue() && Double.isNaN(entry.getValue())) {
+      if (null != entry.getValue() && (Double.isNaN(entry.getValue())
+        || Double.isInfinite(entry.getValue()))) {
         out.put(entry.getKey(), null);
       } else {
         out.put(entry.getKey(), entry.getValue());
@@ -46,6 +47,12 @@ public class MathUtils {
   }
 
   public static Double nullableParseDouble(String value) {
-    return null == value ? null : Double.parseDouble(value);
+    Double result = null;
+
+    if (null != value && value.trim().length() > 0) {
+      result = Double.parseDouble(value);
+    }
+
+    return result;
   }
 }

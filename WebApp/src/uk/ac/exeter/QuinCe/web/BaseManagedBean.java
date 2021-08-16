@@ -14,10 +14,10 @@ import org.primefaces.event.NodeCollapseEvent;
 import org.primefaces.event.NodeExpandEvent;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.User.UserPreferences;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -66,7 +66,7 @@ public abstract class BaseManagedBean {
   /**
    * The instruments owned by the user
    */
-  private List<InstrumentStub> instruments;
+  private List<Instrument> instruments;
 
   /**
    * Long date format for displaying dates
@@ -256,7 +256,7 @@ public abstract class BaseManagedBean {
       boolean userInstrumentExists = false;
       long currentUserInstrument = getUserPrefs().getLastInstrument();
       if (currentUserInstrument != -1) {
-        for (InstrumentStub instrument : instruments) {
+        for (Instrument instrument : instruments) {
           if (instrument.getId() == currentUserInstrument) {
             userInstrumentExists = true;
             break;
@@ -282,7 +282,7 @@ public abstract class BaseManagedBean {
       // session,
       // remove it so it will get reloaded on next access
         (null != currentInstrument
-          && currentInstrument.getDatabaseId() != currentUserInstrument)) {
+          && currentInstrument.getId() != currentUserInstrument)) {
         getSession().removeAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
         setForceInstrumentReload(false);
       }
@@ -297,7 +297,7 @@ public abstract class BaseManagedBean {
    *
    * @return The list of instruments
    */
-  public List<InstrumentStub> getInstruments() {
+  public List<Instrument> getInstruments() {
     if (null == instruments) {
       initialiseInstruments();
     }
@@ -315,9 +315,9 @@ public abstract class BaseManagedBean {
       // the user prefs and put it in the session
       if (null == currentFullInstrument) {
         long currentInstrumentId = getUserPrefs().getLastInstrument();
-        for (InstrumentStub instrumentStub : instruments) {
-          if (instrumentStub.getId() == currentInstrumentId) {
-            currentFullInstrument = instrumentStub.getFullInstrument();
+        for (Instrument instrument : instruments) {
+          if (instrument.getId() == currentInstrumentId) {
+            currentFullInstrument = instrument;
             getSession().setAttribute(CURRENT_FULL_INSTRUMENT_ATTR,
               currentFullInstrument);
           }
@@ -329,11 +329,10 @@ public abstract class BaseManagedBean {
           if (instruments.size() == 0) {
             getUserPrefs().setLastInstrument(-1);
           } else {
-            InstrumentStub stub = instruments.get(0);
-            currentFullInstrument = stub.getFullInstrument();
+            currentFullInstrument = instruments.get(0);
             getSession().setAttribute(CURRENT_FULL_INSTRUMENT_ATTR,
               currentFullInstrument);
-            getUserPrefs().setLastInstrument(stub.getId());
+            getUserPrefs().setLastInstrument(currentFullInstrument.getId());
           }
         }
       }
@@ -347,26 +346,27 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Get the current instrument
+   * Get the database ID of the instrument that is currently selected by the
+   * user.
    *
-   * @return The current instrument
+   * @return The current instrument ID.
    */
   public long getCurrentInstrumentId() {
 
     long result = -1;
 
     if (null != getCurrentInstrument()) {
-      result = getCurrentInstrument().getDatabaseId();
+      result = getCurrentInstrument().getId();
     }
 
     return result;
   }
 
   /**
-   * Set the current instrument
+   * Set the instrument that is currently selected by the user.
    *
-   * @param currentInstrument
-   *          The current instrument
+   * @param currentInstrumentId
+   *          The instrument's database ID
    */
   public void setCurrentInstrumentId(long currentInstrumentId) {
 
@@ -379,6 +379,13 @@ public abstract class BaseManagedBean {
       // Remove the current instrument from the session;
       // It will be replaced on next access
       getSession().removeAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
+
+      try {
+        UserDB.savePreferences(getDataSource(), getUserPrefs());
+      } catch (Exception e) {
+        // Log exceptions but ignore them
+        e.printStackTrace();
+      }
     }
   }
 
@@ -395,8 +402,8 @@ public abstract class BaseManagedBean {
    * @return {@code true} if the user has any instruments; {@code false} if not.
    */
   public boolean getHasInstruments() {
-    List<InstrumentStub> instruments = getInstruments();
-    return instruments.size() > 0;
+    List<Instrument> instruments = getInstruments();
+    return (null != instruments && instruments.size() > 0);
   }
 
   /**
@@ -408,10 +415,16 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Set to true to make full instrument reload on initialiseInstrument This is
-   * reset to false after running initialiseInstrument
+   * Set to true to make full instrument reload when
+   * {@link #initialiseInstruments()}.
+   *
+   * <p>
+   * This is automatically reset to {@code false} after
+   * {@link #initialiseInstruments()} is called.
+   * </p>
    *
    * @param forceReload
+   *          The flag value.
    */
   public void setForceInstrumentReload(boolean forceReload) {
     this.forceInstrumentReload = forceReload;
@@ -502,6 +515,8 @@ public abstract class BaseManagedBean {
    * Used for testing the error page. There is a link on the login page that's
    * usually hidden. Unhide it to throw an error on demand.
    * </p>
+   *
+   * @return The formatted error string.
    */
   public String throwError() {
     return internalError(new BeanException("Test exception"));

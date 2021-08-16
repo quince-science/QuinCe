@@ -261,7 +261,7 @@ public class JobManager {
     long addedID = DatabaseUtils.NO_DATABASE_RECORD;
 
     // Get the user's ID
-    int ownerID = NO_OWNER;
+    long ownerID = NO_OWNER;
 
     if (null != owner) {
       // Check that the user exists
@@ -307,7 +307,7 @@ public class JobManager {
         if (NO_OWNER == ownerID) {
           stmt.setNull(1, java.sql.Types.INTEGER);
         } else {
-          stmt.setInt(1, ownerID);
+          stmt.setLong(1, ownerID);
         }
 
         stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
@@ -1213,15 +1213,11 @@ public class JobManager {
     MissingParam.checkPositive(jobId, "jobId");
 
     String result = null;
-    Connection conn = null;
 
-    try {
-      conn = dataSource.getConnection();
+    try (Connection conn = dataSource.getConnection()) {
       result = getJobStatus(conn, jobId);
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving job status", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
     }
 
     return result;

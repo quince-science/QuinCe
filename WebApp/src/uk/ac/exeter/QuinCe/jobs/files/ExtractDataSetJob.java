@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriod;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
@@ -26,7 +27,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -119,8 +119,7 @@ public class ExtractDataSetJob extends DataSetJob {
       RunTypePeriods runTypePeriods = new RunTypePeriods();
 
       CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
-        .getMostRecentCalibrations(conn, instrument.getDatabaseId(),
-          dataSet.getStart());
+        .getMostRecentCalibrations(conn, instrument, dataSet.getStart());
 
       // Collect the true start and end times of the dataset based on the
       // actual data
@@ -142,7 +141,7 @@ public class ExtractDataSetJob extends DataSetJob {
           try {
 
             List<String> line = file.getLine(currentLine);
-            LocalDateTime time = file.getDate(line);
+            LocalDateTime time = file.getOffsetTime(line);
 
             if ((time.equals(dataSet.getStart())
               || time.isAfter(dataSet.getStart()))
@@ -155,8 +154,7 @@ public class ExtractDataSetJob extends DataSetJob {
 
               realEndTime = time;
 
-              if (null != fileDefinition.getLongitudeSpecification()) {
-
+              if (!dataSet.fixedPosition()) {
                 String longitude = file.getLongitude(line);
 
                 sensorValues.add(new SensorValue(dataSet.getId(),
@@ -176,9 +174,6 @@ public class ExtractDataSetJob extends DataSetJob {
                     // Ignore it now. QC will pick it up later.
                   }
                 }
-              }
-
-              if (null != fileDefinition.getLatitudeSpecification()) {
 
                 String latitude = file.getLatitude(line);
 
@@ -202,7 +197,7 @@ public class ExtractDataSetJob extends DataSetJob {
               }
 
               // Assigned columns
-              for (Entry<SensorType, List<SensorAssignment>> entry : instrument
+              for (Entry<SensorType, TreeSet<SensorAssignment>> entry : instrument
                 .getSensorAssignments().entrySet()) {
 
                 for (SensorAssignment assignment : entry.getValue()) {
@@ -243,7 +238,8 @@ public class ExtractDataSetJob extends DataSetJob {
                 }
               }
             }
-          } catch (DateTimeSpecificationException e) {
+          } catch (Exception e) {
+            // TODO #1967 Log error to dataset comments
             // Log the error but continue with the next line
             System.out.println(
               "*** DATA EXTRACTION ERROR IN FILE " + file.getDatabaseId() + "("
@@ -293,7 +289,11 @@ public class ExtractDataSetJob extends DataSetJob {
             }
 
             // If the current period is an IGNORE run type, remove the value.
-            if (instrument.getRunTypeCategory(currentPeriod.getRunType())
+            // We can only tell this for "Generic" instruments, ie those with a
+            // Run Type column
+            if (instrument
+              .getRunTypeCategory(Measurement.GENERIC_RUN_TYPE_VARIABLE,
+                currentPeriod.getRunType())
               .equals(RunTypeCategory.IGNORED)) {
               value.setValue(null);
             } else if (inFlushingPeriod(value.getTime(), currentPeriod,
@@ -323,7 +323,7 @@ public class ExtractDataSetJob extends DataSetJob {
       dataSet.setBounds(minLon, minLat, maxLon, maxLat);
 
       // Trigger the Auto QC job
-      dataSet.setStatus(DataSet.STATUS_AUTO_QC);
+      dataSet.setStatus(DataSet.STATUS_SENSOR_QC);
       DataSetDB.updateDataSet(conn, dataSet);
       Properties jobProperties = new Properties();
       jobProperties.setProperty(AutoQCJob.ID_PARAM,

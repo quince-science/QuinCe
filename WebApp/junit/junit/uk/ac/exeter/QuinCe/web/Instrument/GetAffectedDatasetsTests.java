@@ -22,68 +22,57 @@ import uk.ac.exeter.QuinCe.web.Instrument.CalibrationBean;
 public abstract class GetAffectedDatasetsTests extends TestSetTest {
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int ACTION1_FIELD = 0;
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int ID1_FIELD = 1;
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int TIME1_FIELD = 2;
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int TARGET1_FIELD = 3;
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int ACTION2_FIELD = 4;
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int ID2_FIELD = 5;
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int TIME2_FIELD = 6;
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int TARGET2_FIELD = 7;
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int AFFECTED_DATASETS_FIELD = 8;
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int CAN_BE_REPROCESSED_FIELD = 9;
 
   /**
-   * A column in the Test Set file for
-   * {@link #getAffectedDatasetsTest(TestSetLine)}.
+   * A column in the Test Set file for {@link #runTest(TestSetLine)}.
    */
   private static final int DATASETS_STATUS_FIELD = 10;
 

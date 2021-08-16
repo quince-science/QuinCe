@@ -15,7 +15,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -32,12 +33,6 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
  *
  */
 public class ResourceManager implements ServletContextListener {
-
-  /**
-   * The name of the QC Routines configuration for routines run when files are
-   * first uploaded
-   */
-  public static final String INITIAL_CHECK_ROUTINES_CONFIG = "InitialCheck";
 
   /**
    * The name of the QC routines configuration for routines run during full
@@ -60,6 +55,8 @@ public class ResourceManager implements ServletContextListener {
   private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
 
   private QCRoutinesConfiguration qcRoutinesConfiguration;
+
+  private DataReductionQCRoutinesConfiguration dataReductionQCRoutinesConfiguration;
 
   /**
    * The singleton instance of the resource manage
@@ -124,6 +121,15 @@ public class ResourceManager implements ServletContextListener {
       throw new RuntimeException("Could not initialise QC Routines", e);
     }
 
+    // Initialise the Data Reduction QC Routines configuration
+    try {
+      dataReductionQCRoutinesConfiguration = new DataReductionQCRoutinesConfiguration(
+        sensorsConfiguration,
+        configuration.getProperty("data_reduction_qc_routines.configfile"));
+    } catch (Exception e) {
+      throw new RuntimeException("Could not initialise QC Routines", e);
+    }
+
     // Initialise the file export options configuration
     try {
       ExportConfig.init(conn, sensorsConfiguration,
@@ -175,6 +181,10 @@ public class ResourceManager implements ServletContextListener {
 
   public QCRoutinesConfiguration getQCRoutinesConfiguration() {
     return qcRoutinesConfiguration;
+  }
+
+  public DataReductionQCRoutinesConfiguration getDataReductionQCRoutinesConfiguration() {
+    return dataReductionQCRoutinesConfiguration;
   }
 
   /**

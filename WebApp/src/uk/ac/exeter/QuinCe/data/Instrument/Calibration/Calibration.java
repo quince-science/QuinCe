@@ -1,11 +1,13 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
@@ -40,7 +42,7 @@ public abstract class Calibration implements Comparable<Calibration> {
   /**
    * The instrument to which this calibration belongs
    */
-  private long instrumentId;
+  protected Instrument instrument;
 
   /**
    * The calibration type
@@ -50,8 +52,6 @@ public abstract class Calibration implements Comparable<Calibration> {
   /**
    * The date and time of the deployment. Some calibrations do not have a time,
    * in which case the time portion will be set to midnight.
-   *
-   * @see #hasTime
    */
   private LocalDateTime deploymentDate = LocalDateTime.now(ZoneOffset.UTC)
     .truncatedTo(ChronoUnit.DAYS);
@@ -72,14 +72,16 @@ public abstract class Calibration implements Comparable<Calibration> {
   protected List<CalibrationCoefficient> coefficients = null;
 
   /**
-   * Create an empty calibration for an instrument
+   * Create an empty calibration for an instrument.
    *
    * @param instrumentId
-   *          The instrument's database ID
+   *          The instrument's database ID.
+   * @param type
+   *          The calibration type.
    */
-  protected Calibration(long instrumentId, String type) {
+  protected Calibration(Instrument instrument, String type) {
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
-    this.instrumentId = instrumentId;
+    this.instrument = instrument;
     this.type = type;
   }
 
@@ -93,17 +95,17 @@ public abstract class Calibration implements Comparable<Calibration> {
    * @param target
    *          The target
    */
-  protected Calibration(long instrumentId, String type, String target) {
+  protected Calibration(Instrument instrument, String type, String target) {
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
-    this.instrumentId = instrumentId;
+    this.instrument = instrument;
     this.type = type;
     this.target = target;
   }
 
-  protected Calibration(long id, long instrumentId, String type,
+  protected Calibration(long id, Instrument instrument, String type,
     String target) {
     this.id = id;
-    this.instrumentId = instrumentId;
+    this.instrument = instrument;
     this.type = type;
     this.target = target;
   }
@@ -207,8 +209,8 @@ public abstract class Calibration implements Comparable<Calibration> {
    *
    * @return The instrument ID
    */
-  public long getInstrumentId() {
-    return instrumentId;
+  public Instrument getInstrument() {
+    return instrument;
   }
 
   /**
@@ -221,7 +223,7 @@ public abstract class Calibration implements Comparable<Calibration> {
       initialiseCoefficients();
     }
 
-    List<Double> values = new ArrayList<Double>(coefficients.size());
+    List<String> values = new ArrayList<String>(coefficients.size());
 
     for (CalibrationCoefficient coefficient : coefficients) {
       values.add(coefficient.getValue());
@@ -272,7 +274,7 @@ public abstract class Calibration implements Comparable<Calibration> {
    * @throws CalibrationException
    *           If an incorrect number of coefficients is supplied
    */
-  public void setCoefficients(List<Double> coefficients)
+  public void setCoefficients(List<String> coefficients)
     throws CalibrationException {
 
     if (coefficients.size() != getCoefficientNames().size()) {
@@ -326,7 +328,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   @Override
   public int compareTo(Calibration o) {
-    int result = (int) (this.instrumentId - o.instrumentId);
+    int result = (int) (this.instrument.getId() - o.instrument.getId());
 
     if (result == 0) {
       result = this.type.compareTo(o.type);
@@ -346,12 +348,25 @@ public abstract class Calibration implements Comparable<Calibration> {
    *          The coefficient name
    * @return The coefficient value
    */
-  public Double getCoefficient(String name) {
+  public Double getDoubleCoefficient(String name) {
     Double result = null;
 
     for (CalibrationCoefficient coefficient : getCoefficients()) {
       if (coefficient.getName().equals(name)) {
-        result = coefficient.getValue();
+        result = Double.parseDouble(coefficient.getValue());
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  public BigDecimal getBigDecimalCoefficient(String name) {
+    BigDecimal result = null;
+
+    for (CalibrationCoefficient coefficient : getCoefficients()) {
+      if (coefficient.getName().equals(name)) {
+        result = new BigDecimal(coefficient.getValue());
         break;
       }
     }
@@ -369,10 +384,16 @@ public abstract class Calibration implements Comparable<Calibration> {
   public abstract Double calibrateValue(Double rawValue);
 
   /**
-   * Check that this calibration is valid. Most calibrations are valid all the
-   * time, so that's the default response. Otherwise this method is overridden
+   * Check that this calibration is valid.
    *
-   * @return
+   * <p>
+   * Most calibrations are valid all the time, so the default implementation
+   * always returns {@code true}. Override the method to provide more
+   * sophisticated logic.
+   * </p>
+   *
+   * @return {@code true} if the calibration is valid; {@code false} if it is
+   *         not.
    */
   public boolean isValid() {
     return true;
@@ -388,7 +409,23 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   @Override
   public String toString() {
-    return id + ";" + getType() + ";" + target;
+    StringBuilder result = new StringBuilder();
+
+    result.append(target);
+    result.append(':');
+
+    if (null == coefficients) {
+      result.append("null");
+    } else {
+      coefficients.stream().forEach(c -> {
+        result.append(c.getName());
+        result.append('=');
+        result.append(c.getValue());
+        result.append(';');
+      });
+    }
+
+    return result.toString();
   }
 
   @Override

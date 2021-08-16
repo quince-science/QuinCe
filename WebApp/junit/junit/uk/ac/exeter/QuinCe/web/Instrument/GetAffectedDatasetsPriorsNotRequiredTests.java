@@ -37,6 +37,8 @@ public class GetAffectedDatasetsPriorsNotRequiredTests
    * Tests that editing calibrations detects the correct set of affected
    * datasets.
    *
+   * @param line
+   *          The test line.
    * @throws Exception
    *           If any internal errors are encountered.
    */

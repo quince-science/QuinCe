@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -338,18 +339,21 @@ public class ExportBean extends BaseManagedBean {
           // There is only one column registered for this SensorType, so use it
           useValueInThisColumn = true;
         } else {
-          // There are multiple columns for this SensorType, so where the value
-          // goes is determined by the measurement's Run Type
+          // There are multiple columns for this SensorType (e.g. xCO2 is for
+          // underway marine pCO2 and underway atmospheric pCO2, so where the
+          // value goes is determined by the measurement's Run Type
           if (null == measurement) {
             // There is no measurement, so we leave the column blank
             useValueInThisColumn = false;
 
           } else {
+
             // If this column is for the Run Type of the measurement, we
             // populate it. Otherwise we leave it blank - there'll be another
             // column for the Run Type somewhere (or perhaps not, if it's a
             // non-measurement run type eg gas standard run)
-            String runType = measurement.getRunType();
+            String runType = measurement
+              .getRunType(Measurement.GENERIC_RUN_TYPE_VARIABLE);
 
             // Look through all the column headings defined for the run type to
             // see if it contains our current column. If it does, we add the
@@ -515,29 +519,47 @@ public class ExportBean extends BaseManagedBean {
         output.append(exportOption.getSeparator());
       }
     } else {
-
-      // Value
-      if (null == value.getValue()) {
+      if (value.getQcFlag().equals(Flag.FLUSHING)) {
+        // Empty columns
         output.append(exportOption.getMissingValue());
-      } else {
-        output.append(exportOption.format(value.getValue()));
-      }
 
-      // QC Flag
-      if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
-        output.append(exportOption.getSeparator());
-        output.append(value.getQcFlag().getWoceValue());
-
-        // QC Comment
-        if (exportOption.includeQCComments()) {
+        if (includeQcColumns) {
           output.append(exportOption.getSeparator());
-          output.append('"' + exportOption.format(value.getQcMessage()) + '"');
-        }
-      }
 
-      if (includeType) {
-        output.append(exportOption.getSeparator());
-        output.append(value.getType());
+          if (exportOption.includeQCComments()) {
+            output.append(exportOption.getSeparator());
+          }
+        }
+
+        if (includeType) {
+          output.append(exportOption.getSeparator()); // Type
+        }
+      } else {
+
+        // Value
+        if (null == value.getValue()) {
+          output.append(exportOption.getMissingValue());
+        } else {
+          output.append(exportOption.format(value.getValue()));
+        }
+
+        // QC Flag
+        if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
+          output.append(exportOption.getSeparator());
+          output.append(value.getQcFlag().getWoceValue());
+
+          // QC Comment
+          if (exportOption.includeQCComments()) {
+            output.append(exportOption.getSeparator());
+            output
+              .append('"' + exportOption.format(value.getQcMessage()) + '"');
+          }
+        }
+
+        if (includeType) {
+          output.append(exportOption.getSeparator());
+          output.append(value.getType());
+        }
       }
     }
   }
@@ -554,6 +576,13 @@ public class ExportBean extends BaseManagedBean {
 
     if (null != mode) {
       header = getModeHeader(heading, (int) mode);
+    } else if (heading.getCodeName()
+      .equals(FileDefinition.TIME_COLUMN_HEADING.getCodeName())) {
+      if (null != exportOption.getTimestampHeader()) {
+        header = exportOption.getTimestampHeader();
+      } else {
+        header = heading.getShortName();
+      }
     } else {
       String replacementHeader = exportOption
         .getReplacementHeader(heading.getCodeName());
@@ -671,8 +700,10 @@ public class ExportBean extends BaseManagedBean {
     for (DataFile file : rawFiles) {
       JSONObject fileJson = new JSONObject();
       fileJson.put("filename", file.getFilename());
-      fileJson.put("startDate", DateTimeUtils.toIsoDate(file.getStartDate()));
-      fileJson.put("endDate", DateTimeUtils.toIsoDate(file.getEndDate()));
+      fileJson.put("startDate",
+        DateTimeUtils.toIsoDate(file.getRawStartTime()));
+      fileJson.put("endDate", DateTimeUtils.toIsoDate(file.getRawEndTime()));
+      fileJson.put("timeOffset", file.getTimeOffset());
       raw.put(fileJson);
     }
     manifest.put("raw", raw);

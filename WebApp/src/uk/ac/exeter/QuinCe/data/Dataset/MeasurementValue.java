@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -19,14 +20,14 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <p>
  * The calculated value is derived from one or more {@link SensorValue}s,
  * depending on the configuration of the instrument, the relative time of the
- * measurement and available {@link SensorValues}, and whether bad/questionable
- * values are being ignored.
+ * measurement and available {@link SensorValue}s, and whether
+ * {@link Flag#BAD}/{@link Flag#QUESTIONABLE} values are being ignored.
  * </p>
  *
  * <p>
  * This class implements the most common calculation of a measurement value.
- * Some {@link SensorTypes} require more complex calculations (e.g. xCO2 with
- * standards, which also requires xH2O). These can be implemented by overriding
+ * Some {@link SensorType}s require more complex calculations (e.g. xCO₂ with
+ * standards, which also requires xH₂O). These can be implemented by overriding
  * classes.
  * </p>
  *
@@ -203,26 +204,28 @@ public class MeasurementValue implements PlotPageTableValue {
    *          member count.
    */
   public void addSensorValue(SensorValue value, boolean incrMemberCount) {
-    if (!sensorValueIds.contains(value.getId())) {
-      sensorValueIds.add(value.getId());
+    if (null != value) {
+      if (!sensorValueIds.contains(value.getId())) {
+        sensorValueIds.add(value.getId());
 
-      Flag valueFlag = value.getDisplayFlag().getSimpleFlag();
+        Flag valueFlag = value.getDisplayFlag().getSimpleFlag();
 
-      if (valueFlag.equals(flag)) {
-        if (value.getUserQCMessage().trim().length() > 0) {
-          qcMessage.add(value.getUserQCMessage());
+        if (valueFlag.equals(flag)) {
+          if (value.getUserQCMessage().trim().length() > 0) {
+            qcMessage.add(value.getUserQCMessage());
+          }
+        } else if (valueFlag.moreSignificantThan(flag)) {
+          flag = valueFlag;
+          qcMessage.clear();
+
+          if (value.getUserQCMessage().trim().length() > 0) {
+            qcMessage.add(value.getUserQCMessage());
+          }
         }
-      } else if (valueFlag.moreSignificantThan(flag)) {
-        flag = valueFlag;
-        qcMessage.clear();
 
-        if (value.getUserQCMessage().trim().length() > 0) {
-          qcMessage.add(value.getUserQCMessage());
+        if (incrMemberCount) {
+          memberCount++;
         }
-      }
-
-      if (incrMemberCount) {
-        memberCount++;
       }
     }
   }
@@ -281,6 +284,26 @@ public class MeasurementValue implements PlotPageTableValue {
 
   public String getProperty(String key) {
     return properties.getProperty(key);
+  }
+
+  /**
+   * Replace the existing QC information with the supplied values.
+   *
+   * @param flag
+   *          The new QC flag
+   * @param message
+   *          The new QC message
+   */
+  public void overrideQC(Flag flag, String message) {
+    this.flag = flag;
+    this.qcMessage = Arrays.asList(new String[] { message });
+  }
+
+  public void addQcMessage(String message) {
+    if (null == qcMessage) {
+      qcMessage = new ArrayList<String>();
+    }
+    qcMessage.add(message);
   }
 
   @Override

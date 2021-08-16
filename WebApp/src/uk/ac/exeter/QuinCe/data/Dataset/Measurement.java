@@ -3,8 +3,11 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -13,9 +16,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -29,9 +34,19 @@ public class Measurement implements Comparable<Measurement> {
 
   public static final MeasurementTimeComparator TIME_COMPARATOR = new MeasurementTimeComparator();
 
+  public static final String POSITION_QC_PREFIX = "Position QC:";
+
   protected static Gson gson;
 
   protected static Type MEASUREMENT_VALUES_TYPE;
+
+  public static final long GENERIC_RUN_TYPE_VARIABLE = -1L;
+
+  public static final String IGNORED_RUN_TYPE = "__I";
+
+  public static final String INTERNAL_CALIBRATION_RUN_TYPE = "__C";
+
+  public static final String MEASUREMENT_RUN_TYPE = "__M";
 
   /**
    * The measurement's database ID
@@ -49,12 +64,20 @@ public class Measurement implements Comparable<Measurement> {
   private final LocalDateTime time;
 
   /**
-   * The run type of the measurement (optional)
+   * The run types of the measurement.
+   *
+   * <p>
+   * Multiple run types may be applicable to different variables. Use
+   * {@link #GENERIC_RUN_TYPE_VARIABLE} for the generic run type.
    */
-  private final String runType;
+  private final Map<Long, String> runTypes;
 
   /**
    * The values used to perform data reduction for this measurement.
+   *
+   * <p>
+   * The {@link Long} is the database ID of a {@link SensorType}.
+   * </p>
    */
   private HashMap<Long, MeasurementValue> measurementValues;
 
@@ -82,12 +105,13 @@ public class Measurement implements Comparable<Measurement> {
    * @param runType
    *          The run type of the measurement
    */
-  public Measurement(long datasetId, LocalDateTime time, String runType) {
+  public Measurement(long datasetId, LocalDateTime time,
+    Map<Long, String> runTypes) {
 
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.datasetId = datasetId;
     this.time = time;
-    this.runType = runType;
+    this.runTypes = runTypes;
     this.measurementValues = new HashMap<Long, MeasurementValue>();
   }
 
@@ -113,17 +137,18 @@ public class Measurement implements Comparable<Measurement> {
     this.id = id;
     this.datasetId = datasetId;
     this.time = time;
-    this.runType = runType;
+    this.runTypes = new HashMap<Long, String>();
     this.measurementValues = new HashMap<Long, MeasurementValue>();
   }
 
   public Measurement(long id, long datasetId, LocalDateTime time,
-    String runType, HashMap<Long, MeasurementValue> measurementValues) {
+    Map<Long, String> runTypes,
+    HashMap<Long, MeasurementValue> measurementValues) {
 
     this.id = id;
     this.datasetId = datasetId;
     this.time = time;
-    this.runType = runType;
+    this.runTypes = runTypes;
 
     if (null == measurementValues) {
       this.measurementValues = new HashMap<Long, MeasurementValue>();
@@ -147,7 +172,7 @@ public class Measurement implements Comparable<Measurement> {
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.datasetId = DatabaseUtils.NO_DATABASE_RECORD;
     this.time = time;
-    this.runType = null;
+    this.runTypes = new HashMap<Long, String>();
     this.measurementValues = null;
   }
 
@@ -193,8 +218,16 @@ public class Measurement implements Comparable<Measurement> {
    *
    * @return The run type
    */
-  public String getRunType() {
-    return runType;
+  public String getRunType(long variableId) {
+    return runTypes.get(variableId);
+  }
+
+  public String getRunType(Variable variable) {
+    return runTypes.get(variable.getId());
+  }
+
+  public Map<Long, String> getRunTypes() {
+    return runTypes;
   }
 
   /*
@@ -229,6 +262,17 @@ public class Measurement implements Comparable<Measurement> {
     throws SensorTypeNotFoundException {
     return getMeasurementValue(ResourceManager.getInstance()
       .getSensorsConfiguration().getSensorType(sensorType));
+  }
+
+  /**
+   * See if this measurement has values for one or more of the specified sensor
+   * types.
+   *
+   * @param sensorTypes
+   * @return
+   */
+  public boolean hasMeasurementValue(Collection<SensorType> sensorTypes) {
+    return sensorTypes.stream().anyMatch(this::hasMeasurementValue);
   }
 
   public boolean hasMeasurementValue(SensorType sensorType) {
@@ -273,11 +317,77 @@ public class Measurement implements Comparable<Measurement> {
 
   @Override
   public String toString() {
-    return "#" + id + " " + runType;
+    return "#" + id;
   }
 
   public static Measurement dummyTimeMeasurement(LocalDateTime time) {
     return new Measurement(time);
+  }
+
+  /**
+   * Add the run types from the supplied measurement to this one.
+   *
+   * <p>
+   * Clashing run types are overwritten by the incoming run types.
+   * </p>
+   *
+   * @param incoming
+   *          The source of the new run types
+   */
+  public void addRunTypes(Measurement incoming) {
+    this.runTypes.putAll(incoming.runTypes);
+  }
+
+  /**
+   * Perform final checks on measurement values before they are stored in the
+   * database.
+   *
+   * <p>
+   * Performs the following actions:
+   * </p>
+   * <ul>
+   * <li>If there are Position QC flags, apply them to all the measurement
+   * values. Anything with a bad position is bad by definition, so no other
+   * lesser flags are valid even if they're set by the user.</li>
+   * </ul>
+   */
+  public void postProcessMeasurementValues() {
+
+    MeasurementValue longitude = measurementValues.get(SensorType.LONGITUDE_ID);
+    if (null != longitude) {
+      Flag positionFlag = longitude.getQcFlag();
+      if (positionFlag.equals(Flag.QUESTIONABLE)
+        || positionFlag.equals(Flag.BAD)) {
+
+        String positionMessage = longitude.getQcMessage();
+
+        for (Map.Entry<Long, MeasurementValue> valueEntry : measurementValues
+          .entrySet()) {
+          if (valueEntry.getKey() != SensorType.LONGITUDE_ID
+            && valueEntry.getKey() != SensorType.LATITUDE_ID) {
+
+            MeasurementValue value = valueEntry.getValue();
+            Flag valueFlag = value.getQcFlag();
+
+            // Note that we override any QC on these values, even if the user
+            // set them.
+            if (positionFlag.moreSignificantThan(valueFlag)) {
+              value.overrideQC(positionFlag,
+                POSITION_QC_PREFIX + positionMessage);
+            } else {
+              List<String> existingMessages = value.getQcMessages();
+
+              boolean hasPosition = existingMessages.stream()
+                .anyMatch(m -> m.startsWith(POSITION_QC_PREFIX));
+
+              if (!hasPosition) {
+                value.addQcMessage(POSITION_QC_PREFIX + positionMessage);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 

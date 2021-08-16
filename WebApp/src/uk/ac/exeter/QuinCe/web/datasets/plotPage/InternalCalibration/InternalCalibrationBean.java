@@ -55,7 +55,7 @@ public class InternalCalibrationBean extends PlotPageBean {
   protected void processDirtyData() {
     try {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId,
-        DataSet.STATUS_AUTO_QC);
+        DataSet.STATUS_SENSOR_QC);
       Properties jobProperties = new Properties();
       jobProperties.setProperty(DataReductionJob.ID_PARAM,
         String.valueOf(datasetId));

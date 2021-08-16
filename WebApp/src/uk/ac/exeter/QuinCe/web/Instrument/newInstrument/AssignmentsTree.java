@@ -10,6 +10,7 @@ import java.util.TreeSet;
 
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
+import org.primefaces.util.TreeUtils;
 
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
@@ -20,7 +21,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentExce
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -79,10 +79,15 @@ public class AssignmentsTree {
 
   private TreeSet<FileDefinitionBuilder> files;
 
+  private static SensorAssignmentTreeNodeComparator nodeComparator;
+
+  static {
+    nodeComparator = new SensorAssignmentTreeNodeComparator();
+  }
+
   protected AssignmentsTree(List<Variable> variables,
     SensorAssignments assignments, boolean needsPosition)
-    throws SensorConfigurationException, SensorTypeNotFoundException,
-    SensorAssignmentException {
+    throws SensorConfigurationException, SensorAssignmentException {
 
     root = new DefaultTreeNode("Root", null);
     this.assignments = assignments;
@@ -94,8 +99,7 @@ public class AssignmentsTree {
   }
 
   private void buildTree(List<Variable> variables)
-    throws SensorConfigurationException, SensorTypeNotFoundException,
-    SensorAssignmentException {
+    throws SensorConfigurationException, SensorAssignmentException {
 
     dateTimeNode = new DefaultTreeNode(VariableTreeNode.VAR_UNFINISHED,
       "Date/Time", root);
@@ -154,6 +158,7 @@ public class AssignmentsTree {
       .get(assignment.getSensorType())) {
 
       new SensorAssignmentTreeNode(sensorTypeNode, assignment);
+      TreeUtils.sortNode(sensorTypeNode, nodeComparator);
       sensorTypeNode.setExpanded(true);
     }
   }

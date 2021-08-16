@@ -9,18 +9,18 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -42,21 +42,6 @@ public abstract class DataReducer {
    * The variable attributes
    */
   protected Map<String, Properties> properties;
-
-  /**
-   * All the measurements from the current data set
-   */
-  protected List<Measurement> allMeasurements;
-
-  /**
-   * A local copy of the complete set of sensor values for the current data set
-   */
-  protected DateColumnGroupedSensorValues groupedSensorValues;
-
-  /**
-   * The internal calibrations for the current data set
-   */
-  protected CalibrationSet calibrationSet;
 
   public DataReducer(Variable variable, Map<String, Properties> properties) {
 
@@ -91,7 +76,15 @@ public abstract class DataReducer {
       MeasurementValue value = measurement.getMeasurementValue(sensorType);
 
       if (null != value) {
-        List<String> qcMessages = value.getQcMessages();
+        List<String> qcMessages = new ArrayList<String>();
+
+        for (String qcMessage : value.getQcMessages()) {
+          List<String> subMessages = StringUtils.delimitedToList(qcMessage,
+            ";");
+          for (String subMessage : subMessages) {
+            qcMessages.add(sensorType.getShortName() + " " + subMessage);
+          }
+        }
 
         Flag cascadeFlag = variable.getCascade(value.getSensorType(),
           value.getQcFlag(), instrument.getSensorAssignments());
@@ -298,9 +291,14 @@ public abstract class DataReducer {
     Float result = null;
 
     try {
-      result = Float
-        .parseFloat(properties.get(variable.getName()).getProperty(property));
-    } catch (NullPointerException | NumberFormatException e) {
+      if (properties.containsKey(variable.getName())) {
+        String stringProp = properties.get(variable.getName())
+          .getProperty(property);
+        if (null != stringProp) {
+          result = Float.parseFloat(stringProp);
+        }
+      }
+    } catch (NumberFormatException e) {
       e.printStackTrace();
       // Swallow the exception so that the result is null
     }
@@ -314,5 +312,13 @@ public abstract class DataReducer {
 
   protected long makeParameterId(int parameterNumber) {
     return DataReducerFactory.makeParameterId(variable, parameterNumber);
+  }
+
+  /**
+   * Perform preprocessing actions on the dataset
+   */
+  public void preprocess(Connection conn, Instrument instrument,
+    DataSet dataset, List<Measurement> allMeasurements) throws Exception {
+    // The default is to do nothing
   }
 }

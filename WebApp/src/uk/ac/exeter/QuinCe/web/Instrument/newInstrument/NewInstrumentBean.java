@@ -1707,6 +1707,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * Reset all data regarding run type assignments
    */
   private void clearRunTypeAssignments() {
+    runTypeFile = null;
     runTypeAssignName = null;
     runTypeAssignCode = RunTypeCategory.IGNORED_TYPE;
   }
@@ -1815,7 +1816,7 @@ public class NewInstrumentBean extends FileUploadBean {
       }
 
       InstrumentDB.storeInstrument(getDataSource(), instrument);
-      setCurrentInstrumentId(instrument.getDatabaseId());
+      setCurrentInstrumentId(instrument.getId());
 
       // Reinitialise beans to update their instrument lists
       instrumentListBean.init();
@@ -1905,12 +1906,13 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public void assignRunType()
     throws SensorAssignmentException, SensorTypeNotFoundException {
-    FileDefinition file = instrumentFiles.get(runTypeFile);
-    file.setRunTypeColumn(runTypeColumn);
+
+    FileDefinitionBuilder file = instrumentFiles.getByDescription(runTypeFile);
+    file.addRunTypeColumn(runTypeColumn);
 
     SensorAssignment sensorAssignment = new SensorAssignment(runTypeFile,
       runTypeColumn, SensorType.RUN_TYPE_SENSOR_TYPE,
-      SensorType.RUN_TYPE_SENSOR_TYPE.getShortName(), true, false, null);
+      file.getFileColumns().get(runTypeColumn).getName(), true, false, null);
 
     sensorAssignments.addAssignment(sensorAssignment);
     assignmentsTree.addAssignment(sensorAssignment);
@@ -2035,8 +2037,7 @@ public class NewInstrumentBean extends FileUploadBean {
     return assignmentsTree.getRoot();
   }
 
-  public String getSensorTypesJson()
-    throws SensorConfigurationException, SensorTypeNotFoundException {
+  public String getSensorTypesJson() throws SensorConfigurationException {
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
@@ -2088,7 +2089,8 @@ public class NewInstrumentBean extends FileUploadBean {
       assignmentsTree.removeAssignment(removed);
 
       if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-        instrumentFiles.get(removeAssignmentDataFile).setRunTypeColumn(-1);
+        instrumentFiles.get(removeAssignmentDataFile)
+          .removeRunTypeColumn(removeAssignmentColumn);
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -2156,5 +2158,18 @@ public class NewInstrumentBean extends FileUploadBean {
     }
 
     return removed;
+  }
+
+  public FileDefinitionBuilder getRunTypeFileDefinition() {
+    FileDefinitionBuilder result = null;
+
+    for (FileDefinition file : instrumentFiles) {
+      if (file.hasRunTypes()) {
+        result = (FileDefinitionBuilder) file;
+        break;
+      }
+    }
+
+    return result;
   }
 }

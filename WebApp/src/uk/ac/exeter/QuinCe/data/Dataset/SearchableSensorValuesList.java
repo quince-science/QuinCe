@@ -201,7 +201,7 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
       TIME_COMPARATOR);
 
     SensorValue result = valueIndex >= 0 ? get(valueIndex) : null;
-    if (result.getUserQCFlag().equals(Flag.FLUSHING)) {
+    if (null != result && result.getUserQCFlag().equals(Flag.FLUSHING)) {
       result = null;
     }
 

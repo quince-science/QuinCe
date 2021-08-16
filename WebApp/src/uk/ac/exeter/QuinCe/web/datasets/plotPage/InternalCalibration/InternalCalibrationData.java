@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -87,7 +88,7 @@ public class InternalCalibrationData extends PlotPageData {
 
     try (Connection conn = dataSource.getConnection()) {
       CalibrationSet calibrations = ExternalStandardDB.getInstance()
-        .getStandardsSet(conn, instrument.getDatabaseId(), dataset.getStart());
+        .getStandardsSet(conn, instrument, dataset.getStart());
 
       // Time
       List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
@@ -108,8 +109,8 @@ public class InternalCalibrationData extends PlotPageData {
 
           List<PlotPageColumnHeading> sensorTypeColumns = new ArrayList<PlotPageColumnHeading>();
 
-          List<SensorAssignment> assignments = instrument.getSensorAssignments()
-            .get(sensorType);
+          TreeSet<SensorAssignment> assignments = instrument
+            .getSensorAssignments().get(sensorType);
 
           // Each sensor assigned to that SensorType becomes a set of columns,
           // one for each calibration run type

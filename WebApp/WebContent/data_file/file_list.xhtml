@@ -16,13 +16,25 @@
     <ui:fragment rendered="#{dataFilesBean.hasInstruments}">
       <h:form id="fileListForm" method="post" charset="utf8">
         <h:panelGrid columns="3" cellpadding="5" class="buttonPanel contentList">
-          <p:outputLabel for="instrument" value="Select Instrument:" />
-          <p:selectOneMenu id="instrument"
-            value="#{dataFilesBean.currentInstrumentId}">
-            <f:selectItems value="#{dataFilesBean.instruments}" var="instrument"
-              itemValue="#{instrument.id}" itemLabel="#{instrument.name}" />
-            <p:ajax event="change" update="files" />
-          </p:selectOneMenu>
+          <p:outputLabel for="instrumentAdmin" value="Select Instrument:" />
+          <ui:fragment rendered="#{User.adminUser}">
+            <p:selectOneMenu id="instrumentAdmin"
+              value="#{dataFilesBean.currentInstrumentId}">
+                <f:selectItems value="#{dataFilesBean.instruments}" var="instrument"
+                  itemValue="#{instrument.id}"
+                  itemLabel="#{instrument.owner.surname}, #{instrument.owner.givenName} - #{instrument.name}" />
+              <p:ajax event="change" update="files" />
+            </p:selectOneMenu>
+          </ui:fragment>
+          <ui:fragment rendered="#{not User.adminUser}">
+            <p:selectOneMenu id="instrumentNonAdmin"
+              value="#{dataFilesBean.currentInstrumentId}">
+                <f:selectItems value="#{dataFilesBean.instruments}" var="instrument"
+                  itemValue="#{instrument.id}"
+                  itemLabel="#{instrument.name}" />
+              <p:ajax event="change" update="files" />
+            </p:selectOneMenu>
+          </ui:fragment>
           <p:button value="Upload New File(s)" ajax="false" outcome="upload" />
         </h:panelGrid>
         <p:dataTable id="files" value="#{dataFilesBean.listFiles}" var="file"
@@ -43,13 +55,19 @@
             <f:facet name="header">
               <h:outputText value="Start Date" />
             </f:facet>
-            <h:outputText value="#{file.startDate}" />
+            <h:outputText value="#{file.rawStartTime}" />
+            <ui:fragment rendered="#{file.hasTimeOffset()}">
+              (<h:outputText value="#{file.timeOffset}"/>)
+            </ui:fragment>
           </p:column>
           <p:column>
             <f:facet name="header">
               <h:outputText value="End Date" />
             </f:facet>
-            <h:outputText value="#{file.endDate}" />
+            <h:outputText value="#{file.rawEndTime}" />
+            <ui:fragment rendered="#{file.hasTimeOffset()}">
+              (<h:outputText value="#{file.timeOffset}"/>)
+            </ui:fragment>
           </p:column>
           <p:column>
             <f:facet name="header">

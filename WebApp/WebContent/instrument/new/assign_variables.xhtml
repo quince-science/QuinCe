@@ -28,6 +28,18 @@
         update="hemisphereFile hemisphereCoordinate hemisphereColumn assignmentsTree"
         oncomplete="positionAssigned();" />
 
+      <!-- Multiple assignment error dialog -->
+      <p:confirmDialog widgetVar="tooManyAssignments" header="Too Many Assignments"
+        message="You cannot assign more than one column to this sensor type.">
+        <p:commandButton value="OK" onclick="PF('tooManyAssignments').hide()" />
+      </p:confirmDialog>
+
+      <!-- Multiple assignment error dialog -->
+      <p:confirmDialog widgetVar="multiFileRunType" header="Invalid Run Type"
+        message="You cannot assign run type columns from more than one file.">
+        <p:commandButton value="OK" onclick="PF('multiFileRunType').hide()" />
+      </p:confirmDialog>
+
       <!-- Sensor Assignment Dialog -->
       <p:dialog header="Assign Column To Sensor"
         widgetVar="sensorAssignmentDialog" modal="true">
@@ -229,6 +241,10 @@
               <td><p:outputLabel value="Format:" /></td>
               <td><p:selectOneMenu widgetVar="dateTimeFormat" id="dateTimeFormat"
                   value="#{newInstrumentBean.dateTimeFormat}">
+                  <f:selectItem itemLabel="ISO Format"
+                    itemValue="ISO" />
+                  <f:selectItem itemLabel="ISO Format (UTC, no separators)"
+                    itemValue="yyyyMMdd'T'HHmmss'Z'" />
                   <f:selectItem itemLabel="YYYY-MM-DD hh:mm:ss"
                     itemValue="yyyy-MM-dd HH:mm:ss" />
                   <f:selectItem itemLabel="YYYY-MM-DD hh:mm:ss.SSS"
@@ -261,11 +277,19 @@
               <td><p:selectOneMenu widgetVar="dateFormat" id="dateFormat"
                   value="#{newInstrumentBean.dateFormat}">
                   <f:selectItem itemLabel="YYYY-MM-DD" itemValue="yyyy-MM-dd" />
+                  <f:selectItem itemLabel="DD-MM-YYYY" itemValue="dd-MM-yyyy" />
+                  <f:selectItem itemLabel="MM-DD-YYYY" itemValue="MM-dd-yyyy" />
+                  <f:selectItem itemLabel="DD-MM-YY" itemValue="dd-MM-yy" />
+                  <f:selectItem itemLabel="MM-DD-YY" itemValue="MM-dd-yy" />
                   <f:selectItem itemLabel="YYYYMMDD" itemValue="yyyyMMdd" />
                   <f:selectItem itemLabel="MM/DD/YYYY" itemValue="MM/dd/yyyy" />
                   <f:selectItem itemLabel="DD/MM/YYYY" itemValue="dd/MM/yyyy" />
                   <f:selectItem itemLabel="MM/DD/YY" itemValue="MM/dd/yy" />
                   <f:selectItem itemLabel="DD/MM/YY" itemValue="dd/MM/yy" />
+                  <f:selectItem itemLabel="D/M/YYYY" itemValue="d/M/yyyy" />
+                  <f:selectItem itemLabel="M/D/YYYY" itemValue="M/d/yyyy" />
+                  <f:selectItem itemLabel="D/M/YY" itemValue="d/M/yy" />
+                  <f:selectItem itemLabel="M/D/YY" itemValue="M/d/yy" />
                   <f:selectItem itemLabel="MM.DD.YYYY" itemValue="MM.dd.yyyy" />
                   <f:selectItem itemLabel="DD.MM.YYYY" itemValue="dd.MM.yyyy" />
                   <f:selectItem itemLabel="MM.DD.YY" itemValue="MM.dd.yy" />
@@ -284,6 +308,7 @@
                   <f:selectItem itemLabel="HH:mm:ss" itemValue="HH:mm:ss" />
                   <f:selectItem itemLabel="HH:mm:ss.SSS" itemValue="HH:mm:ss.SSS" />
                   <f:selectItem itemLabel="HHmmss" itemValue="HHmmss" />
+                  <f:selectItem itemLabel="H:mm:ss" itemValue="H:mm:ss" />
                 </p:selectOneMenu></td>
             </tr>
           </table>
@@ -383,7 +408,7 @@
                   <f:facet name="header">
                     <h:outputText value="Column"/>
                   </f:facet>
-                  <div id="col---#{iFile.fileDescription}---#{column.index}---#{column.name}" draggable="true">
+                  <div id="col---#{iFile.fileDescription}---#{column.index}---#{column.name}" class="draggable" draggable="true">
                     <h:outputText value="#{column.name}"/>
                   </div>
                 </p:column>

@@ -76,47 +76,57 @@ public class DataSet {
   /**
    * The numeric value for the data extraction status
    */
-  public static final int STATUS_DATA_EXTRACTION = 1;
+  public static final int STATUS_DATA_EXTRACTION = 10;
 
   /**
    * The string for the data extraction status
    */
-  public static final String STATUS_DATA_EXTRACTION_NAME = "Data extraction";
-
-  /**
-   * The numeric value for the data reduction status
-   */
-  public static final int STATUS_DATA_REDUCTION = 2;
-
-  /**
-   * The string for the data extraction status
-   */
-  public static final String STATUS_DATA_REDUCTION_NAME = "Data reduction";
+  public static final String STATUS_DATA_EXTRACTION_NAME = "Data Extraction";
 
   /**
    * The numeric value for the automatic QC status
    */
-  public static final int STATUS_AUTO_QC = 3;
+  public static final int STATUS_SENSOR_QC = 20;
 
   /**
    * The string for the automatic QC status
    */
-  public static final String STATUS_AUTO_QC_NAME = "Automatic QC";
+  public static final String STATUS_SENSOR_QC_NAME = "Sensor QC";
+
+  /**
+   * The numeric value for the data reduction status
+   */
+  public static final int STATUS_DATA_REDUCTION = 30;
+
+  /**
+   * The string for the data extraction status
+   */
+  public static final String STATUS_DATA_REDUCTION_NAME = "Data Reduction";
+
+  /**
+   * The numeric value for the data reduction QC status
+   */
+  public static final int STATUS_DATA_REDUCTION_QC = 40;
+
+  /**
+   * The string for the export complete status
+   */
+  public static final String STATUS_DATA_REDUCTION_QC_NAME = "Data Reduction QC";
 
   /**
    * The numeric value for the user QC status
    */
-  public static final int STATUS_USER_QC = 4;
+  public static final int STATUS_USER_QC = 50;
 
   /**
    * The string for the user QC status
    */
-  public static final String STATUS_USER_QC_NAME = "Ready for QC";
+  public static final String STATUS_USER_QC_NAME = "Ready for Manual QC";
 
   /**
    * The numeric value for the ready for submission status
    */
-  public static final int STATUS_READY_FOR_SUBMISSION = 5;
+  public static final int STATUS_READY_FOR_SUBMISSION = 100;
 
   /**
    * The string for the ready for submission status
@@ -126,7 +136,7 @@ public class DataSet {
   /**
    * The numeric value for the waiting for approval status
    */
-  public static final int STATUS_WAITING_FOR_APPROVAL = 6;
+  public static final int STATUS_WAITING_FOR_APPROVAL = 110;
 
   /**
    * The string for the waiting for approval status
@@ -136,7 +146,7 @@ public class DataSet {
   /**
    * The numeric value for the ready for export status
    */
-  public static final int STATUS_READY_FOR_EXPORT = 7;
+  public static final int STATUS_READY_FOR_EXPORT = 120;
 
   /**
    * The string for the ready for export status
@@ -146,22 +156,24 @@ public class DataSet {
   /**
    * The numeric value for the exporting status
    */
-  public static final int STATUS_EXPORTING = 8;
+  public static final int STATUS_EXPORTING = 130;
 
   /**
    * The string for the exporting status
    */
-  public static final String STATUS_EXPORTING_NAME = "Automatic export in progress";
+  public static final String STATUS_EXPORTING_NAME = "Automatic Export In Progress";
 
   /**
    * The numeric value for the export complete status
    */
-  public static final int STATUS_EXPORT_COMPLETE = 9;
+  public static final int STATUS_EXPORT_COMPLETE = 140;
 
   /**
    * The string for the export complete status
    */
-  public static final String STATUS_EXPORT_COMPLETE_NAME = "Automatic export complete";
+  public static final String STATUS_EXPORT_COMPLETE_NAME = "Automatic Export Complete";
+
+  private static Map<Integer, String> validStatuses;
 
   /**
    * The database ID
@@ -248,6 +260,25 @@ public class DataSet {
    */
   private double maxLat = 0.0;
 
+  static {
+    validStatuses = new HashMap<Integer, String>();
+    validStatuses.put(STATUS_DELETE, STATUS_DELETE_NAME);
+    validStatuses.put(STATUS_ERROR, STATUS_ERROR_NAME);
+    validStatuses.put(STATUS_WAITING, STATUS_WAITING_NAME);
+    validStatuses.put(STATUS_DATA_EXTRACTION, STATUS_DATA_EXTRACTION_NAME);
+    validStatuses.put(STATUS_SENSOR_QC, STATUS_SENSOR_QC_NAME);
+    validStatuses.put(STATUS_DATA_REDUCTION, STATUS_DATA_REDUCTION_NAME);
+    validStatuses.put(STATUS_DATA_REDUCTION_QC, STATUS_DATA_REDUCTION_QC_NAME);
+    validStatuses.put(STATUS_USER_QC, STATUS_USER_QC_NAME);
+    validStatuses.put(STATUS_READY_FOR_SUBMISSION,
+      STATUS_READY_FOR_SUBMISSION_NAME);
+    validStatuses.put(STATUS_WAITING_FOR_APPROVAL,
+      STATUS_WAITING_FOR_APPROVAL_NAME);
+    validStatuses.put(STATUS_READY_FOR_EXPORT, STATUS_READY_FOR_EXPORT_NAME);
+    validStatuses.put(STATUS_EXPORTING, STATUS_EXPORTING_NAME);
+    validStatuses.put(STATUS_EXPORT_COMPLETE, STATUS_EXPORT_COMPLETE_NAME);
+  }
+
   /**
    * Constructor for all fields
    *
@@ -263,18 +294,27 @@ public class DataSet {
    *          End date
    * @param status
    *          The current status
-   * @param status
+   * @param statusDate
    *          The date that the status was set
    * @param nrt
    *          Indicates whether or not this is a NRT dataset
    * @param properties
    *          Additional properties
+   * @param createdDate
+   *          Date that the dataset was created
    * @param lastTouched
    *          Date that the dataset was last accessed
-   * @param needsFlagCount
-   *          Number of records that need flagging by the user
    * @param messages
    *          List of messages concerning the dataset (errors etc)
+   * @param minLon
+   *          The minimum longitude of the dataset's geographical bounds
+   * @param minLat
+   *          The minimum latitude of the dataset's geographical bounds
+   * @param maxLon
+   *          The maximum longitude of the dataset's geographical bounds
+   * @param maxLat
+   *          The maximum latitude of the dataset's geographical bounds
+   *
    */
   protected DataSet(long id, long instrumentId, String name,
     LocalDateTime start, LocalDateTime end, int status,
@@ -303,22 +343,20 @@ public class DataSet {
   /**
    * Constructor for a new, empty data set
    *
-   * @param instrumentId
-   *          The database ID of the instrument to which the data set belongs
+   * @param instrument
+   *          The instrument to which the data set belongs
    */
   public DataSet(Instrument instrument) {
-    this.instrumentId = instrument.getDatabaseId();
+    this.instrumentId = instrument.getId();
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
     loadProperties(instrument);
   }
 
   /**
-   * Constructor for all fields
+   * Basic constructor for new dataset with only start and end dates.
    *
-   * @param id
-   *          Data set's database ID
-   * @param instrumentId
-   *          Database ID of the instrument to which the data set belongs
+   * @param instrument
+   *          The instrument to which the data set belongs
    * @param name
    *          Dataset name
    * @param start
@@ -330,7 +368,7 @@ public class DataSet {
    */
   public DataSet(Instrument instrument, String name, LocalDateTime start,
     LocalDateTime end, boolean nrt) {
-    this.instrumentId = instrument.getDatabaseId();
+    this.instrumentId = instrument.getId();
     this.name = name;
     this.start = start;
     this.end = end;
@@ -377,62 +415,10 @@ public class DataSet {
    * @return The status name
    */
   public static String getStatusName(int statusValue) {
-    String result;
-
-    switch (statusValue) {
-    case STATUS_DELETE: {
-      result = STATUS_DELETE_NAME;
-      break;
-    }
-    case STATUS_ERROR: {
-      result = STATUS_ERROR_NAME;
-      break;
-    }
-    case STATUS_WAITING: {
-      result = STATUS_WAITING_NAME;
-      break;
-    }
-    case STATUS_DATA_EXTRACTION: {
-      result = STATUS_DATA_EXTRACTION_NAME;
-      break;
-    }
-    case STATUS_DATA_REDUCTION: {
-      result = STATUS_DATA_REDUCTION_NAME;
-      break;
-    }
-    case STATUS_AUTO_QC: {
-      result = STATUS_AUTO_QC_NAME;
-      break;
-    }
-    case STATUS_USER_QC: {
-      result = STATUS_USER_QC_NAME;
-      break;
-    }
-    case STATUS_READY_FOR_SUBMISSION: {
-      result = STATUS_READY_FOR_SUBMISSION_NAME;
-      break;
-    }
-    case STATUS_WAITING_FOR_APPROVAL: {
-      result = STATUS_WAITING_FOR_APPROVAL_NAME;
-      break;
-    }
-    case STATUS_READY_FOR_EXPORT: {
-      result = STATUS_READY_FOR_EXPORT_NAME;
-      break;
-    }
-    case STATUS_EXPORTING: {
-      result = STATUS_EXPORTING_NAME;
-      break;
-    }
-    case STATUS_EXPORT_COMPLETE: {
-      result = STATUS_EXPORT_COMPLETE_NAME;
-      break;
-    }
-    default: {
+    String result = validStatuses.get(statusValue);
+    if (null == result) {
       result = "UNKNOWN";
     }
-    }
-
     return result;
   }
 
@@ -584,6 +570,21 @@ public class DataSet {
     return result;
   }
 
+  public void setProperty(Variable variable, String key, String value) {
+    if (null == properties) {
+      properties = new HashMap<String, Properties>();
+    }
+
+    Properties varProps;
+
+    if (null == properties.get(variable.getName())) {
+      properties.put(variable.getName(), new Properties());
+    }
+
+    varProps = properties.get(variable.getName());
+    varProps.setProperty(key, value);
+  }
+
   /**
    * Determine whether or not a given status value is valid
    *
@@ -592,7 +593,7 @@ public class DataSet {
    * @return {@code true} if the status is valid; {@code false} if it is not
    */
   public static boolean validateStatus(int status) {
-    return (status >= STATUS_DELETE && status <= STATUS_EXPORT_COMPLETE);
+    return validStatuses.containsKey(status);
   }
 
   /**
@@ -644,8 +645,8 @@ public class DataSet {
   /**
    * Get a list of the raw data files used to construct this DataSet
    *
-   * @param dataSource
-   *          A data source
+   * @param conn
+   *          A database connection
    * @return The IDs of the files
    * @throws MissingParamException
    *           If any required parameters are missing
@@ -654,7 +655,7 @@ public class DataSet {
    */
   public List<Long> getSourceFiles(Connection conn)
     throws MissingParamException, DatabaseException {
-    return DataFileDB.getFilesWithinDates(conn, instrumentId, start, end);
+    return DataFileDB.getFilesWithinDates(conn, instrumentId, start, end, true);
   }
 
   /**
@@ -670,6 +671,9 @@ public class DataSet {
    * Get the available field sets for this dataset keyed by name. Builds the
    * list once, then caches it
    *
+   * @param includeTimePos
+   *          Indicates whether or not the root field set for Time and Position
+   *          is included
    * @return The field sets
    * @throws MissingParamException
    *           If any required parameters are missing

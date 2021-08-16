@@ -15,6 +15,8 @@ import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficient;
@@ -93,14 +95,9 @@ public abstract class CalibrationBean extends BaseManagedBean {
   private long selectedCalibrationId = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
-   * The database ID of the current instrument
+   * The instrument whose calibrations are being edited
    */
-  protected long instrumentId;
-
-  /**
-   * The name of the current instrument
-   */
-  private String instrumentName;
+  protected Instrument instrument;
 
   /**
    * The datasets defined for the instrument.
@@ -159,26 +156,21 @@ public abstract class CalibrationBean extends BaseManagedBean {
     boolean ok = true;
 
     // Get the instrument ID
-    if (instrumentId == 0) {
+    if (null == instrument) {
       nav = internalError(new MissingParamException("instrumentId"));
       ok = false;
     }
 
     if (ok) {
-      if (null == instrumentName || instrumentName.trim().length() == 0) {
-        nav = internalError(new MissingParamException("instrumentName"));
-        ok = false;
-      }
-    }
-
-    if (ok) {
       try {
-        datasets = DataSetDB.getDataSets(getDataSource(), instrumentId, true);
+        datasets = DataSetDB.getDataSets(getDataSource(), instrument.getId(),
+          true);
         dbInstance = getDbInstance();
         loadCalibrations();
         affectedDatasets = null;
         calibration = initNewCalibration();
       } catch (Exception e) {
+        e.printStackTrace();
         nav = internalError(e);
       }
     }
@@ -192,7 +184,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @return The instrument ID
    */
   public long getInstrumentId() {
-    return instrumentId;
+    return (null == instrument ? -1 : instrument.getId());
   }
 
   /**
@@ -200,9 +192,17 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *
    * @param instrumentId
    *          The instrument ID
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws DatabaseException
+   * @throws MissingParamException
    */
-  public void setInstrumentId(long instrumentId) {
-    this.instrumentId = instrumentId;
+  public void setInstrumentId(long instrumentId) throws MissingParamException,
+    DatabaseException, RecordNotFoundException, InstrumentException {
+    if (instrumentId > 0) {
+      this.instrument = InstrumentDB.getInstrument(getDataSource(),
+        instrumentId);
+    }
   }
 
   /**
@@ -211,17 +211,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @return The instrument name
    */
   public String getInstrumentName() {
-    return instrumentName;
-  }
-
-  /**
-   * Set the instrument name
-   *
-   * @param instrumentName
-   *          The instrument name
-   */
-  public void setInstrumentName(String instrumentName) {
-    this.instrumentName = instrumentName;
+    return (null == instrument ? null : instrument.getName());
   }
 
   /**
@@ -235,17 +225,17 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * Get a list of all possible targets for the calibration type
    *
    * @return The targets
-   * @throws Exception
-   *           If the list of targets cannot be retrieved
    */
   public Map<String, String> getTargets() {
     return calibrationTargets;
   };
 
   /**
-   * Store the entered calibration in the database
+   * Store the entered calibration in the database.
    *
-   * @return The navigation
+   * @return The navigation.
+   * @throws InvalidCalibrationEditException
+   *           If the edit action is not recognised.
    */
   public String saveCalibration() throws Exception {
     // Null means we go back to the page we came from.
@@ -267,7 +257,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
         break;
       }
       default: {
-        throw new Exception("Unrecognised action " + editAction);
+        throw new InvalidCalibrationEditException(
+          "Unrecognised action " + editAction);
       }
       }
 
@@ -313,15 +304,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
   protected abstract Class<? extends Job> getReprocessJobClass();
 
   /**
-   * Add a new calibration
+   * Store a new calibration in the database.
    *
-   * @return The navigation string
-   * @throws ParameterException
    * @throws DatabaseException
-   * @throws MissingParamException
+   *           If a database error occurs.
+   * @throws ParameterException
+   *           If any parameters are missing or invalid.
    */
-  private void addCalibration()
-    throws MissingParamException, DatabaseException, ParameterException {
+  private void addCalibration() throws DatabaseException, ParameterException {
     if (dbInstance.calibrationExists(getDataSource(), calibration)) {
       setMessage(null,
         "A calibration already exists for this standard at this time");
@@ -354,24 +344,25 @@ public abstract class CalibrationBean extends BaseManagedBean {
   protected abstract CalibrationDB getDbInstance();
 
   /**
-   * Load the most recent calibrations from the database
+   * Load the most recent calibrations from the database.
    *
    * @throws RecordNotFoundException
-   *           If any required database records are missing
+   *           If any required database records are missing.
    * @throws DatabaseException
-   *           If a database error occurs
+   *           If a database error occurs.
    * @throws CalibrationException
-   *           If the calibrations are internally inconsistent
+   *           If the calibrations are internally inconsistent.
    * @throws MissingParamException
-   *           If any internal calls are missing required parameters
+   *           If any internal calls are missing required parameters.
    * @throws InstrumentException
+   *           If the instrument calibration details cannot be retrieved.
    */
   private void loadCalibrations()
     throws MissingParamException, CalibrationException, DatabaseException,
     RecordNotFoundException, InstrumentException {
 
-    calibrations = dbInstance.getCalibrations(getDataSource(), instrumentId);
-    calibrationTargets = dbInstance.getTargets(getDataSource(), instrumentId);
+    calibrations = dbInstance.getCalibrations(getDataSource(), instrument);
+    calibrationTargets = dbInstance.getTargets(getDataSource(), instrument);
   }
 
   /**
@@ -390,11 +381,11 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * Individual targets are represented as groups on the page. Get the JSON for
-   * these groups
+   * these groups.
    *
-   * @return The targets JSON
+   * @return The targets JSON.
    */
-  public String getUsedTargetsJson() throws Exception {
+  public String getUsedTargetsJson() {
     JSONArray groups = new JSONArray();
 
     int counter = 0;
@@ -415,18 +406,20 @@ public abstract class CalibrationBean extends BaseManagedBean {
     group.put("content", "Datasets");
     groups.put(group);
 
-    return groups.toString();
+    return StringUtils.javascriptString(groups.toString());
   }
 
   /**
-   * Generate a new, empty calibration
+   * Generate a new, empty {@link Calibration} object.
+   *
+   * @return The new object.
    */
   protected abstract Calibration initNewCalibration();
 
   /**
-   * Get the JSON for the individual calibrations
+   * Get the JSON for the individual calibrations.
    *
-   * @return The calibrations JSON
+   * @return The calibrations JSON.
    */
   public String getCalibrationsJson() {
     JSONArray items = new JSONArray();
@@ -471,7 +464,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
       items.put(datasetJson);
     }
 
-    return items.toString();
+    return StringUtils.javascriptString(items.toString());
   }
 
   /**
@@ -521,7 +514,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
       // The calibration wasn't found
       if (null == calibration) {
-        throw new RecordNotFoundException(instrumentName, "calibration",
+        throw new RecordNotFoundException(instrument.getName(), "calibration",
           selectedCalibrationId);
       }
     }
@@ -577,22 +570,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * {@code editCalibration} is negative, an exception will be thrown.
    * </p>
    *
-   * @param editedCalibrationId
-   *          The database ID of the calibration being edited; negative if this
-   *          is a new calibration.
-   * @param newTime
-   *          The new calibration time.
-   * @param newTarget
-   *          The new calibration target.
-   * @return The affected {@link DataSet}s.
    * @throws InvalidCalibrationEditException
    *           If the specified calibration details are invalid.
    * @throws RecordNotFoundException
    *           If the specified calibration does not exist.
    * @throws DatabaseException
+   *           If a database error occurs.
    * @throws MissingParamException
-   * @throws NonExistentCalibrationTargetException
-   *           If the specified calibration target does not exist.
+   *           If any required parameters are missing.
    */
   public void calcAffectedDataSets() throws InvalidCalibrationEditException,
     RecordNotFoundException, InvalidCalibrationTargetException,
@@ -602,7 +587,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
     // because this is a what-if method and we don't want the results to be
     // kept.
     TreeMap<String, List<Calibration>> testCalibrations = dbInstance
-      .getCalibrations(getDataSource(), instrumentId);
+      .getCalibrations(getDataSource(), instrument);
 
     // Get the existing calibration to be edited, if required
     Calibration editedCalibration = null;
@@ -638,7 +623,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
       // If there's no next date, includes all datasets after the start date
       // If neither date is set, includes all datasets
       List<DataSet> affectedDatasets = DataSetDB.getDatasetsBetweenDates(
-        getDataSource(), instrumentId, surroundingCalibrations[0],
+        getDataSource(), instrument.getId(), surroundingCalibrations[0],
         surroundingCalibrations[1]);
 
       // Add them to the result. If there's no previous date, the boolean is
@@ -675,9 +660,9 @@ public abstract class CalibrationBean extends BaseManagedBean {
       LocalDateTime[] surroundingCalibrations = getSurroundingCalibrations(
         newTargetCalibrations, calibration.getDeploymentDate());
 
-      // Get the datasets covered by the before/after calbration range
+      // Get the datasets covered by the before/after calibration range
       List<DataSet> affectedDatasets = DataSetDB.getDatasetsBetweenDates(
-        getDataSource(), instrumentId, surroundingCalibrations[0],
+        getDataSource(), instrument.getId(), surroundingCalibrations[0],
         surroundingCalibrations[1]);
 
       // Add them to the result.
@@ -829,15 +814,9 @@ public abstract class CalibrationBean extends BaseManagedBean {
   }
 
   /**
-   * Check that the parameters passed to
-   * {@link #getAffectedDataSets(long, LocalDateTime, String)} are valid.
+   * Check that the parameters passed to {@link #getAffectedDatasets()} are
+   * valid.
    *
-   * @param editedCalibrationId
-   *          The edited calibration ID
-   * @param newTime
-   *          The new calibration time
-   * @param newTarget
-   *          The new calibration target
    * @throws RecordNotFoundException
    *           If the edited calibration does not exist
    * @throws InvalidCalibrationEditException

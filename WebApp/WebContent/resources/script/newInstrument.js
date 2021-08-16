@@ -205,9 +205,15 @@ function updateUseFileButton() {
 //
 //************************************************
 function assignRunType(file, column) {
-  $('#newInstrumentForm\\:runTypeFile').val(file);
-  $('#newInstrumentForm\\:runTypeColumn').val(column);
-  assignRunTypeAction(); // PF remote command
+
+  let existingRunTypeFile = $('#newInstrumentForm\\:runTypeFile').val();
+  if (existingRunTypeFile != '' && existingRunTypeFile != file) {
+    PF('multiFileRunType').show();
+  } else {
+    $('#newInstrumentForm\\:runTypeFile').val(file);
+    $('#newInstrumentForm\\:runTypeColumn').val(column);
+    assignRunTypeAction(); // PF remote command
+  }
 }
 
 function openAssignSensorDialog(sensorType, column) {
@@ -603,7 +609,7 @@ function handleSensorTypeColumnDrop(e) {
   $(this).removeClass('dropTargetHover');
 
   // Get sensor type
-  let sensorTypeName = $(this)[0].innerText;
+  let sensorTypeName = $(this).find('span[role="treeitem"]')[0].innerText;
   let sensorTypeId = getSensorTypeID(sensorTypeName);
 
   // Get column details
@@ -615,7 +621,21 @@ function handleSensorTypeColumnDrop(e) {
     break;
   }
   default: {
-    openAssignSensorDialog(getSensorType(sensorTypeId), column);
+    let allowAssignment = true;
+
+    // Check non-diagnostic sensors
+    if (!sensorTypeName.startsWith('Diagnostic')) {
+      let existingEntries = $(this).find('ul[role="group"]').find('li').length;
+      // Only allow one column to be assigned
+      if (existingEntries > 0) {
+        allowAssignment = false;
+        PF('tooManyAssignments').show();
+      }
+    }
+
+    if (allowAssignment) {
+      openAssignSensorDialog(getSensorType(sensorTypeId), column);
+    }
   }
   }
 }

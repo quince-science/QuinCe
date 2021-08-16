@@ -11,7 +11,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
@@ -52,11 +51,7 @@ public class MakeNrtDataset {
       if (!InstrumentDB.instrumentExists(conn, instrumentId)) {
         response = Response.status(Status.NOT_FOUND).build();
       } else {
-        ResourceManager resourceManager = ResourceManager.getInstance();
-
-        Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId,
-          resourceManager.getSensorsConfiguration(),
-          resourceManager.getRunTypeCategoryConfiguration());
+        Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId);
 
         if (!instrument.getNrt()) {
           response = Response.status(Status.FORBIDDEN).build();
@@ -79,16 +74,16 @@ public class MakeNrtDataset {
   }
 
   /**
-   * Attempt to create a NRT dataset for an instrument
+   * Attempt to create a NRT dataset for an instrument.
    *
    * @param conn
-   *          A database connection
-   * @param instrumentId
-   *          The instrument ID
+   *          A database connection.
+   * @param instrument
+   *          The instrument.
    * @return {@code true} if a new NRT dataset is created; {@code false} if no
    *         dataset is created.
    * @throws Exception
-   *           Any errors are propagated upward
+   *           Any errors are propagated upward.
    */
   public static boolean createNrtDataset(Connection conn, Instrument instrument)
     throws Exception {
@@ -100,7 +95,7 @@ public class MakeNrtDataset {
     // WAITING FOR EXPORT or EXPORT COMPLETE - any other time the NRT is being
     // processed, so leave it alone.
     DataSet existingDataset = DataSetDB.getNrtDataSet(conn,
-      instrument.getDatabaseId());
+      instrument.getId());
 
     // If there is no NRT dataset, create one
     if (null == existingDataset) {
@@ -113,7 +108,7 @@ public class MakeNrtDataset {
         // See if any data files have been uploaded/updated since the NRT
         // dataset was created. If so, recreate it.
         LocalDateTime lastFileModification = DataFileDB
-          .getLastFileModification(conn, instrument.getDatabaseId());
+          .getLastFileModification(conn, instrument.getId());
 
         if (null != lastFileModification
           && lastFileModification.isAfter(existingDataset.getCreatedDate())) {
@@ -126,9 +121,9 @@ public class MakeNrtDataset {
     if (createDataset) {
       Properties jobProperties = new Properties();
       jobProperties.setProperty(ExtractDataSetJob.ID_PARAM,
-        String.valueOf(instrument.getDatabaseId()));
+        String.valueOf(instrument.getId()));
 
-      JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
+      JobManager.addJob(conn, instrument.getOwner(),
         CreateNrtDataset.class.getCanonicalName(), jobProperties);
     }
 

@@ -8,17 +8,21 @@
   <ui:define name="localHead">
     <c:set var="mainMenuActiveIndex" value="2" scope="request" />
     <script>
-      function goToStandards(id, name) {
+      function goToStandards(id) {
         $('#instrumentListForm\\:standardsInstrumentId').val(id);
-        $('#instrumentListForm\\:standardsInstrumentName').val(name);
         $('#instrumentListForm\\:showStandardsLink').click();
         return false;
       }
 
-      function goToCalibrations(id, name) {
+      function goToCalibrations(id) {
         $('#instrumentListForm\\:calibrationssInstrumentId').val(id);
-        $('#instrumentListForm\\:calibrationsInstrumentName').val(name);
         $('#instrumentListForm\\:showCalibrationsLink').click();
+        return false;
+      }
+
+      function goToCalculationCoefficients(id) {
+        $('#instrumentListForm\\:calculationCoefficientsInstrumentId').val(id);
+        $('#instrumentListForm\\:showCalculationCoefficientsLink').click();
         return false;
       }
     </script>
@@ -27,16 +31,19 @@
     <h:form id="instrumentListForm" method="post" accept-charset="utf8">
       <h:inputHidden id="standardsInstrumentId"
         value="#{externalStandardsBean.instrumentId}" />
-      <h:inputHidden id="standardsInstrumentName"
-        value="#{externalStandardsBean.instrumentName}" />
       <p:commandLink id="showStandardsLink" ajax="false"
         action="#{externalStandardsBean.start}" />
+
       <h:inputHidden id="calibrationssInstrumentId"
         value="#{sensorCalibrationsBean.instrumentId}" />
-      <h:inputHidden id="calibrationsInstrumentName"
-        value="#{sensorCalibrationsBean.instrumentName}" />
       <p:commandLink id="showCalibrationsLink" ajax="false"
         action="#{sensorCalibrationsBean.start}" />
+
+      <h:inputHidden id="calculationCoefficientsInstrumentId"
+        value="#{calculationCoefficientsBean.instrumentId}" />
+      <p:commandLink id="showCalculationCoefficientsLink" ajax="false"
+        action="#{calculationCoefficientsBean.start}" />
+
       <h:panelGrid columns="1" cellpadding="5"
         styleClass="buttonPanel contentList">
         <p:commandButton value="Add New Instrument" ajax="false"
@@ -46,17 +53,31 @@
         value="#{instrumentListBean.instrumentList}" styleClass="pageBlock">
         <p:column>
           <f:facet name="header">Instrument Name</f:facet>
-          <b><h:outputText value="#{instrument.name}" /></b>
+          <b>
+            <ui:fragment rendered="#{User.adminUser}">
+              <h:outputText value="#{instrument.owner.surname}, #{instrument.owner.givenName} - "/>
+            </ui:fragment>
+            <h:outputText value="#{instrument.name}"/>
+          </b>
         </p:column>
         <p:column styleClass="centeredCell">
           <f:facet name="header">Sensor Calibrations</f:facet>
           <p:button value="Sensor Calibrations" styleClass="inlineButton"
-            onclick="return goToCalibrations(#{instrument.id}, '#{instrument.name}')" />
+            onclick="return goToCalibrations(#{instrument.id})" />
         </p:column>
         <p:column styleClass="centeredCell">
           <f:facet name="header">Calibration Gas Deployments</f:facet>
-          <p:button value="View Deployments" styleClass="inlineButton"
-            onclick="return goToStandards(#{instrument.id}, '#{instrument.name}')" />
+          <ui:fragment rendered="#{instrument.hasInternalCalibrations()}">
+            <p:button value="View Deployments" styleClass="inlineButton"
+              onclick="return goToStandards(#{instrument.id})" />
+          </ui:fragment>
+        </p:column>
+        <p:column styleClass="centeredCell">
+          <f:facet name="header">Calculation Coefficients</f:facet>
+          <ui:fragment rendered="#{instrument.hasCalculationCoefficients()}">
+            <p:button value="View Coefficients" styleClass="inlineButton"
+              onclick="return goToCalculationCoefficients(#{instrument.id})" />
+          </ui:fragment>
         </p:column>
       </p:dataTable>
     </h:form>

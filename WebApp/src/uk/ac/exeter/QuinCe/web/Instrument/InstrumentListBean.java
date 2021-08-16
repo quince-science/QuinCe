@@ -5,12 +5,9 @@ import java.util.List;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
-import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -47,12 +44,12 @@ public class InstrumentListBean extends BaseManagedBean {
   /**
    * The list of instruments
    */
-  private List<InstrumentStub> instrumentList = null;
+  private List<Instrument> instrumentList = null;
 
   /**
    * The ID of the instrument chosen from the instrument list
    */
-  private InstrumentStub chosenInstrument = null;
+  private Instrument chosenInstrument = null;
 
   /**
    * Initialises the bean by pre-loading the list of instruments
@@ -62,7 +59,7 @@ public class InstrumentListBean extends BaseManagedBean {
     try {
       instrumentList = InstrumentDB
         .getInstrumentList(ServletUtils.getDBDataSource(), getUser());
-    } catch (MissingParamException | DatabaseException | ResourceException e) {
+    } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -73,7 +70,7 @@ public class InstrumentListBean extends BaseManagedBean {
    *
    * @return The instruments owned by the current user
    */
-  public List<InstrumentStub> getInstrumentList() {
+  public List<Instrument> getInstrumentList() {
     if (null == instrumentList) {
       init();
     }
@@ -132,9 +129,10 @@ public class InstrumentListBean extends BaseManagedBean {
    *          The instrument ID
    */
   public void setChosenInstrument(long chosenInstrument) {
-    for (InstrumentStub stub : instrumentList) {
-      if (stub.getId() == chosenInstrument) {
-        this.chosenInstrument = stub;
+    for (Instrument instrument : instrumentList) {
+      if (instrument.getId() == chosenInstrument) {
+        this.chosenInstrument = instrument;
+        setCurrentInstrumentId(instrument.getId());
         break;
       }
     }

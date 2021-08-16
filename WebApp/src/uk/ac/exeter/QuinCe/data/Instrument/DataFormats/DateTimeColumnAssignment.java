@@ -15,6 +15,8 @@ import java.util.Properties;
  */
 public class DateTimeColumnAssignment {
 
+  private static final String ISO_FORMAT = "ISO";
+
   /**
    * Properties key for format strings
    */
@@ -147,7 +149,11 @@ public class DateTimeColumnAssignment {
     DateTimeFormatter result = null;
 
     if (null != getDateFormatString()) {
-      result = DateTimeFormatter.ofPattern(getDateFormatString());
+      if (getDateFormatString().equals(ISO_FORMAT)) {
+        result = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+      } else {
+        result = DateTimeFormatter.ofPattern(getDateFormatString());
+      }
     }
 
     return result;

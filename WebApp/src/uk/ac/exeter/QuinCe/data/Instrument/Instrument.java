@@ -8,17 +8,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Object to hold all the details of an instrument
@@ -56,12 +61,12 @@ public class Instrument {
   /**
    * The instrument's ID in the database
    */
-  private long databaseID = DatabaseUtils.NO_DATABASE_RECORD;
+  private long id = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
    * The ID of the owner of the instrument
    */
-  private long ownerId;
+  private User owner;
 
   /**
    * The name of the instrument
@@ -110,10 +115,10 @@ public class Instrument {
   /**
    * Create an instrument from an existing database record.
    *
+   * @param owner
+   *          The the instrument owner.
    * @param databaseId
    *          The instrument's database ID.
-   * @param ownerId
-   *          The ID of the instrument owner.
    * @param name
    *          The instrument's name.
    * @param fileDefinitions
@@ -130,14 +135,14 @@ public class Instrument {
    * @param properties
    *          The instrument's properties.
    */
-  public Instrument(long databaseId, long ownerId, String name,
+  public Instrument(User owner, long databaseId, String name,
     InstrumentFileSet fileDefinitions, List<Variable> variables,
     Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformCode, boolean nrt,
     Properties properties) {
 
-    this.databaseID = databaseId;
-    this.ownerId = ownerId;
+    this.owner = owner;
+    this.id = databaseId;
     this.name = name;
     this.fileDefinitions = fileDefinitions;
     this.variables = variables;
@@ -174,7 +179,7 @@ public class Instrument {
     SensorAssignments sensorAssignments, String platformCode, boolean nrt,
     Properties properties) {
 
-    this.ownerId = owner.getDatabaseID();
+    this.owner = owner;
     this.name = name;
     this.fileDefinitions = fileDefinitions;
     this.variables = variables;
@@ -208,7 +213,7 @@ public class Instrument {
     List<Variable> variables, Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformCode, boolean nrt) {
 
-    this.ownerId = owner.getDatabaseID();
+    this.owner = owner;
     this.name = name;
     this.fileDefinitions = fileDefinitions;
     this.variables = variables;
@@ -238,8 +243,8 @@ public class Instrument {
    *
    * @return The ID of the instrument in the database
    */
-  public long getDatabaseId() {
-    return databaseID;
+  public long getId() {
+    return id;
   }
 
   /**
@@ -249,7 +254,7 @@ public class Instrument {
    *          The database ID
    */
   public void setDatabaseId(long databaseID) {
-    this.databaseID = databaseID;
+    this.id = databaseID;
   }
 
   /**
@@ -257,8 +262,8 @@ public class Instrument {
    *
    * @return The ID of the owner of the instrument
    */
-  public long getOwnerId() {
-    return ownerId;
+  public User getOwner() {
+    return owner;
   }
 
   /**
@@ -331,21 +336,70 @@ public class Instrument {
     return variables;
   }
 
+  public RunTypeCategory getRunTypeCategory(
+    Map.Entry<Long, String> runTypeEntry) throws RunTypeCategoryException {
+    return getRunTypeCategory(runTypeEntry.getKey(), runTypeEntry.getValue());
+  }
+
   /**
    * Get the Run Type category for a given Run Type value
    *
    * @param runTypeValue
    *          The Run Type value
    * @return The Run Type category
+   * @throws RunTypeCategoryException
    */
-  public RunTypeCategory getRunTypeCategory(String runTypeValue) {
-    // TODO Maybe we can build a lookup table for this, since the values
-    // are fixed once the instrument's loaded from the database
-    List<SensorAssignment> runTypeAssignments = getSensorAssignments()
-      .get(SensorType.RUN_TYPE_SENSOR_TYPE);
-    FileDefinition fileDef = getFileDefinitions()
-      .get(runTypeAssignments.get(0).getDataFile());
-    return fileDef.getRunTypes().getRunTypeCategory(runTypeValue);
+  public RunTypeCategory getRunTypeCategory(long variableId,
+    String runTypeValue) throws RunTypeCategoryException {
+
+    RunTypeCategory result = null;
+
+    // Fixed run types are those defined in code (see Measurement.java), and
+    // determined programmatically.
+    // Non-fixed ones are provided as a column in the data
+
+    // Start by testing the fixed run types
+    switch (runTypeValue) {
+    case Measurement.IGNORED_RUN_TYPE: {
+      result = RunTypeCategory.IGNORED;
+      break;
+    }
+    case Measurement.INTERNAL_CALIBRATION_RUN_TYPE: {
+      result = RunTypeCategory.INTERNAL_CALIBRATION;
+      break;
+    }
+    case Measurement.MEASUREMENT_RUN_TYPE: {
+      try {
+        Variable variable = ResourceManager.getInstance()
+          .getSensorsConfiguration().getInstrumentVariable(variableId);
+        result = new RunTypeCategory(variableId, variable.getName());
+      } catch (VariableNotFoundException e) {
+        throw new RunTypeCategoryException(
+          "Variable not found for variable ID " + variableId);
+      }
+      break;
+    }
+    default: {
+      // We didn't see anything for the fixed run types. See if there are custom
+      // ones defined.
+      TreeSet<SensorAssignment> runTypeAssignments = getSensorAssignments()
+        .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+      if (null == runTypeAssignments || runTypeAssignments.size() == 0) {
+        throw new RunTypeCategoryException(
+          "No custom run types defined for variable ID " + variableId);
+      } else {
+        FileDefinition fileDef = getFileDefinitions()
+          .get(runTypeAssignments.first().getDataFile());
+        result = fileDef.getRunTypes().getRunTypeCategory(runTypeValue);
+        if (null == result) {
+          throw new RunTypeCategoryException(
+            "Unrecognised run type " + runTypeValue);
+        }
+      }
+    }
+    }
+
+    return result;
   }
 
   /**
@@ -517,11 +571,29 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Determine whether or not the instrument has internal calibrations defined.
+   *
+   * <p>
+   * This is determined by whether or not any run types of
+   * {@link RunTypeCategory#INTERNAL_CALIBRATION_TYPE} have been assigned. Even
+   * though some sensor types provide options for Internal Calibration run
+   * types, these are optional - if they aren't provided, QuinCe won't attempt
+   * to perform any calibration.
+   * </p>
+   *
+   * @return {@code true} if internal calibrations are required by the
+   *         instrument; {@code false} if not.
+   */
   public boolean hasInternalCalibrations() {
+    return getRunTypes(RunTypeCategory.INTERNAL_CALIBRATION_TYPE).size() > 0;
+  }
+
+  public boolean hasCalculationCoefficients() {
     boolean result = false;
 
     for (Variable variable : variables) {
-      if (variable.hasInternalCalibrations()) {
+      if (variable.hasCoefficients()) {
         result = true;
         break;
       }
@@ -541,34 +613,21 @@ public class Instrument {
    * @param runType
    *          The run type
    * @return
+   * @throws RunTypeCategoryException
    */
-  public boolean isMeasurementRunType(String runType) {
+  public boolean isRunTypeForVariable(Variable variable, String runType)
+    throws RunTypeCategoryException {
+
     boolean result = false;
 
-    if (!hasInternalCalibrations()) {
-      result = true;
-    } else {
-      result = getRunTypeCategory(runType).isMeasurementType();
-    }
-
-    return result;
-  }
-
-  /**
-   * Determine whether a Measurement object has the correct run type for data
-   * reduction to be performed
-   *
-   * @param runType
-   *          The run type
-   * @return
-   */
-  public boolean isRunTypeForVariable(Variable variable, String runType) {
-    boolean result = false;
-
-    if (!hasInternalCalibrations()) {
-      result = true;
-    } else {
-      result = getRunTypeCategory(runType).getType() == variable.getId();
+    if (null != runType) {
+      if (null != variable.getRunType()
+        && variable.getRunType().equals(runType)) {
+        result = true;
+      } else if (getRunTypeCategory(variable.getId(), runType)
+        .getType() == variable.getId()) {
+        result = true;
+      }
     }
 
     return result;
@@ -694,15 +753,20 @@ public class Instrument {
     return variableProperties;
   }
 
-  public Set<ColumnHeading> getAllVariableColumnHeadings(String runType) {
+  public Set<ColumnHeading> getAllVariableColumnHeadings(String runType)
+    throws RunTypeCategoryException {
     Set<ColumnHeading> result = new HashSet<ColumnHeading>();
 
-    variables.forEach(v -> {
-      if (isRunTypeForVariable(v, runType)) {
-        result.addAll(v.getAllColumnHeadings());
+    for (Variable variable : variables) {
+      if (isRunTypeForVariable(variable, runType)) {
+        result.addAll(variable.getAllColumnHeadings());
       }
-    });
+    }
 
     return result;
+  }
+
+  public boolean hasVariable(Variable variable) {
+    return variables.contains(variable);
   }
 }

@@ -224,7 +224,8 @@ public class FileDefinitionBuilder extends FileDefinition {
   }
 
   /**
-   * Count the number of instances of a given separator in a string
+   * Count the number of instances of a given separator in a string. Trailing
+   * separators are ignored.
    *
    * @param separator
    *          The separator to search for
@@ -250,6 +251,11 @@ public class FileDefinitionBuilder extends FileDefinition {
     int matchCount = 0;
     while (matcher.find()) {
       matchCount++;
+    }
+
+    // If the string ends with a separator, ignore it
+    if (searchString.endsWith(separator)) {
+      matchCount--;
     }
 
     return matchCount;
@@ -427,9 +433,12 @@ public class FileDefinitionBuilder extends FileDefinition {
 
       for (int i = 0; i < getColumnCount(); i++) {
         if (!complete.get(i)) {
-          if (!FileColumn.isMissingValue(row.get(i))) {
-            values.set(i, row.get(i));
-            complete.set(i, true);
+          // Handle short rows
+          if (row.size() > i) {
+            if (!FileColumn.isMissingValue(row.get(i))) {
+              values.set(i, row.get(i));
+              complete.set(i, true);
+            }
           }
         }
       }
@@ -539,31 +548,36 @@ public class FileDefinitionBuilder extends FileDefinition {
     super.setColumnCount(calculateColumnCount());
   }
 
-  /**
-   * Get the unique values from a column
-   *
-   * @param column
-   *          The column index
-   * @return The unique values
-   */
-  protected TreeSet<String> getUniqueColumnValues(int column) {
+  protected TreeSet<String> getUniqueRunTypes() {
 
     TreeSet<String> values = new TreeSet<String>();
 
-    for (int i = getColumnHeaderRows(); i < fileContents.size(); i++) {
+    for (int i = getHeaderLength() + getColumnHeaderRows(); i < fileContents
+      .size(); i++) {
       List<String> columns = extractFields(fileContents.get(i));
-      values.add(columns.get(column));
+      values.add(runTypes.getRunType(columns));
     }
 
     return values;
   }
 
   @Override
-  public void setRunTypeColumn(int runTypeColumn) {
-    super.setRunTypeColumn(runTypeColumn);
+  public void addRunTypeColumn(int runTypeColumn) {
+    super.addRunTypeColumn(runTypeColumn);
 
-    if (runTypeColumn != -1) {
-      for (String runType : getUniqueColumnValues(runTypeColumn)) {
+    runTypes.clear();
+    for (String runType : getUniqueRunTypes()) {
+      setRunTypeCategory(runType, RunTypeCategory.IGNORED);
+    }
+  }
+
+  @Override
+  public void removeRunTypeColumn(int runTypeColumn) {
+    super.removeRunTypeColumn(runTypeColumn);
+
+    if (null != runTypes) {
+      runTypes.clear();
+      for (String runType : getUniqueRunTypes()) {
         setRunTypeCategory(runType, RunTypeCategory.IGNORED);
       }
     }

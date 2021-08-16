@@ -9,6 +9,9 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
@@ -140,9 +143,9 @@ public class DataSetsBean extends BaseManagedBean {
     RecordNotFoundException, InstrumentException, ResourceException {
     if (null != getCurrentInstrument()) {
       dataSets = DataSetDB.getDataSets(getDataSource(),
-        getCurrentInstrument().getDatabaseId(), true);
+        getCurrentInstrument().getId(), true);
       hasFiles = DataFileDB.getFileCount(getDataSource(),
-        getCurrentInstrument().getDatabaseId()) > 0;
+        getCurrentInstrument().getId()) > 0;
     } else {
       dataSets = null;
     }
@@ -184,14 +187,17 @@ public class DataSetsBean extends BaseManagedBean {
       // Make the list of file definitions
       Map<String, Integer> definitionIds = new HashMap<String, Integer>();
 
-      StringBuilder fdJson = new StringBuilder();
-
-      fdJson.append('[');
+      JsonArray fdJson = new JsonArray();
 
       // Add a fake definition for the data sets, so they can be seen on the
       // timeline
-      fdJson
-        .append("{\"id\":-1000,\"content\":\"File Type:\",\"order\":-1000},");
+      JsonObject datasetDefinition = new JsonObject();
+
+      datasetDefinition.addProperty("id", -1000);
+      datasetDefinition.addProperty("content", "File Type:");
+      datasetDefinition.addProperty("order", -1000);
+
+      fdJson.add(datasetDefinition);
 
       for (int i = 0; i < getCurrentInstrument().getFileDefinitions()
         .size(); i++) {
@@ -202,84 +208,55 @@ public class DataSetsBean extends BaseManagedBean {
         // below
         definitionIds.put(definition.getFileDescription(), i);
 
-        fdJson.append('{');
-        fdJson.append("\"id\":");
-        fdJson.append(i);
-        fdJson.append(",\"content\":\"");
-        fdJson.append(definition.getFileDescription());
-        fdJson.append("\",\"order\":");
-        fdJson.append(i);
-        fdJson.append('}');
+        JsonObject fdJsonObject = new JsonObject();
+        fdJsonObject.addProperty("id", i);
+        fdJsonObject.addProperty("content", definition.getFileDescription());
+        fdJsonObject.addProperty("order", i);
 
-        if (i < getCurrentInstrument().getFileDefinitions().size() - 1) {
-          fdJson.append(',');
-        }
+        fdJson.add(fdJsonObject);
       }
-
-      fdJson.append(']');
 
       fileDefinitionsJson = fdJson.toString();
 
       // Now the actual files
       List<DataFile> dataFiles = DataFileDB.getFiles(getDataSource(),
-        getAppConfig(), getCurrentInstrument().getDatabaseId());
+        getAppConfig(), getCurrentInstrument().getId());
 
-      StringBuilder entriesJson = new StringBuilder();
-      entriesJson.append('[');
+      JsonArray entriesJson = new JsonArray();
 
       for (int i = 0; i < dataFiles.size(); i++) {
         DataFile file = dataFiles.get(i);
 
-        entriesJson.append('{');
-        entriesJson.append("\"type\":\"range\", \"group\":");
-        entriesJson.append(
+        JsonObject entry = new JsonObject();
+
+        entry.addProperty("type", "range");
+        entry.addProperty("group",
           definitionIds.get(file.getFileDefinition().getFileDescription()));
-        entriesJson.append(",\"start\":\"");
-        entriesJson.append(DateTimeUtils.toIsoDate(file.getStartDate()));
-        entriesJson.append("\",\"end\":\"");
-        entriesJson.append(DateTimeUtils.toIsoDate(file.getEndDate()));
-        entriesJson.append("\",\"content\":\"");
-        entriesJson.append(file.getFilename());
-        entriesJson.append("\",\"title\":\"");
-        entriesJson.append(file.getFilename());
-        entriesJson.append("\"}");
+        entry.addProperty("start",
+          DateTimeUtils.toIsoDate(file.getOffsetStartTime()));
+        entry.addProperty("end",
+          DateTimeUtils.toIsoDate(file.getOffsetEndTime()));
+        entry.addProperty("content", file.getFilename());
+        entry.addProperty("title", file.getFilename());
 
-        if (i < dataFiles.size() - 1) {
-          entriesJson.append(',');
-        }
+        entriesJson.add(entry);
       }
 
-      if (dataSets.size() > 0) {
-        entriesJson.append(',');
+      for (int i = 0; i < dataSets.size(); i++) {
+        DataSet dataSet = dataSets.get(i);
 
-        for (int i = 0; i < dataSets.size(); i++) {
-          DataSet dataSet = dataSets.get(i);
+        JsonObject entry = new JsonObject();
 
-          entriesJson.append('{');
-          entriesJson.append("\"type\":\"background\",");
-          entriesJson.append("\"start\":\"");
-          entriesJson.append(DateTimeUtils.toIsoDate(dataSet.getStart()));
-          entriesJson.append("\",\"end\":\"");
-          entriesJson.append(DateTimeUtils.toIsoDate(dataSet.getEnd()));
-          entriesJson.append("\",\"content\":\"");
-          entriesJson.append(dataSet.getName());
-          entriesJson.append("\",\"title\":\"");
-          entriesJson.append(dataSet.getName());
-          entriesJson.append("\",\"className\":\"");
-          if (dataSet.isNrt()) {
-            entriesJson.append("timelineNrtDataSet");
-          } else {
-            entriesJson.append("timelineDataSet");
-          }
-          entriesJson.append("\"}");
+        entry.addProperty("type", "background");
+        entry.addProperty("start", DateTimeUtils.toIsoDate(dataSet.getStart()));
+        entry.addProperty("end", DateTimeUtils.toIsoDate(dataSet.getEnd()));
+        entry.addProperty("content", dataSet.getName());
+        entry.addProperty("title", dataSet.getName());
+        entry.addProperty("className",
+          dataSet.isNrt() ? "timelineNrtDataSet" : "timelineDataSet");
 
-          if (i < dataSets.size() - 1) {
-            entriesJson.append(',');
-          }
-        }
+        entriesJson.add(entry);
       }
-
-      entriesJson.append(']');
 
       timelineEntriesJson = entriesJson.toString();
     } catch (Exception e) {
@@ -399,7 +376,7 @@ public class DataSetsBean extends BaseManagedBean {
   public void recalculate() {
     try {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId,
-        DataSet.STATUS_AUTO_QC);
+        DataSet.STATUS_SENSOR_QC);
       Properties properties = new Properties();
       properties.setProperty(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(),
@@ -426,7 +403,7 @@ public class DataSetsBean extends BaseManagedBean {
 
         // Check sensor calibration equations
         CalibrationSet calibrations = new SensorCalibrationDB()
-          .getMostRecentCalibrations(getDataSource(), getCurrentInstrumentId(),
+          .getMostRecentCalibrations(getDataSource(), getCurrentInstrument(),
             DateTimeUtils.parseDisplayDateTime(startTime));
 
         if (!calibrations.isValid()) {
@@ -435,20 +412,25 @@ public class DataSetsBean extends BaseManagedBean {
         } else {
 
           // Check for external standards if required.
-          if (getCurrentInstrument().getSensorAssignments()
-            .hasInternalCalibrations()) {
+          if (getCurrentInstrument().hasInternalCalibrations()) {
 
             // Check internal calibration standards
             CalibrationSet standards = ExternalStandardDB.getInstance()
-              .getStandardsSet(getDataSource(), getCurrentInstrumentId(),
+              .getStandardsSet(getDataSource(), getCurrentInstrument(),
                 DateTimeUtils.parseDisplayDateTime(startTime));
             if (!standards.isComplete()) {
               validCalibration = false;
               validCalibrationMessage = "No complete set of external standards is available";
-            } else if (!ExternalStandardDB.hasZeroStandard(standards)) {
-              validCalibration = false;
-              validCalibrationMessage = "One external standard must have a zero concentration";
             }
+
+            // Disable zero standard check. #2037
+            // May be reinstated for different types of pCO2 system in the
+            // future.
+            /*
+             * else if (!ExternalStandardDB.hasZeroStandard(standards)) {
+             * validCalibration = false; validCalibrationMessage =
+             * "One external standard must have a zero concentration"; }
+             */
           }
 
         }

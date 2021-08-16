@@ -1,0 +1,19 @@
+[
+  {
+    "variable": "Underway Marine pCO₂",
+    "routines": [
+      {
+        "name": "DeltaTRange",
+        "flagged_sensors": [
+          "Intake Temperature",
+          "Equilibrator Temperature",
+          "Diagnostic Water Flow"
+        ],
+        "options": {
+          "questionable_limit": 1.5,
+          "bad_limit": 3
+        }
+      }
+    ]
+  }
+]

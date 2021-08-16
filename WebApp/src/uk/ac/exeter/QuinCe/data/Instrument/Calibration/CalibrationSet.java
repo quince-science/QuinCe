@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -33,9 +34,9 @@ public class CalibrationSet extends TreeSet<Calibration> {
   private static final long serialVersionUID = 1647218597328709319L;
 
   /**
-   * The ID of the instrument for to which this calibration set belongs
+   * The instrument to which this calibration set belongs
    */
-  private long instrumentId;
+  private Instrument instrument;
 
   /**
    * The calibration type that is allowed in this set
@@ -57,27 +58,27 @@ public class CalibrationSet extends TreeSet<Calibration> {
    * @param targets
    *          The set of targets for the calibration set
    * @throws MissingParamException
-   *           If any required paramters are missing
+   *           If any required parameters are missing
    */
-  protected CalibrationSet(long instrumentId, String type,
+  protected CalibrationSet(Instrument instrument, String type,
     Map<String, String> targets) throws MissingParamException {
     super();
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkMissing(instrument, "instrument");
     MissingParam.checkMissing(type, "type");
     MissingParam.checkMissing(targets, "targets", true);
 
-    this.instrumentId = instrumentId;
+    this.instrument = instrument;
     this.type = type;
     this.targets = targets;
 
     for (String target : targets.keySet()) {
-      add(new EmptyCalibration(instrumentId, type, target));
+      add(new EmptyCalibration(instrument, type, target));
     }
   }
 
   @Override
   public boolean add(Calibration calibration) {
-    if (calibration.getInstrumentId() != instrumentId) {
+    if (!calibration.getInstrument().equals(instrument)) {
       throw new CalibrationException("Instrument ID does not match");
     }
 
@@ -210,7 +211,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
     for (Calibration calibration : this) {
       if (calibration.getTarget().equals(target)) {
         calibrationFound = true;
-        result = calibration.getCoefficient(sensorName);
+        result = calibration.getDoubleCoefficient(sensorName);
       }
     }
 

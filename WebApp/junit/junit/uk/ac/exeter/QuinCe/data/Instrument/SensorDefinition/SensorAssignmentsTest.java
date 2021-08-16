@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterAll;
@@ -150,7 +151,7 @@ public class SensorAssignmentsTest extends BaseTest {
   private int countAllAssignments() {
     int count = 0;
 
-    for (List<SensorAssignment> assignmentSet : assignments.values()) {
+    for (TreeSet<SensorAssignment> assignmentSet : assignments.values()) {
       count += assignmentSet.size();
     }
 
@@ -189,6 +190,11 @@ public class SensorAssignmentsTest extends BaseTest {
   private static SensorType getTestSensorType() throws Exception {
     return ResourceManager.getInstance().getSensorsConfiguration()
       .getSensorType("Intake Temperature");
+  }
+
+  private static SensorType getTestSensorType2() throws Exception {
+    return ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("Salinity");
   }
 
   /**
@@ -310,8 +316,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void basicAssignmentTest() throws Exception {
     assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
-    Map<SensorType, List<SensorAssignment>> allAssignments = assignments;
-    List<SensorAssignment> sensorAssignments = allAssignments
+    Map<SensorType, TreeSet<SensorAssignment>> allAssignments = assignments;
+    TreeSet<SensorAssignment> sensorAssignments = allAssignments
       .get(config.getSensorType(1));
     assertEquals(1, sensorAssignments.size());
     assertEquals(makeAssignment(DATA_FILE_NAME, 1, true),
@@ -348,18 +354,25 @@ public class SensorAssignmentsTest extends BaseTest {
 
   /**
    * Test that attempting to assign the same column to two different
-   * {@link SensorType}s fails.
+   * {@link SensorType}s succeeds.
    *
    * @throws Exception
    *           If any internal errors are encountered.
    */
   @Test
   public void duplicateColumnDifferentSensorTest() throws Exception {
-    // The same column can't be assigned more than once
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
-    assertThrows(SensorAssignmentException.class, () -> {
-      assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
-    });
+
+    SensorAssignment assignment1 = makeAssignment(getTestSensorType(),
+      DATA_FILE_NAME, 1, true);
+    SensorAssignment assignment2 = makeAssignment(getTestSensorType2(),
+      DATA_FILE_NAME, 1, true);
+
+    assignments.addAssignment(assignment1);
+    assignments.addAssignment(assignment2);
+
+    // Check that both assignments are where they should be
+    assertEquals(assignment1, assignments.get(getTestSensorType()).first());
+    assertEquals(assignment2, assignments.get(getTestSensorType2()).first());
   }
 
   /**

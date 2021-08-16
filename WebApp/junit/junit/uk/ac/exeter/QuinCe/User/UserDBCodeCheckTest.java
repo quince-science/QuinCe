@@ -61,6 +61,8 @@ public class UserDBCodeCheckTest extends TestSetTest {
    * Tests for code checks on users with various combinations of email and
    * password reset codes.
    *
+   * @param line
+   *          The line from the test file.
    * @throws Exception
    *           If any internal errors are encountered.
    */
@@ -150,6 +152,7 @@ public class UserDBCodeCheckTest extends TestSetTest {
    * The field will contain one of the following values:
    * </p>
    * <table>
+   * <caption>Possible values for the code field in the test set.</caption>
    * <tr>
    * <td><b>Value</b></td>
    * <td><b>Code sent</b></td>
@@ -173,10 +176,12 @@ public class UserDBCodeCheckTest extends TestSetTest {
    * </p>
    *
    * @param user
-   *          The user object under test
+   *          The user object under test.
    * @param line
-   *          The test set line
-   * @return The code to pass in the test
+   *          The test set line.
+   * @param field
+   *          The zero-based field number.
+   * @return The code to pass in the test.
    * @throws Exception
    *           If any internal errors are encountered.
    */

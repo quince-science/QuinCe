@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
 
-import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
@@ -67,9 +66,7 @@ public class CreateNrtDataset extends Job {
       conn = dataSource.getConnection();
       long instrumentId = Long.parseLong(properties.getProperty(ID_PARAM));
 
-      Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId,
-        ResourceManager.getInstance().getSensorsConfiguration(),
-        ResourceManager.getInstance().getRunTypeCategoryConfiguration());
+      Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId);
 
       // Delete the existing NRT dataset
       DataSetDB.deleteNrtDataSet(conn, instrumentId);
@@ -81,24 +78,23 @@ public class CreateNrtDataset extends Job {
       // available
       // data file.
       LocalDateTime nrtStartDate = null;
-      DataSet lastDataset = DataSetDB.getLastDataSet(conn,
-        instrument.getDatabaseId(), false);
+      DataSet lastDataset = DataSetDB.getLastDataSet(conn, instrument.getId(),
+        false);
       if (null != lastDataset) {
         nrtStartDate = lastDataset.getEnd().plusSeconds(1);
       } else {
         List<DataFile> instrumentFiles = DataFileDB.getFiles(conn,
-          ResourceManager.getInstance().getConfig(),
-          instrument.getDatabaseId());
+          ResourceManager.getInstance().getConfig(), instrument.getId());
 
         // We can only continue if there's at least one file
         if (instrumentFiles.size() > 0) {
-          nrtStartDate = instrumentFiles.get(0).getStartDate();
+          nrtStartDate = instrumentFiles.get(0).getOffsetStartTime();
         }
       }
 
       if (null != nrtStartDate) {
         LocalDateTime endDate = DataFileDB.getLastFileDate(conn,
-          instrument.getDatabaseId());
+          instrument.getId(), true);
 
         // Only create the NRT dataset if there are records available
         if (endDate.isAfter(nrtStartDate)) {
@@ -114,7 +110,7 @@ public class CreateNrtDataset extends Job {
           jobProperties.setProperty(ExtractDataSetJob.ID_PARAM,
             String.valueOf(newDataset.getId()));
 
-          JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
+          JobManager.addJob(conn, instrument.getOwner(),
             ExtractDataSetJob.class.getCanonicalName(), jobProperties);
         }
       }

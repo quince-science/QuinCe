@@ -37,7 +37,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
     Double equilibratorPressure = measurement
       .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
-    Double co2InGas = measurement.getMeasurementValue("xCO₂ (with standards)")
+    Double co2InGas = measurement.getMeasurementValue(getXCO2Parameter())
       .getCalculatedValue();
 
     Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
@@ -47,10 +47,10 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     Double fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, co2InGas,
       equilibratorPressure, equilibratorTemperature);
 
-    Double pCO2SST = calcCO2AtSST(pCo2TEWet, equilibratorTemperature,
-      intakeTemperature);
+    Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet,
+      equilibratorTemperature, intakeTemperature);
 
-    Double fCO2 = calcCO2AtSST(fCo2TEWet, equilibratorTemperature,
+    Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, equilibratorTemperature,
       intakeTemperature);
 
     // Store the calculated values
@@ -62,29 +62,10 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     record.put("fCO₂", fCO2);
   }
 
-  /**
-   * Calculates pCO<sub>2</sub> at the intake (sea surface) temperature. From
-   * Takahashi et al. (2009)
-   *
-   * @param pco2TEWet
-   *          The pCO<sub>2</sub> at equilibrator temperature
-   * @param eqt
-   *          The equilibrator temperature
-   * @param sst
-   *          The intake temperature
-   * @return The pCO<sub>2</sub> at intake temperature
-   */
-  private Double calcCO2AtSST(Double co2AtEquilibrator, Double eqt,
-    Double sst) {
-    return co2AtEquilibrator
-      * Math.exp(0.0423 * (Calculators.kelvin(sst) - Calculators.kelvin(eqt)));
-  }
-
   @Override
   protected String[] getRequiredTypeStrings() {
     return new String[] { "Intake Temperature", "Salinity",
-      "Equilibrator Temperature", "Equilibrator Pressure",
-      "xCO₂ (with standards)" };
+      "Equilibrator Temperature", "Equilibrator Pressure", getXCO2Parameter() };
   }
 
   @Override
@@ -115,5 +96,9 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     }
 
     return calculationParameters;
+  }
+
+  protected String getXCO2Parameter() {
+    return "xCO₂ (with standards)";
   }
 }

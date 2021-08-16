@@ -211,7 +211,7 @@ function resizePlots() {
 }
 
 function resizePlot(index) {
-  if (null != window['dataPlot' + index]) {
+  if (null != window['dataPlot' + index] && null != window['dataPlot' + index].maindiv_) {
     $('#plot' + index + 'Container').width('100%');
     $('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
     window['dataPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
@@ -408,6 +408,52 @@ function getColumnIdsWork(headers) {
 
   return ids;
 
+}
+
+function getReferenceValue(index) {
+  return getColumnById($('#plot' + index + 'Form\\:plot' + index + 'YAxis').val()).referenceValue;
+}
+
+function getYRange(index) {
+  let result = null;
+
+  let referenceValue = getReferenceValue(index);
+  if (null != referenceValue) {
+    let min = Number.MAX_VALUE;
+    let max = Number.MIN_VALUE;
+
+    $.each(window['dataPlot' + index + 'Data'], function(index, value) {
+      if (null != value[2]) {
+        if (value[2] < min) {
+          min = value[2];
+        }
+        if (value[2] > max) {
+          max = value[2];
+        }
+      }
+      if (null != value[3]) {
+        if (value[3] < min) {
+          min = value[3];
+        }
+        if (value[3] > max) {
+          max = value[3];
+        }
+      }
+    });
+
+    if (null != referenceValue) {
+      if (referenceValue > max) {
+        max = referenceValue;
+      }
+      if (referenceValue < min) {
+        min = referenceValue;
+      }
+    }
+
+    result = [min, max];
+  }
+
+  return result;
 }
 
 /*
@@ -1034,17 +1080,12 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   data_options.zoomCallback = function(xMin, xMax, yRange) {
     syncZoom(index);
   };
-
-  // Zoom
-  if (!resetZoom) {
-    data_options.dateWindow = xAxisRange;
-    data_options.valueRange = yAxisRange;
-    data_options.yRangePad = 0;
-    data_options.xRangePad = 0;
-  }
+  data_options.drawCallback = function(g, initial) {
+    resizePlot(index);
+  };
 
   // Reference value
-  let referenceValue = getColumnById($('#plot1Form\\:plot1YAxis').val()).referenceValue;
+  let referenceValue = getColumnById($('#plot' + index + 'Form\\:plot' + index + 'YAxis').val()).referenceValue;
   if (null != referenceValue) {
     data_options.underlayCallback = function(canvas, area, g) {
       let xmin = g.toDomXCoord(g.xAxisExtremes()[0]);
@@ -1062,12 +1103,27 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     }
   }
 
+  // Zoom
+  if (!resetZoom) {
+    data_options.dateWindow = xAxisRange;
+    data_options.valueRange = yAxisRange;
+    data_options.yRangePad = 0;
+    data_options.xRangePad = 0;
+  } else {
+    let nonDefaultYRange = getYRange(index);
+    if (null != nonDefaultYRange) {
+      data_options.valueRange = getYRange(index);
+    }
+  }
+
 
   window[plotVar] = new Dygraph(
     document.getElementById('plot' + index + 'DataPlot'),
     window['dataPlot' + index + 'Data'],
     data_options
   );
+
+  resizePlot(index);
 
   if (drawOtherPlots) {
     drawFlagPlot(index);
@@ -1084,8 +1140,6 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
       PF('plot' + index + 'SelectMode').disable();
     }
   }
-
-  resizePlot(index);
 
   // We can't use the window object here because consts don't get put there.
   if (index == 1) {
@@ -1251,6 +1305,13 @@ function resetZoom(index) {
   });
 
   window['dataPlot' + index].resetZoom();
+  let nonDefaultYRange = getYRange(index);
+  if (null != nonDefaultYRange) {
+    window['dataPlot' + index].updateOptions({
+    valueRange: nonDefaultYRange
+    });
+  }
+
   syncZoom(index);
 }
 

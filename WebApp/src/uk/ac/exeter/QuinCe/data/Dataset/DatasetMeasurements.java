@@ -5,11 +5,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
- * The set of measurements for a given {@link Dataset}.
+ * The set of measurements for a given {@link DataSet}.
  *
  * <p>
  * The main object is a map grouping the measurements by run type, but a second
@@ -23,9 +27,14 @@ import java.util.TreeSet;
 public class DatasetMeasurements {
 
   /**
-   * The measurements mapped by run type.
+   * The measurements mapped by variable and run type.
+   *
+   * <p>
+   * Since a {@link Measurement} may apply to multiple {@link Variable}s, it may
+   * appear multiple times in this map.
+   * </p>
    */
-  private HashMap<String, ArrayList<Measurement>> measurements;
+  private HashMap<VariableRunType, ArrayList<Measurement>> measurements;
 
   /**
    * A view of all the measurements in time order.
@@ -41,7 +50,7 @@ public class DatasetMeasurements {
    * Basic constructor.
    */
   public DatasetMeasurements() {
-    measurements = new HashMap<String, ArrayList<Measurement>>();
+    measurements = new HashMap<VariableRunType, ArrayList<Measurement>>();
   }
 
   /**
@@ -49,8 +58,10 @@ public class DatasetMeasurements {
    *
    * @return The Run Types.
    */
-  public Set<String> getRunTypes() {
-    return measurements.keySet();
+  public Set<String> getRunTypes(Variable variable) {
+    return measurements.keySet().stream()
+      .filter(k -> k.variableId == variable.getId()).map(k -> k.runType)
+      .collect(Collectors.toSet());
   }
 
   /**
@@ -60,18 +71,28 @@ public class DatasetMeasurements {
    *          The run type.
    * @return The measurements.
    */
-  public List<Measurement> getMeasurements(String runType) {
-    return measurements.get(runType);
+  public List<Measurement> getMeasurements(Variable variable, String runType) {
+    return measurements.get(new VariableRunType(variable, runType));
+  }
+
+  public List<Measurement> getMeasurements(long variableId, String runType) {
+    return measurements.get(new VariableRunType(variableId, runType));
   }
 
   public void addMeasurement(Measurement measurement) {
-    if (!measurements.containsKey(measurement.getRunType())) {
-      measurements.put(measurement.getRunType(), new ArrayList<Measurement>());
-    }
 
-    measurements.get(measurement.getRunType()).add(measurement);
-    timeOrderedMeasurements = null;
-    measurementTimes = null;
+    for (Map.Entry<Long, String> runTypeEntry : measurement.getRunTypes()
+      .entrySet()) {
+      VariableRunType varRunType = new VariableRunType(runTypeEntry);
+
+      if (!measurements.containsKey(varRunType)) {
+        measurements.put(varRunType, new ArrayList<Measurement>());
+      }
+
+      measurements.get(varRunType).add(measurement);
+      timeOrderedMeasurements = null;
+      measurementTimes = null;
+    }
   }
 
   /**
@@ -105,11 +126,12 @@ public class DatasetMeasurements {
    */
   private void makeTimeOrderedMeasurements() {
 
-    List<Measurement> orderedMeasurements = new ArrayList<Measurement>();
+    // Make a unique list of all the measurements
+    // Measurements have a natural sort order by time
+    TreeSet<Measurement> orderedMeasurements = new TreeSet<Measurement>();
     measurements.values().forEach(orderedMeasurements::addAll);
 
-    Collections.sort(orderedMeasurements);
-    timeOrderedMeasurements = Collections.unmodifiableList(orderedMeasurements);
+    timeOrderedMeasurements = new ArrayList<Measurement>(orderedMeasurements);
 
     List<LocalDateTime> times = new ArrayList<LocalDateTime>(
       timeOrderedMeasurements.size());
@@ -117,7 +139,13 @@ public class DatasetMeasurements {
     measurementTimes = Collections.unmodifiableList(times);
   }
 
-  public TreeSet<Measurement> getMeasurementsInSameRun(Measurement start) {
+  public TreeSet<Measurement> getMeasurementsInSameRun(Variable variable,
+    Measurement start) {
+    return getMeasurementsInSameRun(variable.getId(), start);
+  }
+
+  public TreeSet<Measurement> getMeasurementsInSameRun(long variableId,
+    Measurement start) {
 
     TreeSet<Measurement> result = new TreeSet<Measurement>(
       Measurement.TIME_COMPARATOR);
@@ -132,7 +160,7 @@ public class DatasetMeasurements {
     while (sameRunType) {
       searchPos--;
       if (searchPos < 0 || !getTimeOrderedMeasurements().get(searchPos)
-        .getRunType().equals(start.getRunType())) {
+        .getRunType(variableId).equals(start.getRunType(variableId))) {
         sameRunType = false;
       } else {
         result.add(getTimeOrderedMeasurements().get(searchPos));
@@ -146,8 +174,8 @@ public class DatasetMeasurements {
     while (sameRunType) {
       searchPos++;
       if (searchPos >= getTimeOrderedMeasurements().size()
-        || !getTimeOrderedMeasurements().get(searchPos).getRunType()
-          .equals(start.getRunType())) {
+        || !getTimeOrderedMeasurements().get(searchPos).getRunType(variableId)
+          .equals(start.getRunType(variableId))) {
         sameRunType = false;
       } else {
         result.add(getTimeOrderedMeasurements().get(searchPos));
@@ -155,5 +183,53 @@ public class DatasetMeasurements {
     }
 
     return result;
+  }
+
+  private static class VariableRunType {
+    private final long variableId;
+    private final String runType;
+
+    private VariableRunType(long variableId, String runType) {
+      this.variableId = variableId;
+      this.runType = runType;
+    }
+
+    private VariableRunType(Variable variable, String runType) {
+      this.variableId = variable.getId();
+      this.runType = runType;
+    }
+
+    private VariableRunType(Map.Entry<Long, String> mapEntry) {
+      this.variableId = mapEntry.getKey();
+      this.runType = mapEntry.getValue();
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((runType == null) ? 0 : runType.hashCode());
+      result = prime * result + (int) (variableId ^ (variableId >>> 32));
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      VariableRunType other = (VariableRunType) obj;
+      if (runType == null) {
+        if (other.runType != null)
+          return false;
+      } else if (!runType.equals(other.runType))
+        return false;
+      if (variableId != other.variableId)
+        return false;
+      return true;
+    }
   }
 }

@@ -13,6 +13,7 @@ import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -57,6 +58,12 @@ public abstract class CalibrationDB {
     + "FROM calibration WHERE "
     + "instrument_id = ? AND type = ? AND deployment_date <= ? "
     + "ORDER BY deployment_date DESC";
+
+  private static final String GET_POST_CALIBRATIONS_QUERY = "SELECT "
+    + "id, instrument_id, target, deployment_date, coefficients, class "
+    + "FROM calibration WHERE "
+    + "instrument_id = ? AND type = ? AND deployment_date >= ? "
+    + "ORDER BY deployment_date ASC";
 
   /**
    * Query to determine whether a calibration already exists
@@ -118,7 +125,7 @@ public abstract class CalibrationDB {
       stmt = conn.prepareStatement(ADD_CALIBRATION_STATEMENT,
         Statement.RETURN_GENERATED_KEYS);
 
-      stmt.setLong(1, calibration.getInstrumentId());
+      stmt.setLong(1, calibration.getInstrument().getId());
       stmt.setString(2, calibration.getType());
       stmt.setString(3, calibration.getTarget());
       stmt.setLong(4,
@@ -158,7 +165,7 @@ public abstract class CalibrationDB {
       PreparedStatement stmt = conn
         .prepareStatement(UPDATE_CALIBRATION_STATEMENT);) {
 
-      stmt.setLong(1, calibration.getInstrumentId());
+      stmt.setLong(1, calibration.getInstrument().getId());
       stmt.setString(2, calibration.getType());
       stmt.setString(3, calibration.getTarget());
       stmt.setLong(4,
@@ -211,7 +218,7 @@ public abstract class CalibrationDB {
    * @throws InstrumentException
    */
   public CalibrationSet getMostRecentCalibrations(DataSource dataSource,
-    long instrumentId, LocalDateTime date)
+    Instrument instrument, LocalDateTime date)
     throws CalibrationException, DatabaseException, MissingParamException,
     RecordNotFoundException, InstrumentException {
 
@@ -220,7 +227,7 @@ public abstract class CalibrationDB {
 
     try {
       conn = dataSource.getConnection();
-      result = getMostRecentCalibrations(conn, instrumentId, date);
+      result = getMostRecentCalibrations(conn, instrument, date);
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving calibrations", e);
     } finally {
@@ -249,19 +256,55 @@ public abstract class CalibrationDB {
    * @throws InstrumentException
    */
   public CalibrationSet getMostRecentCalibrations(Connection conn,
-    long instrumentId, LocalDateTime date)
+    Instrument instrument, LocalDateTime date)
     throws CalibrationException, DatabaseException, MissingParamException,
     RecordNotFoundException, InstrumentException {
 
-    CalibrationSet result = new CalibrationSet(instrumentId,
-      getCalibrationType(), getTargets(conn, instrumentId));
+    CalibrationSet result = new CalibrationSet(instrument, getCalibrationType(),
+      getTargets(conn, instrument));
 
     PreparedStatement stmt = null;
     ResultSet records = null;
 
     try {
       stmt = conn.prepareStatement(GET_RECENT_CALIBRATIONS_QUERY);
-      stmt.setLong(1, instrumentId);
+      stmt.setLong(1, instrument.getId());
+      stmt.setString(2, getCalibrationType());
+      // Get epoch milliseconds
+      stmt.setLong(3, DateTimeUtils.dateToLong(date));
+      records = stmt.executeQuery();
+      while (!result.isComplete() && records.next()) {
+        String target = records.getString(3);
+
+        if (!result.containsTarget(target)) {
+          result.add(calibrationFromResultSet(records, instrument));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving calibrations", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return result;
+  }
+
+  public CalibrationSet getCalibrationsAfter(Connection conn,
+    Instrument instrument, LocalDateTime date)
+    throws CalibrationException, DatabaseException, MissingParamException,
+    RecordNotFoundException, InstrumentException {
+
+    CalibrationSet result = new CalibrationSet(instrument, getCalibrationType(),
+      getTargets(conn, instrument));
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_POST_CALIBRATIONS_QUERY);
+      stmt.setLong(1, instrument.getId());
       stmt.setString(2, getCalibrationType());
       // Get epoch milliseconds
       stmt.setLong(3, DateTimeUtils.dateToLong(date));
@@ -270,7 +313,7 @@ public abstract class CalibrationDB {
         String target = records.getString(1);
 
         if (!result.containsTarget(target)) {
-          result.add(calibrationFromResultSet(records));
+          result.add(calibrationFromResultSet(records, instrument));
         }
       }
 
@@ -303,10 +346,10 @@ public abstract class CalibrationDB {
    * @throws InstrumentException
    */
   public CalibrationSet getCurrentCalibrations(DataSource dataSource,
-    long instrumentId) throws CalibrationException, DatabaseException,
+    Instrument instrument) throws CalibrationException, DatabaseException,
     MissingParamException, RecordNotFoundException, InstrumentException {
 
-    return getMostRecentCalibrations(dataSource, instrumentId,
+    return getMostRecentCalibrations(dataSource, instrument,
       LocalDateTime.now());
   }
 
@@ -325,10 +368,10 @@ public abstract class CalibrationDB {
    * @throws DatabaseException
    */
   public TreeMap<String, List<Calibration>> getCalibrations(
-    DataSource dataSource, long instrumentId)
+    DataSource dataSource, Instrument instrument)
     throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkMissing(instrument, "instrument");
 
     TreeMap<String, List<Calibration>> calibrations = new TreeMap<String, List<Calibration>>();
 
@@ -339,12 +382,12 @@ public abstract class CalibrationDB {
     try {
       conn = dataSource.getConnection();
       stmt = conn.prepareStatement(GET_CALIBRATIONS_QUERY);
-      stmt.setLong(1, instrumentId);
+      stmt.setLong(1, instrument.getId());
       stmt.setString(2, getCalibrationType());
 
       records = stmt.executeQuery();
       while (records.next()) {
-        Calibration calibration = calibrationFromResultSet(records);
+        Calibration calibration = calibrationFromResultSet(records, instrument);
         if (!calibrations.containsKey(calibration.getTarget())) {
           calibrations.put(calibration.getTarget(),
             new ArrayList<Calibration>());
@@ -364,18 +407,17 @@ public abstract class CalibrationDB {
     return calibrations;
   }
 
-  private Calibration calibrationFromResultSet(ResultSet record)
-    throws SQLException {
+  private Calibration calibrationFromResultSet(ResultSet record,
+    Instrument instrument) throws SQLException {
     long id = record.getLong(1);
-    long instrumentId = record.getLong(2);
     String target = record.getString(3);
     LocalDateTime deploymentDate = DateTimeUtils.longToDate(record.getLong(4));
-    List<Double> coefficients = StringUtils
-      .delimitedToDoubleList(record.getString(5));
+    List<String> coefficients = StringUtils.delimitedToList(record.getString(5),
+      ";");
     String calibrationClass = record.getString(6);
 
     return CalibrationFactory.createCalibration(getCalibrationType(),
-      calibrationClass, id, instrumentId, deploymentDate, target, coefficients);
+      calibrationClass, id, instrument, deploymentDate, target, coefficients);
   }
 
   /**
@@ -412,7 +454,7 @@ public abstract class CalibrationDB {
     try {
       conn = dataSource.getConnection();
       stmt = conn.prepareStatement(CALIBRATION_EXISTS_QUERY);
-      stmt.setLong(1, calibration.getInstrumentId());
+      stmt.setLong(1, calibration.getInstrument().getId());
       stmt.setString(2, getCalibrationType());
       stmt.setLong(3,
         DateTimeUtils.dateToLong(calibration.getDeploymentDate()));
@@ -451,7 +493,7 @@ public abstract class CalibrationDB {
    *           If no external standard run types are found
    */
   public Map<String, String> getTargets(DataSource dataSource,
-    long instrumentId) throws MissingParamException, DatabaseException,
+    Instrument instrument) throws MissingParamException, DatabaseException,
     RecordNotFoundException, InstrumentException {
 
     Connection conn = null;
@@ -459,7 +501,7 @@ public abstract class CalibrationDB {
 
     try {
       conn = dataSource.getConnection();
-      result = getTargets(conn, instrumentId);
+      result = getTargets(conn, instrument);
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting calibration targets", e);
     } finally {
@@ -485,7 +527,7 @@ public abstract class CalibrationDB {
    *           If no external standard run types are found
    */
   public abstract Map<String, String> getTargets(Connection conn,
-    long instrumentId) throws MissingParamException, DatabaseException,
+    Instrument instrument) throws MissingParamException, DatabaseException,
     RecordNotFoundException, InstrumentException;
 
   /**

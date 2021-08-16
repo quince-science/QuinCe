@@ -57,7 +57,10 @@ public class DataReducerTest extends BaseTest {
         measurementValue);
     }
 
-    return new Measurement(1L, 1L, LocalDateTime.now(), "runtype",
+    HashMap<Long, String> runTypes = new HashMap<Long, String>();
+    runTypes.put(Measurement.GENERIC_RUN_TYPE_VARIABLE, "runtype");
+
+    return new Measurement(1L, 1L, LocalDateTime.now(), runTypes,
       measurementValuesMap);
   }
 }

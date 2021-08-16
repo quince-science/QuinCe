@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+
 /**
  * A calibration that applies up to a fifth-order polynomial adjustment
  *
@@ -42,8 +44,8 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    * @param target
    *          The calibration target (most likely a sensor)
    */
-  public PolynomialSensorCalibration(long instrumentId, String target) {
-    super(instrumentId, target);
+  public PolynomialSensorCalibration(Instrument instrument, String target) {
+    super(instrument, target);
   }
 
   /**
@@ -52,8 +54,8 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    * @param instrumentId
    *          The instrument to which the calibration target belongs
    */
-  public PolynomialSensorCalibration(long instrumentId) {
-    super(instrumentId);
+  public PolynomialSensorCalibration(Instrument instrument) {
+    super(instrument);
   }
 
   /**
@@ -72,9 +74,9 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    * @throws CalibrationException
    *           If the calibration details are invalid
    */
-  public PolynomialSensorCalibration(long id, long instrumentId, String target,
-    LocalDateTime deploymentDate, List<Double> coefficients) {
-    super(id, instrumentId, target, deploymentDate, coefficients);
+  public PolynomialSensorCalibration(long id, Instrument instrument,
+    String target, LocalDateTime deploymentDate, List<String> coefficients) {
+    super(id, instrument, target, deploymentDate, coefficients);
   }
 
   @Override
@@ -106,7 +108,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
     CalibrationCoefficient coefficient) {
 
     String name = coefficient.getName();
-    double value = coefficient.getValue();
+    double value = Double.parseDouble(coefficient.getValue());
 
     if (string.length() == 0 && value != 0) {
       string.append(value);
@@ -141,7 +143,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
     for (String name : getCoefficientNames()) {
 
       if (name.equals("x")) {
-        coefficients.add(new CalibrationCoefficient(name, 1.0));
+        coefficients.add(new CalibrationCoefficient(name, "1.0"));
       } else {
         coefficients.add(new CalibrationCoefficient(name));
       }
@@ -158,7 +160,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
     ListIterator<CalibrationCoefficient> iterator = coefficients
       .listIterator(coefficients.size());
     while (iterator.hasPrevious()) {
-      calibratedValue += iterator.previous().getValue()
+      calibratedValue += iterator.previous().getDoubleValue()
         * Math.pow(rawValue, power);
       power++;
     }

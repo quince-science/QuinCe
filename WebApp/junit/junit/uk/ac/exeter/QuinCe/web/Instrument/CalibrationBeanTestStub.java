@@ -23,7 +23,10 @@ public class CalibrationBeanTestStub extends CalibrationBean {
   private CalibrationDB stubDbInstance;
 
   /**
-   * Package-protected constructor
+   * Package-protected constructor.
+   *
+   * @param dbInstance
+   *          The {@link CalibrationDB} to use.
    */
   protected CalibrationBeanTestStub(CalibrationDB dbInstance) {
     this.stubDbInstance = dbInstance;
@@ -51,7 +54,7 @@ public class CalibrationBeanTestStub extends CalibrationBean {
 
   @Override
   protected Calibration initNewCalibration() {
-    return new CalibrationTestStub(instrumentId);
+    return new CalibrationTestStub(instrument);
   }
 
   @Override
@@ -62,7 +65,7 @@ public class CalibrationBeanTestStub extends CalibrationBean {
 
   @Override
   protected int getReprocessStatus() {
-    return DataSet.STATUS_AUTO_QC;
+    return DataSet.STATUS_SENSOR_QC;
   }
 
   @Override

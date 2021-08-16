@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.google.gson.Gson;
+
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
@@ -28,7 +30,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
-public class Variable {
+public class Variable implements Comparable<Variable> {
 
   /**
    * The variable's database ID
@@ -41,14 +43,20 @@ public class Variable {
   private String name;
 
   /**
-   * IDs and Labels for this variable's attributes
+   * IDs and Labels for this variable's attributes, which must be defined by the
+   * user when they create an instrument.
    */
-  LinkedHashMap<String, String> attributes;
+  private LinkedHashMap<String, String> attributes;
+
+  /**
+   * The variable's properties
+   */
+  private final VariableProperties properties;
 
   /**
    * The core SensorType
    */
-  private SensorType coreSensorType;
+  private List<SensorType> coreSensorTypes;
 
   /**
    * The other sensors required for data reduction
@@ -92,9 +100,10 @@ public class Variable {
    *           If any cascade flags are invalid
    */
   protected Variable(SensorsConfiguration sensorConfig, long id, String name,
-    LinkedHashMap<String, String> attributes, long coreSensorTypeId,
-    List<Long> requiredSensorTypeIds, List<Integer> questionableCascades,
-    List<Integer> badCascades, Map<SensorType, ColumnHeading> columnHeadings)
+    LinkedHashMap<String, String> attributes, String propertiesJson,
+    List<Long> coreSensorTypeIds, List<Long> requiredSensorTypeIds,
+    List<Integer> questionableCascades, List<Integer> badCascades,
+    Map<SensorType, ColumnHeading> columnHeadings)
     throws SensorTypeNotFoundException, SensorConfigurationException,
     InvalidFlagException {
 
@@ -102,13 +111,24 @@ public class Variable {
     this.name = name;
     this.attributes = attributes;
 
-    if (coreSensorTypeId == -1) {
-      coreSensorType = null;
+    if (null == propertiesJson || propertiesJson.length() == 0) {
+      this.properties = new VariableProperties();
     } else {
-      coreSensorType = sensorConfig.getSensorType(coreSensorTypeId);
-      if (coreSensorType.hasParent()) {
-        throw new SensorConfigurationException(
-          "Core sensor type cannot be a child (ID " + coreSensorTypeId + ")");
+      this.properties = new Gson().fromJson(propertiesJson,
+        VariableProperties.class);
+    }
+
+    coreSensorTypes = new ArrayList<SensorType>();
+
+    if (null != coreSensorTypeIds) {
+      for (long coreSensorTypeId : coreSensorTypeIds) {
+        SensorType sensorType = sensorConfig.getSensorType(coreSensorTypeId);
+        if (sensorType.hasParent()) {
+          throw new SensorConfigurationException(
+            "Core sensor type cannot be a child (ID " + coreSensorTypeId + ")");
+        } else {
+          coreSensorTypes.add(sensorType);
+        }
       }
     }
 
@@ -132,7 +152,7 @@ public class Variable {
         .getSensorType(requiredSensorTypeIds.get(i));
       if (sensorType.hasParent()) {
         throw new SensorConfigurationException(
-          "Required sensor type cannot be a child (ID " + coreSensorTypeId
+          "Required sensor type cannot be a child (ID " + sensorType.getId()
             + ")");
       }
       requiredSensorTypes.add(sensorType);
@@ -167,8 +187,13 @@ public class Variable {
    *
    * @return The core SensorType
    */
-  public SensorType getCoreSensorType() {
-    return coreSensorType;
+  public List<SensorType> getCoreSensorTypes() {
+
+    if (null == coreSensorTypes) {
+      coreSensorTypes = new ArrayList<SensorType>(0);
+    }
+
+    return coreSensorTypes;
   }
 
   /**
@@ -180,8 +205,8 @@ public class Variable {
   public List<SensorType> getAllSensorTypes(boolean includePosition) {
     List<SensorType> result = new ArrayList<SensorType>(requiredSensorTypes);
 
-    if (null != coreSensorType) {
-      result.add(coreSensorType);
+    if (null != coreSensorTypes) {
+      result.addAll(coreSensorTypes);
     }
 
     if (includePosition) {
@@ -217,7 +242,7 @@ public class Variable {
 
     Flag result = null;
 
-    if (sensorType.equals(coreSensorType)
+    if (coreSensorTypes.contains(sensorType)
       || sensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)
       || sensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
       result = flag;
@@ -366,5 +391,27 @@ public class Variable {
 
   public Collection<ColumnHeading> getAllColumnHeadings() {
     return columnHeadings.values();
+  }
+
+  public boolean hasCoefficients() {
+    return properties.getCoefficients().size() > 0;
+  }
+
+  public List<String> getCoefficients() {
+    return properties.getCoefficients();
+  }
+
+  public boolean requiresRunType() {
+    return null != properties.getRunType();
+  }
+
+  public String getRunType() {
+    return properties.getRunType();
+  }
+
+  @Override
+  public int compareTo(Variable o) {
+    // Variables are ordered by name
+    return name.compareTo(o.name);
   }
 }

@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -23,13 +23,9 @@ import com.google.gson.Gson;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.api.nrt.NrtInstrument;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -46,7 +42,6 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -80,13 +75,8 @@ public class InstrumentDB {
     + "instrument_id, description, column_separator, " // 3
     + "header_type, header_lines, header_end_string, " // 6
     + "column_header_rows, column_count, " // 8
-    + "lon_format, lon_value_col, lon_hemisphere_col, " // 11
-    + "lat_format, lat_value_col, lat_hemisphere_col, " // 14
-    + "date_time_col, date_time_props, date_col, date_props, " // 18
-    + "hours_from_start_col, hours_from_start_props, " // 20
-    + "jday_time_col, jday_col, year_col, month_col, day_col, " // 25
-    + "time_col, time_props, hour_col, minute_col, second_col, unix_col" // 30
-    + ") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    + "lon_spec, lat_spec, datetime_spec" // 11
+    + ") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement for inserting a file column definition record
@@ -118,27 +108,6 @@ public class InstrumentDB {
     + ") VALUES (?, ?, ?, ?)";
 
   /**
-   * Query for retrieving the list of instruments owned by a particular user
-   */
-  private static final String GET_SINGLE_USER_INSTRUMENT_LIST_QUERY = "SELECT "
-    + "id, name FROM instrument " + "WHERE owner = ? ORDER BY name ASC";
-
-  /**
-   * Query for retrieving the list of all instruments in the system, grouped by
-   * owner
-   */
-  private static final String GET_ALL_USERS_INSTRUMENT_LIST_QUERY = "SELECT "
-    + "i.id, CONCAT(u.surname, \", \", u.firstname, \" - \", i.name) AS name "
-    + "FROM instrument AS i " + "INNER JOIN user AS u ON i.owner = u.id "
-    + "GROUP BY i.id ORDER BY name ASC";
-
-  /**
-   * Query for retrieving the stub for a specific instrument
-   */
-  private static final String GET_INSTRUMENT_STUB_QUERY = "SELECT name "
-    + "FROM instrument WHERE i.id = ? ";
-
-  /**
    * SQL query to get an instrument's base record
    */
   private static final String GET_INSTRUMENT_QUERY = "SELECT name, owner, " // 2
@@ -157,11 +126,7 @@ public class InstrumentDB {
   private static final String GET_FILE_DEFINITIONS_QUERY = "SELECT "
     + "id, description, column_separator, " // 3
     + "header_type, header_lines, header_end_string, column_header_rows, " // 7
-    + "column_count, lon_format, lon_value_col, lon_hemisphere_col, " // 11
-    + "lat_format, lat_value_col, lat_hemisphere_col, " // 14
-    + "date_time_col, date_time_props, date_col, date_props, hours_from_start_col, hours_from_start_props, " // 20
-    + "jday_time_col, jday_col, year_col, month_col, day_col, " // 25
-    + "time_col, time_props, hour_col, minute_col, second_col, unix_col " // 30
+    + "column_count, lon_spec, lat_spec, datetime_spec " // 11
     + "FROM file_definition WHERE instrument_id = ? ORDER BY description";
 
   /**
@@ -221,6 +186,23 @@ public class InstrumentDB {
     + "INNER JOIN file_definition fd ON (fc.file_definition_id = fd.id)"
     + "WHERE fd.instrument_id = ? "
     + "ORDER BY st.display_order, st.name, fc.sensor_name";
+
+  /**
+   * Query to see if an instrument exists with the given owner and name.
+   */
+  private static final String INSTRUMENT_EXISTS_QUERY = "SELECT "
+    + "id FROM instrument WHERE owner = ? AND name = ?";
+
+  private static final String INSTRUMENT_LIST_QUERY_BASE = "SELECT "
+    + "i.id, i.name, i.owner, i.platform_code, i.nrt, i.properties, " // 6
+    + "iv.variable_id, iv.properties, " // 8
+    + "CONCAT(u.surname, \", \", u.firstname) AS owner_name " // 9
+    + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
+    + "INNER JOIN user u on i.owner = u.id";
+
+  private static final String INSTRUMENT_LIST_QUERY_WHERE = " WHERE u.id = ?";
+
+  private static final String INSTRUMENT_LIST_QUERY_ORDER = " ORDER BY owner_name, i.owner, i.name";
 
   /**
    * Store a new instrument in the database
@@ -314,7 +296,7 @@ public class InstrumentDB {
           }
         }
 
-        for (Map.Entry<SensorType, List<SensorAssignment>> sensorAssignmentsEntry : instrument
+        for (Map.Entry<SensorType, TreeSet<SensorAssignment>> sensorAssignmentsEntry : instrument
           .getSensorAssignments().entrySet()) {
 
           SensorType sensorType = sensorAssignmentsEntry.getKey();
@@ -393,7 +375,7 @@ public class InstrumentDB {
     Connection conn, Instrument instrument) throws SQLException {
     PreparedStatement stmt = conn.prepareStatement(CREATE_INSTRUMENT_STATEMENT,
       Statement.RETURN_GENERATED_KEYS);
-    stmt.setLong(1, instrument.getOwnerId()); // owner
+    stmt.setLong(1, instrument.getOwner().getDatabaseID()); // owner
     stmt.setString(2, instrument.getName()); // name
     stmt.setString(3, instrument.getPlatformCode()); // platform_code
     stmt.setBoolean(4, instrument.getNrt()); // nrt
@@ -422,6 +404,8 @@ public class InstrumentDB {
     Connection conn, FileDefinition file, long instrumentId)
     throws SQLException, IOException {
 
+    Gson gson = new Gson();
+
     PreparedStatement stmt = conn.prepareStatement(
       CREATE_FILE_DEFINITION_STATEMENT, Statement.RETURN_GENERATED_KEYS);
 
@@ -440,125 +424,11 @@ public class InstrumentDB {
 
     stmt.setInt(7, file.getColumnHeaderRows()); // column_header_rows
     stmt.setInt(8, file.getColumnCount()); // column_count
-
-    addPositionAssignment(stmt, file.getLongitudeSpecification(), 9, 10, 11); // longitude
-    addPositionAssignment(stmt, file.getLatitudeSpecification(), 12, 13, 14); // latitude
-
-    DateTimeSpecification dateTimeSpec = file.getDateTimeSpecification();
-    addDateTimeAssignment(stmt, 15, 16, DateTimeSpecification.DATE_TIME,
-      dateTimeSpec); // date_time_col
-    addDateTimeAssignment(stmt, 17, 18, DateTimeSpecification.DATE,
-      dateTimeSpec); // date
-    addDateTimeAssignment(stmt, 19, 20, DateTimeSpecification.HOURS_FROM_START,
-      dateTimeSpec); // hours_from_start
-    addDateTimeAssignment(stmt, 21, -1, DateTimeSpecification.JDAY_TIME,
-      dateTimeSpec); // jday_time_col
-    addDateTimeAssignment(stmt, 22, -1, DateTimeSpecification.JDAY,
-      dateTimeSpec); // jday_col
-    addDateTimeAssignment(stmt, 23, -1, DateTimeSpecification.YEAR,
-      dateTimeSpec); // year_col
-    addDateTimeAssignment(stmt, 24, -1, DateTimeSpecification.MONTH,
-      dateTimeSpec); // jmonth_col
-    addDateTimeAssignment(stmt, 25, -1, DateTimeSpecification.DAY,
-      dateTimeSpec); // jday_col
-    addDateTimeAssignment(stmt, 26, 27, DateTimeSpecification.TIME,
-      dateTimeSpec); // time_col
-    addDateTimeAssignment(stmt, 28, -1, DateTimeSpecification.HOUR,
-      dateTimeSpec); // hour_col
-    addDateTimeAssignment(stmt, 29, -1, DateTimeSpecification.MINUTE,
-      dateTimeSpec); // minute_col
-    addDateTimeAssignment(stmt, 30, -1, DateTimeSpecification.SECOND,
-      dateTimeSpec); // second_col
-    addDateTimeAssignment(stmt, 31, -1, DateTimeSpecification.UNIX,
-      dateTimeSpec); // unix_col
+    stmt.setString(9, gson.toJson(file.getLongitudeSpecification()));
+    stmt.setString(10, gson.toJson(file.getLatitudeSpecification()));
+    stmt.setString(11, gson.toJson(file.getDateTimeSpecification()));
 
     return stmt;
-  }
-
-  /**
-   * Add a position assignment fields to a statement for inserting a file
-   * definition
-   *
-   * @param stmt
-   *          The file definition statement
-   * @param posSpec
-   *          The position specification
-   * @param formatIndex
-   *          The index in the statement of the format field
-   * @param valueIndex
-   *          The index in the statement of the value field
-   * @param hemisphereIndex
-   *          The index in the statement of the hemisphere field
-   * @throws SQLException
-   *           If adding the assignment fails
-   */
-  private static void addPositionAssignment(PreparedStatement stmt,
-    PositionSpecification posSpec, int formatIndex, int valueIndex,
-    int hemisphereIndex) throws SQLException {
-    stmt.setInt(formatIndex, posSpec.getFormat()); // pos_format
-    stmt.setInt(valueIndex, posSpec.getValueColumn()); // pos_value_col
-
-    if (posSpec.hemisphereRequired()) {
-      stmt.setInt(hemisphereIndex, posSpec.getHemisphereColumn()); // pos_hemisphere_col
-    } else {
-      stmt.setInt(hemisphereIndex, -1); // pos_hemisphere_col
-    }
-  }
-
-  /**
-   * Add a date/time column assignment to a statement for inserting a file
-   * definition
-   *
-   * @param stmt
-   *          The file definition statement
-   * @param stmtColumnIndex
-   *          The index in the statement to be set
-   * @param stmtPropsIndex
-   *          The index in the statement to be set. If no properties are to be
-   *          stored, set to -1
-   * @param assignmentId
-   *          The required date/time assignment
-   * @param dateTimeSpec
-   *          The file's date/time specification
-   * @throws SQLException
-   *           If adding the assignment fails
-   * @throws IOException
-   *           If the Properties object cannot be serialized into a String
-   */
-  private static void addDateTimeAssignment(PreparedStatement stmt,
-    int stmtColumnIndex, int stmtPropsIndex, int assignmentId,
-    DateTimeSpecification dateTimeSpec) throws SQLException, IOException {
-
-    int column = -1;
-    Properties properties = null;
-
-    DateTimeColumnAssignment assignment = dateTimeSpec
-      .getAssignment(assignmentId);
-    if (null != assignment) {
-      if (assignment.isAssigned()) {
-        column = assignment.getColumn();
-        properties = assignment.getProperties();
-      }
-    }
-
-    if (column == -1) {
-      stmt.setInt(stmtColumnIndex, -1);
-      if (stmtPropsIndex != -1) {
-        stmt.setNull(stmtPropsIndex, Types.VARCHAR);
-      }
-    } else {
-      stmt.setInt(stmtColumnIndex, column);
-
-      if (stmtPropsIndex != -1) {
-        if (null == properties || properties.size() == 0) {
-          stmt.setNull(stmtPropsIndex, Types.VARCHAR);
-        } else {
-          StringWriter writer = new StringWriter();
-          properties.store(writer, null);
-          stmt.setString(stmtPropsIndex, writer.toString());
-        }
-      }
-    }
   }
 
   /**
@@ -580,15 +450,19 @@ public class InstrumentDB {
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurred
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws VariableNotFoundException
    */
-  public static List<InstrumentStub> getInstrumentList(DataSource dataSource,
-    User owner) throws MissingParamException, DatabaseException {
+  public static List<Instrument> getInstrumentList(DataSource dataSource,
+    User owner) throws MissingParamException, DatabaseException,
+    VariableNotFoundException, RecordNotFoundException, InstrumentException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(owner, "owner");
 
     Connection conn = null;
-    List<InstrumentStub> result = null;
+    List<Instrument> result = null;
 
     try {
       conn = dataSource.getConnection();
@@ -621,24 +495,120 @@ public class InstrumentDB {
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurred
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws VariableNotFoundException
    */
-  private static List<InstrumentStub> getInstrumentList(Connection conn,
-    long ownerId) throws MissingParamException, DatabaseException {
+  public static List<Instrument> getInstrumentList(Connection conn,
+    long ownerId) throws MissingParamException, DatabaseException,
+    VariableNotFoundException, RecordNotFoundException, InstrumentException {
+
+    MissingParam.checkMissing(conn, "conn");
+
+    List<Instrument> result = new ArrayList<Instrument>();
 
     PreparedStatement stmt = null;
-    List<InstrumentStub> instrumentList = null;
+    ResultSet records = null;
 
     try {
-      stmt = conn.prepareStatement(GET_SINGLE_USER_INSTRUMENT_LIST_QUERY);
-      stmt.setLong(1, ownerId);
-      instrumentList = runInstrumentListQuery(conn, stmt);
+
+      String sql = INSTRUMENT_LIST_QUERY_BASE;
+      if (ownerId > 0) {
+        sql += INSTRUMENT_LIST_QUERY_WHERE;
+      }
+      sql += INSTRUMENT_LIST_QUERY_ORDER;
+
+      stmt = conn.prepareStatement(sql);
+
+      if (ownerId > 0) {
+        stmt.setLong(1, ownerId);
+      }
+
+      records = stmt.executeQuery();
+
+      long currentInstrument = -1;
+      String name = null;
+      long owner = -1;
+      String platformCode = null;
+      boolean nrt = false;
+      String propertiesJson = null;
+      List<Long> variables = null;
+      Map<Long, String> variableProperties = null;
+
+      while (records.next()) {
+
+        long instrumentId = records.getLong(1);
+        if (instrumentId != currentInstrument) {
+
+          if (currentInstrument != -1) {
+            result.add(
+              createInstrument(conn, owner, currentInstrument, name, variables,
+                variableProperties, platformCode, nrt, propertiesJson));
+          }
+
+          currentInstrument = instrumentId;
+          name = records.getString(2);
+          owner = records.getLong(3);
+          platformCode = records.getString(4);
+          nrt = records.getBoolean(5);
+          propertiesJson = records.getString(6);
+          variables = new ArrayList<Long>();
+          variableProperties = new HashMap<Long, String>();
+        }
+
+        variables.add(records.getLong(7));
+        variableProperties.put(records.getLong(7), records.getString(8));
+      }
+
+      // Create the last instrument, if there is one
+      if (currentInstrument != -1) {
+        result.add(createInstrument(conn, owner, currentInstrument, name,
+          variables, variableProperties, platformCode, nrt, propertiesJson));
+      }
+
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving instrument list", e);
     } finally {
+      DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
     }
 
-    return instrumentList;
+    return result;
+  }
+
+  private static Instrument createInstrument(Connection conn, long ownerId,
+    long id, String name, List<Long> variableIds,
+    Map<Long, String> variableProperties, String platformCode, boolean nrt,
+    String propertiesJson) throws MissingParamException, DatabaseException,
+    RecordNotFoundException, InstrumentException, VariableNotFoundException {
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+    RunTypeCategoryConfiguration runTypeConfig = ResourceManager.getInstance()
+      .getRunTypeCategoryConfiguration();
+
+    // Get the file definitions and sensor assignments
+    InstrumentFileSet files = getFileDefinitions(conn, id);
+    SensorAssignments sensorAssignments = getSensorAssignments(conn, id, files,
+      sensorConfig, runTypeConfig);
+
+    List<Variable> variables = new ArrayList<Variable>(variableIds.size());
+    for (long varId : variableIds) {
+      variables.add(sensorConfig.getInstrumentVariable(varId));
+    }
+
+    Map<Variable, Properties> processedVariableProperties = new HashMap<Variable, Properties>();
+    for (Map.Entry<Long, String> entry : variableProperties.entrySet()) {
+      Variable var = sensorConfig.getInstrumentVariable(entry.getKey());
+      Properties props = new Gson().fromJson(entry.getValue(),
+        Properties.class);
+
+      processedVariableProperties.put(var, props);
+    }
+
+    return new Instrument(UserDB.getUser(conn, ownerId), id, name, files,
+      variables, processedVariableProperties, sensorAssignments, platformCode,
+      nrt, new Gson().fromJson(propertiesJson, Properties.class));
   }
 
   /**
@@ -655,111 +625,15 @@ public class InstrumentDB {
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurred
-   */
-  private static List<InstrumentStub> getAllUsersInstrumentList(Connection conn)
-    throws MissingParamException, DatabaseException {
-
-    PreparedStatement stmt = null;
-    List<InstrumentStub> instrumentList = null;
-
-    try {
-      stmt = conn.prepareStatement(GET_ALL_USERS_INSTRUMENT_LIST_QUERY);
-      instrumentList = runInstrumentListQuery(conn, stmt);
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving instrument list", e);
-    } finally {
-      DatabaseUtils.closeStatements(stmt);
-    }
-
-    return instrumentList;
-  }
-
-  /**
-   * Run a query to get a list of instruments. The query must produce three
-   * columns:
-   *
-   * <ol>
-   * <li>Instrument ID</li>
-   * <li>Instrument Name</li>
-   * <li>Number of calibratable sensors</li>
-   * </ol>
-   *
-   * @param conn
-   *          A database connection
-   * @param stmt
-   *          The query to be executed
-   * @return The list of instruments
-   * @throws DatabaseException
-   *           If the query fails
-   * @throws MissingParamException
-   *           If any details are missing from the database results
-   */
-  private static List<InstrumentStub> runInstrumentListQuery(Connection conn,
-    PreparedStatement stmt) throws DatabaseException, MissingParamException {
-
-    ResultSet instruments = null;
-    List<InstrumentStub> instrumentList = new ArrayList<InstrumentStub>();
-    try {
-      instruments = stmt.executeQuery();
-      while (instruments.next()) {
-        InstrumentStub record = new InstrumentStub(instruments.getLong(1),
-          instruments.getString(2));
-        instrumentList.add(record);
-      }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving instrument list", e);
-    } finally {
-      DatabaseUtils.closeResultSets(instruments);
-    }
-
-    return instrumentList;
-  }
-
-  /**
-   * Get an stub object for a specified instrument
-   *
-   * @param dataSource
-   *          A data source
-   * @param instrumentId
-   *          The instrument's database ID
-   * @return The instrument stub
+   * @throws InstrumentException
    * @throws RecordNotFoundException
-   *           If the instrument does not exist
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any details are missing from the database results
+   * @throws VariableNotFoundException
    */
-  public static InstrumentStub getInstrumentStub(DataSource dataSource,
-    long instrumentId)
-    throws RecordNotFoundException, DatabaseException, MissingParamException {
-    InstrumentStub result = null;
+  private static List<Instrument> getAllUsersInstrumentList(Connection conn)
+    throws MissingParamException, DatabaseException, VariableNotFoundException,
+    RecordNotFoundException, InstrumentException {
 
-    Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet record = null;
-
-    try {
-      conn = dataSource.getConnection();
-      stmt = conn.prepareStatement(GET_INSTRUMENT_STUB_QUERY);
-      stmt.setLong(1, instrumentId);
-
-      record = stmt.executeQuery();
-      if (!record.next()) {
-        throw new RecordNotFoundException("Instrument not found", "instrument",
-          instrumentId);
-      } else {
-        result = new InstrumentStub(instrumentId, record.getString(1));
-      }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving instrument list", e);
-    } finally {
-      DatabaseUtils.closeResultSets(record);
-      DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
-    }
-
-    return result;
+    return getInstrumentList(conn, -1);
   }
 
   /**
@@ -785,70 +659,34 @@ public class InstrumentDB {
 
     boolean exists = false;
 
-    for (InstrumentStub instrument : getInstrumentList(dataSource, owner)) {
-      if (instrument.getName().equalsIgnoreCase(name)) {
-        exists = true;
-        break;
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(INSTRUMENT_EXISTS_QUERY);) {
+
+      stmt.setLong(1, owner.getDatabaseID());
+      stmt.setString(2, name);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        if (records.next()) {
+          exists = true;
+        }
       }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting instrument", e);
     }
 
     return exists;
   }
 
-  /**
-   * Retrieve a complete {@link Instrument} from the database
-   *
-   * @param dataSource
-   *          A data source
-   * @param instrumentID
-   *          The instrument's database ID
-   * @param sensorConfiguration
-   *          The sensors configuration
-   * @param runTypeConfiguration
-   *          The run type category configuration
-   * @return The instrument object
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws RecordNotFoundException
-   *           If the instrument ID does not exist
-   * @throws InstrumentException
-   *           If any instrument values are invalid
-   */
   public static Instrument getInstrument(DataSource dataSource,
-    long instrumentID, SensorsConfiguration sensorConfiguration,
-    RunTypeCategoryConfiguration runTypeConfiguration) throws DatabaseException,
-    MissingParamException, RecordNotFoundException, InstrumentException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkPositive(instrumentID, "instrumentID");
-
-    Instrument result = null;
-    Connection conn = null;
-
-    try {
-      conn = dataSource.getConnection();
-      result = getInstrument(conn, instrumentID, sensorConfiguration,
-        runTypeConfiguration);
+    long instrumentId) throws DatabaseException, MissingParamException,
+    RecordNotFoundException, InstrumentException {
+    try (Connection conn = dataSource.getConnection()) {
+      return getInstrument(conn, instrumentId);
     } catch (SQLException e) {
-      throw new DatabaseException("Error while updating record counts", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
+      throw new DatabaseException("Error while getting instrument", e);
     }
-
-    return result;
-  }
-
-  public static Instrument getInstrument(Connection conn, long instrumentId)
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-      .getSensorsConfiguration();
-    RunTypeCategoryConfiguration runTypeConfig = ResourceManager.getInstance()
-      .getRunTypeCategoryConfiguration();
-    return getInstrument(conn, instrumentId, sensorConfig, runTypeConfig);
-
   }
 
   /**
@@ -872,14 +710,17 @@ public class InstrumentDB {
    * @throws InstrumentException
    *           If any instrument values are invalid
    */
-  public static Instrument getInstrument(Connection conn, long instrumentId,
-    SensorsConfiguration sensorConfiguration,
-    RunTypeCategoryConfiguration runTypeConfiguration)
+  public static Instrument getInstrument(Connection conn, long instrumentId)
     throws MissingParamException, DatabaseException, RecordNotFoundException,
     InstrumentException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(instrumentId, "instrumentId");
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+    RunTypeCategoryConfiguration runTypeConfig = ResourceManager.getInstance()
+      .getRunTypeCategoryConfiguration();
 
     Instrument instrument = null;
 
@@ -920,10 +761,11 @@ public class InstrumentDB {
 
         // Now the sensor assignments
         SensorAssignments sensorAssignments = getSensorAssignments(conn,
-          instrumentId, files, sensorConfiguration, runTypeConfiguration);
+          instrumentId, files, sensorConfig, runTypeConfig);
 
-        instrument = new Instrument(instrumentId, owner, name, files, variables,
-          variableProperties, sensorAssignments, platformCode, nrt, properties);
+        instrument = new Instrument(UserDB.getUser(conn, owner), instrumentId,
+          name, files, variables, variableProperties, sensorAssignments,
+          platformCode, nrt, properties);
       }
 
     } catch (SQLException e) {
@@ -960,6 +802,7 @@ public class InstrumentDB {
 
     InstrumentFileSet fileSet = new InstrumentFileSet();
 
+    Gson gson = new Gson();
     PreparedStatement stmt = null;
     ResultSet records = null;
 
@@ -981,10 +824,12 @@ public class InstrumentDB {
         int columnHeaderRows = records.getInt(7);
         int columnCount = records.getInt(8);
 
-        LongitudeSpecification lonSpec = buildLongitudeSpecification(records);
-        LatitudeSpecification latSpec = buildLatitudeSpecification(records);
-        DateTimeSpecification dateTimeSpec = buildDateTimeSpecification(
-          records);
+        LongitudeSpecification lonSpec = gson.fromJson(records.getString(9),
+          LongitudeSpecification.class);
+        LatitudeSpecification latSpec = gson.fromJson(records.getString(10),
+          LatitudeSpecification.class);
+        DateTimeSpecification dateTimeSpec = gson
+          .fromJson(records.getString(11), DateTimeSpecification.class);
 
         FileDefinition fileDefinition = new FileDefinition(id, description,
           separator, headerType, headerLines, headerEndString, columnHeaderRows,
@@ -1000,8 +845,7 @@ public class InstrumentDB {
           ResourceManager.getInstance().getRunTypeCategoryConfiguration());
       }
 
-    } catch (SQLException | IOException | PositionException
-      | DateTimeSpecificationException e) {
+    } catch (SQLException e) {
       throw new DatabaseException("Error reading file definitions", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
@@ -1014,106 +858,6 @@ public class InstrumentDB {
     }
 
     return fileSet;
-  }
-
-  /**
-   * Construct a {@link LongitudeSpecification} object from a database record
-   *
-   * @param record
-   *          The database record
-   * @return The specification
-   * @throws SQLException
-   *           If a database error occurs
-   * @throws PositionException
-   *           If the specification is invalid
-   * @see #GET_FILE_DEFINITIONS_QUERY
-   */
-  private static LongitudeSpecification buildLongitudeSpecification(
-    ResultSet record) throws SQLException, PositionException {
-    LongitudeSpecification spec = null;
-
-    int format = record.getInt(9);
-    int valueColumn = record.getInt(10);
-    int hemisphereColumn = record.getInt(11);
-
-    if (format != -1) {
-      spec = new LongitudeSpecification(format, valueColumn, hemisphereColumn);
-    }
-    return spec;
-  }
-
-  /**
-   * Construct a {@link LatitudeSpecification} object from a database record
-   *
-   * @param record
-   *          The database record
-   * @return The specification
-   * @throws SQLException
-   *           If a database error occurs
-   * @throws PositionException
-   *           If the specification is invalid
-   * @see #GET_FILE_DEFINITIONS_QUERY
-   */
-  private static LatitudeSpecification buildLatitudeSpecification(
-    ResultSet record) throws SQLException, PositionException {
-    LatitudeSpecification spec = null;
-
-    int format = record.getInt(12);
-    int valueColumn = record.getInt(13);
-    int hemisphereColumn = record.getInt(14);
-
-    if (format != -1) {
-      spec = new LatitudeSpecification(format, valueColumn, hemisphereColumn);
-    }
-
-    return spec;
-  }
-
-  /**
-   * Construct a {@link DateTimeSpecification} object from a database record
-   *
-   * @param record
-   *          The database record
-   * @return The specification
-   * @throws SQLException
-   *           If a database error occurs
-   * @throws IOException
-   *           If a Properties string cannot be parsed
-   * @throws DateTimeSpecificationException
-   *           If the specification is invalid
-   * @see #GET_FILE_DEFINITIONS_QUERY
-   */
-  private static DateTimeSpecification buildDateTimeSpecification(
-    ResultSet record)
-    throws SQLException, IOException, DateTimeSpecificationException {
-    int headerLines = record.getInt(5);
-
-    int dateTimeCol = record.getInt(15);
-    Properties dateTimeProps = StringUtils
-      .propertiesFromString(record.getString(16));
-    int dateCol = record.getInt(17);
-    Properties dateProps = StringUtils
-      .propertiesFromString(record.getString(18));
-    int hoursFromStartCol = record.getInt(19);
-    Properties hoursFromStartProps = StringUtils
-      .propertiesFromString(record.getString(20));
-    int jdayTimeCol = record.getInt(21);
-    int jdayCol = record.getInt(22);
-    int yearCol = record.getInt(23);
-    int monthCol = record.getInt(24);
-    int dayCol = record.getInt(25);
-    int timeCol = record.getInt(26);
-    Properties timeProps = StringUtils
-      .propertiesFromString(record.getString(27));
-    int hourCol = record.getInt(28);
-    int minuteCol = record.getInt(29);
-    int secondCol = record.getInt(30);
-    int unixCol = record.getInt(31);
-
-    return new DateTimeSpecification(headerLines > 0, dateTimeCol,
-      dateTimeProps, dateCol, dateProps, hoursFromStartCol, hoursFromStartProps,
-      jdayTimeCol, jdayCol, yearCol, monthCol, dayCol, timeCol, timeProps,
-      hourCol, minuteCol, secondCol, unixCol);
   }
 
   /**

@@ -2,6 +2,8 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+
 /**
  * An empty calibration object, used as a placeholder when a calibration is
  * missing
@@ -22,8 +24,9 @@ public class EmptyCalibration extends Calibration {
    * @param target
    *          The calibration target
    */
-  protected EmptyCalibration(long instrumentId, String type, String target) {
-    super(instrumentId, type, target);
+  protected EmptyCalibration(Instrument instrument, String type,
+    String target) {
+    super(instrument, type, target);
   }
 
   @Override

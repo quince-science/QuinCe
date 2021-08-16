@@ -55,7 +55,7 @@ public class ExternalStandardsBean extends CalibrationBean {
 
   @Override
   protected Calibration initNewCalibration() {
-    return new ExternalStandard(instrumentId);
+    return new ExternalStandard(instrument);
   }
 
   @Override
@@ -70,7 +70,7 @@ public class ExternalStandardsBean extends CalibrationBean {
 
   @Override
   protected int getReprocessStatus() {
-    return DataSet.STATUS_AUTO_QC;
+    return DataSet.STATUS_SENSOR_QC;
   }
 
   @Override

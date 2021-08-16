@@ -33,6 +33,12 @@ public class UploadFile {
   /**
    * Main API method
    *
+   * @param instrumentId
+   *          The instrument ID
+   * @param is
+   *          The file content stream
+   * @param fileDetail
+   *          The file information
    * @return The upload response
    */
   @POST
@@ -49,8 +55,7 @@ public class UploadFile {
       ResourceManager resourceManager = ResourceManager.getInstance();
       DataSource dataSource = resourceManager.getDBDataSource();
       Instrument instrument = InstrumentDB.getInstrument(dataSource,
-        instrumentId, resourceManager.getSensorsConfiguration(),
-        resourceManager.getRunTypeCategoryConfiguration());
+        instrumentId);
 
       // We don't allow uploads for non-NRT instruments
       if (!instrument.getNrt()) {

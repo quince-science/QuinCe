@@ -3,6 +3,8 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+
 /**
  * Abstract class for sensor calibrations. Sensor calibrations are of a common
  * type, but the calculations are made in different ways and may require
@@ -20,8 +22,8 @@ public abstract class SensorCalibration extends Calibration {
    * @param target
    *          The target sensor
    */
-  protected SensorCalibration(long instrumentId, String target) {
-    super(instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE, target);
+  protected SensorCalibration(Instrument instrument, String target) {
+    super(instrument, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE, target);
   }
 
   /**
@@ -30,8 +32,8 @@ public abstract class SensorCalibration extends Calibration {
    * @param instrumentId
    *          The instrument that the calibration is for
    */
-  protected SensorCalibration(long instrumentId) {
-    super(instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE);
+  protected SensorCalibration(Instrument instrument) {
+    super(instrument, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE);
   }
 
   /**
@@ -48,11 +50,10 @@ public abstract class SensorCalibration extends Calibration {
    * @throws CalibrationException
    *           If the calibration details are invalid
    */
-  protected SensorCalibration(long id, long instrumentId, String target,
-    LocalDateTime deploymentDate, List<Double> coefficients)
+  protected SensorCalibration(long id, Instrument instrument, String target,
+    LocalDateTime deploymentDate, List<String> coefficients)
     throws CalibrationException {
-    super(id, instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE,
-      target);
+    super(id, instrument, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE, target);
     setDeploymentDate(deploymentDate);
     setCoefficients(coefficients);
     if (!validate()) {
