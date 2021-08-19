@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.utils.CollectionUtils;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -186,24 +187,31 @@ public class DefaultMeasurementValueCalculator
             standardOffsets.put(target, interpolated);
           }
 
+          // Remove any NaN values - there are no calibration data for those.
+          Map<String, Double> filteredOffsets = CollectionUtils
+            .removeNans(standardOffsets);
+
           // If all the standards are for the concentration (which happens for
           // moisture in gas standards because they're all 100% dry) then we'll
           // only get one offset. But that's fine because the offset in the
           // sensors will measure the same regardless of which standard we're
           // using.
-          if (standardOffsets.size() == 1) {
-            Double offset = standardOffsets.values().iterator().next();
+          if (filteredOffsets.size() == 0) {
+            throw new MeasurementValueCalculatorException(
+              "No internal calibration records found");
+          } else if (filteredOffsets.size() == 1) {
+            Double offset = filteredOffsets.values().iterator().next();
             value.setCalculatedValue(value.getCalculatedValue() - offset);
           } else {
 
             // Make a regression of the offsets to calculate the offset at the
             // measurement time
             SimpleRegression regression = new SimpleRegression(true);
-            for (String target : standardOffsets.keySet()) {
+            for (String target : filteredOffsets.keySet()) {
               regression.addData(
                 calibrationSet.getCalibrationValue(target,
                   value.getSensorType().getShortName()),
-                standardOffsets.get(target));
+                filteredOffsets.get(target));
             }
 
             double calibrationOffset = regression
