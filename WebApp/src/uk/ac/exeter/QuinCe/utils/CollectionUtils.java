@@ -8,12 +8,12 @@ public class CollectionUtils {
   /**
    * Remove {@link Double#NaN} values from a {@link Map} whose values are of
    * type {@link Double}. The type of the keys does not matter.
-   * 
+   *
    * <p>
    * The method returns a copy of the supplied {@link Map}; the original is
    * unchanged.
    * </p>
-   * 
+   *
    * @param <T>
    * @param map
    *          The {@link Map} to be edited.
