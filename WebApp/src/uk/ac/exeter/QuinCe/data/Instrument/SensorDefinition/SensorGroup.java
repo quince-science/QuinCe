@@ -1,8 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
-import java.util.List;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 /**
  * Defines a group of sensors that are physically located in the same place for
@@ -113,7 +111,7 @@ public class SensorGroup {
    *
    * @return The group name.
    */
-  protected String getName() {
+  public String getName() {
     return name;
   }
 
@@ -122,9 +120,8 @@ public class SensorGroup {
    *
    * @return The member names.
    */
-  public List<String> getMemberNames() {
-    return members.stream().map(m -> m.getSensorName())
-      .collect(Collectors.toList());
+  public TreeSet<SensorAssignment> getMembers() {
+    return members;
   }
 
   /**
@@ -210,5 +207,14 @@ public class SensorGroup {
    */
   protected void setNextLink(SensorAssignment assignment) {
     this.nextGroupLink = assignment;
+  }
+
+  /**
+   * Get the number of members in this group.
+   * 
+   * @return The number of members.
+   */
+  public int size() {
+    return members.size();
   }
 }

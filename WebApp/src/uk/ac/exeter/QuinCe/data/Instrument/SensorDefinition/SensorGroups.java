@@ -2,6 +2,12 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -181,7 +187,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
    *          The assignments to be removed.
    */
   public void remove(Collection<SensorAssignment> sensorAssignments) {
-    sensorAssignments.forEach(this::remove);
+    sensorAssignments.forEach(this::removeAssignment);
   }
 
   /**
@@ -195,7 +201,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
    * @param sensorAssignments
    *          The assignments to be removed.
    */
-  public void remove(SensorAssignment assignment) {
+  public void removeAssignment(SensorAssignment assignment) {
     boolean removed = false;
 
     SensorGroup nextGroup = firstGroup;
@@ -210,20 +216,35 @@ public class SensorGroups implements Iterable<SensorGroup> {
   }
 
   /**
+   * Get all the groups as a {@link Stream}.
+   * 
+   * @return A {@link Stream} of the groups.
+   */
+  public Stream<SensorGroup> stream() {
+    int characteristics = Spliterator.DISTINCT | Spliterator.NONNULL
+      | Spliterator.ORDERED;
+
+    Spliterator<SensorGroup> spliterator = Spliterators
+      .spliteratorUnknownSize(iterator(), characteristics);
+    return StreamSupport.stream(spliterator, false);
+  }
+
+  /**
+   * Get all the groups as a {@link List}.
+   * 
+   * @return A {@link List} of the groups.
+   */
+  public List<SensorGroup> asList() {
+    return stream().collect(Collectors.toList());
+  }
+
+  /**
    * Get the number of groups.
    *
    * @return The number of groups.
    */
-  public int size() {
-    int size = 0;
-
-    Iterator<SensorGroup> iterator = iterator();
-    while (iterator.hasNext()) {
-      iterator.next();
-      size++;
-    }
-
-    return size;
+  public long size() {
+    return stream().count();
   }
 
   private void validate(SensorAssignments assignments)
