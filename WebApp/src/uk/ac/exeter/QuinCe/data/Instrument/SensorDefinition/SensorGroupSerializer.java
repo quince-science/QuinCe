@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.lang.reflect.Type;
-import java.util.List;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -19,10 +18,9 @@ public class SensorGroupSerializer implements JsonSerializer<SensorGroup> {
     JsonObject group = new JsonObject();
     group.addProperty("name", src.getName());
 
-    List<String> memberNames = src.getMemberNames();
-    JsonArray members = new JsonArray(memberNames.size());
-    memberNames.forEach(members::add);
-    group.add("members", members);
+    JsonArray membersJson = new JsonArray(src.size());
+    src.getMembers().forEach(m -> membersJson.add(m.getSensorName()));
+    group.add("members", membersJson);
 
     if (src.hasPrev()) {
       group.addProperty("prevLink", src.getPrevLink().getSensorName());

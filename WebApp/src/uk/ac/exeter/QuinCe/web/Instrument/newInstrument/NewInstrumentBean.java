@@ -2104,7 +2104,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
       SensorAssignment removed = sensorAssignments.removeAssignment(sensorType,
         removeAssignmentDataFile, removeAssignmentColumn);
-      sensorGroups.remove(removed);
+      sensorGroups.removeAssignment(removed);
       assignmentsTree.removeAssignment(removed);
 
       if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
@@ -2205,4 +2205,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
     return gson;
   }
+
+  public SensorGroups getSensorGroups() {
+    return sensorGroups;
+  }
+
 }

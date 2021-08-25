@@ -1,0 +1,20 @@
+#groupTables {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+}
+
+.sensorGroup {
+  flex: 0 1;
+}
+
+.groupName {
+  font-weight: bold;
+  font-size: 1.25em;
+  text-align: center;
+}
+
+.sensorName {
+  white-space: nowrap;
+}
