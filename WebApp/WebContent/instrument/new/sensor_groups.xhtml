@@ -14,11 +14,53 @@
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
       <p:defaultCommand target="nextButton" />
+      
+      <h:inputHidden id="groupNames"
+        value="#{newInstrumentBean.sensorGroupNamesJson}"/>
+      
+      <p:dialog header="Rename Sensor Group" widgetVar="renameGroupDialog"
+        modal="true">
+        <h:inputHidden id="renameGroupFrom"
+          value="#{newInstrumentBean.groupRenameFrom}" />
+        <div class="dialogSection">
+          <table>
+            <tr>
+              <td><p:outputLabel value="Rename Group:" /></td>
+              <td>
+                <p:inputText id="renameGroupTo" widgetVar="renameGroupTo"
+                  value="#{newInstrumentBean.groupRenameTo}" onkeyup="checkRenameGroup()"/>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">  
+                <div id="groupNameMessage" class="errorBox">
+                  You must provide a unique group name
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:commandButton value="Rename" widgetVar="renameGroupButton" ajax="true"
+            action="#{newInstrumentBean.renameSensorGroup}"
+            process="renameGroupFrom renameGroupTo"
+            update="groupNames"
+            oncomplete="groupRenamed();" />
+          <p:commandButton value="Cancel"
+            onclick="PF('renameGroupDialog').hide(); return false;" />
+        </h:panelGrid>
+      </p:dialog>
+
       <div id="groupTables">
         <ui:repeat value="#{newInstrumentBean.sensorGroups.asList()}" var="group">
-          <div class="sensorGroup">
+          <div class="sensorGroup" id="groupSection_#{group.name}">
             <div class="groupName">
-              <h:outputText value="#{group.name}"/>
+              <span><h:outputText value="#{group.name}"/></span>
+              <p:commandLink onclick="showRenameGroupDialog('#{group.name}')">
+                <h:graphicImage
+                  value="/resources/image/edit.svg"
+                  styleClass="textActionIcon" alt="Rename Group" title="Rename Group" />
+              </p:commandLink>
             </div>
             <p:dataTable value="#{group.members}" var="member" tableStyleClass="groupTable" resizableColumns="true">
               <p:column headerText="Sensor" styleClass="sensorName">

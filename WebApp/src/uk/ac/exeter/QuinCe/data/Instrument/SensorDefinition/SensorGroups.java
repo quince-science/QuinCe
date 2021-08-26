@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -41,6 +42,10 @@ import com.google.gson.JsonParseException;
  * instrument. Each entry in the list is a {@link SensorGroup} object, which
  * maintains the links they are adjacent to and which sensors are used for
  * offset calculations.
+ * </p>
+ * 
+ * <p>
+ * Group names are case-insensitive and must be unique.
  * </p>
  *
  * @author Steve Jones
@@ -250,5 +255,53 @@ public class SensorGroups implements Iterable<SensorGroup> {
   private void validate(SensorAssignments assignments)
     throws SensorGroupsException {
     // TODO Implement!
+  }
+
+  /**
+   * Get the names of all the groups in order.
+   * 
+   * @return The group names.
+   */
+  public List<String> getGroupNames() {
+    return stream().map(g -> g.getName()).collect(Collectors.toList());
+  }
+
+  public void renameGroup(String from, String to) throws SensorGroupsException {
+    if (!from.equals(to)) {
+      Optional<SensorGroup> group = getGroup(from);
+      if (group.isEmpty()) {
+        throw new SensorGroupsException("Cannot find group '" + from + "'");
+      }
+
+      if (groupExists(to)) {
+        throw new SensorGroupsException(
+          "There is already a group named '" + to + "'");
+      }
+
+      group.get().setName(to);
+    }
+  }
+
+  /**
+   * Get the named group.
+   * 
+   * @param name
+   *          The group name.
+   * @return The group, or
+   */
+  public Optional<SensorGroup> getGroup(String name) {
+    return stream().filter(g -> g.getName().equalsIgnoreCase(name.trim()))
+      .findAny();
+  }
+
+  /**
+   * Determine whether or not a group with the specified name exists.
+   * 
+   * @param name
+   *          The group name.
+   * @return {@code true} if the group exists.
+   */
+  public boolean groupExists(String name) {
+    return getGroup(name).isPresent();
   }
 }

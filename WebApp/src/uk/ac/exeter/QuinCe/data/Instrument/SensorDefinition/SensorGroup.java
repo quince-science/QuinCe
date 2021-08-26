@@ -210,6 +210,16 @@ public class SensorGroup {
   }
 
   /**
+   * Give this group a new name.
+   * 
+   * @param name
+   *          The new name.
+   */
+  protected void setName(String name) {
+    this.name = name.trim();
+  }
+
+  /**
    * Get the number of members in this group.
    * 
    * @return The number of members.
