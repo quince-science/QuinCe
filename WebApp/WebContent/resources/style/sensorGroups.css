@@ -15,6 +15,10 @@
   text-align: center;
 }
 
+.groupTable {
+  width: auto !important;
+}
+
 .sensorName {
   white-space: nowrap;
 }
