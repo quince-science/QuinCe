@@ -44,6 +44,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentExce
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroups;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -424,6 +425,16 @@ public class NewInstrumentBean extends FileUploadBean {
    * The column for which an assignment is being removed.
    */
   private int removeAssignmentColumn;
+
+  /**
+   * The name of the sensor group being renamed.
+   */
+  private String groupRenameFrom;
+
+  /**
+   * The new name for the sensor group.
+   */
+  private String groupRenameTo;
 
   /**
    * Begin a new instrument definition
@@ -2210,4 +2221,31 @@ public class NewInstrumentBean extends FileUploadBean {
     return sensorGroups;
   }
 
+  public String getSensorGroupNamesJson() {
+    return new Gson().toJson(sensorGroups.getGroupNames());
+  }
+
+  public void setSensorGroupNamesJson(String dummy) {
+    //
+  }
+
+  public String getGroupRenameFrom() {
+    return ""; // The server can't tell the front end
+  }
+
+  public void setGroupRenameFrom(String groupRenameFrom) {
+    this.groupRenameFrom = groupRenameFrom;
+  }
+
+  public String getGroupRenameTo() {
+    return ""; // The server can't tell the front end
+  }
+
+  public void setGroupRenameTo(String groupRenameTo) {
+    this.groupRenameTo = groupRenameTo;
+  }
+
+  public void renameSensorGroup() throws SensorGroupsException {
+    sensorGroups.renameGroup(groupRenameFrom, groupRenameTo);
+  }
 }
