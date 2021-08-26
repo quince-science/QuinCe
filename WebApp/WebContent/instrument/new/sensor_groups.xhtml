@@ -20,7 +20,7 @@
             <div class="groupName">
               <h:outputText value="#{group.name}"/>
             </div>
-            <p:dataTable value="#{group.members}" var="member" tableStyle="width:auto" resizableColumns="true">
+            <p:dataTable value="#{group.members}" var="member" tableStyleClass="groupTable" resizableColumns="true">
               <p:column headerText="Sensor" styleClass="sensorName">
                 <h:outputText value="#{member.sensorName}"/>
               </p:column>
