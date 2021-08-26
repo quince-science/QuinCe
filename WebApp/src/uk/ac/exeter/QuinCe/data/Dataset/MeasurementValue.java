@@ -296,7 +296,7 @@ public class MeasurementValue implements PlotPageTableValue {
   /**
    * Get the QC flag for this value. If the {@link #calculatedValue} is
    * {@link Double#NaN}, the flag is always {@link Flag#BAD}.
-   * 
+   *
    * @return The QC flag.
    */
   public Flag getQcFlag() {
@@ -307,7 +307,7 @@ public class MeasurementValue implements PlotPageTableValue {
    * Get the QC messages for this value as a {@link List}. If the
    * {@link #calculatedValue} is {@link Double#NaN}, the list is a single value
    * of {@code "NaN"}.
-   * 
+   *
    * @return The QC messages.
    */
   public List<String> getQcMessages() {
