@@ -553,6 +553,12 @@ table.fileDates {
   height: 20px;
 }
 
+.textActionIcon {
+  margin-left: 5px;
+  width: 18px;
+  height: 18px;
+}
+
 .inputForm {
   margin-top: 15px;
   margin-bottom: 15px;
