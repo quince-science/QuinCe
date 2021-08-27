@@ -13,5 +13,4 @@
 git update-index --assume-unchanged      \
   WebApp/WebContent/META-INF/context.xml \
   WebApp/WebContent/WEB-INF/web.xml      \
-  configuration/quince.properties        \
-  external_scripts/NRT/config.toml
+  configuration/quince.properties
