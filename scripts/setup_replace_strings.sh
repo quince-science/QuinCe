@@ -65,8 +65,7 @@ setup=$(echo "$setup"|sed -e '/^#/d' -e '/^\s*$/d')
 files=\
 "WebApp/WebContent/WEB-INF/web.xml
 configuration/quince.properties
-WebApp/WebContent/META-INF/context.xml
-external_scripts/NRT/config.toml"
+WebApp/WebContent/META-INF/context.xml"
 
 while read -r l;
 do
