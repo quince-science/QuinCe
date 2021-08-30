@@ -183,4 +183,13 @@ class PlotValue implements Comparable<PlotValue> {
   public boolean xIsTime() {
     return null != xTime;
   }
+
+  /**
+   * Determines whether or not the X entry for this value is {@code null}.
+   * 
+   * @return {@code true} if the x value is null.
+   */
+  public boolean xNull() {
+    return (!xIsTime() && null == getXDouble());
+  }
 }
