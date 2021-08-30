@@ -3,10 +3,21 @@
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: center;
+  align-items: center;
 }
 
 .sensorGroup {
   flex: 0 1;
+}
+
+.addButtonContainer {
+  flex: 0 1;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.addButton {
+  min-width: 0px;
 }
 
 .groupName {

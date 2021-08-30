@@ -33,7 +33,7 @@
             </tr>
             <tr>
               <td colspan="2">  
-                <div id="groupNameMessage" class="errorBox">
+                <div id="renameGroupNameMessage" class="errorBox">
                   You must provide a unique group name
                 </div>
               </td>
@@ -51,22 +51,85 @@
         </h:panelGrid>
       </p:dialog>
 
+      <p:dialog header="Add Sensor Group" widgetVar="addGroupDialog"
+        modal="true">
+        <h:inputHidden id="afterGroup"
+          value="#{newInstrumentBean.addGroupAfter}" />
+        <div class="dialogSection">
+          <table>
+            <tr>
+              <td><p:outputLabel value="Group Name:" /></td>
+              <td>
+                <p:inputText id="addGroupName" widgetVar="addGroupName"
+                  value="#{newInstrumentBean.addGroupName}" onkeyup="checkAddGroup()"/>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">  
+                <div id="addGroupNameMessage" class="errorBox">
+                  You must provide a unique group name
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:commandButton value="Add" widgetVar="addGroupButton" ajax="false"
+            action="#{newInstrumentBean.addSensorGroup}"
+            process="afterGroup addGroupName" />
+          <p:commandButton value="Cancel"
+            onclick="PF('addGroupDialog').hide(); return false;" />
+        </h:panelGrid>
+      </p:dialog>
+      
+      <p:dialog header="Delete Sensor Group" widgetVar="deleteGroupDialog"
+        modal="true">
+        <h:inputHidden id="deleteGroupName"
+          value="#{newInstrumentBean.deleteGroupName}" />
+        <div class="dialogSection">
+          Delete group <span id="groupNameText"></span>?
+        </div>
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:commandButton value="Delete" widgetVar="deleteGroupButton" ajax="false"
+            action="#{newInstrumentBean.deleteSensorGroup}"
+            process="deleteGroupName" />
+          <p:commandButton value="Cancel"
+            onclick="PF('deleteGroupDialog').hide(); return false;" />
+        </h:panelGrid>
+      </p:dialog>
+
       <div id="groupTables">
+        <div class="addButtonContainer">
+          <p:commandButton value="+" styleClass="addButton" onclick="showAddDialog('')"/>
+        </div>
         <ui:repeat value="#{newInstrumentBean.sensorGroups.asList()}" var="group">
           <div class="sensorGroup" id="groupSection_#{group.name}">
             <div class="groupName">
-              <span><h:outputText value="#{group.name}"/></span>
               <p:commandLink onclick="showRenameGroupDialog('#{group.name}')">
                 <h:graphicImage
                   value="/resources/image/edit.svg"
                   styleClass="textActionIcon" alt="Rename Group" title="Rename Group" />
               </p:commandLink>
+              
+              <ui:fragment rendered="#{newInstrumentBean.sensorGroups.size() gt 1}">
+                <p:commandLink onclick="deleteGroup('#{group.name}')">
+                  <h:graphicImage
+                    value="/resources/image/delete.svg"
+                    styleClass="textActionIcon" alt="Delete Group" title="Delete Group" />
+                </p:commandLink>
+              </ui:fragment>
             </div>
-            <p:dataTable value="#{group.members}" var="member" tableStyleClass="groupTable" resizableColumns="true">
-              <p:column headerText="Sensor" styleClass="sensorName">
+            <p:dataTable value="#{group.members}" var="member"
+              tableStyleClass="groupTable" resizableColumns="true"
+              emptyMessage="No sensors assigned">
+              
+              <p:column headerText="#{group.name}" styleClass="sensorName">
                 <h:outputText value="#{member.sensorName}"/>
               </p:column>
             </p:dataTable>
+          </div>
+          <div class="addButtonContainer">
+            <p:commandButton value="+" styleClass="addButton" onclick="showAddDialog('#{group.name}')"/>
           </div>
         </ui:repeat>
       </div> 

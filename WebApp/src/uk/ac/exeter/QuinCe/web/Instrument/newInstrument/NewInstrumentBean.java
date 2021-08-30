@@ -437,6 +437,21 @@ public class NewInstrumentBean extends FileUploadBean {
   private String groupRenameTo;
 
   /**
+   * The name of the group that an added sensor group will be after.
+   */
+  private String addGroupAfter;
+
+  /**
+   * The name for a new sensor group.
+   */
+  private String addGroupName;
+
+  /**
+   * The name of the sensor group to be deleted.
+   */
+  private String deleteGroupName;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
@@ -2247,5 +2262,38 @@ public class NewInstrumentBean extends FileUploadBean {
 
   public void renameSensorGroup() throws SensorGroupsException {
     sensorGroups.renameGroup(groupRenameFrom, groupRenameTo);
+  }
+
+  public String getAddGroupAfter() {
+    return addGroupAfter;
+  }
+
+  public void setAddGroupAfter(String addGroupAfter) {
+    this.addGroupAfter = addGroupAfter.trim().equals("") ? null : addGroupAfter;
+  }
+
+  public String getAddGroupName() {
+    return addGroupName;
+  }
+
+  public void setAddGroupName(String addGroupName) {
+    this.addGroupName = addGroupName;
+  }
+
+  public String addSensorGroup() throws SensorGroupsException {
+    sensorGroups.addGroup(addGroupName, addGroupAfter);
+    return NAV_SENSOR_GROUPS;
+  }
+
+  public String getDeleteGroupName() {
+    return deleteGroupName;
+  }
+
+  public void setDeleteGroupName(String deleteGroupName) {
+    this.deleteGroupName = deleteGroupName;
+  }
+
+  public void deleteSensorGroup() throws SensorGroupsException {
+    sensorGroups.deleteGroup(deleteGroupName);
   }
 }

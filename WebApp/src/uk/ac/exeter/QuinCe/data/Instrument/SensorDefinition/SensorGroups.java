@@ -304,4 +304,94 @@ public class SensorGroups implements Iterable<SensorGroup> {
   public boolean groupExists(String name) {
     return getGroup(name).isPresent();
   }
+
+  /**
+   * Add a new group after the specified group, or at the beginning if
+   * {@code after} is {@code null}.
+   * 
+   * @param name
+   *          The new group's name
+   * @param after
+   *          The name of the group that will be before this group.
+   * @throws SensorGroupsException
+   */
+  public void addGroup(String name, String after) throws SensorGroupsException {
+
+    name = name.trim();
+    after = null == after ? null : after.trim();
+
+    if (groupExists(name)) {
+      throw new SensorGroupsException("Group '" + name + "' already exists");
+    }
+
+    if (null == after) {
+      SensorGroup newGroup = new SensorGroup(name);
+      newGroup.setNextGroup(firstGroup);
+      firstGroup.setPrevGroup(newGroup);
+      firstGroup = newGroup;
+    } else {
+      Optional<SensorGroup> priorGroup = getGroup(after);
+      if (priorGroup.isEmpty()) {
+        throw new SensorGroupsException(
+          "After group '" + after + "' does not exist");
+      } else {
+        SensorGroup newGroup = new SensorGroup(name);
+
+        // New group links back to prior group
+        newGroup.setPrevGroup(priorGroup.get());
+
+        // New group links forward to prior group's old next
+        newGroup.setNextGroup(priorGroup.get().getNextGroup());
+
+        // Prior group's old next links back to new group
+        if (null != newGroup.getNextGroup()) {
+          newGroup.getNextGroup().setPrevGroup(newGroup);
+        }
+
+        // Prior group links forward to new group
+        priorGroup.get().setNextGroup(newGroup);
+      }
+    }
+  }
+
+  /**
+   * Delete the specified sensor group. All assigned sensors are moved to a
+   * neighbouring group.
+   * 
+   * @param group
+   *          The group to be deleted.
+   * @throws SensorGroupsException
+   */
+  public void deleteGroup(String group) throws SensorGroupsException {
+    if (size() == 1) {
+      throw new SensorGroupsException("Cannot delete the only sensor group");
+    }
+
+    Optional<SensorGroup> findGroup = getGroup(group);
+    if (findGroup.isEmpty()) {
+      throw new SensorGroupsException("Group '" + group + "' does not exist");
+    } else {
+
+      SensorGroup deleteGroup = findGroup.get();
+
+      SensorGroup prevGroup = deleteGroup.getPrevGroup();
+      SensorGroup nextGroup = deleteGroup.getNextGroup();
+
+      // Move all the group's members to a neighbouring group
+      SensorGroup neighbourGroup = null == nextGroup ? prevGroup : nextGroup;
+      neighbourGroup.addAssignments(deleteGroup.getMembers());
+
+      if (null != prevGroup) {
+        prevGroup.setNextGroup(nextGroup);
+      }
+
+      if (null != nextGroup) {
+        nextGroup.setPrevGroup(prevGroup);
+      }
+
+      if (firstGroup.equals(deleteGroup)) {
+        firstGroup = nextGroup;
+      }
+    }
+  }
 }
