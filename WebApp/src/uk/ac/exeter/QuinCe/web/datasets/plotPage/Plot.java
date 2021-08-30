@@ -120,7 +120,15 @@ public class Plot {
    * @throws Exception
    */
   public String getMainData() {
-    return null == plotValues ? "[]" : MAIN_DATA_GSON.toJson(plotValues);
+
+    String result = "[]";
+
+    if (null != plotValues) {
+      result = MAIN_DATA_GSON.toJson(plotValues.stream().filter(f -> !f.xNull())
+        .collect(Collectors.toList()));
+    }
+
+    return result;
   }
 
   /**
