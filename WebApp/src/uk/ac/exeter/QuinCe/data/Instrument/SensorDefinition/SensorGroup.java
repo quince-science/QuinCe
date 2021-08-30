@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
+import java.util.Collection;
 import java.util.TreeSet;
 
 /**
@@ -61,6 +62,16 @@ public class SensorGroup {
    */
   protected void addAssignment(SensorAssignment assignment) {
     members.add(assignment);
+  }
+
+  /**
+   * Add a {@link Collection} of {@link SensorAssignment}s to the group.
+   * 
+   * @param assignments
+   *          The assignments to add.
+   */
+  protected void addAssignments(Collection<SensorAssignment> assignments) {
+    members.addAll(assignments);
   }
 
   /**
@@ -226,5 +237,30 @@ public class SensorGroup {
    */
   public int size() {
     return members.size();
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    SensorGroup other = (SensorGroup) obj;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    return true;
   }
 }
