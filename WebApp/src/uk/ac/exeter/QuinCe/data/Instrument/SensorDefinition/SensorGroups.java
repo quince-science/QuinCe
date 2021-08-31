@@ -375,7 +375,9 @@ public class SensorGroups implements Iterable<SensorGroup> {
       SensorGroup deleteGroup = findGroup.get();
 
       SensorGroup prevGroup = deleteGroup.getPrevGroup();
+      SensorAssignment prevLink = deleteGroup.getPrevLink();
       SensorGroup nextGroup = deleteGroup.getNextGroup();
+      SensorAssignment nextLink = deleteGroup.getNextLink();
 
       // Move all the group's members to a neighbouring group
       SensorGroup neighbourGroup = null == nextGroup ? prevGroup : nextGroup;
@@ -383,10 +385,12 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
       if (null != prevGroup) {
         prevGroup.setNextGroup(nextGroup);
+        prevGroup.setNextLink(nextLink);
       }
 
       if (null != nextGroup) {
         nextGroup.setPrevGroup(prevGroup);
+        nextGroup.setPrevLink(prevLink);
       }
 
       if (firstGroup.equals(deleteGroup)) {
