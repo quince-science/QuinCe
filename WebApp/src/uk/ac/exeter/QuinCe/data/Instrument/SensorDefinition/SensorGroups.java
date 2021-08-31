@@ -394,4 +394,44 @@ public class SensorGroups implements Iterable<SensorGroup> {
       }
     }
   }
+
+  /**
+   * Move a sensor from its current group to another group.
+   * 
+   * @param sensorName
+   *          The sensor to be moved.
+   * @param groupName
+   *          The sensor's new group.
+   * @throws SensorGroupsException
+   */
+  public void moveSensor(String sensorName, String groupName)
+    throws SensorGroupsException {
+
+    Optional<SensorGroup> sourceGroup = getSensorGroup(sensorName);
+    if (sourceGroup.isEmpty()) {
+      throw new SensorGroupsException("Sensor '" + sensorName + "' not found");
+    }
+
+    Optional<SensorAssignment> assignment = sourceGroup.get()
+      .getAssignment(sensorName);
+    if (assignment.isEmpty()) {
+      // This should be caught above. But just in case...
+      throw new SensorGroupsException("Sensor '" + sensorName + "' not found");
+    }
+
+    // If a sensor is moving to its own group, do nothing
+    if (!sourceGroup.get().getName().equalsIgnoreCase(groupName)) {
+      Optional<SensorGroup> destinationGroup = getGroup(groupName);
+      if (destinationGroup.isEmpty()) {
+        throw new SensorGroupsException("Group '" + groupName + "' not found");
+      }
+
+      sourceGroup.get().remove(assignment.get());
+      destinationGroup.get().addAssignment(assignment.get());
+    }
+  }
+
+  private Optional<SensorGroup> getSensorGroup(String sensorName) {
+    return stream().filter(g -> g.contains(sensorName)).findAny();
+  }
 }

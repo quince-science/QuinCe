@@ -33,3 +33,11 @@
 .sensorName {
   white-space: nowrap;
 }
+
+.dropTarget {
+  border: 2px solid #dddddd;
+}
+
+.sensorGroupHover {
+  border: 2px solid #2779aa;
+}
