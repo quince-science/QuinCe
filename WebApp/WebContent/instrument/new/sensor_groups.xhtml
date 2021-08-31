@@ -17,6 +17,16 @@
       
       <h:inputHidden id="groupNames"
         value="#{newInstrumentBean.sensorGroupNamesJson}"/>
+        
+      <h:inputHidden id="moveSensorName"
+        value="#{newInstrumentBean.moveSensorName}"/>
+      <h:inputHidden id="moveSensorGroup"
+        value="#{newInstrumentBean.moveSensorGroup}"/>
+      <p:commandLink id="moveSensorLink" ajax="false"
+        style="invisible"
+        action="#{newInstrumentBean.moveSensor}"
+        process="moveSensorName moveSensorGroup"
+      />
       
       <p:dialog header="Rename Sensor Group" widgetVar="renameGroupDialog"
         modal="true">
@@ -120,11 +130,13 @@
               </ui:fragment>
             </div>
             <p:dataTable value="#{group.members}" var="member"
-              tableStyleClass="groupTable" resizableColumns="true"
+              tableStyleClass="groupTable dropTarget" resizableColumns="true"
               emptyMessage="No sensors assigned">
               
               <p:column headerText="#{group.name}" styleClass="sensorName">
-                <h:outputText value="#{member.sensorName}"/>
+                <span class="draggable" draggable="true">
+                  <h:outputText value="#{member.sensorName}"/>
+                </span>
               </p:column>
             </p:dataTable>
           </div>
@@ -142,5 +154,9 @@
           action="#{newInstrumentBean.saveInstrument}" />
       </h:panelGrid>
     </h:form>
+
+    <script type="text/javascript">
+      setupDragDropEvents();
+    </script>
   </ui:define>
 </ui:composition>

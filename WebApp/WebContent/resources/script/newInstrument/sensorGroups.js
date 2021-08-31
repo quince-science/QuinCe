@@ -67,3 +67,55 @@ function deleteGroup(group) {
   $('#groupNameText').text(group);
   PF('deleteGroupDialog').show();
 }
+
+/////////////////////////////////////
+// Drag/Drop stuff
+
+function setupDragDropEvents() {
+  window.suspendEvents = false;
+
+  $('.draggable').on('dragstart', handleDragStart);
+  $('.draggable').on('dragend', handleDragEnd);
+
+  $('.dropTarget')
+    .on('dragover', handleDragOver)
+    .on('dragenter', handleDragEnter)
+    .on('dragleave', handleDragLeave)
+    .on('drop', handleDrop);
+}
+
+function handleDragStart(e) {
+  e.originalEvent.dataTransfer.setData("text/plain", e.target.innerText);
+  e.originalEvent.dataTransfer.dropEffect = "link";
+}
+
+function handleDragEnd(e) {
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  $(this).addClass('sensorGroupHover');
+  e.originalEvent.dataTransfer.dropEffect = "link";
+}
+
+function handleDragEnter(e) {
+  $(this).addClass('sensorGroupHover');
+}
+
+function handleDragLeave(e) {
+  $(this).removeClass('sensorGroupHover');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  $('#newInstrumentForm\\:moveSensorName')
+    .val(e.originalEvent.dataTransfer.getData("text/plain"));
+
+  let targetGroup = $(e.target)
+    .parents('div[id^=groupSection_]')
+    .attr('id').substr(13);
+  
+  $('#newInstrumentForm\\:moveSensorGroup').val(targetGroup);
+  
+  $('#newInstrumentForm\\:moveSensorLink').click();
+}

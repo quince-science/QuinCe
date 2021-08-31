@@ -452,6 +452,16 @@ public class NewInstrumentBean extends FileUploadBean {
   private String deleteGroupName;
 
   /**
+   * The sensor being moved to another group.
+   */
+  private String moveSensorName;
+
+  /**
+   * The group to which a sensor is being moved.
+   */
+  private String moveSensorGroup;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
@@ -2295,5 +2305,26 @@ public class NewInstrumentBean extends FileUploadBean {
 
   public void deleteSensorGroup() throws SensorGroupsException {
     sensorGroups.deleteGroup(deleteGroupName);
+  }
+
+  public String getMoveSensorName() {
+    return moveSensorName;
+  }
+
+  public void setMoveSensorName(String moveSensorName) {
+    this.moveSensorName = moveSensorName;
+  }
+
+  public String getMoveSensorGroup() {
+    return moveSensorGroup;
+  }
+
+  public void setMoveSensorGroup(String moveSensorGroup) {
+    this.moveSensorGroup = moveSensorGroup;
+  }
+
+  public String moveSensor() throws SensorGroupsException {
+    sensorGroups.moveSensor(moveSensorName, moveSensorGroup);
+    return NAV_SENSOR_GROUPS;
   }
 }

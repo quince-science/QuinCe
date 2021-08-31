@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.TreeSet;
 
 /**
@@ -85,6 +86,20 @@ public class SensorGroup {
    */
   protected boolean contains(SensorAssignment assignment) {
     return members.contains(assignment);
+  }
+
+  /**
+   * Determine whether or not the specified sensor name is in this group.
+   *
+   * @param assignment
+   *          The sensor to be found.
+   * @return {@code true} if the assignment is in this group; {@code false} if
+   *         it is not.
+   */
+  protected boolean contains(String sensorName) {
+    return members.stream()
+      .filter(m -> m.getSensorName().equalsIgnoreCase(sensorName)).findAny()
+      .isPresent();
   }
 
   /**
@@ -237,6 +252,11 @@ public class SensorGroup {
    */
   public int size() {
     return members.size();
+  }
+
+  protected Optional<SensorAssignment> getAssignment(String sensorName) {
+    return members.stream()
+      .filter(m -> m.getSensorName().equalsIgnoreCase(sensorName)).findAny();
   }
 
   @Override
