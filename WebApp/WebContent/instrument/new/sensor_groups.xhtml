@@ -14,10 +14,10 @@
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
       <p:defaultCommand target="nextButton" />
-      
+
       <h:inputHidden id="groupNames"
         value="#{newInstrumentBean.sensorGroupNamesJson}"/>
-        
+
       <h:inputHidden id="moveSensorName"
         value="#{newInstrumentBean.moveSensorName}"/>
       <h:inputHidden id="moveSensorGroup"
@@ -27,7 +27,7 @@
         action="#{newInstrumentBean.moveSensor}"
         process="moveSensorName moveSensorGroup"
       />
-      
+
       <p:dialog header="Rename Sensor Group" widgetVar="renameGroupDialog"
         modal="true">
         <h:inputHidden id="renameGroupFrom"
@@ -42,7 +42,7 @@
               </td>
             </tr>
             <tr>
-              <td colspan="2">  
+              <td colspan="2">
                 <div id="renameGroupNameMessage" class="errorBox">
                   You must provide a unique group name
                 </div>
@@ -75,7 +75,7 @@
               </td>
             </tr>
             <tr>
-              <td colspan="2">  
+              <td colspan="2">
                 <div id="addGroupNameMessage" class="errorBox">
                   You must provide a unique group name
                 </div>
@@ -91,7 +91,7 @@
             onclick="PF('addGroupDialog').hide(); return false;" />
         </h:panelGrid>
       </p:dialog>
-      
+
       <p:dialog header="Delete Sensor Group" widgetVar="deleteGroupDialog"
         modal="true">
         <h:inputHidden id="deleteGroupName"
@@ -120,7 +120,7 @@
                   value="/resources/image/edit.svg"
                   styleClass="textActionIcon" alt="Rename Group" title="Rename Group" />
               </p:commandLink>
-              
+
               <ui:fragment rendered="#{newInstrumentBean.sensorGroups.size() gt 1}">
                 <p:commandLink onclick="deleteGroup('#{group.name}')">
                   <h:graphicImage
@@ -132,7 +132,7 @@
             <p:dataTable value="#{group.members}" var="member"
               tableStyleClass="groupTable dropTarget" resizableColumns="true"
               emptyMessage="No sensors assigned">
-              
+
               <p:column headerText="#{group.name}" styleClass="sensorName">
                 <span class="draggable" draggable="true">
                   <h:outputText value="#{member.sensorName}"/>
@@ -144,7 +144,7 @@
             <p:commandButton value="+" styleClass="addButton" onclick="showAddDialog('#{group.name}')"/>
           </div>
         </ui:repeat>
-      </div> 
+      </div>
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
