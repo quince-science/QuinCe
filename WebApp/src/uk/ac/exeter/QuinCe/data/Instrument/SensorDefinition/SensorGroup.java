@@ -67,7 +67,7 @@ public class SensorGroup {
 
   /**
    * Add a {@link Collection} of {@link SensorAssignment}s to the group.
-   * 
+   *
    * @param assignments
    *          The assignments to add.
    */
@@ -237,7 +237,7 @@ public class SensorGroup {
 
   /**
    * Give this group a new name.
-   * 
+   *
    * @param name
    *          The new name.
    */
@@ -247,7 +247,7 @@ public class SensorGroup {
 
   /**
    * Get the number of members in this group.
-   * 
+   *
    * @return The number of members.
    */
   public int size() {

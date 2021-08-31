@@ -43,7 +43,7 @@ import com.google.gson.JsonParseException;
  * maintains the links they are adjacent to and which sensors are used for
  * offset calculations.
  * </p>
- * 
+ *
  * <p>
  * Group names are case-insensitive and must be unique.
  * </p>
@@ -222,7 +222,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   /**
    * Get all the groups as a {@link Stream}.
-   * 
+   *
    * @return A {@link Stream} of the groups.
    */
   public Stream<SensorGroup> stream() {
@@ -236,7 +236,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   /**
    * Get all the groups as a {@link List}.
-   * 
+   *
    * @return A {@link List} of the groups.
    */
   public List<SensorGroup> asList() {
@@ -259,7 +259,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   /**
    * Get the names of all the groups in order.
-   * 
+   *
    * @return The group names.
    */
   public List<String> getGroupNames() {
@@ -284,7 +284,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   /**
    * Get the named group.
-   * 
+   *
    * @param name
    *          The group name.
    * @return The group, or
@@ -296,7 +296,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   /**
    * Determine whether or not a group with the specified name exists.
-   * 
+   *
    * @param name
    *          The group name.
    * @return {@code true} if the group exists.
@@ -308,7 +308,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
   /**
    * Add a new group after the specified group, or at the beginning if
    * {@code after} is {@code null}.
-   * 
+   *
    * @param name
    *          The new group's name
    * @param after
@@ -357,7 +357,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
   /**
    * Delete the specified sensor group. All assigned sensors are moved to a
    * neighbouring group.
-   * 
+   *
    * @param group
    *          The group to be deleted.
    * @throws SensorGroupsException
@@ -401,7 +401,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   /**
    * Move a sensor from its current group to another group.
-   * 
+   *
    * @param sensorName
    *          The sensor to be moved.
    * @param groupName
