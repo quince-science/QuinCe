@@ -28,6 +28,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationTargetE
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
+import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -301,7 +302,9 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *
    * @return The reprocessing job class.
    */
-  protected abstract Class<? extends Job> getReprocessJobClass();
+  protected Class<? extends Job> getReprocessJobClass() {
+    return ExtractDataSetJob.class;
+  }
 
   /**
    * Store a new calibration in the database.
