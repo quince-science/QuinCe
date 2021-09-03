@@ -339,7 +339,14 @@ public class DataSetDataDB {
           } else {
             updateStmt.setString(1, value.getAutoQcResult().toJson());
             updateStmt.setInt(2, value.getUserQCFlag().getFlagValue());
-            updateStmt.setString(3, value.getUserQCMessage());
+
+            // Truncate user QC message
+            String userQCMessage = value.getUserQCMessage();
+            if (userQCMessage.length() > 255) {
+              userQCMessage = userQCMessage.substring(0, 255);
+            }
+
+            updateStmt.setString(3, userQCMessage);
             updateStmt.setLong(4, value.getId());
 
             updateStmt.addBatch();

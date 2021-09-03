@@ -63,7 +63,7 @@
         </p:selectOneMenu>
         <p:outputLabel for="manualComment" value="Comment:" />
         <p:inputTextarea id="manualComment" value="#{manualQualityControlBean.userComment}"
-          style="width: 95%; height: 150px;"
+          maxlength="255" style="width: 95%; height: 150px;"
           onkeyup="updateFlagDialogControls()" />
       </h:panelGrid>
       <h:panelGrid columns="2" styleClass="buttonPanel">
