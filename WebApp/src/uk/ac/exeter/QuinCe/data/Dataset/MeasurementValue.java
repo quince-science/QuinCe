@@ -133,6 +133,7 @@ public class MeasurementValue implements PlotPageTableValue {
     this.flag = flag;
     this.qcMessage = qcComments;
     this.properties = properties;
+    type = sensorValueIds.size() > 1 ? INTERPOLATED_TYPE : MEASURED_TYPE;
   }
 
   /**
