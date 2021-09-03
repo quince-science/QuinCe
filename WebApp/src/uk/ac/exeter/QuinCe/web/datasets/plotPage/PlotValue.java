@@ -186,7 +186,7 @@ class PlotValue implements Comparable<PlotValue> {
 
   /**
    * Determines whether or not the X entry for this value is {@code null}.
-   * 
+   *
    * @return {@code true} if the x value is null.
    */
   public boolean xNull() {

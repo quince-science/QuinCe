@@ -8,8 +8,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandard;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
-import uk.ac.exeter.QuinCe.jobs.Job;
-import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 
 /**
  * Bean for external standards
@@ -71,11 +69,6 @@ public class ExternalStandardsBean extends CalibrationBean {
   @Override
   protected int getReprocessStatus() {
     return DataSet.STATUS_SENSOR_QC;
-  }
-
-  @Override
-  protected Class<? extends Job> getReprocessJobClass() {
-    return AutoQCJob.class;
   }
 
   @Override
