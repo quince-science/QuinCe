@@ -8,8 +8,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.PolynomialSensorCalibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
-import uk.ac.exeter.QuinCe.jobs.Job;
-import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 
 /**
  * Bean for sensor calibrations.
@@ -72,10 +70,5 @@ public class SensorCalibrationsBean extends CalibrationBean {
   @Override
   protected int getReprocessStatus() {
     return DataSet.STATUS_DATA_EXTRACTION;
-  }
-
-  @Override
-  protected Class<? extends Job> getReprocessJobClass() {
-    return ExtractDataSetJob.class;
   }
 }
