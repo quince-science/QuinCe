@@ -1,3 +1,6 @@
+const PREV = 0;
+const NEXT = 1;
+
 function showRenameGroupDialog(group) {
   $('#newInstrumentForm\\:renameGroupFrom').val(group);
   $('#newInstrumentForm\\:renameGroupTo').val(group);
@@ -68,6 +71,11 @@ function deleteGroup(group) {
   PF('deleteGroupDialog').show();
 }
 
+function setupEvents() {
+  setupDragDropEvents();
+  setupGroupLinkEvents();
+}
+
 /////////////////////////////////////
 // Drag/Drop stuff
 
@@ -118,4 +126,57 @@ function handleDrop(e) {
   $('#newInstrumentForm\\:moveSensorGroup').val(targetGroup);
   
   $('#newInstrumentForm\\:moveSensorLink').click();
+}
+
+function checkComplete() {
+  let completeValue = $('#newInstrumentForm\\:groupsComplete').val();
+
+  if (completeValue == 'true') {
+	PF('nextButton').enable();
+  } else {
+	PF('nextButton').disable();
+  }
+}
+
+//////////////////////////
+// Group links
+function setupGroupLinkEvents() {
+  let groupLinks = JSON.parse($('#newInstrumentForm\\:groupLinksJson').val());
+  
+  $('[id^="prevLink--"]').each(function() {
+	setupGroupLink(groupLinks, this, PREV);
+  });  
+
+  $('[id^="nextLink--"]').each(function() {
+	setupGroupLink(groupLinks, this, NEXT);
+  });  
+}
+
+function setupGroupLink(groupLinks, linkItem, direction) {
+  // Remove any previous adjustments
+  $(linkItem)
+    .off('click')
+    .removeClass('groupLinkUnselected')
+    .removeClass('groupLinkSelected');
+	
+  let parts = linkItem.id.match('.*--(.*)--(.*)$')
+  let group = parts[1];
+  let sensor = parts[2];
+	
+  if (null == groupLinks[group][direction] || groupLinks[group][direction] !== sensor) {
+    $(linkItem)
+      .addClass('groupLinkUnselected')
+      .on('click', function() {
+        setGroupLink(group, sensor, direction)
+      });
+  } else {
+    $(linkItem).addClass('groupLinkSelected');
+  }
+}
+
+function setGroupLink(group, sensor, direction) {
+  $('#newInstrumentForm\\:groupLinkGroup').val(group);
+  $('#newInstrumentForm\\:groupLinkSensor').val(sensor);
+  $('#newInstrumentForm\\:groupLinkDirection').val(direction);
+  setGroupLinkAction();
 }

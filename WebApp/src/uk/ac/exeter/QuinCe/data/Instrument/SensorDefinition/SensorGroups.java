@@ -124,8 +124,6 @@ public class SensorGroups implements Iterable<SensorGroup> {
       throw new SensorGroupsException(
         "Failed to parse JSON - incorrect list size");
     }
-
-    validate(sensorAssignments);
   }
 
   private void insertGroup(SensorGroup groupBefore, SensorGroup group) {
@@ -138,7 +136,10 @@ public class SensorGroups implements Iterable<SensorGroup> {
       groupBefore.setNextGroup(group);
       group.setPrevGroup(groupBefore);
       group.setNextGroup(groupAfter);
-      groupAfter.setPrevGroup(group);
+
+      if (null != groupAfter) {
+        groupAfter.setPrevGroup(group);
+      }
     }
   }
 
@@ -252,9 +253,45 @@ public class SensorGroups implements Iterable<SensorGroup> {
     return stream().count();
   }
 
-  private void validate(SensorAssignments assignments)
-    throws SensorGroupsException {
-    // TODO Implement!
+  /**
+   * Check that this set of sensor groups is complete and ready for use.
+   * 
+   * <p>
+   * Ensures that all groups have members and that linking sensors have been
+   * defined where needed.
+   * </p>
+   * 
+   * <p>
+   * Note that this does not check the validity of the data structure (e.g. that
+   * group links are valid).
+   * </p>
+   * 
+   * @return
+   */
+  public boolean isComplete() {
+    boolean complete = true;
+
+    if (null == firstGroup) {
+      complete = false;
+    } else {
+
+      SensorGroup group = firstGroup;
+
+      while (complete && null != group) {
+        if (group.size() == 0) {
+          complete = false;
+        } else if (group.hasPrev() && null == group.getPrevLink()) {
+          complete = false;
+        } else if (group.hasNext() && null == group.getNextLink()) {
+          complete = false;
+        } else {
+          group = group.getNextGroup();
+        }
+      }
+
+    }
+
+    return complete;
   }
 
   /**
@@ -437,5 +474,18 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   private Optional<SensorGroup> getSensorGroup(String sensorName) {
     return stream().filter(g -> g.contains(sensorName)).findAny();
+  }
+
+  public String getLinksJson() {
+    JsonObject json = new JsonObject();
+
+    stream().forEach(g -> {
+      JsonArray array = new JsonArray();
+      array.add(g.getPreviousLinkName());
+      array.add(g.getNextLinkName());
+      json.add(g.getName(), array);
+    });
+
+    return new Gson().toJson(json);
   }
 }

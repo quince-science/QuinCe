@@ -41,3 +41,21 @@
 .sensorGroupHover {
   border: 2px solid #2779aa;
 }
+
+.groupLink {
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.groupLinkSelected {
+  color: black;
+}
+
+.groupLinkUnselected {
+  color: #ccc;
+}
+
+.groupLinkUnselected:hover {
+  color: #666;
+  cursor:pointer;
+}
