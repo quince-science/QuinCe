@@ -14,6 +14,10 @@ import java.util.TreeSet;
  */
 public class SensorGroup {
 
+  public static final int PREVIOUS = 0;
+
+  public static final int NEXT = 1;
+
   /**
    * The name of the group.
    */
@@ -129,7 +133,18 @@ public class SensorGroup {
    *         was removed.
    */
   protected boolean remove(SensorAssignment assignment) {
-    return members.remove(assignment);
+    boolean result = members.remove(assignment);
+
+    if (result) {
+      if (null != nextGroupLink && nextGroupLink.equals(assignment)) {
+        nextGroupLink = null;
+      }
+      if (null != prevGroupLink && prevGroupLink.equals(assignment)) {
+        prevGroupLink = null;
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -156,7 +171,7 @@ public class SensorGroup {
    * @return {@code true} if the group has a previous group.
    */
   public boolean hasPrev() {
-    return null != prevGroupLink;
+    return null != prevGroup;
   }
 
   /**
@@ -165,7 +180,7 @@ public class SensorGroup {
    * @return {@code true} if the group has a following group.
    */
   public boolean hasNext() {
-    return null != nextGroupLink;
+    return null != nextGroup;
   }
 
   /**
@@ -177,7 +192,7 @@ public class SensorGroup {
    *
    * @return The link to the previous group.
    */
-  public SensorAssignment getPrevLink() {
+  protected SensorAssignment getPrevLink() {
     return prevGroupLink;
   }
 
@@ -190,7 +205,7 @@ public class SensorGroup {
    *
    * @return The link to the next group.
    */
-  public SensorAssignment getNextLink() {
+  protected SensorAssignment getNextLink() {
     return nextGroupLink;
   }
 
@@ -202,6 +217,9 @@ public class SensorGroup {
    */
   protected void setPrevGroup(SensorGroup group) {
     this.prevGroup = group;
+    if (null == prevGroup) {
+      prevGroupLink = null;
+    }
   }
 
   /**
@@ -212,6 +230,9 @@ public class SensorGroup {
    */
   protected void setNextGroup(SensorGroup group) {
     this.nextGroup = group;
+    if (null == nextGroup) {
+      nextGroupLink = null;
+    }
   }
 
   /**
@@ -220,8 +241,15 @@ public class SensorGroup {
    *
    * @param assignment
    *          The linking assignment.
+   * @throws SensorGroupsException
    */
-  protected void setPrevLink(SensorAssignment assignment) {
+  protected void setPrevLink(SensorAssignment assignment)
+    throws SensorGroupsException {
+    if (!members.contains(assignment)) {
+      throw new SensorGroupsException("Assignment '"
+        + assignment.getSensorName() + "' not a member of this group");
+    }
+
     this.prevGroupLink = assignment;
   }
 
@@ -230,9 +258,111 @@ public class SensorGroup {
    *
    * @param group
    *          The linking assignment.
+   * @throws SensorGroupsException
    */
-  protected void setNextLink(SensorAssignment assignment) {
+  protected void setNextLink(SensorAssignment assignment)
+    throws SensorGroupsException {
+    if (!members.contains(assignment)) {
+      throw new SensorGroupsException("Assignment '"
+        + assignment.getSensorName() + "' not a member of this group");
+    }
+
     this.nextGroupLink = assignment;
+  }
+
+  /**
+   * Get the name of the sensor used as the link to the next group.
+   * 
+   * <p>
+   * Returns {@code null} if there is no next group or no link is defined.
+   * </p>
+   * 
+   * @return The name of the link sensor.
+   */
+  public String getNextLinkName() {
+    return null == nextGroupLink ? null : nextGroupLink.getSensorName();
+  }
+
+  /**
+   * Get the name of the sensor used as the link to the previous group.
+   * 
+   * <p>
+   * Returns {@code null} if there is no previous group or no link is defined.
+   * </p>
+   * 
+   * @return The name of the link sensor.
+   */
+  public String getPrevLinkName() {
+    return null == prevGroupLink ? null : prevGroupLink.getSensorName();
+  }
+
+  /**
+   * Set the sensor used as the link to the next group using its name.
+   * 
+   * @param sensorName
+   *          The sensor name.
+   * @throws SensorGroupsException
+   *           If the sensor is not a member of the group.
+   */
+  public void setNextLinkName(String sensorName) throws SensorGroupsException {
+    if (sensorName.trim().length() > 0) {
+      nextGroupLink = get(sensorName);
+    }
+  }
+
+  /**
+   * Set the sensor used as the link to the previous group using its name.
+   * 
+   * @param sensorName
+   *          The sensor name.
+   * @throws SensorGroupsException
+   *           If the sensor is not a member of the group.
+   */
+  public void setPrevLinkName(String sensorName) throws SensorGroupsException {
+    if (sensorName.trim().length() > 0) {
+      prevGroupLink = get(sensorName);
+    }
+  }
+
+  /**
+   * Get a {@link SensorAssignment} from the group using its sensor name.
+   * 
+   * @param senosrName
+   *          The sensor name.
+   * @return The {@link SensorAssignment}.
+   * @throws SensorGroupsException
+   *           If the sensor is not a member of the group.
+   */
+  private SensorAssignment get(String sensorName) throws SensorGroupsException {
+
+    SensorAssignment result = null;
+
+    if (sensorName.trim().length() > 0) {
+      Optional<SensorAssignment> assignment = members.stream()
+        .filter(m -> m.getSensorName().equals(sensorName)).findAny();
+
+      if (assignment.isEmpty()) {
+        throw new SensorGroupsException(
+          "Sensor '" + sensorName + "' is not a member of the group");
+      } else {
+        result = assignment.get();
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the name of the sensor used as the link to the previous group.
+   * 
+   * <p>
+   * Returns {@code null} if there is no previous group or no link is defined.
+   * </p>
+   * 
+   * @return The name of the link sensor.
+   */
+  public String getPreviousLinkName() {
+    return null == prevGroupLink ? null : prevGroupLink.getSensorName();
   }
 
   /**
@@ -254,9 +384,36 @@ public class SensorGroup {
     return members.size();
   }
 
+  /**
+   * Indicates whether or not this group is empty.
+   * 
+   * @return {@code true} if the group has no members.
+   */
+  public boolean isEmpty() {
+    return members.isEmpty();
+  }
+
   protected Optional<SensorAssignment> getAssignment(String sensorName) {
     return members.stream()
       .filter(m -> m.getSensorName().equalsIgnoreCase(sensorName)).findAny();
+  }
+
+  public void setLink(String sensor, int direction)
+    throws SensorGroupsException {
+
+    switch (direction) {
+    case PREVIOUS: {
+      setPrevLinkName(sensor);
+      break;
+    }
+    case NEXT: {
+      setNextLinkName(sensor);
+      break;
+    }
+    default: {
+      throw new SensorGroupsException("Invalid link direction");
+    }
+    }
   }
 
   @Override

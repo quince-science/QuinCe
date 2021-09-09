@@ -43,9 +43,9 @@ public class SensorGroupDeserializer implements JsonDeserializer<SensorGroup> {
 
       if (jsonObject.has("prevLink")) {
         group.setPrevLink(sensorAssignments
-          .getBySensorName(jsonObject.get("nextLink").getAsString()));
+          .getBySensorName(jsonObject.get("prevLink").getAsString()));
       }
-    } catch (SensorAssignmentException e) {
+    } catch (Exception e) {
       throw new JsonParseException(e);
     }
 

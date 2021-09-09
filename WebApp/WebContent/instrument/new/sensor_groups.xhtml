@@ -15,6 +15,23 @@
     <h:form id="newInstrumentForm" method="post" charset="utf8">
       <p:defaultCommand target="nextButton" />
 
+      <h:inputHidden id="groupLinksJson"
+        value="#{newInstrumentBean.groupLinksJson}"/>
+      <h:inputHidden id="groupsComplete"
+        value="#{newInstrumentBean.groupsComplete}"/>
+        
+      <h:inputHidden id="groupLinkGroup"
+        value="#{newInstrumentBean.groupLinkGroup}"/>
+      <h:inputHidden id="groupLinkSensor"
+        value="#{newInstrumentBean.groupLinkSensor}"/>
+      <h:inputHidden id="groupLinkDirection"
+        value="#{newInstrumentBean.groupLinkDirection}"/>
+      <p:remoteCommand name="setGroupLinkAction" action="#{newInstrumentBean.setGroupLink}"
+        partialSubmit="true"
+        process="groupLinkGroup groupLinkSensor groupLinkDirection"
+        update="groupLinksJson groupsComplete"
+        oncomplete="setupGroupLinkEvents();checkComplete()" />
+
       <h:inputHidden id="groupNames"
         value="#{newInstrumentBean.sensorGroupNamesJson}"/>
 
@@ -109,10 +126,13 @@
       </p:dialog>
 
       <div id="groupTables">
+        <!-- Add button before the first group -->
         <div class="addButtonContainer">
           <p:commandButton value="+" styleClass="addButton" onclick="showAddDialog('')"/>
         </div>
-        <ui:repeat value="#{newInstrumentBean.sensorGroups.asList()}" var="group">
+        <ui:repeat value="#{newInstrumentBean.sensorGroups.asList()}" id="group"
+          var="group" varStatus="groupStatus">
+          
           <div class="sensorGroup" id="groupSection_#{group.name}">
             <div class="groupName">
               <p:commandLink onclick="showRenameGroupDialog('#{group.name}')">
@@ -129,19 +149,52 @@
                 </p:commandLink>
               </ui:fragment>
             </div>
-            <p:dataTable value="#{group.members}" var="member"
+            
+            <p:dataTable value="#{group.members}" var="member" rowIndexVar="row"
               tableStyleClass="groupTable dropTarget" resizableColumns="true"
               emptyMessage="No sensors assigned">
 
+              <p:column
+                visible="#{group.hasPrev() and not group.isEmpty()}">
+                <f:facet name="header">
+                  <h:graphicImage
+                    value="/resources/image/link_header.svg"
+                    styleClass="textActionIcon"
+                    alt="Link to Previous Group"
+                    title="Link to Previous Group" />
+                </f:facet>
+                <ui:fragment rendered="#{group.hasPrev() and not group.isEmpty()}">
+                  <div id="prevLink--#{group.name}--#{member.sensorName}" class="groupLink">
+                    ⮜
+                  </div>
+                </ui:fragment>
+              </p:column>
               <p:column headerText="#{group.name}" styleClass="sensorName">
                 <span class="draggable" draggable="true">
                   <h:outputText value="#{member.sensorName}"/>
                 </span>
               </p:column>
+              <p:column
+                visible="#{group.hasNext() and not group.isEmpty()}">
+                <f:facet name="header">
+                  <h:graphicImage
+                    value="/resources/image/link_header.svg"
+                    styleClass="textActionIcon"
+                    alt="Link to Next Group"
+                    title="Link to Next Group" />
+                </f:facet>
+                <ui:fragment rendered="#{group.hasNext() and not group.isEmpty()}">
+                  <div id="nextLink--#{group.name}--#{member.sensorName}" class="groupLink">
+                    ⮞
+                  </div>
+                </ui:fragment>
+              </p:column>
             </p:dataTable>
           </div>
+          <!-- Add button after each group -->
           <div class="addButtonContainer">
-            <p:commandButton value="+" styleClass="addButton" onclick="showAddDialog('#{group.name}')"/>
+            <p:commandButton value="+" styleClass="addButton"
+              onclick="showAddDialog('#{group.name}')"/>
           </div>
         </ui:repeat>
       </div>
@@ -150,13 +203,14 @@
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
         <p:commandButton value="Back" ajax="false"
           action="#{newInstrumentBean.goToRunTypes}" immediate="true" />
-        <p:commandButton id="nextButton" value="Save" ajax="false"
-          action="#{newInstrumentBean.saveInstrument}" />
+        <p:commandButton id="nextButton" widgetVar="nextButton" value="Save"
+          ajax="false" action="#{newInstrumentBean.saveInstrument}" />
       </h:panelGrid>
     </h:form>
 
     <script type="text/javascript">
-      setupDragDropEvents();
+      setupEvents();
+      checkComplete();
     </script>
   </ui:define>
 </ui:composition>

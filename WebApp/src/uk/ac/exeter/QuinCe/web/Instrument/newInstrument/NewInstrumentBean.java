@@ -462,6 +462,22 @@ public class NewInstrumentBean extends FileUploadBean {
   private String moveSensorGroup;
 
   /**
+   * The name of the group whose link is being set.
+   */
+  private String groupLinkGroup;
+
+  /**
+   * The sensor that is being set as a group link.
+   */
+  private String groupLinkSensor;
+
+  /**
+   * The link direction ({@link SensorGroups#PREVIOUS}
+   * {@link SensorGroups#NEXT}).
+   */
+  private int groupLinkDirection;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
@@ -2326,5 +2342,50 @@ public class NewInstrumentBean extends FileUploadBean {
   public String moveSensor() throws SensorGroupsException {
     sensorGroups.moveSensor(moveSensorName, moveSensorGroup);
     return NAV_SENSOR_GROUPS;
+  }
+
+  public boolean getGroupsComplete() {
+    return sensorGroups.isComplete();
+  }
+
+  public void setGroupsComplete(boolean groupsComplete) {
+    // Dummy
+  }
+
+  public String getGroupLinksJson() {
+    return sensorGroups.getLinksJson();
+  }
+
+  public void setGroupLinksJson(String dummy) {
+    // Dummy
+  }
+
+  public String getGroupLinkGroup() {
+    return groupLinkGroup;
+  }
+
+  public void setGroupLinkGroup(String groupLinkGroup) {
+    this.groupLinkGroup = groupLinkGroup;
+  }
+
+  public String getGroupLinkSensor() {
+    return groupLinkSensor;
+  }
+
+  public void setGroupLinkSensor(String groupLinkSensor) {
+    this.groupLinkSensor = groupLinkSensor;
+  }
+
+  public int getGroupLinkDirection() {
+    return groupLinkDirection;
+  }
+
+  public void setGroupLinkDirection(int groupLinkDirection) {
+    this.groupLinkDirection = groupLinkDirection;
+  }
+
+  public void setGroupLink() throws SensorGroupsException {
+    sensorGroups.getGroup(groupLinkGroup).get().setLink(groupLinkSensor,
+      groupLinkDirection);
   }
 }
