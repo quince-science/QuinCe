@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
-import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -79,7 +78,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
   "resources/sql/testbase/instrument", "resources/sql/testbase/variable" })
 @TestInstance(Lifecycle.PER_CLASS)
-public class PositionQCRoutinePropagationTest extends BaseTest {
+public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
 
   private LocalDateTime makeTime(int second) {
     return LocalDateTime.of(2000, 1, 1, 0, 0, second);
@@ -139,7 +138,7 @@ public class PositionQCRoutinePropagationTest extends BaseTest {
     return result;
   }
 
-  private List<Long> getDataColumnIds() {
+  protected List<Long> makeDataColumnIds() {
     return Arrays.asList(new Long[] { 1L });
   }
 
@@ -159,7 +158,8 @@ public class PositionQCRoutinePropagationTest extends BaseTest {
     DatasetSensorValues sensorValues = makeSensorValues();
 
     PositionQCRoutine routine = new PositionQCRoutine(makeLons(true, true),
-      makeLats(true, true), getDataColumnIds(), sensorValues);
+      makeLats(true, true), makeInstrument(), sensorValues,
+      makeEmptyRunTypes());
 
     routine.qc(null);
 
@@ -175,7 +175,8 @@ public class PositionQCRoutinePropagationTest extends BaseTest {
     DatasetSensorValues sensorValues = makeSensorValues();
 
     PositionQCRoutine routine = new PositionQCRoutine(makeLons(false, false),
-      makeLats(false, false), getDataColumnIds(), sensorValues);
+      makeLats(false, false), makeInstrument(), sensorValues,
+      makeEmptyRunTypes());
 
     routine.qc(null);
 
@@ -191,7 +192,8 @@ public class PositionQCRoutinePropagationTest extends BaseTest {
     DatasetSensorValues sensorValues = makeSensorValues();
 
     PositionQCRoutine routine = new PositionQCRoutine(makeLons(false, true),
-      makeLats(false, true), getDataColumnIds(), sensorValues);
+      makeLats(false, true), makeInstrument(), sensorValues,
+      makeEmptyRunTypes());
 
     routine.qc(null);
 

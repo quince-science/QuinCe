@@ -12,7 +12,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
-import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
@@ -23,7 +22,14 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
-public class PositionQCRoutineTest extends BaseTest {
+public class PositionQCRoutineTest extends PositionQCTestBase {
+
+  protected List<Long> makeDataColumnIds() {
+    List<Long> ids = new ArrayList<Long>();
+    ids.add(10L);
+    ids.add(11L);
+    return ids;
+  }
 
   private List<SensorValue> makeSensorValueList(long columnId, int size,
     double startValue) {
@@ -38,13 +44,6 @@ public class PositionQCRoutineTest extends BaseTest {
     }
 
     return list;
-  }
-
-  private List<Long> makeDataColumnIds() {
-    List<Long> ids = new ArrayList<Long>();
-    ids.add(10L);
-    ids.add(11L);
-    return ids;
   }
 
   private DatasetSensorValues makeDatasetSensorValues() {
@@ -79,8 +78,8 @@ public class PositionQCRoutineTest extends BaseTest {
   public void missingLonsTest() {
     assertThrows(MissingParamException.class, () -> {
       new PositionQCRoutine(null,
-        makeSensorValueList(SensorType.LATITUDE_ID, 2, 0D), makeDataColumnIds(),
-        makeDatasetSensorValues());
+        makeSensorValueList(SensorType.LATITUDE_ID, 2, 0D), makeInstrument(),
+        makeDatasetSensorValues(), makeEmptyRunTypes());
     });
   }
 
@@ -88,16 +87,16 @@ public class PositionQCRoutineTest extends BaseTest {
   public void missingLatsTest() {
     assertThrows(MissingParamException.class, () -> {
       new PositionQCRoutine(makeSensorValueList(SensorType.LONGITUDE_ID, 2, 0D),
-        null, makeDataColumnIds(), makeDatasetSensorValues());
+        null, makeInstrument(), makeDatasetSensorValues(), makeEmptyRunTypes());
     });
   }
 
   @Test
-  public void missingDataColumnIdsTest() {
+  public void missingInstrumentTest() {
     assertThrows(MissingParamException.class, () -> {
       new PositionQCRoutine(makeSensorValueList(SensorType.LONGITUDE_ID, 2, 0D),
         makeSensorValueList(SensorType.LATITUDE_ID, 2, 0D), null,
-        makeDatasetSensorValues());
+        makeDatasetSensorValues(), makeEmptyRunTypes());
     });
   }
 
@@ -105,8 +104,17 @@ public class PositionQCRoutineTest extends BaseTest {
   public void missingSensorValuesTest() {
     assertThrows(MissingParamException.class, () -> {
       new PositionQCRoutine(makeSensorValueList(SensorType.LONGITUDE_ID, 2, 0D),
-        makeSensorValueList(SensorType.LATITUDE_ID, 2, 0D), makeDataColumnIds(),
-        null);
+        makeSensorValueList(SensorType.LATITUDE_ID, 2, 0D), makeInstrument(),
+        null, makeEmptyRunTypes());
+    });
+  }
+
+  @Test
+  public void missingRunTypesTest() {
+    assertThrows(MissingParamException.class, () -> {
+      new PositionQCRoutine(makeSensorValueList(SensorType.LONGITUDE_ID, 2, 0D),
+        makeSensorValueList(SensorType.LATITUDE_ID, 2, 0D), makeInstrument(),
+        makeDatasetSensorValues(), null);
     });
   }
 
@@ -118,32 +126,32 @@ public class PositionQCRoutineTest extends BaseTest {
 
     assertThrows(RoutineException.class, () -> {
       new PositionQCRoutine(lons,
-        makeSensorValueList(SensorType.LATITUDE_ID, 2, 0D), makeDataColumnIds(),
-        makeDatasetSensorValues());
+        makeSensorValueList(SensorType.LATITUDE_ID, 2, 0D), makeInstrument(),
+        makeDatasetSensorValues(), makeEmptyRunTypes());
     });
   }
 
   @Test
-  public void passingQCTest() throws MissingParamException, RoutineException {
+  public void passingQCTest() throws Exception {
     PositionQCRoutine routine = new PositionQCRoutine(
       makeSensorValueList(SensorType.LONGITUDE_ID, 2, 0D),
-      makeSensorValueList(SensorType.LATITUDE_ID, 2, 0D), makeDataColumnIds(),
-      makeDatasetSensorValues());
+      makeSensorValueList(SensorType.LATITUDE_ID, 2, 0D), makeInstrument(),
+      makeDatasetSensorValues(), makeEmptyRunTypes());
 
     routine.qc(new ArrayList<SensorValue>());
   }
 
   @Test
-  public void emptyQCTest() throws MissingParamException, RoutineException {
+  public void emptyQCTest() throws Exception {
     PositionQCRoutine routine = new PositionQCRoutine(
       new ArrayList<SensorValue>(), new ArrayList<SensorValue>(),
-      makeDataColumnIds(), makeDatasetSensorValues());
+      makeInstrument(), makeDatasetSensorValues(), makeEmptyRunTypes());
 
     routine.qc(null);
   }
 
   @Test
-  public void missingLonTest() throws MissingParamException, RoutineException {
+  public void missingLonTest() throws Exception {
 
     SensorValue missingLon = makeMissingSensorValue(SensorType.LONGITUDE_ID);
     List<SensorValue> missingLons = new ArrayList<SensorValue>();
@@ -153,7 +161,7 @@ public class PositionQCRoutineTest extends BaseTest {
     SensorValue lat = lats.get(0);
 
     PositionQCRoutine routine = new PositionQCRoutine(missingLons, lats,
-      makeDataColumnIds(), makeDatasetSensorValues());
+      makeInstrument(), makeDatasetSensorValues(), makeEmptyRunTypes());
 
     routine.qc(null);
     assertEquals(Flag.BAD, missingLon.getUserQCFlag());
@@ -165,7 +173,7 @@ public class PositionQCRoutineTest extends BaseTest {
   }
 
   @Test
-  public void missingLatTest() throws MissingParamException, RoutineException {
+  public void missingLatTest() throws Exception {
 
     List<SensorValue> lons = makeSensorValueList(SensorType.LONGITUDE_ID, 1,
       0D);
@@ -176,7 +184,7 @@ public class PositionQCRoutineTest extends BaseTest {
     missingLats.add(missingLat);
 
     PositionQCRoutine routine = new PositionQCRoutine(lons, missingLats,
-      makeDataColumnIds(), makeDatasetSensorValues());
+      makeInstrument(), makeDatasetSensorValues(), makeEmptyRunTypes());
 
     routine.qc(null);
     assertEquals(Flag.BAD, lon.getUserQCFlag());
@@ -188,8 +196,7 @@ public class PositionQCRoutineTest extends BaseTest {
   }
 
   @Test
-  public void missingLatLonTest()
-    throws MissingParamException, RoutineException {
+  public void missingLatLonTest() throws Exception {
 
     SensorValue missingLon = makeMissingSensorValue(SensorType.LONGITUDE_ID);
     List<SensorValue> missingLons = new ArrayList<SensorValue>();
@@ -200,7 +207,7 @@ public class PositionQCRoutineTest extends BaseTest {
     missingLats.add(missingLat);
 
     PositionQCRoutine routine = new PositionQCRoutine(missingLons, missingLats,
-      makeDataColumnIds(), makeDatasetSensorValues());
+      makeInstrument(), makeDatasetSensorValues(), makeEmptyRunTypes());
 
     routine.qc(null);
     assertEquals(Flag.BAD, missingLon.getUserQCFlag());
@@ -213,8 +220,7 @@ public class PositionQCRoutineTest extends BaseTest {
 
   @ParameterizedTest
   @ValueSource(doubles = { -180, -179.999, -100.252, 0, 4.54, 179.999, 180 })
-  public void validLonTest(double lon)
-    throws MissingParamException, RoutineException {
+  public void validLonTest(double lon) throws Exception {
 
     SensorValue lonValue = new SensorValue(1L, SensorType.LONGITUDE_ID,
       LocalDateTime.now(), String.valueOf(lon));
@@ -222,8 +228,8 @@ public class PositionQCRoutineTest extends BaseTest {
     lons.add(lonValue);
 
     PositionQCRoutine routine = new PositionQCRoutine(lons,
-      makeSensorValueList(SensorType.LATITUDE_ID, 1, 0D), makeDataColumnIds(),
-      makeDatasetSensorValues());
+      makeSensorValueList(SensorType.LATITUDE_ID, 1, 0D), makeInstrument(),
+      makeDatasetSensorValues(), makeEmptyRunTypes());
 
     routine.qc(null);
 
@@ -232,8 +238,7 @@ public class PositionQCRoutineTest extends BaseTest {
 
   @ParameterizedTest
   @ValueSource(doubles = { -180.0001, -200, 200, 180.001, 500 })
-  public void invalidLonTest(double lon)
-    throws MissingParamException, RoutineException {
+  public void invalidLonTest(double lon) throws Exception {
 
     SensorValue lonValue = new SensorValue(1L, SensorType.LONGITUDE_ID,
       LocalDateTime.now(), String.valueOf(lon));
@@ -241,8 +246,8 @@ public class PositionQCRoutineTest extends BaseTest {
     lons.add(lonValue);
 
     PositionQCRoutine routine = new PositionQCRoutine(lons,
-      makeSensorValueList(SensorType.LATITUDE_ID, 1, 0D), makeDataColumnIds(),
-      makeDatasetSensorValues());
+      makeSensorValueList(SensorType.LATITUDE_ID, 1, 0D), makeInstrument(),
+      makeDatasetSensorValues(), makeEmptyRunTypes());
 
     routine.qc(null);
 
@@ -251,8 +256,7 @@ public class PositionQCRoutineTest extends BaseTest {
 
   @ParameterizedTest
   @ValueSource(doubles = { -90, -89.999, -40.252, 0, 4.54, 89.999, 90 })
-  public void validLatTest(double lat)
-    throws MissingParamException, RoutineException {
+  public void validLatTest(double lat) throws Exception {
 
     SensorValue latValue = new SensorValue(1L, SensorType.LONGITUDE_ID,
       LocalDateTime.now(), String.valueOf(lat));
@@ -261,7 +265,7 @@ public class PositionQCRoutineTest extends BaseTest {
 
     PositionQCRoutine routine = new PositionQCRoutine(
       makeSensorValueList(SensorType.LONGITUDE_ID, 1, 0D), lats,
-      makeDataColumnIds(), makeDatasetSensorValues());
+      makeInstrument(), makeDatasetSensorValues(), makeEmptyRunTypes());
 
     routine.qc(null);
 
@@ -270,8 +274,7 @@ public class PositionQCRoutineTest extends BaseTest {
 
   @ParameterizedTest
   @ValueSource(doubles = { -90.001, -100, -180, 180, 223.424, 90.001 })
-  public void invalidLatTest(double lat)
-    throws MissingParamException, RoutineException {
+  public void invalidLatTest(double lat) throws Exception {
 
     SensorValue latValue = new SensorValue(1L, SensorType.LONGITUDE_ID,
       LocalDateTime.now(), String.valueOf(lat));
@@ -280,7 +283,7 @@ public class PositionQCRoutineTest extends BaseTest {
 
     PositionQCRoutine routine = new PositionQCRoutine(
       makeSensorValueList(SensorType.LONGITUDE_ID, 1, 0D), lats,
-      makeDataColumnIds(), makeDatasetSensorValues());
+      makeInstrument(), makeDatasetSensorValues(), makeEmptyRunTypes());
 
     routine.qc(null);
 
