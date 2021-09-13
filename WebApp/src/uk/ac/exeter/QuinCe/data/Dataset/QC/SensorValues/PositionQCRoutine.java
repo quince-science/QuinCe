@@ -10,6 +10,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -57,15 +59,19 @@ public class PositionQCRoutine extends AutoQCRoutine {
   private List<SensorValue> latValues;
 
   /**
-   * The IDs of the data columns for the instrument, excluding diagnostics and
-   * system values.
+   * The instrument.
    */
-  private List<Long> dataColumnIds;
+  private Instrument instrument;
 
   /**
    * The complete set of sensor values for the current dataset
    */
   private final DatasetSensorValues allSensorValues;
+
+  /**
+   * The run types in the dataset.
+   */
+  private SearchableSensorValuesList runTypes;
 
   /**
    * Initialise the routine with the position and sensor values.
@@ -85,8 +91,8 @@ public class PositionQCRoutine extends AutoQCRoutine {
    * @throws MissingParamException
    */
   public PositionQCRoutine(List<SensorValue> lonValues,
-    List<SensorValue> latValues, List<Long> dataColumnIds,
-    DatasetSensorValues allSensorValues)
+    List<SensorValue> latValues, Instrument instrument,
+    DatasetSensorValues allSensorValues, SearchableSensorValuesList runTypes)
     throws RoutineException, MissingParamException {
 
     super();
@@ -94,8 +100,9 @@ public class PositionQCRoutine extends AutoQCRoutine {
 
     MissingParam.checkMissing(lonValues, "lonValues", true);
     MissingParam.checkMissing(latValues, "latValues", true);
-    MissingParam.checkMissing(dataColumnIds, "dataColumnIds");
+    MissingParam.checkMissing(instrument, "instrument");
     MissingParam.checkMissing(allSensorValues, "allSensorValues");
+    MissingParam.checkMissing(runTypes, "runTypes", true);
 
     if (lonValues.size() != latValues.size()) {
       throw new RoutineException("Longitude and latitude counts are different");
@@ -103,8 +110,9 @@ public class PositionQCRoutine extends AutoQCRoutine {
 
     this.lonValues = lonValues;
     this.latValues = latValues;
-    this.dataColumnIds = dataColumnIds;
+    this.instrument = instrument;
     this.allSensorValues = allSensorValues;
+    this.runTypes = runTypes;
   }
 
   /**
@@ -172,14 +180,33 @@ public class PositionQCRoutine extends AutoQCRoutine {
             nextPosTime = nextPos.getTime();
           }
 
-          for (long columnId : dataColumnIds) {
+          for (long columnId : instrument.getSensorAssignments()
+            .getSensorColumnIds()) {
             SearchableSensorValuesList columnValues = allSensorValues
               .getColumnValues(columnId);
+
+            SensorType sensorType = instrument.getSensorAssignments()
+              .getSensorTypeForDBColumn(columnId);
 
             for (SensorValue value : columnValues.rangeSearch(currentPosTime,
               nextPosTime)) {
 
-              value.setPositionQC(Flag.BAD, qcMessage);
+              // Sensor values with internal calibrations are OK if they aren't
+              // part of a measurement; they can still be used for calibrations,
+              // so we don't flag them.
+              boolean flagValue = true;
+
+              if (sensorType.hasInternalCalibration()) {
+                String runType = runTypes.timeSearch(value.getTime())
+                  .getValue();
+                if (!instrument.getMeasurementRunTypes().contains(runType)) {
+                  flagValue = false;
+                }
+              }
+
+              if (flagValue) {
+                value.setPositionQC(Flag.BAD, qcMessage);
+              }
             }
           }
         }

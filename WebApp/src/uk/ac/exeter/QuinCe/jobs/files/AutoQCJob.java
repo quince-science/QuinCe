@@ -145,6 +145,19 @@ public class AutoQCJob extends DataSetJob {
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
         instrument, dataSet.getId(), true);
 
+      // Get all the run type entries from the data set
+      TreeSet<SensorAssignment> runTypeColumns = sensorAssignments
+        .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+
+      TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
+      for (SensorAssignment column : runTypeColumns) {
+        runTypeValuesTemp
+          .addAll(sensorValues.getColumnValues(column.getDatabaseId()));
+      }
+
+      SearchableSensorValuesList runTypeValues = SearchableSensorValuesList
+        .newFromSensorValueCollection(runTypeValuesTemp);
+
       // First run the position QC, unless the instrument has a fixed position.
       // This will potentially set QC flags on all sensor values, and those
       // values will then be skipped by the 'normal' routines later on.
@@ -152,15 +165,12 @@ public class AutoQCJob extends DataSetJob {
       // Note that this routine uses a different API - the constructor is given
       // all values, and therefore doesn't need to pass any to the actual QC
       // call.
-
       if (!dataSet.fixedPosition()) {
-
-        List<Long> dataSensorColumnIds = sensorAssignments.getSensorColumnIds();
 
         PositionQCRoutine positionQC = new PositionQCRoutine(
           sensorValues.getColumnValues(FileDefinition.LONGITUDE_COLUMN_ID),
           sensorValues.getColumnValues(FileDefinition.LATITUDE_COLUMN_ID),
-          dataSensorColumnIds, sensorValues);
+          instrument, sensorValues, runTypeValues);
 
         positionQC.qc(null);
       }
@@ -179,20 +189,6 @@ public class AutoQCJob extends DataSetJob {
           // All the values can be QCed as a single group
           valuesForQC.put("", sensorValues.getColumnValues(columnId));
         } else {
-
-          // Get all the run type entries from the data set
-          TreeSet<SensorAssignment> runTypeColumns = sensorAssignments
-            .get(SensorType.RUN_TYPE_SENSOR_TYPE);
-
-          TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
-          for (SensorAssignment column : runTypeColumns) {
-            runTypeValuesTemp
-              .addAll(sensorValues.getColumnValues(column.getDatabaseId()));
-          }
-
-          SearchableSensorValuesList runTypeValues = SearchableSensorValuesList
-            .newFromSensorValueCollection(runTypeValuesTemp);
-
           for (SensorValue value : sensorValues.getColumnValues(columnId)) {
 
             SensorValue runType = runTypeValues.timeSearch(value.getTime());
