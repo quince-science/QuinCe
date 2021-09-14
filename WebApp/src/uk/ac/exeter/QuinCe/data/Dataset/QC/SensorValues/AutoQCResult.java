@@ -113,7 +113,7 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
 
   /**
    * Add a new {@link RoutineFlag}.
-   * 
+   *
    * <p>
    * If an entry for the flag's source routine already exists, it is replaced.
    * </p>

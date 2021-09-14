@@ -557,8 +557,14 @@ public class ManualQCData extends PlotPageData {
       List<SensorValue> sensorValues = getSelectedSensorValues();
 
       for (SensorValue sensorValue : sensorValues) {
-        sensorValue.setUserQC(sensorValue.getAutoQcFlag(),
-          sensorValue.getAutoQcResult().getAllMessages());
+
+        // Only override the existing user QC if it has Needs Flag or Assumed
+        // Good
+        if (sensorValue.getUserQCFlag().equals(Flag.NEEDED)
+          || sensorValue.getUserQCFlag().equals(Flag.ASSUMED_GOOD)) {
+          sensorValue.setUserQC(sensorValue.getAutoQcFlag(),
+            sensorValue.getAutoQcResult().getAllMessages());
+        }
       }
 
       // If we QCed the position update all related sensor values
