@@ -57,6 +57,10 @@ public class RoutineFlag extends Flag {
     return result;
   }
 
+  public String getRoutineName() {
+    return routineName;
+  }
+
   /**
    * Get the short message for the routine attached to this flag
    *
