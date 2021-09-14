@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import com.google.gson.Gson;
@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
-public class AutoQCResult extends ArrayList<RoutineFlag> {
+public class AutoQCResult extends HashSet<RoutineFlag> {
 
   /**
    * Serial Version UID
@@ -100,10 +100,36 @@ public class AutoQCResult extends ArrayList<RoutineFlag> {
   }
 
   public Set<String> getAllMessagesSet() throws RoutineException {
+
     Set<String> messages = new HashSet<String>();
-    for (int i = 0; i < size(); i++) {
-      messages.add(get(i).getShortMessage());
+
+    Iterator<RoutineFlag> iterator = iterator();
+    while (iterator.hasNext()) {
+      messages.add(iterator.next().getShortMessage());
     }
+
     return messages;
+  }
+
+  /**
+   * Add a new {@link RoutineFlag}.
+   * 
+   * <p>
+   * If an entry for the flag's source routine already exists, it is replaced.
+   * </p>
+   */
+  @Override
+  public boolean add(RoutineFlag flag) {
+
+    // Remove any existing flags from the same routine
+    Iterator<RoutineFlag> iterator = iterator();
+    while (iterator.hasNext()) {
+      RoutineFlag existingFlag = iterator.next();
+      if (existingFlag.getRoutineName().equals(flag.getRoutineName())) {
+        remove(existingFlag);
+      }
+    }
+
+    return super.add(flag);
   }
 }
