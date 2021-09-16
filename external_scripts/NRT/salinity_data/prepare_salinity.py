@@ -25,82 +25,86 @@ IN_VAR = "s_an"
 
 OUTPUT_FILE = "woa18_seasonal_surface_salinity.nc"
 
-def main():
-	if not init_check():
-		print("Initialisation check failed.")
-		exit()
 
-	init_output_file()
-	add_season(WINTER_FILE, 0)
-	add_season(SPRING_FILE, 1)
-	add_season(SUMMER_FILE, 2)
-	add_season(AUTUMN_FILE, 3)
+def main():
+    if not init_check():
+        print("Initialisation check failed.")
+        exit()
+
+    init_output_file()
+    add_season(WINTER_FILE, 0)
+    add_season(SPRING_FILE, 1)
+    add_season(SUMMER_FILE, 2)
+    add_season(AUTUMN_FILE, 3)
 
 
 # Initialisation check
 def init_check():
-	check_result = True
+    check_result = True
 
-	if not file_exists(WINTER_FILE):
-		check_result = False
-	if not file_exists(SPRING_FILE):
-		check_result = False
-	if not file_exists(SUMMER_FILE):
-		check_result = False
-	if not file_exists(SPRING_FILE):
-		check_result = False
+    if not file_exists(WINTER_FILE):
+        check_result = False
+    if not file_exists(SPRING_FILE):
+        check_result = False
+    if not file_exists(SUMMER_FILE):
+        check_result = False
+    if not file_exists(SPRING_FILE):
+        check_result = False
 
-	return check_result
+    return check_result
+
 
 # See if a file exists
 def file_exists(file):
-	exists = True
+    exists = True
 
-	if not os.path.isfile(file):
-		print("Missing file %s" % file)
-		exists = False
+    if not os.path.isfile(file):
+        print("Missing file %s" % file)
+        exists = False
 
-	return exists
+    return exists
+
 
 def init_output_file():
+    # Get spatial dimensions from input file
+    nc = netCDF4.Dataset(WINTER_FILE, mode="r")
+    lons = nc.variables["lon"][:]
+    lats = nc.variables["lat"][:]
+    nc.close()
 
-	# Get spatial dimensions from input file
-  nc = netCDF4.Dataset(WINTER_FILE, mode="r")
-  lons = nc.variables["lon"][:]
-  lats = nc.variables["lat"][:]
-  nc.close()
+    nc = netCDF4.Dataset(OUTPUT_FILE, format="NETCDF4_CLASSIC", mode="w")
 
-  nc = netCDF4.Dataset(OUTPUT_FILE, format="NETCDF4_CLASSIC", mode="w")
+    nc.createDimension("lon", len(lons))
+    lon_var = nc.createVariable("lon", "f", "lon", fill_value=-999)
+    lon_var.units = "degrees_east"
 
-  londim = nc.createDimension("lon", len(lons))
-  lonvar = nc.createVariable("lon", "f", ("lon"), fill_value=-999)
-  lonvar.units = "degrees_east"
+    nc.createDimension("lat", len(lats))
+    lat_var = nc.createVariable("lat", "f", "lat", fill_value=-999)
+    lat_var.units = "degrees_north"
 
-  latdim = nc.createDimension("lat", len(lats))
-  latvar = nc.createVariable("lat", "f", ("lat"), fill_value=-999)
-  latvar.units = "degrees_north"
+    nc.createDimension("time", 4)
+    time_var = nc.createVariable("time", "i", "time", fill_value=-1)
+    time_var.units = "season"
+    time_var.long_name = "season"
 
-  timedim = nc.createDimension("time", 4)
-  timevar = nc.createVariable("time", "i", ("time"), fill_value = -1)
-  timevar.units = "season"
-  timevar.long_name = "season"
+    nc.createVariable("salinity", "d", ("time", "lat", "lon"), fill_value=-999)
 
-  salvar = nc.createVariable("salinity", "d", ("time", "lat", "lon"), fill_value=-999)
+    lon_var[:] = lons
+    lat_var[:] = lats
+    time_var[:] = [1, 2, 3, 4]
 
-  lonvar[:] = lons
-  latvar[:] = lats
-  timevar[:] = [1,2,3,4]
+    nc.close()
 
-  nc.close()
 
 def add_season(season_file, season):
-	nc = netCDF4.Dataset(season_file, mode="r")
-	values = nc.variables[IN_VAR][0,0,:,:]
-	nc.close()
+    nc = netCDF4.Dataset(season_file, mode="r")
+    values = nc.variables[IN_VAR][0, 0, :, :]
+    nc.close()
 
-	nc = netCDF4.Dataset(OUTPUT_FILE, mode="a")
-	nc.variables["salinity"][season,:,:] = values
-	nc.close()
+    nc = netCDF4.Dataset(OUTPUT_FILE, mode="a")
+    nc.variables["salinity"][season, :, :] = values
+    nc.close()
+
 
 if __name__ == '__main__':
-   main()
+    main()
