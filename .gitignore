@@ -64,3 +64,5 @@ DataPreparation/MapCO2/*csv
 # Lock files
 **/.~lock*
 
+# PyCharm files
+**/.idea
