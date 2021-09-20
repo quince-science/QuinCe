@@ -111,10 +111,11 @@ def main():
                     log_instrument(logger, instrument_id, logging.ERROR,
                                    "Could not initialise retriever")
                 else:
-                    preprocessor = PreprocessorFactory.get_new_instance(instrument["preprocessor"])
+                    preprocessor = None if instrument["preprocessor"] is None else \
+                        PreprocessorFactory.get_new_instance(instrument["preprocessor"])
 
                     # Loop through all files returned by the retriever one by one
-                    while retriever.load_next_file():
+                    while retriever.load_next_files():
                         for file in retriever.current_files:
 
                             log_instrument(logger, instrument_id, logging.DEBUG,

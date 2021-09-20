@@ -1,13 +1,21 @@
-from DataRetriever import DataRetriever
+from ImapRetriever import ImapRetriever
+from FTPRetriever import FTPRetriever
 
 
 # Factory for DataRetriever instances
+
+def _get_retriever_classes():
+    return [
+        FTPRetriever,
+        ImapRetriever
+    ]
+
 
 # Get the list of retriever types
 def get_retriever_types():
     result = []
 
-    for clazz in DataRetriever.__subclasses__():
+    for clazz in _get_retriever_classes():
         result.append(clazz.get_type())
 
     return result
@@ -44,7 +52,7 @@ def ask_retriever_type():
 def get_new_instance(retriever_type):
     result = None
 
-    for clazz in DataRetriever.__subclasses__():
+    for clazz in _get_retriever_classes():
         if clazz.get_type() == retriever_type:
             result = clazz(None, None)
             break
@@ -55,12 +63,12 @@ def get_new_instance(retriever_type):
     return result
 
 
-def get_instance(retriever_type, instrument_id, logger):
+def get_instance(retriever_type, instrument_id, logger, configuration):
     result = None
 
-    for clazz in DataRetriever.__subclasses__():
+    for clazz in _get_retriever_classes():
         if clazz.get_type() == retriever_type:
-            result = clazz(instrument_id, logger)
+            result = clazz(instrument_id, logger, configuration)
             break
 
     if result is None:
