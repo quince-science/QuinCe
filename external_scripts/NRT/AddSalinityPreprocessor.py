@@ -111,3 +111,6 @@ class AddSalinityPreprocessor(Preprocessor):
     def get_processed_filename(filename):
         split = os.path.splitext(filename)
         return f'{split[0]}.woa_salinity{split[1]}'
+
+    def test_configuration(self):
+        return True

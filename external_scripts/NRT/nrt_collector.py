@@ -112,7 +112,8 @@ def main():
                                    "Could not initialise retriever")
                 else:
                     preprocessor = None if instrument["preprocessor"] is None else \
-                        PreprocessorFactory.get_new_instance(instrument["preprocessor"])
+                        PreprocessorFactory.get_new_instance(instrument["preprocessor"],
+                                                             logger, instrument["preprocessor_config"])
 
                     # Loop through all files returned by the retriever one by one
                     while retriever.load_next_files():

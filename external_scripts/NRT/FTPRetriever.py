@@ -15,7 +15,7 @@ class FTPRetriever(FileListRetriever):
 
     @staticmethod
     def _get_config_entries():
-        return ['Server', 'Port', 'User', 'Password', 'Source Folder']
+        return ['Server', 'Port', 'User', 'Password', 'Source Folder', 'File Specification']
 
     @staticmethod
     def get_type():
@@ -28,25 +28,28 @@ class FTPRetriever(FileListRetriever):
         try:
             with FTP() as ftp:
                 try:
-                    ftp.connect(self.configuration['Server'], port=int(self.configuration['Port']))
+                    ftp.connect(self._configuration['Server'], port=int(self._configuration['Port']))
                 except Exception:
                     config_ok = False
+                    print("Cannot connect to FTP server: " + traceback.format_exc())
                     self.log(logging.CRITICAL, "Cannot connect to FTP server: "
                              + traceback.format_exc())
 
                 if config_ok:
                     try:
-                        ftp.login(user=self.configuration['User'], passwd=self.configuration['Password'])
+                        ftp.login(user=self._configuration['User'], passwd=self._configuration['Password'])
                     except Exception:
                         config_ok = False
+                        print("Cannot log in to FTP server: " + traceback.format_exc())
                         self.log(logging.CRITICAL, "Cannot log in to FTP server: "
                                  + traceback.format_exc())
 
                 if config_ok:
                     try:
-                        ftp.cwd(self.configuration['Source Folder'])
+                        ftp.cwd(self._configuration['Source Folder'])
                     except Exception:
                         config_ok = False
+                        print("Cannot access source folder: " + traceback.format_exc())
                         self.log(logging.CRITICAL, "Cannot access source folder: "
                                  + traceback.format_exc())
 
@@ -64,9 +67,9 @@ class FTPRetriever(FileListRetriever):
 
         try:
             self._ftp = FTP()
-            self._ftp.connect(self.configuration['Server'], port=int(self.configuration['Port']))
-            self._ftp.login(user=self.configuration['User'], passwd=self.configuration['Password'])
-            self._ftp.cwd(self.configuration['Source Folder'])
+            self._ftp.connect(self._configuration['Server'], port=int(self._configuration['Port']))
+            self._ftp.login(user=self._configuration['User'], passwd=self._configuration['Password'])
+            self._ftp.cwd(self._configuration['Source Folder'])
         except Exception:
             self.log(logging.CRITICAL, "Cannot log in to FTP server: "
                      + traceback.format_exc())
@@ -80,7 +83,7 @@ class FTPRetriever(FileListRetriever):
 
     def _get_all_files(self):
         all_files = self._ftp.nlst()
-        return filter(lambda name: PurePath(name).match(self.configuration["File Specification"]), all_files)
+        return filter(lambda name: PurePath(name).match(self._configuration["File Specification"]), all_files)
 
     def _get_hashsum(self, filename):
         self._download_file(filename)

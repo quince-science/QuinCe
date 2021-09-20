@@ -147,6 +147,11 @@ def main():
                             print()
 
                             print("PREPROCESSOR: %s" % instrument["preprocessor"])
+                            if instrument["preprocessor"] is not None and instrument["preprocessor_config"] is not None:
+                                preprocessor = PreprocessorFactory.get_instance(
+                                    instrument["preprocessor"], logger, json.loads(instrument["preprocessor_config"]))
+                                preprocessor.print_configuration()
+                                print()
 
                         print()
 
@@ -160,13 +165,20 @@ def main():
                                 if new_type != instrument["type"]:
                                     retriever = RetrieverFactory.get_new_instance(new_type)
 
-                                config_ok = False
+                                config_ok = not retriever.has_config()
                                 while not config_ok:
                                     print()
                                     config_ok = retriever.enter_configuration()
 
                                 print()
-                                preprocessor = PreprocessorFactory.ask_preprocessor()
+                                preprocessor_type = PreprocessorFactory.ask_preprocessor_type()
+                                preprocessor = PreprocessorFactory.get_new_instance(preprocessor_type)
+
+                                config_ok = not retriever.has_config()
+                                while not config_ok:
+                                    print()
+                                    config_ok = preprocessor.enter_configuration()
+
                                 nrtdb.store_configuration(db_conn, instrument["id"], retriever, preprocessor)
     except urllib.error.HTTPError as e:
         print("%s %s" % (e.code, e.reason))

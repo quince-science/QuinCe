@@ -53,12 +53,12 @@ def get_instrument(conn, instrument_id):
     result = None
 
     c = conn.cursor()
-    c.execute("SELECT id, name, owner, type, preprocessor, config FROM instrument WHERE id = ?",
+    c.execute("SELECT id, name, owner, type, preprocessor, config, preprocessor_config FROM instrument WHERE id = ?",
               (instrument_id,))
 
     for row in c:
         record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4],
-                  "config": row[5]}
+                  "config": row[5], "preprocessor_config": row[6]}
         result = record
 
     return result
@@ -78,8 +78,8 @@ def add_instruments(conn, instruments, ids):
     c = conn.cursor()
     for instrument in instruments:
         if instrument["id"] in ids:
-            c.execute("INSERT INTO instrument(id, name, owner, type, preprocessor, config)"
-                      " VALUES (?, ?, ?, 'None', 'None', NULL)",
+            c.execute("INSERT INTO instrument(id, name, owner, type, preprocessor, config, preprocessor_config)"
+                      " VALUES (?, ?, ?, 'None', 'None', NULL, NULL)",
                       (instrument["id"], instrument["name"], instrument["owner"]))
     conn.commit()
 
@@ -102,11 +102,13 @@ def store_configuration(conn, instrument_id, retriever, preprocessor):
     c = conn.cursor()
     if retriever is None:
         print(instrument_id)
-        c.execute("UPDATE instrument SET type=NULL, config=NULL, preprocessor=NULL WHERE id = ?",
+        c.execute(
+            "UPDATE instrument SET type=NULL, config=NULL, preprocessor=NULL, preprocessor_config=NULL WHERE id = ?",
                   (instrument_id,))
     else:
-        c.execute("UPDATE instrument SET type=?, config=?, preprocessor=? WHERE id = ?",
-                  (retriever.get_type(), retriever.get_configuration_json(), preprocessor, instrument_id))
+        c.execute("UPDATE instrument SET type=?, config=?, preprocessor=?, preprocessor_config=? WHERE id = ?",
+                  (retriever.get_type(), retriever.get_configuration_json(),
+                   preprocessor.get_type(), preprocessor.get_configuration_json(), instrument_id))
 
     conn.commit()
 
