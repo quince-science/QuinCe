@@ -122,7 +122,7 @@ def main():
                                            "Uploading " + file["filename"] + " to FTP server")
 
                             upload_result = upload_file(logger, ftp_conn, config["FTP"],
-                                                        instrument_id, preprocessor, file["filename"], file["contents"])
+                                                        instrument_id, preprocessor, preprocessor.get_processed_filename(file["filename"]), file["contents"])
 
                             if upload_result == nrtftp.NOT_INITIALISED:
                                 log_instrument(logger, instrument_id, logging.ERROR,
