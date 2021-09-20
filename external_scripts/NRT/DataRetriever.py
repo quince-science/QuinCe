@@ -1,17 +1,21 @@
 import getpass
 import json
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 from tabulate import tabulate
 
 
-class DataRetriever(metaclass=ABCMeta):
+class DataRetriever(object):
 
     # Base constructor
-    def __init__(self, instrument_id, logger):
+    def __init__(self, instrument_id, logger, configuration=None):
         self.instrument_id = instrument_id
         self.logger = logger
-        self.configuration = {}
+
+        if configuration is None:
+            self.configuration = {}
+        else:
+            self.configuration = configuration
 
         # This will be an array of {filename, file_contents}
         self.current_files = []
@@ -48,8 +52,8 @@ class DataRetriever(metaclass=ABCMeta):
     # and put it in the current_files variable in the form:
     # [{name="xx", content=<bytes>}]
     @abstractmethod
-    def _retrieve_next_file(self):
-        raise NotImplementedError("_retrieve_next_file not implemented")
+    def _retrieve_next_file_set(self):
+        raise NotImplementedError("_retrieve_next_file_set not implemented")
 
     # The file(s) have been processed successfully;
     # clean them up accordingly
@@ -117,11 +121,11 @@ class DataRetriever(metaclass=ABCMeta):
         return json.dumps(self.configuration)
 
     # Get the next file to be processed
-    def load_next_file(self):
+    def load_next_files(self):
         # Reset the file list
         self.current_files = []
 
-        self._retrieve_next_file()
+        self._retrieve_next_file_set()
         return len(self.current_files) > 0
 
     # Add a file to the current files list

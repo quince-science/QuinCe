@@ -1,14 +1,20 @@
-from Preprocessor import Preprocessor
+from AddSalinityPreprocessor import AddSalinityPreprocessor
+from NonePreprocessor import NonePreprocessor
 
 
-# Factory for Preprocessor instances
+def _get_retriever_classes():
+    return [
+        NonePreprocessor,
+        AddSalinityPreprocessor
+    ]
+
 
 # Get the list of preprocessor types
 def get_preprocessor_names():
     result = []
 
-    for clazz in Preprocessor.__subclasses__():
-        result.append(clazz.get_name())
+    for clazz in _get_retriever_classes():
+        result.append(clazz.get_type())
 
     return result
 
@@ -32,16 +38,14 @@ def ask_preprocessor():
         except ValueError:
             pass
 
-    result = entries[selected]
-
-    return result
+    return entries[selected]
 
 
 def get_new_instance(preprocessor_type):
     result = None
 
-    for clazz in Preprocessor.__subclasses__():
-        if clazz.get_name() == preprocessor_type:
+    for clazz in _get_retriever_classes():
+        if clazz.get_type() == preprocessor_type:
             result = clazz()
             break
 
