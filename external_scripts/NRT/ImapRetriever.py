@@ -24,16 +24,7 @@ def _extract_filename(filename):
 class ImapRetriever(DataRetriever):
 
     def __init__(self, instrument_id, logger, configuration=None):
-        super().__init__(instrument_id, logger)
-        if configuration is None:
-            self.configuration["Server"] = None
-            self.configuration["Port"] = None
-            self.configuration["User"] = None
-            self.configuration["Password"] = None
-            self.configuration["Source Folder"] = None
-            self.configuration["Downloaded Folder"] = None
-        else:
-            self.configuration = configuration
+        super().__init__(instrument_id, logger, configuration)
 
         # For storing the current IMAP connection
         self.imap_conn = None
@@ -51,6 +42,10 @@ class ImapRetriever(DataRetriever):
     def get_type():
         return "IMAP Email"
 
+    @staticmethod
+    def _get_config_entries():
+        return ['Server', 'Port', 'User', 'Password', 'Source Folder', 'Downloaded Folder']
+
     # Check that the configuration works
     def test_configuration(self):
 
@@ -58,8 +53,8 @@ class ImapRetriever(DataRetriever):
 
         # Connect
         try:
-            self.imap_conn = IMAPClient(host=self.configuration["Server"],
-                                        port=self.configuration["Port"])
+            self.imap_conn = IMAPClient(host=self._configuration["Server"],
+                                        port=self._configuration["Port"])
 
         except IMAPClient.Error:
             self.log(logging.CRITICAL, "Cannot connect to IMAP server: "
@@ -69,15 +64,15 @@ class ImapRetriever(DataRetriever):
         # Authenticate
         try:
             if self.imap_conn is not None:
-                self.imap_conn.login(self.configuration["User"],
-                                     self.configuration["Password"])
+                self.imap_conn.login(self._configuration["User"],
+                                     self._configuration["Password"])
 
                 # Check folders
-                if not self.imap_conn.folder_exists(self.configuration["Source Folder"]):
+                if not self.imap_conn.folder_exists(self._configuration["Source Folder"]):
                     self.log(logging.CRITICAL, "Source Folder does not exist")
                     config_ok = False
 
-                if not self.imap_conn.folder_exists(self.configuration["Downloaded Folder"]):
+                if not self.imap_conn.folder_exists(self._configuration["Downloaded Folder"]):
                     self.log(logging.CRITICAL, "Downloaded Folder does not exist")
                     config_ok = False
 
@@ -97,13 +92,13 @@ class ImapRetriever(DataRetriever):
 
         try:
             # Log in to the mail server
-            self.imap_conn = IMAPClient(host=self.configuration["Server"],
-                                        port=self.configuration["Port"])
-            self.imap_conn.login(self.configuration["User"],
-                                 self.configuration["Password"])
+            self.imap_conn = IMAPClient(host=self._configuration["Server"],
+                                        port=self._configuration["Port"])
+            self.imap_conn.login(self._configuration["User"],
+                                 self._configuration["Password"])
 
             # Get the list of messages we can process
-            self.imap_conn.select_folder(self.configuration["Source Folder"])
+            self.imap_conn.select_folder(self._configuration["Source Folder"])
             self.message_ids = self.imap_conn.search(["NOT", "DELETED"])
             self.current_index = -1
 
@@ -152,7 +147,7 @@ class ImapRetriever(DataRetriever):
 
                 if not file_found:
                     self.imap_conn.move(self.message_ids[self.current_index],
-                                        self.configuration["Downloaded Folder"])
+                                        self._configuration["Downloaded Folder"])
 
                     self.current_index = self.current_index + 1
 
@@ -168,7 +163,7 @@ class ImapRetriever(DataRetriever):
                      + str(self.message_ids[self.current_index]) + " to downloaded folder")
 
             self.imap_conn.move(self.message_ids[self.current_index],
-                                self.configuration["Downloaded Folder"])
+                                self._configuration["Downloaded Folder"])
         except IMAPClient.Error:
             self.log(logging.ERROR, "Failed to move email after processing: "
                      + traceback.format_exc())

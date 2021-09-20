@@ -20,7 +20,7 @@ def get_preprocessor_names():
 
 
 # Ask the user to select a preprocessor
-def ask_preprocessor():
+def ask_preprocessor_type():
     entries = get_preprocessor_names()
 
     selected = -1
@@ -41,12 +41,26 @@ def ask_preprocessor():
     return entries[selected]
 
 
+def get_instance(preprocessor_type, logger, configuration):
+    result = None
+
+    for clazz in _get_retriever_classes():
+        if clazz.get_type() == preprocessor_type:
+            result = clazz(logger, configuration)
+            break
+
+    if result is None:
+        raise ValueError("Cannot find retriever of type %s" % (preprocessor_type,))
+
+    return result
+
+
 def get_new_instance(preprocessor_type):
     result = None
 
     for clazz in _get_retriever_classes():
         if clazz.get_type() == preprocessor_type:
-            result = clazz()
+            result = clazz(None, None)
             break
 
     if result is None:

@@ -1,8 +1,14 @@
 import os
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
+
+from ConfigurableItem import ConfigurableItem
 
 
-class Preprocessor(metaclass=ABCMeta):
+class Preprocessor(ConfigurableItem):
+
+    def __init__(self, logger, configuration=None):
+        super().__init__(configuration)
+        self.logger = logger
 
     @staticmethod
     @abstractmethod
