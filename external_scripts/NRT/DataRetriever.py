@@ -1,21 +1,16 @@
-import getpass
-import json
 from abc import abstractmethod
 
-from tabulate import tabulate
+from ConfigurableItem import ConfigurableItem
 
 
-class DataRetriever(object):
+class DataRetriever(ConfigurableItem):
 
     # Base constructor
     def __init__(self, instrument_id, logger, configuration=None):
+        super().__init__(configuration)
+
         self.instrument_id = instrument_id
         self.logger = logger
-
-        if configuration is None:
-            self.configuration = {}
-        else:
-            self.configuration = configuration
 
         # This will be an array of {filename, file_contents}
         self.current_files = []
@@ -32,11 +27,6 @@ class DataRetriever(object):
     @abstractmethod
     def get_type():
         raise NotImplementedError("get_type not implemented")
-
-    # Test the configuration to make sure everything works
-    @abstractmethod
-    def test_configuration(self):
-        raise NotImplementedError("test_configuration not implemented")
 
     # Initialise the retriever ready to retrieve files
     @abstractmethod
@@ -72,53 +62,6 @@ class DataRetriever(object):
     @abstractmethod
     def _cleanup_not_processed(self):
         raise NotImplementedError("_cleanup_not_processed not implemented")
-
-    # Print the current configuration values
-    def print_configuration(self):
-        table_data = []
-
-        for key, value in self.configuration.items():
-            if value is None:
-                value = "NOT SET"
-            elif key.lower() == "password":
-                value = "***"
-
-            table_data.append([key, value])
-
-        print(tabulate(table_data))
-
-    # Ask the user for all configuration values
-    def enter_configuration(self):
-        print("Enter configuration values")
-        print("--------------------------")
-
-        for key, existing_value in self.configuration.items():
-            new_value = None
-            if existing_value is None:
-                existing_value = "NOT SET"
-            elif key.lower() == "password":
-                existing_value = "***"
-
-            while new_value is None:
-
-                if key.lower() == "password":
-                    input_value = getpass.getpass("%s [%s]: " % (key, existing_value)).strip()
-                else:
-                    input_value = input("%s [%s]: " % (key, existing_value)).strip()
-
-                if input_value == "":
-                    if existing_value is not None:
-                        new_value = self.configuration[key]
-                else:
-                    new_value = input_value
-
-            self.configuration[key] = new_value
-
-        return self.test_configuration()
-
-    # Get the configuration as a JSON object
-    def get_configuration_json(self):
-        return json.dumps(self.configuration)
 
     # Get the next file to be processed
     def load_next_files(self):

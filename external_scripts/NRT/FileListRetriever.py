@@ -15,25 +15,11 @@ class FileListRetriever(DataRetriever):
     _DB_FILE = 'FileListRetriever.sqlite'
 
     def __init__(self, instrument_id, logger, configuration=None):
-        super().__init__(instrument_id, logger)
-
-        if configuration is None:
-            self.configuration = {}
-            for entry in self._get_config_entries():
-                self.configuration[entry] = None
-
-            self.configuration['File Specification'] = None
-
-        else:
-            self.configuration = configuration
+        super().__init__(instrument_id, logger, configuration)
 
         # Check that the database exists
         if not self._is_db_set_up():
             self._init_db()
-
-    @staticmethod
-    def _get_config_entries():
-        return []
 
     def _is_db_set_up(self):
         with sqlite3.connect(self._DB_FILE) as conn:
