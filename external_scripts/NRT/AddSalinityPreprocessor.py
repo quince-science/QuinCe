@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 from Preprocessor import Preprocessor
@@ -105,3 +106,8 @@ class AddSalinityPreprocessor(Preprocessor):
                         break
 
         return salinity
+
+    @staticmethod
+    def get_processed_filename(filename):
+        split = os.path.splitext(filename)
+        return f'{split[0]}.woa_salinity{split[1]}'

@@ -9,3 +9,7 @@ class NonePreprocessor(Preprocessor):
 
     def preprocess(self, data):
         return data.getvalue()
+
+    @staticmethod
+    def get_processed_filename(filename):
+        return filename
