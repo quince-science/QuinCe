@@ -61,10 +61,12 @@ def make_indices(dataframe):
 
 
 class AddSalinityPreprocessor(Preprocessor):
+
     SALINITY_FILE = "salinity_data/woa18_seasonal_surface_salinity.nc"
     SALINITY_VAR = "salinity"
 
-    def get_name(self):
+    @staticmethod
+    def get_type():
         return "Add Fixed Salinity"
 
     def preprocess(self, data):

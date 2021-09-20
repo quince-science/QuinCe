@@ -5,7 +5,7 @@ class Preprocessor(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def get_name():
+    def get_type():
         raise NotImplementedError("get_name not implemented")
 
     @abstractmethod

@@ -101,10 +101,10 @@ def get_unconfigured_instruments(conn):
 def store_configuration(conn, instrument_id, retriever, preprocessor):
     c = conn.cursor()
     if retriever is None:
-        c.execute("UPDATE instrument SET type=NULL, config=NULL, preprocessor=NULL, WHERE id = ?",
+        print(instrument_id)
+        c.execute("UPDATE instrument SET type=NULL, config=NULL, preprocessor=NULL WHERE id = ?",
                   (instrument_id,))
     else:
-        print(retriever.get_type(), retriever.get_configuration_json(), instrument_id, preprocessor)
         c.execute("UPDATE instrument SET type=?, config=?, preprocessor=? WHERE id = ?",
                   (retriever.get_type(), retriever.get_configuration_json(), preprocessor, instrument_id))
 

@@ -21,7 +21,7 @@ def _extract_filename(filename):
     return result
 
 
-class ImapConfiguration(DataRetriever):
+class ImapRetriever(DataRetriever):
 
     def __init__(self, instrument_id, logger, configuration=None):
         super().__init__(instrument_id, logger)
@@ -126,7 +126,7 @@ class ImapConfiguration(DataRetriever):
         self.imap_conn = None
 
     # Get the next message and extract its attachment
-    def _retrieve_next_file(self):
+    def _retrieve_next_file_set(self):
 
         try:
             file_found = False
