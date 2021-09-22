@@ -6,6 +6,10 @@ from hashlib import sha256
 from DataRetriever import DataRetriever
 from NotFoundException import NotFoundException
 
+STATUS_COMPLETE = 1
+STATUS_RETRY = 0
+STATUS_FAILED = -1
+
 
 def timestamp():
     return int(time.time())
@@ -21,6 +25,10 @@ class FileListRetriever(DataRetriever):
         if not self._is_db_set_up():
             self._init_db()
 
+        # Tracker for retrieved files
+        self._file_list = None
+        self._current_file_index = -1
+
     def _is_db_set_up(self):
         with sqlite3.connect(self._DB_FILE) as conn:
             cursor = conn.cursor()
@@ -34,8 +42,8 @@ class FileListRetriever(DataRetriever):
                      "instrument_id INTEGER, "
                      "filename TEXT, "
                      "hashsum TEXT, "
-                     "uploaded_to_quince INTEGER, "
-                     "upload_time INTEGER, "
+                     "status INTEGER, "
+                     "timestamp INTEGER, "
                      "PRIMARY KEY (instrument_id, filename)"
                      ")"
                      )
@@ -72,15 +80,20 @@ class FileListRetriever(DataRetriever):
     #
     # We only download one file at a time
     def _retrieve_next_file_set(self):
-        all_files = self._get_all_files()
+
+        if self._file_list is None:
+            self._file_list = self._get_all_files()
 
         # Loop through all files until we find one that needs processing
         file_to_process = None
 
-        for filename in all_files:
+        while file_to_process is None and self._current_file_index < len(self._file_list) - 1:
+            self._current_file_index += 1
+            filename = self._file_list[self._current_file_index]
+
             process_file = False
 
-            if not self._file_known(filename):
+            if self._needs_processing(filename):
                 process_file = True
             else:
                 if self._file_updated(filename, self._get_hashsum(filename)):
@@ -93,8 +106,7 @@ class FileListRetriever(DataRetriever):
         if file_to_process is not None:
             self._add_file(file_to_process, self._get_file_content(file_to_process))
 
-    # Record the successful processing of the current files
-    def _cleanup_success(self):
+    def _record_file(self, status):
         with sqlite3.connect(self._DB_FILE) as conn:
             cursor = conn.cursor()
 
@@ -102,39 +114,39 @@ class FileListRetriever(DataRetriever):
             for file in self.current_files:
                 if not self._file_known(file["filename"]):
                     sql = ("INSERT INTO files "
-                           "(instrument_id, filename, hashsum, uploaded_to_quince, upload_time) "
+                           "(instrument_id, filename, hashsum, status, timestamp) "
                            "VALUES (?, ?, ?, ?, ?)"
                            )
 
                     cursor.execute(sql,
                                    (self.instrument_id, file["filename"], self._hashsum(file["contents"]),
-                                    True, timestamp()))
+                                    status, timestamp()))
 
                 else:
                     sql = ("UPDATE files SET "
-                           "hashsum = ?, uploaded_to_quince = ?, upload_time = ? "
+                           "hashsum = ?, status = ?, timestamp = ? "
                            "WHERE instrument_id = ? AND filename = ?"
                            )
 
                     cursor.execute(sql,
-                                   (self._hashsum(file["contents"]), True, timestamp(),
+                                   (self._hashsum(file["contents"]), status, timestamp(),
                                     self.instrument_id, file["filename"]))
 
             conn.commit()
 
-            # Perform any custom cleanup actions
-            self._cleanup_file_action(file)
+    # Record the successful processing of the current files
+    def _cleanup_success(self):
+        self._record_file(STATUS_COMPLETE)
 
     # The file(s) were not processed successfully;
     # clean them up accordingly
     def _cleanup_fail(self):
-        # We don't need to do anything - the file will be picked up next time
-        pass
+        self._record_file(STATUS_FAILED)
 
     # The file(s) were not processed this time;
     # clean them up so they can be reprocessed later
     def _cleanup_not_processed(self):
-        pass
+        self._record_file(STATUS_RETRY)
 
     # Get all the files from the source
     @abstractmethod
@@ -156,7 +168,24 @@ class FileListRetriever(DataRetriever):
     def _cleanup_file_action(self, filename):
         pass
 
-    # See if a given file exists in the database
+    # See if a given file needs processing
+    def _needs_processing(self, filename):
+        result = False
+
+        with sqlite3.connect(self._DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT filename, status FROM files WHERE instrument_id = ? AND filename = ?",
+                           (self.instrument_id, filename))
+
+            record = cursor.fetchone()
+            if record is None:
+                result = True
+            elif record[1] == STATUS_RETRY:
+                result = True
+
+        return result
+
+    # See if a file is known in the database
     def _file_known(self, filename):
         with sqlite3.connect(self._DB_FILE) as conn:
             cursor = conn.cursor()

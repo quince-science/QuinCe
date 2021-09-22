@@ -67,7 +67,6 @@ class DataRetriever(ConfigurableItem):
     def load_next_files(self):
         # Reset the file list
         self.current_files = []
-
         self._retrieve_next_file_set()
         return len(self.current_files) > 0
 
