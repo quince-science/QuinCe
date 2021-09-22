@@ -112,8 +112,8 @@ def main():
                                    "Could not initialise retriever")
                 else:
                     preprocessor = None if instrument["preprocessor"] is None else \
-                        PreprocessorFactory.get_new_instance(instrument["preprocessor"],
-                                                             logger, instrument["preprocessor_config"])
+                        PreprocessorFactory.get_instance(instrument["preprocessor"],
+                                                         logger, json.loads(instrument["preprocessor_config"]))
 
                     # Loop through all files returned by the retriever one by one
                     while retriever.load_next_files():
@@ -123,7 +123,9 @@ def main():
                                            "Uploading " + file["filename"] + " to FTP server")
 
                             upload_result = upload_file(logger, ftp_conn, config["FTP"],
-                                                        instrument_id, preprocessor, preprocessor.get_processed_filename(file["filename"]), file["contents"])
+                                                        instrument_id, preprocessor,
+                                                        preprocessor.get_processed_filename(file["filename"]),
+                                                        file["contents"])
 
                             if upload_result == nrtftp.NOT_INITIALISED:
                                 log_instrument(logger, instrument_id, logging.ERROR,
