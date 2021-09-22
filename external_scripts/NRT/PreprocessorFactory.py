@@ -1,11 +1,13 @@
 from AddSalinityPreprocessor import AddSalinityPreprocessor
 from NonePreprocessor import NonePreprocessor
+from SQLiteExtractor import SQLiteExtractor
 
 
 def _get_retriever_classes():
     return [
         NonePreprocessor,
-        AddSalinityPreprocessor
+        AddSalinityPreprocessor,
+        SQLiteExtractor
     ]
 
 

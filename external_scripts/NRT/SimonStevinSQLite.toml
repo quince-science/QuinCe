@@ -1,0 +1,132 @@
+[output]
+
+  # The column headers for the output file
+  # To join two fields add a percent sign (_) between the names
+  columns = [
+    "TimeStamp",
+    "Longitude",
+    "Latitude",
+    "xH2O",
+    "xCO2",
+    "CellTemperature",
+    "CellPressure",
+    "DrainTemperature",
+    "ColumnTemperature",
+    "VaisalaPressure",
+    "SmartTrakFlow",
+    "WaterFlow",
+    "SBE21Serial",
+    "SBE21Salinity",
+    "SBE21Temperature",
+    "SBE38Temperature",
+    "AA4330FSerial",
+    "AA4330FOxygen",
+    "AA4330FAirSat",
+    "AA4330FTemperature",
+    "FLRTSerial",
+    "FLRTChla",
+    "AWSAirPressure",
+    "AWSTemperature",
+    "AWSWindDir",
+    "AWSWindSpeed",
+    "OctansHeave",
+    "Multiplexer",
+  ]
+
+  # Sort column. This should be the date/time.
+  sort_column = "TimeStamp"
+
+  # Value to store in empty columns
+  empty_col_value = -999.0
+
+[input]
+  [[input.tables]]
+    name = "IcosData"
+
+    # Only sample every minute
+    whereclause = "strftime('%S',TimeStamp) == '00'"
+
+    # Outfield = Infield
+    mapping = [
+      ["TimeStamp", "TimeStamp"],
+      ["Longitude", "Longitude"],
+      ["Latitude", "Latitude"],
+      ["xH2O", "xH2O"],
+      ["xCO2", "xCO2"],
+      ["CellTemperature", "CellTemperature"],
+      ["CellPressure", "CellPressure"],
+      ["DrainTemperature", "DrainTemperature"],
+      ["ColumnTemperature", "ColumnTemperature"],
+      ["VaisalaPressure", "VaisalaPressure"],
+      ["SmartTrakFlow", "SmartTrakFlow"],
+      ["WaterFlow", "WaterFlow"],
+      ["SBE21Serial", "SBE21Serial"],
+      ["SBE21Salinity", "SBE21Salinity"],
+      ["SBE21Temperature", "SBE21Temperature"],
+      ["SBE38Temperature", "SBE38Temperature"],
+      ["AA4330FSerial", "AA4330FSerial"],
+      ["AA4330FOxygen", "AA4330FOxygen"],
+      ["AA4330FAirSat", "AA4330FAirSat"],
+      ["AA4330FTemperature", "AA4330FTemperature"],
+      ["FLRTSerial", "FLRTSerial"],
+      ["FLRTChla", "FLRTChla"],
+      ["AWSAirPressure", "AWSAirPressure"],
+      ["AWSTemperature", "AWSTemperature"],
+      ["AWSWindDir", "AWSWindDir"],
+      ["AWSWindSpeed", "AWSWindSpeed"],
+      ["OctansHeave", "OctansHeave"],
+      ["Multiplexer", "Multiplexer"]
+    ]
+
+  [[input.tables]]
+    name = "IcosCalData"
+
+    # We sample every 15 seconds, and only include gas standards (2-5) and atm values (6)
+    whereclause = "Multiplexer IN (2, 3, 4, 5, 6) AND (strftime('%S',TimeStamp) == '00' OR strftime('%S',TimeStamp) == '15' OR strftime('%S',TimeStamp) == '30' OR strftime('%S',TimeStamp) == '45')"
+
+    # Outfield = Infield
+    mapping = [
+      ["TimeStamp", "TimeStamp"],
+      ["Longitude", "Longitude"],
+      ["Latitude", "Latitude"],
+      ["xH2O", "xH2O"],
+      ["xCO2", "xCO2"],
+      ["CellTemperature", "CellTemperature"],
+      ["CellPressure", "CellPressure"],
+      ["DrainTemperature", "DrainTemperature"],
+      ["ColumnTemperature", "ColumnTemperature"],
+      ["VaisalaPressure", "VaisalaPressure"],
+      ["SmartTrakFlow", "SmartTrakFlow"],
+      ["WaterFlow", "WaterFlow"],
+      ["SBE21Serial", ""],
+      ["SBE21Salinity", ""],
+      ["SBE21Temperature", ""],
+      ["SBE38Temperature", ""],
+      ["AA4330FSerial", ""],
+      ["AA4330FOxygen", ""],
+      ["AA4330FAirSat", ""],
+      ["AA4330FTemperature", ""],
+      ["FLRTSerial", ""],
+      ["FLRTChla", ""],
+      ["AWSAirPressure", ""],
+      ["AWSTemperature", ""],
+      ["AWSWindDir", ""],
+      ["AWSWindSpeed", ""],
+      ["OctansHeave", ""],
+      ["Multiplexer", "Multiplexer"]
+    ]
+
+[column_mapping]
+  [[column_mapping.mappings]]
+    column = "Multiplexer"
+    # From -> To
+    mapping = [
+      ["1", "mar"],
+      ["2", "std1"],
+      ["3", "std2"],
+      ["4", "std3"],
+      ["5", "std4"],
+      ["6", "atm"]
+    ]
+
+    other = "ign"
