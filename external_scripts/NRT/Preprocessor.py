@@ -13,7 +13,7 @@ class Preprocessor(ConfigurableItem):
     @staticmethod
     @abstractmethod
     def get_type():
-        raise NotImplementedError("get_name not implemented")
+        raise NotImplementedError("get_type not implemented")
 
     @abstractmethod
     def preprocess(self, data):
