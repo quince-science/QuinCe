@@ -83,7 +83,7 @@ class FTPRetriever(FileListRetriever):
 
     def _get_all_files(self):
         all_files = self._ftp.nlst()
-        return filter(lambda name: PurePath(name).match(self._configuration["File Specification"]), all_files)
+        return list(filter(lambda name: PurePath(name).match(self._configuration["File Specification"]), all_files))
 
     def _get_hashsum(self, filename):
         self._download_file(filename)

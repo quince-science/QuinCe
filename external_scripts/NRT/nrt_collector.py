@@ -1,3 +1,4 @@
+import json
 import logging
 import ntpath
 import re
@@ -5,7 +6,6 @@ import traceback
 from io import BytesIO
 from zipfile import ZipFile
 
-import json
 import toml
 
 import PreprocessorFactory
@@ -13,8 +13,10 @@ import RetrieverFactory
 # Local modules
 import nrtdb
 import nrtftp
+from PreprocessorError import PreprocessorError
 
 IGNORE_REGEXPS = [".*err.txt"]
+PREPROCESSOR_FAILED = -10
 
 
 # See if a file should be ignored based on its filename
@@ -36,8 +38,12 @@ def upload_file(logger, ftp_conn, ftp_config, instrument_id, preprocessor, filen
 
     if not str.endswith(filename, ".zip"):
         if not ignore_file(filename):
-            upload_result = nrtftp.upload_file(ftp_conn, ftp_config,
-                                               instrument_id, filename, preprocessor.preprocess(BytesIO(contents)))
+            try:
+                upload_result = nrtftp.upload_file(ftp_conn, ftp_config,
+                                                   instrument_id, filename, preprocessor.preprocess(BytesIO(contents)))
+            except PreprocessorError:
+                logger.log(logging.ERROR, "Failed to preprocess file " + filename + ":" + traceback.format_exc())
+                upload_result = PREPROCESSOR_FAILED
     else:
         with ZipFile(BytesIO(contents), 'r') as unzip:
             for name in unzip.namelist():
@@ -48,9 +54,10 @@ def upload_file(logger, ftp_conn, ftp_config, instrument_id, preprocessor, filen
                     preprocessed_file = None
                     try:
                         preprocessed_file = preprocessor.preprocess(BytesIO(unzip.read(name)))
-                    except Exception:
+                    except PreprocessorError:
                         log_instrument(logger, instrument_id, logging.ERROR, "Preprocessing "
                                        + "failed: " + traceback.format_exc())
+                        upload_result = PREPROCESSOR_FAILED
 
                     if preprocessed_file is not None:
                         upload_result = nrtftp.upload_file(ftp_conn, ftp_config,
@@ -140,6 +147,10 @@ def main():
                                 log_instrument(logger, instrument_id, logging.DEBUG,
                                                "File uploaded OK (look for individual failures in ZIPs)")
                                 retriever.file_succeeded()
+                            elif upload_result == PREPROCESSOR_FAILED:
+                                log_instrument(logger, instrument_id, logging.DEBUG,
+                                               "File preprocessor failed")
+                                retriever.file_failed()
                             else:
                                 log_instrument(logger, instrument_id, logging.CRITICAL,
                                                "Unrecognised upload result " + str(upload_result))
