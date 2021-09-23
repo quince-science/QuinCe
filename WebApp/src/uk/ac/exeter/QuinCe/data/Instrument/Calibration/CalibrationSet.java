@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -258,11 +259,17 @@ public class CalibrationSet extends TreeSet<Calibration> {
    * {@link SensorType}.
    *
    * <p>
-   * Attempts to return the three closest standards. If some standards are an
-   * equal distance from the value, exactly which three are returned is
-   * undefined (and it shouldn't matter for calibration calculations). If the
-   * CalibrationSet contains fewer than three standards then all will be
-   * returned.
+   * Returns all standards, ordered by their difference from the specified
+   * value. If only standards with zero values are found, then one zero standard
+   * is returned. Otherwise all non-zero standards are returned.
+   * </p>
+   *
+   * <p>
+   * For normal gas standards, the zero gas should not be used for calibration;
+   * it is only for zeroing the instrument, and values close to zero tend to be
+   * unreliable as a general rule. For specific sensors such as xH₂O, all the
+   * standards will be zero (because it's dry gas). Therefore if all found
+   * standards are zero, all the zero standards will be returned.
    * </p>
    *
    * @param value
@@ -291,18 +298,26 @@ public class CalibrationSet extends TreeSet<Calibration> {
     }
 
     // Now we get the three first standards and return them
-    HashMap<String, Double> result = new HashMap<String, Double>();
+    Map<String, Double> result = new HashMap<String, Double>();
 
     for (String target : differenceOrderedStandards.values()) {
       try {
         result.put(target,
           getCalibrationValue(target, sensorType.getShortName()));
-        if (result.size() >= 3) {
-          break;
-        }
       } catch (RecordNotFoundException e) {
         // Do nothing - this exception can't be thrown at this stage.
       }
+    }
+
+    // If all the standards are zero, keep them (for xH2O from dry gas
+    // cylinders).
+    // If not, remove the zero standards so we only use the non-zero standards.
+    boolean hasNonZero = result.values().stream().filter(v -> v > 0D).findAny()
+      .isPresent();
+
+    if (hasNonZero) {
+      result = result.entrySet().stream().filter(e -> e.getValue() > 0D)
+        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
     }
 
     return result;
