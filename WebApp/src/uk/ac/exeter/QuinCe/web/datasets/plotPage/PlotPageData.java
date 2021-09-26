@@ -744,6 +744,14 @@ public abstract class PlotPageData {
       rangeEnd = temp;
     }
 
+    if (rangeStart < 0) {
+      rangeStart = 0;
+    }
+
+    if (rangeEnd >= allRows.size()) {
+      rangeEnd = allRows.size() - 1;
+    }
+
     for (int i = rangeStart; i <= rangeEnd; i++) {
       if (lastSelectionAction == DESELECT) {
         newSelectedRows.remove(allRows.get(i));
