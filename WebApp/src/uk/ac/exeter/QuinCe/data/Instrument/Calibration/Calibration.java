@@ -6,6 +6,7 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -66,8 +67,12 @@ public abstract class Calibration implements Comparable<Calibration> {
    * The values for the calibration. The list must contain the same number of
    * entries as the list of value names returned by
    * {@link #getCoefficientNames()}.
-   *
-   * @see #getCoefficientNames()
+   * 
+   * <p>
+   * <b>Note:</b> You should not use this variable directly unless you have a
+   * good reason to. You should instead use {@link #getCoefficients()}, which
+   * automatically takes care of initialise them if they haven't been already.
+   * </p>
    */
   protected List<CalibrationCoefficient> coefficients = null;
 
@@ -160,7 +165,22 @@ public abstract class Calibration implements Comparable<Calibration> {
    *
    * @return The human-readable coefficients
    */
-  protected abstract String buildHumanReadableCoefficients();
+  protected String buildHumanReadableCoefficients() {
+
+    String result = "Not set";
+
+    List<CalibrationCoefficient> editableCoefficients = getEditableCoefficients();
+
+    if (editableCoefficients.size() == 1) {
+      result = editableCoefficients.get(0).getValue();
+    } else if (size() > 1) {
+      result = editableCoefficients.stream().map(c -> c.toString())
+        .collect(Collectors.joining("; "));
+    }
+
+    return result;
+
+  }
 
   /**
    * Get the calibration target
@@ -236,12 +256,8 @@ public abstract class Calibration implements Comparable<Calibration> {
    * Initialise the coefficients for this calibration with zero values
    */
   protected void initialiseCoefficients() {
-    coefficients = new ArrayList<CalibrationCoefficient>(
-      getCoefficientNames().size());
-
-    for (String name : getCoefficientNames()) {
-      coefficients.add(new CalibrationCoefficient(name));
-    }
+    coefficients = getCoefficientNames().stream()
+      .map(n -> new CalibrationCoefficient(n)).collect(Collectors.toList());
   }
 
   /**
@@ -440,5 +456,13 @@ public abstract class Calibration implements Comparable<Calibration> {
       result = true;
 
     return result;
+  }
+
+  protected void setCoefficient(int index, CalibrationCoefficient coefficient) {
+    getCoefficients().set(index, coefficient);
+  }
+
+  protected int size() {
+    return getCoefficients().size();
   }
 }

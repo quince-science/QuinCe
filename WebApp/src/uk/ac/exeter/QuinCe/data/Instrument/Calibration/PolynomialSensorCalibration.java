@@ -86,13 +86,8 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   @Override
   protected String buildHumanReadableCoefficients() {
-
     StringBuilder result = new StringBuilder();
-
-    for (CalibrationCoefficient coefficient : coefficients) {
-      appendCoefficient(result, coefficient);
-    }
-
+    getCoefficients().forEach(c -> appendCoefficient(result, c));
     return result.toString();
   }
 
@@ -132,7 +127,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   @Override
   public boolean coefficientsValid() {
-    return (null != coefficients && coefficients.size() == 6);
+    return size() == 6;
   }
 
   @Override
