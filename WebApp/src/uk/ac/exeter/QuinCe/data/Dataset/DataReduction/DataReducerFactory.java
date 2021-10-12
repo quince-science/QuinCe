@@ -41,6 +41,10 @@ public class DataReducerFactory {
     reducers.put("ASVCO₂ Atmosphere", ASVCO2AtmosphereReducer.class);
     reducers.put("Japan Custom (temp)", JapanCustomReducer.class);
     reducers.put("Carioca (experimental)", CariocaReducer.class);
+    reducers.put("Water Vapour Mixing Ratio", NoReductionReducer.class);
+    reducers.put("CH₄ Mixing ratio", NoReductionReducer.class);
+    reducers.put("Ambient Pressure (Torr)", NoReductionReducer.class);
+    reducers.put("D-Excess", DExcessReducer.class);
   }
 
   /**

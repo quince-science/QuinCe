@@ -1,10 +1,12 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.ParameterException;
 
 /**
@@ -15,16 +17,10 @@ import uk.ac.exeter.QuinCe.utils.ParameterException;
  */
 public class ExternalStandard extends Calibration {
 
-  /**
-   * Contains the label for the concentration value (constructed in the
-   * {@code static} block)
-   */
-  private static List<String> valueNames;
+  private static final List<String> IGNORED_TYPES;
 
   static {
-    valueNames = new ArrayList<String>(1);
-    valueNames.add("xCO₂ (with standards)");
-    valueNames.add("xH₂O (with standards)");
+    IGNORED_TYPES = Arrays.asList("xH₂O (with standards)");
   }
 
   /**
@@ -81,20 +77,15 @@ public class ExternalStandard extends Calibration {
     }
   }
 
+  /**
+   * The coefficient names are the names of the {@link SensorType}s that have
+   * internal calibrations.
+   */
   @Override
   public List<String> getCoefficientNames() {
-    return valueNames;
-  }
-
-  @Override
-  public String buildHumanReadableCoefficients() {
-    String result = "Not set";
-
-    if (null != coefficients) {
-      result = String.valueOf(coefficients.get(0).getValue());
-    }
-
-    return result;
+    return instrument.getSensorAssignments().getAssignedSensorTypes().stream()
+      .filter(s -> s.hasInternalCalibration()).map(s -> s.getShortName())
+      .collect(Collectors.toList());
   }
 
   /**
@@ -103,11 +94,7 @@ public class ExternalStandard extends Calibration {
    * @return The concentration
    */
   public double getConcentration() {
-    if (null == coefficients) {
-      initialiseCoefficients();
-    }
-
-    return coefficients.get(0).getDoubleValue();
+    return getCoefficients().get(0).getDoubleValue();
   }
 
   /**
@@ -117,11 +104,7 @@ public class ExternalStandard extends Calibration {
    *          The concentration
    */
   public void setConcentration(String concentration) {
-    if (null == coefficients) {
-      initialiseCoefficients();
-    }
-
-    coefficients.set(0,
+    super.setCoefficient(0,
       new CalibrationCoefficient(getCoefficientNames().get(0), concentration));
   }
 
@@ -129,17 +112,10 @@ public class ExternalStandard extends Calibration {
   public boolean coefficientsValid() {
     boolean result = true;
 
-    if (null != coefficients) {
-      if (coefficients.size() != 2) {
+    for (CalibrationCoefficient coefficient : getCoefficients()) {
+      if (coefficient.getDoubleValue() < 0) {
         result = false;
-      } else {
-        if (getConcentration() < 0) {
-          result = false;
-        }
-        if (getCoefficients().get(1).getDoubleValue() != 0.0) {
-          // xH2O must be zero
-          result = false;
-        }
+        break;
       }
     }
 
@@ -153,7 +129,8 @@ public class ExternalStandard extends Calibration {
 
   @Override
   public List<CalibrationCoefficient> getEditableCoefficients() {
-    // Only the CO2 concentration is editable, and it's the first coefficient.
-    return getCoefficients().subList(0, 1);
+    return getCoefficients().stream()
+      .filter(c -> !IGNORED_TYPES.contains(c.getName()))
+      .collect(Collectors.toList());
   }
 }

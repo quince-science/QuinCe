@@ -75,17 +75,6 @@ public class CalculationCoefficient extends Calibration {
   }
 
   @Override
-  protected String buildHumanReadableCoefficients() {
-    String result = "Not set";
-
-    if (null != coefficients) {
-      result = String.valueOf(coefficients.get(0).getValue());
-    }
-
-    return result;
-  }
-
-  @Override
   public boolean coefficientsValid() {
     return true;
   }
