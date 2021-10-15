@@ -593,6 +593,9 @@ public class ExportBean extends BaseManagedBean {
       }
     }
 
+    // Strip out any instances of the column separator from the header
+    header = header.replaceAll(exportOption.getSeparator(), "");
+
     if (exportOption.includeUnits() && null != heading.getUnits()
       && heading.getUnits().length() > 0)
 
