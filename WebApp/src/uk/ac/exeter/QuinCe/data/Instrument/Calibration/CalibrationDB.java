@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,6 +14,9 @@ import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -22,7 +26,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.ParameterException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Database methods for database actions related to calibrations
@@ -83,6 +86,14 @@ public abstract class CalibrationDB {
     + "target, deployment_date ASC";
 
   /**
+   * JSON -> Coefficient map conversion type.
+   * 
+   * @see #makeCoefficientsFromJson(String)
+   */
+  private static final Type coefficientsType = new TypeToken<Map<String, String>>() {
+  }.getType();
+
+  /**
    * Empty constructor. These classes must be singletons so the abstract methods
    * can be declared. Individual instances can be retrieved from the concrete
    * classes
@@ -130,7 +141,7 @@ public abstract class CalibrationDB {
       stmt.setString(3, calibration.getTarget());
       stmt.setLong(4,
         DateTimeUtils.dateToLong(calibration.getDeploymentDate()));
-      stmt.setString(5, calibration.getCoefficientsAsDelimitedList());
+      stmt.setString(5, calibration.getCoefficientsJson());
       stmt.setString(6, calibration.getClass().getSimpleName());
 
       stmt.execute();
@@ -170,7 +181,7 @@ public abstract class CalibrationDB {
       stmt.setString(3, calibration.getTarget());
       stmt.setLong(4,
         DateTimeUtils.dateToLong(calibration.getDeploymentDate()));
-      stmt.setString(5, calibration.getCoefficientsAsDelimitedList());
+      stmt.setString(5, calibration.getCoefficientsJson());
       stmt.setString(6, calibration.getClass().getSimpleName());
       stmt.setLong(7, calibration.getId());
 
@@ -412,12 +423,18 @@ public abstract class CalibrationDB {
     long id = record.getLong(1);
     String target = record.getString(3);
     LocalDateTime deploymentDate = DateTimeUtils.longToDate(record.getLong(4));
-    List<String> coefficients = StringUtils.delimitedToList(record.getString(5),
-      ";");
+
+    Map<String, String> coefficients = makeCoefficientsFromJson(
+      record.getString(5));
+
     String calibrationClass = record.getString(6);
 
     return CalibrationFactory.createCalibration(getCalibrationType(),
       calibrationClass, id, instrument, deploymentDate, target, coefficients);
+  }
+
+  protected static Map<String, String> makeCoefficientsFromJson(String json) {
+    return new Gson().fromJson(json, coefficientsType);
   }
 
   /**

@@ -6,7 +6,10 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -290,7 +293,7 @@ public abstract class Calibration implements Comparable<Calibration> {
    * @throws CalibrationException
    *           If an incorrect number of coefficients is supplied
    */
-  public void setCoefficients(List<String> coefficients)
+  public void setCoefficients(Map<String, String> newCoefficients)
     throws CalibrationException {
 
     if (coefficients.size() != getCoefficientNames().size()) {
@@ -299,15 +302,10 @@ public abstract class Calibration implements Comparable<Calibration> {
           + getCoefficientNames().size() + ", got " + coefficients.size());
     }
 
-    this.coefficients = new ArrayList<CalibrationCoefficient>(
-      getCoefficientNames().size());
+    initialiseCoefficients();
 
-    int count = -1;
-    for (String name : getCoefficientNames()) {
-      count++;
-      this.coefficients
-        .add(new CalibrationCoefficient(name, coefficients.get(count)));
-    }
+    newCoefficients.entrySet()
+      .forEach(e -> setCoefficient(e.getKey(), e.getValue()));
   }
 
   /**
@@ -458,11 +456,31 @@ public abstract class Calibration implements Comparable<Calibration> {
     return result;
   }
 
-  protected void setCoefficient(int index, CalibrationCoefficient coefficient) {
-    getCoefficients().set(index, coefficient);
+  protected void setCoefficient(String name, String value) {
+    getCoefficients().get(getCoefficientIndex(name)).setValue(value);
   }
 
   protected int size() {
     return getCoefficients().size();
+  }
+
+  private int getCoefficientIndex(String name) {
+    int result = -1;
+
+    int searchIndex = 0;
+    while (result == -1 && searchIndex < coefficients.size()) {
+      if (coefficients.get(searchIndex).getName().equals(name)) {
+        result = searchIndex;
+      }
+      searchIndex++;
+    }
+
+    return result;
+  }
+
+  public String getCoefficientsJson() {
+    JsonObject json = new JsonObject();
+    coefficients.forEach(c -> json.addProperty(c.getName(), c.getValue()));
+    return json.toString();
   }
 }

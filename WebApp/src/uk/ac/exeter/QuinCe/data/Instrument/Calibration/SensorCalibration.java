@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
@@ -51,7 +51,7 @@ public abstract class SensorCalibration extends Calibration {
    *           If the calibration details are invalid
    */
   protected SensorCalibration(long id, Instrument instrument, String target,
-    LocalDateTime deploymentDate, List<String> coefficients)
+    LocalDateTime deploymentDate, Map<String, String> coefficients)
     throws CalibrationException {
     super(id, instrument, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE, target);
     setDeploymentDate(deploymentDate);

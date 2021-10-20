@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -60,7 +61,7 @@ public class CalculationCoefficient extends Calibration {
    *           If the calibration details are invalid
    */
   public CalculationCoefficient(long id, Instrument instrument, String target,
-    LocalDateTime deploymentDate, List<String> coefficients) {
+    LocalDateTime deploymentDate, Map<String, String> coefficients) {
 
     super(id, instrument,
       CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE,
@@ -76,7 +77,7 @@ public class CalculationCoefficient extends Calibration {
 
   @Override
   public boolean coefficientsValid() {
-    return true;
+    return coefficients.size() == 1;
   }
 
   @Override

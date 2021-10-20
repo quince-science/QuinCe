@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -62,7 +63,7 @@ public class ExternalStandard extends Calibration {
    *           If the calibration details are invalid
    */
   protected ExternalStandard(long id, Instrument instrument, String target,
-    LocalDateTime deploymentDate, List<String> coefficients)
+    LocalDateTime deploymentDate, Map<String, String> coefficients)
     throws ParameterException {
     super(id, instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
       target);
@@ -93,8 +94,8 @@ public class ExternalStandard extends Calibration {
    *
    * @return The concentration
    */
-  public double getConcentration() {
-    return getCoefficients().get(0).getDoubleValue();
+  public Double getConcentration(SensorType sensorType) {
+    return getDoubleCoefficient(sensorType.getShortName());
   }
 
   /**
@@ -103,23 +104,14 @@ public class ExternalStandard extends Calibration {
    * @param concentration
    *          The concentration
    */
-  public void setConcentration(String concentration) {
-    super.setCoefficient(0,
-      new CalibrationCoefficient(getCoefficientNames().get(0), concentration));
+  public void setConcentration(SensorType sensorType, String concentration) {
+    setCoefficient(sensorType.getShortName(), concentration);
   }
 
   @Override
   public boolean coefficientsValid() {
-    boolean result = true;
-
-    for (CalibrationCoefficient coefficient : getCoefficients()) {
-      if (coefficient.getDoubleValue() < 0) {
-        result = false;
-        break;
-      }
-    }
-
-    return result;
+    return !getCoefficients().stream().filter(c -> c.getDoubleValue() < 0D)
+      .findAny().isPresent();
   }
 
   @Override
