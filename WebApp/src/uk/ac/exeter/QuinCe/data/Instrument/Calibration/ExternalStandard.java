@@ -18,10 +18,10 @@ import uk.ac.exeter.QuinCe.utils.ParameterException;
  */
 public class ExternalStandard extends Calibration {
 
-  private static final List<String> IGNORED_TYPES;
+  private static final List<String> HIDDEN_SENSOR_TYPES;
 
   static {
-    IGNORED_TYPES = Arrays.asList("xH₂O (with standards)");
+    HIDDEN_SENSOR_TYPES = Arrays.asList("xH₂O (with standards)");
   }
 
   /**
@@ -99,7 +99,8 @@ public class ExternalStandard extends Calibration {
   }
 
   /**
-   * Set the concentration of the external standard
+   * Set the concentration of the external standard for the specified
+   * {@link SensorType}.
    *
    * @param concentration
    *          The concentration
@@ -122,7 +123,7 @@ public class ExternalStandard extends Calibration {
   @Override
   public List<CalibrationCoefficient> getEditableCoefficients() {
     return getCoefficients().stream()
-      .filter(c -> !IGNORED_TYPES.contains(c.getName()))
+      .filter(c -> !HIDDEN_SENSOR_TYPES.contains(c.getName()))
       .collect(Collectors.toList());
   }
 }

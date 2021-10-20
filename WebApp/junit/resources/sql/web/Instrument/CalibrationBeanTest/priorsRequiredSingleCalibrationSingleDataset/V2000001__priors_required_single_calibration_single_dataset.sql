@@ -4,4 +4,4 @@ INSERT INTO dataset (id, instrument_id, name, start, end, status, status_date)
 
 -- Calibration: 2019-06-02T00:00:00
 INSERT INTO calibration (id, instrument_id, type, target, deployment_date, coefficients, class)
-  VALUES (1001, 1000000, 'EXTERNAL_STANDARD', 'TARGET1', 1559433600000, '200.0;0.0', 'ExternalStandard');
+  VALUES (1001, 1000000, 'EXTERNAL_STANDARD', 'TARGET1', 1559433600000, '{"xCO₂ (with standards)":"200.0","xH₂O (with standards)":"0.0"}', 'ExternalStandard');
