@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
@@ -75,7 +75,8 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    *           If the calibration details are invalid
    */
   public PolynomialSensorCalibration(long id, Instrument instrument,
-    String target, LocalDateTime deploymentDate, List<String> coefficients) {
+    String target, LocalDateTime deploymentDate,
+    Map<String, String> coefficients) {
     super(id, instrument, target, deploymentDate, coefficients);
   }
 
@@ -127,38 +128,32 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   @Override
   public boolean coefficientsValid() {
-    return size() == 6;
+    return coefficients.size() == 6;
   }
 
   @Override
   protected void initialiseCoefficients() {
-    coefficients = new ArrayList<CalibrationCoefficient>(
-      getCoefficientNames().size());
+    super.initialiseCoefficients();
 
-    for (String name : getCoefficientNames()) {
-
-      if (name.equals("x")) {
-        coefficients.add(new CalibrationCoefficient(name, "1.0"));
-      } else {
-        coefficients.add(new CalibrationCoefficient(name));
-      }
-    }
+    // Default to a linear 1:1 relationship, i.e. no change.
+    setCoefficient("x", "1.0");
   }
 
   @Override
   public Double calibrateValue(Double rawValue) {
-    int power = 0;
+
     Double calibratedValue = 0d;
 
-    // The coefficients are stored from highest to lowest power, so iterate in
-    // reverse list order
-    ListIterator<CalibrationCoefficient> iterator = coefficients
-      .listIterator(coefficients.size());
-    while (iterator.hasPrevious()) {
-      calibratedValue += iterator.previous().getDoubleValue()
+    // The first coefficient is the 5th power. We go down to the intercept
+    // (zeroth power)
+    int power = 5;
+
+    for (CalibrationCoefficient coefficient : coefficients) {
+      calibratedValue += coefficient.getDoubleValue()
         * Math.pow(rawValue, power);
-      power++;
+      power--;
     }
+
     return calibratedValue;
   }
 }
