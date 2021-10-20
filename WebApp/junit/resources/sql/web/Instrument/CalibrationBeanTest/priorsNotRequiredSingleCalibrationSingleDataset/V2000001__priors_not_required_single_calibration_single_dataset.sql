@@ -4,4 +4,4 @@ INSERT INTO dataset (id, instrument_id, name, start, end, status, status_date)
 
 -- Calibration: 2019-06-02T00:00:00
 INSERT INTO calibration (id, instrument_id, type, target, deployment_date, coefficients, class)
-  VALUES (1001, 1000000, 'SENSOR_CALIBRATION', '1001', 1559433600000, '0.0;0.0;0.0;0.0;1.0;0.0', 'PolynomialSensorCalibration');
+  VALUES (1001, 1000000, 'SENSOR_CALIBRATION', '1001', 1559433600000, '{"x⁵":"0.0","x⁴":"0.0","x³":"0.0","x²":"0.0","x":"1.0","Intercept":"0.0"}', 'PolynomialSensorCalibration');
