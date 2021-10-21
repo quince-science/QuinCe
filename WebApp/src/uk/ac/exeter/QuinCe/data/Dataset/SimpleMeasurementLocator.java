@@ -17,14 +17,8 @@ public class SimpleMeasurementLocator extends MeasurementLocator {
 
   private final Variable variable;
 
-  private Map<Long, String> runTypeMap;
-
   public SimpleMeasurementLocator(Variable variable) {
     this.variable = variable;
-
-    // Set up the Run Type map we'll use for all measurements
-    this.runTypeMap = new HashMap<Long, String>();
-    this.runTypeMap.put(variable.getId(), Measurement.MEASUREMENT_RUN_TYPE);
   }
 
   @Override
@@ -70,8 +64,8 @@ public class SimpleMeasurementLocator extends MeasurementLocator {
           seenTimes.add(v.getTime());
 
           // Make the measurement
-          measurements
-            .add(new Measurement(dataset.getId(), v.getTime(), runTypeMap));
+          measurements.add(
+            new Measurement(dataset.getId(), v.getTime(), makeRunTypeMap()));
         });
 
       return measurements;
@@ -79,6 +73,13 @@ public class SimpleMeasurementLocator extends MeasurementLocator {
     } catch (Exception e) {
       throw new MeasurementLocatorException(e);
     }
+  }
+
+  private Map<Long, String> makeRunTypeMap() {
+    // Set up the Run Type map we'll use for all measurements
+    Map<Long, String> runTypeMap = new HashMap<Long, String>();
+    runTypeMap.put(variable.getId(), Measurement.MEASUREMENT_RUN_TYPE);
+    return runTypeMap;
   }
 
   @Override
