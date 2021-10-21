@@ -159,11 +159,17 @@ public class DatasetMeasurements {
     int searchPos = startPos;
     while (sameRunType) {
       searchPos--;
-      if (searchPos < 0 || !getTimeOrderedMeasurements().get(searchPos)
-        .getRunType(variableId).equals(start.getRunType(variableId))) {
+      if (searchPos < 0) {
         sameRunType = false;
       } else {
-        result.add(getTimeOrderedMeasurements().get(searchPos));
+        String searchRunType = getTimeOrderedMeasurements().get(searchPos)
+          .getRunType(variableId);
+        if (searchPos < 0 || null == searchRunType
+          || !searchRunType.equals(start.getRunType(variableId))) {
+          sameRunType = false;
+        } else {
+          result.add(getTimeOrderedMeasurements().get(searchPos));
+        }
       }
     }
 
@@ -173,12 +179,18 @@ public class DatasetMeasurements {
     searchPos = startPos;
     while (sameRunType) {
       searchPos++;
-      if (searchPos >= getTimeOrderedMeasurements().size()
-        || !getTimeOrderedMeasurements().get(searchPos).getRunType(variableId)
-          .equals(start.getRunType(variableId))) {
+      if (searchPos >= getTimeOrderedMeasurements().size()) {
         sameRunType = false;
       } else {
-        result.add(getTimeOrderedMeasurements().get(searchPos));
+        String searchRunType = getTimeOrderedMeasurements().get(searchPos)
+          .getRunType(variableId);
+        if (searchPos >= getTimeOrderedMeasurements().size()
+          || null == searchRunType
+          || !searchRunType.equals(start.getRunType(variableId))) {
+          sameRunType = false;
+        } else {
+          result.add(getTimeOrderedMeasurements().get(searchPos));
+        }
       }
     }
 
