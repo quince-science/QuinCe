@@ -111,8 +111,7 @@ public class ExternalStandard extends Calibration {
 
   @Override
   public boolean coefficientsValid() {
-    return !getCoefficients().stream().filter(c -> c.getDoubleValue() < 0D)
-      .findAny().isPresent();
+    return true;
   }
 
   @Override
