@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -203,8 +204,9 @@ public class DefaultMeasurementValueCalculator
           // sensors will measure the same regardless of which standard we're
           // using.
           if (filteredOffsets.size() == 0) {
-            throw new MeasurementValueCalculatorException(
-              "No internal calibration records found");
+            // If we get no standards, keep the original (uncalibrated) value
+            // but flag it Bad.
+            value.overrideQC(Flag.BAD, "No calibration records available");
           } else if (filteredOffsets.size() == 1) {
             Double offset = filteredOffsets.values().iterator().next();
             value.setCalculatedValue(value.getCalculatedValue() - offset);
