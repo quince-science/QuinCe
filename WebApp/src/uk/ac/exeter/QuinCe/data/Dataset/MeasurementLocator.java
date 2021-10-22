@@ -49,6 +49,10 @@ public abstract class MeasurementLocator {
         result = new ASVCO2MeasurementLocator();
         break;
       }
+      case "Water Vapour Mixing Ratio": {
+        result = new WaterVapourMixingRatioMeasurementLocator();
+        break;
+      }
       case "Pro Oceanus CO₂ Atmosphere":
       case "ASVCO₂ Atmosphere": {
         // The atmospheric measurements are automatically created by the water
