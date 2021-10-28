@@ -67,4 +67,7 @@ DataPreparation/MapCO2/*csv
 # PyCharm files
 **/.idea
 
+# Jupyter Notebooks
+**/.ipynb_checkpoints
+
 DataPreparation/HaraldSodemann/netCDFConverter/config.yaml
