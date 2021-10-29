@@ -1,5 +1,5 @@
 '''
-Carbon Portal module 
+Carbon Portal module
 Metadata package construction
 
 Maren K. Karlsen 2020.10.29
@@ -49,7 +49,11 @@ def build_metadata_package(file,manifest,index,hashsum,
       'creationDate': creation_date,
       'comment': ''.join(
         [manifest['manifest']['metadata']['quince_information']])})
-    # meta['specificInfo']['production']['sources'] = L0_hashsums
+
+    # We only link L2 datasets to the raw files. L1 don't get linked
+    # because they get updated so frequently
+    if 'L2' in level:
+      meta['specificInfo']['production']['sources'] = L0_hashsums
     if is_next_version is not None:
       meta['isNextVersionOf'] = is_next_version
 
@@ -58,7 +62,7 @@ def build_metadata_package(file,manifest,index,hashsum,
       'start':manifest['manifest']['raw'][index]['startDate'],
       'stop': manifest['manifest']['raw'][index]['endDate']})
     meta['fileName'] = os.path.split(file)[-1]
-  
+
   meta_JSON = json.dumps(meta) # converting from dictionary to json-object
   logging.debug(f'metadata-package: {type(meta_JSON)}\n \
     {json.dumps(json.loads(meta_JSON), indent = 4)}')
