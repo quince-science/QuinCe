@@ -243,6 +243,11 @@
       <to-view-id>/dataset/export.xhtml</to-view-id>
       <redirect/>
     </navigation-case>
+    <navigation-case>
+      <from-outcome>sensor_offsets</from-outcome>
+      <to-view-id>/dataset/sensor_offsets.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
   </navigation-rule>
   <component>
     <component-type>org.primefaces.component.SelectOneMenu</component-type>
