@@ -9,11 +9,17 @@
   <ui:define name="localHead">
     <c:set var="mainMenuActiveIndex" value="0" scope="request" />
     <script>
-      function goToCalibrationData(id) {
-        $('#datasetListForm\\:calibrationDatasetId').val(id);
-        $('#datasetListForm\\:reviewCalibrationDataLink').click();
-        return false;
-      }
+    function goToCalibrationData(id) {
+      $('#datasetListForm\\:calibrationDatasetId').val(id);
+      $('#datasetListForm\\:reviewCalibrationDataLink').click();
+      return false;
+    }
+
+    function goToSensorOffsets(id) {
+      $('#datasetListForm\\:sensorOffsetsDatasetId').val(id);
+      $('#datasetListForm\\:sensorOffsetsLink').click();
+      return false;
+    }
 
       function goToQc(id) {
         window['keepAliveActive'] = false;
@@ -130,6 +136,11 @@
           <p:commandButton widgetVar="newDataset" value="Create New Data Set" ajax="false"
             action="#{dataSetsBean.startNewDataset}" />
         </h:panelGrid>
+        <h:inputHidden id="sensorOffsetsDatasetId"
+          value="#{sensorOffsetsBean.datasetId}" />
+        <p:commandLink id="sensorOffsetsLink" ajax="false"
+          action="#{sensorOffsetsBean.start}" />
+
         <h:inputHidden id="calibrationDatasetId"
           value="#{internalCalibrationBean.datasetId}" />
         <p:commandLink id="reviewCalibrationDataLink" ajax="false"
@@ -204,6 +215,13 @@
                     styleClass="actionIcon" alt="Recalculate"
                     title="Recalculate" />
                 </p:commandLink>
+                <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasSensorGroups()}">
+                  <p:commandLink onclick="goToSensorOffsets(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/offsets.svg"
+                      styleClass="actionIcon" alt="Sensor Offsets"
+                      title="Sensor Offsets" />
+                  </p:commandLink>
+                </ui:fragment>
                 <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
                   <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
                     <h:graphicImage value="/resources/image/calibration.svg"
@@ -222,6 +240,11 @@
                 <h:graphicImage value="/resources/image/calculate_disabled.svg"
                   styleClass="actionIcon" alt="Data Reduction"
                   title="Data Reduction" />
+                <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasSensorGroups()}">
+                  <h:graphicImage
+                    value="/resources/image/offsets_disabled.svg"
+                    styleClass="actionIcon" alt="Sensor Offsets" title="Sensor Offsets" />
+                </ui:fragment>
                 <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
                   <h:graphicImage
                     value="/resources/image/calibration_disabled.svg"
