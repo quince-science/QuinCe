@@ -154,7 +154,8 @@ public class ExtractDataSetJob extends DataSetJob {
 
               realEndTime = time;
 
-              if (!dataSet.fixedPosition()) {
+              if (!dataSet.fixedPosition() && fileDefinition.hasPosition()) {
+
                 String longitude = file.getLongitude(line);
 
                 sensorValues.add(new SensorValue(dataSet.getId(),

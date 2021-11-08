@@ -1078,4 +1078,22 @@ public class FileDefinition implements Comparable<FileDefinition> {
   public String toString() {
     return fileDescription;
   }
+
+  /**
+   * Determines whether or not this file definition contains position columns.
+   * 
+   * @return {@code true} if a valid position specification is present;
+   *         {@code false} otherwise.
+   */
+  public boolean hasPosition() {
+    boolean result = true;
+
+    if (null == getLongitudeSpecification()) {
+      result = false;
+    } else if (getLongitudeSpecification().getFormat() < 0) {
+      result = false;
+    }
+
+    return result;
+  }
 }
