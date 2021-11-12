@@ -1,0 +1,58 @@
+.pageContent {
+  position: absolute;
+  top: 35px;
+  width: 100%;
+  height: calc(100% - 73px); /* Also change in sensorOffsets.js */
+  overflow: hidden;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#timeSeries {
+  height: 100%;
+  width: 100%;
+  overflow: hidden !important;
+}
+
+#offsetsPlot {
+  background-color: #55f;
+}
+
+#offsetsTable {
+  background-color: #fa2;
+}
+
+#offsetEditor {
+  background-color: #9ed;
+}
+
+.plotPageHeader {
+  height: 30px;
+  color: #2779AA;
+}
+
+.finishButton {
+  position: absolute;
+  right: 5px;
+  top: -15px;
+}
+
+.legend {
+  margin-left: 30px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.first {
+  color: #018000;
+  display: inline-block;
+}
+
+.second {
+  color: #000080;
+  display: inline-block;
+}

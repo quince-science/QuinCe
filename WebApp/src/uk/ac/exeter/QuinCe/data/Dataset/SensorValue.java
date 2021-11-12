@@ -5,6 +5,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -736,5 +740,15 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
 
     return result;
+  }
+
+  public static String getDateValueJson(List<SensorValue> sensorValues) {
+    Map<Long, Double> valuesMap = new TreeMap<Long, Double>();
+
+    sensorValues.forEach(v -> {
+      valuesMap.put(DateTimeUtils.dateToLong(v.time), v.getDoubleValue());
+    });
+
+    return new Gson().toJson(valuesMap);
   }
 }

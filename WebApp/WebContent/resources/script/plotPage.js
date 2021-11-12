@@ -297,7 +297,7 @@ function dataLoaded() {
     initPlot(2);
 
     if (typeof dataLoadedLocal === "function") {
-    dataLoadedLocal();
+      dataLoadedLocal();
     }
   }
 }
