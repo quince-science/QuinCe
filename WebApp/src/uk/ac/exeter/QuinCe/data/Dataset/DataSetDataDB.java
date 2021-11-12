@@ -920,8 +920,7 @@ public class DataSetDataDB {
   }
 
   /**
-   * Get all the sensor values for the given columns that occur between the
-   * specified dates (inclusive).
+   * Get all the sensor values for the given columns.
    *
    * @param conn
    *          A database connection

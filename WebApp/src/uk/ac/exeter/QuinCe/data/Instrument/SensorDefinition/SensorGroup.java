@@ -217,9 +217,6 @@ public class SensorGroup {
    */
   protected void setPrevGroup(SensorGroup group) {
     this.prevGroup = group;
-    if (null == prevGroup) {
-      prevGroupLink = null;
-    }
   }
 
   /**
@@ -230,9 +227,6 @@ public class SensorGroup {
    */
   protected void setNextGroup(SensorGroup group) {
     this.nextGroup = group;
-    if (null == nextGroup) {
-      nextGroupLink = null;
-    }
   }
 
   /**
@@ -439,5 +433,10 @@ public class SensorGroup {
     } else if (!name.equals(other.name))
       return false;
     return true;
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 }

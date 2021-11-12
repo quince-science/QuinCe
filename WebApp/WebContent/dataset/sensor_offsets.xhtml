@@ -21,12 +21,105 @@
 </h:head>
 
 <h:body class="fullPage">
+  <ui:include src="/WEB-INF/templates/keep_alive.xhtml" />
+  <!--  The main stylesheet goes here because it can then override PrimeFaces styles -->
+  <h:outputStylesheet name="style/main.css" />
+  <h:outputStylesheet name="style/plotPage.css" />
+  <h:outputStylesheet name="style/sensorOffsets.css" />
 
-        <h:form id="finishButtonForm" method="post" styleClass="inline">
-         <p:commandButton widgetVar="finishButton" value="Finish" ajax="false"
-           process="@none" action="#{sensorOffsetsBean.finish}" styleClass="inlineButton" />
-        </h:form>
+  <p:dialog header="Please wait" widgetVar="pleaseWait" modal="true"
+    resizable="false" closable="false">
+    <h:form id="pleaseWaitForm">
+      Preparing data. This can take quite a while, so please be patient...
+      <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+        <p:commandButton widgetVar="finishButton" value="Abort" ajax="false"
+          immediate="true" process="@none" action="#{sensorOffsetsBean.finish}"
+          styleClass="inlineButton" />
+      </h:panelGrid>
+    </h:form>
+  </p:dialog>
 
+  <h:form id="mainForm" method="post">
+    <p:remoteCommand name="loadData"
+      action="#{sensorOffsetsBean.loadData}"
+      process="@this" update="firstName secondName timeSeriesForm:plotData"
+      oncomplete="dataPrepared()" />
+      
+    <p:remoteCommand name="changeGroup"
+      action="#{sensorOffsetsBean.preparePageData}"
+      process="currentPair" update="firstName secondName timeSeriesForm:plotData"
+      oncomplete="dataPrepared()" />
+
+    <p:toolbar styleClass="plotPageHeader">
+      <f:facet name="left">
+        #{sensorOffsetsBean.dataset.name} - Setting offsets for
+        
+        <p:selectOneMenu value="#{sensorOffsetsBean.currentPair}"
+          id="currentPair" onchange="newGroupSelected()">
+          <f:selectItems
+            value="#{sensorOffsetsBean.instrument.sensorGroups.groupPairs}"
+            var="pair" itemValue="#{pair.id}"
+            itemLabel="#{pair.toString()}" />
+        </p:selectOneMenu>
+        
+        <div class="legend">
+          Legend:
+          <div class="first">
+            <h:outputText id="firstName" value="#{sensorOffsetsBean.firstName}"/>
+          </div>
+          <div class="second">
+            <h:outputText id="secondName" value="#{sensorOffsetsBean.secondName}"/>
+          </div>
+        </div>
+      </f:facet>
+    </p:toolbar>
+  </h:form>
+    
+  <div id="pageContent" class="pageContent">
+    
+    <!-- Time series is the top half -->
+    <div id="timeSeries" class="plotContainer">
+      <h:form id="timeSeriesForm" method="post">
+          <h:inputHidden id="plotData" value="#{sensorOffsetsBean.timeSeriesData}"/>
+        <div id="timeSeriesContainer">
+          <div id="timeSeriesPlot" class="plot"></div>
+          <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
+            <f:facet name="left">
+              <p:commandButton icon="zoomOutButton" onclick="resetZoom('timeSeriesPlot'); return false;"
+                styleClass="inlineButton tightButton plotFooterButton" />
+            </f:facet>
+          </p:toolbar>
+        </div>
+      </h:form>
+    </div>
+    
+    <!-- Bottom half is split further -->
+    <div id="bottomHalf">
+      <div id="bottomLeft">
+        <div id="offsetsPlot">
+          Offsets plot
+        </div>
+      </div>
+      <div id="offsetsTable">
+        Offsets Table
+      </div>
+      <div id="offsetEditor">
+        Offset Editor
+      </div>
+    </div>
+  </div>
+
+  <!-- The Finish button is its own thing -->
+  <h:form id="finishButtonForm" method="post">
+   <p:commandButton widgetVar="finishButton" value="Finish" ajax="false"
+     process="@none" action="#{sensorOffsetsBean.finish}" styleClass="finishButton" />
+  </h:form>
+
+  <script>
+    $(document).ready(function (){
+      initPage();
+    });
+  </script>
 </h:body>
 
 </html>

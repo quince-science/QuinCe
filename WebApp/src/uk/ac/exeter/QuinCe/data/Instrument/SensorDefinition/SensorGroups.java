@@ -1,9 +1,12 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -487,5 +490,54 @@ public class SensorGroups implements Iterable<SensorGroup> {
     });
 
     return new Gson().toJson(json);
+  }
+
+  /**
+   * Get a all the columns used to link groups together.
+   * 
+   * <p>
+   * The set will not be in any particular order.
+   * <p>
+   * 
+   * @return The connecting columns.
+   */
+  public Set<SensorAssignment> getLinkColumns() {
+    HashSet<SensorAssignment> columns = new HashSet<SensorAssignment>();
+
+    stream().forEach(g -> {
+      if (null != g.getPrevLink()) {
+        columns.add(g.getPrevLink());
+      }
+
+      if (null != g.getNextLink()) {
+        columns.add(g.getNextLink());
+      }
+    });
+
+    return columns;
+  }
+
+  /**
+   * Get the groups as a list of paired groups which are joined to each other.
+   * 
+   * @return The list of linked group pairs
+   */
+  public List<SensorGroupPair> getGroupPairs() {
+
+    List<SensorGroupPair> result = new ArrayList<SensorGroupPair>();
+
+    SensorGroup group = firstGroup;
+
+    while (group.hasNext()) {
+      result.add(new SensorGroupPair(group, group.getNextGroup()));
+      group = group.getNextGroup();
+    }
+
+    return result;
+  }
+
+  public SensorGroupPair getGroupPair(int pairId) {
+    return getGroupPairs().stream().filter(p -> p.getId() == pairId).findAny()
+      .get();
   }
 }
