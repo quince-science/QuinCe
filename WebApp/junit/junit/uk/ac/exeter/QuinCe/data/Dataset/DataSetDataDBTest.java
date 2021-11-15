@@ -243,7 +243,7 @@ public class DataSetDataDBTest extends BaseTest {
 
   /**
    * Test that no values are stored if any values are invalid.
-   * 
+   *
    * @throws Exception
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
