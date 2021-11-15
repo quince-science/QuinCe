@@ -12,6 +12,7 @@ import javax.faces.bean.SessionScoped;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorOffset;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -55,6 +56,10 @@ public class SensorOffsetsBean extends BaseManagedBean {
    * </p>
    */
   private int currentPair;
+
+  private long offsetFirst;
+
+  private long offsetSecond;
 
   /**
    * Initialise the bean with basic required information.
@@ -163,8 +168,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
     String result = null;
 
     if (null != sensorValues) {
-      SensorGroupPair pair = instrument.getSensorGroups()
-        .getGroupPair(currentPair);
+      SensorGroupPair pair = getCurrentPairObject();
 
       String firstName = pair.first().getNextLinkName();
       String secondName = pair.second().getPreviousLinkName();
@@ -186,5 +190,29 @@ public class SensorOffsetsBean extends BaseManagedBean {
   public String getSecondName() {
     return instrument.getSensorGroups().getGroupPair(currentPair).second()
       .getPrevLinkName();
+  }
+
+  public List<SensorOffset> getOffsets() {
+    return dataset.getSensorOffsets().getOffsets(getCurrentPairObject());
+  }
+
+  private SensorGroupPair getCurrentPairObject() {
+    return instrument.getSensorGroups().getGroupPair(currentPair);
+  }
+
+  public long getOffsetFirst() {
+    return offsetFirst;
+  }
+
+  public long getOffsetSecond() {
+    return offsetSecond;
+  }
+
+  public void setOffsetFirst(long offsetFirst) {
+    this.offsetFirst = offsetFirst;
+  }
+
+  public void setOffsetSecond(long offsetSecond) {
+    this.offsetSecond = offsetSecond;
   }
 }

@@ -41,13 +41,13 @@
 
   <h:form id="mainForm" method="post">
     <p:remoteCommand name="loadData"
-      action="#{sensorOffsetsBean.loadData}"
-      process="@this" update="firstName secondName timeSeriesForm:plotData"
+      action="#{sensorOffsetsBean.loadData}" process="@this"
+      update="firstName secondName timeSeriesForm:plotData offsetForm:offsets offsetForm:firstName offsetForm:secondName"
       oncomplete="dataPrepared()" />
       
     <p:remoteCommand name="changeGroup"
-      action="#{sensorOffsetsBean.preparePageData}"
-      process="currentPair" update="firstName secondName timeSeriesForm:plotData"
+      action="#{sensorOffsetsBean.preparePageData}" process="currentPair"
+      update="firstName secondName timeSeriesForm:plotData offsetForm:offsets offsetForm:firstName offsetForm:secondName"
       oncomplete="dataPrepared()" />
 
     <p:toolbar styleClass="plotPageHeader">
@@ -88,6 +88,10 @@
               <p:commandButton icon="zoomOutButton" onclick="resetZoom('timeSeriesPlot'); return false;"
                 styleClass="inlineButton tightButton plotFooterButton" />
             </f:facet>
+            <f:facet name="right">
+              <p:commandButton value="Add Offset..." onclick="startAddOffset(); return false;"
+                styleClass="inlineButton tightButton plotFooterButton"/>
+            </f:facet>
           </p:toolbar>
         </div>
       </h:form>
@@ -100,11 +104,75 @@
           Offsets plot
         </div>
       </div>
-      <div id="offsetsTable">
-        Offsets Table
-      </div>
-      <div id="offsetEditor">
-        Offset Editor
+      <div id="bottomRight">
+        <h:form id="offsetForm" method="post">
+          <h:inputHidden id="firstTime" value="#{sensorOffsetsBean.offsetFirst}"/>
+          <h:inputHidden id="secondTime" value="#{sensorOffsetsBean.offsetSecond}"/>
+          <div id="offsetsTable">
+            <p:dataTable id="offsets" var="offset" values="#{sensorOffsetsBean.offsets}">
+              <p:column>
+                <f:facet name="header">
+                  Time
+                </f:facet>
+                <h:outputText value="#{offset.time}"/>
+              </p:column>
+              <p:column>
+                <f:facet name="header">
+                  Offset
+                </f:facet>
+                <h:outputText value="#{offset.offset}"/>
+              </p:column>
+            </p:dataTable>
+          </div>
+          <div id="offsetFormContainer">
+            <table>
+              <tr>
+                <td class="first">
+                  <h:outputText id="firstName" value="#{sensorOffsetsBean.firstName}"/>
+                </td>
+                <td>
+                  <p:commandButton id="firstLeft" value="◀" onclick=""
+                    styleClass="inlineButton tightButton plotFooterButton"/>
+                </td>
+                <td>
+                  <h:outputText id="firstTimeText"></h:outputText>
+                </td>
+                <td>
+                  <p:commandButton id="firstRight" value="▶" onclick=""
+                    styleClass="inlineButton tightButton plotFooterButton"/>
+                </td>
+                <td>
+                  <p:selectBooleanButton id="firstSelect" widgetVar="firstSelect"
+                    onIcon="pipetteButton" offIcon="pipetteButton"
+                    onchange="firstSelectClick()"
+                    styleClass="inlineButton tightButton plotFooterButton"/>
+                </td>
+              </tr>
+              <tr>
+                <td class="second">
+                  <h:outputText id="secondName" value="#{sensorOffsetsBean.secondName}"/>
+                </td>
+                <td>
+                  <p:commandButton id="secondLeft" value="◀" onclick=""
+                    styleClass="inlineButton tightButton plotFooterButton"/>
+                </td>
+                <td>
+                  <h:outputText id="secondTimeText"></h:outputText>
+                </td>
+                <td>
+                  <p:commandButton id="secondRight" value="▶" onclick=""
+                    styleClass="inlineButton tightButton plotFooterButton"/>
+                </td>
+                <td>
+                  <p:selectBooleanButton id="secondSelect" widgetVar="secondSelect"
+                    onIcon="pipetteButton" offIcon="pipetteButton"
+                    onchange="secondSelectClick()"
+                    styleClass="inlineButton tightButton plotFooterButton"/>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </h:form>
       </div>
     </div>
   </div>
