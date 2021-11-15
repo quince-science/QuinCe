@@ -19,15 +19,12 @@
 }
 
 #offsetsPlot {
-  background-color: #55f;
+  background-color: #aaf;
 }
 
-#offsetsTable {
-  background-color: #fa2;
-}
-
-#offsetEditor {
-  background-color: #9ed;
+#offsetFormContainer {
+  display: none;
+  font-weight: bold;
 }
 
 .plotPageHeader {
@@ -55,4 +52,15 @@
 .second {
   color: #000080;
   display: inline-block;
+}
+
+.pipetteButton {
+  background-image: url("#{resource['image/pipette_button.svg']}") !important;
+  background-size: cover;
+  margin-left: -13px !important;
+  margin-top: -13px !important;
+  width: 25px !important;
+  height: 25px !important;
+  margin-left: -13px !important;
+  margin-top: -13px !important;
 }

@@ -1,3 +1,6 @@
+var UPDATING_UI = false;
+var SELECT_STATE = -1;
+
 // Timer used to prevent event spamming during page resizes
 var resizeEventTimer = null;
 
@@ -18,7 +21,8 @@ var TIMESERIES_PLOT_OPTIONS = {
   xRangePad: 10,
   yRangePad: 10,
   xlabel: 'Date/Time',
-  interactionModel: intModel
+  interactionModel: intModel,
+  clickCallback: timeSeriesClick
 }
 
 function initPage() {
@@ -60,11 +64,23 @@ function layoutPage() {
 function resizeAllContent() {
   console.log('resizeAllContent');
   resizeTimeSeriesPlot();
-  resizeBottomHalf();
+  resizeOffsetPlot();
+  resizeBottomRight();
 }
 
 function resizeBottomHalf() {
   console.log('resizeBottomHalf');
+}
+
+function resizeBottomRight() {
+  $('#offsetsTable').width('100%');
+  $('#offsetsTable').height('100%');
+  $('#offsetFormContainer').width('100%');
+  $('#offsetFormContainer').height('100%');
+}
+
+function resizeOffsetPlot() {
+  console.log('resizeOffsetPlot');
 }
 
 // Draws the initial page data once loading is complete.
@@ -104,4 +120,73 @@ function resetZoom(plotName) {
   });
 
   window[plotName].resetZoom();
+}
+
+function startAddOffset() {
+  $('#offsetForm\\:firstTime').val('');
+  $('#offsetForm\\:secondTime').val('');
+  updateOffsetTimeText();
+  $('#offsetsTable').hide();
+  $('#offsetFormContainer').show();
+}
+
+function updateOffsetTimeText() {
+  if ($('#offsetForm\\:firstTime').val() == '') {
+    $('#offsetForm\\:firstTimeText')[0].innerHTML = '&lt;Not selected&gt;';
+  } else {
+	$('#offsetForm\\:firstTimeText')[0].innerHTML = new Date(parseInt($('#offsetForm\\:firstTime').val())).toISOString();
+  }
+
+  if ($('#offsetForm\\:secondTime').val() == '') {
+    $('#offsetForm\\:secondTimeText')[0].innerHTML = '&lt;Not selected&gt;';
+  } else {
+	$('#offsetForm\\:secondTimeText')[0].innerHTML = new Date(parseInt($('#offsetForm\\:secondTime').val())).toISOString();
+  }
+}
+
+function timeSeriesClick(e, x, points) {
+  if (SELECT_STATE >= 0) {
+    let selectedMillis = points[SELECT_STATE].xval;	
+
+    if (SELECT_STATE == 0) {
+	  $('#offsetForm\\:firstTime').val(selectedMillis);
+    } else if (SELECT_STATE == 1) {
+	  $('#offsetForm\\:secondTime').val(selectedMillis);
+    }
+
+    UPDATING_UI = true;
+    PF('firstSelect').uncheck();
+    PF('secondSelect').uncheck();
+    UPDATING_UI = false;
+
+    updateOffsetTimeText();
+  }
+}
+
+function firstSelectClick() {
+  if (!UPDATING_UI) {
+    UPDATING_UI = true;	
+    PF('secondSelect').uncheck();
+    UPDATING_UI = false;
+  }
+
+  if (PF('firstSelect').input[0].checked) {
+    SELECT_STATE = 0;	
+  } else {
+    SELECT_STATE = -1;	
+  }
+}
+
+function secondSelectClick() {
+  if (!UPDATING_UI) {
+    UPDATING_UI = true;	
+    PF('firstSelect').uncheck();
+    UPDATING_UI = false;
+  }
+
+  if (PF('secondSelect').input[0].checked) {
+    SELECT_STATE = 1;	
+  } else {
+    SELECT_STATE = -1;	
+  }
 }

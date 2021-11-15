@@ -270,6 +270,11 @@ public class DataSet implements Comparable<DataSet> {
    */
   private double maxLat = 0.0;
 
+  /**
+   * The sensor offsets defined for the dataset.
+   */
+  private SensorOffsets sensorOffsets;
+
   static {
     validStatuses = new HashMap<Integer, String>();
     validStatuses.put(STATUS_DELETE, STATUS_DELETE_NAME);
@@ -822,6 +827,10 @@ public class DataSet implements Comparable<DataSet> {
    */
   public boolean fixedPosition() {
     return null != getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "longitude");
+  }
+
+  public SensorOffsets getSensorOffsets() {
+    return sensorOffsets;
   }
 
   @Override
