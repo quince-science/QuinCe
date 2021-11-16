@@ -26,7 +26,7 @@ public class SensorGroupPair {
 
   /**
    * Get a unique identifier for this group pair
-   * 
+   *
    * @return
    */
   public int getId() {

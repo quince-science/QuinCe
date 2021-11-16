@@ -898,13 +898,13 @@ public class Instrument {
 
   /**
    * Determine whether or not this instrument has multiple sensor groups.
-   * 
+   *
    * <p>
    * If there is only one sensor group, or the instrument has no
    * {@link SensorGroups} definition, this method will return {@code false}. If
    * there is more than one sensor group then this method returns {@code true}.
    * </p>
-   * 
+   *
    * @return {@code true} if there are sensor groups; {@code false} otherwise.
    */
   public boolean hasSensorGroups() {
