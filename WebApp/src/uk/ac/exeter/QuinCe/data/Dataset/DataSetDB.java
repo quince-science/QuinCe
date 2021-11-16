@@ -25,6 +25,7 @@ import com.google.gson.reflect.TypeToken;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -783,10 +784,11 @@ public class DataSetDB {
    *           If the dataset doesn't exist
    * @throws InstrumentException
    *           If the instrument details cannot be retrieved
+   * @throws SensorGroupsException
    */
   public static JSONObject getMetadataJson(DataSource dataSource,
     DataSet dataset) throws DatabaseException, MissingParamException,
-    RecordNotFoundException, InstrumentException {
+    RecordNotFoundException, InstrumentException, SensorGroupsException {
 
     JSONObject result = null;
     Connection conn = null;
@@ -819,10 +821,11 @@ public class DataSetDB {
    *           If the dataset doesn't exist
    * @throws InstrumentException
    *           If the instrument details cannot be retrieved
+   * @throws SensorGroupsException
    */
   public static JSONObject getMetadataJson(Connection conn, DataSet dataset)
     throws DatabaseException, MissingParamException, RecordNotFoundException,
-    InstrumentException {
+    InstrumentException, SensorGroupsException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(dataset, "dataset");
@@ -1000,7 +1003,7 @@ public class DataSetDB {
 
   public static List<NrtStatus> getNrtStatus(DataSource dataSource)
     throws DatabaseException, MissingParamException, RecordNotFoundException,
-    InstrumentException {
+    InstrumentException, SensorGroupsException {
 
     List<NrtStatus> result = new ArrayList<NrtStatus>();
 

@@ -10,6 +10,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
@@ -19,6 +25,9 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroups;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsSerializer;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
@@ -33,6 +42,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  */
 public class Instrument {
+
+  private static final String SENSOR_GROUPS_JSON_NAME = "sensorGroups";
 
   /**
    * Property name for the pre-flushing time
@@ -100,6 +111,11 @@ public class Instrument {
   private SensorAssignments sensorAssignments = null;
 
   /**
+   * The sensor groups.
+   */
+  private SensorGroups sensorGroups = null;
+
+  /**
    * Platform code
    */
   private String platformCode = null;
@@ -135,12 +151,13 @@ public class Instrument {
    *          time.
    * @param properties
    *          The instrument's properties.
+   * @throws SensorGroupsException
    */
   public Instrument(User owner, long databaseId, String name,
     InstrumentFileSet fileDefinitions, List<Variable> variables,
     Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformCode, boolean nrt,
-    Properties properties) {
+    String propertiesJson) throws SensorGroupsException {
 
     this.owner = owner;
     this.id = databaseId;
@@ -151,7 +168,7 @@ public class Instrument {
     this.sensorAssignments = sensorAssignments;
     this.setPlatformCode(platformCode);
     this.nrt = nrt;
-    this.properties = properties;
+    parsePropertiesJson(propertiesJson);
   }
 
   /**
@@ -174,11 +191,12 @@ public class Instrument {
    *          time.
    * @param properties
    *          The instrument's properties.
+   * @throws SensorGroupsException
    */
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
     List<Variable> variables, Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformCode, boolean nrt,
-    Properties properties) {
+    String propertiesJson) throws SensorGroupsException {
 
     this.owner = owner;
     this.name = name;
@@ -188,7 +206,7 @@ public class Instrument {
     this.sensorAssignments = sensorAssignments;
     this.platformCode = platformCode;
     this.nrt = nrt;
-    this.properties = properties;
+    parsePropertiesJson(propertiesJson);
   }
 
   /**
@@ -212,7 +230,8 @@ public class Instrument {
    */
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
     List<Variable> variables, Map<Variable, Properties> variableProperties,
-    SensorAssignments sensorAssignments, String platformCode, boolean nrt) {
+    SensorAssignments sensorAssignments, SensorGroups sensorGroups,
+    String platformCode, boolean nrt) {
 
     this.owner = owner;
     this.name = name;
@@ -220,13 +239,15 @@ public class Instrument {
     this.variables = variables;
     this.variableProperties = variableProperties;
     this.sensorAssignments = sensorAssignments;
+    this.sensorGroups = sensorGroups;
     this.platformCode = platformCode;
     this.nrt = nrt;
     this.properties = new Properties();
   }
 
   /**
-   * Validate that all required information for the Instrument is present
+   * Validate that all required information for the Instrument is present and
+   * consistent
    *
    * @param checkDatabaseColumns
    *          Specifies whether or not database columns have been assigned and
@@ -237,6 +258,7 @@ public class Instrument {
   public void validate(boolean checkDatabaseColumns)
     throws InstrumentException {
     // TODO Write it!
+    // Compare sensor groups with sensor assignments
   }
 
   /**
@@ -808,5 +830,69 @@ public class Instrument {
     }
 
     return result;
+  }
+
+  public SensorGroups getSensorGroups() {
+    return sensorGroups;
+  }
+
+  /**
+   * Get the JSON string to be stored as the instrument's properties.
+   *
+   * <p>
+   * The JSON represents both {@link #properties} and {@link #sensorGroups}.
+   * They are stored in the database as a single entity.
+   * </p>
+   *
+   * @return The properties JSON.
+   */
+  public String getPropertiesJson() {
+
+    Gson gson = new GsonBuilder()
+      .registerTypeAdapter(SensorGroups.class, new SensorGroupsSerializer())
+      .create();
+
+    // Get the basic properties Json
+    JsonObject result = gson.toJsonTree(properties, Properties.class)
+      .getAsJsonObject();
+
+    // Add the Sensor Groups
+    result.add(SENSOR_GROUPS_JSON_NAME, gson.toJsonTree(sensorGroups));
+
+    return result.toString();
+  }
+
+  /**
+   * Parse a Json string from the {@code properties} field in the database and
+   * add its contents to this object.
+   *
+   * @param jsonString
+   *          The JSON string.
+   * @throws SensorGroupsException
+   *           If the Sensor Groups portion of the string is invalid.
+   */
+  private void parsePropertiesJson(String jsonString)
+    throws SensorGroupsException {
+
+    if (null == jsonString || jsonString.trim().length() == 0) {
+      properties = new Properties();
+      sensorGroups = new SensorGroups(sensorAssignments);
+    } else {
+      JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
+
+      // First extract the SensorGroups element and parse it
+      if (json.has(SENSOR_GROUPS_JSON_NAME)) {
+        JsonElement sensorGroupsElement = json.get(SENSOR_GROUPS_JSON_NAME);
+        sensorGroups = new SensorGroups(sensorGroupsElement, sensorAssignments);
+
+        // Remove the SensorGroups elements and parse the remainder into
+        // Properties
+        json.remove(SENSOR_GROUPS_JSON_NAME);
+      } else {
+        sensorGroups = new SensorGroups(sensorAssignments);
+      }
+
+      properties = new Gson().fromJson(json, Properties.class);
+    }
   }
 }

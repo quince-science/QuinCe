@@ -80,7 +80,7 @@ dependencies {
   implementation 'org.flywaydb:flyway-core:7.15.0'
 
   // Google GSON library
-  implementation 'com.google.code.gson:gson:2.8.5'
+  implementation 'com.google.code.gson:gson:2.8.8'
 
   // JAX-B dependencies for JDK 9+
   implementation 'javax.xml.bind:jaxb-api:2.3.1'

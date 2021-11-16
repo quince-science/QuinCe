@@ -32,6 +32,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -386,7 +387,7 @@ public class InstrumentDB {
     stmt.setString(2, instrument.getName()); // name
     stmt.setString(3, instrument.getPlatformCode()); // platform_code
     stmt.setBoolean(4, instrument.getNrt()); // nrt
-    stmt.setString(5, new Gson().toJson(instrument.getProperties())); // attributes
+    stmt.setString(5, instrument.getPropertiesJson()); // attributes
 
     return stmt;
   }
@@ -460,10 +461,12 @@ public class InstrumentDB {
    * @throws InstrumentException
    * @throws RecordNotFoundException
    * @throws VariableNotFoundException
+   * @throws SensorGroupsException
    */
   public static List<Instrument> getInstrumentList(DataSource dataSource,
-    User owner) throws MissingParamException, DatabaseException,
-    VariableNotFoundException, RecordNotFoundException, InstrumentException {
+    User owner)
+    throws MissingParamException, DatabaseException, VariableNotFoundException,
+    RecordNotFoundException, InstrumentException, SensorGroupsException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(owner, "owner");
@@ -505,10 +508,12 @@ public class InstrumentDB {
    * @throws InstrumentException
    * @throws RecordNotFoundException
    * @throws VariableNotFoundException
+   * @throws SensorGroupsException
    */
   public static List<Instrument> getInstrumentList(Connection conn,
-    long ownerId) throws MissingParamException, DatabaseException,
-    VariableNotFoundException, RecordNotFoundException, InstrumentException {
+    long ownerId)
+    throws MissingParamException, DatabaseException, VariableNotFoundException,
+    RecordNotFoundException, InstrumentException, SensorGroupsException {
 
     MissingParam.checkMissing(conn, "conn");
 
@@ -583,8 +588,9 @@ public class InstrumentDB {
   private static Instrument createInstrument(Connection conn, long ownerId,
     long id, String name, List<Long> variableIds,
     Map<Long, String> variableProperties, String platformCode, boolean nrt,
-    String propertiesJson) throws MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException, VariableNotFoundException {
+    String propertiesJson)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException, VariableNotFoundException, SensorGroupsException {
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
@@ -612,7 +618,7 @@ public class InstrumentDB {
 
     return new Instrument(UserDB.getUser(conn, ownerId), id, name, files,
       variables, processedVariableProperties, sensorAssignments, platformCode,
-      nrt, new Gson().fromJson(propertiesJson, Properties.class));
+      nrt, propertiesJson);
   }
 
   /**
@@ -632,10 +638,11 @@ public class InstrumentDB {
    * @throws InstrumentException
    * @throws RecordNotFoundException
    * @throws VariableNotFoundException
+   * @throws SensorGroupsException
    */
   private static List<Instrument> getAllUsersInstrumentList(Connection conn)
     throws MissingParamException, DatabaseException, VariableNotFoundException,
-    RecordNotFoundException, InstrumentException {
+    RecordNotFoundException, InstrumentException, SensorGroupsException {
 
     return getInstrumentList(conn, -1);
   }
@@ -685,7 +692,7 @@ public class InstrumentDB {
 
   public static Instrument getInstrument(DataSource dataSource,
     long instrumentId) throws DatabaseException, MissingParamException,
-    RecordNotFoundException, InstrumentException {
+    RecordNotFoundException, InstrumentException, SensorGroupsException {
     try (Connection conn = dataSource.getConnection()) {
       return getInstrument(conn, instrumentId);
     } catch (SQLException e) {
@@ -713,10 +720,11 @@ public class InstrumentDB {
    *           If the specified instrument cannot be found
    * @throws InstrumentException
    *           If any instrument values are invalid
+   * @throws SensorGroupsException
    */
   public static Instrument getInstrument(Connection conn, long instrumentId)
     throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+    InstrumentException, SensorGroupsException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(instrumentId, "instrumentId");
@@ -751,9 +759,6 @@ public class InstrumentDB {
         boolean nrt = instrumentRecord.getBoolean(4);
         String propertiesJson = instrumentRecord.getString(5);
 
-        Properties properties = new Gson().fromJson(propertiesJson,
-          Properties.class);
-
         // Now get the file definitions
         InstrumentFileSet files = getFileDefinitions(conn, instrumentId);
 
@@ -769,7 +774,7 @@ public class InstrumentDB {
 
         instrument = new Instrument(UserDB.getUser(conn, owner), instrumentId,
           name, files, variables, variableProperties, sensorAssignments,
-          platformCode, nrt, properties);
+          platformCode, nrt, propertiesJson);
       }
 
     } catch (SQLException e) {
