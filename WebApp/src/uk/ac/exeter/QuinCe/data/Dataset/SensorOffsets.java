@@ -9,7 +9,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroups;
 
 /**
  * Holds information regarding time offsets between sensor groups.
- * 
+ *
  * @author Steve Jones
  *
  */

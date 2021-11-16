@@ -4,13 +4,13 @@ import java.time.LocalDateTime;
 
 /**
  * A single sensor offset.
- * 
+ *
  * <p>
  * The offset is defined in milliseconds to be applied to the second of the
  * sensor group pairs, i.e. the sensor values in the second group should be
  * moved backwards in time by the specified offset.
  * </p>
- * 
+ *
  * @author Steve Jones
  *
  */
