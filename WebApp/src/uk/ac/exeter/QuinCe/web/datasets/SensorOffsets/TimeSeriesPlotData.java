@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 /**
  * Data structure for building main time series plot data for the Sensor Offsets
  * page.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -91,7 +91,7 @@ public class TimeSeriesPlotData {
 
   /**
    * A simple Tuple of two Double values
-   * 
+   *
    * @author Steve Jones
    *
    */

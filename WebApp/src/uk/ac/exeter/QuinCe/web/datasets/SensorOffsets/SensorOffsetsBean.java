@@ -50,7 +50,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
 
   /**
    * The name of the group whose offsets are being edited.
-   * 
+   *
    * <p>
    * This is the second of the two groups being linked together.
    * </p>
@@ -63,11 +63,11 @@ public class SensorOffsetsBean extends BaseManagedBean {
 
   /**
    * Initialise the bean with basic required information.
-   * 
+   *
    * <p>
    * Full data is loaded when the page is loaded using {@link #loadData()}.
    * </p>
-   * 
+   *
    * @return The navigation to the main bean page.
    */
   public String start() {

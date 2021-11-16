@@ -258,17 +258,17 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   /**
    * Check that this set of sensor groups is complete and ready for use.
-   * 
+   *
    * <p>
    * Ensures that all groups have members and that linking sensors have been
    * defined where needed.
    * </p>
-   * 
+   *
    * <p>
    * Note that this does not check the validity of the data structure (e.g. that
    * group links are valid).
    * </p>
-   * 
+   *
    * @return
    */
   public boolean isComplete() {
@@ -494,11 +494,11 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   /**
    * Get a all the columns used to link groups together.
-   * 
+   *
    * <p>
    * The set will not be in any particular order.
    * <p>
-   * 
+   *
    * @return The connecting columns.
    */
   public Set<SensorAssignment> getLinkColumns() {
@@ -519,7 +519,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   /**
    * Get the groups as a list of paired groups which are joined to each other.
-   * 
+   *
    * @return The list of linked group pairs
    */
   public List<SensorGroupPair> getGroupPairs() {

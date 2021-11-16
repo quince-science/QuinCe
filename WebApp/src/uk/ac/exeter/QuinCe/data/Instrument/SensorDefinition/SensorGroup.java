@@ -266,11 +266,11 @@ public class SensorGroup {
 
   /**
    * Get the name of the sensor used as the link to the next group.
-   * 
+   *
    * <p>
    * Returns {@code null} if there is no next group or no link is defined.
    * </p>
-   * 
+   *
    * @return The name of the link sensor.
    */
   public String getNextLinkName() {
@@ -279,11 +279,11 @@ public class SensorGroup {
 
   /**
    * Get the name of the sensor used as the link to the previous group.
-   * 
+   *
    * <p>
    * Returns {@code null} if there is no previous group or no link is defined.
    * </p>
-   * 
+   *
    * @return The name of the link sensor.
    */
   public String getPrevLinkName() {
@@ -292,7 +292,7 @@ public class SensorGroup {
 
   /**
    * Set the sensor used as the link to the next group using its name.
-   * 
+   *
    * @param sensorName
    *          The sensor name.
    * @throws SensorGroupsException
@@ -306,7 +306,7 @@ public class SensorGroup {
 
   /**
    * Set the sensor used as the link to the previous group using its name.
-   * 
+   *
    * @param sensorName
    *          The sensor name.
    * @throws SensorGroupsException
@@ -320,7 +320,7 @@ public class SensorGroup {
 
   /**
    * Get a {@link SensorAssignment} from the group using its sensor name.
-   * 
+   *
    * @param senosrName
    *          The sensor name.
    * @return The {@link SensorAssignment}.
@@ -348,11 +348,11 @@ public class SensorGroup {
 
   /**
    * Get the name of the sensor used as the link to the previous group.
-   * 
+   *
    * <p>
    * Returns {@code null} if there is no previous group or no link is defined.
    * </p>
-   * 
+   *
    * @return The name of the link sensor.
    */
   public String getPreviousLinkName() {
@@ -380,7 +380,7 @@ public class SensorGroup {
 
   /**
    * Indicates whether or not this group is empty.
-   * 
+   *
    * @return {@code true} if the group has no members.
    */
   public boolean isEmpty() {

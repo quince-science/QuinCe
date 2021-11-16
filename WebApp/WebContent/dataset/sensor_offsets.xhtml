@@ -44,7 +44,7 @@
       action="#{sensorOffsetsBean.loadData}" process="@this"
       update="firstName secondName timeSeriesForm:plotData offsetForm:offsets offsetForm:firstName offsetForm:secondName"
       oncomplete="dataPrepared()" />
-      
+
     <p:remoteCommand name="changeGroup"
       action="#{sensorOffsetsBean.preparePageData}" process="currentPair"
       update="firstName secondName timeSeriesForm:plotData offsetForm:offsets offsetForm:firstName offsetForm:secondName"
@@ -53,7 +53,7 @@
     <p:toolbar styleClass="plotPageHeader">
       <f:facet name="left">
         #{sensorOffsetsBean.dataset.name} - Setting offsets for
-        
+
         <p:selectOneMenu value="#{sensorOffsetsBean.currentPair}"
           id="currentPair" onchange="newGroupSelected()">
           <f:selectItems
@@ -61,7 +61,7 @@
             var="pair" itemValue="#{pair.id}"
             itemLabel="#{pair.toString()}" />
         </p:selectOneMenu>
-        
+
         <div class="legend">
           Legend:
           <div class="first">
@@ -74,9 +74,9 @@
       </f:facet>
     </p:toolbar>
   </h:form>
-    
+
   <div id="pageContent" class="pageContent">
-    
+
     <!-- Time series is the top half -->
     <div id="timeSeries" class="plotContainer">
       <h:form id="timeSeriesForm" method="post">
@@ -96,7 +96,7 @@
         </div>
       </h:form>
     </div>
-    
+
     <!-- Bottom half is split further -->
     <div id="bottomHalf">
       <div id="bottomLeft">

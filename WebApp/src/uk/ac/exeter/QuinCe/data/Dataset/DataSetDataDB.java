@@ -33,10 +33,10 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-==== BASE ====
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
-==== BASE ====
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -45,6 +45,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class for handling database queries related to dataset data
@@ -308,11 +309,12 @@ public class DataSetDataDB {
    *           If the instrument details cannot be retrieved.
    * @throws InvalidSensorValueException
    *           If any sensor value contains invalid dataset/column IDs.
+   * @throws SensorGroupsException
    */
   public static void storeSensorValues(Connection conn,
-    Collection<SensorValue> sensorValues)
-    throws MissingParamException, DatabaseException,
-    InvalidSensorValueException, RecordNotFoundException, InstrumentException {
+    Collection<SensorValue> sensorValues) throws MissingParamException,
+    DatabaseException, InvalidSensorValueException, RecordNotFoundException,
+    InstrumentException, SensorGroupsException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(sensorValues, "sensorValues", true);
@@ -393,8 +395,6 @@ public class DataSetDataDB {
       updateStmt.executeBatch();
     } catch (SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
-    } finally {
-      DatabaseUtils.closeStatements(addStmt, updateStmt);
     }
 
     // Clear the dirty flag on all the sensor values

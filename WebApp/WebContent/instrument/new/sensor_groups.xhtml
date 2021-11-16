@@ -19,7 +19,7 @@
         value="#{newInstrumentBean.groupLinksJson}"/>
       <h:inputHidden id="groupsComplete"
         value="#{newInstrumentBean.groupsComplete}"/>
-        
+
       <h:inputHidden id="groupLinkGroup"
         value="#{newInstrumentBean.groupLinkGroup}"/>
       <h:inputHidden id="groupLinkSensor"
@@ -132,7 +132,7 @@
         </div>
         <ui:repeat value="#{newInstrumentBean.sensorGroups.asList()}" id="group"
           var="group" varStatus="groupStatus">
-          
+
           <div class="sensorGroup" id="groupSection_#{group.name}">
             <div class="groupName">
               <p:commandLink onclick="showRenameGroupDialog('#{group.name}')">
@@ -149,7 +149,7 @@
                 </p:commandLink>
               </ui:fragment>
             </div>
-            
+
             <p:dataTable value="#{group.members}" var="member" rowIndexVar="row"
               tableStyleClass="groupTable dropTarget" resizableColumns="true"
               emptyMessage="No sensors assigned">
