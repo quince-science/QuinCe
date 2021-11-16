@@ -7,17 +7,18 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -26,7 +27,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <p>
  * Although this class extends the Map interface, you should use the convenience
  * methods defined here to change the contents of the Map. You can do it all
- * yourself if you like, but caveat emptor.
+ * yourself if you like, but you'll need to perform all validity checks yourself
+ * too. Good luck...
  * </p>
  *
  * @author Steve Jones
@@ -137,15 +139,11 @@ public class SensorAssignments
   private void populateAssignments(DataSource dataSource)
     throws SensorTypeNotFoundException, SensorConfigurationException,
     DatabaseException {
-    Connection conn = null;
 
-    try {
-      conn = dataSource.getConnection();
+    try (Connection conn = dataSource.getConnection()) {
       populateAssignments(conn);
     } catch (SQLException e) {
       throw new DatabaseException("Error setting up sensor assignments", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -192,7 +190,7 @@ public class SensorAssignments
    * @param sensorType
    *          The sensor type to be checked
    * @return {@code true} if a column must be assigned to the sensor;
-   *           {@code false} if no assignment is needed.
+   *         {@code false} if no assignment is needed.
    * @throws SensorAssignmentException
    *           If the specified sensor type does not exist
    * @throws SensorConfigurationException
@@ -227,7 +225,7 @@ public class SensorAssignments
    * {@link SensorType#RUN_TYPE_SENSOR_TYPE} is required.
    *
    * @return {@code true} if the {@link SensorType#RUN_TYPE_SENSOR_TYPE} is
-   *           required; {@code false} otherwise.
+   *         required; {@code false} otherwise.
    * @throws SensorConfigurationException
    * @throws VariableNotFoundException
    */
@@ -348,7 +346,7 @@ public class SensorAssignments
    *          Indicates whether child or sibling {@link SensorType}s should be
    *          included.
    * @return {@code true} if the {@link SensorType} is assigned; {@code false}
-   *           if not.
+   *         if not.
    */
   private boolean isAssigned(SensorType sensorType, String dataFileName,
     boolean primaryOnly, boolean includeRelations) {
@@ -392,7 +390,7 @@ public class SensorAssignments
    * @param column
    *          The column
    * @return {@code true} if the file and column have been assigned;
-   *           {@code false} if not
+   *         {@code false} if not
    */
   private boolean isAssigned(SensorType sensorType, String file, int column) {
     boolean assigned = false;
@@ -457,7 +455,7 @@ public class SensorAssignments
    * @param sensorType
    *          The sensor type that other sensors may depend on
    * @return {@code true} if any other sensor types depend on the supplied
-   *           sensor type; {@code false} if there are no dependents
+   *         sensor type; {@code false} if there are no dependents
    * @throws SensorConfigurationException
    *           If the internal configuration is invalid
    */
@@ -602,7 +600,7 @@ public class SensorAssignments
    * @param columnIndex
    *          The column index.
    * @return The removed assignment, or {@code null} if there was no assignment
-   *           to remove.
+   *         to remove.
    */
   public SensorAssignment removeAssignment(SensorType sensorType,
     String fileDescription, int columnIndex) {
@@ -643,6 +641,26 @@ public class SensorAssignments
     }
   }
 
+  public Set<SensorAssignment> getFileAssignments(String fileDescription) {
+
+    Set<SensorAssignment> result = new HashSet<SensorAssignment>();
+
+    for (Map.Entry<SensorType, TreeSet<SensorAssignment>> entry : entrySet()) {
+
+      Set<SensorAssignment> foundAssignments = new HashSet<SensorAssignment>();
+
+      TreeSet<SensorAssignment> assignments = entry.getValue();
+      for (SensorAssignment assignment : assignments) {
+        if (assignment.getDataFile().equalsIgnoreCase(fileDescription)) {
+          foundAssignments.add(assignment);
+        }
+      }
+
+      result.addAll(foundAssignments);
+    }
+    return result;
+  }
+
   /**
    * Determines whether or not a Core Sensor has been assigned within any file
    *
@@ -652,7 +670,7 @@ public class SensorAssignments
    *          If {@code true}, only primary assignments are considered;
    *          secondary assignments will return {@code false}.
    * @return {@code true} if the file has had a core sensor assigned;
-   *           {@code false} if it has not
+   *         {@code false} if it has not
    * @throws SensorConfigurationException
    *           If the sensor configuration is invalid
    */
@@ -807,7 +825,7 @@ public class SensorAssignments
    * calibrations.
    *
    * @return {@code true} if any internal calibrations are required;
-   *           {@code false} otherwise.
+   *         {@code false} otherwise.
    */
   public boolean hasInternalCalibrations() {
     boolean result = false;
@@ -912,7 +930,7 @@ public class SensorAssignments
    * @param variable
    *          The variable to be checked.
    * @return {@code true} if all required sensor types are assigned;
-   *           {@code false} otherwise.
+   *         {@code false} otherwise.
    * @throws SensorConfigurationException
    *           If the sensor types for the variable cannot be retrieved.
    * @throws SensorTypeNotFoundException
@@ -1016,6 +1034,38 @@ public class SensorAssignments
   public Set<String> getAllSensorNames() {
     return values().stream().flatMap(Set::stream).map(a -> a.getSensorName())
       .collect(Collectors.toSet());
+  }
+
+  /**
+   * Get the assignment for the sensor with the specified name.
+   *
+   * @param name
+   *          The sensor name.
+   * @return The assignment.
+   * @throws SensorAssignmentException
+   *           If there is no assignment with the specified sensor name.
+   */
+  public SensorAssignment getBySensorName(String name)
+    throws SensorAssignmentException {
+
+    Optional<SensorAssignment> found = values().stream().flatMap(Set::stream)
+      .filter(a -> a.getSensorName().equals(name)).findAny();
+
+    if (found.isEmpty()) {
+      throw new SensorAssignmentException(
+        "Cannot find assignment for sensor named '" + name + "'");
+    }
+
+    return found.get();
+  }
+
+  /**
+   * Get all the assignments as a {@link Stream}.
+   *
+   * @return The assignments.
+   */
+  protected Stream<SensorAssignment> getAllAssignments() {
+    return values().stream().flatMap(Set::stream);
   }
 
   /**

@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationTargetException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
@@ -193,9 +194,11 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @throws RecordNotFoundException
    * @throws DatabaseException
    * @throws MissingParamException
+   * @throws SensorGroupsException
    */
-  public void setInstrumentId(long instrumentId) throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException {
+  public void setInstrumentId(long instrumentId)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException, SensorGroupsException {
     if (instrumentId > 0) {
       this.instrument = InstrumentDB.getInstrument(getDataSource(),
         instrumentId);

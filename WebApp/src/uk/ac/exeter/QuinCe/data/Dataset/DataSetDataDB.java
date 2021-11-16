@@ -33,6 +33,9 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+==== BASE ====
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+==== BASE ====
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -187,6 +190,106 @@ public class DataSetDataDB {
     + DatabaseUtils.IN_PARAMS_TOKEN;
 
   /**
+   * Take a list of fields, and return those which come from the dataset data.
+   * Any others will come from calculation data and will be left alone.
+   *
+   * @param conn
+   *          A database connection
+   * @param dataSet
+   *          The data set to which the fields belong
+   * @param originalFields
+   *          The list of fields
+   * @return The fields that come from dataset data
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the dataset or its instrument do not exist
+   * @throws InstrumentException
+   *           If the instrument details cannot be retrieved
+   * @throws SensorGroupsException
+   */
+  public static List<String> extractDatasetFields(Connection conn,
+    DataSet dataSet, List<String> originalFields)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException, SensorGroupsException {
+
+    List<String> datasetFields = new ArrayList<String>();
+
+    ResourceManager resourceManager = ResourceManager.getInstance();
+    SensorsConfiguration sensorConfig = resourceManager
+      .getSensorsConfiguration();
+
+    Instrument instrument = InstrumentDB.getInstrument(conn,
+      dataSet.getInstrumentId());
+
+    SensorAssignments sensorAssignments = instrument.getSensorAssignments();
+
+    for (String originalField : originalFields) {
+
+      switch (originalField) {
+      case "id":
+      case "date": {
+        datasetFields.add(originalField);
+        break;
+      }
+      default: {
+        // Sensor value columns
+        for (SensorType sensorType : sensorConfig.getSensorTypes()) {
+          if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
+            if (originalField.equals(sensorType.getDatabaseFieldName())) {
+              // TODO Eventually this will use the sensor name as the label, and
+              // the sensor type as the group
+              datasetFields.add(originalField);
+              break;
+            }
+          }
+        }
+
+        break;
+      }
+      }
+    }
+
+    return datasetFields;
+  }
+
+  /**
+   * Determine whether or not a given field is a dataset-level field
+   *
+   * @param conn
+   *          A database connection
+   * @param dataset
+   *          The dataset to which the field belongs
+   * @param field
+   *          The field name
+   * @return {@code true} if the field is a dataset field; {@code false} if it
+   *         is not
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the dataset or its instrument do not exist
+   * @throws InstrumentException
+   *           If the instrument details cannot be retrieved
+   * @throws SensorGroupsException
+   */
+  public static boolean isDatasetField(Connection conn, DataSet dataset,
+    String field) throws MissingParamException, DatabaseException,
+    RecordNotFoundException, InstrumentException, SensorGroupsException {
+
+    List<String> fieldList = new ArrayList<String>(1);
+    fieldList.add(field);
+
+    List<String> detectedDatasetField = extractDatasetFields(conn, dataset,
+      fieldList);
+
+    return (detectedDatasetField.size() > 0);
+  }
+
+  /**
    * Store a set of sensor values in the database. Values will only be stored if
    * their {@code dirty} flag is set. If a sensor value has a database ID, it
    * will be updated. Otherwise it will be stored as a new record. Note that the
@@ -288,12 +391,14 @@ public class DataSetDataDB {
 
       addStmt.executeBatch();
       updateStmt.executeBatch();
-
-      // Clear the dirty flag on all the sensor values
-      SensorValue.clearDirtyFlag(sensorValues);
     } catch (SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
+    } finally {
+      DatabaseUtils.closeStatements(addStmt, updateStmt);
     }
+
+    // Clear the dirty flag on all the sensor values
+    SensorValue.clearDirtyFlag(sensorValues);
   }
 
   /**
