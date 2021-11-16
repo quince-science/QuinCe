@@ -28,9 +28,14 @@ def get_instruments(conn):
     result = []
 
     c = conn.cursor()
-    c.execute("SELECT id, name, owner, type, preprocessor FROM instrument ORDER BY id")
+    c.execute("SELECT id, name, owner, type, preprocessor, check_hours FROM instrument ORDER BY id")
     for row in c:
-        record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4]}
+        record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4],
+                  "check_hours": row[5]}
+
+        if record["check_hours"] is None:
+            record["check_hours"] = [0]
+
         result.append(record)
 
     return result
@@ -53,13 +58,17 @@ def get_instrument(conn, instrument_id):
     result = None
 
     c = conn.cursor()
-    c.execute("SELECT id, name, owner, type, preprocessor, config, preprocessor_config FROM instrument WHERE id = ?",
+    c.execute("SELECT id, name, owner, type, preprocessor, config, preprocessor_config, "
+              "check_hours FROM instrument WHERE id = ?",
               (instrument_id,))
 
     for row in c:
         record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4],
-                  "config": row[5], "preprocessor_config": row[6]}
+                  "config": row[5], "preprocessor_config": row[6], "check_hours": row[7]}
         result = record
+
+    if record["check_hours"] is None:
+        record["check_hours"] = [0]
 
     return result
 
@@ -101,7 +110,6 @@ def get_unconfigured_instruments(conn):
 def store_configuration(conn, instrument_id, retriever, preprocessor):
     c = conn.cursor()
     if retriever is None:
-        print(instrument_id)
         c.execute(
             "UPDATE instrument SET type=NULL, config=NULL, preprocessor=NULL, preprocessor_config=NULL WHERE id = ?",
                   (instrument_id,))
@@ -129,7 +137,11 @@ def __init_db(conn):
                       "owner TEXT, "
                       "type TEXT, "
                       "preprocessor TEXT, "
-                      "config TEXT)"
+                      "config TEXT, "
+                      "preprocessor_config TEXT, "
+                      "check_hours TEXT, "
+                      "last_check INTEGER"
+                      ")"
                       )
 
     c = conn.cursor()
