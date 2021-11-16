@@ -32,7 +32,7 @@ Draw the table of instruments
 
 def make_instrument_table(instruments, ids, show_type):
     if show_type:
-        table_data = [["ID", "Name", "Owner", "Type", "Preprocessor"]]
+        table_data = [["ID", "Name", "Owner", "Type", "Preprocessor", "Check Hours"]]
     else:
         table_data = [["ID", "Name", "Owner"]]
 
@@ -46,9 +46,9 @@ def make_instrument_table(instruments, ids, show_type):
                 table_data.append([instrument["id"],
                                    instrument["name"],
                                    instrument["owner"],
-                                   "None" if instrument["type"] is None
-                                   else instrument["type"],
-                                   instrument["preprocessor"]])
+                                   "None" if instrument["type"] is None else instrument["type"],
+                                   instrument["preprocessor"],
+                                   ",".join(map(str, instrument["check_hours"]))])
             else:
                 table_data.append([instrument["id"],
                                    instrument["name"],
@@ -180,7 +180,7 @@ def main():
                                         preprocessor = PreprocessorFactory.get_new_instance(
                                             new_preprocessor_type, None)
 
-                                config_ok = not retriever.has_config()
+                                config_ok = not preprocessor.has_config()
                                 while not config_ok:
                                     print()
                                     config_ok = preprocessor.enter_configuration()
