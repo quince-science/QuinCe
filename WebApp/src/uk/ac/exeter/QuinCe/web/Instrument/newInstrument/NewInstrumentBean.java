@@ -43,6 +43,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroups;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -158,6 +159,11 @@ public class NewInstrumentBean extends FileUploadBean {
    * The data for the assignments tree in {@code assign_variables.xhtml}.
    */
   private AssignmentsTree assignmentsTree;
+
+  /**
+   * The {@link SensorAssignment}s grouped by their physical locations.
+   */
+  private SensorGroups sensorGroups;
 
   /**
    * The sample file that is currently being edited
@@ -534,6 +540,7 @@ public class NewInstrumentBean extends FileUploadBean {
       instrumentFiles = new NewInstrumentFileSet();
       sensorAssignments = null;
       assignmentsTree = null;
+      sensorGroups = null;
       instrumentVariables = null;
       variableProperties = null;
       preFlushingTime = 0;
@@ -609,6 +616,7 @@ public class NewInstrumentBean extends FileUploadBean {
         instrumentVariables);
       assignmentsTree = new AssignmentsTree(this.instrumentVariables,
         sensorAssignments, !fixedPosition);
+      sensorGroups = new SensorGroups();
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
     }
@@ -650,7 +658,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * Determines whether or not the file set contains more than one file
    *
    * @return {@code true} if more than one file is in the set; {@code false} if
-   *           there are zero or one files
+   *         there are zero or one files
    */
   public boolean getHasMultipleFiles() {
     return (instrumentFiles.size() > 1);
@@ -837,6 +845,7 @@ public class NewInstrumentBean extends FileUploadBean {
       sensorAssignmentMissingValue);
 
     sensorAssignments.addAssignment(assignment);
+    sensorGroups.addAssignment(assignment);
     assignmentsTree.addAssignment(assignment);
 
     // Reset the assign dialog values, because it's so damn hard to do in
@@ -1419,7 +1428,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * Remove a file from the instrument
    *
    * @return Navigation to either the upload page (if all files have been
-   *           removed), or the assignment page
+   *         removed), or the assignment page
    */
   @SuppressWarnings("unlikely-arg-type")
   public String removeFile() {
@@ -1427,6 +1436,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
     if (null != removeFileName) {
       instrumentFiles.remove(removeFileName);
+      sensorGroups.remove(sensorAssignments.getFileAssignments(removeFileName));
       sensorAssignments.removeFileAssignments(removeFileName);
       assignmentsTree.removeFile(removeFileName);
     }
@@ -1806,9 +1816,10 @@ public class NewInstrumentBean extends FileUploadBean {
       }
 
       // Create the new Instrument object
+      // TODO groups in here.
       Instrument instrument = new Instrument(getUser(), instrumentName,
         instrumentFiles, instrumentVariables, storedVariableProperties,
-        sensorAssignments, platformCode, false);
+        sensorAssignments, sensorGroups, platformCode, false);
 
       instrument.setProperty(Instrument.PROP_PRE_FLUSHING_TIME,
         preFlushingTime);
@@ -2093,6 +2104,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
       SensorAssignment removed = sensorAssignments.removeAssignment(sensorType,
         removeAssignmentDataFile, removeAssignmentColumn);
+      sensorGroups.remove(removed);
       assignmentsTree.removeAssignment(removed);
 
       if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
