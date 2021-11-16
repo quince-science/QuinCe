@@ -6,31 +6,28 @@ import urllib.error
 import toml
 from tabulate import tabulate
 
+# Local modules
 import PreprocessorFactory
 import RetrieverFactory
+import quince
 import nrtdb
 import nrtftp
-# Local modules
-import quince
-
-'''
-Extract the list of IDs from a set of instruments
-'''
 
 
 def get_ids(instruments):
+    """
+    Extract the list of IDs from a set of instruments
+    """
     result = []
     for instrument in instruments:
         result.append(instrument["id"])
     return result
 
 
-'''
-Draw the table of instruments
-'''
-
-
 def make_instrument_table(instruments, ids, show_type):
+    """
+    Draw the table of instruments
+    """
     if show_type:
         table_data = [["ID", "Name", "Owner", "Type", "Preprocessor", "Check Hours"]]
     else:
@@ -48,7 +45,7 @@ def make_instrument_table(instruments, ids, show_type):
                                    instrument["owner"],
                                    "None" if instrument["type"] is None else instrument["type"],
                                    instrument["preprocessor"],
-                                   ",".join(map(str, instrument["check_hours"]))])
+                                   instrument["check_hours"]])
             else:
                 table_data.append([instrument["id"],
                                    instrument["name"],
@@ -57,7 +54,51 @@ def make_instrument_table(instruments, ids, show_type):
     print(tabulate(table_data, headers="firstrow"))
 
 
+def ask_check_hours(existing):
+    """
+    Ask the user to specify which hours the NRT source should be checked.
+    """
+    new_value = None
+
+    print()
+    while new_value is None:
+        input_value = input("Check hours (comma separated) %s: " % (existing)).strip()
+        if input_value == "":
+            if existing is not None:
+                new_value = existing
+        else:
+            parsed_value = parse_check_hours(input_value)
+            if parsed_value is not None:
+                new_value = parsed_value
+
+    return new_value
+
+
+def parse_check_hours(hours):
+    ok = True
+
+    entry_list = hours.split(",")
+
+    hour_list = []
+
+    try:
+        for e in entry_list:
+            hour = int(e)
+            if 0 <= hour <= 23:
+                hour_list.append(hour)
+    except ValueError:
+        ok = False
+
+    if not ok:
+        return None
+    else:
+        # Sort/unique
+        list(dict.fromkeys(hour_list)).sort()
+        return hour_list
+
+
 #######################################################
+
 
 def main():
     ftp_conn = None
@@ -132,6 +173,7 @@ def main():
                     instrument = nrtdb.get_instrument(db_conn, instrument_id)
                     if instrument is not None:
                         retriever = None
+                        preprocessor = None
 
                         print()
                         print("Current configuration for instrument %d (%s):" %
@@ -160,7 +202,7 @@ def main():
                         if change == "y":
                             new_type = RetrieverFactory.ask_retriever_type()
                             if new_type is None:
-                                nrtdb.store_configuration(db_conn, instrument["id"], None, None)
+                                nrtdb.store_configuration(db_conn, instrument["id"], None, None, None)
                             else:
                                 if new_type != instrument["type"]:
                                     retriever = RetrieverFactory.get_new_instance(new_type)
@@ -177,15 +219,17 @@ def main():
                                     instrument["preprocessor_config"] = None
                                 else:
                                     if new_preprocessor_type != instrument["preprocessor"]:
-                                        preprocessor = PreprocessorFactory.get_new_instance(
-                                            new_preprocessor_type, None)
+                                        preprocessor = PreprocessorFactory.get_new_instance(new_preprocessor_type)
 
                                 config_ok = not preprocessor.has_config()
                                 while not config_ok:
                                     print()
                                     config_ok = preprocessor.enter_configuration()
 
-                                nrtdb.store_configuration(db_conn, instrument["id"], retriever, preprocessor)
+                                instrument["check_hours"] = ask_check_hours(instrument["check_hours"])
+
+                                nrtdb.store_configuration(db_conn, instrument["id"], retriever, preprocessor,
+                                                          instrument["check_hours"])
     except urllib.error.HTTPError as e:
         print("%s %s" % (e.code, e.reason))
     except urllib.error.URLError as e:
