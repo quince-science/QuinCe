@@ -1,4 +1,5 @@
 import sqlite3
+import json
 
 
 # Functions for talking to the NRT scripts database
@@ -55,22 +56,21 @@ def get_instrument_ids(conn):
 
 # Get a stored instrument
 def get_instrument(conn, instrument_id):
-    result = None
-
     c = conn.cursor()
     c.execute("SELECT id, name, owner, type, preprocessor, config, preprocessor_config, "
               "check_hours FROM instrument WHERE id = ?",
               (instrument_id,))
 
-    for row in c:
-        record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4],
-                  "config": row[5], "preprocessor_config": row[6], "check_hours": row[7]}
-        result = record
+    row = c.fetchone()
+    record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4],
+              "config": row[5], "preprocessor_config": row[6], "check_hours": row[7]}
 
     if record["check_hours"] is None:
         record["check_hours"] = [0]
+    else:
+        record["check_hours"] = json.loads(record["check_hours"])
 
-    return result
+    return record
 
 
 # Delete an instrument
@@ -107,16 +107,17 @@ def get_unconfigured_instruments(conn):
 
 
 # Store the configuration for an instrument
-def store_configuration(conn, instrument_id, retriever, preprocessor):
+def store_configuration(conn, instrument_id, retriever, preprocessor, check_hours):
     c = conn.cursor()
     if retriever is None:
         c.execute(
-            "UPDATE instrument SET type=NULL, config=NULL, preprocessor=NULL, preprocessor_config=NULL WHERE id = ?",
-                  (instrument_id,))
+            "UPDATE instrument SET type=NULL, config=NULL, preprocessor=NULL, preprocessor_config=NULL,"
+            "check_hours=NULL, last_check=NULL WHERE id = ?", (instrument_id,))
     else:
-        c.execute("UPDATE instrument SET type=?, config=?, preprocessor=?, preprocessor_config=? WHERE id = ?",
+        c.execute("UPDATE instrument SET type=?, config=?, preprocessor=?, preprocessor_config=?, "
+                  "check_hours=? WHERE id = ?",
                   (retriever.get_type(), retriever.get_configuration_json(),
-                   preprocessor.get_type(), preprocessor.get_configuration_json(), instrument_id))
+                   preprocessor.get_type(), preprocessor.get_configuration_json(), str(check_hours), instrument_id))
 
     conn.commit()
 
