@@ -170,9 +170,15 @@ def main():
                                     print()
                                     config_ok = retriever.enter_configuration()
 
-                                print()
-                                preprocessor_type = PreprocessorFactory.ask_preprocessor_type()
-                                preprocessor = PreprocessorFactory.get_new_instance(preprocessor_type)
+                                new_preprocessor_type = PreprocessorFactory.ask_preprocessor_type()
+
+                                if new_preprocessor_type is None:
+                                    instrument["preprocessor"] = None
+                                    instrument["preprocessor_config"] = None
+                                else:
+                                    if new_preprocessor_type != instrument["preprocessor"]:
+                                        preprocessor = PreprocessorFactory.get_new_instance(
+                                            new_preprocessor_type, None)
 
                                 config_ok = not retriever.has_config()
                                 while not config_ok:
