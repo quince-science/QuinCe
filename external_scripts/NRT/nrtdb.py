@@ -1,5 +1,6 @@
 import sqlite3
 import json
+from datetime import datetime
 
 
 # Functions for talking to the NRT scripts database
@@ -58,12 +59,12 @@ def get_instrument_ids(conn):
 def get_instrument(conn, instrument_id):
     c = conn.cursor()
     c.execute("SELECT id, name, owner, type, preprocessor, config, preprocessor_config, "
-              "check_hours FROM instrument WHERE id = ?",
+              "check_hours, last_check FROM instrument WHERE id = ?",
               (instrument_id,))
 
     row = c.fetchone()
     record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4],
-              "config": row[5], "preprocessor_config": row[6], "check_hours": row[7]}
+              "config": row[5], "preprocessor_config": row[6], "check_hours": row[7], "last_check": row[8]}
 
     if record["check_hours"] is None:
         record["check_hours"] = [0]
@@ -119,6 +120,14 @@ def store_configuration(conn, instrument_id, retriever, preprocessor, check_hour
                   (retriever.get_type(), retriever.get_configuration_json(),
                    preprocessor.get_type(), preprocessor.get_configuration_json(), str(check_hours), instrument_id))
 
+    conn.commit()
+
+
+def set_last_check(conn, instrument):
+    instrument["last_check"] = int(datetime.now().timestamp())
+    c = conn.cursor()
+    c.execute("UPDATE instrument SET last_check=? WHERE id = ?",
+              (instrument["last_check"], instrument["id"]))
     conn.commit()
 
 
