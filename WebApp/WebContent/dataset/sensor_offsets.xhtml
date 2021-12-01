@@ -80,7 +80,9 @@
     <!-- Time series is the top half -->
     <div id="timeSeries" class="plotContainer">
       <h:form id="timeSeriesForm" method="post">
-          <h:inputHidden id="plotData" value="#{sensorOffsetsBean.timeSeriesData}"/>
+        <h:inputHidden id="plotData" value="#{sensorOffsetsBean.timeSeriesData}"/>
+        <h:inputHidden id="series0Name" value="#{sensorOffsetsBean.firstName}"/>
+        <h:inputHidden id="series1Name" value="#{sensorOffsetsBean.secondName}"/>
         <div id="timeSeriesContainer">
           <div id="timeSeriesPlot" class="plot"></div>
           <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
@@ -169,6 +171,12 @@
                     onchange="secondSelectClick()"
                     styleClass="inlineButton tightButton plotFooterButton"/>
                 </td>
+              </tr>
+              <tr>
+                <td>Offset:</td>
+                <td>&nbps;</td>
+                <td><div id="offsetText">Not set</div></td>
+                <td colspan="2">&nbsp;</td>
               </tr>
             </table>
           </div>
