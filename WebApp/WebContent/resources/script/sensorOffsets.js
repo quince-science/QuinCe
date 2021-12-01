@@ -1,5 +1,11 @@
 var UPDATING_UI = false;
 var SELECT_STATE = -1;
+const SERIES_0_COLOR = '#018000';
+const SERIES_1_COLOR = '#000080';
+const SERIES_HIDDEN_COLOR = '#dddddd';
+const DATA_POINT_SIZE = 2;
+const DATA_POINT_HIGHLIGHT_SIZE = 5;
+
 
 // Timer used to prevent event spamming during page resizes
 var resizeEventTimer = null;
@@ -10,7 +16,7 @@ intModel.dblclick = function(e, x, points) {
 };
 
 var TIMESERIES_PLOT_OPTIONS = {
-  colors: ['#018000', '#000080'],
+  colors: [SERIES_0_COLOR, SERIES_1_COLOR],
   drawPoints: true,
   strokeWidth: 0.0,
   labelsUTC: true,
@@ -22,7 +28,9 @@ var TIMESERIES_PLOT_OPTIONS = {
   yRangePad: 10,
   xlabel: 'Date/Time',
   interactionModel: intModel,
-  clickCallback: timeSeriesClick
+  clickCallback: timeSeriesClick,
+  pointSize: DATA_POINT_SIZE,
+  highlightCircleSize: DATA_POINT_SIZE
 }
 
 function initPage() {
@@ -131,16 +139,27 @@ function startAddOffset() {
 }
 
 function updateOffsetTimeText() {
+  let canCalculateOffset = true;
+
   if ($('#offsetForm\\:firstTime').val() == '') {
     $('#offsetForm\\:firstTimeText')[0].innerHTML = '&lt;Not selected&gt;';
+    canCalculateOffset = false;
   } else {
 	$('#offsetForm\\:firstTimeText')[0].innerHTML = new Date(parseInt($('#offsetForm\\:firstTime').val())).toISOString();
   }
 
   if ($('#offsetForm\\:secondTime').val() == '') {
     $('#offsetForm\\:secondTimeText')[0].innerHTML = '&lt;Not selected&gt;';
+    canCalculateOffset = false;
   } else {
 	$('#offsetForm\\:secondTimeText')[0].innerHTML = new Date(parseInt($('#offsetForm\\:secondTime').val())).toISOString();
+  }
+
+  if (!canCalculateOffset) {
+	$('#offsetText').html('Not set');
+  } else {
+	let offset = (parseFloat($('#offsetForm\\:secondTime').val()) - parseFloat($('#offsetForm\\:firstTime').val())) / 1000;
+    $('#offsetText').html(offset.toFixed(3) + ' s');
   }
 }
 
@@ -159,21 +178,24 @@ function timeSeriesClick(e, x, points) {
     PF('secondSelect').uncheck();
     UPDATING_UI = false;
 
+    updateHighlights();
     updateOffsetTimeText();
   }
 }
 
 function firstSelectClick() {
   if (!UPDATING_UI) {
-    UPDATING_UI = true;	
+    UPDATING_UI = true;
     PF('secondSelect').uncheck();
     UPDATING_UI = false;
   }
 
   if (PF('firstSelect').input[0].checked) {
-    SELECT_STATE = 0;	
+    SELECT_STATE = 0;
+    updateHighlights();
   } else {
     SELECT_STATE = -1;	
+    updateHighlights();
   }
 }
 
@@ -185,8 +207,51 @@ function secondSelectClick() {
   }
 
   if (PF('secondSelect').input[0].checked) {
-    SELECT_STATE = 1;	
+    SELECT_STATE = 1;
+    updateHighlights();
   } else {
-    SELECT_STATE = -1;	
+    SELECT_STATE = -1;
+    updateHighlights();
+  }
+}
+
+function updateHighlights() {
+
+  if (!UPDATING_UI) {
+    let seriesOpts = {}
+
+    let series0Opts = {}
+    if (SELECT_STATE == 1) {
+  	  series0Opts.color = SERIES_HIDDEN_COLOR;	
+    } else {
+	  series0Opts.color = SERIES_0_COLOR;	
+    }
+
+    if (SELECT_STATE == 0) {
+      series0Opts.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;	
+    } else {
+	  series0Opts.highlightCircleSize = DATA_POINT_SIZE;
+    }
+
+    seriesOpts[$('#timeSeriesForm\\:series0Name').val()] = series0Opts;
+    
+    let series1Opts = {}
+    if (SELECT_STATE == 0) {
+	  series1Opts.color = SERIES_HIDDEN_COLOR;
+    } else {
+	  series1Opts.color = SERIES_1_COLOR;	
+    }
+
+    if (SELECT_STATE == 1) {
+      series1Opts.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;	
+    } else {
+	  series1Opts.highlightCircleSize = DATA_POINT_SIZE;
+    }
+
+    seriesOpts[$('#timeSeriesForm\\:series1Name').val()] = series1Opts;
+
+    window['timeSeriesPlot'].updateOptions({
+      series: seriesOpts	
+    });
   }
 }
