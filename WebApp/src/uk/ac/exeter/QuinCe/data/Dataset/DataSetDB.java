@@ -396,15 +396,11 @@ public class DataSetDB {
     MissingParam.checkZeroPositive(id, "id");
 
     DataSet result = null;
-    Connection conn = null;
 
-    try {
-      conn = dataSource.getConnection();
+    try (Connection conn = dataSource.getConnection()) {
       result = getDataSet(conn, id);
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving data sets", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
     }
 
     return result;
@@ -433,27 +429,20 @@ public class DataSetDB {
 
     DataSet result = null;
 
-    PreparedStatement stmt = null;
-    ResultSet record = null;
-
-    try {
-      stmt = conn.prepareStatement(makeGetDatasetsQuery("id"));
+    try (PreparedStatement stmt = conn
+      .prepareStatement(makeGetDatasetsQuery("id"))) {
       stmt.setLong(1, id);
 
-      record = stmt.executeQuery();
-
-      if (!record.next()) {
-        throw new RecordNotFoundException("Data set does not exist", "dataset",
-          id);
-      } else {
-        result = dataSetFromRecord(record);
+      try (ResultSet record = stmt.executeQuery()) {
+        if (!record.next()) {
+          throw new RecordNotFoundException("Data set does not exist",
+            "dataset", id);
+        } else {
+          result = dataSetFromRecord(record);
+        }
       }
-
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving data sets", e);
-    } finally {
-      DatabaseUtils.closeResultSets(record);
-      DatabaseUtils.closeStatements(stmt);
     }
 
     return result;

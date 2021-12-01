@@ -136,9 +136,8 @@ public class SensorOffsetsBean extends BaseManagedBean {
 
       for (SensorAssignment column : linkColumns) {
         sensorValues.put(column.getSensorName(),
-          DataSetDataDB.getSensorValuesForColumns(
-            getDataSource().getConnection(), dataset.getId(),
-            Arrays.asList(column.getDatabaseId())));
+          DataSetDataDB.getSensorValuesForColumns(getDataSource(),
+            dataset.getId(), Arrays.asList(column.getDatabaseId())));
       }
 
       preparePageData();

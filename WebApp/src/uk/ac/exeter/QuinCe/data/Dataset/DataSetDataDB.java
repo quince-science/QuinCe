@@ -919,6 +919,17 @@ public class DataSetDataDB {
     }
   }
 
+  public static List<SensorValue> getSensorValuesForColumns(
+    DataSource dataSource, long datasetId, List<Long> columnIds)
+    throws MissingParamException, DatabaseException {
+
+    try (Connection conn = dataSource.getConnection()) {
+      return getSensorValuesForColumns(conn, datasetId, columnIds);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting sensor values", e);
+    }
+  }
+
   /**
    * Get all the sensor values for the given columns.
    *
