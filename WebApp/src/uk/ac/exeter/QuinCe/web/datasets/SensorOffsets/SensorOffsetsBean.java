@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.SensorOffsets;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupPair;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 @ManagedBean
@@ -49,7 +54,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
   private Map<String, List<SensorValue>> sensorValues;
 
   /**
-   * The name of the group whose offsets are being edited.
+   * The ID of the group whose offsets are being edited.
    *
    * <p>
    * This is the second of the two groups being linked together.
@@ -60,6 +65,8 @@ public class SensorOffsetsBean extends BaseManagedBean {
   private long offsetFirst;
 
   private long offsetSecond;
+
+  boolean dirty = false;
 
   /**
    * Initialise the bean with basic required information.
@@ -99,7 +106,9 @@ public class SensorOffsetsBean extends BaseManagedBean {
     dataset = null;
   }
 
-  public String finish() {
+  public String finish()
+    throws MissingParamException, DatabaseException, RecordNotFoundException {
+    DataSetDB.updateDataSet(getDataSource(), dataset);
     return NAV_DATASET_LIST;
   }
 
@@ -191,8 +200,9 @@ public class SensorOffsetsBean extends BaseManagedBean {
       .getPrevLinkName();
   }
 
-  public List<SensorOffset> getOffsets() {
-    return dataset.getSensorOffsets().getOffsets(getCurrentPairObject());
+  public List<SensorOffset> getOffsetsList() {
+    return new ArrayList<SensorOffset>(
+      dataset.getSensorOffsets().getOffsets(getCurrentPairObject()));
   }
 
   private SensorGroupPair getCurrentPairObject() {
@@ -213,5 +223,11 @@ public class SensorOffsetsBean extends BaseManagedBean {
 
   public void setOffsetSecond(long offsetSecond) {
     this.offsetSecond = offsetSecond;
+  }
+
+  public void addOffset() {
+    dataset.getSensorOffsets().addOffset(getCurrentPairObject(),
+      DateTimeUtils.longToDate(offsetSecond), offsetSecond - offsetFirst);
+    dirty = true;
   }
 }
