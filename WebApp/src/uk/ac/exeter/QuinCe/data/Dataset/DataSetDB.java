@@ -20,6 +20,10 @@ import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -92,6 +96,8 @@ public class DataSetDB {
     + "ds.instrument_id, ds.created, ds.end, ds.status, ds.status_date "
     + "FROM dataset ds INNER JOIN instrument i ON ds.instrument_id = i.id "
     + "WHERE ds.nrt = 1 ORDER BY i.platform_code ASC";
+
+  private static final String SENSOR_OFFSETS_PROPERTY = "__sensorOffsets";
 
   /**
    * Make an SQL query for retrieving complete datasets using a specified WHERE
@@ -184,13 +190,13 @@ public class DataSetDB {
       records = stmt.executeQuery();
 
       while (records.next()) {
-        DataSet dataSet = dataSetFromRecord(records);
+        DataSet dataSet = dataSetFromRecord(conn, records);
         if (!dataSet.isNrt() || includeNrt) {
           result.add(dataSet);
         }
       }
 
-    } catch (SQLException e) {
+    } catch (Exception e) {
       throw new DatabaseException("Error while retrieving data sets", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
@@ -208,9 +214,15 @@ public class DataSetDB {
    * @return The Data Set object
    * @throws SQLException
    *           If the data cannot be extracted from the result
+   * @throws SensorGroupsException
+   * @throws InstrumentException
+   * @throws RecordNotFoundException
+   * @throws DatabaseException
+   * @throws MissingParamException
    */
-  private static DataSet dataSetFromRecord(ResultSet record)
-    throws SQLException {
+  private static DataSet dataSetFromRecord(Connection conn, ResultSet record)
+    throws SQLException, MissingParamException, DatabaseException,
+    RecordNotFoundException, InstrumentException, SensorGroupsException {
 
     long id = record.getLong(1);
     long instrumentId = record.getLong(2);
@@ -221,10 +233,28 @@ public class DataSetDB {
     LocalDateTime statusDate = DateTimeUtils.longToDate(record.getLong(7));
     boolean nrt = record.getBoolean(8);
 
+    // The properties field combines several things. Extract them.
+    Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId);
+    Gson gson = new GsonBuilder().registerTypeAdapter(SensorOffsets.class,
+      new SensorOffsetsDeserializer(instrument)).create();
+
+    JsonObject parsedJson = JsonParser.parseString(record.getString(9))
+      .getAsJsonObject();
+
+    SensorOffsets sensorOffsets;
+    if (parsedJson.has(SENSOR_OFFSETS_PROPERTY)) {
+      sensorOffsets = gson.fromJson(parsedJson.get(SENSOR_OFFSETS_PROPERTY),
+        SensorOffsets.class);
+      parsedJson.remove(SENSOR_OFFSETS_PROPERTY);
+    } else {
+      // Create a new SensorOffsets object
+      sensorOffsets = new SensorOffsets(instrument.getSensorGroups());
+    }
+
     Type propertiesType = new TypeToken<Map<String, Properties>>() {
     }.getType();
-    Map<String, Properties> properties = new Gson()
-      .fromJson(record.getString(9), propertiesType);
+    Map<String, Properties> properties = gson.fromJson(parsedJson,
+      propertiesType);
 
     LocalDateTime createdDate = DateTimeUtils
       .longToDate(record.getTimestamp(10).getTime());
@@ -248,8 +278,8 @@ public class DataSetDB {
     double maxLat = record.getDouble(16);
 
     return new DataSet(id, instrumentId, name, start, end, status, statusDate,
-      nrt, properties, createdDate, lastTouched, messages, minLon, minLat,
-      maxLon, maxLat);
+      nrt, properties, sensorOffsets, createdDate, lastTouched, messages,
+      minLon, minLat, maxLon, maxLat);
   }
 
   /**
@@ -338,7 +368,7 @@ public class DataSetDB {
       stmt.setInt(5, dataSet.getStatus());
       stmt.setLong(6, DateTimeUtils.dateToLong(dataSet.getStatusDate()));
       stmt.setBoolean(7, dataSet.isNrt());
-      stmt.setString(8, new Gson().toJson(dataSet.getAllProperties()));
+      stmt.setString(8, getDatasetPropertiesJson(dataSet));
       stmt.setLong(9, DateTimeUtils.dateToLong(LocalDateTime.now()));
 
       if (dataSet.getMessageCount() > 0) {
@@ -372,6 +402,22 @@ public class DataSetDB {
       DatabaseUtils.closeResultSets(addedKeys);
       DatabaseUtils.closeStatements(stmt);
     }
+  }
+
+  private static String getDatasetPropertiesJson(DataSet dataSet) {
+
+    Gson gson = new GsonBuilder()
+      .registerTypeAdapter(SensorOffsets.class, new SensorOffsetsSerializer())
+      .create();
+
+    JsonObject propertiesJson = gson.toJsonTree(dataSet.getAllProperties())
+      .getAsJsonObject();
+
+    JsonElement sensorOffsetsJson = gson.toJsonTree(dataSet.getSensorOffsets());
+
+    propertiesJson.add(SENSOR_OFFSETS_PROPERTY, sensorOffsetsJson);
+
+    return propertiesJson.toString();
   }
 
   /**
@@ -438,10 +484,10 @@ public class DataSetDB {
           throw new RecordNotFoundException("Data set does not exist",
             "dataset", id);
         } else {
-          result = dataSetFromRecord(record);
+          result = dataSetFromRecord(conn, record);
         }
       }
-    } catch (SQLException e) {
+    } catch (Exception e) {
       throw new DatabaseException("Error while retrieving data sets", e);
     }
 
@@ -558,6 +604,30 @@ public class DataSetDB {
    * @throws RecordNotFoundException
    *           If the dataset is not already in the database
    */
+  public static void updateDataSet(DataSource dataSource, DataSet dataSet)
+    throws MissingParamException, DatabaseException, RecordNotFoundException {
+
+    try (Connection conn = dataSource.getConnection()) {
+      saveDataSet(conn, dataSet);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error saving dataset", e);
+    }
+  }
+
+  /**
+   * Update a dataset in the database
+   *
+   * @param conn
+   *          A database connection
+   * @param dataSet
+   *          The updated dataset
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws RecordNotFoundException
+   *           If the dataset is not already in the database
+   */
   public static void updateDataSet(Connection conn, DataSet dataSet)
     throws MissingParamException, DatabaseException, RecordNotFoundException {
     saveDataSet(conn, dataSet);
@@ -629,13 +699,13 @@ public class DataSetDB {
 
       try (ResultSet records = stmt.executeQuery()) {
         while (null == result && records.next()) {
-          DataSet dataset = dataSetFromRecord(records);
+          DataSet dataset = dataSetFromRecord(conn, records);
           result = dataset;
           break;
         }
       }
 
-    } catch (SQLException e) {
+    } catch (Exception e) {
       throw new DatabaseException("Error while retrieving data sets", e);
     }
 
@@ -873,10 +943,10 @@ public class DataSetDB {
       stmt.setInt(1, status);
       records = stmt.executeQuery();
       while (records.next()) {
-        dataSets.add(dataSetFromRecord(records));
+        dataSets.add(dataSetFromRecord(conn, records));
       }
 
-    } catch (SQLException e) {
+    } catch (Exception e) {
       throw new DatabaseException("Error while getting export datasets", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
@@ -939,10 +1009,10 @@ public class DataSetDB {
       try (ResultSet records = stmt.executeQuery()) {
 
         while (records.next()) {
-          result.add(dataSetFromRecord(records));
+          result.add(dataSetFromRecord(conn, records));
         }
 
-      } catch (SQLException e) {
+      } catch (Exception e) {
         throw new DatabaseException("Error while retrieving datasets", e);
       }
 
