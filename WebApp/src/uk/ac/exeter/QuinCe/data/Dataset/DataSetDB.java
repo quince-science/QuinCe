@@ -97,7 +97,7 @@ public class DataSetDB {
     + "FROM dataset ds INNER JOIN instrument i ON ds.instrument_id = i.id "
     + "WHERE ds.nrt = 1 ORDER BY i.platform_code ASC";
 
-  private static final String SENSOR_OFFSETS_PROPERTY = "__sensorOffsets";
+  private static final String SENSOR_OFFSETS_PROPERTY = "__SENSOR_OFFSETS";
 
   /**
    * Make an SQL query for retrieving complete datasets using a specified WHERE
