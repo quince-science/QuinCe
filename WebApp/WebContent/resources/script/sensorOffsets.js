@@ -278,3 +278,8 @@ function updateHighlightSettings() {
     });
   }
 }
+
+function deleteOffset(offsetTime) {
+  $('#offsetForm\\:deleteTime').val(offsetTime);
+  deleteOffsetAction(); // PF remoteCommand
+}

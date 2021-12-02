@@ -414,6 +414,11 @@ table .noWrap {
   white-space: nowrap;
 }
 
+table .buttonCol {
+  text-align: center;
+  width: 40px;
+}
+
 .shown {
   display: block;
 }
