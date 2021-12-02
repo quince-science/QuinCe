@@ -335,9 +335,9 @@ public class DataSet implements Comparable<DataSet> {
   protected DataSet(long id, long instrumentId, String name,
     LocalDateTime start, LocalDateTime end, int status,
     LocalDateTime statusDate, boolean nrt, Map<String, Properties> properties,
-    LocalDateTime createdDate, LocalDateTime lastTouched,
-    List<Message> messages, double minLon, double minLat, double maxLon,
-    double maxLat) {
+    SensorOffsets sensorOffsets, LocalDateTime createdDate,
+    LocalDateTime lastTouched, List<Message> messages, double minLon,
+    double minLat, double maxLon, double maxLat) {
     this.id = id;
     this.instrumentId = instrumentId;
     this.name = name;
@@ -347,6 +347,7 @@ public class DataSet implements Comparable<DataSet> {
     this.statusDate = statusDate;
     this.nrt = nrt;
     this.properties = properties;
+    this.sensorOffsets = sensorOffsets;
     this.createdDate = createdDate;
     this.lastTouched = lastTouched;
     this.messages = new ArrayList<Message>(messages);
@@ -366,6 +367,7 @@ public class DataSet implements Comparable<DataSet> {
     this.instrumentId = instrument.getId();
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
     loadProperties(instrument);
+    this.sensorOffsets = new SensorOffsets(instrument.getSensorGroups());
   }
 
   /**
@@ -391,6 +393,7 @@ public class DataSet implements Comparable<DataSet> {
     this.nrt = nrt;
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
     loadProperties(instrument);
+    this.sensorOffsets = new SensorOffsets(instrument.getSensorGroups());
   }
 
   private void loadProperties(Instrument instrument) {

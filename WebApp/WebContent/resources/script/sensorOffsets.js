@@ -134,8 +134,22 @@ function startAddOffset() {
   $('#offsetForm\\:firstTime').val('');
   $('#offsetForm\\:secondTime').val('');
   updateOffsetTimeText();
+  PF('saveOffset').disable();
   $('#offsetsTable').hide();
   $('#offsetFormContainer').show();
+}
+
+function cancelOffset() {
+  showOffsetsTable();
+}
+
+function showOffsetsTable() {
+  $('#offsetFormContainer').hide();
+  $('#offsetsTable').show();
+}
+
+function offsetsUpdated() {
+  showOffsetsTable();
 }
 
 function updateOffsetTimeText() {
@@ -176,10 +190,19 @@ function timeSeriesClick(e, x, points) {
     UPDATING_UI = true;
     PF('firstSelect').uncheck();
     PF('secondSelect').uncheck();
+    updateAddOffsetButton();
     UPDATING_UI = false;
 
-    updateHighlights();
+    updateHighlightSettings();
     updateOffsetTimeText();
+  }
+}
+
+function updateAddOffsetButton() {
+  if ($('#offsetForm\\:firstTime').val() == '' || $('#offsetForm\\:secondTime').val() == '') {
+	PF('saveOffset').disable();	
+  } else {
+	PF('saveOffset').enable();
   }
 }
 
@@ -192,10 +215,10 @@ function firstSelectClick() {
 
   if (PF('firstSelect').input[0].checked) {
     SELECT_STATE = 0;
-    updateHighlights();
+    updateHighlightSettings();
   } else {
     SELECT_STATE = -1;	
-    updateHighlights();
+    updateHighlightSettings();
   }
 }
 
@@ -208,14 +231,14 @@ function secondSelectClick() {
 
   if (PF('secondSelect').input[0].checked) {
     SELECT_STATE = 1;
-    updateHighlights();
+    updateHighlightSettings();
   } else {
     SELECT_STATE = -1;
-    updateHighlights();
+    updateHighlightSettings();
   }
 }
 
-function updateHighlights() {
+function updateHighlightSettings() {
 
   if (!UPDATING_UI) {
     let seriesOpts = {}
