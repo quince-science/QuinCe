@@ -25,7 +25,7 @@ var TIMESERIES_PLOT_OPTIONS = {
   selectMode: 'euclidian',
   animatedZooms: false,
   xRangePad: 10,
-  yRangePad: 10,
+  yRangePad: 20,
   xlabel: 'Date/Time',
   interactionModel: intModel,
   clickCallback: timeSeriesClick,
