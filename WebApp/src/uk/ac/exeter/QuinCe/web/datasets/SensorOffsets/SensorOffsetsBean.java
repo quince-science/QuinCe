@@ -66,6 +66,8 @@ public class SensorOffsetsBean extends BaseManagedBean {
 
   private long offsetSecond;
 
+  private long deleteTime;
+
   boolean dirty = false;
 
   /**
@@ -228,6 +230,20 @@ public class SensorOffsetsBean extends BaseManagedBean {
   public void addOffset() {
     dataset.getSensorOffsets().addOffset(getCurrentPairObject(),
       DateTimeUtils.longToDate(offsetSecond), offsetSecond - offsetFirst);
+    dirty = true;
+  }
+
+  public long getDeleteTime() {
+    return deleteTime;
+  }
+
+  public void setDeleteTime(long deleteTime) {
+    this.deleteTime = deleteTime;
+  }
+
+  public void deleteOffset() {
+    dataset.getSensorOffsets().deleteOffset(getCurrentPairObject(),
+      DateTimeUtils.longToDate(deleteTime));
     dirty = true;
   }
 }

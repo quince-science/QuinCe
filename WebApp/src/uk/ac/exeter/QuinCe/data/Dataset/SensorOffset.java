@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
 
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -35,6 +36,10 @@ public class SensorOffset implements Comparable<SensorOffset> {
 
   public LocalDateTime getTime() {
     return time;
+  }
+
+  public long getTimeMilliseconds() {
+    return DateTimeUtils.dateToLong(time);
   }
 
   public long getOffset() {

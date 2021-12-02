@@ -36,6 +36,10 @@ public class SensorOffsets {
     offsets.get(groupPair).add(new SensorOffset(time, offsetMillis));
   }
 
+  public void deleteOffset(SensorGroupPair groupPair, LocalDateTime time) {
+    offsets.get(groupPair).removeIf(o -> o.getTime().equals(time));
+  }
+
   protected LinkedHashMap<SensorGroupPair, TreeSet<SensorOffset>> getMap() {
     return offsets;
   }

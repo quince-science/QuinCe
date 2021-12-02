@@ -108,7 +108,13 @@
         <h:form id="offsetForm" method="post">
           <h:inputHidden id="firstTime" value="#{sensorOffsetsBean.offsetFirst}"/>
           <h:inputHidden id="secondTime" value="#{sensorOffsetsBean.offsetSecond}"/>
-
+          <h:inputHidden id="deleteTime" value="#{sensorOffsetsBean.deleteTime}"/>
+          
+          <p:remoteCommand name="deleteOffsetAction"
+            action="#{sensorOffsetsBean.deleteOffset}" process="deleteTime"
+            update="offsetsList"
+            oncomplete="offsetsUpdated();" />
+          
           <div id="offsetsTable">
             <p:dataTable id="offsetsList" var="offset" value="#{sensorOffsetsBean.offsetsList}">
               <p:column>
@@ -117,11 +123,20 @@
                 </f:facet>
                 <h:outputText value="#{offset.time}"/>
               </p:column>
-              <p:column>
+              <p:column styleClass="numericCol">
                 <f:facet name="header">
                   Offset
                 </f:facet>
                 <h:outputText value="#{offset.offsetText}"/>
+              </p:column>
+              <p:column styleClass="buttonCol">
+                <f:facet name="header">
+                  &nbsp;
+                </f:facet>
+                <p:commandLink onclick="deleteOffset(#{offset.timeMilliseconds})">
+                  <h:graphicImage value="/resources/image/delete.svg"
+                    styleClass="actionIcon" alt="Delete" title="Delete" />
+                </p:commandLink>
               </p:column>
             </p:dataTable>
           </div>
@@ -164,7 +179,7 @@
             <h:panelGrid columns="2" styleClass="buttonPanel">
               <p:commandButton widgetVar="saveOffset" value="Add"
                  action="#{sensorOffsetsBean.addOffset}" ajax="true"
-                 process="firstTime secondTime" update=":offsetForm:offsetsList" oncomplete="offsetsUpdated();"/>
+                 process="firstTime secondTime" update="offsetsList" oncomplete="offsetsUpdated();"/>
               <p:commandButton value="Cancel" onclick="cancelOffset()" />
             </h:panelGrid>
           </div>
