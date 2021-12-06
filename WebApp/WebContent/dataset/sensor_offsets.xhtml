@@ -40,12 +40,12 @@
   <h:form id="mainForm" method="post">
     <p:remoteCommand name="loadData"
       action="#{sensorOffsetsBean.loadData}" process="@this"
-      update="firstName secondName :timeSeriesForm:plotData :offsetForm:offsetsList :offsetForm:firstName :offsetForm:secondName"
+      update="firstName secondName :timeSeriesForm:plotData :offsetForm:offsetsList :offsetForm:firstName :offsetForm:secondName :timeSeriesForm:series0Name :timeSeriesForm:series1Name"
       oncomplete="dataPrepared()" />
 
     <p:remoteCommand name="changeGroup"
       action="#{sensorOffsetsBean.preparePageData}" process="currentPair"
-      update="firstName secondName :timeSeriesForm:plotData :offsetForm:offsetsList :offsetForm:firstName :offsetForm:secondName"
+      update="firstName secondName :timeSeriesForm:plotData :offsetForm:offsetsList :offsetForm:firstName :offsetForm:secondName :timeSeriesForm:series0Name :timeSeriesForm:series1Name"
       oncomplete="dataPrepared()" />
 
     <p:toolbar styleClass="plotPageHeader">

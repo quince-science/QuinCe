@@ -100,6 +100,7 @@ function dataPrepared() {
 
 function newGroupSelected() {
   PF('pleaseWait').show();
+  cancelOffset();
   changeGroup(); // PF RemoteCommand
 }
 
@@ -133,6 +134,8 @@ function resetZoom(plotName) {
 function startAddOffset() {
   $('#offsetForm\\:firstTime').val('');
   $('#offsetForm\\:secondTime').val('');
+  PF('firstSelect').uncheck();
+  PF('secondSelect').uncheck();
   updateOffsetTimeText();
   PF('saveOffset').disable();
   $('#offsetsTable').hide();
@@ -140,6 +143,8 @@ function startAddOffset() {
 }
 
 function cancelOffset() {
+  SELECT_STATE = -1;
+  updateHighlightSettings();
   showOffsetsTable();
 }
 
