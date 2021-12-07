@@ -78,7 +78,7 @@ public class TimeSeriesPlotData {
     result.append('\n');
 
     for (Map.Entry<LocalDateTime, Tuple> entry : data.entrySet()) {
-      result.append(DateTimeUtils.formatDateTime(entry.getKey()));
+      result.append(DateTimeUtils.toIsoDate(entry.getKey()));
       result.append(',');
       result.append(entry.getValue().getFirst());
       result.append(',');
@@ -87,6 +87,14 @@ public class TimeSeriesPlotData {
     }
 
     return result.toString();
+  }
+
+  protected Double getFirstSeriesValue(LocalDateTime time) {
+    return data.get(time).getFirst();
+  }
+
+  protected Double getSecondSeriesValue(LocalDateTime time) {
+    return data.get(time).getSecond();
   }
 
   /**
