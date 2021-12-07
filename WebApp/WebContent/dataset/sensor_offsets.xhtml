@@ -40,12 +40,12 @@
   <h:form id="mainForm" method="post">
     <p:remoteCommand name="loadData"
       action="#{sensorOffsetsBean.loadData}" process="@this"
-      update="firstName secondName :timeSeriesForm:plotData :offsetForm:offsetsList :offsetForm:firstName :offsetForm:secondName :timeSeriesForm:series0Name :timeSeriesForm:series1Name"
+      update="firstName secondName :timeSeriesForm:plotData :offsetForm:offsetsList :offsetForm:firstName :offsetForm:secondName :timeSeriesForm:series0Name :timeSeriesForm:series1Name :timeSeriesForm:offsetsData"
       oncomplete="dataPrepared()" />
 
     <p:remoteCommand name="changeGroup"
       action="#{sensorOffsetsBean.preparePageData}" process="currentPair"
-      update="firstName secondName :timeSeriesForm:plotData :offsetForm:offsetsList :offsetForm:firstName :offsetForm:secondName :timeSeriesForm:series0Name :timeSeriesForm:series1Name"
+      update="firstName secondName :timeSeriesForm:plotData :offsetForm:offsetsList :offsetForm:firstName :offsetForm:secondName :timeSeriesForm:series0Name :timeSeriesForm:series1Name :timeSeriesForm:offsetsData"
       oncomplete="dataPrepared()" />
 
     <p:toolbar styleClass="plotPageHeader">
@@ -81,8 +81,10 @@
         <h:inputHidden id="plotData" value="#{sensorOffsetsBean.timeSeriesData}"/>
         <h:inputHidden id="series0Name" value="#{sensorOffsetsBean.firstName}"/>
         <h:inputHidden id="series1Name" value="#{sensorOffsetsBean.secondName}"/>
+        <h:inputHidden id="offsetsData" value="#{sensorOffsetsBean.offsetsListJson}"/>
         <div id="timeSeriesContainer">
-          <div id="timeSeriesPlot" class="plot"></div>
+          <div id="timeSeriesPlotContainer" class="plot dataPlot"></div>
+          <div id="highlightPlotContainer" class="plot selectionPlot"></div>
           <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
             <f:facet name="left">
               <p:commandButton icon="zoomOutButton" onclick="resetZoom('timeSeriesPlot'); return false;"
@@ -112,7 +114,7 @@
           
           <p:remoteCommand name="deleteOffsetAction"
             action="#{sensorOffsetsBean.deleteOffset}" process="deleteTime"
-            update="offsetsList"
+            update="offsetsList :timeSeriesForm:offsetsData"
             oncomplete="offsetsUpdated();" />
           
           <div id="offsetsTable">
@@ -179,7 +181,7 @@
             <h:panelGrid columns="2" styleClass="buttonPanel">
               <p:commandButton widgetVar="saveOffset" value="Add"
                  action="#{sensorOffsetsBean.addOffset}" ajax="true"
-                 process="firstTime secondTime" update="offsetsList" oncomplete="offsetsUpdated();"/>
+                 process="firstTime secondTime" update="offsetsList :timeSeriesForm:offsetsData" oncomplete="offsetsUpdated();"/>
               <p:commandButton value="Cancel" onclick="cancelOffset()" />
             </h:panelGrid>
           </div>

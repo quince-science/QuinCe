@@ -4,7 +4,10 @@ const SERIES_0_COLOR = '#018000';
 const SERIES_1_COLOR = '#000080';
 const SERIES_HIDDEN_COLOR = '#dddddd';
 const DATA_POINT_SIZE = 2;
-const DATA_POINT_HIGHLIGHT_SIZE = 5;
+const DATA_POINT_HIGHLIGHT_SIZE = 8.5;
+const HIGHLIGHT_POINT_SIZE = 8;
+const PLOT_X_PAD = 10;
+const PLOT_Y_PAD = 20;
 
 
 // Timer used to prevent event spamming during page resizes
@@ -24,13 +27,54 @@ var TIMESERIES_PLOT_OPTIONS = {
   legend: 'never',
   selectMode: 'euclidian',
   animatedZooms: false,
-  xRangePad: 10,
-  yRangePad: 20,
+  xRangePad: PLOT_X_PAD,
+  yRangePad: PLOT_Y_PAD,
   xlabel: 'Date/Time',
   interactionModel: intModel,
   clickCallback: timeSeriesClick,
   pointSize: DATA_POINT_SIZE,
-  highlightCircleSize: DATA_POINT_SIZE
+  highlightCircleSize: DATA_POINT_SIZE,
+  zoomCallback: function(xMin, xMax, yRange) {
+    syncZoom();
+  },
+  axes: {
+    x: {
+      drawGrid: false
+    },
+    y: {
+      drawGrid: true,
+      gridLinePattern: [1, 3],
+      gridLineColor: 'rbg(200, 200, 200)',
+    }
+  }
+}
+
+var HIGHLIGHT_PLOT_OPTIONS = {
+  colors: ['#FFA42B', '#FFFF00'],
+  drawPoints: true,
+  strokeWidth: 0.0,
+  labelsUTC: true,
+  digitsAfterDecimal: 2,
+  legend: 'never',
+  selectMode: 'euclidian',
+  animatedZooms: false,
+  xRangePad: PLOT_X_PAD,
+  yRangePad: PLOT_Y_PAD,
+  xlabel: ' ',
+  ylabel: ' ',
+  interactionModel: null,
+  pointSize: HIGHLIGHT_POINT_SIZE,
+  highlightCircleSize: 0,
+  axes: {
+    x: {
+      drawGrid: false
+    },
+    y: {
+      drawGrid: false
+    }
+  },
+  xAxisHeight: 20,
+  axisLabelFontSize: 0
 }
 
 function initPage() {
@@ -94,7 +138,10 @@ function resizeOffsetPlot() {
 // Draws the initial page data once loading is complete.
 // Called by oncomplete of loadData() PF remoteCommand
 function dataPrepared() {
+  makeHighlightPlotData();
   drawTimeSeriesPlot();
+  drawHighlightPlot();
+  resizeTimeSeriesPlots();
   PF('pleaseWait').hide();
 }
 
@@ -105,30 +152,85 @@ function newGroupSelected() {
 }
 
 function drawTimeSeriesPlot() {
+	
+  if (null != window['timeSeriesPlot']) {
+    window['timeSeriesPlot'].destroy();	
+    window['timeSeriesPlot'] = null;
+  }
+
   window['timeSeriesPlot'] = new Dygraph(
-    document.getElementById('timeSeriesPlot'),
+    document.getElementById('timeSeriesPlotContainer'),
     $('#timeSeriesForm\\:plotData').val(),
 	TIMESERIES_PLOT_OPTIONS
   );
-
-  resizeTimeSeriesPlot();
 }
 
-function resizeTimeSeriesPlot() {
+function drawHighlightPlot() {
+  if (null != window['highlightPlot']) {
+    window['highlightPlot'].destroy();
+    window['highlightPlot'] = null;
+  }
+
+  if (null != window['highlightData'] && window['highlightData'].length > 0) {
+    window['highlightPlot'] = new Dygraph(
+      document.getElementById('highlightPlotContainer'),
+      window['highlightData'],
+      HIGHLIGHT_PLOT_OPTIONS
+    );
+
+    syncZoom();
+  }
+}
+
+function resizeTimeSeriesPlots() {
   if (null != window['timeSeriesPlot'] && null != window['timeSeriesPlot'].maindiv_) {
     $('#timeSeriesContainer').width('100%');
     $('#timeSeriesContainer').height($('#timeSeries').height() - 40);
     window['timeSeriesPlot'].resize($('#timeSeriesContainer').width(), $('#timeSeriesContainer').height());
+    
+    if (null != window['highlightPlot']) {
+      window['highlightPlot'].resize($('#timeSeriesContainer').width(), $('#timeSeriesContainer').height());	
+    }
+
+    syncZoom();
   }
+}
+
+function makeHighlightPlotData() {
+  // Data is for 2 series - first is offsets, second is for 'live' highlights.
+  // Here we just build the offsets - highlights are added as required later on.  
+
+  let array = [];
+
+  JSON.parse($('#timeSeriesForm\\:offsetsData').val()).forEach( o => {
+	array.push([new Date(o['firstTime']), o['firstValue'], null]);   	
+	array.push([new Date(o['secondTime']), o['secondValue'], null]);   	
+  });
+
+  window['highlightData'] = array;
 }
 
 function resetZoom(plotName) {
   window[plotName].updateOptions({
-    yRangePad: 10,
-    xRangePad: 10
+    yRangePad: PLOT_X_PAD,
+    xRangePad: PLOT_Y_PAD
   });
 
   window[plotName].resetZoom();
+  syncZoom();
+}
+
+function syncZoom() {
+  if (null != window['highlightPlot']) {
+    let zoomOptions = {
+      dateWindow: window['timeSeriesPlot'].xAxisRange(),
+      valueRange: window['timeSeriesPlot'].yAxisRange(),
+      yRangePad: PLOT_X_PAD,
+      xRangePad: PLOT_Y_PAD
+    };
+
+    window['highlightPlot'].updateOptions(zoomOptions);
+  }
 }
 
 function startAddOffset() {
@@ -155,6 +257,9 @@ function showOffsetsTable() {
 
 function offsetsUpdated() {
   showOffsetsTable();
+  makeHighlightPlotData();
+  drawHighlightPlot();
+  resizeTimeSeriesPlots();
 }
 
 function updateOffsetTimeText() {
