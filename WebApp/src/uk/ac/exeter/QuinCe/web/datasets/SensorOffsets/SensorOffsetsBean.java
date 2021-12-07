@@ -10,6 +10,9 @@ import java.util.Set;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -67,6 +70,8 @@ public class SensorOffsetsBean extends BaseManagedBean {
   private long offsetSecond;
 
   private long deleteTime;
+
+  TimeSeriesPlotData plotData;
 
   boolean dirty = false;
 
@@ -151,15 +156,11 @@ public class SensorOffsetsBean extends BaseManagedBean {
             dataset.getId(), Arrays.asList(column.getDatabaseId())));
       }
 
-      preparePageData();
+      preparePlotData();
     } catch (Exception e) {
       e.printStackTrace();
       throw e;
     }
-  }
-
-  public void preparePageData() {
-
   }
 
   public int getCurrentPair() {
@@ -168,6 +169,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
 
   public void setCurrentPair(int currentPair) {
     this.currentPair = currentPair;
+    preparePlotData();
   }
 
   public Instrument getInstrument() {
@@ -177,19 +179,31 @@ public class SensorOffsetsBean extends BaseManagedBean {
   public String getTimeSeriesData() {
     String result = null;
 
+    if (null != plotData) {
+      result = plotData.getCSV();
+    }
+
+    return result;
+  }
+
+  private void preparePlotData() {
     if (null != sensorValues) {
       SensorGroupPair pair = getCurrentPairObject();
 
       String firstName = pair.first().getNextLinkName();
       String secondName = pair.second().getPreviousLinkName();
 
-      TimeSeriesPlotData plotData = new TimeSeriesPlotData(firstName,
-        sensorValues.get(firstName), secondName, sensorValues.get(secondName));
-
-      result = plotData.getCSV();
+      plotData = new TimeSeriesPlotData(firstName, sensorValues.get(firstName),
+        secondName, sensorValues.get(secondName));
     }
+  }
 
-    return result;
+  public void preparePageData() {
+    preparePlotData();
+  }
+
+  protected TimeSeriesPlotData getPlotData() {
+    return plotData;
   }
 
   public String getFirstName() {
@@ -205,6 +219,14 @@ public class SensorOffsetsBean extends BaseManagedBean {
   public List<SensorOffset> getOffsetsList() {
     return new ArrayList<SensorOffset>(
       dataset.getSensorOffsets().getOffsets(getCurrentPairObject()));
+  }
+
+  public String getOffsetsListJson() {
+    Gson gson = new GsonBuilder()
+      .registerTypeAdapter(SensorOffset.class, new SensorOffsetSerializer(this))
+      .create();
+
+    return gson.toJson(getOffsetsList());
   }
 
   private SensorGroupPair getCurrentPairObject() {
