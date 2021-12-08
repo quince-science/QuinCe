@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -768,18 +770,23 @@ public class SensorAssignments
    * @return The sensor column IDs
    */
   public List<Long> getSensorColumnIds() {
+    return getColumnIds(SensorType::isSensor);
+  }
 
-    List<Long> result = new ArrayList<Long>();
+  /**
+   * Get the column IDs of all diagnostic columns
+   *
+   * @return The sensor column IDs
+   */
+  public List<Long> getDiagnosticColumnIds() {
+    return getColumnIds(SensorType::isDiagnostic);
+  }
 
-    for (SensorType type : keySet()) {
-      if (type.isSensor()) {
-        get(type).stream().forEach(a -> {
-          result.add(a.getDatabaseId());
-        });
-      }
-    }
-
-    return result;
+  private List<Long> getColumnIds(Predicate<SensorType> filterMethod) {
+    return keySet().stream().filter(filterMethod)
+      .map(t -> get(t).stream().map(a -> a.getDatabaseId())
+        .collect(Collectors.toList()))
+      .flatMap(l -> l.stream()).collect(Collectors.toList());
   }
 
   /**
