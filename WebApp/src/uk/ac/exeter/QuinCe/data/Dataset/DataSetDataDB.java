@@ -243,7 +243,9 @@ public class DataSetDataDB {
             dataSet.getInstrumentId());
 
           if (!instrument.getSensorAssignments().getSensorColumnIds()
-            .contains(value.getColumnId())) {
+            .contains(value.getColumnId())
+            && !instrument.getSensorAssignments().getDiagnosticColumnIds()
+              .contains(value.getColumnId())) {
 
             throw new InvalidSensorValueException(
               "Column specified in SensorValue is not valid for the instrument",
@@ -1174,7 +1176,7 @@ public class DataSetDataDB {
    * @param value
    *          The value being searched for
    * @return The times of the {@link SensorValue}s that match the passed in
-   *           value.
+   *         value.
    * @throws MissingParamException
    *           If any required parameters are missing
    * @throws DatabaseException
@@ -1208,7 +1210,7 @@ public class DataSetDataDB {
    * @param value
    *          The value being searched for
    * @return The times of the {@link SensorValue}s that match the passed in
-   *           value.
+   *         value.
    * @throws MissingParamException
    *           If any required parameters are missing
    * @throws DatabaseException
