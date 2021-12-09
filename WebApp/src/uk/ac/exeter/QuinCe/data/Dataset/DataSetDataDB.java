@@ -242,11 +242,7 @@ public class DataSetDataDB {
           Instrument instrument = InstrumentDB.getInstrument(conn,
             dataSet.getInstrumentId());
 
-          if (!instrument.getSensorAssignments().getSensorColumnIds()
-            .contains(value.getColumnId())
-            && !instrument.getSensorAssignments().getDiagnosticColumnIds()
-              .contains(value.getColumnId())) {
-
+          if (!instrument.columnValid(value.getColumnId())) {
             throw new InvalidSensorValueException(
               "Column specified in SensorValue is not valid for the instrument",
               value);
