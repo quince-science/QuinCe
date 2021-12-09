@@ -23,6 +23,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -768,5 +769,44 @@ public class Instrument {
 
   public boolean hasVariable(Variable variable) {
     return variables.contains(variable);
+  }
+
+  /**
+   * Convenience method to determine whether or not this instrument has a fixed
+   * position.
+   *
+   * @return {@code true} if the instrument has a fixed position; {@code false}
+   *         otherwise.
+   */
+  public boolean fixedPosition() {
+    return null != getProperty("longitude");
+  }
+
+  public boolean columnValid(long columnId) {
+
+    boolean result = true;
+
+    try {
+      if (columnId == FileDefinition.LONGITUDE_COLUMN_ID
+        || columnId == FileDefinition.LATITUDE_COLUMN_ID) {
+        if (fixedPosition()) {
+          result = false;
+        }
+      } else if (null == getSensorAssignments()
+        .getSensorTypeForDBColumn(columnId)) {
+        result = false;
+      } else {
+        result = ((hasRunTypes()
+          && getSensorAssignments().getSensorTypeForDBColumn(columnId)
+            .equals(SensorType.RUN_TYPE_SENSOR_TYPE))
+          || getSensorAssignments().getSensorColumnIds().contains(columnId)
+          || getSensorAssignments().getDiagnosticColumnIds()
+            .contains(columnId));
+      }
+    } catch (RecordNotFoundException e) {
+      result = false;
+    }
+
+    return result;
   }
 }
