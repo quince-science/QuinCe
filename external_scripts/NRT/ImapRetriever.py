@@ -2,6 +2,7 @@ import email
 import logging
 import traceback
 from email.header import decode_header
+import ssl
 
 from imapclient import IMAPClient
 
@@ -56,7 +57,7 @@ class ImapRetriever(DataRetriever):
             self.imap_conn = IMAPClient(host=self._configuration["Server"],
                                         port=self._configuration["Port"])
 
-        except IMAPClient.Error:
+        except (IMAPClient.Error, ssl.SSLCertVerificationError):
             self.log(logging.CRITICAL, "Cannot connect to IMAP server: "
                      + traceback.format_exc())
             config_ok = False
