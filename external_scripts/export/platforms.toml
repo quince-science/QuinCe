@@ -10,7 +10,7 @@ author_list = 'Skjelvan, Ingunn'
 NRT = 'False'
 
 	[58GS.export]
-	NRT = ['ICOS','CMEMS']
+	NRT = ['ICOS']
 	L2 = ['ICOS']
 
 # New ICES code for G O Sars - in use from Jan 2021
@@ -25,7 +25,7 @@ author_list = 'Skjelvan, Ingunn'
 NRT = 'True'
 
 	[58G2.export]
-	NRT = ['ICOS','CMEMS']
+	NRT = ['ICOS']
 	L2 = ['ICOS']
 
 	[LMEL]
@@ -43,7 +43,7 @@ author_list = 'Becker, Meike; Olsen, Are'
 NRT = 'True'
 
 	[26NA.export]
-	NRT = ['ICOS','CMEMS']
+	NRT = ['ICOS']
 	L2 = ['ICOS']
 
 	[OXYH2]
@@ -55,9 +55,12 @@ submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_VOS%20France-Brazil'
 category_code = '32'
 call_sign = 'OXOF2'
-export = ['ICOS','CMEMS']
 creation_date = '2019-03-27T14:54:38Z'
 author_list = 'Lefèvre, Nathalie'
+
+	[65DK.export]
+	NRT = ['ICOS']
+  L2 = ['ICOS']
 
 	[OXOF2]
 	platform_id = '65DK'
@@ -112,7 +115,7 @@ affiliation = 'Flanders Marine Institute (VLIZ), Wandelaarkaai 7, 8400, Ostend, 
 NRT = 'True'
 
 	[11SS.export]
-	NRT = ['ICOS','CMEMS']
+	NRT = ['ICOS']
 	L2 = ['ICOS']
 
 	[ORBS]
