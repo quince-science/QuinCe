@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonNull;
+
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
@@ -18,26 +21,12 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 public class TimeSeriesPlotData {
 
   /**
-   * The name of the first series.
-   */
-  private final String series1Name;
-
-  /**
-   * The name of the second series.
-   */
-  private final String series2Name;
-
-  /**
    * The internal data structure.
    */
   private TreeMap<LocalDateTime, Tuple> data;
 
-  protected TimeSeriesPlotData(String series1Name,
-    List<SensorValue> series1Points, String series2Name,
+  protected TimeSeriesPlotData(List<SensorValue> series1Points,
     List<SensorValue> series2Points) {
-
-    this.series1Name = series1Name;
-    this.series2Name = series2Name;
 
     data = new TreeMap<LocalDateTime, Tuple>();
     processSeries1(series1Points);
@@ -68,25 +57,30 @@ public class TimeSeriesPlotData {
     });
   }
 
-  public String getCSV() {
-    StringBuilder result = new StringBuilder();
+  public String getArray() {
 
-    result.append("Date/Time,");
-    result.append(series1Name);
-    result.append(',');
-    result.append(series2Name);
-    result.append('\n');
+    JsonArray json = new JsonArray();
 
     for (Map.Entry<LocalDateTime, Tuple> entry : data.entrySet()) {
-      result.append(DateTimeUtils.toIsoDate(entry.getKey()));
-      result.append(',');
-      result.append(entry.getValue().getFirst());
-      result.append(',');
-      result.append(entry.getValue().getSecond());
-      result.append('\n');
+      JsonArray entryArray = new JsonArray();
+      entryArray.add(DateTimeUtils.dateToLong(entry.getKey()));
+
+      if (entry.getValue().getFirst().isNaN()) {
+        entryArray.add(JsonNull.INSTANCE);
+      } else {
+        entryArray.add(entry.getValue().getFirst());
+      }
+
+      if (entry.getValue().getSecond().isNaN()) {
+        entryArray.add(JsonNull.INSTANCE);
+      } else {
+        entryArray.add(entry.getValue().getSecond());
+      }
+
+      json.add(entryArray);
     }
 
-    return result.toString();
+    return json.toString();
   }
 
   protected Double getFirstSeriesValue(LocalDateTime time) {
