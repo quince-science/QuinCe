@@ -180,7 +180,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
     String result = null;
 
     if (null != plotData) {
-      result = plotData.getCSV();
+      result = plotData.getArray();
     }
 
     return result;
@@ -193,8 +193,8 @@ public class SensorOffsetsBean extends BaseManagedBean {
       String firstName = pair.first().getNextLinkName();
       String secondName = pair.second().getPreviousLinkName();
 
-      plotData = new TimeSeriesPlotData(firstName, sensorValues.get(firstName),
-        secondName, sensorValues.get(secondName));
+      plotData = new TimeSeriesPlotData(sensorValues.get(firstName),
+        sensorValues.get(secondName));
     }
   }
 

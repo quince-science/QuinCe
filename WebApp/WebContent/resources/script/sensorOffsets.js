@@ -1,6 +1,6 @@
 var UPDATING_UI = false;
 var SELECT_STATE = -1;
-const SERIES_0_COLOR = '#018000';
+const SERIES_0_COLOR = '#53C621';
 const SERIES_1_COLOR = '#000080';
 const SERIES_HIDDEN_COLOR = '#dddddd';
 const DATA_POINT_SIZE = 2;
@@ -34,9 +34,6 @@ var TIMESERIES_PLOT_OPTIONS = {
   clickCallback: timeSeriesClick,
   pointSize: DATA_POINT_SIZE,
   highlightCircleSize: DATA_POINT_SIZE,
-  zoomCallback: function(xMin, xMax, yRange) {
-    syncZoom();
-  },
   axes: {
     x: {
       drawGrid: false
@@ -47,34 +44,6 @@ var TIMESERIES_PLOT_OPTIONS = {
       gridLineColor: 'rbg(200, 200, 200)',
     }
   }
-}
-
-var HIGHLIGHT_PLOT_OPTIONS = {
-  colors: ['#FFA42B', '#FFFF00'],
-  drawPoints: true,
-  strokeWidth: 0.0,
-  labelsUTC: true,
-  digitsAfterDecimal: 2,
-  legend: 'never',
-  selectMode: 'euclidian',
-  animatedZooms: false,
-  xRangePad: PLOT_X_PAD,
-  yRangePad: PLOT_Y_PAD,
-  xlabel: ' ',
-  ylabel: ' ',
-  interactionModel: null,
-  pointSize: HIGHLIGHT_POINT_SIZE,
-  highlightCircleSize: 0,
-  axes: {
-    x: {
-      drawGrid: false
-    },
-    y: {
-      drawGrid: false
-    }
-  },
-  xAxisHeight: 20,
-  axisLabelFontSize: 0
 }
 
 function initPage() {
@@ -131,17 +100,11 @@ function resizeBottomRight() {
   $('#offsetFormContainer').height('100%');
 }
 
-function resizeOffsetPlot() {
-  console.log('resizeOffsetPlot');
-}
-
 // Draws the initial page data once loading is complete.
 // Called by oncomplete of loadData() PF remoteCommand
 function dataPrepared() {
-  makeHighlightPlotData();
   drawTimeSeriesPlot();
-  drawHighlightPlot();
-  resizeTimeSeriesPlots();
+  resizeTimeSeriesPlot();
   PF('pleaseWait').hide();
 }
 
@@ -157,57 +120,30 @@ function drawTimeSeriesPlot() {
     window['timeSeriesPlot'].destroy();	
     window['timeSeriesPlot'] = null;
   }
+  
+  let plotOptions = Object.assign({}, TIMESERIES_PLOT_OPTIONS);
+  plotOptions.series = {}
+  plotOptions['series'][$('#timeSeriesForm\\:series1Name').val()] = {
+    'axis': 'y2',
+  }
+  plotOptions.ylabel = $('#timeSeriesForm\\:series0Name').val()
+  plotOptions.y2label = $('#timeSeriesForm\\:series1Name').val()
+  plotOptions.labels = ['Date/Time', $('#timeSeriesForm\\:series0Name').val(),
+  	$('#timeSeriesForm\\:series1Name').val()]
 
   window['timeSeriesPlot'] = new Dygraph(
     document.getElementById('timeSeriesPlotContainer'),
-    $('#timeSeriesForm\\:plotData').val(),
-	TIMESERIES_PLOT_OPTIONS
+    makePlotData,
+    plotOptions
   );
 }
 
-function drawHighlightPlot() {
-  if (null != window['highlightPlot']) {
-    window['highlightPlot'].destroy();
-    window['highlightPlot'] = null;
-  }
-
-  if (null != window['highlightData'] && window['highlightData'].length > 0) {
-    window['highlightPlot'] = new Dygraph(
-      document.getElementById('highlightPlotContainer'),
-      window['highlightData'],
-      HIGHLIGHT_PLOT_OPTIONS
-    );
-
-    syncZoom();
-  }
-}
-
-function resizeTimeSeriesPlots() {
+function resizeTimeSeriesPlot() {
   if (null != window['timeSeriesPlot'] && null != window['timeSeriesPlot'].maindiv_) {
     $('#timeSeriesContainer').width('100%');
     $('#timeSeriesContainer').height($('#timeSeries').height() - 40);
     window['timeSeriesPlot'].resize($('#timeSeriesContainer').width(), $('#timeSeriesContainer').height());
-    
-    if (null != window['highlightPlot']) {
-      window['highlightPlot'].resize($('#timeSeriesContainer').width(), $('#timeSeriesContainer').height());	
-    }
-
-    syncZoom();
   }
-}
-
-function makeHighlightPlotData() {
-  // Data is for 2 series - first is offsets, second is for 'live' highlights.
-  // Here we just build the offsets - highlights are added as required later on.  
-
-  let array = [];
-
-  JSON.parse($('#timeSeriesForm\\:offsetsData').val()).forEach( o => {
-	array.push([new Date(o['firstTime']), o['firstValue'], null]);   	
-	array.push([new Date(o['secondTime']), o['secondValue'], null]);   	
-  });
-
-  window['highlightData'] = array;
 }
 
 function resetZoom(plotName) {
@@ -217,20 +153,6 @@ function resetZoom(plotName) {
   });
 
   window[plotName].resetZoom();
-  syncZoom();
-}
-
-function syncZoom() {
-  if (null != window['highlightPlot']) {
-    let zoomOptions = {
-      dateWindow: window['timeSeriesPlot'].xAxisRange(),
-      valueRange: window['timeSeriesPlot'].yAxisRange(),
-      yRangePad: PLOT_X_PAD,
-      xRangePad: PLOT_Y_PAD
-    };
-
-    window['highlightPlot'].updateOptions(zoomOptions);
-  }
 }
 
 function startAddOffset() {
@@ -257,9 +179,7 @@ function showOffsetsTable() {
 
 function offsetsUpdated() {
   showOffsetsTable();
-  makeHighlightPlotData();
-  drawHighlightPlot();
-  resizeTimeSeriesPlots();
+  resizeTimeSeriesPlot();
 }
 
 function updateOffsetTimeText() {
@@ -392,4 +312,16 @@ function updateHighlightSettings() {
 function deleteOffset(offsetTime) {
   $('#offsetForm\\:deleteTime').val(offsetTime);
   deleteOffsetAction(); // PF remoteCommand
+}
+
+// Make the data for the plots - combine data and offsets
+function makePlotData() {
+	
+  data = JSON.parse($('#timeSeriesForm\\:plotData').val());
+
+  data.forEach((row) => {
+    row[0] = new Date(row[0]);
+  });
+  
+  return data;
 }
