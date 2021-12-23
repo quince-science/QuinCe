@@ -45,15 +45,26 @@ public class SensorOffsetSerializer implements JsonSerializer<SensorOffset> {
 
       JsonObject json = new JsonObject();
       json.addProperty("firstTime", DateTimeUtils.dateToLong(firstTime));
-      json.addProperty("firstValue", plotData.getFirstSeriesValue(firstTime));
+
+      Double firstValue = plotData.getFirstSeriesValue(firstTime);
+      if (firstValue.isNaN()) {
+        json.add("firstValue", JsonNull.INSTANCE);
+      } else {
+        json.addProperty("firstValue", firstValue);
+      }
+
       json.addProperty("secondTime", DateTimeUtils.dateToLong(secondTime));
-      json.addProperty("secondValue",
-        plotData.getSecondSeriesValue(secondTime));
+
+      Double secondValue = plotData.getSecondSeriesValue(secondTime);
+      if (secondValue.isNaN()) {
+        json.add("secondValue", JsonNull.INSTANCE);
+      } else {
+        json.addProperty("secondValue", secondValue);
+      }
 
       result = json;
     }
 
     return result;
   }
-
 }

@@ -1035,8 +1035,8 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
 
   let labels = getPlotLabels(index);
 
-  var xAxisRange = null;
-  var yAxisRange = null;
+  let xAxisRange = null;
+  let yAxisRange = null;
 
   if (!resetZoom && null != window[plotVar]) {
     xAxisRange = window[plotVar].xAxisRange();
