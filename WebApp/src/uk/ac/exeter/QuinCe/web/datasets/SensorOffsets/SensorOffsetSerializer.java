@@ -62,6 +62,8 @@ public class SensorOffsetSerializer implements JsonSerializer<SensorOffset> {
         json.addProperty("secondValue", secondValue);
       }
 
+      json.addProperty("offset", src.getOffset());
+
       result = json;
     }
 
