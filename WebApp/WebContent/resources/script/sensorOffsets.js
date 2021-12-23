@@ -10,6 +10,9 @@ const HIGHLIGHT_COLOR = '#FF8800';
 const PLOT_X_PAD = 10;
 const PLOT_Y_PAD = 20;
 
+var firstDate = null;
+var lastDate = null;
+
 
 // Timer used to prevent event spamming during page resizes
 var resizeEventTimer = null;
@@ -43,6 +46,33 @@ var TIMESERIES_PLOT_OPTIONS = {
       drawGrid: true,
       gridLinePattern: [1, 3],
       gridLineColor: 'rbg(200, 200, 200)',
+    }
+  }
+}
+
+var OFFSET_PLOT_OPTIONS = {
+  colors: ['#9999ff'],
+  drawPoints: true,
+  strokeWidth: 2,
+  labelsUTC: true,
+  digitsAfterDecimal: 2,
+  legend: 'never',
+  selectMode: 'euclidian',
+  animatedZooms: false,
+  xRangePad: PLOT_X_PAD,
+  yRangePad: PLOT_Y_PAD,
+  xlabel: 'Date/Time',
+  ylabel: 'Offset (s)',
+  highlightCircleSize: DATA_POINT_SIZE,
+  axes: {
+    x: {
+      drawGrid: false
+    },
+    y: {
+      drawGrid: true,
+      gridLinePattern: [1, 3],
+      gridLineColor: 'rbg(200, 200, 200)',
+      includeZero: true
     }
   }
 }
@@ -84,14 +114,11 @@ function layoutPage() {
 }
 
 function resizeAllContent() {
-  console.log('resizeAllContent');
-  resizeTimeSeriesPlot();
-  resizeOffsetPlot();
+  resizePlots();
   resizeBottomRight();
 }
 
 function resizeBottomHalf() {
-  console.log('resizeBottomHalf');
 }
 
 function resizeBottomRight() {
@@ -104,8 +131,9 @@ function resizeBottomRight() {
 // Draws the initial page data once loading is complete.
 // Called by oncomplete of loadData() PF remoteCommand
 function dataPrepared() {
-  drawTimeSeriesPlot(false);
-  resizeTimeSeriesPlot();
+  drawTimeSeriesPlot(true);
+  drawOffsetsPlot();
+  resizePlots();
   PF('pleaseWait').hide();
 }
 
@@ -156,11 +184,17 @@ function drawTimeSeriesPlot(resetZoom) {
 
 }
 
-function resizeTimeSeriesPlot() {
+function resizePlots() {
   if (null != window['timeSeriesPlot'] && null != window['timeSeriesPlot'].maindiv_) {
     $('#timeSeriesContainer').width('100%');
     $('#timeSeriesContainer').height($('#timeSeries').height() - 40);
     window['timeSeriesPlot'].resize($('#timeSeriesContainer').width(), $('#timeSeriesContainer').height());
+  }
+
+  if (null != window['offsetsPlot'] && null != window['offsetsPlot'].maindiv_) {
+    $('#offsetsPlotContainer').width('100%');
+    $('#offsetsPlotContainer').height($('#timeSeries').height() - 40);
+    window['offsetsPlot'].resize($('#offsetsPlot').width(), $('#offsetsPlotContainer').height());
   }
 }
 
@@ -197,7 +231,8 @@ function showOffsetsTable() {
 
 function offsetsUpdated() {
   showOffsetsTable();
-  drawTimeSeriesPlot();
+  drawTimeSeriesPlot(false);
+  drawOffsetsPlot();
 }
 
 function updateOffsetTimeText() {
@@ -337,9 +372,12 @@ function makePlotData() {
 	
   data = JSON.parse($('#timeSeriesForm\\:plotData').val());
 
-  data.forEach((row) => {
+  data.forEach(row => {
     row[0] = new Date(row[0]);
   });
+  
+  firstDate = data[0][0];
+  lastDate = data[data.length - 1][0];
   
   return data;
 }
@@ -375,4 +413,53 @@ function drawHighlightCircle(canvas, g, x, y) {
   canvas.beginPath();
   canvas.arc(x, y, HIGHLIGHT_POINT_SIZE, 0, 2 * Math.PI, false);
   canvas.fill();  
+}
+
+function drawOffsetsPlot() {
+
+  if (null != window['offsetsPlot']) {
+    window['offsetsPlot'].destroy();
+    window['offsetsPlot'] = null;
+  }
+
+  data = [];
+
+  let offsets = [];
+  
+  let minOffset = 0;
+  let maxOffset = 0;
+  
+  if ($('#timeSeriesForm\\:offsetsData').val() != '') {
+    offsets = JSON.parse($('#timeSeriesForm\\:offsetsData').val());
+  }
+  
+  if (offsets.length == 0) {
+    data.push([firstDate, 0]);
+    data.push([lastDate, 0]);
+  } else {
+    data.push([firstDate, offsets[0]['offset'] / 1000]);
+    
+    minOffset = Number.MAX_SAFE_INTEGER;
+    maxOffset = Number.MIN_SAFE_INTEGER;
+    
+    offsets.forEach(offset => {
+	  offsetSeconds = offset['offset'] / 1000;
+      data.push([new Date(offset['firstTime']), offsetSeconds]);
+      if (offsetSeconds < minOffset) {
+        minOffset = offsetSeconds;
+      }
+      if (offsetSeconds > maxOffset) {
+        maxOffset = offsetSeconds;
+      }
+    });
+    
+    data.push([lastDate, offsets[offsets.length - 1]['offset'] / 1000]);
+  }
+
+  let plotOptions = Object.assign({}, OFFSET_PLOT_OPTIONS);
+
+  window['offsetsPlot'] = new Dygraph(
+    document.getElementById('offsetsPlotContainer'),
+    data, plotOptions
+  );
 }
