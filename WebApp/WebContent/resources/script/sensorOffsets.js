@@ -6,6 +6,7 @@ const SERIES_HIDDEN_COLOR = '#dddddd';
 const DATA_POINT_SIZE = 2;
 const DATA_POINT_HIGHLIGHT_SIZE = 8.5;
 const HIGHLIGHT_POINT_SIZE = 8;
+const HIGHLIGHT_COLOR = '#FF8800';
 const PLOT_X_PAD = 10;
 const PLOT_Y_PAD = 20;
 
@@ -103,7 +104,7 @@ function resizeBottomRight() {
 // Draws the initial page data once loading is complete.
 // Called by oncomplete of loadData() PF remoteCommand
 function dataPrepared() {
-  drawTimeSeriesPlot();
+  drawTimeSeriesPlot(false);
   resizeTimeSeriesPlot();
   PF('pleaseWait').hide();
 }
@@ -114,9 +115,17 @@ function newGroupSelected() {
   changeGroup(); // PF RemoteCommand
 }
 
-function drawTimeSeriesPlot() {
-	
+function drawTimeSeriesPlot(resetZoom) {
+
+  let xAxisRange = null;
+  let yAxisRange = null;
+
   if (null != window['timeSeriesPlot']) {
+	if (!resetZoom) {
+      xAxisRange = window['timeSeriesPlot'].xAxisRange();
+      yAxisRange = window['timeSeriesPlot'].yAxisRange();
+	}
+
     window['timeSeriesPlot'].destroy();	
     window['timeSeriesPlot'] = null;
   }
@@ -124,18 +133,27 @@ function drawTimeSeriesPlot() {
   let plotOptions = Object.assign({}, TIMESERIES_PLOT_OPTIONS);
   plotOptions.series = {}
   plotOptions['series'][$('#timeSeriesForm\\:series1Name').val()] = {
-    'axis': 'y2',
-  }
-  plotOptions.ylabel = $('#timeSeriesForm\\:series0Name').val()
-  plotOptions.y2label = $('#timeSeriesForm\\:series1Name').val()
+    'axis': 'y2'
+  };
+  plotOptions.ylabel = $('#timeSeriesForm\\:series0Name').val();
+  plotOptions.y2label = $('#timeSeriesForm\\:series1Name').val();
   plotOptions.labels = ['Date/Time', $('#timeSeriesForm\\:series0Name').val(),
-  	$('#timeSeriesForm\\:series1Name').val()]
+  	$('#timeSeriesForm\\:series1Name').val()];
+  plotOptions.underlayCallback = drawHighlights; // Function call
+
+  if (!resetZoom) {
+    plotOptions.dateWindow = xAxisRange;
+    plotOptions.valueRange = yAxisRange;
+    plotOptions.yRangePad = 0;
+    plotOptions.xRangePad = 0;
+  }
 
   window['timeSeriesPlot'] = new Dygraph(
     document.getElementById('timeSeriesPlotContainer'),
     makePlotData,
     plotOptions
   );
+
 }
 
 function resizeTimeSeriesPlot() {
@@ -179,7 +197,7 @@ function showOffsetsTable() {
 
 function offsetsUpdated() {
   showOffsetsTable();
-  resizeTimeSeriesPlot();
+  drawTimeSeriesPlot();
 }
 
 function updateOffsetTimeText() {
@@ -324,4 +342,37 @@ function makePlotData() {
   });
   
   return data;
+}
+
+function drawHighlights(canvas, area, g) {
+
+  if ($('#timeSeriesForm\\:offsetsData').val() != '') {
+	let highlights = JSON.parse($('#timeSeriesForm\\:offsetsData').val());
+
+    canvas.fillStyle = HIGHLIGHT_COLOR;
+    canvas.strokeStyle = HIGHLIGHT_COLOR;
+    canvas.lineWidth = 3;
+    canvas.setLineDash([5, 3]);
+	
+	highlights.forEach((h) => {
+      let x1 = g.toDomXCoord(new Date(h['firstTime']));
+      let y1 = g.toDomYCoord(h['firstValue'], 0);
+      let x2 = g.toDomXCoord(new Date(h['secondTime']));
+      let y2 = g.toDomYCoord(h['secondValue'], 1);
+		
+	  drawHighlightCircle(canvas, g, x1, y1);
+	  drawHighlightCircle(canvas, g, x2, y2);
+	  
+	  canvas.beginPath();
+	  canvas.moveTo(x1, y1);
+	  canvas.lineTo(x2, y2);
+	  canvas.stroke();
+  	});
+  } 
+}
+
+function drawHighlightCircle(canvas, g, x, y) {  
+  canvas.beginPath();
+  canvas.arc(x, y, HIGHLIGHT_POINT_SIZE, 0, 2 * Math.PI, false);
+  canvas.fill();  
 }
