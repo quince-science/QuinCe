@@ -1,6 +1,6 @@
 .pageContent {
   position: absolute;
-  top: 35px;
+  top: 45px;
   width: 100%;
   height: calc(100% - 73px); /* Also change in sensorOffsets.js */
   overflow: hidden;
@@ -24,9 +24,26 @@
   overflow: hidden !important;
 }
 
+#bottomLeft {
+  overflow: hidden !important;
+}
+
+#bottomRight {
+  overflow: hidden !important;
+}
+
 #offsetFormContainer {
   display: none;
   font-weight: bold;
+  overflow: hidden !important;
+}
+
+.offsetTable {
+  height: 100%;
+}
+
+.offsetTableOffsetColumn {
+  width: 125px;
 }
 
 .plotPageHeader {
