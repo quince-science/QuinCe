@@ -106,6 +106,7 @@ function layoutPage() {
   // Split bottom left/right
   $('#bottomHalf').split({
     orientation: 'vertical',
+    position: $('#bottomHalf').width() - 425,
     onDragEnd: function() {
       resizeBottomHalf();
     }
@@ -114,14 +115,12 @@ function layoutPage() {
 }
 
 function resizeAllContent() {
-  resizePlots();
-  resizeBottomRight();
+  resizeTimeSeriesPlot();
+  resizeBottomHalf();
 }
 
 function resizeBottomHalf() {
-}
-
-function resizeBottomRight() {
+  resizeOffsetPlot();
   $('#offsetsTable').width('100%');
   $('#offsetsTable').height('100%');
   $('#offsetFormContainer').width('100%');
@@ -133,7 +132,7 @@ function resizeBottomRight() {
 function dataPrepared() {
   drawTimeSeriesPlot(true);
   drawOffsetsPlot();
-  resizePlots();
+  resizeAllContent();
   PF('pleaseWait').hide();
 }
 
@@ -184,16 +183,18 @@ function drawTimeSeriesPlot(resetZoom) {
 
 }
 
-function resizePlots() {
+function resizeTimeSeriesPlot() {
   if (null != window['timeSeriesPlot'] && null != window['timeSeriesPlot'].maindiv_) {
     $('#timeSeriesContainer').width('100%');
     $('#timeSeriesContainer').height($('#timeSeries').height() - 40);
     window['timeSeriesPlot'].resize($('#timeSeriesContainer').width(), $('#timeSeriesContainer').height());
   }
+}
 
+function resizeOffsetPlot() {
   if (null != window['offsetsPlot'] && null != window['offsetsPlot'].maindiv_) {
     $('#offsetsPlotContainer').width('100%');
-    $('#offsetsPlotContainer').height($('#timeSeries').height() - 40);
+    $('#offsetsPlotContainer').height($('#bottomLeft').height() - 5);
     window['offsetsPlot'].resize($('#offsetsPlot').width(), $('#offsetsPlotContainer').height());
   }
 }
@@ -336,16 +337,16 @@ function updateHighlightSettings() {
     if (SELECT_STATE == 0) {
       series0Opts.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;	
     } else {
-	  series0Opts.highlightCircleSize = DATA_POINT_SIZE;
+      series0Opts.highlightCircleSize = DATA_POINT_SIZE;
     }
 
     seriesOpts[$('#timeSeriesForm\\:series0Name').val()] = series0Opts;
     
     let series1Opts = {}
     if (SELECT_STATE == 0) {
-	  series1Opts.color = SERIES_HIDDEN_COLOR;
+      series1Opts.color = SERIES_HIDDEN_COLOR;
     } else {
-	  series1Opts.color = SERIES_1_COLOR;	
+      series1Opts.color = SERIES_1_COLOR;	
     }
 
     if (SELECT_STATE == 1) {
@@ -356,8 +357,16 @@ function updateHighlightSettings() {
 
     seriesOpts[$('#timeSeriesForm\\:series1Name').val()] = series1Opts;
 
+	// For some reason the graph likes to mess up the left Y axis
+	// when we do this. Resetting the X axis range seems to stop it happening.
+	// Ugly but I don't have time to investigate further.
+    axisOpts = {};
+    axisOpts.x = {};
+    axisOpts.x.valueRange = window['timeSeriesPlot'].xAxisRange();
+
     window['timeSeriesPlot'].updateOptions({
-      series: seriesOpts	
+      series: seriesOpts,
+      axes: axisOpts
     });
   }
 }
@@ -406,6 +415,8 @@ function drawHighlights(canvas, area, g) {
 	  canvas.lineTo(x2, y2);
 	  canvas.stroke();
   	});
+  	
+  	canvas.setLineDash([]);
   } 
 }
 

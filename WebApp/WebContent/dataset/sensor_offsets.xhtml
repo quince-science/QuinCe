@@ -101,9 +101,7 @@
     <!-- Bottom half is split further -->
     <div id="bottomHalf">
       <div id="bottomLeft">
-        <div id="offsetsPlotOuter" class="plotContainer">
-          <div id="offsetsPlotContainer" class="plot dataPlot"></div>
-        </div>
+        <div id="offsetsPlotContainer" class="plot dataPlot"></div>
       </div>
       <div id="bottomRight">
         <h:form id="offsetForm" method="post">
@@ -117,14 +115,15 @@
             oncomplete="offsetsUpdated();" />
           
           <div id="offsetsTable">
-            <p:dataTable id="offsetsList" var="offset" value="#{sensorOffsetsBean.offsetsList}">
+            <p:dataTable id="offsetsList" scrollable="true" styleClass="offsetTable"
+              var="offset" value="#{sensorOffsetsBean.offsetsList}">
               <p:column>
                 <f:facet name="header">
                   Time
                 </f:facet>
                 <h:outputText value="#{offset.time}"/>
               </p:column>
-              <p:column styleClass="numericCol">
+              <p:column styleClass="numericCol offsetTableOffsetColumn">
                 <f:facet name="header">
                   Offset
                 </f:facet>
