@@ -17,6 +17,10 @@ var lastDate = null;
 // Timer used to prevent event spamming during page resizes
 var resizeEventTimer = null;
 
+// The plot/table ratio
+var splitProportion = 0.5;
+
+
 var intModel = Dygraph.defaultInteractionModel;
 intModel.dblclick = function(e, x, points) {
   // Empty callback
@@ -44,8 +48,6 @@ var TIMESERIES_PLOT_OPTIONS = {
     },
     y: {
       drawGrid: true,
-      gridLinePattern: [1, 3],
-      gridLineColor: 'rbg(200, 200, 200)',
     }
   }
 }
@@ -83,7 +85,7 @@ function initPage() {
   // When the window is resized, scale the panels
   $(window).resize(function() {
     clearTimeout(resizeEventTimer);
-    resizeEventTimer = setTimeout(resizeAllContent, 100);
+    resizeEventTimer = setTimeout(resizeAllContent, 500);
   });
 
   // Draw the basic page layout
@@ -99,22 +101,20 @@ function layoutPage() {
   $('#pageContent').split({
     orientation: 'horizontal',
     onDragEnd: function() {
-      resizeAllContent();
+      scaleSplit();
     }
   });
+}
 
-  // Split bottom left/right
-  $('#bottomHalf').split({
-    orientation: 'vertical',
-    position: $('#bottomHalf').width() - 425,
-    onDragEnd: function() {
-      resizeBottomHalf();
-    }
-  });
-
+// Handle table/plot split adjustment
+function scaleSplit() {
+  splitProportion = $('#pageContent').split().position() / $('#pageContent').height();
+  resizeAllContent();
 }
 
 function resizeAllContent() {
+  $('#pageContent').height(window.innerHeight);
+  $('#pageContent').split().position($('#pageContent').height() * splitProportion);
   resizeTimeSeriesPlot();
   resizeBottomHalf();
 }
@@ -123,6 +123,8 @@ function resizeBottomHalf() {
   resizeOffsetPlot();
   $('#offsetsTable').width('100%');
   $('#offsetsTable').height('100%');
+  $('#offsetForm').width('100%');
+  $('#offsetForm').height('100%');
   $('#offsetFormContainer').width('100%');
   $('#offsetFormContainer').height('100%');
 }
@@ -193,9 +195,9 @@ function resizeTimeSeriesPlot() {
 
 function resizeOffsetPlot() {
   if (null != window['offsetsPlot'] && null != window['offsetsPlot'].maindiv_) {
-    $('#offsetsPlotContainer').width('100%');
-    $('#offsetsPlotContainer').height($('#bottomLeft').height() - 5);
-    window['offsetsPlot'].resize($('#offsetsPlot').width(), $('#offsetsPlotContainer').height());
+    $('#offsetsPlotContainer').width($('#bottomLeft').width());
+    $('#offsetsPlotContainer').height($('#bottomLeft').height() - 50);
+    window['offsetsPlot'].resize($('#offsetsPlotContainer').width(), $('#offsetsPlotContainer').height());
   }
 }
 

@@ -108,14 +108,14 @@
           <h:inputHidden id="firstTime" value="#{sensorOffsetsBean.offsetFirst}"/>
           <h:inputHidden id="secondTime" value="#{sensorOffsetsBean.offsetSecond}"/>
           <h:inputHidden id="deleteTime" value="#{sensorOffsetsBean.deleteTime}"/>
-          
+
           <p:remoteCommand name="deleteOffsetAction"
             action="#{sensorOffsetsBean.deleteOffset}" process="deleteTime"
             update="offsetsList :timeSeriesForm:offsetsData"
             oncomplete="offsetsUpdated();" />
-          
+
           <div id="offsetsTable">
-            <p:dataTable id="offsetsList" scrollable="true" styleClass="offsetTable"
+            <p:dataTable id="offsetsList" widgetVar="offsetsList"
               var="offset" value="#{sensorOffsetsBean.offsetsList}">
               <p:column>
                 <f:facet name="header">
