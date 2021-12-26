@@ -2,7 +2,7 @@
   position: absolute;
   top: 45px;
   width: 100%;
-  height: calc(100% - 73px); /* Also change in sensorOffsets.js */
+  height: 100%;
   overflow: hidden;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -18,18 +18,29 @@
   overflow: hidden !important;
 }
 
-#offsetsPlot {
-  height: 100%;
-  width: 100%;
-  overflow: hidden !important;
+#bottomHalf {
+  display: flex;
+  align-content: flex-start;
+  flex-direction: row;
 }
 
 #bottomLeft {
   overflow: hidden !important;
+  flex-grow: 1;
+}
+
+#offsetsPlotContainer {
+  width: 100%;
+  height: 100%;
+  overflow: hidden !important;
 }
 
 #bottomRight {
-  overflow: hidden !important;
+  width: 425px;
+  height: calc(100% - 50px);
+  flex-grow: 0;
+  overflow-y: scroll;
+  overflow-x: hidden !important
 }
 
 #offsetFormContainer {
@@ -38,8 +49,8 @@
   overflow: hidden !important;
 }
 
-.offsetTable {
-  height: 100%;
+#offsetsTable {
+  height: 50%;
 }
 
 .offsetTableOffsetColumn {
