@@ -13,13 +13,11 @@ const PLOT_Y_PAD = 20;
 var firstDate = null;
 var lastDate = null;
 
-
 // Timer used to prevent event spamming during page resizes
 var resizeEventTimer = null;
 
 // The plot/table ratio
 var splitProportion = 0.5;
-
 
 var intModel = Dygraph.defaultInteractionModel;
 intModel.dblclick = function(e, x, points) {
@@ -239,28 +237,40 @@ function offsetsUpdated() {
 }
 
 function updateOffsetTimeText() {
-  let canCalculateOffset = true;
-
   if ($('#offsetForm\\:firstTime').val() == '') {
     $('#offsetForm\\:firstTimeText')[0].innerHTML = '&lt;Not selected&gt;';
-    canCalculateOffset = false;
   } else {
 	$('#offsetForm\\:firstTimeText')[0].innerHTML = new Date(parseInt($('#offsetForm\\:firstTime').val())).toISOString();
   }
 
   if ($('#offsetForm\\:secondTime').val() == '') {
     $('#offsetForm\\:secondTimeText')[0].innerHTML = '&lt;Not selected&gt;';
-    canCalculateOffset = false;
   } else {
 	$('#offsetForm\\:secondTimeText')[0].innerHTML = new Date(parseInt($('#offsetForm\\:secondTime').val())).toISOString();
   }
 
-  if (!canCalculateOffset) {
+  let offset = calcOffset();
+  
+  if (null == offset) {
 	$('#offsetText').html('Not set');
   } else {
-	let offset = (parseFloat($('#offsetForm\\:secondTime').val()) - parseFloat($('#offsetForm\\:firstTime').val())) / 1000;
     $('#offsetText').html(offset.toFixed(3) + ' s');
+    if (offset < 0) {
+	  $('#offsetText').addClass('error');
+    } else {
+	  $('#offsetText').removeClass('error');
+    }
   }
+}
+
+function calcOffset() {
+  let offset = null;
+  
+  if ($('#offsetForm\\:firstTime').val() != '' && $('#offsetForm\\:secondTime').val() != '') {
+    offset = (parseFloat($('#offsetForm\\:secondTime').val()) - parseFloat($('#offsetForm\\:firstTime').val())) / 1000;
+  }
+  
+  return offset;
 }
 
 function timeSeriesClick(e, x, points) {
@@ -285,7 +295,9 @@ function timeSeriesClick(e, x, points) {
 }
 
 function updateAddOffsetButton() {
-  if ($('#offsetForm\\:firstTime').val() == '' || $('#offsetForm\\:secondTime').val() == '') {
+  let offset = calcOffset();
+  
+  if (null == offset || offset < 0) {
 	PF('saveOffset').disable();	
   } else {
 	PF('saveOffset').enable();
