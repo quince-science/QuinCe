@@ -330,6 +330,11 @@ public class DataSetDataDB {
 
       for (SensorValue value : sensorValues) {
 
+        if (!value.canBeSaved()) {
+          throw new InvalidSensorValueException(
+            "Attempt to store SensorValue but canBeSaved = false", value);
+        }
+
         DatasetColumn dsCol = new DatasetColumn(value);
 
         if (!verifiedColumns.contains(dsCol)) {

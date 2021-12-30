@@ -86,6 +86,11 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   private boolean dirty;
 
   /**
+   * Indicates whether or not this value can be saved to the database.
+   */
+  private boolean canBeSaved = true;
+
+  /**
    * Build a sensor value with default QC flags
    *
    * @param datasetId
@@ -137,6 +142,31 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     this.userQCFlag = userQcFlag;
     this.userQCMessage = userQcMessage;
     this.dirty = false;
+  }
+
+  /**
+   * Create a copy of an existing {@code SensorValue} but with a new timestamp.
+   * 
+   * {@code SensorValue}s created with this constructor cannot be saved to the
+   * database.
+   * 
+   * @param source
+   *          The source {@code SensorValue}.
+   * @param newTime
+   *          The new timestamp.
+   */
+  public SensorValue(SensorValue source, LocalDateTime newTime) {
+    this.id = source.id;
+    this.datasetId = source.datasetId;
+    this.columnId = source.columnId;
+    this.autoQC = source.autoQC;
+    this.userQCFlag = source.userQCFlag;
+    this.userQCMessage = source.userQCMessage;
+    this.value = source.value;
+    this.dirty = false;
+
+    this.time = newTime;
+    this.canBeSaved = false;
   }
 
   /**
@@ -263,7 +293,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * Reset the automatic QC result
    *
    * @throws RecordNotFoundException
-   *         If the value has not yet been stored in the database
+   *           If the value has not yet been stored in the database
    */
   public void clearAutomaticQC() throws RecordNotFoundException {
 
@@ -287,10 +317,10 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * Add a flag from an automatic QC routine to the automatic QC result
    *
    * @param flag
-   *        The flag
+   *          The flag
    *
    * @throws RecordNotFoundException
-   *         If the value has not yet been stored in the database
+   *           If the value has not yet been stored in the database
    */
   public void addAutoQCFlag(RoutineFlag flag)
     throws RecordNotFoundException, RoutineException {
@@ -316,9 +346,9 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * only set it if the flag is worse than the position flag.
    *
    * @param flag
-   *        The user QC flag
+   *          The user QC flag
    * @param message
-   *        The user QC message
+   *          The user QC message
    */
   public void setUserQC(Flag flag, String message) {
 
@@ -360,9 +390,9 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * </p>
    *
    * @param positionFlag
-   *        The position QC flag.
+   *          The position QC flag.
    * @param positionMessage
-   *        The position QC message.
+   *          The position QC message.
    *
    * @throws RoutineException
    */
@@ -459,7 +489,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * Clear the {@code dirty} flag on a collection of SensorValues
    *
    * @param sensorValues
-   *        The values to be cleared
+   *          The values to be cleared
    */
   public static void clearDirtyFlag(Collection<SensorValue> sensorValues) {
     for (SensorValue value : sensorValues) {
@@ -506,7 +536,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * Clear the automatic QC information for a set of SensorValues
    *
    * @param values
-   *        The values
+   *          The values
    *
    * @throws RecordNotFoundException
    */
@@ -624,9 +654,9 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * </p>
    *
    * @param values
-   *        The values.
+   *          The values.
    * @param includeNan
-   *        Indicates whether NaN values should be ignored.
+   *          Indicates whether NaN values should be ignored.
    *
    * @return The mean time.
    */
@@ -653,7 +683,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * ignored.
    *
    * @param values
-   *        The values.
+   *          The values.
    *
    * @return The mean value.
    */
@@ -750,5 +780,9 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     });
 
     return new Gson().toJson(valuesMap);
+  }
+
+  public boolean canBeSaved() {
+    return canBeSaved;
   }
 }
