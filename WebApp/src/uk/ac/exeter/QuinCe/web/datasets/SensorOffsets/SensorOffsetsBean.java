@@ -180,7 +180,8 @@ public class SensorOffsetsBean extends BaseManagedBean {
     String result = null;
 
     if (null != plotData) {
-      result = plotData.getArray();
+      result = plotData.getArray(dataset.getSensorOffsets(),
+        getCurrentPairObject());
     }
 
     return result;

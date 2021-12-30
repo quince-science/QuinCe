@@ -476,9 +476,10 @@ tr.header {
 .sectionTitle {
   margin: auto;
   margin-top: 15px;
-  text-align: center;
+  text-align: left;
   font-size: 1.5em;
   font-weight: 700;
+  text-decoration: underline;
 }
 
 .smallHeader {
