@@ -95,6 +95,21 @@
   margin-top: -13px !important;
 }
 
+.offsetsButton {
+  background-image: url("#{resource['image/offsets_button.svg']}") !important;
+  background-size: cover;
+  margin-left: -13px !important;
+  margin-top: -13px !important;
+  width: 25px !important;
+  height: 25px !important;
+}
+
 #offsetText {
   text-align: center;
+}
+
+/* PrimeFaces override */
+.plotFooterSelectBoolean {
+  height: 28px !important;
+  top: -3px !important;
 }

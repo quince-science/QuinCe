@@ -88,6 +88,11 @@
             <f:facet name="left">
               <p:commandButton icon="zoomOutButton" onclick="resetZoom('timeSeriesPlot'); return false;"
                 styleClass="inlineButton tightButton plotFooterButton" />
+
+              <p:selectBooleanButton id="showOffsetsButton" widgetVar="showOffsetsButton"
+                onIcon="offsetsButton" offIcon="offsetsButton"
+                onchange="showOffsetsAction()"
+                styleClass="inlineButton tightButton plotFooterSelectBoolean"/>
             </f:facet>
             <f:facet name="right">
               <p:commandButton value="Add Offset..." onclick="startAddOffset(); return false;"
@@ -111,7 +116,7 @@
 
           <p:remoteCommand name="deleteOffsetAction"
             action="#{sensorOffsetsBean.deleteOffset}" process="deleteTime"
-            update="offsetsList :timeSeriesForm:offsetsData"
+            update="offsetsList :timeSeriesForm:plotData :timeSeriesForm:offsetsData"
             oncomplete="offsetsUpdated();" />
 
           <div id="offsetsTable">
@@ -179,7 +184,9 @@
             <h:panelGrid columns="2" styleClass="buttonPanel">
               <p:commandButton widgetVar="saveOffset" value="Add"
                  action="#{sensorOffsetsBean.addOffset}" ajax="true"
-                 process="firstTime secondTime" update="offsetsList :timeSeriesForm:offsetsData" oncomplete="offsetsUpdated();"/>
+                 process="firstTime secondTime"
+                 update="offsetsList :timeSeriesForm:plotData :timeSeriesForm:offsetsData"
+                 oncomplete="offsetsUpdated();"/>
               <p:commandButton value="Cancel" onclick="cancelOffset()" />
             </h:panelGrid>
           </div>

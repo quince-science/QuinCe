@@ -8,7 +8,9 @@ import java.util.TreeMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 
+import uk.ac.exeter.QuinCe.data.Dataset.SensorOffsets;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupPair;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
@@ -25,12 +27,19 @@ public class TimeSeriesPlotData {
    */
   private TreeMap<LocalDateTime, Tuple> data;
 
+  private List<SensorValue> series2;
+
   protected TimeSeriesPlotData(List<SensorValue> series1Points,
     List<SensorValue> series2Points) {
 
     data = new TreeMap<LocalDateTime, Tuple>();
+
+    // Extract the two series into the Tuple map.
     processSeries1(series1Points);
     processSeries2(series2Points);
+
+    // Store the second series separately - we need it to apply offsets to.
+    this.series2 = series2Points;
   }
 
   private void processSeries1(List<SensorValue> points) {
@@ -57,11 +66,34 @@ public class TimeSeriesPlotData {
     });
   }
 
-  public String getArray() {
+  protected String getArray(SensorOffsets sensorOffsets,
+    SensorGroupPair groupPair) {
+
+    List<SensorValue> offsetsApplied = sensorOffsets.applyOffsets(groupPair,
+      series2);
+
+    TreeMap<LocalDateTime, Tuple> dataWithOffset = new TreeMap<LocalDateTime, Tuple>(
+      data);
+
+    // Add the offsets to the copied map
+    offsetsApplied.forEach(o -> {
+      if (dataWithOffset.containsKey(o.getTime())) {
+
+        Tuple oldTuple = dataWithOffset.get(o.getTime());
+
+        Tuple newTuple = new Tuple(oldTuple);
+        newTuple.setOffsetSecond(o.getDoubleValue());
+        dataWithOffset.put(o.getTime(), newTuple);
+      } else {
+        Tuple tuple = new Tuple();
+        tuple.setOffsetSecond(o.getDoubleValue());
+        dataWithOffset.put(o.getTime(), tuple);
+      }
+    });
 
     JsonArray json = new JsonArray();
 
-    for (Map.Entry<LocalDateTime, Tuple> entry : data.entrySet()) {
+    for (Map.Entry<LocalDateTime, Tuple> entry : dataWithOffset.entrySet()) {
       JsonArray entryArray = new JsonArray();
       entryArray.add(DateTimeUtils.dateToLong(entry.getKey()));
 
@@ -75,6 +107,12 @@ public class TimeSeriesPlotData {
         entryArray.add(JsonNull.INSTANCE);
       } else {
         entryArray.add(entry.getValue().getSecond());
+      }
+
+      if (entry.getValue().getOffsetSecond().isNaN()) {
+        entryArray.add(JsonNull.INSTANCE);
+      } else {
+        entryArray.add(entry.getValue().getOffsetSecond());
       }
 
       json.add(entryArray);
@@ -103,6 +141,18 @@ public class TimeSeriesPlotData {
 
     private Double second = Double.NaN;
 
+    private Double offsetSecond = Double.NaN;
+
+    protected Tuple() {
+      // Blank constructor
+    }
+
+    protected Tuple(Tuple source) {
+      this.first = source.first;
+      this.second = source.second;
+      this.offsetSecond = source.offsetSecond;
+    }
+
     protected void setFirst(Double first) {
       this.first = first;
     }
@@ -111,12 +161,20 @@ public class TimeSeriesPlotData {
       this.second = second;
     }
 
+    protected void setOffsetSecond(Double offsetSecond) {
+      this.offsetSecond = offsetSecond;
+    }
+
     private Double getFirst() {
       return first;
     }
 
     private Double getSecond() {
       return second;
+    }
+
+    private Double getOffsetSecond() {
+      return offsetSecond;
     }
   }
 }

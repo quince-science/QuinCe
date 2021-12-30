@@ -7,7 +7,7 @@ const DATA_POINT_SIZE = 2;
 const DATA_POINT_HIGHLIGHT_SIZE = 8.5;
 const HIGHLIGHT_POINT_SIZE = 8;
 const HIGHLIGHT_COLOR = '#FF8800';
-const PLOT_X_PAD = 10;
+const PLOT_X_PAD = 20;
 const PLOT_Y_PAD = 20;
 
 var firstDate = null;
@@ -19,13 +19,17 @@ var resizeEventTimer = null;
 // The plot/table ratio
 var splitProportion = 0.5;
 
+// The name for the two series on the right axis - non-offset and offset
+var nonOffsetSeriesName = null;
+var offsetSeriesName = null;
+
 var intModel = Dygraph.defaultInteractionModel;
 intModel.dblclick = function(e, x, points) {
   // Empty callback
 };
 
 var TIMESERIES_PLOT_OPTIONS = {
-  colors: [SERIES_0_COLOR, SERIES_1_COLOR],
+  colors: [SERIES_0_COLOR, SERIES_1_COLOR, SERIES_1_COLOR],
   drawPoints: true,
   strokeWidth: 0.0,
   labelsUTC: true,
@@ -157,15 +161,22 @@ function drawTimeSeriesPlot(resetZoom) {
     window['timeSeriesPlot'] = null;
   }
   
+  // Set global series names
+  nonOffsetSeriesName = $('#timeSeriesForm\\:series1Name').val();
+  offsetSeriesName = $('#timeSeriesForm\\:series1Name').val() + ' (offset)';
+  
   let plotOptions = Object.assign({}, TIMESERIES_PLOT_OPTIONS);
   plotOptions.series = {}
-  plotOptions['series'][$('#timeSeriesForm\\:series1Name').val()] = {
+  plotOptions['series'][nonOffsetSeriesName] = {
+    'axis': 'y2'
+  };
+  plotOptions['series'][offsetSeriesName] = {
     'axis': 'y2'
   };
   plotOptions.ylabel = $('#timeSeriesForm\\:series0Name').val();
   plotOptions.y2label = $('#timeSeriesForm\\:series1Name').val();
   plotOptions.labels = ['Date/Time', $('#timeSeriesForm\\:series0Name').val(),
-  	$('#timeSeriesForm\\:series1Name').val()];
+  	nonOffsetSeriesName, offsetSeriesName];
   plotOptions.underlayCallback = drawHighlights; // Function call
 
   if (!resetZoom) {
@@ -180,7 +191,9 @@ function drawTimeSeriesPlot(resetZoom) {
     makePlotData,
     plotOptions
   );
-
+  
+  // Hide the offsets series
+  window['timeSeriesPlot'].setVisibility(2, false);
 }
 
 function resizeTimeSeriesPlot() {
@@ -209,6 +222,7 @@ function resetZoom(plotName) {
 }
 
 function startAddOffset() {
+  PF('showOffsetsButton').uncheck();
   $('#offsetForm\\:firstTime').val('');
   $('#offsetForm\\:secondTime').val('');
   PF('firstSelect').uncheck();
@@ -371,16 +385,18 @@ function updateHighlightSettings() {
 
     seriesOpts[$('#timeSeriesForm\\:series1Name').val()] = series1Opts;
 
-	// For some reason the graph likes to mess up the left Y axis
-	// when we do this. Resetting the X axis range seems to stop it happening.
-	// Ugly but I don't have time to investigate further.
+	// Stop the graph from redrawing its vertical axis ranges.
+	// Seems to be a bug in dygraphs.
     axisOpts = {};
-    axisOpts.x = {};
-    axisOpts.x.valueRange = window['timeSeriesPlot'].xAxisRange();
+    axisOpts.y = {};
+    axisOpts.y2 = {};
+    axisOpts.y.valueRange = window['timeSeriesPlot'].yAxisRange(0);
+    axisOpts.y2.valueRange = window['timeSeriesPlot'].yAxisRange(1);
 
     window['timeSeriesPlot'].updateOptions({
       series: seriesOpts,
-      axes: axisOpts
+      axes: axisOpts,
+      yRangePad: 0
     });
   }
 }
@@ -487,4 +503,26 @@ function drawOffsetsPlot() {
     document.getElementById('offsetsPlotContainer'),
     data, plotOptions
   );
+}
+
+function showOffsetsAction() {
+
+  axisOpts = {};
+  axisOpts.y = {};
+  axisOpts.y2 = {};
+  axisOpts.y.valueRange = window['timeSeriesPlot'].yAxisRange(0);
+  axisOpts.y2.valueRange = window['timeSeriesPlot'].yAxisRange(1);
+
+  if (PF('showOffsetsButton').input[0].checked) {
+    window['timeSeriesPlot'].setVisibility(2, true);
+    window['timeSeriesPlot'].setVisibility(1, false);
+  } else {
+    window['timeSeriesPlot'].setVisibility(1, true);
+    window['timeSeriesPlot'].setVisibility(2, false);
+  }
+
+  window['timeSeriesPlot'].updateOptions({
+    axes: axisOpts,
+    yRangePad: 0
+  });
 }
