@@ -884,7 +884,7 @@ public class DataFile {
     if (field < line.size()) {
       result = line.get(field).trim().replaceAll(",", "");
       if (result.length() == 0 || result.equals(missingValue)
-        || result.equals("NaN") || result.equals("NA")) {
+        || result.equalsIgnoreCase("NaN") || result.equalsIgnoreCase("NA")) {
         result = null;
       } else {
 

@@ -1081,7 +1081,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Determines whether or not this file definition contains position columns.
-   * 
+   *
    * @return {@code true} if a valid position specification is present;
    *         {@code false} otherwise.
    */
