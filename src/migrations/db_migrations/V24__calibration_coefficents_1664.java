@@ -10,7 +10,7 @@ import org.flywaydb.core.api.migration.Context;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-public class V23__calibration_coefficents_1664 extends BaseJavaMigration {
+public class V24__calibration_coefficents_1664 extends BaseJavaMigration {
 
   private PreparedStatement searchStmt;
 
@@ -59,7 +59,7 @@ public class V23__calibration_coefficents_1664 extends BaseJavaMigration {
    * Convert external standards. Currently all external standards store both
    * xCO2 and xH2O. We need to remove xH2O if the instrument doesn't have it
    * defined.
-   * 
+   *
    * @param conn
    */
   private void convertExternalStandards(Connection conn) throws Exception {
