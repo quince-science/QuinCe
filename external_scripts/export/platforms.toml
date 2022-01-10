@@ -49,6 +49,23 @@ NRT = 'True'
 	[OXYH2]
 	platform_id = '26NA'
 
+[26RA]
+name = 'Tukuma Arctica'
+submitter_id = 'OTC'
+cp_url = 'https://meta.icos-cp.eu/resources/stations/OS_26RA'
+category_code = '31'
+call_sign = 'OYTR2'
+creation_date = '2021-01-01T00:00:00Z'
+author_list = 'Becker, Meike; Olsen, Are'
+NRT = 'True'
+
+	[26RA.export]
+	NRT = ['ICOS']
+	L2 = ['ICOS']
+
+	[OYTR2]
+	platform_id = '26RA'
+
 [65DK]
 name = 'Cap San Lorenzo'
 submitter_id = 'OTC'
@@ -60,7 +77,7 @@ author_list = 'Lefèvre, Nathalie'
 
 	[65DK.export]
 	NRT = ['ICOS']
-  L2 = ['ICOS']
+	L2 = ['ICOS']
 
 	[OXOF2]
 	platform_id = '65DK'
