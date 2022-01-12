@@ -115,7 +115,6 @@
     "includeCalculationColumns": true,
     "includeRawSensors": true,
     "includeUnits": false,
-    "exportDataClass": "NeutraliseSalinityFlagsExportData",
     "visible": false,
     "timestampHeader": "Date/Time",
     "replaceColumnHeaders": {
