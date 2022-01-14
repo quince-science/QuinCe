@@ -338,6 +338,10 @@ public abstract class Calibration implements Comparable<Calibration> {
       result = this.target.compareTo(o.target);
     }
 
+    if (result == 0) {
+      result = this.deploymentDate.compareTo(o.deploymentDate);
+    }
+
     return result;
   }
 

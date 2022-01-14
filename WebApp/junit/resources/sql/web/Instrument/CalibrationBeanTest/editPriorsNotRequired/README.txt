@@ -1,1 +1,0 @@
-See editPriorsRequired folder for a description of the initial calibration setup.

@@ -1,0 +1,12 @@
+Calibration,Prior Required,Affect Following Only,Affected Datasets,Failed Datasets
+A,false,false,a,
+B,false,false,ab,
+C,false,false,bc,
+D,false,false,cd,
+E,false,false,d,
+A,false,true,a,
+B,false,true,b,
+C,false,true,c,
+D,false,true,d,
+E,false,true,,
+A,true,false,a,a

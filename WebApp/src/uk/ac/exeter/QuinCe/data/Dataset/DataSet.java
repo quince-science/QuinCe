@@ -28,7 +28,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * @author Steve Jones
  *
  */
-public class DataSet {
+public class DataSet implements Comparable<DataSet> {
 
   public static final long TIMEPOS_FIELDSET_ID = 0L;
 
@@ -811,5 +811,10 @@ public class DataSet {
    */
   public boolean fixedPosition() {
     return null != getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "longitude");
+  }
+
+  @Override
+  public int compareTo(DataSet o) {
+    return start.compareTo(o.start);
   }
 }
