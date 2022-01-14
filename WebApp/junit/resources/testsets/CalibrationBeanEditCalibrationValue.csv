@@ -1,0 +1,11 @@
+Calibration,Affect Following Only,Affected Datasets
+A,false,a
+B,false,ab
+C,false,bc
+D,false,cd
+E,false,d
+A,true,a
+B,true,b
+C,true,c
+D,true,d
+E,true,

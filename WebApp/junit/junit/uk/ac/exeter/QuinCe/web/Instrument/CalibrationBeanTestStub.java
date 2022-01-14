@@ -22,14 +22,18 @@ public class CalibrationBeanTestStub extends CalibrationBean {
 
   private CalibrationDB stubDbInstance;
 
+  private boolean affectFollowingOnly;
+
   /**
    * Package-protected constructor.
    *
    * @param dbInstance
    *          The {@link CalibrationDB} to use.
    */
-  protected CalibrationBeanTestStub(CalibrationDB dbInstance) {
+  protected CalibrationBeanTestStub(CalibrationDB dbInstance,
+    boolean affectFollowingOnly) {
     this.stubDbInstance = dbInstance;
+    this.affectFollowingOnly = affectFollowingOnly;
   }
 
   @Override
@@ -73,4 +77,8 @@ public class CalibrationBeanTestStub extends CalibrationBean {
     return AutoQCJob.class;
   }
 
+  @Override
+  protected boolean changeAffectsDatasetsAfterOnly() {
+    return affectFollowingOnly;
+  }
 }

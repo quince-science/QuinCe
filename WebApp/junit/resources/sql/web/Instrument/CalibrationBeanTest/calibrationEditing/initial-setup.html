@@ -1,0 +1,175 @@
+<html>
+	<head>
+		<title>ExternalStandardsBeanTest.getAffectedDATASETSTest</title>
+		<script src="https://visjs.github.io/vis-timeline/dist/vis-timeline-graph2d.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="https://visjs.github.io/vis-timeline/dist/vis-timeline-graph2d.min.css" />
+	</head>
+	<body>
+		<p>
+      This is the setup for the ExternalsStandardsBean.getAffectedDATASETSTest in
+		  QuinCe. I've built this as a timeline that will be screenshotted and saved
+		  as an image in the repository.
+    </p>
+		<p>
+		  The CALIBRATIONS and DATASETS lines show the initial positions of the calibrations and datasets.
+      These are lableed with upper and lower case letters respectively.
+		  <br/>
+      INSERTION POINTS shows where either new calibrations will be created, or where calibrations will be moved to when having their dates changed.
+    </p>
+    <p>
+      The tests and their expected outcomes are in the spreadsheet CalibrationBeenGetAffectedDatasets.ods
+    </p>
+
+		<br/>
+		<br/>
+		<div id="timeline"></div>
+	</body>
+
+	<script>
+		// DOM element where the Timeline will be attached
+		var container = document.getElementById("timeline");
+
+		var usedTargets = [
+			{ id: 1, content: "INSERTION POINTS", order: 1 },
+			{ id: 2, content: "CALIBRATIONS", order: 2 },
+			{ id: "DATASETS", content: "DATASETS", order: 4 }
+		];
+
+		var calibrationsJson = [
+      {
+        start: "2019-06-01T00:05:00Z",
+        type: "box",
+        content: "1",
+        group: 1
+      },
+      {
+        start: "2019-06-01T00:15:00Z",
+        type: "box",
+        content: "2",
+        group: 1
+      },
+      {
+        start: "2019-06-01T01:05:00Z",
+        type: "box",
+        content: "3",
+        group: 1
+      },
+      {
+        start: "2019-06-01T01:15:00Z",
+        type: "box",
+        content: "4",
+        group: 1
+      },
+      {
+        start: "2019-06-01T03:05:00Z",
+        type: "box",
+        content: "5",
+        group: 1
+      },
+      {
+        start: "2019-06-01T03:15:00Z",
+        type: "box",
+        content: "6",
+        group: 1
+      },
+      {
+        start: "2019-06-01T05:05:00Z",
+        type: "box",
+        content: "7",
+        group: 1
+      },
+      {
+        start: "2019-06-01T05:15:00Z",
+        type: "box",
+        content: "8",
+        group: 1
+      },
+      {
+        start: "2019-06-01T06:05:00Z",
+        type: "box",
+        content: "9",
+        group: 1
+      },
+      {
+        start: "2019-06-01T06:15:00Z",
+        type: "box",
+        content: "10",
+        group: 1
+      },
+      {
+        start: "2019-06-01T00:10:00Z",
+        type: "box",
+        content: "A",
+        group: 2
+      },
+      {
+        start: "2019-06-01T01:10:00Z",
+        type: "box",
+        content: "B",
+        group: 2
+      },
+      {
+        start: "2019-06-01T03:10:00Z",
+        type: "box",
+        content: "C",
+        group: 2
+      },
+      {
+        start: "2019-06-01T05:10:00Z",
+        type: "box",
+        content: "D",
+        group: 2
+      },
+      {
+        start: "2019-06-01T06:10:00Z",
+        type: "box",
+        content: "E",
+        group: 2
+      },
+      {
+        start: "2019-06-01T00:20:00Z",
+        end: "2019-06-01T00:40:00Z",
+        type: "range",
+        content: "a",
+        group: "DATASETS"
+      },
+      {
+        start: "2019-06-01T01:20:00Z",
+        end: "2019-06-01T02:40:00Z",
+        type: "range",
+        content: "b",
+        group: "DATASETS"
+      },
+      {
+        start: "2019-06-01T03:20:00Z",
+        end: "2019-06-01T04:40:00Z",
+        type: "range",
+        content: "c",
+        group: "DATASETS"
+      },
+      {
+        start: "2019-06-01T05:20:00Z",
+        end: "2019-06-01T05:40:00Z",
+        type: "range",
+        content: "d",
+        group: "DATASETS"
+      },
+		];
+
+		var calibrations = new vis.DataSet(calibrationsJson);
+
+		// Configuration for the Timeline
+		var options = {
+			showCurrentTime: false,
+			selectable: false,
+			editable: false,
+			zoomMin: 3600000,
+			moment: function(date) {
+				return vis.moment(date).utc();
+			}
+		};
+
+		// Create a Timeline
+		var timeline = new vis.Timeline(container, calibrations, usedTargets, options);
+	</script>
+</html>
