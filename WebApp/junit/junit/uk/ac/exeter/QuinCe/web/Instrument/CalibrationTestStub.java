@@ -33,5 +33,4 @@ public class CalibrationTestStub extends Calibration {
   public Double calibrateValue(Double rawValue) {
     return 0.0;
   }
-
 }

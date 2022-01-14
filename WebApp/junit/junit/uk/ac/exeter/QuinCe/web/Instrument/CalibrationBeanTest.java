@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterEach;
@@ -95,7 +95,7 @@ public class CalibrationBeanTest extends BaseTest {
    */
   public static CalibrationBean initBean() throws MissingParamException,
     DatabaseException, RecordNotFoundException, InstrumentException {
-    return initBean(ExternalStandardDB.getInstance());
+    return initBean(ExternalStandardDB.getInstance(), true);
   }
 
   /**
@@ -118,11 +118,12 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws DatabaseException
    * @throws MissingParamException
    */
-  public static CalibrationBean initBean(CalibrationDB dbInstance)
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+  public static CalibrationBean initBean(CalibrationDB dbInstance,
+    boolean affectFollowingOnly) throws MissingParamException,
+    DatabaseException, RecordNotFoundException, InstrumentException {
 
-    CalibrationBean bean = new CalibrationBeanTestStub(dbInstance);
+    CalibrationBean bean = new CalibrationBeanTestStub(dbInstance,
+      affectFollowingOnly);
 
     // Set the instrument details
     bean.setInstrumentId(INSTRUMENT_ID);
@@ -145,16 +146,22 @@ public class CalibrationBeanTest extends BaseTest {
 
   public static CalibrationBean initBean(CalibrationDB dbInstance,
     int editAction, long calibrationId, LocalDateTime deploymentDate,
-    String target) throws RecordNotFoundException, MissingParamException,
-    DatabaseException, InstrumentException {
+    String target, boolean affectFollowingOnly) throws RecordNotFoundException,
+    MissingParamException, DatabaseException, InstrumentException {
 
-    CalibrationBean bean = initBean(dbInstance);
+    CalibrationBean bean = initBean(dbInstance, affectFollowingOnly);
 
     bean.setSelectedCalibrationId(calibrationId);
     bean.loadSelectedCalibration();
     bean.setEditAction(editAction);
-    bean.getCalibration().setDeploymentDate(deploymentDate);
-    bean.getCalibration().setTarget(target);
+
+    if (null != deploymentDate) {
+      bean.getCalibration().setDeploymentDate(deploymentDate);
+    }
+
+    if (null != target) {
+      bean.getCalibration().setTarget(target);
+    }
 
     return bean;
   }
@@ -408,7 +415,7 @@ public class CalibrationBeanTest extends BaseTest {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 1, 0, 0, 0),
-      "TARGET1");
+      "TARGET1", true);
 
     bean.calcAffectedDataSets();
 
@@ -435,15 +442,13 @@ public class CalibrationBeanTest extends BaseTest {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 20, 0, 0, 0),
-      "TARGET1");
+      "TARGET1", true);
 
     bean.calcAffectedDataSets();
     Map<String, Boolean> affected = getDatasetNamesMap(
       bean.getAffectedDatasets());
 
-    assertTrue(affectedDatasetMatches(affected, "A", false));
-    assertTrue(affectedDatasetMatches(affected, "B", false));
-
+    assertEquals(0, affected.size());
   }
 
   /**
@@ -461,15 +466,13 @@ public class CalibrationBeanTest extends BaseTest {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 7, 0, 0, 0),
-      "TARGET1");
+      "TARGET1", true);
 
     bean.calcAffectedDataSets();
     Map<String, Boolean> affected = getDatasetNamesMap(
       bean.getAffectedDatasets());
 
-    assertTrue(affectedDatasetMatches(affected, "A", false));
     assertTrue(affectedDatasetMatches(affected, "B", true));
-
   }
 
   /**
@@ -488,7 +491,7 @@ public class CalibrationBeanTest extends BaseTest {
 
     CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 1, 0, 0, 0),
-      "1001");
+      "1001", true);
 
     bean.calcAffectedDataSets();
 
@@ -516,15 +519,13 @@ public class CalibrationBeanTest extends BaseTest {
 
     CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 20, 0, 0, 0),
-      "1001");
+      "1001", true);
 
     bean.calcAffectedDataSets();
     Map<String, Boolean> affected = getDatasetNamesMap(
       bean.getAffectedDatasets());
 
-    assertTrue(affectedDatasetMatches(affected, "A", true));
-    assertTrue(affectedDatasetMatches(affected, "B", true));
-
+    assertEquals(0, affected.size());
   }
 
   @FlywayTest(locationsForMigrate = {
@@ -538,13 +539,12 @@ public class CalibrationBeanTest extends BaseTest {
 
     CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 7, 0, 0, 0),
-      "1001");
+      "1001", true);
 
     bean.calcAffectedDataSets();
     Map<String, Boolean> affected = getDatasetNamesMap(
       bean.getAffectedDatasets());
 
-    assertTrue(affectedDatasetMatches(affected, "A", true));
     assertTrue(affectedDatasetMatches(affected, "B", true));
   }
 
@@ -558,7 +558,7 @@ public class CalibrationBeanTest extends BaseTest {
     InvalidCalibrationEditException, DatabaseException, InstrumentException {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
-      CalibrationBean.DELETE_ACTION, 1001, null, null);
+      CalibrationBean.DELETE_ACTION, 1001, null, null, true);
 
     bean.calcAffectedDataSets();
     Map<String, Boolean> affected = getDatasetNamesMap(
@@ -577,7 +577,7 @@ public class CalibrationBeanTest extends BaseTest {
     InvalidCalibrationEditException, DatabaseException, InstrumentException {
 
     CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
-      CalibrationBean.DELETE_ACTION, 1001, null, null);
+      CalibrationBean.DELETE_ACTION, 1001, null, null, true);
 
     bean.calcAffectedDataSets();
     Map<String, Boolean> affected = getDatasetNamesMap(
@@ -594,9 +594,9 @@ public class CalibrationBeanTest extends BaseTest {
    *          The Dataset map
    * @return The dataset name map
    */
-  public static Map<String, Boolean> getDatasetNamesMap(
+  public static TreeMap<String, Boolean> getDatasetNamesMap(
     Map<DataSet, Boolean> input) {
-    Map<String, Boolean> result = new HashMap<String, Boolean>();
+    TreeMap<String, Boolean> result = new TreeMap<String, Boolean>();
 
     for (Map.Entry<DataSet, Boolean> entry : input.entrySet()) {
       result.put(entry.getKey().getName(), entry.getValue());
@@ -605,8 +605,9 @@ public class CalibrationBeanTest extends BaseTest {
     return result;
   }
 
-  private boolean affectedDatasetMatches(Map<String, Boolean> affectedDatasets,
-    String name, boolean canBeReprocessed) {
+  public static boolean affectedDatasetMatches(
+    Map<String, Boolean> affectedDatasets, String name,
+    boolean canBeReprocessed) {
 
     boolean result = false;
 

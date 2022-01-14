@@ -3,7 +3,10 @@ package junit.uk.ac.exeter.QuinCe.TestBase;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -207,6 +210,38 @@ public class TestSetLine {
   public Flag getFlagField(int fieldNumber) throws InvalidFlagException {
     char flagChar = getCharField(fieldNumber);
     return flagChar == '\0' ? null : new Flag(flagChar);
+  }
+
+  /**
+   * Get a field of characters as a String list in the order that they are
+   * specified
+   *
+   * @param fieldNumber
+   * @return
+   */
+  public List<String> getCharListField(int fieldNumber) {
+    String field = getStringField(fieldNumber, true);
+
+    List<String> result;
+
+    if (null == field) {
+      result = new ArrayList<String>(0);
+    } else {
+      result = Arrays
+        .asList(getStringField(fieldNumber, false).trim().split(""));
+    }
+
+    return result;
+  }
+
+  /**
+   * Get a field of characters as a String list in String order
+   *
+   * @param fieldNumber
+   * @return
+   */
+  public TreeSet<String> getOrderedCharListField(int fieldNumber) {
+    return new TreeSet<String>(getCharListField(fieldNumber));
   }
 
   /**
