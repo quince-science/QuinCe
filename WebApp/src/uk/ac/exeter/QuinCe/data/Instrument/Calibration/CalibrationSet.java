@@ -92,8 +92,12 @@ public class CalibrationSet extends TreeSet<Calibration> {
         + calibration.getTarget() + "' is not allowed in this set");
     }
 
-    if (contains(calibration)) {
-      super.remove(calibration);
+    // Remove any existing calibration for the same target
+    for (Calibration c : this) {
+      if (c.getTarget().equals(calibration.getTarget())) {
+        super.remove(c);
+        break;
+      }
     }
 
     super.add(calibration);
