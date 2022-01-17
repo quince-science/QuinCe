@@ -415,8 +415,13 @@ public class MeasurementValue implements PlotPageTableValue {
   }
 
   @Override
-  public String getQcMessage() {
-    return StringUtils.collectionToDelimited(getQcMessages(), ";");
+  public String getQcMessage(boolean replaceNewlines) {
+    String result = StringUtils.collectionToDelimited(getQcMessages(), ";");
+    if (replaceNewlines) {
+      result = StringUtils.replaceNewlines(result);
+    }
+
+    return result;
   }
 
   @Override

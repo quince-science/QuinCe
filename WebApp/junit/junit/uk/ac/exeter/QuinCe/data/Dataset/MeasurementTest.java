@@ -114,7 +114,7 @@ public class MeasurementTest extends BaseTest {
       measurement.getMeasurementValue(intakeTemperature()).getQcFlag());
 
     String qcMessage = measurement.getMeasurementValue(intakeTemperature())
-      .getQcMessage();
+      .getQcMessage(false);
 
     assertTrue(qcMessage.contains(ADDED_POSITION_MESSAGE));
   }
@@ -128,7 +128,7 @@ public class MeasurementTest extends BaseTest {
 
     // Before post-processing, the questionable sensor message should be present
     String preQcMessage = measurement.getMeasurementValue(intakeTemperature())
-      .getQcMessage();
+      .getQcMessage(false);
     assertTrue(preQcMessage.contains(SENSOR_MESSAGE));
 
     measurement.postProcessMeasurementValues();
@@ -137,7 +137,7 @@ public class MeasurementTest extends BaseTest {
       measurement.getMeasurementValue(intakeTemperature()).getQcFlag());
 
     String qcMessage = measurement.getMeasurementValue(intakeTemperature())
-      .getQcMessage();
+      .getQcMessage(false);
 
     assertTrue(qcMessage.contains(ADDED_POSITION_MESSAGE));
 
@@ -157,7 +157,7 @@ public class MeasurementTest extends BaseTest {
       measurement.getMeasurementValue(intakeTemperature()).getQcFlag());
 
     String qcMessage = measurement.getMeasurementValue(intakeTemperature())
-      .getQcMessage();
+      .getQcMessage(false);
 
     // Both sensor and position messages should be present
     assertTrue(qcMessage.contains(ADDED_POSITION_MESSAGE));

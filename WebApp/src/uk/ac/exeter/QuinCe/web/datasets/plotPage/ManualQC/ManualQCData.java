@@ -395,7 +395,7 @@ public class ManualQCData extends PlotPageData {
             }
 
             record.addColumn(positionString.toString(), longitude.getQcFlag(),
-              longitude.getQcMessage(), longitude.getFlagNeeded(),
+              longitude.getQcMessage(false), longitude.getFlagNeeded(),
               longitude.getType());
           } else {
             // Empty position column
