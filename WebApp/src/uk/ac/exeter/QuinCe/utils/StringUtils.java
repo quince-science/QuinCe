@@ -543,4 +543,8 @@ public final class StringUtils {
   public static String javascriptString(String string) {
     return string.replaceAll("'", Matcher.quoteReplacement("\\'"));
   }
+
+  public static String replaceNewlines(String str) {
+    return null == str ? null : str.replaceAll("\\r?\\n", ";");
+  }
 }

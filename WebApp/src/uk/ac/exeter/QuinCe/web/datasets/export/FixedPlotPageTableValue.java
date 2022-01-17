@@ -27,7 +27,7 @@ public class FixedPlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
-  public String getQcMessage() {
+  public String getQcMessage(boolean replaceNewlines) {
     return "";
   }
 

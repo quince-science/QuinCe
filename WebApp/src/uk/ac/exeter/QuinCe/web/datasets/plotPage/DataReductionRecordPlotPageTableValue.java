@@ -38,8 +38,16 @@ public class DataReductionRecordPlotPageTableValue
   }
 
   @Override
-  public String getQcMessage() {
-    return StringUtils.collectionToDelimited(record.getQCMessages(), ";");
+  public String getQcMessage(boolean replaceNewlines) {
+
+    String result = StringUtils.collectionToDelimited(record.getQCMessages(),
+      ";");
+
+    if (replaceNewlines) {
+      result = StringUtils.replaceNewlines(result);
+    }
+
+    return result;
   }
 
   @Override
