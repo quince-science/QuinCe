@@ -99,8 +99,8 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    * @return The QC message.
    */
   @Override
-  public String getQcMessage() {
-    return qcMessage;
+  public String getQcMessage(boolean replaceNewlines) {
+    return replaceNewlines ? StringUtils.replaceNewlines(qcMessage) : qcMessage;
   }
 
   @Override

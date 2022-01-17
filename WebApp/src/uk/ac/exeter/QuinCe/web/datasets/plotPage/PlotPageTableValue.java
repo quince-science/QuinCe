@@ -48,7 +48,7 @@ public interface PlotPageTableValue {
    *
    * @return The QC message.
    */
-  public String getQcMessage();
+  public String getQcMessage(boolean replaceNewlines);
 
   /**
    * Get the flag indicating whether user QC is needed.

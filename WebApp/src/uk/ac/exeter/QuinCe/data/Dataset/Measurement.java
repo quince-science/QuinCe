@@ -359,7 +359,7 @@ public class Measurement implements Comparable<Measurement> {
       if (positionFlag.equals(Flag.QUESTIONABLE)
         || positionFlag.equals(Flag.BAD)) {
 
-        String positionMessage = longitude.getQcMessage();
+        String positionMessage = longitude.getQcMessage(false);
 
         for (Map.Entry<Long, MeasurementValue> valueEntry : measurementValues
           .entrySet()) {

@@ -211,7 +211,8 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
       "Value mismatch");
     assertEquals(expectedType, value.getType(), "Value type mismatch");
     assertEquals(expectedFlag, value.getQcFlag(), "Flag mismatch");
-    assertEquals(expectedMessage, value.getQcMessage(), "Message mismatch");
+    assertEquals(expectedMessage, value.getQcMessage(false),
+      "Message mismatch");
   }
 
   @Override

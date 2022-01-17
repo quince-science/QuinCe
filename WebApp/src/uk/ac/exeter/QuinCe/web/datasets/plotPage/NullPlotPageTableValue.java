@@ -27,7 +27,7 @@ public class NullPlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
-  public String getQcMessage() {
+  public String getQcMessage(boolean replaceNewlines) {
     return null;
   }
 

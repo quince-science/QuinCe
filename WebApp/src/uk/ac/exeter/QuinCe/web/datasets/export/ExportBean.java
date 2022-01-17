@@ -551,8 +551,8 @@ public class ExportBean extends BaseManagedBean {
           // QC Comment
           if (exportOption.includeQCComments()) {
             output.append(exportOption.getSeparator());
-            output
-              .append('"' + exportOption.format(value.getQcMessage()) + '"');
+            output.append(
+              '"' + exportOption.format(value.getQcMessage(true)) + '"');
           }
         }
 

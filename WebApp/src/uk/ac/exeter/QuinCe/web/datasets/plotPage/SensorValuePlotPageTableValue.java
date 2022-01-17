@@ -39,7 +39,7 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
-  public String getQcMessage() {
+  public String getQcMessage(boolean replaceNewlines) {
     String result = "*Error getting QC message*";
 
     try {
@@ -47,6 +47,10 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
       result = message;
     } catch (RoutineException e) {
       e.printStackTrace();
+    }
+
+    if (replaceNewlines) {
+      result = StringUtils.replaceNewlines(result);
     }
 
     return result;
