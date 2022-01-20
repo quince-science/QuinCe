@@ -9,7 +9,6 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import uk.ac.exeter.QuinCe.api.nrt.MakeNrtDataset;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -136,12 +135,6 @@ public class DataReductionQCJob extends DataSetJob {
 
       // Set the dataset status
       DataSetDB.updateDataSet(conn, dataSet);
-
-      // Remake the NRT dataset if necessary (and we haven't just processed
-      // it!)
-      if (instrument.getNrt() && !dataSet.isNrt()) {
-        MakeNrtDataset.createNrtDataset(conn, instrument);
-      }
     } catch (Exception e) {
       DatabaseUtils.rollBack(conn);
       e.printStackTrace();

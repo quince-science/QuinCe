@@ -45,6 +45,16 @@ public class DataSet implements Comparable<DataSet> {
   /**
    * The numeric value for the delete status.
    */
+  public static final int STATUS_DELETING = -3;
+
+  /**
+   * The string for the delete status
+   */
+  public static final String STATUS_DELETING_NAME = "Reprocessing";
+
+  /**
+   * The numeric value for the delete status.
+   */
   public static final int STATUS_DELETE = -2;
 
   /**
@@ -277,6 +287,7 @@ public class DataSet implements Comparable<DataSet> {
     validStatuses.put(STATUS_READY_FOR_EXPORT, STATUS_READY_FOR_EXPORT_NAME);
     validStatuses.put(STATUS_EXPORTING, STATUS_EXPORTING_NAME);
     validStatuses.put(STATUS_EXPORT_COMPLETE, STATUS_EXPORT_COMPLETE_NAME);
+    validStatuses.put(STATUS_DELETING, STATUS_DELETING_NAME);
   }
 
   /**
