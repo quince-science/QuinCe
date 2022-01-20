@@ -99,10 +99,13 @@ public class ExtractDataSetJob extends DataSetJob {
 
       Instrument instrument = getInstrument(conn);
 
-      // Delete any existing NRT dataset, unless we're processing it.
-      // The odds are that the new dataset will replace it
-      if (instrument.getNrt() && !dataSet.isNrt()) {
-        DataSetDB.deleteNrtDataSet(conn, dataSet.getInstrumentId());
+      // If the new dataset overlaps the NRT dataset, mark it for deletion.
+      // It will get removed and recreated by the NRT scripts outside QuinCe
+      DataSet nrtDataset = DataSetDB.getNrtDataSet(conn,
+        dataSet.getInstrumentId());
+      if (null != nrtDataset && DateTimeUtils.overlap(nrtDataset, dataSet)) {
+        DataSetDB.setNrtDatasetStatus(dataSource, instrument,
+          DataSet.STATUS_DELETE);
       }
 
       // Reset the data set and all associated data

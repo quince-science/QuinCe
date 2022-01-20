@@ -306,10 +306,7 @@ public class DataSetsBean extends BaseManagedBean {
   public String addDataSet() {
 
     try {
-
       // Mark any existing NRT dataset for deletion
-      DataSetDB.setNrtDatasetStatus(getDataSource(), getCurrentInstrument(),
-        DataSet.STATUS_DELETE);
       DataSetDB.addDataSet(getDataSource(), newDataSet);
 
       Properties jobProperties = new Properties();
