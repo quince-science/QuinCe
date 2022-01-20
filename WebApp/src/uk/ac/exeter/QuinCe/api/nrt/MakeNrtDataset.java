@@ -94,15 +94,16 @@ public class MakeNrtDataset {
     // NRT datasets or (b) there is an NRT dataset and its status is either
     // WAITING FOR EXPORT or EXPORT COMPLETE - any other time the NRT is being
     // processed, so leave it alone.
-    DataSet existingDataset = DataSetDB.getNrtDataSet(conn,
-      instrument.getId());
+    DataSet existingDataset = DataSetDB.getNrtDataSet(conn, instrument.getId());
 
     // If there is no NRT dataset, create one
     if (null == existingDataset) {
       createDataset = true;
     } else {
 
-      if (existingDataset.getStatus() == DataSet.STATUS_READY_FOR_EXPORT
+      if (existingDataset.getStatus() == DataSet.STATUS_DELETE) {
+        createDataset = true;
+      } else if (existingDataset.getStatus() == DataSet.STATUS_READY_FOR_EXPORT
         || existingDataset.getStatus() == DataSet.STATUS_EXPORT_COMPLETE) {
 
         // See if any data files have been uploaded/updated since the NRT

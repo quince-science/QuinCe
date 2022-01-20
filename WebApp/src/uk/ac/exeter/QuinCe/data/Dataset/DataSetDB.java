@@ -600,6 +600,16 @@ public class DataSetDB {
     return result;
   }
 
+  public static DataSet getNrtDataSet(DataSource dataSource, long instrumentId)
+    throws MissingParamException, DatabaseException {
+
+    try (Connection conn = dataSource.getConnection()) {
+      return getNrtDataSet(conn, instrumentId);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting NRT dataset", e);
+    }
+  }
+
   /**
    * Retrieve the NRT data set for an instrument
    *
@@ -653,9 +663,12 @@ public class DataSetDB {
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurs
+   * @throws RecordNotFoundException
+   * @throws InvalidDataSetStatusException
    */
   public static void deleteNrtDataSet(DataSource dataSource, long instrumentId)
-    throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException,
+    InvalidDataSetStatusException, RecordNotFoundException {
 
     Connection conn = null;
 
@@ -670,8 +683,7 @@ public class DataSetDB {
   }
 
   /**
-   * Delete all NRT datasets defined for a given instrument. In theory there
-   * should be only one, but this deletes all that it can find, just in case.
+   * Delete the NRT datasets defined for a given instrument.
    *
    * @param conn
    *          A database connection
@@ -681,12 +693,15 @@ public class DataSetDB {
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurs
+   * @throws RecordNotFoundException
+   * @throws InvalidDataSetStatusException
    */
   public static void deleteNrtDataSet(Connection conn, long instrumentId)
-    throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException,
+    InvalidDataSetStatusException, RecordNotFoundException {
 
     DataSet nrtDataset = getNrtDataSet(conn, instrumentId);
-    if (null != nrtDataset && nrtDataset.getStatus() != DataSet.STATUS_DELETE) {
+    if (null != nrtDataset) {
       deleteDataSet(conn, nrtDataset);
     }
   }
@@ -702,11 +717,12 @@ public class DataSetDB {
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurs
+   * @throws RecordNotFoundException
+   * @throws InvalidDataSetStatusException
    */
   public static void deleteDataSet(Connection conn, DataSet dataSet)
-    throws MissingParamException, DatabaseException {
-
-    // TODO Delete all related data. To be fixed in issue #1289
+    throws MissingParamException, DatabaseException,
+    InvalidDataSetStatusException, RecordNotFoundException {
 
     boolean currentAutoCommitStatus = false;
     PreparedStatement datasetStatement = null;
@@ -714,7 +730,7 @@ public class DataSetDB {
     try {
 
       currentAutoCommitStatus = conn.getAutoCommit();
-      setDatasetStatus(conn, dataSet.getId(), DataSet.STATUS_DELETE);
+      setDatasetStatus(conn, dataSet.getId(), DataSet.STATUS_DELETING);
       if (!currentAutoCommitStatus) {
         conn.commit();
       }

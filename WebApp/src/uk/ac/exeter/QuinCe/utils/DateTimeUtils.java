@@ -7,6 +7,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+
 /**
  * Miscellaneous date/time utilities
  *
@@ -150,5 +152,32 @@ public class DateTimeUtils {
   public static List<LocalDateTime> longsToDates(List<Long> millisecondses) {
     return millisecondses.stream().map(x -> longToDate(x))
       .collect(Collectors.toList());
+  }
+
+  public static boolean isBetween(LocalDateTime time, LocalDateTime start,
+    LocalDateTime end) {
+
+    LocalDateTime realStart = start.isBefore(end) ? start : end;
+    LocalDateTime realEnd = start.isBefore(end) ? end : start;
+
+    return !time.isBefore(realStart) && !time.isAfter(realEnd);
+  }
+
+  public static boolean overlap(LocalDateTime start1, LocalDateTime end1,
+    LocalDateTime start2, LocalDateTime end2) {
+
+    LocalDateTime realStart1 = start1.isBefore(end1) ? start1 : end1;
+    LocalDateTime realEnd1 = start1.isBefore(end1) ? end1 : start1;
+    LocalDateTime realStart2 = start2.isBefore(end2) ? start2 : end2;
+    LocalDateTime realEnd2 = start2.isBefore(end2) ? end2 : start2;
+
+    return isBetween(realStart1, realStart2, realEnd2)
+      || isBetween(realEnd1, realStart2, realEnd2)
+      || (!realStart1.isAfter(realStart2) && !realEnd1.isBefore(realEnd2));
+
+  }
+
+  public static boolean overlap(DataSet ds1, DataSet ds2) {
+    return overlap(ds1.getStart(), ds1.getEnd(), ds2.getStart(), ds2.getEnd());
   }
 }
