@@ -1,18 +1,37 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
   xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:p="http://primefaces.org/ui"
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
   <h:form id="sessionTouchForm" method="post">
-    <h:commandLink id="sessionTouch" action="#{keepAliveBean.sessionTouch}">
-      <f:ajax render="@none" />
-    </h:commandLink>
-    <script>
-      var sessionTouchFunction = function() {
-        $('#sessionTouchForm\\:sessionTouch').click();
-        setTimeout(sessionTouchFunction, 10000);
-      };
+    <p:dialog widgetVar="lostContactDialog" modal="true" closable="false"
+      header="Contact Lost">
+      <div style="float:left">
+        <h:graphicImage value="/resources/image/rotten_quince.png"/>
+      </div>
+      <div style="padding-bottom: 10px">
+        Lost contact with the server. You will have to log in again to continue.
+      </div>
+      <h:panelGrid columns="2" cellpadding="5" class="buttonPanel contentList">
+        <p:button href="#{dataSetsBean.urlStub}" value="Go to Login page"/>
+      </h:panelGrid>      
+    </p:dialog>
 
-      setTimeout(sessionTouchFunction, 10000);
+    <p:remoteCommand name="touchSession"
+      actionListener="#{keepAliveBean.sessionTouch}"
+      onerror="updateFailed()"/>
+    
+    <script>
+      var refreshInterval = setInterval(function() {
+        if (window['touchSession']) {
+          touchSession(); // PF Command
+        }
+      }, 10000);
+      
+      function updateFailed() {
+        clearInterval(refreshInterval);
+        PF('lostContactDialog').show();
+      }
     </script>
   </h:form>
 </ui:composition>
