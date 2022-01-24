@@ -58,7 +58,7 @@
           updateList(); // PF Command
         }
       });
-      
+
       function updateControls() {
         if ($('#datasetListForm\\:hasFiles').val() == "true") {
           $('#noFiles').hide();
@@ -68,7 +68,7 @@
           PF('newDataset').disable();
         }
       }
-      
+
       function updateFailed() {
         clearInterval(refreshInterval);
         PF('lostContactDialog').show();
@@ -86,7 +86,7 @@
       </div>
       <h:panelGrid columns="2" cellpadding="5" class="buttonPanel contentList">
         <p:button href="#{dataSetsBean.urlStub}" value="Go to Login page"/>
-      </h:panelGrid>      
+      </h:panelGrid>
     </p:dialog>
     <ui:fragment rendered="#{not dataSetsBean.hasInstruments}">
       <div class="instructions error">You do not have any instruments

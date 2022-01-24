@@ -14,20 +14,20 @@
       </div>
       <h:panelGrid columns="2" cellpadding="5" class="buttonPanel contentList">
         <p:button href="#{dataSetsBean.urlStub}" value="Go to Login page"/>
-      </h:panelGrid>      
+      </h:panelGrid>
     </p:dialog>
 
     <p:remoteCommand name="touchSession"
       actionListener="#{keepAliveBean.sessionTouch}"
       onerror="updateFailed()"/>
-    
+
     <script>
       var refreshInterval = setInterval(function() {
         if (window['touchSession']) {
           touchSession(); // PF Command
         }
       }, 10000);
-      
+
       function updateFailed() {
         clearInterval(refreshInterval);
         PF('lostContactDialog').show();
