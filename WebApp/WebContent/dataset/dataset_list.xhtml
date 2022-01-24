@@ -53,11 +53,12 @@
       }, 10000);
 
       $(document).ready(function() {
+        window['canUpdateList'] = true;
         if (window['updateList']) {
           updateList(); // PF Command
         }
       });
-
+      
       function updateControls() {
         if ($('#datasetListForm\\:hasFiles').val() == "true") {
           $('#noFiles').hide();
@@ -67,9 +68,26 @@
           PF('newDataset').disable();
         }
       }
+      
+      function updateFailed() {
+        clearInterval(refreshInterval);
+        PF('lostContactDialog').show();
+      }
     </script>
   </ui:define>
   <ui:define name="content">
+    <p:dialog widgetVar="lostContactDialog" modal="true" closable="false"
+      header="Contact Lost">
+      <div style="float:left">
+        <h:graphicImage value="/resources/image/rotten_quince.png"/>
+      </div>
+      <div style="padding-bottom: 10px">
+        Lost contact with the server. You will have to log in again to continue.
+      </div>
+      <h:panelGrid columns="2" cellpadding="5" class="buttonPanel contentList">
+        <p:button href="#{dataSetsBean.urlStub}" value="Go to Login page"/>
+      </h:panelGrid>      
+    </p:dialog>
     <ui:fragment rendered="#{not dataSetsBean.hasInstruments}">
       <div class="instructions error">You do not have any instruments
         defined. Go to the Instruments tab to add an instrument.</div>
@@ -126,7 +144,7 @@
 
         <p:remoteCommand name="updateList" update="datasets hasFiles"
           actionListener="#{dataSetsBean.updateDatasetList}"
-          oncomplete="updateControls()"/>
+          oncomplete="updateControls()" onerror="updateFailed()"/>
 
         <ui:include src="/WEB-INF/templates/dialog.xhtml" />
 
