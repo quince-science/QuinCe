@@ -54,10 +54,12 @@ public class SensorOffsets {
     List<SensorValue> result = new ArrayList<SensorValue>(sensorValues.size());
 
     for (SensorValue sensorValue : sensorValues) {
-      long offset = getOffset(groupPair, sensorValue.getTime());
-      LocalDateTime newTime = sensorValue.getTime().minus(offset,
-        ChronoUnit.MILLIS);
-      result.add(new SensorValue(sensorValue, newTime));
+      if (sensorValue.getUserQCFlag().isGood()) {
+        long offset = getOffset(groupPair, sensorValue.getTime());
+        LocalDateTime newTime = sensorValue.getTime().minus(offset,
+          ChronoUnit.MILLIS);
+        result.add(new SensorValue(sensorValue, newTime));
+      }
     }
 
     return result;
