@@ -238,7 +238,12 @@ public class DataSetDB {
     Gson gson = new GsonBuilder().registerTypeAdapter(SensorOffsets.class,
       new SensorOffsetsDeserializer(instrument)).create();
 
-    JsonObject parsedJson = JsonParser.parseString(record.getString(9))
+    String propertiesString = record.getString(9);
+    if (null == propertiesString) {
+      propertiesString = "{}";
+    }
+
+    JsonObject parsedJson = JsonParser.parseString(propertiesString)
       .getAsJsonObject();
 
     SensorOffsets sensorOffsets;
@@ -487,6 +492,8 @@ public class DataSetDB {
           result = dataSetFromRecord(conn, record);
         }
       }
+    } catch (RecordNotFoundException e) {
+      throw e;
     } catch (Exception e) {
       throw new DatabaseException("Error while retrieving data sets", e);
     }

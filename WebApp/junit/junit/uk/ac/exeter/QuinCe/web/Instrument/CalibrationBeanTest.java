@@ -99,8 +99,7 @@ public class CalibrationBeanTest extends BaseTest {
    *           If any function calls are invalid.
    * @throws SensorGroupsException
    */
-  public static CalibrationBean initBean() throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException {
+  public static CalibrationBean initBean() throws Exception {
     return initBean(ExternalStandardDB.getInstance(), true);
   }
 
@@ -122,8 +121,7 @@ public class CalibrationBeanTest extends BaseTest {
    * @throws SensorGroupsException
    */
   public static CalibrationBean initBean(CalibrationDB dbInstance,
-    boolean affectFollowingOnly) throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException {
+    boolean affectFollowingOnly) throws Exception {
 
     CalibrationBean bean = new CalibrationBeanTestStub(dbInstance,
       affectFollowingOnly);
@@ -155,9 +153,7 @@ public class CalibrationBeanTest extends BaseTest {
    *           If any function calls are invalid.
    */
   public static CalibrationBean initBean(long calibrationId,
-    LocalDateTime deploymentDate, String target)
-    throws RecordNotFoundException, MissingParamException, DatabaseException,
-    InstrumentException, SensorGroupsException {
+    LocalDateTime deploymentDate, String target) throws Exception {
     CalibrationBean bean = initBean();
 
     bean.setSelectedCalibrationId(calibrationId);
@@ -199,8 +195,7 @@ public class CalibrationBeanTest extends BaseTest {
    */
   public static CalibrationBean initBean(CalibrationDB dbInstance,
     int editAction, long calibrationId, LocalDateTime deploymentDate,
-    String target, boolean affectFollowingOnly) throws RecordNotFoundException,
-    MissingParamException, DatabaseException, InstrumentException {
+    String target, boolean affectFollowingOnly) throws Exception {
 
     CalibrationBean bean = initBean(dbInstance, affectFollowingOnly);
 
@@ -617,11 +612,7 @@ public class CalibrationBeanTest extends BaseTest {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/priorsRequiredSingleCalibrationSingleDataset" })
   @Test
-  public void deleteOnlyCalibrationPriorsRequiredTest()
-    throws RecordNotFoundException, InvalidCalibrationTargetException,
-    InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException, InstrumentException,
-    SensorGroupsException {
+  public void deleteOnlyCalibrationPriorsRequiredTest() throws Exception {
 
     CalibrationBean bean = initBean(ExternalStandardDB.getInstance(),
       CalibrationBean.DELETE_ACTION, 1001, null, null, true);
