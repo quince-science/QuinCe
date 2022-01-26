@@ -56,7 +56,7 @@ public class Variable implements Comparable<Variable> {
   /**
    * The core SensorType
    */
-  private List<SensorType> coreSensorTypes;
+  private SensorType coreSensorType;
 
   /**
    * The other sensors required for data reduction
@@ -101,7 +101,7 @@ public class Variable implements Comparable<Variable> {
    */
   protected Variable(SensorsConfiguration sensorConfig, long id, String name,
     LinkedHashMap<String, String> attributes, String propertiesJson,
-    List<Long> coreSensorTypeIds, List<Long> requiredSensorTypeIds,
+    long coreSensorTypeId, List<Long> requiredSensorTypeIds,
     List<Integer> questionableCascades, List<Integer> badCascades,
     Map<SensorType, ColumnHeading> columnHeadings)
     throws SensorTypeNotFoundException, SensorConfigurationException,
@@ -118,18 +118,11 @@ public class Variable implements Comparable<Variable> {
         VariableProperties.class);
     }
 
-    coreSensorTypes = new ArrayList<SensorType>();
-
-    if (null != coreSensorTypeIds) {
-      for (long coreSensorTypeId : coreSensorTypeIds) {
-        SensorType sensorType = sensorConfig.getSensorType(coreSensorTypeId);
-        if (sensorType.hasParent()) {
-          throw new SensorConfigurationException(
-            "Core sensor type cannot be a child (ID " + coreSensorTypeId + ")");
-        } else {
-          coreSensorTypes.add(sensorType);
-        }
-      }
+    coreSensorType = sensorConfig.getSensorType(coreSensorTypeId);
+    if (coreSensorType.hasParent()) {
+      throw new SensorConfigurationException(
+        "Core sensor type cannot be a child (ID " + coreSensorType.getId()
+          + ")");
     }
 
     if (questionableCascades.size() != requiredSensorTypeIds.size()) {
@@ -187,13 +180,8 @@ public class Variable implements Comparable<Variable> {
    *
    * @return The core SensorType
    */
-  public List<SensorType> getCoreSensorTypes() {
-
-    if (null == coreSensorTypes) {
-      coreSensorTypes = new ArrayList<SensorType>(0);
-    }
-
-    return coreSensorTypes;
+  public SensorType getCoreSensorType() {
+    return coreSensorType;
   }
 
   /**
@@ -204,10 +192,7 @@ public class Variable implements Comparable<Variable> {
    */
   public List<SensorType> getAllSensorTypes(boolean includePosition) {
     List<SensorType> result = new ArrayList<SensorType>(requiredSensorTypes);
-
-    if (null != coreSensorTypes) {
-      result.addAll(coreSensorTypes);
-    }
+    result.add(coreSensorType);
 
     if (includePosition) {
       result.add(SensorType.LONGITUDE_SENSOR_TYPE);
@@ -242,7 +227,7 @@ public class Variable implements Comparable<Variable> {
 
     Flag result = null;
 
-    if (coreSensorTypes.contains(sensorType)
+    if (coreSensorType.equals(sensorType)
       || sensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)
       || sensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
       result = flag;
