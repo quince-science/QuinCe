@@ -516,7 +516,7 @@ public class ManualQCData extends PlotPageData {
 
   private boolean isCoreSensorType(SensorType sensorType) {
     return instrument.getVariables().stream()
-      .anyMatch(v -> v.getCoreSensorTypes().contains(sensorType));
+      .anyMatch(v -> v.getCoreSensorType().equals(sensorType));
   }
 
   private boolean isMeasurementForAnyVariable(Measurement measurement)
@@ -937,25 +937,11 @@ public class ManualQCData extends PlotPageData {
   @Override
   protected PlotPageColumnHeading getDefaultYAxis2() throws Exception {
 
-    PlotPageColumnHeading result = null;
-
-    // The core sensor value for the first variable, or if there isn't one,
-    // The second sensor
     Variable variable = instrument.getVariables().get(0);
-
-    SensorType coreSensorType = variable.getCoreSensorTypes().size() > 0
-      ? variable.getCoreSensorTypes().get(0)
-      : null;
-
-    if (null != coreSensorType) {
-      long coreColumn = instrument.getSensorAssignments()
-        .getColumnIds(coreSensorType).get(0);
-      result = getColumnHeading(coreColumn);
-    } else {
-      return columnHeadings.get(SENSORS_FIELD_GROUP).get(1);
-    }
-
-    return result;
+    SensorType coreSensorType = variable.getCoreSensorType();
+    long coreColumn = instrument.getSensorAssignments()
+      .getColumnIds(coreSensorType).get(0);
+    return getColumnHeading(coreColumn);
   }
 
   /**

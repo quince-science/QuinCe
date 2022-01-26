@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public class SimpleMeasurementLocator extends MeasurementLocator {
@@ -27,21 +26,8 @@ public class SimpleMeasurementLocator extends MeasurementLocator {
 
     try {
       Set<Long> measurementColumnIds = new HashSet<Long>();
-
-      List<SensorType> coreSensorTypes = variable.getCoreSensorTypes();
-      if (coreSensorTypes.size() > 0) {
-        List<Long> columns = instrument.getSensorAssignments()
-          .getColumnIds(coreSensorTypes);
-        measurementColumnIds.addAll(columns);
-      } else {
-
-        // If there's no core sensor type, use any of the sensor values
-        for (SensorType sensorType : variable.getAllSensorTypes(false)) {
-          List<Long> columns = instrument.getSensorAssignments()
-            .getColumnIds(sensorType);
-          measurementColumnIds.addAll(columns);
-        }
-      }
+      measurementColumnIds.addAll(instrument.getSensorAssignments()
+        .getColumnIds(variable.getCoreSensorType()));
 
       // Get all the sensor values for the identified columns
       List<SensorValue> sensorValues = DataSetDataDB.getSensorValuesForColumns(
