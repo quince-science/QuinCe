@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -117,9 +116,8 @@ public class DataReductionJob extends DataSetJob {
           .entrySet()) {
 
           // See if this run type is for the GENERIC variable - this is a value
-          // from
-          // the Run Type column which determines which variable(s) it belongs
-          // to
+          // from the Run Type column which determines which variable(s) it
+          // belongs to
           if (runTypeEntry.getKey() == Measurement.GENERIC_RUN_TYPE_VARIABLE) {
 
             for (Variable variable : instrument.getVariables()) {
@@ -175,19 +173,8 @@ public class DataReductionJob extends DataSetJob {
            */
           boolean hasCoreValue = true;
 
-          List<SensorType> coreSensorTypes = variable.getCoreSensorTypes();
-          if (coreSensorTypes.size() > 0) {
-
-            hasCoreValue = false;
-
-            if (measurement.hasMeasurementValue(coreSensorTypes)) {
-              hasCoreValue = true;
-            }
-          }
-
-          if (hasCoreValue) {
-
-            // Store the measurement values in the database
+          // Otherwise store the measurement values for processing.
+          if (measurement.hasMeasurementValue(variable.getCoreSensorType())) {
             DataSetDataDB.storeMeasurementValues(conn, measurement);
           }
         }

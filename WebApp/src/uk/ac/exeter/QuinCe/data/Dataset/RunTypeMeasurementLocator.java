@@ -12,7 +12,6 @@ import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public class RunTypeMeasurementLocator extends MeasurementLocator {
@@ -36,20 +35,8 @@ public class RunTypeMeasurementLocator extends MeasurementLocator {
 
       for (Variable variable : instrument.getVariables()) {
         if (variable.hasInternalCalibrations()) {
-          List<SensorType> coreSensorTypes = variable.getCoreSensorTypes();
-          if (coreSensorTypes.size() > 0) {
-            List<Long> columns = instrument.getSensorAssignments()
-              .getColumnIds(coreSensorTypes);
-            measurementColumnIds.addAll(columns);
-          } else {
-
-            // If there's no core sensor type, use any of the sensor values
-            for (SensorType sensorType : variable.getAllSensorTypes(false)) {
-              List<Long> columns = instrument.getSensorAssignments()
-                .getColumnIds(sensorType);
-              measurementColumnIds.addAll(columns);
-            }
-          }
+          measurementColumnIds.addAll(instrument.getSensorAssignments()
+            .getColumnIds(variable.getCoreSensorType()));
         }
       }
 
