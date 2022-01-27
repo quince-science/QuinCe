@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +31,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -93,6 +95,18 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
 
     initResourceManager();
 
+    // Test data
+    // 2021-07-22T00:05:00Z,2
+    // 2021-07-22T00:15:00Z,3
+    // 2021-07-22T00:25:00Z,3.5
+    // 2021-07-22T00:35:00Z,4.5
+    // 2021-07-22T00:45:00Z,5
+    // 2021-07-22T00:55:00Z,6
+    // 2021-07-22T01:05:00Z,7
+    // 2021-07-22T01:15:00Z,8.5
+    // 2021-07-22T01:25:00Z,9
+    // 2021-07-22T01:35:00Z,10
+
     timestamps = new ArrayList<LocalDateTime>(10);
     timestamps.add(LocalDateTime.parse("2021-07-22T00:24:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
@@ -136,6 +150,15 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
     SensorAssignments mockAssignments = Mockito.mock(SensorAssignments.class);
     Mockito.when(mockAssignments.getColumnIds(sensorType))
       .thenReturn(columnList);
+
+    SensorAssignment mockAssignment = Mockito.mock(SensorAssignment.class);
+    Mockito.when(mockAssignment.getDatabaseId()).thenReturn(COLUMN_ID);
+
+    TreeSet<SensorAssignment> mockAssignmentSet = new TreeSet<SensorAssignment>();
+    mockAssignmentSet.add(mockAssignment);
+
+    Mockito.when(mockAssignments.get(Mockito.any()))
+      .thenReturn(mockAssignmentSet);
 
     instrument = Mockito.mock(Instrument.class);
     Mockito.when(instrument.getSensorAssignments()).thenReturn(mockAssignments);
@@ -195,8 +218,8 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
   @MethodSource("getLines")
   public void interpolationTest(TestSetLine line) throws Exception {
 
-    // TODO Currently fakes the sensor offsets stuff and never applies an
-    // offset.
+    // All SensorOffset details are mocked such that no offsets are calculated.
+    // This is covered in other tests.
     SensorOffsets sensorOffsets = Mockito.mock(SensorOffsets.class);
     Mockito.when(
       sensorOffsets.getOffsetTime(Mockito.any(), Mockito.any(), Mockito.any()))
