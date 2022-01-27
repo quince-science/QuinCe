@@ -190,6 +190,9 @@ public class DataSetDataDB {
     + DatabaseUtils.IN_PARAMS_TOKEN + " AND sv.file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN;
 
+  private static final String UPDATE_MEASUREMENT_TIME_STATEMENT = "UPDATE measurements"
+    + "SET date = ? WHERE id = ?";
+
   /**
    * Take a list of fields, and return those which come from the dataset data.
    * Any others will come from calculation data and will be left alone.
@@ -1371,6 +1374,19 @@ public class DataSetDataDB {
 
     return allValues.stream().filter(v -> v.getDoubleValue().equals(value))
       .map(v -> v.getTime()).collect(Collectors.toCollection(HashSet::new));
+  }
+
+  public static void updateMeasurementTime(Connection conn,
+    Measurement measurement) throws DatabaseException {
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(UPDATE_MEASUREMENT_TIME_STATEMENT)) {
+      stmt.setLong(1, DateTimeUtils.dateToLong(measurement.getTime()));
+      stmt.setLong(2, measurement.getDatasetId());
+      stmt.execute();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error updating measurement time", e);
+    }
   }
 }
 

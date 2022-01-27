@@ -12,10 +12,11 @@ public class DiffEqPresMeasurementValueCalculator
   extends MeasurementValueCalculator {
 
   @Override
-  public MeasurementValue calculate(Instrument instrument,
-    Measurement measurement, SensorType sensorType,
-    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
-    Connection conn) throws MeasurementValueCalculatorException {
+  public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
+    Measurement measurement, SensorType coreSensorType,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException {
 
     try {
       SensorsConfiguration sensorConfig = ResourceManager.getInstance()
@@ -24,17 +25,17 @@ public class DiffEqPresMeasurementValueCalculator
         .getSensorType("Pressure at instrument");
 
       MeasurementValue diffEqPress = new DefaultMeasurementValueCalculator()
-        .calculate(instrument, measurement, sensorType, allMeasurements,
-          allSensorValues, conn);
+        .calculate(instrument, dataSet, measurement, coreSensorType,
+          requiredSensorType, allMeasurements, allSensorValues, conn);
 
       MeasurementValue pressAtInstrument = new DefaultMeasurementValueCalculator()
-        .calculate(instrument, measurement, pressAtInstrumentSensorType,
-          allMeasurements, allSensorValues, conn);
+        .calculate(instrument, dataSet, measurement, coreSensorType,
+          pressAtInstrumentSensorType, allMeasurements, allSensorValues, conn);
 
       Double finalPressure = pressAtInstrument.getCalculatedValue()
         + diffEqPress.getCalculatedValue();
 
-      return new MeasurementValue(sensorType,
+      return new MeasurementValue(requiredSensorType,
         getSensorValues(allSensorValues, diffEqPress),
         getSensorValues(allSensorValues, pressAtInstrument), finalPressure,
         diffEqPress.getMemberCount());

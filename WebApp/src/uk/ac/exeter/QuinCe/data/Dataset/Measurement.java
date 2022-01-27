@@ -60,7 +60,7 @@ public class Measurement implements Comparable<Measurement> {
   /**
    * The timestamp of the measurement
    */
-  private final LocalDateTime time;
+  private LocalDateTime time;
 
   /**
    * The run types of the measurement.
@@ -387,6 +387,10 @@ public class Measurement implements Comparable<Measurement> {
         }
       }
     }
+  }
+
+  public void setTime(LocalDateTime time) {
+    this.time = time;
   }
 }
 

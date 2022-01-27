@@ -18,11 +18,13 @@ import org.mockito.Mockito;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.DefaultMeasurementValueCalculator;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorOffsets;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
@@ -193,6 +195,16 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
   @MethodSource("getLines")
   public void interpolationTest(TestSetLine line) throws Exception {
 
+    // TODO Currently fakes the sensor offsets stuff and never applies an
+    // offset.
+    SensorOffsets sensorOffsets = Mockito.mock(SensorOffsets.class);
+    Mockito.when(
+      sensorOffsets.getOffsetTime(Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenAnswer(invocation -> invocation.getArgument(0));
+
+    DataSet dataSet = Mockito.mock(DataSet.class);
+    Mockito.when(dataSet.getSensorOffsets()).thenReturn(sensorOffsets);
+
     DatasetSensorValues sensorValues = makeSensorValues(
       line.getStringField(FLAGS_COL, true));
     Measurement measurement = Measurement
@@ -200,8 +212,9 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
 
     DefaultMeasurementValueCalculator calculator = new DefaultMeasurementValueCalculator();
 
-    MeasurementValue value = calculator.calculate(instrument, measurement,
-      sensorType, null, sensorValues, getDataSource().getConnection());
+    MeasurementValue value = calculator.calculate(instrument, dataSet,
+      measurement, sensorType, sensorType, null, sensorValues,
+      getDataSource().getConnection());
 
     Double expectedValue = line.getDoubleField(EXPECTED_VALUE_COL);
     char expectedType = line.getCharField(EXPECTED_TYPE_COL);

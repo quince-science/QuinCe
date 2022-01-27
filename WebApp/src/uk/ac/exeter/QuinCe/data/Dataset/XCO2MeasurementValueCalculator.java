@@ -25,18 +25,19 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
   }
 
   @Override
-  public MeasurementValue calculate(Instrument instrument,
-    Measurement measurement, SensorType sensorType,
-    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
-    Connection conn) throws MeasurementValueCalculatorException {
+  public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
+    Measurement measurement, SensorType coreSensorType,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException {
 
     MeasurementValue result;
 
     // Get the xCO2 as a simple value. Because it's a core sensor it will only
     // contain one
     MeasurementValue xCO2 = new DefaultMeasurementValueCalculator().calculate(
-      instrument, measurement, xco2SensorType, allMeasurements, allSensorValues,
-      conn);
+      instrument, dataSet, measurement, coreSensorType, xco2SensorType,
+      allMeasurements, allSensorValues, conn);
 
     if (xCO2.getMemberCount() == 0) {
       // The CO2 value is missing, or in flushing. So we don't do anything
@@ -47,8 +48,8 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
       } else {
 
         MeasurementValue xH2O = new DefaultMeasurementValueCalculator()
-          .calculate(instrument, measurement, xh2oSensorType, allMeasurements,
-            allSensorValues, conn);
+          .calculate(instrument, dataSet, measurement, coreSensorType,
+            xh2oSensorType, allMeasurements, allSensorValues, conn);
 
         result = new MeasurementValue(xco2SensorType);
         result.addSensorValues(xCO2, allSensorValues);
