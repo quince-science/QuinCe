@@ -540,4 +540,46 @@ public class SensorGroups implements Iterable<SensorGroup> {
     return getGroupPairs().stream().filter(p -> p.getId() == pairId).findAny()
       .get();
   }
+
+  /**
+   * Get the group that contains the given {@link SensorAssignment}.
+   * 
+   * @param assignment
+   * @return
+   */
+  public SensorGroup getGroup(SensorAssignment assignment)
+    throws SensorGroupsException {
+
+    // We know that an assignment can only be in one group
+    Optional<SensorGroup> result = stream().filter(g -> g.contains(assignment))
+      .findAny();
+
+    if (result.isEmpty()) {
+      throw new SensorGroupsException(
+        "Assignment '" + assignment.getSensorName() + "' not found");
+    }
+
+    return result.get();
+  }
+
+  public int getGroupIndex(SensorGroup group) {
+
+    boolean found = false;
+    int result = -1;
+
+    Iterator<SensorGroup> iterator = iterator();
+    while (!found && iterator.hasNext()) {
+      result++;
+      SensorGroup g = iterator.next();
+      if (g.equals(group)) {
+        found = true;
+      }
+    }
+
+    return found ? result : -1;
+  }
+
+  public SensorGroup first() {
+    return firstGroup;
+  }
 }
