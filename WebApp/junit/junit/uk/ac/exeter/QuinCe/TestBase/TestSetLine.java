@@ -179,10 +179,11 @@ public class TestSetLine {
    *          The zero-based field number
    * @return The field value
    */
-  public double getDoubleField(int fieldNumber) {
-    double result = 0;
+  public Double getDoubleField(int fieldNumber) {
+    Double result = Double.NaN;
 
-    if (!isFieldEmpty(fieldNumber)) {
+    if (!isFieldEmpty(fieldNumber)
+      && !getStringField(fieldNumber, false).equals("NaN")) {
       result = Double.parseDouble(fields[fieldNumber]);
     }
 
