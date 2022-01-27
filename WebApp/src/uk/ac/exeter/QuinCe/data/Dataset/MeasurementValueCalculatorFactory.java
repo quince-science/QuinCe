@@ -10,12 +10,14 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class MeasurementValueCalculatorFactory {
 
   public static MeasurementValue calculateMeasurementValue(
-    Instrument instrument, Measurement measurement, SensorType sensorType,
+    Instrument instrument, DataSet dataSet, Measurement measurement,
+    SensorType coreSensorType, SensorType requiredSensorType,
     DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
     Connection conn) throws MeasurementValueCalculatorException {
 
-    return getCalculator(sensorType).calculate(instrument, measurement,
-      sensorType, allMeasurements, allSensorValues, conn);
+    return getCalculator(requiredSensorType).calculate(instrument, dataSet,
+      measurement, coreSensorType, requiredSensorType, allMeasurements,
+      allSensorValues, conn);
   }
 
   private static MeasurementValueCalculator getCalculator(SensorType sensorType)

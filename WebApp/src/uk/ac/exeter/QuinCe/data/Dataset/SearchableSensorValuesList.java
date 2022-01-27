@@ -219,6 +219,11 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    * value should not be used.
    * </p>
    * <p>
+   * If the requested time is before the first value or after the last value the
+   * method returns an empty list to prevent extrapolation beyond the range of
+   * the dataset.
+   * </p>
+   * <p>
    * The above logic is overridden by {@code preferGoodFlags}. If this is set
    * and any selected value is {@link Flag#QUESTIONABLE} or {@link Flag#BAD},
    * the interpolation continues until a {@link Flag#GOOD} value is found. If no
@@ -239,57 +244,68 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
     List<SensorValue> result;
 
-    int startPoint = Collections.binarySearch(this, dummySensorValue(time),
-      TIME_COMPARATOR);
+    if (size() == 0 || time.isBefore(get(0).getTime())
+      || time.isAfter(get(size() - 1).getTime())) {
+      result = new ArrayList<SensorValue>(0);
+    } else {
 
-    SensorValue exactTimeValue = null;
-    List<SensorValue> priorPostValues = null;
-    boolean useExactValue = true;
+      int startPoint = Collections.binarySearch(this, dummySensorValue(time),
+        TIME_COMPARATOR);
 
-    // If we get a positive result, we hit the measurement exactly.
-    if (startPoint >= 0) {
+      SensorValue exactTimeValue = null;
+      List<SensorValue> priorPostValues = null;
+      boolean useExactValue = true;
 
-      exactTimeValue = get(startPoint);
-      Flag exactTimeFlag = getQCFlag(startPoint);
+      // If we get a positive result, we hit the measurement exactly.
+      if (startPoint >= 0) {
 
-      // We can use the exact time value if:
-      // (a) The flag is FLUSHING (it won't actually be used but we work that
-      // out later)
-      // (b) The flag is GOOD
-      // (c) The flag is BAD or QUESTIONABLE but we don't mind
-      if (!exactTimeFlag.equals(Flag.FLUSHING)
-        && (!exactTimeFlag.isGood() && preferGoodFlags)) {
+        exactTimeValue = get(startPoint);
+        Flag exactTimeFlag = getQCFlag(startPoint);
 
-        priorPostValues = getPriorPost(time, startPoint);
+        // We can use the exact time value if:
+        // (a) The flag is FLUSHING (it won't actually be used but we work that
+        // out later)
+        // (b) The flag is GOOD
+        // (c) The flag is BAD or QUESTIONABLE but we don't mind
+        if (!exactTimeFlag.equals(Flag.FLUSHING)
+          && (!exactTimeFlag.isGood() && preferGoodFlags)) {
 
-        // If the prior and post contain one non-null value and it is our exact
-        // value, that means no interpolation could be performed - usually
-        // because our exact value was not GOOD but there were no other GOOD
-        // values available.
-        if (CollectionUtils.getNonNullCount(priorPostValues) == 1L
-          && CollectionUtils.getFirstNonNull(priorPostValues).getTime()
-            .equals(time)) {
-          useExactValue = true;
-        } else {
-          useExactValue = false;
+          priorPostValues = getPriorPost(startPoint);
+
+          // If the prior and post contain one non-null value and it is our
+          // exact
+          // value, that means no interpolation could be performed - usually
+          // because our exact value was not GOOD but there were no other GOOD
+          // values available.
+          if (CollectionUtils.getNonNullCount(priorPostValues) == 1L
+            && CollectionUtils.getFirstNonNull(priorPostValues).getTime()
+              .equals(time)) {
+            useExactValue = true;
+          } else {
+            useExactValue = false;
+          }
         }
+      } else {
+        priorPostValues = getPriorPost(startPoint);
+        useExactValue = false;
       }
     } else {
       priorPostValues = getPriorPost(time, startPoint);
       useExactValue = false;
     }
 
-    // Now we decide what to put in our returned list
-    if (useExactValue) {
-      result = new ArrayList<SensorValue>();
+      // Now we decide what to put in our returned list
+      if (useExactValue) {
+        result = new ArrayList<SensorValue>();
 
-      // A FLUSHING value means an empty list. Otherwise put in the exact time
-      // value.
-      if (!exactTimeValue.getUserQCFlag().equals(Flag.FLUSHING)) {
-        result.add(exactTimeValue);
+        // A FLUSHING value means an empty list. Otherwise put in the exact time
+        // value.
+        if (!exactTimeValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+          result.add(exactTimeValue);
+        }
+      } else {
+        result = priorPostValues;
       }
-    } else {
-      result = priorPostValues;
     }
 
     return result;

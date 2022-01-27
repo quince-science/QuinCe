@@ -16,12 +16,15 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
+import uk.ac.exeter.QuinCe.utils.CollectionUtils;
 
 /**
  * The default implementation of {@link MeasurementValueCalculator}.
@@ -75,10 +78,8 @@ public class DefaultMeasurementValueCalculator
         }
       } else {
 
-        // Otherwise we get the closest GOOD (or best available quality) values
-        // we can, interpolating where required.
         List<SensorValue> valuesToUse = sensorValues
-          .getWithInterpolation(measurement.getTime(), true);
+          .getWithInterpolation(valueTime, true);
 
         switch (valuesToUse.size()) {
         case 0: {
@@ -88,9 +89,8 @@ public class DefaultMeasurementValueCalculator
         }
         case 1: {
           // If the value is not the same as the measurement time, then it's
-          // been
-          // interpolated (usually because it's before or after the time range
-          // of the available sensor values)
+          // been interpolated (usually because it's before or after the time
+          // range of the available sensor values)
           if (!valuesToUse.get(0).getTime().equals(measurement.getTime())) {
             result.addInterpolatedSensorValue(valuesToUse.get(0), true);
           } else {
@@ -111,21 +111,22 @@ public class DefaultMeasurementValueCalculator
             "Invalid number of values in search result");
         }
         }
+      } catch (SensorGroupsException e) {
+        throw new MeasurementValueCalculatorException(
+          "Cannot calculate time offset", e);
       }
 
-      // Calibrate the value if (a) the SensorType can have calibrations, and
-      // (b) the instrument has calibration Run Types defined.
-      if (sensorType.hasInternalCalibration()
-        && instrument.hasInternalCalibrations()) {
-        calibrate(instrument, measurement, sensorType, result, allMeasurements,
-          sensorValues, conn);
-      }
-
-      return result;
-    } catch (DatabaseException e) {
-      throw new MeasurementValueCalculatorException(
-        "Error getting sensor value details", e);
     }
+
+    // Calibrate the value if (a) the SensorType can have calibrations, and
+    // (b) the instrument has calibration Run Types defined.
+    if (requiredSensorType.hasInternalCalibration()
+      && instrument.hasInternalCalibrations()) {
+      calibrate(instrument, measurement, requiredSensorType, result,
+        allMeasurements, sensorValues, conn);
+    }
+
+    return result;
   }
 
   private void calibrate(Instrument instrument, Measurement measurement,

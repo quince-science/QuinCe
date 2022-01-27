@@ -12,9 +12,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 public abstract class MeasurementValueCalculator {
 
   public abstract MeasurementValue calculate(Instrument instrument,
-    Measurement measurement, SensorType sensorType,
-    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
-    Connection conn) throws MeasurementValueCalculatorException;
+    DataSet dataSet, Measurement measurement, SensorType coreSensorType,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException;
 
   protected static List<SensorValue> getSensorValues(
     Collection<MeasurementValue> measurementValues,

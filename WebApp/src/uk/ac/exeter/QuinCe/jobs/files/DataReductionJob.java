@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
@@ -19,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -136,6 +139,10 @@ public class DataReductionJob extends DataSetJob {
           }
         }
 
+        // A store of one of the variables we will calculate. This is useful
+        // later.
+        Variable usedVariable = null;
+
         // Loop through each variable
         for (Variable variable : variablesToProcess) {
 
@@ -161,8 +168,9 @@ public class DataReductionJob extends DataSetJob {
              */
             if (!measurement.hasMeasurementValue(sensorType)) {
               measurement.setMeasurementValue(MeasurementValueCalculatorFactory
-                .calculateMeasurementValue(instrument, measurement, sensorType,
-                  allMeasurements, allSensorValues, conn));
+                .calculateMeasurementValue(instrument, dataSet, measurement,
+                  variable.getCoreSensorType(), sensorType, allMeasurements,
+                  allSensorValues, conn));
             }
           }
 
@@ -176,7 +184,28 @@ public class DataReductionJob extends DataSetJob {
           // Otherwise store the measurement values for processing.
           if (measurement.hasMeasurementValue(variable.getCoreSensorType())) {
             DataSetDataDB.storeMeasurementValues(conn, measurement);
+
+            // Store this variable for use below
+            if (null == usedVariable) {
+              usedVariable = variable;
+            }
           }
+        }
+
+        // Finally we adjust the measurement time.
+        // The original measurement time was the time of the value from the core
+        // sensor type. We apply an offset to the first sensor group, since this
+        // is the point of first acquisition of data relevant to the measurement
+        // and therefore closest to the real time for the measurement.
+        // We can use any of the insturment's variables for this purpose.
+        if (null != usedVariable) {
+          SensorType coreSensorType = usedVariable.getCoreSensorType();
+          SensorAssignment coreAssignment = instrument.getSensorAssignments()
+            .get(coreSensorType).first();
+          LocalDateTime offsetMeasurementTime = dataSet.getSensorOffsets()
+            .offsetToFirstGroup(measurement.getTime(), coreAssignment);
+          measurement.setTime(offsetMeasurementTime);
+          DataSetDataDB.updateMeasurementTime(conn, measurement);
         }
       }
 
