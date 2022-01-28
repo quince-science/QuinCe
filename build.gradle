@@ -15,6 +15,9 @@ buildscript {
 
     // Flyway migration needs the mysql connector
     classpath 'mysql:mysql-connector-java:5.1.36'
+
+    // Gson
+    classpath 'com.google.code.gson:gson:2.8.5'
   }
 }
 

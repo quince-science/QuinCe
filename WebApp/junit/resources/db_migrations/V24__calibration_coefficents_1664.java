@@ -30,25 +30,43 @@ public class V24__calibration_coefficents_1664 extends BaseJavaMigration {
       .prepareStatement("UPDATE calibration SET coefficients = ? WHERE id = ?");
 
     // Do the simple ones first.
-    convert("PolynomialSensorCalibration", new PolynomialConverter());
-    convert("CalculationCoefficient", new CalculationCoefficientConverter());
-
-    // Now the external standards
+    convertPolynomialSensorCalibrations();
+    convertCalculationCoefficients();
     convertExternalStandards(conn);
   }
 
-  private void convert(String calClass, CoefficientConverter converter)
-    throws Exception {
-
-    searchStmt.setString(1, calClass);
+  private void convertPolynomialSensorCalibrations() throws Exception {
+    searchStmt.setString(1, "PolynomialSensorCalibration");
 
     try (ResultSet records = searchStmt.executeQuery()) {
-
       while (records.next()) {
-        JsonObject newCoefficients = converter
-          .convertCoefficients(records.getString(2));
+        String[] coeffs = records.getString(2).split(";");
 
-        updateStmt.setString(1, gson.toJson(newCoefficients));
+        JsonObject json = new JsonObject();
+        json.addProperty("x⁵", coeffs[0]);
+        json.addProperty("x⁴", coeffs[1]);
+        json.addProperty("x³", coeffs[2]);
+        json.addProperty("x²", coeffs[3]);
+        json.addProperty("x", coeffs[4]);
+        json.addProperty("Intercept", coeffs[5]);
+
+        updateStmt.setString(1, gson.toJson(json));
+        updateStmt.setLong(2, records.getLong(1));
+        updateStmt.execute();
+      }
+    }
+  }
+
+  private void convertCalculationCoefficients() throws Exception {
+    searchStmt.setString(1, "CalculationCoefficient");
+
+    try (ResultSet records = searchStmt.executeQuery()) {
+      while (records.next()) {
+
+        JsonObject json = new JsonObject();
+        json.addProperty("Value", records.getString(2));
+
+        updateStmt.setString(1, gson.toJson(json));
         updateStmt.setLong(2, records.getLong(1));
         updateStmt.execute();
       }
@@ -101,38 +119,5 @@ public class V24__calibration_coefficents_1664 extends BaseJavaMigration {
         updateStmt.execute();
       }
     }
-  }
-}
-
-interface CoefficientConverter {
-  public JsonObject convertCoefficients(String src);
-}
-
-class PolynomialConverter implements CoefficientConverter {
-
-  @Override
-  public JsonObject convertCoefficients(String src) {
-
-    String[] coeffs = src.split(";");
-
-    JsonObject json = new JsonObject();
-    json.addProperty("x⁵", coeffs[0]);
-    json.addProperty("x⁴", coeffs[1]);
-    json.addProperty("x³", coeffs[2]);
-    json.addProperty("x²", coeffs[3]);
-    json.addProperty("x", coeffs[4]);
-    json.addProperty("Intercept", coeffs[5]);
-
-    return json;
-  }
-}
-
-class CalculationCoefficientConverter implements CoefficientConverter {
-
-  @Override
-  public JsonObject convertCoefficients(String src) {
-    JsonObject json = new JsonObject();
-    json.addProperty("Value", src);
-    return json;
   }
 }
