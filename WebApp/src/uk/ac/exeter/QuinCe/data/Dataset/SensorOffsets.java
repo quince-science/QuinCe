@@ -123,7 +123,7 @@ public class SensorOffsets {
    * Get the time to use for a {@link SensorAssignment} relative to a base
    * {@link SensorAssignment} taking into account the offsets across sensor
    * groups.
-   * 
+   *
    * @param time
    *          The time to be offset.
    * @param base
