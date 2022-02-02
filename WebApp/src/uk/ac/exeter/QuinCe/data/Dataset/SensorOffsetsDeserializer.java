@@ -35,8 +35,13 @@ public class SensorOffsetsDeserializer
       .entrySet()) {
 
       // Get the group pair
-      SensorGroupPair groupPair = instrument.getSensorGroups()
-        .getGroupPair(Integer.parseInt(entry.getKey()));
+      SensorGroupPair groupPair;
+      try {
+        groupPair = instrument.getSensorGroups()
+          .getGroupPair(Integer.parseInt(entry.getKey()));
+      } catch (Exception e) {
+        throw new JsonParseException(e);
+      }
 
       // Loop through the offsets
       entry.getValue().getAsJsonArray().forEach(a -> {

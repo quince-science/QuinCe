@@ -196,7 +196,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
    *          The assignments to be removed.
    */
   public void remove(Collection<SensorAssignment> sensorAssignments) {
-    sensorAssignments.forEach(this::removeAssignment);
+    sensorAssignments.forEach(this::remove);
   }
 
   /**
@@ -210,12 +210,13 @@ public class SensorGroups implements Iterable<SensorGroup> {
    * @param sensorAssignments
    *          The assignments to be removed.
    */
-  public void removeAssignment(SensorAssignment assignment) {
+  public void remove(SensorAssignment assignment) {
     boolean removed = false;
 
-    SensorGroup nextGroup = firstGroup;
-    while (!removed && null != nextGroup) {
-      removed = nextGroup.remove(assignment);
+    SensorGroup searchGroup = firstGroup;
+    while (!removed && null != searchGroup) {
+      removed = searchGroup.remove(assignment);
+      searchGroup = searchGroup.getNextGroup();
     }
   }
 
@@ -274,24 +275,18 @@ public class SensorGroups implements Iterable<SensorGroup> {
   public boolean isComplete() {
     boolean complete = true;
 
-    if (null == firstGroup) {
-      complete = false;
-    } else {
+    SensorGroup group = firstGroup;
 
-      SensorGroup group = firstGroup;
-
-      while (complete && null != group) {
-        if (group.size() == 0) {
-          complete = false;
-        } else if (group.hasPrev() && null == group.getPrevLink()) {
-          complete = false;
-        } else if (group.hasNext() && null == group.getNextLink()) {
-          complete = false;
-        } else {
-          group = group.getNextGroup();
-        }
+    while (complete && null != group) {
+      if (group.size() == 0) {
+        complete = false;
+      } else if (group.hasPrev() && null == group.getPrevLink()) {
+        complete = false;
+      } else if (group.hasNext() && null == group.getNextLink()) {
+        complete = false;
+      } else {
+        group = group.getNextGroup();
       }
-
     }
 
     return complete;
@@ -308,17 +303,13 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
   public void renameGroup(String from, String to) throws SensorGroupsException {
     if (!from.equals(to)) {
-      Optional<SensorGroup> group = getGroup(from);
-      if (group.isEmpty()) {
-        throw new SensorGroupsException("Cannot find group '" + from + "'");
-      }
-
+      SensorGroup group = getGroup(from);
       if (groupExists(to)) {
         throw new SensorGroupsException(
           "There is already a group named '" + to + "'");
       }
 
-      group.get().setName(to);
+      group.setName(to);
     }
   }
 
@@ -328,10 +319,17 @@ public class SensorGroups implements Iterable<SensorGroup> {
    * @param name
    *          The group name.
    * @return The group, or
+   * @throws SensorGroupsException
    */
-  public Optional<SensorGroup> getGroup(String name) {
-    return stream().filter(g -> g.getName().equalsIgnoreCase(name.trim()))
-      .findAny();
+  public SensorGroup getGroup(String name) throws SensorGroupsException {
+    Optional<SensorGroup> group = stream()
+      .filter(g -> g.getName().equalsIgnoreCase(name.trim())).findAny();
+
+    if (group.isEmpty()) {
+      throw new SensorGroupsException("Group '" + name + "' not found");
+    }
+
+    return group.get();
   }
 
   /**
@@ -342,7 +340,8 @@ public class SensorGroups implements Iterable<SensorGroup> {
    * @return {@code true} if the group exists.
    */
   public boolean groupExists(String name) {
-    return getGroup(name).isPresent();
+    return stream().filter(g -> g.getName().equalsIgnoreCase(name.trim()))
+      .findAny().isPresent();
   }
 
   /**
@@ -370,27 +369,22 @@ public class SensorGroups implements Iterable<SensorGroup> {
       firstGroup.setPrevGroup(newGroup);
       firstGroup = newGroup;
     } else {
-      Optional<SensorGroup> priorGroup = getGroup(after);
-      if (priorGroup.isEmpty()) {
-        throw new SensorGroupsException(
-          "After group '" + after + "' does not exist");
-      } else {
-        SensorGroup newGroup = new SensorGroup(name);
+      SensorGroup priorGroup = getGroup(after);
+      SensorGroup newGroup = new SensorGroup(name);
 
-        // New group links back to prior group
-        newGroup.setPrevGroup(priorGroup.get());
+      // New group links back to prior group
+      newGroup.setPrevGroup(priorGroup);
 
-        // New group links forward to prior group's old next
-        newGroup.setNextGroup(priorGroup.get().getNextGroup());
+      // New group links forward to prior group's old next
+      newGroup.setNextGroup(priorGroup.getNextGroup());
 
-        // Prior group's old next links back to new group
-        if (null != newGroup.getNextGroup()) {
-          newGroup.getNextGroup().setPrevGroup(newGroup);
-        }
-
-        // Prior group links forward to new group
-        priorGroup.get().setNextGroup(newGroup);
+      // Prior group's old next links back to new group
+      if (null != newGroup.getNextGroup()) {
+        newGroup.getNextGroup().setPrevGroup(newGroup);
       }
+
+      // Prior group links forward to new group
+      priorGroup.setNextGroup(newGroup);
     }
   }
 
@@ -407,35 +401,30 @@ public class SensorGroups implements Iterable<SensorGroup> {
       throw new SensorGroupsException("Cannot delete the only sensor group");
     }
 
-    Optional<SensorGroup> findGroup = getGroup(group);
-    if (findGroup.isEmpty()) {
-      throw new SensorGroupsException("Group '" + group + "' does not exist");
-    } else {
+    SensorGroup findGroup = getGroup(group);
+    SensorGroup deleteGroup = findGroup;
 
-      SensorGroup deleteGroup = findGroup.get();
+    SensorGroup prevGroup = deleteGroup.getPrevGroup();
+    SensorAssignment prevLink = deleteGroup.getPrevLink();
+    SensorGroup nextGroup = deleteGroup.getNextGroup();
+    SensorAssignment nextLink = deleteGroup.getNextLink();
 
-      SensorGroup prevGroup = deleteGroup.getPrevGroup();
-      SensorAssignment prevLink = deleteGroup.getPrevLink();
-      SensorGroup nextGroup = deleteGroup.getNextGroup();
-      SensorAssignment nextLink = deleteGroup.getNextLink();
+    // Move all the group's members to a neighbouring group
+    SensorGroup neighbourGroup = null == nextGroup ? prevGroup : nextGroup;
+    neighbourGroup.addAssignments(deleteGroup.getMembers());
 
-      // Move all the group's members to a neighbouring group
-      SensorGroup neighbourGroup = null == nextGroup ? prevGroup : nextGroup;
-      neighbourGroup.addAssignments(deleteGroup.getMembers());
+    if (null != prevGroup) {
+      prevGroup.setNextGroup(nextGroup);
+      prevGroup.setNextLink(nextLink);
+    }
 
-      if (null != prevGroup) {
-        prevGroup.setNextGroup(nextGroup);
-        prevGroup.setNextLink(nextLink);
-      }
+    if (null != nextGroup) {
+      nextGroup.setPrevGroup(prevGroup);
+      nextGroup.setPrevLink(prevLink);
+    }
 
-      if (null != nextGroup) {
-        nextGroup.setPrevGroup(prevGroup);
-        nextGroup.setPrevLink(prevLink);
-      }
-
-      if (firstGroup.equals(deleteGroup)) {
-        firstGroup = nextGroup;
-      }
+    if (firstGroup.equals(deleteGroup)) {
+      firstGroup = nextGroup;
     }
   }
 
@@ -451,32 +440,27 @@ public class SensorGroups implements Iterable<SensorGroup> {
   public void moveSensor(String sensorName, String groupName)
     throws SensorGroupsException {
 
-    Optional<SensorGroup> sourceGroup = getSensorGroup(sensorName);
-    if (sourceGroup.isEmpty()) {
-      throw new SensorGroupsException("Sensor '" + sensorName + "' not found");
-    }
-
-    Optional<SensorAssignment> assignment = sourceGroup.get()
-      .getAssignment(sensorName);
-    if (assignment.isEmpty()) {
-      // This should be caught above. But just in case...
-      throw new SensorGroupsException("Sensor '" + sensorName + "' not found");
-    }
+    SensorGroup sourceGroup = getAssignmentGroup(sensorName);
+    SensorAssignment assignment = sourceGroup.getAssignment(sensorName);
 
     // If a sensor is moving to its own group, do nothing
-    if (!sourceGroup.get().getName().equalsIgnoreCase(groupName)) {
-      Optional<SensorGroup> destinationGroup = getGroup(groupName);
-      if (destinationGroup.isEmpty()) {
-        throw new SensorGroupsException("Group '" + groupName + "' not found");
-      }
-
-      sourceGroup.get().remove(assignment.get());
-      destinationGroup.get().addAssignment(assignment.get());
+    if (!sourceGroup.getName().equalsIgnoreCase(groupName)) {
+      SensorGroup destinationGroup = getGroup(groupName);
+      sourceGroup.remove(assignment);
+      destinationGroup.addAssignment(assignment);
     }
   }
 
-  private Optional<SensorGroup> getSensorGroup(String sensorName) {
-    return stream().filter(g -> g.contains(sensorName)).findAny();
+  private SensorGroup getAssignmentGroup(String sensorName)
+    throws SensorGroupsException {
+    Optional<SensorGroup> group = stream().filter(g -> g.contains(sensorName))
+      .findAny();
+    if (group.isEmpty()) {
+      throw new SensorGroupsException(
+        "Assignment '" + sensorName + "' not found");
+    }
+
+    return group.get();
   }
 
   public String getLinksJson() {
@@ -484,7 +468,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
 
     stream().forEach(g -> {
       JsonArray array = new JsonArray();
-      array.add(g.getPreviousLinkName());
+      array.add(g.getPrevLinkName());
       array.add(g.getNextLinkName());
       json.add(g.getName(), array);
     });
@@ -493,7 +477,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
   }
 
   /**
-   * Get a all the columns used to link groups together.
+   * Get all the columns used to link groups together.
    *
    * <p>
    * The set will not be in any particular order.
@@ -536,14 +520,19 @@ public class SensorGroups implements Iterable<SensorGroup> {
     return result;
   }
 
-  public SensorGroupPair getGroupPair(int pairId) {
-    return getGroupPairs().stream().filter(p -> p.getId() == pairId).findAny()
-      .get();
+  public SensorGroupPair getGroupPair(int pairId) throws SensorGroupsException {
+    Optional<SensorGroupPair> pair = getGroupPairs().stream()
+      .filter(p -> p.getId() == pairId).findAny();
+    if (pair.isEmpty()) {
+      throw new SensorGroupsException("Pair " + pairId + " not found");
+    }
+
+    return pair.get();
   }
 
   /**
    * Get the group that contains the given {@link SensorAssignment}.
-   * 
+   *
    * @param assignment
    * @return
    */
@@ -562,7 +551,7 @@ public class SensorGroups implements Iterable<SensorGroup> {
     return result.get();
   }
 
-  public int getGroupIndex(SensorGroup group) {
+  public int getGroupIndex(SensorGroup group) throws SensorGroupsException {
 
     boolean found = false;
     int result = -1;
@@ -576,7 +565,12 @@ public class SensorGroups implements Iterable<SensorGroup> {
       }
     }
 
-    return found ? result : -1;
+    if (!found) {
+      throw new SensorGroupsException(
+        "Group '" + group.getName() + "' not found");
+    }
+
+    return result;
   }
 
   public SensorGroup first() {

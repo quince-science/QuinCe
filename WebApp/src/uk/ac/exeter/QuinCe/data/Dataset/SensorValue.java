@@ -146,10 +146,10 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   /**
    * Create a copy of an existing {@code SensorValue} but with a new timestamp.
-   * 
+   *
    * {@code SensorValue}s created with this constructor cannot be saved to the
    * database.
-   * 
+   *
    * @param source
    *          The source {@code SensorValue}.
    * @param newTime

@@ -239,12 +239,17 @@ public class SensorGroup {
    */
   protected void setPrevLink(SensorAssignment assignment)
     throws SensorGroupsException {
-    if (!members.contains(assignment)) {
-      throw new SensorGroupsException("Assignment '"
-        + assignment.getSensorName() + "' not a member of this group");
-    }
 
-    this.prevGroupLink = assignment;
+    if (null == assignment) {
+      this.prevGroupLink = null;
+    } else {
+      if (!members.contains(assignment)) {
+        throw new SensorGroupsException("Assignment '"
+          + assignment.getSensorName() + "' not a member of this group");
+      }
+
+      this.prevGroupLink = assignment;
+    }
   }
 
   /**
@@ -256,12 +261,18 @@ public class SensorGroup {
    */
   protected void setNextLink(SensorAssignment assignment)
     throws SensorGroupsException {
-    if (!members.contains(assignment)) {
-      throw new SensorGroupsException("Assignment '"
-        + assignment.getSensorName() + "' not a member of this group");
-    }
 
-    this.nextGroupLink = assignment;
+    if (null == assignment) {
+      this.nextGroupLink = null;
+    } else {
+      if (!members.contains(assignment)) {
+        throw new SensorGroupsException("Assignment '"
+          + assignment.getSensorName() + "' not a member of this group");
+      }
+
+      this.nextGroupLink = assignment;
+
+    }
   }
 
   /**
@@ -298,7 +309,7 @@ public class SensorGroup {
    * @throws SensorGroupsException
    *           If the sensor is not a member of the group.
    */
-  public void setNextLinkName(String sensorName) throws SensorGroupsException {
+  private void setNextLinkName(String sensorName) throws SensorGroupsException {
     if (sensorName.trim().length() > 0) {
       nextGroupLink = get(sensorName);
     }
@@ -312,7 +323,7 @@ public class SensorGroup {
    * @throws SensorGroupsException
    *           If the sensor is not a member of the group.
    */
-  public void setPrevLinkName(String sensorName) throws SensorGroupsException {
+  private void setPrevLinkName(String sensorName) throws SensorGroupsException {
     if (sensorName.trim().length() > 0) {
       prevGroupLink = get(sensorName);
     }
@@ -347,19 +358,6 @@ public class SensorGroup {
   }
 
   /**
-   * Get the name of the sensor used as the link to the previous group.
-   *
-   * <p>
-   * Returns {@code null} if there is no previous group or no link is defined.
-   * </p>
-   *
-   * @return The name of the link sensor.
-   */
-  public String getPreviousLinkName() {
-    return null == prevGroupLink ? null : prevGroupLink.getSensorName();
-  }
-
-  /**
    * Give this group a new name.
    *
    * @param name
@@ -387,9 +385,18 @@ public class SensorGroup {
     return members.isEmpty();
   }
 
-  protected Optional<SensorAssignment> getAssignment(String sensorName) {
-    return members.stream()
+  protected SensorAssignment getAssignment(String sensorName)
+    throws SensorGroupsException {
+
+    Optional<SensorAssignment> assignment = members.stream()
       .filter(m -> m.getSensorName().equalsIgnoreCase(sensorName)).findAny();
+
+    if (assignment.isEmpty()) {
+      throw new SensorGroupsException(
+        "Assignment '" + sensorName + "' not found");
+    }
+
+    return assignment.get();
   }
 
   public void setLink(String sensor, int direction)
