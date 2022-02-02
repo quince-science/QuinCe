@@ -22,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupPair;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -167,7 +168,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
     return currentPair;
   }
 
-  public void setCurrentPair(int currentPair) {
+  public void setCurrentPair(int currentPair) throws SensorGroupsException {
     this.currentPair = currentPair;
     preparePlotData();
   }
@@ -176,7 +177,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
     return instrument;
   }
 
-  public String getTimeSeriesData() {
+  public String getTimeSeriesData() throws SensorGroupsException {
     String result = null;
 
     if (null != plotData) {
@@ -187,19 +188,19 @@ public class SensorOffsetsBean extends BaseManagedBean {
     return result;
   }
 
-  private void preparePlotData() {
+  private void preparePlotData() throws SensorGroupsException {
     if (null != sensorValues) {
       SensorGroupPair pair = getCurrentPairObject();
 
       String firstName = pair.first().getNextLinkName();
-      String secondName = pair.second().getPreviousLinkName();
+      String secondName = pair.second().getPrevLinkName();
 
       plotData = new TimeSeriesPlotData(sensorValues.get(firstName),
         sensorValues.get(secondName));
     }
   }
 
-  public void preparePageData() {
+  public void preparePageData() throws SensorGroupsException {
     preparePlotData();
   }
 
@@ -207,22 +208,32 @@ public class SensorOffsetsBean extends BaseManagedBean {
     return plotData;
   }
 
-  public String getFirstName() {
-    return instrument.getSensorGroups().getGroupPair(currentPair).first()
-      .getNextLinkName();
+  public String getFirstName() throws SensorGroupsException {
+    try {
+      return instrument.getSensorGroups().getGroupPair(currentPair).first()
+        .getNextLinkName();
+    } catch (SensorGroupsException e) {
+      e.printStackTrace();
+      throw e;
+    }
   }
 
-  public String getSecondName() {
-    return instrument.getSensorGroups().getGroupPair(currentPair).second()
-      .getPrevLinkName();
+  public String getSecondName() throws SensorGroupsException {
+    try {
+      return instrument.getSensorGroups().getGroupPair(currentPair).second()
+        .getPrevLinkName();
+    } catch (SensorGroupsException e) {
+      e.printStackTrace();
+      throw e;
+    }
   }
 
-  public List<SensorOffset> getOffsetsList() {
+  public List<SensorOffset> getOffsetsList() throws SensorGroupsException {
     return new ArrayList<SensorOffset>(
       dataset.getSensorOffsets().getOffsets(getCurrentPairObject()));
   }
 
-  public String getOffsetsListJson() {
+  public String getOffsetsListJson() throws SensorGroupsException {
     Gson gson = new GsonBuilder()
       .registerTypeAdapter(SensorOffset.class, new SensorOffsetSerializer(this))
       .create();
@@ -230,8 +241,13 @@ public class SensorOffsetsBean extends BaseManagedBean {
     return gson.toJson(getOffsetsList());
   }
 
-  private SensorGroupPair getCurrentPairObject() {
-    return instrument.getSensorGroups().getGroupPair(currentPair);
+  private SensorGroupPair getCurrentPairObject() throws SensorGroupsException {
+    try {
+      return instrument.getSensorGroups().getGroupPair(currentPair);
+    } catch (SensorGroupsException e) {
+      e.printStackTrace();
+      throw e;
+    }
   }
 
   public long getOffsetFirst() {
@@ -250,7 +266,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
     this.offsetSecond = offsetSecond;
   }
 
-  public void addOffset() {
+  public void addOffset() throws SensorGroupsException {
     dataset.getSensorOffsets().addOffset(getCurrentPairObject(),
       DateTimeUtils.longToDate(offsetSecond), offsetSecond - offsetFirst);
     dirty = true;
@@ -264,7 +280,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
     this.deleteTime = deleteTime;
   }
 
-  public void deleteOffset() {
+  public void deleteOffset() throws SensorGroupsException {
     dataset.getSensorOffsets().deleteOffset(getCurrentPairObject(),
       DateTimeUtils.longToDate(deleteTime));
     dirty = true;

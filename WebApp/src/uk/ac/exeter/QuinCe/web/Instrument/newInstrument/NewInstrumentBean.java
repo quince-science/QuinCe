@@ -2156,7 +2156,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
       SensorAssignment removed = sensorAssignments.removeAssignment(sensorType,
         removeAssignmentDataFile, removeAssignmentColumn);
-      sensorGroups.removeAssignment(removed);
+      sensorGroups.remove(removed);
       assignmentsTree.removeAssignment(removed);
 
       if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
@@ -2385,7 +2385,7 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   public void setGroupLink() throws SensorGroupsException {
-    sensorGroups.getGroup(groupLinkGroup).get().setLink(groupLinkSensor,
+    sensorGroups.getGroup(groupLinkGroup).setLink(groupLinkSensor,
       groupLinkDirection);
   }
 }
