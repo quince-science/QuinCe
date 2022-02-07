@@ -46,13 +46,18 @@ public class SensorOffsetsDeserializer
       // Loop through the offsets
       entry.getValue().getAsJsonArray().forEach(a -> {
 
-        JsonObject offsetObject = a.getAsJsonObject();
-        LocalDateTime time = DateTimeUtils.longToDate(
-          offsetObject.get(SensorOffsetsSerializer.TIME_NAME).getAsLong());
-        long offset = offsetObject.get(SensorOffsetsSerializer.OFFSET_NAME)
-          .getAsLong();
+        try {
 
-        sensorOffsets.addOffset(groupPair, time, offset);
+          JsonObject offsetObject = a.getAsJsonObject();
+          LocalDateTime time = DateTimeUtils.longToDate(
+            offsetObject.get(SensorOffsetsSerializer.TIME_NAME).getAsLong());
+          long offset = offsetObject.get(SensorOffsetsSerializer.OFFSET_NAME)
+            .getAsLong();
+
+          sensorOffsets.addOffset(groupPair, time, offset);
+        } catch (SensorOffsetsException e) {
+          throw new JsonParseException(e);
+        }
       });
     }
 
