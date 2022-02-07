@@ -47,9 +47,16 @@ public class SensorOffsets {
   }
 
   public void addOffset(SensorGroupPair groupPair, LocalDateTime time,
-    long offsetMillis) {
+    long offsetMillis) throws SensorOffsetsException {
 
-    offsets.get(groupPair).add(new SensorOffset(time, offsetMillis));
+    TreeSet<SensorOffset> pairOffsets = offsets.get(groupPair);
+
+    if (containsTime(pairOffsets, time)) {
+      throw new SensorOffsetsException(
+        "Offset already exists with specified time");
+    }
+
+    pairOffsets.add(new SensorOffset(time, offsetMillis));
   }
 
   public void deleteOffset(SensorGroupPair groupPair, LocalDateTime time) {
@@ -198,4 +205,12 @@ public class SensorOffsets {
 
     return getOffsetTime(time, baseAssignment, firstGroupAssignment);
   }
+
+  private static boolean containsTime(TreeSet<SensorOffset> offsets,
+    LocalDateTime time) {
+
+    return offsets.stream().filter(o -> o.getTime().equals(time)).findAny()
+      .isPresent();
+  }
+
 }

@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorOffset;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorOffsetsException;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -266,7 +267,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
     this.offsetSecond = offsetSecond;
   }
 
-  public void addOffset() throws SensorGroupsException {
+  public void addOffset() throws SensorGroupsException, SensorOffsetsException {
     dataset.getSensorOffsets().addOffset(getCurrentPairObject(),
       DateTimeUtils.longToDate(offsetSecond), offsetSecond - offsetFirst);
     dirty = true;
