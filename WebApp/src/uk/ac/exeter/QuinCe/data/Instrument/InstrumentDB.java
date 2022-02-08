@@ -175,7 +175,7 @@ public class InstrumentDB {
     + "owner FROM instrument WHERE id = ?";
 
   private static final String GET_ALL_VARIABLES_QUERY = "SELECT "
-    + "id FROM variables";
+    + "id FROM variables WHERE visible = 1";
 
   /**
    * Get the sensor or diagnostic column details for a given instrument
