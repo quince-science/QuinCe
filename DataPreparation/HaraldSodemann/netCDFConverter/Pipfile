@@ -4,6 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+pyyaml = "*"
+netcdf4 = "*"
+pandas = "*"
 
 [dev-packages]
 
