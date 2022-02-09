@@ -3,3 +3,11 @@
 # Fixed global attributes that are the same for all netCDF files
 global_attributes:
   conventions: "NetCDF-CF"
+
+# List the columns in the QuinCe output file, and which variables
+# they will go into in the netCDF
+columns:
+  "Ambient Pressure":
+    variable: "Ambient_Pressure"
+    type: "f8"
+    units: "hPa"
