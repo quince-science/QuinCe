@@ -70,7 +70,7 @@ public abstract class Calibration implements Comparable<Calibration> {
    * The values for the calibration. The list must contain the same number of
    * entries as the list of value names returned by
    * {@link #getCoefficientNames()}.
-   * 
+   *
    * <p>
    * <b>Note:</b> You should not use this variable directly unless you have a
    * good reason to. You should instead use {@link #getCoefficients()}, which
