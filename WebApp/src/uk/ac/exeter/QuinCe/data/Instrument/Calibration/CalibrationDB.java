@@ -87,7 +87,7 @@ public abstract class CalibrationDB {
 
   /**
    * JSON -> Coefficient map conversion type.
-   * 
+   *
    * @see #makeCoefficientsFromJson(String)
    */
   private static final Type coefficientsType = new TypeToken<Map<String, String>>() {
