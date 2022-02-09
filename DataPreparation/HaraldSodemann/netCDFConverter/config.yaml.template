@@ -1,0 +1,5 @@
+# Configuration for QuinCe CSV to netCDF converter
+
+# Fixed global attributes that are the same for all netCDF files
+global_attributes:
+  conventions: "NetCDF-CF"
