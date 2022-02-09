@@ -997,12 +997,12 @@ public class SensorAssignments
 
   /**
    * Get the {@link SensorType}s that are assigned.
-   * 
+   *
    * <p>
    * The {@link SensorType}s are in display order according to
    * {@link SensorType#compareTo(SensorType)}.
    * </p>
-   * 
+   *
    * @return
    */
   public Set<SensorType> getAssignedSensorTypes() {

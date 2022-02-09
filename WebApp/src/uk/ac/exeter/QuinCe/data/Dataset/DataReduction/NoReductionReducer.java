@@ -13,7 +13,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * "Dummy" reducer that does no calculations.
- * 
+ *
  * <p>
  * The core sensor type values for the measurements are copied as the reducer's
  * output.

@@ -16,13 +16,13 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * Very hacky measurement locator for Water Vapour Mixing Ratio in Harald
  * Soderman's data.
- * 
+ *
  * <p>
  * This should have its own Run Type definitions, but that isn't supported yet.
  * So instead we look up the run types for the dExcess variable and make
  * measurements where there's measurements for that.
  * </p>
- * 
+ *
  * <p>
  * This should eventually be fixed by Issue #2279.
  * </p>
