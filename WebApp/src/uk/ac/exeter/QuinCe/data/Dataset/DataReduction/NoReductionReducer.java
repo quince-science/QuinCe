@@ -32,10 +32,9 @@ public class NoReductionReducer extends DataReducer {
   public void doCalculation(Instrument instrument, Measurement measurement,
     DataReductionRecord record, Connection conn) throws Exception {
 
-    for (SensorType sensorType : variable.getCoreSensorTypes()) {
-      record.put(sensorType.getShortName(),
-        measurement.getMeasurementValue(sensorType).getCalculatedValue());
-    }
+    SensorType coreType = variable.getCoreSensorType();
+    record.put(coreType.getShortName(),
+      measurement.getMeasurementValue(coreType).getCalculatedValue());
   }
 
   @Override
@@ -48,17 +47,12 @@ public class NoReductionReducer extends DataReducer {
 
     // The output parameters are the core sensor types defined for the variable
 
-    List<CalculationParameter> result = new ArrayList<CalculationParameter>(0);
+    List<CalculationParameter> result = new ArrayList<CalculationParameter>(1);
 
-    int param = 0;
-
-    for (SensorType sensorType : variable.getCoreSensorTypes()) {
-      result.add(new CalculationParameter(makeParameterId(param),
-        sensorType.getShortName(), sensorType.getLongName(),
-        sensorType.getCodeName(), sensorType.getUnits(), true));
-
-      param++;
-    }
+    SensorType coreType = variable.getCoreSensorType();
+    result.add(new CalculationParameter(makeParameterId(0),
+      coreType.getShortName(), coreType.getLongName(), coreType.getCodeName(),
+      coreType.getUnits(), true));
 
     return result;
   }
