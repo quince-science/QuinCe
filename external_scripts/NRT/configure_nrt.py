@@ -113,12 +113,21 @@ def main():
         with open("config.toml", "r") as config_file:
             config = toml.loads(config_file.read())
 
-        print("Connecting to FTP servers...")
-        ftp_conn = nrtftp.connect_ftp(config["FTP"])
         db_conn = nrtdb.get_db_conn(config["Database"]["location"])
 
+        print("Connecting to NRT Upload server...")
+        try:
+            ftp_conn = nrtftp.connect_ftp(config["FTP"])
+        except Exception as e:
+            print(f"Could not connect to server: {e}")
+            exit()
+
         print("Getting QuinCe instruments...")
-        quince_instruments = quince.get_instruments(config)
+        try:
+            quince_instruments = quince.get_instruments(config)
+        except Exception as e:
+            print(f"Could not retrieve information from QuinCe: {e}")
+            exit()
 
         print("Getting NRT instruments...")
         nrt_instruments = nrtdb.get_instruments(db_conn)
