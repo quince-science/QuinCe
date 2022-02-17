@@ -7,11 +7,12 @@ from FileListRetriever import FileListRetriever
 
 
 class FTPRetriever(FileListRetriever):
+    """
+    File retriever for files held on an FTP server.
+    """
     def __init__(self, instrument_id, logger, configuration=None):
         super().__init__(instrument_id, logger, configuration)
         self._ftp = None
-        self._cached_file = None
-        self._cached_content = None
 
     @staticmethod
     def _get_config_entries():
@@ -85,16 +86,7 @@ class FTPRetriever(FileListRetriever):
         all_files = self._ftp.nlst()
         return list(filter(lambda name: PurePath(name).match(self._configuration["File Specification"]), all_files))
 
-    def _get_hashsum(self, filename):
-        self._download_file(filename)
-        return self._hashsum(self._cached_content)
-
-    def _get_file_content(self, filename):
-        self._download_file(filename)
-        return self._cached_content
-
-    def _download_file(self, filename):
-        if self._cached_file is None or self._cached_file != filename:
-            self._cached_file = filename
-            self._cached_content = bytearray()
-            self._ftp.retrbinary(f'RETR {filename}', callback=self._cached_content.extend)
+    def _load_file(self, filename):
+        result = bytearray()
+        self._ftp.retrbinary(f'RETR {filename}', callback=result.extend)
+        return result
