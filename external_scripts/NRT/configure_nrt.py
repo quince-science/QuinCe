@@ -62,7 +62,7 @@ def ask_check_hours(existing):
 
     print()
     while new_value is None:
-        input_value = input("Check hours (comma separated) %s: " % (existing)).strip()
+        input_value = input("Check hours (comma separated) %s: " % existing).strip()
         if input_value == "":
             if existing is not None:
                 new_value = existing
@@ -103,6 +103,7 @@ def parse_check_hours(hours):
 def main():
     ftp_conn = None
     db_conn = None
+    quince_instruments = None
 
     try:
         # Blank logger - sends everything to /dev/null
