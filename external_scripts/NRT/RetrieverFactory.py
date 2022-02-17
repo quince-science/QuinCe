@@ -1,5 +1,6 @@
 from ImapRetriever import ImapRetriever
 from FTPRetriever import FTPRetriever
+from SFTPRetriever import SFTPRetriever
 
 
 # Factory for DataRetriever instances
@@ -7,7 +8,8 @@ from FTPRetriever import FTPRetriever
 def _get_retriever_classes():
     return [
         FTPRetriever,
-        ImapRetriever
+        ImapRetriever,
+        SFTPRetriever
     ]
 
 
