@@ -34,18 +34,16 @@ class ConfigurableItem(object):
             elif key.lower() == "password":
                 existing_value = "***"
 
-            while new_value is None:
+            if key.lower() == "password":
+                input_value = getpass.getpass("%s [%s]: " % (key, existing_value)).strip()
+            else:
+                input_value = input("%s [%s]: " % (key, existing_value)).strip()
 
-                if key.lower() == "password":
-                    input_value = getpass.getpass("%s [%s]: " % (key, existing_value)).strip()
-                else:
-                    input_value = input("%s [%s]: " % (key, existing_value)).strip()
-
-                if input_value == "":
-                    if existing_value is not None:
-                        new_value = self._configuration[key]
-                else:
-                    new_value = input_value
+            if input_value == "":
+                if existing_value is not None:
+                    new_value = self._configuration[key]
+            else:
+                new_value = input_value
 
             self._configuration[key] = new_value
 

@@ -274,5 +274,5 @@ class FileListRetriever(DataRetriever):
         :param data: The data
         :return: The data's hashsum
         """
-        sha_input = data if type(data) == bytearray else data.encode('utf-8')
+        sha_input = data if type(data) == bytearray or type(data) == bytes else data.encode('utf-8')
         return sha256(sha_input).hexdigest()
