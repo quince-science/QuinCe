@@ -40,13 +40,14 @@ public class ExternalStandardDB extends CalibrationDB {
    * date
    */
   public static final String GET_STANDARD_SET_QUERY = "SELECT "
-    + "c1.id, c1.target, c1.deployment_date, c1.coefficients, c1.class "
+    + "c1.id, c1.target, c1.deployment_date, c1.coefficients, c1.class, c1.instrument_id "
     + "FROM calibration c1 INNER JOIN "
-    + "(SELECT MAX(deployment_date) deployment_date, target "
+    + "(SELECT MAX(deployment_date) deployment_date, target, instrument_id "
     + "FROM calibration WHERE deployment_date < ? " + "AND instrument_id = ? "
     + "AND type = '" + EXTERNAL_STANDARD_CALIBRATION_TYPE + "' "
     + "GROUP BY target) "
-    + "AS c2 ON c1.target = c2.target AND c1.deployment_date = c2.deployment_date";
+    + "AS c2 ON c1.target = c2.target AND c1.deployment_date = c2.deployment_date "
+    + "AND c1.instrument_id = c2.instrument_id";
 
   /**
    * The singleton instance of the class
