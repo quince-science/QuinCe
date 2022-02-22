@@ -68,11 +68,10 @@
           </table>
         </div>
         <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-          <p:commandButton value="Rename" widgetVar="renameGroupButton" ajax="true"
+          <p:commandButton value="Rename" widgetVar="renameGroupButton" ajax="false"
             action="#{newInstrumentBean.renameSensorGroup}"
             process="renameGroupFrom renameGroupTo"
-            update="groupNames"
-            oncomplete="groupRenamed();" />
+            update="groupNames"/>
           <p:commandButton value="Cancel"
             onclick="PF('renameGroupDialog').hide(); return false;" />
         </h:panelGrid>

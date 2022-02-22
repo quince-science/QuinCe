@@ -10,17 +10,6 @@ function showRenameGroupDialog(group) {
   checkRenameGroup();
 }
 
-function groupRenamed() {
-  let from = $('#newInstrumentForm\\:renameGroupFrom').val().trim();
-  let to = $('#newInstrumentForm\\:renameGroupTo').val().trim();
-
-  let groupDiv = $('#groupSection_' + from);
-
-  groupDiv.attr('id', 'groupSection_' + to);
-  groupDiv.children('.groupName').children('span').text(to);
-  PF('renameGroupDialog').hide();
-}
-
 function checkRenameGroup() {
   let from = $('#newInstrumentForm\\:renameGroupFrom').val().trim();
   let to = $('#newInstrumentForm\\:renameGroupTo').val().trim();
