@@ -55,6 +55,21 @@ public class DefaultMeasurementValueCalculator
 
     // TODO #1128 This currently assumes only one sensor for each SensorType.
     // This will have to change eventually.
+    if (requiredSensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)
+      || requiredSensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
+      return getPositionValue(instrument, dataSet, measurement, coreSensorType,
+        requiredSensorType, allMeasurements, allSensorValues, conn);
+    } else {
+      return getSensorValue(instrument, dataSet, measurement, coreSensorType,
+        requiredSensorType, allMeasurements, allSensorValues, conn);
+    }
+  }
+
+  private MeasurementValue getSensorValue(Instrument instrument,
+    DataSet dataSet, Measurement measurement, SensorType coreSensorType,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException {
 
     SensorAssignment requiredAssignment = instrument.getSensorAssignments()
       .get(requiredSensorType).first();
@@ -77,39 +92,7 @@ public class DefaultMeasurementValueCalculator
       List<SensorValue> valuesToUse = sensorValues
         .getWithInterpolation(valueTime, true);
 
-        List<SensorValue> valuesToUse = sensorValues
-          .getWithInterpolation(valueTime, true);
-
-      switch (valuesToUse.size()) {
-      case 0: {
-        // We should not use a value here
-        result.setCalculatedValue(Double.NaN);
-        break;
-      }
-      case 1: {
-        // If the value is not the same as the measurement time, then it's
-        // been interpolated (usually because it's before or after the time
-        // range of the available sensor values)
-        if (!valuesToUse.get(0).getTime().equals(measurement.getTime())) {
-          result.addInterpolatedSensorValue(valuesToUse.get(0), true);
-        } else {
-          result.addSensorValue(valuesToUse.get(0), true);
-        }
-
-        result.setCalculatedValue(valuesToUse.get(0).getDoubleValue());
-        break;
-      }
-      case 2: {
-        result.addSensorValues(valuesToUse, true);
-        result.setCalculatedValue(SensorValue.interpolate(valuesToUse.get(0),
-          valuesToUse.get(1), measurement.getTime()));
-        break;
-      }
-      default: {
-        throw new MeasurementValueCalculatorException(
-          "Invalid number of values in search result");
-      }
-      }
+      populateMeasurementValue(measurement.getTime(), result, valuesToUse);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Cannot calculate time offset", e);
@@ -124,6 +107,76 @@ public class DefaultMeasurementValueCalculator
     }
 
     return result;
+  }
+
+  private MeasurementValue getPositionValue(Instrument instrument,
+    DataSet dataSet, Measurement measurement, SensorType coreSensorType,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException {
+
+    MeasurementValue result = new MeasurementValue(requiredSensorType);
+
+    SensorAssignment coreAssignment = instrument.getSensorAssignments()
+      .get(coreSensorType).first();
+
+    try {
+      // If Lon/Lat, get offset to first group. Get lat/lon at that time.
+      LocalDateTime positionTime = dataSet.getSensorOffsets()
+        .offsetToFirstGroup(measurement.getTime(), coreAssignment);
+
+      long columnId = requiredSensorType
+        .equals(SensorType.LONGITUDE_SENSOR_TYPE) ? SensorType.LONGITUDE_ID
+          : SensorType.LATITUDE_ID;
+
+      SearchableSensorValuesList sensorValues = allSensorValues
+        .getColumnValues(columnId);
+
+      List<SensorValue> valuesToUse = sensorValues
+        .getWithInterpolation(positionTime, true);
+
+      populateMeasurementValue(measurement.getTime(), result, valuesToUse);
+    } catch (SensorGroupsException e) {
+      throw new MeasurementValueCalculatorException(
+        "Unable to apply sensor offsets", e);
+    }
+
+    return result;
+  }
+
+  private void populateMeasurementValue(LocalDateTime measurementTime,
+    MeasurementValue measurementValue, List<SensorValue> valuesToUse)
+    throws MeasurementValueCalculatorException {
+    switch (valuesToUse.size()) {
+    case 0: {
+      // We should not use a value here
+      measurementValue.setCalculatedValue(Double.NaN);
+      break;
+    }
+    case 1: {
+      // If the value is not the same as the measurement time, then it's
+      // been interpolated (usually because it's before or after the time
+      // range of the available sensor values)
+      if (!valuesToUse.get(0).getTime().equals(measurementTime)) {
+        measurementValue.addInterpolatedSensorValue(valuesToUse.get(0), true);
+      } else {
+        measurementValue.addSensorValue(valuesToUse.get(0), true);
+      }
+
+      measurementValue.setCalculatedValue(valuesToUse.get(0).getDoubleValue());
+      break;
+    }
+    case 2: {
+      measurementValue.addSensorValues(valuesToUse, true);
+      measurementValue.setCalculatedValue(SensorValue
+        .interpolate(valuesToUse.get(0), valuesToUse.get(1), measurementTime));
+      break;
+    }
+    default: {
+      throw new MeasurementValueCalculatorException(
+        "Invalid number of values in search result");
+    }
+    }
   }
 
   private void calibrate(Instrument instrument, Measurement measurement,
