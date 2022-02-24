@@ -190,7 +190,7 @@ public class DataSetDataDB {
     + DatabaseUtils.IN_PARAMS_TOKEN + " AND sv.file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN;
 
-  private static final String UPDATE_MEASUREMENT_TIME_STATEMENT = "UPDATE measurements"
+  private static final String UPDATE_MEASUREMENT_TIME_STATEMENT = "UPDATE measurements "
     + "SET date = ? WHERE id = ?";
 
   /**
