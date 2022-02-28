@@ -16,31 +16,35 @@
       }
 
       function goToQc(id) {
-        clearInterval(refreshInterval);
+        keepAliveActive = false;
         $('#datasetListForm\\:manualQCDatasetId').val(id);
         $('#datasetListForm\\:manualQCLink').click();
         return false;
       }
 
       function recalculate(id) {
+        keepAliveActive = false;
         $('#datasetListForm\\:datasetId').val(id);
         $('#datasetListForm\\:recalculateLink').click();
         return false;
       }
 
       function exportDataset(id) {
+        keepAliveActive = false;
         $('#exportForm\\:exportDatasetId').val(id);
         $('#exportForm\\:exportLink').click();
         return false;
       }
 
       function submitForApproval(id) {
+        keepAliveActive = false;
         $('#datasetListForm\\:datasetId').val(id);
         $('#datasetListForm\\:submitLink').click();
         return false;
       }
 
       function approve(id) {
+        keepAliveActive = false;
         $('#datasetListForm\\:datasetId').val(id);
         $('#datasetListForm\\:approveLink').click();
         return false;
@@ -53,6 +57,7 @@
       }, 10000);
 
       $(document).ready(function() {
+        var keepAliveActive = true;
         window['canUpdateList'] = true;
         if (window['updateList']) {
           updateList(); // PF Command
@@ -71,7 +76,9 @@
 
       function updateFailed() {
         clearInterval(refreshInterval);
-        PF('lostContactDialog').show();
+        if (keepAliveActive) {
+          PF('lostContactDialog').show();
+        }
       }
     </script>
   </ui:define>
@@ -79,12 +86,12 @@
     <p:dialog widgetVar="lostContactDialog" modal="true" closable="false"
       header="Contact Lost">
       <div style="float:left">
-        <h:graphicImage value="/resources/image/rotten_quince.png"/>
+        <h:graphicImage value="/resources/image/rotten_quince.png" alt="Rotten QuinCe"/>
       </div>
       <div style="padding-bottom: 10px">
         Lost contact with the server. You will have to log in again to continue.
       </div>
-      <h:panelGrid columns="2" cellpadding="5" class="buttonPanel contentList">
+      <h:panelGrid columns="1" cellpadding="5" class="buttonPanel contentList">
         <p:button href="#{dataSetsBean.urlStub}" value="Go to Login page"/>
       </h:panelGrid>
     </p:dialog>

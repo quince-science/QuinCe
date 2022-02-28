@@ -7,12 +7,12 @@
     <p:dialog widgetVar="lostContactDialog" modal="true" closable="false"
       header="Contact Lost">
       <div style="float:left">
-        <h:graphicImage value="/resources/image/rotten_quince.png"/>
+        <h:graphicImage value="/resources/image/rotten_quince.png" alt="Rotten QuinCe"/>
       </div>
       <div style="padding-bottom: 10px">
         Lost contact with the server. You will have to log in again to continue.
       </div>
-      <h:panelGrid columns="2" cellpadding="5" class="buttonPanel contentList">
+      <h:panelGrid columns="1" cellpadding="5" class="buttonPanel contentList">
         <p:button href="#{dataSetsBean.urlStub}" value="Go to Login page"/>
       </h:panelGrid>
     </p:dialog>
@@ -22,6 +22,7 @@
       onerror="updateFailed()"/>
 
     <script>
+      var keepAliveActive = true;
       var refreshInterval = setInterval(function() {
         if (window['touchSession']) {
           touchSession(); // PF Command
@@ -30,7 +31,13 @@
 
       function updateFailed() {
         clearInterval(refreshInterval);
-        PF('lostContactDialog').show();
+        if (keepAliveActive) {
+          PF('lostContactDialog').show();
+        }
+      }
+      
+      function disableKeepAlive() {
+        keepAliveActive = false;
       }
     </script>
   </h:form>
