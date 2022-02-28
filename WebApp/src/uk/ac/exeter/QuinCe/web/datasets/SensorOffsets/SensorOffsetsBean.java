@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.faces.bean.ManagedBean;
@@ -24,10 +25,9 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupPair;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.LocateMeasurementsJob;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 @ManagedBean
@@ -115,9 +115,19 @@ public class SensorOffsetsBean extends BaseManagedBean {
     dataset = null;
   }
 
-  public String finish()
-    throws MissingParamException, DatabaseException, RecordNotFoundException {
-    DataSetDB.updateDataSet(getDataSource(), dataset);
+  public String finish() throws Exception {
+
+    if (dirty) {
+      dataset.setStatus(DataSet.STATUS_DATA_REDUCTION);
+      DataSetDB.updateDataSet(getDataSource(), dataset);
+
+      Properties jobProperties = new Properties();
+      jobProperties.setProperty(LocateMeasurementsJob.ID_PARAM,
+        String.valueOf(datasetId));
+      JobManager.addJob(getDataSource(), getUser(),
+        LocateMeasurementsJob.class.getCanonicalName(), jobProperties);
+
+    }
     return NAV_DATASET_LIST;
   }
 
