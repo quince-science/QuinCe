@@ -1,5 +1,6 @@
 package junit.uk.ac.exeter.QuinCe.data.Dataset;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
@@ -91,25 +92,25 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
     initResourceManager();
 
     timestamps = new ArrayList<LocalDateTime>(10);
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:05:00Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:24:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:15:00Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:26:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:25:00Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:28:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:35:00Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:30:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:45:00Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:32:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T00:55:00Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:34:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T01:05:00Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:36:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T01:15:00Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:38:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T01:25:00Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:40:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
-    timestamps.add(LocalDateTime.parse("2021-07-22T01:35:00Z",
+    timestamps.add(LocalDateTime.parse("2021-07-22T00:42:00Z",
       DateTimeFormatter.ISO_DATE_TIME));
 
     values = new ArrayList<String>(10);
@@ -207,12 +208,14 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
     Flag expectedFlag = line.getFlagField(EXPECTED_FLAG_COL);
     String expectedMessage = line.getStringField(EXPECTED_MESSAGE_COL, false);
 
-    assertEquals(expectedValue, value.getCalculatedValue(), 0.0004,
-      "Value mismatch");
-    assertEquals(expectedType, value.getType(), "Value type mismatch");
-    assertEquals(expectedFlag, value.getQcFlag(), "Flag mismatch");
-    assertEquals(expectedMessage, value.getQcMessage(false),
-      "Message mismatch");
+    assertAll(() -> {
+      assertEquals(expectedValue, value.getCalculatedValue(), 0.0004,
+        "Value mismatch");
+      assertEquals(expectedType, value.getType(), "Value type mismatch");
+      assertEquals(expectedFlag, value.getQcFlag(), "Flag mismatch");
+      assertEquals(expectedMessage, value.getQcMessage(false),
+        "Message mismatch");
+    });
   }
 
   @Override
