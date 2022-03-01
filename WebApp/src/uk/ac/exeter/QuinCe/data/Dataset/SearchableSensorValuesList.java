@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.CollectionUtils;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -35,6 +36,9 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  */
 @SuppressWarnings("serial")
 public class SearchableSensorValuesList extends ArrayList<SensorValue> {
+
+  // The furthest we are allowed to interpolate values in seconds
+  private static final long MAX_INTERPOLATION_LIMIT = 300;
 
   private static final SensorValueTimeComparator TIME_COMPARATOR = new SensorValueTimeComparator();
 
@@ -227,8 +231,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    * @param preferGoodFlags
    *          Only return values with {@link Flag#GOOD} QC flags if possible.
    * @return An array of either one {@link SensorValue} (if it exactly matches
-   *           the specified time) or two (for the closest matches either side
-   *           of the time).
+   *         the specified time) or two (for the closest matches either side of
+   *         the time).
    */
   public List<SensorValue> getWithInterpolation(LocalDateTime time,
     boolean preferGoodFlags) {
@@ -367,7 +371,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     int closestBad = -1;
 
     int currentIndex = startPoint;
-    mainLoop: while (limitTest.test(currentIndex)) {
+    mainLoop: while (limitTest.test(currentIndex)
+      && withinTimeInterpolationLimit(startPoint, currentIndex)) {
 
       Flag qcFlag = getQCFlag(currentIndex);
 
@@ -430,6 +435,11 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     return get(index).getUserQCFlag().equals(Flag.NEEDED)
       ? get(index).getAutoQcFlag()
       : get(index).getUserQCFlag();
+  }
+
+  private boolean withinTimeInterpolationLimit(int startPoint, int testPoint) {
+    return DateTimeUtils.secondsBetween(get(startPoint).getTime(),
+      get(testPoint).getTime()) <= MAX_INTERPOLATION_LIMIT;
   }
 }
 
