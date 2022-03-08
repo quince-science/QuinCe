@@ -1,7 +1,6 @@
 import logging
 import traceback
 from ftplib import FTP
-from pathlib import PurePath
 
 from FileListRetriever import FileListRetriever
 
@@ -84,7 +83,7 @@ class FTPRetriever(FileListRetriever):
 
     def _get_all_files(self):
         all_files = self._ftp.nlst()
-        return list(filter(lambda name: PurePath(name).match(self._configuration["File Specification"]), all_files))
+        return self.filter_file_list(all_files, self._configuration["File Specification"].split(";"))
 
     def _load_file(self, filename):
         result = bytearray()

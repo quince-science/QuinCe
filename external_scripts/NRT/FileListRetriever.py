@@ -2,6 +2,7 @@ import sqlite3
 import time
 from abc import abstractmethod
 from hashlib import sha256
+from pathlib import PurePath
 
 from DataRetriever import DataRetriever
 from NotFoundException import NotFoundException
@@ -276,3 +277,12 @@ class FileListRetriever(DataRetriever):
         """
         sha_input = data if type(data) == bytearray or type(data) == bytes else data.encode('utf-8')
         return sha256(sha_input).hexdigest()
+
+    @staticmethod
+    def filter_file_list(file_list, file_specs):
+        result = []
+
+        for spec in file_specs:
+            result = result + list(filter(lambda name: PurePath(name).match(spec), file_list))
+
+        return list(set(result))
