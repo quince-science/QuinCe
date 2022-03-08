@@ -18,3 +18,6 @@ class NonePreprocessor(Preprocessor):
     @staticmethod
     def get_processed_filename(filename):
         return filename
+
+    def has_config(self):
+        return True
