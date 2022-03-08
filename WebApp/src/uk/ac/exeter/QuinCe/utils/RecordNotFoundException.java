@@ -34,7 +34,7 @@ public class RecordNotFoundException extends Exception {
    *          The record ID that could not be found
    */
   public RecordNotFoundException(String message, String table, long id) {
-    super(message + "(Table " + table + ", record " + id);
+    super(message + "(Table " + table + ", record " + id + ")");
   }
 
 }
