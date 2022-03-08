@@ -5,7 +5,7 @@ public class ExceptionUtils {
   /**
    * A cut-down stack trace printer that stops the stack trace after the last
    * QuinCe exception in the trace.
-   * 
+   *
    * @param e
    *          The exception
    */
