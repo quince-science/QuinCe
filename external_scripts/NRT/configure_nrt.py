@@ -224,14 +224,18 @@ def main():
 
                                 new_preprocessor_type = PreprocessorFactory.ask_preprocessor_type()
 
-                                if new_preprocessor_type is None:
-                                    instrument["preprocessor"] = None
-                                    instrument["preprocessor_config"] = None
+                                if new_preprocessor_type != instrument["preprocessor"]:
+                                    preprocessor = PreprocessorFactory.get_new_instance(new_preprocessor_type)
                                 else:
-                                    if new_preprocessor_type != instrument["preprocessor"]:
-                                        preprocessor = PreprocessorFactory.get_new_instance(new_preprocessor_type)
+                                    existing_config = "{}"
+                                    if "preprocessor_config" in instrument and instrument["preprocessor_config"] is not None:
+                                        existing_config = instrument["preprocessor_config"]
 
-                                config_ok = not preprocessor.has_config()
+                                    preprocessor = PreprocessorFactory.get_instance(new_preprocessor_type, logger,
+                                                                                    json.loads(existing_config))
+
+                                print()
+                                config_ok = preprocessor.enter_configuration()
                                 while not config_ok:
                                     print()
                                     config_ok = preprocessor.enter_configuration()
