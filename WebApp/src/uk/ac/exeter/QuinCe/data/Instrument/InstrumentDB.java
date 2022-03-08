@@ -1010,7 +1010,6 @@ public class InstrumentDB {
 
     try {
       for (FileDefinition file : files) {
-
         PreparedStatement stmt = conn.prepareStatement(GET_FILE_COLUMNS_QUERY);
         stmts.add(stmt);
         stmt.setLong(1, file.getDatabaseId());
@@ -1040,7 +1039,9 @@ public class InstrumentDB {
           }
         }
 
-        if (columnsRead == 0) {
+        // If there's no columns for this file, something is wrong.
+        // Although it might just have position data.
+        if (columnsRead == 0 && !file.hasPosition()) {
           throw new RecordNotFoundException("No file columns found",
             "file_column", file.getDatabaseId());
         }
