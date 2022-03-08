@@ -20,6 +20,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -287,8 +288,7 @@ public abstract class BaseManagedBean {
         setForceInstrumentReload(false);
       }
     } catch (Exception e) {
-      // Fail quietly, but print the log
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 
