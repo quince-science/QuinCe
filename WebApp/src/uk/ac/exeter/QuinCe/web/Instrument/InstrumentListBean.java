@@ -7,6 +7,7 @@ import javax.faces.bean.SessionScoped;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
@@ -60,8 +61,7 @@ public class InstrumentListBean extends BaseManagedBean {
       instrumentList = InstrumentDB
         .getInstrumentList(ServletUtils.getDBDataSource(), getUser());
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new RuntimeException(e.getMessage(), e);
+      ExceptionUtils.printStackTrace(e);
     }
   }
 
