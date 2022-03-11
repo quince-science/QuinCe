@@ -52,7 +52,7 @@ NRT = 'True'
 [26RA]
 name = 'Tukuma Arctica'
 submitter_id = 'OTC'
-cp_url = 'https://meta.icos-cp.eu/resources/stations/OS_26RA'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_26RA'
 category_code = '31'
 call_sign = 'OYTR2'
 creation_date = '2021-01-01T00:00:00Z'
@@ -137,3 +137,19 @@ NRT = 'True'
 
 	[ORBS]
 	platform_id = '11SS'
+
+[74FS]
+name = 'Porcupine Abyssal Plain'
+submitter_id = 'OTC'
+cp_url = ''
+category_code = ''
+call_sign = ''
+creation_date = '2022-03-11T00:00:00Z'
+author_list = ""
+affiliation = ''
+NRT = 'True'
+
+	[74FS.export]
+	NRT = []
+	L2 = []
+
