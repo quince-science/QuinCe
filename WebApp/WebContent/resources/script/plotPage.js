@@ -1084,11 +1084,11 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     resizePlot(index);
   };
   data_options.valueFormatter = function(value, opts, seriesName, dygraph, row, col) {
-	if (seriesName != 'Time') {
-	  return value;
-	} else {
-	  return new Date(value).toISOString();
-	}
+  if (seriesName != 'Time') {
+    return value;
+  } else {
+    return new Date(value).toISOString();
+  }
   };
 
   // Reference value
