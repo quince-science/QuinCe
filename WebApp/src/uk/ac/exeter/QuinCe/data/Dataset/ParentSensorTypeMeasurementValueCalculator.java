@@ -37,7 +37,7 @@ public class ParentSensorTypeMeasurementValueCalculator
       Double.valueOf(x.getMemberCount())));
 
     return new MeasurementValue(sensorType,
-      getSensorValues(childMeasurementValues, allSensorValues),
+      getSensorValues(childMeasurementValues, allSensorValues), null,
       mean.getWeightedMean(), (int) Math.floor(mean.getSumOfWeights()));
   }
 }
