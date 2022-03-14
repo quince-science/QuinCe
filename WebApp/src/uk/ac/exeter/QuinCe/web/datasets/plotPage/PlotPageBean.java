@@ -377,6 +377,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @see DataSet#isNrt()
    */
   public boolean getCanEdit() {
-    return !dataset.isNrt();
+    return null == dataset ? false : !dataset.isNrt();
   }
 }
