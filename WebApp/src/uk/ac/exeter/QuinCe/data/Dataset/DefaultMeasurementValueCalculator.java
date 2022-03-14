@@ -65,7 +65,7 @@ public class DefaultMeasurementValueCalculator
       if (sensorConfig.isCoreSensor(sensorType)) {
         SensorValue sensorValue = sensorValues.get(measurement.getTime());
         if (null != sensorValue) {
-          result.addSensorValue(sensorValue, true);
+          result.addSensorValue(sensorValue);
           result.setCalculatedValue(sensorValue.getDoubleValue());
         }
       } else {
@@ -89,14 +89,14 @@ public class DefaultMeasurementValueCalculator
           if (!valuesToUse.get(0).getTime().equals(measurement.getTime())) {
             result.addInterpolatedSensorValue(valuesToUse.get(0), true);
           } else {
-            result.addSensorValue(valuesToUse.get(0), true);
+            result.addSensorValue(valuesToUse.get(0));
           }
 
           result.setCalculatedValue(valuesToUse.get(0).getDoubleValue());
           break;
         }
         case 2: {
-          result.addSensorValues(valuesToUse, true);
+          result.addSensorValues(valuesToUse);
           result.setCalculatedValue(SensorValue.interpolate(valuesToUse.get(0),
             valuesToUse.get(1), measurement.getTime()));
           break;

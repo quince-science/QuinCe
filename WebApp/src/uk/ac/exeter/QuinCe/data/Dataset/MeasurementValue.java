@@ -146,17 +146,20 @@ public class MeasurementValue implements PlotPageTableValue {
    * @param memberCount
    */
   public MeasurementValue(SensorType sensorType, List<SensorValue> sensorValues,
-    Double calculatedValue, int memberCount) {
+    List<SensorValue> supportingSensorValues, Double calculatedValue,
+    int memberCount) {
 
     this.sensorType = sensorType;
     this.sensorValueIds = new ArrayList<Long>();
     this.memberCount = memberCount;
+    this.supportingSensorValueIds = new ArrayList<Long>();
     this.supportingSensorValueIds = new ArrayList<Long>();
     this.calculatedValue = calculatedValue;
     this.memberCount = memberCount;
     this.qcMessage = new ArrayList<String>();
     this.properties = new Properties();
     addSensorValues(sensorValues, false);
+    addSupportingSensorValues(supportingSensorValues);
   }
 
   /**
@@ -179,7 +182,7 @@ public class MeasurementValue implements PlotPageTableValue {
    * @param incrMemberCount
    *          Indicates whether or not the member count should be incremented.
    */
-  public void addSensorValues(Collection<SensorValue> values,
+  private void addSensorValues(Collection<SensorValue> values,
     boolean incrMemberCount) {
 
     values.forEach(v -> addSensorValue(v, incrMemberCount));
@@ -195,10 +198,8 @@ public class MeasurementValue implements PlotPageTableValue {
    *          The source {@code MeasurementValue}s.
    */
   public void addSensorValues(Collection<MeasurementValue> sourceValues,
-    DatasetSensorValues allSensorValues, boolean incrMemberCount) {
-
-    sourceValues
-      .forEach(x -> addSensorValues(x, allSensorValues, incrMemberCount));
+    DatasetSensorValues allSensorValues) {
+    sourceValues.forEach(x -> addSensorValues(x, allSensorValues));
   }
 
   /**
@@ -208,9 +209,23 @@ public class MeasurementValue implements PlotPageTableValue {
    *          The source {@code MeasurementValue}.
    */
   public void addSensorValues(MeasurementValue sourceValue,
-    DatasetSensorValues allSensorValues, boolean incrMemberCount) {
+    DatasetSensorValues allSensorValues) {
     for (Long sensorValueId : sourceValue.getSensorValueIds()) {
-      addSensorValue(allSensorValues.getById(sensorValueId), incrMemberCount);
+      addSensorValue(allSensorValues.getById(sensorValueId));
+    }
+  }
+
+  /**
+   * Add the sensor values used in the specified {@code MeasurementValue} as
+   * supporting sensor values.
+   *
+   * @param sourceValues
+   *          The source {@code MeasurementValue}.
+   */
+  public void addSupportingSensorValues(MeasurementValue sourceValue,
+    DatasetSensorValues allSensorValues) {
+    for (Long sensorValueId : sourceValue.getSensorValueIds()) {
+      addSupportingSensorValue(allSensorValues.getById(sensorValueId));
     }
   }
 
@@ -226,7 +241,7 @@ public class MeasurementValue implements PlotPageTableValue {
    *          Indicates whether or not this value should contribute to the
    *          member count.
    */
-  public void addSensorValue(SensorValue value, boolean incrMemberCount) {
+  private void addSensorValue(SensorValue value, boolean incrMemberCount) {
     if (null != value) {
       if (!sensorValueIds.contains(value.getId())) {
         sensorValueIds.add(value.getId());
@@ -256,6 +271,14 @@ public class MeasurementValue implements PlotPageTableValue {
     }
   }
 
+  public void addSensorValue(SensorValue sensorValue) {
+    addSensorValue(sensorValue, true);
+  }
+
+  public void addSensorValues(Collection<SensorValue> sensorValues) {
+    addSensorValues(sensorValues, true);
+  }
+
   /**
    * Add a {@link SensorValue} to the value and force the {@link #type} to be
    * {@link PlotPageTableValue#INTERPOLATED_TYPE} regardless of the resulting
@@ -278,7 +301,9 @@ public class MeasurementValue implements PlotPageTableValue {
   }
 
   public void addSupportingSensorValues(Collection<SensorValue> values) {
-    values.forEach(this::addSupportingSensorValue);
+    if (null != values) {
+      values.forEach(this::addSupportingSensorValue);
+    }
   }
 
   public List<Long> getSupportingSensorValueIds() {
