@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeSet;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -37,6 +35,7 @@ import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -243,12 +242,9 @@ public class ExtractDataSetJob extends DataSetJob {
               }
             }
           } catch (Exception e) {
-            // TODO #1967 Log error to dataset comments
+            // TODO #1967/2346 Log error to dataset comments
             // Log the error but continue with the next line
-            System.out.println(
-              "*** DATA EXTRACTION ERROR IN FILE " + file.getDatabaseId() + "("
-                + file.getFilename() + ") line " + currentLine);
-            e.printStackTrace();
+            ExceptionUtils.printStackTrace(e);
           }
 
           currentLine++;
@@ -337,7 +333,7 @@ public class ExtractDataSetJob extends DataSetJob {
 
       conn.commit();
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       DatabaseUtils.rollBack(conn);
       try {
         // Set the dataset to Error status
@@ -352,7 +348,7 @@ public class ExtractDataSetJob extends DataSetJob {
         DataSetDB.updateDataSet(conn, getDataset(conn));
         conn.commit();
       } catch (Exception e1) {
-        e1.printStackTrace();
+        ExceptionUtils.printStackTrace(e1);
       }
       throw new JobFailedException(id, e);
     } finally {

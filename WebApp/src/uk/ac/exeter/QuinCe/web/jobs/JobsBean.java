@@ -9,6 +9,7 @@ import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobSummary;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 import uk.ac.exeter.QuinCe.jobs.test.TenSecondJob;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
@@ -70,42 +71,42 @@ public class JobsBean extends BaseManagedBean {
     try {
       idleThreads = JobThreadPool.getInstance().getPoolThreadCount();
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       idleThreads = -1;
     }
 
     try {
       runningThreads = JobThreadPool.getInstance().getRunningThreadsCount();
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       runningThreads = -1;
     }
 
     try {
       overflowThreads = JobThreadPool.getInstance().getOverflowThreadsCount();
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       overflowThreads = -1;
     }
 
     try {
       maxThreads = JobThreadPool.getInstance().getMaxThreads();
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       maxThreads = -1;
     }
 
     try {
       jobCounts = JobManager.getJobCounts(ServletUtils.getDBDataSource());
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       jobCounts = null;
     }
 
     try {
       jobList = JobManager.getJobList(ServletUtils.getDBDataSource());
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       jobList = null;
     }
   }
@@ -120,7 +121,7 @@ public class JobsBean extends BaseManagedBean {
       JobManager.addJob(ServletUtils.getDBDataSource(), getUser(),
         "uk.ac.exeter.QuinCe.jobs.test.TenSecondJob", getNewJobParams());
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     // Finally, update everything
@@ -138,7 +139,7 @@ public class JobsBean extends BaseManagedBean {
         ServletUtils.getAppConfig(), getUser(),
         "uk.ac.exeter.QuinCe.jobs.test.TenSecondJob", getNewJobParams());
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     // Finally, update everything
@@ -169,7 +170,7 @@ public class JobsBean extends BaseManagedBean {
       JobManager.startNextJob(ServletUtils.getResourceManager(),
         ServletUtils.getAppConfig());
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     update();
@@ -184,7 +185,7 @@ public class JobsBean extends BaseManagedBean {
     try {
       JobManager.requeueJob(ServletUtils.getDBDataSource(), chosenJob);
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     update();

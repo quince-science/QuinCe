@@ -8,8 +8,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -31,6 +29,7 @@ import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -248,7 +247,7 @@ public class DataReductionJob extends DataSetJob {
       conn.commit();
     } catch (Exception e) {
       DatabaseUtils.rollBack(conn);
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       try {
         // Change dataset status to Error, and append an error message
         StringBuffer message = new StringBuffer();
@@ -262,7 +261,7 @@ public class DataReductionJob extends DataSetJob {
         DataSetDB.updateDataSet(conn, getDataset(conn));
         conn.commit();
       } catch (Exception e1) {
-        e.printStackTrace();
+        ExceptionUtils.printStackTrace(e1);
       }
 
       throw new JobFailedException(id, e);

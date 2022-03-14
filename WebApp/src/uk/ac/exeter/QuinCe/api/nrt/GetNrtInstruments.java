@@ -9,6 +9,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @Path("/nrt/GetInstruments")
@@ -22,7 +23,7 @@ public class GetNrtInstruments {
       DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
       return InstrumentDB.getNrtInstruments(dataSource);
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       throw e;
     }
   }

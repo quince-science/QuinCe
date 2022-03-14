@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -147,7 +148,7 @@ public class ExportDataset {
     } catch (RecordNotFoundException e) {
       responseCode = Status.NOT_FOUND;
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       responseCode = Status.INTERNAL_SERVER_ERROR;
     } finally {
       DatabaseUtils.closeConnection(conn);

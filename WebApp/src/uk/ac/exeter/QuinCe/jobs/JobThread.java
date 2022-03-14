@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs;
 
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -118,7 +119,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
           }
         }
       } catch (Exception e2) {
-        e.printStackTrace();
+        ExceptionUtils.printStackTrace(e2);
       }
     } finally {
       job.destroy();
@@ -150,7 +151,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
     try {
       job.setFinishState(Job.KILLED_STATUS);
     } catch (JobException e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 }

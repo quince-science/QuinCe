@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -260,7 +261,7 @@ public class DataSetsBean extends BaseManagedBean {
 
       timelineEntriesJson = entriesJson.toString();
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 
@@ -318,7 +319,7 @@ public class DataSetsBean extends BaseManagedBean {
 
       loadDataSets();
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     return NAV_DATASET_LIST;
@@ -351,7 +352,7 @@ public class DataSetsBean extends BaseManagedBean {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId,
         DataSet.STATUS_WAITING_FOR_APPROVAL);
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 
@@ -363,7 +364,7 @@ public class DataSetsBean extends BaseManagedBean {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId,
         DataSet.STATUS_READY_FOR_EXPORT);
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 
@@ -379,7 +380,7 @@ public class DataSetsBean extends BaseManagedBean {
       JobManager.addJob(getDataSource(), getUser(),
         AutoQCJob.class.getCanonicalName(), properties);
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 
@@ -432,7 +433,7 @@ public class DataSetsBean extends BaseManagedBean {
 
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        ExceptionUtils.printStackTrace(e);
         validCalibration = false;
         validCalibrationMessage = "Error while checking calibrations";
       }
@@ -463,7 +464,7 @@ public class DataSetsBean extends BaseManagedBean {
     try {
       loadDataSets();
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 

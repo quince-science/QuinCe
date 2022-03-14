@@ -13,6 +13,7 @@ import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
@@ -62,7 +63,7 @@ public class InternalCalibrationBean extends PlotPageBean {
       JobManager.addJob(getDataSource(), getUser(),
         AutoQCJob.class.getCanonicalName(), jobProperties);
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 

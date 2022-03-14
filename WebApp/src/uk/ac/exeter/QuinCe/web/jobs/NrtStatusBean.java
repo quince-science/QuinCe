@@ -7,6 +7,7 @@ import javax.faces.bean.ViewScoped;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.NrtStatus;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 @ManagedBean
@@ -23,7 +24,7 @@ public class NrtStatusBean extends BaseManagedBean {
     try {
       status = DataSetDB.getNrtStatus(getDataSource());
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 }

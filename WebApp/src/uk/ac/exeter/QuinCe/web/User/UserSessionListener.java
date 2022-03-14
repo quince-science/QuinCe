@@ -6,6 +6,7 @@ import javax.servlet.http.HttpSessionListener;
 
 import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.User.UserPreferences;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -32,10 +33,7 @@ public class UserSessionListener implements HttpSessionListener {
         UserDB.savePreferences(ServletUtils.getDBDataSource(), prefs);
       }
     } catch (Exception e) {
-      /*
-       * Just log the error
-       */
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     session.removeAttribute(LoginBean.USER_SESSION_ATTR);

@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -281,7 +282,7 @@ public abstract class Job {
     throws DatabaseException, MissingParamException, NoSuchJobException {
     Connection conn = null;
     try {
-      error.printStackTrace();
+      ExceptionUtils.printStackTrace(error);
       conn = dataSource.getConnection();
       JobManager.logJobError(conn, id, error);
     } catch (SQLException e) {
