@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -741,7 +742,7 @@ public class JobManager {
 
       System.out.println(StringUtils.stackTraceToString(error));
     } catch (SQLException e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       throw new DatabaseException(
         "An error occurred while setting the error state of the job", e);
     } finally {
@@ -887,7 +888,7 @@ public class JobManager {
           logJobError(connection, nextJobId, e.getCause());
         }
       } catch (Exception e2) {
-        e2.printStackTrace();
+        ExceptionUtils.printStackTrace(e2);
         // Do nothing. The job scheduler will try again.
       }
     } catch (SQLException e) {

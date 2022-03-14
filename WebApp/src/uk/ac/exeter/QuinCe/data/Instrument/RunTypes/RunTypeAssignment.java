@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -254,7 +255,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
           }
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        ExceptionUtils.printStackTrace(e);
         throw e;
       }
     }
@@ -262,7 +263,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
     if (!categoryAssigned) {
       RunTypeCategoryException e = new RunTypeCategoryException(
         "Unrecognised run type '" + type + "'");
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       throw e;
     }
   }

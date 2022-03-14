@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -78,7 +79,7 @@ public class ApiAuthenticationFilter implements javax.servlet.Filter {
       }
     } catch (Exception e) {
       result = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     if (result == HttpServletResponse.SC_OK) {

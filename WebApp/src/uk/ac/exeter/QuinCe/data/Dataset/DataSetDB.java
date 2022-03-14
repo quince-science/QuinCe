@@ -28,6 +28,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.Message;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -752,13 +753,13 @@ public class DataSetDB {
         conn.setAutoCommit(true);
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       if (currentAutoCommitStatus) {
         try {
           conn.rollback();
           conn.setAutoCommit(true);
         } catch (SQLException e2) {
-          e2.printStackTrace();
+          ExceptionUtils.printStackTrace(e2);
         }
       }
     } finally {

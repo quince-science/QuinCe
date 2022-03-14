@@ -20,6 +20,7 @@ import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.CreateNrtDataset;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -65,7 +66,7 @@ public class MakeNrtDataset {
       }
     } catch (Exception e) {
       response = Response.status(Status.INTERNAL_SERVER_ERROR).build();
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     } finally {
       DatabaseUtils.closeConnection(conn);
     }

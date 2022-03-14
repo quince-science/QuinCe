@@ -78,7 +78,7 @@ public abstract class BackgroundTask
         doTask();
       } catch (Exception e) {
         // We don't do anything at the minute
-        e.printStackTrace();
+        ExceptionUtils.printStackTrace(e);
       } finally {
         synchronized (lock) {
           running = false;

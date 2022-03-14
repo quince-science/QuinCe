@@ -20,6 +20,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -299,7 +300,7 @@ public abstract class DataReducer {
         }
       }
     } catch (NumberFormatException e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       // Swallow the exception so that the result is null
     }
 

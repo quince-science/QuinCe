@@ -5,6 +5,7 @@ import org.primefaces.model.TreeNode;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 
 @SuppressWarnings("serial")
 public class VariableTreeNode extends DefaultTreeNode {
@@ -35,8 +36,7 @@ public class VariableTreeNode extends DefaultTreeNode {
       result = sensorAssignments.isVariableComplete(variable) ? VAR_FINISHED
         : VAR_UNFINISHED;
     } catch (Exception e) {
-      // Print the stack trace and continue
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     return result;

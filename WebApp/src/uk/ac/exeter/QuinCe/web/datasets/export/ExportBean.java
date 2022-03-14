@@ -37,6 +37,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
@@ -98,7 +99,7 @@ public class ExportBean extends BaseManagedBean {
     try {
       this.dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 
@@ -201,7 +202,7 @@ public class ExportBean extends BaseManagedBean {
 
       fc.responseComplete();
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 
@@ -241,8 +242,7 @@ public class ExportBean extends BaseManagedBean {
 
       fc.responseComplete();
     } catch (Exception e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     } finally {
       DatabaseUtils.closeConnection(conn);
     }

@@ -24,6 +24,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -440,7 +441,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
           + " was not recognised. Please upload a different file.",
         FacesMessage.SEVERITY_ERROR);
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       setDataFile(null);
       putMessage(Status.INTERNAL_SERVER_ERROR.getStatusCode(),
         "The file could not be processed: " + e.getMessage(),

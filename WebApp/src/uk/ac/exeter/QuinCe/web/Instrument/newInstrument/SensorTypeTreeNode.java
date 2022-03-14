@@ -10,6 +10,7 @@ import org.primefaces.model.TreeNode;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 
 @SuppressWarnings("serial")
 public class SensorTypeTreeNode extends DefaultTreeNode {
@@ -57,8 +58,7 @@ public class SensorTypeTreeNode extends DefaultTreeNode {
           : SENSOR_ASSIGNED;
       }
     } catch (Exception e) {
-      // Print the stack trace and continue
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     return result;
