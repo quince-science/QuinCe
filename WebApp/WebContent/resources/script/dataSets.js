@@ -8,6 +8,11 @@ TIMELINE_OPTIONS = {
   editable: false,
   moment: function(date) {
       return vis.moment(date).utc();
+  },
+  format: {
+    minorLabels: {
+      week: 'D',
+    }
   }
 };
 

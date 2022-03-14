@@ -36,6 +36,11 @@
             zoomMin: 3600000,
             moment: function(date) {
               return vis.moment(date).utc();
+            },
+            format: {
+              minorLabels: {
+                week: 'D',
+              }
             }
           };
 
