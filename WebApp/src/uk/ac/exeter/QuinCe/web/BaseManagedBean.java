@@ -338,7 +338,7 @@ public abstract class BaseManagedBean {
       }
     } catch (Exception e) {
       // Swallow the error, but dump it
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       currentFullInstrument = null;
     }
 
@@ -383,8 +383,7 @@ public abstract class BaseManagedBean {
       try {
         UserDB.savePreferences(getDataSource(), getUserPrefs());
       } catch (Exception e) {
-        // Log exceptions but ignore them
-        e.printStackTrace();
+        ExceptionUtils.printStackTrace(e);
       }
     }
   }

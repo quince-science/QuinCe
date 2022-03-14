@@ -9,6 +9,7 @@ import javax.faces.bean.ViewScoped;
 import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -152,7 +153,7 @@ public class ResetPasswordBean extends BaseManagedBean {
         UserDB.clearPasswordResetCode(conn, email);
         conn.commit();
       } catch (SQLException e) {
-        e.printStackTrace();
+        ExceptionUtils.printStackTrace(e);
         DatabaseUtils.rollBack(conn);
       } finally {
         if (conn != null) {

@@ -18,6 +18,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.files.UploadedDataFile;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -78,7 +79,7 @@ public class UploadFile {
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       result = Status.INTERNAL_SERVER_ERROR.getStatusCode();
       resultBody = e.getMessage();
     }

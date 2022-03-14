@@ -27,6 +27,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -498,7 +499,7 @@ public class DataFileDB {
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       throw new DatabaseException("An error occurred while searching for files",
         e);
     } finally {
@@ -569,7 +570,7 @@ public class DataFileDB {
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
       throw new DatabaseException("An error occurred while searching for files",
         e);
     } finally {
@@ -934,7 +935,7 @@ public class DataFileDB {
    * @param time
    *          The time boundary
    * @return {@code true} if a complete set of files is available; {@code false}
-   *           if not
+   *         if not
    * @throws RecordNotFoundException
    * @throws DatabaseException
    * @throws MissingParamException

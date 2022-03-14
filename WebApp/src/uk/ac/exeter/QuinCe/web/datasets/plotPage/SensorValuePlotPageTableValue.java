@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class SensorValuePlotPageTableValue implements PlotPageTableValue {
@@ -46,7 +47,7 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
       String message = sensorValue.getDisplayQCMessage();
       result = message;
     } catch (RoutineException e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     if (replaceNewlines) {

@@ -24,6 +24,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 
 public abstract class PlotPageData {
 
@@ -517,7 +518,7 @@ public abstract class PlotPageData {
 
     long millis = DateTimeUtils.dateToLong(LocalDateTime.now());
     this.errorMessage = millis + ": " + message;
-    cause.printStackTrace();
+    ExceptionUtils.printStackTrace(cause);
   }
 
   /**

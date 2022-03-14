@@ -32,6 +32,7 @@ import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.ParameterException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -166,7 +167,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
         affectedDatasets = null;
         calibration = initNewCalibration();
       } catch (Exception e) {
-        e.printStackTrace();
+        ExceptionUtils.printStackTrace(e);
         nav = internalError(e);
       }
     }

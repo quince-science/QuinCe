@@ -5,6 +5,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Properties;
 
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
+
 /**
  * User Preferences
  *
@@ -63,7 +65,7 @@ public class UserPreferences extends Properties {
          * corrupted in the database. They will get overwritten the next time a
          * preference is set.
          */
-        e.printStackTrace();
+        ExceptionUtils.printStackTrace(e);
       }
     }
   }
@@ -126,7 +128,7 @@ public class UserPreferences extends Properties {
        *
        * Log the error to the console
        */
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     return result;

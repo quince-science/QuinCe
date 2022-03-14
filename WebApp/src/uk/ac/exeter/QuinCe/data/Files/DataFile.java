@@ -22,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -442,7 +443,7 @@ public class DataFile {
         headerDate = LocalDateTime.parse(matchedLine.getHighlightedPortion(),
           assignment.getFormatter());
       } catch (Exception e) {
-        e.printStackTrace();
+        ExceptionUtils.printStackTrace(e);
         addMessage(
           "Could not extract file start date from header: " + e.getMessage());
         result = false;

@@ -43,4 +43,21 @@ public class ExceptionUtils {
   private static boolean isQuinceElement(StackTraceElement element) {
     return element.getClassName().contains("QuinCe");
   }
+
+  /**
+   * Get an exception's stack trace as a string.
+   *
+   * <p>
+   * This is a simple passthrough to
+   * {@link org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace} for
+   * code simplicity.
+   * </p>
+   *
+   * @param e
+   *          The exception
+   * @return The stack trace
+   */
+  public static String getStackTrace(Exception e) {
+    return org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
+  }
 }

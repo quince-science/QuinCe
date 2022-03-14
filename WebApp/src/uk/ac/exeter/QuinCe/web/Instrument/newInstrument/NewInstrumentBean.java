@@ -48,6 +48,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -544,7 +545,6 @@ public class NewInstrumentBean extends FileUploadBean {
       clearRunTypeAssignments();
       clearFile();
     } catch (Exception e) {
-      e.printStackTrace();
       throw e;
     } finally {
       DatabaseUtils.closeConnection(conn);
@@ -605,7 +605,7 @@ public class NewInstrumentBean extends FileUploadBean {
       assignmentsTree = new AssignmentsTree(this.instrumentVariables,
         sensorAssignments, !fixedPosition);
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 
@@ -617,7 +617,7 @@ public class NewInstrumentBean extends FileUploadBean {
         variables.put(variable.getId(), variable.getName());
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
 
     return variables;
@@ -1823,7 +1823,6 @@ public class NewInstrumentBean extends FileUploadBean {
       dataFilesBean.initialiseInstruments();
       dataSetsBean.initialiseInstruments();
     } catch (Exception e) {
-      e.printStackTrace();
       throw e;
     }
 
@@ -2093,7 +2092,7 @@ public class NewInstrumentBean extends FileUploadBean {
           .removeRunTypeColumn(removeAssignmentColumn);
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      ExceptionUtils.printStackTrace(e);
     }
   }
 
