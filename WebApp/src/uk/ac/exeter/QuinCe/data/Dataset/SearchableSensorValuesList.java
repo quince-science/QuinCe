@@ -438,8 +438,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   }
 
   private boolean withinTimeInterpolationLimit(int startPoint, int testPoint) {
-    return DateTimeUtils.secondsBetween(get(startPoint).getTime(),
-      get(testPoint).getTime()) <= MAX_INTERPOLATION_LIMIT;
+    return Math.abs(DateTimeUtils.secondsBetween(get(startPoint).getTime(),
+      get(testPoint).getTime())) <= MAX_INTERPOLATION_LIMIT;
   }
 }
 
