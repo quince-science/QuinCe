@@ -145,23 +145,22 @@ public class DataReductionJob extends DataSetJob {
           dataReductionRecords.ensureCapacity(
             dataReductionRecords.size() + variablesToProcess.size());
 
-          // Get all the sensor values for this measurement.
-          // This searches all the sensor values for each required sensor
-          // type, finding either the sensor value at the same time as the
-          // measurement or the values immediately before and after the
-          // measurement time.
-          // "Immediately" may mean that we try to find a Good value
-          // within
-          // a reasonable timespan, or we fall back to a Questionable or
-          // Bad
-          // value.
+          /*
+           * Get all the sensor values for this measurement. This searches all
+           * the sensor values for each required sensor type, finding either the
+           * sensor value at the same time as the measurement or the values
+           * immediately before and after the measurement time. "Immediately"
+           * may mean that we try to find a Good value within a reasonable
+           * timespan, or we fall back to a Questionable or Bad value.
+           */
 
           for (SensorType sensorType : variable
             .getAllSensorTypes(!dataSet.fixedPosition())) {
 
-            // Create the MeasurementValue for this SensorType if we
-            // haven't
-            // already done it.
+            /*
+             * Create the MeasurementValue for this SensorType if we haven't
+             * already done it.
+             */
             if (!measurement.hasMeasurementValue(sensorType)) {
               measurement.setMeasurementValue(MeasurementValueCalculatorFactory
                 .calculateMeasurementValue(instrument, measurement, sensorType,
@@ -169,13 +168,11 @@ public class DataReductionJob extends DataSetJob {
             }
           }
 
-          // If any of the core sensor values are linked to this
-          // measurement
-          // are empty, this means the measurement isn't actually
-          // available
-          // (usually because it's in a FLUSHING state). So we don't
-          // process
-          // it.
+          /*
+           * If any of the core sensor values are linked to this measurement are
+           * empty, this means the measurement isn't actually available (usually
+           * because it's in a FLUSHING state). So we don't process it.
+           */
           boolean hasCoreValue = true;
 
           List<SensorType> coreSensorTypes = variable.getCoreSensorTypes();

@@ -20,11 +20,11 @@ BBBBBBBBBB,2021-07-22T00:31:00Z,4.75,I,B,B3;B4,Interpolate value; all B
 BGGGGGGGGG,2021-07-22T00:00:00Z,3,I,G,,Before first value; first value B
 BBBGGGGGGG,2021-07-22T00:00:00Z,2,I,B,B0,Before first value; first few B
 GGGGGGGGGB,2021-07-22T01:00:00Z,9,I,G,,After last value; last value B
-GGGGGGGBBB,2021-07-22T01:00:00Z,7,I,G,,After last value; last few B
+GGGGGGGBBB,2021-07-22T01:00:00Z,10,I,B,B9,After last value; last few B
 QGGGGGGGGG,2021-07-22T00:00:00Z,3,I,G,,Before first value; first value Q
 QQQGGGGGGG,2021-07-22T00:00:00Z,2,I,Q,Q0,Before first value; first few Q
 GGGGGGGGGQ,2021-07-22T01:00:00Z,9,I,G,,After last value; last value Q
-GGGGGGGQQQ,2021-07-22T01:00:00Z,7,I,G,,After last value; last few Q
+GGGGGGGQQQ,2021-07-22T01:00:00Z,10,I,Q,Q9,After last value; last few Q
 GGGGGBGGGG,2021-07-22T00:34:00Z,6,I,G,,Direct on B value
 GGGGGQGGGG,2021-07-22T00:34:00Z,6,I,G,,Direct on Q value
 BGGGGGGGGG,2021-07-22T00:24:00Z,3,I,G,,Direct on B first value
@@ -33,32 +33,32 @@ GGGGGGGGGB,2021-07-22T00:42:00Z,9,I,G,,Direct on B last value
 GGGGGGGGGQ,2021-07-22T00:42:00Z,9,I,G,,Direct on Q last value
 BBBBBGGGGG,2021-07-22T00:24:00Z,2,M,B,B0,Direct on B first value;first few B
 QQQQGGGGGG,2021-07-22T00:24:00Z,2,M,Q,Q0,Direct on Q first value;first few Q
-GGGGGGBBBB,2021-07-22T00:42:00Z,6,I,G,,Direct on B last value;last few B
-GGGQQQQQQQ,2021-07-22T00:42:00Z,3.5,I,G,,Direct on Q last value;last few Q
+GGGGGGBBBB,2021-07-22T00:42:00Z,10,M,B,B9,Direct on B last value;last few B
+GGGQQQQQQQ,2021-07-22T00:42:00Z,10,M,Q,Q9,Direct on Q last value;last few Q
 GGGQBGGGGG,2021-07-22T00:32:00Z,5.1666,I,G,,On B;One Q before
 GGGGBQGGGG,2021-07-22T00:32:00Z,5.3333,I,G,,On B;One Q after
 QQQQBGGGGG,2021-07-22T00:32:00Z,6,I,G,,On B;All Q before
 GGGGBQQQQQ,2021-07-22T00:32:00Z,4.5,I,G,,On B;All Q after
 QQQQBQGGGG,2021-07-22T00:32:00Z,7,I,G,,On B;All Q before;One Q after
 GGGQBQQQQQ,2021-07-22T00:32:00Z,3.5,I,G,,On B;All Q after;One Q before
-GGQBBBGGGG,2021-07-22T00:32:00Z,5.4,I,G,,On B;One B each side;One Q before
+GGQBBBGGGG,2021-07-22T00:32:00Z,7,I,G,,On B;One B each side;One Q before
 GGGBBBQGGG,2021-07-22T00:32:00Z,3.5,I,G,,On B;One B each side;One Q after
 QQQBBBGGGG,2021-07-22T00:32:00Z,7,I,G,,On B;One B each side;All Q before
 GGGBBBQQQQ,2021-07-22T00:32:00Z,3.5,I,G,,On B;One B each side;All Q after
 QQQBBBQGGG,2021-07-22T00:32:00Z,5.25,I,Q,Q2;Q6,On B;One B each side;All Q before;One Q after
-GGQBBBQQQQ,2021-07-22T00:32:00Z,3,I,G,,On B;One B each side;All Q after;One Q before
+GGQBBBQQQQ,2021-07-22T00:32:00Z,5.25,I,Q,Q2;Q6,On B;One B each side;All Q after;One Q before
 GGGBQGGGGG,2021-07-22T00:32:00Z,5.1666,I,G,,On Q;One B Before
 GGGGQBGGGG,2021-07-22T00:32:00Z,5.3333,I,G,,On Q;One B after
 BBBBQGGGGG,2021-07-22T00:32:00Z,6,I,G,,On Q;All B Before
 GGGGQBBBBB,2021-07-22T00:32:00Z,4.5,I,G,,On Q;All B after
 BBBBQBGGGG,2021-07-22T00:32:00Z,7,I,G,,On Q;All B Before;One B after
 GGGBQBBBBB,2021-07-22T00:32:00Z,3.5,I,G,,On Q;All B after;One B Before
-GGBQQQGGGG,2021-07-22T00:32:00Z,5.4,I,G,,On Q;One Q each side;One B Before
+GGBQQQGGGG,2021-07-22T00:32:00Z,7,I,G,,On Q;One Q each side;One B Before
 GGGQQQBGGG,2021-07-22T00:32:00Z,3.5,I,G,,On Q;One Q each side;One B after
 BBBQQQGGGG,2021-07-22T00:32:00Z,7,I,G,,On Q;One Q each side;All B Before
 GGGQQQBBBB,2021-07-22T00:32:00Z,3.5,I,G,,On Q;One Q each side;All B after
 BBBQQQBGGG,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One Q each side;All B Before;One B after
-GGBQQQBBBB,2021-07-22T00:32:00Z,3,I,G,,On Q;One Q each side;All B after;One B Before
+GGBQQQBBBB,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One Q each side;All B after;One B Before
 QBGGGGGGGG,2021-07-22T00:24:00Z,3.5,I,G,,On Q first;Second B
 QBGGGGGGGG,2021-07-22T00:00:00Z,3.5,I,G,,Before Q first;Second B
 BQGGGGGGGG,2021-07-22T00:24:00Z,3.5,I,G,,On B first;Second Q
@@ -179,7 +179,7 @@ QQQQQQQQQB,2021-07-22T00:42:00Z,9,I,Q,Q8,Direct on B last value;All others Q
 QQQQQQQQQQ,2021-07-22T00:42:00Z,10,M,Q,Q9,Direct on Q last value;All others Q
 BBBBBQQQQQ,2021-07-22T00:24:00Z,2,M,B,B0,Direct on B first value;first few B;All others Q
 QQQQQQQQQQ,2021-07-22T00:24:00Z,2,M,Q,Q0,Direct on Q first value;first few Q;All others Q
-QQQQQQBBBB,2021-07-22T00:42:00Z,6,I,Q,Q5,Direct on B last value;last few B;All others Q
+QQQQQQBBBB,2021-07-22T00:42:00Z,10,M,B,B9,Direct on B last value;last few B;All others Q
 QQQQQQQQQQ,2021-07-22T00:42:00Z,10,M,Q,Q9,Direct on Q last value;last few Q;All others Q
 QQQQBQQQQQ,2021-07-22T00:32:00Z,5.25,I,Q,Q3;Q5,On B;One Q before;All others Q
 QQQBBBQQQQ,2021-07-22T00:32:00Z,5.25,I,Q,Q2;Q6,On B;One B each side;One Q before;All others Q
