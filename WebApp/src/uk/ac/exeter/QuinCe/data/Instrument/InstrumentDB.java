@@ -193,16 +193,23 @@ public class InstrumentDB {
   private static final String INSTRUMENT_EXISTS_QUERY = "SELECT "
     + "id FROM instrument WHERE owner = ? AND name = ?";
 
-  private static final String INSTRUMENT_LIST_QUERY_BASE = "SELECT "
+  private static final String INSTRUMENT_LIST_QUERY = "SELECT "
     + "i.id, i.name, i.owner, i.platform_code, i.nrt, i.properties, " // 6
     + "iv.variable_id, iv.properties, " // 8
-    + "CONCAT(u.surname, \", \", u.firstname) AS owner_name " // 9
+    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 9
     + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
-    + "INNER JOIN user u on i.owner = u.id";
+    + "INNER JOIN user u on i.owner = u.id " + "WHERE i.id IN ("
+    + "SELECT id FROM instrument WHERE OWNER = ? " + "UNION "
+    + "SELECT instrument_id FROM shared_instruments WHERE shared_with = ?"
+    + ") ORDER BY owner_name, i.owner, i.name";
 
-  private static final String INSTRUMENT_LIST_QUERY_WHERE = " WHERE u.id = ?";
-
-  private static final String INSTRUMENT_LIST_QUERY_ORDER = " ORDER BY owner_name, i.owner, i.name";
+  private static final String ALL_INSTRUMENT_LIST_QUERY = "SELECT "
+    + "i.id, i.name, i.owner, i.platform_code, i.nrt, i.properties, " // 6
+    + "iv.variable_id, iv.properties, " // 8
+    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 9
+    + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
+    + "INNER JOIN user u on i.owner = u.id "
+    + "ORDER BY owner_name, i.owner, i.name";
 
   /**
    * Store a new instrument in the database
@@ -512,16 +519,13 @@ public class InstrumentDB {
 
     try {
 
-      String sql = INSTRUMENT_LIST_QUERY_BASE;
-      if (ownerId > 0) {
-        sql += INSTRUMENT_LIST_QUERY_WHERE;
-      }
-      sql += INSTRUMENT_LIST_QUERY_ORDER;
-
-      stmt = conn.prepareStatement(sql);
-
-      if (ownerId > 0) {
+      // -1 means get all instruments
+      if (ownerId == -1) {
+        stmt = conn.prepareStatement(ALL_INSTRUMENT_LIST_QUERY);
+      } else {
+        stmt = conn.prepareStatement(INSTRUMENT_LIST_QUERY);
         stmt.setLong(1, ownerId);
+        stmt.setLong(2, ownerId);
       }
 
       records = stmt.executeQuery();
