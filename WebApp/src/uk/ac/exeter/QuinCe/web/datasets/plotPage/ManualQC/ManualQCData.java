@@ -1133,7 +1133,7 @@ public class ManualQCData extends PlotPageData {
         .get(0);
 
       List<SensorValue> valuesToUse = sensorValues.getColumnValues(columnId)
-        .getWithInterpolation(time, false);
+        .getWithInterpolation(time, true, false);
 
       switch (valuesToUse.size()) {
       case 0: {

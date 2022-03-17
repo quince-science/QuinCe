@@ -85,6 +85,8 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
 
   private SensorType sensorType;
 
+  private SensorType coreSensorType;
+
   /**
    * Build everything needed for the tests
    *
@@ -143,6 +145,8 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
 
     sensorType = ResourceManager.getInstance().getSensorsConfiguration()
       .getSensorType("Intake Temperature");
+    coreSensorType = ResourceManager.getInstance().getSensorsConfiguration()
+      .getSensorType("xCO₂ (with standards)");
 
     List<Long> columnList = new ArrayList<Long>(1);
     columnList.add(COLUMN_ID);
@@ -236,7 +240,7 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
     DefaultMeasurementValueCalculator calculator = new DefaultMeasurementValueCalculator();
 
     MeasurementValue value = calculator.calculate(instrument, dataSet,
-      measurement, sensorType, sensorType, null, sensorValues,
+      measurement, coreSensorType, sensorType, null, sensorValues,
       getDataSource().getConnection());
 
     Double expectedValue = line.getDoubleField(EXPECTED_VALUE_COL);
