@@ -240,12 +240,14 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    *         the time).
    */
   public List<SensorValue> getWithInterpolation(LocalDateTime time,
-    boolean preferGoodFlags) {
+    boolean allowOutsideTimeRange, boolean preferGoodFlags) {
 
     List<SensorValue> result;
 
-    if (size() == 0 || time.isBefore(get(0).getTime())
-      || time.isAfter(get(size() - 1).getTime())) {
+    if (size() == 0) {
+      result = new ArrayList<SensorValue>(0);
+    } else if (!allowOutsideTimeRange && (time.isBefore(get(0).getTime())
+      || time.isAfter(get(size() - 1).getTime()))) {
       result = new ArrayList<SensorValue>(0);
     } else {
 

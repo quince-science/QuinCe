@@ -89,8 +89,9 @@ public class DefaultMeasurementValueCalculator
       LocalDateTime valueTime = dataSet.getSensorOffsets().getOffsetTime(
         measurement.getTime(), coreAssignment, requiredAssignment);
 
-      List<SensorValue> valuesToUse = sensorValues
-        .getWithInterpolation(valueTime, true);
+      // We only allow values outside the list time range for non-core sensors.
+      List<SensorValue> valuesToUse = sensorValues.getWithInterpolation(
+        valueTime, !coreSensorType.equals(requiredSensorType), true);
 
       populateMeasurementValue(measurement.getTime(), result, valuesToUse);
     } catch (SensorGroupsException e) {
@@ -133,7 +134,7 @@ public class DefaultMeasurementValueCalculator
         .getColumnValues(columnId);
 
       List<SensorValue> valuesToUse = sensorValues
-        .getWithInterpolation(positionTime, true);
+        .getWithInterpolation(positionTime, true, true);
 
       populateMeasurementValue(measurement.getTime(), result, valuesToUse);
     } catch (SensorGroupsException e) {
@@ -160,14 +161,14 @@ public class DefaultMeasurementValueCalculator
       if (!valuesToUse.get(0).getTime().equals(measurementTime)) {
         measurementValue.addInterpolatedSensorValue(valuesToUse.get(0), true);
       } else {
-        measurementValue.addSensorValue(valuesToUse.get(0), true);
+        measurementValue.addSensorValue(valuesToUse.get(0));
       }
 
       measurementValue.setCalculatedValue(valuesToUse.get(0).getDoubleValue());
       break;
     }
     case 2: {
-      measurementValue.addSensorValues(valuesToUse, true);
+      measurementValue.addSensorValues(valuesToUse);
       measurementValue.setCalculatedValue(SensorValue
         .interpolate(valuesToUse.get(0), valuesToUse.get(1), measurementTime));
       break;
