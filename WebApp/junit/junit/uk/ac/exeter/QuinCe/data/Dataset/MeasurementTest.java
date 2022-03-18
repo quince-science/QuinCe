@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class MeasurementTest extends BaseTest {
@@ -69,11 +70,11 @@ public class MeasurementTest extends BaseTest {
 
       MeasurementValue longitude = new MeasurementValue(SensorType.LONGITUDE_ID,
         Arrays.asList(new Long[] { 1L }), null, 1, 0D, positionFlag, posMessage,
-        null);
+        PlotPageTableValue.MEASURED_TYPE, null);
 
       MeasurementValue latitude = new MeasurementValue(SensorType.LATITUDE_ID,
         Arrays.asList(new Long[] { 2L }), null, 1, 0D, positionFlag, posMessage,
-        null);
+        PlotPageTableValue.MEASURED_TYPE, null);
 
       result.setMeasurementValue(longitude);
       result.setMeasurementValue(latitude);
@@ -84,7 +85,7 @@ public class MeasurementTest extends BaseTest {
 
     MeasurementValue other = new MeasurementValue(intakeTemperature().getId(),
       Arrays.asList(new Long[] { 3L }), null, 1, 0D, sensorFlag, sensorMessage,
-      null);
+      PlotPageTableValue.MEASURED_TYPE, null);
 
     result.setMeasurementValue(other);
 

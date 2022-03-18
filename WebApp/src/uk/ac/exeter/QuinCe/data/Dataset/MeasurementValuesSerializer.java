@@ -42,6 +42,8 @@ public class MeasurementValuesSerializer
 
   private static final String QC_COMMENT_KEY = "qcComments";
 
+  private static final String TYPE_KEY = "type";
+
   private static final String PROPERTIES_KEY = "props";
 
   private static final Double NAN_VALUE = -999999999.9D;
@@ -98,6 +100,9 @@ public class MeasurementValuesSerializer
       valueJson.add(QC_COMMENT_KEY, qcComments);
 
       json.add(String.valueOf(entry.getKey()), valueJson);
+
+      // Type
+      valueJson.addProperty(TYPE_KEY, value.getType());
 
       // Properties
       valueJson.add(PROPERTIES_KEY, gson.toJsonTree(value.getProperties()));
@@ -161,11 +166,14 @@ public class MeasurementValuesSerializer
 
       qcCommentsElement.forEach(e -> qcComments.add(e.getAsString()));
 
+      char type = json.get(TYPE_KEY).getAsString().charAt(0);
+
       Properties properties = gson.fromJson(json.get(PROPERTIES_KEY),
         Properties.class);
 
       return new MeasurementValue(sensorTypeId, sensorValueIds,
-        supportingValueIds, memberCount, value, flag, qcComments, properties);
+        supportingValueIds, memberCount, value, flag, qcComments, type,
+        properties);
     } catch (SensorTypeNotFoundException e) {
       throw new JsonParseException(e);
     }
