@@ -8,6 +8,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.WeightedMeanCalculator;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class ParentSensorTypeMeasurementValueCalculator
@@ -37,8 +38,18 @@ public class ParentSensorTypeMeasurementValueCalculator
     childMeasurementValues.forEach(x -> mean.add(x.getCalculatedValue(),
       Double.valueOf(x.getMemberCount())));
 
+    char valueType = PlotPageTableValue.MEASURED_TYPE;
+
+    if (childMeasurementValues.stream()
+      .filter(c -> c.getType() == PlotPageTableValue.INTERPOLATED_TYPE)
+      .findAny().isPresent()) {
+
+      valueType = PlotPageTableValue.INTERPOLATED_TYPE;
+    }
+
     return new MeasurementValue(requiredSensorType,
       getSensorValues(childMeasurementValues, allSensorValues), null,
-      mean.getWeightedMean(), (int) Math.floor(mean.getSumOfWeights()));
+      mean.getWeightedMean(), (int) Math.floor(mean.getSumOfWeights()),
+      valueType);
   }
 }

@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class DataReducerTest extends BaseTest {
@@ -47,7 +48,7 @@ public class DataReducerTest extends BaseTest {
 
     return new MeasurementValue(sensorType.getId(), singleSensorValueList,
       emptySensorValueList, 1, value, Flag.GOOD, emptyCommentList,
-      new Properties());
+      PlotPageTableValue.MEASURED_TYPE, new Properties());
   }
 
   protected Measurement makeMeasurement(MeasurementValue... measurementValues) {

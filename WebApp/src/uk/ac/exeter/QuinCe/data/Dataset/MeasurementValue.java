@@ -75,7 +75,7 @@ public class MeasurementValue implements PlotPageTableValue {
   /**
    * The value type
    */
-  private char type = MEASURED_TYPE;
+  private char type = NAN_TYPE;
 
   /**
    * The QC flag for this value, derived from the contributing
@@ -122,7 +122,7 @@ public class MeasurementValue implements PlotPageTableValue {
    */
   public MeasurementValue(long sensorTypeId, List<Long> sensorValueIds,
     List<Long> supportingSensorValueIds, int memberCount,
-    Double calculatedValue, Flag flag, HashSet<String> qcComments,
+    Double calculatedValue, Flag flag, HashSet<String> qcComments, char type,
     Properties properties) throws SensorTypeNotFoundException {
 
     this.sensorType = ResourceManager.getInstance().getSensorsConfiguration()
@@ -133,8 +133,8 @@ public class MeasurementValue implements PlotPageTableValue {
     this.calculatedValue = calculatedValue;
     this.flag = flag;
     this.qcMessage = qcComments;
+    this.type = type;
     this.properties = properties;
-    type = sensorValueIds.size() > 1 ? INTERPOLATED_TYPE : MEASURED_TYPE;
   }
 
   /**
@@ -148,7 +148,7 @@ public class MeasurementValue implements PlotPageTableValue {
    */
   public MeasurementValue(SensorType sensorType, List<SensorValue> sensorValues,
     List<SensorValue> supportingSensorValues, Double calculatedValue,
-    int memberCount) {
+    int memberCount, char type) {
 
     this.sensorType = sensorType;
     this.sensorValueIds = new ArrayList<Long>();
@@ -161,6 +161,7 @@ public class MeasurementValue implements PlotPageTableValue {
     this.properties = new Properties();
     addSensorValues(sensorValues, false);
     addSupportingSensorValues(supportingSensorValues);
+    this.type = type;
   }
 
   /**
@@ -264,9 +265,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
         if (incrMemberCount) {
           memberCount++;
-          if (memberCount > 1) {
-            type = INTERPOLATED_TYPE;
-          }
+          type = memberCount == 1 ? MEASURED_TYPE : INTERPOLATED_TYPE;
         }
       }
     }
@@ -414,6 +413,52 @@ public class MeasurementValue implements PlotPageTableValue {
       qcMessage = new HashSet<String>();
     }
     qcMessage.add(message);
+  }
+
+  /**
+   * Manually set the type of this {@link MeasurementValue}.
+   *
+   * @param type
+   *          The new type
+   * @throws MeasurementValueException
+   *           If the type is invalid
+   */
+  public void setType(char type) throws MeasurementValueException {
+
+    boolean ok = true;
+    String errorMessage = null;
+
+    switch (type) {
+    case PlotPageTableValue.MEASURED_TYPE: {
+      if (memberCount > 0 || sensorValueIds.size() > 0) {
+        ok = false;
+        errorMessage = "Cannot set Measured type for multiple members";
+      }
+      break;
+    }
+    case PlotPageTableValue.INTERPOLATED_TYPE: {
+      // This is always allowed
+      break;
+    }
+    case PlotPageTableValue.DATA_REDUCTION_TYPE:
+    case PlotPageTableValue.NAN_TYPE:
+    case PlotPageTableValue.NOMINAL_TYPE: {
+      ok = false;
+      errorMessage = "MeasurementValue type '" + type
+        + "' cannot be set manually";
+    }
+    default: {
+      ok = false;
+      errorMessage = "Unrecognised MeasurementValue type '" + type + "'";
+
+    }
+    }
+
+    if (!ok) {
+      throw new MeasurementValueException(errorMessage);
+    } else {
+      this.type = type;
+    }
   }
 
   @Override

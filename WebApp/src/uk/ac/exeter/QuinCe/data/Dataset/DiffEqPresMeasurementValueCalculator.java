@@ -38,7 +38,7 @@ public class DiffEqPresMeasurementValueCalculator
       return new MeasurementValue(requiredSensorType,
         getSensorValues(allSensorValues, diffEqPress),
         getSensorValues(allSensorValues, pressAtInstrument), finalPressure,
-        diffEqPress.getMemberCount());
+        diffEqPress.getMemberCount(), diffEqPress.getType());
 
     } catch (SensorTypeNotFoundException e) {
       throw new MeasurementValueCalculatorException(
