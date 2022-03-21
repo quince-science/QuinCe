@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 import uk.ac.exeter.QuinCe.utils.CollectionUtils;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 /**
  * The default implementation of {@link MeasurementValueCalculator}.
@@ -93,7 +94,10 @@ public class DefaultMeasurementValueCalculator
       List<SensorValue> valuesToUse = sensorValues.getWithInterpolation(
         valueTime, !coreSensorType.equals(requiredSensorType), true);
 
-      populateMeasurementValue(measurement.getTime(), result, valuesToUse);
+      char valueType = calcValueType(valueTime, valuesToUse);
+
+      populateMeasurementValue(measurement.getTime(), result, valuesToUse,
+        valueType);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Cannot calculate time offset", e);
@@ -136,7 +140,10 @@ public class DefaultMeasurementValueCalculator
       List<SensorValue> valuesToUse = sensorValues
         .getWithInterpolation(positionTime, true, true);
 
-      populateMeasurementValue(measurement.getTime(), result, valuesToUse);
+      char valueType = calcValueType(positionTime, valuesToUse);
+
+      populateMeasurementValue(measurement.getTime(), result, valuesToUse,
+        valueType);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Unable to apply sensor offsets", e);
@@ -145,9 +152,34 @@ public class DefaultMeasurementValueCalculator
     return result;
   }
 
+  private char calcValueType(LocalDateTime usedTime,
+    List<SensorValue> usedValues) {
+    char result;
+
+    if (usedValues.size() == 1
+      && usedValues.get(0).getTime().equals(usedTime)) {
+      result = PlotPageTableValue.MEASURED_TYPE;
+    } else {
+      result = PlotPageTableValue.INTERPOLATED_TYPE;
+    }
+
+    return result;
+  }
+
+  /**
+   * 
+   * @param measurementTime
+   * @param measurementValue
+   * @param valuesToUse
+   * @param preferredType
+   *          The type that the calling function would like to set for the
+   *          MeasurementValue. May be overridden by this method for
+   *          interpolated values.
+   * @throws MeasurementValueCalculatorException
+   */
   private void populateMeasurementValue(LocalDateTime measurementTime,
-    MeasurementValue measurementValue, List<SensorValue> valuesToUse)
-    throws MeasurementValueCalculatorException {
+    MeasurementValue measurementValue, List<SensorValue> valuesToUse,
+    char preferredType) throws MeasurementValueCalculatorException {
     switch (valuesToUse.size()) {
     case 0: {
       // We should not use a value here
@@ -155,19 +187,23 @@ public class DefaultMeasurementValueCalculator
       break;
     }
     case 1: {
-      // If the value is not the same as the measurement time, then it's
-      // been interpolated (usually because it's before or after the time
-      // range of the available sensor values)
-      if (!valuesToUse.get(0).getTime().equals(measurementTime)) {
-        measurementValue.addInterpolatedSensorValue(valuesToUse.get(0), true);
-      } else {
+      /*
+       * For a single value we trust what the provided type tells us (whether
+       * it's measured or interpolated).
+       */
+      if (preferredType == PlotPageTableValue.MEASURED_TYPE) {
         measurementValue.addSensorValue(valuesToUse.get(0));
+      } else {
+        measurementValue.addInterpolatedSensorValue(valuesToUse.get(0), true);
       }
 
       measurementValue.setCalculatedValue(valuesToUse.get(0).getDoubleValue());
       break;
     }
     case 2: {
+      /*
+       * Everything is always interpolated
+       */
       measurementValue.addSensorValues(valuesToUse);
       measurementValue.setCalculatedValue(SensorValue
         .interpolate(valuesToUse.get(0), valuesToUse.get(1), measurementTime));
