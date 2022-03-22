@@ -155,7 +155,8 @@ public class MeasurementValuesSerializer
       Flag flag = gson.fromJson(json.get(FLAG_KEY), Flag.class);
 
       JsonArray qcCommentsElement = json.getAsJsonArray(QC_COMMENT_KEY);
-      List<String> qcComments = new ArrayList<String>(qcCommentsElement.size());
+      ArrayList<String> qcComments = new ArrayList<String>(
+        qcCommentsElement.size());
 
       qcCommentsElement.forEach(e -> qcComments.add(e.getAsString()));
 
