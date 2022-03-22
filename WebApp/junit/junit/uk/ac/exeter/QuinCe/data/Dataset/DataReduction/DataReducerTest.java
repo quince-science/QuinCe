@@ -22,7 +22,7 @@ public class DataReducerTest extends BaseTest {
 
   private static List<Long> emptySensorValueList;
 
-  private static List<String> emptyCommentList;
+  private static ArrayList<String> emptyCommentList;
 
   static {
     singleSensorValueList = new ArrayList<Long>();

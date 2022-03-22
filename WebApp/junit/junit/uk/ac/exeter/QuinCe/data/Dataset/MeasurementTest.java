@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,7 +64,7 @@ public class MeasurementTest extends BaseTest {
       "RunType");
 
     if (null != positionFlag) {
-      List<String> posMessage = new ArrayList<String>(1);
+      ArrayList<String> posMessage = new ArrayList<String>(1);
       posMessage.add(POSITION_MESSAGE);
 
       MeasurementValue longitude = new MeasurementValue(SensorType.LONGITUDE_ID,
