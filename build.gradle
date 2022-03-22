@@ -8,7 +8,7 @@
 
 buildscript {
   repositories {
-    jcenter()
+    mavenCentral()
   }
   dependencies {
     classpath 'org.gretty:gretty:3.0.3'
@@ -40,11 +40,7 @@ gretty {
 }
 
 repositories {
-  // Use jcenter for resolving your dependencies.
-  // You can declare any Maven/Ivy/file repository here.
-
-  // http://jcenter.bintray.com/
-  jcenter()
+  mavenCentral()
 
   // primefaces repo needed for the cupertino theme
   maven {
@@ -263,9 +259,9 @@ tasks.register("migrationCheck") {
 
 jacocoTestReport {
   reports {
-    xml.enabled true
-    xml.destination file("${buildDir}/reports/jacoco/report.xml")
-    csv.enabled false
-    html.enabled false
+    xml.required = true
+    xml.destination = file("${buildDir}/reports/jacoco/report.xml")
+    csv.required = false
+    html.required = false
   }
 }
