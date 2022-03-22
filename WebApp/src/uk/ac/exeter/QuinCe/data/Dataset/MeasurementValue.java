@@ -86,7 +86,7 @@ public class MeasurementValue implements PlotPageTableValue {
    * The QC message for this value, derived from the contributing
    * {@link SensorValues}.
    */
-  private List<String> qcMessage;
+  private ArrayList<String> qcMessage;
 
   /**
    * Miscellaneous properties
@@ -121,7 +121,7 @@ public class MeasurementValue implements PlotPageTableValue {
    */
   public MeasurementValue(long sensorTypeId, List<Long> sensorValueIds,
     List<Long> supportingSensorValueIds, int memberCount,
-    Double calculatedValue, Flag flag, List<String> qcComments,
+    Double calculatedValue, Flag flag, ArrayList<String> qcComments,
     Properties properties) throws SensorTypeNotFoundException {
 
     this.sensorType = ResourceManager.getInstance().getSensorsConfiguration()
@@ -378,7 +378,8 @@ public class MeasurementValue implements PlotPageTableValue {
    */
   public void overrideQC(Flag flag, String message) {
     this.flag = flag;
-    this.qcMessage = Arrays.asList(new String[] { message });
+    this.qcMessage = new ArrayList<String>();
+    this.qcMessage.add(message);
   }
 
   public void addQcMessage(String message) {
