@@ -20,9 +20,9 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * </p>
  *
  * <p>
- * Any attempt to save this to the database using
- * {@link DataSetDataDB#storeDataReduction(java.sql.Connection, List)} will
- * result in an Exception.
+ * Changes to QC flags can be stored using
+ * {@link DataSetDataDB#storeDataReductionQC}. Attempting to store changes to
+ * the actual data values will result in an Exception.
  * </p>
  *
  * @author Steve Jones
@@ -31,15 +31,45 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 public class ReadOnlyDataReductionRecord extends DataReductionRecord {
 
   /**
-   * An extra QC flag that can be used to add extra QC to the record
+   * A QC flag that can be used to override the flag from the original record.
+   * 
+   * <p>
+   * Calling {@link #getQCFlag()} will return this {@link Flag} if it is set,
+   * completely overriding the original QC flag on the record. The normal
+   * precedence of QC flags (where {@link Flag#BAD} supersedes
+   * {@link Flag#GOOD}) does not apply.
+   * </p>
    */
-  private Flag extraQcFlag = null;
+  private Flag overrideQCFlag = null;
 
   /**
-   * Extra QC messages to be added to the record
+   * A set of QC messages that will override those stored in the original
+   * record.
+   * 
+   * <p>
+   * If this list is populated, any QC messages on the original record will be
+   * replaced by these when {@link #getQCMessages()} is called.
+   * </p>
    */
-  private NoEmptyStringList extraQcMessages = null;
+  private NoEmptyStringList overrideQcMessages = null;
 
+  /**
+   * Create a record object with the specified values.
+   * 
+   * @param measurementId
+   *          The measurement's database ID.
+   * @param variableId
+   *          The ID of the variable that that the measurement refers to.
+   * @param calculationValues
+   *          The values calculated during data reduction.
+   * @param qcFlag
+   *          The record's QC flag.
+   * @param qcMessage
+   *          The record's QC message. If the message is a combination of
+   *          multiple messages (separated by {@code ;}) they will be split into
+   *          separate messages.
+   * @return A record object.
+   */
   public static ReadOnlyDataReductionRecord makeRecord(long measurementId,
     long variableId, Map<String, Double> calculationValues, Flag qcFlag,
     String qcMessage) {
@@ -53,6 +83,24 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
     return record;
   }
 
+  /**
+   * Internal constructor for {@link ReadOnlyDataReductionRecord} objects. Use
+   * {@link #makeRecord(long, long, Map, Flag, String)} to create instances of
+   * this class.
+   * 
+   * @param measurementId
+   *          The measurement's database ID.
+   * @param variableId
+   *          The ID of the variable that that the measurement refers to.
+   * @param calculationValues
+   *          The values calculated during data reduction.
+   * @param qcFlag
+   *          The record's QC flag.
+   * @param qcMessage
+   *          The record's QC message. If the message is a combination of
+   *          multiple messages (separated by {@code ;}) they will be split into
+   *          separate messages.
+   */
   private ReadOnlyDataReductionRecord(long measurementId, long variableId,
     List<String> parameterNames, Map<String, Double> calculationValues,
     Flag qcFlag, NoEmptyStringList qcMessages) {
@@ -67,30 +115,31 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
   }
 
   /**
-   * This sets the override QC flag. It does not take into account previous QC
-   * flag values.
+   * Sets the override QC flag and message(s).
+   * 
+   * @see #overrideQCFlag
+   * @see #overrideQcMessages
    */
   @Override
   public void setQc(Flag flag, List<String> messages) {
-    if (null == extraQcFlag || flag.moreSignificantThan(extraQcFlag)) {
-      extraQcFlag = flag;
-      extraQcMessages = new NoEmptyStringList(messages);
-    } else if (null != extraQcFlag && flag.equals(extraQcFlag)) {
-      extraQcMessages.addAll(messages);
+    if (null == overrideQCFlag || flag.moreSignificantThan(overrideQCFlag)) {
+      overrideQCFlag = flag;
+      overrideQcMessages = new NoEmptyStringList(messages);
+    } else if (null != overrideQCFlag && flag.equals(overrideQCFlag)) {
+      overrideQcMessages.addAll(messages);
     }
   }
 
   /**
-   * If the override QC flag is set, then that is returned. Otherwise we return
-   * the original record's flag
+   * Get the QC flag for the record, or the override flag if that is set.
    */
   @Override
   public Flag getQCFlag() {
     Flag result;
 
-    if (null != extraQcFlag
-      && extraQcFlag.moreSignificantThan(super.getQCFlag())) {
-      result = extraQcFlag;
+    if (null != overrideQCFlag
+      && overrideQCFlag.moreSignificantThan(super.getQCFlag())) {
+      result = overrideQCFlag;
     } else {
       result = super.getQCFlag();
     }
@@ -99,19 +148,19 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
   }
 
   /**
-   * If the override QC flag is set, then we return the override messages.
-   * Otherwise we return the original record's messages.
+   * The the QC messages for the record, or the override messages if they are
+   * set.
    */
   @Override
   public List<String> getQCMessages() {
 
     List<String> result = super.getQCMessages();
 
-    if (null != extraQcFlag) {
-      if (extraQcFlag.moreSignificantThan(super.getQCFlag())) {
-        result = extraQcMessages;
-      } else if (extraQcFlag.equals(super.getQCFlag())) {
-        result.addAll(extraQcMessages);
+    if (null != overrideQCFlag) {
+      if (overrideQCFlag.moreSignificantThan(super.getQCFlag())) {
+        result = overrideQcMessages;
+      } else if (overrideQCFlag.equals(super.getQCFlag())) {
+        result.addAll(overrideQcMessages);
       }
     }
 
@@ -125,6 +174,6 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    * @return {@code true} if the record needs saving; {@code false) if not.
    */
   public boolean isDirty() {
-    return null != extraQcFlag;
+    return null != overrideQCFlag;
   }
 }
