@@ -41,12 +41,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * of the tests.
  * </p>
  *
- * <p>
- * Tests for invalid calls to {@link CalibrationBean#getAffectedDatasets()} are
- * provided by this class. Tests for valid calls are provided by
- * {@link GetAffectedDatasetsPriorsRequiredTests}.
- * </p>
- *
  * @author Steve Jones
  *
  */
@@ -72,39 +66,41 @@ public class CalibrationBeanTest extends BaseTest {
    */
   private static final long NON_EXISTENT_CALIBRATION = 2000L;
 
+  /**
+   * Initialise the {@link ResourceManager} anew for each test.
+   */
   @BeforeEach
   public void setup() {
     initResourceManager();
   }
 
+  /**
+   * Destroy the {@link ResourceManager} after each test.
+   */
   @AfterEach
   public void tearDown() {
     ResourceManager.destroy();
   }
 
   /**
-   * Create an initialised bean using a default {@link CalibrationDB} back end.
-   * Use this when the exact back end being used will not affect the outcome of
-   * the test.
+   * Create an initialised bean using a default (unspecified)
+   * {@link CalibrationDB} back end. Use this when the exact back end being used
+   * will not affect the outcome of the test.
    *
    * @return The initialised bean.
    * @throws InstrumentException
+   *           If the instrument is not defined in the test setup.
    * @throws RecordNotFoundException
+   *           If any other required records are missing.
    * @throws DatabaseException
+   *           If any other database error is encountered.
    * @throws MissingParamException
+   *           If any function calls are invalid.
    */
   public static CalibrationBean initBean() throws MissingParamException,
     DatabaseException, RecordNotFoundException, InstrumentException {
     return initBean(ExternalStandardDB.getInstance(), true);
   }
-
-  /**
-   * Create an initialised bean for tests.
-   *
-   * <p>
-   * This method is tested by {@link #initBeanTest()}.
-   * </p>
-   */
 
   /**
    * Create an initialised bean with the specified {@link CalibrationDB}
@@ -114,9 +110,13 @@ public class CalibrationBeanTest extends BaseTest {
    *          The {@link CalibrationDB} instance to use
    * @return The initialised bean
    * @throws InstrumentException
+   *           If the instrument is not defined in the test setup.
    * @throws RecordNotFoundException
+   *           If any other required records are missing.
    * @throws DatabaseException
+   *           If any other database error is encountered.
    * @throws MissingParamException
+   *           If any function calls are invalid.
    */
   public static CalibrationBean initBean(CalibrationDB dbInstance,
     boolean affectFollowingOnly) throws MissingParamException,
@@ -131,6 +131,26 @@ public class CalibrationBeanTest extends BaseTest {
     return bean;
   }
 
+  /**
+   * Create an initialised bean pre-loaded with the specified calibration
+   * details.
+   * 
+   * @param calibrationId
+   *          The calibration's database ID.
+   * @param deploymentDate
+   *          The calibration date.
+   * @param target
+   *          The calibration target.
+   * @return The initialised bean.
+   * @throws InstrumentException
+   *           If the instrument is not defined in the test setup.
+   * @throws RecordNotFoundException
+   *           If any other required records are missing.
+   * @throws DatabaseException
+   *           If any other database error is encountered.
+   * @throws MissingParamException
+   *           If any function calls are invalid.
+   */
   public static CalibrationBean initBean(long calibrationId,
     LocalDateTime deploymentDate, String target) throws RecordNotFoundException,
     MissingParamException, DatabaseException, InstrumentException {
@@ -144,6 +164,35 @@ public class CalibrationBeanTest extends BaseTest {
     return bean;
   }
 
+  /**
+   * Create an initialised bean pre-loaded with the specified
+   * {@link CalibrationDB} back end, pre-loaded with the specified calibration
+   * and with an edit action set.
+   * 
+   * @param dbInstance
+   *          The {@link CalibrationDB} instance to use
+   * @param editAction
+   *          The edit action being performed.
+   * @param calibrationId
+   *          The calibration's database ID.
+   * @param deploymentDate
+   *          The calibration date.
+   * @param target
+   *          The calibration target.
+   * @param affectFollowingOnly
+   *          Indicates whether only datasets following the calibration should
+   *          be affected by the edit, or datasets before and after the
+   *          calibration.
+   * @return The initialised bean.
+   * @throws InstrumentException
+   *           If the instrument is not defined in the test setup.
+   * @throws RecordNotFoundException
+   *           If any other required records are missing.
+   * @throws DatabaseException
+   *           If any other database error is encountered.
+   * @throws MissingParamException
+   *           If any function calls are invalid.
+   */
   public static CalibrationBean initBean(CalibrationDB dbInstance,
     int editAction, long calibrationId, LocalDateTime deploymentDate,
     String target, boolean affectFollowingOnly) throws RecordNotFoundException,
@@ -186,7 +235,7 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that {@link CalibrationBean#getInstrumentId()} works.
+   * {@link CalibrationBean#getInstrumentId()}.
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -201,7 +250,7 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that {@link CalibrationBean#getInstrumentName()} works.
+   * {@link CalibrationBean#getInstrumentName()}
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -216,7 +265,7 @@ public class CalibrationBeanTest extends BaseTest {
   }
 
   /**
-   * Test that {@link CalibrationBean#setInstrumentId(long)} works.
+   * {@link CalibrationBean#setInstrumentId(long)}
    *
    * @throws Exception
    *           If any internal errors are encountered.
@@ -528,14 +577,20 @@ public class CalibrationBeanTest extends BaseTest {
     assertEquals(0, affected.size());
   }
 
+  /**
+   * Test that adding the first calibration for a target between datasets works
+   * and only following datasets are affected (and can be recalculated).
+   * 
+   * @throws Exception
+   *           If any internal errors are encountered.
+   * 
+   */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/datasets_only" })
   @Test
   public void addFirstCalibrationBetweenPriorsNotRequiredTest()
-    throws RecordNotFoundException, InvalidCalibrationTargetException,
-    InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException, InstrumentException {
+    throws Exception {
 
     CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
       CalibrationBean.ADD_ACTION, -1, LocalDateTime.of(2019, 6, 7, 0, 0, 0),
@@ -548,6 +603,12 @@ public class CalibrationBeanTest extends BaseTest {
     assertTrue(affectedDatasetMatches(affected, "B", true));
   }
 
+  /**
+   * Test deleting the only calibration when prior calibrations are required.
+   * 
+   * @throws Exception
+   *           If an internal error occurs
+   */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/priorsRequiredSingleCalibrationSingleDataset" })
@@ -567,14 +628,18 @@ public class CalibrationBeanTest extends BaseTest {
     assertTrue(affectedDatasetMatches(affected, "A", false));
   }
 
+  /**
+   * Test deleting the only calibration when prior calibrations are not
+   * required.
+   * 
+   * @throws Exception
+   *           If an internal error occurs
+   */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/priorsNotRequiredSingleCalibrationSingleDataset" })
   @Test
-  public void deleteOnlyCalibrationPriorsNotRequiredTest()
-    throws RecordNotFoundException, InvalidCalibrationTargetException,
-    InvalidCalibrationDateException, MissingParamException,
-    InvalidCalibrationEditException, DatabaseException, InstrumentException {
+  public void deleteOnlyCalibrationPriorsNotRequiredTest() throws Exception {
 
     CalibrationBean bean = initBean(SensorCalibrationDB.getInstance(),
       CalibrationBean.DELETE_ACTION, 1001, null, null, true);
@@ -605,7 +670,22 @@ public class CalibrationBeanTest extends BaseTest {
     return result;
   }
 
-  public static boolean affectedDatasetMatches(
+  /**
+   * Test whether or not the named dataset is present in the specified
+   * collection of affected datasets, and that the {@code canBeReprocessed} flag
+   * matches the specified value.
+   * 
+   * @param affectedDatasets
+   *          The affected datasets from a
+   *          {@link CalibrationBean#getAffectedDatasets()} call.
+   * @param name
+   *          The expected dataset name
+   * @param canBeReprocessed
+   *          The expected "Can be reprocessed" flag value.
+   * @return {@code true} if the dataset name an "Can be reprocessed" flag match
+   *         the specified values; {@code false} otherwise.
+   */
+  private static boolean affectedDatasetMatches(
     Map<String, Boolean> affectedDatasets, String name,
     boolean canBeReprocessed) {
 

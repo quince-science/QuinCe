@@ -20,6 +20,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Tests that check the ability of flags set on Position values to be propagated
@@ -39,11 +40,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
  * </p>
  *
  * <table>
- * <th>
- * <td>Time</td>
- * <td>Position</td>
- * <td>Sensor Value</td>
- * <th>
+ * <caption>Presence of positions and sensor values</caption>
+ * <tr>
+ * <td><b>Time</b></td>
+ * <td><b>Position</b></td>
+ * <td><b>Sensor Value</b></td>
+ * </tr>
  * <tr>
  * <td>T1</td>
  * <td>P1</td>
@@ -71,6 +73,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
  * will selectively remove position values P2 and/or P3 and observe how flags
  * are propagated to the {@link SensorValue}s.
  * </p>
+ * 
+ * <p>
+ * All times in the dataset are within the same minute, so times are specified
+ * purely by a seconds values.
+ * </p>
  *
  * @author Steve Jones
  *
@@ -80,10 +87,30 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 @TestInstance(Lifecycle.PER_CLASS)
 public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
 
+  /**
+   * Create a {@link LocalDateTime} object for the dataset with the specified
+   * seconds value.
+   * 
+   * <p>
+   * All times in the test dataset are within the same minute so this is
+   * sufficient for all tests.
+   * </p>
+   * 
+   * @param second
+   *          The seconds value.
+   * @return The {@link LocalDateTime} object.
+   */
   private LocalDateTime makeTime(int second) {
     return LocalDateTime.of(2000, 1, 1, 0, 0, second);
   }
 
+  /**
+   * Create the {@link SensorValue}s for the test dataset.
+   * 
+   * @return The {@link SensorValue}s.
+   * @throws Exception
+   *           If an internal error occurs.
+   */
   private DatasetSensorValues makeSensorValues() throws Exception {
     Instrument instrument = InstrumentDB.getInstrument(getDataSource(), 1);
 
@@ -101,6 +128,34 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
     return result;
   }
 
+  /**
+   * Create the longitude {@link SensorValue}s for the test dataset.
+   * 
+   * <p>
+   * The second and third longitudes can be included or not using the
+   * {@code include2} and {@code include3} parameters. There is an assumption
+   * that if {@code include3} is {@code true} then so is {@code include2}, but
+   * it is not enforced. The method's behaviour and results of related tests is
+   * undefined in this case.
+   * </p>
+   * 
+   * <p>
+   * The three longitude values provided by this method are:
+   * <ol start="0">
+   * <li>999 (invalid)</li>
+   * <li>0</li>
+   * <li>0</li>
+   * </ol>
+   * </p>
+   * 
+   * @param include2
+   *          Indicates whether or not the second longitude should be included
+   *          in the result.
+   * @param include3
+   *          Indicates whether or not the third longitude should be included in
+   *          the result. Assumes that {@code include2} is {@code true}.
+   * @return The longitudes {@link SensorValue}s.
+   */
   private List<SensorValue> makeLons(boolean include2, boolean include3) {
 
     List<SensorValue> result = new ArrayList<SensorValue>(3);
@@ -121,6 +176,34 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
     return result;
   }
 
+  /**
+   * Create the latitude {@link SensorValue}s for the test dataset.
+   * 
+   * <p>
+   * The second and third latitudes can be included or not using the
+   * {@code include2} and {@code include3} parameters. There is an assumption
+   * that if {@code include3} is {@code true} then so is {@code include2}, but
+   * it is not enforced. The method's behaviour and results of related tests is
+   * undefined in this case.
+   * </p>
+   * 
+   * <p>
+   * The three latitude values provided by this method are:
+   * <ol start="0">
+   * <li>999 (invalid)</li>
+   * <li>0</li>
+   * <li>0</li>
+   * </ol>
+   * </p>
+   * 
+   * @param include2
+   *          Indicates whether or not the second latitude should be included in
+   *          the result.
+   * @param include3
+   *          Indicates whether or not the third latitude should be included in
+   *          the result. Assumes that {@code include2} is {@code true}.
+   * @return The latitudes {@link SensorValue}s.
+   */
   private List<SensorValue> makeLats(boolean include2, boolean include3) {
 
     List<SensorValue> result = new ArrayList<SensorValue>(3);
@@ -138,20 +221,39 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
     return result;
   }
 
+  @Override
   protected List<Long> makeDataColumnIds() {
     return Arrays.asList(new Long[] { 1L });
   }
 
+  /**
+   * Get the QC flag for the {@link SensorValue} at the specified time.
+   * 
+   * @param sensorValues
+   *          The complete set of {@link SensorValue}s.
+   * @param second
+   *          The second of the target {@link SensorValue}'s time.
+   * @return The value's QC flag.
+   */
   private Flag getSensorValueFlag(DatasetSensorValues sensorValues,
     int second) {
     return sensorValues.get(makeTime(second)).get(1L).getUserQCFlag();
   }
 
+  /**
+   * Initialise the {@link ResourceManager}.
+   */
   @BeforeEach
   public void init() {
     initResourceManager();
   }
 
+  /**
+   * Test the propagated QC flags when all positions are defined.
+   * 
+   * @throws Exception
+   *           If an internal error occurs.
+   */
   @Test
   public void allPositionsTest() throws Exception {
 
@@ -169,6 +271,12 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
     assertEquals(Flag.ASSUMED_GOOD, getSensorValueFlag(sensorValues, 4));
   }
 
+  /**
+   * Test the propagated QC flags when only the first (bad) position is defined.
+   * 
+   * @throws Exception
+   *           If an internal error occurs.
+   */
   @Test
   public void onlyFirstPositionTest() throws Exception {
 
@@ -186,6 +294,12 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
     assertEquals(Flag.BAD, getSensorValueFlag(sensorValues, 4));
   }
 
+  /**
+   * Test the propagated QC flags when only the first two positions are defined.
+   * 
+   * @throws Exception
+   *           If an internal error occurs.
+   */
   @Test
   public void twoPositionsTest() throws Exception {
 
