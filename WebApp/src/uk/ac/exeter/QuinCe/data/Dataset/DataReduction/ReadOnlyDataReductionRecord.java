@@ -32,7 +32,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
 
   /**
    * A QC flag that can be used to override the flag from the original record.
-   * 
+   *
    * <p>
    * Calling {@link #getQCFlag()} will return this {@link Flag} if it is set,
    * completely overriding the original QC flag on the record. The normal
@@ -45,7 +45,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
   /**
    * A set of QC messages that will override those stored in the original
    * record.
-   * 
+   *
    * <p>
    * If this list is populated, any QC messages on the original record will be
    * replaced by these when {@link #getQCMessages()} is called.
@@ -55,7 +55,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
 
   /**
    * Create a record object with the specified values.
-   * 
+   *
    * @param measurementId
    *          The measurement's database ID.
    * @param variableId
@@ -87,7 +87,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    * Internal constructor for {@link ReadOnlyDataReductionRecord} objects. Use
    * {@link #makeRecord(long, long, Map, Flag, String)} to create instances of
    * this class.
-   * 
+   *
    * @param measurementId
    *          The measurement's database ID.
    * @param variableId
@@ -116,7 +116,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
 
   /**
    * Sets the override QC flag and message(s).
-   * 
+   *
    * @see #overrideQCFlag
    * @see #overrideQcMessages
    */
