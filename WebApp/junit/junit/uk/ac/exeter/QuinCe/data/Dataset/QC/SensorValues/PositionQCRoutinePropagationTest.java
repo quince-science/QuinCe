@@ -73,7 +73,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * will selectively remove position values P2 and/or P3 and observe how flags
  * are propagated to the {@link SensorValue}s.
  * </p>
- * 
+ *
  * <p>
  * All times in the dataset are within the same minute, so times are specified
  * purely by a seconds values.
@@ -90,12 +90,12 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
   /**
    * Create a {@link LocalDateTime} object for the dataset with the specified
    * seconds value.
-   * 
+   *
    * <p>
    * All times in the test dataset are within the same minute so this is
    * sufficient for all tests.
    * </p>
-   * 
+   *
    * @param second
    *          The seconds value.
    * @return The {@link LocalDateTime} object.
@@ -106,7 +106,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
 
   /**
    * Create the {@link SensorValue}s for the test dataset.
-   * 
+   *
    * @return The {@link SensorValue}s.
    * @throws Exception
    *           If an internal error occurs.
@@ -130,7 +130,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
 
   /**
    * Create the longitude {@link SensorValue}s for the test dataset.
-   * 
+   *
    * <p>
    * The second and third longitudes can be included or not using the
    * {@code include2} and {@code include3} parameters. There is an assumption
@@ -138,7 +138,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
    * it is not enforced. The method's behaviour and results of related tests is
    * undefined in this case.
    * </p>
-   * 
+   *
    * <p>
    * The three longitude values provided by this method are:
    * <ol start="0">
@@ -147,7 +147,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
    * <li>0</li>
    * </ol>
    * </p>
-   * 
+   *
    * @param include2
    *          Indicates whether or not the second longitude should be included
    *          in the result.
@@ -178,7 +178,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
 
   /**
    * Create the latitude {@link SensorValue}s for the test dataset.
-   * 
+   *
    * <p>
    * The second and third latitudes can be included or not using the
    * {@code include2} and {@code include3} parameters. There is an assumption
@@ -186,7 +186,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
    * it is not enforced. The method's behaviour and results of related tests is
    * undefined in this case.
    * </p>
-   * 
+   *
    * <p>
    * The three latitude values provided by this method are:
    * <ol start="0">
@@ -195,7 +195,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
    * <li>0</li>
    * </ol>
    * </p>
-   * 
+   *
    * @param include2
    *          Indicates whether or not the second latitude should be included in
    *          the result.
@@ -228,7 +228,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
 
   /**
    * Get the QC flag for the {@link SensorValue} at the specified time.
-   * 
+   *
    * @param sensorValues
    *          The complete set of {@link SensorValue}s.
    * @param second
@@ -250,7 +250,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
 
   /**
    * Test the propagated QC flags when all positions are defined.
-   * 
+   *
    * @throws Exception
    *           If an internal error occurs.
    */
@@ -273,7 +273,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
 
   /**
    * Test the propagated QC flags when only the first (bad) position is defined.
-   * 
+   *
    * @throws Exception
    *           If an internal error occurs.
    */
@@ -296,7 +296,7 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
 
   /**
    * Test the propagated QC flags when only the first two positions are defined.
-   * 
+   *
    * @throws Exception
    *           If an internal error occurs.
    */
