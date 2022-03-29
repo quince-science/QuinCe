@@ -134,7 +134,7 @@ public class CalibrationBeanTest extends BaseTest {
   /**
    * Create an initialised bean pre-loaded with the specified calibration
    * details.
-   * 
+   *
    * @param calibrationId
    *          The calibration's database ID.
    * @param deploymentDate
@@ -168,7 +168,7 @@ public class CalibrationBeanTest extends BaseTest {
    * Create an initialised bean pre-loaded with the specified
    * {@link CalibrationDB} back end, pre-loaded with the specified calibration
    * and with an edit action set.
-   * 
+   *
    * @param dbInstance
    *          The {@link CalibrationDB} instance to use
    * @param editAction
@@ -580,10 +580,10 @@ public class CalibrationBeanTest extends BaseTest {
   /**
    * Test that adding the first calibration for a target between datasets works
    * and only following datasets are affected (and can be recalculated).
-   * 
+   *
    * @throws Exception
    *           If any internal errors are encountered.
-   * 
+   *
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
@@ -605,7 +605,7 @@ public class CalibrationBeanTest extends BaseTest {
 
   /**
    * Test deleting the only calibration when prior calibrations are required.
-   * 
+   *
    * @throws Exception
    *           If an internal error occurs
    */
@@ -631,7 +631,7 @@ public class CalibrationBeanTest extends BaseTest {
   /**
    * Test deleting the only calibration when prior calibrations are not
    * required.
-   * 
+   *
    * @throws Exception
    *           If an internal error occurs
    */
@@ -674,7 +674,7 @@ public class CalibrationBeanTest extends BaseTest {
    * Test whether or not the named dataset is present in the specified
    * collection of affected datasets, and that the {@code canBeReprocessed} flag
    * matches the specified value.
-   * 
+   *
    * @param affectedDatasets
    *          The affected datasets from a
    *          {@link CalibrationBean#getAffectedDatasets()} call.
