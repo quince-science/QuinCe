@@ -3,6 +3,7 @@ package junit.uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -22,7 +23,7 @@ public class DataReducerTest extends BaseTest {
 
   private static List<Long> emptySensorValueList;
 
-  private static ArrayList<String> emptyCommentList;
+  private static HashSet<String> emptyCommentList;
 
   static {
     singleSensorValueList = new ArrayList<Long>();
@@ -30,7 +31,7 @@ public class DataReducerTest extends BaseTest {
 
     emptySensorValueList = new ArrayList<Long>();
 
-    emptyCommentList = new ArrayList<String>();
+    emptyCommentList = new HashSet<String>();
   }
 
   @BeforeEach

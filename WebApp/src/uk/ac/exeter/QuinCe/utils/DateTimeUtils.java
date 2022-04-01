@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 
@@ -179,5 +181,29 @@ public class DateTimeUtils {
 
   public static boolean overlap(DataSet ds1, DataSet ds2) {
     return overlap(ds1.getStart(), ds1.getEnd(), ds2.getStart(), ds2.getEnd());
+  }
+
+  /**
+   * Return the mean time from a {@link Stream} of {@link LocalDateTime}s.
+   *
+   * <p>
+   * Null values are ignored.
+   * </p>
+   *
+   * <p>
+   * This utilises a <a href=
+   * "https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/package-summary.html#StreamOps">terminal
+   * operation</a>, so the {@link Stream} cannot be used after this call.
+   * </p>
+   *
+   * @param times
+   *          The times to be averaged.
+   * @return The mean time.
+   */
+  public static LocalDateTime meanTime(Stream<LocalDateTime> times) {
+    OptionalDouble mean = times.filter(t -> null != t)
+      .map(DateTimeUtils::dateToLong).mapToLong(Long::valueOf).average();
+
+    return longToDate(Double.valueOf(mean.getAsDouble()).longValue());
   }
 }

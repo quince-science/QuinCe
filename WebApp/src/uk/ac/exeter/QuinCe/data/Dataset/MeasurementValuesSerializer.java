@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -155,7 +156,7 @@ public class MeasurementValuesSerializer
       Flag flag = gson.fromJson(json.get(FLAG_KEY), Flag.class);
 
       JsonArray qcCommentsElement = json.getAsJsonArray(QC_COMMENT_KEY);
-      ArrayList<String> qcComments = new ArrayList<String>(
+      HashSet<String> qcComments = new HashSet<String>(
         qcCommentsElement.size());
 
       qcCommentsElement.forEach(e -> qcComments.add(e.getAsString()));
