@@ -3,12 +3,14 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
@@ -18,8 +20,9 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
-import uk.ac.exeter.QuinCe.utils.CollectionUtils;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -35,6 +38,14 @@ public class DefaultMeasurementValueCalculator
   extends MeasurementValueCalculator {
 
   public static final String STANDARDS_COUNT_PROPERTY = "stdcount";
+
+  private static final int PRIOR = -1;
+
+  private static final int POST = 1;
+
+  private static final double MAXIMUM_OFFSET = 4D;
+
+  private static final double MAXIMUM_STDEV = 1D;
 
   // TODO Need limits on how far interpolation goes before giving up.
 
@@ -135,105 +146,79 @@ public class DefaultMeasurementValueCalculator
         CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
           .getMostRecentCalibrations(conn, instrument, measurement.getTime());
 
-        value.setProperty(STANDARDS_COUNT_PROPERTY,
-          String.valueOf(calibrationSet.size()));
+        // Get the calibration offset for the standard run prior to the
+        // measurement
+        CalibrationOffset prior = getCalibrationOffset(PRIOR, calibrationSet,
+          allMeasurements, sensorValues, sensorType, measurement.getTime(),
+          value);
 
-        // Get the standards closest to the measured value, with their
-        // concentrations.
-        Map<String, Double> closestStandards = calibrationSet
-          .getClosestStandards(sensorType, value.getCalculatedValue());
+        // Get the calibration offset for the standard run after the measurement
+        CalibrationOffset post = getCalibrationOffset(POST, calibrationSet,
+          allMeasurements, sensorValues, sensorType, measurement.getTime(),
+          value);
 
-        if (closestStandards.size() > 0) {
-          // For each external standard target, calculate the offset from the
-          // external standard at the measurement time.
-          //
-          // We get the offset at the prior and post measurements of that
-          // standard,
-          // and then interpolate to get the offset at the measurement time.
-          Map<String, Double> standardOffsets = new HashMap<String, Double>();
+        // The QC messages generated during calibration.
+        // If any messages are added here, the value will be flagged as BAD.
+        HashSet<String> qcMessages = new HashSet<String>();
 
-          for (Map.Entry<String, Double> standard : closestStandards
-            .entrySet()) {
-            String target = standard.getKey();
-            double standardConcentration = standard.getValue();
+        if (!prior.isValid() && !post.isValid()) {
+          // No standards found anywhere. No offset and a big ol' red flag.
+          qcMessages.add("No external standards found for measurement");
 
-            List<SensorValue> priorCalibrationValues = getPriorCalibrationValues(
-              measurement.getTime(), allMeasurements, target, sensorValues);
+        } else if (prior.isValid() && !post.isValid()) {
 
-            List<SensorValue> postCalibrationValues = getPostCalibrationValues(
-              measurement.getTime(), allMeasurements, target, sensorValues);
+          // We only found a calibration run after the measurement, so use that
+          // without any interpolation.
+          applyOffset(value, post.getOffset());
 
-            LocalDateTime priorTime = null;
-            Double priorOffset = null;
+          value.addSupportingSensorValues(post.getUsedValues());
 
-            if (priorCalibrationValues.size() > 0) {
-              priorTime = SensorValue.getMeanTime(priorCalibrationValues,
-                false);
-              priorOffset = SensorValue.getMeanValue(priorCalibrationValues)
-                - standardConcentration;
-              value.addSupportingSensorValues(priorCalibrationValues);
-            }
+          qcMessages
+            .add("No available external standards run after measurement");
+          if (post.isBad()) {
+            qcMessages.addAll(post.getComments());
+          }
+        } else if (!prior.isValid() && post.isValid()) {
 
-            LocalDateTime postTime = null;
-            Double postOffset = null;
+          // We only found a calibration run before the measurement, so use that
+          // without any interpolation.
+          applyOffset(value, prior.getOffset());
 
-            if (postCalibrationValues.size() > 0) {
-              postTime = SensorValue.getMeanTime(postCalibrationValues, false);
-              postOffset = SensorValue.getMeanValue(postCalibrationValues)
-                - standardConcentration;
-              value.addSupportingSensorValues(postCalibrationValues);
-            }
+          value.addSupportingSensorValues(prior.getUsedValues());
 
-            Double interpolated = Calculators.interpolate(priorTime,
-              priorOffset, postTime, postOffset, measurement.getTime());
-
-            if (null == interpolated) {
-              interpolated = Double.NaN;
-            }
-
-            standardOffsets.put(target, interpolated);
+          qcMessages
+            .add("No available external standards run before measurement");
+          if (prior.isBad()) {
+            qcMessages.addAll(post.getComments());
           }
 
-          // Remove any NaN values - there are no calibration data for those.
-          Map<String, Double> filteredOffsets = CollectionUtils
-            .removeNans(standardOffsets);
+        } else {
 
-          // If all the standards are for the concentration (which happens for
-          // moisture in gas standards because they're all 100% dry) then we'll
-          // only get one offset. But that's fine because the offset in the
-          // sensors will measure the same regardless of which standard we're
-          // using.
-          if (filteredOffsets.size() == 0) {
-            // If we get no standards, keep the original (uncalibrated) value
-            // but flag it Bad.
-            value.overrideQC(Flag.BAD, "No calibration records available");
-          } else if (filteredOffsets.size() == 1) {
-            Double offset = filteredOffsets.values().iterator().next();
-            value.setCalculatedValue(value.getCalculatedValue() - offset);
-          } else {
+          // We have valid calibrations either side. Get their offsets, and
+          // interpolated to the time of the measured value.
+          double offset = Calculators.interpolate(prior.getTime(),
+            prior.getOffset(), post.getTime(), post.getOffset(),
+            measurement.getTime());
 
-            // Make a regression of the offsets to calculate the offset at the
-            // measurement time
-            SimpleRegression regression = new SimpleRegression(true);
-            for (String target : filteredOffsets.keySet()) {
-              regression.addData(
-                calibrationSet.getCalibrationValue(target,
-                  value.getSensorType().getShortName()),
-                filteredOffsets.get(target));
-            }
+          applyOffset(value, offset);
 
-            double calibrationOffset = regression
-              .predict(value.getCalculatedValue());
+          value.addSupportingSensorValues(prior.getUsedValues());
+          value.addSupportingSensorValues(post.getUsedValues());
 
-            // Now apply the offset to the measured value.
-            // TODO #732/#410 Add excessive calibration adjustment check to this
-            // method - it will set the flag on the MeasurementValue. Needs to
-            // be
-            // defined per sensor type.
-            value.setCalculatedValue(
-              value.getCalculatedValue() - calibrationOffset);
+          if (prior.isBad()) {
+            qcMessages.addAll(prior.getComments());
+          }
+          if (post.isBad()) {
+            qcMessages.addAll(post.getComments());
           }
         }
+
+        // If any QC messages have been recorded, add them to the value and flag
+        // it.
+        if (qcMessages.size() > 0) {
+          value.overrideQC(Flag.BAD, qcMessages);
+        }
+
       } catch (Exception e) {
         throw new MeasurementValueCalculatorException(
           "Error while calculating calibrated value", e);
@@ -241,149 +226,200 @@ public class DefaultMeasurementValueCalculator
     }
   }
 
-  /**
-   * Get the closest GOOD calibration value before a given time.
-   *
-   * @param startTime
-   *          The start time.
-   * @param measurements
-   *          The list of measurements from which to select are value. Assumed
-   *          to be correct for the desired calibration target.
-   * @param sensorValues
-   *          The list of sensor values for the desired data column.
-   * @return The SensorValue for the calibration measurement.
-   */
-  private List<SensorValue> getPriorCalibrationValues(LocalDateTime startTime,
-    DatasetMeasurements allMeasurements, String target,
-    SearchableSensorValuesList sensorValues) {
+  private CalibrationOffset getCalibrationOffset(int direction,
+    CalibrationSet calibrationSet, DatasetMeasurements allMeasurements,
+    SearchableSensorValuesList sensorValues, SensorType sensorType,
+    LocalDateTime measurementTime, MeasurementValue value)
+    throws RecordNotFoundException {
 
-    List<SensorValue> result = new ArrayList<SensorValue>();
+    CalibrationOffset result = new CalibrationOffset();
 
-    // Work out where we're starting in the list of measurements for the target
-    // standard.
-    // The result of this search should be negative because our base measurement
-    // will not be in the calibration run type. But we handle the case where
-    // it's positive just in case. (See documentation for binarySearch.)
+    SimpleRegression regression = new SimpleRegression();
 
-    List<Measurement> targetMeasurements = allMeasurements
-      .getMeasurements(Measurement.GENERIC_RUN_TYPE_VARIABLE, target);
+    // Loop through each calibration target
+    for (String runType : calibrationSet.getTargets().keySet()) {
 
-    if (null != targetMeasurements) {
-      int startPoint = Collections.binarySearch(targetMeasurements,
-        Measurement.dummyTimeMeasurement(startTime),
-        Measurement.TIME_COMPARATOR);
+      // Get the measurements for the closest run
+      TreeSet<Measurement> runTypeMeasurements;
 
-      if (startPoint >= 0) {
-        startPoint--;
+      if (direction == PRIOR) {
+        runTypeMeasurements = allMeasurements.getRunBefore(
+          Measurement.GENERIC_RUN_TYPE_VARIABLE, runType, measurementTime);
       } else {
-        startPoint = (startPoint * -1) - 2;
+        runTypeMeasurements = allMeasurements.getRunAfter(
+          Measurement.GENERIC_RUN_TYPE_VARIABLE, runType, measurementTime);
       }
 
-      // If the start point is still negative, then there will be no prior
-      // calibrations
-      if (startPoint >= 0) {
-        int searchPoint = startPoint;
-        while (searchPoint >= 0) {
-          LocalDateTime testTime = targetMeasurements.get(searchPoint)
-            .getTime();
-          SensorValue testValue = sensorValues.get(testTime);
-          if (null != testValue && testValue.getUserQCFlag().isGood()) {
-            result.add(testValue);
-            break;
-          }
+      /*
+       * Get the mean sensor value for these calibration measurements, filtering
+       * out any bad ones.
+       */
+      List<SensorValue> runSensorValues = runTypeMeasurements.stream()
+        .map(m -> sensorValues.get(m.getTime()))
+        .filter(v -> v.getUserQCFlag().isGood())
+        .filter(v -> !v.getDoubleValue().isNaN()).collect(Collectors.toList());
 
-          searchPoint--;
+      Mean mean = new Mean();
+      StandardDeviation stdev = new StandardDeviation();
+
+      runSensorValues.stream().map(v -> v.getDoubleValue()).forEach(d -> {
+        mean.increment(d);
+        stdev.increment(d);
+      });
+
+      // If there are values from the run...
+      if (!Double.isNaN(mean.getResult())) {
+
+        result.addUsedSensorValues(runSensorValues);
+
+        double standardConcentration = calibrationSet
+          .getCalibrationValue(runType, sensorType.getShortName());
+
+        double offset = mean.getResult() - standardConcentration;
+
+        regression.addData(standardConcentration, offset);
+
+        if (Math.abs(offset) > MAXIMUM_OFFSET) {
+          result.addComment("Offset to " + runType + " is too large");
         }
-
-        // Now we've found the closest measurement, find others from the same
-        // run
-        // type sequence.
-        TreeSet<Measurement> runMeasurements = allMeasurements
-          .getMeasurementsInSameRun(Measurement.GENERIC_RUN_TYPE_VARIABLE,
-            targetMeasurements.get(startPoint));
-
-        for (Measurement measurement : runMeasurements) {
-          SensorValue valueCandidate = sensorValues.get(measurement.getTime());
-          if (null != valueCandidate
-            && valueCandidate.getUserQCFlag().isGood()) {
-            result.add(valueCandidate);
-          }
+        if (stdev.getResult() > MAXIMUM_STDEV) {
+          result.addComment("Variance of " + runType + " is too large");
         }
       }
+    }
+
+    if (regression.getN() < 2) {
+      result.addComment("Not enough gas standards available");
+    } else {
+      result.setOffset(regression.predict(value.getCalculatedValue()));
     }
 
     return result;
   }
 
+  private void applyOffset(MeasurementValue value, Double offset) {
+    if (!offset.isNaN()) {
+      value.setCalculatedValue(value.getCalculatedValue() - offset);
+    }
+  }
+
   /**
-   * Get the closest GOOD calibration value after a given time.
+   * Inner class to hold the results of calculating the offset for a given value
+   * from a set of gas standard runs.
    *
-   * @param startTime
-   *          The start time.
-   * @param measurements
-   *          The list of measurements from which to select are value. Assumed
-   *          to be correct for the desired calibration target.
-   * @param sensorValues
-   *          The list of sensor values for the desired data column.
-   * @return The SensorValue for the calibration measurement.
+   * @author Steve Jones
+   *
    */
-  private List<SensorValue> getPostCalibrationValues(LocalDateTime startTime,
-    DatasetMeasurements allMeasurements, String target,
-    SearchableSensorValuesList sensorValues) {
+  class CalibrationOffset {
 
-    List<SensorValue> result = new ArrayList<SensorValue>();
+    /**
+     * The {@link SensorValue}s used in the calculation of this calibration.
+     */
+    private HashSet<SensorValue> usedValues;
 
-    // Work out where we're starting in the list of measurements for the target
-    // standard.
-    // The result of this search should be negative because our base measurement
-    // will not be in the calibration run type. But we handle the case where
-    // it's positive just in case. (See documentation for binarySearch.)
+    /**
+     * The calculated offset from the gas standards.
+     */
+    private Double offset;
 
-    List<Measurement> targetMeasurements = allMeasurements
-      .getMeasurements(Measurement.GENERIC_RUN_TYPE_VARIABLE, target);
+    /**
+     * Comment for this calibration. Setting a comment implies that the
+     * calibration is bad.
+     */
+    private List<String> comments;
 
-    if (null != targetMeasurements) {
-      int startPoint = Collections.binarySearch(targetMeasurements,
-        Measurement.dummyTimeMeasurement(startTime),
-        Measurement.TIME_COMPARATOR);
-
-      if (startPoint >= 0) {
-        startPoint++;
-      } else {
-        startPoint = (startPoint * -1) - 1;
-      }
-
-      if (startPoint < targetMeasurements.size()) {
-        int searchPoint = startPoint;
-        while (searchPoint >= 0 && searchPoint < targetMeasurements.size()) {
-          LocalDateTime testTime = targetMeasurements.get(searchPoint)
-            .getTime();
-          SensorValue testValue = sensorValues.get(testTime);
-          if (null != testValue && testValue.getUserQCFlag().isGood()) {
-            result.add(testValue);
-            break;
-          }
-
-          searchPoint--;
-        }
-
-        // Now we've found the closest measurement, find others from the same
-        // run
-        // type sequence.
-        TreeSet<Measurement> runMeasurements = allMeasurements
-          .getMeasurementsInSameRun(Measurement.GENERIC_RUN_TYPE_VARIABLE,
-            targetMeasurements.get(startPoint));
-
-        for (Measurement measurement : runMeasurements) {
-          SensorValue valueCandidate = sensorValues.get(measurement.getTime());
-          if (null != valueCandidate
-            && valueCandidate.getUserQCFlag().isGood()) {
-            result.add(valueCandidate);
-          }
-        }
-      }
+    /**
+     * Initialise with no used values, invalid offset and no comments.
+     */
+    protected CalibrationOffset() {
+      this.usedValues = new HashSet<SensorValue>();
+      this.offset = Double.NaN;
+      this.comments = new ArrayList<String>();
     }
 
-    return result;
+    /**
+     * Get the calculated offset,
+     *
+     * @return The offset of the measured value at the time specified by
+     *         {@link #time}.
+     */
+    protected Double getOffset() {
+      return offset;
+    }
+
+    /**
+     * Indicates whether or not this calibration can be used.
+     *
+     * @return {@code true} if the calibration can be used to calibrate a
+     *         measurement; {@code false} if not.
+     */
+    protected boolean isValid() {
+      return !offset.isNaN();
+    }
+
+    /**
+     * Get the QC flag set for this calibration.
+     *
+     * @return The QC flag.
+     */
+    protected boolean isBad() {
+      return !comments.isEmpty();
+    }
+
+    /**
+     * Get the QC comment for this calibration.
+     *
+     * @return The QC comment.
+     */
+    protected List<String> getComments() {
+      return comments;
+    }
+
+    /**
+     * Get the {@link SensorValue} objects used to calculate this calibration.
+     *
+     * @return The used {@link SensorValue}s.
+     */
+    protected HashSet<SensorValue> getUsedValues() {
+      return usedValues;
+    }
+
+    /**
+     * Get the time for this calibration.
+     *
+     * <p>
+     * The time is calculated as the mean time of all the {@link SensorValue}s
+     * used in the calibration.
+     * </p>
+     *
+     * @return The calculated calibration time.
+     */
+    protected LocalDateTime getTime() {
+      return DateTimeUtils.meanTime(usedValues.stream().map(v -> v.getTime()));
+    }
+
+    /**
+     * Add a collection of {@link SensorValue}s.
+     *
+     * @param values
+     *          The {@link SensorValue}s.
+     */
+    protected void addUsedSensorValues(Collection<SensorValue> values) {
+      usedValues.addAll(values);
+    }
+
+    /**
+     * Add a comment to the offset QC information.
+     *
+     * @param comment
+     *          The comment.
+     */
+    protected void addComment(String comment) {
+      comments.add(comment);
+    }
+
+    protected void setOffset(double offset) {
+      this.offset = offset;
+    }
   }
 }

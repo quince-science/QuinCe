@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,7 +64,7 @@ public class MeasurementTest extends BaseTest {
       "RunType");
 
     if (null != positionFlag) {
-      ArrayList<String> posMessage = new ArrayList<String>(1);
+      HashSet<String> posMessage = new HashSet<String>(1);
       posMessage.add(POSITION_MESSAGE);
 
       MeasurementValue longitude = new MeasurementValue(SensorType.LONGITUDE_ID,
@@ -79,7 +79,7 @@ public class MeasurementTest extends BaseTest {
       result.setMeasurementValue(latitude);
     }
 
-    ArrayList<String> sensorMessage = new ArrayList<String>(1);
+    HashSet<String> sensorMessage = new HashSet<String>(1);
     sensorMessage.add(SENSOR_MESSAGE);
 
     MeasurementValue other = new MeasurementValue(intakeTemperature().getId(),

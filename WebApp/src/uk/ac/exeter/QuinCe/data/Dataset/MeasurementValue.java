@@ -1,10 +1,11 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -86,7 +87,7 @@ public class MeasurementValue implements PlotPageTableValue {
    * The QC message for this value, derived from the contributing
    * {@link SensorValues}.
    */
-  private ArrayList<String> qcMessage;
+  private HashSet<String> qcMessage;
 
   /**
    * Miscellaneous properties
@@ -103,7 +104,7 @@ public class MeasurementValue implements PlotPageTableValue {
     this.sensorType = sensorType;
     this.sensorValueIds = new ArrayList<Long>();
     this.supportingSensorValueIds = new ArrayList<Long>();
-    this.qcMessage = new ArrayList<String>();
+    this.qcMessage = new HashSet<String>();
     this.properties = new Properties();
   }
 
@@ -121,7 +122,7 @@ public class MeasurementValue implements PlotPageTableValue {
    */
   public MeasurementValue(long sensorTypeId, List<Long> sensorValueIds,
     List<Long> supportingSensorValueIds, int memberCount,
-    Double calculatedValue, Flag flag, ArrayList<String> qcComments,
+    Double calculatedValue, Flag flag, HashSet<String> qcComments,
     Properties properties) throws SensorTypeNotFoundException {
 
     this.sensorType = ResourceManager.getInstance().getSensorsConfiguration()
@@ -156,7 +157,7 @@ public class MeasurementValue implements PlotPageTableValue {
     this.supportingSensorValueIds = new ArrayList<Long>();
     this.calculatedValue = calculatedValue;
     this.memberCount = memberCount;
-    this.qcMessage = new ArrayList<String>();
+    this.qcMessage = new HashSet<String>();
     this.properties = new Properties();
     addSensorValues(sensorValues, false);
     addSupportingSensorValues(supportingSensorValues);
@@ -330,14 +331,21 @@ public class MeasurementValue implements PlotPageTableValue {
   }
 
   /**
-   * Get the QC messages for this value as a {@link List}. If the
+   * Get the QC messages for this value as a {@link Set}. If the
    * {@link #calculatedValue} is {@link Double#NaN}, the list is a single value
    * of {@code "NaN"}.
    *
    * @return The QC messages.
    */
-  public List<String> getQcMessages() {
-    return calculatedValue.isNaN() ? Arrays.asList("NaN") : qcMessage;
+  public Set<String> getQcMessages() {
+    Set<String> result = qcMessage;
+
+    if (calculatedValue.isNaN()) {
+      result = new HashSet<String>();
+      result.add("NaN");
+    }
+
+    return result;
   }
 
   public SensorType getSensorType() {
@@ -369,22 +377,41 @@ public class MeasurementValue implements PlotPageTableValue {
   }
 
   /**
-   * Replace the existing QC information with the supplied values.
+   * Replace the existing QC information with the supplied flag and QC message.
    *
    * @param flag
-   *          The new QC flag
+   *          The new QC flag.
    * @param message
-   *          The new QC message
+   *          The new QC message.
    */
   public void overrideQC(Flag flag, String message) {
     this.flag = flag;
-    this.qcMessage = new ArrayList<String>();
+    this.qcMessage = new HashSet<String>();
     this.qcMessage.add(message);
   }
 
+  /**
+   * Replace the existing QC information with the supplied flag and QC message.
+   *
+   * @param flag
+   *          The new QC flag.
+   * @param message
+   *          The new QC messages.
+   */
+  public void overrideQC(Flag flag, Collection<String> messages) {
+    this.flag = flag;
+    this.qcMessage = new HashSet<String>(messages);
+  }
+
+  /**
+   * Add a message to the override QC messages.
+   *
+   * @param message
+   *          The message.
+   */
   public void addQcMessage(String message) {
     if (null == qcMessage) {
-      qcMessage = new ArrayList<String>();
+      qcMessage = new HashSet<String>();
     }
     qcMessage.add(message);
   }

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -75,6 +76,16 @@ public class DatasetMeasurements {
     return measurements.get(new VariableRunType(variable, runType));
   }
 
+  /**
+   * Get all the measurements for the specified {@link Variable} with the
+   * specified Run Type.
+   *
+   * @param variableId
+   *          The variable's database ID
+   * @param runType
+   *          The run type
+   * @return The matching measurments.
+   */
   public List<Measurement> getMeasurements(long variableId, String runType) {
     return measurements.get(new VariableRunType(variableId, runType));
   }
@@ -195,6 +206,29 @@ public class DatasetMeasurements {
     }
 
     return result;
+  }
+
+  public TreeSet<Measurement> getRunBefore(long variableId, String runType,
+    LocalDateTime time) {
+
+    Optional<Measurement> lastBefore = getMeasurements(variableId, runType)
+      .stream().filter(m -> m.getTime().isBefore(time))
+      .reduce((first, second) -> second);
+
+    return lastBefore.isEmpty() ? new TreeSet<Measurement>()
+      : getMeasurementsInSameRun(variableId, lastBefore.get());
+
+  }
+
+  public TreeSet<Measurement> getRunAfter(long variableId, String runType,
+    LocalDateTime time) {
+
+    Optional<Measurement> firstAfter = getMeasurements(variableId, runType)
+      .stream().filter(m -> m.getTime().isAfter(time)).findFirst();
+
+    return firstAfter.isEmpty() ? new TreeSet<Measurement>()
+      : getMeasurementsInSameRun(variableId, firstAfter.get());
+
   }
 
   private static class VariableRunType {

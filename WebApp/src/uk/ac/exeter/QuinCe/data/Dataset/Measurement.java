@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -375,7 +374,7 @@ public class Measurement implements Comparable<Measurement> {
               value.overrideQC(positionFlag,
                 POSITION_QC_PREFIX + positionMessage);
             } else {
-              List<String> existingMessages = value.getQcMessages();
+              Set<String> existingMessages = value.getQcMessages();
 
               boolean hasPosition = existingMessages.stream()
                 .anyMatch(m -> m.startsWith(POSITION_QC_PREFIX));
