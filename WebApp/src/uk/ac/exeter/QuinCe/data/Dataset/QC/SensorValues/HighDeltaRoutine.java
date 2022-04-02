@@ -15,18 +15,6 @@ public class HighDeltaRoutine extends AutoQCRoutine {
    */
   private double maxDelta;
 
-  /**
-   * Basic constructor
-   *
-   * @param parameters
-   *          The parameters
-   * @throws QCRoutinesConfigurationException
-   *           If the parameters are invalid
-   */
-  public HighDeltaRoutine() {
-    super();
-  }
-
   @Override
   protected void validateParameters() throws RoutineException {
     if (parameters.size() != 1) {

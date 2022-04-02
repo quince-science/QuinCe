@@ -15,17 +15,6 @@ public class OutlierRoutine extends AutoQCRoutine {
    */
   private double stdevLimit;
 
-  /**
-   * Basic constructor
-   *
-   * @param parameters
-   *          The parameters
-   * @throws QCRoutinesConfigurationException
-   *           If the parameters are invalid
-   */
-  public OutlierRoutine() {
-  }
-
   @Override
   protected void validateParameters() throws RoutineException {
     if (parameters.size() != 1) {

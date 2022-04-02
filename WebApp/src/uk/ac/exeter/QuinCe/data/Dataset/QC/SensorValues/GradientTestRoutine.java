@@ -15,18 +15,6 @@ public class GradientTestRoutine extends AutoQCRoutine {
    */
   private double maxDelta;
 
-  /**
-   * Basic constructor
-   *
-   * @param parameters
-   *          The parameters
-   * @throws QCRoutinesConfigurationException
-   *           If the parameters are invalid
-   */
-  public GradientTestRoutine() {
-    super();
-  }
-
   @Override
   protected void validateParameters() throws RoutineException {
     // copied from HighDeltaRoutine

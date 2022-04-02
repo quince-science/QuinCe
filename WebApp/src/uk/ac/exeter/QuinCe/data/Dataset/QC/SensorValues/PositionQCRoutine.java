@@ -249,4 +249,9 @@ public class PositionQCRoutine extends AutoQCRoutine {
   public String getLongMessage(RoutineFlag flag) {
     return "Invalid position";
   }
+
+  @Override
+  protected void checkSetup() {
+    // No checks required
+  }
 }

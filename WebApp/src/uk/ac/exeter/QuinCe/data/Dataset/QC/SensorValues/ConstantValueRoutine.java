@@ -16,18 +16,6 @@ public class ConstantValueRoutine extends AutoQCRoutine {
    */
   private double maxDuration;
 
-  /**
-   * Basic constructor
-   *
-   * @param parameters
-   *          The parameters
-   * @throws QCRoutinesConfigurationException
-   *           If the parameters are invalid
-   */
-  public ConstantValueRoutine() throws RoutineException {
-    super();
-  }
-
   @Override
   protected void validateParameters() throws RoutineException {
     if (parameters.size() != 1) {

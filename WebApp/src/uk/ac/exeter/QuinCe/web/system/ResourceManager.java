@@ -16,6 +16,7 @@ import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
@@ -55,6 +56,8 @@ public class ResourceManager implements ServletContextListener {
   private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
 
   private QCRoutinesConfiguration qcRoutinesConfiguration;
+
+  private ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfiguration;
 
   private DataReductionQCRoutinesConfiguration dataReductionQCRoutinesConfiguration;
 
@@ -121,6 +124,16 @@ public class ResourceManager implements ServletContextListener {
       throw new RuntimeException("Could not initialise QC Routines", e);
     }
 
+    // Initialise the External Standards Routines configuration
+    try {
+      externalStandardsRoutinesConfiguration = new ExternalStandardsRoutinesConfiguration(
+        sensorsConfiguration,
+        configuration.getProperty("externalstandards_routines.configfile"));
+    } catch (Exception e) {
+      throw new RuntimeException(
+        "Could not initialise External Standards Routines", e);
+    }
+
     // Initialise the Data Reduction QC Routines configuration
     try {
       dataReductionQCRoutinesConfiguration = new DataReductionQCRoutinesConfiguration(
@@ -181,6 +194,10 @@ public class ResourceManager implements ServletContextListener {
 
   public QCRoutinesConfiguration getQCRoutinesConfiguration() {
     return qcRoutinesConfiguration;
+  }
+
+  public ExternalStandardsRoutinesConfiguration getExternalStandardsRoutinesConfiguration() {
+    return externalStandardsRoutinesConfiguration;
   }
 
   public DataReductionQCRoutinesConfiguration getDataReductionQCRoutinesConfiguration() {

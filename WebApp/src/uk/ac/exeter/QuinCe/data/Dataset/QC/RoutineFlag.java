@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class RoutineFlag extends Flag {
 
@@ -41,7 +41,13 @@ public class RoutineFlag extends Flag {
 
     switch (routineNameParts[0]) {
     case "SensorValues": {
-      result = QCRoutinesConfiguration.getRoutine(routineName);
+      result = ResourceManager.getInstance().getQCRoutinesConfiguration()
+        .getRoutine(routineName);
+      break;
+    }
+    case "ExternalStandards": {
+      result = ResourceManager.getInstance()
+        .getExternalStandardsRoutinesConfiguration().getRoutine(routineName);
       break;
     }
     case "DataReduction": {

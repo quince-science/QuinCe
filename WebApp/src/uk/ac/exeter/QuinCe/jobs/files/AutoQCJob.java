@@ -17,12 +17,17 @@ import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -174,7 +179,7 @@ public class AutoQCJob extends DataSetJob {
         positionQC.qc(null);
       }
 
-      // Run the routines for each column
+      // Run the auto QC routines for each column
       for (long columnId : sensorValues.getColumnIds()) {
 
         SensorType sensorType = sensorAssignments
@@ -214,14 +219,38 @@ public class AutoQCJob extends DataSetJob {
 
           if (values.getKey().equals("")
             || measurementRunTypes.contains(values.getKey())) {
-            // Loop through all
-            // routines
-            for (AutoQCRoutine routine : qcRoutinesConfig
+            // Loop through all routines
+            for (AbstractAutoQCRoutine routine : qcRoutinesConfig
               .getRoutines(sensorType)) {
-              routine.qc(filteredValues);
+
+              routine.setSensorType(sensorType);
+              ((AutoQCRoutine) routine).qc(filteredValues);
             }
           }
 
+        }
+      }
+
+      // Now the External Standards routines
+      ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfig = ResourceManager
+        .getInstance().getExternalStandardsRoutinesConfiguration();
+
+      for (long columnId : sensorValues.getColumnIds()) {
+
+        SensorType sensorType = sensorAssignments
+          .getSensorTypeForDBColumn(columnId);
+
+        CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
+          .getMostRecentCalibrations(conn, instrument, dataSet.getStart());
+
+        if (sensorType.hasInternalCalibration()) {
+          for (AbstractAutoQCRoutine routine : externalStandardsRoutinesConfig
+            .getRoutines(sensorType)) {
+
+            routine.setSensorType(sensorType);
+            ((ExternalStandardsQCRoutine) routine).qc(calibrationSet,
+              runTypeValues, sensorValues.getColumnValues(columnId));
+          }
         }
       }
 
