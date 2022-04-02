@@ -62,17 +62,6 @@ public class RangeCheckRoutine extends AutoQCRoutine {
    */
   private boolean hasBadRange = false;
 
-  /**
-   * Basic constructor
-   *
-   * @param parameters
-   *          The parameters
-   * @throws QCRoutinesConfigurationException
-   *           If the parameters are invalid
-   */
-  public RangeCheckRoutine() {
-  }
-
   @Override
   protected void validateParameters() throws RoutineException {
     if (parameters.size() != 4) {
