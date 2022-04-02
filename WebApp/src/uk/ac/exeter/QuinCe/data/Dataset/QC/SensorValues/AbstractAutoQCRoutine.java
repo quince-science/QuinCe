@@ -5,32 +5,54 @@ import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
-/**
- * The base class for a QC routine. These classes will be called to check the
- * data after it's been read and processed for missing/ out of range values.
- */
-public abstract class AutoQCRoutine extends AbstractAutoQCRoutine {
+public abstract class AbstractAutoQCRoutine implements Routine {
 
   /**
-   * Basic constructor
-   *
-   * @param parameters
-   *          The parameters
-   * @throws RoutineException
-   *           If the parameters are invalid
+   * The {@link SensorType} of values to be checked by this routine instance.
    */
-  protected AutoQCRoutine() {
+  protected SensorType sensorType;
+
+  /**
+   * The parameters for the routine
+   */
+  protected List<String> parameters = null;
+
+  public AbstractAutoQCRoutine() {
   }
 
   protected void setParameters(List<String> parameters)
     throws RoutineException {
     this.parameters = parameters;
     validateParameters();
+  }
+
+  public void setSensorType(SensorType sensorType) {
+    this.sensorType = sensorType;
+  }
+
+  /**
+   * Validate the parameters
+   *
+   * @throws RoutineException
+   *           If the parameters are invalid
+   */
+  protected abstract void validateParameters() throws RoutineException;
+
+  /**
+   * Filter a list of {@link SensorValue} objects to remove any NaN values.
+   *
+   * @param values
+   *          The values to be filtered.
+   * @return The filtered list.
+   */
+  protected List<SensorValue> filterMissingValues(List<SensorValue> values) {
+    return values.stream().filter(x -> !x.isNaN()).collect(Collectors.toList());
   }
 
   /**
@@ -97,60 +119,13 @@ public abstract class AutoQCRoutine extends AbstractAutoQCRoutine {
     addFlag(value, flag, requiredValue, String.valueOf(actualValue));
   }
 
-  /**
-   * Validate the parameters
-   *
-   * @throws RoutineException
-   *           If the parameters are invalid
-   */
-  protected abstract void validateParameters() throws RoutineException;
+  protected void checkSetup() throws RoutineException {
+    if (null == sensorType) {
+      throw new RoutineException("SensorType not set");
+    }
 
-  /**
-   * Perform the QC on the specified values.
-   *
-   * <p>
-   * The method ensures that the Routine is correctly configured and then calls
-   * {@link #qcAction(List)} to perform the actual QC.
-   * </p>
-   *
-   * @param values
-   *          The values to be QCed.
-   * @throws RoutineException
-   *           If the Routine is not configured correctly, or fails during
-   *           processing.
-   */
-  public void qc(List<SensorValue> values) throws RoutineException {
-    checkSetup();
-    qcAction(values);
-  }
-
-  /**
-   * Perform the QC
-   *
-   * @param values
-   *          The values to be QCed
-   */
-  protected abstract void qcAction(List<SensorValue> values)
-    throws RoutineException;
-
-  /**
-   * Filter a list of {@link SensorValue} objects to remove any NaN values.
-   *
-   * @param values
-   *          The values to be filtered.
-   * @return The filtered list.
-   */
-  protected List<SensorValue> filterMissingValues(List<SensorValue> values) {
-    return values.stream().filter(x -> !x.isNaN()).collect(Collectors.toList());
-  }
-
-  public abstract String getShortMessage();
-
-  public abstract String getLongMessage(RoutineFlag flag);
-
-  @Override
-  public String getName() {
-    return ResourceManager.getInstance().getQCRoutinesConfiguration()
-      .getRoutineName(this);
+    if (null == parameters) {
+      throw new RoutineException("Routine parameters not set");
+    }
   }
 }

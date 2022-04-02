@@ -10,7 +10,6 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
@@ -42,10 +41,6 @@ public class DefaultMeasurementValueCalculator
   private static final int PRIOR = -1;
 
   private static final int POST = 1;
-
-  private static final double MAXIMUM_OFFSET = 4D;
-
-  private static final double MAXIMUM_STDEV = 1D;
 
   // TODO Need limits on how far interpolation goes before giving up.
 
@@ -188,8 +183,9 @@ public class DefaultMeasurementValueCalculator
 
           qcMessages
             .add("No available external standards run before measurement");
+
           if (prior.isBad()) {
-            qcMessages.addAll(post.getComments());
+            // qcMessages.addAll(post.getComments());
           }
 
         } else {
@@ -206,10 +202,10 @@ public class DefaultMeasurementValueCalculator
           value.addSupportingSensorValues(post.getUsedValues());
 
           if (prior.isBad()) {
-            qcMessages.addAll(prior.getComments());
+            // qcMessages.addAll(prior.getComments());
           }
           if (post.isBad()) {
-            qcMessages.addAll(post.getComments());
+            // qcMessages.addAll(post.getComments());
           }
         }
 
@@ -260,11 +256,9 @@ public class DefaultMeasurementValueCalculator
         .filter(v -> !v.getDoubleValue().isNaN()).collect(Collectors.toList());
 
       Mean mean = new Mean();
-      StandardDeviation stdev = new StandardDeviation();
 
       runSensorValues.stream().map(v -> v.getDoubleValue()).forEach(d -> {
         mean.increment(d);
-        stdev.increment(d);
       });
 
       // If there are values from the run...
@@ -278,13 +272,6 @@ public class DefaultMeasurementValueCalculator
         double offset = mean.getResult() - standardConcentration;
 
         regression.addData(standardConcentration, offset);
-
-        if (Math.abs(offset) > MAXIMUM_OFFSET) {
-          result.addComment("Offset to " + runType + " is too large");
-        }
-        if (stdev.getResult() > MAXIMUM_STDEV) {
-          result.addComment("Variance of " + runType + " is too large");
-        }
       }
     }
 
