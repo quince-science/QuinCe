@@ -10,7 +10,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 /**
  * Configuration for the Auto QC routines run on values in External Standard
  * runs.
- * 
+ *
  * <p>
  * These routines are similar in structure to the normal Auto QC routines,
  * except that they are only run on {@link SensorValue}s that have internal
