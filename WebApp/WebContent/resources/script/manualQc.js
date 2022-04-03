@@ -60,16 +60,16 @@ function saveManualComment() {
 function updateFlagCounts() {
   let flagCounts = JSON.parse($('#statusForm\\:neededFlagCounts').val());
   if (null != flagCounts) {
-  $('#totalFlagsNeeded').text(flagCounts['-1']);
+    $('#totalFlagsNeeded').text(flagCounts['-1']);
   }
 
   for (colId in flagCounts) {
     if (colId != -1) {
-    if (flagCounts[colId] == 0) {
-      $('#varInfo-' + colId).html('');
-    } else {
-    $('#varInfo-' + colId).html(flagCounts[colId]);
-    }
+      if (flagCounts[colId] == 0) {
+        $('#varInfo-' + colId).html('');
+      } else {
+        $('#varInfo-' + colId).html(flagCounts[colId]);
+      }
     }
   }
 }

@@ -30,12 +30,12 @@ public class QCRoutinesConfiguration extends AbstractQCRoutinesConfiguration {
   /**
    * Get the name of the package in which all sensor value routine classes will
    * be.
-   * 
+   *
    * <p>
    * This must be a child of the package returned by
    * {@link #getRoutineClassRoot()}.
    * </p>
-   * 
+   *
    * @return The name of the package containing QC routines.
    */
   protected String getRoutineClassPackage() {

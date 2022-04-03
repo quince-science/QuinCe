@@ -143,4 +143,16 @@ public class InternalCalibrationBean extends PlotPageBean {
     data.applyFlag(newFlag, useCalibrationsMessage);
     dirty = true;
   }
+
+  /**
+   * Accept the automatic QC flags for the selected values.
+   */
+  public void acceptAutoQC() {
+    data.acceptAutoQC();
+    dirty = true;
+  }
+
+  public int getNeedsFlagCount() {
+    return data.getNeedsFlagCount();
+  }
 }
