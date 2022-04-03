@@ -217,4 +217,19 @@ public class SimplePlotPageDataStructure {
 
     return result;
   }
+
+  public int getNeedsFlagCount() {
+    int result = 0;
+
+    for (LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue> entry : pageData
+      .values()) {
+      for (PlotPageTableValue value : entry.values()) {
+        if (null != value && value.getFlagNeeded()) {
+          result++;
+        }
+      }
+    }
+
+    return result;
+  }
 }

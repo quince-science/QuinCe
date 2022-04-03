@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypeSensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
@@ -243,5 +244,48 @@ public class InternalCalibrationData extends PlotPageData {
     }
 
     initPlots();
+  }
+
+  /**
+   * Accept automatic QC flags for the selected values.
+   *
+   * @throws RoutineException
+   *           If the automatic QC details cannot be retrieved.
+   * @throws SQLException
+   * @throws DatabaseException
+   * @throws MissingParamException
+   */
+  public void acceptAutoQC() {
+    try {
+      List<SensorValue> sensorValues = getSelectedSensorValues();
+
+      for (SensorValue sensorValue : sensorValues) {
+
+        // Only override the existing user QC if it has Needs Flag or Assumed
+        // Good
+        if (sensorValue.getUserQCFlag().equals(Flag.NEEDED)
+          || sensorValue.getUserQCFlag().equals(Flag.ASSUMED_GOOD)) {
+          sensorValue.setUserQC(sensorValue.getAutoQcFlag(),
+            sensorValue.getAutoQcResult().getAllMessages());
+        }
+      }
+
+      try (Connection conn = dataSource.getConnection()) {
+        DataSetDataDB.storeSensorValues(conn, sensorValues);
+      }
+      initPlots();
+    } catch (Exception e) {
+      error("Error while updating QC flags", e);
+    }
+  }
+
+  /**
+   * Get the number of {@link SensorValue}s whose QC flag is
+   * {@link Flag#NEEDED}, grouped by column ID.
+   *
+   * @return The number of NEEDED flags
+   */
+  public int getNeedsFlagCount() {
+    return null == dataStructure ? 0 : dataStructure.getNeedsFlagCount();
   }
 }

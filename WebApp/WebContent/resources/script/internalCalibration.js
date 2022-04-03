@@ -33,3 +33,7 @@ function calibrationUpdated() {
   jsDataTable.ajax.reload(null, false);
   itemNotLoading(UPDATE_DATA);
 }
+
+function acceptAutoQc() {
+  submitAutoQC(); // remoteCommand
+}

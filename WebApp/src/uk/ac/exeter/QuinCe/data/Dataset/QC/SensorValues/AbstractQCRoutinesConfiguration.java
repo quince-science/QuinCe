@@ -213,7 +213,7 @@ public abstract class AbstractQCRoutinesConfiguration {
 
   /**
    * Get the root package containing QC routines.
-   * 
+   *
    * @return The QC routines root package.
    */
   protected String getRoutineClassRoot() {
@@ -223,24 +223,24 @@ public abstract class AbstractQCRoutinesConfiguration {
   /**
    * Get the name of the package in which all sensor value routine classes will
    * be.
-   * 
+   *
    * <p>
    * This must be a child of the package returned by
    * {@link #getRoutineClassRoot()}.
    * </p>
-   * 
+   *
    * @return The name of the package containing QC routines.
    */
   protected abstract String getRoutineClassPackage();
 
   /**
    * Get the standard tail of the class name for each routine.
-   * 
+   *
    * <p>
    * Each QC routine class must be named {@code <routine_name><tail>}. This
    * method returns the tail.
    * </p>
-   * 
+   *
    * @return The standard routine class tail.
    */
   protected String getRoutineClassTail() {
