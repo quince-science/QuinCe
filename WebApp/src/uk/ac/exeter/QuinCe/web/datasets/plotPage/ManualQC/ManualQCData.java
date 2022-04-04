@@ -186,7 +186,7 @@ public class ManualQCData extends PlotPageData {
 
     try (Connection conn = dataSource.getConnection()) {
       sensorValues = DataSetDataDB.getSensorValues(conn, instrument,
-        dataset.getId(), false);
+        dataset.getId(), false, true);
 
       List<Measurement> measurementsList = DataSetDataDB.getMeasurements(conn,
         dataset.getId());

@@ -83,7 +83,7 @@ public class DataReductionQCJob extends DataSetJob {
 
       // Load all the sensor values for this dataset
       DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataSet.getId(), false);
+        instrument, dataSet.getId(), false, false);
 
       List<Measurement> measurements = DataSetDataDB.getMeasurements(conn,
         dataSet.getId());

@@ -57,7 +57,7 @@ public class DataSetDataDBTest extends BaseTest {
     DatasetSensorValues storedValues = DataSetDataDB.getSensorValues(
       getConnection(),
       InstrumentDB.getInstrument(getConnection(), INSTRUMENT_ID), DATASET_ID,
-      false);
+      false, false);
 
     assertEquals(1, storedValues.size());
 
@@ -264,7 +264,7 @@ public class DataSetDataDBTest extends BaseTest {
     assertEquals(0,
       DataSetDataDB.getSensorValues(getConnection(),
         InstrumentDB.getInstrument(getConnection(), INSTRUMENT_ID), DATASET_ID,
-        false).size(),
+        false, false).size(),
       "Value has been stored; should not have been");
   }
 
@@ -287,7 +287,7 @@ public class DataSetDataDBTest extends BaseTest {
     assertEquals(2,
       DataSetDataDB.getSensorValues(getConnection(),
         InstrumentDB.getInstrument(getConnection(), INSTRUMENT_ID), DATASET_ID,
-        false).size(),
+        false, false).size(),
       "Incorrect number of values retrieved");
   }
 
@@ -310,7 +310,7 @@ public class DataSetDataDBTest extends BaseTest {
     assertEquals(1,
       DataSetDataDB.getSensorValues(getConnection(),
         InstrumentDB.getInstrument(getConnection(), INSTRUMENT_ID), DATASET_ID,
-        true).size(),
+        true, false).size(),
       "Incorrect number of values retrieved");
   }
 
@@ -331,7 +331,7 @@ public class DataSetDataDBTest extends BaseTest {
     assertEquals(2,
       DataSetDataDB.getSensorValues(getConnection(),
         InstrumentDB.getInstrument(getConnection(), INSTRUMENT_ID), DATASET_ID,
-        true).size(),
+        true, false).size(),
       "Values not stored as expected");
 
     DataSetDataDB.deleteSensorValues(getConnection(), DATASET_ID);
@@ -339,7 +339,7 @@ public class DataSetDataDBTest extends BaseTest {
     assertEquals(0,
       DataSetDataDB.getSensorValues(getConnection(),
         InstrumentDB.getInstrument(getConnection(), INSTRUMENT_ID), DATASET_ID,
-        true).size(),
+        true, false).size(),
       "Values not removed");
   }
 }
