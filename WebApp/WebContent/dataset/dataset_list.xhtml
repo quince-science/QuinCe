@@ -16,35 +16,35 @@
       }
 
       function goToQc(id) {
-        keepAliveActive = false;
+    	  window['keepAliveActive'] = false;
         $('#datasetListForm\\:manualQCDatasetId').val(id);
         $('#datasetListForm\\:manualQCLink').click();
         return false;
       }
 
       function recalculate(id) {
-        keepAliveActive = false;
+    	  window['keepAliveActive'] = false;
         $('#datasetListForm\\:datasetId').val(id);
         $('#datasetListForm\\:recalculateLink').click();
         return false;
       }
 
       function exportDataset(id) {
-        keepAliveActive = false;
+    	  window['keepAliveActive'] = false;
         $('#exportForm\\:exportDatasetId').val(id);
         $('#exportForm\\:exportLink').click();
         return false;
       }
 
       function submitForApproval(id) {
-        keepAliveActive = false;
+    	  window['keepAliveActive'] = false;
         $('#datasetListForm\\:datasetId').val(id);
         $('#datasetListForm\\:submitLink').click();
         return false;
       }
 
       function approve(id) {
-        keepAliveActive = false;
+    	  window['keepAliveActive'] = false;
         $('#datasetListForm\\:datasetId').val(id);
         $('#datasetListForm\\:approveLink').click();
         return false;
@@ -57,7 +57,7 @@
       }, 10000);
 
       $(document).ready(function() {
-        var keepAliveActive = true;
+        window['keepAliveActive'] = true;
         window['canUpdateList'] = true;
         if (window['updateList']) {
           updateList(); // PF Command
@@ -76,7 +76,7 @@
 
       function updateFailed() {
         clearInterval(refreshInterval);
-        if (keepAliveActive) {
+        if (window['keepAliveActive']) {
           PF('lostContactDialog').show();
         }
       }
