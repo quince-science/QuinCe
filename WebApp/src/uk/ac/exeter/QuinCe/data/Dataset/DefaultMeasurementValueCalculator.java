@@ -184,10 +184,6 @@ public class DefaultMeasurementValueCalculator
           qcMessages
             .add("No available external standards run before measurement");
 
-          if (prior.isBad()) {
-            // qcMessages.addAll(post.getComments());
-          }
-
         } else {
 
           // We have valid calibrations either side. Get their offsets, and
@@ -200,13 +196,6 @@ public class DefaultMeasurementValueCalculator
 
           value.addSupportingSensorValues(prior.getUsedValues());
           value.addSupportingSensorValues(post.getUsedValues());
-
-          if (prior.isBad()) {
-            // qcMessages.addAll(prior.getComments());
-          }
-          if (post.isBad()) {
-            // qcMessages.addAll(post.getComments());
-          }
         }
 
         // If any QC messages have been recorded, add them to the value and flag
