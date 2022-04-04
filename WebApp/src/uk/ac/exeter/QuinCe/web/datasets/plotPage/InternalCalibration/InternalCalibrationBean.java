@@ -155,4 +155,54 @@ public class InternalCalibrationBean extends PlotPageBean {
   public int getNeedsFlagCount() {
     return data.getNeedsFlagCount();
   }
+
+  /**
+   * Get the worst QC flag from the current selection.
+   *
+   * @return The QC flag.
+   */
+  public int getWorstSelectedFlag() {
+    return data.getWorstSelectedFlag().getFlagValue();
+  }
+
+  /**
+   * Get the QC comments generated from the current selection.
+   *
+   * @return The QC comments
+   */
+  public String getUserCommentList() {
+    return data.getUserCommentsList();
+  }
+
+  /**
+   * Generate the QC comments list and find the worst QC flag from the currently
+   * selected values.
+   */
+  public void generateUserCommentsList() {
+    data.generateUserCommentsList();
+  }
+
+  /**
+   * Dummy setter for the worst selected flag. Needed because the
+   * generateUserCommentList remoteCommand insists on trying to set this even
+   * though I've told it not to.
+   *
+   * @param userCommentList
+   */
+  public void setWorstSelectedFlag(int worstSelectedFlag) {
+    // TODO Work out how to not need this.
+    // NOOP
+  }
+
+  /**
+   * Dummy setter for the user comment list. Needed because the
+   * generateUserCommentList remoteCommand insists on trying to set this even
+   * though I've told it not to.
+   *
+   * @param userCommentList
+   */
+  public void setUserCommentList(String userCommentList) {
+    // TODO Work out how to not need this.
+    // NOOP
+  }
 }

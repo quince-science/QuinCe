@@ -19,12 +19,23 @@
   </ui:define>
 
   <ui:define name="selectionFormEntries">
+      <h:inputHidden id="userCommentList"
+        value="#{internalCalibrationBean.userCommentList}" />
+      <h:inputHidden id="worstSelectedFlag"
+        value="#{internalCalibrationBean.worstSelectedFlag}" />
+
       <p:remoteCommand name="submitAutoQC" action="#{internalCalibrationBean.acceptAutoQC}"
       partialSubmit="true"
       process="selectedColumn selectedRows"
       update=":plotPageForm:error :plot1Form:plot1Flags :plot2Form:plot2Flags :statusForm"
       onstart="itemLoading(UPDATE_DATA)"
       oncomplete="calibrationUpdated()" />
+
+    <p:remoteCommand name="generateUserQCComments"
+      action="#{internalCalibrationBean.generateUserCommentsList}"
+      partialSubmit="true" process="selectedColumn selectedRows"
+      update="userCommentList worstSelectedFlag :plotPageForm:error"
+      oncomplete="showUseDialog()" />
 
     <p:remoteCommand name="setUseCalibrations"
       action="#{internalCalibrationBean.setCalibrationUse}"
@@ -67,7 +78,7 @@
     <p:commandButton widgetVar="acceptQcButton" value="Accept Automatic QC"
       onclick="acceptAutoQc(); return false;" styleClass="inlineButton" />
     <p:commandButton widgetVar="useCalibrationsButton" value="Override Automatic QC"
-      onclick="showUseDialog(); return false;" styleClass="inlineButton" />
+      onclick="startUserQcFlags(); return false;" styleClass="inlineButton" />
   </ui:define>
 
 </ui:composition>
