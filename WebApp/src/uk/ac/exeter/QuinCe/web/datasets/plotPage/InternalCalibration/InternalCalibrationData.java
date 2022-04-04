@@ -28,6 +28,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.ValueCounter;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
@@ -41,6 +42,16 @@ public class InternalCalibrationData extends PlotPageData {
   private PlotPageColumnHeading defaultYAxis2 = null;
 
   private SimplePlotPageDataStructure dataStructure = null;
+
+  /**
+   * The initial user QC comments generated from the selected values.
+   */
+  private String userCommentsList = null;
+
+  /**
+   * The worst QC flag set on any of the selected values.
+   */
+  private Flag worstSelectedFlag = Flag.GOOD;
 
   /**
    * Construct the data object.
@@ -287,5 +298,51 @@ public class InternalCalibrationData extends PlotPageData {
    */
   public int getNeedsFlagCount() {
     return null == dataStructure ? 0 : dataStructure.getNeedsFlagCount();
+  }
+
+  /**
+   * Generate the QC comments list and find the worst QC flag from the currently
+   * selected values.
+   */
+  public void generateUserCommentsList() {
+
+    ValueCounter comments = new ValueCounter();
+    worstSelectedFlag = Flag.GOOD;
+
+    for (SensorValue sensorValue : getSelectedSensorValues()) {
+      if (sensorValue.getDisplayFlag().moreSignificantThan(worstSelectedFlag)) {
+        worstSelectedFlag = sensorValue.getDisplayFlag();
+      }
+
+      if (!sensorValue.flagNeeded()) {
+        comments.add(sensorValue.getUserQCMessage());
+      } else {
+        try {
+          comments.addAll(sensorValue.getAutoQcResult().getAllMessagesSet());
+        } catch (RoutineException e) {
+          error("Error getting QC comments", e);
+        }
+      }
+    }
+
+    userCommentsList = comments.toString();
+  }
+
+  /**
+   * Get the QC comments generated from the current selection.
+   *
+   * @return The QC comments
+   */
+  public String getUserCommentsList() {
+    return userCommentsList;
+  }
+
+  /**
+   * Get the worst QC flag from the current selection.
+   *
+   * @return The QC flag.
+   */
+  public Flag getWorstSelectedFlag() {
+    return worstSelectedFlag;
   }
 }

@@ -1,7 +1,15 @@
 function showUseDialog() {
+  
   // Select the first radio button, which is "Yes"
-  PF('useCalibrationsWidget').jq.find('input:radio[value=true]').parent().next().trigger('click.selectOneRadio');
-  $(PF('useCalibrationsMessageWidget').jqId).val("");
+  let targetRadioValue = 'true';
+  if ($('#selectionForm\\:worstSelectedFlag').val() != 2) {
+    targetRadioValue = 'false';	
+  }
+  
+  PF('useCalibrationsWidget').jq.find('input:radio[value=' + targetRadioValue + ']').parent().next().trigger('click.selectOneRadio');
+  
+  $(PF('useCalibrationsMessageWidget').jqId).val($('#selectionForm\\:userCommentList').val());
+  
   updateUseDialogControls();
   PF('useDialog').show();
 }
@@ -36,4 +44,8 @@ function calibrationUpdated() {
 
 function acceptAutoQc() {
   submitAutoQC(); // remoteCommand
+}
+
+function startUserQcFlags() {
+  generateUserQCComments(); // remoteCommand
 }
