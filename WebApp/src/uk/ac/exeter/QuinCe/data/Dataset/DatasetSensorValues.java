@@ -63,6 +63,24 @@ public class DatasetSensorValues {
     addByDateAndColumn(sensorValue);
   }
 
+  public void remove(SensorValue sensorValue) throws RecordNotFoundException {
+    SensorType sensorType = instrument.getSensorAssignments()
+      .getSensorTypeForDBColumn(sensorValue.getColumnId());
+
+    removeById(sensorValue);
+    removeByColumn(sensorValue);
+    removeBySensorType(sensorValue, sensorType);
+    removeByDateAndColumn(sensorValue);
+  }
+
+  public void removeAll(Collection<? extends SensorValue> values)
+    throws RecordNotFoundException {
+
+    for (SensorValue sensorValue : values) {
+      remove(sensorValue);
+    }
+  }
+
   public Set<Long> getColumnIds() {
     return valuesByColumn.keySet();
   }
@@ -87,6 +105,10 @@ public class DatasetSensorValues {
     valuesById.put(sensorValue.getId(), sensorValue);
   }
 
+  private void removeById(SensorValue sensorValue) {
+    valuesById.remove(sensorValue.getId());
+  }
+
   private void addByColumn(SensorValue sensorValue) {
     long columnId = sensorValue.getColumnId();
     if (!valuesByColumn.containsKey(columnId)) {
@@ -96,12 +118,32 @@ public class DatasetSensorValues {
     valuesByColumn.get(columnId).add(sensorValue);
   }
 
+  private void removeByColumn(SensorValue sensorValue) {
+    long columnId = sensorValue.getColumnId();
+    if (valuesByColumn.containsKey(columnId)) {
+      valuesByColumn.get(columnId).remove(sensorValue);
+      if (valuesByColumn.get(columnId).isEmpty()) {
+        valuesByColumn.remove(columnId);
+      }
+    }
+  }
+
   private void addBySensorType(SensorValue sensorValue, SensorType sensorType) {
     if (!valuesBySensorType.containsKey(sensorType)) {
       valuesBySensorType.put(sensorType, new TreeSet<SensorValue>());
     }
 
     valuesBySensorType.get(sensorType).add(sensorValue);
+  }
+
+  private void removeBySensorType(SensorValue sensorValue,
+    SensorType sensorType) {
+    if (valuesBySensorType.containsKey(sensorType)) {
+      valuesBySensorType.get(sensorType).remove(sensorValue);
+      if (valuesBySensorType.get(sensorType).isEmpty()) {
+        valuesBySensorType.remove(sensorType);
+      }
+    }
   }
 
   private void addByDateAndColumn(SensorValue sensorValue)
@@ -114,6 +156,26 @@ public class DatasetSensorValues {
     }
 
     valuesByDateAndColumn.get(time).put(sensorValue.getColumnId(), sensorValue);
+
+    // Clear the cache of times, since it will need rebuilding.
+    times = null;
+  }
+
+  private void removeByDateAndColumn(SensorValue sensorValue)
+    throws RecordNotFoundException {
+
+    LocalDateTime time = sensorValue.getTime();
+
+    if (valuesByDateAndColumn.containsKey(time)) {
+      Map<Long, SensorValue> values = valuesByDateAndColumn.get(time);
+      if (values.containsKey(sensorValue.getColumnId())) {
+        values.remove(sensorValue.getColumnId());
+      }
+
+      if (values.isEmpty()) {
+        valuesByDateAndColumn.remove(time);
+      }
+    }
 
     // Clear the cache of times, since it will need rebuilding.
     times = null;

@@ -58,7 +58,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
         .getColumnIds(refSensorType).get(0);
 
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataset.getId(), false);
+        instrument, dataset.getId(), false, true);
 
       // Loop through all the rows, examining the zero/flush columns to decide
       // what to do
