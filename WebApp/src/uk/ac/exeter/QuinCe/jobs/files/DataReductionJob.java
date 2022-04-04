@@ -139,7 +139,7 @@ public class DataReductionJob extends DataSetJob {
         }
 
         // Loop through each variable
-        for (Variable variable : instrument.getVariables()) {
+        for (Variable variable : variablesToProcess) {
 
           // Process each measurement
           dataReductionRecords.ensureCapacity(
