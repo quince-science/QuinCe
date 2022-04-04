@@ -147,7 +147,7 @@ public class AutoQCJob extends DataSetJob {
 
       // Get the sensor values grouped by data file column
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataSet.getId(), true);
+        instrument, dataSet.getId(), true, true);
 
       // Get all the run type entries from the data set
       TreeSet<SensorAssignment> runTypeColumns = sensorAssignments

@@ -348,10 +348,12 @@ public class DataSetDataDB {
    *           If a database error occurs
    * @throws MissingParamException
    *           If any required parameters are missing
+   * @throws InvalidFlagException
    */
   public static DatasetSensorValues getSensorValues(Connection conn,
-    Instrument instrument, long datasetId, boolean ignoreFlushing)
-    throws RecordNotFoundException, DatabaseException, MissingParamException {
+    Instrument instrument, long datasetId, boolean ignoreFlushing,
+    boolean ignoreInternalCalibrations) throws RecordNotFoundException,
+    DatabaseException, MissingParamException, InvalidFlagException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -374,6 +376,11 @@ public class DataSetDataDB {
       }
     } catch (Exception e) {
       throw new DatabaseException("Error while retrieving sensor values", e);
+    }
+
+    if (ignoreInternalCalibrations) {
+      values.removeAll(
+        getInternalCalibrationSensorValues(conn, instrument, datasetId));
     }
 
     return values;

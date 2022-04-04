@@ -97,7 +97,7 @@ public class DataReductionJob extends DataSetJob {
 
       // Load all the sensor values for this dataset
       DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataSet.getId(), false);
+        instrument, dataSet.getId(), false, false);
 
       // Get all the measurements grouped by run type
       DatasetMeasurements allMeasurements = DataSetDataDB

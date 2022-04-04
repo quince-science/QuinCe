@@ -48,7 +48,7 @@ public class WaterVapourMixingRatioMeasurementLocator
         instrument);
 
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataset.getId(), false);
+        instrument, dataset.getId(), false, true);
 
       for (LocalDateTime recordTime : sensorValues.getTimes()) {
         RunTypeCategory category = instrument
