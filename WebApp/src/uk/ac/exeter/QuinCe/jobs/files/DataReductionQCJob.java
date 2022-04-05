@@ -112,8 +112,8 @@ public class DataReductionQCJob extends DataSetJob {
         List<DataReductionQCRoutine> routines = config.getRoutines(reducer);
         if (null != routines) {
           for (DataReductionQCRoutine routine : routines) {
-            routine.qc(instrument, variableRecords, allSensorValues,
-              flaggedItems);
+            routine.qc(conn, instrument, dataSet, var, variableRecords,
+              allSensorValues, flaggedItems);
           }
         }
       }

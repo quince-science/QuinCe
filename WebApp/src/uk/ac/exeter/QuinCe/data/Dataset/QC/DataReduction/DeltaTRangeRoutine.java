@@ -1,8 +1,10 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction;
 
+import java.sql.Connection;
 import java.util.Map;
 import java.util.TreeMap;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
@@ -11,15 +13,13 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public class DeltaTRangeRoutine extends DataReductionQCRoutine {
 
-  public DeltaTRangeRoutine() {
-    super();
-  }
-
   @Override
-  protected void qcAction(Instrument instrument,
+  protected void qcAction(Connection conn, Instrument instrument,
+    DataSet dataSet, Variable variable,
     TreeMap<Measurement, ReadOnlyDataReductionRecord> dataReductionRecords,
     DatasetSensorValues allSensorValues, FlaggedItems flaggedItems)
     throws RoutineException {

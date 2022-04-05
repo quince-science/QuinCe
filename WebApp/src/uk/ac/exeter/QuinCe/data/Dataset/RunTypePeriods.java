@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Optional;
 
 @SuppressWarnings("serial")
 public class RunTypePeriods extends ArrayList<RunTypePeriod> {
@@ -57,6 +58,13 @@ public class RunTypePeriods extends ArrayList<RunTypePeriod> {
     }
 
     return result;
+  }
+
+  public String getRunType(LocalDateTime time) {
+    Optional<RunTypePeriod> period = stream().filter(p -> p.encompasses(time))
+      .findAny();
+
+    return period.isEmpty() ? null : period.get().getRunType();
   }
 
   private LocalDateTime getLastTime() {
