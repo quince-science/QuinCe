@@ -199,6 +199,11 @@
             <ui:fragment rendered="#{dataset.status gt DataSet.STATUS_ERROR}">
               <ui:fragment
                 rendered="#{dataset.status ge DataSet.STATUS_USER_QC}">
+                <p:commandLink onclick="recalculate(#{dataset.id})">
+                  <h:graphicImage value="/resources/image/calculate.svg"
+                    styleClass="actionIcon" alt="Recalculate"
+                    title="Recalculate" />
+                </p:commandLink>
                 <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
                   <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
                     <h:graphicImage value="/resources/image/calibration.svg"
@@ -206,11 +211,6 @@
                       title="Calibration" />
                   </p:commandLink>
                 </ui:fragment>
-                <p:commandLink onclick="recalculate(#{dataset.id})">
-                  <h:graphicImage value="/resources/image/calculate.svg"
-                    styleClass="actionIcon" alt="Recalculate"
-                    title="Recalculate" />
-                </p:commandLink>
                 <p:commandLink onclick="goToQc(#{dataset.id})">
                   <h:graphicImage value="/resources/image/qc.svg"
                     styleClass="actionIcon" alt="Quality Control"
@@ -219,14 +219,14 @@
               </ui:fragment>
               <ui:fragment
                 rendered="#{dataset.status lt DataSet.STATUS_USER_QC}">
+                <h:graphicImage value="/resources/image/calculate_disabled.svg"
+                  styleClass="actionIcon" alt="Data Reduction"
+                  title="Data Reduction" />
                 <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
                   <h:graphicImage
                     value="/resources/image/calibration_disabled.svg"
                     styleClass="actionIcon" alt="Calibration" title="Calibration" />
                 </ui:fragment>
-                <h:graphicImage value="/resources/image/calculate_disabled.svg"
-                  styleClass="actionIcon" alt="Data Reduction"
-                  title="Data Reduction" />
                 <h:graphicImage value="/resources/image/qc_disabled.svg"
                   styleClass="actionIcon" alt="Quality Control"
                   title="Quality Control" />
