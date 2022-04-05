@@ -315,4 +315,16 @@ public class DatasetSensorValues {
   public int size() {
     return valuesById.size();
   }
+
+  public boolean isOfSensorType(SensorValue sensorValue, SensorType sensorType) {
+    boolean result;
+
+    if (!valuesBySensorType.containsKey(sensorType)) {
+      result = false;
+    } else {
+      result = valuesBySensorType.get(sensorType).contains(sensorValue);
+    }
+
+    return result;
+  }
 }

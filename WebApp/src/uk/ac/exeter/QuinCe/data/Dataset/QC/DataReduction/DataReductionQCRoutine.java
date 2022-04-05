@@ -1,10 +1,12 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
@@ -16,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Base class for QC routines to be run during data reduction
@@ -79,7 +82,8 @@ public abstract class DataReductionQCRoutine implements Routine {
     }
   }
 
-  public void qc(Instrument instrument,
+  public void qc(Connection conn, Instrument instrument, DataSet dataSet,
+    Variable variable,
     TreeMap<Measurement, ReadOnlyDataReductionRecord> dataReductionRecords,
     DatasetSensorValues allSensorValues, FlaggedItems flaggedItems)
     throws RoutineException {
@@ -88,10 +92,12 @@ public abstract class DataReductionQCRoutine implements Routine {
       throw new RoutineException("Settings not initialised");
     }
 
-    qcAction(instrument, dataReductionRecords, allSensorValues, flaggedItems);
+    qcAction(conn, instrument, dataSet, variable, dataReductionRecords,
+      allSensorValues, flaggedItems);
   }
 
-  protected abstract void qcAction(Instrument instrument,
+  protected abstract void qcAction(Connection conn, Instrument instrument,
+    DataSet dataSet, Variable variable,
     TreeMap<Measurement, ReadOnlyDataReductionRecord> dataReductionRecords,
     DatasetSensorValues allSensorValues, FlaggedItems flaggedItems)
     throws RoutineException;

@@ -13,7 +13,6 @@ import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -152,40 +151,24 @@ public class DefaultMeasurementValueCalculator
           allMeasurements, sensorValues, sensorType, measurement.getTime(),
           value);
 
-        // The QC messages generated during calibration.
-        // If any messages are added here, the value will be flagged as BAD.
-        HashSet<String> qcMessages = new HashSet<String>();
-
-        if (!prior.isValid() && !post.isValid()) {
-          // No standards found anywhere. No offset and a big ol' red flag.
-          qcMessages.add("No external standards found for measurement");
-
-        } else if (prior.isValid() && !post.isValid()) {
+        /*
+         * Note that even though we know QC messages are required here, we can't
+         * store them because we aren't an Auto QC routine. There is a Data
+         * Reduction QC routine that will generate the QC messages.
+         */
+        if (prior.isValid() && !post.isValid()) {
 
           // We only found a calibration run after the measurement, so use that
           // without any interpolation.
           applyOffset(value, post.getOffset());
-
           value.addSupportingSensorValues(post.getUsedValues());
-
-          qcMessages
-            .add("No available external standards run after measurement");
-          if (post.isBad()) {
-            qcMessages.addAll(post.getComments());
-          }
         } else if (!prior.isValid() && post.isValid()) {
 
           // We only found a calibration run before the measurement, so use that
           // without any interpolation.
           applyOffset(value, prior.getOffset());
-
           value.addSupportingSensorValues(prior.getUsedValues());
-
-          qcMessages
-            .add("No available external standards run before measurement");
-
-        } else {
-
+        } else if (prior.isValid() && post.isValid()) {
           // We have valid calibrations either side. Get their offsets, and
           // interpolated to the time of the measured value.
           double offset = Calculators.interpolate(prior.getTime(),
@@ -197,13 +180,6 @@ public class DefaultMeasurementValueCalculator
           value.addSupportingSensorValues(prior.getUsedValues());
           value.addSupportingSensorValues(post.getUsedValues());
         }
-
-        // If any QC messages have been recorded, add them to the value and flag
-        // it.
-        if (qcMessages.size() > 0) {
-          value.overrideQC(Flag.BAD, qcMessages);
-        }
-
       } catch (Exception e) {
         throw new MeasurementValueCalculatorException(
           "Error while calculating calibrated value", e);

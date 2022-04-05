@@ -1037,14 +1037,13 @@ public class DataSetDataDB {
     return result;
   }
 
-  public static RunTypePeriods getRunTypePeriods(DataSource dataSource,
-    Instrument instrument, DataSet dataSet, List<String> allowedRunTypes)
+  public static RunTypePeriods getRunTypePeriods(Connection conn,
+    Instrument instrument, long datasetId)
     throws MissingParamException, DatabaseException, DataSetException {
 
-    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(instrument, "instrument");
-    MissingParam.checkMissing(dataSet, "dataSet");
-    MissingParam.checkMissing(allowedRunTypes, "allowedRunTypes", false);
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
 
     RunTypePeriods result = new RunTypePeriods();
 
@@ -1054,10 +1053,9 @@ public class DataSetDataDB {
     String sensorValuesSQL = DatabaseUtils
       .makeInStatementSql(GET_RUN_TYPES_QUERY, runTypeColumnIds.size());
 
-    try (Connection conn = dataSource.getConnection();
-      PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
+    try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
 
-      stmt.setLong(1, dataSet.getId());
+      stmt.setLong(1, datasetId);
 
       int currentParam = 2;
       for (long column : runTypeColumnIds) {
