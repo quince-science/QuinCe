@@ -10,10 +10,31 @@
           "Diagnostic Water Flow"
         ],
         "options": {
-          "questionable_limit": 1,
-          "bad_limit": 1.5
+          "questionable_limit": 1.5,
+          "bad_limit": 3
         }
-      }
+      },
+      {
+        "name": "MissingStandards",
+        "flagged_sensors": [
+          "xCO₂ (with standards)"
+        ],
+        "options": {
+        }
+      }      
+    ]
+  },
+  {
+    "variable": "Underway Marine pCO₂",
+    "routines": [
+      {
+        "name": "MissingStandards",
+        "flagged_sensors": [
+          "xCO₂ (with standards)"
+        ],
+        "options": {
+        }
+      }      
     ]
   }
 ]
