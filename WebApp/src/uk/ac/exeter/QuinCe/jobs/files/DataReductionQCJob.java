@@ -119,6 +119,8 @@ public class DataReductionQCJob extends DataSetJob {
       }
 
       DataSetDataDB.storeSensorValues(conn, flaggedItems.getSensorValues());
+      DataSetDataDB.storeMeasurementValues(conn,
+        flaggedItems.getMeasurements());
       DataSetDataDB.storeDataReductionQC(conn,
         flaggedItems.getDataReductionRecords());
 

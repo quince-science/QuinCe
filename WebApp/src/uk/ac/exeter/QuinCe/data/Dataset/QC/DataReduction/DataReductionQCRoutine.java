@@ -62,6 +62,14 @@ public abstract class DataReductionQCRoutine implements Routine {
           .getMeasurementValue(sensorType);
 
         if (null != measurementValue) {
+          // Flag the MeasurementValue
+          measurementValue.overrideQC(flag, getShortMessage());
+
+          // Flag the measurement for update - it will save the
+          // MeasurementValues.
+          flaggedItems.add(measurement);
+
+          // Get the sensor values from the MeasurmentValue that need flagging
           valuesToFlag.addAll(measurementValue.getSensorValueIds().stream()
             .map(allSensorValues::getById).collect(Collectors.toList()));
         }
@@ -77,6 +85,7 @@ public abstract class DataReductionQCRoutine implements Routine {
         dataReductionRecord.setQc(flag, getShortMessage());
         flaggedItems.add(dataReductionRecord);
       }
+
     } catch (Exception e) {
       throw new RoutineException("Error while setting QC flags", e);
     }

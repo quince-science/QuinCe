@@ -1094,6 +1094,29 @@ public class DataSetDataDB {
     }
   }
 
+  public static void storeMeasurementValues(Connection conn,
+    Collection<Measurement> measurements)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(measurements, "measurements");
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(STORE_MEASUREMENT_VALUES_STATEMENT)) {
+
+      for (Measurement measurement : measurements) {
+        measurement.postProcessMeasurementValues();
+        stmt.setString(1, measurement.getMeasurementValuesJson());
+        stmt.setLong(2, measurement.getId());
+        stmt.addBatch();
+      }
+
+      stmt.executeBatch();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while storing measurement values", e);
+    }
+  }
+
   public static void deleteDataReduction(Connection conn, long datasetId)
     throws MissingParamException, DatabaseException {
 
