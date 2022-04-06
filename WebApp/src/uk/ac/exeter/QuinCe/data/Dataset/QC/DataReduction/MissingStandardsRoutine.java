@@ -26,7 +26,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 /**
  * QC Routine to detect whether values that are calibrated with external
  * standards had all required standards available.
- * 
+ *
  * @author stevej
  *
  */
