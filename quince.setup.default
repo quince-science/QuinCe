@@ -63,3 +63,6 @@
 
 # Branch used for deployment to production server
 %git_deploy_branch%=master
+
+# Tomcat app mode. Either "Development" or "Production"
+%tomcat_mode%=Development
