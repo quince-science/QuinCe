@@ -104,7 +104,12 @@
       <param-value>true</param-value>
   </context-param>
 
-   <filter>
+  <context-param>
+      <param-name>javax.faces.PROJECT_STAGE</param-name>
+      <param-value>%tomcat_mode%</param-value>
+  </context-param>
+
+  <filter>
       <filter-name>PrimeFaces FileUpload Filter</filter-name>
       <filter-class>org.primefaces.webapp.filter.FileUploadFilter</filter-class>
   </filter>
