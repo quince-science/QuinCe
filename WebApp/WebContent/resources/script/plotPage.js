@@ -1085,7 +1085,7 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   };
   data_options.valueFormatter = function(value, opts, seriesName, dygraph, row, col) {
   if (seriesName != 'Time') {
-    return value;
+    return value.toFixed(3);
   } else {
     return new Date(value).toISOString();
   }
