@@ -1099,7 +1099,7 @@ public class DataSetDataDB {
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(measurements, "measurements");
+    MissingParam.checkMissing(measurements, "measurements", true);
 
     try (PreparedStatement stmt = conn
       .prepareStatement(STORE_MEASUREMENT_VALUES_STATEMENT)) {
