@@ -378,7 +378,7 @@ public class DataSetDataDB {
       throw new DatabaseException("Error while retrieving sensor values", e);
     }
 
-    if (ignoreInternalCalibrations) {
+    if (instrument.hasInternalCalibrations() && ignoreInternalCalibrations) {
       values.removeAll(
         getInternalCalibrationSensorValues(conn, instrument, datasetId));
     }
