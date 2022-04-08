@@ -148,7 +148,7 @@ public class JobManager {
    */
   private static final String REQUEUE_JOBS_STATEMENT = "UPDATE job SET "
     + "status = 'WAITING', started = NULL, ended = NULL, thread_name = NULL, progress = 0, "
-    + "stack_trace = NULL WHERE id IN (%%IDS%%)";
+    + "stack_trace = NULL WHERE id = ?";
 
   /**
    * Query to get the thread names of currently running jobs
@@ -1377,18 +1377,17 @@ public class JobManager {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(jobIds, "jobIds");
 
-    PreparedStatement stmt = null;
+    try (
+      PreparedStatement stmt = conn.prepareStatement(REQUEUE_JOBS_STATEMENT)) {
 
-    try {
-      String statement = REQUEUE_JOBS_STATEMENT.replaceAll("%%IDS%%",
-        StringUtils.collectionToDelimited(jobIds, ";"));
-      stmt = conn.prepareStatement(statement);
-      stmt.execute();
+      for (long id : jobIds) {
+        stmt.setLong(1, id);
+        stmt.addBatch();
+      }
 
+      stmt.executeBatch();
     } catch (SQLException e) {
       throw new DatabaseException("An error occurred while requeuing jobs", e);
-    } finally {
-      DatabaseUtils.closeStatements(stmt);
     }
 
     // Start the next job in the queue
