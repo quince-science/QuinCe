@@ -204,7 +204,7 @@ public class BaseTest {
   /**
    * Check that two integers have the same sign (both negative, both zero or
    * both positive).
-   * 
+   *
    * @param value1
    *          The first value.
    * @param value2
