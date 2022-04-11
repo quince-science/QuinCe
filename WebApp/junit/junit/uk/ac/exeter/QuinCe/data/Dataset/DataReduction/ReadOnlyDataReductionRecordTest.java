@@ -19,7 +19,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
 /**
  * Tests for the {@link ReadOnlyDataReductionRecord} class.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -48,7 +48,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
   /**
    * Test building a record.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -94,7 +94,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
   /**
    * Test overriding QC with lesser QC flag and a single message.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -112,7 +112,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
   /**
    * Test overriding QC with lesser QC flag and multiple messages.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -131,7 +131,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
   /**
    * Test overriding QC with equal QC flag and a single message.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -147,7 +147,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
   /**
    * Test overriding QC with equal QC flag and multiple messages.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -165,7 +165,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
   /**
    * Test overriding QC with more significant QC flag and a single message.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -184,7 +184,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
   /**
    * Test overriding QC with more significant QC flag and multiple messages.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -215,7 +215,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
   /**
    * Test overriding an existing overridden QC with a lesser QC
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -235,7 +235,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
   /**
    * Test overriding an existing overridden QC with an equal QC
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -253,7 +253,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
   /**
    * Test overriding an existing overridden QC with a more significant QC
-   * 
+   *
    * @throws DataReductionException
    */
   @Test

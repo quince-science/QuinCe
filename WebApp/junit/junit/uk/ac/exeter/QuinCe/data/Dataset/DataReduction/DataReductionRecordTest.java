@@ -21,7 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Tests for the {@link DataReductionRecord} class.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -66,7 +66,7 @@ public class DataReductionRecordTest extends BaseTest {
   /**
    * Test that the base constructor (with no calculation values) sets up the
    * object correctly.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -88,7 +88,7 @@ public class DataReductionRecordTest extends BaseTest {
 
   /**
    * Test that a parameter can be set and retrieved.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -127,7 +127,7 @@ public class DataReductionRecordTest extends BaseTest {
 
   /**
    * Test setting basic QC information.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -143,7 +143,7 @@ public class DataReductionRecordTest extends BaseTest {
 
   /**
    * Test setting multiple QC messages.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -161,7 +161,7 @@ public class DataReductionRecordTest extends BaseTest {
 
   /**
    * Test that empty QC messages are not accepted.
-   * 
+   *
    * @param message
    */
   @ParameterizedTest
@@ -176,7 +176,7 @@ public class DataReductionRecordTest extends BaseTest {
 
   /**
    * Test that empty QC messages are accepted for {@link Flag#NO_QC}.
-   * 
+   *
    * @param message
    * @throws DataReductionException
    */
@@ -192,7 +192,7 @@ public class DataReductionRecordTest extends BaseTest {
 
   /**
    * Test that setting less significant QC has no effect.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -204,7 +204,7 @@ public class DataReductionRecordTest extends BaseTest {
 
   /**
    * Test that setting a flag of equal significance adds the message.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test
@@ -218,7 +218,7 @@ public class DataReductionRecordTest extends BaseTest {
 
   /**
    * Test that more significant QC overrides existing QC.
-   * 
+   *
    * @throws DataReductionException
    */
   @Test

@@ -79,7 +79,7 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
 
   /**
    * Set a simple QC flag and single message.
-   * 
+   *
    * @param flag
    *          The QC flag.
    * @param message

@@ -20,7 +20,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 /**
  * Tests for the {@link DataReductionRecord#compareTo(DataReductionRecord)
  * method.
- * 
+ *
  * @author stevej
  *
  */
