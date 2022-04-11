@@ -26,20 +26,23 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
    */
   private final long variableId;
 
+  /**
+   * The parameter names for this record.
+   */
   private final List<String> parameterNames;
 
   /**
-   * Intermediate calculation values
+   * Holds variables calculated for this record.
    */
   private Map<String, Double> calculationValues;
 
   /**
-   * QC Flag
+   * The record's QC Flag.
    */
   private Flag qcFlag;
 
   /**
-   * QC Message
+   * The QC message for the record.
    */
   private NoEmptyStringList qcMessages;
 
@@ -74,23 +77,42 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
 
   }
 
-  public void setQc(Flag flag, String message) {
+  /**
+   * Set a simple QC flag and single message.
+   * 
+   * @param flag
+   *          The QC flag.
+   * @param message
+   *          The QC message.
+   * @throws DataReductionException
+   *           If the QC message is empty.
+   */
+  public void setQc(Flag flag, String message) throws DataReductionException {
     setQc(flag, Arrays.asList(new String[] { message }));
   }
 
   /**
-   * Set the QC details for the record
+   * Set the QC details for the record.
    *
    * @param flag
-   *          The QC flag
+   *          The QC flag.
    * @param message
-   *          The QC messages
+   *          The QC messages.
+   * @throws DataReductionException
+   *           If there are not valid QC messages.
    */
-  public void setQc(Flag flag, List<String> messages) {
+  public void setQc(Flag flag, List<String> messages)
+    throws DataReductionException {
     if (flag.equalSignificance(qcFlag)) {
       qcMessages.addAll(messages);
     } else if (flag.moreSignificantThan(qcFlag)) {
       qcFlag = flag;
+
+      NoEmptyStringList messageList = new NoEmptyStringList(messages);
+      if (!flag.equals(Flag.NO_QC) && messageList.size() == 0) {
+        throw new DataReductionException("Empty QC message not allowed");
+      }
+
       qcMessages = new NoEmptyStringList(messages);
     }
   }
@@ -104,7 +126,7 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
    *          The value
    * @throws DataReductionException
    */
-  protected void put(String parameter, Double value)
+  public void put(String parameter, Double value)
     throws DataReductionException {
     if (!parameterNames.contains(parameter)) {
       throw new DataReductionException(
@@ -154,7 +176,12 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
     return gson.toJson(MathUtils.nanToNull(calculationValues));
   }
 
-  public Double getCalculationValue(String param) {
+  public Double getCalculationValue(String param)
+    throws DataReductionException {
+    if (!parameterNames.contains(param)) {
+      throw new DataReductionException(
+        "Unrecognised calculation parameter '" + param + "'");
+    }
     return calculationValues.get(param);
   }
 

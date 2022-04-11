@@ -124,8 +124,10 @@ public abstract class DataReducer {
    *
    * @param record
    *          The record
+   * @throws DataReductionException
    */
-  protected void makeEmptyRecord(DataReductionRecord record) {
+  protected void makeEmptyRecord(DataReductionRecord record)
+    throws DataReductionException {
     record.setQc(Flag.NO_QC, new ArrayList<String>());
   }
 
