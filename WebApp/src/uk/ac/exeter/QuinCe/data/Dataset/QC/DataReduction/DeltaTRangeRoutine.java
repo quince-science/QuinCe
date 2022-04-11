@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
@@ -14,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 
 public class DeltaTRangeRoutine extends DataReductionQCRoutine {
 
@@ -30,7 +32,18 @@ public class DeltaTRangeRoutine extends DataReductionQCRoutine {
       Measurement measurement = entry.getKey();
       ReadOnlyDataReductionRecord record = entry.getValue();
 
-      Double value = record.getCalculationValue("ΔT");
+      Double value = null;
+
+      try {
+        value = record.getCalculationValue("ΔT");
+      } catch (DataReductionException e) {
+        /*
+         * If we're asking for non-existent values here then something's gone
+         * very wrong in the application logic. Log the error and just return
+         * nulls.
+         */
+        ExceptionUtils.printStackTrace(e);
+      }
 
       if (null != value) {
         RoutineFlag flag = null;

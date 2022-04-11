@@ -1,7 +1,9 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class DataReductionRecordPlotPageTableValue
@@ -33,8 +35,20 @@ public class DataReductionRecordPlotPageTableValue
 
   @Override
   public String getValue() {
-    Double value = record.getCalculationValue(parameterName);
-    return null == value ? null : String.valueOf(value);
+
+    Double result = null;
+
+    try {
+      result = record.getCalculationValue(parameterName);
+    } catch (DataReductionException e) {
+      /*
+       * If we're asking for non-existent values here then something's gone very
+       * wrong in the application logic. Log the error and just return nulls.
+       */
+      ExceptionUtils.printStackTrace(e);
+    }
+
+    return null == result ? null : String.valueOf(result);
   }
 
   @Override

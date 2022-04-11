@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -75,6 +76,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
     String qcMessage) {
 
     List<String> parameterNames = new ArrayList<String>();
+    calculationValues.keySet().forEach(parameterNames::add);
 
     ReadOnlyDataReductionRecord record = new ReadOnlyDataReductionRecord(
       measurementId, variableId, parameterNames, calculationValues, qcFlag,
@@ -109,9 +111,14 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
   }
 
   @Override
-  protected void put(String parameter, Double value)
+  public void put(String parameter, Double value)
     throws DataReductionException {
     throw new NotImplementedException("This record is read only");
+  }
+
+  @Override
+  public void setQc(Flag flag, String message) throws DataReductionException {
+    setQc(flag, Arrays.asList(new String[] { message }));
   }
 
   /**
@@ -121,17 +128,33 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    * @see #overrideQcMessages
    */
   @Override
-  public void setQc(Flag flag, List<String> messages) {
-    if (null == overrideQCFlag || flag.moreSignificantThan(overrideQCFlag)) {
-      overrideQCFlag = flag;
-      overrideQcMessages = new NoEmptyStringList(messages);
-    } else if (null != overrideQCFlag && flag.equals(overrideQCFlag)) {
-      overrideQcMessages.addAll(messages);
+  public void setQc(Flag flag, List<String> messages)
+    throws DataReductionException {
+
+    NoEmptyStringList filteredMessages = new NoEmptyStringList(messages);
+    if (filteredMessages.size() == 0) {
+      throw new DataReductionException("Empty QC message not allowed");
+    }
+
+    if (null == overrideQCFlag) {
+      if (!flag.lessSignificantThan(super.getQCFlag())) {
+        overrideQCFlag = flag;
+        overrideQcMessages = filteredMessages;
+
+      }
+    } else {
+      if (flag.equalSignificance(overrideQCFlag)) {
+        overrideQcMessages.addAll(filteredMessages);
+      } else if (flag.moreSignificantThan(overrideQCFlag)) {
+        overrideQCFlag = flag;
+        overrideQcMessages = filteredMessages;
+      }
     }
   }
 
   /**
-   * Get the QC flag for the record, or the override flag if that is set.
+   * Get the QC flag for the record, or the override flag if that is set and is
+   * more significant than the original flag.
    */
   @Override
   public Flag getQCFlag() {
@@ -159,7 +182,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
     if (null != overrideQCFlag) {
       if (overrideQCFlag.moreSignificantThan(super.getQCFlag())) {
         result = overrideQcMessages;
-      } else if (overrideQCFlag.equals(super.getQCFlag())) {
+      } else if (overrideQCFlag.equalSignificance(super.getQCFlag())) {
         result.addAll(overrideQcMessages);
       }
     }
