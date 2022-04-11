@@ -176,7 +176,12 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
     return gson.toJson(MathUtils.nanToNull(calculationValues));
   }
 
-  public Double getCalculationValue(String param) {
+  public Double getCalculationValue(String param)
+    throws DataReductionException {
+    if (!parameterNames.contains(param)) {
+      throw new DataReductionException(
+        "Unrecognised calculation parameter '" + param + "'");
+    }
     return calculationValues.get(param);
   }
 
