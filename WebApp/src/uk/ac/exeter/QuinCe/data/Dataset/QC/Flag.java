@@ -414,7 +414,7 @@ public class Flag implements Comparable<Flag> {
    * @param flag
    *          The flag to be compared
    * @return {@code true} if this flag is more significant than the supplied
-   *           flag; {@code false} if it is not.
+   *         flag; {@code false} if it is not.
    */
   public boolean moreSignificantThan(Flag flag) {
     boolean result = false;
@@ -435,6 +435,19 @@ public class Flag implements Comparable<Flag> {
     }
 
     return result;
+  }
+
+  /**
+   * Determines whether or not this flag is less significant than the specified
+   * flag.
+   * 
+   * @param flag
+   *          The flag to be compared.
+   * @return {@code true} if this flag is less significant than the supplied
+   *         flag; {@code false} if it is not.
+   */
+  public boolean lessSignificantThan(Flag flag) {
+    return !moreSignificantThan(flag) && !equalSignificance(flag);
   }
 
   /**
@@ -507,7 +520,7 @@ public class Flag implements Comparable<Flag> {
    * @param otherFlag
    *          The flag to be compared.
    * @return {@code true} if the supplied flag is of equal significance to this
-   *           flag; {@code false} otherwise.
+   *         flag; {@code false} otherwise.
    */
   public boolean equalSignificance(Flag otherFlag) {
     return otherFlag.getWoceValue() == getWoceValue();
