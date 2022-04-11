@@ -440,7 +440,7 @@ public class Flag implements Comparable<Flag> {
   /**
    * Determines whether or not this flag is less significant than the specified
    * flag.
-   * 
+   *
    * @param flag
    *          The flag to be compared.
    * @return {@code true} if this flag is less significant than the supplied
