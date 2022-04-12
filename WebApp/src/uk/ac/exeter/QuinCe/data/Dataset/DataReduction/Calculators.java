@@ -169,7 +169,10 @@ public class Calculators {
 
     BigDecimal result = null;
 
-    if (null != y0 && null != y1) {
+    boolean priorNull = null == x0 || null == y0;
+    boolean postNull = null == x1 || null == y1;
+
+    if (!priorNull && !postNull) {
       BigDecimal X1minusX = x1.subtract(x);
       BigDecimal XminusX0 = x.subtract(x0);
       BigDecimal X1minusX0 = x1.subtract(x0);
@@ -180,9 +183,9 @@ public class Calculators {
       BigDecimal top = Y0timesX1minusX.add(Y1timesXminusX0);
 
       result = top.divide(X1minusX0, 10, RoundingMode.HALF_UP);
-    } else if (null != y0) {
+    } else if (!priorNull) {
       result = y0;
-    } else if (null != y1) {
+    } else if (!postNull) {
       result = y1;
     }
 
@@ -216,9 +219,9 @@ public class Calculators {
     if (null == mapEntry) {
       result = true;
     } else if (null == mapEntry.getKey() || mapEntry.getKey().isNaN()) {
-      result = false;
+      result = true;
     } else if (null == mapEntry.getValue() || mapEntry.getValue().isNaN()) {
-      result = false;
+      result = true;
     }
 
     return result;

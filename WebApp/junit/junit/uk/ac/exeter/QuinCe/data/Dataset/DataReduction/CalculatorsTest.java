@@ -1,6 +1,9 @@
 package junit.uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
@@ -166,4 +169,129 @@ public class CalculatorsTest extends BaseTest {
       Calculators.calcfCO2(pCO2, xCO2, pressure, temperature), 0.0001);
   }
 
+  /**
+   * Celsius to Kelvin, positive
+   */
+  @Test
+  public void kelvinPositiveTest() {
+    assertEquals(282.63D, Calculators.kelvin(9.48D), 0.01);
+  }
+
+  /**
+   * Celsius to Kelvin, zero
+   */
+  @Test
+  public void kelvinZeroTest() {
+    assertEquals(273.15D, Calculators.kelvin(0D), 0.01);
+  }
+
+  /**
+   * Celsius to Kelvin, negative
+   */
+  @Test
+  public void kelvinNegativeTest() {
+    assertEquals(263.67D, Calculators.kelvin(-9.48D), 0.01);
+  }
+
+  /**
+   * Kelvin to Celsius, positive
+   */
+  @Test
+  public void celsiusPositiveTest() {
+    assertEquals(9.48D, Calculators.celsius(282.63D), 0.01);
+  }
+
+  /**
+   * Kelvin to Celsius, zero
+   */
+  @Test
+  public void celsiusZeroTest() {
+    assertEquals(0D, Calculators.celsius(273.15D), 0.01);
+  }
+
+  /**
+   * Kelvin to Celsius, negative
+   */
+  @Test
+  public void celsiusNegativeTest() {
+    assertEquals(-9.48D, Calculators.celsius(263.67D), 0.01);
+  }
+
+  @Test
+  public void calcCO2AtSSTTest() {
+    assertEquals(385.9254D, Calculators.calcCO2AtSST(402.43D, 6.34D, 5.35D),
+      0.0001D);
+  }
+
+  @Test
+  public void calcSeaLevelPressureTest() {
+    assertEquals(1024.5142D,
+      Calculators.calcSeaLevelPressure(1023.244D, 7.44D, 10.2F), 0.0001D);
+  }
+
+  @Test
+  public void calcSeaLevelPressureNoHeightTest() {
+    assertEquals(1023.244D,
+      Calculators.calcSeaLevelPressure(1023.244D, 7.44D, null), 0.0001D);
+  }
+
+  @Test
+  public void interpolateDoublesTest() {
+
+    double x0 = 26.533D;
+    double y0 = 8.328D;
+    double x1 = 60.952D;
+    double y1 = 15.685D;
+    double targetX = 37.765D;
+
+    assertEquals(10.7288D, Calculators.interpolate(x0, y0, x1, y1, targetX),
+      0.0001D);
+  }
+
+  @Test
+  public void interpolateTimesNullYsTest() {
+    LocalDateTime time0 = LocalDateTime.of(2020, 1, 1, 12, 10, 00);
+    Double y0 = null;
+    LocalDateTime time1 = LocalDateTime.of(2020, 1, 1, 12, 43, 00);
+    Double y1 = null;
+    LocalDateTime targetTime = LocalDateTime.of(2020, 1, 1, 12, 11, 00);
+
+    assertNull(Calculators.interpolate(time0, y0, time1, y1, targetTime));
+  }
+
+  @Test
+  public void interpolateTimesNullY0Test() {
+    LocalDateTime time0 = LocalDateTime.of(2020, 1, 1, 12, 10, 00);
+    Double y0 = null;
+    LocalDateTime time1 = LocalDateTime.of(2020, 1, 1, 12, 43, 00);
+    Double y1 = 50.602D;
+    LocalDateTime targetTime = LocalDateTime.of(2020, 1, 1, 12, 11, 00);
+
+    assertEquals(50.602D,
+      Calculators.interpolate(time0, y0, time1, y1, targetTime), 0.0001D);
+  }
+
+  @Test
+  public void interpolateTimesNullY1Test() {
+    LocalDateTime time0 = LocalDateTime.of(2020, 1, 1, 12, 10, 00);
+    Double y0 = 5.666D;
+    LocalDateTime time1 = LocalDateTime.of(2020, 1, 1, 12, 43, 00);
+    Double y1 = null;
+    LocalDateTime targetTime = LocalDateTime.of(2020, 1, 1, 12, 11, 00);
+
+    assertEquals(5.666D,
+      Calculators.interpolate(time0, y0, time1, y1, targetTime), 0.0001D);
+  }
+
+  @Test
+  public void interpolateTimesTest() {
+    LocalDateTime time0 = LocalDateTime.of(2020, 1, 1, 12, 10, 00);
+    Double y0 = 5.666D;
+    LocalDateTime time1 = LocalDateTime.of(2020, 1, 1, 12, 43, 00);
+    Double y1 = 50.602D;
+    LocalDateTime targetTime = LocalDateTime.of(2020, 1, 1, 12, 11, 00);
+
+    assertEquals(7.0276D,
+      Calculators.interpolate(time0, y0, time1, y1, targetTime), 0.0001D);
+  }
 }
