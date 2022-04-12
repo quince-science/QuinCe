@@ -239,6 +239,7 @@ function openAssignSensorDialog(sensorType, column) {
 
   PF('sensorAssignmentAssignButton').enable();
   PF('sensorAssignmentDialog').show();
+  checkSensorName(column.colName);
 }
 
 function openDateTimeAssignDialog(dateTimeType, column) {
@@ -471,34 +472,20 @@ function updateStartTime() {
   }
 }
 
-function checkSensorName() {
+function checkSensorNameEvent(event) {
+  checkSensorName(event.target.value.trim());
+}
+
+function checkSensorName(enteredName) {
   let nameOK = true;
 
-  let enteredName = $('#newInstrumentForm\\:sensorAssignmentName').val().trim();
   if (enteredName == "") {
     nameOK = false;
   }
 
   if (nameOK) {
-    let sensorType = $('#newInstrumentForm\\:sensorAssignmentSensorType').val();
-    let sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
-
-    let currentSensorAssignments = null;
-
-    for (let i = 0; i < sensorAssignments.length; i++) {
-      if (sensorAssignments[i]['name'] == sensorType) {
-        currentSensorAssignments = sensorAssignments[i]['assignments'];
-        break;
-      }
-    }
-
-    if (null != currentSensorAssignments && currentSensorAssignments.length > 0) {
-      for (let i = 0; i < currentSensorAssignments.length; i++) {
-        if (currentSensorAssignments[i]['sensorName'] == enteredName) {
-          nameOK = false;
-          break;
-        }
-      }
+    if ($.inArray(enteredName.toLowerCase(), JSON.parse($('#newInstrumentForm\\:assignedSensorNames').val())) >= 0) {
+      nameOK = false;
     }
   }
 

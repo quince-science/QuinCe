@@ -1035,7 +1035,7 @@ public class InstrumentDB {
 
           assignments.addAssignment(new SensorAssignment(assignmentId,
             file.getFileDescription(), fileColumn, sensorType, sensorName,
-            primarySensor, dependsQuestionAnswer, missingValue));
+            primarySensor, dependsQuestionAnswer, missingValue), true);
 
           // Add the run type assignments to the file definition
           if (sensorType.getId() == SensorType.RUN_TYPE_ID) {
