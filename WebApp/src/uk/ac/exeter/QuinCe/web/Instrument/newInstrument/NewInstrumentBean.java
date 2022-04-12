@@ -23,6 +23,7 @@ import org.primefaces.json.JSONObject;
 import org.primefaces.model.TreeNode;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -2170,5 +2171,15 @@ public class NewInstrumentBean extends FileUploadBean {
     }
 
     return result;
+  }
+
+  public String getAssignedSensorNames() {
+    JsonArray json = new JsonArray();
+    sensorAssignments.getAllSensorNames().forEach(json::add);
+    return json.toString();
+  }
+
+  public void setAssignedSensorNames(String name) {
+    // dummy
   }
 }

@@ -16,6 +16,9 @@
     </h:form>
     <h:form id="newInstrumentForm" method="post" charset="utf8">
 
+      <h:inputHidden id="assignedSensorNames"
+        value="#{newInstrumentBean.assignedSensorNames}"/>
+
       <h:inputHidden id="hemisphereFile"
         value="#{newInstrumentBean.hemisphereFile}" />
       <h:inputHidden id="hemisphereCoordinate"
@@ -70,7 +73,7 @@
               <td><p:inputText id="sensorAssignmentName"
                   widgetVar="sensorName"
                   value="#{newInstrumentBean.sensorAssignmentName}" size="20"
-                  onkeyup="checkSensorName()" /></td>
+                  onkeyup="checkSensorNameEvent(event)" /></td>
             </tr>
             <tr>
               <td></td>
@@ -117,7 +120,7 @@
             value="Assign" ajax="true"
             action="#{newInstrumentBean.storeSensorAssignment}"
             process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue"
-            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue assignmentsTree"
+            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue assignmentsTree assignedSensorNames"
             oncomplete="sensorAssigned();" />
           <p:commandButton value="Cancel" ajax="true"
             action="#{newInstrumentBean.resetSensorAssignmentValues}"
