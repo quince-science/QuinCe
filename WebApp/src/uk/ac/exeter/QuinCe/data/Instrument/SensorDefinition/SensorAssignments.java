@@ -543,17 +543,27 @@ public class SensorAssignments
     return ResourceManager.getInstance().getSensorsConfiguration();
   }
 
+  public void addAssignment(SensorAssignment assignment)
+    throws SensorTypeNotFoundException, SensorAssignmentException {
+    addAssignment(assignment, false);
+  }
+
   /**
    * Add a sensor assignment using the ID of a sensor type
    *
    * @param assignment
    *          The assignment details
+   * @param allowDuplicates
+   *          Some historical instruments have duplicate sensor names which
+   *          can't be changed, so we have an option to allow these through.
+   *          Otherwise this should be set to {@code false}.
    * @throws SensorTypeNotFoundException
    *           If the named sensor does not exist
    * @throws SensorAssignmentException
    *           If the file column has already been assigned
    */
-  public void addAssignment(SensorAssignment assignment)
+  public void addAssignment(SensorAssignment assignment,
+    boolean allowDuplicates)
     throws SensorTypeNotFoundException, SensorAssignmentException {
 
     if (getSensorConfig().isParent(assignment.getSensorType())) {
@@ -564,6 +574,12 @@ public class SensorAssignments
       assignment.getColumn())) {
       throw new SensorAssignmentException("File '" + assignment.getDataFile()
         + "', column " + assignment.getColumn() + " has already been assigned");
+    }
+
+    if (!allowDuplicates && getAllSensorNames()
+      .contains(assignment.getSensorName().toLowerCase())) {
+      throw new SensorAssignmentException("Sensor name "
+        + assignment.getSensorName() + " has already been assigned");
     }
 
     TreeSet<SensorAssignment> assignments = get(assignment.getSensorType());
@@ -1008,5 +1024,15 @@ public class SensorAssignments
   public Set<SensorType> getAssignedSensorTypes() {
     return keySet().stream().filter(k -> get(k).size() > 0)
       .collect(Collectors.toCollection(TreeSet::new));
+  }
+
+  /**
+   * Get all assigned sensor names in lower case.
+   *
+   * @return
+   */
+  public List<String> getAllSensorNames() {
+    return values().stream().flatMap(Set::stream)
+      .map(a -> a.getSensorName().toLowerCase()).collect(Collectors.toList());
   }
 }
