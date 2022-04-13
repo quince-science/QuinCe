@@ -13,6 +13,20 @@ public class ExceptionUtils {
 
     StringBuilder output = new StringBuilder();
 
+    output.append(getExceptionString(e));
+
+    if (null != e.getCause()) {
+      output.append("Caused by: ");
+      output.append(getExceptionString(e.getCause()));
+    }
+
+    System.err.print(output);
+  }
+
+  private static String getExceptionString(Throwable e) {
+
+    StringBuilder output = new StringBuilder();
+
     output.append(e.getClass().getCanonicalName());
     output.append(": ");
     output.append(e.getMessage());
@@ -37,7 +51,7 @@ public class ExceptionUtils {
       }
     }
 
-    System.err.print(output);
+    return output.toString();
   }
 
   private static boolean isQuinceElement(StackTraceElement element) {
