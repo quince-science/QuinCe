@@ -365,11 +365,11 @@ public class IsAssignmentRequiredTests extends TestSetTest {
     if (line.getBooleanField(SENSOR_ASSIGN_PRIMARY_COL)) {
       assignments.addAssignment(SensorAssignmentsTest.makeAssignment(
         getSensorType(line, SENSOR_TYPE_COL),
-        SensorAssignmentsTest.DATA_FILE_NAME, 1, true));
+        SensorAssignmentsTest.DATA_FILE_NAME, 1, "Sensor 1", true));
     }
     if (line.getBooleanField(SENSOR_ASSIGN_SECONDARY_COL)) {
-      assignments.addAssignment(SensorAssignmentsTest
-        .makeAssignment(SensorAssignmentsTest.DATA_FILE_NAME, 2, false));
+      assignments.addAssignment(SensorAssignmentsTest.makeAssignment(
+        SensorAssignmentsTest.DATA_FILE_NAME, 2, "Sensor 2", false));
     }
   }
 
@@ -388,12 +388,12 @@ public class IsAssignmentRequiredTests extends TestSetTest {
       if (line.getBooleanField(SIBLING_ASSIGNED_PRIMARY_COL)) {
         assignments.addAssignment(SensorAssignmentsTest.makeAssignment(
           getSensorType(line, RELATION_COL),
-          SensorAssignmentsTest.DATA_FILE_NAME, 3, true));
+          SensorAssignmentsTest.DATA_FILE_NAME, 3, "Sensor 3", true));
       }
       if (line.getBooleanField(SIBLING_ASSIGNED_SECONDARY_COL)) {
         assignments.addAssignment(SensorAssignmentsTest.makeAssignment(
           getSensorType(line, RELATION_COL),
-          SensorAssignmentsTest.DATA_FILE_NAME, 4, false));
+          SensorAssignmentsTest.DATA_FILE_NAME, 4, "Sensor 4", false));
       }
     }
   }
@@ -420,7 +420,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
 
         SensorAssignment assignment = new SensorAssignment(
           SensorAssignmentsTest.DATA_FILE_NAME, 5,
-          getSensorType(line, DEPENDENT_COL), "Assignment", true,
+          getSensorType(line, DEPENDENT_COL), "Dependent 1", true,
           dependsQuestionAnswer, null);
         assignments.addAssignment(assignment);
       }
@@ -434,7 +434,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
 
         SensorAssignment assignment = new SensorAssignment(
           SensorAssignmentsTest.DATA_FILE_NAME, 6,
-          getSensorType(line, DEPENDENT_COL), "Assignment", true,
+          getSensorType(line, DEPENDENT_COL), "Dependent 2", true,
           dependsQuestionAnswer, null);
         assignments.addAssignment(assignment);
       }
@@ -455,12 +455,12 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   private void assignDependentSibling(TestSetLine line) throws Exception {
     if (!line.isFieldEmpty(DEPENDENT_SIBLING_COL)) {
       if (line.getBooleanField(DEPENDENT_SIBLING_ASSIGNED_PRIMARY_COL)) {
-        assignments.addAssignment(SensorAssignmentsTest
-          .makeAssignment(SensorAssignmentsTest.DATA_FILE_NAME, 7, true));
+        assignments.addAssignment(SensorAssignmentsTest.makeAssignment(
+          SensorAssignmentsTest.DATA_FILE_NAME, 7, "Sensor 7", true));
       }
       if (line.getBooleanField(DEPENDENT_SIBLING_ASSIGNED_SECONDARY_COL)) {
-        assignments.addAssignment(SensorAssignmentsTest
-          .makeAssignment(SensorAssignmentsTest.DATA_FILE_NAME, 8, false));
+        assignments.addAssignment(SensorAssignmentsTest.makeAssignment(
+          SensorAssignmentsTest.DATA_FILE_NAME, 8, "Sensor 8", false));
       }
     }
   }

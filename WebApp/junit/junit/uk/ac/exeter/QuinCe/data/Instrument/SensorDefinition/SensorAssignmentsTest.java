@@ -175,16 +175,18 @@ public class SensorAssignmentsTest extends BaseTest {
    *           If any internal errors are encountered.
    */
   protected static SensorAssignment makeAssignment(SensorType sensorType,
-    String file, int column, boolean primary) throws Exception {
+    String file, int column, String sensorName, boolean primary)
+    throws Exception {
 
-    return new SensorAssignment(file, column, sensorType, "Assignment", primary,
+    return new SensorAssignment(file, column, sensorType, sensorName, primary,
       false, "NaN");
   }
 
   protected static SensorAssignment makeAssignment(String file, int column,
-    boolean primary) throws Exception {
+    String sensorName, boolean primary) throws Exception {
 
-    return makeAssignment(getTestSensorType(), file, column, primary);
+    return makeAssignment(getTestSensorType(), file, column, sensorName,
+      primary);
   }
 
   private static SensorType getTestSensorType() throws Exception {
@@ -315,12 +317,17 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   @Test
   public void basicAssignmentTest() throws Exception {
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
+
     Map<SensorType, TreeSet<SensorAssignment>> allAssignments = assignments;
+
     TreeSet<SensorAssignment> sensorAssignments = allAssignments
       .get(config.getSensorType(1));
+
     assertEquals(1, sensorAssignments.size());
-    assertEquals(makeAssignment(DATA_FILE_NAME, 1, true),
+
+    assertEquals(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true),
       sensorAssignments.toArray()[0]);
   }
 
@@ -331,8 +338,9 @@ public class SensorAssignmentsTest extends BaseTest {
   public void assignParentTest() {
     // Parents cannot be assigned; only their children
     assertThrows(SensorAssignmentException.class, () -> {
-      assignments.addAssignment(makeAssignment(
-        getSensorType("Equilibrator Pressure"), DATA_FILE_NAME, 1, true));
+      assignments
+        .addAssignment(makeAssignment(getSensorType("Equilibrator Pressure"),
+          DATA_FILE_NAME, 1, "Equilibrator Pressure", true));
     });
   }
 
@@ -346,9 +354,11 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void duplicateColumnSameSensorTest() throws Exception {
     // The same column can't be assigned more than once
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
     assertThrows(SensorAssignmentException.class, () -> {
-      assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
+      assignments
+        .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 2", true));
     });
   }
 
@@ -363,9 +373,9 @@ public class SensorAssignmentsTest extends BaseTest {
   public void duplicateColumnDifferentSensorTest() throws Exception {
 
     SensorAssignment assignment1 = makeAssignment(getTestSensorType(),
-      DATA_FILE_NAME, 1, true);
+      DATA_FILE_NAME, 1, "Sensor 1", true);
     SensorAssignment assignment2 = makeAssignment(getTestSensorType2(),
-      DATA_FILE_NAME, 1, true);
+      DATA_FILE_NAME, 1, "Sensor 2", true);
 
     assignments.addAssignment(assignment1);
     assignments.addAssignment(assignment2);
@@ -383,12 +393,30 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   @Test
   public void duplicateColumnDifferentFileTest() throws Exception {
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
     SensorAssignment assignment2 = new SensorAssignment(DATA_FILE_2_NAME, 1,
       getTestSensorType(), "Second file sensor", true, false, "NaN");
     assignments.addAssignment(assignment2);
 
     assertEquals(2, countAllAssignments());
+  }
+
+  /**
+   * Test that attempting to assign the same sensor name twice fails.
+   *
+   * @throws Exception
+   *           If any internal errors are encountered.
+   */
+  @Test
+  public void duplicateSensorNameTest() throws Exception {
+    // The same column can't be assigned more than once
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
+    assertThrows(SensorAssignmentException.class, () -> {
+      assignments
+        .addAssignment(makeAssignment(DATA_FILE_NAME, 2, "Sensor 1", true));
+    });
   }
 
   /**
@@ -404,7 +432,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void removeAssignmentTest() throws Exception {
 
-    SensorAssignment assignment = makeAssignment(DATA_FILE_NAME, 1, true);
+    SensorAssignment assignment = makeAssignment(DATA_FILE_NAME, 1, "Sensor 1",
+      true);
     assignments.addAssignment(assignment);
 
     SensorAssignment removedAssignment = assignments
@@ -427,9 +456,12 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   @Test
   public void removeFileAssignmentsTest() throws Exception {
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 2, true));
-    assignments.addAssignment(makeAssignment(DATA_FILE_2_NAME, 1, false));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 2, "Sensor 2", true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_2_NAME, 1, "Sensor 3", false));
     assignments.removeFileAssignments(DATA_FILE_NAME);
     assertEquals(1, countAllAssignments());
   }
@@ -443,14 +475,22 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void addMultipleAssignments() throws Exception {
     // Add multiple assignments to sensor types
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 2, false));
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 3, true));
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 4, false));
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 5, true));
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 6, false));
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 7, true));
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 8, false));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 2, "Sensor 2", false));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 3, "Sensor 3", true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 4, "Sensor 4", false));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 5, "Sensor 5", true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 6, "Sensor 6", false));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 7, "Sensor 7", true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 8, "Sensor 8", false));
     assertEquals(8, countAllAssignments());
 
   }
@@ -471,8 +511,9 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   @Test
   public void coreSensorAssignedPrimaryTest() throws Exception {
-    assignments.addAssignment(makeAssignment(
-      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("xCO₂ (with standards)"),
+        DATA_FILE_NAME, 1, "Sensor 1", true));
     assertTrue(assignments.coreSensorAssigned(DATA_FILE_NAME, true));
     assertFalse(assignments.coreSensorAssigned(DATA_FILE_2_NAME, true));
   }
@@ -485,8 +526,10 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   @Test
   public void coreSensorNotAssignedTest() throws Exception {
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 2, true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 2, "Sensor 2", true));
 
     assertFalse(assignments.coreSensorAssigned(DATA_FILE_NAME, true));
     assertFalse(assignments.coreSensorAssigned(DATA_FILE_2_NAME, true));
@@ -510,8 +553,9 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   @Test
   public void coreSensorSecondaryAssignedTest() throws Exception {
-    assignments.addAssignment(makeAssignment(
-      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, false));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("xCO₂ (with standards)"),
+        DATA_FILE_NAME, 1, "Sensor 1", false));
     assertTrue(assignments.coreSensorAssigned(DATA_FILE_NAME, false));
     assertFalse(assignments.coreSensorAssigned(DATA_FILE_NAME, true));
   }
@@ -529,8 +573,8 @@ public class SensorAssignmentsTest extends BaseTest {
     // variable that your instrument doesn't measure.
 
     assertThrows(SensorAssignmentException.class, () -> {
-      assignments.addAssignment(
-        makeAssignment(getSensorType("testSensor"), DATA_FILE_NAME, 1, true));
+      assignments.addAssignment(makeAssignment(getSensorType("testSensor"),
+        DATA_FILE_NAME, 1, "Sensor 1", true));
     });
   }
 
@@ -550,7 +594,8 @@ public class SensorAssignmentsTest extends BaseTest {
   public void runTypeNotRequiredNoInternalCalibTest() throws Exception {
     // Run type is not required if no sensor with internal calibration is
     // assigned
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
 
     assertFalse(assignments.runTypeRequired(DATA_FILE_NAME));
     assertFalse(assignments.runTypeRequired(DATA_FILE_2_NAME));
@@ -573,8 +618,9 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void runTypeRequiredOneInternalCalibTest() throws Exception {
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("xH₂O (with standards)"),
+        DATA_FILE_NAME, 1, "Sensor 1", true));
 
     assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
     assertFalse(assignments.runTypeRequired(DATA_FILE_2_NAME));
@@ -590,10 +636,12 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   @Test
   public void runTypeRequiredTwoInternalCalibTest() throws Exception {
-    assignments.addAssignment(makeAssignment(
-      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, true));
-    assignments.addAssignment(makeAssignment(
-      getSensorType("xH₂O (with standards)"), DATA_FILE_2_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("xH₂O (with standards)"),
+        DATA_FILE_NAME, 1, "Sensor 1", true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("xH₂O (with standards)"),
+        DATA_FILE_2_NAME, 1, "Sensor 2", true));
 
     assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
     assertTrue(assignments.runTypeRequired(DATA_FILE_2_NAME));
@@ -610,9 +658,9 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void runTypeRequiredBothInternalCalibTest() throws Exception {
     assignments.addAssignment(makeAssignment(
-      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, true));
+      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, "xH2O", true));
     assignments.addAssignment(makeAssignment(
-      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 2, true));
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 2, "xCO2", true));
 
     assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
   }
@@ -637,8 +685,9 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteOneAssignmentTest() throws Exception {
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
+        DATA_FILE_NAME, 1, "Sensor 1", true));
     assertFalse(assignments.isVariableComplete(co2Var));
   }
 
@@ -651,24 +700,26 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteNoDependsTest() throws Exception {
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
+        DATA_FILE_NAME, 1, "Intake Temperature", true));
 
-    assignments.addAssignment(
-      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
+      DATA_FILE_NAME, 2, "Salinity", true));
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Equilibrator Temperature"),
+        DATA_FILE_NAME, 3, "Equilibrator Temperature", true));
 
     assignments.addAssignment(
       makeAssignment(getSensorType("Equilibrator Pressure (absolute)"),
-        DATA_FILE_NAME, 4, true));
+        DATA_FILE_NAME, 4, "Equilibrator Pressure", true));
 
     assignments.addAssignment(makeAssignment(
-      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 5, true));
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 5, "xCO2", true));
 
-    assignments.addAssignment(
-      makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE, DATA_FILE_NAME, 6, true));
+    assignments.addAssignment(makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE,
+      DATA_FILE_NAME, 6, "Run Type", true));
 
     assertTrue(assignments.isVariableComplete(co2Var));
   }
@@ -682,21 +733,23 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteRunTypeNotSetTest() throws Exception {
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
+        DATA_FILE_NAME, 1, "Intake Temperature", true));
 
-    assignments.addAssignment(
-      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
+      DATA_FILE_NAME, 2, "Salinity", true));
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Equilibrator Temperature"),
+        DATA_FILE_NAME, 3, "Equilibrator Temperature", true));
 
     assignments.addAssignment(
       makeAssignment(getSensorType("Equilibrator Pressure (absolute)"),
-        DATA_FILE_NAME, 4, true));
+        DATA_FILE_NAME, 4, "Equilibrator Pressure", true));
 
     assignments.addAssignment(makeAssignment(
-      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 5, true));
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 5, "xCO2", true));
 
     assertFalse(assignments.isVariableComplete(co2Var));
   }
@@ -711,26 +764,28 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteDependsNotSetTest() throws Exception {
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
+        DATA_FILE_NAME, 1, "Intake Temperature", true));
 
-    assignments.addAssignment(
-      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
+      DATA_FILE_NAME, 2, "Salinity", true));
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Equilibrator Temperature"),
+        DATA_FILE_NAME, 3, "Equilibrator Temperature", true));
 
     // Both Absolute and Differential are set, but Pressure At Instrument
     // (which differential depends on) is not set
     assignments.addAssignment(
       makeAssignment(getSensorType("Equilibrator Pressure (absolute)"),
-        DATA_FILE_NAME, 4, true));
+        DATA_FILE_NAME, 4, "Equilibrator Pressure absolute", true));
     assignments.addAssignment(
       makeAssignment(getSensorType("Equilibrator Pressure (differential)"),
-        DATA_FILE_NAME, 5, true));
+        DATA_FILE_NAME, 5, "Equilibrator Pressure differential", true));
 
     assignments.addAssignment(makeAssignment(
-      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 6, true));
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 6, "xCO2", true));
 
     assertFalse(assignments.isVariableComplete(co2Var));
   }
@@ -744,31 +799,34 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteDependsSetTest() throws Exception {
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
+        DATA_FILE_NAME, 1, "Intake Temperature", true));
 
-    assignments.addAssignment(
-      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
+      DATA_FILE_NAME, 2, "Salinity", true));
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Equilibrator Temperature"),
+        DATA_FILE_NAME, 3, "Equilibrator Temperature", true));
 
     assignments.addAssignment(
       makeAssignment(getSensorType("Equilibrator Pressure (absolute)"),
-        DATA_FILE_NAME, 4, true));
+        DATA_FILE_NAME, 4, "Equilibrator Pressure absolute", true));
 
     assignments.addAssignment(
       makeAssignment(getSensorType("Equilibrator Pressure (differential)"),
-        DATA_FILE_NAME, 5, true));
+        DATA_FILE_NAME, 5, "Equilibrator Pressure differential", true));
 
     assignments.addAssignment(makeAssignment(
-      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 6, true));
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 6, "xCO2", true));
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Pressure at instrument"), DATA_FILE_NAME, 7, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Pressure at instrument"),
+        DATA_FILE_NAME, 7, "Pressure at instrument", true));
 
-    assignments.addAssignment(
-      makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE, DATA_FILE_NAME, 8, true));
+    assignments.addAssignment(makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE,
+      DATA_FILE_NAME, 8, "Run Type", true));
 
     assertTrue(assignments.isVariableComplete(co2Var));
   }
@@ -788,24 +846,27 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteDependsQuestionNotSetTest() throws Exception {
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
+        DATA_FILE_NAME, 1, "Intake Temperature", true));
 
-    assignments.addAssignment(
-      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
+      DATA_FILE_NAME, 2, "Salinity", true));
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Equilibrator Temperature"),
+        DATA_FILE_NAME, 3, "Equilibrator Temperature", true));
 
     assignments.addAssignment(
       makeAssignment(getSensorType("Equilibrator Pressure (differential)"),
-        DATA_FILE_NAME, 4, true));
+        DATA_FILE_NAME, 4, "Equilibrator Pressure", true));
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Pressure at instrument"), DATA_FILE_NAME, 6, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Pressure at instrument"),
+        DATA_FILE_NAME, 6, "Pressure at instrument", true));
 
     SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME, 5,
-      getSensorType("xCO₂ (with standards)"), "Assignment", true, true, "NaN");
+      getSensorType("xCO₂ (with standards)"), "xCO2", true, true, "NaN");
     assignments.addAssignment(co2Assignment);
 
     assertFalse(assignments.isVariableComplete(co2Var));
@@ -826,31 +887,34 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteDependsQuestionSetTest() throws Exception {
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Intake Temperature"), DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
+        DATA_FILE_NAME, 1, "Intake Temperature", true));
 
-    assignments.addAssignment(
-      makeAssignment(getSensorType("Salinity"), DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
+      DATA_FILE_NAME, 2, "Salinity", true));
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Equilibrator Temperature"), DATA_FILE_NAME, 3, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Equilibrator Temperature"),
+        DATA_FILE_NAME, 3, "Equilibrator Temperature", true));
 
     assignments.addAssignment(
       makeAssignment(getSensorType("Equilibrator Pressure (differential)"),
-        DATA_FILE_NAME, 4, true));
+        DATA_FILE_NAME, 4, "Equilibrator Pressure", true));
 
-    assignments.addAssignment(makeAssignment(
-      getSensorType("Pressure at instrument"), DATA_FILE_NAME, 6, true));
+    assignments
+      .addAssignment(makeAssignment(getSensorType("Pressure at instrument"),
+        DATA_FILE_NAME, 6, "Pressure at instrument", true));
 
     SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME, 5,
-      getSensorType("xCO₂ (with standards)"), "Assignment", true, true, "NaN");
+      getSensorType("xCO₂ (with standards)"), "xCO2", true, true, "NaN");
     assignments.addAssignment(co2Assignment);
 
     assignments.addAssignment(makeAssignment(
-      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 7, true));
+      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 7, "xH2O", true));
 
-    assignments.addAssignment(
-      makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE, DATA_FILE_NAME, 8, true));
+    assignments.addAssignment(makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE,
+      DATA_FILE_NAME, 8, "Run Type", true));
 
     assertTrue(assignments.isVariableComplete(co2Var));
   }
@@ -879,7 +943,8 @@ public class SensorAssignmentsTest extends BaseTest {
   public void runTypeRequiredNoInternalCalibrationsAssignedTest()
     throws Exception {
 
-    assignments.addAssignment(makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments
+      .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
 
     assertFalse(
       assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
@@ -897,7 +962,7 @@ public class SensorAssignmentsTest extends BaseTest {
     throws Exception {
 
     assignments.addAssignment(makeAssignment(
-      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, true));
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, "xCO2", true));
 
     assertTrue(
       assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
@@ -915,10 +980,10 @@ public class SensorAssignmentsTest extends BaseTest {
     throws Exception {
 
     assignments.addAssignment(makeAssignment(
-      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, true));
+      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, "xCO2", true));
 
-    assignments.addAssignment(
-      makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE, DATA_FILE_NAME, 2, true));
+    assignments.addAssignment(makeAssignment(SensorType.RUN_TYPE_SENSOR_TYPE,
+      DATA_FILE_NAME, 2, "Sensor 1", true));
 
     assertFalse(
       assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
