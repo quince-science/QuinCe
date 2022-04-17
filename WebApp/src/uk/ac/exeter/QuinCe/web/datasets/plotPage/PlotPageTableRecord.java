@@ -71,7 +71,7 @@ public class PlotPageTableRecord {
    *          Indicates whether or not a user QC flag is needed.
    */
   public void addColumn(LocalDateTime value) {
-    addColumn(new SimplePlotPageTableValue(value, false));
+    addColumn(new SimplePlotPageTableValue(value, null, false));
   }
 
   public void addColumn(SensorValue sensorValue) {

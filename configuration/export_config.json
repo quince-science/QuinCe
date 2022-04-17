@@ -6,6 +6,7 @@
     "includeCalculationColumns": true,
     "includeUnits": false,
     "timestampHeader": "date time [ yyyy-mm-dd hh:mm:ss ]",
+    "timestampFormat": "uuuu-MM-dd HH:mm:ss",
     "replaceColumnHeaders": {
       "ALATGP01": "latitude [ deg N ]",
       "ALONGP01": "longitude [ deg E ]",

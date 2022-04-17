@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -59,10 +60,13 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    * @param time
    *          The timestamp.
    */
-  public SimplePlotPageTableValue(LocalDateTime time, boolean milliseconds) {
+  public SimplePlotPageTableValue(LocalDateTime time,
+    DateTimeFormatter formatter, boolean milliseconds) {
 
     if (milliseconds) {
       this.value = String.valueOf(DateTimeUtils.dateToLong(time));
+    } else if (null != formatter) {
+      this.value = formatter.format(time);
     } else {
       this.value = DateTimeUtils.toIsoDate(time);
     }
