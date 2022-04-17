@@ -70,7 +70,7 @@ public class SimplePlotPageDataStructure {
     columnHeadings.forEach(x -> columns.put(x, null));
 
     if (null != timeHeading) {
-      columns.put(timeHeading, new SimplePlotPageTableValue(time, false));
+      columns.put(timeHeading, new SimplePlotPageTableValue(time, null, false));
     }
 
     pageData.put(time, columns);

@@ -17,6 +17,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Export.ExportOption;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -25,6 +27,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -51,6 +54,8 @@ public class ExportData extends ManualQCData {
 
   private static final long DEPTH_ID = -10002L;
 
+  private ExportOption exportOption = null;
+
   private FixedPlotPageTableValue lonValue = null;
 
   private FixedPlotPageTableValue latValue = null;
@@ -58,8 +63,9 @@ public class ExportData extends ManualQCData {
   private FixedPlotPageTableValue depthValue = null;
 
   public ExportData(DataSource dataSource, Instrument instrument,
-    DataSet dataset) throws SQLException {
+    DataSet dataset, ExportOption exportOption) throws SQLException {
     super(dataSource, instrument, dataset);
+    this.exportOption = exportOption;
   }
 
   @Override
@@ -149,7 +155,12 @@ public class ExportData extends ManualQCData {
     // TODO Replace this with something more generic. See issue #1845
     PlotPageTableValue value = null;
 
-    if (columnId == FIXED_LON_ID) {
+    // The time is just the time
+    if (columnId == FileDefinition.TIME_COLUMN_ID) {
+      LocalDateTime rowTime = DateTimeUtils.longToDate(rowId);
+      value = new SimplePlotPageTableValue(rowTime,
+        exportOption.getTimestampFormatter(), false);
+    } else if (columnId == FIXED_LON_ID) {
       value = lonValue;
     } else if (columnId == FIXED_LAT_ID) {
       value = latValue;

@@ -2,6 +2,8 @@ package uk.ac.exeter.QuinCe.data.Export;
 
 import java.lang.reflect.Constructor;
 import java.sql.Connection;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -105,6 +107,11 @@ public class ExportOption {
    * The header for the timestamp column
    */
   private String timestampHeader = null;
+
+  /**
+   * The format to use for timestamps.
+   */
+  private DateTimeFormatter timestampFormat = null;
 
   /**
    * QC Flag header suffix
@@ -306,6 +313,11 @@ public class ExportOption {
       timestampHeader = json.getString("timestampHeader");
     }
 
+    if (json.has("timestampFormat")) {
+      timestampFormat = makeTimestampFormatter(
+        json.getString("timestampFormat"));
+    }
+
     if (json.has("qcFlagSuffix")) {
       qcFlagSuffix = json.getString("qcFlagSuffix");
     }
@@ -348,6 +360,10 @@ public class ExportOption {
     }
   }
 
+  private DateTimeFormatter makeTimestampFormatter(String format) {
+    return DateTimeFormatter.ofPattern(format).withZone(ZoneOffset.UTC);
+  }
+
   @SuppressWarnings("unchecked")
   private String checkExportDataClass(String className) {
 
@@ -366,7 +382,7 @@ public class ExportOption {
         try {
           // Check that the correct constructor is available
           testClass.getConstructor(DataSource.class, Instrument.class,
-            DataSet.class);
+            DataSet.class, this.getClass());
         } catch (NoSuchMethodException e) {
           errorMessage = "No valid constructor found in " + className;
         }
@@ -447,6 +463,10 @@ public class ExportOption {
     return timestampHeader;
   }
 
+  public DateTimeFormatter getTimestampFormatter() {
+    return timestampFormat;
+  }
+
   public String getReplacementHeader(String code) {
     String result = null;
     if (null != replacementColumnHeaders
@@ -482,10 +502,10 @@ public class ExportOption {
 
     try {
       Constructor<?> constructor = dataClass.getConstructor(DataSource.class,
-        Instrument.class, DataSet.class);
+        Instrument.class, DataSet.class, this.getClass());
 
       return (ExportData) constructor.newInstance(dataSource, instrument,
-        dataset);
+        dataset, this);
     } catch (Exception e) {
       throw new ExportConfigurationException(name,
         "Error creating ExportData object", e);
