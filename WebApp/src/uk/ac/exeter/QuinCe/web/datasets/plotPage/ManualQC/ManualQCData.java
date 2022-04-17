@@ -841,7 +841,7 @@ public class ManualQCData extends PlotPageData {
 
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
       for (LocalDateTime time : sensorValues.getTimes()) {
-        result.put(time, new SimplePlotPageTableValue(time, true));
+        result.put(time, new SimplePlotPageTableValue(time, null, true));
       }
     } else if (sensorValues.containsColumn(column.getId())) {
 
@@ -979,7 +979,7 @@ public class ManualQCData extends PlotPageData {
 
       // The time is just the time
       if (columnId == FileDefinition.TIME_COLUMN_ID) {
-        result = new SimplePlotPageTableValue(rowTime, false);
+        result = new SimplePlotPageTableValue(rowTime, null, false);
 
       } else if (columnId == FileDefinition.LONGITUDE_COLUMN_ID) {
         result = getInterpolatedPositionValue(SensorType.LONGITUDE_SENSOR_TYPE,

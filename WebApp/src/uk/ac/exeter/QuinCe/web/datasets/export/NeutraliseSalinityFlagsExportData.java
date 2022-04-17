@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.export;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -49,8 +51,9 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
     "xCO₂ (with standards)" };
 
   public NeutraliseSalinityFlagsExportData(DataSource dataSource,
-    Instrument instrument, DataSet dataSet) throws Exception {
-    super(dataSource, instrument, dataSet);
+    Instrument instrument, DataSet dataset, ExportOption exportOption)
+    throws SQLException {
+    super(dataSource, instrument, dataset, exportOption);
   }
 
   @Override
