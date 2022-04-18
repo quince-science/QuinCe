@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.data.Export;
 
 import java.lang.reflect.Constructor;
 import java.sql.Connection;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +20,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
 
@@ -314,8 +314,8 @@ public class ExportOption {
     }
 
     if (json.has("timestampFormat")) {
-      timestampFormat = makeTimestampFormatter(
-        json.getString("timestampFormat"));
+      timestampFormat = DateTimeUtils
+        .makeDateTimeFormatter(json.getString("timestampFormat"));
     }
 
     if (json.has("qcFlagSuffix")) {
@@ -358,10 +358,6 @@ public class ExportOption {
       // Since we've already checked the class, this shouldn't really happen
       throw new ExportConfigurationException(name, e);
     }
-  }
-
-  private DateTimeFormatter makeTimestampFormatter(String format) {
-    return DateTimeFormatter.ofPattern(format).withZone(ZoneOffset.UTC);
   }
 
   @SuppressWarnings("unchecked")

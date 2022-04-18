@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.utils;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.OptionalDouble;
@@ -205,5 +206,17 @@ public class DateTimeUtils {
       .map(DateTimeUtils::dateToLong).mapToLong(Long::valueOf).average();
 
     return longToDate(Double.valueOf(mean.getAsDouble()).longValue());
+  }
+
+  /**
+   * Create a {@link DateTimeFormatter} of the specified format, ensuring that
+   * it uses the UTC timezone.
+   * 
+   * @param format
+   *          The format string.
+   * @return The formatter.
+   */
+  public static DateTimeFormatter makeDateTimeFormatter(String format) {
+    return DateTimeFormatter.ofPattern(format).withZone(ZoneOffset.UTC);
   }
 }
