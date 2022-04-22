@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -69,7 +70,8 @@ public class RunTypeMeasurementLocator extends MeasurementLocator {
       int currentRunTypeTime = 0;
 
       for (SensorValue sensorValue : sensorValues) {
-        if (null != sensorValue.getValue()) {
+        if (null != sensorValue.getValue()
+          && !sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
           LocalDateTime measurementTime = sensorValue.getTime();
 
           // Get the run type for this measurement
