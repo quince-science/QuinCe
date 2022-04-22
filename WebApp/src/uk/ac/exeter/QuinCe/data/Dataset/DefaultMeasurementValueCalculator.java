@@ -216,9 +216,9 @@ public class DefaultMeasurementValueCalculator
        * out any bad ones.
        */
       List<SensorValue> runSensorValues = runTypeMeasurements.stream()
-        .map(m -> sensorValues.get(m.getTime()))
-        .filter(v -> v.getUserQCFlag().isGood())
-        .filter(v -> !v.getDoubleValue().isNaN()).collect(Collectors.toList());
+        .map(m -> sensorValues.get(m.getTime())).filter(v -> null != v)
+        .filter(v -> !v.getDoubleValue().isNaN())
+        .filter(v -> v.getUserQCFlag().isGood()).collect(Collectors.toList());
 
       Mean mean = new Mean();
 
