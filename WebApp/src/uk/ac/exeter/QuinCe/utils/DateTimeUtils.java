@@ -211,7 +211,7 @@ public class DateTimeUtils {
   /**
    * Create a {@link DateTimeFormatter} of the specified format, ensuring that
    * it uses the UTC timezone.
-   * 
+   *
    * @param format
    *          The format string.
    * @return The formatter.
