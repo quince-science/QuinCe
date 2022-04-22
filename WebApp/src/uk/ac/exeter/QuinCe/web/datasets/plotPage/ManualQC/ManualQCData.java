@@ -507,9 +507,7 @@ public class ManualQCData extends PlotPageData {
 
         records.add(record);
       }
-    } catch (
-
-    Exception e) {
+    } catch (Exception e) {
       error("Error loading table data", e);
     }
 

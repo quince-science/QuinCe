@@ -120,9 +120,7 @@ public class DataReductionRecordTest extends BaseTest {
   public void getBadParameterTest() {
     DataReductionRecord record = makeEmptyRecord();
 
-    assertThrows(DataReductionException.class, () -> {
-      record.getCalculationValue("BadParam");
-    });
+    assertNull(record.getCalculationValue("BadParam"));
   }
 
   /**
