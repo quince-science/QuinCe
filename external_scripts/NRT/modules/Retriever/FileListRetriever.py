@@ -4,8 +4,8 @@ from abc import abstractmethod
 from hashlib import sha256
 from pathlib import PurePath
 
-from DataRetriever import DataRetriever
-from NotFoundException import NotFoundException
+from modules.Retriever import DataRetriever
+from modules.Retriever.NotFoundException import NotFoundException
 
 STATUS_COMPLETE = 1
 STATUS_RETRY = 0
@@ -16,7 +16,7 @@ def timestamp():
     return int(time.time())
 
 
-class FileListRetriever(DataRetriever):
+class FileListRetriever(DataRetriever.DataRetriever):
     """
     Base class for a retriever based on list of files.
     The files are not deleted when they've been processed,

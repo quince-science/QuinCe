@@ -6,13 +6,12 @@ import pandas as pd
 import uuid
 import tempfile
 import toml
-import shutil
 
-from Preprocessor import Preprocessor
-from PreprocessorError import PreprocessorError
+from modules.Preprocessor import Preprocessor
+from modules.Preprocessor.PreprocessorError import PreprocessorError
 
 
-class SQLiteExtractor(Preprocessor):
+class SQLiteExtractor(Preprocessor.Preprocessor):
     def __init__(self, logger, configuration=None):
         super().__init__(logger, configuration)
 

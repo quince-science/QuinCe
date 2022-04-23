@@ -1,14 +1,14 @@
 # Run a preprocessor on a file
 import sys
 from io import BytesIO
-import PreprocessorFactory
+from modules.Preprocessor import PreprocessorFactory
 
 
 def main():
     if len(sys.argv) != 2:
         print("Usage: preprocess_file.py <file>")
 
-    preprocessor = PreprocessorFactory.get_new_instance(PreprocessorFactory.ask_preprocessor())
+    preprocessor = PreprocessorFactory.get_new_instance(PreprocessorFactory.ask_preprocessor_type())
 
     in_file = open(sys.argv[1], "rb")
     in_bytes = in_file.read()

@@ -2,10 +2,10 @@ import logging
 import traceback
 from ftplib import FTP
 
-from FileListRetriever import FileListRetriever
+from modules.Retriever import FileListRetriever
 
 
-class FTPRetriever(FileListRetriever):
+class FTPRetriever(FileListRetriever.FileListRetriever):
     """
     File retriever for files held on an FTP server.
     """

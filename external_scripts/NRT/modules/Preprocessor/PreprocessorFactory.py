@@ -1,6 +1,6 @@
-from AddSalinityPreprocessor import AddSalinityPreprocessor
-from NonePreprocessor import NonePreprocessor
-from SQLiteExtractor import SQLiteExtractor
+from modules.Preprocessor.AddSalinityPreprocessor import AddSalinityPreprocessor
+from modules.Preprocessor.NonePreprocessor import NonePreprocessor
+from modules.Preprocessor.SQLiteExtractor import SQLiteExtractor
 
 
 def _get_retriever_classes():

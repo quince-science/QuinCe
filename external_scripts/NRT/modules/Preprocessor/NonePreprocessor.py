@@ -1,7 +1,7 @@
-from Preprocessor import Preprocessor
+from modules.Preprocessor import Preprocessor
 
 
-class NonePreprocessor(Preprocessor):
+class NonePreprocessor(Preprocessor.Preprocessor):
     def __init__(self, logger, configuration):
         super().__init__(logger, configuration)
 
