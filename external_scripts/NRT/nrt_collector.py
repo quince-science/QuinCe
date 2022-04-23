@@ -134,59 +134,60 @@ def main():
                            "Time for check")
 
             # Build the retriever
-            retriever = RetrieverFactory.get_instance(instrument["type"],
-                                                      instrument_id, logger, json.loads(instrument["config"]))
+            if instrument["config"] is not None:
+                retriever = RetrieverFactory.get_instance(instrument["type"],
+                                                          instrument_id, logger, json.loads(instrument["config"]))
 
-            # Make sure configuration is still valid
-            if not retriever.test_configuration():
-                log_instrument(logger, instrument_id, logging.ERROR,
-                               "Configuration invalid")
-            # Initialise the retriever
-            elif not retriever.startup():
-                log_instrument(logger, instrument_id, logging.ERROR,
-                               "Could not initialise retriever")
-            else:
-                preprocessor = None if instrument["preprocessor"] is None else \
-                    PreprocessorFactory.get_instance(instrument["preprocessor"],
-                                                     logger, json.loads(instrument["preprocessor_config"]))
+                # Make sure configuration is still valid
+                if not retriever.test_configuration():
+                    log_instrument(logger, instrument_id, logging.ERROR,
+                                   "Configuration invalid")
+                # Initialise the retriever
+                elif not retriever.startup():
+                    log_instrument(logger, instrument_id, logging.ERROR,
+                                   "Could not initialise retriever")
+                else:
+                    preprocessor = None if instrument["preprocessor"] is None else \
+                        PreprocessorFactory.get_instance(instrument["preprocessor"],
+                                                         logger, json.loads(instrument["preprocessor_config"]))
 
-                # Loop through all files returned by the retriever one by one
-                while retriever.load_next_files():
-                    for file in retriever.current_files:
+                    # Loop through all files returned by the retriever one by one
+                    while retriever.load_next_files():
+                        for file in retriever.current_files:
 
-                        log_instrument(logger, instrument_id, logging.DEBUG,
-                                       "Uploading " + file["filename"] + " to FTP server")
-
-                        upload_result = upload_file(logger, ftp_conn, config["FTP"],
-                                                    instrument_id, preprocessor,
-                                                    preprocessor.get_processed_filename(file["filename"]),
-                                                    file["contents"])
-
-                        if upload_result == nrtftp.NOT_INITIALISED:
-                            log_instrument(logger, instrument_id, logging.ERROR,
-                                           "FTP not initialised")
-                            retriever.file_failed()
-                        elif upload_result == nrtftp.FILE_EXISTS:
                             log_instrument(logger, instrument_id, logging.DEBUG,
-                                           "File exists on FTP "
-                                           + "server - will retry later")
-                            retriever.file_not_processed()
-                        elif upload_result == nrtftp.UPLOAD_OK:
-                            log_instrument(logger, instrument_id, logging.DEBUG,
-                                           "File uploaded OK (look for individual failures in ZIPs)")
-                            retriever.file_succeeded()
-                        elif upload_result == PREPROCESSOR_FAILED:
-                            log_instrument(logger, instrument_id, logging.DEBUG,
-                                           "File preprocessor failed")
-                            retriever.file_failed()
-                        else:
-                            log_instrument(logger, instrument_id, logging.CRITICAL,
-                                           "Unrecognised upload result " + str(upload_result))
-                            exit()
+                                           "Uploading " + file["filename"] + " to FTP server")
 
-                retriever.shutdown()
+                            upload_result = upload_file(logger, ftp_conn, config["FTP"],
+                                                        instrument_id, preprocessor,
+                                                        preprocessor.get_processed_filename(file["filename"]),
+                                                        file["contents"])
 
-                nrtdb.set_last_check(db_conn, instrument)
+                            if upload_result == nrtftp.NOT_INITIALISED:
+                                log_instrument(logger, instrument_id, logging.ERROR,
+                                               "FTP not initialised")
+                                retriever.file_failed()
+                            elif upload_result == nrtftp.FILE_EXISTS:
+                                log_instrument(logger, instrument_id, logging.DEBUG,
+                                               "File exists on FTP "
+                                               + "server - will retry later")
+                                retriever.file_not_processed()
+                            elif upload_result == nrtftp.UPLOAD_OK:
+                                log_instrument(logger, instrument_id, logging.DEBUG,
+                                               "File uploaded OK (look for individual failures in ZIPs)")
+                                retriever.file_succeeded()
+                            elif upload_result == PREPROCESSOR_FAILED:
+                                log_instrument(logger, instrument_id, logging.DEBUG,
+                                               "File preprocessor failed")
+                                retriever.file_failed()
+                            else:
+                                log_instrument(logger, instrument_id, logging.CRITICAL,
+                                               "Unrecognised upload result " + str(upload_result))
+                                exit()
+
+                    retriever.shutdown()
+
+                    nrtdb.set_last_check(db_conn, instrument)
 
     if ftp_conn is not None:
         ftp_conn.close()
