@@ -10,12 +10,12 @@ from bisect import bisect
 
 import toml
 
-import PreprocessorFactory
-import RetrieverFactory
+from modules.Preprocessor import PreprocessorFactory
+from modules.Retriever import RetrieverFactory
 # Local modules
 import nrtdb
 import nrtftp
-from PreprocessorError import PreprocessorError
+from modules.Preprocessor.PreprocessorError import PreprocessorError
 
 IGNORE_REGEXPS = [".*err.txt"]
 PREPROCESSOR_FAILED = -10

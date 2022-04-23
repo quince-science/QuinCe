@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
-from Preprocessor import Preprocessor
+from modules.Preprocessor import Preprocessor
 from netCDF4 import Dataset
 
 
@@ -61,7 +61,7 @@ def make_indices(dataframe):
     return indices
 
 
-class AddSalinityPreprocessor(Preprocessor):
+class AddSalinityPreprocessor(Preprocessor.Preprocessor):
 
     SALINITY_FILE = "salinity_data/woa18_seasonal_surface_salinity.nc"
     SALINITY_VAR = "salinity"

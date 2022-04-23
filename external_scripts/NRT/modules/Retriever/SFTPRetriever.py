@@ -1,13 +1,12 @@
 import logging
 import traceback
 import pysftp
-from pathlib import PurePath
 from io import BytesIO
 
-from FileListRetriever import FileListRetriever
+from modules.Retriever import FileListRetriever
 
 
-class SFTPRetriever(FileListRetriever):
+class SFTPRetriever(FileListRetriever.FileListRetriever):
     """
     File retriever for files held on an FTP server.
     """

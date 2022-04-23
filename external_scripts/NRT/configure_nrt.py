@@ -7,8 +7,8 @@ import toml
 from tabulate import tabulate
 
 # Local modules
-import PreprocessorFactory
-import RetrieverFactory
+from modules.Preprocessor import PreprocessorFactory
+from modules.Retriever import RetrieverFactory
 import quince
 import nrtdb
 import nrtftp
@@ -183,7 +183,6 @@ def main():
                     instrument = nrtdb.get_instrument(db_conn, instrument_id)
                     if instrument is not None:
                         retriever = None
-                        preprocessor = None
 
                         print()
                         print("Current configuration for instrument %d (%s):" %
@@ -228,7 +227,8 @@ def main():
                                     preprocessor = PreprocessorFactory.get_new_instance(new_preprocessor_type)
                                 else:
                                     existing_config = "{}"
-                                    if "preprocessor_config" in instrument and instrument["preprocessor_config"] is not None:
+                                    if "preprocessor_config" in instrument \
+                                            and instrument["preprocessor_config"] is not None:
                                         existing_config = instrument["preprocessor_config"]
 
                                     preprocessor = PreprocessorFactory.get_instance(new_preprocessor_type, logger,

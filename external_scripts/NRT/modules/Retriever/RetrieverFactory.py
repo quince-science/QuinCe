@@ -1,6 +1,6 @@
-from ImapRetriever import ImapRetriever
-from FTPRetriever import FTPRetriever
-from SFTPRetriever import SFTPRetriever
+from modules.Retriever.ImapRetriever import ImapRetriever
+from modules.Retriever.FTPRetriever import FTPRetriever
+from modules.Retriever.SFTPRetriever import SFTPRetriever
 
 
 # Factory for DataRetriever instances
