@@ -6,7 +6,7 @@ import ssl
 
 from imapclient import IMAPClient
 
-from DataRetriever import DataRetriever
+from modules.Retriever import DataRetriever
 
 '''
 Extract a filename, handling encoded filenames as required
@@ -22,7 +22,7 @@ def _extract_filename(filename):
     return result
 
 
-class ImapRetriever(DataRetriever):
+class ImapRetriever(DataRetriever.DataRetriever):
 
     def __init__(self, instrument_id, logger, configuration=None):
         super().__init__(instrument_id, logger, configuration)
