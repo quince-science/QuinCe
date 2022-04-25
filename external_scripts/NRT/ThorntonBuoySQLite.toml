@@ -1,0 +1,109 @@
+[output]
+
+  # The column headers for the output file
+  # To join two fields add a tilde sign (~) between the names
+  columns = [
+    "Timestamp",
+    "Measurement type",
+    "Zero A/D",
+    "Current A/D",
+    "CO2",
+    "IRGA temperature",
+    "Humidity",
+    "Humidity sensor temperature",
+    "Cell gas pressure",
+    "IRGA detector temperature",
+    "IRGA source temperature",
+    "Battery voltage",
+    "Longitude",
+    "Latitude",
+    "Water Temperature",
+    "Air Temperature"
+  ]
+
+  # Timestamp column.
+  timestamp_column = "Timestamp"
+
+  # Value to store in empty columns
+  empty_col_value = "NaN"
+
+[input]
+  [[input.tables]]
+    name = "sbe37"
+
+    fixed_values = [
+      ["Measurement type", ""]
+    ]
+
+    # Outfield = Infield
+    mapping = [
+      ["Timestamp", "TimeStamp"],
+      ["Water Temperature", "temperature"]
+    ]
+
+    timestamp_format = "%Y-%m-%d %H:%M:%S"
+
+  [[input.tables]]
+    name = "meteo"
+
+    fixed_values = [
+      ["Measurement type", ""]
+    ]
+
+    # Outfield = Infield
+    mapping = [
+      ["Timestamp", "timestamp"],
+      ["Longitude", "longitude"],
+      ["Latitude", "latitude"],
+      ["Air Temperature", "temperature"]
+    ]
+
+    timestamp_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+  [[input.tables]]
+    name = "co2atm"
+
+    fixed_values = [
+      ["Measurement type", "A M"]
+    ]
+
+    # Outfield = Infield
+    mapping = [
+      ["Timestamp", "TimeStamp"],
+      ["Zero A/D", "Zero_AD"],
+      ["Current A/D", "Current_AD"],
+      ["CO2", "CO2_Avg"],
+      ["IRGA temperature", "IRGAavgTemp_Avg"],
+      ["Humidity", "Humidity_Avg"],
+      ["Humidity sensor temperature", "HumidTemp_Avg"],
+      ["Cell gas pressure", "GasStrPressure_Avg"],
+      ["IRGA detector temperature", "IRGAdetTemp_Avg"],
+      ["IRGA source temperature", "IRGAsourceTemp_Avg"],
+      ["Battery voltage", "SupplyVoltage_Avg"]
+    ]
+
+    timestamp_format = "%Y-%m-%d %H:%M:%S"
+
+  [[input.tables]]
+    name = "co2water"
+
+    fixed_values = [
+      ["Measurement type", "W M"]
+    ]
+
+    # Outfield = Infield
+    mapping = [
+      ["Timestamp", "TimeStamp"],
+      ["Zero A/D", "Zero_AD"],
+      ["Current A/D", "Current_AD"],
+      ["CO2", "CO2_Avg"],
+      ["IRGA temperature", "IRGAavgTemp_Avg"],
+      ["Humidity", "Humidity_Avg"],
+      ["Humidity sensor temperature", "HumidTemp_Avg"],
+      ["Cell gas pressure", "GasStrPressure_Avg"],
+      ["IRGA detector temperature", "IRGAdetTemp_Avg"],
+      ["IRGA source temperature", "IRGAsourceTemp_Avg"],
+      ["Battery voltage", "SupplyVoltage_Avg"]
+    ]
+
+    timestamp_format = "%Y-%m-%d %H:%M:%S"
