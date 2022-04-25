@@ -232,24 +232,26 @@ public class AutoQCJob extends DataSetJob {
       }
 
       // Now the External Standards routines
-      ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfig = ResourceManager
-        .getInstance().getExternalStandardsRoutinesConfiguration();
+      if (instrument.hasInternalCalibrations()) {
+        ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfig = ResourceManager
+          .getInstance().getExternalStandardsRoutinesConfiguration();
 
-      for (long columnId : sensorValues.getColumnIds()) {
+        for (long columnId : sensorValues.getColumnIds()) {
 
-        SensorType sensorType = sensorAssignments
-          .getSensorTypeForDBColumn(columnId);
+          SensorType sensorType = sensorAssignments
+            .getSensorTypeForDBColumn(columnId);
 
-        CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
-          .getMostRecentCalibrations(conn, instrument, dataSet.getStart());
+          CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
+            .getMostRecentCalibrations(conn, instrument, dataSet.getStart());
 
-        if (sensorType.hasInternalCalibration()) {
-          for (AbstractAutoQCRoutine routine : externalStandardsRoutinesConfig
-            .getRoutines(sensorType)) {
+          if (sensorType.hasInternalCalibration()) {
+            for (AbstractAutoQCRoutine routine : externalStandardsRoutinesConfig
+              .getRoutines(sensorType)) {
 
-            routine.setSensorType(sensorType);
-            ((ExternalStandardsQCRoutine) routine).qc(calibrationSet,
-              runTypeValues, sensorValues.getColumnValues(columnId));
+              routine.setSensorType(sensorType);
+              ((ExternalStandardsQCRoutine) routine).qc(calibrationSet,
+                runTypeValues, sensorValues.getColumnValues(columnId));
+            }
           }
         }
       }
