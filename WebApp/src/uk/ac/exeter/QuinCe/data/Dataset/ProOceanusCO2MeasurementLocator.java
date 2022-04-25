@@ -85,7 +85,8 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
         // The TSG will have timestamps that don't match up to the Pro Oceanus
         // data,
         // so they won't have a run type.
-        if (null != runType) {
+        if (null != runType && !runType.equals("")
+          && !runType.equalsIgnoreCase("NaN")) {
 
           if (!runType.equals(WATER_MODE) && !runType.equals(ATM_MODE)) {
             throw new MeasurementLocatorException(

@@ -1,4 +1,3 @@
-import collections
 import os
 import sqlite3
 import logging
@@ -64,13 +63,13 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
 
             # Join and sort datasets
             all_data = pd.concat(all_datasets)
-            all_data.sort_values(by=extractor_config['output']['sort_column'], inplace=True)
+            all_data.sort_values(by=extractor_config['output']['timestamp_column'], inplace=True)
 
             # Replace missing values
             all_data.fillna(value=extractor_config['output']['empty_col_value'], inplace=True)
 
             # Perform all mappings
-            if 'mappings' in extractor_config['column_mapping']:
+            if 'column_mapping' in extractor_config:
                 for col_map in extractor_config['column_mapping']['mappings']:
 
                     mapped_values = []
@@ -137,12 +136,8 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
                             self.logger.log(logging.ERROR, f'Field {sub_infield} is not in table {table["name"]}')
                             result = False
 
-            # Check that table_outfields and output_names are identical
-            if collections.Counter(table_outfields) != collections.Counter(output_names):
-                self.logger.log(logging.ERROR, f'Outputs for table {table["name"]} do not match main output config')
-
-            if extractor_config['output']['sort_column'] not in extractor_config['output']['columns']:
-                self.logger.log(logging.ERROR, f'Sort column not in output columns list')
+            if extractor_config['output']['timestamp_column'] not in extractor_config['output']['columns']:
+                self.logger.log(logging.ERROR, f'Timestamp column not in output columns list')
                 result = False
 
         return result
@@ -163,7 +158,11 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
                     else:
                         infield_select = " || '~' || ".join(infield.split("~"))
 
-                    selects.append(infield_select + " AS '" + outfield + "'")
+                    selects.append(f"{infield_select} AS '{outfield}'")
+
+                if 'fixed_values' in table:
+                    for column, value in table['fixed_values']:
+                        selects.append(f"'{value}' AS '{column}'")
 
                 sql += ",".join(selects)
                 sql += " FROM " + table_name
@@ -172,4 +171,16 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
 
                 result = pd.read_sql_query(sql, db_conn)
 
+                # Adjust the timestamp format if necessary
+                if 'timestamp_format' in table:
+                    timestamp_column = extractor_config['output']['timestamp_column']
+                    result[timestamp_column] = result.apply(
+                        lambda row:SQLiteExtractor.format_timestamp(row[timestamp_column], table['timestamp_format']),
+                        axis=1)
+
         return result
+
+    @staticmethod
+    def format_timestamp(value, format):
+        parsed_time = pd.to_datetime(value, format=format, utc=True)
+        return parsed_time.strftime("%Y-%m-%dT%H:%M:%SZ")

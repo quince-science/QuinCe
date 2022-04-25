@@ -1,7 +1,7 @@
 [output]
 
   # The column headers for the output file
-  # To join two fields add a percent sign (_) between the names
+  # To join two fields add a tilde sign (~) between the names
   columns = [
     "TimeStamp",
     "Longitude",
@@ -33,8 +33,8 @@
     "Multiplexer",
   ]
 
-  # Sort column. This should be the date/time.
-  sort_column = "TimeStamp"
+  # Timestamp column
+  timestamp_column = "TimeStamp"
 
   # Value to store in empty columns
   empty_col_value = -999.0
