@@ -36,19 +36,16 @@ public class SamiPco2DataReducer extends DataReducer {
 
     Double intakeTemperature = measurement
       .getMeasurementValue("Intake Temperature").getCalculatedValue();
-    Double equilibrationTemperature = measurement
-      .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
     Double pCO2TEWet = measurement
       .getMeasurementValue("pCO₂ (wet at equilibration)").getCalculatedValue();
     Double pressure = measurement.getMeasurementValue("Pressure at instrument")
       .getCalculatedValue();
 
-    Double pCO2SST = Calculators.calcCO2AtSST(pCO2TEWet,
-      equilibrationTemperature, intakeTemperature);
+    Double pCO2SST = Calculators.calcCO2AtSST(pCO2TEWet, intakeTemperature,
+      intakeTemperature);
     Double fCO2 = Calculators.calcfCO2(pCO2SST, pCO2SST, pressure,
       intakeTemperature);
 
-    record.put("ΔT", Math.abs(intakeTemperature - equilibrationTemperature));
     record.put("pCO₂ SST", pCO2SST);
     record.put("fCO₂", fCO2);
   }
@@ -64,14 +61,10 @@ public class SamiPco2DataReducer extends DataReducer {
     if (null == calculationParameters) {
       calculationParameters = new ArrayList<CalculationParameter>(2);
 
-      calculationParameters
-        .add(new CalculationParameter(makeParameterId(0), "ΔT",
-          "Water-Equilibrator Temperature Difference", "DELTAT", "°C", false));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(1),
+      calculationParameters.add(new CalculationParameter(makeParameterId(0),
         "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(2),
+      calculationParameters.add(new CalculationParameter(makeParameterId(1),
         "fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true));
     }
 
