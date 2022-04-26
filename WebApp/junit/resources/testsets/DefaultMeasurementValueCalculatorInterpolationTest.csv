@@ -2,29 +2,37 @@ Flags,Measurement Time,Expected Value,Expected Type,Expected Flag,Expected Messa
 GGGGGGGGGG,2021-07-22T00:24:00Z,2,M,G,,First value
 GGGGGGGGGG,2021-07-22T00:32:00Z,5,M,G,,Middle value
 GGGGGGGGGG,2021-07-22T00:42:00Z,10,M,G,,Last value
-GGGGGGGGGG,2021-07-22T00:00:00Z,2,I,G,,Before first value
-GGGGGGGGGG,2021-07-22T01:00:00Z,10,I,G,,After last value
+GGGGGGGGGG,2021-07-22T00:20:00Z,2,I,G,,Before first value - inside limit
+GGGGGGGGGG,2021-07-22T00:19:00Z,2,I,G,,Before first value - on limit
+GGGGGGGGGG,2021-07-22T00:00:00Z,NaN,0,B,NaN,Before first value - outside limit
+GGGGGGGGGG,2021-07-22T00:43:00Z,10,I,G,,After last value - inside limit
+GGGGGGGGGG,2021-07-22T00:47:00Z,10,I,G,,After last value - on limit
+GGGGGGGGGG,2021-07-22T01:00:00Z,NaN,0,B,NaN,After last value - outside limit
 GGGGGGGGGG,2021-07-22T00:33:00Z,5.5,I,G,,Interpolate value
 QQQQQQQQQQ,2021-07-22T00:24:00Z,2,M,Q,Q0,First value; all Q
 QQQQQQQQQQ,2021-07-22T00:32:00Z,5,M,Q,Q4,Middle value; all Q
 QQQQQQQQQQ,2021-07-22T00:42:00Z,10,M,Q,Q9,Last value; all Q
-QQQQQQQQQQ,2021-07-22T00:00:00Z,2,I,Q,Q0,Before first value; all Q
-QQQQQQQQQQ,2021-07-22T01:00:00Z,10,I,Q,Q9,After last value; all Q
+QQQQQQQQQQ,2021-07-22T00:20:00Z,2,I,Q,Q0,Before first value; all Q
+QQQQQQQQQQ,2021-07-22T00:45:00Z,10,I,Q,Q9,After last value; all Q
 QQQQQQQQQQ,2021-07-22T00:35:00Z,6.5,I,Q,Q5;Q6,Interpolate value; all Q
 BBBBBBBBBB,2021-07-22T00:24:00Z,2,M,B,B0,First value; all B
 BBBBBBBBBB,2021-07-22T00:32:00Z,5,M,B,B4,Middle value; all B
 BBBBBBBBBB,2021-07-22T00:42:00Z,10,M,B,B9,Last value; all B
-BBBBBBBBBB,2021-07-22T00:00:00Z,2,I,B,B0,Before first value; all B
-BBBBBBBBBB,2021-07-22T01:00:00Z,10,I,B,B9,After last value; all B
+BBBBBBBBBB,2021-07-22T00:20:00Z,2,I,B,B0,Before first value; all B
+BBBBBBBBBB,2021-07-22T00:45:00Z,10,I,B,B9,After last value; all B
 BBBBBBBBBB,2021-07-22T00:31:00Z,4.75,I,B,B3;B4,Interpolate value; all B
-BGGGGGGGGG,2021-07-22T00:00:00Z,3,I,G,,Before first value; first value B
-BBBGGGGGGG,2021-07-22T00:00:00Z,2,I,B,B0,Before first value; first few B
-GGGGGGGGGB,2021-07-22T01:00:00Z,9,I,G,,After last value; last value B
-GGGGGGGBBB,2021-07-22T01:00:00Z,10,I,B,B9,After last value; last few B
-QGGGGGGGGG,2021-07-22T00:00:00Z,3,I,G,,Before first value; first value Q
-QQQGGGGGGG,2021-07-22T00:00:00Z,2,I,Q,Q0,Before first value; first few Q
-GGGGGGGGGQ,2021-07-22T01:00:00Z,9,I,G,,After last value; last value Q
-GGGGGGGQQQ,2021-07-22T01:00:00Z,10,I,Q,Q9,After last value; last few Q
+BGGGGGGGGG,2021-07-22T00:23:00Z,3,I,G,,Before first value; first value B; in interp range
+BGGGGGGGGG,2021-07-22T00:20:00Z,NaN,0,B,NaN,Before first value; first value B; outside interp range
+BBBGGGGGGG,2021-07-22T00:20:00Z,2,I,B,B0,Before first value; first few B
+GGGGGGGGGB,2021-07-22T00:45:00Z,9,I,G,,After last value; last value B; in interp range
+GGGGGGGGGB,2021-07-22T01:00:00Z,NaN,0,B,NaN,After last value; last value B; outside interp range
+GGGGGGGBBB,2021-07-22T00:45:00Z,10,I,B,B9,After last value; last few B
+QGGGGGGGGG,2021-07-22T00:23:00Z,3,I,G,,Before first value; first value Q; in interp range
+QGGGGGGGGG,2021-07-22T00:20:00Z,NaN,0,B,NaN,Before first value; first value Q; outside interp range
+QQQGGGGGGG,2021-07-22T00:20:00Z,2,I,Q,Q0,Before first value; first few Q
+GGGGGGGGGQ,2021-07-22T00:45:00Z,9,I,G,,After last value; last value Q; in interp range
+GGGGGGGGGQ,2021-07-22T01:00:00Z,NaN,0,B,NaN,After last value; last value Q; outside interp range
+GGGGGGGQQQ,2021-07-22T00:45:00Z,10,I,Q,Q9,After last value; last few Q
 GGGGGBGGGG,2021-07-22T00:34:00Z,6,I,G,,Direct on B value
 GGGGGQGGGG,2021-07-22T00:34:00Z,6,I,G,,Direct on Q value
 BGGGGGGGGG,2021-07-22T00:24:00Z,3,I,G,,Direct on B first value
@@ -60,13 +68,17 @@ GGGQQQBBBB,2021-07-22T00:32:00Z,3.5,I,G,,On Q;One Q each side;All B after
 BBBQQQBGGG,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One Q each side;All B Before;One B after
 GGBQQQBBBB,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One Q each side;All B after;One B Before
 QBGGGGGGGG,2021-07-22T00:24:00Z,3.5,I,G,,On Q first;Second B
-QBGGGGGGGG,2021-07-22T00:00:00Z,3.5,I,G,,Before Q first;Second B
+QBGGGGGGGG,2021-07-22T00:23:00Z,3.5,I,G,,Before Q first;Second B; in interp range
+QBGGGGGGGG,2021-07-22T00:20:00Z,NaN,0,B,NaN,Before Q first;Second B; outside interp range
 BQGGGGGGGG,2021-07-22T00:24:00Z,3.5,I,G,,On B first;Second Q
-BQGGGGGGGG,2021-07-22T00:00:00Z,3.5,I,G,,Before B first;Second Q
+BQGGGGGGGG,2021-07-22T00:23:00Z,3.5,I,G,,Before B first;Second Q; in interp range
+BQGGGGGGGG,2021-07-22T00:20:00Z,NaN,0,B,NaN,Before B first;Second Q; outside interp range
 GGGGGGGGQB,2021-07-22T00:42:00Z,8.5,I,G,,On B last;Penultimate Q
-GGGGGGGGQB,2021-07-22T01:00:00Z,8.5,I,G,,After B last;Penultimate Q
+GGGGGGGGQB,2021-07-22T00:43:00Z,8.5,I,G,,After B last;Penultimate Q; in interp range
+GGGGGGGGQB,2021-07-22T00:45:00Z,NaN,0,B,NaN,After B last;Penultimate Q; outside interp range
 GGGGGGGGBQ,2021-07-22T00:42:00Z,8.5,I,G,,On Q last;Penultimate B
-GGGGGGGGBQ,2021-07-22T01:00:00Z,8.5,I,G,,After Q last;Penultimate B
+GGGGGGGGBQ,2021-07-22T00:43:00Z,8.5,I,G,,After Q last;Penultimate B; in interp range
+GGGGGGGGBQ,2021-07-22T01:00:00Z,NaN,0,B,NaN,After Q last;Penultimate B; outside interp range
 GGGGGQQGGG,2021-07-22T00:35:00Z,6.75,I,G,,Between QQ values;Rest G
 GGGGQQQGGG,2021-07-22T00:35:00Z,7,I,G,,Between QQ values;One Q before
 GGGGGQQQGG,2021-07-22T00:35:00Z,6.5,I,G,,Between QQ values;One Q after
@@ -197,11 +209,14 @@ BBBQQQBQQQ,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One Q each side;All B Before;One B
 QQBQQQBBBB,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One Q each side;All B after;One B Before;All others Q
 QBQQQQQQQQ,2021-07-22T00:24:00Z,2,M,Q,Q0,On Q first;Second B;All others Q
 BQQQQQQQQQ,2021-07-22T00:24:00Z,3,I,Q,Q1,On B first;Second Q;All others Q
-BQQQQQQQQQ,2021-07-22T00:00:00Z,3,I,Q,Q1,Before B first;Second Q;All others Q
+BQQQQQQQQQ,2021-07-22T00:23:00Z,3,I,Q,Q1,Before B first;Second Q;All others Q; in interp range
+BQQQQQQQQQ,2021-07-22T00:20:00Z,NaN,0,B,NaN,Before B first;Second Q;All others Q; outside interp range
 QQQQQQQQQB,2021-07-22T00:42:00Z,9,I,Q,Q8,On B last;Penultimate Q;All others Q
-QQQQQQQQQB,2021-07-22T01:00:00Z,9,I,Q,Q8,After B last;Penultimate Q;All others Q
+QQQQQQQQQB,2021-07-22T00:45:00Z,9,I,Q,Q8,After B last;Penultimate Q;All others Q; in interp range
+QQQQQQQQQB,2021-07-22T00:50:00Z,NaN,0,B,NaN,After B last;Penultimate Q;All others Q; outside interp range
 QQQQQQQQBQ,2021-07-22T00:42:00Z,10,M,Q,Q9,On Q last;Penultimate B;All others Q
-QQQQQQQQBQ,2021-07-22T01:00:00Z,10,I,Q,Q9,After Q last;Penultimate B;All others Q
+QQQQQQQQBQ,2021-07-22T00:45:00Z,10,I,Q,Q9,After Q last;Penultimate B;All others Q; in interp range
+QQQQQQQQBQ,2021-07-22T00:50:00Z,NaN,0,B,NaN,After Q last;Penultimate B;All others Q; outside range
 QQQQQQQQQQ,2021-07-22T00:31:00Z,4.75,I,Q,Q3;Q4,Between QQ values;All others Q
 QQQQBQQQQQ,2021-07-22T00:31:00Z,4.875,I,Q,Q3;Q5,Between QQ values;One B before;All others Q
 QQQQQQQBQQ,2021-07-22T00:31:00Z,4.75,I,Q,Q3;Q4,Between QQ values;One B after;All others Q
@@ -283,13 +298,17 @@ BBQBBBQQQQ,2021-07-22T00:32:00Z,5.25,I,Q,Q2;Q6,On B;One B each side;All Q after;
 BBBBQBBBBB,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One B Before;All others B
 BBBQQQBBBB,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One Q each side;One B Before;All others B
 QBBBBBBBBB,2021-07-22T00:24:00Z,2,M,Q,Q0,On Q first;Second B;All others B
-QBBBBBBBBB,2021-07-22T00:00:00Z,2,I,Q,Q0,Before Q first;Second B;All others B
+QBBBBBBBBB,2021-07-22T00:23:00Z,2,I,Q,Q0,Before Q first;Second B;All others B; in interp range
+QBBBBBBBBB,2021-07-22T00:00:00Z,NaN,0,B,NaN,Before Q first;Second B;All others B; outside interp range
 BQBBBBBBBB,2021-07-22T00:24:00Z,3,I,Q,Q1,On B first;Second Q;All others B
-BQBBBBBBBB,2021-07-22T00:00:00Z,3,I,Q,Q1,Before B first;Second Q;All others B
+BQBBBBBBBB,2021-07-22T00:23:00Z,3,I,Q,Q1,Before B first;Second Q;All others B; in interp range
+BQBBBBBBBB,2021-07-22T00:00:00Z,NaN,0,B,NaN,Before B first;Second Q;All others B; outside interp range
 BBBBBBBBQB,2021-07-22T00:42:00Z,9,I,Q,Q8,On B last;Penultimate Q;All others B
-BBBBBBBBQB,2021-07-22T01:00:00Z,9,I,Q,Q8,After B last;Penultimate Q;All others B
+BBBBBBBBQB,2021-07-22T00:45:00Z,9,I,Q,Q8,After B last;Penultimate Q;All others B; in interp range
+BBBBBBBBQB,2021-07-22T01:00:00Z,NaN,0,B,NaN,After B last;Penultimate Q;All others B; outside interp range
 BBBBBBBBBQ,2021-07-22T00:42:00Z,10,M,Q,Q9,On Q last;Penultimate B;All others B
-BBBBBBBBBQ,2021-07-22T01:00:00Z,10,I,Q,Q9,After Q last;Penultimate B;All others B
+BBBBBBBBBQ,2021-07-22T00:45:00Z,10,I,Q,Q9,After Q last;Penultimate B;All others B; in interp range
+BBBBBBBBBQ,2021-07-22T01:00:00Z,NaN,0,B,NaN,After Q last;Penultimate B;All others B; outside interp range
 BBBBBQQBBB,2021-07-22T00:35:00Z,6.5,I,Q,Q5;Q6,Between QQ values;All others B
 BBBBQQQBBB,2021-07-22T00:35:00Z,6.5,I,Q,Q5;Q6,Between QQ values;One Q before;All others B
 BBBBBQQQBB,2021-07-22T00:35:00Z,6.5,I,Q,Q5;Q6,Between QQ values;One Q after;All others B

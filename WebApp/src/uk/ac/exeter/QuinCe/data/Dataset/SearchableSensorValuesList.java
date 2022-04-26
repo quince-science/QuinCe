@@ -260,7 +260,7 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
       if (!exactTimeFlag.equals(Flag.FLUSHING)
         && (!exactTimeFlag.isGood() && preferGoodFlags)) {
 
-        priorPostValues = getPriorPost(startPoint);
+        priorPostValues = getPriorPost(time, startPoint);
 
         // If the prior and post contain one non-null value and it is our exact
         // value, that means no interpolation could be performed - usually
@@ -275,7 +275,7 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
         }
       }
     } else {
-      priorPostValues = getPriorPost(startPoint);
+      priorPostValues = getPriorPost(time, startPoint);
       useExactValue = false;
     }
 
@@ -295,7 +295,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     return result;
   }
 
-  private List<SensorValue> getPriorPost(int startPoint) {
+  private List<SensorValue> getPriorPost(LocalDateTime targetTime,
+    int startPoint) {
     // First set the start point to the list in the right place
 
     // If the start point is >= 0, our starting point is a value in the list.
@@ -320,6 +321,19 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
     int priorIndex = priorSearch(priorSearchStartPoint);
     int postIndex = postSearch(postSearchStartPoint);
+
+    /*
+     * If the found values aren't within the interpolation limit, discard them.
+     */
+    if (priorIndex >= 0
+      && !withinTimeInterpolationLimit(targetTime, priorIndex)) {
+      priorIndex = -1;
+    }
+
+    if (postIndex >= 0
+      && !withinTimeInterpolationLimit(targetTime, postIndex)) {
+      postIndex = -1;
+    }
 
     SensorValue prior = priorIndex == -1 ? null : get(priorIndex);
     SensorValue post = postIndex == -1 ? null : get(postIndex);
@@ -439,6 +453,12 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
   private boolean withinTimeInterpolationLimit(int startPoint, int testPoint) {
     return Math.abs(DateTimeUtils.secondsBetween(get(startPoint).getTime(),
+      get(testPoint).getTime())) <= MAX_INTERPOLATION_LIMIT;
+  }
+
+  private boolean withinTimeInterpolationLimit(LocalDateTime targetTime,
+    int testPoint) {
+    return Math.abs(DateTimeUtils.secondsBetween(targetTime,
       get(testPoint).getTime())) <= MAX_INTERPOLATION_LIMIT;
   }
 }
