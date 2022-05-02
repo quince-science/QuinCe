@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,13 +14,13 @@ import java.util.stream.Collectors;
  *
  */
 @SuppressWarnings("serial")
-public class NoEmptyStringList extends ArrayList<String> {
+public class NoEmptyStringSet extends HashSet<String> {
 
-  public NoEmptyStringList() {
+  public NoEmptyStringSet() {
     super();
   }
 
-  public NoEmptyStringList(Collection<? extends String> c) {
+  public NoEmptyStringSet(Collection<? extends String> c) {
     super(filterCollection(c));
   }
 
@@ -35,27 +36,8 @@ public class NoEmptyStringList extends ArrayList<String> {
   }
 
   @Override
-  public void add(int index, String e) {
-    if (isValid(e)) {
-      super.add(index, e.trim());
-    }
-  }
-
-  @Override
   public boolean addAll(Collection<? extends String> c) {
     return super.addAll(filterCollection(c));
-  }
-
-  @Override
-  public boolean addAll(int index, Collection<? extends String> c) {
-    boolean result = false;
-
-    List<String> toAdd = filterCollection(c);
-    if (toAdd.size() > 0) {
-      result = super.addAll(index, toAdd);
-    }
-
-    return result;
   }
 
   /**
@@ -80,7 +62,7 @@ public class NoEmptyStringList extends ArrayList<String> {
     if (null == c) {
       return new ArrayList<String>();
     } else {
-      return c.stream().filter(NoEmptyStringList::isValid).map(String::trim)
+      return c.stream().filter(NoEmptyStringSet::isValid).map(String::trim)
         .collect(Collectors.toList());
     }
   }
