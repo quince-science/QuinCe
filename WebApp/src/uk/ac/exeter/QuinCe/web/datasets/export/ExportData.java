@@ -6,12 +6,15 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
@@ -24,6 +27,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
@@ -75,6 +79,18 @@ public class ExportData extends ManualQCData {
       loaded = true;
     } catch (Exception e) {
       error("Error while loading dataset data", e);
+    }
+  }
+
+  /**
+   * Different data can be loaded depending on the export options.
+   */
+  @Override
+  public void loadDataAction() throws Exception {
+    super.loadDataAction();
+
+    if (exportOption.measurementsOnly()) {
+      sensorValues = filterSensorValuesToMeasurements();
     }
   }
 
@@ -234,5 +250,37 @@ public class ExportData extends ManualQCData {
         }
       }
     }
+  }
+
+  private DatasetSensorValues filterSensorValuesToMeasurements()
+    throws RecordNotFoundException {
+
+    TreeSet<LocalDateTime> times = new TreeSet<LocalDateTime>();
+    TreeSet<Long> ids = new TreeSet<Long>();
+
+    for (Measurement measurement : measurements.values()) {
+      times.add(measurement.getTime());
+
+      for (MeasurementValue measurementValue : measurement
+        .getMeasurementValues()) {
+
+        ids.addAll(measurementValue.getSensorValueIds());
+        ids.addAll(measurementValue.getSupportingSensorValueIds());
+      }
+    }
+
+    return sensorValues.subset(times, ids);
+  }
+
+  public boolean containsTime(LocalDateTime time, boolean includeSensorValues) {
+    boolean containsMeasurement = !(null == getMeasurement(time));
+    boolean result;
+    if (includeSensorValues) {
+      result = containsMeasurement && sensorValues.contains(time);
+    } else {
+      result = containsMeasurement;
+    }
+
+    return result;
   }
 }

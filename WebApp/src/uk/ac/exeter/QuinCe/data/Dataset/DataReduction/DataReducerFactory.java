@@ -138,6 +138,11 @@ public class DataReducerFactory {
   public static Variable getVariable(Instrument instrument, long parameterId)
     throws InstrumentException {
 
+    if (parameterId < 10000) {
+      throw new InstrumentException(
+        "Requested parameter is not part of data reduction");
+    }
+
     return instrument.getVariable(parameterId / 10000);
   }
 

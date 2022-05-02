@@ -1091,7 +1091,7 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   }
   };
 
-  // Reference value
+  // Reference value for gas standards and similar
   let referenceValue = getColumnById($('#plot' + index + 'Form\\:plot' + index + 'YAxis').val()).referenceValue;
   if (null != referenceValue) {
     data_options.underlayCallback = function(canvas, area, g) {

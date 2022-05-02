@@ -283,130 +283,122 @@ public class ExportBean extends BaseManagedBean {
 
     // Process each row of the data
     for (Long rowId : data.getRowIDs()) {
-      boolean firstColumn = true;
+      if (data.containsTime(DateTimeUtils.longToDate(rowId),
+        exportOption.includeRawSensors())) {
 
-      // Time and position
-      List<PlotPageColumnHeading> baseColumns = data.getExtendedColumnHeadings()
-        .get(ExportData.ROOT_FIELD_GROUP);
+        boolean firstColumn = true;
 
-      for (PlotPageColumnHeading column : baseColumns) {
-        if (firstColumn) {
-          firstColumn = false;
-        } else {
-          output.append(exportOption.getSeparator());
-        }
+        // Time and position
+        List<PlotPageColumnHeading> baseColumns = data
+          .getExtendedColumnHeadings().get(ExportData.ROOT_FIELD_GROUP);
 
-        PlotPageTableValue value = data.getColumnValue(rowId, column.getId());
-
-        addValueToOutput(output, exportOption, column.getId(), value,
-          column.hasQC(), column.includeType());
-      }
-
-      // Measurement values
-      Measurement measurement = data.getMeasurement(data.getRowTime(rowId));
-
-      List<PlotPageColumnHeading> measurementValueColumns = data
-        .getExtendedColumnHeadings()
-        .get(ExportData.MEASUREMENTVALUES_FIELD_GROUP);
-
-      for (PlotPageColumnHeading column : measurementValueColumns) {
-
-        SensorType sensorType = ResourceManager.getInstance()
-          .getSensorsConfiguration().getSensorType(column.getId());
-
-        // Get the value for this SensorType. If there's a measurement and it
-        // contains the SensorType, use that; otherwise get the original
-        // SensorValue.
-        PlotPageTableValue value = null;
-
-        if (null != measurement
-          && measurement.containsMeasurementValue(sensorType)) {
-          value = measurement.getMeasurementValue(sensorType);
-        } else {
-          // TODO #1128 Handle multiple sensors
-          List<Long> sensorTypeColumns = instrument.getSensorAssignments()
-            .getColumnIds(sensorType);
-
-          if (null != sensorTypeColumns && sensorTypeColumns.size() > 0) {
-            value = data.getColumnValue(rowId, sensorTypeColumns.get(0));
-          }
-        }
-
-        boolean useValueInThisColumn;
-
-        if (columnsWithId(measurementValueColumns, column.getId()) == 1) {
-
-          // There is only one column registered for this SensorType, so use it
-          useValueInThisColumn = true;
-        } else {
-          // There are multiple columns for this SensorType (e.g. xCO2 is for
-          // underway marine pCO2 and underway atmospheric pCO2, so where the
-          // value goes is determined by the measurement's Run Type
-          if (null == measurement) {
-            // There is no measurement, so we leave the column blank
-            useValueInThisColumn = false;
-
+        for (PlotPageColumnHeading column : baseColumns) {
+          if (firstColumn) {
+            firstColumn = false;
           } else {
-
-            // If this column is for the Run Type of the measurement, we
-            // populate it. Otherwise we leave it blank - there'll be another
-            // column for the Run Type somewhere (or perhaps not, if it's a
-            // non-measurement run type eg gas standard run)
-            String runType = measurement
-              .getRunType(Measurement.GENERIC_RUN_TYPE_VARIABLE);
-
-            // Look through all the column headings defined for the run type to
-            // see if it contains our current column. If it does, we add the
-            // value. If not, it'll be blank.
-            Set<ColumnHeading> runTypeColumns = instrument
-              .getAllVariableColumnHeadings(runType);
-
-            useValueInThisColumn = ColumnHeading
-              .containsColumnWithCode(runTypeColumns, column.getCodeName());
-          }
-        }
-
-        output.append(exportOption.getSeparator());
-        addValueToOutput(output, exportOption, column.getId(),
-          useValueInThisColumn ? value : null, true, true);
-      }
-
-      // Data Reduction for all variables
-      for (Variable variable : exportOption.getVariables()) {
-        if (instrument.getVariables().contains(variable)) {
-          List<CalculationParameter> params = DataReducerFactory
-            .getCalculationParameters(variable,
-              exportOption.includeCalculationColumns());
-
-          for (CalculationParameter param : params) {
             output.append(exportOption.getSeparator());
+          }
 
-            PlotPageTableValue value = data.getColumnValue(rowId,
-              param.getId());
-            addValueToOutput(output, exportOption, param.getId(), value,
-              param.isResult(), false);
+          PlotPageTableValue value = data.getColumnValue(rowId, column.getId());
+
+          addValueToOutput(output, exportOption, column.getId(), value,
+            column.hasQC(), column.includeType());
+        }
+
+        // Measurement values
+        Measurement measurement = data.getMeasurement(data.getRowTime(rowId));
+
+        List<PlotPageColumnHeading> measurementValueColumns = data
+          .getExtendedColumnHeadings()
+          .get(ExportData.MEASUREMENTVALUES_FIELD_GROUP);
+
+        for (PlotPageColumnHeading column : measurementValueColumns) {
+
+          SensorType sensorType = ResourceManager.getInstance()
+            .getSensorsConfiguration().getSensorType(column.getId());
+
+          // Get the value for this SensorType. If there's a measurement and it
+          // contains the SensorType, use that; otherwise get the original
+          // SensorValue.
+          PlotPageTableValue value = null;
+
+          if (null != measurement
+            && measurement.containsMeasurementValue(sensorType)) {
+            value = measurement.getMeasurementValue(sensorType);
+          } else {
+            // TODO #1128 Handle multiple sensors
+            List<Long> sensorTypeColumns = instrument.getSensorAssignments()
+              .getColumnIds(sensorType);
+
+            if (null != sensorTypeColumns && sensorTypeColumns.size() > 0) {
+              value = data.getColumnValue(rowId, sensorTypeColumns.get(0));
+            }
+          }
+
+          boolean useValueInThisColumn;
+
+          if (columnsWithId(measurementValueColumns, column.getId()) == 1) {
+
+            // There is only one column registered for this SensorType, so use
+            // it
+            useValueInThisColumn = true;
+          } else {
+            // There are multiple columns for this SensorType (e.g. xCO2 is for
+            // underway marine pCO2 and underway atmospheric pCO2, so where the
+            // value goes is determined by the measurement's Run Type
+            if (null == measurement) {
+              // There is no measurement, so we leave the column blank
+              useValueInThisColumn = false;
+
+            } else {
+
+              // If this column is for the Run Type of the measurement, we
+              // populate it. Otherwise we leave it blank - there'll be another
+              // column for the Run Type somewhere (or perhaps not, if it's a
+              // non-measurement run type eg gas standard run)
+              String runType = measurement
+                .getRunType(Measurement.GENERIC_RUN_TYPE_VARIABLE);
+
+              // Look through all the column headings defined for the run type
+              // to
+              // see if it contains our current column. If it does, we add the
+              // value. If not, it'll be blank.
+              Set<ColumnHeading> runTypeColumns = instrument
+                .getAllVariableColumnHeadings(runType);
+
+              useValueInThisColumn = ColumnHeading
+                .containsColumnWithCode(runTypeColumns, column.getCodeName());
+            }
+          }
+
+          output.append(exportOption.getSeparator());
+          addValueToOutput(output, exportOption, column.getId(),
+            useValueInThisColumn ? value : null, true, true);
+        }
+
+        // Data Reduction for all variables
+        for (Variable variable : exportOption.getVariables()) {
+          if (instrument.getVariables().contains(variable)) {
+            List<CalculationParameter> params = DataReducerFactory
+              .getCalculationParameters(variable,
+                exportOption.includeCalculationColumns());
+
+            for (CalculationParameter param : params) {
+              output.append(exportOption.getSeparator());
+
+              PlotPageTableValue value = data.getColumnValue(rowId,
+                param.getId());
+              addValueToOutput(output, exportOption, param.getId(), value,
+                param.isResult(), false);
+            }
           }
         }
-      }
 
-      if (exportOption.includeRawSensors()) {
-        List<PlotPageColumnHeading> sensorHeadings = data
-          .getExtendedColumnHeadings().get(ExportData.SENSORS_FIELD_GROUP);
+        if (exportOption.includeRawSensors()) {
+          List<PlotPageColumnHeading> sensorHeadings = data
+            .getExtendedColumnHeadings().get(ExportData.SENSORS_FIELD_GROUP);
 
-        for (PlotPageColumnHeading heading : sensorHeadings) {
-          output.append(exportOption.getSeparator());
-
-          PlotPageTableValue value = data.getColumnValue(rowId,
-            heading.getId());
-          addValueToOutput(output, exportOption, heading.getId(), value, true,
-            false);
-        }
-
-        List<PlotPageColumnHeading> diagnosticHeadings = data
-          .getExtendedColumnHeadings().get(ExportData.DIAGNOSTICS_FIELD_GROUP);
-
-        if (null != diagnosticHeadings) {
-          for (PlotPageColumnHeading heading : diagnosticHeadings) {
+          for (PlotPageColumnHeading heading : sensorHeadings) {
             output.append(exportOption.getSeparator());
 
             PlotPageTableValue value = data.getColumnValue(rowId,
@@ -414,10 +406,25 @@ public class ExportBean extends BaseManagedBean {
             addValueToOutput(output, exportOption, heading.getId(), value, true,
               false);
           }
-        }
-      }
 
-      output.append("\n");
+          List<PlotPageColumnHeading> diagnosticHeadings = data
+            .getExtendedColumnHeadings()
+            .get(ExportData.DIAGNOSTICS_FIELD_GROUP);
+
+          if (null != diagnosticHeadings) {
+            for (PlotPageColumnHeading heading : diagnosticHeadings) {
+              output.append(exportOption.getSeparator());
+
+              PlotPageTableValue value = data.getColumnValue(rowId,
+                heading.getId());
+              addValueToOutput(output, exportOption, heading.getId(), value,
+                true, false);
+            }
+          }
+        }
+
+        output.append("\n");
+      }
     }
 
     // Destroy the ExportData object so it cleans up its resources

@@ -389,6 +389,10 @@ public class Measurement implements Comparable<Measurement> {
     }
   }
 
+  public Collection<MeasurementValue> getMeasurementValues() {
+    return measurementValues.values();
+  }
+
   public void setTime(LocalDateTime time) {
     this.time = time;
   }
