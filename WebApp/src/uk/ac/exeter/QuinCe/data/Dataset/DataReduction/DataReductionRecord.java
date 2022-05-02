@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.Gson;
 
@@ -12,7 +13,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
-import uk.ac.exeter.QuinCe.utils.NoEmptyStringList;
+import uk.ac.exeter.QuinCe.utils.NoEmptyStringSet;
 
 public class DataReductionRecord implements Comparable<DataReductionRecord> {
 
@@ -44,7 +45,7 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
   /**
    * The QC message for the record.
    */
-  private NoEmptyStringList qcMessages;
+  private NoEmptyStringSet qcMessages;
 
   /**
    * Create an empty record for a given measurement
@@ -60,12 +61,12 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
 
     this.calculationValues = new HashMap<String, Double>();
     this.qcFlag = Flag.ASSUMED_GOOD;
-    this.qcMessages = new NoEmptyStringList();
+    this.qcMessages = new NoEmptyStringSet();
   }
 
   protected DataReductionRecord(long measurementId, long variableId,
     List<String> parameterNames, Map<String, Double> calculationValues,
-    Flag qcFlag, NoEmptyStringList qcMessages) {
+    Flag qcFlag, NoEmptyStringSet qcMessages) {
 
     this.measurementId = measurementId;
     this.variableId = variableId;
@@ -108,12 +109,12 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
     } else if (flag.moreSignificantThan(qcFlag)) {
       qcFlag = flag;
 
-      NoEmptyStringList messageList = new NoEmptyStringList(messages);
+      NoEmptyStringSet messageList = new NoEmptyStringSet(messages);
       if (!flag.equals(Flag.NO_QC) && messageList.size() == 0) {
         throw new DataReductionException("Empty QC message not allowed");
       }
 
-      qcMessages = new NoEmptyStringList(messages);
+      qcMessages = new NoEmptyStringSet(messages);
     }
   }
 
@@ -162,7 +163,7 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
    *
    * @return The QC messages
    */
-  public List<String> getQCMessages() {
+  public Set<String> getQCMessages() {
     return qcMessages;
   }
 

@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.NotImplementedException;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.utils.NoEmptyStringList;
+import uk.ac.exeter.QuinCe.utils.NoEmptyStringSet;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -52,7 +53,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    * replaced by these when {@link #getQCMessages()} is called.
    * </p>
    */
-  private NoEmptyStringList overrideQcMessages = null;
+  private NoEmptyStringSet overrideQcMessages = null;
 
   /**
    * Create a record object with the specified values.
@@ -80,7 +81,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
 
     ReadOnlyDataReductionRecord record = new ReadOnlyDataReductionRecord(
       measurementId, variableId, parameterNames, calculationValues, qcFlag,
-      new NoEmptyStringList(StringUtils.delimitedToList(qcMessage, ";")));
+      new NoEmptyStringSet(StringUtils.delimitedToList(qcMessage, ";")));
 
     return record;
   }
@@ -105,7 +106,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    */
   private ReadOnlyDataReductionRecord(long measurementId, long variableId,
     List<String> parameterNames, Map<String, Double> calculationValues,
-    Flag qcFlag, NoEmptyStringList qcMessages) {
+    Flag qcFlag, NoEmptyStringSet qcMessages) {
     super(measurementId, variableId, parameterNames, calculationValues, qcFlag,
       qcMessages);
   }
@@ -131,7 +132,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
   public void setQc(Flag flag, List<String> messages)
     throws DataReductionException {
 
-    NoEmptyStringList filteredMessages = new NoEmptyStringList(messages);
+    NoEmptyStringSet filteredMessages = new NoEmptyStringSet(messages);
     if (filteredMessages.size() == 0) {
       throw new DataReductionException("Empty QC message not allowed");
     }
@@ -175,9 +176,9 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    * set.
    */
   @Override
-  public List<String> getQCMessages() {
+  public Set<String> getQCMessages() {
 
-    List<String> result = super.getQCMessages();
+    Set<String> result = super.getQCMessages();
 
     if (null != overrideQCFlag) {
       if (overrideQCFlag.moreSignificantThan(super.getQCFlag())) {
