@@ -54,13 +54,23 @@ public class DatasetSensorValues {
 
   public void add(SensorValue sensorValue) throws RecordNotFoundException {
 
-    SensorType sensorType = instrument.getSensorAssignments()
-      .getSensorTypeForDBColumn(sensorValue.getColumnId());
+    if (!contains(sensorValue)) {
+      SensorType sensorType = instrument.getSensorAssignments()
+        .getSensorTypeForDBColumn(sensorValue.getColumnId());
 
-    addById(sensorValue);
-    addByColumn(sensorValue);
-    addBySensorType(sensorValue, sensorType);
-    addByDateAndColumn(sensorValue);
+      addById(sensorValue);
+      addByColumn(sensorValue);
+      addBySensorType(sensorValue, sensorType);
+      addByDateAndColumn(sensorValue);
+    }
+  }
+
+  public boolean contains(SensorValue sensorValue) {
+    return valuesById.containsKey(sensorValue.getId());
+  }
+
+  public boolean contains(LocalDateTime time) {
+    return valuesByDateAndColumn.containsKey(time);
   }
 
   public void remove(SensorValue sensorValue) throws RecordNotFoundException {
@@ -195,7 +205,13 @@ public class DatasetSensorValues {
   }
 
   public SensorValue getSensorValue(LocalDateTime time, long columnID) {
-    return valuesByDateAndColumn.get(time).get(columnID);
+    SensorValue result = null;
+
+    if (valuesByDateAndColumn.containsKey(time)) {
+      result = valuesByDateAndColumn.get(time).get(columnID);
+    }
+
+    return result;
   }
 
   /**
@@ -316,13 +332,43 @@ public class DatasetSensorValues {
     return valuesById.size();
   }
 
-  public boolean isOfSensorType(SensorValue sensorValue, SensorType sensorType) {
+  public boolean isOfSensorType(SensorValue sensorValue,
+    SensorType sensorType) {
     boolean result;
 
     if (!valuesBySensorType.containsKey(sensorType)) {
       result = false;
     } else {
       result = valuesBySensorType.get(sensorType).contains(sensorValue);
+    }
+
+    return result;
+  }
+
+  /**
+   * Create a subset of this object containing the specified items.
+   * 
+   * <p>
+   * All values with the specified time are kept, plus those with the specified
+   * ids. If any times or ids are not in this object they will be ignored.
+   * </p>
+   * 
+   * @param times
+   *          The times of values to keep
+   * @param ids
+   *          The additional {@lonk SensorValue} ids to keep
+   * @return The subsetted values
+   * @throws RecordNotFoundException
+   */
+  public DatasetSensorValues subset(Collection<LocalDateTime> times,
+    Collection<Long> ids) throws RecordNotFoundException {
+
+    DatasetSensorValues result = new DatasetSensorValues(instrument);
+
+    for (SensorValue value : this.valuesById.values()) {
+      if (ids.contains(value.getId()) || times.contains(value.getTime())) {
+        result.add(value);
+      }
     }
 
     return result;
