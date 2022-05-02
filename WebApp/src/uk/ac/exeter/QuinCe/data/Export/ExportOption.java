@@ -129,6 +129,11 @@ public class ExportOption {
   private Map<String, String> replacementColumnHeaders = null;
 
   /**
+   * Only export measurements and their related sensor values.
+   */
+  private boolean measurementsOnly = false;
+
+  /**
    * Indicates whether export option should be visible in webapp
    */
   private boolean visible = true;
@@ -197,6 +202,10 @@ public class ExportOption {
 
   public boolean includeUnits() {
     return includeUnits;
+  }
+
+  public boolean measurementsOnly() {
+    return measurementsOnly;
   }
 
   public boolean getVisible() {
@@ -336,6 +345,10 @@ public class ExportOption {
         replacementColumnHeaders.put(k, replacementHeaderJson.getString(k));
 
       });
+    }
+
+    if (json.has("measurementsOnly")) {
+      measurementsOnly = json.getBoolean("measurementsOnly");
     }
 
     // ExportData class. All classes are in the

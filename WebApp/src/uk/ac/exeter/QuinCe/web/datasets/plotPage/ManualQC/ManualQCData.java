@@ -340,8 +340,7 @@ public class ManualQCData extends PlotPageData {
 
   @Override
   public int size() {
-    // Each record is identified by its time stamp, so each time = 1 record
-    return (loaded ? sensorValues.getTimes().size() : -1);
+    return (null != sensorValues ? sensorValues.size() : -1);
   }
 
   @Override
@@ -1104,8 +1103,8 @@ public class ManualQCData extends PlotPageData {
     return result;
   }
 
-  private PlotPageTableValue getInterpolatedPositionValue(SensorType sensorType,
-    LocalDateTime time) throws PlotPageDataException {
+  protected PlotPageTableValue getInterpolatedPositionValue(
+    SensorType sensorType, LocalDateTime time) throws PlotPageDataException {
 
     PlotPageTableValue result = null;
 
@@ -1122,9 +1121,11 @@ public class ManualQCData extends PlotPageData {
       // Try getting SensorValues from the current row
       if (null == result) {
         Map<Long, SensorValue> recordSensorValues = sensorValues.get(time);
-        SensorValue sensorValue = recordSensorValues.get(sensorType.getId());
-        if (null != sensorValue && null != sensorValue.getValue()) {
-          result = new SensorValuePlotPageTableValue(sensorValue);
+        if (null != recordSensorValues) {
+          SensorValue sensorValue = recordSensorValues.get(sensorType.getId());
+          if (null != sensorValue && null != sensorValue.getValue()) {
+            result = new SensorValuePlotPageTableValue(sensorValue);
+          }
         }
       }
 
@@ -1166,7 +1167,6 @@ public class ManualQCData extends PlotPageData {
           "Invalid number of values in sensor value search");
       }
       }
-
     }
 
     return result;
