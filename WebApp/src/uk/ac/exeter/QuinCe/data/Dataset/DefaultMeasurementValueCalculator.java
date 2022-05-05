@@ -167,7 +167,7 @@ public class DefaultMeasurementValueCalculator
   }
 
   /**
-   * 
+   *
    * @param measurementTime
    * @param measurementValue
    * @param valuesToUse
