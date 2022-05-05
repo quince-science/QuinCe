@@ -68,9 +68,11 @@ GGGQQQBBBB,2021-07-22T00:32:00Z,3.5,I,G,,On Q;One Q each side;All B after
 BBBQQQBGGG,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One Q each side;All B Before;One B after
 GGBQQQBBBB,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One Q each side;All B after;One B Before
 QBGGGGGGGG,2021-07-22T00:24:00Z,3.5,I,G,,On Q first;Second B
-QBGGGGGGGG,2021-07-22T00:00:00Z,3.5,I,G,,Before Q first;Second B
+QBGGGGGGGG,2021-07-22T00:23:00Z,3.5,I,G,,Before Q first;Second B; in interp range
+QBGGGGGGGG,2021-07-22T00:20:00Z,NaN,0,B,NaN,Before Q first;Second B; outside interp range
 BQGGGGGGGG,2021-07-22T00:24:00Z,3.5,I,G,,On B first;Second Q
-BQGGGGGGGG,2021-07-22T00:00:00Z,3.5,I,G,,Before B first;Second Q
+BQGGGGGGGG,2021-07-22T00:23:00Z,3.5,I,G,,Before B first;Second Q; in interp range
+BQGGGGGGGG,2021-07-22T00:20:00Z,NaN,0,B,NaN,Before B first;Second Q; outside interp range
 GGGGGGGGQB,2021-07-22T00:42:00Z,8.5,I,G,,On B last;Penultimate Q
 GGGGGGGGQB,2021-07-22T00:43:00Z,8.5,I,G,,After B last;Penultimate Q; in interp range
 GGGGGGGGQB,2021-07-22T00:45:00Z,NaN,0,B,NaN,After B last;Penultimate Q; outside interp range
@@ -296,9 +298,11 @@ BBQBBBQQQQ,2021-07-22T00:32:00Z,5.25,I,Q,Q2;Q6,On B;One B each side;All Q after;
 BBBBQBBBBB,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One B Before;All others B
 BBBQQQBBBB,2021-07-22T00:32:00Z,5,M,Q,Q4,On Q;One Q each side;One B Before;All others B
 QBBBBBBBBB,2021-07-22T00:24:00Z,2,M,Q,Q0,On Q first;Second B;All others B
-QBBBBBBBBB,2021-07-22T00:00:00Z,2,I,Q,Q0,Before Q first;Second B;All others B
+QBBBBBBBBB,2021-07-22T00:23:00Z,2,I,Q,Q0,Before Q first;Second B;All others B; in interp range
+QBBBBBBBBB,2021-07-22T00:00:00Z,NaN,0,B,NaN,Before Q first;Second B;All others B; outside interp range
 BQBBBBBBBB,2021-07-22T00:24:00Z,3,I,Q,Q1,On B first;Second Q;All others B
-BQBBBBBBBB,2021-07-22T00:00:00Z,3,I,Q,Q1,Before B first;Second Q;All others B
+BQBBBBBBBB,2021-07-22T00:23:00Z,3,I,Q,Q1,Before B first;Second Q;All others B; in interp range
+BQBBBBBBBB,2021-07-22T00:00:00Z,NaN,0,B,NaN,Before B first;Second Q;All others B; outside interp range
 BBBBBBBBQB,2021-07-22T00:42:00Z,9,I,Q,Q8,On B last;Penultimate Q;All others B
 BBBBBBBBQB,2021-07-22T00:45:00Z,9,I,Q,Q8,After B last;Penultimate Q;All others B; in interp range
 BBBBBBBBQB,2021-07-22T01:00:00Z,NaN,0,B,NaN,After B last;Penultimate Q;All others B; outside interp range

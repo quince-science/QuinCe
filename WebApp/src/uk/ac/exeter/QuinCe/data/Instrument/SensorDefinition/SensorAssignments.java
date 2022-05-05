@@ -1027,16 +1027,6 @@ public class SensorAssignments
   }
 
   /**
-   * Get all the assigned sensor names.
-   *
-   * @return The assigned sensor names.
-   */
-  public Set<String> getAllSensorNames() {
-    return values().stream().flatMap(Set::stream).map(a -> a.getSensorName())
-      .collect(Collectors.toSet());
-  }
-
-  /**
    * Get the assignment for the sensor with the specified name.
    *
    * @param name

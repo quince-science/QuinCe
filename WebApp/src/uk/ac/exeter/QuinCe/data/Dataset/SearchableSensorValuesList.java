@@ -272,7 +272,7 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
         if (!exactTimeFlag.equals(Flag.FLUSHING)
           && (!exactTimeFlag.isGood() && preferGoodFlags)) {
 
-          priorPostValues = getPriorPost(startPoint);
+          priorPostValues = getPriorPost(time, startPoint);
 
           // If the prior and post contain one non-null value and it is our
           // exact
@@ -288,13 +288,9 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
           }
         }
       } else {
-        priorPostValues = getPriorPost(startPoint);
+        priorPostValues = getPriorPost(time, startPoint);
         useExactValue = false;
       }
-    } else {
-      priorPostValues = getPriorPost(time, startPoint);
-      useExactValue = false;
-    }
 
       // Now we decide what to put in our returned list
       if (useExactValue) {

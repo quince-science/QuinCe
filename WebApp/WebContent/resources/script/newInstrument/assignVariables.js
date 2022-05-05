@@ -197,9 +197,8 @@ function openAssignSensorDialog(sensorType, column) {
   $('#sensorAssignmentPrimaryContainer').hide();
 
   PF('sensorAssignmentAssignButton').enable();
-  checkSensorName();
-  PF('sensorAssignmentDialog').show();
   checkSensorName(column.colName);
+  PF('sensorAssignmentDialog').show();
 }
 
 function openDateTimeAssignDialog(dateTimeType, column) {
