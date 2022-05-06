@@ -116,13 +116,16 @@ public class PositionQCRoutinePropagationTest extends PositionQCTestBase {
 
     DatasetSensorValues result = new DatasetSensorValues(instrument);
 
-    SensorValue s1 = new SensorValue(1L, 1L, makeTime(2), "1");
+    SensorValue s1 = new SensorValue(1L, 1L, 1L, makeTime(2), "1", null,
+      Flag.ASSUMED_GOOD, "");
     result.add(s1);
 
-    SensorValue s2 = new SensorValue(1L, 1L, makeTime(3), "2");
+    SensorValue s2 = new SensorValue(2L, 1L, 1L, makeTime(3), "2", null,
+      Flag.ASSUMED_GOOD, "");
     result.add(s2);
 
-    SensorValue s3 = new SensorValue(1L, 1L, makeTime(4), "3");
+    SensorValue s3 = new SensorValue(3L, 1L, 1L, makeTime(4), "3", null,
+      Flag.ASSUMED_GOOD, "");
     result.add(s3);
 
     return result;
