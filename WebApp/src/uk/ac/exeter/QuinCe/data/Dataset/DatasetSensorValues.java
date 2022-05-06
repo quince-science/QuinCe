@@ -347,12 +347,12 @@ public class DatasetSensorValues {
 
   /**
    * Create a subset of this object containing the specified items.
-   * 
+   *
    * <p>
    * All values with the specified time are kept, plus those with the specified
    * ids. If any times or ids are not in this object they will be ignored.
    * </p>
-   * 
+   *
    * @param times
    *          The times of values to keep
    * @param ids

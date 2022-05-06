@@ -136,7 +136,7 @@ public class DataReductionRecordTest extends BaseTest {
 
     assertEquals(Flag.BAD, record.getQCFlag(), "QC Flag incorrect");
     assertEquals(1, record.getQCMessages().size());
-    assertEquals("Bad", record.getQCMessages().get(0));
+    assertEquals("Bad", record.getQCMessages().iterator().next());
   }
 
   /**
@@ -226,6 +226,6 @@ public class DataReductionRecordTest extends BaseTest {
 
     assertEquals(Flag.BAD, record.getQCFlag());
     assertEquals(1, record.getQCMessages().size());
-    assertEquals("Bad Message", record.getQCMessages().get(0));
+    assertEquals("Bad Message", record.getQCMessages().iterator().next());
   }
 }

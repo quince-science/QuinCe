@@ -64,7 +64,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
       "Mismatched parameter value");
     assertEquals(Flag.BAD, record.getQCFlag(), "Mismatched QC Flag");
     assertEquals(1, record.getQCMessages().size());
-    assertEquals("Single Message", record.getQCMessages().get(0));
+    assertEquals("Single Message", record.getQCMessages().iterator().next());
     assertFalse(record.isDirty(), "Dirty flag set");
   }
 
@@ -105,7 +105,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
     assertEquals(Flag.BAD, record.getQCFlag(), "Mismatched QC Flag");
     assertEquals(1, record.getQCMessages().size(), "Mismatched message count");
-    assertEquals(BASE_MESSAGE, record.getQCMessages().get(0),
+    assertEquals(BASE_MESSAGE, record.getQCMessages().iterator().next(),
       "Mismatched message");
     assertFalse(record.isDirty(), "Mismatched dirty flag");
   }
@@ -124,7 +124,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
     assertEquals(Flag.BAD, record.getQCFlag(), "Mismatched QC Flag");
     assertEquals(1, record.getQCMessages().size(), "Mismatched message count");
-    assertEquals(BASE_MESSAGE, record.getQCMessages().get(0),
+    assertEquals(BASE_MESSAGE, record.getQCMessages().iterator().next(),
       "Mismatched message");
     assertFalse(record.isDirty(), "Mismatched dirty flag");
   }
@@ -177,7 +177,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
     assertEquals(Flag.BAD, record.getQCFlag(), "Mismatched QC Flag");
     assertEquals(1, record.getQCMessages().size(), "Mismatched message count");
-    assertEquals("New Message", record.getQCMessages().get(0),
+    assertEquals("New Message", record.getQCMessages().iterator().next(),
       "Mismatched message");
     assertTrue(record.isDirty(), "Mismatched dirty flag");
   }
@@ -228,7 +228,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
     assertEquals(Flag.BAD, record.getQCFlag(), "Mismatched QC Flag");
     assertEquals(1, record.getQCMessages().size());
-    assertEquals("Bad Message", record.getQCMessages().get(0));
+    assertEquals("Bad Message", record.getQCMessages().iterator().next());
     assertTrue(record.isDirty(), "Mismatched dirty flag");
 
   }
@@ -266,7 +266,7 @@ public class ReadOnlyDataReductionRecordTest extends BaseTest {
 
     assertEquals(Flag.BAD, record.getQCFlag(), "Mismatched QC Flag");
     assertEquals(1, record.getQCMessages().size());
-    assertEquals("Bad Message", record.getQCMessages().get(0));
+    assertEquals("Bad Message", record.getQCMessages().iterator().next());
     assertTrue(record.isDirty(), "Mismatched dirty flag");
   }
 }
