@@ -183,7 +183,7 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
     // If the result is negative, then we haven't found an exact time match. The
     // start point will therefore be the absolute result - 1
-    if (startPoint < 0 && startPoint > (size() * -1)) {
+    if (startPoint < 0 && startPoint >= (size() * -1)) {
       startPoint = Math.abs(startPoint) - 1;
     }
 
