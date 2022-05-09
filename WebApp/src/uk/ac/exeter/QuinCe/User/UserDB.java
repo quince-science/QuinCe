@@ -259,7 +259,7 @@ public class UserDB {
       stmt.setString(1, email);
       record = stmt.executeQuery();
 
-      if (record.first()) {
+      if (record.next()) {
         foundUser = new User(record.getInt(1), record.getString(2),
           record.getString(3), record.getString(4), record.getInt(9),
           record.getString(10));
@@ -352,7 +352,7 @@ public class UserDB {
       stmt.setLong(1, id);
       record = stmt.executeQuery();
 
-      if (record.first()) {
+      if (record.next()) {
         foundUser = new User(record.getInt(1), record.getString(2),
           record.getString(3), record.getString(4), record.getInt(9),
           record.getString(10));
@@ -716,7 +716,7 @@ public class UserDB {
       stmt = conn.prepareStatement(GET_AUTHENTICATION_DETAILS_STATEMENT);
       stmt.setString(1, email);
       ResultSet result = stmt.executeQuery();
-      if (result.first()) {
+      if (result.next()) {
         byte[] salt = result.getBytes(1);
         byte[] storedPassword = result.getBytes(2);
         String emailVerificationCode = result.getString(3);

@@ -244,7 +244,7 @@ public class DataFileDB {
     try {
       if (getFilesWithinDates(conn, dataFile.getFileDefinition(),
         dataFile.getRawStartTime(), dataFile.getRawEndTime(), false)
-          .size() > 0) {
+        .size() > 0) {
         throw new FileExistsException(dataFile.getFileDescription(),
           dataFile.getRawStartTime(), dataFile.getRawEndTime());
       }
@@ -1136,7 +1136,7 @@ public class DataFileDB {
       stmt.setLong(1, instrumentId);
 
       try (ResultSet records = stmt.executeQuery()) {
-        records.first();
+        records.next();
         fileCount = records.getInt(1);
       } catch (SQLException e) {
         throw e;
