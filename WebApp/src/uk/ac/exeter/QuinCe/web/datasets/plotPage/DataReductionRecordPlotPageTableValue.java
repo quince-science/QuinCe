@@ -1,9 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class DataReductionRecordPlotPageTableValue
@@ -37,6 +35,11 @@ public class DataReductionRecordPlotPageTableValue
   public String getValue() {
     Double result = record.getCalculationValue(parameterName);
     return null == result ? null : String.valueOf(result);
+  }
+
+  @Override
+  public Object getRawValue() {
+    return record.getCalculationValue(parameterName);
   }
 
   @Override

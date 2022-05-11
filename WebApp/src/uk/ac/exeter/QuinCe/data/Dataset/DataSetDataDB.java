@@ -169,9 +169,6 @@ public class DataSetDataDB {
     + "measurements m ON dr.measurement_id = m.id WHERE m.dataset_id = ? "
     + "ORDER BY dr.measurement_id ASC";
 
-  private static final String GET_RECORD_COUNT_QUERY = "SELECT "
-    + "COUNT(DISTINCT(date)) FROM sensor_values WHERE dataset_id = ?";
-
   private static final String GET_RUN_TYPES_QUERY = "SELECT "
     + "date, value FROM sensor_values "
     + " WHERE dataset_id = ? AND file_column IN "
@@ -582,48 +579,6 @@ public class DataSetDataDB {
     } catch (Exception e) {
       throw new DatabaseException("Error while storing measurements", e);
     }
-  }
-
-  /**
-   * Get the number of measurements in a dataset
-   *
-   * @param conn
-   *          A database connection
-   * @param datasetId
-   *          The dataset's database ID
-   * @return The number of records
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   */
-  public static int getRecordCount(Connection conn, long datasetId)
-    throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(datasetId, "datasetId");
-
-    int result = -1;
-
-    PreparedStatement stmt = null;
-    ResultSet count = null;
-
-    try {
-      stmt = conn.prepareStatement(GET_RECORD_COUNT_QUERY);
-      stmt.setLong(1, datasetId);
-
-      count = stmt.executeQuery();
-      if (count.next()) {
-        result = count.getInt(1);
-      }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting measurement count", e);
-    } finally {
-      DatabaseUtils.closeResultSets(count);
-      DatabaseUtils.closeStatements(stmt);
-    }
-
-    return result;
   }
 
   /**

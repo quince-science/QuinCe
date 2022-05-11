@@ -15,6 +15,11 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
   private final String value;
 
   /**
+   * The raw value.
+   */
+  private final Object rawValue;
+
+  /**
    * The value's QC flag.
    */
   private final Flag qcFlag;
@@ -48,6 +53,7 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
   public SimplePlotPageTableValue(String value, Flag qcFlag, String qcMessage,
     boolean flagNeeded, char type) {
     this.value = StringUtils.formatNumber(value);
+    this.rawValue = value;
     this.qcFlag = qcFlag;
     this.qcMessage = qcMessage;
     this.flagNeeded = flagNeeded;
@@ -62,6 +68,8 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    */
   public SimplePlotPageTableValue(LocalDateTime time,
     DateTimeFormatter formatter, boolean milliseconds) {
+
+    this.rawValue = time;
 
     if (milliseconds) {
       this.value = String.valueOf(DateTimeUtils.dateToLong(time));
@@ -85,6 +93,11 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
   @Override
   public String getValue() {
     return value;
+  }
+
+  @Override
+  public Object getRawValue() {
+    return rawValue;
   }
 
   /**
