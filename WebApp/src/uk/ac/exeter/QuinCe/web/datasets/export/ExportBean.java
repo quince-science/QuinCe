@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -16,8 +17,8 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.sql.DataSource;
 
-import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
@@ -59,14 +60,9 @@ public class ExportBean extends BaseManagedBean {
   private DataSet dataset = null;
 
   /**
-   * The chosen export option
+   * The chosen export options
    */
-  private int chosenExportOption = -1;
-
-  /**
-   * Indicates whether raw files should be included in the export
-   */
-  private boolean includeRawFiles = false;
+  private List<Integer> chosenExportOptions = new ArrayList<Integer>();
 
   /**
    * Initialise the bean
@@ -130,12 +126,7 @@ public class ExportBean extends BaseManagedBean {
    *           In an error occurs while retrieving the export options
    */
   public List<ExportOption> getExportOptions() throws ExportException {
-    List<ExportOption> options = ExportConfig.getInstance().getOptions();
-    if (chosenExportOption == -1 && options.size() > 0) {
-      chosenExportOption = options.get(0).getIndex();
-    }
-
-    return options;
+    return ExportConfig.getInstance().getOptions();
   }
 
   /**
@@ -143,8 +134,8 @@ public class ExportBean extends BaseManagedBean {
    *
    * @return The export option ID
    */
-  public int getChosenExportOption() {
-    return chosenExportOption;
+  public List<Integer> getChosenExportOptions() {
+    return chosenExportOptions;
   }
 
   /**
@@ -153,57 +144,15 @@ public class ExportBean extends BaseManagedBean {
    * @param chosenExportOption
    *          The export option ID
    */
-  public void setChosenExportOption(int chosenExportOption) {
-    this.chosenExportOption = chosenExportOption;
+  public void setChosenExportOptions(List<Integer> chosenExportOptions) {
+    this.chosenExportOptions = chosenExportOptions;
   }
 
   /**
    * Export the dataset in the chosen format
    */
   public void exportDataset() {
-
-    if (includeRawFiles) {
-      exportDatasetWithRawFiles();
-    } else {
-      exportSingleFile();
-    }
-  }
-
-  /**
-   * Export a dataset file by itself
-   */
-  private void exportSingleFile() {
-
-    try {
-      ExportOption exportOption = getExportOptions().get(chosenExportOption);
-
-      byte[] fileContent = getDatasetExport(getCurrentInstrument(), dataset,
-        exportOption);
-
-      FacesContext fc = FacesContext.getCurrentInstance();
-      ExternalContext ec = fc.getExternalContext();
-
-      ec.responseReset();
-      ec.setResponseContentType("text/csv");
-
-      // Set it with the file size. This header is optional. It will work if
-      // it's omitted,
-      // but the download progress will be unknown.
-      ec.setResponseContentLength(fileContent.length);
-
-      // The Save As popup magic is done here. You can give it any file name you
-      // want, this only won't work in MSIE,
-      // it will use current request URL as file name instead.
-      ec.setResponseHeader("Content-Disposition",
-        "attachment; filename=\"" + getExportFilename(exportOption) + "\"");
-
-      OutputStream outputStream = ec.getResponseOutputStream();
-      outputStream.write(fileContent);
-
-      fc.responseComplete();
-    } catch (Exception e) {
-      ExceptionUtils.printStackTrace(e);
-    }
+    exportDatasetWithRawFiles();
   }
 
   /**
@@ -215,10 +164,9 @@ public class ExportBean extends BaseManagedBean {
 
     try {
       conn = getDataSource().getConnection();
-      ExportOption exportOption = getExportOptions().get(chosenExportOption);
 
       byte[] outBytes = buildExportZip(conn, getCurrentInstrument(), dataset,
-        exportOption);
+        ExportConfig.getInstance().getOptions(chosenExportOptions));
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -261,8 +209,8 @@ public class ExportBean extends BaseManagedBean {
    * @return The exported dataset
    * @throws Exception
    */
-  private static byte[] getDatasetExport(Instrument instrument, DataSet dataset,
-    ExportOption exportOption) throws Exception {
+  private static DatasetExport getDatasetExport(Instrument instrument,
+    DataSet dataset, ExportOption exportOption) throws Exception {
 
     DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
@@ -274,12 +222,12 @@ public class ExportBean extends BaseManagedBean {
     data.postProcess();
 
     // Initialise the output
-    StringBuilder output = new StringBuilder();
+    DatasetExport result = new DatasetExport();
 
-    List<String> headers = makeHeaders(instrument, data, exportOption, output);
-    output.append(
+    List<String> headers = makeHeaders(instrument, data, exportOption, result);
+    result.append(
       StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
-    output.append('\n');
+    result.append('\n');
 
     // Process each row of the data
     for (Long rowId : data.getRowIDs()) {
@@ -296,12 +244,12 @@ public class ExportBean extends BaseManagedBean {
           if (firstColumn) {
             firstColumn = false;
           } else {
-            output.append(exportOption.getSeparator());
+            result.append(exportOption.getSeparator());
           }
 
           PlotPageTableValue value = data.getColumnValue(rowId, column.getId());
 
-          addValueToOutput(output, exportOption, column.getId(), value,
+          addValueToOutput(result, exportOption, column.getId(), value,
             column.hasQC(), column.includeType());
         }
 
@@ -371,8 +319,8 @@ public class ExportBean extends BaseManagedBean {
             }
           }
 
-          output.append(exportOption.getSeparator());
-          addValueToOutput(output, exportOption, column.getId(),
+          result.append(exportOption.getSeparator());
+          addValueToOutput(result, exportOption, column.getId(),
             useValueInThisColumn ? value : null, true, true);
         }
 
@@ -384,11 +332,11 @@ public class ExportBean extends BaseManagedBean {
                 exportOption.includeCalculationColumns());
 
             for (CalculationParameter param : params) {
-              output.append(exportOption.getSeparator());
+              result.append(exportOption.getSeparator());
 
               PlotPageTableValue value = data.getColumnValue(rowId,
                 param.getId());
-              addValueToOutput(output, exportOption, param.getId(), value,
+              addValueToOutput(result, exportOption, param.getId(), value,
                 param.isResult(), false);
             }
           }
@@ -399,11 +347,11 @@ public class ExportBean extends BaseManagedBean {
             .getExtendedColumnHeadings().get(ExportData.SENSORS_FIELD_GROUP);
 
           for (PlotPageColumnHeading heading : sensorHeadings) {
-            output.append(exportOption.getSeparator());
+            result.append(exportOption.getSeparator());
 
             PlotPageTableValue value = data.getColumnValue(rowId,
               heading.getId());
-            addValueToOutput(output, exportOption, heading.getId(), value, true,
+            addValueToOutput(result, exportOption, heading.getId(), value, true,
               false);
           }
 
@@ -413,24 +361,25 @@ public class ExportBean extends BaseManagedBean {
 
           if (null != diagnosticHeadings) {
             for (PlotPageColumnHeading heading : diagnosticHeadings) {
-              output.append(exportOption.getSeparator());
+              result.append(exportOption.getSeparator());
 
               PlotPageTableValue value = data.getColumnValue(rowId,
                 heading.getId());
-              addValueToOutput(output, exportOption, heading.getId(), value,
+              addValueToOutput(result, exportOption, heading.getId(), value,
                 true, false);
             }
           }
         }
 
-        output.append("\n");
+        result.append('\n');
+        result.addRecord();
       }
     }
 
     // Destroy the ExportData object so it cleans up its resources
     data.destroy();
 
-    return output.toString().getBytes();
+    return result;
   }
 
   /**
@@ -443,7 +392,7 @@ public class ExportBean extends BaseManagedBean {
    * @throws Exception
    */
   private static List<String> makeHeaders(Instrument instrument,
-    ExportData data, ExportOption exportOption, StringBuilder output)
+    ExportData data, ExportOption exportOption, DatasetExport export)
     throws Exception {
 
     List<String> headers = new ArrayList<String>();
@@ -502,70 +451,74 @@ public class ExportBean extends BaseManagedBean {
     return headers;
   }
 
-  private static void addValueToOutput(StringBuilder output,
+  private static void addValueToOutput(DatasetExport export,
     ExportOption exportOption, long columnId, PlotPageTableValue value,
     boolean includeQcColumns, boolean includeType) {
 
     if (null == value) {
+
       // Value
-      output.append(exportOption.getMissingValue());
+      export.append(exportOption.getMissingValue());
 
       // QC Flag
       if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
-        output.append(exportOption.getSeparator());
-        output.append(exportOption.getMissingQcFlag());
+        export.append(exportOption.getSeparator());
+        export.append(exportOption.getMissingQcFlag());
 
         // QC Comment if required
         if (exportOption.includeQCComments()) {
-          output.append(exportOption.getSeparator());
+          export.append(exportOption.getSeparator());
         }
       }
 
       // Type
       if (includeType) {
-        output.append(exportOption.getSeparator());
+        export.append(exportOption.getSeparator());
       }
     } else {
+      export.registerValue(columnId, value);
+
+      // Replacing FLUSHING values with empty
       if (value.getQcFlag().equals(Flag.FLUSHING)) {
         // Empty columns
-        output.append(exportOption.getMissingValue());
+        export.append(exportOption.getMissingValue());
 
         if (includeQcColumns) {
-          output.append(exportOption.getSeparator());
+          export.append(exportOption.getSeparator());
 
           if (exportOption.includeQCComments()) {
-            output.append(exportOption.getSeparator());
+            export.append(exportOption.getSeparator());
           }
         }
 
         if (includeType) {
-          output.append(exportOption.getSeparator()); // Type
+          export.append(exportOption.getSeparator()); // Type
         }
       } else {
 
         // Value
         if (null == value.getValue()) {
-          output.append(exportOption.getMissingValue());
+          export.append(exportOption.getMissingValue());
         } else {
-          output.append(exportOption.format(value.getValue()));
+          export.append(exportOption.format(value.getValue()));
         }
 
         // QC Flag
         if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
-          output.append(exportOption.getSeparator());
-          output.append(value.getQcFlag().getWoceValue());
+          export.append(exportOption.getSeparator());
+          export.append(value.getQcFlag().getWoceValue());
 
           // QC Comment
           if (exportOption.includeQCComments()) {
-            output.append(exportOption.getSeparator());
-            output.append(
+            export.append(exportOption.getSeparator());
+            export.append(
               '"' + exportOption.format(value.getQcMessage(true)) + '"');
           }
         }
 
         if (includeType) {
-          output.append(exportOption.getSeparator());
-          output.append(value.getType());
+          export.append(exportOption.getSeparator());
+          export.append(value.getType());
         }
       }
     }
@@ -652,91 +605,38 @@ public class ExportBean extends BaseManagedBean {
   }
 
   /**
-   * Get the filename of the file that will be exported
-   *
-   * @param exportOption
-   *          The export option
-   * @return The export filename
-   * @throws Exception
-   *           If any errors occur
-   */
-  private String getExportFilename(ExportOption exportOption) throws Exception {
-    StringBuffer fileName = new StringBuffer(
-      dataset.getName().replaceAll("\\.", "_"));
-    fileName.append('-');
-    fileName.append(exportOption.getName());
-
-    if (exportOption.getSeparator().equals("\t")) {
-      fileName.append(".tsv");
-    } else {
-      fileName.append(".csv");
-    }
-
-    return fileName.toString();
-  }
-
-  /**
-   * Determine whether raw files should be included in the export
-   *
-   * @return {@code true} if raw files should be included; {@code false} if not
-   */
-  public boolean getIncludeRawFiles() {
-    return includeRawFiles;
-  }
-
-  /**
-   * Specify whether raw files should be included in the export
-   *
-   * @param includeRawFiles
-   *          The raw files flag
-   */
-  public void setIncludeRawFiles(boolean includeRawFiles) {
-    this.includeRawFiles = includeRawFiles;
-  }
-
-  /**
    * Create the contents of the manifest.json file
    *
    * @return The manifest JSON
    */
-  private static JSONObject makeManifest(Connection conn, DataSet dataset,
-    List<ExportOption> exportOptions, List<DataFile> rawFiles)
+  private static JsonObject makeManifest(Connection conn, DataSet dataset,
+    Collection<ExportOption> exportOptions, List<DataFile> rawFiles)
     throws Exception {
 
-    JSONObject result = new JSONObject();
+    JsonObject result = new JsonObject();
 
-    JSONObject manifest = new JSONObject();
-    JSONArray raw = new JSONArray();
+    JsonObject manifest = new JsonObject();
+    JsonArray raw = new JsonArray();
     for (DataFile file : rawFiles) {
-      JSONObject fileJson = new JSONObject();
-      fileJson.put("filename", file.getFilename());
-      fileJson.put("startDate",
+      JsonObject fileJson = new JsonObject();
+      fileJson.addProperty("filename", file.getFilename());
+      fileJson.addProperty("startDate",
         DateTimeUtils.toIsoDate(file.getRawStartTime()));
-      fileJson.put("endDate", DateTimeUtils.toIsoDate(file.getRawEndTime()));
-      fileJson.put("timeOffset", file.getTimeOffset());
-      raw.put(fileJson);
+      fileJson.addProperty("endDate",
+        DateTimeUtils.toIsoDate(file.getRawEndTime()));
+      fileJson.addProperty("timeOffset", file.getTimeOffset());
+      raw.add(fileJson);
     }
-    manifest.put("raw", raw);
+    manifest.add("raw", raw);
 
-    JSONArray datasetArray = new JSONArray();
-    for (ExportOption exportOption : exportOptions) {
-      JSONObject datasetObject = new JSONObject();
-      datasetObject.put("destination", exportOption.getName());
-      datasetObject.put("filename",
-        dataset.getName() + exportOption.getFileExtension());
-      datasetArray.put(datasetObject);
-    }
-
-    manifest.put("dataset", datasetArray);
-
-    JSONObject metadata = DataSetDB.getMetadataJson(conn, dataset);
+    JsonObject metadata = DataSetDB.getMetadataJson(conn, dataset);
     Properties appConfig = ResourceManager.getInstance().getConfig();
 
-    metadata.put("quince_information", "Data processed using QuinCe version "
-      + appConfig.getProperty("version"));
-    manifest.put("metadata", metadata);
+    metadata.addProperty("quince_information",
+      "Data processed using QuinCe " + appConfig.getProperty("version"));
+    manifest.add("metadata", metadata);
 
-    result.put("manifest", manifest);
+    result.add("manifest", manifest);
     return result;
   }
 
@@ -759,35 +659,55 @@ public class ExportBean extends BaseManagedBean {
    *           All exceptions are propagated upwards
    */
   public static byte[] buildExportZip(Connection conn, Instrument instrument,
-    DataSet dataset, ExportOption exportOption) throws Exception {
+    DataSet dataset, Collection<ExportOption> exportOptions) throws Exception {
 
-    ByteArrayOutputStream zipOut = new ByteArrayOutputStream();
-    ZipOutputStream zip = new ZipOutputStream(zipOut);
+    // Get the list of raw files
+    List<Long> rawIds = dataset.getSourceFiles(conn);
+    List<DataFile> files = DataFileDB.getDataFiles(conn,
+      ResourceManager.getInstance().getConfig(), rawIds);
+
+    // Get the base manifest. We will add to it as we go.
+    JsonObject manifest = makeManifest(conn, dataset, exportOptions, files);
+
+    /*
+     * Create the dataset array, which contains details of each export format.
+     * We fill this in as we go along
+     */
+    JsonObject exportFilesJson = new JsonObject();
 
     String dirRoot = dataset.getName();
 
-    List<ExportOption> exportOptions;
-    if (null != exportOption) {
-      exportOptions = new ArrayList<ExportOption>(1);
-      exportOptions.add(exportOption);
-    } else {
-      exportOptions = ExportConfig.getInstance().getOptions();
-    }
+    ByteArrayOutputStream zipOut = new ByteArrayOutputStream();
+    ZipOutputStream zip = new ZipOutputStream(zipOut);
 
     for (ExportOption option : exportOptions) {
       // Add the main dataset file
       String datasetPath = dirRoot + "/dataset/" + option.getName() + "/"
         + dataset.getName() + option.getFileExtension();
 
+      DatasetExport export = getDatasetExport(instrument, dataset, option);
+
       ZipEntry datasetEntry = new ZipEntry(datasetPath);
       zip.putNextEntry(datasetEntry);
-      zip.write(getDatasetExport(instrument, dataset, option));
+      zip.write(export.getContent());
       zip.closeEntry();
+
+      // Add the details to the manifest
+      JsonObject datasetObject = new JsonObject();
+      datasetObject.addProperty("filename",
+        dataset.getName() + option.getFileExtension());
+      datasetObject.addProperty("records", export.getRecordCount());
+      datasetObject.addProperty("validStartDate",
+        DateTimeUtils.toIsoDate(export.getStartDate()));
+      datasetObject.addProperty("validEndDate",
+        DateTimeUtils.toIsoDate(export.getEndDate()));
+      datasetObject.add("validBounds", export.getBoundsJson());
+
+      exportFilesJson.add(option.getName(), datasetObject);
     }
 
-    List<Long> rawIds = dataset.getSourceFiles(conn);
-    List<DataFile> files = DataFileDB.getDataFiles(conn,
-      ResourceManager.getInstance().getConfig(), rawIds);
+    // Add the dataset details to the manifest
+    manifest.add("exportFiles", exportFilesJson);
 
     for (DataFile file : files) {
       String filePath = dirRoot + "/raw/" + file.getFilename();
@@ -799,7 +719,6 @@ public class ExportBean extends BaseManagedBean {
     }
 
     // Manifest
-    JSONObject manifest = makeManifest(conn, dataset, exportOptions, files);
     ZipEntry manifestEntry = new ZipEntry(dirRoot + "/manifest.json");
     zip.putNextEntry(manifestEntry);
     zip.write(manifest.toString().getBytes());

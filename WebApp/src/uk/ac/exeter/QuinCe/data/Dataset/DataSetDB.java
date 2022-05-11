@@ -852,11 +852,11 @@ public class DataSetDB {
    *           If the instrument details cannot be retrieved
    * @throws SensorGroupsException
    */
-  public static JSONObject getMetadataJson(DataSource dataSource,
+  public static JsonObject getMetadataJson(DataSource dataSource,
     DataSet dataset) throws DatabaseException, MissingParamException,
     RecordNotFoundException, InstrumentException, SensorGroupsException {
 
-    JSONObject result = null;
+    JsonObject result = null;
     Connection conn = null;
 
     try {
@@ -889,7 +889,7 @@ public class DataSetDB {
    *           If the instrument details cannot be retrieved
    * @throws SensorGroupsException
    */
-  public static JSONObject getMetadataJson(Connection conn, DataSet dataset)
+  public static JsonObject getMetadataJson(Connection conn, DataSet dataset)
     throws DatabaseException, MissingParamException, RecordNotFoundException,
     InstrumentException, SensorGroupsException {
 
@@ -899,24 +899,22 @@ public class DataSetDB {
     Instrument instrument = InstrumentDB.getInstrument(conn,
       dataset.getInstrumentId());
 
-    JSONObject result = new JSONObject();
-    result.put("name", dataset.getName());
-    result.put("startdate", DateTimeUtils.toIsoDate(dataset.getStart()));
-    result.put("enddate", DateTimeUtils.toIsoDate(dataset.getEnd()));
-    result.put("platformCode", instrument.getPlatformCode());
-    result.put("nrt", dataset.isNrt());
-    result.put("last_touched",
+    JsonObject result = new JsonObject();
+    result.addProperty("name", dataset.getName());
+    result.addProperty("startdate",
+      DateTimeUtils.toIsoDate(dataset.getStart()));
+    result.addProperty("enddate", DateTimeUtils.toIsoDate(dataset.getEnd()));
+    result.addProperty("platformCode", instrument.getPlatformCode());
+    result.addProperty("nrt", dataset.isNrt());
+    result.addProperty("last_touched",
       DateTimeUtils.toIsoDate(dataset.getLastTouched()));
 
-    int recordCount = DataSetDataDB.getRecordCount(conn, dataset.getId());
-    result.put("records", recordCount);
-
-    JSONObject boundsObject = new JSONObject();
-    boundsObject.put("south", dataset.getMinLat());
-    boundsObject.put("west", dataset.getMinLon());
-    boundsObject.put("east", dataset.getMaxLon());
-    boundsObject.put("north", dataset.getMaxLat());
-    result.put("bounds", boundsObject);
+    JsonObject boundsObject = new JsonObject();
+    boundsObject.addProperty("south", dataset.getMinLat());
+    boundsObject.addProperty("west", dataset.getMinLon());
+    boundsObject.addProperty("east", dataset.getMaxLon());
+    boundsObject.addProperty("north", dataset.getMaxLat());
+    result.add("bounds", boundsObject);
 
     return result;
   }

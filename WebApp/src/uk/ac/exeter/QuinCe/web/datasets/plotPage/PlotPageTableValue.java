@@ -37,6 +37,19 @@ public interface PlotPageTableValue {
   public String getValue();
 
   /**
+   * Get the raw value.
+   *
+   * <p>
+   * There is no indication here of what class the returned value will be. It is
+   * also more likely that this will be {@code null} - most implementations will
+   * handle this in {@link #getValue()} but not here.
+   * </p>
+   *
+   * @return The value
+   */
+  public Object getRawValue();
+
+  /**
    * Get the QC flag.
    *
    * @return The QC flag.
