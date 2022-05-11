@@ -513,6 +513,11 @@ public class MeasurementValue implements PlotPageTableValue {
   }
 
   @Override
+  public Object getRawValue() {
+    return calculatedValue;
+  }
+
+  @Override
   public String getQcMessage(boolean replaceNewlines) {
     String result = StringUtils.collectionToDelimited(getQcMessages(), ";");
     if (replaceNewlines) {

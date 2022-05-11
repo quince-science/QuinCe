@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.primefaces.json.JSONArray;
@@ -264,5 +265,9 @@ public class ExportConfig {
    */
   public ExportOption getOption(int index) {
     return options.get(index);
+  }
+
+  public List<ExportOption> getOptions(Collection<Integer> indices) {
+    return indices.stream().map(i -> getOption(i)).toList();
   }
 }

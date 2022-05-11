@@ -35,6 +35,11 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
+  public Object getRawValue() {
+    return sensorValue;
+  }
+
+  @Override
   public Flag getQcFlag() {
     return sensorValue.getDisplayFlag();
   }

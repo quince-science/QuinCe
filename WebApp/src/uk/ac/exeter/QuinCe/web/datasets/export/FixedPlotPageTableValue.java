@@ -22,6 +22,11 @@ public class FixedPlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
+  public Object getRawValue() {
+    return getValue();
+  }
+
+  @Override
   public Flag getQcFlag() {
     return Flag.GOOD;
   }

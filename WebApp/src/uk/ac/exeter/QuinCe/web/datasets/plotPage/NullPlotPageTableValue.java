@@ -22,6 +22,11 @@ public class NullPlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
+  public Object getRawValue() {
+    return null;
+  }
+
+  @Override
   public Flag getQcFlag() {
     return Flag.NO_QC;
   }
