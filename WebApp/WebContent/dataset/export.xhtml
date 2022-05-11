@@ -8,24 +8,24 @@
   <ui:define name="title">Export</ui:define>
   <ui:define name="pageTitle">Export Dataset #{exportBean.dataset.name}</ui:define>
   <ui:define name="localHead">
-	<script>
-	  function setExportButton() {
+  <script>
+    function setExportButton() {
       let enable = false;
       let inputs = PF('exportOptions').inputs;
       for (i = 0; i &lt; inputs.length; i++) {
-    	  if (inputs[i].checked) {
-    		  enable = true;
-    		  break;
-    	  }
+        if (inputs[i].checked) {
+          enable = true;
+          break;
+        }
       }
-      
+
       if (enable) {
-    	  PF('exportButton').enable();
+        PF('exportButton').enable();
       } else {
-    	  PF('exportButton').disable();
+        PF('exportButton').disable();
       }
     }
-	</script>
+  </script>
 
   </ui:define>
   <ui:define name="content">
