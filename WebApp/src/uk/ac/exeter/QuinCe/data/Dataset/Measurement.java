@@ -396,6 +396,35 @@ public class Measurement implements Comparable<Measurement> {
   public void setTime(LocalDateTime time) {
     this.time = time;
   }
+
+  /**
+   * Get the measurement's QC flag.
+   *
+   * <p>
+   * This is calculated as the worst QC flag from all the measurement's
+   * {@link MeasurementValue}s.
+   * </p>
+   *
+   * @return The QC flag for the measurement.
+   */
+  public Flag getQCFlag() {
+
+    Flag result;
+
+    if (measurementValues.size() == 0) {
+      result = Flag.BAD;
+    } else {
+      result = Flag.ASSUMED_GOOD;
+
+      for (MeasurementValue measurementValue : measurementValues.values()) {
+        if (measurementValue.getQcFlag().moreSignificantThan(result)) {
+          result = measurementValue.getQcFlag();
+        }
+      }
+    }
+
+    return result;
+  }
 }
 
 class MeasurementTimeComparator implements Comparator<Measurement> {

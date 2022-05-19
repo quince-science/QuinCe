@@ -6,7 +6,8 @@
     "includeRawSensors": false,
     "includeCalculationColumns": true,
     "includeUnits": false,
-    "measurementsOnly": false,
+    "measurementsOnly": true,
+    "goodOnly": true,
     "timestampHeader": "date time",
     "timestampFormat": "uuuu-MM-dd HH:mm:ss",
     "replaceColumnHeaders": {
