@@ -134,6 +134,16 @@ public class ExportOption {
   private boolean measurementsOnly = false;
 
   /**
+   * Only export good measurements and/or sensor values.
+   *
+   * <p>
+   * If a bad sensor value is used by a good measurement, it will still be
+   * included.
+   * </p>
+   */
+  private boolean goodOnly = false;
+
+  /**
    * Indicates whether export option should be visible in webapp
    */
   private boolean visible = true;
@@ -206,6 +216,14 @@ public class ExportOption {
 
   public boolean measurementsOnly() {
     return measurementsOnly;
+  }
+
+  public boolean goodOnly() {
+    return goodOnly;
+  }
+
+  public boolean filterSensorValues() {
+    return measurementsOnly || goodOnly;
   }
 
   public boolean getVisible() {
@@ -349,6 +367,10 @@ public class ExportOption {
 
     if (json.has("measurementsOnly")) {
       measurementsOnly = json.getBoolean("measurementsOnly");
+    }
+
+    if (json.has("goodOnly")) {
+      goodOnly = json.getBoolean("goodOnly");
     }
 
     // ExportData class. All classes are in the
