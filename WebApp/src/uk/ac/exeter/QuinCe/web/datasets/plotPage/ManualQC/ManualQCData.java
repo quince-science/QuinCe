@@ -1127,45 +1127,47 @@ public class ManualQCData extends PlotPageData {
             result = new SensorValuePlotPageTableValue(sensorValue);
           }
         }
-      }
 
-      // Now just try to get an interpolated value
-      long columnId = instrument.getSensorAssignments().getColumnIds(sensorType)
-        .get(0);
+        if (null == result) {
+          // Now just try to get an interpolated value
+          long columnId = instrument.getSensorAssignments()
+            .getColumnIds(sensorType).get(0);
 
-      List<SensorValue> valuesToUse = sensorValues.getColumnValues(columnId)
-        .getWithInterpolation(time, true, false);
+          List<SensorValue> valuesToUse = sensorValues.getColumnValues(columnId)
+            .getWithInterpolation(time, true, false);
 
-      switch (valuesToUse.size()) {
-      case 0: {
-        // Flushing value - do nothing
-        break;
-      }
-      case 1: {
-        // Value from exact time - use it directly
-        result = new SensorValuePlotPageTableValue(valuesToUse.get(0));
-        break;
-      }
-      case 2: {
-        Double value = SensorValue.interpolate(valuesToUse.get(0),
-          valuesToUse.get(1), time);
+          switch (valuesToUse.size()) {
+          case 0: {
+            // Flushing value - do nothing
+            break;
+          }
+          case 1: {
+            // Value from exact time - use it directly
+            result = new SensorValuePlotPageTableValue(valuesToUse.get(0));
+            break;
+          }
+          case 2: {
+            Double value = SensorValue.interpolate(valuesToUse.get(0),
+              valuesToUse.get(1), time);
 
-        try {
-          result = new SimplePlotPageTableValue(String.valueOf(value),
-            SensorValue.getCombinedDisplayFlag(valuesToUse),
-            SensorValue.getCombinedQcComment(valuesToUse), false,
-            PlotPageTableValue.INTERPOLATED_TYPE);
-        } catch (RoutineException e) {
-          throw new PlotPageDataException(
-            "Unable to get SensorValue QC Comments", e);
+            try {
+              result = new SimplePlotPageTableValue(String.valueOf(value),
+                SensorValue.getCombinedDisplayFlag(valuesToUse),
+                SensorValue.getCombinedQcComment(valuesToUse), false,
+                PlotPageTableValue.INTERPOLATED_TYPE);
+            } catch (RoutineException e) {
+              throw new PlotPageDataException(
+                "Unable to get SensorValue QC Comments", e);
+            }
+
+            break;
+          }
+          default: {
+            throw new PlotPageDataException(
+              "Invalid number of values in sensor value search");
+          }
+          }
         }
-
-        break;
-      }
-      default: {
-        throw new PlotPageDataException(
-          "Invalid number of values in sensor value search");
-      }
       }
     }
 

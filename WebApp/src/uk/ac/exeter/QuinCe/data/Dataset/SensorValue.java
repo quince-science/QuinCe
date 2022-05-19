@@ -508,18 +508,9 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   @Override
   public int compareTo(SensorValue o) {
-    // If the IDs are equal, the objects are equal.
-    // Otherwise compare on time, dataset ID, column ID
+    // Compare on time, dataset ID, column ID
 
-    int result = 0;
-
-    if (id > -1) {
-      result = Long.compare(id, o.id);
-    }
-
-    if (result == 0) {
-      result = time.compareTo(o.time);
-    }
+    int result = time.compareTo(o.time);
 
     if (result == 0) {
       result = Long.compare(datasetId, o.datasetId);

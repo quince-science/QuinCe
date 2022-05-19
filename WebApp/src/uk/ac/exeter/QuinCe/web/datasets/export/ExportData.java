@@ -6,13 +6,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
@@ -27,7 +28,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
@@ -87,10 +87,70 @@ public class ExportData extends ManualQCData {
    */
   @Override
   public void loadDataAction() throws Exception {
+
+    // Load all data
     super.loadDataAction();
 
-    if (exportOption.measurementsOnly()) {
-      sensorValues = filterSensorValuesToMeasurements();
+    /*
+     * Filter measurements to only contain those with Good QC flags if required
+     */
+    if (exportOption.goodOnly()) {
+      TreeMap<LocalDateTime, Measurement> filteredMeasurements = new TreeMap<LocalDateTime, Measurement>();
+
+      for (Map.Entry<LocalDateTime, Measurement> entry : measurements
+        .entrySet()) {
+        if (entry.getValue().getQCFlag().isGood()) {
+          filteredMeasurements.put(entry.getKey(), entry.getValue());
+        }
+      }
+
+      measurements = filteredMeasurements;
+
+      /*
+       * measurements = measurements.entrySet().stream() .filter(e ->
+       * e.getValue().getQCFlag().isGood()) .collect(Collectors.toMap(e ->
+       * e.getKey(), e -> e.getValue(), (key1, key2) -> key1, TreeMap::new));
+       */
+    }
+
+    /*
+     * Now filter the SensorValues if required.
+     */
+    if (exportOption.filterSensorValues()) {
+      /*
+       * If filtering is required, we always need SensorValues related to the
+       * selected Measurements (which may have been filtered above).
+       */
+
+      // Get all SensorValues related to the measurements
+      TreeSet<LocalDateTime> filteredTimes = new TreeSet<LocalDateTime>();
+      TreeSet<Long> filteredIds = new TreeSet<Long>();
+
+      // Get all sensor values related to measurements
+      for (Measurement measurement : measurements.values()) {
+        filteredTimes.add(measurement.getTime());
+
+        for (MeasurementValue measurementValue : measurement
+          .getMeasurementValues()) {
+
+          filteredIds.addAll(measurementValue.getSensorValueIds());
+          filteredIds.addAll(measurementValue.getSupportingSensorValueIds());
+        }
+      }
+
+      /*
+       * If we don't want values from only Measurements, but we do want only
+       * Good values, filter them here.
+       */
+      if (!exportOption.measurementsOnly() && exportOption.goodOnly()) {
+        List<Long> goodIds = sensorValues.getAll().stream()
+          .filter(v -> v.getUserQCFlag().isGood()).map(v -> v.getId()).toList();
+
+        filteredIds.addAll(goodIds);
+      }
+
+      // Now subset the SensorValues to only contain the selected ones.
+      sensorValues = sensorValues.subset(filteredTimes, filteredIds);
     }
   }
 
@@ -252,31 +312,11 @@ public class ExportData extends ManualQCData {
     }
   }
 
-  private DatasetSensorValues filterSensorValuesToMeasurements()
-    throws RecordNotFoundException {
-
-    TreeSet<LocalDateTime> times = new TreeSet<LocalDateTime>();
-    TreeSet<Long> ids = new TreeSet<Long>();
-
-    for (Measurement measurement : measurements.values()) {
-      times.add(measurement.getTime());
-
-      for (MeasurementValue measurementValue : measurement
-        .getMeasurementValues()) {
-
-        ids.addAll(measurementValue.getSensorValueIds());
-        ids.addAll(measurementValue.getSupportingSensorValueIds());
-      }
-    }
-
-    return sensorValues.subset(times, ids);
-  }
-
   public boolean containsTime(LocalDateTime time, boolean includeSensorValues) {
     boolean containsMeasurement = !(null == getMeasurement(time));
     boolean result;
     if (includeSensorValues) {
-      result = containsMeasurement && sensorValues.contains(time);
+      result = containsMeasurement || sensorValues.contains(time);
     } else {
       result = containsMeasurement;
     }

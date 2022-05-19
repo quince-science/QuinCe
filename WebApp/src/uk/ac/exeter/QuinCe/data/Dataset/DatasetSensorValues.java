@@ -350,7 +350,8 @@ public class DatasetSensorValues {
    *
    * <p>
    * All values with the specified time are kept, plus those with the specified
-   * ids. If any times or ids are not in this object they will be ignored.
+   * ids and all position values. If any specified times or ids are not in this
+   * object they will be ignored.
    * </p>
    *
    * @param times
@@ -360,15 +361,34 @@ public class DatasetSensorValues {
    * @return The subsetted values
    * @throws RecordNotFoundException
    */
-  public DatasetSensorValues subset(Collection<LocalDateTime> times,
-    Collection<Long> ids) throws RecordNotFoundException {
+  public DatasetSensorValues subset(TreeSet<LocalDateTime> times,
+    TreeSet<Long> ids) throws RecordNotFoundException {
 
     DatasetSensorValues result = new DatasetSensorValues(instrument);
 
+    /*
+     * Build a TreeSet of values to be added to the result to ensure that
+     * they're added in the correct order.
+     */
+    TreeSet<SensorValue> valuesToAdd = new TreeSet<SensorValue>();
+
     for (SensorValue value : this.valuesById.values()) {
-      if (ids.contains(value.getId()) || times.contains(value.getTime())) {
-        result.add(value);
+      /*
+       * Copy the value if either:
+       *
+       * (a) its time is in the times list, (b) its ID is in the ids list, (c)
+       * it's a position
+       */
+
+      if (value.getColumnId() == SensorType.LONGITUDE_ID
+        || value.getColumnId() == SensorType.LATITUDE_ID
+        || ids.contains(value.getId()) || times.contains(value.getTime())) {
+        valuesToAdd.add(value);
       }
+    }
+
+    for (SensorValue sensorValue : valuesToAdd) {
+      result.add(sensorValue);
     }
 
     return result;
