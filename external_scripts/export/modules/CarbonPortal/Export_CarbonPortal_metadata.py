@@ -40,9 +40,9 @@ def build_metadata_package(file,manifest,index,hashsum,
     'objectSpecification': obj_spec
     }
 
-  if 'L1' or 'L2' in level:  # L1 and L2 specific metadata
+  if 'L1' in level or 'L2' in level:  # L1 and L2 specific metadata
     meta['fileName'] = export_filename
-    meta['specificInfo']['nRows'] = manifest['manifest']['metadata']['records']
+    meta['specificInfo']['nRows'] = manifest['manifest']['exportFiles']['ICOS OTC']['records']
     meta['specificInfo']['production'] = (
       {'creator': 'http://meta.icos-cp.eu/resources/organizations/OTC',
       'contributors': [],
