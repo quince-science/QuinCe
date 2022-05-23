@@ -74,13 +74,13 @@ def main():
 
         for destination in export_destination:
           if 'ICOS' in destination: 
-            successful_upload_CP = 0; cp_err_msg = '';
+            successful_upload_CP = 0; cp_err_msg = ''
             
             #--- Processing L0 files
             L0_hashsums = []
             for index, raw_filename in enumerate(raw_filenames):
               successful_upload_CP, L0_hashsum, cp_err_msg, CP_pid = export_file_to_cp(
-                manifest, raw_filename, dataset_zip, index, cp_cookie,UPLOAD,cp_err_msg,True)
+                manifest, raw_filename, dataset_zip, index, cp_cookie, UPLOAD, cp_err_msg, True)
               if L0_hashsum:
                 L0_hashsums += [L0_hashsum]
             
@@ -90,7 +90,7 @@ def main():
 
             try:
               successful_upload_CP, L1_hashsum, cp_err_msg, CP_pid = export_file_to_cp(
-                manifest, data_filename, dataset_zip, index, cp_cookie, UPLOAD, cp_err_msg,False,L0_hashsums)
+                manifest, data_filename, dataset_zip, index, cp_cookie, UPLOAD, cp_err_msg, False, L0_hashsums)
             except Exception as e:
               logging.error('Carbon Portal export failed. \n', exc_info=True)
               successful_upload_CP = 0

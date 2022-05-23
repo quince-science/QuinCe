@@ -680,7 +680,9 @@ public class ExportBean extends BaseManagedBean {
     ByteArrayOutputStream zipOut = new ByteArrayOutputStream();
     ZipOutputStream zip = new ZipOutputStream(zipOut);
 
-    for (ExportOption option : exportOptions) {
+    for (ExportOption option : null != exportOptions ? exportOptions
+      : ExportConfig.getInstance().getOptions()) {
+
       // Add the main dataset file
       String datasetPath = dirRoot + "/dataset/" + option.getName() + "/"
         + dataset.getName() + option.getFileExtension();
@@ -707,7 +709,7 @@ public class ExportBean extends BaseManagedBean {
     }
 
     // Add the dataset details to the manifest
-    manifest.add("exportFiles", exportFilesJson);
+    manifest.getAsJsonObject("manifest").add("exportFiles", exportFilesJson);
 
     for (DataFile file : files) {
       String filePath = dirRoot + "/raw/" + file.getFilename();
