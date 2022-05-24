@@ -1135,7 +1135,7 @@ public class DataFileDB {
       stmt.setLong(1, instrumentId);
 
       try (ResultSet records = stmt.executeQuery()) {
-        records.first();
+        records.next();
         fileCount = records.getInt(1);
       } catch (SQLException e) {
         throw e;
