@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
+import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -35,10 +36,13 @@ public class DiffEqPresMeasurementValueCalculator
       Double finalPressure = pressAtInstrument.getCalculatedValue()
         + diffEqPress.getCalculatedValue();
 
-      return new MeasurementValue(requiredSensorType,
-        getSensorValues(allSensorValues, diffEqPress),
-        getSensorValues(allSensorValues, pressAtInstrument), finalPressure,
-        diffEqPress.getMemberCount(), diffEqPress.getType());
+      List<SensorValue> usedSensorValues = getSensorValues(allSensorValues,
+        diffEqPress);
+      usedSensorValues
+        .addAll(getSensorValues(allSensorValues, pressAtInstrument));
+
+      return new MeasurementValue(requiredSensorType, usedSensorValues, null,
+        finalPressure, diffEqPress.getMemberCount(), diffEqPress.getType());
 
     } catch (SensorTypeNotFoundException e) {
       throw new MeasurementValueCalculatorException(
