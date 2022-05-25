@@ -27,6 +27,11 @@ table.dataTable.compact td {
   background-color: #e9e9f9;
 }
 
+/* Fix width of fixed left columns */
+.DTFC_LeftBodyLiner {
+  width: 0px !important;
+}
+
 /*
  *************************
  * Page layout
