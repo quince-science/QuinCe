@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.utils.CollectionUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.ModeCalculator;
 
 /**
  * A list of SensorValue objects with various search capabilities.
@@ -38,11 +39,13 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
   // The furthest we are allowed to interpolate values in seconds
-  private static final long MAX_INTERPOLATION_LIMIT = 300;
+  private static final long DEFAULT_INTERPOLATION_LIMIT = 300;
 
   private static final SensorValueTimeComparator TIME_COMPARATOR = new SensorValueTimeComparator();
 
   private final TreeSet<Long> columnIds;
+
+  private int modeTimeStep = 0;
 
   /**
    * Constructor for an empty list with one supported column ID
@@ -467,13 +470,40 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
   private boolean withinTimeInterpolationLimit(int startPoint, int testPoint) {
     return Math.abs(DateTimeUtils.secondsBetween(get(startPoint).getTime(),
-      get(testPoint).getTime())) <= MAX_INTERPOLATION_LIMIT;
+      get(testPoint).getTime())) <= getInterpolationLimit();
   }
 
   private boolean withinTimeInterpolationLimit(LocalDateTime targetTime,
     int testPoint) {
     return Math.abs(DateTimeUtils.secondsBetween(targetTime,
-      get(testPoint).getTime())) <= MAX_INTERPOLATION_LIMIT;
+      get(testPoint).getTime())) <= getInterpolationLimit();
+  }
+
+  private double getInterpolationLimit() {
+    return getModeTimeStep() / 2 < DEFAULT_INTERPOLATION_LIMIT
+      ? DEFAULT_INTERPOLATION_LIMIT
+      : modeTimeStep / 2;
+  }
+
+  private Integer getModeTimeStep() {
+    if (modeTimeStep == 0) {
+      calculateModeTimeStep();
+    }
+
+    return modeTimeStep;
+  }
+
+  private void calculateModeTimeStep() {
+    ModeCalculator mode = new ModeCalculator();
+
+    for (int i = 1; i < size(); i++) {
+      long prev = DateTimeUtils.dateToLong(get(i - 1).getTime());
+      long current = DateTimeUtils.dateToLong(get(i).getTime());
+      mode.add(current - prev);
+    }
+
+    // ms to s
+    modeTimeStep = mode.getMode().intValue() / 1000;
   }
 }
 
