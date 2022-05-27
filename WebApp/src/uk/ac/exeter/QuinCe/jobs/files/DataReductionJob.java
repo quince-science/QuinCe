@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
@@ -179,7 +178,6 @@ public class DataReductionJob extends DataSetJob {
            * empty, this means the measurement isn't actually available (usually
            * because it's in a FLUSHING state). So we don't process it.
            */
-          boolean hasCoreValue = true;
 
           // Otherwise store the measurement values for processing.
           if (measurement.hasMeasurementValue(variable.getCoreSensorType())) {
