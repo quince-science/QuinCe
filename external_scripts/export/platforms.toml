@@ -153,3 +153,17 @@ NRT = 'True'
 	NRT = []
 	L2 = []
 
+[58US]
+name = 'Kronprins Haakon'
+submitter_id = 'OTC'
+cp_url = ''
+category_code = '31'
+call_sign = '3YYQ'
+creation_date = '2020-11-17T17:01:34Z'
+author_list = 'Fransson, Agneta; Granskog, Mats; Åberg, Petter'
+affiliation = 'Norwegian Polar Institute'
+NRT = 'False'
+
+	[58US.export]
+	NRT = ['ICOS']
+	L2 = ['ICOS']
