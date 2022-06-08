@@ -781,9 +781,10 @@ public class DataSetDataDB {
             .collectionToDelimited(dataReduction.getQCMessages(), ";"));
           dataReductionStmt.setLong(3, dataReduction.getMeasurementId());
           dataReductionStmt.setLong(4, dataReduction.getVariableId());
+
+          dataReductionStmt.addBatch();
         }
 
-        dataReductionStmt.addBatch();
       }
 
       dataReductionStmt.executeBatch();
