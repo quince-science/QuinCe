@@ -54,7 +54,7 @@ public class DataSetDB {
    */
   private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
     + "(instrument_id, name, start, end, status, status_date, "
-    + "nrt, properties, last_touched, messages_json,"
+    + "nrt, properties, last_touched, error_messages,"
     + "min_longitude, max_longitude, min_latitude, max_latitude) "
     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 14
 
@@ -66,7 +66,7 @@ public class DataSetDB {
   private static final String UPDATE_DATASET_STATEMENT = "Update dataset set "
     + "instrument_id = ?, name = ?, start = ?, end = ?, status = ?, " // 5
     + "status_date = ?, nrt = ?, properties = ?, last_touched = ?, " // 9
-    + "messages_json = ?, min_longitude = ?, max_longitude = ?, " // 12
+    + "error_messages = ?, min_longitude = ?, max_longitude = ?, " // 12
     + "min_latitude = ?, max_latitude = ? WHERE id = ?"; // 15
 
   /**
@@ -82,7 +82,7 @@ public class DataSetDB {
   private static final String DATASET_QUERY_BASE = "SELECT "
     + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
     + "d.status_date, d.nrt, d.properties, d.created, d.last_touched, " // 11
-    + "COALESCE(d.messages_json, '[]'), " // 12
+    + "COALESCE(d.error_messages, '[]'), " // 12
     + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude " // 16
     + "FROM dataset d WHERE ";
 
