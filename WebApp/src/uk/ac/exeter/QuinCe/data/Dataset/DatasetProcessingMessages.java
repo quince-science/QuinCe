@@ -1,30 +1,31 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.GsonBuilder;
+
+import uk.ac.exeter.QuinCe.data.Files.DataFile;
 
 /**
  * Maintains a list of messages for a dataset generated during processing and
  * data reduction.
- * 
+ *
  * <p>
  * Messages are grouped into modules (identified by a name), typically to
  * identify different jobs in the processing chain. Modules are maintained in
  * insertion order, as are the messages added for each module.
  * </p>
- * 
+ *
  * <p>
  * Although this is based on a standard {@link LinkedHashMap}, adding and
  * removing things manually may result in unpredictable behaviour in the
  * application. Please use only the methods provided here.
  * </p>
- * 
+ *
  * @author steve
  *
  */
@@ -34,12 +35,9 @@ public class DatasetProcessingMessages
 
   private static Gson gson;
 
-  private static final Type MAP_TYPE = new TypeToken<Map<String, List<String>>>() {
-  }.getType();
-
   /**
    * Add a message for a specified processing module.
-   * 
+   *
    * @param module
    *          The module.
    * @param message
@@ -54,13 +52,58 @@ public class DatasetProcessingMessages
   }
 
   /**
+   * Add a message pertaining to an error raised on specific line in a data
+   * file.
+   *
+   * @param module
+   *          The module.
+   * @param file
+   *          The file where the message was triggered.
+   * @param line
+   *          The line for which the message was triggered.
+   * @param e
+   *          The error.
+   */
+  public void addMessage(String module, DataFile file, int line, Throwable e) {
+    addMessage(module, makeFileMessage(file, line, e.getMessage()));
+  }
+
+  /**
+   * Add a message pertaining to an error raised on specific line in a data
+   * file.
+   *
+   * @param module
+   *          The module.
+   * @param file
+   *          The file where the message was triggered.
+   * @param line
+   *          The line for which the message was triggered.
+   * @param e
+   *          The error.
+   */
+  public void addMessage(String module, DataFile file, int line,
+    String message) {
+    addMessage(module, makeFileMessage(file, line, message));
+  }
+
+  private String makeFileMessage(DataFile file, int line, String messageText) {
+    StringBuilder message = new StringBuilder();
+    message.append(file.getFilename());
+    message.append(':');
+    message.append(line);
+    message.append(' ');
+    message.append(messageText);
+    return message.toString();
+  }
+
+  /**
    * Clear all the messages for a given module.
-   * 
+   *
    * <p>
    * The module is not removed from the object, so new messages can be added and
    * it maintains its position in the sequence of modules.
    * </p>
-   * 
+   *
    * @param module
    */
   public void clearModule(String module) {
@@ -79,7 +122,7 @@ public class DatasetProcessingMessages
 
   /**
    * Get the messages as a formatted string for display.
-   * 
+   *
    * @return The display string.
    */
   public String getDisplayString() {
@@ -107,14 +150,17 @@ public class DatasetProcessingMessages
 
   private static Gson getGson() {
     if (null == gson) {
-      gson = new Gson();
+      gson = new GsonBuilder()
+        .registerTypeAdapter(DatasetProcessingMessages.class,
+          new DatasetProcessingMessagesSerializer())
+        .create();
     }
 
     return gson;
   }
 
   protected String toJson() {
-    return gson.toJson(this);
+    return getGson().toJson(this);
   }
 
   protected static DatasetProcessingMessages fromJson(String json) {
@@ -123,9 +169,7 @@ public class DatasetProcessingMessages
     if (null == json) {
       result = new DatasetProcessingMessages();
     } else {
-      Map<String, List<String>> messagesMap = getGson().fromJson(json,
-        MAP_TYPE);
-      result = (DatasetProcessingMessages) messagesMap;
+      result = getGson().fromJson(json, DatasetProcessingMessages.class);
     }
 
     return result;

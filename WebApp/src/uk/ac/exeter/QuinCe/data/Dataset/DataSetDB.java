@@ -56,7 +56,7 @@ public class DataSetDB {
     + "(instrument_id, name, start, end, status, status_date, "
     + "nrt, properties, last_touched, error_messages, processing_messages, user_messages, "
     + "min_longitude, max_longitude, min_latitude, max_latitude) "
-    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 14
+    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement to update a data set in the database

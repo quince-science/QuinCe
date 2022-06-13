@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import org.primefaces.json.JSONArray;
 
+import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -384,6 +385,7 @@ public class DataSet implements Comparable<DataSet> {
     loadProperties(instrument);
     this.sensorOffsets = new SensorOffsets(instrument.getSensorGroups());
     this.processingMessages = new DatasetProcessingMessages();
+    this.userMessages = new DatasetUserMessages();
   }
 
   /**
@@ -411,6 +413,7 @@ public class DataSet implements Comparable<DataSet> {
     loadProperties(instrument);
     this.sensorOffsets = new SensorOffsets(instrument.getSensorGroups());
     this.processingMessages = new DatasetProcessingMessages();
+    this.userMessages = new DatasetUserMessages();
   }
 
   private void loadProperties(Instrument instrument) {
@@ -860,6 +863,16 @@ public class DataSet implements Comparable<DataSet> {
 
   public void addProcessingMessage(String module, String message) {
     processingMessages.addMessage(module, message);
+  }
+
+  public void addProcessingMessage(String module, DataFile file, int line,
+    Throwable e) {
+    processingMessages.addMessage(module, file, line, e);
+  }
+
+  public void addProcessingMessage(String module, DataFile file, int line,
+    String message) {
+    processingMessages.addMessage(module, file, line, message);
   }
 
   protected DatasetProcessingMessages getProcessingMessages() {

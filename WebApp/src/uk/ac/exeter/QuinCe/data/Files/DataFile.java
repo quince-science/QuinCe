@@ -12,6 +12,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.lang3.math.NumberUtils;
+
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
@@ -878,8 +881,8 @@ public class DataFile {
    *          The defined missing value
    * @return The extracted value
    */
-  public String getStringValue(List<String> line, int field,
-    String missingValue) {
+  public String getStringValue(String jobName, DataSet dataSet, int lineNumber,
+    List<String> line, int field, String missingValue) {
     String result = null;
 
     if (field < line.size()) {
@@ -888,27 +891,10 @@ public class DataFile {
         || result.equalsIgnoreCase("NaN") || result.equalsIgnoreCase("NA")) {
         result = null;
       } else {
-
-        Double doubleValue = null;
-        // See if this is a numeric value. If it isn't, log an error.
-        try {
-
-          doubleValue = Double.parseDouble(result);
-        } catch (NumberFormatException e) {
-          // TODO #1967 Log error to dataset comments
-          System.out
-            .println("NumberFormatException: Invalid value '" + result + "'");
+        if (!NumberUtils.isCreatable(result)) {
+          dataSet.addProcessingMessage(jobName, this, lineNumber,
+            "Invalid value '" + result + "'");
           result = null;
-        }
-
-        // If we have a value, check it agains the missing value
-        try {
-          Double numericMissingValue = Double.parseDouble(missingValue);
-          if (doubleValue.equals(numericMissingValue)) {
-            result = null;
-          }
-        } catch (NumberFormatException e) {
-          // Do nothing - the missing value is non-numeric
         }
       }
     }

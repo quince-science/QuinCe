@@ -220,10 +220,14 @@ public class ExtractDataSetJob extends DataSetJob {
                     } else {
 
                       // Create the SensorValue object
+                      String fieldValue = null;
+
+                      fieldValue = file.getStringValue(jobName, dataSet,
+                        currentLine, line, assignment.getColumn(),
+                        assignment.getMissingValue());
+
                       SensorValue value = new SensorValue(dataSet.getId(),
-                        assignment.getDatabaseId(), time,
-                        file.getStringValue(line, assignment.getColumn(),
-                          assignment.getMissingValue()));
+                        assignment.getDatabaseId(), time, fieldValue);
 
                       // Apply calibration if required
                       Calibration sensorCalibration = sensorCalibrations
@@ -238,13 +242,13 @@ public class ExtractDataSetJob extends DataSetJob {
                       sensorValues.add(value);
                     }
                   }
+
                 }
               }
             }
-          } catch (Exception e) {
-            // TODO #1967/2346 Log error to dataset comments
+          } catch (Throwable e) {
             // Log the error but continue with the next line
-            ExceptionUtils.printStackTrace(e);
+            dataSet.addProcessingMessage(jobName, file, currentLine, e);
           }
 
           currentLine++;
