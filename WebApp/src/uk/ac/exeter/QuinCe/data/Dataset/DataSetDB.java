@@ -54,7 +54,7 @@ public class DataSetDB {
    */
   private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
     + "(instrument_id, name, start, end, status, status_date, "
-    + "nrt, properties, last_touched, error_messages,"
+    + "nrt, properties, last_touched, error_messages, processing_messages, user_messages, "
     + "min_longitude, max_longitude, min_latitude, max_latitude) "
     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 14
 
@@ -64,10 +64,11 @@ public class DataSetDB {
    * @see #addDataSet(DataSource, DataSet)
    */
   private static final String UPDATE_DATASET_STATEMENT = "Update dataset set "
-    + "instrument_id = ?, name = ?, start = ?, end = ?, status = ?, " // 5
-    + "status_date = ?, nrt = ?, properties = ?, last_touched = ?, " // 9
-    + "error_messages = ?, min_longitude = ?, max_longitude = ?, " // 12
-    + "min_latitude = ?, max_latitude = ? WHERE id = ?"; // 15
+    + "instrument_id = ?, name = ?, start = ?, end = ?, status = ?, "
+    + "status_date = ?, nrt = ?, properties = ?, last_touched = ?, "
+    + "error_messages = ?, processing_messages = ?, user_messages = ?, "
+    + "min_longitude = ?, max_longitude = ?, "
+    + "min_latitude = ?, max_latitude = ? WHERE id = ?";
 
   /**
    * Statement to delete a dataset record
@@ -80,10 +81,10 @@ public class DataSetDB {
    * in the same order.
    */
   private static final String DATASET_QUERY_BASE = "SELECT "
-    + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
-    + "d.status_date, d.nrt, d.properties, d.created, d.last_touched, " // 11
-    + "COALESCE(d.error_messages, '[]'), " // 12
-    + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude " // 16
+    + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, "
+    + "d.status_date, d.nrt, d.properties, d.created, d.last_touched, "
+    + "COALESCE(d.error_messages, '[]'), processing_messages, user_messages, "
+    + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude "
     + "FROM dataset d WHERE ";
 
   private static final String GET_DATASETS_BETWEEN_DATES_QUERY = DATASET_QUERY_BASE
@@ -265,26 +266,31 @@ public class DataSetDB {
       .longToDate(record.getTimestamp(10).getTime());
 
     LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(11));
-    String json = record.getString(12);
-    JSONArray array = new JSONArray(json);
-    ArrayList<Message> messages = new ArrayList<>();
+    String errorMessagesJson = record.getString(12);
+    JSONArray array = new JSONArray(errorMessagesJson);
+    ArrayList<Message> errorMessage = new ArrayList<>();
     for (Object o : array) {
       if (o instanceof JSONObject) {
         JSONObject jo = (JSONObject) o;
         Message m = new Message(jo.getString("message"),
           jo.getString("details"));
-        messages.add(m);
+        errorMessage.add(m);
       }
     }
 
-    double minLon = record.getDouble(13);
-    double maxLon = record.getDouble(14);
-    double minLat = record.getDouble(15);
-    double maxLat = record.getDouble(16);
+    DatasetProcessingMessages processingMessages = DatasetProcessingMessages
+      .fromJson(record.getString(13));
+    DatasetUserMessages userMessages = DatasetUserMessages
+      .fromString(record.getString(14));
+
+    double minLon = record.getDouble(15);
+    double maxLon = record.getDouble(16);
+    double minLat = record.getDouble(17);
+    double maxLat = record.getDouble(18);
 
     return new DataSet(id, instrumentId, name, start, end, status, statusDate,
-      nrt, properties, sensorOffsets, createdDate, lastTouched, messages,
-      minLon, minLat, maxLon, maxLat);
+      nrt, properties, sensorOffsets, createdDate, lastTouched, errorMessage,
+      processingMessages, userMessages, minLon, minLat, maxLon, maxLat);
   }
 
   /**
@@ -377,19 +383,22 @@ public class DataSetDB {
       stmt.setLong(9, DateTimeUtils.dateToLong(LocalDateTime.now()));
 
       if (dataSet.getMessageCount() > 0) {
-        String jsonString = dataSet.getMessagesAsJSONString();
+        String jsonString = dataSet.getErrorMessagesAsJSONString();
         stmt.setString(10, jsonString);
       } else {
         stmt.setNull(10, Types.VARCHAR);
       }
 
-      stmt.setDouble(11, dataSet.getMinLon());
-      stmt.setDouble(12, dataSet.getMaxLon());
-      stmt.setDouble(13, dataSet.getMinLat());
-      stmt.setDouble(14, dataSet.getMaxLat());
+      stmt.setString(11, dataSet.getProcessingMessages().toJson());
+      stmt.setString(12, dataSet.getUserMessages().getStorageString());
+
+      stmt.setDouble(13, dataSet.getMinLon());
+      stmt.setDouble(14, dataSet.getMaxLon());
+      stmt.setDouble(15, dataSet.getMinLat());
+      stmt.setDouble(16, dataSet.getMaxLat());
 
       if (DatabaseUtils.NO_DATABASE_RECORD != dataSet.getId()) {
-        stmt.setLong(15, dataSet.getId());
+        stmt.setLong(17, dataSet.getId());
       }
 
       stmt.execute();
