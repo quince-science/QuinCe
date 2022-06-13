@@ -241,9 +241,19 @@ public class DataSet implements Comparable<DataSet> {
   private boolean nrt = false;
 
   /**
-   * Messages from jobs handling this data set
+   * Errors from jobs handling this data set
    */
-  private ArrayList<Message> messages = new ArrayList<Message>();
+  private ArrayList<Message> errorMessages = new ArrayList<Message>();
+
+  /**
+   * Messages generated during processing and data reduction.
+   */
+  private DatasetProcessingMessages processingMessages;
+
+  /**
+   * Messages entered by the user.
+   */
+  private DatasetUserMessages userMessages;
 
   /**
    * The available field sets for this dataset
@@ -320,7 +330,7 @@ public class DataSet implements Comparable<DataSet> {
    *          Date that the dataset was created
    * @param lastTouched
    *          Date that the dataset was last accessed
-   * @param messages
+   * @param errorMessages
    *          List of messages concerning the dataset (errors etc)
    * @param minLon
    *          The minimum longitude of the dataset's geographical bounds
@@ -336,8 +346,11 @@ public class DataSet implements Comparable<DataSet> {
     LocalDateTime start, LocalDateTime end, int status,
     LocalDateTime statusDate, boolean nrt, Map<String, Properties> properties,
     SensorOffsets sensorOffsets, LocalDateTime createdDate,
-    LocalDateTime lastTouched, List<Message> messages, double minLon,
-    double minLat, double maxLon, double maxLat) {
+    LocalDateTime lastTouched, List<Message> errorMessages,
+    DatasetProcessingMessages processingMessages,
+    DatasetUserMessages userMessages, double minLon, double minLat,
+    double maxLon, double maxLat) {
+
     this.id = id;
     this.instrumentId = instrumentId;
     this.name = name;
@@ -350,7 +363,9 @@ public class DataSet implements Comparable<DataSet> {
     this.sensorOffsets = sensorOffsets;
     this.createdDate = createdDate;
     this.lastTouched = lastTouched;
-    this.messages = new ArrayList<Message>(messages);
+    this.errorMessages = new ArrayList<Message>(errorMessages);
+    this.processingMessages = processingMessages;
+    this.userMessages = userMessages;
     this.minLon = minLon;
     this.minLat = minLat;
     this.maxLon = maxLon;
@@ -368,6 +383,7 @@ public class DataSet implements Comparable<DataSet> {
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
     loadProperties(instrument);
     this.sensorOffsets = new SensorOffsets(instrument.getSensorGroups());
+    this.processingMessages = new DatasetProcessingMessages();
   }
 
   /**
@@ -394,6 +410,7 @@ public class DataSet implements Comparable<DataSet> {
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
     loadProperties(instrument);
     this.sensorOffsets = new SensorOffsets(instrument.getSensorGroups());
+    this.processingMessages = new DatasetProcessingMessages();
   }
 
   private void loadProperties(Instrument instrument) {
@@ -635,14 +652,14 @@ public class DataSet implements Comparable<DataSet> {
   }
 
   public void addMessage(String message, String details) {
-    messages.add(new Message(message, details));
+    errorMessages.add(new Message(message, details));
   }
 
   public List<Message> getMessages() {
-    return messages;
+    return errorMessages;
   }
 
-  public String getMessagesAsJSONString() {
+  public String getErrorMessagesAsJSONString() {
     JSONArray json = new JSONArray();
     for (Message message : getMessages()) {
       json.put(message.getAsJSON());
@@ -651,14 +668,14 @@ public class DataSet implements Comparable<DataSet> {
   }
 
   public int getMessageCount() {
-    return messages.size();
+    return errorMessages.size();
   }
 
   /**
    * Remove all messages from this dataset.
    */
   public void clearMessages() {
-    messages.clear();
+    errorMessages.clear();
   }
 
   /**
@@ -839,5 +856,17 @@ public class DataSet implements Comparable<DataSet> {
   @Override
   public int compareTo(DataSet o) {
     return start.compareTo(o.start);
+  }
+
+  public void addProcessingMessage(String module, String message) {
+    processingMessages.addMessage(module, message);
+  }
+
+  protected DatasetProcessingMessages getProcessingMessages() {
+    return processingMessages;
+  }
+
+  protected DatasetUserMessages getUserMessages() {
+    return userMessages;
   }
 }
