@@ -1016,18 +1016,24 @@ public class DateTimeSpecification {
     LocalDate result;
 
     DateTimeColumnAssignment assignment = getAssignment(DATE);
-    String fieldValue = DataFile
-      .extractStringFieldValue(line.get(assignment.getColumn()), null);
 
-    if (null == fieldValue) {
-      throw new DateTimeSpecificationException("Date column is empty");
+    if (line.size() <= assignment.getColumn()) {
+      throw new DateTimeSpecificationException(
+        "Line does not contain date/time");
     } else {
-      try {
-        result = LocalDate.parse(fieldValue, assignment.getFormatter());
-      } catch (Exception e) {
-        ExceptionUtils.printStackTrace(e);
-        throw new DateTimeSpecificationException(
-          "Invalid date value '" + fieldValue + "'");
+      String fieldValue = DataFile
+        .extractStringFieldValue(line.get(assignment.getColumn()), null);
+
+      if (null == fieldValue) {
+        throw new DateTimeSpecificationException("Date column is empty");
+      } else {
+        try {
+          result = LocalDate.parse(fieldValue, assignment.getFormatter());
+        } catch (Exception e) {
+          ExceptionUtils.printStackTrace(e);
+          throw new DateTimeSpecificationException(
+            "Invalid date value '" + fieldValue + "'");
+        }
       }
     }
 
