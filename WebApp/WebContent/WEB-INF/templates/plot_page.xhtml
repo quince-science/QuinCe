@@ -145,6 +145,39 @@
       <p:commandButton value="Cancel" onclick="PF('variableDialog').hide();" />
     </h:panelGrid>
   </p:dialog>
+  
+  <p:dialog widgetVar="notesDialog" modal="true" header="Dataset Notes"
+    resizable="false">
+    <h:form id="notesForm">
+      <div class="instructions">
+        These notes will be published in the dataset metadata.
+        <br/>
+        Semi-colons will be converted to newlines.
+      </div>
+      <p:inputTextarea id="userNotes"
+        value="#{sessionScope[beanName].userComments}"
+        style="width: 420px; height: 130px;" autoResize="false"/>
+
+	    <h:panelGrid columns="3" styleClass="buttonPanel">
+	      <p:commandButton widgetVar="notesOK" value="OK"
+	        onclick="saveNotes();" />
+	      <p:commandButton widgetVar="notesRevert" value="Revert">
+	        <p:ajax update="userNotes" resetValues="true"/>
+	      </p:commandButton>
+	      <p:commandButton value="Cancel" onclick="cancelNotes();" />
+
+	      <p:remoteCommand name="saveComments"
+	        action="#{sessionScope[beanName].saveUserComments}"
+	        process="userNotes"
+	        update="@none"
+	        oncomplete="PF('notesDialog').hide();" />
+	
+	      <p:remoteCommand name="resetComments"
+	        update="userNotes"
+	        resetValues="true" />
+	    </h:panelGrid>
+    </h:form>
+  </p:dialog>
 
   <p:toolbar styleClass="plotPageHeader">
     <f:facet name="left">
@@ -328,6 +361,9 @@
             <div id="selectionActions" style="display: inline">
               <ui:insert name="selectionActions">Selection actions here</ui:insert>
             </div>
+		        |
+		        <p:commandButton widgetVar="notesButton" value="Notes"
+		          onclick="showNotesDialog(); return false;" styleClass="inlineButton" />
           </h:form>
         </ui:fragment>
         |

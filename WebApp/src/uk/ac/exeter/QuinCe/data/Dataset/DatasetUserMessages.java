@@ -2,13 +2,13 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 @SuppressWarnings("serial")
-public class DatasetUserMessages extends TreeSet<String> {
+public class DatasetUserMessages extends LinkedHashSet<String> {
 
   public static DatasetUserMessages fromString(String messages) {
     DatasetUserMessages result = new DatasetUserMessages();

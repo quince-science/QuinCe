@@ -519,5 +519,4 @@ public abstract class BaseManagedBean {
   public String throwError() {
     return internalError(new BeanException("Test exception"));
   }
-
 }
