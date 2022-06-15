@@ -879,7 +879,11 @@ public class DataSet implements Comparable<DataSet> {
     return processingMessages;
   }
 
-  protected DatasetUserMessages getUserMessages() {
+  public DatasetUserMessages getUserMessages() {
     return userMessages;
+  }
+
+  public void setUserMessages(String messages) {
+    userMessages = DatasetUserMessages.fromString(messages);
   }
 }

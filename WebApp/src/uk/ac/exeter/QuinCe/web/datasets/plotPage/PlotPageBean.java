@@ -4,6 +4,8 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 public abstract class PlotPageBean extends BaseManagedBean {
@@ -378,5 +380,18 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   public boolean getCanEdit() {
     return null == dataset ? false : !dataset.isNrt();
+  }
+
+  public String getUserComments() {
+    return dataset.getUserMessages().getDisplayString();
+  }
+
+  public void setUserComments(String userComments) {
+    dataset.setUserMessages(userComments);
+  }
+
+  public void saveUserComments()
+    throws MissingParamException, DatabaseException {
+    DataSetDB.storeUserMessages(getDataSource(), dataset);
   }
 }

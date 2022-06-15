@@ -154,7 +154,7 @@ function initPage() {
     clearTimeout(resizeEventTimer);
     resizeEventTimer = setTimeout(resizeAllContent, 100);
   });
-
+  
   // Draw the basic page layout
   layoutPage();
 
@@ -1677,4 +1677,17 @@ function getTrueSelectionColumn(columnId) {
 
 function canEdit() {
   return $('#plotPageForm\\:canEdit').val() === 'true';
+}
+
+function showNotesDialog() {
+  PF('notesDialog').show();
+}
+
+function saveNotes() {
+  saveComments(); // PF RemoteCommand  
+}
+
+function cancelNotes() {
+  PF('notesDialog').hide();
+  PF('notesRevert').jq[0].click();
 }

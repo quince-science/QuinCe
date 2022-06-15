@@ -98,6 +98,12 @@ public class DataSetDB {
     + "FROM dataset ds INNER JOIN instrument i ON ds.instrument_id = i.id "
     + "WHERE ds.nrt = 1 ORDER BY i.platform_code ASC";
 
+  /**
+   * Statement to update the user messages for a dataset
+   */
+  private static final String UPDATE_USER_MESSAGES_STATEMENT = "Update dataset set "
+    + "user_messages = ? WHERE id = ?";
+
   private static final String SENSOR_OFFSETS_PROPERTY = "__SENSOR_OFFSETS";
 
   /**
@@ -917,6 +923,8 @@ public class DataSetDB {
     result.addProperty("nrt", dataset.isNrt());
     result.addProperty("last_touched",
       DateTimeUtils.toIsoDate(dataset.getLastTouched()));
+    result.addProperty("comments",
+      dataset.getUserMessages().getDisplayString());
 
     JsonObject boundsObject = new JsonObject();
     boundsObject.addProperty("south", dataset.getMinLat());
@@ -1110,5 +1118,23 @@ public class DataSetDB {
 
     return result;
 
+  }
+
+  public static void storeUserMessages(DataSource dataSource, DataSet dataset)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(dataset, "dataset");
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(UPDATE_USER_MESSAGES_STATEMENT)) {
+
+      stmt.setString(1, dataset.getUserMessages().getStorageString());
+      stmt.setLong(2, dataset.getId());
+      stmt.execute();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error storing user messages", e);
+    }
   }
 }
