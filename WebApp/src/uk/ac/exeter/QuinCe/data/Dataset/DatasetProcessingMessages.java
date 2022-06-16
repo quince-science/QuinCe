@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -173,5 +174,9 @@ public class DatasetProcessingMessages
     }
 
     return result;
+  }
+
+  protected int getMessageCount() {
+    return values().stream().collect(Collectors.summingInt(List::size));
   }
 }

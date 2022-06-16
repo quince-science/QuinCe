@@ -154,7 +154,7 @@ function initPage() {
     clearTimeout(resizeEventTimer);
     resizeEventTimer = setTimeout(resizeAllContent, 100);
   });
-  
+
   // Draw the basic page layout
   layoutPage();
 
@@ -1684,7 +1684,7 @@ function showNotesDialog() {
 }
 
 function saveNotes() {
-  saveComments(); // PF RemoteCommand  
+  saveComments(); // PF RemoteCommand
 }
 
 function cancelNotes() {
