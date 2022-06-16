@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1200pt"
+   height="1200pt"
+   version="1.1"
+   viewBox="0 0 1200 1200"
+   id="svg67"
+   sodipodi:docname="dataset_warning.svg"
+   inkscape:version="1.2 (dc2aeda, 2022-05-15)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs71" />
+  <sodipodi:namedview
+     id="namedview69"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="pt"
+     showgrid="false"
+     inkscape:zoom="0.53450995"
+     inkscape:cx="797.92715"
+     inkscape:cy="988.75615"
+     inkscape:window-width="1390"
+     inkscape:window-height="1097"
+     inkscape:window-x="2259"
+     inkscape:window-y="90"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg67" />
+  <path
+     d="m 1045.7007,577.5 -184.49998,-360 c -9,-13.5 -22.5,-22.5 -40.5,-22.5 h -441 c -18,0 -31.5,9 -40.5,22.5 l -184.5,360 c -4.5,13.5 -4.5,27 0,40.5 l 184.5,360 c 9,18 22.5,27 40.5,27 h 441 c 18,0 31.5,-9 40.5,-22.5 l 184.49998,-360 c 9,-13.5 9,-31.5 0,-45 z"
+     id="path65"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:72;stroke-dasharray:none;stroke-opacity:1"
+     sodipodi:nodetypes="ccssccccssccc" />
+  <rect
+     style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:11.6127;stroke-dasharray:none;stroke-opacity:1"
+     id="rect3157"
+     width="131.89651"
+     height="332.54758"
+     x="534.60181"
+     y="335.35391" />
+  <rect
+     style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.31346;stroke-dasharray:none;stroke-opacity:1"
+     id="rect3157-8"
+     width="131.89651"
+     height="131.8965"
+     x="534.60187"
+     y="734.55133" />
+</svg>
