@@ -875,7 +875,7 @@ public class DataSet implements Comparable<DataSet> {
     processingMessages.addMessage(module, file, line, message);
   }
 
-  protected DatasetProcessingMessages getProcessingMessages() {
+  public DatasetProcessingMessages getProcessingMessages() {
     return processingMessages;
   }
 
@@ -885,5 +885,9 @@ public class DataSet implements Comparable<DataSet> {
 
   public void setUserMessages(String messages) {
     userMessages = DatasetUserMessages.fromString(messages);
+  }
+
+  public boolean hasProcessingMessages() {
+    return processingMessages.getMessageCount() > 0;
   }
 }

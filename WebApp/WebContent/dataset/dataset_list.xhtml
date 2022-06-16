@@ -57,7 +57,7 @@
       }
 
       var refreshInterval = setInterval(function() {
-        if (window['updateList']) {
+        if (window['keepAliveActive']) {
           updateList(); // PF Command
         }
       }, 10000);
@@ -86,6 +86,11 @@
           PF('lostContactDialog').show();
         }
       }
+
+      function showProcessingMessages(datasetId) {
+        $('#messagesForm\\:datasetId').val(datasetId);
+        loadProcessingMessages(); // PF remoteCommand
+      }
     </script>
   </ui:define>
   <ui:define name="content">
@@ -101,6 +106,27 @@
         <p:button href="#{dataSetsBean.urlStub}" value="Go to Login page"/>
       </h:panelGrid>
     </p:dialog>
+
+    <p:dialog widgetVar="messagesDialog" modal="true" header="Processing Messages">
+      <div class="instructions">Messages from dataset processing:</div>
+      <h:form id="messagesForm" onsubmit="return false;">
+        <h:inputHidden id="datasetId" value="#{dataSetsBean.processingMessagesId}"/>
+
+        <div style="background-color: white; border: 1px solid black; overflow: auto; width: 600px; height: 250px; margin: auto; font-family: 'Courier New', Courier, monospace;">
+          <pre>
+            <h:outputText id="messagesBox" value="#{dataSetsBean.processingMessages}"/>
+          </pre>
+        </div>
+        <p:remoteCommand name="loadProcessingMessages" action="#{dataSetsBean.noop}"
+          process="datasetId"
+          update="messagesBox"
+          oncomplete="PF('messagesDialog').show()"/>
+      </h:form>
+      <h:panelGrid columns="1" cellpadding="5" class="buttonPanel contentList">
+        <p:commandButton onclick="PF('messagesDialog').hide()" value="Close"/>
+      </h:panelGrid>
+    </p:dialog>
+
     <ui:fragment rendered="#{not dataSetsBean.hasInstruments}">
       <div class="instructions error">You do not have any instruments
         defined. Go to the Instruments tab to add an instrument.</div>
@@ -187,6 +213,18 @@
               <h:outputText value="End Date" />
             </f:facet>
             <h:outputText value="#{dataset.end}" />
+          </p:column>
+          <p:column width="20">
+            <f:facet name="header">
+              <h:outputText value="" />
+            </f:facet>
+            <ui:fragment rendered="#{dataset.hasProcessingMessages()}">
+              <p:commandLink onclick="showProcessingMessages(#{dataset.id});">
+                <h:graphicImage value="/resources/image/dataset_warning.svg"
+                  styleClass="actionIcon" alt="Dataset Warnings"
+                  title="Dataset Warnings" />
+              </p:commandLink>
+            </ui:fragment>
           </p:column>
           <p:column styleClass="centeredCell">
             <f:facet name="header">

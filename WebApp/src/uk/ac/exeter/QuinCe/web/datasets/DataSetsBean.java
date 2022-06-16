@@ -95,6 +95,11 @@ public class DataSetsBean extends BaseManagedBean {
   private String validCalibrationMessage = null;
 
   /**
+   * The ID of the datasets whose processing messages are being displayed.
+   */
+  private long processingMessagesId = -1L;
+
+  /**
    * Start the dataset definition procedure
    *
    * @return The navigation to the dataset definition page
@@ -474,5 +479,28 @@ public class DataSetsBean extends BaseManagedBean {
 
   public void setHasFiles(boolean dummy) {
     // Ignore any attempt to set this value
+  }
+
+  public long getProcessingMessagesId() {
+    return processingMessagesId;
+  }
+
+  public void setProcessingMessagesId(long processingMessagesId) {
+    this.processingMessagesId = processingMessagesId;
+  }
+
+  public String getProcessingMessages() {
+    String result = null;
+
+    if (null != dataSets) {
+      for (DataSet dataSet : dataSets) {
+        if (dataSet.getId() == processingMessagesId) {
+          result = dataSet.getProcessingMessages().getDisplayString();
+          break;
+        }
+      }
+    }
+
+    return result;
   }
 }
