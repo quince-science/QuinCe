@@ -257,7 +257,12 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
     Flag result = userQCFlag;
 
-    if ((null == userQCFlag || userQCFlag.equals(Flag.NEEDED))
+    if (null == value) {
+      /*
+       * Empty values are bad by definition
+       */
+      result = Flag.BAD;
+    } else if ((null == userQCFlag || userQCFlag.equals(Flag.NEEDED))
       && ignoreNeeded) {
 
       result = getAutoQcFlag();

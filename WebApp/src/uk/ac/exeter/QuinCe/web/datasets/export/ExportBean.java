@@ -506,13 +506,22 @@ public class ExportBean extends BaseManagedBean {
         // QC Flag
         if (columnId != FileDefinition.TIME_COLUMN_ID && includeQcColumns) {
           export.append(exportOption.getSeparator());
-          export.append(value.getQcFlag().getWoceValue());
+
+          // If the value is NULL, the QC flag is empty. So only put in the flag
+          // if it's not null.
+          if (null != value.getValue()) {
+            export.append(value.getQcFlag().getWoceValue());
+          }
 
           // QC Comment
           if (exportOption.includeQCComments()) {
             export.append(exportOption.getSeparator());
-            export.append(
-              '"' + exportOption.format(value.getQcMessage(true)) + '"');
+            // If the value is NULL, the QC flag is empty. So only put in the
+            // flag if it's not null.
+            if (null != value.getValue()) {
+              export.append(
+                '"' + exportOption.format(value.getQcMessage(true)) + '"');
+            }
           }
         }
 
