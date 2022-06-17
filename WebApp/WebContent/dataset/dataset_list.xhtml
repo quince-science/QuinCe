@@ -29,7 +29,6 @@
       }
 
       function recalculate(id) {
-        window['keepAliveActive'] = false;
         $('#datasetListForm\\:datasetId').val(id);
         $('#datasetListForm\\:recalculateLink').click();
         return false;
@@ -43,14 +42,12 @@
       }
 
       function submitForApproval(id) {
-        window['keepAliveActive'] = false;
         $('#datasetListForm\\:datasetId').val(id);
         $('#datasetListForm\\:submitLink').click();
         return false;
       }
 
       function approve(id) {
-        window['keepAliveActive'] = false;
         $('#datasetListForm\\:datasetId').val(id);
         $('#datasetListForm\\:approveLink').click();
         return false;
