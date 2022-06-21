@@ -35,20 +35,25 @@ def build_metadata_package(file,manifest,index,hashsum,
 
   meta= {
     'submitterId': platform['submitter_id'],
-    'hashSum':hashsum,
-    'specificInfo':{'station': platform['cp_url'],},
+    'hashSum': hashsum,
+    'specificInfo': {'station': platform['cp_url'],},
     'objectSpecification': obj_spec
     }
 
   if 'L1' in level or 'L2' in level:  # L1 and L2 specific metadata
     meta['fileName'] = export_filename
     meta['specificInfo']['nRows'] = manifest['manifest']['exportFiles']['ICOS OTC']['records']
+
+    comments = manifest['manifest']['metadata']['comments'].strip()
+    if len(comments) > 0:
+      comments += '\n'
+    comments += manifest['manifest']['metadata']['quince_information']
+
     meta['specificInfo']['production'] = (
       {'creator': 'http://meta.icos-cp.eu/resources/organizations/OTC',
       'contributors': [],
       'creationDate': creation_date,
-      'comment': ''.join(
-        [manifest['manifest']['metadata']['quince_information']])})
+      'comment': comments})
 
     # We only link L2 datasets to the raw files. L1 don't get linked
     # because they get updated so frequently
