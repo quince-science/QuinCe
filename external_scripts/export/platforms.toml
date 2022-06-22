@@ -156,7 +156,7 @@ NRT = 'True'
 [58US]
 name = 'Kronprins Haakon'
 submitter_id = 'OTC'
-cp_url = ''
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_58US'
 category_code = '31'
 call_sign = '3YYQ'
 creation_date = '2020-11-17T17:01:34Z'
@@ -167,3 +167,18 @@ NRT = 'False'
 	[58US.export]
 	NRT = ['ICOS']
 	L2 = ['ICOS']
+
+[BHNQ]
+name = 'Trans Carrier'
+submitter_id = 'OTC'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_TCarrier'
+category_code = '31'
+call_sign = 'C6RM5'
+creation_date = '2020-05-05T00:00:00Z'
+author_list = 'Omar, Abdirahman; Skjelvan, Ingunn; de Lange, Tor'
+affiliation = 'NORCE Norwegian Research Centre AS'
+NRT = 'True'
+
+  [58US.export]
+  NRT = ['ICOS']
+  L2 = ['ICOS']
