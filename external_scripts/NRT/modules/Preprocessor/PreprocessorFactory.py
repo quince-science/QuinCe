@@ -1,12 +1,14 @@
 from modules.Preprocessor.AddSalinityPreprocessor import AddSalinityPreprocessor
 from modules.Preprocessor.NonePreprocessor import NonePreprocessor
 from modules.Preprocessor.SQLiteExtractor import SQLiteExtractor
+from modules.Preprocessor.GORunTypeFilter import GORunTypeFilter
 
 
 def _get_retriever_classes():
     return [
         NonePreprocessor,
         AddSalinityPreprocessor,
+        GORunTypeFilter,
         SQLiteExtractor
     ]
 
