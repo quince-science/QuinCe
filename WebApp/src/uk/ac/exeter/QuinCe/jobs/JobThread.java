@@ -119,6 +119,11 @@ public class JobThread extends Thread implements Comparable<JobThread> {
           }
         }
       } catch (Exception e2) {
+        System.out
+          .println("Job failed, but could not store error in database.");
+        System.out.println("Job error:");
+        ExceptionUtils.printStackTrace(e);
+        System.out.println("Storage error:");
         ExceptionUtils.printStackTrace(e2);
       }
     } finally {
