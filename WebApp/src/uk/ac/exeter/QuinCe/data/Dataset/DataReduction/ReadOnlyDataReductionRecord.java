@@ -133,7 +133,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
     throws DataReductionException {
 
     NoEmptyStringSet filteredMessages = new NoEmptyStringSet(messages);
-    if (filteredMessages.size() == 0) {
+    if (!flag.isGood() && filteredMessages.size() == 0) {
       throw new DataReductionException("Empty QC message not allowed");
     }
 
