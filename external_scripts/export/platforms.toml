@@ -179,6 +179,6 @@ author_list = 'Omar, Abdirahman; Skjelvan, Ingunn; de Lange, Tor'
 affiliation = 'NORCE Norwegian Research Centre AS'
 NRT = 'True'
 
-  [58US.export]
+  [BHNQ.export]
   NRT = ['ICOS']
   L2 = ['ICOS']
