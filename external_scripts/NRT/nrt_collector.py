@@ -7,11 +7,13 @@ from io import BytesIO
 from zipfile import ZipFile
 from datetime import datetime, timedelta
 from bisect import bisect
+from slacker import Slacker
 
 import toml
 
 from modules.Preprocessor import PreprocessorFactory
 from modules.Retriever import RetrieverFactory
+
 # Local modules
 import nrtdb
 import nrtftp
@@ -19,6 +21,10 @@ from modules.Preprocessor.PreprocessorError import PreprocessorError
 
 IGNORE_REGEXPS = [".*err.txt"]
 PREPROCESSOR_FAILED = -10
+
+def post_slack_msg(config, message):
+  slack = Slacker(config['api_token'])
+  slack.chat.post_message('#'+config['workspace'],f'{message}')
 
 
 # See if a file should be ignored based on its filename
@@ -119,75 +125,80 @@ def main():
 
     # Loop through each instrument
     for instrument_id in instruments:
-        log_instrument(logger, instrument_id, logging.INFO,
-                       "Checking instrument")
-        instrument = nrtdb.get_instrument(db_conn, instrument_id)
+        try:
+            log_instrument(logger, instrument_id, logging.INFO,
+                           "Checking instrument")
+            instrument = nrtdb.get_instrument(db_conn, instrument_id)
 
-        if instrument["type"] is None:
+            if instrument["type"] is None:
+                log_instrument(logger, instrument_id, logging.ERROR,
+                               "Configuration type not set")
+            elif not time_for_check(instrument):
+                log_instrument(logger, instrument_id, logging.INFO,
+                               "Not time for check yet")
+            else:
+                log_instrument(logger, instrument_id, logging.INFO,
+                               "Time for check")
+
+                # Build the retriever
+                if instrument["config"] is not None:
+                    retriever = RetrieverFactory.get_instance(instrument["type"],
+                                                              instrument_id, logger, json.loads(instrument["config"]))
+
+                    # Make sure configuration is still valid
+                    if not retriever.test_configuration():
+                        log_instrument(logger, instrument_id, logging.ERROR,
+                                       "Configuration invalid")
+                    # Initialise the retriever
+                    elif not retriever.startup():
+                        log_instrument(logger, instrument_id, logging.ERROR,
+                                       "Could not initialise retriever")
+                    else:
+                        preprocessor = None if instrument["preprocessor"] is None else \
+                            PreprocessorFactory.get_instance(instrument["preprocessor"],
+                                                             logger, json.loads(instrument["preprocessor_config"]))
+
+                        # Loop through all files returned by the retriever one by one
+                        while retriever.load_next_files():
+                            for file in retriever.current_files:
+
+                                log_instrument(logger, instrument_id, logging.DEBUG,
+                                               "Uploading " + file["filename"] + " to FTP server")
+
+                                upload_result = upload_file(logger, ftp_conn, config["FTP"],
+                                                            instrument_id, preprocessor,
+                                                            preprocessor.get_processed_filename(file["filename"]),
+                                                            file["contents"])
+
+                                if upload_result == nrtftp.NOT_INITIALISED:
+                                    log_instrument(logger, instrument_id, logging.ERROR,
+                                                   "FTP not initialised")
+                                    retriever.file_failed()
+                                elif upload_result == nrtftp.FILE_EXISTS:
+                                    log_instrument(logger, instrument_id, logging.DEBUG,
+                                                   "File exists on FTP "
+                                                   + "server - will retry later")
+                                    retriever.file_not_processed()
+                                elif upload_result == nrtftp.UPLOAD_OK:
+                                    log_instrument(logger, instrument_id, logging.DEBUG,
+                                                   "File uploaded OK (look for individual failures in ZIPs)")
+                                    retriever.file_succeeded()
+                                elif upload_result == PREPROCESSOR_FAILED:
+                                    log_instrument(logger, instrument_id, logging.DEBUG,
+                                                   "File preprocessor failed")
+                                    retriever.file_failed()
+                                else:
+                                    log_instrument(logger, instrument_id, logging.CRITICAL,
+                                                   "Unrecognised upload result " + str(upload_result))
+                                    exit()
+
+                        retriever.shutdown()
+
+                        nrtdb.set_last_check(db_conn, instrument)
+        except Exception as e:
             log_instrument(logger, instrument_id, logging.ERROR,
-                           "Configuration type not set")
-        elif not time_for_check(instrument):
-            log_instrument(logger, instrument_id, logging.INFO,
-                           "Not time for check yet")
-        else:
-            log_instrument(logger, instrument_id, logging.INFO,
-                           "Time for check")
-
-            # Build the retriever
-            if instrument["config"] is not None:
-                retriever = RetrieverFactory.get_instance(instrument["type"],
-                                                          instrument_id, logger, json.loads(instrument["config"]))
-
-                # Make sure configuration is still valid
-                if not retriever.test_configuration():
-                    log_instrument(logger, instrument_id, logging.ERROR,
-                                   "Configuration invalid")
-                # Initialise the retriever
-                elif not retriever.startup():
-                    log_instrument(logger, instrument_id, logging.ERROR,
-                                   "Could not initialise retriever")
-                else:
-                    preprocessor = None if instrument["preprocessor"] is None else \
-                        PreprocessorFactory.get_instance(instrument["preprocessor"],
-                                                         logger, json.loads(instrument["preprocessor_config"]))
-
-                    # Loop through all files returned by the retriever one by one
-                    while retriever.load_next_files():
-                        for file in retriever.current_files:
-
-                            log_instrument(logger, instrument_id, logging.DEBUG,
-                                           "Uploading " + file["filename"] + " to FTP server")
-
-                            upload_result = upload_file(logger, ftp_conn, config["FTP"],
-                                                        instrument_id, preprocessor,
-                                                        preprocessor.get_processed_filename(file["filename"]),
-                                                        file["contents"])
-
-                            if upload_result == nrtftp.NOT_INITIALISED:
-                                log_instrument(logger, instrument_id, logging.ERROR,
-                                               "FTP not initialised")
-                                retriever.file_failed()
-                            elif upload_result == nrtftp.FILE_EXISTS:
-                                log_instrument(logger, instrument_id, logging.DEBUG,
-                                               "File exists on FTP "
-                                               + "server - will retry later")
-                                retriever.file_not_processed()
-                            elif upload_result == nrtftp.UPLOAD_OK:
-                                log_instrument(logger, instrument_id, logging.DEBUG,
-                                               "File uploaded OK (look for individual failures in ZIPs)")
-                                retriever.file_succeeded()
-                            elif upload_result == PREPROCESSOR_FAILED:
-                                log_instrument(logger, instrument_id, logging.DEBUG,
-                                               "File preprocessor failed")
-                                retriever.file_failed()
-                            else:
-                                log_instrument(logger, instrument_id, logging.CRITICAL,
-                                               "Unrecognised upload result " + str(upload_result))
-                                exit()
-
-                    retriever.shutdown()
-
-                    nrtdb.set_last_check(db_conn, instrument)
+                           f"Error processing instrument {instrument_id}: {e}")
+            post_slack_msg(config['slack'], f"Error processing NRT for instrument {instrument_id}")
 
     if ftp_conn is not None:
         ftp_conn.close()
