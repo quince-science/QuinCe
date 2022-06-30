@@ -12,6 +12,7 @@ imapclient = "*"
 pandas = "*"
 netcdf4 = "*"
 numpy = "*"
+slacker = "*"
 
 [dev-packages]
 
