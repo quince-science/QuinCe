@@ -165,32 +165,39 @@ def main():
                                 log_instrument(logger, instrument_id, logging.INFO,
                                                "Uploading " + file["filename"] + " to FTP server")
 
-                                upload_result = upload_file(logger, ftp_conn, config["FTP"],
-                                                            instrument_id, preprocessor,
-                                                            preprocessor.get_processed_filename(file["filename"]),
-                                                            file["contents"])
+                                try:
+                                    upload_result = upload_file(logger, ftp_conn, config["FTP"],
+                                                                instrument_id, preprocessor,
+                                                                preprocessor.get_processed_filename(file["filename"]),
+                                                                file["contents"])
 
-                                if upload_result == nrtftp.NOT_INITIALISED:
+                                    if upload_result == nrtftp.NOT_INITIALISED:
+                                        log_instrument(logger, instrument_id, logging.ERROR,
+                                                       "FTP not initialised")
+                                        retriever.file_failed()
+                                    elif upload_result == nrtftp.FILE_EXISTS:
+                                        log_instrument(logger, instrument_id, logging.DEBUG,
+                                                       "File exists on FTP "
+                                                       + "server - will retry later")
+                                        retriever.file_not_processed()
+                                    elif upload_result == nrtftp.UPLOAD_OK:
+                                        log_instrument(logger, instrument_id, logging.DEBUG,
+                                                       "File uploaded OK (look for individual failures in ZIPs)")
+                                        retriever.file_succeeded()
+                                    elif upload_result == PREPROCESSOR_FAILED:
+                                        log_instrument(logger, instrument_id, logging.DEBUG,
+                                                       "File preprocessor failed")
+                                        retriever.file_failed()
+                                    else:
+                                        log_instrument(logger, instrument_id, logging.CRITICAL,
+                                                       "Unrecognised upload result " + str(upload_result))
+                                        exit()
+                                except Exception as e:
                                     log_instrument(logger, instrument_id, logging.ERROR,
-                                                   "FTP not initialised")
+                                                   f"Error processing file {file['filename']}  for instrument {instrument_id}:\n{traceback.format_exc()}")
+                                    post_slack_msg(config['slack'],
+                                                   f"Error processing NRT for instrument {instrument_id}")
                                     retriever.file_failed()
-                                elif upload_result == nrtftp.FILE_EXISTS:
-                                    log_instrument(logger, instrument_id, logging.DEBUG,
-                                                   "File exists on FTP "
-                                                   + "server - will retry later")
-                                    retriever.file_not_processed()
-                                elif upload_result == nrtftp.UPLOAD_OK:
-                                    log_instrument(logger, instrument_id, logging.DEBUG,
-                                                   "File uploaded OK (look for individual failures in ZIPs)")
-                                    retriever.file_succeeded()
-                                elif upload_result == PREPROCESSOR_FAILED:
-                                    log_instrument(logger, instrument_id, logging.DEBUG,
-                                                   "File preprocessor failed")
-                                    retriever.file_failed()
-                                else:
-                                    log_instrument(logger, instrument_id, logging.CRITICAL,
-                                                   "Unrecognised upload result " + str(upload_result))
-                                    exit()
 
                         retriever.shutdown()
 
