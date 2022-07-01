@@ -62,8 +62,9 @@ def upload_file(ftp_conn, ftp_config, instrument_id, filename, contents):
     destination_file = destination_folder + filename
 
     if not ftp_conn.isdir(destination_folder):
-        upload_result = NOT_INITIALISED
-    elif ftp_conn.exists(destination_file):
+        init_ftp_folder(ftp_conn, ftp_config, instrument_id)
+
+    if ftp_conn.exists(destination_file):
         upload_result = FILE_EXISTS
     else:
         ftp_conn.putfo(BytesIO(contents), destination_file)
