@@ -80,7 +80,7 @@ def upload_file(logger, ftp_conn, ftp_config, instrument_id, preprocessor, filen
         with ZipFile(BytesIO(contents), 'r') as unzip:
             for name in unzip.namelist():
                 if not ignore_file(name):
-                    log_instrument(logger, instrument_id, logging.DEBUG, "Uploading "
+                    log_instrument(logger, instrument_id, logging.INFO, "Uploading "
                                    + "ZIP entry " + name)
 
                     preprocessed_file = None
@@ -126,7 +126,7 @@ def main():
     # Loop through each instrument
     for instrument_id in instruments:
         try:
-            log_instrument(logger, instrument_id, logging.INFO,
+            log_instrument(logger, instrument_id, logging.DEBUG,
                            "Checking instrument")
             instrument = nrtdb.get_instrument(db_conn, instrument_id)
 
@@ -134,10 +134,10 @@ def main():
                 log_instrument(logger, instrument_id, logging.ERROR,
                                "Configuration type not set")
             elif not time_for_check(instrument):
-                log_instrument(logger, instrument_id, logging.INFO,
+                log_instrument(logger, instrument_id, logging.DEBUG,
                                "Not time for check yet")
             else:
-                log_instrument(logger, instrument_id, logging.INFO,
+                log_instrument(logger, instrument_id, logging.DEBUG,
                                "Time for check")
 
                 # Build the retriever
@@ -162,7 +162,7 @@ def main():
                         while retriever.load_next_files():
                             for file in retriever.current_files:
 
-                                log_instrument(logger, instrument_id, logging.DEBUG,
+                                log_instrument(logger, instrument_id, logging.INFO,
                                                "Uploading " + file["filename"] + " to FTP server")
 
                                 upload_result = upload_file(logger, ftp_conn, config["FTP"],
@@ -197,7 +197,7 @@ def main():
                         nrtdb.set_last_check(db_conn, instrument)
         except Exception as e:
             log_instrument(logger, instrument_id, logging.ERROR,
-                           f"Error processing instrument {instrument_id}: {e}")
+                           f"Error processing instrument {instrument_id}: {traceback.format_exc()}")
             post_slack_msg(config['slack'], f"Error processing NRT for instrument {instrument_id}")
 
     if ftp_conn is not None:
