@@ -7,7 +7,7 @@ verify_ssl = true
 
 [packages]
 toml = "*"
-slacker = "*"
+slack-sdk = "*"
 ftputil = "*"
 pandas = "*"
 netcdf4 = "*"
