@@ -4,29 +4,18 @@ Contains functions related to API-calls towards QuinCe
 
 Maren K. Karlsen 2020.10.29
 '''
-import logging 
-import urllib
-import base64
 import toml
-import json
-import sys
-import os
-import re
-import io
-from slacker import Slacker
-
-from xml.etree import ElementTree as ET
-from zipfile import ZipFile
+from slack_sdk import WebClient
 
 with open('config_slack.toml') as f: CONFIG = toml.load(f)
 
 
 def post_slack_msg(message,status=False):
   if status: workspace = 'err_workspace'
-  else: workspace = 'rep_workspace' 
+  else: workspace = 'rep_workspace'
 
-  slack = Slacker(CONFIG['slack']['api_token'])
-  slack.chat.post_message('#'+CONFIG['slack'][workspace],f'{message}')
+  client = WebClient(token=CONFIG['slack']['api_token'])
+  client.chat_postMessage(channel='#'+CONFIG['slack'][workspace], text=f'{message}')
 
 
 def slack_export_report(destination,platform_name,dataset,successful_upload,err_msg):
@@ -37,4 +26,3 @@ def slack_export_report(destination,platform_name,dataset,successful_upload,err_
   elif successful_upload == 2: slack_msg += 'No new data.'
   else: slack_msg += 'Something went wrong. Check log.'
   post_slack_msg(slack_msg)
-       
