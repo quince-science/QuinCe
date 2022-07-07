@@ -122,6 +122,11 @@ public class LongitudeSpecification extends PositionSpecification {
     return result;
   }
 
+  @Override
+  protected String fixNegatives(String value) {
+    return value.equals("-180.000") ? "180.000" : super.fixNegatives(value);
+  }
+
   private HemisphereMultiplier makeHemisphereMultiplier() {
     return new HemisphereMultiplier(Arrays.asList("E", "East"), Arrays.asList("W", "West"));
   }
