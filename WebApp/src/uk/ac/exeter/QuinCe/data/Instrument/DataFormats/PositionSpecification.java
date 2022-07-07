@@ -204,7 +204,11 @@ public abstract class PositionSpecification {
       result = "180.000";
     }
 
-    return result;
+    return fixNegatives(result);
+  }
+
+  protected String fixNegatives(String value) {
+    return value.equals("-0.000") ? "0.000" : value;
   }
 
   protected abstract PositionParser getParser() throws PositionException;
