@@ -23,7 +23,6 @@ import org.primefaces.json.JSONObject;
 import org.primefaces.model.TreeNode;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -122,6 +121,10 @@ public class NewInstrumentBean extends FileUploadBean {
     .ofPattern("yyyy-MM-dd HH:mm:ss");
 
   private static Gson gson = null;
+
+  private static List<PositionFormatEntry> lonFormats = null;
+
+  private static List<PositionFormatEntry> latFormats = null;
 
   /**
    * The Instrument List Bean
@@ -2387,5 +2390,36 @@ public class NewInstrumentBean extends FileUploadBean {
   public void setGroupLink() throws SensorGroupsException {
     sensorGroups.getGroup(groupLinkGroup).setLink(groupLinkSensor,
       groupLinkDirection);
+  }
+
+  public List<PositionFormatEntry> getLongitudeFormats() {
+
+    if (null == lonFormats) {
+      TreeMap<Integer, String> lonFormatsMap = LongitudeSpecification
+        .getFormats();
+
+      lonFormats = new ArrayList<PositionFormatEntry>(lonFormatsMap.size());
+
+      lonFormatsMap.entrySet().forEach(
+        e -> lonFormats.add(new PositionFormatEntry(e.getKey(), e.getValue())));
+    }
+
+    return lonFormats;
+
+  }
+
+  public List<PositionFormatEntry> getLatitudeFormats() {
+
+    if (null == latFormats) {
+      TreeMap<Integer, String> latFormatsMap = LatitudeSpecification
+        .getFormats();
+
+      latFormats = new ArrayList<PositionFormatEntry>(latFormatsMap.size());
+
+      latFormatsMap.entrySet().forEach(
+        e -> latFormats.add(new PositionFormatEntry(e.getKey(), e.getValue())));
+    }
+
+    return latFormats;
   }
 }

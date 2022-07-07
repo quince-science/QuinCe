@@ -6,12 +6,8 @@ package uk.ac.exeter.QuinCe.utils;
  * @author Steve Jones
  *
  */
-public class ParameterException extends Exception {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = 3826060193745981107L;
+@SuppressWarnings("serial")
+public class ParameterException extends RuntimeException {
 
   /**
    * Constructor
