@@ -141,7 +141,7 @@ eclipse {
   wtp {
     facet {
       facet name: "jst.web", version: "2.5"       // Dynamic Web Application
-      facet name: "java", version: "11"          // Java version
+      facet name: "java", version: "17"          // Java version
       facet name: "wst.jsdt.web", version: "1.0"  // JavaScript
       facet name: "jst.jsf", version: "2.2"       // Java Server Faces
     }
