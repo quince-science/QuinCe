@@ -6,12 +6,8 @@ package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
  * @author Steve Jones
  *
  */
+@SuppressWarnings("serial")
 public class PositionException extends Exception {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = -5002071128888697454L;
 
   /**
    * Simple error message

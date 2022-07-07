@@ -6,12 +6,8 @@ package uk.ac.exeter.QuinCe.utils;
  * @author Steve Jones
  *
  */
+@SuppressWarnings("serial")
 public class MissingParamException extends ParameterException {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = -5143400042710795233L;
 
   /**
    * Basic constructor
@@ -20,7 +16,7 @@ public class MissingParamException extends ParameterException {
    *          The parameter that failed the test
    */
   public MissingParamException(String varName) {
-    super(varName, "parameter is null");
+    super(varName, "parameter is missing or empty");
   }
 
   /**

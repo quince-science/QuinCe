@@ -17,7 +17,6 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.ValueNotNumericException;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Defines how the date and time are stored in a data file
@@ -280,55 +279,6 @@ public class DateTimeSpecification {
   }
 
   /**
-   * Get the JSON representation of this specification.
-   *
-   * <p>
-   * The JSON string is as follows:
-   * </p>
-   *
-   * <pre>
-   * {}
-   * </pre>
-   * <p>
-   * The format will be the integer value corresponding to the chosen format.
-   * The JSON processor will need to know how to translate these.
-   * </p>
-   *
-   * @return The JSON string
-   * @throws DateTimeSpecificationException
-   *           If an error occurs while building the string
-   */
-  // TODO Make JSON string in comment
-  public String getJsonString() throws DateTimeSpecificationException {
-    StringBuilder json = new StringBuilder();
-
-    json.append('[');
-
-    List<Integer> entries = getAvailableEntries();
-    for (int i = 0; i < entries.size(); i++) {
-      DateTimeColumnAssignment assignment = assignments.get(entries.get(i));
-
-      json.append("{\"id\":");
-      json.append(i);
-      json.append(",\"name\":\"");
-      json.append(getAssignmentName(entries.get(i)));
-      json.append("\",\"column\":");
-      json.append(assignment.getColumn());
-      json.append(",\"properties\":");
-      json.append(StringUtils.getPropertiesAsJson(assignment.getProperties()));
-      json.append("}");
-
-      if (i < entries.size() - 1) {
-        json.append(',');
-      }
-    }
-
-    json.append(']');
-
-    return json.toString();
-  }
-
-  /**
    * Determine whether or not this specification has had both date and time
    * fully assigned
    *
@@ -367,7 +317,7 @@ public class DateTimeSpecification {
    *
    * @return The available entries
    */
-  private List<Integer> getAvailableEntries() {
+  protected List<Integer> getAvailableEntries() {
 
     // A bit mask for available assignments. Start with nothing available,
     // and build from there.
