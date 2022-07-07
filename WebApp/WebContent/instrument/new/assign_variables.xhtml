@@ -153,12 +153,10 @@
               <td><p:outputLabel value="Format:" /></td>
               <td><p:selectOneMenu id="longitudeFormat"
                   value="#{newInstrumentBean.longitudeFormat}">
-                  <f:selectItem itemLabel="-180° to 180°" itemValue="1" />
-                  <f:selectItem itemLabel="0° to 360°" itemValue="0" />
-                  <f:selectItem
-                    itemLabel="0° to 180° (hemisphere specified separately)"
-                    itemValue="2" />
-                  <f:selectItem itemLabel="Hemisphere, degrees, decimal minutes" itemValue="3"/>
+
+                  <f:selectItems value="#{newInstrumentBean.longitudeFormats}" var="format"
+                    itemValue="#{format.id}"
+                    itemLabel="#{format.name}" />
                 </p:selectOneMenu></td>
             </tr>
           </table>
@@ -196,11 +194,9 @@
               <td><p:outputLabel value="Format:" /></td>
               <td><p:selectOneMenu id="latitudeFormat"
                   value="#{newInstrumentBean.latitudeFormat}">
-                  <f:selectItem itemLabel="-90° to 90°" itemValue="0" />
-                  <f:selectItem
-                    itemLabel="0° to 90° (hemisphere specified separately)"
-                    itemValue="1" />
-                  <f:selectItem itemLabel="Hemisphere, degrees, decimal minutes" itemValue="2"/>
+                  <f:selectItems value="#{newInstrumentBean.latitudeFormats}" var="format"
+                    itemValue="#{format.id}"
+                    itemLabel="#{format.name}" />
                 </p:selectOneMenu></td>
             </tr>
           </table>

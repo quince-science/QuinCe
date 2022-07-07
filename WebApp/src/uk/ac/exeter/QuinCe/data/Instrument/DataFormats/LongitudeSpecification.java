@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.TreeMap;
 
 /**
  * Handles all formats of longitudes, and the corresponding column assignments
@@ -16,23 +17,43 @@ public class LongitudeSpecification extends PositionSpecification {
    */
   public static final int FORMAT_0_360 = 0;
 
+  public static final String NAME_0_360 = "0° to 360°";
+
   /**
    * Indicates that longitudes are between -180 and 180
    */
   public static final int FORMAT_MINUS180_180 = 1;
 
+  public static final String NAME_MINUS180_180 = "-180° to 180°";
+
   /**
-   * Indicates that longitudes are between 0 and 180, with an extra field
-   * denoting East or West
+   * Indicates that longitudes are between 0 and 180, with an extra field denoting
+   * East or West
    */
   public static final int FORMAT_0_180 = 2;
 
-  /**
-   * Indicates a format of degress and decimal minutes (-180:180)
-   */
-  public static final int FORMAT_HEM_DEG_DEC_MIN = 3;
+  public static final String NAME_0_180 = "0° to 180°; separate hemisphere";
 
   /**
+   * Indicates a format of hemisphere, degrees and decimal minutes in one column
+   */
+  public static final int FORMAT_HDM = 3;
+
+  public static final String NAME_HDM = "H DD MM.mmm";
+
+  private static TreeMap<Integer, String> formats = null;
+
+  static {
+    formats = new TreeMap<Integer, String>();
+
+    formats.put(FORMAT_0_360, NAME_0_360);
+    formats.put(FORMAT_MINUS180_180, NAME_MINUS180_180);
+    formats.put(FORMAT_0_180, NAME_0_180);
+    formats.put(FORMAT_HDM, NAME_HDM);
+  }
+
+  /**
+   *
    * Basic constructor
    */
   public LongitudeSpecification() {
@@ -42,17 +63,12 @@ public class LongitudeSpecification extends PositionSpecification {
   /**
    * Constructor for a complete specification
    *
-   * @param format
-   *          The format
-   * @param valueColumn
-   *          The value column
-   * @param hemisphereColumn
-   *          The hemisphere column
-   * @throws PositionException
-   *           If the specification is incomplete or invalid
+   * @param format           The format
+   * @param valueColumn      The value column
+   * @param hemisphereColumn The hemisphere column
+   * @throws PositionException If the specification is incomplete or invalid
    */
-  public LongitudeSpecification(int format, int valueColumn,
-    int hemisphereColumn) throws PositionException {
+  public LongitudeSpecification(int format, int valueColumn, int hemisphereColumn) throws PositionException {
     super(format, valueColumn, hemisphereColumn);
   }
 
@@ -67,111 +83,50 @@ public class LongitudeSpecification extends PositionSpecification {
   }
 
   @Override
-  public String getValue(List<String> line) throws PositionException {
+  protected double getMin() {
+    return -180D;
+  }
 
-    String result = null;
+  @Override
+  protected double getMax() {
+    return 180D;
+  }
 
-    String stringValue = line.get(getValueColumn()).trim();
+  @Override
+  protected PositionParser getParser() throws PositionException {
 
-    if (stringValue.length() == 0) {
-      result = null;
-    } else {
-      try {
-        double doubleValue = 0D;
+    PositionParser result;
 
-        switch (format) {
-        case FORMAT_0_360: {
-          doubleValue = Double.parseDouble(stringValue);
-          if (doubleValue > 180) {
-            doubleValue = (360 - doubleValue) * -1;
-          }
-          break;
-        }
-        case FORMAT_MINUS180_180: {
-          doubleValue = Double.parseDouble(stringValue);
-          break;
-        }
-        case FORMAT_0_180: {
-          String hemisphere = line.get(getHemisphereColumn());
-          doubleValue = Double.parseDouble(stringValue);
-          doubleValue = doubleValue * hemisphereMultiplier(hemisphere);
-          break;
-        }
-        case FORMAT_HEM_DEG_DEC_MIN: {
-          // Split on whitespace
-          String[] split = stringValue.split("\\s+");
-
-          if (split.length != 3) {
-            throw new NumberFormatException();
-          }
-
-          String hemisphere = split[0];
-          int degrees = Integer.parseInt(split[1]);
-          double minutes = Double.parseDouble(split[2]);
-
-          doubleValue = degrees + (minutes / 60);
-
-          if (hemisphere.equals("W")) {
-            doubleValue = doubleValue * -1;
-          } else if (!hemisphere.equals("N")) {
-            throw new PositionException(
-              "Invalid hemisphere value '" + hemisphere + "'");
-          }
-
-          break;
-        }
-        default: {
-          throw new InvalidPositionFormatException(format);
-        }
-        }
-
-        result = String.valueOf(doubleValue);
-
-      } catch (NumberFormatException e) {
-        System.out.println("NumberFormatException: Invalid longitude value '"
-          + stringValue + "'");
-      }
-
+    switch (format) {
+    case FORMAT_MINUS180_180: {
+      result = new DecimalDegreesParser(true);
+      break;
+    }
+    case FORMAT_0_360: {
+      result = new Zero360Parser();
+      break;
+    }
+    case FORMAT_0_180: {
+      result = new DecimalDegreesParser(makeHemisphereMultiplier());
+      break;
+    }
+    case FORMAT_HDM: {
+      result = new HDMParser(makeHemisphereMultiplier());
+      break;
+    }
+    default: {
+      throw new PositionException("Unknown format " + format);
+    }
     }
 
     return result;
   }
 
-  /**
-   * Calculate the longitude multiplier for a longitude value. East = 1, West =
-   * -1
-   *
-   * @param hemisphere
-   *          The hemisphere
-   * @return The multiplier
-   * @throws PositionException
-   *           If the hemisphere value is invalid
-   */
-  private double hemisphereMultiplier(String hemisphere)
-    throws PositionException {
-    double multiplier = 1.0;
+  private HemisphereMultiplier makeHemisphereMultiplier() {
+    return new HemisphereMultiplier(Arrays.asList("E", "East"), Arrays.asList("W", "West"));
+  }
 
-    if (null == hemisphere) {
-      throw new PositionException("Missing hemisphere value");
-    }
-
-    switch (hemisphere.toLowerCase()) {
-    case "e":
-    case "east": {
-      multiplier = 1.0;
-      break;
-    }
-    case "w":
-    case "west": {
-      multiplier = -1.0;
-      break;
-    }
-    default: {
-      throw new PositionException(
-        "Invalid hemisphere value '" + hemisphere + "'");
-    }
-    }
-
-    return multiplier;
+  public static TreeMap<Integer, String> getFormats() {
+    return formats;
   }
 }

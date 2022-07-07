@@ -55,4 +55,8 @@ public class MathUtils {
 
     return result;
   }
+
+  public static boolean checkRange(double value, double min, double max) {
+    return value >= min && value <= max;
+  }
 }
