@@ -30,10 +30,18 @@ public abstract class PositionParser {
 
   protected double calculateDecimalDegrees(int degrees, double minutes) throws PositionParseException {
 
-    if (minutes >= 60D) {
-      throw new PositionParseException("Invalid minutes value " + minutes);
+    if (minutes < 0D || minutes >= 60D) {
+      throw new PositionParseException("minutes", minutes);
     }
 
-    return degrees + (minutes / 60D);
+    double result;
+
+    if (degrees >= 0) {
+      result = degrees + (minutes / 60D);
+    } else {
+      result = degrees - (minutes / 60D);
+    }
+
+    return result;
   }
 }

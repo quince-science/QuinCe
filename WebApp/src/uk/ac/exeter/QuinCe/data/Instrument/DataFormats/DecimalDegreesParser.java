@@ -26,7 +26,7 @@ public class DecimalDegreesParser extends PositionParser {
     }
 
     if (!negativeAllowed && result < 0) {
-      throw new PositionParseException("Invalid position " + result);
+      throw new PositionParseException(result);
     }
 
     return result;

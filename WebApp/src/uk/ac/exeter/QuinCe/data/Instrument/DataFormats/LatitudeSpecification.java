@@ -35,12 +35,22 @@ public class LatitudeSpecification extends PositionSpecification {
 
   private static TreeMap<Integer, String> formats = null;
 
+  public static final int FORMAT_H_DDDMMmmm = 3;
+
+  public static final String NAME_H_DDDMMmmm = "H | DDDMM.mmm";
+
+  public static final int FORMAT_DDDMMmmm = 4;
+
+  public static final String NAME_DDDMMmmm = "(-)DDDMM.mmm";
+
   static {
     formats = new TreeMap<Integer, String>();
 
     formats.put(FORMAT_MINUS90_90, NAME_MINUS90_90);
     formats.put(FORMAT_0_90, NAME_0_90);
     formats.put(FORMAT_HDM, NAME_HDM);
+    formats.put(FORMAT_H_DDDMMmmm, NAME_H_DDDMMmmm);
+    formats.put(FORMAT_DDDMMmmm, NAME_DDDMMmmm);
   }
 
   /**
@@ -64,7 +74,7 @@ public class LatitudeSpecification extends PositionSpecification {
 
   @Override
   public boolean formatValid(int format) {
-    return (format >= 0 && format <= 2);
+    return (format >= 0 && format <= 4);
   }
 
   @Override
@@ -86,7 +96,15 @@ public class LatitudeSpecification extends PositionSpecification {
       break;
     }
     case FORMAT_HDM: {
-      result = new HDMParser(makeHemisphereMultiplier());
+      result = new HDMOneFieldParser(makeHemisphereMultiplier());
+      break;
+    }
+    case FORMAT_H_DDDMMmmm: {
+      result = new DDDMMmmmParser(makeHemisphereMultiplier());
+      break;
+    }
+    case FORMAT_DDDMMmmm: {
+      result = new DDDMMmmmParser();
       break;
     }
     default: {
