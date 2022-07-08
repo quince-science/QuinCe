@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -232,7 +233,7 @@ public class DataSetDB {
     RecordNotFoundException, InstrumentException, SensorGroupsException {
 
     long id = record.getLong(1);
-    long instrumentId = record.getLong(2);
+    Instrument instrument = InstrumentDB.getInstrument(conn, record.getLong(2));
     String name = record.getString(3);
     LocalDateTime start = DateTimeUtils.longToDate(record.getLong(4));
     LocalDateTime end = DateTimeUtils.longToDate(record.getLong(5));
@@ -241,7 +242,6 @@ public class DataSetDB {
     boolean nrt = record.getBoolean(8);
 
     // The properties field combines several things. Extract them.
-    Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId);
     Gson gson = new GsonBuilder().registerTypeAdapter(SensorOffsets.class,
       new SensorOffsetsDeserializer(instrument)).create();
 
@@ -274,7 +274,7 @@ public class DataSetDB {
     LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(11));
     String errorMessagesJson = record.getString(12);
     JSONArray array = new JSONArray(errorMessagesJson);
-    ArrayList<Message> errorMessage = new ArrayList<>();
+    ArrayList<Message> errorMessage = new ArrayList<Message>();
     for (Object o : array) {
       if (o instanceof JSONObject) {
         JSONObject jo = (JSONObject) o;
@@ -294,7 +294,7 @@ public class DataSetDB {
     double minLat = record.getDouble(17);
     double maxLat = record.getDouble(18);
 
-    return new DataSet(id, instrumentId, name, start, end, status, statusDate,
+    return new DataSet(id, instrument, name, start, end, status, statusDate,
       nrt, properties, sensorOffsets, createdDate, lastTouched, errorMessage,
       processingMessages, userMessages, minLon, minLat, maxLon, maxLat);
   }
@@ -375,8 +375,7 @@ public class DataSetDB {
         sql = ADD_DATASET_STATEMENT;
       }
 
-      stmt = conn.prepareStatement(sql,
-        PreparedStatement.RETURN_GENERATED_KEYS);
+      stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
       stmt.setLong(1, dataSet.getInstrumentId());
       stmt.setString(2, dataSet.getName());
