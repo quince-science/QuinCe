@@ -12,11 +12,10 @@ public class InvalidHemisphereException extends PositionParseException {
   /**
    * Simple constructor
    *
-   * @param hemisphere
-   *          The invalid hemisphere value
+   * @param hemisphere The invalid hemisphere value
    */
   public InvalidHemisphereException(String hemisphere) {
-    super("The hemisphere value '" + hemisphere + "' is invalid");
+    super("hemisphere", hemisphere);
   }
 
 }
