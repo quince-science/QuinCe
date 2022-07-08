@@ -619,8 +619,7 @@ public class ExportBean extends BaseManagedBean {
    * @return The manifest JSON
    */
   private static JsonObject makeManifest(Connection conn, DataSet dataset,
-    Collection<ExportOption> exportOptions, List<DataFile> rawFiles)
-    throws Exception {
+    List<DataFile> rawFiles) throws Exception {
 
     JsonObject result = new JsonObject();
 
@@ -676,7 +675,7 @@ public class ExportBean extends BaseManagedBean {
       ResourceManager.getInstance().getConfig(), rawIds);
 
     // Get the base manifest. We will add to it as we go.
-    JsonObject manifest = makeManifest(conn, dataset, exportOptions, files);
+    JsonObject manifest = makeManifest(conn, dataset, files);
 
     /*
      * Create the dataset array, which contains details of each export format.
@@ -712,7 +711,12 @@ public class ExportBean extends BaseManagedBean {
         DateTimeUtils.toIsoDate(export.getStartDate()));
       datasetObject.addProperty("validEndDate",
         DateTimeUtils.toIsoDate(export.getEndDate()));
-      datasetObject.add("validBounds", export.getBoundsJson());
+
+      if (instrument.fixedPosition()) {
+        datasetObject.add("validBounds", makeFixedBoundsJson(instrument));
+      } else {
+        datasetObject.add("validBounds", export.getBoundsJson());
+      }
 
       exportFilesJson.add(option.getName(), datasetObject);
     }
@@ -741,6 +745,20 @@ public class ExportBean extends BaseManagedBean {
     zipOut.close();
 
     return outBytes;
+  }
+
+  private static JsonObject makeFixedBoundsJson(Instrument instrument) {
+    JsonObject boundsObject = new JsonObject();
+    boundsObject.addProperty("south",
+      Double.parseDouble(instrument.getProperty("latitude")));
+    boundsObject.addProperty("west",
+      Double.parseDouble(instrument.getProperty("longitude")));
+    boundsObject.addProperty("east",
+      Double.parseDouble(instrument.getProperty("longitude")));
+    boundsObject.addProperty("north",
+      Double.parseDouble(instrument.getProperty("latitude")));
+
+    return boundsObject;
   }
 
   private static long columnsWithId(List<PlotPageColumnHeading> columns,

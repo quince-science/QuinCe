@@ -14,7 +14,6 @@ import org.primefaces.json.JSONArray;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -194,7 +193,7 @@ public class DataSet implements Comparable<DataSet> {
   /**
    * The database ID of the instrument to which this data set belongs
    */
-  private long instrumentId;
+  private Instrument instrument;
 
   /**
    * The data set name
@@ -343,7 +342,7 @@ public class DataSet implements Comparable<DataSet> {
    *          The maximum latitude of the dataset's geographical bounds
    *
    */
-  protected DataSet(long id, long instrumentId, String name,
+  protected DataSet(long id, Instrument instrument, String name,
     LocalDateTime start, LocalDateTime end, int status,
     LocalDateTime statusDate, boolean nrt, Map<String, Properties> properties,
     SensorOffsets sensorOffsets, LocalDateTime createdDate,
@@ -353,7 +352,7 @@ public class DataSet implements Comparable<DataSet> {
     double maxLon, double maxLat) {
 
     this.id = id;
-    this.instrumentId = instrumentId;
+    this.instrument = instrument;
     this.name = name;
     this.start = start;
     this.end = end;
@@ -380,12 +379,13 @@ public class DataSet implements Comparable<DataSet> {
    *          The instrument to which the data set belongs
    */
   public DataSet(Instrument instrument) {
-    this.instrumentId = instrument.getId();
+    this.instrument = instrument;
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
     loadProperties(instrument);
     this.sensorOffsets = new SensorOffsets(instrument.getSensorGroups());
     this.processingMessages = new DatasetProcessingMessages();
     this.userMessages = new DatasetUserMessages();
+    initBounds();
   }
 
   /**
@@ -404,7 +404,7 @@ public class DataSet implements Comparable<DataSet> {
    */
   public DataSet(Instrument instrument, String name, LocalDateTime start,
     LocalDateTime end, boolean nrt) {
-    this.instrumentId = instrument.getId();
+    this.instrument = instrument;
     this.name = name;
     this.start = start;
     this.end = end;
@@ -414,6 +414,7 @@ public class DataSet implements Comparable<DataSet> {
     this.sensorOffsets = new SensorOffsets(instrument.getSensorGroups());
     this.processingMessages = new DatasetProcessingMessages();
     this.userMessages = new DatasetUserMessages();
+    initBounds();
   }
 
   private void loadProperties(Instrument instrument) {
@@ -486,7 +487,7 @@ public class DataSet implements Comparable<DataSet> {
    * @return The instrument's database ID
    */
   public long getInstrumentId() {
-    return instrumentId;
+    return instrument.getId();
   }
 
   /**
@@ -694,7 +695,8 @@ public class DataSet implements Comparable<DataSet> {
    */
   public List<Long> getSourceFiles(Connection conn)
     throws MissingParamException, DatabaseException {
-    return DataFileDB.getFilesWithinDates(conn, instrumentId, start, end, true);
+    return DataFileDB.getFilesWithinDates(conn, instrument.getId(), start, end,
+      true);
   }
 
   /**
@@ -735,7 +737,7 @@ public class DataSet implements Comparable<DataSet> {
       fieldSetsByName.put(DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME,
         DataSetDataDB.DIAGNOSTICS_FIELDSET);
 
-      for (Variable variable : InstrumentDB.getVariables(instrumentId)) {
+      for (Variable variable : instrument.getVariables()) {
         fieldSetsByName.put(variable.getName(), variable.getId());
       }
     }
@@ -765,11 +767,26 @@ public class DataSet implements Comparable<DataSet> {
   public void setBounds(double minLon, double minLat, double maxLon,
     double maxLat) {
 
-    this.minLon = minLon;
-    this.maxLon = maxLon;
-    this.minLat = minLat;
-    this.maxLat = maxLat;
+    if (!instrument.fixedPosition()) {
+      this.minLon = minLon;
+      this.maxLon = maxLon;
+      this.minLat = minLat;
+      this.maxLat = maxLat;
+    }
+  }
 
+  private void initBounds() {
+    if (instrument.fixedPosition()) {
+      this.minLon = Double.parseDouble(instrument.getProperty("longitude"));
+      this.maxLon = Double.parseDouble(instrument.getProperty("longitude"));
+      this.minLat = Double.parseDouble(instrument.getProperty("latitude"));
+      this.maxLat = Double.parseDouble(instrument.getProperty("latitude"));
+    } else {
+      this.minLon = 0D;
+      this.maxLon = 0D;
+      this.minLat = 0D;
+      this.maxLat = 0D;
+    }
   }
 
   /**
