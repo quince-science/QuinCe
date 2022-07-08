@@ -41,6 +41,14 @@ public class LongitudeSpecification extends PositionSpecification {
 
   public static final String NAME_HDM = "H DD MM.mmm";
 
+  public static final int FORMAT_H_DDDMMmmm = 4;
+
+  public static final String NAME_H_DDDMMmmm = "H | DDDMM.mmm";
+
+  public static final int FORMAT_DDDMMmmm = 5;
+
+  public static final String NAME_DDDMMmmm = "(-)DDDMM.mmm";
+
   private static TreeMap<Integer, String> formats = null;
 
   static {
@@ -50,6 +58,8 @@ public class LongitudeSpecification extends PositionSpecification {
     formats.put(FORMAT_MINUS180_180, NAME_MINUS180_180);
     formats.put(FORMAT_0_180, NAME_0_180);
     formats.put(FORMAT_HDM, NAME_HDM);
+    formats.put(FORMAT_H_DDDMMmmm, NAME_H_DDDMMmmm);
+    formats.put(FORMAT_DDDMMmmm, NAME_DDDMMmmm);
   }
 
   /**
@@ -74,7 +84,7 @@ public class LongitudeSpecification extends PositionSpecification {
 
   @Override
   public boolean formatValid(int format) {
-    return (format >= 0 && format <= 3);
+    return (format >= 0 && format <= 5);
   }
 
   @Override
@@ -111,7 +121,15 @@ public class LongitudeSpecification extends PositionSpecification {
       break;
     }
     case FORMAT_HDM: {
-      result = new HDMParser(makeHemisphereMultiplier());
+      result = new HDMOneFieldParser(makeHemisphereMultiplier());
+      break;
+    }
+    case FORMAT_H_DDDMMmmm: {
+      result = new DDDMMmmmParser(makeHemisphereMultiplier());
+      break;
+    }
+    case FORMAT_DDDMMmmm: {
+      result = new DDDMMmmmParser();
       break;
     }
     default: {

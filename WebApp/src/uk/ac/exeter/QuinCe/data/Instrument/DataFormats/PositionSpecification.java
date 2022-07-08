@@ -192,23 +192,25 @@ public abstract class PositionSpecification {
     double parsedValue = parser.parsePosition(stringValue, hemisphereValue);
 
     if (!MathUtils.checkRange(parsedValue, getMin(), getMax())) {
-      throw new PositionParseException("Position out of range " + parsedValue);
+      throw new PositionParseException(parsedValue);
     }
 
     // Handle the corner case where rounding ends up with a value of negative
     // zero
-    String result = StringUtils.formatNumber(parsedValue);
-    if (result.equals("-0.000")) {
-      result = "0.000";
-    } else if (result.equals("-180.000")) {
-      result = "180.000";
-    }
-
-    return fixNegatives(result);
+    return fixNegatives(StringUtils.formatNumber(parsedValue));
   }
 
   protected String fixNegatives(String value) {
-    return value.equals("-0.000") ? "0.000" : value;
+
+    String result = value;
+
+    if (value.equals("-0.000")) {
+      result = "0.000";
+    } else if (value.equals("-180.000")) {
+      result = "180.000";
+    }
+
+    return result;
   }
 
   protected abstract PositionParser getParser() throws PositionException;

@@ -10,19 +10,16 @@ public class HemisphereMultiplier {
 
   private Collection<String> minusOneValues;
 
-  public HemisphereMultiplier(Collection<String> oneValues,
-    Collection<String> minusOneValues) {
+  public HemisphereMultiplier(Collection<String> oneValues, Collection<String> minusOneValues) {
 
     MissingParam.checkMissing(oneValues, "oneValues", false);
     MissingParam.checkMissing(minusOneValues, "minusOneValues", false);
 
     this.oneValues = oneValues.stream().map(v -> v.toLowerCase()).toList();
-    this.minusOneValues = minusOneValues.stream().map(v -> v.toLowerCase())
-      .toList();
+    this.minusOneValues = minusOneValues.stream().map(v -> v.toLowerCase()).toList();
   }
 
-  public double apply(double value, String hemisphere)
-    throws InvalidHemisphereException {
+  public double apply(double value, String hemisphere) throws InvalidHemisphereException {
 
     double multiplier;
 

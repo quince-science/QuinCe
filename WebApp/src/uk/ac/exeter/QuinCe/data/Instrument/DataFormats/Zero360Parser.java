@@ -12,7 +12,7 @@ public class Zero360Parser extends DecimalDegreesParser {
     double parsed = super.getNumericValue(value);
 
     if (parsed >= 360D) {
-      throw new PositionParseException("Invalid position " + value);
+      throw new PositionParseException(value);
     }
 
     if (parsed > 180) {
