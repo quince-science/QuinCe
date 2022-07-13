@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -158,7 +159,12 @@ public class ExtractDataSetJob extends DataSetJob {
 
               if (!dataSet.fixedPosition() && fileDefinition.hasPosition()) {
 
-                String longitude = file.getLongitude(line);
+                String longitude = "NaN";
+                try {
+                  longitude = file.getLongitude(line);
+                } catch (PositionException e) {
+                  dataSet.addProcessingMessage(jobName, file, currentLine, e);
+                }
 
                 sensorValues.add(new SensorValue(dataSet.getId(),
                   FileDefinition.LONGITUDE_COLUMN_ID, time, longitude));
@@ -178,7 +184,12 @@ public class ExtractDataSetJob extends DataSetJob {
                   }
                 }
 
-                String latitude = file.getLatitude(line);
+                String latitude = "NaN";
+                try {
+                  latitude = file.getLatitude(line);
+                } catch (PositionException e) {
+                  dataSet.addProcessingMessage(jobName, file, currentLine, e);
+                }
 
                 sensorValues.add(new SensorValue(dataSet.getId(),
                   FileDefinition.LATITUDE_COLUMN_ID, time, latitude));
