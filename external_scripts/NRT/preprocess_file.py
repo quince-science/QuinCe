@@ -7,8 +7,11 @@ from modules.Preprocessor import PreprocessorFactory
 def main():
     if len(sys.argv) != 2:
         print("Usage: preprocess_file.py <file>")
+        exit()
 
     preprocessor = PreprocessorFactory.get_new_instance(PreprocessorFactory.ask_preprocessor_type())
+
+    preprocessor.enter_configuration()
 
     in_file = open(sys.argv[1], "rb")
     in_bytes = in_file.read()
