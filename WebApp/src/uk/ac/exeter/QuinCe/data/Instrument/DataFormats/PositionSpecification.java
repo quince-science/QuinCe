@@ -46,12 +46,17 @@ public abstract class PositionSpecification {
   /**
    * Constructor for a complete specification
    *
-   * @param format           The format
-   * @param valueColumn      The value column
-   * @param hemisphereColumn The hemisphere column
-   * @throws PositionException If the specification is incomplete or invalid
+   * @param format
+   *          The format
+   * @param valueColumn
+   *          The value column
+   * @param hemisphereColumn
+   *          The hemisphere column
+   * @throws PositionException
+   *           If the specification is incomplete or invalid
    */
-  protected PositionSpecification(int format, int valueColumn, int hemisphereColumn) throws PositionException {
+  protected PositionSpecification(int format, int valueColumn,
+    int hemisphereColumn) throws PositionException {
     setFormat(format);
     this.valueColumn = valueColumn;
     this.hemisphereColumn = hemisphereColumn;
@@ -72,8 +77,10 @@ public abstract class PositionSpecification {
   /**
    * Set the format for this position specification
    *
-   * @param format The format code
-   * @throws InvalidPositionFormatException If the format is invalid
+   * @param format
+   *          The format code
+   * @throws InvalidPositionFormatException
+   *           If the format is invalid
    */
   public void setFormat(int format) throws InvalidPositionFormatException {
     if (!formatValid(format)) {
@@ -86,7 +93,8 @@ public abstract class PositionSpecification {
   /**
    * Determine whether a given format identifier is valid
    *
-   * @param format The format identifier
+   * @param format
+   *          The format identifier
    * @return {@code true} if the format is valid; {@code false} if it is not
    */
   public abstract boolean formatValid(int format);
@@ -95,8 +103,8 @@ public abstract class PositionSpecification {
    * Determines whether or not a hemisphere column is required for this
    * specification's format
    *
-   * @return {@code true} if a hemisphere column is required; {@code false} if it
-   *         is not
+   * @return {@code true} if a hemisphere column is required; {@code false} if
+   *         it is not
    */
   public abstract boolean hemisphereRequired();
 
@@ -104,8 +112,8 @@ public abstract class PositionSpecification {
    * Determines whether or not this specification is complete, i.e. all required
    * column indices are supplied
    *
-   * @return {@code true} if the specification is complete; {@code false} if it is
-   *         not
+   * @return {@code true} if the specification is complete; {@code false} if it
+   *         is not
    */
   public boolean specificationComplete() {
     boolean complete = true;
@@ -133,7 +141,8 @@ public abstract class PositionSpecification {
   /**
    * Set the column for the position's value
    *
-   * @param valueColumn The value column
+   * @param valueColumn
+   *          The value column
    */
   public void setValueColumn(int valueColumn) {
     this.valueColumn = valueColumn;
@@ -151,7 +160,8 @@ public abstract class PositionSpecification {
   /**
    * Set the column for the position's hemisphere
    *
-   * @param hemisphereColumn The hemisphere column
+   * @param hemisphereColumn
+   *          The hemisphere column
    */
   public void setHemisphereColumn(int hemisphereColumn) {
     this.hemisphereColumn = hemisphereColumn;
@@ -176,28 +186,40 @@ public abstract class PositionSpecification {
   /**
    * Get the position value from a given line
    *
-   * @param line The line
+   * @param line
+   *          The line
    * @return The position value
-   * @throws PositionException If the position cannot be extracted, or is invalid
+   * @throws PositionException
+   *           If the position cannot be extracted, or is invalid
    */
   public String getValue(List<String> line) throws PositionException {
 
+    String result;
+
     String stringValue = line.get(getValueColumn()).trim();
-    String hemisphereValue = null;
-    if (getHemisphereColumn() > -1) {
-      hemisphereValue = line.get(getHemisphereColumn()).trim();
+    if (stringValue.length() == 0 || stringValue.equalsIgnoreCase("NaN")
+      || stringValue.equalsIgnoreCase("NA")) {
+      result = "NaN";
+    } else {
+      String hemisphereValue = null;
+      if (getHemisphereColumn() > -1) {
+        hemisphereValue = line.get(getHemisphereColumn()).trim();
+      }
+
+      PositionParser parser = getParser();
+      double parsedValue = parser.parsePosition(stringValue, hemisphereValue);
+
+      if (!MathUtils.checkRange(parsedValue, getMin(), getMax())) {
+        throw new PositionParseException(parsedValue);
+      }
+
+      // Handle the corner case where rounding ends up with a value of negative
+      // zero
+      result = fixNegatives(StringUtils.formatNumber(parsedValue));
+
     }
 
-    PositionParser parser = getParser();
-    double parsedValue = parser.parsePosition(stringValue, hemisphereValue);
-
-    if (!MathUtils.checkRange(parsedValue, getMin(), getMax())) {
-      throw new PositionParseException(parsedValue);
-    }
-
-    // Handle the corner case where rounding ends up with a value of negative
-    // zero
-    return fixNegatives(StringUtils.formatNumber(parsedValue));
+    return result;
   }
 
   protected String fixNegatives(String value) {
