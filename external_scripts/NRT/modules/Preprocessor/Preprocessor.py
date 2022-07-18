@@ -1,4 +1,6 @@
 import os
+import sys
+import logging
 from abc import abstractmethod
 
 from ConfigurableItem import ConfigurableItem
@@ -8,7 +10,14 @@ class Preprocessor(ConfigurableItem):
 
     def __init__(self, logger, configuration=None):
         super().__init__(configuration)
-        self.logger = logger
+
+        if logger is not None:
+            self.logger = logger
+        else:
+            logging.basicConfig(stream=sys.stdout,
+                                format="%(message)s",
+                                level=logging.ERROR)
+            self.logger = logging.getLogger('preprocessor')
 
     @staticmethod
     @abstractmethod
