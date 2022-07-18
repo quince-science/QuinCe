@@ -5,6 +5,7 @@ import pandas as pd
 import uuid
 import tempfile
 import toml
+import re
 
 from modules.Preprocessor import Preprocessor
 from modules.Preprocessor.PreprocessorError import PreprocessorError
@@ -62,11 +63,23 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
                 all_datasets.append(self._get_dataset(db_conn, extractor_config, table['name']))
 
             # Join and sort datasets
-            all_data = pd.concat(all_datasets)
-            all_data.sort_values(by=extractor_config['output']['timestamp_column'], inplace=True)
+            merged_data = all_datasets[0]
 
-            # Replace missing values
-            all_data.fillna(value=extractor_config['output']['empty_col_value'], inplace=True)
+            if len(all_datasets) > 1:
+                for i in range(1, len(all_datasets)):
+                    if not all_datasets[i].empty:
+                        merged_data = merged_data.merge(all_datasets[i], how='outer', suffixes=[None, f'___{i}'],
+                                                        on=extractor_config['output']['timestamp_column'])
+
+            # Merge columns from multiple tables with same names.
+            # NB Clashing values will be ignored - a correct configuration should not produce any.
+            #    Yes, I'm being lazy.
+            for col in merged_data.columns:
+                repeat_col = re.match('(.*)___[0-9]+$', col)
+                if repeat_col is not None:
+                    target_col = repeat_col.group(1)
+                    merged_data[target_col] = merged_data[target_col].combine_first(merged_data[col])
+                    merged_data.drop(col, axis=1, inplace=True)
 
             # Perform all mappings
             if 'column_mapping' in extractor_config:
@@ -74,20 +87,26 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
 
                     mapped_values = []
 
-                    all_data[col_map['column']] = all_data[col_map['column']].astype(str)
+                    merged_data[col_map['column']] = merged_data[col_map['column']].astype(str)
 
                     for map_from, map_to in col_map['mapping']:
-                        all_data[col_map['column']].replace(map_from, map_to, inplace=True)
+                        merged_data[col_map['column']].replace(map_from, map_to, inplace=True)
                         mapped_values.append(map_to)
 
-                    column_index = all_data.columns.get_loc(col_map['column'])
+                    column_index = merged_data.columns.get_loc(col_map['column'])
 
-                    for i in range(0, len(all_data[col_map['column']])):
-                        if all_data.iloc[i, column_index] not in mapped_values:
-                            all_data.iloc[i, column_index] = col_map['other']
+                    for i in range(0, len(merged_data[col_map['column']])):
+                        if merged_data.iloc[i, column_index] not in mapped_values:
+                            merged_data.iloc[i, column_index] = col_map['other']
+
+            # Replace missing values
+            merged_data.fillna(value=extractor_config['output']['empty_col_value'], inplace=True)
+
+            # Sort by time
+            merged_data.sort_values(by=extractor_config['output']['timestamp_column'], inplace=True)
 
             # Get data as CSV
-            result = all_data.to_csv(None, index=False).encode("utf-8")
+            result = merged_data.to_csv(None, index=False, date_format='%Y-%m-%dT%H:%M:%SZ').encode("utf-8")
 
         # Delete the temporary file
         try:
@@ -172,15 +191,14 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
                 result = pd.read_sql_query(sql, db_conn)
 
                 # Adjust the timestamp format if necessary
-                if 'timestamp_format' in table:
+                if not result.empty:
                     timestamp_column = extractor_config['output']['timestamp_column']
                     result[timestamp_column] = result.apply(
-                        lambda row:SQLiteExtractor.format_timestamp(row[timestamp_column], table['timestamp_format']),
+                        lambda row: SQLiteExtractor.parse_date(row[timestamp_column], table['timestamp_format']),
                         axis=1)
 
         return result
 
     @staticmethod
-    def format_timestamp(value, format):
-        parsed_time = pd.to_datetime(value, format=format, utc=True)
-        return parsed_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    def parse_date(value, ts_format):
+        return pd.to_datetime(value, format=ts_format, utc=True).round(freq='S')
