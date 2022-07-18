@@ -14,11 +14,25 @@
     "Cell gas pressure",
     "IRGA detector temperature",
     "IRGA source temperature",
-    "Battery voltage",
-    "Longitude",
+    "Pro Oceanus voltage",
+    "SST",
+    "Salinity",
+    "Pressure (depth)",
+    "Oxygen",
+    "Battery Voltage",
+    "Wind Direction",
+    "Wind Speed",
+    "Air Temperature",
+    "Atmospheric Pressure",
     "Latitude",
-    "Water Temperature",
-    "Air Temperature"
+    "Longitude",
+    "TDGP Temp 1",
+    "TDGP Temp 2",
+    "TDGP Pressure",
+    "Victron Voltage",
+    "Victron Current",
+    "Victron Panel Power",
+    "Victron Panel Voltage"
   ]
 
   # Timestamp column.
@@ -28,38 +42,6 @@
   empty_col_value = "NaN"
 
 [input]
-  [[input.tables]]
-    name = "sbe37"
-
-    fixed_values = [
-      ["Measurement type", ""]
-    ]
-
-    # Outfield = Infield
-    mapping = [
-      ["Timestamp", "TimeStamp"],
-      ["Water Temperature", "temperature"]
-    ]
-
-    timestamp_format = "%Y-%m-%d %H:%M:%S"
-
-  [[input.tables]]
-    name = "meteo"
-
-    fixed_values = [
-      ["Measurement type", ""]
-    ]
-
-    # Outfield = Infield
-    mapping = [
-      ["Timestamp", "timestamp"],
-      ["Longitude", "longitude"],
-      ["Latitude", "latitude"],
-      ["Air Temperature", "temperature"]
-    ]
-
-    timestamp_format = "%Y-%m-%dT%H:%M:%S.%fZ"
-
   [[input.tables]]
     name = "co2atm"
 
@@ -79,7 +61,7 @@
       ["Cell gas pressure", "GasStrPressure_Avg"],
       ["IRGA detector temperature", "IRGAdetTemp_Avg"],
       ["IRGA source temperature", "IRGAsourceTemp_Avg"],
-      ["Battery voltage", "SupplyVoltage_Avg"]
+      ["Pro Oceanus voltage", "SupplyVoltage_Avg"]
     ]
 
     timestamp_format = "%Y-%m-%d %H:%M:%S"
@@ -103,7 +85,70 @@
       ["Cell gas pressure", "GasStrPressure_Avg"],
       ["IRGA detector temperature", "IRGAdetTemp_Avg"],
       ["IRGA source temperature", "IRGAsourceTemp_Avg"],
-      ["Battery voltage", "SupplyVoltage_Avg"]
+      ["Pro Oceanus voltage", "SupplyVoltage_Avg"]
     ]
 
     timestamp_format = "%Y-%m-%d %H:%M:%S"
+
+  [[input.tables]]
+    name = "sbe37"
+
+    mapping = [
+      ["Timestamp", "TimeStamp"],
+      ["SST", "temperature"],
+      ["Salinity", "salinity"],
+      ["Pressure (depth)", "pressure"],
+      ["Oxygen", "oxygen"]
+    ]
+
+    timestamp_format = "%Y-%m-%d %H:%M:%S"
+
+  [[input.tables]]
+    name = "battery"
+
+    mapping = [
+      ["Timestamp", "timestamp"],
+      ["Battery Voltage", "voltage"]
+    ]
+
+    timestamp_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+  [[input.tables]]
+    name = "meteo"
+
+    mapping = [
+      ["Timestamp", "timestamp"],
+      ["Wind Direction", "winddirection"],
+      ["Wind Speed", "windspeed"],
+      ["Air Temperature", "temperature"],
+      ["Atmospheric Pressure", "pressure"],
+      ["Latitude", "latitude"],
+      ["Longitude", "longitude"]
+    ]
+
+    timestamp_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+  [[input.tables]]
+    name = "tdgp"
+
+    mapping = [
+      ["Timestamp", "TimeStamp"],
+      ["TDGP Temp 1", "temperature_1"],
+      ["TDGP Temp 2", "temperature_2"],
+      ["TDGP Pressure", "pressure"]
+    ]
+
+    timestamp_format = "\"%Y-%m-%d %H:%M:%S\""
+
+  [[input.tables]]
+    name = "victron"
+
+    mapping = [
+      ["Timestamp", "timestamp"],
+      ["Victron Voltage", "battv"],
+      ["Victron Current", "chargecurrent"],
+      ["Victron Panel Power", "panelpower"],
+      ["Victron Panel Voltage", "panelvoltage"]
+    ]
+
+    timestamp_format = "%Y-%m-%dT%H:%M:%S.%fZ"
