@@ -12,7 +12,7 @@ imapclient = "*"
 pandas = "*"
 netcdf4 = "*"
 numpy = "*"
-slacker = "*"
+slack_sdk = "*"
 
 [dev-packages]
 
