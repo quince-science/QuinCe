@@ -7,7 +7,7 @@ from io import BytesIO
 from zipfile import ZipFile
 from datetime import datetime, timedelta
 from bisect import bisect
-from slacker import Slacker
+from slack_sdk import WebClient
 
 import toml
 
@@ -22,9 +22,10 @@ from modules.Preprocessor.PreprocessorError import PreprocessorError
 IGNORE_REGEXPS = [".*err.txt"]
 PREPROCESSOR_FAILED = -10
 
+
 def post_slack_msg(config, message):
-  slack = Slacker(config['api_token'])
-  slack.chat.post_message('#'+config['workspace'],f'{message}')
+    client = WebClient(token=config['api_token'])
+    client.chat_postMessage(channel='#' + config['workspace'], text=f'{message}')
 
 
 # See if a file should be ignored based on its filename
