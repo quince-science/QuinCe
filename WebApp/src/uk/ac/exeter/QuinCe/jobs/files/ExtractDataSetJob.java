@@ -237,20 +237,22 @@ public class ExtractDataSetJob extends DataSetJob {
                         currentLine, line, assignment.getColumn(),
                         assignment.getMissingValue());
 
-                      SensorValue value = new SensorValue(dataSet.getId(),
-                        assignment.getDatabaseId(), time, fieldValue);
+                      if (null != fieldValue) {
+                        SensorValue value = new SensorValue(dataSet.getId(),
+                          assignment.getDatabaseId(), time, fieldValue);
 
-                      // Apply calibration if required
-                      Calibration sensorCalibration = sensorCalibrations
-                        .getTargetCalibration(
-                          String.valueOf(assignment.getDatabaseId()));
+                        // Apply calibration if required
+                        Calibration sensorCalibration = sensorCalibrations
+                          .getTargetCalibration(
+                            String.valueOf(assignment.getDatabaseId()));
 
-                      if (null != sensorCalibration) {
-                        value.calibrateValue(sensorCalibration);
+                        if (null != sensorCalibration) {
+                          value.calibrateValue(sensorCalibration);
+                        }
+
+                        // Add to storage list
+                        sensorValues.add(value);
                       }
-
-                      // Add to storage list
-                      sensorValues.add(value);
                     }
                   }
 
@@ -310,7 +312,7 @@ public class ExtractDataSetJob extends DataSetJob {
               .getRunTypeCategory(Measurement.GENERIC_RUN_TYPE_VARIABLE,
                 currentPeriod.getRunType())
               .equals(RunTypeCategory.IGNORED)) {
-              value.setValue(null);
+              valuesIter.remove();
             } else if (inFlushingPeriod(value.getTime(), currentPeriod,
               instrument)) {
 
