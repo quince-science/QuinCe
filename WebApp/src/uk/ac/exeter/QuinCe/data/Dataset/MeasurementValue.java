@@ -508,7 +508,7 @@ public class MeasurementValue implements PlotPageTableValue {
 
   @Override
   public String getValue() {
-    return calculatedValue.isNaN() ? ""
+    return calculatedValue.isNaN() ? null
       : StringUtils.formatNumber(calculatedValue);
   }
 
