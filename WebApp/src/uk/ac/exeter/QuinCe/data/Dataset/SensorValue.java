@@ -781,4 +781,25 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   public boolean canBeSaved() {
     return canBeSaved;
   }
+
+  /**
+   * Select the value with the worst {@link Flag} from the supplied collection
+   * of values. If there's a tie, any one of those values may be returned.
+   * 
+   * @param values
+   *          The values to be compared.
+   * @return One of the values with the worst Flag.
+   */
+  public static SensorValue getValueWithWorstFlag(Collection<SensorValue> values) {
+    SensorValue result = null;
+
+    for (SensorValue value : values) {
+      if (null == result || value.getDisplayFlag()
+        .moreSignificantThan(result.getDisplayFlag())) {
+        result = value;
+      }
+    }
+
+    return result;
+  }
 }

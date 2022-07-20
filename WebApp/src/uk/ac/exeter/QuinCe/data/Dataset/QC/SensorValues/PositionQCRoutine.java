@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
@@ -14,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
+import uk.ac.exeter.QuinCe.utils.CollectionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -49,16 +51,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class PositionQCRoutine extends AutoQCRoutine {
 
   /**
-   * The longitude values
-   */
-  private List<SensorValue> lonValues;
-
-  /**
-   * The latitude values
-   */
-  private List<SensorValue> latValues;
-
-  /**
    * The instrument.
    */
   private Instrument instrument;
@@ -90,26 +82,17 @@ public class PositionQCRoutine extends AutoQCRoutine {
    *           If the routine cannot be constructed
    * @throws MissingParamException
    */
-  public PositionQCRoutine(List<SensorValue> lonValues,
-    List<SensorValue> latValues, Instrument instrument,
+  public PositionQCRoutine(Instrument instrument,
     DatasetSensorValues allSensorValues, SearchableSensorValuesList runTypes)
     throws RoutineException, MissingParamException {
 
     super();
     super.parameters = new ArrayList<String>(); // No parameters needed
 
-    MissingParam.checkMissing(lonValues, "lonValues", true);
-    MissingParam.checkMissing(latValues, "latValues", true);
     MissingParam.checkMissing(instrument, "instrument");
     MissingParam.checkMissing(allSensorValues, "allSensorValues");
     MissingParam.checkMissing(runTypes, "runTypes", true);
 
-    if (lonValues.size() != latValues.size()) {
-      throw new RoutineException("Longitude and latitude counts are different");
-    }
-
-    this.lonValues = lonValues;
-    this.latValues = latValues;
     this.instrument = instrument;
     this.allSensorValues = allSensorValues;
     this.runTypes = runTypes;
@@ -128,68 +111,55 @@ public class PositionQCRoutine extends AutoQCRoutine {
   protected void qcAction(List<SensorValue> values) throws RoutineException {
 
     try {
-      int posIndex = 0;
+      SearchableSensorValuesList longitudes = allSensorValues
+        .getColumnValues(SensorType.LONGITUDE_ID);
+      SearchableSensorValuesList latitudes = allSensorValues
+        .getColumnValues(SensorType.LATITUDE_ID);
 
-      while (posIndex < lonValues.size()) {
+      // Step through each time in the dataset
+      for (LocalDateTime time : allSensorValues.getTimes()) {
 
-        SensorValue lon = lonValues.get(posIndex);
-        SensorValue lat = latValues.get(posIndex);
+        // Get the position values for this time
+        List<SensorValue> longitude = longitudes.getWithInterpolation(time,
+          false, true);
+        List<SensorValue> latitude = latitudes.getWithInterpolation(time, false,
+          true);
 
-        boolean qcFailed = false;
+        // Figure out what the position flag and QC message are
+        Flag positionFlag = Flag.GOOD;
+        String positionMessage = null;
 
-        // The method to use to set QC flags on sensors
-        String qcMessage = null;
-
-        // Missing value check
-        if (lon.isNaN() || lat.isNaN()) {
-          setPositionQC("Missing", lon, lat);
-          qcFailed = true;
-          qcMessage = "Missing";
-
+        if (CollectionUtils.getNonNullCount(longitude) == 0
+          || CollectionUtils.getNonNullCount(latitude) == 0) {
+          positionFlag = Flag.BAD;
+          positionMessage = "Missing";
         } else {
+          SensorValue worstLongitude = SensorValue
+            .getValueWithWorstFlag(longitude);
+          SensorValue worstLatitude = SensorValue
+            .getValueWithWorstFlag(longitude);
 
-          // Range check
-          double lonValue = lon.getDoubleValue();
-          double latValue = lat.getDoubleValue();
-
-          if (lonValue < -180.0 || lonValue > 180.0) {
-            qcFailed = true;
-          } else if (latValue < -90.0 || latValue > 90.0) {
-            qcFailed = true;
-          }
-
-          if (qcFailed) {
-            setPositionQC("Out of range", lon, lat);
-            qcMessage = "Out of range";
+          if (worstLongitude.getDisplayFlag()
+            .moreSignificantThan(worstLatitude.getDisplayFlag())) {
+            positionFlag = worstLongitude.getDisplayFlag();
+            positionMessage = worstLongitude.getDisplayQCMessage();
+          } else {
+            positionFlag = worstLatitude.getDisplayFlag();
+            positionMessage = worstLatitude.getDisplayQCMessage();
           }
         }
 
-        // If the position QC failed, apply the same QC flag to each sensor
-        // value between this and the next position (exclusive).
-        // This handles the case where sensor values are not aligned with
-        // position values in time.
-        if (qcFailed) {
-          LocalDateTime currentPosTime = lon.getTime();
-          LocalDateTime nextPosTime = LocalDateTime.MAX;
-
-          SensorValue nextPos = null;
-          if (posIndex + 1 < lonValues.size()) {
-            nextPos = lonValues.get(posIndex + 1);
-          }
-          if (null != nextPos) {
-            nextPosTime = nextPos.getTime();
-          }
-
-          for (long columnId : instrument.getSensorAssignments()
-            .getSensorColumnIds()) {
-            SearchableSensorValuesList columnValues = allSensorValues
-              .getColumnValues(columnId);
+        if (!positionFlag.equals(Flag.GOOD)) {
+          // Now loop through all SensorValues for this time and apply the
+          // position QC
+          for (Map.Entry<Long, SensorValue> entry : allSensorValues.get(time)
+            .entrySet()) {
 
             SensorType sensorType = instrument.getSensorAssignments()
-              .getSensorTypeForDBColumn(columnId);
+              .getSensorTypeForDBColumn(entry.getKey());
 
-            for (SensorValue value : columnValues.rangeSearch(currentPosTime,
-              nextPosTime)) {
+            // We don't re-set position value flags
+            if (!sensorType.isPosition()) {
 
               // Sensor values with internal calibrations are OK if they aren't
               // part of a measurement; they can still be used for calibrations,
@@ -197,7 +167,7 @@ public class PositionQCRoutine extends AutoQCRoutine {
               boolean flagValue = true;
 
               if (sensorType.hasInternalCalibration()) {
-                String runType = runTypes.timeSearch(value.getTime())
+                String runType = runTypes.timeSearch(entry.getValue().getTime())
                   .getValue();
                 if (!instrument.getMeasurementRunTypes().contains(runType)) {
                   flagValue = false;
@@ -205,38 +175,14 @@ public class PositionQCRoutine extends AutoQCRoutine {
               }
 
               if (flagValue) {
-                value.setPositionQC(Flag.BAD, qcMessage);
+                entry.getValue().setPositionQC(positionFlag, positionMessage);
               }
             }
           }
         }
-
-        posIndex++;
       }
     } catch (Exception e) {
       throw new RoutineException(e);
-    }
-  }
-
-  /**
-   * Set the position QC result as the QC for a {@link SensorValue}. Multiple
-   * values can be supplied.
-   *
-   * <p>
-   * The QC message will be prepended with
-   * {@link SensorValue#POSITION_QC_PREFIX}.
-   * </p>
-   *
-   * @param message
-   *          The QC message.
-   * @param value
-   *          The value whose QC is to be set.
-   * @throws RoutineException
-   */
-  private void setPositionQC(String message, SensorValue... value)
-    throws RoutineException {
-    for (SensorValue v : value) {
-      v.setPositionQC(Flag.BAD, message);
     }
   }
 
