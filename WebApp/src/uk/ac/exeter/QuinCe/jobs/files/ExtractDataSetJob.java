@@ -159,17 +159,18 @@ public class ExtractDataSetJob extends DataSetJob {
 
               if (!dataSet.fixedPosition() && fileDefinition.hasPosition()) {
 
-                String longitude = "NaN";
+                String longitude = null;
                 try {
                   longitude = file.getLongitude(line);
                 } catch (PositionException e) {
                   dataSet.addProcessingMessage(jobName, file, currentLine, e);
                 }
 
-                sensorValues.add(new SensorValue(dataSet.getId(),
-                  FileDefinition.LONGITUDE_COLUMN_ID, time, longitude));
-
                 if (null != longitude) {
+                  sensorValues.add(new SensorValue(dataSet.getId(),
+                    FileDefinition.LONGITUDE_COLUMN_ID, time, longitude));
+
+                  // Update the dataset bounds
                   try {
                     double lonDouble = Double.parseDouble(longitude);
                     if (lonDouble < minLon) {
@@ -184,17 +185,18 @@ public class ExtractDataSetJob extends DataSetJob {
                   }
                 }
 
-                String latitude = "NaN";
+                String latitude = null;
                 try {
                   latitude = file.getLatitude(line);
                 } catch (PositionException e) {
                   dataSet.addProcessingMessage(jobName, file, currentLine, e);
                 }
 
-                sensorValues.add(new SensorValue(dataSet.getId(),
-                  FileDefinition.LATITUDE_COLUMN_ID, time, latitude));
-
                 if (null != latitude) {
+                  sensorValues.add(new SensorValue(dataSet.getId(),
+                    FileDefinition.LATITUDE_COLUMN_ID, time, latitude));
+
+                  // Update the dataset bounds
                   try {
                     double latDouble = Double.parseDouble(latitude);
                     if (latDouble < minLat) {
