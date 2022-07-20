@@ -24,7 +24,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
-import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -171,10 +170,8 @@ public class AutoQCJob extends DataSetJob {
       // call.
       if (!dataSet.fixedPosition()) {
 
-        PositionQCRoutine positionQC = new PositionQCRoutine(
-          sensorValues.getColumnValues(FileDefinition.LONGITUDE_COLUMN_ID),
-          sensorValues.getColumnValues(FileDefinition.LATITUDE_COLUMN_ID),
-          instrument, sensorValues, runTypeValues);
+        PositionQCRoutine positionQC = new PositionQCRoutine(instrument,
+          sensorValues, runTypeValues);
 
         positionQC.qc(null);
       }
