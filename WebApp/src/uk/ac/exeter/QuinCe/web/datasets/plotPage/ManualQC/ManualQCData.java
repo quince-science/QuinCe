@@ -399,7 +399,7 @@ public class ManualQCData extends PlotPageData {
           } else {
             // Empty position column
             record.addColumn("", Flag.GOOD, null, false,
-              PlotPageTableValue.MEASURED_TYPE);
+              PlotPageTableValue.NAN_TYPE);
           }
         }
 
@@ -1150,14 +1150,16 @@ public class ManualQCData extends PlotPageData {
             Double value = SensorValue.interpolate(valuesToUse.get(0),
               valuesToUse.get(1), time);
 
-            try {
-              result = new SimplePlotPageTableValue(String.valueOf(value),
-                SensorValue.getCombinedDisplayFlag(valuesToUse),
-                SensorValue.getCombinedQcComment(valuesToUse), false,
-                PlotPageTableValue.INTERPOLATED_TYPE);
-            } catch (RoutineException e) {
-              throw new PlotPageDataException(
-                "Unable to get SensorValue QC Comments", e);
+            if (null != value) {
+              try {
+                result = new SimplePlotPageTableValue(String.valueOf(value),
+                  SensorValue.getCombinedDisplayFlag(valuesToUse),
+                  SensorValue.getCombinedQcComment(valuesToUse), false,
+                  PlotPageTableValue.INTERPOLATED_TYPE);
+              } catch (RoutineException e) {
+                throw new PlotPageDataException(
+                  "Unable to get SensorValue QC Comments", e);
+              }
             }
 
             break;

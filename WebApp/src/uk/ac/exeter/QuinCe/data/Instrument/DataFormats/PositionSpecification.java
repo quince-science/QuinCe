@@ -199,7 +199,7 @@ public abstract class PositionSpecification {
     String stringValue = line.get(getValueColumn()).trim();
     if (stringValue.length() == 0 || stringValue.equalsIgnoreCase("NaN")
       || stringValue.equalsIgnoreCase("NA")) {
-      result = "NaN";
+      result = null;
     } else {
       String hemisphereValue = null;
       if (getHemisphereColumn() > -1) {

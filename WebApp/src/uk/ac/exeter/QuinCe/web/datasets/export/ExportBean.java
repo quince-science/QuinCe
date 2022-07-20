@@ -474,6 +474,7 @@ public class ExportBean extends BaseManagedBean {
       // Type
       if (includeType) {
         export.append(exportOption.getSeparator());
+        export.append(PlotPageTableValue.NAN_TYPE);
       }
     } else {
       export.registerValue(columnId, value);
