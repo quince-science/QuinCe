@@ -534,4 +534,16 @@ public class Flag implements Comparable<Flag> {
   public Flag getSimpleFlag() {
     return this;
   }
+
+  public static Flag getWorstFlag(Flag... flags) {
+    Flag result = Flag.GOOD;
+
+    for (Flag flag : flags) {
+      if (flag.moreSignificantThan(result)) {
+        result = flag;
+      }
+    }
+
+    return result;
+  }
 }
