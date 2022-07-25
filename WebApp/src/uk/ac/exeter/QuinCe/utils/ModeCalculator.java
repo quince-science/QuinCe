@@ -30,6 +30,6 @@ public class ModeCalculator {
       }
     }
 
-    return mode;
+    return null == mode ? 0L : mode;
   }
 }
