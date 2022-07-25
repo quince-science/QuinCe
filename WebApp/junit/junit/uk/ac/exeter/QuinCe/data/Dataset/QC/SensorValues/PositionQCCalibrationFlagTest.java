@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -53,8 +54,10 @@ public class PositionQCCalibrationFlagTest extends TestSetTest {
 
   private SensorValue makeSensorValue(long columnId, int minute,
     boolean empty) {
-    return new SensorValue(DATASET_ID, columnId, makeTime(minute),
-      empty ? null : "24");
+
+    return new SensorValue(Math.abs(columnId) * 1000 + columnId, DATASET_ID,
+      columnId, makeTime(minute), empty ? null : "24", new AutoQCResult(),
+      empty ? Flag.BAD : Flag.ASSUMED_GOOD, "");
   }
 
   private Instrument makeInstrument() throws RecordNotFoundException {
@@ -82,20 +85,19 @@ public class PositionQCCalibrationFlagTest extends TestSetTest {
   }
 
   private DatasetSensorValues makeDatasetSensorValues(int minute,
-    String runType) {
+    String runType) throws Exception {
 
     SearchableSensorValuesList sensorValues = new SearchableSensorValuesList(
       SENSOR_ID);
     sensorValues.add(makeSensorValue(SENSOR_ID, minute, false));
 
-    DatasetSensorValues datasetSensorValues = Mockito
-      .mock(DatasetSensorValues.class);
+    DatasetSensorValues datasetSensorValues = new DatasetSensorValues(
+      makeInstrument());
 
     // Respond to getColumnValues with an empty list
-    Mockito.when(datasetSensorValues.getColumnValues(SENSOR_ID))
-      .thenAnswer(invocation -> {
-        return sensorValues;
-      });
+    for (SensorValue val : sensorValues) {
+      datasetSensorValues.add(val);
+    }
 
     return datasetSensorValues;
   }
@@ -109,6 +111,7 @@ public class PositionQCCalibrationFlagTest extends TestSetTest {
   }
 
   @ParameterizedTest
+
   @MethodSource("getLines")
   public void runTypeFlagTest(TestSetLine line) throws Exception {
 
@@ -119,10 +122,20 @@ public class PositionQCCalibrationFlagTest extends TestSetTest {
 
     DatasetSensorValues sensorValues = makeDatasetSensorValues(minute, runType);
 
-    PositionQCRoutine routine = new PositionQCRoutine(
-      makeSensorValueList(SensorType.LONGITUDE_ID, minute, !posValid),
-      makeSensorValueList(SensorType.LATITUDE_ID, minute, !posValid),
-      makeInstrument(), sensorValues, makeRunTypes(minute, runType));
+    List<SensorValue> lons = makeSensorValueList(SensorType.LONGITUDE_ID,
+      minute, !posValid);
+    for (SensorValue lon : lons) {
+      sensorValues.add(lon);
+    }
+
+    List<SensorValue> lats = makeSensorValueList(SensorType.LATITUDE_ID, minute,
+      !posValid);
+    for (SensorValue lat : lats) {
+      sensorValues.add(lat);
+    }
+
+    PositionQCRoutine routine = new PositionQCRoutine(makeInstrument(),
+      sensorValues, makeRunTypes(minute, runType));
 
     routine.qc(null);
 
