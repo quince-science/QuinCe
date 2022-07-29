@@ -21,17 +21,18 @@ EOM
 
 read -r -d '' statuses << EOM
 Choose status:
--1   ERROR
- 0   Waiting
- 1   Data extraction
- 2   Data reduction
- 3   Automatic QC
- 4   Ready for QC
- 5   Ready for submission
- 6   Waiting for approval
- 7   Waiting for automatic export
- 8   Automatic export in progress
- 9   Automatic export complete
+ -1   ERROR
+  0   Waiting
+ 10   Data Extraction
+ 20   Sensor QC
+ 30   Data Reduction
+ 40   Data Reduction QC
+ 50   User QC
+100   Ready for Submission
+110   Waiting for Approval
+120   Waiting for Automatic Export
+130   Automatic Export In Progress
+140   Automatic Export Complete
 EOM
 
 db_name="$(scripts/get_setup_property.sh db_database)"
