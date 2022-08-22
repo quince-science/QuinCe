@@ -31,36 +31,27 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
     DatasetSensorValues allSensorValues, Connection conn)
     throws MeasurementValueCalculatorException {
 
-    MeasurementValue result;
-
     // Get the xCO2 as a simple value. Because it's a core sensor it will only
     // contain one
     MeasurementValue xCO2 = new DefaultMeasurementValueCalculator().calculate(
       instrument, dataSet, measurement, coreSensorType, xco2SensorType,
       allMeasurements, allSensorValues, conn);
 
-    if (xCO2.getMemberCount() == 0) {
-      // The CO2 value is missing, or in flushing. So we don't do anything
-      result = xCO2;
-    } else {
-      if (!dryingRequired(instrument)) {
-        result = xCO2;
-      } else {
+    if (xCO2.getMemberCount() > 0 && dryingRequired(instrument)) {
 
-        MeasurementValue xH2O = new DefaultMeasurementValueCalculator()
-          .calculate(instrument, dataSet, measurement, coreSensorType,
-            xh2oSensorType, allMeasurements, allSensorValues, conn);
+      MeasurementValue xH2O = new DefaultMeasurementValueCalculator().calculate(
+        instrument, dataSet, measurement, coreSensorType, xh2oSensorType,
+        allMeasurements, allSensorValues, conn);
 
-        result = new MeasurementValue(xco2SensorType);
-        result.addSensorValues(xCO2, allSensorValues);
-        result.addSupportingSensorValues(xH2O, allSensorValues);
+      // result = new MeasurementValue(xco2SensorType);
+      xCO2.addSensorValues(xCO2, allSensorValues);
+      xCO2.addSupportingSensorValues(xH2O, allSensorValues);
 
-        result.setCalculatedValue(
-          dry(xCO2.getCalculatedValue(), xH2O.getCalculatedValue()));
-      }
+      xCO2.setCalculatedValue(
+        dry(xCO2.getCalculatedValue(), xH2O.getCalculatedValue()));
     }
 
-    return result;
+    return xCO2;
   }
 
   private boolean dryingRequired(Instrument instrument)
