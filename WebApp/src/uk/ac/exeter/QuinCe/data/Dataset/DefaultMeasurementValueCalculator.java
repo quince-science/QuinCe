@@ -19,12 +19,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
-import uk.ac.exeter.QuinCe.utils.CollectionUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 /**
@@ -288,43 +284,47 @@ public class DefaultMeasurementValueCalculator
     // Loop through each calibration target
     for (String runType : calibrationSet.getTargets().keySet()) {
 
-      // Get the measurements for the closest run
-      TreeSet<Measurement> runTypeMeasurements;
+      double standardConcentration = calibrationSet.getCalibrationValue(runType,
+        sensorType.getShortName());
 
-      if (direction == PRIOR) {
-        runTypeMeasurements = allMeasurements.getRunBefore(
-          Measurement.GENERIC_RUN_TYPE_VARIABLE, runType, measurementTime);
-      } else {
-        runTypeMeasurements = allMeasurements.getRunAfter(
-          Measurement.GENERIC_RUN_TYPE_VARIABLE, runType, measurementTime);
-      }
+      if (sensorType.includeZeroInCalibration()
+        || standardConcentration > 0.0D) {
 
-      /*
-       * Get the mean sensor value for these calibration measurements, filtering
-       * out any bad ones.
-       */
-      List<SensorValue> runSensorValues = runTypeMeasurements.stream()
-        .map(m -> sensorValues.get(m.getTime())).filter(v -> null != v)
-        .filter(v -> !v.getDoubleValue().isNaN())
-        .filter(v -> v.getUserQCFlag().isGood()).collect(Collectors.toList());
+        // Get the measurements for the closest run
+        TreeSet<Measurement> runTypeMeasurements;
 
-      Mean mean = new Mean();
+        if (direction == PRIOR) {
+          runTypeMeasurements = allMeasurements.getRunBefore(
+            Measurement.GENERIC_RUN_TYPE_VARIABLE, runType, measurementTime);
+        } else {
+          runTypeMeasurements = allMeasurements.getRunAfter(
+            Measurement.GENERIC_RUN_TYPE_VARIABLE, runType, measurementTime);
+        }
 
-      runSensorValues.stream().map(v -> v.getDoubleValue()).forEach(d -> {
-        mean.increment(d);
-      });
+        /*
+         * Get the mean sensor value for these calibration measurements,
+         * filtering out any bad ones.
+         */
+        List<SensorValue> runSensorValues = runTypeMeasurements.stream()
+          .map(m -> sensorValues.get(m.getTime())).filter(v -> null != v)
+          .filter(v -> !v.getDoubleValue().isNaN())
+          .filter(v -> v.getUserQCFlag().isGood()).collect(Collectors.toList());
 
-      // If there are values from the run...
-      if (!Double.isNaN(mean.getResult())) {
+        Mean mean = new Mean();
 
-        result.addUsedSensorValues(runSensorValues);
+        runSensorValues.stream().map(v -> v.getDoubleValue()).forEach(d -> {
+          mean.increment(d);
+        });
 
-        double standardConcentration = calibrationSet
-          .getCalibrationValue(runType, sensorType.getShortName());
+        // If there are values from the run...
+        if (!Double.isNaN(mean.getResult())) {
 
-        double offset = mean.getResult() - standardConcentration;
+          result.addUsedSensorValues(runSensorValues);
 
-        regression.addData(standardConcentration, offset);
+          double offset = mean.getResult() - standardConcentration;
+
+          regression.addData(standardConcentration, offset);
+        }
       }
     }
 
