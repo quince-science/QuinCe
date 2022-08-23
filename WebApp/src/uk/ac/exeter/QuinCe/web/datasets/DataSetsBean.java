@@ -12,6 +12,7 @@ import javax.faces.context.FacesContext;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
@@ -49,7 +50,11 @@ public class DataSetsBean extends BaseManagedBean {
   /**
    * Navigation string for the datasets list
    */
-  private static final String NAV_DATASET_LIST = "dataset_list";
+  public static final String NAV_DATASET_LIST = "dataset_list";
+
+  public static final String NAV_APPROVAL_LIST = "approval_list";
+
+  public static final String CURRENT_VIEW_ATTR = "datasetListView";
 
   /**
    * The data sets for the current instrument
@@ -121,7 +126,7 @@ public class DataSetsBean extends BaseManagedBean {
    */
   public String goToList() {
     updateDatasetList();
-    return NAV_DATASET_LIST;
+    return getDatasetListNavigation();
   }
 
   /**
@@ -131,6 +136,12 @@ public class DataSetsBean extends BaseManagedBean {
    */
   public List<DataSet> getDataSets() {
     return dataSets;
+  }
+
+  public List<DataSet> getDatasetsForApproval() {
+    return dataSets.stream()
+      .filter(d -> d.getStatus() == DataSet.STATUS_WAITING_FOR_APPROVAL)
+      .toList();
   }
 
   /**
@@ -502,5 +513,26 @@ public class DataSetsBean extends BaseManagedBean {
     }
 
     return result;
+  }
+
+  public String getInstrumentName(DataSet dataSet) {
+    return getInstrument(dataSet.getInstrumentId()).getName();
+  }
+
+  public String getOwnerName(DataSet dataSet) {
+    User owner = getInstrument(dataSet.getInstrumentId()).getOwner();
+    return owner.getSurname() + ", " + owner.getGivenName();
+  }
+
+  private void setCurrentView(String view) {
+    getSession().setAttribute(CURRENT_VIEW_ATTR, view);
+  }
+
+  public void setApprovalView() {
+    setCurrentView(NAV_APPROVAL_LIST);
+  }
+
+  public void setListView() {
+    setCurrentView(NAV_DATASET_LIST);
   }
 }

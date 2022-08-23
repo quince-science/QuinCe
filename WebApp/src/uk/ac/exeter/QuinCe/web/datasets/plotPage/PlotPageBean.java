@@ -11,11 +11,6 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
-   * Navigation to the dataset list
-   */
-  private static final String NAV_DATASET_LIST = "dataset_list";
-
-  /**
    * The ID of the data set being processed
    */
   protected long datasetId;
@@ -131,7 +126,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @return The navigation string.
    */
   protected String getFinishNavigation() {
-    return NAV_DATASET_LIST;
+    return getDatasetListNavigation();
   }
 
   /**

@@ -1,0 +1,286 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+  xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:c="http://java.sun.com/jsp/jstl/core"
+  template="/WEB-INF/templates/menu_page.xhtml">
+  <ui:define name="title">Data Sets</ui:define>
+  <ui:define name="localHead">
+    <c:set var="mainMenuActiveIndex" value="5" scope="request" />
+    <script>
+    function goToCalibrationData(id) {
+      $('#datasetListForm\\:calibrationDatasetId').val(id);
+      $('#datasetListForm\\:reviewCalibrationDataLink').click();
+      return false;
+    }
+
+    function goToSensorOffsets(id) {
+      $('#datasetListForm\\:sensorOffsetsDatasetId').val(id);
+      $('#datasetListForm\\:sensorOffsetsLink').click();
+      return false;
+    }
+
+      function goToQc(id) {
+        window['keepAliveActive'] = false;
+        $('#datasetListForm\\:manualQCDatasetId').val(id);
+        $('#datasetListForm\\:manualQCLink').click();
+        return false;
+      }
+
+      function recalculate(id) {
+        $('#datasetListForm\\:datasetId').val(id);
+        $('#datasetListForm\\:recalculateLink').click();
+        return false;
+      }
+
+      function exportDataset(id) {
+        window['keepAliveActive'] = false;
+        $('#exportForm\\:exportDatasetId').val(id);
+        $('#exportForm\\:exportLink').click();
+        return false;
+      }
+
+      function submitForApproval(id) {
+        $('#datasetListForm\\:datasetId').val(id);
+        $('#datasetListForm\\:submitLink').click();
+        return false;
+      }
+
+      function approve(id) {
+        $('#datasetListForm\\:datasetId').val(id);
+        $('#datasetListForm\\:approveLink').click();
+        return false;
+      }
+
+      var refreshInterval = setInterval(function() {
+        if (window['keepAliveActive']) {
+          updateList(); // PF Command
+        }
+      }, 10000);
+
+      $(document).ready(function() {
+        window['keepAliveActive'] = true;
+        window['canUpdateList'] = true;
+        if (window['updateList']) {
+          updateList(); // PF Command
+        }
+        setApprovalView() // PF Command
+      });
+
+      function updateFailed() {
+        clearInterval(refreshInterval);
+        if (window['keepAliveActive']) {
+          PF('lostContactDialog').show();
+        }
+      }
+
+      function showProcessingMessages(datasetId) {
+        $('#messagesForm\\:datasetId').val(datasetId);
+        loadProcessingMessages(); // PF remoteCommand
+      }
+    </script>
+  </ui:define>
+  <ui:define name="content">
+    <p:dialog widgetVar="lostContactDialog" modal="true" closable="false"
+      header="Contact Lost">
+      <div style="float:left">
+        <h:graphicImage value="/resources/image/rotten_quince.png" alt="Rotten QuinCe"/>
+      </div>
+      <div style="padding-bottom: 10px">
+        Lost contact with the server. You will have to log in again to continue.
+      </div>
+      <h:panelGrid columns="1" cellpadding="5" class="buttonPanel contentList">
+        <p:button href="#{dataSetsBean.urlStub}" value="Go to Login page"/>
+      </h:panelGrid>
+    </p:dialog>
+
+    <p:dialog widgetVar="messagesDialog" modal="true" header="Processing Messages">
+      <div class="instructions">Messages from dataset processing:</div>
+      <h:form id="messagesForm" onsubmit="return false;">
+        <h:inputHidden id="datasetId" value="#{dataSetsBean.processingMessagesId}"/>
+
+        <div style="background-color: white; border: 1px solid black; overflow: auto; width: 600px; height: 250px; margin: auto; font-family: 'Courier New', Courier, monospace;">
+          <pre>
+            <h:outputText id="messagesBox" value="#{dataSetsBean.processingMessages}"/>
+          </pre>
+        </div>
+        <p:remoteCommand name="loadProcessingMessages" action="#{dataSetsBean.noop}"
+          process="datasetId"
+          update="messagesBox"
+          oncomplete="PF('messagesDialog').show()"/>
+      </h:form>
+      <h:panelGrid columns="1" cellpadding="5" class="buttonPanel contentList">
+        <p:commandButton onclick="PF('messagesDialog').hide()" value="Close"/>
+      </h:panelGrid>
+    </p:dialog>
+
+     <h:form id="exportForm" method="post" charset="utf8">
+       <h:inputHidden id="exportDatasetId" value="#{exportBean.datasetId}" />
+       <p:commandLink id="exportLink" ajax="false" action="#{exportBean.start}" />
+     </h:form>
+     <h:form id="datasetListForm" method="post" charset="utf8">
+       <h:inputHidden id="hasFiles" value="#{dataSetsBean.hasFiles}"/>
+
+       <h:inputHidden id="sensorOffsetsDatasetId"
+         value="#{sensorOffsetsBean.datasetId}" />
+       <p:commandLink id="sensorOffsetsLink" ajax="false"
+         action="#{sensorOffsetsBean.start}" />
+
+       <h:inputHidden id="calibrationDatasetId"
+         value="#{internalCalibrationBean.datasetId}" />
+       <p:commandLink id="reviewCalibrationDataLink" ajax="false"
+         action="#{internalCalibrationBean.start}" />
+
+       <h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}" />
+       <p:commandLink id="recalculateLink" ajax="true"
+         action="#{dataSetsBean.recalculate}" oncomplete="updateList()" />
+
+       <p:commandLink id="submitLink" ajax="true"
+         action="#{dataSetsBean.submitForApproval}" oncomplete="updateList()" />
+
+       <p:commandLink id="approveLink" ajax="true"
+         action="#{dataSetsBean.approve}" oncomplete="updateList()" />
+
+       <h:inputHidden id="manualQCDatasetId" value="#{manualQualityControlBean.datasetId}" />
+       <p:commandLink id="manualQCLink" ajax="false"
+         action="#{manualQualityControlBean.start}" />
+
+       <p:remoteCommand name="updateList" update="datasets hasFiles"
+         actionListener="#{dataSetsBean.updateDatasetList}"
+         onerror="updateFailed()"/>
+         
+	   <p:remoteCommand name="setApprovalView" action="#{dataSetsBean.setApprovalView()}"/>
+
+       <ui:include src="/WEB-INF/templates/dialog.xhtml" />
+
+       <p:importConstants type="uk.ac.exeter.QuinCe.data.Dataset.DataSet"
+         var="DataSet" />
+       <p:dataTable id="datasets" value="#{dataSetsBean.datasetsForApproval}"
+         var="dataset" styleClass="pageBlock">
+         <p:column>
+           <f:facet name="header">
+             <h:outputText value="Owner" />
+           </f:facet>
+           <h:outputText value="#{dataSetsBean.getOwnerName(dataset)}" />
+         </p:column>
+         <p:column>
+           <f:facet name="header">
+             <h:outputText value="Instrument" />
+           </f:facet>
+           <h:outputText value="#{dataSetsBean.getInstrumentName(dataset)}" />
+         </p:column>
+         <p:column>
+           <f:facet name="header">
+             <h:outputText value="Name" />
+           </f:facet>
+           <h:outputText value="#{dataset.name}" />
+         </p:column>
+         <p:column width="20">
+           <f:facet name="header">
+             <h:outputText value="" />
+           </f:facet>
+           <ui:fragment rendered="#{dataset.hasProcessingMessages()}">
+             <p:commandLink onclick="showProcessingMessages(#{dataset.id});">
+               <h:graphicImage value="/resources/image/dataset_warning.svg"
+                 styleClass="actionIcon" alt="Dataset Warnings"
+                 title="Dataset Warnings" />
+             </p:commandLink>
+           </ui:fragment>
+         </p:column>
+         <p:column>
+           <f:facet name="header">
+             <h:outputText value="Actions" />
+           </f:facet>
+           <ui:fragment rendered="#{dataset.status gt DataSet.STATUS_ERROR}">
+             <ui:fragment
+               rendered="#{dataset.status ge DataSet.STATUS_USER_QC}">
+               <p:commandLink onclick="recalculate(#{dataset.id})">
+                 <h:graphicImage value="/resources/image/calculate.svg"
+                   styleClass="actionIcon" alt="Recalculate"
+                   title="Recalculate" />
+               </p:commandLink>
+               <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasSensorGroups()}">
+                 <p:commandLink onclick="goToSensorOffsets(#{dataset.id})">
+                   <h:graphicImage value="/resources/image/offsets.svg"
+                     styleClass="actionIcon" alt="Sensor Offsets"
+                     title="Sensor Offsets" />
+                 </p:commandLink>
+               </ui:fragment>
+               <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
+                 <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
+                   <h:graphicImage value="/resources/image/calibration.svg"
+                     styleClass="actionIcon" alt="Calibration"
+                     title="Calibration" />
+                 </p:commandLink>
+               </ui:fragment>
+               <p:commandLink onclick="goToQc(#{dataset.id})">
+                 <h:graphicImage value="/resources/image/qc.svg"
+                   styleClass="actionIcon" alt="Quality Control"
+                   title="Quality Control" />
+               </p:commandLink>
+             </ui:fragment>
+             <ui:fragment
+               rendered="#{dataset.status lt DataSet.STATUS_USER_QC}">
+               <h:graphicImage value="/resources/image/calculate_disabled.svg"
+                 styleClass="actionIcon" alt="Data Reduction"
+                 title="Data Reduction" />
+               <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasSensorGroups()}">
+                 <h:graphicImage
+                   value="/resources/image/offsets_disabled.svg"
+                   styleClass="actionIcon" alt="Sensor Offsets" title="Sensor Offsets" />
+               </ui:fragment>
+               <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
+                 <h:graphicImage
+                   value="/resources/image/calibration_disabled.svg"
+                   styleClass="actionIcon" alt="Calibration" title="Calibration" />
+               </ui:fragment>
+               <h:graphicImage value="/resources/image/qc_disabled.svg"
+                 styleClass="actionIcon" alt="Quality Control"
+                 title="Quality Control" />
+             </ui:fragment>
+             <ui:fragment rendered="#{dataset.canBeExported}">
+               <p:commandLink onclick="exportDataset(#{dataset.id})">
+                 <h:graphicImage value="/resources/image/export.svg"
+                   styleClass="actionIcon" alt="Export" title="Export" />
+               </p:commandLink>
+             </ui:fragment>
+             <ui:fragment rendered="#{!dataset.canBeExported}">
+               <h:graphicImage value="/resources/image/export_disabled.svg"
+                 styleClass="actionIcon" alt="Export" title="Export" />
+             </ui:fragment>
+             <ui:fragment rendered="#{!dataset.nrt}">
+               <ui:fragment
+                 rendered="#{dataset.status eq DataSet.STATUS_READY_FOR_SUBMISSION}">
+                 <p:commandLink onclick="submitForApproval(#{dataset.id})">
+                   <h:graphicImage value="/resources/image/submit.svg"
+                     styleClass="actionIcon" alt="Submit" title="Submit" />
+                 </p:commandLink>
+               </ui:fragment>
+               <ui:fragment
+                 rendered="#{dataset.status ne DataSet.STATUS_READY_FOR_SUBMISSION}">
+                 <h:graphicImage value="/resources/image/submit_disabled.svg"
+                   styleClass="actionIcon" alt="Submit" title="Submit" />
+               </ui:fragment>
+               <ui:fragment rendered="#{dataSetsBean.approvalUser}">
+                 <ui:fragment
+                   rendered="#{dataset.status eq DataSet.STATUS_WAITING_FOR_APPROVAL}">
+                   <p:commandLink onclick="approve(#{dataset.id})">
+                     <h:graphicImage value="/resources/image/approve.svg"
+                       styleClass="actionIcon" alt="Approve" title="Approve" />
+                   </p:commandLink>
+                 </ui:fragment>
+                 <ui:fragment
+                   rendered="#{dataset.status ne DataSet.STATUS_WAITING_FOR_APPROVAL}">
+                   <h:graphicImage
+                     value="/resources/image/approve_disabled.svg"
+                     styleClass="actionIcon" alt="Approve" title="Approve" />
+                 </ui:fragment>
+               </ui:fragment>
+             </ui:fragment>
+           </ui:fragment>
+         </p:column>
+       </p:dataTable>
+     </h:form>
+  </ui:define>
+</ui:composition>
