@@ -65,6 +65,7 @@
         if (window['updateList']) {
           updateList(); // PF Command
         }
+        setListView();
       });
 
       function updateControls() {
@@ -186,6 +187,8 @@
         <p:remoteCommand name="updateList" update="datasets hasFiles"
           actionListener="#{dataSetsBean.updateDatasetList}"
           oncomplete="updateControls()" onerror="updateFailed()"/>
+
+	   <p:remoteCommand name="setListView" action="#{dataSetsBean.setListView()}"/>
 
         <ui:include src="/WEB-INF/templates/dialog.xhtml" />
 
