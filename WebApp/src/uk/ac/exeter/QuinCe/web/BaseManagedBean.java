@@ -23,6 +23,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
+import uk.ac.exeter.QuinCe.web.datasets.DataSetsBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -304,6 +305,11 @@ public abstract class BaseManagedBean {
     return instruments;
   }
 
+  public Instrument getInstrument(long instrumentId) {
+    return getInstruments().stream().filter(i -> i.getId() == instrumentId)
+      .findFirst().get();
+  }
+
   public Instrument getCurrentInstrument() {
     // Get the current instrument from the session
     Instrument currentFullInstrument = (Instrument) getSession()
@@ -522,5 +528,15 @@ public abstract class BaseManagedBean {
 
   public void noop() {
     // Do nothing
+  }
+
+  public String getDatasetListNavigation() {
+    String result = (String) getSession()
+      .getAttribute(DataSetsBean.CURRENT_VIEW_ATTR);
+    if (null == result) {
+      result = DataSetsBean.NAV_DATASET_LIST;
+    }
+
+    return result;
   }
 }
