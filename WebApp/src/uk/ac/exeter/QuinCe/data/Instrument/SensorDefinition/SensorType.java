@@ -119,6 +119,11 @@ public class SensorType extends ColumnHeading
   private boolean internalCalibration = false;
 
   /**
+   * Indicates whether the zero standard should be used in calibration.
+   */
+  private boolean includeZeroInCalibration = true;
+
+  /**
    * Indicates whether this is a special sensor type created internally by the
    * application
    */
@@ -165,6 +170,7 @@ public class SensorType extends ColumnHeading
     this.dependsOn = NO_DEPENDS_ON;
     this.dependsQuestion = null;
     this.internalCalibration = false;
+    this.includeZeroInCalibration = true;
     this.diagnostic = false;
     this.systemType = true;
     this.displayOrder = displayOrder;
@@ -219,8 +225,9 @@ public class SensorType extends ColumnHeading
     }
 
     this.internalCalibration = record.getBoolean(7);
-    this.diagnostic = record.getBoolean(8);
-    this.displayOrder = record.getInt(9);
+    this.includeZeroInCalibration = record.getBoolean(8);
+    this.diagnostic = record.getBoolean(9);
+    this.displayOrder = record.getInt(10);
   }
 
   /**
@@ -308,6 +315,10 @@ public class SensorType extends ColumnHeading
    */
   public boolean hasInternalCalibration() {
     return internalCalibration;
+  }
+
+  public boolean includeZeroInCalibration() {
+    return includeZeroInCalibration;
   }
 
   /**
