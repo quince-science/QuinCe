@@ -935,6 +935,17 @@ public class DataSetDB {
     return result;
   }
 
+  public static List<DataSet> getDatasetsWithStatus(DataSource dataSource,
+    int status) throws MissingParamException, DatabaseException {
+
+    try (Connection conn = dataSource.getConnection()) {
+      return getDatasetsWithStatus(conn, status);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting datasets", e);
+    }
+
+  }
+
   /**
    * Get the all the datasets that are ready for export, but not already
    * being/been exported
@@ -968,7 +979,7 @@ public class DataSetDB {
       }
 
     } catch (Exception e) {
-      throw new DatabaseException("Error while getting export datasets", e);
+      throw new DatabaseException("Error while getting datasets", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
