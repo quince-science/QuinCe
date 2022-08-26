@@ -96,6 +96,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
       // Get the instrument
       instrument = InstrumentDB.getInstrument(getDataSource(),
         dataset.getInstrumentId());
+      setCurrentInstrumentId(instrument.getId());
 
       currentPair = instrument.getSensorGroups().getGroupPairs().get(0).getId();
     } catch (Exception e) {

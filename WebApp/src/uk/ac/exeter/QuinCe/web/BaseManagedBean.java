@@ -320,7 +320,7 @@ public abstract class BaseManagedBean {
       // the user prefs and put it in the session
       if (null == currentFullInstrument) {
         long currentInstrumentId = getUserPrefs().getLastInstrument();
-        for (Instrument instrument : instruments) {
+        for (Instrument instrument : getInstruments()) {
           if (instrument.getId() == currentInstrumentId) {
             currentFullInstrument = instrument;
             getSession().setAttribute(CURRENT_FULL_INSTRUMENT_ATTR,
@@ -374,6 +374,10 @@ public abstract class BaseManagedBean {
    *          The instrument's database ID
    */
   public void setCurrentInstrumentId(long currentInstrumentId) {
+
+    if (null == instruments) {
+      initialiseInstruments();
+    }
 
     // Only do something if the instrument has actually changed
     if (getUserPrefs().getLastInstrument() != currentInstrumentId) {
