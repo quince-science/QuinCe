@@ -61,6 +61,8 @@ public class DataSetsBean extends BaseManagedBean {
    */
   private List<DataSet> dataSets;
 
+  private List<DataSet> approvalDatasets;
+
   /**
    * The file definitions for the current instrument in JSON format for the
    * timeline
@@ -139,9 +141,7 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   public List<DataSet> getDatasetsForApproval() {
-    return dataSets.stream()
-      .filter(d -> d.getStatus() == DataSet.STATUS_WAITING_FOR_APPROVAL)
-      .toList();
+    return approvalDatasets;
   }
 
   /**
@@ -163,6 +163,8 @@ public class DataSetsBean extends BaseManagedBean {
         getCurrentInstrument().getId(), true);
       hasFiles = DataFileDB.getFileCount(getDataSource(),
         getCurrentInstrument().getId()) > 0;
+      approvalDatasets = DataSetDB.getDatasetsWithStatus(getDataSource(),
+        DataSet.STATUS_WAITING_FOR_APPROVAL);
     } else {
       dataSets = null;
     }
