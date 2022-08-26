@@ -144,6 +144,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
       reset();
 
       dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
+      setCurrentInstrumentId(dataset.getInstrumentId());
       initDataObject(getDataSource());
 
     } catch (Exception e) {
