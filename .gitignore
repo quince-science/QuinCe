@@ -71,3 +71,7 @@ DataPreparation/MapCO2/*csv
 **/.ipynb_checkpoints
 
 DataPreparation/HaraldSodemann/netCDFConverter/config.yaml
+
+scripts/monitoring/exception_monitor/config.toml
+
+scripts/monitoring/exception_monitor/lastLine.txt
