@@ -1,0 +1,6 @@
+[log]
+file=''
+
+[slack]
+api_token = ''
+workspace = ''
