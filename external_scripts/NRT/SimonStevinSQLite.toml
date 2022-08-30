@@ -78,6 +78,8 @@
       ["Multiplexer", "Multiplexer"]
     ]
 
+    timestamp_format = "%Y-%m-%d %H:%M:%S.%f"
+
   [[input.tables]]
     name = "IcosCalData"
 
@@ -115,6 +117,8 @@
       ["OctansHeave", ""],
       ["Multiplexer", "Multiplexer"]
     ]
+
+    timestamp_format = "%Y-%m-%d %H:%M:%S.%f"
 
 [column_mapping]
   [[column_mapping.mappings]]
