@@ -25,16 +25,25 @@ from zipfile import ZipFile
 import io
 import traceback
 
-from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_code, is_NRT, get_L1_filename, get_export_filename
+from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_code, get_platform_type,\
+  is_NRT, get_L1_filename, get_export_filename
 from modules.CarbonPortal.Export_CarbonPortal_metadata import  build_metadata_package
 from modules.CarbonPortal.Export_CarbonPortal_SQL import sql_investigate, sql_commit
 from modules.CarbonPortal.Export_CarbonPortal_http import upload_to_cp
 
-
 OBJ_SPEC_URI = {}
 OBJ_SPEC_URI['L0'] = 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject'
-OBJ_SPEC_URI['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product_v2' 
-OBJ_SPEC_URI['L2'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product' 
+
+OBJ_SPEC_URI['SOOP'] = {}
+OBJ_SPEC_URI['SOOP']['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product_v2'
+OBJ_SPEC_URI['SOOP']['L2'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product'
+
+OBJ_SPEC_URI['FOS'] = {}
+OBJ_SPEC_URI['FOS']['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL1Product'
+OBJ_SPEC_URI['FOS']['L2'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL2Product'
+
+SOOP_PLATFORMS = ['31', '32', '3B']
+FOS_PLATFORMS = ['41']
 
 def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,upload,err_msg,L0,L0_hashsums=[]):
   ''' Upload routine for NRT data files
@@ -53,12 +62,29 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,upload,err
   
   hashsum = get_hashsum(file)  
   platform_code = get_platform_code(manifest)
+  platform_type = get_platform_type(platform_code)
   NRT = is_NRT(manifest) # True/False
   L1_filename = get_L1_filename(manifest)
-  if L0: level = 'L0'
-  else:  
-    if NRT: level = 'L1'
-    else: level = 'L2'
+
+  uri = None
+  level = None
+
+  if L0:
+    uri = OBJ_SPEC_URI['L0']
+    level = 'L0'
+  else:
+    uri_platform_type = None
+    if platform_type in SOOP_PLATFORMS:
+      uri_platform_type = 'SOOP'
+    elif platform_type in FOS_PLATFORMS:
+      uri_platform_type = 'FOS'
+
+    if NRT:
+      uri = OBJ_SPEC_URI[uri_platform_type]['L1']
+      level = 'L1'
+    else:
+      uri = OBJ_SPEC_URI[uri_platform_type]['L2']
+      level = 'L2'
 
   logging.debug(f'\n\n --- Processing {level} file: {filename}')
 
@@ -73,12 +99,12 @@ def export_file_to_cp(manifest,filename,dataset_zip,index,auth_cookie,upload,err
   elif prev_exp['status'] == 'NEW' or prev_exp['status'] == 'UPDATE':
     meta = build_metadata_package(
       file, manifest,index, hashsum, 
-      OBJ_SPEC_URI[level], level, L0_hashsums, is_next_version)
+      uri, level, L0_hashsums, is_next_version)
     
     if upload:
       try:
         upload_status, response = upload_to_cp(
-          auth_cookie, file, hashsum, meta, OBJ_SPEC_URI[level])
+          auth_cookie, file, hashsum, meta, uri)
         logging.debug(f'Upload status: {upload_status}')
         if upload_status:
           success = 1
