@@ -5,11 +5,8 @@ Contains functions related to data processing, manifest extraction and file oper
 Maren K. Karlsen 2020.10.29
 '''
 import logging 
-import base64
 import json
-import sys
 import os
-import re
 import io
 import hashlib
 import datetime
@@ -57,6 +54,10 @@ def get_platform_code(manifest):
 
 def get_platform_name(platform_code):
   return platform[platform_code]['name']
+
+
+def get_platform_type(platform_code):
+  return platform[platform_code]['category_code']
 
 
 def is_NRT(manifest):
