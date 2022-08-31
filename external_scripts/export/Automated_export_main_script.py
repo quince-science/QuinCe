@@ -30,7 +30,8 @@ import traceback
 
 from modules.Common.QuinCe import get_export_list, report_abandon_export, report_complete_export
 from modules.Common.Slack import post_slack_msg, slack_export_report
-from modules.Common.data_processing import process_dataset, get_platform_code, get_platform_name, get_export_destination, construct_datafilename, is_NRT
+from modules.Common.data_processing import process_dataset, get_platform_code, get_platform_name, \
+  get_export_destination, construct_datafilename, is_NRT
 from modules.CarbonPortal.Export_CarbonPortal_http import get_auth_cookie
 from modules.CarbonPortal.Export_CarbonPortal_main import export_file_to_cp
 from modules.CMEMS.Export_CMEMS_main import build_dataproduct, upload_to_copernicus
@@ -42,7 +43,7 @@ if not os.path.isdir('log'): os.mkdir('log')
 logging.basicConfig(filename='log/console.log',format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
 #logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG) #Logs to console, for debugging only.
 
-UPLOAD = True # for debugging purposes, when False no data is exported.
+UPLOAD = False # for debugging purposes, when False no data is exported.
 SLACK_ERROR_MSG = True # for differentiating between slack reports and slack errors, slack msg defaults to report
 
 def main():
