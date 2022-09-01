@@ -6,7 +6,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -639,10 +638,9 @@ public class ExportBean extends BaseManagedBean {
     manifest.add("raw", raw);
 
     JsonObject metadata = DataSetDB.getMetadataJson(conn, dataset);
-    Properties appConfig = ResourceManager.getInstance().getConfig();
 
     metadata.addProperty("quince_information",
-      "Data processed using QuinCe " + appConfig.getProperty("version"));
+      "Data processed using QuinCe " + dataset.getProcessingVersion());
     manifest.add("metadata", metadata);
 
     result.add("manifest", manifest);

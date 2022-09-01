@@ -251,6 +251,7 @@ public class DataReductionJob extends DataSetJob {
 
         // Set the dataset status
         dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION_QC);
+        dataSet.setProcessingVersion();
         DataSetDB.updateDataSet(conn, dataSet);
 
       }
