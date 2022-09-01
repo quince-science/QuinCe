@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.Message;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Object to represent a data set
@@ -41,6 +42,16 @@ public class DataSet implements Comparable<DataSet> {
    * @see #getProperty(String, String)
    */
   public static final String INSTRUMENT_PROPERTIES_KEY = "_INSTRUMENT";
+
+  /**
+   * Special key for the dataset properties that holds the general properties
+   * for the dataset.
+   *
+   * @see #getProperty(String, String)
+   */
+  public static final String DATASET_PROPERTIES_KEY = "_DATASET";
+
+  private static final String PROCESSING_VERSION_PROPERTY = "ProcessingVersion";
 
   /**
    * The numeric value for the delete status.
@@ -604,24 +615,31 @@ public class DataSet implements Comparable<DataSet> {
     String result = null;
 
     if (null != properties) {
-      result = properties.get(variable).getProperty(key);
+      Properties varProps = properties.get(variable);
+      if (null != varProps) {
+        result = varProps.getProperty(key, null);
+      }
     }
 
     return result;
   }
 
   public void setProperty(Variable variable, String key, String value) {
+    setProperty(variable.getName(), key, value);
+  }
+
+  private void setProperty(String variableName, String key, String value) {
     if (null == properties) {
       properties = new HashMap<String, Properties>();
     }
 
     Properties varProps;
 
-    if (null == properties.get(variable.getName())) {
-      properties.put(variable.getName(), new Properties());
+    if (null == properties.get(variableName)) {
+      properties.put(variableName, new Properties());
     }
 
-    varProps = properties.get(variable.getName());
+    varProps = properties.get(variableName);
     varProps.setProperty(key, value);
   }
 
@@ -866,7 +884,7 @@ public class DataSet implements Comparable<DataSet> {
    *         otherwise.
    */
   public boolean fixedPosition() {
-    return null != getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "longitude");
+    return null != getProperty(INSTRUMENT_PROPERTIES_KEY, "longitude");
   }
 
   public SensorOffsets getSensorOffsets() {
@@ -906,5 +924,24 @@ public class DataSet implements Comparable<DataSet> {
 
   public boolean hasProcessingMessages() {
     return processingMessages.getMessageCount() > 0;
+  }
+
+  public void setProcessingVersion() {
+    setProperty(DATASET_PROPERTIES_KEY, PROCESSING_VERSION_PROPERTY,
+      ResourceManager.getInstance().getConfig().getProperty("version"));
+  }
+
+  public String getProcessingVersion() {
+
+    String result = getProperty(DATASET_PROPERTIES_KEY,
+      PROCESSING_VERSION_PROPERTY);
+
+    // If the version wasn't set for some reason, assume it was done with the
+    // current version
+    if (null == result) {
+      result = ResourceManager.getInstance().getConfig().getProperty("version");
+    }
+
+    return result;
   }
 }
