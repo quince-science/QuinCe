@@ -36,5 +36,31 @@
         }
       }      
     ]
+  },
+  {
+    "variable": "Pro Oceanus CO₂ Water",
+    "routines": [
+      {
+        "name": "ZeroCurrentComparison",
+        "flagged_sensors": [
+          "ProOceanus Current Count"
+        ],
+        "options": {
+        }
+      }      
+    ]
+  },
+  {
+    "variable": "Pro Oceanus CO₂ Atmosphere",
+    "routines": [
+      {
+        "name": "ZeroCurrentComparison",
+        "flagged_sensors": [
+          "ProOceanus Current Count"
+        ],
+        "options": {
+        }
+      }      
+    ]
   }
 ]
