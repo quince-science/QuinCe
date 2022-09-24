@@ -13,7 +13,7 @@ public class GradientTestRoutine extends AutoQCRoutine {
   /**
    * The maximum delta between values, in units per minute
    */
-  private double maxDelta;
+  private double maxDeltaPerMinute;
 
   @Override
   protected void validateParameters() throws RoutineException {
@@ -24,23 +24,29 @@ public class GradientTestRoutine extends AutoQCRoutine {
     }
 
     try {
-      maxDelta = Double.parseDouble(parameters.get(0));
+      maxDeltaPerMinute = Double.parseDouble(parameters.get(0));
     } catch (NumberFormatException e) {
       throw new RoutineException("Max delta parameter must be numeric");
     }
 
-    if (maxDelta <= 0) {
+    if (maxDeltaPerMinute <= 0) {
       throw new RoutineException("Max duration must be greater than zero");
     }
   }
 
   @Override
   protected void qcAction(List<SensorValue> values) throws RoutineException {
+
     SensorValue prevValue = null;
     SensorValue currValue = null;
     SensorValue nextValue = null;
 
     List<SensorValue> filteredValues = filterMissingValues(values);
+
+    // If the smallest change in values is larger than the specified delta,
+    // increase the delta accordingly. Otherwise we'll get false positives
+    // where the sensor cannot meet the standards of the delta.
+    double minimumChange = SensorValue.getMinimumChange(values);
 
     int i = 1;
     while (i < filteredValues.size() - 1) {
@@ -49,35 +55,43 @@ public class GradientTestRoutine extends AutoQCRoutine {
       prevValue = filteredValues.get(i - 1);
       nextValue = filteredValues.get(i + 1);
 
-      // time-increment
-      double tDiff = ChronoUnit.NANOS.between(prevValue.getTime(),
-        currValue.getTime()) / (60.0 * 1000000000);
+      // If the change is equal to the smallest possible change
+      // we can't do the gradient check
+      double valueDelta = Math
+        .abs(currValue.getDoubleValue() - prevValue.getDoubleValue());
+      if (valueDelta > minimumChange) {
 
-      double delta = Math
-        .abs(currValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
+        // time-increment
+        double tDiff = ChronoUnit.NANOS.between(prevValue.getTime(),
+          currValue.getTime()) / (60.0 * 1000000000);
 
-      if (delta > maxDelta) { // spike or gradient
-        double deltaNext = Math
-          .abs(nextValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
-        if (deltaNext < maxDelta) { // Spike
-          addFlag(currValue, Flag.BAD, maxDelta, delta);
-          i++;
+        double deltaPerMin = valueDelta / tDiff;
 
-        } else { // Gradient
-          addFlag(prevValue, Flag.BAD, maxDelta, delta);
-
-          while ((delta > maxDelta) && (i < filteredValues.size() - 1)) {
-            addFlag(currValue, Flag.BAD, maxDelta, delta);
-
+        if (deltaPerMin > maxDeltaPerMinute) { // spike or gradient
+          double deltaNext = Math.abs(
+            nextValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
+          if (deltaNext < maxDeltaPerMinute) { // Spike
+            addFlag(currValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
             i++;
-            currValue = filteredValues.get(i);
-            prevValue = filteredValues.get(i - 1);
 
-            tDiff = ChronoUnit.NANOS.between(prevValue.getTime(),
-              currValue.getTime()) / (60.0 * 1000000000);
+          } else { // Gradient
+            addFlag(prevValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
 
-            delta = Math.abs(
-              currValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
+            while ((deltaPerMin > maxDeltaPerMinute)
+              && (i < filteredValues.size() - 1)) {
+              addFlag(currValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
+
+              i++;
+              currValue = filteredValues.get(i);
+              prevValue = filteredValues.get(i - 1);
+
+              tDiff = ChronoUnit.NANOS.between(prevValue.getTime(),
+                currValue.getTime()) / (60.0 * 1000000000);
+
+              deltaPerMin = Math
+                .abs(currValue.getDoubleValue() - prevValue.getDoubleValue())
+                / tDiff;
+            }
           }
         }
       }
