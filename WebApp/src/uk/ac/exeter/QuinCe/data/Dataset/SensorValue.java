@@ -805,4 +805,40 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
     return result;
   }
+
+  /**
+   * Get the smallest absolute delta per minute (excluding zero) between two
+   * consecutive {@link SensorValue}s in a {@link List}.
+   *
+   * <p>
+   * The list is assumed to be in chronological order.
+   * </p>
+   *
+   * @param values
+   *          The list of SensorValues
+   * @return The smallest delta
+   */
+  public static double getMinimumChange(List<SensorValue> values) {
+
+    double minDelta = Double.MAX_VALUE;
+
+    if (values.size() > 1) {
+      for (int i = 1; i < values.size(); i++) {
+        SensorValue first = values.get(i - 1);
+        SensorValue second = values.get(i);
+
+        if (!first.isNaN() && !second.isNaN()) {
+
+          double valueDelta = Math
+            .abs(second.getDoubleValue() - first.getDoubleValue());
+
+          if (valueDelta > 0 && valueDelta < minDelta) {
+            minDelta = valueDelta;
+          }
+        }
+      }
+    }
+
+    return minDelta;
+  }
 }
