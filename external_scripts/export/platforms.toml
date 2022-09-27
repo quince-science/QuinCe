@@ -153,21 +153,6 @@ NRT = 'True'
 	NRT = ['ICOS']
 	L2 = ['ICOS']
 
-[74FS]
-name = 'Porcupine Abyssal Plain'
-submitter_id = 'OTC'
-cp_url = ''
-category_code = ''
-call_sign = ''
-creation_date = '2022-03-11T00:00:00Z'
-author_list = ""
-affiliation = ''
-NRT = 'True'
-
-	[74FS.export]
-	NRT = []
-	L2 = []
-
 [58US]
 name = 'Kronprins Haakon'
 submitter_id = 'OTC'
@@ -197,3 +182,19 @@ NRT = 'True'
   [BHNQ.export]
   NRT = ['ICOS']
   L2 = ['ICOS']
+
+[74FS]
+name = 'PAP'
+submitter_id = 'OTC'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_74FS'
+category_code = '41'
+call_sign = ''
+creation_date = '2022-09-27T00:00:00Z'
+author_list = 'Hartman, Sue; Lampitt, Richard'
+affiliation = 'National Oceanography Centre, UK'
+NRT = 'True'
+
+  [74FS.export]
+  NRT = ['ICOS']
+  L2 = ['ICOS']
+
