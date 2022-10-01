@@ -106,7 +106,11 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
             merged_data.sort_values(by=extractor_config['output']['timestamp_column'], inplace=True)
 
             # Get data as CSV
-            result = merged_data.to_csv(None, index=False, date_format='%Y-%m-%dT%H:%M:%SZ').encode("utf-8")
+            date_format = '%Y-%m-%dT%H:%M:%SZ'
+            if 'timestamp_format' in extractor_config['output']:
+                date_format = extractor_config['output']['timestamp_format']
+
+            result = merged_data.to_csv(None, index=False, date_format=date_format).encode("utf-8")
 
         # Delete the temporary file
         try:

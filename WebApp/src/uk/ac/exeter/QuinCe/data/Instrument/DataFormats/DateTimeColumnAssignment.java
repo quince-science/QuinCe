@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.Properties;
 
 /**
@@ -152,7 +154,24 @@ public class DateTimeColumnAssignment {
       if (getDateFormatString().equals(ISO_FORMAT)) {
         result = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
       } else {
-        result = DateTimeFormatter.ofPattern(getDateFormatString());
+
+        /*
+         * Formats with fractions of a second sometimes contain an arbitrary
+         * number of digits after the decimal point.
+         *
+         * For any format support fractions of a second, we take off the ".SSS"
+         * identifier and replace it with a custom fractions parser.
+         */
+        String formatString = getDateFormatString();
+        if (formatString.contains(".S")) {
+          formatString = formatString.replaceFirst("\\.S+", "");
+          result = new DateTimeFormatterBuilder().appendPattern(formatString)
+            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+            .toFormatter();
+        } else {
+          result = DateTimeFormatter.ofPattern(formatString);
+        }
+
       }
     }
 

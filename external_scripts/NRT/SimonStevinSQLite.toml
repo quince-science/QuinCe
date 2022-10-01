@@ -35,6 +35,7 @@
 
   # Timestamp column
   timestamp_column = "TimeStamp"
+  timestamp_format = "%Y-%m-%d %H:%M:%S.%f"
 
   # Value to store in empty columns
   empty_col_value = -999.0
