@@ -60,16 +60,17 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
             # Extract all tables
             all_datasets = []
             for table in extractor_config['input']['tables']:
-                all_datasets.append(self._get_dataset(db_conn, extractor_config, table['name']))
+                table_dataset = self._get_dataset(db_conn, extractor_config, table['name'])
+                if not table_dataset.empty:
+                    all_datasets.append(table_dataset)
 
             # Join and sort datasets
             merged_data = all_datasets[0]
 
             if len(all_datasets) > 1:
                 for i in range(1, len(all_datasets)):
-                    if not all_datasets[i].empty:
-                        merged_data = merged_data.merge(all_datasets[i], how='outer', suffixes=[None, f'___{i}'],
-                                                        on=extractor_config['output']['timestamp_column'])
+                    merged_data = merged_data.merge(all_datasets[i], how='outer', suffixes=(None, f'___{i}'),
+                                                    on=extractor_config['output']['timestamp_column'])
 
             # Merge columns from multiple tables with same names.
             # NB Clashing values will be ignored - a correct configuration should not produce any.
