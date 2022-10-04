@@ -72,7 +72,7 @@ public class RunTypePeriods extends ArrayList<RunTypePeriod> {
   /**
    * Get the unique set of run type names from all periods. The order is not
    * guaranteed.
-   * 
+   *
    * @return The run type names.
    */
   public Set<String> getRunTypeNames() {
