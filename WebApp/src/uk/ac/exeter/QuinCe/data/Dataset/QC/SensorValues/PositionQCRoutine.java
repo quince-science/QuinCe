@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -105,6 +106,12 @@ public class PositionQCRoutine extends AutoQCRoutine {
   @Override
   protected void validateParameters() throws RoutineException {
     // NOOP
+  }
+
+  @Override
+  public void qc(List<SensorValue> values, RunTypePeriods runTypePeriods)
+    throws RoutineException {
+    qcAction(values);
   }
 
   @Override
