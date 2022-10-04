@@ -135,6 +135,12 @@ public class SensorType extends ColumnHeading
    */
   private int displayOrder = 0;
 
+  /**
+   * Indicates whether values are likely to be significantly different in
+   * different run types. QC routines etc. need to know this.
+   */
+  private boolean runTypeAware = false;
+
   static {
     RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_ID, "Run Type", "Run Type",
       RUN_TYPE_ORDER, null, "RUNTYPE");
@@ -174,6 +180,7 @@ public class SensorType extends ColumnHeading
     this.diagnostic = false;
     this.systemType = true;
     this.displayOrder = displayOrder;
+    this.runTypeAware = false;
   }
 
   /**
@@ -189,8 +196,8 @@ public class SensorType extends ColumnHeading
   protected SensorType(ResultSet record)
     throws SQLException, SensorConfigurationException {
 
-    super(record.getLong(1), record.getString(2), record.getString(12),
-      record.getString(11), record.getString(10), true, false);
+    super(record.getLong(1), record.getString(2), record.getString(14),
+      record.getString(13), record.getString(12), true, false);
 
     this.group = record.getString(3);
 
@@ -226,8 +233,9 @@ public class SensorType extends ColumnHeading
 
     this.internalCalibration = record.getBoolean(7);
     this.includeZeroInCalibration = record.getBoolean(8);
-    this.diagnostic = record.getBoolean(9);
-    this.displayOrder = record.getInt(10);
+    this.runTypeAware = record.getBoolean(9);
+    this.diagnostic = record.getBoolean(10);
+    this.displayOrder = record.getInt(11);
   }
 
   /**
@@ -459,5 +467,9 @@ public class SensorType extends ColumnHeading
 
   public boolean isPosition() {
     return equals(LONGITUDE_SENSOR_TYPE) || equals(LATITUDE_SENSOR_TYPE);
+  }
+
+  public boolean isRunTypeAware() {
+    return runTypeAware;
   }
 }

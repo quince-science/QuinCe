@@ -3,6 +3,8 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("serial")
 public class RunTypePeriods extends ArrayList<RunTypePeriod> {
@@ -65,6 +67,17 @@ public class RunTypePeriods extends ArrayList<RunTypePeriod> {
       .findAny();
 
     return period.isEmpty() ? null : period.get().getRunType();
+  }
+
+  /**
+   * Get the unique set of run type names from all periods. The order is not
+   * guaranteed.
+   *
+   * @return The run type names.
+   */
+  public Set<String> getRunTypeNames() {
+    return stream().map(p -> p.getRunType()).distinct()
+      .collect(Collectors.toSet());
   }
 
   private LocalDateTime getLastTime() {

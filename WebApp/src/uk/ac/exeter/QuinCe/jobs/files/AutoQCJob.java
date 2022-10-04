@@ -14,6 +14,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -161,6 +162,10 @@ public class AutoQCJob extends DataSetJob {
       SearchableSensorValuesList runTypeValues = SearchableSensorValuesList
         .newFromSensorValueCollection(runTypeValuesTemp);
 
+      // Get the Run Type Periods for the dataset
+      RunTypePeriods runTypePeriods = DataSetDataDB.getRunTypePeriods(conn,
+        instrument, dataSet.getId());
+
       // First run the position QC, unless the instrument has a fixed position.
       // This will potentially set QC flags on all sensor values, and those
       // values will then be skipped by the 'normal' routines later on.
@@ -173,7 +178,7 @@ public class AutoQCJob extends DataSetJob {
         PositionQCRoutine positionQC = new PositionQCRoutine(instrument,
           sensorValues, runTypeValues);
 
-        positionQC.qc(null);
+        positionQC.qc(null, null);
       }
 
       // Run the auto QC routines for each column
@@ -221,7 +226,7 @@ public class AutoQCJob extends DataSetJob {
               .getRoutines(sensorType)) {
 
               routine.setSensorType(sensorType);
-              ((AutoQCRoutine) routine).qc(filteredValues);
+              ((AutoQCRoutine) routine).qc(filteredValues, runTypePeriods);
             }
           }
 

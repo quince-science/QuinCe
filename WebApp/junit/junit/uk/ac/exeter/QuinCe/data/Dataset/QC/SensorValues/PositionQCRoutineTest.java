@@ -95,7 +95,7 @@ public class PositionQCRoutineTest extends PositionQCTestBase {
     PositionQCRoutine routine = new PositionQCRoutine(makeInstrument(),
       makeDatasetSensorValues(1, 1), makeEmptyRunTypes());
 
-    routine.qc(null);
+    routine.qc(null, null);
   }
 
   @Test
@@ -103,7 +103,7 @@ public class PositionQCRoutineTest extends PositionQCTestBase {
     PositionQCRoutine routine = new PositionQCRoutine(makeInstrument(),
       makeDatasetSensorValues(0, 0), makeEmptyRunTypes());
 
-    routine.qc(null);
+    routine.qc(null, null);
   }
 
   public void validLonTest() throws Exception {
@@ -118,7 +118,7 @@ public class PositionQCRoutineTest extends PositionQCTestBase {
         makeSensorValueList(SensorType.LATITUDE_ID, 1, 0D)),
       makeEmptyRunTypes());
 
-    routine.qc(null);
+    routine.qc(null, null);
 
     assertEquals(Flag.ASSUMED_GOOD, lonValue.getUserQCFlag());
   }
@@ -135,7 +135,7 @@ public class PositionQCRoutineTest extends PositionQCTestBase {
         makeSensorValueList(SensorType.LATITUDE_ID, 1, 0D)),
       makeEmptyRunTypes());
 
-    routine.qc(null);
+    routine.qc(null, null);
 
     assertEquals(Flag.BAD, lonValue.getUserQCFlag());
   }
@@ -153,7 +153,7 @@ public class PositionQCRoutineTest extends PositionQCTestBase {
         makeSensorValueList(SensorType.LONGITUDE_ID, 1, 0D), lats),
       makeEmptyRunTypes());
 
-    routine.qc(null);
+    routine.qc(null, null);
 
     assertEquals(Flag.ASSUMED_GOOD, latValue.getUserQCFlag());
   }
@@ -171,7 +171,7 @@ public class PositionQCRoutineTest extends PositionQCTestBase {
         makeSensorValueList(SensorType.LONGITUDE_ID, 1, 0D), lats),
       makeEmptyRunTypes());
 
-    routine.qc(null);
+    routine.qc(null, null);
 
     assertEquals(Flag.BAD, latValue.getUserQCFlag());
   }

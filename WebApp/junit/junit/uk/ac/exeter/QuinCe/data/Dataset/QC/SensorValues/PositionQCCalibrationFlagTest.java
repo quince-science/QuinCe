@@ -137,7 +137,7 @@ public class PositionQCCalibrationFlagTest extends TestSetTest {
     PositionQCRoutine routine = new PositionQCRoutine(makeInstrument(),
       sensorValues, makeRunTypes(minute, runType));
 
-    routine.qc(null);
+    routine.qc(null, null);
 
     SensorValue sensorValue = sensorValues.getColumnValues(SENSOR_ID)
       .get(makeTime(minute));
