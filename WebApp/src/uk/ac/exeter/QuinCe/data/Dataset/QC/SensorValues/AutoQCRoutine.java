@@ -1,8 +1,13 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriod;
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
@@ -119,9 +124,41 @@ public abstract class AutoQCRoutine extends AbstractAutoQCRoutine {
    *           If the Routine is not configured correctly, or fails during
    *           processing.
    */
-  public void qc(List<SensorValue> values) throws RoutineException {
+  public void qc(List<SensorValue> values, RunTypePeriods runTypePeriods)
+    throws RoutineException {
     checkSetup();
-    qcAction(values);
+
+    if (!sensorType.isRunTypeAware()) {
+      qcAction(values);
+    } else {
+      Map<String, List<SensorValue>> valuesByRunType = getValuesByRunType(
+        values, runTypePeriods);
+      for (List<SensorValue> valuesGroup : valuesByRunType.values()) {
+        qcAction(valuesGroup);
+      }
+    }
+  }
+
+  private Map<String, List<SensorValue>> getValuesByRunType(
+    List<SensorValue> values, RunTypePeriods runTypePeriods) {
+
+    Map<String, List<SensorValue>> result = new HashMap<String, List<SensorValue>>();
+    runTypePeriods.getRunTypeNames()
+      .forEach(r -> result.put(r, new ArrayList<SensorValue>()));
+
+    int currentPeriodIndex = 0;
+    RunTypePeriod currentPeriod = runTypePeriods.get(currentPeriodIndex);
+
+    for (SensorValue value : values) {
+      while (!currentPeriod.encompasses(value.getTime())) {
+        currentPeriodIndex++;
+        currentPeriod = runTypePeriods.get(currentPeriodIndex);
+      }
+
+      result.get(currentPeriod.getRunType()).add(value);
+    }
+
+    return result;
   }
 
   /**
