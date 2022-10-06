@@ -40,6 +40,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.NullPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -264,22 +265,13 @@ public class ExportBean extends BaseManagedBean {
           SensorType sensorType = ResourceManager.getInstance()
             .getSensorsConfiguration().getSensorType(column.getId());
 
-          // Get the value for this SensorType. If there's a measurement and it
-          // contains the SensorType, use that; otherwise get the original
-          // SensorValue.
           PlotPageTableValue value = null;
 
           if (null != measurement
             && measurement.containsMeasurementValue(sensorType)) {
             value = measurement.getMeasurementValue(sensorType);
           } else {
-            // TODO #1128 Handle multiple sensors
-            List<Long> sensorTypeColumns = instrument.getSensorAssignments()
-              .getColumnIds(sensorType);
-
-            if (null != sensorTypeColumns && sensorTypeColumns.size() > 0) {
-              value = data.getColumnValue(rowId, sensorTypeColumns.get(0));
-            }
+            value = new NullPlotPageTableValue();
           }
 
           boolean useValueInThisColumn;
