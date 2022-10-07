@@ -193,7 +193,7 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
                 if 'whereclause' in table:
                     sql += " WHERE " + table['whereclause']
 
-                result = pd.read_sql_query(sql, db_conn)
+                result = pd.read_sql_query(sql, db_conn, dtype=str)
 
                 # Adjust the timestamp format if necessary
                 if not result.empty:
