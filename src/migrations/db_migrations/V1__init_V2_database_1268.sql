@@ -389,7 +389,7 @@ CREATE TABLE job (
 CREATE TRIGGER job_insert_trigger BEFORE INSERT ON job FOR EACH ROW SET NEW.modified=NOW();
 CREATE TRIGGER job_update_trigger BEFORE UPDATE ON job FOR EACH ROW SET NEW.modified=NOW();
 
---------------------------------------------------------------
+-- ##########################################
 --
 -- Initialise data
 
