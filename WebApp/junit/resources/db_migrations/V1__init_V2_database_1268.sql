@@ -361,7 +361,7 @@ CREATE TABLE job (
 
 CREATE INDEX JOB_OWNER_idx ON job(owner);
 
---------------------------------------------------------------
+-- ##########################################
 --
 -- Initialise data
 
