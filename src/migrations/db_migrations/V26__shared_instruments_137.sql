@@ -1,6 +1,6 @@
 CREATE TABLE shared_instruments (
-  instrument_id INT(11) NOT NULL,
-  shared_with INT(11) NOT NULL,
+  instrument_id INT NOT NULL,
+  shared_with INT NOT NULL,
   PRIMARY KEY (instrument_id, shared_with),
   INDEX sharedinstruments_sharedwith_idx (shared_with ASC),
   CONSTRAINT sharedinstruments_instrument

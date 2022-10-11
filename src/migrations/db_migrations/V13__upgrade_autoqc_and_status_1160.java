@@ -44,7 +44,7 @@ public class V13__upgrade_autoqc_and_status_1160 extends BaseJavaMigration {
 
     // Now we update the dataset status numbers to give more flexibility
     PreparedStatement fieldChange = conn.prepareStatement("ALTER TABLE dataset "
-      + "CHANGE COLUMN status status SMALLINT(4) NOT NULL");
+      + "CHANGE COLUMN status status SMALLINT NOT NULL");
     fieldChange.execute();
 
     // Export Complete

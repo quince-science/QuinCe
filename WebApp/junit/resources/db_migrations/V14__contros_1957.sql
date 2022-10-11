@@ -1,7 +1,7 @@
 -- Create separate measurement run types table
 CREATE TABLE measurement_run_types (
-  measurement_id BIGINT(20) NOT NULL,
-  variable_id BIGINT(20) NOT NULL,
+  measurement_id BIGINT NOT NULL,
+  variable_id BIGINT NOT NULL,
   run_type VARCHAR(45) NOT NULL,
   PRIMARY KEY (measurement_id, variable_id),
   CONSTRAINT `mrt_m`

@@ -1,1 +1,1 @@
-ALTER TABLE file_definition ADD unix_col SMALLINT(3) NOT NULL DEFAULT -1 AFTER second_col;
+ALTER TABLE file_definition ADD unix_col SMALLINT NOT NULL DEFAULT -1 AFTER second_col;

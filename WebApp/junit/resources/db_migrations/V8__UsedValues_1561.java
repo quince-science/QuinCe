@@ -89,9 +89,9 @@ public class V8__UsedValues_1561 extends BaseJavaMigration {
 
     // Create the new table
     String createSql = "CREATE TABLE measurement_values ("
-      + "measurement_id BIGINT(20) NOT NULL,"
-      + "file_column_id INT(11) NOT NULL," + "prior BIGINT(20) NOT NULL,"
-      + "post BIGINT(20) NULL,"
+      + "measurement_id BIGINT NOT NULL,"
+      + "file_column_id INT NOT NULL," + "prior BIGINT NOT NULL,"
+      + "post BIGINT NULL,"
       + "PRIMARY KEY (measurement_id, file_column_id),"
       + "CONSTRAINT MEAS_VAL_MEASUREMENT FOREIGN KEY (measurement_id)"
       + "  REFERENCES measurements (id) ON DELETE NO ACTION ON UPDATE NO ACTION, "
