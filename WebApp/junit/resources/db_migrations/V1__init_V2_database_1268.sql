@@ -11,7 +11,7 @@
 --
 
 CREATE TABLE user (
-  id int(11) NOT NULL AUTO_INCREMENT,
+  id int NOT NULL AUTO_INCREMENT,
   email varchar(45) NOT NULL,
   salt varbinary(20) NOT NULL,
   password varbinary(45) NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE user (
   email_code_time timestamp NULL DEFAULT NULL,
   password_code varchar(50) DEFAULT NULL,
   password_code_time timestamp NULL DEFAULT NULL,
-  permissions int(11) NOT NULL DEFAULT '0',
+  permissions int NOT NULL DEFAULT '0',
   preferences mediumtext,
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified datetime DEFAULT NULL,
@@ -34,15 +34,15 @@ CREATE TABLE user (
 --
 
 CREATE TABLE sensor_types (
-  id int(11) NOT NULL AUTO_INCREMENT,
+  id int NOT NULL AUTO_INCREMENT,
   name varchar(100) NOT NULL,
   vargroup varchar(100) NOT NULL,
-  parent int(11) DEFAULT NULL,
-  depends_on int(11) DEFAULT NULL,
+  parent int DEFAULT NULL,
+  depends_on int DEFAULT NULL,
   depends_question text,
-  internal_calibration tinyint(4) NOT NULL DEFAULT '0',
-  diagnostic tinyint(4) NOT NULL DEFAULT '0',
-  display_order int(11) NOT NULL,
+  internal_calibration tinyint NOT NULL DEFAULT '0',
+  diagnostic tinyint NOT NULL DEFAULT '0',
+  display_order int NOT NULL,
   column_code varchar(50) DEFAULT NULL,
   column_heading varchar(100) DEFAULT NULL,
   units varchar(20) DEFAULT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE sensor_types (
 --
 
 CREATE TABLE variables (
-  id int(11) NOT NULL AUTO_INCREMENT,
+  id int NOT NULL AUTO_INCREMENT,
   name varchar(100) NOT NULL,
   attributes mediumtext,
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -71,11 +71,11 @@ CREATE TABLE variables (
 --
 
 CREATE TABLE variable_sensors (
-  variable_id int(11) NOT NULL,
-  sensor_type int(11) NOT NULL,
-  core tinyint(1) NOT NULL DEFAULT '0',
-  questionable_cascade tinyint(1) NOT NULL,
-  bad_cascade tinyint(1) NOT NULL,
+  variable_id int NOT NULL,
+  sensor_type int NOT NULL,
+  core tinyint NOT NULL DEFAULT '0',
+  questionable_cascade tinyint NOT NULL,
+  bad_cascade tinyint NOT NULL,
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified datetime DEFAULT NULL,
   PRIMARY KEY (variable_id,sensor_type),
@@ -90,14 +90,14 @@ CREATE INDEX VARSENSOR_SENSOR_idx ON variable_sensors(sensor_type);
 --
 
 CREATE TABLE instrument (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  owner int(11) NOT NULL,
+  id int NOT NULL AUTO_INCREMENT,
+  owner int NOT NULL,
   name varchar(100) NOT NULL,
-  pre_flushing_time int(11) DEFAULT '0',
-  post_flushing_time int(11) DEFAULT '0',
-  depth int(11) NOT NULL DEFAULT '0',
+  pre_flushing_time int DEFAULT '0',
+  post_flushing_time int DEFAULT '0',
+  depth int NOT NULL DEFAULT '0',
   platform_code varchar(6) DEFAULT NULL,
-  nrt tinyint(1) NOT NULL DEFAULT '0',
+  nrt tinyint NOT NULL DEFAULT '0',
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified datetime DEFAULT NULL,
   PRIMARY KEY (id),
@@ -111,8 +111,8 @@ CREATE INDEX OWNER_idx ON instrument(owner);
 --
 
 CREATE TABLE instrument_variables (
-  instrument_id int(11) NOT NULL,
-  variable_id int(11) NOT NULL,
+  instrument_id int NOT NULL,
+  variable_id int NOT NULL,
   attributes mediumtext,
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified datetime DEFAULT NULL,
@@ -128,37 +128,37 @@ CREATE INDEX INSTRVAR_VARIABLE_idx ON instrument_variables(variable_id);
 --
 
 CREATE TABLE file_definition (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  instrument_id int(11) NOT NULL,
+  id int NOT NULL AUTO_INCREMENT,
+  instrument_id int NOT NULL,
   description varchar(100) NOT NULL,
   column_separator varchar(1) NOT NULL,
-  header_type tinyint(1) NOT NULL,
-  header_lines smallint(3) DEFAULT NULL,
+  header_type tinyint NOT NULL,
+  header_lines smallint DEFAULT NULL,
   header_end_string varchar(100) DEFAULT NULL,
-  column_header_rows tinyint(2) NOT NULL,
-  column_count smallint(3) NOT NULL,
-  lon_format tinyint(1) NOT NULL DEFAULT '-1',
-  lon_value_col smallint(3) NOT NULL DEFAULT '-1',
-  lon_hemisphere_col smallint(3) NOT NULL DEFAULT '-1',
-  lat_format tinyint(1) NOT NULL DEFAULT '-1',
-  lat_value_col smallint(3) NOT NULL DEFAULT '-1',
-  lat_hemisphere_col smallint(3) NOT NULL DEFAULT '-1',
-  date_time_col smallint(3) NOT NULL DEFAULT '-1',
+  column_header_rows tinyint NOT NULL,
+  column_count smallint NOT NULL,
+  lon_format tinyint NOT NULL DEFAULT '-1',
+  lon_value_col smallint NOT NULL DEFAULT '-1',
+  lon_hemisphere_col smallint NOT NULL DEFAULT '-1',
+  lat_format tinyint NOT NULL DEFAULT '-1',
+  lat_value_col smallint NOT NULL DEFAULT '-1',
+  lat_hemisphere_col smallint NOT NULL DEFAULT '-1',
+  date_time_col smallint NOT NULL DEFAULT '-1',
   date_time_props text,
-  date_col smallint(3) NOT NULL DEFAULT '-1',
+  date_col smallint NOT NULL DEFAULT '-1',
   date_props text,
-  hours_from_start_col smallint(3) NOT NULL DEFAULT '-1',
+  hours_from_start_col smallint NOT NULL DEFAULT '-1',
   hours_from_start_props text,
-  jday_time_col smallint(3) NOT NULL DEFAULT '-1',
-  jday_col smallint(3) NOT NULL DEFAULT '-1',
-  year_col smallint(3) NOT NULL DEFAULT '-1',
-  month_col smallint(3) NOT NULL DEFAULT '-1',
-  day_col smallint(3) NOT NULL DEFAULT '-1',
-  time_col smallint(3) NOT NULL DEFAULT '-1',
+  jday_time_col smallint NOT NULL DEFAULT '-1',
+  jday_col smallint NOT NULL DEFAULT '-1',
+  year_col smallint NOT NULL DEFAULT '-1',
+  month_col smallint NOT NULL DEFAULT '-1',
+  day_col smallint NOT NULL DEFAULT '-1',
+  time_col smallint NOT NULL DEFAULT '-1',
   time_props text,
-  hour_col smallint(3) NOT NULL DEFAULT '-1',
-  minute_col smallint(3) NOT NULL DEFAULT '-1',
-  second_col smallint(3) NOT NULL DEFAULT '-1',
+  hour_col smallint NOT NULL DEFAULT '-1',
+  minute_col smallint NOT NULL DEFAULT '-1',
+  second_col smallint NOT NULL DEFAULT '-1',
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified datetime DEFAULT NULL,
   PRIMARY KEY (id),
@@ -172,13 +172,13 @@ CREATE INDEX FILEDEFINITION_INSTRUMENT_idx ON file_definition(instrument_id);
 --
 
 CREATE TABLE file_column (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  file_definition_id int(11) NOT NULL,
-  file_column smallint(3) NOT NULL,
-  primary_sensor tinyint(1) NOT NULL,
-  sensor_type int(11) DEFAULT NULL,
+  id int NOT NULL AUTO_INCREMENT,
+  file_definition_id int NOT NULL,
+  file_column smallint NOT NULL,
+  primary_sensor tinyint NOT NULL,
+  sensor_type int DEFAULT NULL,
   sensor_name varchar(100) NOT NULL,
-  depends_question_answer tinyint(1) NOT NULL DEFAULT '0',
+  depends_question_answer tinyint NOT NULL DEFAULT '0',
   missing_value varchar(50) DEFAULT NULL,
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified datetime DEFAULT NULL,
@@ -192,9 +192,9 @@ CREATE TABLE file_column (
 --
 
 CREATE TABLE run_type (
-  file_definition_id int(11) NOT NULL,
+  file_definition_id int NOT NULL,
   run_name varchar(50) NOT NULL,
-  category_code int(11) NOT NULL,
+  category_code int NOT NULL,
   alias_to varchar(50) DEFAULT NULL,
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified datetime DEFAULT NULL,
@@ -207,10 +207,10 @@ CREATE TABLE run_type (
 --
 
 CREATE TABLE calibration (
-  instrument_id int(11) NOT NULL,
+  instrument_id int NOT NULL,
   type varchar(20) NOT NULL,
   target varchar(45) NOT NULL,
-  deployment_date bigint(20) NOT NULL,
+  deployment_date bigint NOT NULL,
   coefficients text NOT NULL,
   class varchar(45) NOT NULL,
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -224,12 +224,12 @@ CREATE TABLE calibration (
 --
 
 CREATE TABLE data_file (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  file_definition_id int(11) NOT NULL,
+  id int NOT NULL AUTO_INCREMENT,
+  file_definition_id int NOT NULL,
   filename varchar(200) NOT NULL,
-  start_date bigint(20) NOT NULL,
-  end_date bigint(20) NOT NULL,
-  record_count int(11) NOT NULL,
+  start_date bigint NOT NULL,
+  end_date bigint NOT NULL,
+  record_count int NOT NULL,
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified datetime DEFAULT NULL,
   PRIMARY KEY (id),
@@ -243,21 +243,21 @@ CREATE INDEX DATAFILE_FILEDEFINITION_idx ON data_file(file_definition_id);
 --
 
 CREATE TABLE dataset (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  instrument_id int(11) NOT NULL,
+  id int NOT NULL AUTO_INCREMENT,
+  instrument_id int NOT NULL,
   name varchar(100) NOT NULL,
-  start bigint(20) NOT NULL,
-  end bigint(20) NOT NULL,
+  start bigint NOT NULL,
+  end bigint NOT NULL,
   min_longitude double DEFAULT NULL,
   max_longitude double DEFAULT NULL,
   min_latitude double DEFAULT NULL,
   max_latitude double DEFAULT NULL,
-  status tinyint(1) NOT NULL,
-  nrt tinyint(1) NOT NULL DEFAULT '0',
-  status_date bigint(20) NOT NULL,
+  status tinyint NOT NULL,
+  nrt tinyint NOT NULL DEFAULT '0',
+  status_date bigint NOT NULL,
   properties text,
   messages_json text,
-  last_touched bigint(20) DEFAULT NULL,
+  last_touched bigint DEFAULT NULL,
   created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified datetime DEFAULT NULL,
   PRIMARY KEY (id),
@@ -271,13 +271,13 @@ CREATE INDEX DATASET_INSTRUMENT_idx ON dataset(instrument_id);
 --
 
 CREATE TABLE sensor_values (
-  id bigint(20) NOT NULL AUTO_INCREMENT,
-  dataset_id int(11) NOT NULL,
-  file_column int(11) NOT NULL,
-  date bigint(20) NOT NULL,
+  id bigint NOT NULL AUTO_INCREMENT,
+  dataset_id int NOT NULL,
+  file_column int NOT NULL,
+  date bigint NOT NULL,
   value varchar(100) DEFAULT NULL,
   auto_qc text,
-  user_qc_flag smallint(2) DEFAULT '-1000',
+  user_qc_flag smallint DEFAULT '-1000',
   user_qc_message varchar(255) DEFAULT NULL,
   PRIMARY KEY (id),
   CONSTRAINT SENSORVALUE_DATASET FOREIGN KEY (dataset_id) REFERENCES dataset (id) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -290,10 +290,10 @@ CREATE INDEX SENSORVALUE_DATASET_idx ON sensor_values(dataset_id);
 --
 
 CREATE TABLE measurements (
-  id bigint(20) NOT NULL AUTO_INCREMENT,
-  dataset_id int(11) NOT NULL,
-  variable_id int(11) NOT NULL,
-  date bigint(20) NOT NULL,
+  id bigint NOT NULL AUTO_INCREMENT,
+  dataset_id int NOT NULL,
+  variable_id int NOT NULL,
+  date bigint NOT NULL,
   longitude double NOT NULL,
   latitude double NOT NULL,
   run_type varchar(45) DEFAULT NULL,
@@ -308,9 +308,9 @@ CREATE INDEX MEASUREMENT_DATASET_idx ON measurements(dataset_id);
 --
 
 CREATE TABLE measurement_values (
-  measurement_id bigint(20) NOT NULL,
-  variable_id int(11) NOT NULL,
-  sensor_value_id bigint(20) NOT NULL,
+  measurement_id bigint NOT NULL,
+  variable_id int NOT NULL,
+  sensor_value_id bigint NOT NULL,
   PRIMARY KEY (measurement_id,variable_id,sensor_value_id),
   CONSTRAINT MEASVAL_MEASUREMENT FOREIGN KEY (measurement_id) REFERENCES measurements (id),
   CONSTRAINT MEASVAL_SENSORVALUE FOREIGN KEY (sensor_value_id) REFERENCES sensor_values (id),
@@ -326,10 +326,10 @@ CREATE INDEX MEASVAL_SENSORVALUE_idx ON measurement_values(sensor_value_id);
 --
 
 CREATE TABLE data_reduction (
-  measurement_id bigint(20) NOT NULL,
-  variable_id int(11) NOT NULL,
+  measurement_id bigint NOT NULL,
+  variable_id int NOT NULL,
   calculation_values mediumtext NOT NULL,
-  qc_flag smallint(2) NOT NULL,
+  qc_flag smallint NOT NULL,
   qc_message text,
   PRIMARY KEY (measurement_id,variable_id),
   CONSTRAINT DATAREDUCTION_MEASUREMENT FOREIGN KEY (measurement_id) REFERENCES measurements (id) ON UPDATE NO ACTION,
@@ -343,8 +343,8 @@ CREATE INDEX DATAREDUCTION_VARIABLE_idx ON data_reduction(variable_id);
 --
 
 CREATE TABLE job (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  owner int(11) DEFAULT NULL,
+  id int NOT NULL AUTO_INCREMENT,
+  owner int DEFAULT NULL,
   class text NOT NULL,
   parameters longtext,
   status enum('WAITING','RUNNING','FINISHED','ERROR','KILLED') NOT NULL DEFAULT 'WAITING',
