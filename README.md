@@ -15,7 +15,10 @@
 [![License](https://img.shields.io/github/license/BjerknesClimateDataCentre/QuinCe)](https://www.gnu.org/licenses/gpl-3.0)
 
 # QuinCe
-QuinCe is a system for the automatic QC of data collected from ship-board scientific instruments.
+QuinCe is a system for the collection, processing, quality control and publication
+of a variety of data streams, mostly focused on marine biogeochemical data but
+designed to be able to handle almost anything.
 
-See Documentation/Specification for more details of what the project does.
+See Documentation/setup.md for installation details.
 
+Contact [SquareGoldfish](https://github.com/squaregoldfish) for more information.
