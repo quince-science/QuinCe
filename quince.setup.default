@@ -6,20 +6,28 @@
 # quince.setup file to your setup.
 #
 ################################################
-%quince_url%=https://quince.bcdc.no
+
+# The QuinCe repository directory (where this file is)
 %quince_root_folder%=/home/centos/QuinCe
+
+# The folder where uploaded data files will be stored
 %filestore_folder%=/home/centos/FILESTORE
+
+# MySQL database connection details
 %db_username%=quince_dev
 %db_password%=quince_dev
 %db_database%=quince_dev
 %db_port%=3306
 %db_host%=localhost
+
+# The URL through which QuinCe will be accessed
+# This needs to be in line with the prod_deploy_folder below
 %app.urlstub%=http://localhost:8080/QuinCe
+
+# OPTIONAL: Some parts of QuinCe can report errors to a Slack channel
 %slack_app_url%=https://hooks.slack.com/services/XXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXX
 
-####################
-# Email properties #
-####################
+# Email sending configuration
 %email_tls%=true
 %email_ssl%=false
 %email_hostname%=smtp
@@ -30,19 +38,26 @@
 %email_fromaddress%=quince@uib.no
 
 ###########################
-# NRT Properties          #
+# Prod server properties  #
 ###########################
-%nrt_api_user%=api_user@bcdc.no
-%nrt_api_password%=iamanapiuser
-%nrt_ftp_server%=localhost
-%nrt_ftp_user%=ftp
-%nrt_ftp_keyfile%=id_rsa
-%nrt_ftp_keyfile_pass%=
-%nrt_ftp_folder%=NRT
+
+# Directory to store backups when upgrading QuinCe
+%prod_backup_folder%=tagged_backups
+
+# Directory to copy the QuinCe WAR file in the Tomcat setup
+%prod_deploy_folder%=/home/tomcat/quince/webapps
+
+# Branch used for deployment to production server
+%git_deploy_branch%=master
+
+# Tomcat app mode. Either "Development" or "Production"
+%tomcat_mode%=Development
 
 ###########################
 # Test server properties  #
 ###########################
+
+# Setup for experimental test server features
 
 # Which branch is checked out running full_restore_from_prod.sh
 %git_test_branch%=master
@@ -51,18 +66,3 @@
 %git_test_remote%=origin
 
 
-###########################
-# Prod server properties  #
-###########################
-
-# Folder backups are stored from the production server on deployment
-%prod_backup_folder%=tagged_backups
-
-# Folder where the output WAR file is copied after compilation setup
-%prod_deploy_folder%=/home/tomcat/quince/webapps
-
-# Branch used for deployment to production server
-%git_deploy_branch%=master
-
-# Tomcat app mode. Either "Development" or "Production"
-%tomcat_mode%=Development
