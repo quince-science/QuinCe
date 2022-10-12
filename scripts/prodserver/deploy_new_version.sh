@@ -109,13 +109,16 @@ tag=$(git tag --sort=authordate|tail -1)
 timestamp=$(date +%Y%m%d%H%M%S)
 mkdir -p $deploy_folder
 
-cp $deploy_folder/ROOT.war $backup_folder/$tag.$timestamp.ROOT.war
-if [ $? -gt 0 ]
+if [ -f $deploy_folder/ROOT.war ]
 then
-  >&2 printf "ERROR: Backup of .war file failed.\n"
-  exit 1
+  cp $deploy_folder/ROOT.war $backup_folder/$tag.$timestamp.ROOT.war
+  if [ $? -gt 0 ]
+  then
+    >&2 printf "ERROR: Backup of .war file failed.\n"
+    exit 1
+  fi
+  echo "Current .war - file backed up to $backup_folder/$tag.$timestamp.ROOT.war"
 fi
-echo "Current .war - file backed up to $backup_folder/$tag.$timestamp.ROOT.war"
 echo ""
 echo ""
 
