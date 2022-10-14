@@ -100,9 +100,6 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
                         if merged_data.iloc[i, column_index] not in mapped_values:
                             merged_data.iloc[i, column_index] = col_map['other']
 
-            # Replace missing values
-            merged_data.fillna(value=extractor_config['output']['empty_col_value'], inplace=True)
-
             # Sort by time
             merged_data.sort_values(by=extractor_config['output']['timestamp_column'], inplace=True)
 
@@ -195,8 +192,15 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
 
                 result = pd.read_sql_query(sql, db_conn, dtype=str)
 
-                # Adjust the timestamp format if necessary
                 if not result.empty:
+                    # Null values in the database are converted to the string 'None'. We replace these with the
+                    # configured missing value.
+                    #
+                    # This makes me cringe, but it's Friday afternoon and the odds of this ever becoming a problem
+                    # are very small.
+                    result.replace('None', extractor_config['output']['empty_col_value'], inplace=True)
+
+                    # Adjust the timestamp format if necessary
                     timestamp_column = extractor_config['output']['timestamp_column']
                     result[timestamp_column] = result.apply(
                         lambda row: SQLiteExtractor.parse_date(row[timestamp_column], table['timestamp_format']),
