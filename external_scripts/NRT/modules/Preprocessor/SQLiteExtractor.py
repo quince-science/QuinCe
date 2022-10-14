@@ -70,7 +70,8 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
             if len(all_datasets) > 1:
                 for i in range(1, len(all_datasets)):
                     merged_data = merged_data.merge(all_datasets[i], how='outer', suffixes=(None, f'___{i}'),
-                                                    on=extractor_config['output']['timestamp_column'])
+                                                    on=extractor_config['output']['timestamp_column'])\
+                        .fillna(value=extractor_config['output']['empty_col_value'])
 
             # Merge columns from multiple tables with same names.
             # NB Clashing values will be ignored - a correct configuration should not produce any.
@@ -101,7 +102,7 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
                             merged_data.iloc[i, column_index] = col_map['other']
 
             # Replace missing values
-            merged_data.fillna(value=extractor_config['output']['empty_col_value'], inplace=True)
+            #merged_data.fillna(value=extractor_config['output']['empty_col_value'], inplace=True)
 
             # Sort by time
             merged_data.sort_values(by=extractor_config['output']['timestamp_column'], inplace=True)
