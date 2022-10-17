@@ -7,7 +7,7 @@ know enough to deploy it in production.
 ## Requirements
 Before you start with the QuinCe side of things, you will need the following:
 
-- JDK 17. Newer versions will probably work but haven't been tested.
+- JDK 17. NB Newer versions will not work.
 - Apache Tomcat 9.
 - MySQL 8 with an empty database set up.
 - Details of an SMTP server for sending emails to users. Continue reading if
