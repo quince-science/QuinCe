@@ -14,8 +14,8 @@ Before you start with the QuinCe side of things, you will need the following:
 you don't want to set this up immediately (e.g. for testing).
 
 ## Setup
-1. Clone the repo from Github. At this stage download the source release will
-not work correctly.
+1. Clone the repo from Github using SSH (not HTTP). At this stage download the
+source release will not work correctly.
 2. In the repo root folder, copy `quince.setup.default` to `quince.setup`.
 3. Edit `quince.setup` as required. Comments in the file should help you out.
 4. From the repo root folder, run `./scripts/setup_replace_strings.sh`.
