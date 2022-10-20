@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -86,9 +87,13 @@ public class DefaultMeasurementValueCalculator
       LocalDateTime valueTime = dataSet.getSensorOffsets().getOffsetTime(
         measurement.getTime(), coreAssignment, requiredAssignment);
 
-      // We only allow values outside the list time range for non-core sensors.
-      List<SensorValue> valuesToUse = sensorValues.getWithInterpolation(
-        valueTime, !coreSensorType.equals(requiredSensorType), true);
+      List<SensorValue> valuesToUse;
+
+      if (requiredSensorType.equals(coreSensorType)) {
+        valuesToUse = Arrays.asList(sensorValues.get(valueTime));
+      } else {
+        valuesToUse = sensorValues.getWithInterpolation(valueTime, true, true);
+      }
 
       char valueType = calcValueType(valueTime, valuesToUse);
 
