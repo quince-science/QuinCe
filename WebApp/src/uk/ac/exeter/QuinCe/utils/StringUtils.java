@@ -29,7 +29,7 @@ import java.text.DecimalFormatSymbols;
  * Miscellaneous string utilities
  *
  * @author Steve Jones
- * (Giuliano Castelli fixed a Locale issue)
+ * (Giuliano Castelli fixed up a Locale issue)
  *
  */
 public final class StringUtils {
