@@ -20,18 +20,18 @@
       "PRESSEQ": "P_equ [ hPa ]",
       "XCO2DCEQ": "xCO2_water_Tequ_dry [ umol/mol ]",
       "XCO2DCMA": "xCO2_atm_dry_actual [ umol/mol ]",
-      "CAPHZZ01": "P_atm [ hPa ]",
       "DELTAT": "Delta_T [ deg C ]",
       "RH2OX0EQ": "Water Vapour Pressure [ hPa ]",
       "PCO2IG02": "pCO2_water_Tequ_wet [ uatm ]",
       "FCO2IG02": "fCO2_water_Tequ_wet [ uatm ]",
       "PCO2TK02": "pCO2_water_SST_wet [ uatm ]",
       "FCO2XXXX": "fCO2_water_SST_wet [ uatm ]",
-      "CAPASS01": "P_atm [ hPa ] Atm",
+      "CAPASS01": "P_atm [ hPa ]",
       "CPVPZZ01": "Water Vapour Pressure [ hPa ] Atm",
       "ACO2XXXX": "pCO2_atm_wet_actual [ uatm ]",
       "FCO2WTAT": "fCO2_atm_wet_actual [ uatm ]"
-    }
+    },
+    "excludeColumns": ["CAPHZZ01"]
   },
   {
     "exportName": "ICOS OTC",

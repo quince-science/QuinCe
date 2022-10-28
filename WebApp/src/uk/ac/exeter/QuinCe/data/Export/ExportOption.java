@@ -1,26 +1,18 @@
 package uk.ac.exeter.QuinCe.data.Export;
 
 import java.lang.reflect.Constructor;
-import java.sql.Connection;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONObject;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
 
@@ -38,9 +30,9 @@ public class ExportOption {
 
   public static final int HEADER_MODE_CODE = 2;
 
-  private static final String EXPORT_DATA_PACKAGE = "uk.ac.exeter.QuinCe.web.datasets.export.";
+  protected static final String EXPORT_DATA_PACKAGE = "uk.ac.exeter.QuinCe.web.datasets.export.";
 
-  private static final String DEFAULT_EXPORT_DATA_CLASS = EXPORT_DATA_PACKAGE
+  protected static final String DEFAULT_EXPORT_DATA_CLASS = EXPORT_DATA_PACKAGE
     + "ExportData";
 
   private int index;
@@ -129,6 +121,11 @@ public class ExportOption {
   private Map<String, String> replacementColumnHeaders = null;
 
   /**
+   * List of columns to be excluded from export.
+   */
+  private List<String> excludedColumns = null;
+
+  /**
    * Only export measurements and their related sensor values.
    */
   private boolean measurementsOnly = false;
@@ -158,10 +155,103 @@ public class ExportOption {
    * @throws ExportException
    *           If the export configuration is invalid
    */
-  public ExportOption(Connection conn, SensorsConfiguration sensorConfig,
-    int index, JSONObject json) throws ExportException {
+  @SuppressWarnings("unchecked")
+  public ExportOption(int index, String name, String separator,
+    List<Variable> variables) throws ExportConfigurationException {
     this.index = index;
-    parseJson(conn, sensorConfig, json);
+    this.name = name;
+    this.separator = separator;
+    this.variables = variables;
+
+    try {
+      this.dataClass = (Class<? extends ExportData>) Class
+        .forName(DEFAULT_EXPORT_DATA_CLASS);
+    } catch (ClassNotFoundException e) {
+      // Since we've already checked the class, this shouldn't really happen
+      throw new ExportConfigurationException(name, e);
+    }
+
+  }
+
+  protected void setVisible(boolean visible) {
+    this.visible = visible;
+  }
+
+  protected void setMissingValue(String missingValue) {
+    this.missingValue = missingValue;
+  }
+
+  protected void setMissingQCFlag(String missingQCFlag) {
+    this.missingQcFlag = missingQCFlag;
+  }
+
+  protected void setIncludeRawSensors(boolean includeRawSensors) {
+    this.includeRawSensors = includeRawSensors;
+  }
+
+  protected void setIncludeCalculationColumns(
+    boolean includeCalculationColuns) {
+    this.includeCalculationColumns = includeCalculationColuns;
+  }
+
+  protected void setHeaderMode(int headerMode)
+    throws ExportConfigurationException {
+    validateHeaderMode(headerMode);
+    this.headerMode = headerMode;
+  }
+
+  protected void setIncludeUnits(boolean includeUnits) {
+    this.includeUnits = includeUnits;
+  }
+
+  protected void setIncludeQCComments(boolean includeQCComments) {
+    this.includeQCComments = includeQCComments;
+  }
+
+  protected void setTimestampHeader(String timestampHeader) {
+    this.timestampHeader = timestampHeader;
+  }
+
+  protected void setTimestampFormat(DateTimeFormatter timestampFormat) {
+    this.timestampFormat = timestampFormat;
+  }
+
+  protected void setQcFlagSuffix(String qcFlagSuffix) {
+    this.qcFlagSuffix = qcFlagSuffix;
+  }
+
+  protected void setQcCommentSuffix(String qcCommentSuffix) {
+    this.qcCommentSuffix = qcCommentSuffix;
+  }
+
+  protected void setMeasurementsOnly(boolean measurementsOnly) {
+    this.measurementsOnly = measurementsOnly;
+  }
+
+  protected void setGoodOnly(boolean goodOnly) {
+    this.goodOnly = goodOnly;
+  }
+
+  protected void setDataClass(Class<? extends ExportData> dataClass) {
+    this.dataClass = dataClass;
+  }
+
+  protected void setReplacementColumnHeaders(
+    Map<String, String> replacementColumnHeaders) {
+    this.replacementColumnHeaders = replacementColumnHeaders;
+  }
+
+  protected void setExcludedColumns(List<String> excludedColumns) {
+    this.excludedColumns = excludedColumns;
+  }
+
+  private void validateHeaderMode(int mode)
+    throws ExportConfigurationException {
+    if (mode != HEADER_MODE_SHORT && mode != HEADER_MODE_LONG
+      && mode != HEADER_MODE_CODE) {
+      throw new ExportConfigurationException(name,
+        "Invalid header mode '" + headerMode + "'");
+    }
   }
 
   public int getIndex() {
@@ -228,229 +318,6 @@ public class ExportOption {
 
   public boolean getVisible() {
     return visible;
-  }
-
-  /**
-   * Export the option details from a JSON object
-   *
-   * @param json
-   *          The JSON
-   * @throws ExportConfigurationException
-   *           If the JSON does not contain valid values
-   */
-  @SuppressWarnings("unchecked")
-  private void parseJson(Connection conn, SensorsConfiguration sensorConfig,
-    JSONObject json) throws ExportConfigurationException {
-
-    // Export name
-    if (!json.has("exportName")) {
-      throw new ExportConfigurationException(json, "Missing exportName");
-    } else {
-      this.name = json.getString("exportName").trim();
-      if (name.contains("/")) {
-        throw new ExportConfigurationException(name,
-          "Export option name cannot contain '/'");
-      }
-    }
-
-    // Separator
-    if (!json.has("separator")) {
-      throw new ExportConfigurationException(name, "Missing separator");
-    } else {
-      parseSeparator(json.getString("separator"));
-    }
-
-    // Variables
-    List<Variable> allVariables;
-    try {
-      allVariables = InstrumentDB.getAllVariables(conn, sensorConfig);
-    } catch (Exception e) {
-      throw new ExportConfigurationException("N/A",
-        "Unable to retrieve variable information");
-    }
-
-    // If the element isn't provided, assume all variables
-    if (!json.has("variables")) {
-      variables = allVariables;
-    } else {
-      JSONArray varArray = json.getJSONArray("variables");
-
-      // If we have an empty array, use all variables
-      if (varArray.length() == 0) {
-        variables = allVariables;
-      } else {
-        variables = new ArrayList<Variable>(varArray.length());
-
-        Iterator<Object> iter = json.getJSONArray("variables").iterator();
-        while (iter.hasNext()) {
-          String varName = (String) iter.next();
-
-          boolean variableFound = false;
-          for (Variable variable : allVariables) {
-            if (varName.equals(variable.getName())) {
-              variables.add(variable);
-              variableFound = true;
-              break;
-            }
-          }
-
-          if (!variableFound) {
-            throw new ExportConfigurationException(name,
-              "Invalid variable name '" + varName);
-          }
-        }
-      }
-    }
-
-    if (json.has("visible")) {
-      visible = json.getBoolean("visible");
-    } else {
-      visible = true;
-    }
-
-    if (json.has("missingValue")) {
-      missingValue = json.getString("missingValue");
-    }
-
-    if (json.has("missingQCFlag")) {
-      missingQcFlag = json.getString("missingQCFlag");
-    }
-
-    if (json.has("includeRawSensors")) {
-      includeRawSensors = json.getBoolean("includeRawSensors");
-    }
-
-    if (json.has("includeCalculationColumns")) {
-      includeCalculationColumns = json.getBoolean("includeCalculationColumns");
-    }
-
-    if (json.has("headerMode")) {
-      headerMode = parseHeaderMode(json, json.getString("headerMode"));
-    }
-
-    if (json.has("includeUnits")) {
-      includeUnits = json.getBoolean("includeUnits");
-    }
-
-    if (json.has("includeQCComments")) {
-      includeQCComments = json.getBoolean("includeQCComments");
-    }
-
-    if (json.has("timestampHeader")) {
-      timestampHeader = json.getString("timestampHeader");
-    }
-
-    if (json.has("timestampFormat")) {
-      timestampFormat = DateTimeUtils
-        .makeDateTimeFormatter(json.getString("timestampFormat"));
-    }
-
-    if (json.has("qcFlagSuffix")) {
-      qcFlagSuffix = json.getString("qcFlagSuffix");
-    }
-
-    if (json.has("qcCommentSuffix")) {
-      qcCommentSuffix = json.getString("qcCommentSuffix");
-    }
-
-    // Replacement column headers.
-    if (json.has("replaceColumnHeaders")) {
-      replacementColumnHeaders = new HashMap<String, String>();
-
-      JSONObject replacementHeaderJson = json
-        .getJSONObject("replaceColumnHeaders");
-      replacementHeaderJson.keySet().stream().forEach(k -> {
-        replacementColumnHeaders.put(k, replacementHeaderJson.getString(k));
-
-      });
-    }
-
-    if (json.has("measurementsOnly")) {
-      measurementsOnly = json.getBoolean("measurementsOnly");
-    }
-
-    if (json.has("goodOnly")) {
-      goodOnly = json.getBoolean("goodOnly");
-    }
-
-    // ExportData class. All classes are in the
-    // uk.ac.exeter.QuinCe.web.datasets.export package.
-    String className = EXPORT_DATA_PACKAGE;
-
-    if (json.has("exportDataClass")) {
-      className = className + json.getString("exportDataClass");
-      String checkMessage = checkExportDataClass(className);
-      if (null != checkMessage) {
-        throw new ExportConfigurationException(name, checkMessage);
-      }
-    } else {
-      className = DEFAULT_EXPORT_DATA_CLASS;
-    }
-
-    try {
-      dataClass = (Class<? extends ExportData>) Class.forName(className);
-    } catch (ClassNotFoundException e) {
-      // Since we've already checked the class, this shouldn't really happen
-      throw new ExportConfigurationException(name, e);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private String checkExportDataClass(String className) {
-
-    String errorMessage = null;
-
-    try {
-      Class<? extends Object> testClass = Class.forName(className);
-      Class<ExportData> rootClass = (Class<ExportData>) Class
-        .forName(DEFAULT_EXPORT_DATA_CLASS);
-
-      if (!rootClass.isAssignableFrom(testClass)) {
-        errorMessage = "Specified export class does not extend "
-          + DEFAULT_EXPORT_DATA_CLASS;
-      } else {
-
-        try {
-          // Check that the correct constructor is available
-          testClass.getConstructor(DataSource.class, Instrument.class,
-            DataSet.class, this.getClass());
-        } catch (NoSuchMethodException e) {
-          errorMessage = "No valid constructor found in " + className;
-        }
-
-      }
-
-    } catch (ClassNotFoundException e) {
-      errorMessage = "Cannot find class " + className;
-    }
-
-    return errorMessage;
-  }
-
-  /**
-   * Parse the {@code separator} entry in the export configuration JSON
-   *
-   * @param separator
-   *          the separator entry
-   * @throws ExportConfigurationException
-   *           If the separator is not recognised
-   */
-  private void parseSeparator(String separator)
-    throws ExportConfigurationException {
-    switch (separator.toLowerCase()) {
-    case "comma": {
-      this.separator = ",";
-      break;
-    }
-    case "tab": {
-      this.separator = "\t";
-      break;
-    }
-    default: {
-      throw new ExportConfigurationException(name,
-        "Separator must be 'tab' or 'comma'");
-    }
-    }
   }
 
   /**
@@ -543,33 +410,6 @@ public class ExportOption {
     }
   }
 
-  private int parseHeaderMode(JSONObject json, String mode)
-    throws ExportConfigurationException {
-
-    int result;
-
-    switch (mode.toLowerCase()) {
-    case "short": {
-      result = HEADER_MODE_SHORT;
-      break;
-    }
-    case "long": {
-      result = HEADER_MODE_LONG;
-      break;
-    }
-    case "code": {
-      result = HEADER_MODE_CODE;
-      break;
-    }
-    default: {
-      throw new ExportConfigurationException(json,
-        "Unrecognised header mode '" + mode + "'");
-    }
-    }
-
-    return result;
-  }
-
   /**
    * Format a field value to fit the export format.
    *
@@ -595,5 +435,22 @@ public class ExportOption {
     }
 
     return result;
+  }
+
+  /**
+   * Determine whether or not a header should be excluded from the export.
+   *
+   * <p>
+   * The heading is checked using both its short name and code name.
+   * </p>
+   *
+   * @param header
+   *          The header.
+   * @return {@code true} if the header should be excluded; {@code false}
+   *         otherwise.
+   */
+  public boolean columnExcluded(ColumnHeading heading) {
+    return excludedColumns.contains(heading.getCodeName())
+      || excludedColumns.contains(heading.getShortName());
   }
 }
