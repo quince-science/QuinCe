@@ -1,13 +1,9 @@
 package uk.ac.exeter.QuinCe.data.Export;
 
-import org.primefaces.json.JSONObject;
+import com.google.gson.JsonElement;
 
+@SuppressWarnings("serial")
 public class ExportConfigurationException extends ExportException {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = -6755072895338252798L;
 
   /**
    * Constructor for a basic message
@@ -47,7 +43,7 @@ public class ExportConfigurationException extends ExportException {
       cause);
   }
 
-  public ExportConfigurationException(JSONObject json, String message) {
+  public ExportConfigurationException(JsonElement json, String message) {
     super("Invalid JSON object: " + message + "\n\n" + json.toString());
   }
 }

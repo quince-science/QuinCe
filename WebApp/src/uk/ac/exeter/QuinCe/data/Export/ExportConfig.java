@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Export;
 
 import java.io.FileNotFoundException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -9,7 +10,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.primefaces.json.JSONArray;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
@@ -225,11 +228,14 @@ public class ExportConfig {
     try {
       String fileContent = new String(
         Files.readAllBytes(Paths.get(configFilename)), StandardCharsets.UTF_8);
-      JSONArray jsonEntries = new JSONArray(fileContent);
-      for (int i = 0; i < jsonEntries.length(); i++) {
-        options.add(new ExportOption(conn, sensorConfig, i,
-          jsonEntries.getJSONObject(i)));
-      }
+
+      Gson gson = new GsonBuilder().registerTypeAdapter(ExportOption.class,
+        new ExportOptionDeserializer(conn, sensorConfig)).create();
+
+      Type listType = new TypeToken<ArrayList<ExportOption>>() {
+      }.getType();
+      options = gson.fromJson(fileContent, listType);
+
     } catch (Exception e) {
       if (e instanceof ExportException) {
         throw (ExportException) e;
