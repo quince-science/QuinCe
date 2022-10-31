@@ -21,6 +21,10 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
+import java.util.Locale;
+import java.text.DecimalFormatSymbols;
+
+
 /**
  * Miscellaneous string utilities
  *
@@ -37,6 +41,7 @@ public final class StringUtils {
     threeDecimalPoints.setMaximumFractionDigits(3);
     threeDecimalPoints.setGroupingUsed(false);
     threeDecimalPoints.setRoundingMode(RoundingMode.HALF_UP);
+    threeDecimalPoints.setDecimalFormatSymbols(new DecimalFormatSymbols(new Locale("en","US")));
   }
 
   /**
