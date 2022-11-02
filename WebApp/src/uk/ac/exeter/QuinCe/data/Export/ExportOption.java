@@ -450,7 +450,13 @@ public class ExportOption {
    *         otherwise.
    */
   public boolean columnExcluded(ColumnHeading heading) {
-    return excludedColumns.contains(heading.getCodeName())
-      || excludedColumns.contains(heading.getShortName());
+    boolean result = false;
+
+    if (null != excludedColumns) {
+      result = excludedColumns.contains(heading.getCodeName())
+        || excludedColumns.contains(heading.getShortName());
+    }
+
+    return result;
   }
 }
