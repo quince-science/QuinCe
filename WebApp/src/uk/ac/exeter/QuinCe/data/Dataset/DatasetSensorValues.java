@@ -43,6 +43,12 @@ public class DatasetSensorValues {
    */
   private List<LocalDateTime> times = null;
 
+  /**
+   * Some datasets have columns that contain no data. You can ensure that they
+   * are catered for by adding them as optional columns.
+   */
+  private TreeSet<Long> optionalColumns = new TreeSet<Long>();
+
   public DatasetSensorValues(Instrument instrument) {
     valuesById = new HashMap<Long, SensorValue>();
     valuesByColumn = new HashMap<Long, SearchableSensorValuesList>();
@@ -62,6 +68,12 @@ public class DatasetSensorValues {
       addByColumn(sensorValue);
       addBySensorType(sensorValue, sensorType);
       addByDateAndColumn(sensorValue);
+    }
+  }
+
+  public void addOptionalColumn(long columnId) {
+    if (!valuesByColumn.containsKey(columnId)) {
+      optionalColumns.add(columnId);
     }
   }
 
@@ -121,6 +133,10 @@ public class DatasetSensorValues {
 
   private void addByColumn(SensorValue sensorValue) {
     long columnId = sensorValue.getColumnId();
+
+    // Remove the column from the optional columns - it now contains data
+    optionalColumns.remove(columnId);
+
     if (!valuesByColumn.containsKey(columnId)) {
       valuesByColumn.put(columnId, new SearchableSensorValuesList(columnId));
     }
@@ -287,7 +303,8 @@ public class DatasetSensorValues {
    * @return {@code true} if the column exists; {@code false} if it does not.
    */
   public boolean containsColumn(long columnId) {
-    return valuesByColumn.containsKey(columnId);
+    return valuesByColumn.containsKey(columnId)
+      || optionalColumns.contains(columnId);
   }
 
   /**

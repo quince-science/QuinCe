@@ -51,7 +51,6 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A version of {@link PlotPageData} used for the main manual QC page.
@@ -100,7 +99,7 @@ public class ManualQCData extends PlotPageData {
    *
    * @see Measurement#getMeasurementValue(SensorType)
    */
-  private TreeSet<SensorType> measurementSensorTypes = null;
+  private TreeSet<MeasurementValueSensorType> measurementSensorTypes = null;
 
   /**
    * All row IDs for the dataset. Row IDs are the millisecond values of the
@@ -301,13 +300,15 @@ public class ManualQCData extends PlotPageData {
     extendedColumnHeadings.put(MEASUREMENTVALUES_FIELD_GROUP, null);
 
     // We use a TreeSet to maintain order and uniqueness
-    measurementSensorTypes = new TreeSet<SensorType>();
+    measurementSensorTypes = new TreeSet<MeasurementValueSensorType>();
 
     // Each of the instrument variables
     for (Variable variable : instrument.getVariables()) {
 
       // Get the SensorTypes for this variable
-      variable.getAllSensorTypes(true).forEach(measurementSensorTypes::add);
+      variable.getAllSensorTypes(true).forEach(s -> {
+        measurementSensorTypes.add(new MeasurementValueSensorType(s));
+      });
 
       // Now the calculation parameters
       try {
@@ -884,12 +885,11 @@ public class ManualQCData extends PlotPageData {
       }
     } else {
 
-      // See if we have a Sensor Type - if so, this is a Measurement Value plot
+      // See if we have a proxy SensorType used for Measurement Values
       SensorType sensorType = null;
 
       try {
-        sensorType = ResourceManager.getInstance().getSensorsConfiguration()
-          .getSensorType(column.getId());
+        sensorType = MeasurementValueSensorType.getSensorType(column);
       } catch (SensorTypeNotFoundException e) {
         // This just means we're not using a SensorType
       }
@@ -1077,7 +1077,7 @@ public class ManualQCData extends PlotPageData {
     return concurrentMeasurement;
   }
 
-  public TreeSet<SensorType> getMeasurementSensorTypes() {
+  public TreeSet<MeasurementValueSensorType> getMeasurementSensorTypes() {
     return measurementSensorTypes;
   }
 

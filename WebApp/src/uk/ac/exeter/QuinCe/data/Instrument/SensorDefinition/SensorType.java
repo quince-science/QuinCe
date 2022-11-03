@@ -184,6 +184,28 @@ public class SensorType extends ColumnHeading
   }
 
   /**
+   * Copy constructor.
+   *
+   * @param sensorType
+   *          The source object.
+   */
+  protected SensorType(SensorType source) {
+    super(source.getId(), source.getShortName(), source.getLongName(),
+      source.getCodeName(), source.getUnits(), false, true);
+
+    this.dependsOn = source.dependsOn;
+    this.dependsQuestion = source.dependsQuestion;
+    this.diagnostic = source.diagnostic;
+    this.displayOrder = source.displayOrder;
+    this.group = source.group;
+    this.includeZeroInCalibration = source.includeZeroInCalibration;
+    this.internalCalibration = source.internalCalibration;
+    this.parent = source.parent;
+    this.runTypeAware = source.runTypeAware;
+    this.systemType = source.systemType;
+  }
+
+  /**
    * Build a new SensorType object from a database record
    *
    * @param record

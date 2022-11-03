@@ -33,7 +33,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.MeasurementValueSensorType;
 
 /**
  * A representation of a dataset's data for export.
@@ -105,12 +105,6 @@ public class ExportData extends ManualQCData {
       }
 
       measurements = filteredMeasurements;
-
-      /*
-       * measurements = measurements.entrySet().stream() .filter(e ->
-       * e.getValue().getQCFlag().isGood()) .collect(Collectors.toMap(e ->
-       * e.getKey(), e -> e.getValue(), (key1, key2) -> key1, TreeMap::new));
-       */
     }
 
     /*
@@ -151,6 +145,16 @@ public class ExportData extends ManualQCData {
 
       // Now subset the SensorValues to only contain the selected ones.
       sensorValues = sensorValues.subset(filteredTimes, filteredIds);
+    }
+
+    // Diagnostic sensors do not always exist in all datasets. Make sure
+    // there's a column entry for all diagnostic sensors, even if there's no
+    // associated data.
+    if (exportOption.includeRawSensors()) {
+      for (long diagnosticId : instrument.getSensorAssignments()
+        .getDiagnosticColumnIds()) {
+        sensorValues.addOptionalColumn(diagnosticId);
+      }
     }
   }
 
@@ -204,8 +208,8 @@ public class ExportData extends ManualQCData {
       for (PlotPageColumnHeading sourceHeading : headingsWithProperties
         .get(MEASUREMENTVALUES_FIELD_GROUP)) {
 
-        SensorType sensorType = ResourceManager.getInstance()
-          .getSensorsConfiguration().getSensorType(sourceHeading.getId());
+        SensorType sensorType = MeasurementValueSensorType
+          .getSensorType(sourceHeading);
 
         for (Variable variable : instrument.getVariables()) {
           ColumnHeading variableHeading = variable.getColumnHeading(sensorType);
