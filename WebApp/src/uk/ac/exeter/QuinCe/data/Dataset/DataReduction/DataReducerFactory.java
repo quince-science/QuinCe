@@ -20,6 +20,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  */
 public class DataReducerFactory {
 
+  private static final long ID_MULTIPLIER = 10000L;
+
   private static Map<String, Class<? extends DataReducer>> reducers;
 
   static {
@@ -132,24 +134,24 @@ public class DataReducerFactory {
   }
 
   protected static long makeParameterId(Variable variable, int sequence) {
-    return variable.getId() * 10000 + sequence;
+    return variable.getId() * ID_MULTIPLIER + sequence;
   }
 
   public static Variable getVariable(Instrument instrument, long parameterId)
     throws InstrumentException {
 
-    if (parameterId < 10000) {
+    if (parameterId < ID_MULTIPLIER) {
       throw new InstrumentException(
         "Requested parameter is not part of data reduction");
     }
 
-    return instrument.getVariable(parameterId / 10000);
+    return instrument.getVariable(parameterId / ID_MULTIPLIER);
   }
 
   public static CalculationParameter getVariableParameter(Variable variable,
     long parameterId) throws DataReductionException {
 
-    int parameterIndex = (int) (parameterId % 10000);
+    int parameterIndex = (int) (parameterId % ID_MULTIPLIER);
     return getSkeletonReducer(variable).getCalculationParameters()
       .get(parameterIndex);
   }
