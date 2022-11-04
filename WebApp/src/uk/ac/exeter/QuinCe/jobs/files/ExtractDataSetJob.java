@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -223,13 +224,18 @@ public class ExtractDataSetJob extends DataSetJob {
                     // For run types, follow all aliases
                     if (entry.getKey()
                       .equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-                      String runType = file.getFileDefinition()
-                        .getRunType(line, true).getRunName();
 
-                      sensorValues.add(new SensorValue(dataSet.getId(),
-                        assignment.getDatabaseId(), time, runType));
+                      RunTypeAssignment runTypeValue = file.getFileDefinition()
+                        .getRunType(line, true);
 
-                      runTypePeriods.add(runType, time);
+                      if (null != runTypeValue) {
+                        String runType = runTypeValue.getRunName();
+
+                        sensorValues.add(new SensorValue(dataSet.getId(),
+                          assignment.getDatabaseId(), time, runType));
+
+                        runTypePeriods.add(runType, time);
+                      }
                     } else {
 
                       // Create the SensorValue object
