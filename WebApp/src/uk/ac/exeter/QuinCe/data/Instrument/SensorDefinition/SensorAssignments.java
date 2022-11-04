@@ -1082,4 +1082,55 @@ public class SensorAssignments
     return values().stream().flatMap(Set::stream)
       .map(a -> a.getSensorName().toLowerCase()).collect(Collectors.toList());
   }
+
+  /**
+   * Determines whether or not there are any diagnostic sensors assigned.
+   *
+   * @return {@code true} if at least one diagnostic sensor is assigned;
+   *         {@code false} otherwise.
+   */
+  public boolean hasDiagnosticSensors() {
+    return keySet().stream().filter(t -> t.isDiagnostic()).map(t -> get(t))
+      .filter(a -> a.size() > 0).findAny().isPresent();
+  }
+
+  /**
+   * Get the list of assigned diagnostic sensors.
+   * 
+   * @return The diagnostic sensors.
+   */
+  public List<SensorAssignment> getDiagnosticSensors() {
+    return keySet().stream().filter(t -> t.isDiagnostic())
+      .flatMap(t -> get(t).stream()).collect(Collectors.toList());
+  }
+
+  /**
+   * Get the list of assigned non-diagnostic sensors.
+   * 
+   * @return The diagnostic sensors.
+   */
+  public List<SensorAssignment> getNonDiagnosticSensors(
+    boolean includeSystemTypes) {
+    return keySet().stream()
+      .filter(
+        t -> !t.isDiagnostic() && includeSystemTypes ? true : !t.isSystemType())
+      .flatMap(t -> get(t).stream()).collect(Collectors.toList());
+  }
+
+  /**
+   * Get the {@link SensorAssignment} with the specified database ID.
+   * 
+   * <p>
+   * Returns {@code null} if there is no assignment with that ID.
+   * </p>
+   * 
+   * @param assignmentId
+   *          The database ID
+   * @return The SensorAssignment.
+   */
+  public SensorAssignment getById(long assignmentId) {
+    Optional<SensorAssignment> found = values().stream().flatMap(Set::stream)
+      .filter(a -> a.getDatabaseId() == assignmentId).findFirst();
+    return found.isPresent() ? found.get() : null;
+  }
 }

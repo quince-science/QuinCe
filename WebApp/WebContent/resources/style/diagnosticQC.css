@@ -1,0 +1,30 @@
+#controls {
+  display: flex;	
+  justify-content: space-around;
+}
+
+.columnHeader {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.variableName label {
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+.assigned {
+  color: #00F;
+  font-weight: 700;
+}
+
+.notAssigned {
+  color: #000;
+  font-weight: 400;
+}
+
+/* PrimeFaces Overrides */
+.ui-selectonelistbox {
+  width: 250px;
+}
+

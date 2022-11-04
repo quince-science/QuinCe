@@ -1,0 +1,74 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+  xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+  xmlns:c="http://java.sun.com/jsp/jstl/core"
+  template="/WEB-INF/templates/basic_page.xhtml">
+  <ui:define name="title">Diagnostics QC Setup</ui:define>
+  <ui:define name="pageTitle">Diagnostics QC Setup</ui:define>
+  <ui:define name="localHead">
+    <h:outputScript name="script/diagnosticQC.js" />
+  </ui:define>
+
+  <ui:define name="content">
+    <ui:include src="/WEB-INF/templates/keep_alive.xhtml" />
+    
+    <!--  The stylesheet goes here because it can then override PrimeFaces styles -->
+    <h:outputStylesheet name="style/diagnosticQC.css" />
+    <div class="fullPage">
+      <div class="instructions">
+  	    Select a diagnostic sensor on the left.
+  	    In the middle, choose a sensor that will be affected by the QC of the selected sensor.
+  	    On the right, which variables require the QC effects to be active.
+      </div>
+      
+      <h:form id="qcForm" method="post" charset="utf8">
+        <div id="controls">
+          <div>
+            <div class="columnHeader label">Diagnostic Sensor</div>
+            <p:selectOneListbox value="#{diagnosticQCSetupBean.currentDiagnosticSensor}"
+              id="diagnosticSensor">
+              <f:selectItems value="#{diagnosticQCSetupBean.diagnosticSensors}"
+                var="sensor" itemLabel="#{sensor.sensorName}" itemValue="#{sensor.databaseId}"/>
+              <p:ajax listener="#{diagnosticQCSetupBean.diagnosticSensorSelected}"
+                process="@this" update="measurementSensor variables"/>
+            </p:selectOneListbox>
+          </div>
+        
+          <div>
+            <div class="columnHeader label">Measurement Sensor</div>
+            <p:selectOneListbox value="#{diagnosticQCSetupBean.currentMeasurementSensor}"
+              id="measurementSensor" var="s">
+              <f:selectItems value="#{diagnosticQCSetupBean.measurementSensors}"
+                var="sensor" itemLabel="#{sensor.sensorName}" itemValue="#{sensor.databaseId}"/>
+              <p:column>
+                <h:outputText class="#{diagnosticQCSetupBean.getVarsAssignedString(s)}"
+                  value="#{diagnosticQCSetupBean.getSensorName(s)}"/>
+              </p:column>
+              <p:ajax listener="#{diagnosticQCSetupBean.measurementSensorSelected}"
+                process="@this" update="variables @this"/>
+            </p:selectOneListbox>
+          </div>
+        
+          <div>
+            <div class="columnHeader label">Variables Affected</div>
+            <p:selectManyCheckbox layout="pageDirection" styleClass="variableName"
+              value="#{diagnosticQCSetupBean.assignedVariables}"
+              id="variables" widgetVar="variables">
+              <f:selectItems value="#{diagnosticQCSetupBean.instrument.variables}"
+                var="variable" itemLabel="#{variable.name}" itemValue="#{variable.id}"/>
+              <p:ajax listener="#{diagnosticQCSetupBean.variablesUpdated}"
+                process="@this" update="measurementSensor @this"/>
+            </p:selectManyCheckbox>
+          </div>
+        </div>
+      
+        <h:panelGrid columns="1" styleClass="buttonPanel">
+          <p:commandButton value="Back to Instruments List"
+            action="/instrument/instrument_list.xhtml" />
+        </h:panelGrid>
+      </h:form>
+    </div>
+  </ui:define>
+</ui:composition>
