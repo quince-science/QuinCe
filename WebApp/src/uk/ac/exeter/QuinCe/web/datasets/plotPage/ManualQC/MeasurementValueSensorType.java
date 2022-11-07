@@ -40,6 +40,10 @@ public class MeasurementValueSensorType extends SensorType {
     return super.getId() + OFFSET;
   }
 
+  public long getOriginalId() {
+    return super.getId();
+  }
+
   @Override
   public boolean isPosition() {
     return SensorType.isPosition(source.getId());

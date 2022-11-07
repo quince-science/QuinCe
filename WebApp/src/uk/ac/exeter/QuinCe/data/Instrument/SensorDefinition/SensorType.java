@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.MeasurementValueSensorType;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -493,5 +494,19 @@ public class SensorType extends ColumnHeading
 
   public boolean isRunTypeAware() {
     return runTypeAware;
+  }
+
+  /**
+   * Get the 'true' database ID of a given {@link SensorType}, converting proxy
+   * {@link SensorType}s to their originals first.
+   *
+   * @param sensorType
+   *          The SensorType.
+   * @return The SensorType's ID.
+   */
+  public static long getTrueSensorTypeId(SensorType sensorType) {
+    return sensorType instanceof MeasurementValueSensorType
+      ? ((MeasurementValueSensorType) sensorType).getOriginalId()
+      : sensorType.getId();
   }
 }
