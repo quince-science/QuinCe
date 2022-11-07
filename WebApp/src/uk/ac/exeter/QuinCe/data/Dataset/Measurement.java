@@ -250,7 +250,7 @@ public class Measurement implements Comparable<Measurement> {
   }
 
   public MeasurementValue getMeasurementValue(SensorType sensorType) {
-    return measurementValues.get(sensorType.getId());
+    return measurementValues.get(SensorType.getTrueSensorTypeId(sensorType));
   }
 
   public MeasurementValue getMeasurementValue(String sensorType)
@@ -271,7 +271,8 @@ public class Measurement implements Comparable<Measurement> {
   }
 
   public boolean hasMeasurementValue(SensorType sensorType) {
-    return measurementValues.containsKey(sensorType.getId());
+    return measurementValues
+      .containsKey(SensorType.getTrueSensorTypeId(sensorType));
   }
 
   public String getMeasurementValuesJson() {
