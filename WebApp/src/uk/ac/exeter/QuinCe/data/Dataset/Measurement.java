@@ -253,10 +253,6 @@ public class Measurement implements Comparable<Measurement> {
     return measurementValues.get(sensorType.getId());
   }
 
-  public boolean containsMeasurementValue(SensorType sensorType) {
-    return measurementValues.containsKey(sensorType.getId());
-  }
-
   public MeasurementValue getMeasurementValue(String sensorType)
     throws SensorTypeNotFoundException {
     return getMeasurementValue(ResourceManager.getInstance()

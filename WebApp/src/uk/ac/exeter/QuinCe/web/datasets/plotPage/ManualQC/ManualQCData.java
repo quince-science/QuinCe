@@ -453,7 +453,7 @@ public class ManualQCData extends PlotPageData {
           measurementSensorTypes.forEach(s -> {
 
             if (!s.isPosition()) {
-              record.addColumn(measurement.containsMeasurementValue(s)
+              record.addColumn(measurement.hasMeasurementValue(s)
                 ? measurement.getMeasurementValue(s)
                 : new NullPlotPageTableValue());
             }
@@ -1113,7 +1113,7 @@ public class ManualQCData extends PlotPageData {
       Measurement measurement = measurements.get(time);
 
       if (null != measurement) {
-        if (measurement.containsMeasurementValue(sensorType)) {
+        if (measurement.hasMeasurementValue(sensorType)) {
           result = measurement.getMeasurementValue(sensorType);
         }
       }
