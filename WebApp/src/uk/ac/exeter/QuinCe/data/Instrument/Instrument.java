@@ -981,7 +981,7 @@ public class Instrument {
    *           If one of the IDs does not correspond to a Variable registered
    *           with this Instrument.
    */
-  public List<Variable> getVariablesFromIds(Collection<Long> ids)
+  public List<Variable> getVariables(Collection<Long> ids)
     throws VariableNotFoundException {
     List<Variable> result = new ArrayList<Variable>(
       null == ids ? 0 : ids.size());

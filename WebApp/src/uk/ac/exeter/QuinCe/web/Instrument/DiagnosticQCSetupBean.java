@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.bean.ManagedBean;
@@ -10,7 +9,6 @@ import javax.faces.event.AjaxBehaviorEvent;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -47,7 +45,7 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   /**
    * The variables assigned for the current measurement sensor.
    */
-  private List<Variable> assignedVariables = null;
+  private List<Long> assignedVariables = null;
 
   /**
    * Get the instrument's database ID
@@ -97,9 +95,7 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
     currentDiagnosticSensor = instrument.getSensorAssignments()
       .getDiagnosticSensors().get(0);
     currentMeasurementSensor = getMeasurementSensors().get(0);
-    assignedVariables = new ArrayList<Variable>(
-      instrument.getDiagnosticQCConfig().getAssignedVariables(
-        currentDiagnosticSensor, currentMeasurementSensor));
+    updateAssignedVariables();
 
     return NAV_QC;
   }
@@ -118,9 +114,7 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   }
 
   public void diagnosticSensorSelected(AjaxBehaviorEvent event) {
-    assignedVariables = new ArrayList<Variable>(
-      instrument.getDiagnosticQCConfig().getAssignedVariables(
-        currentDiagnosticSensor, currentMeasurementSensor));
+    updateAssignedVariables();
   }
 
   public List<SensorAssignment> getMeasurementSensors() {
@@ -137,22 +131,21 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   }
 
   public void measurementSensorSelected(AjaxBehaviorEvent event) {
-    assignedVariables = new ArrayList<Variable>(
-      instrument.getDiagnosticQCConfig().getAssignedVariables(
-        currentDiagnosticSensor, currentMeasurementSensor));
+    updateAssignedVariables();
   }
 
-  public List<Variable> getAssignedVariables() {
+  public List<Long> getAssignedVariables() {
     return assignedVariables;
   }
 
-  public void setAssignedVariables(List<Variable> assignedVariables) {
+  public void setAssignedVariables(List<Long> assignedVariables) {
     this.assignedVariables = assignedVariables;
   }
 
   public void variablesUpdated() throws VariableNotFoundException {
     instrument.getDiagnosticQCConfig().setAssignedVariables(
-      currentDiagnosticSensor, currentMeasurementSensor, assignedVariables);
+      currentDiagnosticSensor, currentMeasurementSensor,
+      instrument.getVariables(assignedVariables));
   }
 
   public String getVarsAssignedString(Long sensorId) {
@@ -165,5 +158,24 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
 
   public String getSensorName(Long sensorId) {
     return instrument.getSensorAssignments().getById(sensorId).getSensorName();
+  }
+
+  public void assignAllVariables() {
+    instrument.getDiagnosticQCConfig().setAssignedVariables(
+      currentDiagnosticSensor, currentMeasurementSensor,
+      instrument.getVariables());
+    updateAssignedVariables();
+  }
+
+  public void unassignAllVariables() {
+    instrument.getDiagnosticQCConfig().setAssignedVariables(
+      currentDiagnosticSensor, currentMeasurementSensor, null);
+    updateAssignedVariables();
+  }
+
+  private void updateAssignedVariables() {
+    assignedVariables = instrument.getDiagnosticQCConfig()
+      .getAssignedVariables(currentDiagnosticSensor, currentMeasurementSensor)
+      .stream().map(v -> v.getId()).toList();
   }
 }

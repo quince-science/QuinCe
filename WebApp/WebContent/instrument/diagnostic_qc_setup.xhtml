@@ -61,6 +61,12 @@
               <p:ajax listener="#{diagnosticQCSetupBean.variablesUpdated}"
                 process="@this" update="measurementSensor @this"/>
             </p:selectManyCheckbox>
+            <h:panelGrid columns="2" styleClass="buttonPanel">
+              <p:commandButton action="#{diagnosticQCSetupBean.assignAllVariables}" ajax="true"
+                update="measurementSensor variables" value="All"/>
+              <p:commandButton action="#{diagnosticQCSetupBean.unassignAllVariables}" ajax="true"
+                update="measurementSensor variables" value="None"/>
+            </h:panelGrid>
           </div>
         </div>
       
