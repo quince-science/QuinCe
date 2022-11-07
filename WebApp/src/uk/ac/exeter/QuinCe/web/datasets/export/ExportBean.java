@@ -275,7 +275,7 @@ public class ExportBean extends BaseManagedBean {
             PlotPageTableValue value = null;
 
             if (null != measurement
-              && measurement.containsMeasurementValue(sensorType)) {
+              && measurement.hasMeasurementValue(sensorType)) {
               value = measurement.getMeasurementValue(sensorType);
             } else {
               value = new NullPlotPageTableValue();
