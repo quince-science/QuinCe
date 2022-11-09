@@ -6,11 +6,11 @@
 .columnHeader {
   text-align: center;
   margin-bottom: 10px;
+  font-size: 1.5em;
 }
 
-.variableName label {
-  white-space: nowrap;
-  font-weight: 400;
+.categoryName {
+  text-decoration: underline;	
 }
 
 .assigned {
@@ -26,5 +26,9 @@
 /* PrimeFaces Overrides */
 .ui-selectonelistbox {
   width: 250px;
+}
+
+.ui-selectmanycheckbox label {
+  font-weight: 400;
 }
 

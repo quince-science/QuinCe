@@ -1,42 +1,46 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 @SuppressWarnings("serial")
 public class DiagnosticQCConfig
   extends TreeMap<SensorAssignment, DiagnosticSensorQCConfig> {
 
-  public void setAssignedVariables(SensorAssignment diagnosticSensor,
-    SensorAssignment measurementSensor, List<Variable> assignedVariables) {
+  public void setAssignedRunTypes(SensorAssignment diagnosticSensor,
+    SensorAssignment measurementSensor, List<String> assignedRunTypes) {
 
     if (!containsKey(diagnosticSensor)) {
       put(diagnosticSensor, new DiagnosticSensorQCConfig());
     }
 
-    get(diagnosticSensor).setMeasurementSensorVariables(measurementSensor,
-      assignedVariables);
+    get(diagnosticSensor).setMeasurementSensorRunTypes(measurementSensor,
+      assignedRunTypes);
   }
 
-  public TreeSet<Variable> getAssignedVariables(
-    SensorAssignment diagnosticSensor, SensorAssignment measurmentSensor) {
+  public List<String> getAssignedRunTypes(SensorAssignment diagnosticSensor,
+    SensorAssignment measurmentSensor) {
 
-    TreeSet<Variable> result = new TreeSet<Variable>();
+    List<String> result = new ArrayList<String>();
 
     if (containsKey(diagnosticSensor)) {
       DiagnosticSensorQCConfig sensorConfig = get(diagnosticSensor);
-      result = sensorConfig.getMeasurementSensorVariables(measurmentSensor);
+      result = sensorConfig.getMeasurementSensorRunTypes(measurmentSensor);
     }
 
     return result;
   }
 
-  public boolean hasAssignedVariables(SensorAssignment diagnosticSensor,
+  public boolean hasAssignedRunTypes(SensorAssignment diagnosticSensor,
     SensorAssignment measurementSensor) {
-    return getAssignedVariables(diagnosticSensor, measurementSensor).size() > 0;
+    return getAssignedRunTypes(diagnosticSensor, measurementSensor).size() > 0;
+  }
+
+  public boolean hasAssignedRunTypes(SensorAssignment diagnosticSensor) {
+    DiagnosticSensorQCConfig sensorConfig = get(diagnosticSensor);
+    return null == sensorConfig ? false : sensorConfig.anyRunTypeAssigned();
   }
 }

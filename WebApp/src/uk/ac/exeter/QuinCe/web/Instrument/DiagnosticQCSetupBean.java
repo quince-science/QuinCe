@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.bean.ManagedBean;
@@ -8,6 +9,8 @@ import javax.faces.event.AjaxBehaviorEvent;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
@@ -43,9 +46,9 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   private SensorAssignment currentMeasurementSensor = null;
 
   /**
-   * The variables assigned for the current measurement sensor.
+   * The Run Types assigned for the current measurement sensor.
    */
-  private List<Long> assignedVariables = null;
+  private List<String> assignedRunTypes = null;
 
   /**
    * Get the instrument's database ID
@@ -78,15 +81,6 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   }
 
   /**
-   * Get the {@link Instrument} object for the sensors being set up.
-   * 
-   * @return The Instrument.
-   */
-  public Instrument getInstrument() {
-    return instrument;
-  }
-
-  /**
    * Start up the bean.
    *
    * @return The bean navigation.
@@ -95,7 +89,7 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
     currentDiagnosticSensor = instrument.getSensorAssignments()
       .getDiagnosticSensors().get(0);
     currentMeasurementSensor = getMeasurementSensors().get(0);
-    updateAssignedVariables();
+    updateAssignedRunTypes();
 
     return NAV_QC;
   }
@@ -114,7 +108,15 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   }
 
   public void diagnosticSensorSelected(AjaxBehaviorEvent event) {
-    updateAssignedVariables();
+    updateAssignedRunTypes();
+  }
+
+  public String getDiagnosticSensorAssignedString(Long sensorId) {
+    SensorAssignment assignment = instrument.getSensorAssignments()
+      .getById(sensorId);
+    boolean assigned = instrument.getDiagnosticQCConfig()
+      .hasAssignedRunTypes(assignment);
+    return assigned ? ASSIGNED : NOT_ASSIGNED;
   }
 
   public List<SensorAssignment> getMeasurementSensors() {
@@ -131,28 +133,55 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   }
 
   public void measurementSensorSelected(AjaxBehaviorEvent event) {
-    updateAssignedVariables();
+    updateAssignedRunTypes();
   }
 
-  public List<Long> getAssignedVariables() {
-    return assignedVariables;
+  /**
+   * Get the list of run type categories for which there are run types.
+   * 
+   * @return The run type categories.
+   */
+  public List<RunTypeCategory> getInstrumentRunTypeCategories() {
+    return new ArrayList<RunTypeCategory>(instrument.getAllRunTypes().keySet());
   }
 
-  public void setAssignedVariables(List<Long> assignedVariables) {
-    this.assignedVariables = assignedVariables;
+  /**
+   * Get all the run types from all run type categories.
+   * 
+   * <p>
+   * This is used for the Run Types input on the JSF page.
+   * </p>
+   * 
+   * @return All the run types.
+   */
+  public List<RunTypeAssignment> getAllRunTypes() {
+    List<RunTypeAssignment> result = new ArrayList<RunTypeAssignment>();
+
+    for (RunTypeCategory category : getInstrumentRunTypeCategories()) {
+      result.addAll(instrument.getAllRunTypes().get(category));
+    }
+
+    return result;
   }
 
-  public void variablesUpdated() throws VariableNotFoundException {
-    instrument.getDiagnosticQCConfig().setAssignedVariables(
-      currentDiagnosticSensor, currentMeasurementSensor,
-      instrument.getVariables(assignedVariables));
+  public List<String> getAssignedRunTypes() {
+    return assignedRunTypes;
   }
 
-  public String getVarsAssignedString(Long sensorId) {
+  public void setAssignedRunTypes(List<String> assignedRunTypes) {
+    this.assignedRunTypes = assignedRunTypes;
+  }
+
+  public void runTypesUpdated() throws VariableNotFoundException {
+    instrument.getDiagnosticQCConfig().setAssignedRunTypes(
+      currentDiagnosticSensor, currentMeasurementSensor, assignedRunTypes);
+  }
+
+  public String getMeasurementSensorAssignedString(Long sensorId) {
     SensorAssignment assignment = instrument.getSensorAssignments()
       .getById(sensorId);
     boolean assigned = instrument.getDiagnosticQCConfig()
-      .hasAssignedVariables(currentDiagnosticSensor, assignment);
+      .hasAssignedRunTypes(currentDiagnosticSensor, assignment);
     return assigned ? ASSIGNED : NOT_ASSIGNED;
   }
 
@@ -160,22 +189,21 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
     return instrument.getSensorAssignments().getById(sensorId).getSensorName();
   }
 
-  public void assignAllVariables() {
-    instrument.getDiagnosticQCConfig().setAssignedVariables(
+  public void assignAllRunTypes() {
+    instrument.getDiagnosticQCConfig().setAssignedRunTypes(
       currentDiagnosticSensor, currentMeasurementSensor,
-      instrument.getVariables());
-    updateAssignedVariables();
+      instrument.getAllRunTypeNames());
+    updateAssignedRunTypes();
   }
 
-  public void unassignAllVariables() {
-    instrument.getDiagnosticQCConfig().setAssignedVariables(
+  public void unassignAllRunTypes() {
+    instrument.getDiagnosticQCConfig().setAssignedRunTypes(
       currentDiagnosticSensor, currentMeasurementSensor, null);
-    updateAssignedVariables();
+    updateAssignedRunTypes();
   }
 
-  private void updateAssignedVariables() {
-    assignedVariables = instrument.getDiagnosticQCConfig()
-      .getAssignedVariables(currentDiagnosticSensor, currentMeasurementSensor)
-      .stream().map(v -> v.getId()).toList();
+  private void updateAssignedRunTypes() {
+    assignedRunTypes = instrument.getDiagnosticQCConfig()
+      .getAssignedRunTypes(currentDiagnosticSensor, currentMeasurementSensor);
   }
 }

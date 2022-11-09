@@ -1096,7 +1096,7 @@ public class SensorAssignments
 
   /**
    * Get the list of assigned diagnostic sensors.
-   * 
+   *
    * @return The diagnostic sensors.
    */
   public List<SensorAssignment> getDiagnosticSensors() {
@@ -1106,7 +1106,7 @@ public class SensorAssignments
 
   /**
    * Get the list of assigned non-diagnostic sensors.
-   * 
+   *
    * @return The diagnostic sensors.
    */
   public List<SensorAssignment> getNonDiagnosticSensors(
@@ -1119,11 +1119,11 @@ public class SensorAssignments
 
   /**
    * Get the {@link SensorAssignment} with the specified database ID.
-   * 
+   *
    * <p>
    * Returns {@code null} if there is no assignment with that ID.
    * </p>
-   * 
+   *
    * @param assignmentId
    *          The database ID
    * @return The SensorAssignment.

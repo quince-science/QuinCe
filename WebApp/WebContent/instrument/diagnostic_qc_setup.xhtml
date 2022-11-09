@@ -13,29 +13,33 @@
 
   <ui:define name="content">
     <ui:include src="/WEB-INF/templates/keep_alive.xhtml" />
-    
+
     <!--  The stylesheet goes here because it can then override PrimeFaces styles -->
     <h:outputStylesheet name="style/diagnosticQC.css" />
     <div class="fullPage">
       <div class="instructions">
-  	    Select a diagnostic sensor on the left.
-  	    In the middle, choose a sensor that will be affected by the QC of the selected sensor.
-  	    On the right, which variables require the QC effects to be active.
+        Select a diagnostic sensor on the left.
+        In the middle, choose a sensor that will be affected by the QC of the selected sensor.
+        On the right, which run types require the QC effects to be active.
       </div>
-      
+
       <h:form id="qcForm" method="post" charset="utf8">
         <div id="controls">
           <div>
             <div class="columnHeader label">Diagnostic Sensor</div>
             <p:selectOneListbox value="#{diagnosticQCSetupBean.currentDiagnosticSensor}"
-              id="diagnosticSensor">
+              id="diagnosticSensor" var="s">
               <f:selectItems value="#{diagnosticQCSetupBean.diagnosticSensors}"
                 var="sensor" itemLabel="#{sensor.sensorName}" itemValue="#{sensor.databaseId}"/>
+              <p:column>
+                <h:outputText class="#{diagnosticQCSetupBean.getDiagnosticSensorAssignedString(s)}"
+                  value="#{diagnosticQCSetupBean.getSensorName(s)}"/>
+              </p:column>
               <p:ajax listener="#{diagnosticQCSetupBean.diagnosticSensorSelected}"
-                process="@this" update="measurementSensor variables"/>
+                process="@this" update="diagnosticSensor measurementSensor runTypeSelector"/>
             </p:selectOneListbox>
           </div>
-        
+
           <div>
             <div class="columnHeader label">Measurement Sensor</div>
             <p:selectOneListbox value="#{diagnosticQCSetupBean.currentMeasurementSensor}"
@@ -43,33 +47,34 @@
               <f:selectItems value="#{diagnosticQCSetupBean.measurementSensors}"
                 var="sensor" itemLabel="#{sensor.sensorName}" itemValue="#{sensor.databaseId}"/>
               <p:column>
-                <h:outputText class="#{diagnosticQCSetupBean.getVarsAssignedString(s)}"
+                <h:outputText class="#{diagnosticQCSetupBean.getMeasurementSensorAssignedString(s)}"
                   value="#{diagnosticQCSetupBean.getSensorName(s)}"/>
               </p:column>
               <p:ajax listener="#{diagnosticQCSetupBean.measurementSensorSelected}"
-                process="@this" update="variables @this"/>
+                process="@this" update="diagnosticSensor measurementSensor runTypeSelector"/>
             </p:selectOneListbox>
           </div>
-        
+
           <div>
-            <div class="columnHeader label">Variables Affected</div>
-            <p:selectManyCheckbox layout="pageDirection" styleClass="variableName"
-              value="#{diagnosticQCSetupBean.assignedVariables}"
-              id="variables" widgetVar="variables">
-              <f:selectItems value="#{diagnosticQCSetupBean.instrument.variables}"
-                var="variable" itemLabel="#{variable.name}" itemValue="#{variable.id}"/>
-              <p:ajax listener="#{diagnosticQCSetupBean.variablesUpdated}"
-                process="@this" update="measurementSensor @this"/>
+            <div class="columnHeader label">Run Types Affected</div>
+            <p:selectManyCheckbox layout="pageDirection"
+              value="#{diagnosticQCSetupBean.assignedRunTypes}"
+              id="runTypeSelector">
+              <f:selectItems value="#{diagnosticQCSetupBean.allRunTypes}" var="runType"
+                itemLabel="#{runType.runName} (#{runType.category.description})" itemValue="#{runType.runName}"/>
+              <p:ajax listener="#{diagnosticQCSetupBean.runTypesUpdated}"
+                process="@this" update="diagnosticSensor measurementSensor runTypeSelector"/>
             </p:selectManyCheckbox>
+
             <h:panelGrid columns="2" styleClass="buttonPanel">
-              <p:commandButton action="#{diagnosticQCSetupBean.assignAllVariables}" ajax="true"
-                update="measurementSensor variables" value="All"/>
-              <p:commandButton action="#{diagnosticQCSetupBean.unassignAllVariables}" ajax="true"
-                update="measurementSensor variables" value="None"/>
+              <p:commandButton action="#{diagnosticQCSetupBean.assignAllRunTypes}" ajax="true"
+                update="diagnosticSensor measurementSensor runTypeSelector" value="All"/>
+              <p:commandButton action="#{diagnosticQCSetupBean.unassignAllRunTypes}" ajax="true"
+                update="diagnosticSensor measurementSensor runTypeSelector" value="None"/>
             </h:panelGrid>
           </div>
         </div>
-      
+
         <h:panelGrid columns="1" styleClass="buttonPanel">
           <p:commandButton value="Back to Instruments List"
             action="/instrument/instrument_list.xhtml" />

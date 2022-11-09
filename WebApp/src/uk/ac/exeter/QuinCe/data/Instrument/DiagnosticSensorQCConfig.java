@@ -1,8 +1,9 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -26,16 +27,16 @@ public class DiagnosticSensorQCConfig {
 
   /**
    * The measurement sensors whose QC flag will be set when this diagnostic
-   * sensor's flag is set. Different sensors can be triggered for different
-   * {@link Variable}s.
+   * sensor's flag is set. Different sensors can be triggered for different Run
+   * Types.
    */
-  private TreeMap<SensorAssignment, TreeSet<Variable>> flagCascades;
+  private TreeMap<SensorAssignment, List<String>> affectedRunTypes;
 
   /**
    * Basic constructor.
    */
   public DiagnosticSensorQCConfig() {
-    flagCascades = new TreeMap<SensorAssignment, TreeSet<Variable>>();
+    affectedRunTypes = new TreeMap<SensorAssignment, List<String>>();
   }
 
   /**
@@ -86,27 +87,31 @@ public class DiagnosticSensorQCConfig {
   /**
    * Set the {@link Variable}s for which the given measurement sensor will be
    * affected by flags on the parent diagnostic sensor.
-   * 
+   *
    * @param measurementSensor
    *          The measurement sensor.
    * @param variables
    *          The Variables for which the effects of the parent diagnostic
    *          sensor will occur.
    */
-  protected void setMeasurementSensorVariables(
-    SensorAssignment measurementSensor, Collection<Variable> variables) {
+  protected void setMeasurementSensorRunTypes(
+    SensorAssignment measurementSensor, Collection<String> runTypes) {
 
-    if (null == variables || variables.size() == 0) {
-      flagCascades.remove(measurementSensor);
+    if (null == runTypes || runTypes.size() == 0) {
+      affectedRunTypes.remove(measurementSensor);
     } else {
-      flagCascades.put(measurementSensor, new TreeSet<Variable>(variables));
+      affectedRunTypes.put(measurementSensor, new ArrayList<String>(runTypes));
     }
   }
 
-  protected TreeSet<Variable> getMeasurementSensorVariables(
+  protected List<String> getMeasurementSensorRunTypes(
     SensorAssignment measurementSensor) {
-    return flagCascades.containsKey(measurementSensor)
-      ? flagCascades.get(measurementSensor)
-      : new TreeSet<Variable>();
+    return affectedRunTypes.containsKey(measurementSensor)
+      ? affectedRunTypes.get(measurementSensor)
+      : new ArrayList<String>(0);
+  }
+
+  protected boolean anyRunTypeAssigned() {
+    return affectedRunTypes.size() > 0;
   }
 }
