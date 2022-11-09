@@ -67,6 +67,9 @@ def build_metadata_package(file,manifest,index,hashsum,
       'start':manifest['manifest']['raw'][index]['startDate'],
       'stop': manifest['manifest']['raw'][index]['endDate']})
     meta['fileName'] = os.path.split(file)[-1]
+    meta['references'] = {
+      "duplicateFilenameAllowed": True
+    }
 
   meta_JSON = json.dumps(meta) # converting from dictionary to json-object
   logging.debug(f'metadata-package: {type(meta_JSON)}\n \
