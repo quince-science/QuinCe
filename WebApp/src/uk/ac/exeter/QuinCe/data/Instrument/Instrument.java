@@ -611,12 +611,14 @@ public class Instrument {
       RunTypeAssignments assignments = fileDef.getRunTypes();
       if (null != assignments) {
         for (RunTypeAssignment assignment : assignments.values()) {
-          if (!runTypes.containsKey(assignment.getCategory())) {
-            runTypes.put(assignment.getCategory(),
-              new TreeSet<RunTypeAssignment>());
-          }
+          if (!assignment.isAlias()) {
+            if (!runTypes.containsKey(assignment.getCategory())) {
+              runTypes.put(assignment.getCategory(),
+                new TreeSet<RunTypeAssignment>());
+            }
 
-          runTypes.get(assignment.getCategory()).add(assignment);
+            runTypes.get(assignment.getCategory()).add(assignment);
+          }
         }
       }
     }
