@@ -530,6 +530,14 @@ public abstract class BaseManagedBean {
     return internalError(new BeanException("Test exception"));
   }
 
+  /**
+   * Does absolutely nothing.
+   * 
+   * <p>
+   * This is useful for various things, like swallowing trigger events that need
+   * to be sent but don't actually need to do anything.
+   * </p>
+   */
   public void noop() {
     // Do nothing
   }

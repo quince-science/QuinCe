@@ -18,12 +18,12 @@ public class DiagnosticSensorQCConfig {
   /**
    * The minimum allowed value for the sensor.
    */
-  private double rangeMin = Double.MIN_VALUE;
+  private Double rangeMin = null;
 
   /**
    * The maximum allowed value for the sensor.
    */
-  private double rangeMax = Double.MAX_VALUE;
+  private Double rangeMax = null;
 
   /**
    * The measurement sensors whose QC flag will be set when this diagnostic
@@ -40,14 +40,32 @@ public class DiagnosticSensorQCConfig {
   }
 
   /**
+   * Get the minimum allowed value for the sensor.
+   * 
+   * @return The minimum allowed value.
+   */
+  public Double getRangeMin() {
+    return rangeMin;
+  }
+
+  /**
    * Set the minimum allowed value for the sensor.
    *
    * @param min
    *          The minimum value.
    */
-  public void setRangeMin(double min) {
+  public void setRangeMin(Double min) {
     this.rangeMin = min;
     validateRange();
+  }
+
+  /**
+   * Get the maximum allowed value for the sensor.
+   * 
+   * @return The maximum allowed value.
+   */
+  public Double getRangeMax() {
+    return rangeMax;
   }
 
   /**
@@ -56,7 +74,7 @@ public class DiagnosticSensorQCConfig {
    * @param max
    *          The maximum value.
    */
-  public void setRangeMax(double max) {
+  public void setRangeMax(Double max) {
     this.rangeMax = max;
     validateRange();
   }
@@ -65,10 +83,12 @@ public class DiagnosticSensorQCConfig {
    * Ensure that the min and max are the right way round.
    */
   private void validateRange() {
-    if (rangeMin < rangeMax) {
-      double temp = rangeMax;
-      rangeMax = rangeMin;
-      rangeMin = temp;
+    if (null != rangeMin && null != rangeMax) {
+      if (rangeMin > rangeMax) {
+        double temp = rangeMax;
+        rangeMax = rangeMin;
+        rangeMin = temp;
+      }
     }
   }
 
@@ -81,7 +101,23 @@ public class DiagnosticSensorQCConfig {
    *         {@code false} if it is not.
    */
   public boolean rangeOK(double value) {
-    return !Double.isNaN(value) && value <= rangeMax && value >= rangeMin;
+    boolean result;
+
+    if (Double.isNaN(value)) {
+      result = true;
+    } else {
+      if (null == rangeMin && null == rangeMax) {
+        result = true;
+      } else if (null == rangeMin) {
+        result = value <= rangeMax;
+      } else if (null == rangeMax) {
+        result = value >= rangeMin;
+      } else {
+        result = value <= rangeMax && value >= rangeMin;
+      }
+    }
+
+    return result;
   }
 
   /**

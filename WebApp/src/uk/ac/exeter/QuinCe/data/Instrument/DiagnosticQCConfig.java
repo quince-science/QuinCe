@@ -43,4 +43,30 @@ public class DiagnosticQCConfig
     DiagnosticSensorQCConfig sensorConfig = get(diagnosticSensor);
     return null == sensorConfig ? false : sensorConfig.anyRunTypeAssigned();
   }
+
+  public Double getRangeMin(SensorAssignment diagnosticSensor) {
+    return containsKey(diagnosticSensor) ? get(diagnosticSensor).getRangeMin()
+      : null;
+  }
+
+  public void setRangeMin(SensorAssignment diagnosticSensor, Double min) {
+    if (!containsKey(diagnosticSensor)) {
+      put(diagnosticSensor, new DiagnosticSensorQCConfig());
+    }
+
+    get(diagnosticSensor).setRangeMin(min);
+  }
+
+  public Double getRangeMax(SensorAssignment diagnosticSensor) {
+    return containsKey(diagnosticSensor) ? get(diagnosticSensor).getRangeMax()
+      : null;
+  }
+
+  public void setRangeMax(SensorAssignment diagnosticSensor, Double max) {
+    if (!containsKey(diagnosticSensor)) {
+      put(diagnosticSensor, new DiagnosticSensorQCConfig());
+    }
+
+    get(diagnosticSensor).setRangeMax(max);
+  }
 }

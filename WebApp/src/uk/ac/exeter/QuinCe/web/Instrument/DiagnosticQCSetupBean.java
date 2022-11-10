@@ -7,6 +7,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 
+import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticSensorQCConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
@@ -119,6 +120,26 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
     return assigned ? ASSIGNED : NOT_ASSIGNED;
   }
 
+  public Double getMin() {
+    return instrument.getDiagnosticQCConfig()
+      .getRangeMin(currentDiagnosticSensor);
+  }
+
+  public void setMin(Double min) {
+    instrument.getDiagnosticQCConfig().setRangeMin(currentDiagnosticSensor,
+      min);
+  }
+
+  public Double getMax() {
+    return instrument.getDiagnosticQCConfig()
+      .getRangeMax(currentDiagnosticSensor);
+  }
+
+  public void setMax(Double max) {
+    instrument.getDiagnosticQCConfig().setRangeMax(currentDiagnosticSensor,
+      max);
+  }
+
   public List<SensorAssignment> getMeasurementSensors() {
     return instrument.getSensorAssignments().getNonDiagnosticSensors(false);
   }
@@ -138,7 +159,7 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
 
   /**
    * Get the list of run type categories for which there are run types.
-   * 
+   *
    * @return The run type categories.
    */
   public List<RunTypeCategory> getInstrumentRunTypeCategories() {
@@ -147,11 +168,11 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
 
   /**
    * Get all the run types from all run type categories.
-   * 
+   *
    * <p>
    * This is used for the Run Types input on the JSF page.
    * </p>
-   * 
+   *
    * @return All the run types.
    */
   public List<RunTypeAssignment> getAllRunTypes() {
@@ -205,5 +226,9 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   private void updateAssignedRunTypes() {
     assignedRunTypes = instrument.getDiagnosticQCConfig()
       .getAssignedRunTypes(currentDiagnosticSensor, currentMeasurementSensor);
+  }
+
+  private DiagnosticSensorQCConfig getCurrentSensorConfig() {
+    return instrument.getDiagnosticQCConfig().get(currentDiagnosticSensor);
   }
 }
