@@ -41,7 +41,7 @@ public class DiagnosticSensorQCConfig {
 
   /**
    * Get the minimum allowed value for the sensor.
-   * 
+   *
    * @return The minimum allowed value.
    */
   public Double getRangeMin() {
@@ -61,7 +61,7 @@ public class DiagnosticSensorQCConfig {
 
   /**
    * Get the maximum allowed value for the sensor.
-   * 
+   *
    * @return The maximum allowed value.
    */
   public Double getRangeMax() {

@@ -532,7 +532,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Does absolutely nothing.
-   * 
+   *
    * <p>
    * This is useful for various things, like swallowing trigger events that need
    * to be sent but don't actually need to do anything.

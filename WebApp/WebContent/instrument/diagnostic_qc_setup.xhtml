@@ -40,7 +40,7 @@
                 update="diagnosticSensor measurementSensor runTypeSelector rangeMin rangeMax"/>
             </p:selectOneListbox>
           </div>
-          
+
           <div>
             <div class="columnHeader label">Valid Range</div>
             <table>
@@ -49,10 +49,10 @@
                 <td>
                   <p:inputNumber decimalPlaces="3" min="-1000000" max="1000000"
                     id="rangeMin" value="#{diagnosticQCSetupBean.min}">
-					
-				    <p:ajax listener="#{diagnosticQCSetupBean.noop}"
-				      process="@this" update="rangeMin rangeMax"/>	
-			      </p:inputNumber>
+
+            <p:ajax listener="#{diagnosticQCSetupBean.noop}"
+              process="@this" update="rangeMin rangeMax"/>
+            </p:inputNumber>
                 </td>
               </tr>
               <tr>
@@ -60,9 +60,9 @@
                 <td>
                   <p:inputNumber decimalPlaces="3" min="-1000000" max="1000000"
                     id="rangeMax" value="#{diagnosticQCSetupBean.max}">
-                    
+
                     <p:ajax listener="#{diagnosticQCSetupBean.noop}"
-				      process="@this" update="rangeMin rangeMax"/>	
+              process="@this" update="rangeMin rangeMax"/>
                   </p:inputNumber>
                 </td>
               </tr>
