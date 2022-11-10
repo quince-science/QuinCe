@@ -69,4 +69,16 @@ public class DiagnosticQCConfig
 
     get(diagnosticSensor).setRangeMax(max);
   }
+
+  public boolean isInRange(SensorAssignment diagnosticSensor, double value) {
+    boolean result;
+
+    if (!containsKey(diagnosticSensor)) {
+      result = true;
+    } else {
+      result = get(diagnosticSensor).rangeOK(value);
+    }
+
+    return result;
+  }
 }

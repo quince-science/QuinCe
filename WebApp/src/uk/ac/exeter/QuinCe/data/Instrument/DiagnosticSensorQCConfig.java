@@ -35,7 +35,7 @@ public class DiagnosticSensorQCConfig {
   /**
    * Basic constructor.
    */
-  public DiagnosticSensorQCConfig() {
+  protected DiagnosticSensorQCConfig() {
     affectedRunTypes = new TreeMap<SensorAssignment, List<String>>();
   }
 
@@ -44,7 +44,7 @@ public class DiagnosticSensorQCConfig {
    *
    * @return The minimum allowed value.
    */
-  public Double getRangeMin() {
+  protected Double getRangeMin() {
     return rangeMin;
   }
 
@@ -54,7 +54,7 @@ public class DiagnosticSensorQCConfig {
    * @param min
    *          The minimum value.
    */
-  public void setRangeMin(Double min) {
+  protected void setRangeMin(Double min) {
     this.rangeMin = min;
     validateRange();
   }
@@ -64,7 +64,7 @@ public class DiagnosticSensorQCConfig {
    *
    * @return The maximum allowed value.
    */
-  public Double getRangeMax() {
+  protected Double getRangeMax() {
     return rangeMax;
   }
 
@@ -74,7 +74,7 @@ public class DiagnosticSensorQCConfig {
    * @param max
    *          The maximum value.
    */
-  public void setRangeMax(Double max) {
+  protected void setRangeMax(Double max) {
     this.rangeMax = max;
     validateRange();
   }
@@ -100,7 +100,7 @@ public class DiagnosticSensorQCConfig {
    * @return {@code true} if the value is within the sensor's allowable range;
    *         {@code false} if it is not.
    */
-  public boolean rangeOK(double value) {
+  protected boolean rangeOK(double value) {
     boolean result;
 
     if (Double.isNaN(value)) {
