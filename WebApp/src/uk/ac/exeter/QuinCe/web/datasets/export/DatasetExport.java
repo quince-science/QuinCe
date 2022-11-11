@@ -112,10 +112,16 @@ public class DatasetExport {
     if (!Double.isNaN(lon)) {
       if (lon < minLon) {
         minLon = lon;
+        if (maxLon == Double.MIN_VALUE) {
+          maxLon = lon;
+        }
       }
 
       if (lon > maxLon) {
         maxLon = lon;
+        if (minLon == Double.MAX_VALUE) {
+          minLon = lon;
+        }
       }
     }
   }
@@ -124,10 +130,16 @@ public class DatasetExport {
     if (!Double.isNaN(lat)) {
       if (lat < minLat) {
         minLat = lat;
+        if (maxLat == Double.MIN_VALUE) {
+          maxLat = lat;
+        }
       }
 
       if (lat > maxLat) {
         maxLat = lat;
+        if (minLat == Double.MAX_VALUE) {
+          minLat = lat;
+        }
       }
     }
   }
