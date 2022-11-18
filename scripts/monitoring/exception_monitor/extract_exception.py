@@ -98,7 +98,9 @@ def main(config):
             if trimmed.startswith('at') or trimmed.startswith('Caused by'):
                 exception.append(line)
             else:
-                exceptions.append('\n'.join(exception))
+                # Only add the exception if it's not a broken pipe
+                if not any('Broken pipe' in line for line in exception):
+                    exceptions.append('\n'.join(exception))
                 mode = SEARCHING_MODE
 
         else:  # We are searching for an exception
@@ -112,7 +114,8 @@ def main(config):
 
     # Tidy up the last exception, if that was the last thing in the file
     if mode == EXCEPTION_MODE:
-        exceptions.append('\n'.join(exception))
+        if not any('Broken pipe' in line for line in exception):
+            exceptions.append('\n'.join(exception))
 
     if len(exceptions) > 0:
 
