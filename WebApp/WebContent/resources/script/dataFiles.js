@@ -26,6 +26,7 @@ function renderMessages(messages) {
   }
   $("#messageText").html(html);
   PF('msgDialog').show();
+  $('.ui-scrollpanel')[0].scrollTop = 0;
 }
 
 function reprocessUploadedFiles() {
