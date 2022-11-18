@@ -198,3 +198,18 @@ NRT = 'True'
   NRT = ['ICOS']
   L2 = ['ICOS']
 
+[34FM]
+name = 'Finnmaid'
+submitter_id = 'OTC'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_BALTIC-VOS'
+category_code = '31'
+call_sign = 'OJMI'
+creation_date = '2022-09-27T00:00:00Z'
+author_list = 'Glockzin, Michael; Rehder, Gregor'
+affiliation = 'Leibniz Institute for Baltic Sea Research' 
+NRT = 'False'
+
+  [34FM.export]
+  NRT = ['ICOS']
+  L2 = ['ICOS']
+
