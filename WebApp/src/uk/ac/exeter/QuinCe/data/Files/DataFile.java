@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.MissingDateTimeException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -343,6 +344,8 @@ public class DataFile {
               addMessage(lineNumber, "Date/Time is not monotonic");
             }
           }
+        } catch (MissingDateTimeException e) {
+          // We don't mind this while scanning the file
         } catch (DateTimeSpecificationException e) {
           addMessage(lineNumber, e.getMessage());
         }
@@ -458,31 +461,36 @@ public class DataFile {
 
   /**
    * Get the time of the first record in the file. Time offset will not be
-   * applied.
+   * applied. Lines with invalid/missing dates are ignored.
    *
    * @return The date, or null if the date cannot be retrieved
    */
   public LocalDateTime getRawStartTime() {
-    int firstDataLine = -1;
-    String message = "";
     if (null == startDate) {
-
       try {
         loadContents();
-        firstDataLine = getFirstDataLine();
-        startDate = getRawTime(firstDataLine);
-      } catch (IndexOutOfBoundsException arrex) {
-        message = "Date column doesn't exist.";
-      } catch (Exception e) {
-        message = e.getMessage();
-      }
+        LocalDateTime foundDate = null;
+        int searchLine = getFirstDataLine() - 1;
+        int lastLine = getContentLineCount() - 1;
 
-      if (!"".equals(message)) {
-        if (firstDataLine > -1) {
-          addMessage(firstDataLine, message);
-        } else {
-          addMessage(message);
+        while (null == foundDate && searchLine <= lastLine) {
+          searchLine++;
+
+          try {
+            foundDate = getRawTime(searchLine);
+          } catch (Exception e) {
+            // Ignore errors and try the next line
+          }
         }
+
+        if (null != foundDate) {
+          startDate = foundDate;
+        } else {
+          addMessage("No valid dates in file");
+        }
+
+      } catch (DataFileException e) {
+        addMessage("Unable to extract data from file");
       }
     }
 
@@ -498,26 +506,34 @@ public class DataFile {
    *           If the file contents could not be loaded
    */
   public LocalDateTime getRawEndTime() {
-    int lastLine = -1;
-    String message = null;
     if (null == endDate) {
       try {
         loadContents();
-        lastLine = getContentLineCount() - 1;
-        endDate = getRawTime(lastLine);
-      } catch (IndexOutOfBoundsException arrex) {
-        message = "Date column doesn't exist.";
-      } catch (Exception e) {
-        message = e.getMessage();
+        LocalDateTime foundDate = null;
+        int firstLine = getFirstDataLine();
+        int searchLine = getContentLineCount();
+
+        while (null == foundDate && searchLine >= firstLine) {
+          searchLine--;
+
+          try {
+            foundDate = getRawTime(searchLine);
+          } catch (Exception e) {
+            // Ignore errors and try the next line
+          }
+        }
+
+        if (null != foundDate) {
+          endDate = foundDate;
+        } else {
+          addMessage("No valid dates in file");
+        }
+
+      } catch (DataFileException e) {
+        addMessage("Unable to extract data from file");
       }
     }
-    if (null != message) {
-      if (lastLine > -1) {
-        addMessage(lastLine, message);
-      } else {
-        addMessage(message);
-      }
-    }
+
     return endDate;
   }
 
@@ -538,21 +554,6 @@ public class DataFile {
   }
 
   /**
-   * Get the time of a line in the file, with the define offset applied
-   *
-   * @param line
-   *          The line
-   * @return The time
-   * @throws DataFileException
-   *           If any date/time fields are empty
-   */
-  public LocalDateTime getOffsetTime(int line)
-    throws DataFileException, DateTimeSpecificationException {
-    loadContents();
-    return getOffsetTime(fileDefinition.extractFields(contents.get(line)));
-  }
-
-  /**
    * Get the time of a line in the file, without the define offset applied
    *
    * @param line
@@ -560,21 +561,23 @@ public class DataFile {
    * @return The time
    * @throws DataFileException
    *           If any date/time fields are empty
+   * @throws MissingDateTimeException
    */
-  public LocalDateTime getRawTime(int line)
-    throws DataFileException, DateTimeSpecificationException {
+  public LocalDateTime getRawTime(int line) throws DataFileException,
+    DateTimeSpecificationException, MissingDateTimeException {
     loadContents();
     return getRawTime(fileDefinition.extractFields(contents.get(line)));
   }
 
   public LocalDateTime getOffsetTime(List<String> line)
-    throws DataFileException, DateTimeSpecificationException {
+    throws DataFileException, DateTimeSpecificationException,
+    MissingDateTimeException {
 
     return applyTimeOffset(getRawTime(line));
   }
 
   public LocalDateTime getRawTime(List<String> line)
-    throws DateTimeSpecificationException {
+    throws DateTimeSpecificationException, MissingDateTimeException {
 
     return fileDefinition.getDateTimeSpecification().getDateTime(headerDate,
       line);
