@@ -138,33 +138,38 @@ public class AutoQCJob extends DataSetJob {
 
       conn.setAutoCommit(false);
 
+      // Get the sensor values grouped by data file column
       SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 
-      measurementRunTypes = instrument.getMeasurementRunTypes();
-
-      QCRoutinesConfiguration qcRoutinesConfig = ResourceManager.getInstance()
-        .getQCRoutinesConfiguration();
-
-      // Get the sensor values grouped by data file column
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
         instrument, dataSet.getId(), true, true);
 
-      // Get all the run type entries from the data set
-      TreeSet<SensorAssignment> runTypeColumns = sensorAssignments
-        .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+      RunTypePeriods runTypePeriods = null;
+      SearchableSensorValuesList runTypeValues = null;
 
-      TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
-      for (SensorAssignment column : runTypeColumns) {
-        runTypeValuesTemp
-          .addAll(sensorValues.getColumnValues(column.getDatabaseId()));
+      if (instrument.hasRunTypes()) {
+        measurementRunTypes = instrument.getMeasurementRunTypes();
+
+        // Get all the run type entries from the data set
+        TreeSet<SensorAssignment> runTypeColumns = sensorAssignments
+          .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+
+        TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
+        for (SensorAssignment column : runTypeColumns) {
+          runTypeValuesTemp
+            .addAll(sensorValues.getColumnValues(column.getDatabaseId()));
+        }
+
+        runTypeValues = SearchableSensorValuesList
+          .newFromSensorValueCollection(runTypeValuesTemp);
+
+        // Get the Run Type Periods for the dataset
+        runTypePeriods = DataSetDataDB.getRunTypePeriods(conn, instrument,
+          dataSet.getId());
       }
 
-      SearchableSensorValuesList runTypeValues = SearchableSensorValuesList
-        .newFromSensorValueCollection(runTypeValuesTemp);
-
-      // Get the Run Type Periods for the dataset
-      RunTypePeriods runTypePeriods = DataSetDataDB.getRunTypePeriods(conn,
-        instrument, dataSet.getId());
+      QCRoutinesConfiguration qcRoutinesConfig = ResourceManager.getInstance()
+        .getQCRoutinesConfiguration();
 
       // First run the position QC, unless the instrument has a fixed position.
       // This will potentially set QC flags on all sensor values, and those
@@ -197,7 +202,8 @@ public class AutoQCJob extends DataSetJob {
         } else {
           for (SensorValue value : sensorValues.getColumnValues(columnId)) {
 
-            SensorValue runType = runTypeValues.timeSearch(value.getTime());
+            SensorValue runType = !instrument.hasRunTypes() ? null
+              : runTypeValues.timeSearch(value.getTime());
 
             if (!valuesForQC.containsKey(runType.getValue())) {
               valuesForQC.put(runType.getValue(),
@@ -219,7 +225,7 @@ public class AutoQCJob extends DataSetJob {
               | x.getUserQCFlag().equals(Flag.QUESTIONABLE)))
             .collect(Collectors.toList());
 
-          if (values.getKey().equals("")
+          if (null == values.getKey() || values.getKey().equals("")
             || measurementRunTypes.contains(values.getKey())) {
             // Loop through all routines
             for (AbstractAutoQCRoutine routine : qcRoutinesConfig
@@ -229,7 +235,6 @@ public class AutoQCJob extends DataSetJob {
               ((AutoQCRoutine) routine).qc(filteredValues, runTypePeriods);
             }
           }
-
         }
       }
 
