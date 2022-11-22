@@ -897,7 +897,8 @@ public class DataFile {
 
         // Strip leading zeros from integers - otherwise we get octal number
         // nonsense.
-        if (!org.apache.commons.lang3.StringUtils.contains(result, '.')) {
+        if (!org.apache.commons.lang3.StringUtils.contains(result, '.')
+          && !result.equals("0")) {
           result = org.apache.commons.lang3.StringUtils.stripStart(result, "0");
         }
 
