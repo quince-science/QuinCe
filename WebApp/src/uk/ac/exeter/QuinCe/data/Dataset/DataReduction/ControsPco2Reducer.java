@@ -21,6 +21,15 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundEx
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 
+/**
+ * Data reduction for the Contros/4H-Jena pCO2 sensor.
+ *
+ * <p>
+ * There is no correction to SST - we assume that the equilibration through the
+ * membrane does not induce a significant temperature change.
+ * </p>
+ *
+ */
 public class ControsPco2Reducer extends DataReducer {
 
   public static final String ZEROS_PROP = "contros.zeros";
@@ -185,68 +194,49 @@ public class ControsPco2Reducer extends DataReducer {
       Double membranePressure = measurement
         .getMeasurementValue("Membrane Pressure").getCalculatedValue();
 
+      // We assume that temperature of equilibration is the same as SST.
       Double pCo2TEWet = xco2 * (membranePressure / P0);
       Double fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, xco2, membranePressure,
         gasTemperature);
-
-      Double sst = measurement.getMeasurementValue("Intake Temperature")
-        .getCalculatedValue() + T0;
-      Double membraneTemp = measurement
-        .getMeasurementValue("Membrane Temperature").getCalculatedValue() + T0;
-
-      Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet, membraneTemp, sst);
-      Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, membraneTemp, sst);
 
       record.put("Zero S₂beam", zeroS2Beam.doubleValue());
       record.put("S₂beam", measurementS2Beam.doubleValue());
       record.put("Sproc", sProc.doubleValue());
       record.put("xCO₂", xco2);
-      record.put("pCO₂ TE Wet", pCo2TEWet);
-      record.put("fCO₂ TE Wet", fCo2TEWet);
-      record.put("pCO₂ SST", pCO2SST);
-      record.put("fCO₂", fCO2);
+      record.put("pCO₂ SST", pCo2TEWet);
+      record.put("fCO₂", fCo2TEWet);
     }
   }
 
   @Override
   protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Salinity",
-      "Contros pCO₂ Raw Detector Signal", "Contros pCO₂ Reference Signal",
-      "Contros pCO₂ Zero Mode", "Contros pCO₂ Flush Mode",
-      "Contros pCO₂ Runtime", "Gas Stream Temperature", "Gas Stream Pressure",
-      "Membrane Temperature", "Membrane Pressure",
-      "Diagnostic Relative Humidity" };
+    return new String[] { "Salinity", "Contros pCO₂ Raw Detector Signal",
+      "Contros pCO₂ Reference Signal", "Contros pCO₂ Zero Mode",
+      "Contros pCO₂ Flush Mode", "Contros pCO₂ Runtime",
+      "Gas Stream Temperature", "Gas Stream Pressure", "Membrane Pressure" };
   }
 
   @Override
   public List<CalculationParameter> getCalculationParameters() {
     if (null == calculationParameters) {
-      calculationParameters = new ArrayList<CalculationParameter>(8);
+      calculationParameters = new ArrayList<CalculationParameter>(6);
 
       calculationParameters.add(new CalculationParameter(makeParameterId(0),
-        "Zero S₂beam", "Interpolated Zero Signal", "CONZERO2BEAM", "", false));
+        "Zero S₂beam", "Interpolated Zero Signal", "", "", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(1),
-        "S₂beam", "Two-beam Signal", "CON2BEAM", "", false));
+        "S₂beam", "Two-beam Signal", "", "", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(2),
-        "Sproc", "Drift-corrected Signal", "CONSPROC", "", false));
+        "Sproc", "Drift-corrected Signal", "", "", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(3),
         "xCO₂", "xCO₂ In Water", "XCO2WBDY", "μmol/mol", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(4),
-        "pCO₂ TE Wet", "pCO₂ In Water - Equilibrator Temperature", "PCO2IG02",
-        "μatm", false));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(5),
-        "fCO₂ TE Wet", "fCO₂ In Water - Equilibrator Temperature", "FCO2IG02",
-        "μatm", false));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(6),
         "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(7),
+      calculationParameters.add(new CalculationParameter(makeParameterId(5),
         "fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true));
     }
 
