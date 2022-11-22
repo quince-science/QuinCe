@@ -90,7 +90,12 @@ public class DefaultMeasurementValueCalculator
       List<SensorValue> valuesToUse;
 
       if (requiredSensorType.equals(coreSensorType)) {
-        valuesToUse = Arrays.asList(sensorValues.get(valueTime));
+        SensorValue sensorValue = sensorValues.get(valueTime);
+        if (null == sensorValue) {
+          valuesToUse = new ArrayList<SensorValue>();
+        } else {
+          valuesToUse = Arrays.asList(sensorValues.get(valueTime));
+        }
       } else {
         valuesToUse = sensorValues.getWithInterpolation(valueTime, true, true);
       }
