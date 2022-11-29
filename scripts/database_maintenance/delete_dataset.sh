@@ -64,7 +64,7 @@ then
   if [ $verbose -eq 1 ]; then
     echo "Delete all data related to dataset ID $dataset_id from database"
   fi
-  # Retrieve the instrument id before delering the dataset data
+  # Retrieve the instrument id before deleting the dataset data
   instrument_id=$(mysql -u $db_user -p"$db_password" $db_name -N -B \
       -e "select instrument_id from dataset where id=$dataset_id limit 1")
 
