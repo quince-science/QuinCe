@@ -110,16 +110,6 @@ author_list = ''
 	[1801573]
 	platform_id = 'SD1053'
 
-[48MB]
-name = 'PALOMA'
-submitter_id = 'OTC'
-cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_PALOMA'
-category_code = ''
-call_sign = ''
-export = ['ICOS']
-creation_date = '2020-05-20T00:00:00Z'
-author_list = ''
-
 [11SS]
 name = 'Simon Stevin'
 submitter_id = 'OTC'
