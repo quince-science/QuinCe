@@ -359,7 +359,12 @@ public class NewInstrumentBean extends FileUploadBean {
   private int depth;
 
   /**
-   * The averaging mode
+   * The platform name.
+   */
+  private String platformName = null;
+
+  /**
+   * The platform code.
    */
   private String platformCode = null;
 
@@ -1825,6 +1830,21 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
+   * @return the platformName
+   */
+  public String getPlatformName() {
+    return platformName;
+  }
+
+  /**
+   * @param platformName
+   *          the platform name to set
+   */
+  public void setPlatformName(String platformName) {
+    this.platformName = platformName;
+  }
+
+  /**
    * @return the platformCode
    */
   public String getPlatformCode() {
@@ -1874,7 +1894,7 @@ public class NewInstrumentBean extends FileUploadBean {
       // TODO groups in here.
       Instrument instrument = new Instrument(getUser(), instrumentName,
         instrumentFiles, instrumentVariables, storedVariableProperties,
-        sensorAssignments, sensorGroups, platformCode, false);
+        sensorAssignments, sensorGroups, platformName, platformCode, false);
 
       instrument.setProperty(Instrument.PROP_PRE_FLUSHING_TIME,
         preFlushingTime);

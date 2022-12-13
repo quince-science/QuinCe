@@ -144,7 +144,7 @@
               value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
                 <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
                   itemValue="#{instrument.id}"
-                  itemLabel="#{instrument.owner.surname}, #{instrument.owner.givenName} - #{instrument.name}" />
+                  itemLabel="#{instrument.owner.surname}, #{instrument.owner.givenName} - #{instrument.displayName}" />
               <p:ajax event="change" update="datasets hasFiles" />
             </p:selectOneMenu>
           </ui:fragment>
@@ -153,7 +153,7 @@
               value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
                 <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
                   itemValue="#{instrument.id}"
-                  itemLabel="#{instrument.name}" />
+                  itemLabel="#{instrument.displayName}" />
               <p:ajax event="change" update="datasets hasFiles" />
             </p:selectOneMenu>
           </ui:fragment>

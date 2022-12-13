@@ -17,17 +17,30 @@
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
       <p:defaultCommand target="nextButton" />
-      <div id="nameForm">
-        <p:inputText id="instrumentName" widgetVar="instrumentName"
-          value="#{newInstrumentBean.instrumentName}"
-          placeholder="Name your instrument" styleClass="instrumentName"
-          required="true" requiredMessage="You must enter an instrument name">
-          <f:validator validatorId="instrumentNameValidator" />
-          <p:ajax update="msgInstrumentName" event="keyup" />
-        </p:inputText>
-        <p:message for="instrumentName" id="msgInstrumentName" display="both"
-          styleClass="instrumentNameMessage" />
-      </div>
+      <table class="form">
+        <tr>
+          <td class="labels">Platform Name</td>
+          <td><p:inputText id="platformName" required="true"
+            requiredMessage="Platform Name is required"
+            value="#{newInstrumentBean.platformName}" maxlength="100"/>
+          </td>
+        </tr>
+        <tr>
+          <td class="labels">Platform Code</td>
+          <td><p:inputText id="platformCode" required="true"
+            requiredMessage="Platform Code is required"
+            value="#{newInstrumentBean.platformCode}" maxlength="50"/>
+          </td>
+        </tr>
+        <tr>
+          <td class="labels">Instrument Name</td>
+          <td><p:inputText id="instrumentName" required="true"
+            requiredMessage="Platform Code is required"
+            value="#{newInstrumentBean.instrumentName}" maxlength="50"/>
+          </td>
+        </tr>
+      </table>
+      <p:messages display="both" styleClass="instrumentNameMessage" />
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="3" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
