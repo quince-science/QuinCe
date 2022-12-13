@@ -5,8 +5,8 @@ INSERT INTO user (id, email, salt, password, firstname, surname, permissions)
   VALUES (1000000, 'test@test.com', 'FF', 'FF', 'FF', 'FF', 0);
 
 -- Instrument
-INSERT INTO instrument (id, owner, name)
-  VALUES (1000000, 1000000, 'Test Instrument');
+INSERT INTO instrument (id, owner, name, platform_name, platform_code)
+  VALUES (1000000, 1000000, 'Test Instrument', 'Test', 'TEST');
 
 -- File definition
 INSERT INTO file_definition (id, instrument_id, description, column_separator,

@@ -22,7 +22,7 @@
               value="#{dataFilesBean.currentInstrumentId}">
                 <f:selectItems value="#{dataFilesBean.instruments}" var="instrument"
                   itemValue="#{instrument.id}"
-                  itemLabel="#{instrument.owner.surname}, #{instrument.owner.givenName} - #{instrument.name}" />
+                  itemLabel="#{instrument.owner.surname}, #{instrument.owner.givenName} - #{instrument.displayName}" />
               <p:ajax event="change" update="files" />
             </p:selectOneMenu>
           </ui:fragment>
@@ -31,7 +31,7 @@
               value="#{dataFilesBean.currentInstrumentId}">
                 <f:selectItems value="#{dataFilesBean.instruments}" var="instrument"
                   itemValue="#{instrument.id}"
-                  itemLabel="#{instrument.name}" />
+                  itemLabel="#{instrument.displayName}" />
               <p:ajax event="change" update="files" />
             </p:selectOneMenu>
           </ui:fragment>
