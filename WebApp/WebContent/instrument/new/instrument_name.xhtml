@@ -20,23 +20,30 @@
       <table class="form">
         <tr>
           <td class="labels">Platform Name</td>
-          <td><p:inputText id="platformName" required="true"
-            requiredMessage="Platform Name is required"
-            value="#{newInstrumentBean.platformName}" maxlength="100"/>
+          <td>
+            <p:selectOneMenu id="platformName" required="true"
+              editable="true" requiredMessage="Platform Name is required"
+              value="#{newInstrumentBean.platformName}" maxlength="100">
+              <f:selectItems value="#{newInstrumentBean.existingPlatformNames}"/>
+              <p:ajax listener="#{newInstrumentBean.platformNameChanged}"
+                update="platformCode"/>
+            </p:selectOneMenu>
           </td>
         </tr>
         <tr>
           <td class="labels">Platform Code</td>
-          <td><p:inputText id="platformCode" required="true"
-            requiredMessage="Platform Code is required"
-            value="#{newInstrumentBean.platformCode}" maxlength="50"/>
+          <td>
+            <p:inputText id="platformCode" required="true"
+              requiredMessage="Platform Code is required"
+              value="#{newInstrumentBean.platformCode}" maxlength="50"/>
           </td>
         </tr>
         <tr>
           <td class="labels">Instrument Name</td>
-          <td><p:inputText id="instrumentName" required="true"
-            requiredMessage="Platform Code is required"
-            value="#{newInstrumentBean.instrumentName}" maxlength="50"/>
+          <td>
+            <p:inputText id="instrumentName" required="true"
+              requiredMessage="Platform Code is required"
+              value="#{newInstrumentBean.instrumentName}" maxlength="50"/>
           </td>
         </tr>
       </table>

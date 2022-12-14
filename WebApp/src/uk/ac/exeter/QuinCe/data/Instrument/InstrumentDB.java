@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -213,6 +214,13 @@ public class InstrumentDB {
     + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
     + "INNER JOIN user u on i.owner = u.id "
     + "ORDER BY owner_name, i.owner, i.name";
+
+  private static final String PLATFORMS_QUERY = "SELECT "
+    + "platform_name, platform_code FROM instrument "
+    + "WHERE owner = ? ORDER BY created ASC";
+
+  private static final String ALL_PLATFORMS_QUERY = "SELECT "
+    + "platform_name, platform_code FROM instrument ORDER BY created ASC";
 
   /**
    * Store a new instrument in the database
@@ -1684,5 +1692,38 @@ public class InstrumentDB {
     return getSensorColumns(dataSource, instrumentId).stream()
       .filter(x -> x.getSensorType().hasInternalCalibration())
       .collect(Collectors.toList());
+  }
+
+  public static TreeMap<String, String> getPlatforms(DataSource dataSource,
+    User user) throws DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(user, "user");
+
+    TreeMap<String, String> result = new TreeMap<String, String>();
+
+    try (Connection conn = dataSource.getConnection()) {
+
+      PreparedStatement stmt;
+
+      if (user.isAdminUser()) {
+        stmt = conn.prepareStatement(ALL_PLATFORMS_QUERY);
+      } else {
+        stmt = conn.prepareStatement(PLATFORMS_QUERY);
+        stmt.setLong(1, user.getDatabaseID());
+      }
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.put(records.getString(1), records.getString(2));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting platforms list", e);
+    }
+
+    return result;
+
   }
 }
