@@ -486,12 +486,18 @@ public class NewInstrumentBean extends FileUploadBean {
   private int groupLinkDirection;
 
   /**
+   * Existing platform names/codes
+   */
+  private TreeMap<String, String> existingPlatforms;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
    */
   public String start() throws Exception {
     clearAllData();
+    existingPlatforms = InstrumentDB.getPlatforms(getDataSource(), getUser());
     return NAV_NAME;
   }
 
@@ -2429,7 +2435,6 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   public List<PositionFormatEntry> getLatitudeFormats() {
-
     if (null == latFormats) {
       TreeMap<Integer, String> latFormatsMap = LatitudeSpecification
         .getFormats();
@@ -2441,5 +2446,15 @@ public class NewInstrumentBean extends FileUploadBean {
     }
 
     return latFormats;
+  }
+
+  public List<String> getExistingPlatformNames() {
+    return new ArrayList<String>(existingPlatforms.keySet());
+  }
+
+  public void platformNameChanged() {
+    if (existingPlatforms.containsKey(platformName)) {
+      platformCode = existingPlatforms.get(platformName);
+    }
   }
 }

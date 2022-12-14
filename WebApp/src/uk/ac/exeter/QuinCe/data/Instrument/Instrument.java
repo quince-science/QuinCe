@@ -328,7 +328,7 @@ public class Instrument {
 
   /**
    * Get the platform code.
-   * 
+   *
    * @return the platformCode
    */
   public String getPlatformCode() {
@@ -337,7 +337,7 @@ public class Instrument {
 
   /**
    * Get the platform name.
-   * 
+   *
    * @return the platformCode
    */
   public String getPlatformName() {
