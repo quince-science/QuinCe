@@ -20,8 +20,6 @@ public abstract class NewInstrumentValidator implements Validator {
   public final void validate(FacesContext context, UIComponent component,
     Object value) throws ValidatorException {
 
-    String description = ((String) value).trim();
-
     ValueExpression expression = component.getValueExpression("bean");
     if (null == expression) {
       throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_FATAL,
@@ -36,14 +34,7 @@ public abstract class NewInstrumentValidator implements Validator {
     }
 
     NewInstrumentBean bean = (NewInstrumentBean) beanAttributeValue;
-
     doValidation(bean, value);
-
-    if (bean.getInstrumentFiles().containsFileDescription(description)) {
-      throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR,
-        "This description is already being used by another file",
-        "This description is already being used by another file"));
-    }
   }
 
   /**

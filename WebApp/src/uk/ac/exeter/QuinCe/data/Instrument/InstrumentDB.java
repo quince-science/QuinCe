@@ -193,7 +193,7 @@ public class InstrumentDB {
    * Query to see if an instrument exists with the given owner and name.
    */
   private static final String INSTRUMENT_EXISTS_QUERY = "SELECT "
-    + "id FROM instrument WHERE owner = ? AND name = ?";
+    + "id FROM instrument WHERE owner = ? AND platform_name = ? AND name = ?";
 
   private static final String INSTRUMENT_LIST_QUERY = "SELECT "
     + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, " // 6
@@ -677,10 +677,10 @@ public class InstrumentDB {
    *           If a database error occurs
    */
   public static boolean instrumentExists(DataSource dataSource, User owner,
-    String name) throws MissingParamException, DatabaseException {
+    String platformName, String name)
+    throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(owner, "owner");
-    MissingParam.checkMissing(name, "name");
 
     boolean exists = false;
 
@@ -689,7 +689,8 @@ public class InstrumentDB {
         .prepareStatement(INSTRUMENT_EXISTS_QUERY);) {
 
       stmt.setLong(1, owner.getDatabaseID());
-      stmt.setString(2, name);
+      stmt.setString(2, platformName);
+      stmt.setString(3, name);
 
       try (ResultSet records = stmt.executeQuery()) {
         if (records.next()) {
