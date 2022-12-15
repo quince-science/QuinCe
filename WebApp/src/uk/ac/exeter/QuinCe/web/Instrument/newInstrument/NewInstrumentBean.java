@@ -18,6 +18,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 import org.primefaces.model.TreeNode;
@@ -612,6 +613,7 @@ public class NewInstrumentBean extends FileUploadBean {
       preFlushingTime = 0;
       postFlushingTime = 0;
       depth = 0;
+      platformName = "";
       platformCode = "";
       fixedPosition = false;
       longitude = 0;
@@ -636,6 +638,10 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public String getInstrumentName() {
     return instrumentName;
+  }
+
+  public String getInstrumentDisplayName() {
+    return platformName + ";" + instrumentName;
   }
 
   /**
@@ -1566,7 +1572,40 @@ public class NewInstrumentBean extends FileUploadBean {
    * @return The navigation to the General Info page
    */
   public String goToGeneralInfo() {
-    return NAV_GENERAL_INFO;
+    return (nameValid() ? NAV_GENERAL_INFO : null);
+  }
+
+  private boolean nameValid() {
+    boolean result = true;
+
+    if (StringUtils.isBlank(platformName)) {
+      result = false;
+      setMessage(null, "Platform Name required");
+    }
+
+    if (StringUtils.isBlank(platformCode)) {
+      result = false;
+      setMessage(null, "Platform Code required");
+    }
+
+    if (StringUtils.isBlank(instrumentName)) {
+      result = false;
+      setMessage(null, "Instrument Name required");
+    }
+
+    try {
+      if (InstrumentDB.instrumentExists(getDataSource(), getUser(),
+        platformName, instrumentName)) {
+        result = false;
+        setMessage(null, "Platform/Instrument name combination already used");
+      }
+    } catch (Exception e) {
+      ExceptionUtils.printStackTrace(e);
+      result = false;
+      setMessage(null, "Error checking instrument name");
+    }
+
+    return result;
   }
 
   /**
