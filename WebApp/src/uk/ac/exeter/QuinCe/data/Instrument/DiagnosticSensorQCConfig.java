@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -147,7 +148,25 @@ public class DiagnosticSensorQCConfig {
       : new ArrayList<String>(0);
   }
 
+  protected Map<SensorAssignment, List<String>> getAllAffectedRunTypes() {
+    return affectedRunTypes;
+  }
+
   protected boolean anyRunTypeAssigned() {
     return affectedRunTypes.size() > 0;
+  }
+
+  public boolean isEmpty() {
+    boolean result = true;
+
+    if (null != rangeMin) {
+      result = false;
+    } else if (null != rangeMax) {
+      result = false;
+    } else {
+      result = !anyRunTypeAssigned();
+    }
+
+    return result;
   }
 }

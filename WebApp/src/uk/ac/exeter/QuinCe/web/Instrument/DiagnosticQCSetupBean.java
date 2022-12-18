@@ -7,7 +7,11 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 
-import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticSensorQCConfig;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
+import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfigSerializer;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
@@ -51,6 +55,8 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
    */
   private List<String> assignedRunTypes = null;
 
+  private static Gson gson = null;
+
   /**
    * Get the instrument's database ID
    *
@@ -92,6 +98,11 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
     currentMeasurementSensor = getMeasurementSensors().get(0);
     updateAssignedRunTypes();
 
+    if (null == gson) {
+      gson = new GsonBuilder().registerTypeAdapter(DiagnosticQCConfig.class,
+        new DiagnosticQCConfigSerializer()).create();
+    }
+
     return NAV_QC;
   }
 
@@ -128,6 +139,7 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   public void setMin(Double min) {
     instrument.getDiagnosticQCConfig().setRangeMin(currentDiagnosticSensor,
       min);
+    configChanged();
   }
 
   public Double getMax() {
@@ -138,6 +150,7 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   public void setMax(Double max) {
     instrument.getDiagnosticQCConfig().setRangeMax(currentDiagnosticSensor,
       max);
+    configChanged();
   }
 
   public List<SensorAssignment> getMeasurementSensors() {
@@ -189,13 +202,15 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
     return assignedRunTypes;
   }
 
-  public void setAssignedRunTypes(List<String> assignedRunTypes) {
+  public void setAssignedRunTypes(List<String> assignedRunTypes)
+    throws VariableNotFoundException {
     this.assignedRunTypes = assignedRunTypes;
   }
 
   public void runTypesUpdated() throws VariableNotFoundException {
     instrument.getDiagnosticQCConfig().setAssignedRunTypes(
       currentDiagnosticSensor, currentMeasurementSensor, assignedRunTypes);
+    configChanged();
   }
 
   public String getMeasurementSensorAssignedString(Long sensorId) {
@@ -214,12 +229,14 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
     instrument.getDiagnosticQCConfig().setAssignedRunTypes(
       currentDiagnosticSensor, currentMeasurementSensor,
       instrument.getAllRunTypeNames());
+    configChanged();
     updateAssignedRunTypes();
   }
 
   public void unassignAllRunTypes() {
     instrument.getDiagnosticQCConfig().setAssignedRunTypes(
       currentDiagnosticSensor, currentMeasurementSensor, null);
+    configChanged();
     updateAssignedRunTypes();
   }
 
@@ -228,7 +245,7 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
       .getAssignedRunTypes(currentDiagnosticSensor, currentMeasurementSensor);
   }
 
-  private DiagnosticSensorQCConfig getCurrentSensorConfig() {
-    return instrument.getDiagnosticQCConfig().get(currentDiagnosticSensor);
+  private void configChanged() {
+    System.out.println(gson.toJson(instrument.getDiagnosticQCConfig()));
   }
 }
