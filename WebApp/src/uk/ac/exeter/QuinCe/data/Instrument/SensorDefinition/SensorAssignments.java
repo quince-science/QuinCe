@@ -1111,9 +1111,8 @@ public class SensorAssignments
    */
   public List<SensorAssignment> getNonDiagnosticSensors(
     boolean includeSystemTypes) {
-    return keySet().stream()
-      .filter(
-        t -> !t.isDiagnostic() && includeSystemTypes ? true : !t.isSystemType())
+    return keySet().stream().filter(
+      t -> !t.isDiagnostic() && (includeSystemTypes ? true : !t.isSystemType()))
       .flatMap(t -> get(t).stream()).collect(Collectors.toList());
   }
 
