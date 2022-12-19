@@ -4,11 +4,64 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 
 @SuppressWarnings("serial")
 public class DiagnosticQCConfig
   extends TreeMap<SensorAssignment, DiagnosticSensorQCConfig> {
+
+  public DiagnosticQCConfig() {
+    super();
+  }
+
+  public DiagnosticQCConfig(JsonElement json,
+    SensorAssignments sensorAssignments) {
+
+    super();
+
+    JsonObject jsonObject = json.getAsJsonObject();
+
+    for (String assignmentIdString : jsonObject.keySet()) {
+      SensorAssignment assignment = sensorAssignments
+        .getById(Long.parseLong(assignmentIdString));
+
+      JsonObject assignmentObject = jsonObject
+        .getAsJsonObject(assignmentIdString);
+      if (assignmentObject.has(DiagnosticQCConfigSerializer.RANGE_MIN_KEY)) {
+        setRangeMin(assignment, assignmentObject
+          .get(DiagnosticQCConfigSerializer.RANGE_MIN_KEY).getAsDouble());
+      }
+
+      if (assignmentObject.has(DiagnosticQCConfigSerializer.RANGE_MAX_KEY)) {
+        setRangeMax(assignment, assignmentObject
+          .get(DiagnosticQCConfigSerializer.RANGE_MAX_KEY).getAsDouble());
+      }
+
+      if (assignmentObject.has(DiagnosticQCConfigSerializer.RUN_TYPES_KEY)) {
+        JsonObject assignedRunTypesObject = assignmentObject
+          .getAsJsonObject(DiagnosticQCConfigSerializer.RUN_TYPES_KEY);
+
+        for (String runTypesAssignmentIdString : assignedRunTypesObject
+          .keySet()) {
+          SensorAssignment runTypesAssignment = sensorAssignments
+            .getById(Long.parseLong(runTypesAssignmentIdString));
+
+          JsonArray runTypes = assignedRunTypesObject
+            .get(runTypesAssignmentIdString).getAsJsonArray();
+
+          List<String> runTypesStrings = new ArrayList<String>();
+          runTypes.forEach(e -> runTypesStrings.add(e.getAsString()));
+
+          setAssignedRunTypes(assignment, runTypesAssignment, runTypesStrings);
+        }
+      }
+    }
+  }
 
   public void setAssignedRunTypes(SensorAssignment diagnosticSensor,
     SensorAssignment measurementSensor, List<String> assignedRunTypes) {

@@ -212,6 +212,9 @@ public class InstrumentDB {
     + "INNER JOIN user u on i.owner = u.id "
     + "ORDER BY owner_name, i.owner, i.name";
 
+  private static final String SAVE_PROPERTIES_STATEMENT = "UPDATE instrument "
+    + "SET properties = ? WHERE id = ?";
+
   /**
    * Store a new instrument in the database
    *
@@ -1677,5 +1680,27 @@ public class InstrumentDB {
     return getSensorColumns(dataSource, instrumentId).stream()
       .filter(x -> x.getSensorType().hasInternalCalibration())
       .collect(Collectors.toList());
+  }
+
+  public static void saveInstrumentProperties(DataSource dataSource,
+    Instrument instrument) throws DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(instrument, "instrument");
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(SAVE_PROPERTIES_STATEMENT)) {
+
+      if (instrument.getId() == DatabaseUtils.NO_DATABASE_RECORD) {
+        throw new DatabaseException("Instrument not saved to database");
+      }
+
+      stmt.setString(1, instrument.getPropertiesJson());
+      stmt.setLong(2, instrument.getId());
+      stmt.execute();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error saving instrument properties", e);
+    }
   }
 }

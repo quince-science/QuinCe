@@ -7,17 +7,13 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
-import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfigSerializer;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
@@ -54,8 +50,6 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
    * The Run Types assigned for the current measurement sensor.
    */
   private List<String> assignedRunTypes = null;
-
-  private static Gson gson = null;
 
   /**
    * Get the instrument's database ID
@@ -97,11 +91,6 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
       .getDiagnosticSensors().get(0);
     currentMeasurementSensor = getMeasurementSensors().get(0);
     updateAssignedRunTypes();
-
-    if (null == gson) {
-      gson = new GsonBuilder().registerTypeAdapter(DiagnosticQCConfig.class,
-        new DiagnosticQCConfigSerializer()).create();
-    }
 
     return NAV_QC;
   }
@@ -246,6 +235,10 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
   }
 
   private void configChanged() {
-    System.out.println(gson.toJson(instrument.getDiagnosticQCConfig()));
+    try {
+      InstrumentDB.saveInstrumentProperties(getDataSource(), instrument);
+    } catch (DatabaseException e) {
+      ExceptionUtils.printStackTrace(e);
+    }
   }
 }

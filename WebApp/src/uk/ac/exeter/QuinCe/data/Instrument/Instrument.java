@@ -887,6 +887,8 @@ public class Instrument {
 
     Gson gson = new GsonBuilder()
       .registerTypeAdapter(SensorGroups.class, new SensorGroupsSerializer())
+      .registerTypeAdapter(DiagnosticQCConfig.class,
+        new DiagnosticQCConfigSerializer())
       .create();
 
     // Get the basic properties Json
@@ -895,6 +897,10 @@ public class Instrument {
 
     // Add the Sensor Groups
     result.add(SENSOR_GROUPS_JSON_NAME, gson.toJsonTree(sensorGroups));
+
+    // Add diagnostic QC setup
+    result.add(DIAGNOSTIC_QC_JSON_NAME,
+      gson.toJsonTree(getDiagnosticQCConfig()));
 
     return result.toString();
   }
@@ -930,7 +936,8 @@ public class Instrument {
 
       if (json.has(DIAGNOSTIC_QC_JSON_NAME)) {
         JsonElement diagnosticQCElement = json.get(DIAGNOSTIC_QC_JSON_NAME);
-        parseDiagnosticQC(diagnosticQCElement);
+        diagnosticQC = new DiagnosticQCConfig(diagnosticQCElement,
+          sensorAssignments);
 
         // Remove the elements and parse the remainder into Properties
         json.remove(DIAGNOSTIC_QC_JSON_NAME);
@@ -938,10 +945,6 @@ public class Instrument {
 
       properties = new Gson().fromJson(json, Properties.class);
     }
-  }
-
-  private void parseDiagnosticQC(JsonElement element) {
-    diagnosticQC = new DiagnosticQCConfig();
   }
 
   /**

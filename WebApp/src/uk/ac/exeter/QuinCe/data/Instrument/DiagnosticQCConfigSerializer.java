@@ -15,11 +15,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 public class DiagnosticQCConfigSerializer
   implements JsonSerializer<DiagnosticQCConfig> {
 
-  private static final String RANGE_MIN_KEY = "rangeMin";
+  protected static final String RANGE_MIN_KEY = "rangeMin";
 
-  private static final String RANGE_MAX_KEY = "rangeMax";
+  protected static final String RANGE_MAX_KEY = "rangeMax";
 
-  private static final String RUN_TYPES_KEY = "affectedRunTypes";
+  protected static final String RUN_TYPES_KEY = "affectedRunTypes";
 
   @Override
   public JsonElement serialize(DiagnosticQCConfig src, Type typeOfSrc,
