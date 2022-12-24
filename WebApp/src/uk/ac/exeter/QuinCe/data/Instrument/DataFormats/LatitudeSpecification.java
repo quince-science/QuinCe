@@ -63,12 +63,17 @@ public class LatitudeSpecification extends PositionSpecification {
   /**
    * Constructor for a complete specification
    *
-   * @param format           The format
-   * @param valueColumn      The value column
-   * @param hemisphereColumn The hemisphere column
-   * @throws PositionException If the specification is incomplete or invalid
+   * @param format
+   *          The format
+   * @param valueColumn
+   *          The value column
+   * @param hemisphereColumn
+   *          The hemisphere column
+   * @throws PositionException
+   *           If the specification is incomplete or invalid
    */
-  public LatitudeSpecification(int format, int valueColumn, int hemisphereColumn) throws PositionException {
+  public LatitudeSpecification(int format, int valueColumn,
+    int hemisphereColumn) throws PositionException {
     super(format, valueColumn, hemisphereColumn);
   }
 
@@ -79,7 +84,7 @@ public class LatitudeSpecification extends PositionSpecification {
 
   @Override
   public boolean hemisphereRequired() {
-    return (getFormat() == FORMAT_0_90);
+    return (format == FORMAT_0_90 || format == FORMAT_H_DDDMMmmm);
   }
 
   @Override
@@ -126,7 +131,8 @@ public class LatitudeSpecification extends PositionSpecification {
   }
 
   private HemisphereMultiplier makeHemisphereMultiplier() {
-    return new HemisphereMultiplier(Arrays.asList("N", "North"), Arrays.asList("S", "South"));
+    return new HemisphereMultiplier(Arrays.asList("N", "North"),
+      Arrays.asList("S", "South"));
   }
 
   public static TreeMap<Integer, String> getFormats() {

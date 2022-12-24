@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -59,8 +60,8 @@ public class InstrumentDB {
    * Statement for inserting an instrument record
    */
   private static final String CREATE_INSTRUMENT_STATEMENT = "INSERT INTO instrument ("
-    + "owner, name, platform_code, nrt, properties" // 5
-    + ") VALUES (?, ?, ?, ?, ?)";
+    + "owner, name, platform_name, platform_code, nrt, properties" // 5
+    + ") VALUES (?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement for inserting an instrument variable record
@@ -112,7 +113,7 @@ public class InstrumentDB {
    * SQL query to get an instrument's base record
    */
   private static final String GET_INSTRUMENT_QUERY = "SELECT name, owner, " // 2
-    + "platform_code, nrt, properties " // 5
+    + "platform_name, platform_code, nrt, properties " // 5
     + "FROM instrument WHERE id = ?";
 
   /**
@@ -192,12 +193,13 @@ public class InstrumentDB {
    * Query to see if an instrument exists with the given owner and name.
    */
   private static final String INSTRUMENT_EXISTS_QUERY = "SELECT "
-    + "id FROM instrument WHERE owner = ? AND name = ?";
+    + "id FROM instrument WHERE owner = ? AND platform_name = ? AND name = ?";
 
   private static final String INSTRUMENT_LIST_QUERY = "SELECT "
-    + "i.id, i.name, i.owner, i.platform_code, i.nrt, i.properties, " // 6
-    + "iv.variable_id, iv.properties, " // 8
-    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 9
+    + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, " // 6
+    + "i.properties, " // 7
+    + "iv.variable_id, iv.properties, " // 9
+    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 10
     + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
     + "INNER JOIN user u on i.owner = u.id " + "WHERE i.id IN ("
     + "SELECT id FROM instrument WHERE OWNER = ? " + "UNION "
@@ -205,17 +207,25 @@ public class InstrumentDB {
     + ") ORDER BY owner_name, i.owner, i.name";
 
   private static final String ALL_INSTRUMENT_LIST_QUERY = "SELECT "
-    + "i.id, i.name, i.owner, i.platform_code, i.nrt, i.properties, " // 6
-    + "iv.variable_id, iv.properties, " // 8
-    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 9
+    + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, " // 6
+    + "i.properties, " // 7
+    + "iv.variable_id, iv.properties, " // 9
+    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 10
     + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
     + "INNER JOIN user u on i.owner = u.id "
     + "ORDER BY owner_name, i.owner, i.name";
 
+   private static final String PLATFORMS_QUERY = "SELECT "
+    + "platform_name, platform_code FROM instrument "
+    + "WHERE owner = ? ORDER BY created ASC";
+
+  private static final String ALL_PLATFORMS_QUERY = "SELECT "
+    + "platform_name, platform_code FROM instrument ORDER BY created ASC";
+
   private static final String SAVE_PROPERTIES_STATEMENT = "UPDATE instrument "
     + "SET properties = ? WHERE id = ?";
 
-  /**
+ /**
    * Store a new instrument in the database
    *
    * @param dataSource
@@ -388,9 +398,10 @@ public class InstrumentDB {
       Statement.RETURN_GENERATED_KEYS);
     stmt.setLong(1, instrument.getOwner().getDatabaseID()); // owner
     stmt.setString(2, instrument.getName()); // name
-    stmt.setString(3, instrument.getPlatformCode()); // platform_code
-    stmt.setBoolean(4, instrument.getNrt()); // nrt
-    stmt.setString(5, instrument.getPropertiesJson()); // attributes
+    stmt.setString(3, instrument.getPlatformName()); // platform_name
+    stmt.setString(4, instrument.getPlatformCode()); // platform_code
+    stmt.setBoolean(5, instrument.getNrt()); // nrt
+    stmt.setString(6, instrument.getPropertiesJson()); // attributes
 
     return stmt;
   }
@@ -541,6 +552,7 @@ public class InstrumentDB {
       long currentInstrument = -1;
       String name = null;
       long owner = -1;
+      String platformName = null;
       String platformCode = null;
       boolean nrt = false;
       String propertiesJson = null;
@@ -553,29 +565,31 @@ public class InstrumentDB {
         if (instrumentId != currentInstrument) {
 
           if (currentInstrument != -1) {
-            result.add(
-              createInstrument(conn, owner, currentInstrument, name, variables,
-                variableProperties, platformCode, nrt, propertiesJson));
+            result.add(createInstrument(conn, owner, currentInstrument, name,
+              variables, variableProperties, platformName, platformCode, nrt,
+              propertiesJson));
           }
 
           currentInstrument = instrumentId;
           name = records.getString(2);
           owner = records.getLong(3);
-          platformCode = records.getString(4);
-          nrt = records.getBoolean(5);
-          propertiesJson = records.getString(6);
+          platformName = records.getString(4);
+          platformCode = records.getString(5);
+          nrt = records.getBoolean(6);
+          propertiesJson = records.getString(7);
           variables = new ArrayList<Long>();
           variableProperties = new HashMap<Long, String>();
         }
 
-        variables.add(records.getLong(7));
-        variableProperties.put(records.getLong(7), records.getString(8));
+        variables.add(records.getLong(8));
+        variableProperties.put(records.getLong(8), records.getString(9));
       }
 
       // Create the last instrument, if there is one
       if (currentInstrument != -1) {
         result.add(createInstrument(conn, owner, currentInstrument, name,
-          variables, variableProperties, platformCode, nrt, propertiesJson));
+          variables, variableProperties, platformName, platformCode, nrt,
+          propertiesJson));
       }
 
     } catch (SQLException e) {
@@ -590,8 +604,8 @@ public class InstrumentDB {
 
   private static Instrument createInstrument(Connection conn, long ownerId,
     long id, String name, List<Long> variableIds,
-    Map<Long, String> variableProperties, String platformCode, boolean nrt,
-    String propertiesJson)
+    Map<Long, String> variableProperties, String platformName,
+    String platformCode, boolean nrt, String propertiesJson)
     throws MissingParamException, DatabaseException, RecordNotFoundException,
     InstrumentException, VariableNotFoundException, SensorGroupsException {
 
@@ -620,8 +634,8 @@ public class InstrumentDB {
     }
 
     return new Instrument(UserDB.getUser(conn, ownerId), id, name, files,
-      variables, processedVariableProperties, sensorAssignments, platformCode,
-      nrt, propertiesJson);
+      variables, processedVariableProperties, sensorAssignments, platformName,
+      platformCode, nrt, propertiesJson);
   }
 
   /**
@@ -666,10 +680,10 @@ public class InstrumentDB {
    *           If a database error occurs
    */
   public static boolean instrumentExists(DataSource dataSource, User owner,
-    String name) throws MissingParamException, DatabaseException {
+    String platformName, String name)
+    throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(owner, "owner");
-    MissingParam.checkMissing(name, "name");
 
     boolean exists = false;
 
@@ -678,7 +692,8 @@ public class InstrumentDB {
         .prepareStatement(INSTRUMENT_EXISTS_QUERY);) {
 
       stmt.setLong(1, owner.getDatabaseID());
-      stmt.setString(2, name);
+      stmt.setString(2, platformName);
+      stmt.setString(3, name);
 
       try (ResultSet records = stmt.executeQuery()) {
         if (records.next()) {
@@ -758,9 +773,10 @@ public class InstrumentDB {
         // Read in the instrument details
         String name = instrumentRecord.getString(1);
         long owner = instrumentRecord.getLong(2);
-        String platformCode = instrumentRecord.getString(3);
-        boolean nrt = instrumentRecord.getBoolean(4);
-        String propertiesJson = instrumentRecord.getString(5);
+        String platformName = instrumentRecord.getString(3);
+        String platformCode = instrumentRecord.getString(4);
+        boolean nrt = instrumentRecord.getBoolean(5);
+        String propertiesJson = instrumentRecord.getString(6);
 
         // Now get the file definitions
         InstrumentFileSet files = getFileDefinitions(conn, instrumentId);
@@ -777,7 +793,7 @@ public class InstrumentDB {
 
         instrument = new Instrument(UserDB.getUser(conn, owner), instrumentId,
           name, files, variables, variableProperties, sensorAssignments,
-          platformCode, nrt, propertiesJson);
+          platformName, platformCode, nrt, propertiesJson);
       }
 
     } catch (SQLException e) {
@@ -1680,6 +1696,38 @@ public class InstrumentDB {
     return getSensorColumns(dataSource, instrumentId).stream()
       .filter(x -> x.getSensorType().hasInternalCalibration())
       .collect(Collectors.toList());
+  }
+
+  public static TreeMap<String, String> getPlatforms(DataSource dataSource,
+    User user) throws DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(user, "user");
+
+    TreeMap<String, String> result = new TreeMap<String, String>();
+
+    try (Connection conn = dataSource.getConnection()) {
+
+      PreparedStatement stmt;
+
+      if (user.isAdminUser()) {
+        stmt = conn.prepareStatement(ALL_PLATFORMS_QUERY);
+      } else {
+        stmt = conn.prepareStatement(PLATFORMS_QUERY);
+        stmt.setLong(1, user.getDatabaseID());
+      }
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.put(records.getString(1), records.getString(2));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting platforms list", e);
+    }
+
+    return result;
   }
 
   public static void saveInstrumentProperties(DataSource dataSource,

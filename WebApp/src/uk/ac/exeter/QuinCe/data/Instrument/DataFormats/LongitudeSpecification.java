@@ -27,8 +27,8 @@ public class LongitudeSpecification extends PositionSpecification {
   public static final String NAME_MINUS180_180 = "-180° to 180°";
 
   /**
-   * Indicates that longitudes are between 0 and 180, with an extra field denoting
-   * East or West
+   * Indicates that longitudes are between 0 and 180, with an extra field
+   * denoting East or West
    */
   public static final int FORMAT_0_180 = 2;
 
@@ -73,12 +73,17 @@ public class LongitudeSpecification extends PositionSpecification {
   /**
    * Constructor for a complete specification
    *
-   * @param format           The format
-   * @param valueColumn      The value column
-   * @param hemisphereColumn The hemisphere column
-   * @throws PositionException If the specification is incomplete or invalid
+   * @param format
+   *          The format
+   * @param valueColumn
+   *          The value column
+   * @param hemisphereColumn
+   *          The hemisphere column
+   * @throws PositionException
+   *           If the specification is incomplete or invalid
    */
-  public LongitudeSpecification(int format, int valueColumn, int hemisphereColumn) throws PositionException {
+  public LongitudeSpecification(int format, int valueColumn,
+    int hemisphereColumn) throws PositionException {
     super(format, valueColumn, hemisphereColumn);
   }
 
@@ -89,7 +94,7 @@ public class LongitudeSpecification extends PositionSpecification {
 
   @Override
   public boolean hemisphereRequired() {
-    return (format == FORMAT_0_180);
+    return (format == FORMAT_0_180 || format == FORMAT_H_DDDMMmmm);
   }
 
   @Override
@@ -146,7 +151,8 @@ public class LongitudeSpecification extends PositionSpecification {
   }
 
   private HemisphereMultiplier makeHemisphereMultiplier() {
-    return new HemisphereMultiplier(Arrays.asList("E", "East"), Arrays.asList("W", "West"));
+    return new HemisphereMultiplier(Arrays.asList("E", "East"),
+      Arrays.asList("W", "West"));
   }
 
   public static TreeMap<Integer, String> getFormats() {

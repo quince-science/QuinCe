@@ -68,7 +68,7 @@
             <ui:fragment rendered="#{User.adminUser}">
               <h:outputText value="#{instrument.owner.surname}, #{instrument.owner.givenName} - "/>
             </ui:fragment>
-            <h:outputText value="#{instrument.name}"/>
+            <h:outputText value="#{instrument.displayName}"/>
           </b>
         </p:column>
         <p:column styleClass="centeredCell">

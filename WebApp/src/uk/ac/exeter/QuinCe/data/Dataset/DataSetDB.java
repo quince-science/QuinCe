@@ -919,6 +919,8 @@ public class DataSetDB {
       DateTimeUtils.toIsoDate(dataset.getStart()));
     result.addProperty("enddate", DateTimeUtils.toIsoDate(dataset.getEnd()));
     result.addProperty("platformCode", instrument.getPlatformCode());
+    result.addProperty("platformName", instrument.getPlatformName());
+    result.addProperty("instrumentName", instrument.getName());
     result.addProperty("nrt", dataset.isNrt());
     result.addProperty("last_touched",
       DateTimeUtils.toIsoDate(dataset.getLastTouched()));

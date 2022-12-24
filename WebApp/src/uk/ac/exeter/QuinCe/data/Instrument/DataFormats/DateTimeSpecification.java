@@ -743,11 +743,12 @@ public class DateTimeSpecification {
    * @param line
    *          The line
    * @return The date/time
+   * @throws MissingDateTimeException
    * @throws DataFileException
    *           If the date/time in the line is missing or invalid
    */
   public LocalDateTime getDateTime(LocalDateTime headerDate, List<String> line)
-    throws DateTimeSpecificationException {
+    throws DateTimeSpecificationException, MissingDateTimeException {
     LocalDateTime result = null;
 
     if (isAssigned(HOURS_FROM_START)) {
@@ -958,24 +959,26 @@ public class DateTimeSpecification {
    * @param line
    *          The line
    * @return The date
+   * @throws MissingDateTimeException
+   *           If the line does not contain the date/time field(s) or are empty
    * @throws DataFileException
-   *           If the date field is empty or invalid
+   *           If the date field(s) is invalid
    */
   private LocalDate getDate(List<String> line)
-    throws DateTimeSpecificationException {
+    throws DateTimeSpecificationException, MissingDateTimeException {
     LocalDate result;
 
     DateTimeColumnAssignment assignment = getAssignment(DATE);
 
     if (line.size() <= assignment.getColumn()) {
-      throw new DateTimeSpecificationException(
-        "Line does not contain date/time");
+      throw new MissingDateTimeException();
     } else {
       String fieldValue = DataFile
         .extractStringFieldValue(line.get(assignment.getColumn()), null);
 
-      if (null == fieldValue) {
-        throw new DateTimeSpecificationException("Date column is empty");
+      if (null == fieldValue || fieldValue.equalsIgnoreCase("")
+        || fieldValue.equalsIgnoreCase("NaN")) {
+        throw new MissingDateTimeException();
       } else {
         try {
           result = LocalDate.parse(fieldValue, assignment.getFormatter());

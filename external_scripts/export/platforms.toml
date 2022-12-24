@@ -110,16 +110,6 @@ author_list = ''
 	[1801573]
 	platform_id = 'SD1053'
 
-[48MB]
-name = 'PALOMA'
-submitter_id = 'OTC'
-cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_PALOMA'
-category_code = ''
-call_sign = ''
-export = ['ICOS']
-creation_date = '2020-05-20T00:00:00Z'
-author_list = ''
-
 [11SS]
 name = 'Simon Stevin'
 submitter_id = 'OTC'
@@ -195,6 +185,21 @@ affiliation = 'National Oceanography Centre, UK'
 NRT = 'True'
 
   [74FS.export]
+  NRT = ['ICOS']
+  L2 = ['ICOS']
+
+[34FM]
+name = 'Finnmaid'
+submitter_id = 'OTC'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_BALTIC-VOS'
+category_code = '31'
+call_sign = 'OJMI'
+creation_date = '2022-09-27T00:00:00Z'
+author_list = 'Glockzin, Michael; Rehder, Gregor'
+affiliation = 'Leibniz Institute for Baltic Sea Research' 
+NRT = 'False'
+
+  [34FM.export]
   NRT = ['ICOS']
   L2 = ['ICOS']
 

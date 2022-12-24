@@ -88,7 +88,7 @@ public class Instrument {
   /**
    * The name of the instrument
    */
-  private String name = null;
+  private final String name;
 
   /**
    * The instrument properties
@@ -121,9 +121,14 @@ public class Instrument {
   private SensorGroups sensorGroups = null;
 
   /**
+   * Platform name
+   */
+  private final String platformName;
+
+  /**
    * Platform code
    */
-  private String platformCode = null;
+  private final String platformCode;
 
   /**
    * Indicates whether or not this instrument supplies near-real-time data
@@ -166,8 +171,9 @@ public class Instrument {
   public Instrument(User owner, long databaseId, String name,
     InstrumentFileSet fileDefinitions, List<Variable> variables,
     Map<Variable, Properties> variableProperties,
-    SensorAssignments sensorAssignments, String platformCode, boolean nrt,
-    String propertiesJson) throws SensorGroupsException {
+    SensorAssignments sensorAssignments, String platformName,
+    String platformCode, boolean nrt, String propertiesJson)
+    throws SensorGroupsException {
 
     this.owner = owner;
     this.id = databaseId;
@@ -176,7 +182,8 @@ public class Instrument {
     this.variables = variables;
     this.variableProperties = variableProperties;
     this.sensorAssignments = sensorAssignments;
-    this.setPlatformCode(platformCode);
+    this.platformName = platformName;
+    this.platformCode = platformCode;
     this.nrt = nrt;
     parsePropertiesJson(propertiesJson);
   }
@@ -205,8 +212,9 @@ public class Instrument {
    */
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
     List<Variable> variables, Map<Variable, Properties> variableProperties,
-    SensorAssignments sensorAssignments, String platformCode, boolean nrt,
-    String propertiesJson) throws SensorGroupsException {
+    SensorAssignments sensorAssignments, String platformName,
+    String platformCode, boolean nrt, String propertiesJson)
+    throws SensorGroupsException {
 
     this.owner = owner;
     this.name = name;
@@ -214,6 +222,7 @@ public class Instrument {
     this.variables = variables;
     this.variableProperties = variableProperties;
     this.sensorAssignments = sensorAssignments;
+    this.platformName = platformName;
     this.platformCode = platformCode;
     this.nrt = nrt;
     parsePropertiesJson(propertiesJson);
@@ -241,7 +250,7 @@ public class Instrument {
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
     List<Variable> variables, Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, SensorGroups sensorGroups,
-    String platformCode, boolean nrt) {
+    String platformName, String platformCode, boolean nrt) {
 
     this.owner = owner;
     this.name = name;
@@ -250,6 +259,7 @@ public class Instrument {
     this.variableProperties = variableProperties;
     this.sensorAssignments = sensorAssignments;
     this.sensorGroups = sensorGroups;
+    this.platformName = platformName;
     this.platformCode = platformCode;
     this.nrt = nrt;
     this.properties = new Properties();
@@ -327,6 +337,8 @@ public class Instrument {
   }
 
   /**
+   * Get the platform code.
+   *
    * @return the platformCode
    */
   public String getPlatformCode() {
@@ -334,11 +346,12 @@ public class Instrument {
   }
 
   /**
-   * @param platformCode
-   *          the platformCode to set
+   * Get the platform name.
+   *
+   * @return the platformCode
    */
-  public void setPlatformCode(String platformCode) {
-    this.platformCode = platformCode;
+  public String getPlatformName() {
+    return platformName;
   }
 
   /**
@@ -960,6 +973,10 @@ public class Instrument {
    */
   public boolean hasSensorGroups() {
     return null != sensorGroups && sensorGroups.size() > 1;
+  }
+
+  public String getDisplayName() {
+    return platformName + ";" + name;
   }
 
   /**
