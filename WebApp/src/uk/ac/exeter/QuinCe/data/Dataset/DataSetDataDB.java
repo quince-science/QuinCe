@@ -1161,8 +1161,6 @@ public class DataSetDataDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(measurement, "measurement");
 
-    measurement.postProcessMeasurementValues();
-
     try (PreparedStatement stmt = conn
       .prepareStatement(STORE_MEASUREMENT_VALUES_STATEMENT)) {
       stmt.setString(1, measurement.getMeasurementValuesJson());
@@ -1184,7 +1182,6 @@ public class DataSetDataDB {
       .prepareStatement(STORE_MEASUREMENT_VALUES_STATEMENT)) {
 
       for (Measurement measurement : measurements) {
-        measurement.postProcessMeasurementValues();
         stmt.setString(1, measurement.getMeasurementValuesJson());
         stmt.setLong(2, measurement.getId());
         stmt.addBatch();

@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
@@ -131,9 +132,10 @@ public class InternalCalibrationBean extends PlotPageBean {
    *           If a database error occurs
    * @throws MissingParamException
    *           If any required parameters are missing
+   * @throws InvalidFlagException
    */
   public void setCalibrationUse()
-    throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException, InvalidFlagException {
 
     Flag newFlag = Flag.GOOD;
     if (!useCalibrations) {

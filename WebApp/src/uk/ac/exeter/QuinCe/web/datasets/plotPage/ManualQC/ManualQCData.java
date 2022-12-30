@@ -395,8 +395,8 @@ public class ManualQCData extends PlotPageData {
             }
 
             record.addColumn(positionString.toString(), longitude.getQcFlag(),
-              longitude.getQcMessage(false), longitude.getFlagNeeded(),
-              longitude.getType());
+              longitude.getQcMessage(sensorValues, false),
+              longitude.getFlagNeeded(), longitude.getType());
           } else {
             // Empty position column
             record.addColumn("", Flag.GOOD, null, false,
@@ -671,31 +671,28 @@ public class ManualQCData extends PlotPageData {
       // If we're doing position QC, apply it and update all related sensor
       // values.
       if (FileDefinition.LONGITUDE_COLUMN_ID == selectedColumn) {
-        selectedValues.forEach(v -> v.setUserQC(userFlag, userComment));
+        for (SensorValue sensorValue : selectedValues) {
+          sensorValue.setUserQC(userFlag, userComment);
+        }
         selectedValues.addAll(propagatePositionQC(selectedValues));
       } else {
 
         for (SensorValue value : selectedValues) {
           // If we are directly overwriting an existing position QC, go ahead
           // and set it - the SensorValue will decide whether to update or not
-          if (value.hasPositionQC()) {
-            value.setUserQC(userFlag, userComment);
+          // Find the position QC for this sensor value, and see if we need to
+          // apply it.
+          SensorValue positionSensorValue = sensorValues
+            .getSensorValueOnOrBefore(FileDefinition.LONGITUDE_COLUMN_ID,
+              value.getTime());
+
+          if (null != positionSensorValue && positionSensorValue
+            .getDisplayFlag().moreSignificantThan(userFlag)) {
+
+            value.setUserQC(positionSensorValue.getDisplayFlag(),
+              positionSensorValue.getDisplayQCMessage(sensorValues));
           } else {
-
-            // Find the position QC for this sensor value, and see if we need to
-            // apply it.
-            SensorValue positionSensorValue = sensorValues
-              .getSensorValueOnOrBefore(FileDefinition.LONGITUDE_COLUMN_ID,
-                value.getTime());
-
-            if (null != positionSensorValue && positionSensorValue
-              .getDisplayFlag().moreSignificantThan(userFlag)) {
-
-              value.setUserQC(positionSensorValue.getDisplayFlag(),
-                positionSensorValue.getDisplayQCMessage());
-            } else {
-              value.setUserQC(userFlag, userComment);
-            }
+            value.setUserQC(userFlag, userComment);
           }
         }
       }
@@ -734,10 +731,11 @@ public class ManualQCData extends PlotPageData {
    * @return The list of sensor values whose QC flags have been updated
    * @throws RecordNotFoundException
    * @throws RoutineException
+   * @throws InvalidFlagException
    */
   private List<SensorValue> propagatePositionQC(
     List<SensorValue> positionValues)
-    throws RecordNotFoundException, RoutineException {
+    throws RecordNotFoundException, RoutineException, InvalidFlagException {
 
     List<SensorValue> updatedValues = new ArrayList<SensorValue>();
 
@@ -759,7 +757,7 @@ public class ManualQCData extends PlotPageData {
         // For latitude, just copy the longitude QC
         if (FileDefinition.LATITUDE_COLUMN_ID == value.getColumnId()) {
           value.setUserQC(positionValue.getDisplayFlag(),
-            positionValue.getDisplayQCMessage());
+            positionValue.getDisplayQCMessage(sensorValues));
 
           // Skip the longitude - that's what we're basing this whole thing on
           // in the first place.
@@ -768,8 +766,7 @@ public class ManualQCData extends PlotPageData {
           if (!instrument.getSensorAssignments()
             .getSensorTypeForDBColumn(value.getColumnId()).isDiagnostic()) {
 
-            value.setPositionQC(positionValue.getDisplayFlag(),
-              positionValue.getDisplayQCMessage());
+            value.setCascadingQC(positionValue);
 
             updatedValues.add(value);
           }
@@ -1154,8 +1151,8 @@ public class ManualQCData extends PlotPageData {
               try {
                 result = new SimplePlotPageTableValue(String.valueOf(value),
                   SensorValue.getCombinedDisplayFlag(valuesToUse),
-                  SensorValue.getCombinedQcComment(valuesToUse), false,
-                  PlotPageTableValue.INTERPOLATED_TYPE);
+                  SensorValue.getCombinedQcComment(valuesToUse, sensorValues),
+                  false, PlotPageTableValue.INTERPOLATED_TYPE);
               } catch (RoutineException e) {
                 throw new PlotPageDataException(
                   "Unable to get SensorValue QC Comments", e);
@@ -1174,5 +1171,10 @@ public class ManualQCData extends PlotPageData {
     }
 
     return result;
+  }
+
+  @Override
+  public DatasetSensorValues getAllSensorValues() {
+    return sensorValues;
   }
 }

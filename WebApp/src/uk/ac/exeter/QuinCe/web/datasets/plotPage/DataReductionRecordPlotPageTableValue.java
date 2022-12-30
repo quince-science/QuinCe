@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -43,7 +44,8 @@ public class DataReductionRecordPlotPageTableValue
   }
 
   @Override
-  public String getQcMessage(boolean replaceNewlines) {
+  public String getQcMessage(DatasetSensorValues allSensorValues,
+    boolean replaceNewlines) {
 
     String result = StringUtils.collectionToDelimited(record.getQCMessages(),
       ";");

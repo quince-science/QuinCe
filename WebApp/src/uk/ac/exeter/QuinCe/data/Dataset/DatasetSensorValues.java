@@ -115,6 +115,10 @@ public class DatasetSensorValues {
     return valuesById.get(id);
   }
 
+  public List<SensorValue> getById(Collection<Long> ids) {
+    return ids.stream().map(id -> getById(id)).toList();
+  }
+
   public TreeSet<SensorValue> getBySensorType(SensorType sensorType) {
     return valuesBySensorType.get(sensorType);
   }

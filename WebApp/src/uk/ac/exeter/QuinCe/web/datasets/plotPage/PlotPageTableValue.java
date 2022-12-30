@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
 /**
@@ -61,7 +62,8 @@ public interface PlotPageTableValue {
    *
    * @return The QC message.
    */
-  public String getQcMessage(boolean replaceNewlines);
+  public String getQcMessage(DatasetSensorValues allSensorValues,
+    boolean replaceNewlines);
 
   /**
    * Get the flag indicating whether user QC is needed.
