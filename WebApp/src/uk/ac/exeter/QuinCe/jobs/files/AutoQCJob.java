@@ -178,7 +178,7 @@ public class AutoQCJob extends DataSetJob {
         PositionQCRoutine positionQC = new PositionQCRoutine(instrument,
           sensorValues, runTypeValues);
 
-        positionQC.qc(null, null);
+        // positionQC.qc(null, null);
       }
 
       // Run the auto QC routines for each column

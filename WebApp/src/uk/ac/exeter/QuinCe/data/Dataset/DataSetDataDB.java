@@ -382,10 +382,12 @@ public class DataSetDataDB {
             updateStmt.setString(1, value.getAutoQcResult().toJson());
             updateStmt.setInt(2, value.getUserQCFlag().getFlagValue());
 
-            // Truncate user QC message
+            // Truncate user QC message (except for LOOKUP flags)
             String userQCMessage = value.getUserQCMessage();
-            if (userQCMessage.length() > 255) {
-              userQCMessage = userQCMessage.substring(0, 255);
+            if (!value.getUserQCFlag().equals(Flag.LOOKUP)) {
+              if (userQCMessage.length() > 255) {
+                userQCMessage = userQCMessage.substring(0, 255);
+              }
             }
 
             updateStmt.setString(3, userQCMessage);

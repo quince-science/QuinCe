@@ -5,9 +5,11 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -551,11 +553,9 @@ public class ManualQCData extends PlotPageData {
   public void acceptAutoQC() {
 
     try {
-
       List<SensorValue> sensorValues = getSelectedSensorValues();
 
       for (SensorValue sensorValue : sensorValues) {
-
         // Only override the existing user QC if it has Needs Flag or Assumed
         // Good
         if (sensorValue.getUserQCFlag().equals(Flag.NEEDED)
@@ -612,7 +612,8 @@ public class ManualQCData extends PlotPageData {
         worstSelectedFlag = sensorValue.getDisplayFlag();
       }
 
-      if (!sensorValue.flagNeeded()) {
+      if (!sensorValue.flagNeeded()
+        && !sensorValue.getUserQCFlag().equals(Flag.LOOKUP)) {
         comments.add(sensorValue.getUserQCMessage());
       } else {
         try {
@@ -666,40 +667,21 @@ public class ManualQCData extends PlotPageData {
 
   public void applyManualFlag() {
     try {
+      Set<SensorValue> changedValues = new HashSet<SensorValue>();
+
       List<SensorValue> selectedValues = getSelectedSensorValues();
 
-      // If we're doing position QC, apply it and update all related sensor
-      // values.
-      if (FileDefinition.LONGITUDE_COLUMN_ID == selectedColumn) {
-        for (SensorValue sensorValue : selectedValues) {
-          sensorValue.setUserQC(userFlag, userComment);
-        }
-        selectedValues.addAll(propagatePositionQC(selectedValues));
-      } else {
+      for (SensorValue value : selectedValues) {
+        value.setUserQC(userFlag, userComment);
+        changedValues.add(value);
 
-        for (SensorValue value : selectedValues) {
-          // If we are directly overwriting an existing position QC, go ahead
-          // and set it - the SensorValue will decide whether to update or not
-          // Find the position QC for this sensor value, and see if we need to
-          // apply it.
-          SensorValue positionSensorValue = sensorValues
-            .getSensorValueOnOrBefore(FileDefinition.LONGITUDE_COLUMN_ID,
-              value.getTime());
-
-          if (null != positionSensorValue && positionSensorValue
-            .getDisplayFlag().moreSignificantThan(userFlag)) {
-
-            value.setUserQC(positionSensorValue.getDisplayFlag(),
-              positionSensorValue.getDisplayQCMessage(sensorValues));
-          } else {
-            value.setUserQC(userFlag, userComment);
-          }
-        }
+        changedValues
+          .addAll(sensorValues.applyQCCascade(value, runTypePeriods));
       }
 
       // Store the updated sensor values
       try (Connection conn = dataSource.getConnection()) {
-        DataSetDataDB.storeSensorValues(conn, selectedValues);
+        DataSetDataDB.storeSensorValues(conn, changedValues);
       }
 
       initPlots();

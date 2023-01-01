@@ -208,7 +208,6 @@ public class SensorValueQCTest extends BaseTest {
     target.setCascadingQC(source);
 
     assertEquals(Flag.LOOKUP, target.getUserQCFlag());
-    assertEquals(Flag.LOOKUP.toString(), target.getUserQCMessage());
   }
 
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",

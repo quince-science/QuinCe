@@ -213,6 +213,43 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   }
 
   /**
+   * Get the closest {@link SensorValue}(s) to the specified time.
+   *
+   * <p>
+   * If there is a value at exactly the specified time, that value is returned.
+   * If there is no such value, the values immediately before and after the time
+   * are returned, if they exist.
+   * </p>
+   *
+   * @param assignment
+   *          The column to search.
+   * @param time
+   *          The time.
+   * @return The closest values.
+   */
+  public List<SensorValue> getClosest(LocalDateTime time) {
+
+    List<SensorValue> result = new ArrayList<SensorValue>(2);
+
+    if (!isEmpty()) {
+      int valueIndex = Collections.binarySearch(this, dummySensorValue(time),
+        TIME_COMPARATOR);
+
+      if (valueIndex >= 0) {
+        result.add(get(valueIndex));
+      } else if (valueIndex == -1) {
+        result.add(get(0));
+      } else if (Math.abs(valueIndex) > size()) {
+        result.add(get(size() - 1));
+      } else {
+        result.add(get(Math.abs(valueIndex) - 2));
+        result.add(get(Math.abs(valueIndex) - 1));
+      }
+    }
+    return result;
+  }
+
+  /**
    * Get the {@link SensorValue}(s) most relevant for the specified time.
    * <p>
    * If there is a {@link SensorValue} at the specified time, that value is

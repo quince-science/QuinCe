@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.lang.reflect.Type;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,12 +22,15 @@ import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public abstract class PlotPageData {
 
@@ -54,6 +58,11 @@ public abstract class PlotPageData {
    * The instrument that the dataset belongs to.
    */
   protected final Instrument instrument;
+
+  /**
+   * The Run Type periods
+   */
+  protected RunTypePeriods runTypePeriods;
 
   /**
    * Json serialization type for lists of longs
@@ -160,6 +169,16 @@ public abstract class PlotPageData {
   public void loadData() {
     try {
       loadDataAction();
+
+      DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
+      try {
+        Connection conn = dataSource.getConnection();
+
+        runTypePeriods = DataSetDataDB.getRunTypePeriods(conn, instrument,
+          dataset.getId());
+      } catch (SQLException e) {
+        error("Error loading data", e);
+      }
 
       // Initialise Gson builder
       tableDataGson = new GsonBuilder()

@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -281,15 +280,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @return The user QC message
    */
   public String getUserQCMessage() {
-    String result;
-
-    if (userQCFlag.equals(Flag.LOOKUP)) {
-      result = userQCFlag.toString();
-    } else {
-      result = null == userQCMessage ? "" : userQCMessage;
-    }
-
-    return result;
+    return null == userQCMessage ? "" : userQCMessage;
   }
 
   /**
@@ -298,7 +289,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @throws RecordNotFoundException
    *           If the value has not yet been stored in the database
    */
-  public Set<SensorValue> clearAutomaticQC() throws RecordNotFoundException {
+  public void clearAutomaticQC() throws RecordNotFoundException {
 
     if (!isInDatabase()) {
       throw new RecordNotFoundException(
@@ -314,8 +305,6 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
 
     dirty = true;
-
-    return asSet();
   }
 
   /**
@@ -327,7 +316,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @throws RecordNotFoundException
    *           If the value has not yet been stored in the database
    */
-  public Set<SensorValue> addAutoQCFlag(RoutineFlag flag)
+  public void addAutoQCFlag(RoutineFlag flag)
     throws RecordNotFoundException, RoutineException {
 
     if (!isInDatabase()) {
@@ -344,8 +333,6 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
 
     dirty = true;
-
-    return asSet();
   }
 
   /**
@@ -359,8 +346,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @throws InvalidFlagException
    *           If an invalid flag is set.
    */
-  public Set<SensorValue> setUserQC(Flag flag, String message)
-    throws InvalidFlagException {
+  public void setUserQC(Flag flag, String message) throws InvalidFlagException {
 
     boolean setQC = true;
 
@@ -379,9 +365,6 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     if (setQC && !isNaN()) {
       setUserQCAction(flag, message);
     }
-
-    return asSet();
-
   }
 
   private void setUserQCAction(Flag flag, String message) {
@@ -838,16 +821,5 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
       dirty = true;
     }
-  }
-
-  /**
-   * Make a {@link Set} containing this SensorValue instance.
-   *
-   * @return The Set.
-   */
-  private Set<SensorValue> asSet() {
-    Set<SensorValue> result = new HashSet<SensorValue>();
-    result.add(this);
-    return result;
   }
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +13,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
@@ -220,7 +223,6 @@ public class DatasetSensorValues {
   }
 
   public Map<Long, SensorValue> get(LocalDateTime time) {
-
     return valuesByDateAndColumn.get(time);
   }
 
@@ -410,6 +412,125 @@ public class DatasetSensorValues {
 
     for (SensorValue sensorValue : valuesToAdd) {
       result.add(sensorValue);
+    }
+
+    return result;
+  }
+
+  /**
+   * Cascade QC values from the specified {@link SensorValue} to other sensors.
+   *
+   * <p>
+   * When QC flags are applied to certain {@link SensorValue}s, they also apply
+   * to other sensors. For example, a bad Position value means that all sensor
+   * values will be bad.
+   * </p>
+   *
+   * <p>
+   * For each affected sensor type, if there is a SensorValue for the same time
+   * as the source value, it will be flagged. If there is no value at that time,
+   * the values before and after the source value will be flagged because we
+   * don't know when the issue started. Flags will not be applied if the
+   * value(s) are not within a specified affected Run Type.
+   * </p>
+   *
+   * @param source
+   *          The source QCed SensorValue
+   * @param changedValues
+   *          The SensorValues that have been changed as part of this cascade.
+   *          Will be updated by this method.
+   * @throws RecordNotFoundException
+   */
+  public Set<SensorValue> applyQCCascade(SensorValue source,
+    RunTypePeriods runTypePeriods) throws RecordNotFoundException {
+
+    Set<SensorValue> changedValues = new HashSet<SensorValue>();
+
+    Map<SensorAssignment, Collection<String>> affectedSensorAssignments = getCascadeAffectedSensorAssignments(
+      source);
+
+    for (SensorAssignment assignment : affectedSensorAssignments.keySet()) {
+      List<SensorValue> affectedSensorValues = valuesByColumn
+        .get(assignment.getDatabaseId()).getClosest(source.getTime());
+
+      for (SensorValue value : affectedSensorValues) {
+        String valueRunType = runTypePeriods.getRunType(value.getTime());
+        if (affectedSensorAssignments.get(assignment).contains(valueRunType)) {
+
+          if (!source.getDisplayFlag().equals(Flag.GOOD)) {
+            value.setCascadingQC(source);
+          } else {
+            value.removeCascadingQC(source);
+          }
+
+          changedValues.add(value);
+        }
+      }
+    }
+
+    return changedValues;
+  }
+
+  /**
+   * Get the set of sensor assignments that will be affected by the cascading QC
+   * from the specified SensorValue, along with the run types that the cascade
+   * will apply to.
+   *
+   * <p>
+   * For sensors without calibrations, all run types are affected. For those
+   * with calibrations, either only measurement run types are affected, or those
+   * affected have been specified by the user elsewhere.
+   * </p>
+   *
+   * <p>
+   * Position values always affect all sensors, and calibrated sensors during
+   * measurements. Diagnostic sensors affect only those sensors specified in the
+   * instrument's configuration.
+   * </p>
+   *
+   * @param source
+   *          The source SensorValue
+   * @return The affected sensors and run types.
+   * @throws RecordNotFoundException
+   */
+  private Map<SensorAssignment, Collection<String>> getCascadeAffectedSensorAssignments(
+    SensorValue source) throws RecordNotFoundException {
+    SensorType sourceType = instrument.getSensorAssignments()
+      .getSensorTypeForDBColumn(source.getColumnId());
+
+    Map<SensorAssignment, Collection<String>> result = new HashMap<SensorAssignment, Collection<String>>();
+
+    if (sourceType.isPosition()) {
+      // Positions affect all sensors.
+      Collection<SensorAssignment> assignments = instrument
+        .getSensorAssignments().getNonDiagnosticSensors(false);
+
+      assignments.forEach(a -> {
+        if (a.getSensorType().hasInternalCalibration()) {
+          result.put(a, instrument.getMeasurementRunTypes());
+        } else {
+          result.put(a, instrument.getAllRunTypeNames());
+        }
+      });
+    } else if (sourceType.isDiagnostic()) {
+      // Diagnostics affect the sensors configured by the user
+      SensorAssignment sourceAssignment = instrument.getSensorAssignments()
+        .getById(source.getColumnId());
+
+      Collection<SensorAssignment> measurementSensors = instrument
+        .getSensorAssignments().getNonDiagnosticSensors(false);
+
+      DiagnosticQCConfig diagnosticQCConfig = instrument
+        .getDiagnosticQCConfig();
+
+      measurementSensors.forEach(m -> {
+        Collection<String> runTypes = diagnosticQCConfig
+          .getAssignedRunTypes(sourceAssignment, m);
+        if (!runTypes.isEmpty()) {
+          result.put(m, runTypes);
+        }
+      });
+
     }
 
     return result;
