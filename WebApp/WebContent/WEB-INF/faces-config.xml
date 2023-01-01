@@ -196,6 +196,15 @@
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
+  	<display_name>DiagnosticQCSetup</display_name>
+    <from-view-id>/instrument/diagnostic_qc_setup.xhtml</from-view-id>
+    <navigation-case>
+      <from-outcome>finish</from-outcome>
+      <to-view-id>/instrument/instrument_list.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
+  </navigation-rule>
+  <navigation-rule>
     <display-name>DataFiles</display-name>
     <from-view-id>/data_file/*</from-view-id>
     <navigation-case>

@@ -27,6 +27,8 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
 
   private static final String NAV_QC = "diagnostic_qc_setup";
 
+  private static final String NAV_INSTRUMENT_LIST = "instrument_list";
+
   private static final String ASSIGNED = "assigned";
 
   private static final String NOT_ASSIGNED = "notAssigned";
@@ -240,5 +242,10 @@ public class DiagnosticQCSetupBean extends BaseManagedBean {
     } catch (DatabaseException e) {
       ExceptionUtils.printStackTrace(e);
     }
+  }
+
+  public String finish() {
+    initialiseInstruments();
+    return NAV_INSTRUMENT_LIST;
   }
 }
