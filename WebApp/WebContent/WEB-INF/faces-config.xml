@@ -196,7 +196,7 @@
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
-  	<display_name>DiagnosticQCSetup</display_name>
+    <display_name>DiagnosticQCSetup</display_name>
     <from-view-id>/instrument/diagnostic_qc_setup.xhtml</from-view-id>
     <navigation-case>
       <from-outcome>finish</from-outcome>

@@ -455,7 +455,8 @@ public class DatasetSensorValues {
 
       for (SensorValue value : affectedSensorValues) {
         String valueRunType = runTypePeriods.getRunType(value.getTime());
-        if (affectedSensorAssignments.get(assignment).contains(valueRunType)) {
+        if (null == valueRunType
+          || affectedSensorAssignments.get(assignment).contains(valueRunType)) {
 
           if (!source.getDisplayFlag().equals(Flag.GOOD)) {
             value.setCascadingQC(source);
