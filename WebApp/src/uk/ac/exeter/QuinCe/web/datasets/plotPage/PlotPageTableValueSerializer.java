@@ -8,8 +8,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
+
 public class PlotPageTableValueSerializer
   implements JsonSerializer<PlotPageTableValue> {
+
+  private DatasetSensorValues allSensorValues;
+
+  public PlotPageTableValueSerializer(DatasetSensorValues allSensorValues) {
+    this.allSensorValues = allSensorValues;
+  }
 
   @Override
   public JsonElement serialize(PlotPageTableValue src, Type typeOfSrc,
@@ -27,11 +35,11 @@ public class PlotPageTableValueSerializer
       json.addProperty("value", src.getValue());
       json.addProperty("qcFlag", src.getQcFlag().getFlagValue());
 
-      if (null == src.getQcMessage(false)) {
+      if (null == src.getQcMessage(allSensorValues, false)) {
         json.add("qcMessage", JsonNull.INSTANCE);
       } else {
         json.addProperty("qcMessage",
-          src.getQcMessage(true).replaceAll("\\r?\\n", ";"));
+          src.getQcMessage(allSensorValues, true).replaceAll("\\r?\\n", ";"));
       }
 
       json.addProperty("flagNeeded", src.getFlagNeeded());

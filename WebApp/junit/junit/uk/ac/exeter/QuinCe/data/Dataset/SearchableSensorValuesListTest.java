@@ -36,6 +36,12 @@ public class SearchableSensorValuesListTest extends BaseTest {
     return makeSensorValue(id, minute, Flag.GOOD, false);
   }
 
+  private SensorValue mockSensorValueWithColumnId(long columnId) {
+    SensorValue value = Mockito.mock(SensorValue.class);
+    Mockito.when(value.getColumnId()).thenReturn(4L);
+    return value;
+  }
+
   private SensorValue makeSensorValue(long id, int minute, Flag flag,
     boolean needed) {
 
@@ -222,9 +228,43 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   }
 
-  private SensorValue mockSensorValueWithColumnId(long columnId) {
-    SensorValue value = Mockito.mock(SensorValue.class);
-    Mockito.when(value.getColumnId()).thenReturn(4L);
-    return value;
+  @Test
+  public void getClosestExactTest() {
+    SearchableSensorValuesList list = rangeTestList();
+    List<SensorValue> found = list.getClosest(makeTime(35));
+    assertEquals(1, found.size());
+    assertEquals(4L, found.get(0).getId());
+  }
+
+  @Test
+  public void getClosestEmptyTest() {
+    SearchableSensorValuesList list = new SearchableSensorValuesList(4L);
+    List<SensorValue> found = list.getClosest(makeTime(35));
+    assertTrue(found.isEmpty());
+  }
+
+  @Test
+  public void getClosestBetweenTest() {
+    SearchableSensorValuesList list = rangeTestList();
+    List<SensorValue> found = list.getClosest(makeTime(32));
+    assertEquals(2, found.size());
+    assertEquals(3L, found.get(0).getId());
+    assertEquals(4L, found.get(1).getId());
+  }
+
+  @Test
+  public void getClosestStartTest() {
+    SearchableSensorValuesList list = rangeTestList();
+    List<SensorValue> found = list.getClosest(makeTime(15));
+    assertEquals(1, found.size());
+    assertEquals(1L, found.get(0).getId());
+  }
+
+  @Test
+  public void getClosestEndTest() {
+    SearchableSensorValuesList list = rangeTestList();
+    List<SensorValue> found = list.getClosest(makeTime(50));
+    assertEquals(1, found.size());
+    assertEquals(6L, found.get(0).getId());
   }
 }

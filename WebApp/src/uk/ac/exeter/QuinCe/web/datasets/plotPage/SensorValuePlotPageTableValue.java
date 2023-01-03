@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
@@ -45,11 +46,12 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
-  public String getQcMessage(boolean replaceNewlines) {
+  public String getQcMessage(DatasetSensorValues allSensorValues,
+    boolean replaceNewlines) {
     String result = "*Error getting QC message*";
 
     try {
-      String message = sensorValue.getDisplayQCMessage();
+      String message = sensorValue.getDisplayQCMessage(allSensorValues);
       result = message;
     } catch (RoutineException e) {
       ExceptionUtils.printStackTrace(e);

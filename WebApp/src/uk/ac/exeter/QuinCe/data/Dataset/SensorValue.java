@@ -6,16 +6,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
-import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -257,7 +260,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
     Flag result = userQCFlag;
 
-    if (null == value) {
+    if (StringUtils.isEmpty(value)) {
       /*
        * Empty values are bad by definition
        */
@@ -277,21 +280,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @return The user QC message
    */
   public String getUserQCMessage() {
-    return getUserQCMessage(false);
-  }
-
-  public String getUserQCMessage(boolean ignorePosition) {
-
-    String result = (null == userQCMessage ? "" : userQCMessage);
-
-    // If we're ignoring the position, clear the QC message if it's from the
-    // position QC
-    if (result.startsWith(Measurement.POSITION_QC_PREFIX) && ignorePosition
-      && columnId != FileDefinition.LONGITUDE_COLUMN_ID) {
-      result = "";
-    }
-
-    return result;
+    return null == userQCMessage ? "" : userQCMessage;
   }
 
   /**
@@ -354,25 +343,26 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    *          The user QC flag
    * @param message
    *          The user QC message
+   * @throws InvalidFlagException
+   *           If an invalid flag is set.
    */
-  public void setUserQC(Flag flag, String message) {
+  public void setUserQC(Flag flag, String message) throws InvalidFlagException {
 
     boolean setQC = true;
 
-    if (null != userQCFlag) {
+    if (flag.equals(Flag.LOOKUP)) {
+      throw new InvalidFlagException(
+        "Cannot manually set " + flag.toString() + " flag");
+    }
 
-      // Never override a flushing flag
-      if (userQCFlag.equals(Flag.FLUSHING)) {
-        setQC = false;
-      } else if (null != userQCMessage
-        && userQCMessage.contains(Measurement.POSITION_QC_PREFIX)) {
-        // Don't override an existing position QC that's worse than what we're
-        // trying to set
+    if (null != userQCFlag) {
+      // Never override a flushing or Auto QC flag
+      if (userQCFlag.equals(Flag.FLUSHING) || userQCFlag.equals(Flag.LOOKUP)) {
         setQC = false;
       }
     }
 
-    if (setQC) {
+    if (setQC && !isNaN()) {
       setUserQCAction(flag, message);
     }
   }
@@ -381,93 +371,6 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     userQCFlag = flag;
     userQCMessage = message;
     dirty = true;
-  }
-
-  /**
-   * Set the position QC for this value.
-   * <p>
-   * If the position value is GOOD, then it doesn't affect the value's QC. If
-   * the value's auto QC is not GOOD, then the user flag is NEEDED.
-   * </p>
-   * <p>
-   * If the position value is not GOOD, then it replaces the existing user QC if
-   * it's either NEEDED or less significant than the position flag.
-   * </p>
-   *
-   * @param positionFlag
-   *          The position QC flag.
-   * @param positionMessage
-   *          The position QC message.
-   *
-   * @throws RoutineException
-   */
-  public void setPositionQC(Flag positionFlag, String positionMessage)
-    throws RoutineException {
-
-    // If the position flag is Good, revert to the Auto QC if we previously had
-    // a position message. Otherwise leave everything alone.
-    if (positionFlag.isGood()) {
-      if (userQCMessage.contains(Measurement.POSITION_QC_PREFIX)) {
-        // Reset the QC back to the base SensorValue QC
-        revertToAutoQc();
-      }
-    } else {
-
-      Flag sensorFlag = getUserQCFlag(true);
-      boolean needed = getUserQCFlag(false).equals(Flag.NEEDED);
-      if (sensorFlag.moreSignificantThan(positionFlag)) {
-        if (userQCMessage.contains(Measurement.POSITION_QC_PREFIX)) {
-          // The old flag may have been caused by Position QC, so we revert
-          // to the Auto QC result. Otherwise we leave the flag alone because it
-          // was nothing to do with position so it can remain.
-          revertToAutoQc();
-
-          // See if the position flag is now worse than the auto QC flag
-          if (positionFlag.moreSignificantThan(autoQC.getOverallFlag())) {
-            setUserQCAction(positionFlag,
-              Measurement.POSITION_QC_PREFIX + positionMessage);
-          } else if (positionFlag.equals(autoQC.getOverallFlag())) {
-            userQCFlag = positionFlag; // Remove the NEEDED flag from Auto QC
-            addUserQCMessage(Measurement.POSITION_QC_PREFIX + positionMessage);
-          }
-        }
-      } else if (positionFlag.moreSignificantThan(sensorFlag)) {
-        // Use the position QC
-        setUserQCAction(positionFlag,
-          Measurement.POSITION_QC_PREFIX + positionMessage);
-      } else {
-        // The flags are equal. Add the position QC if it hasn't been already
-        if (!userQCMessage.contains(Measurement.POSITION_QC_PREFIX)) {
-          addUserQCMessage(Measurement.POSITION_QC_PREFIX + positionMessage);
-        }
-
-        if (needed) {
-          // The position dictates the QC flag, so it's no longer NEEDED
-          userQCFlag = positionFlag;
-        }
-
-        dirty = true;
-      }
-    }
-  }
-
-  private void addUserQCMessage(String message) {
-    if (null == userQCMessage) {
-      userQCMessage = message;
-    } else {
-      if (userQCMessage.trim().length() > 0) {
-        userQCMessage += ';';
-      }
-      userQCMessage += message;
-    }
-  }
-
-  private void revertToAutoQc() throws RoutineException {
-    if (!getAutoQcFlag().isGood()) {
-      setUserQCAction(Flag.NEEDED, getAutoQcResult().getAllMessages());
-    } else {
-      setUserQCAction(Flag.ASSUMED_GOOD, null);
-    }
   }
 
   /**
@@ -594,19 +497,44 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   }
 
   public Flag getDisplayFlag() {
-    return flagNeeded() ? autoQC.getOverallFlag() : userQCFlag;
+
+    Flag result;
+
+    // Lookups are always BAD
+    if (userQCFlag.equals(Flag.LOOKUP) || StringUtils.isEmpty(value)) {
+      result = Flag.BAD;
+    } else {
+      result = flagNeeded() ? autoQC.getOverallFlag() : getUserQCFlag();
+    }
+
+    return result;
   }
 
-  public String getDisplayQCMessage() throws RoutineException {
-    return flagNeeded() ? autoQC.getAllMessages() : userQCMessage;
+  public String getDisplayQCMessage(DatasetSensorValues allSensorValues)
+    throws RoutineException {
+
+    String result;
+
+    if (userQCFlag.equals(Flag.LOOKUP)) {
+      Set<Long> sourceValues = StringUtils.delimitedToLongSet(userQCMessage);
+
+      Set<String> messages = new TreeSet<String>();
+
+      for (SensorValue value : allSensorValues.getById(sourceValues)) {
+        messages.add(value.getDisplayQCMessage(allSensorValues));
+      }
+
+      result = StringUtils.collectionToDelimited(messages, ";");
+
+    } else {
+      result = flagNeeded() ? autoQC.getAllMessages() : userQCMessage;
+    }
+
+    return result;
   }
 
   public boolean flagNeeded() {
     return userQCFlag.equals(Flag.NEEDED);
-  }
-
-  public boolean hasPositionQC() {
-    return userQCMessage.startsWith(Measurement.POSITION_QC_PREFIX);
   }
 
   @Override
@@ -628,15 +556,6 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     SensorValue clone = new SensorValue(id, datasetId, columnId, time, value,
       autoQC, userQCFlag, userQCMessage);
     clone.dirty = this.dirty;
-    return clone;
-  }
-
-  public static SensorValue getNoValueSensorValue(SensorValue source)
-    throws CloneNotSupportedException {
-
-    SensorValue clone = (SensorValue) source.clone();
-    clone.setValue(NO_VALUE);
-    clone.setUserQC(Flag.NO_QC, "No Value");
     return clone;
   }
 
@@ -737,13 +656,14 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   }
 
   public static String getCombinedQcComment(
-    Collection<SensorValue> sensorValues) throws RoutineException {
+    Collection<SensorValue> sensorValues, DatasetSensorValues allSensorValues)
+    throws RoutineException {
 
     List<String> comments = new ArrayList<String>(sensorValues.size());
 
     for (SensorValue sensorValue : sensorValues) {
       if (null != sensorValue) {
-        String comment = sensorValue.getDisplayQCMessage();
+        String comment = sensorValue.getDisplayQCMessage(allSensorValues);
         if (null != comment && comment.trim().length() > 0) {
           comments.add(comment.trim());
         }
@@ -840,5 +760,66 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
 
     return minDelta;
+  }
+
+  /**
+   * Set the QC for this SensorValue as a cascade from another SensorValue. Can
+   * be called multiple times with different sources.
+   *
+   * @param source
+   *          The source of the QC flag
+   */
+  public void setCascadingQC(SensorValue source) {
+
+    SortedSet<Long> sources = userQCFlag.equals(Flag.LOOKUP)
+      ? StringUtils.delimitedToLongSet(userQCMessage)
+      : new TreeSet<Long>();
+
+    sources.add(source.getId());
+    userQCFlag = Flag.LOOKUP;
+    userQCMessage = StringUtils.collectionToDelimited(sources, ",");
+    dirty = true;
+  }
+
+  /**
+   * Remove a cascading QC source from this value's QC.
+   *
+   * <p>
+   * If this is the only QC source, the user QC will revert to either
+   * {@link Flag#NEEDS_FLAG} or {@link Flag#ASSUMED_GOOD} according to the
+   * {@link #autoQC} value.
+   * </p>
+   * <p>
+   * If this value is not registered with any cascading QC, or the specified
+   * source is not recorded as part of the value's cascading QC, no action will
+   * be taken.
+   * </p>
+   *
+   * @param source
+   *          The cascading QC source to be removed.
+   */
+  public void removeCascadingQC(SensorValue source) {
+
+    // If there is no cascading QC already registered, do nothing.
+    if (userQCFlag.equals(Flag.LOOKUP)) {
+
+      SortedSet<Long> sources = StringUtils.delimitedToLongSet(userQCMessage);
+      sources.remove(source.getId());
+
+      if (sources.size() == 0) {
+        // Reset the flag to either NEEDED or ASSUMED_GOOD
+        if (autoQC.getOverallFlag().moreSignificantThan(Flag.GOOD)) {
+          userQCFlag = Flag.NEEDED;
+        } else {
+          userQCFlag = Flag.ASSUMED_GOOD;
+        }
+
+        userQCMessage = null;
+      } else {
+        userQCMessage = StringUtils.collectionToDelimited(sources, ",");
+      }
+
+      dirty = true;
+    }
   }
 }

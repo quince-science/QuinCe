@@ -25,4 +25,8 @@ public class InvalidFlagException extends Exception {
   public InvalidFlagException(char flagLetter) {
     super("Invalid flag character " + flagLetter);
   }
+
+  public InvalidFlagException(String message) {
+    super(message);
+  }
 }

@@ -253,7 +253,7 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
         "Value mismatch");
       assertEquals(expectedType, value.getType(), "Value type mismatch");
       assertEquals(expectedFlag, value.getQcFlag(), "Flag mismatch");
-      assertEquals(expectedMessage, value.getQcMessage(false),
+      assertEquals(expectedMessage, value.getQcMessage(sensorValues, false),
         "Message mismatch");
     });
   }

@@ -518,7 +518,8 @@ public class MeasurementValue implements PlotPageTableValue {
   }
 
   @Override
-  public String getQcMessage(boolean replaceNewlines) {
+  public String getQcMessage(DatasetSensorValues allSensorValues,
+    boolean replaceNewlines) {
     String result = StringUtils.collectionToDelimited(getQcMessages(), ";");
     if (replaceNewlines) {
       result = StringUtils.replaceNewlines(result);

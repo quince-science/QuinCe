@@ -360,7 +360,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @return The error message.
    */
   public String getError() {
-    return getData().getErrorMessage();
+    PlotPageData data = getData();
+    return null == data ? null : data.getErrorMessage();
   }
 
   /**

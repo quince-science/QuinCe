@@ -115,7 +115,8 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
                 if (cascadeFlag.equals(Flag.BAD)
                   || cascadeFlag.equals(Flag.QUESTIONABLE)) {
 
-                  qcComments.add(cascadeValue.getQcMessage(true));
+                  qcComments
+                    .add(cascadeValue.getQcMessage(getAllSensorValues(), true));
                   if (cascadeFlag.moreSignificantThan(newFlag)) {
                     newFlag = cascadeFlag;
                   }

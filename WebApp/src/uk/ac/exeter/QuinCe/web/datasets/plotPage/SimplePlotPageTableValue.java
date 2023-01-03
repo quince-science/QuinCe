@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -116,7 +117,8 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    * @return The QC message.
    */
   @Override
-  public String getQcMessage(boolean replaceNewlines) {
+  public String getQcMessage(DatasetSensorValues allSensorValues,
+    boolean replaceNewlines) {
     return replaceNewlines ? StringUtils.replaceNewlines(qcMessage) : qcMessage;
   }
 

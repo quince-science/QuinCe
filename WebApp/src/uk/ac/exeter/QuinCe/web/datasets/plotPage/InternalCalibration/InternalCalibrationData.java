@@ -13,9 +13,11 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypeSensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -42,6 +44,11 @@ public class InternalCalibrationData extends PlotPageData {
   private PlotPageColumnHeading defaultYAxis2 = null;
 
   private SimplePlotPageDataStructure dataStructure = null;
+
+  /**
+   * The dataset's sensor values.
+   */
+  private DatasetSensorValues datasetSensorValues = null;
 
   /**
    * The initial user QC comments generated from the selected values.
@@ -79,6 +86,10 @@ public class InternalCalibrationData extends PlotPageData {
   protected void loadDataAction() throws Exception {
 
     try (Connection conn = dataSource.getConnection()) {
+
+      datasetSensorValues = DataSetDataDB.getSensorValues(conn, instrument,
+        dataset.getId(), false, true);
+
       List<RunTypeSensorValue> sensorValues = DataSetDataDB
         .getInternalCalibrationSensorValues(conn, instrument, dataset.getId());
 
@@ -89,6 +100,11 @@ public class InternalCalibrationData extends PlotPageData {
         dataStructure.add(value.getTime(), getColumnHeading(columnId), value);
       }
     }
+  }
+
+  @Override
+  protected DatasetSensorValues getAllSensorValues() {
+    return datasetSensorValues;
   }
 
   @Override
@@ -241,11 +257,13 @@ public class InternalCalibrationData extends PlotPageData {
   }
 
   protected void applyFlag(Flag flag, String message)
-    throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException, InvalidFlagException {
 
     List<SensorValue> sensorValues = getSelectedSensorValues();
 
-    sensorValues.forEach(v -> v.setUserQC(flag, message));
+    for (SensorValue sensorValue : sensorValues) {
+      sensorValue.setUserQC(flag, message);
+    }
 
     // Store the updated sensor values
     try (Connection conn = dataSource.getConnection()) {

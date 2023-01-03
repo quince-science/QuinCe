@@ -10,14 +10,18 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
+
 public class PlotPageTableRecordSerializer
   implements JsonSerializer<PlotPageTableRecord> {
 
-  private static Gson gson;
+  private Gson gson;
 
-  static {
-    gson = new GsonBuilder().registerTypeHierarchyAdapter(
-      PlotPageTableValue.class, new PlotPageTableValueSerializer()).create();
+  public PlotPageTableRecordSerializer(DatasetSensorValues allSensorValues) {
+    gson = new GsonBuilder()
+      .registerTypeHierarchyAdapter(PlotPageTableValue.class,
+        new PlotPageTableValueSerializer(allSensorValues))
+      .create();
   }
 
   @Override
@@ -36,5 +40,4 @@ public class PlotPageTableRecordSerializer
     // TODO Auto-generated method stub
     return jsonMap;
   }
-
 }

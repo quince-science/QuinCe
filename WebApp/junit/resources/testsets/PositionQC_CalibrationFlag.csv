@@ -1,5 +1,0 @@
-Minute,Position Valid,Run Type,Expected Flag
-0,true,M,A
-5,true,C,A
-10,false,M,B
-15,false,C,A

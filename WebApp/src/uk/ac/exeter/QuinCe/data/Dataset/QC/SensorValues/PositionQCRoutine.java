@@ -135,24 +135,26 @@ public class PositionQCRoutine extends AutoQCRoutine {
         // Figure out what the position flag and QC message are
         Flag positionFlag = Flag.GOOD;
         String positionMessage = null;
+        SensorValue worstLongitude = null;
+        SensorValue worstLatitude = null;
 
         if (CollectionUtils.getNonNullCount(longitude) == 0
           || CollectionUtils.getNonNullCount(latitude) == 0) {
           positionFlag = Flag.BAD;
           positionMessage = "Missing";
         } else {
-          SensorValue worstLongitude = SensorValue
-            .getValueWithWorstFlag(longitude);
-          SensorValue worstLatitude = SensorValue
-            .getValueWithWorstFlag(longitude);
+          worstLongitude = SensorValue.getValueWithWorstFlag(longitude);
+          worstLatitude = SensorValue.getValueWithWorstFlag(longitude);
 
           if (worstLongitude.getDisplayFlag()
             .moreSignificantThan(worstLatitude.getDisplayFlag())) {
             positionFlag = worstLongitude.getDisplayFlag();
-            positionMessage = worstLongitude.getDisplayQCMessage();
+            positionMessage = worstLongitude
+              .getDisplayQCMessage(allSensorValues);
           } else {
             positionFlag = worstLatitude.getDisplayFlag();
-            positionMessage = worstLatitude.getDisplayQCMessage();
+            positionMessage = worstLatitude
+              .getDisplayQCMessage(allSensorValues);
           }
         }
 
@@ -182,7 +184,7 @@ public class PositionQCRoutine extends AutoQCRoutine {
               }
 
               if (flagValue) {
-                entry.getValue().setPositionQC(positionFlag, positionMessage);
+                entry.getValue().setCascadingQC(worstLongitude);
               }
             }
           }

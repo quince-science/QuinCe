@@ -382,10 +382,12 @@ public class DataSetDataDB {
             updateStmt.setString(1, value.getAutoQcResult().toJson());
             updateStmt.setInt(2, value.getUserQCFlag().getFlagValue());
 
-            // Truncate user QC message
+            // Truncate user QC message (except for LOOKUP flags)
             String userQCMessage = value.getUserQCMessage();
-            if (userQCMessage.length() > 255) {
-              userQCMessage = userQCMessage.substring(0, 255);
+            if (!value.getUserQCFlag().equals(Flag.LOOKUP)) {
+              if (userQCMessage.length() > 255) {
+                userQCMessage = userQCMessage.substring(0, 255);
+              }
             }
 
             updateStmt.setString(3, userQCMessage);
@@ -1161,8 +1163,6 @@ public class DataSetDataDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(measurement, "measurement");
 
-    measurement.postProcessMeasurementValues();
-
     try (PreparedStatement stmt = conn
       .prepareStatement(STORE_MEASUREMENT_VALUES_STATEMENT)) {
       stmt.setString(1, measurement.getMeasurementValuesJson());
@@ -1184,7 +1184,6 @@ public class DataSetDataDB {
       .prepareStatement(STORE_MEASUREMENT_VALUES_STATEMENT)) {
 
       for (Measurement measurement : measurements) {
-        measurement.postProcessMeasurementValues();
         stmt.setString(1, measurement.getMeasurementValuesJson());
         stmt.setLong(2, measurement.getId());
         stmt.addBatch();

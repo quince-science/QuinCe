@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.lang.reflect.Type;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,10 +22,15 @@ import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public abstract class PlotPageData {
 
@@ -54,6 +60,11 @@ public abstract class PlotPageData {
   protected final Instrument instrument;
 
   /**
+   * The Run Type periods
+   */
+  protected RunTypePeriods runTypePeriods;
+
+  /**
    * Json serialization type for lists of longs
    */
   Type longList = new TypeToken<List<Long>>() {
@@ -62,7 +73,7 @@ public abstract class PlotPageData {
   /**
    * Gson instance for serializing table data
    */
-  private static Gson tableDataGson;
+  private Gson tableDataGson;
 
   /**
    * An error string to display to the user if something goes wrong.
@@ -136,12 +147,6 @@ public abstract class PlotPageData {
 
   public static final String MEASUREMENTVALUES_FIELD_GROUP = "Measurement Values";
 
-  static {
-    // Initialise Gson builder
-    tableDataGson = new GsonBuilder().registerTypeAdapter(
-      PlotPageTableRecord.class, new PlotPageTableRecordSerializer()).create();
-  }
-
   protected PlotPageData(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
     this.dataSource = dataSource;
@@ -165,6 +170,22 @@ public abstract class PlotPageData {
     try {
       loadDataAction();
 
+      DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
+      try {
+        Connection conn = dataSource.getConnection();
+
+        runTypePeriods = DataSetDataDB.getRunTypePeriods(conn, instrument,
+          dataset.getId());
+      } catch (SQLException e) {
+        error("Error loading data", e);
+      }
+
+      // Initialise Gson builder
+      tableDataGson = new GsonBuilder()
+        .registerTypeAdapter(PlotPageTableRecord.class,
+          new PlotPageTableRecordSerializer(getAllSensorValues()))
+        .create();
+
       // Initialise the plots
       plot1 = new Plot(this, getDefaultXAxis(), getDefaultYAxis1(),
         !dataset.isNrt());
@@ -184,6 +205,13 @@ public abstract class PlotPageData {
    *          A data source.
    */
   protected abstract void loadDataAction() throws Exception;
+
+  /**
+   * Get the complete set of {@link SensorValue}s for the dataset.
+   *
+   * @return The dataset's SensorValues.
+   */
+  protected abstract DatasetSensorValues getAllSensorValues();
 
   /**
    * Get the standard column headings for the table in groups, without QC
