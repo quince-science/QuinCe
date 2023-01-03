@@ -2,7 +2,7 @@
 <faces-config
     xmlns="http://xmlns.jcp.org/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
     version="2.2">
   <converter>
     <description>Converts strings to LocalDateTime objects</description>
@@ -196,7 +196,7 @@
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
-    <display_name>DiagnosticQCSetup</display_name>
+    <display-name>DiagnosticQCSetup</display-name>
     <from-view-id>/instrument/diagnostic_qc_setup.xhtml</from-view-id>
     <navigation-case>
       <from-outcome>finish</from-outcome>
