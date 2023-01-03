@@ -23,6 +23,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRo
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.DiagnosticsQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -233,7 +234,7 @@ public class AutoQCJob extends DataSetJob {
         }
       }
 
-      // Now the External Standards routines
+      // External Standards routines
       if (instrument.hasInternalCalibrations()) {
         ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfig = ResourceManager
           .getInstance().getExternalStandardsRoutinesConfiguration();
@@ -257,6 +258,11 @@ public class AutoQCJob extends DataSetJob {
           }
         }
       }
+
+      // Diagnostics QC
+      DiagnosticsQCRoutine diagnosticsQC = new DiagnosticsQCRoutine(instrument,
+        sensorValues, runTypePeriods);
+      diagnosticsQC.run();
 
       // Send all sensor values to be stored. The storeSensorValues method only
       // writes those values whose 'dirty' flag is set.

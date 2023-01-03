@@ -134,4 +134,9 @@ public class DiagnosticQCConfig
 
     return result;
   }
+
+  public boolean hasRange(SensorAssignment sensor) {
+    return containsKey(sensor) && (null != get(sensor).getRangeMin()
+      || null != get(sensor).getRangeMax());
+  }
 }
