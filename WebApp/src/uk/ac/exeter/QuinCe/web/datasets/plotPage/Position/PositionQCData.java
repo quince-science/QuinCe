@@ -1,0 +1,145 @@
+package uk.ac.exeter.QuinCe.web.datasets.plotPage.Position;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.sql.DataSource;
+
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
+
+public class PositionQCData extends ManualQCData {
+
+  protected PositionQCData(DataSource dataSource, Instrument instrument,
+    DataSet dataset) throws SQLException {
+    super(dataSource, instrument, dataset);
+  }
+
+  @Override
+  public void loadDataAction() throws Exception {
+    try (Connection conn = dataSource.getConnection()) {
+      sensorValues = DataSetDataDB.getPositionSensorValues(conn, instrument,
+        dataset.getId());
+    }
+
+    // Build the row IDs
+    rowIDs = sensorValues.getTimes().stream()
+      .map(t -> DateTimeUtils.dateToLong(t)).collect(Collectors.toList());
+  }
+
+  @Override
+  protected void buildColumnHeadings() {
+
+    columnHeadings = new LinkedHashMap<String, List<PlotPageColumnHeading>>();
+    extendedColumnHeadings = new LinkedHashMap<String, List<PlotPageColumnHeading>>();
+
+    // Time
+    List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
+      1);
+
+    rootColumns.add(new PlotPageColumnHeading(
+      FileDefinition.TIME_COLUMN_HEADING, false, false));
+
+    columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
+    extendedColumnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
+
+    // Position - combined for view, separated for extended columns
+    List<PlotPageColumnHeading> sensorColumns = new ArrayList<PlotPageColumnHeading>(
+      1);
+    List<PlotPageColumnHeading> extendedSensorColumns = new ArrayList<PlotPageColumnHeading>(
+      2);
+
+    sensorColumns
+      .add(new PlotPageColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
+        "Position", "Position", "POSITION", null, true, false, true, false));
+
+    extendedSensorColumns.add(new PlotPageColumnHeading(
+      FileDefinition.LONGITUDE_COLUMN_HEADING, false, true));
+    extendedSensorColumns
+      .add(new PlotPageColumnHeading(FileDefinition.LATITUDE_COLUMN_HEADING,
+        false, true, FileDefinition.LONGITUDE_COLUMN_ID));
+
+    columnHeadings.put(SENSORS_FIELD_GROUP, sensorColumns);
+    extendedColumnHeadings.put(SENSORS_FIELD_GROUP, extendedSensorColumns);
+  }
+
+  @Override
+  protected PlotPageColumnHeading getDefaultYAxis2() throws Exception {
+    return extendedColumnHeadings.get(SENSORS_FIELD_GROUP).get(1);
+  }
+
+  @Override
+  public List<PlotPageTableRecord> generateTableDataRecords(int start,
+    int length) {
+
+    List<PlotPageTableRecord> records = new ArrayList<PlotPageTableRecord>(
+      length);
+
+    try {
+
+      List<LocalDateTime> times = sensorValues.getTimes();
+
+      // Make sure we don't fall off the end of the dataset
+      int lastRecord = start + length;
+      if (lastRecord > times.size()) {
+        lastRecord = times.size();
+      }
+
+      for (int i = start; i < lastRecord; i++) {
+        PlotPageTableRecord record = new PlotPageTableRecord(times.get(i));
+
+        // Timestamp
+        record.addColumn(times.get(i));
+
+        PlotPageTableValue longitude = new SensorValuePlotPageTableValue(
+          sensorValues.getSensorValue(times.get(i), SensorType.LONGITUDE_ID));
+        PlotPageTableValue latitude = new SensorValuePlotPageTableValue(
+          sensorValues.getSensorValue(times.get(i), SensorType.LATITUDE_ID));
+
+        // The lon/lat can be null if the instrument has a fixed position
+        if (null != longitude && null != latitude
+          && null != longitude.getValue() && null != latitude.getValue()) {
+
+          StringBuilder positionString = new StringBuilder();
+          if (null != longitude.getValue() && null != latitude.getValue()) {
+            positionString
+              .append(StringUtils.formatNumber(longitude.getValue()));
+            positionString.append(" | ");
+            positionString
+              .append(StringUtils.formatNumber(latitude.getValue()));
+          }
+
+          record.addColumn(positionString.toString(), longitude.getQcFlag(),
+            longitude.getQcMessage(sensorValues, false),
+            longitude.getFlagNeeded(), longitude.getType());
+        } else {
+          // Empty position column
+          record.addColumn("", Flag.GOOD, null, false,
+            PlotPageTableValue.NAN_TYPE);
+        }
+
+        records.add(record);
+      }
+    } catch (Exception e) {
+      error("Error loading table data", e);
+    }
+
+    return records;
+  }
+}
