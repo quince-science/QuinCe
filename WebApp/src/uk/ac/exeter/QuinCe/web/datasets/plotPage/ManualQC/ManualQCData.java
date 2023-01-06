@@ -107,7 +107,7 @@ public class ManualQCData extends PlotPageData {
    * All row IDs for the dataset. Row IDs are the millisecond values of the
    * times.
    */
-  private List<Long> rowIDs = null;
+  protected List<Long> rowIDs = null;
 
   /**
    * The dataset's sensor values.
@@ -914,7 +914,6 @@ public class ManualQCData extends PlotPageData {
 
   @Override
   protected PlotPageColumnHeading getDefaultYAxis2() throws Exception {
-
     Variable variable = instrument.getVariables().get(0);
     SensorType coreSensorType = variable.getCoreSensorType();
     long coreColumn = instrument.getSensorAssignments()

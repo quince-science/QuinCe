@@ -446,30 +446,51 @@ public class DatasetSensorValues {
 
     Set<SensorValue> changedValues = new HashSet<SensorValue>();
 
-    Map<SensorAssignment, Collection<String>> affectedSensorAssignments = getCascadeAffectedSensorAssignments(
-      source);
+    // For position values, we just copy from the source to the counterpart.
+    // Other sensors are sorted out as part of the Data Reduction QC.
+    if (SensorType.isPosition(source.getColumnId())) {
 
-    for (SensorAssignment assignment : affectedSensorAssignments.keySet()) {
-      List<SensorValue> affectedSensorValues = valuesByColumn
-        .get(assignment.getDatabaseId()).getClosest(source.getTime());
+      SensorValue other;
 
-      for (SensorValue value : affectedSensorValues) {
-        String valueRunType = runTypePeriods.getRunType(value.getTime());
-        if (null == valueRunType
-          || affectedSensorAssignments.get(assignment).contains(valueRunType)) {
+      if (source.getColumnId() == SensorType.LONGITUDE_ID) {
+        other = getSensorValue(source.getTime(), SensorType.LATITUDE_ID);
+      } else {
+        other = getSensorValue(source.getTime(), SensorType.LONGITUDE_ID);
+      }
 
-          if (!source.getDisplayFlag().equals(Flag.GOOD)) {
-            value.setCascadingQC(source);
-          } else {
-            value.removeCascadingQC(source);
+      if (null != other) {
+        cascade(source, other);
+        changedValues.add(other);
+      }
+    } else {
+      Map<SensorAssignment, Collection<String>> affectedSensorAssignments = getCascadeAffectedSensorAssignments(
+        source);
+
+      for (SensorAssignment assignment : affectedSensorAssignments.keySet()) {
+        List<SensorValue> affectedSensorValues = valuesByColumn
+          .get(assignment.getDatabaseId()).getClosest(source.getTime());
+
+        for (SensorValue value : affectedSensorValues) {
+          String valueRunType = runTypePeriods.getRunType(value.getTime());
+          if (null == valueRunType || affectedSensorAssignments.get(assignment)
+            .contains(valueRunType)) {
+
+            cascade(source, value);
+            changedValues.add(value);
           }
-
-          changedValues.add(value);
         }
       }
     }
 
     return changedValues;
+  }
+
+  private void cascade(SensorValue source, SensorValue destination) {
+    if (!source.getDisplayFlag().equals(Flag.GOOD)) {
+      destination.setCascadingQC(source);
+    } else {
+      destination.removeCascadingQC(source);
+    }
   }
 
   /**
@@ -501,19 +522,7 @@ public class DatasetSensorValues {
 
     Map<SensorAssignment, Collection<String>> result = new HashMap<SensorAssignment, Collection<String>>();
 
-    if (sourceType.isPosition()) {
-      // Positions affect all sensors.
-      Collection<SensorAssignment> assignments = instrument
-        .getSensorAssignments().getNonDiagnosticSensors(false);
-
-      assignments.forEach(a -> {
-        if (a.getSensorType().hasInternalCalibration()) {
-          result.put(a, instrument.getMeasurementRunTypes());
-        } else {
-          result.put(a, instrument.getAllRunTypeNames());
-        }
-      });
-    } else if (sourceType.isDiagnostic()) {
+    if (sourceType.isDiagnostic()) {
       // Diagnostics affect the sensors configured by the user
       SensorAssignment sourceAssignment = instrument.getSensorAssignments()
         .getById(source.getColumnId());
@@ -531,7 +540,6 @@ public class DatasetSensorValues {
           result.put(m, runTypes);
         }
       });
-
     }
 
     return result;
