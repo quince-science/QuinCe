@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.DiagnosticsQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.SpeedQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -150,6 +151,9 @@ public class AutoQCJob extends DataSetJob {
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
         instrument, dataSet.getId(), true, true);
 
+      // This will be populated if the instrument has position data
+      DatasetSensorValues positionValues = null;
+
       // Get all the run type entries from the data set
       TreeSet<SensorAssignment> runTypeColumns = sensorAssignments
         .get(SensorType.RUN_TYPE_SENSOR_TYPE);
@@ -176,10 +180,14 @@ public class AutoQCJob extends DataSetJob {
       // call.
       if (!dataSet.fixedPosition()) {
 
-        PositionQCRoutine positionQC = new PositionQCRoutine(instrument,
-          sensorValues, runTypeValues);
+        positionValues = DataSetDataDB.getPositionSensorValues(conn, instrument,
+          dataSet.getId());
 
-        // positionQC.qc(null, null);
+        PositionQCRoutine positionQC = new PositionQCRoutine(positionValues);
+        positionQC.qc(null, null);
+
+        SpeedQCRoutine speedQC = new SpeedQCRoutine(positionValues);
+        speedQC.qc(null, null);
       }
 
       // Run the auto QC routines for each column
@@ -267,6 +275,10 @@ public class AutoQCJob extends DataSetJob {
       // Send all sensor values to be stored. The storeSensorValues method only
       // writes those values whose 'dirty' flag is set.
       DataSetDataDB.storeSensorValues(conn, sensorValues.getAll());
+
+      if (null != positionValues) {
+        DataSetDataDB.storeSensorValues(conn, positionValues.getAll());
+      }
 
       // Trigger the Build Measurements job
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);

@@ -3,20 +3,16 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
-import uk.ac.exeter.QuinCe.utils.CollectionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -52,19 +48,16 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class PositionQCRoutine extends AutoQCRoutine {
 
   /**
-   * The instrument.
-   */
-  private Instrument instrument;
-
-  /**
    * The complete set of sensor values for the current dataset
    */
-  private final DatasetSensorValues allSensorValues;
+  protected DatasetSensorValues positionSensorValues;
 
   /**
-   * The run types in the dataset.
+   * Empty instance constructor used to get messages
    */
-  private SearchableSensorValuesList runTypes;
+  public PositionQCRoutine() {
+
+  }
 
   /**
    * Initialise the routine with the position and sensor values.
@@ -83,20 +76,15 @@ public class PositionQCRoutine extends AutoQCRoutine {
    *           If the routine cannot be constructed
    * @throws MissingParamException
    */
-  public PositionQCRoutine(Instrument instrument,
-    DatasetSensorValues allSensorValues, SearchableSensorValuesList runTypes)
+  public PositionQCRoutine(DatasetSensorValues positionSensorValues)
     throws RoutineException, MissingParamException {
 
     super();
     super.parameters = new ArrayList<String>(); // No parameters needed
 
-    MissingParam.checkMissing(instrument, "instrument");
-    MissingParam.checkMissing(allSensorValues, "allSensorValues");
-    MissingParam.checkMissing(runTypes, "runTypes", true);
+    MissingParam.checkMissing(positionSensorValues, "allSensorValues");
 
-    this.instrument = instrument;
-    this.allSensorValues = allSensorValues;
-    this.runTypes = runTypes;
+    this.positionSensorValues = positionSensorValues;
   }
 
   /**
@@ -111,86 +99,39 @@ public class PositionQCRoutine extends AutoQCRoutine {
   @Override
   public void qc(List<SensorValue> values, RunTypePeriods runTypePeriods)
     throws RoutineException {
-    qcAction(values);
+    qcAction(null);
   }
 
   @Override
   protected void qcAction(List<SensorValue> values) throws RoutineException {
 
     try {
-      SearchableSensorValuesList longitudes = allSensorValues
-        .getColumnValues(SensorType.LONGITUDE_ID);
-      SearchableSensorValuesList latitudes = allSensorValues
-        .getColumnValues(SensorType.LATITUDE_ID);
-
       // Step through each time in the dataset
-      for (LocalDateTime time : allSensorValues.getTimes()) {
+      for (LocalDateTime time : positionSensorValues.getTimes()) {
 
         // Get the position values for this time
-        List<SensorValue> longitude = longitudes.getWithInterpolation(time,
-          false, true);
-        List<SensorValue> latitude = latitudes.getWithInterpolation(time, false,
-          true);
+        SensorValue longitude = positionSensorValues.getSensorValue(time,
+          SensorType.LONGITUDE_ID);
+        SensorValue latitude = positionSensorValues.getSensorValue(time,
+          SensorType.LATITUDE_ID);
 
-        // Figure out what the position flag and QC message are
-        Flag positionFlag = Flag.GOOD;
-        String positionMessage = null;
-        SensorValue worstLongitude = null;
-        SensorValue worstLatitude = null;
-
-        if (CollectionUtils.getNonNullCount(longitude) == 0
-          || CollectionUtils.getNonNullCount(latitude) == 0) {
-          positionFlag = Flag.BAD;
-          positionMessage = "Missing";
-        } else {
-          worstLongitude = SensorValue.getValueWithWorstFlag(longitude);
-          worstLatitude = SensorValue.getValueWithWorstFlag(longitude);
-
-          if (worstLongitude.getDisplayFlag()
-            .moreSignificantThan(worstLatitude.getDisplayFlag())) {
-            positionFlag = worstLongitude.getDisplayFlag();
-            positionMessage = worstLongitude
-              .getDisplayQCMessage(allSensorValues);
-          } else {
-            positionFlag = worstLatitude.getDisplayFlag();
-            positionMessage = worstLatitude
-              .getDisplayQCMessage(allSensorValues);
-          }
+        if (longitude.isNaN()) {
+          flag(longitude, latitude);
+        } else if (longitude.getDoubleValue() < -180D
+          || longitude.getDoubleValue() > 180D) {
+          flag(longitude, latitude);
         }
 
-        if (!positionFlag.equals(Flag.GOOD)) {
-          // Now loop through all SensorValues for this time and apply the
-          // position QC
-          for (Map.Entry<Long, SensorValue> entry : allSensorValues.get(time)
-            .entrySet()) {
-
-            SensorType sensorType = instrument.getSensorAssignments()
-              .getSensorTypeForDBColumn(entry.getKey());
-
-            // We don't re-set position value flags
-            if (!sensorType.isPosition()) {
-
-              // Sensor values with internal calibrations are OK if they aren't
-              // part of a measurement; they can still be used for calibrations,
-              // so we don't flag them.
-              boolean flagValue = true;
-
-              if (sensorType.hasInternalCalibration()) {
-                String runType = runTypes.timeSearch(entry.getValue().getTime())
-                  .getValue();
-                if (!instrument.getMeasurementRunTypes().contains(runType)) {
-                  flagValue = false;
-                }
-              }
-
-              if (flagValue) {
-                entry.getValue().setCascadingQC(worstLongitude);
-              }
-            }
-          }
+        if (latitude.isNaN()) {
+          flag(longitude, latitude);
+        } else if (latitude.getDoubleValue() < -90D
+          || latitude.getDoubleValue() > 90D) {
+          flag(longitude, latitude);
         }
       }
-    } catch (Exception e) {
+    } catch (
+
+    Exception e) {
       throw new RoutineException(e);
     }
   }
@@ -208,5 +149,10 @@ public class PositionQCRoutine extends AutoQCRoutine {
   @Override
   protected void checkSetup() {
     // No checks required
+  }
+
+  private void flag(SensorValue lon, SensorValue lat) throws RoutineException {
+    addFlag(lon, Flag.BAD, "", "");
+    addFlag(lat, Flag.BAD, "", "");
   }
 }

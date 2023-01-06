@@ -94,6 +94,9 @@ dependencies {
   implementation 'org.glassfish.jersey.media:jersey-media-moxy:2.34'
   implementation 'org.glassfish.jersey.media:jersey-media-multipart:2.34'
 
+  // Simple lat/long calculations
+  implementation 'com.javadocmd:simplelatlng:1.4.0'
+
   // gretty plugin handling the tomcat server
   gretty 'org.apache.tomcat:tomcat-dbcp:8.0.1'
   gretty 'org.apache.tomcat:tomcat:8.0.1'
