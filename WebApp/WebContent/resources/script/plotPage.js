@@ -316,13 +316,13 @@ function getColumnGroup(column) {
 }
 
 //Get the details of the specified column header
-function getColumn(columnIndex) {
+function getColumn(headers, columnIndex) {
 
   let result = null;
 
   let currentIndex = 0;
-  for (let i = 0; i < columnHeaders.length; i++) {
-    let groupHeaders = columnHeaders[i].headings;
+  for (let i = 0; i < headers.length; i++) {
+    let groupHeaders = headers[i].headings;
     if (currentIndex + groupHeaders.length > columnIndex) {
       result = groupHeaders[columnIndex - currentIndex];
       break;
@@ -727,7 +727,7 @@ function clickCellAction(cell, shiftClick) {
   if (canSelectCell(rowIndex, colIndex)) {
 
     if (null == getSelectedColumn() || colIndex != getTableColumnIndex(getSelectedColumn().id)) {
-      setSelectedColumn(getColumn(colIndex).id);
+      setSelectedColumn(getColumn(columnHeaders, colIndex).id);
       setSelectedRows([rowId]);
       setPrevClickedRow(rowId);
       setLastSelectionAction(SELECT_ACTION);
@@ -993,7 +993,7 @@ function canSelectCell(rowIndex, colIndex) {
 
   let result = true;
 
-  if (!getColumn(colIndex).editable) {
+  if (!getColumn(columnHeaders, colIndex).editable) {
     result = false;
   } else {
     let cellData = jsDataTable.cell(rowIndex, colIndex).data();
@@ -1589,7 +1589,7 @@ function selectModeMouseUp(event, g, context) {
   let plotIndex = g.maindiv_.id.substring(4,5);
   let plotVar = $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val();
 
-  if (getColumn(getColumnIndex(plotVar)).editable) {
+  if (getColumn(extendedColumnHeaders, getColumnIndex(plotVar)).editable) {
     let minX = g.toDataXCoord(context.dragStartX);
     let maxX = g.toDataXCoord(context.dragEndX);
     if (maxX < minX) {

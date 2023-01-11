@@ -11,4 +11,7 @@ public class MeasurementValueCalculatorException extends Exception {
     super(message, cause);
   }
 
+  public MeasurementValueCalculatorException(Throwable cause) {
+    super("Error calculating measurement value", cause);
+  }
 }

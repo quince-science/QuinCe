@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -15,13 +16,14 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
 
 public class PositionQCData extends ManualQCData {
@@ -39,7 +41,7 @@ public class PositionQCData extends ManualQCData {
     }
 
     // Build the row IDs
-    rowIDs = sensorValues.getTimes().stream()
+    rowIDs = sensorValues.getPositionTimes().stream()
       .map(t -> DateTimeUtils.dateToLong(t)).collect(Collectors.toList());
   }
 
@@ -93,7 +95,7 @@ public class PositionQCData extends ManualQCData {
 
     try {
 
-      List<LocalDateTime> times = sensorValues.getTimes();
+      List<LocalDateTime> times = sensorValues.getPositionTimes();
 
       // Make sure we don't fall off the end of the dataset
       int lastRecord = start + length;
@@ -107,10 +109,10 @@ public class PositionQCData extends ManualQCData {
         // Timestamp
         record.addColumn(times.get(i));
 
-        PlotPageTableValue longitude = new SensorValuePlotPageTableValue(
-          sensorValues.getSensorValue(times.get(i), SensorType.LONGITUDE_ID));
-        PlotPageTableValue latitude = new SensorValuePlotPageTableValue(
-          sensorValues.getSensorValue(times.get(i), SensorType.LATITUDE_ID));
+        PlotPageTableValue longitude = sensorValues
+          .getPositionTableValue(SensorType.LONGITUDE_ID, times.get(i), false);
+        PlotPageTableValue latitude = sensorValues
+          .getPositionTableValue(SensorType.LATITUDE_ID, times.get(i), false);
 
         // The lon/lat can be null if the instrument has a fixed position
         if (null != longitude && null != latitude
@@ -141,5 +143,16 @@ public class PositionQCData extends ManualQCData {
     }
 
     return records;
+  }
+
+  @Override
+  protected List<LocalDateTime> getDataTimes() {
+    return sensorValues.getPositionTimes();
+  }
+
+  @Override
+  protected TreeMap<LocalDateTime, PlotPageTableValue> getPositionValues(
+    long columnId) throws PlotPageDataException, PositionException {
+    return getPositionValuesAction(columnId, false);
   }
 }
