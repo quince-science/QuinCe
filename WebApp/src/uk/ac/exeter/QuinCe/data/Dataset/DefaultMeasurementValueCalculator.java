@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -51,15 +52,20 @@ public class DefaultMeasurementValueCalculator
     DatasetSensorValues allSensorValues, Connection conn)
     throws MeasurementValueCalculatorException {
 
-    // TODO #1128 This currently assumes only one sensor for each SensorType.
-    // This will have to change eventually.
-    if (requiredSensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)
-      || requiredSensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
-      return getPositionValue(instrument, dataSet, measurement, coreSensorType,
-        requiredSensorType, allMeasurements, allSensorValues, conn);
-    } else {
-      return getSensorValue(instrument, dataSet, measurement, coreSensorType,
-        requiredSensorType, allMeasurements, allSensorValues, conn);
+    try {
+      // TODO #1128 This currently assumes only one sensor for each SensorType.
+      // This will have to change eventually.
+      if (requiredSensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)
+        || requiredSensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
+        return getPositionValue(instrument, dataSet, measurement,
+          coreSensorType, requiredSensorType, allMeasurements, allSensorValues,
+          conn);
+      } else {
+        return getSensorValue(instrument, dataSet, measurement, coreSensorType,
+          requiredSensorType, allMeasurements, allSensorValues, conn);
+      }
+    } catch (Exception e) {
+      throw new MeasurementValueCalculatorException(e);
     }
   }
 
@@ -124,7 +130,7 @@ public class DefaultMeasurementValueCalculator
     DataSet dataSet, Measurement measurement, SensorType coreSensorType,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException {
+    throws MeasurementValueCalculatorException, PositionException {
 
     MeasurementValue result = new MeasurementValue(requiredSensorType);
 
@@ -140,11 +146,8 @@ public class DefaultMeasurementValueCalculator
         .equals(SensorType.LONGITUDE_SENSOR_TYPE) ? SensorType.LONGITUDE_ID
           : SensorType.LATITUDE_ID;
 
-      SearchableSensorValuesList sensorValues = allSensorValues
-        .getColumnValues(columnId);
-
-      List<SensorValue> valuesToUse = sensorValues
-        .getWithInterpolation(positionTime, true, true);
+      List<SensorValue> valuesToUse = allSensorValues
+        .getPositionValues(columnId, measurement.getTime());
 
       char valueType = calcValueType(positionTime, valuesToUse);
 

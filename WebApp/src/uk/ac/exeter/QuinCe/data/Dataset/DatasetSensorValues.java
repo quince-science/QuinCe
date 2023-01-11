@@ -15,15 +15,22 @@ import java.util.TreeSet;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 /**
  * Data structure holding all the {@code SensorValue}s for a dataset, accessible
  * by different lookups.
  *
- * @author Steve Jones
+ * <p>
+ * Position values are kept separate from the others, and can be accessed by a
+ * timestamp. This will give either the position for that timestamp, or an
+ * interpolated value. It will strive to give only GOOD values.
+ * </p>
  */
 public class DatasetSensorValues {
 
@@ -34,6 +41,10 @@ public class DatasetSensorValues {
   private Map<SensorType, TreeSet<SensorValue>> valuesBySensorType;
 
   private TreeMap<LocalDateTime, Map<Long, SensorValue>> valuesByDateAndColumn;
+
+  private SearchableSensorValuesList longitudes;
+
+  private SearchableSensorValuesList latitudes;
 
   private final Instrument instrument;
 
@@ -57,13 +68,19 @@ public class DatasetSensorValues {
     valuesByColumn = new HashMap<Long, SearchableSensorValuesList>();
     valuesBySensorType = new HashMap<SensorType, TreeSet<SensorValue>>();
     valuesByDateAndColumn = new TreeMap<LocalDateTime, Map<Long, SensorValue>>();
+    longitudes = new SearchableSensorValuesList(SensorType.LONGITUDE_ID);
+    latitudes = new SearchableSensorValuesList(SensorType.LATITUDE_ID);
 
     this.instrument = instrument;
   }
 
   public void add(SensorValue sensorValue) throws RecordNotFoundException {
 
-    if (!contains(sensorValue)) {
+    if (sensorValue.getColumnId() == SensorType.LONGITUDE_ID) {
+      longitudes.add(sensorValue);
+    } else if (sensorValue.getColumnId() == SensorType.LATITUDE_ID) {
+      latitudes.add(sensorValue);
+    } else if (!contains(sensorValue)) {
       SensorType sensorType = instrument.getSensorAssignments()
         .getSensorTypeForDBColumn(sensorValue.getColumnId());
 
@@ -222,6 +239,26 @@ public class DatasetSensorValues {
     return times;
   }
 
+  /**
+   * Get the times for which position values have been added.
+   *
+   * <p>
+   * Assumes that the times for longitudes and latitudes are identical.
+   * </p>
+   *
+   * @return The position value times.
+   */
+  public List<LocalDateTime> getPositionTimes() {
+
+    List<LocalDateTime> result = null;
+
+    if (null != longitudes) {
+      result = longitudes.getTimes();
+    }
+
+    return result;
+  }
+
   public Map<Long, SensorValue> get(LocalDateTime time) {
     return valuesByDateAndColumn.get(time);
   }
@@ -229,7 +266,11 @@ public class DatasetSensorValues {
   public SensorValue getSensorValue(LocalDateTime time, long columnID) {
     SensorValue result = null;
 
-    if (valuesByDateAndColumn.containsKey(time)) {
+    if (columnID == SensorType.LONGITUDE_ID) {
+      result = longitudes.get(time);
+    } else if (columnID == SensorType.LATITUDE_ID) {
+      result = latitudes.get(time);
+    } else if (valuesByDateAndColumn.containsKey(time)) {
       result = valuesByDateAndColumn.get(time).get(columnID);
     }
 
@@ -352,7 +393,7 @@ public class DatasetSensorValues {
   }
 
   public int size() {
-    return valuesById.size();
+    return valuesById.size() + latitudes.size() + longitudes.size();
   }
 
   public boolean isOfSensorType(SensorValue sensorValue,
@@ -543,5 +584,36 @@ public class DatasetSensorValues {
     }
 
     return result;
+  }
+
+  public PlotPageTableValue getPositionTableValue(long columnId,
+    LocalDateTime time, boolean preferGoodValues)
+    throws PositionException, PlotPageDataException {
+
+    return getPositionValuesList(columnId).getTableValue(time, false,
+      preferGoodValues, this);
+  }
+
+  public List<SensorValue> getPositionValues(long columnId, LocalDateTime time)
+    throws PositionException {
+
+    return getPositionValuesList(columnId).getWithInterpolation(time, false,
+      true);
+  }
+
+  private SearchableSensorValuesList getPositionValuesList(long columnId)
+    throws PositionException {
+
+    SearchableSensorValuesList values;
+
+    if (columnId == SensorType.LONGITUDE_ID) {
+      values = longitudes;
+    } else if (columnId == SensorType.LATITUDE_ID) {
+      values = latitudes;
+    } else {
+      throw new PositionException("Invalid position column ID");
+    }
+
+    return values;
   }
 }

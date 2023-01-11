@@ -33,6 +33,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -795,6 +796,10 @@ public class ManualQCData extends PlotPageData {
     return selectable;
   }
 
+  protected List<LocalDateTime> getDataTimes() {
+    return sensorValues.getTimes();
+  }
+
   /**
    * Determine whether or not a given {@link SensorValue} should be regarded as
    * a ghost value (i.e. visible but not editable).
@@ -819,9 +824,11 @@ public class ManualQCData extends PlotPageData {
     TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
 
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
-      for (LocalDateTime time : sensorValues.getTimes()) {
+      for (LocalDateTime time : getDataTimes()) {
         result.put(time, new SimplePlotPageTableValue(time, null, true));
       }
+    } else if (SensorType.isPosition(column.getId())) {
+      result = getPositionValues(column.getId());
     } else if (sensorValues.containsColumn(column.getId())) {
 
       SensorType sensorType = instrument.getSensorAssignments()
@@ -901,6 +908,25 @@ public class ManualQCData extends PlotPageData {
           }
         }
       }
+    }
+
+    return result;
+  }
+
+  protected TreeMap<LocalDateTime, PlotPageTableValue> getPositionValues(
+    long columnId) throws PlotPageDataException, PositionException {
+    return getPositionValuesAction(columnId, true);
+  }
+
+  protected TreeMap<LocalDateTime, PlotPageTableValue> getPositionValuesAction(
+    long columnId, boolean preferGoodFlags)
+    throws PlotPageDataException, PositionException {
+
+    TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
+
+    for (LocalDateTime time : getDataTimes()) {
+      result.put(time,
+        sensorValues.getPositionTableValue(columnId, time, preferGoodFlags));
     }
 
     return result;
@@ -1082,7 +1108,8 @@ public class ManualQCData extends PlotPageData {
   }
 
   protected PlotPageTableValue getInterpolatedPositionValue(
-    SensorType sensorType, LocalDateTime time) throws PlotPageDataException {
+    SensorType sensorType, LocalDateTime time)
+    throws PlotPageDataException, PositionException {
 
     PlotPageTableValue result = null;
 
@@ -1111,42 +1138,7 @@ public class ManualQCData extends PlotPageData {
           long columnId = instrument.getSensorAssignments()
             .getColumnIds(sensorType).get(0);
 
-          List<SensorValue> valuesToUse = sensorValues.getColumnValues(columnId)
-            .getWithInterpolation(time, true, false);
-
-          switch (valuesToUse.size()) {
-          case 0: {
-            // Flushing value - do nothing
-            break;
-          }
-          case 1: {
-            // Value from exact time - use it directly
-            result = new SensorValuePlotPageTableValue(valuesToUse.get(0));
-            break;
-          }
-          case 2: {
-            Double value = SensorValue.interpolate(valuesToUse.get(0),
-              valuesToUse.get(1), time);
-
-            if (null != value) {
-              try {
-                result = new SimplePlotPageTableValue(String.valueOf(value),
-                  SensorValue.getCombinedDisplayFlag(valuesToUse),
-                  SensorValue.getCombinedQcComment(valuesToUse, sensorValues),
-                  false, PlotPageTableValue.INTERPOLATED_TYPE);
-              } catch (RoutineException e) {
-                throw new PlotPageDataException(
-                  "Unable to get SensorValue QC Comments", e);
-              }
-            }
-
-            break;
-          }
-          default: {
-            throw new PlotPageDataException(
-              "Invalid number of values in sensor value search");
-          }
-          }
+          result = sensorValues.getPositionTableValue(columnId, time, true);
         }
       }
     }
