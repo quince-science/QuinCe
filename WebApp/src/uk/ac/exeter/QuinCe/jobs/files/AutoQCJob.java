@@ -183,6 +183,8 @@ public class AutoQCJob extends DataSetJob {
         positionValues = DataSetDataDB.getPositionSensorValues(conn, instrument,
           dataSet.getId());
 
+        SensorValue.clearAutoQC(positionValues.getAllPositionValues());
+
         PositionQCRoutine positionQC = new PositionQCRoutine(positionValues);
         positionQC.qc(null, null);
 
@@ -277,7 +279,8 @@ public class AutoQCJob extends DataSetJob {
       DataSetDataDB.storeSensorValues(conn, sensorValues.getAll());
 
       if (null != positionValues) {
-        DataSetDataDB.storeSensorValues(conn, positionValues.getAll());
+        DataSetDataDB.storeSensorValues(conn,
+          positionValues.getAllPositionValues());
       }
 
       // Trigger the Build Measurements job

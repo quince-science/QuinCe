@@ -32,7 +32,8 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
 
   @Override
   public String getValue() {
-    return StringUtils.formatNumber(sensorValue.getValue());
+    return null == sensorValue ? ""
+      : StringUtils.formatNumber(sensorValue.getValue());
   }
 
   @Override

@@ -439,7 +439,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    *
    * @throws RecordNotFoundException
    */
-  public static void clearAutoQC(List<SensorValue> values)
+  public static void clearAutoQC(Collection<SensorValue> values)
     throws RecordNotFoundException {
     for (SensorValue value : values) {
       value.clearAutomaticQC();
