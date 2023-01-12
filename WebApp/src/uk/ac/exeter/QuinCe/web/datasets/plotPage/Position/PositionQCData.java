@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -154,5 +155,11 @@ public class PositionQCData extends ManualQCData {
   protected TreeMap<LocalDateTime, PlotPageTableValue> getPositionValues(
     long columnId) throws PlotPageDataException, PositionException {
     return getPositionValuesAction(columnId, false);
+  }
+
+  @Override
+  public Map<Long, Integer> getNeedsFlagCounts() {
+    return null == sensorValues ? null
+      : sensorValues.getPositionNeedsFlagCounts();
   }
 }

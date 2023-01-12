@@ -243,21 +243,21 @@ public class DatasetSensorValues {
   /**
    * Get the times for which position values have been added.
    *
-   * <p>
-   * Assumes that the times for longitudes and latitudes are identical.
-   * </p>
-   *
    * @return The position value times.
    */
   public List<LocalDateTime> getPositionTimes() {
 
-    List<LocalDateTime> result = null;
+    TreeSet<LocalDateTime> result = new TreeSet<LocalDateTime>();
 
     if (null != longitudes) {
-      result = longitudes.getTimes();
+      result.addAll(longitudes.getTimes());
     }
 
-    return result;
+    if (null != latitudes) {
+      result.addAll(latitudes.getTimes());
+    }
+
+    return new ArrayList<LocalDateTime>(result);
   }
 
   public Map<Long, SensorValue> get(LocalDateTime time) {
@@ -364,7 +364,7 @@ public class DatasetSensorValues {
    *
    * @return The number of NEEDED flags
    */
-  public Map<Long, Integer> getNeedsFlagCounts() {
+  public Map<Long, Integer> getNonPositionNeedsFlagCounts() {
 
     Map<Long, Integer> result = new HashMap<Long, Integer>();
     int total = 0;
@@ -385,6 +385,34 @@ public class DatasetSensorValues {
     }
 
     result.put(FLAG_TOTAL, total);
+
+    return result;
+  }
+
+  public Map<Long, Integer> getPositionNeedsFlagCounts() {
+
+    Set<LocalDateTime> needsFlagTimes = new HashSet<LocalDateTime>();
+
+    int lonCount = 0;
+    for (SensorValue longitude : longitudes) {
+      if (longitude.getUserQCFlag().equals(Flag.NEEDED)) {
+        needsFlagTimes.add(longitude.getTime());
+        lonCount++;
+      }
+    }
+
+    int latCount = 0;
+    for (SensorValue latitude : latitudes) {
+      if (latitude.getUserQCFlag().equals(Flag.NEEDED)) {
+        needsFlagTimes.add(latitude.getTime());
+        latCount++;
+      }
+    }
+
+    Map<Long, Integer> result = new HashMap<Long, Integer>();
+    result.put(SensorType.LONGITUDE_ID, lonCount);
+    result.put(SensorType.LATITUDE_ID, latCount);
+    result.put(FLAG_TOTAL, needsFlagTimes.size());
 
     return result;
   }
@@ -616,7 +644,7 @@ public class DatasetSensorValues {
     return result;
   }
 
-  private SearchableSensorValuesList getPositionValuesList(long columnId)
+  public SearchableSensorValuesList getPositionValuesList(long columnId)
     throws PositionException {
 
     SearchableSensorValuesList values;

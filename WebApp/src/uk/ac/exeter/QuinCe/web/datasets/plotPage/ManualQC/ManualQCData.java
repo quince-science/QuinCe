@@ -909,7 +909,8 @@ public class ManualQCData extends PlotPageData {
    * @return The number of NEEDED flags
    */
   public Map<Long, Integer> getNeedsFlagCounts() {
-    return null == sensorValues ? null : sensorValues.getNeedsFlagCounts();
+    return null == sensorValues ? null
+      : sensorValues.getNonPositionNeedsFlagCounts();
   }
 
   /**
