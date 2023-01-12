@@ -107,7 +107,7 @@ public class PositionQCRoutine extends AutoQCRoutine {
 
     try {
       // Step through each time in the dataset
-      for (LocalDateTime time : positionSensorValues.getTimes()) {
+      for (LocalDateTime time : positionSensorValues.getPositionTimes()) {
 
         // Get the position values for this time
         SensorValue longitude = positionSensorValues.getSensorValue(time,
@@ -115,14 +115,14 @@ public class PositionQCRoutine extends AutoQCRoutine {
         SensorValue latitude = positionSensorValues.getSensorValue(time,
           SensorType.LATITUDE_ID);
 
-        if (longitude.isNaN()) {
+        if (null == longitude || longitude.isNaN()) {
           flag(longitude, latitude);
         } else if (longitude.getDoubleValue() < -180D
           || longitude.getDoubleValue() > 180D) {
           flag(longitude, latitude);
         }
 
-        if (latitude.isNaN()) {
+        if (null == latitude || latitude.isNaN()) {
           flag(longitude, latitude);
         } else if (latitude.getDoubleValue() < -90D
           || latitude.getDoubleValue() > 90D) {
@@ -152,7 +152,12 @@ public class PositionQCRoutine extends AutoQCRoutine {
   }
 
   private void flag(SensorValue lon, SensorValue lat) throws RoutineException {
-    addFlag(lon, Flag.BAD, "", "");
-    addFlag(lat, Flag.BAD, "", "");
+    if (null != lon) {
+      addFlag(lon, Flag.BAD, "", "");
+    }
+
+    if (null != lat) {
+      addFlag(lat, Flag.BAD, "", "");
+    }
   }
 }

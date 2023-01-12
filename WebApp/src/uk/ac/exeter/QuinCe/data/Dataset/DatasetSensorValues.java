@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
 
 /**
  * Data structure holding all the {@code SensorValue}s for a dataset, accessible
@@ -586,6 +587,13 @@ public class DatasetSensorValues {
     return result;
   }
 
+  public PlotPageTableValue getRawPositionTableValue(long columnId,
+    LocalDateTime time) throws PositionException {
+
+    return new SensorValuePlotPageTableValue(
+      getPositionValuesList(columnId).get(time));
+  }
+
   public PlotPageTableValue getPositionTableValue(long columnId,
     LocalDateTime time, boolean preferGoodValues)
     throws PositionException, PlotPageDataException {
@@ -599,6 +607,13 @@ public class DatasetSensorValues {
 
     return getPositionValuesList(columnId).getWithInterpolation(time, false,
       true);
+  }
+
+  public Collection<SensorValue> getAllPositionValues() {
+    Collection<SensorValue> result = new HashSet<SensorValue>();
+    result.addAll(longitudes);
+    result.addAll(latitudes);
+    return result;
   }
 
   private SearchableSensorValuesList getPositionValuesList(long columnId)

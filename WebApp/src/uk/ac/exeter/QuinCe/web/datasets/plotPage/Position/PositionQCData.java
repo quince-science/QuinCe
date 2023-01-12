@@ -110,9 +110,9 @@ public class PositionQCData extends ManualQCData {
         record.addColumn(times.get(i));
 
         PlotPageTableValue longitude = sensorValues
-          .getPositionTableValue(SensorType.LONGITUDE_ID, times.get(i), false);
+          .getRawPositionTableValue(SensorType.LONGITUDE_ID, times.get(i));
         PlotPageTableValue latitude = sensorValues
-          .getPositionTableValue(SensorType.LATITUDE_ID, times.get(i), false);
+          .getRawPositionTableValue(SensorType.LATITUDE_ID, times.get(i));
 
         // The lon/lat can be null if the instrument has a fixed position
         if (null != longitude && null != latitude
