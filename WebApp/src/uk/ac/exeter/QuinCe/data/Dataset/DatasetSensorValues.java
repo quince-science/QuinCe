@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import com.javadocmd.simplelatlng.LatLng;
+
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -129,7 +131,18 @@ public class DatasetSensorValues {
   }
 
   public SearchableSensorValuesList getColumnValues(long columnId) {
-    return valuesByColumn.get(columnId);
+
+    SearchableSensorValuesList values;
+
+    if (columnId == SensorType.LONGITUDE_ID) {
+      values = longitudes;
+    } else if (columnId == SensorType.LATITUDE_ID) {
+      values = latitudes;
+    } else {
+      values = valuesByColumn.get(columnId);
+    }
+
+    return values;
   }
 
   public SensorValue getById(long id) {
@@ -658,5 +671,19 @@ public class DatasetSensorValues {
     }
 
     return values;
+  }
+
+  public LatLng getClosestPosition(LocalDateTime time) {
+
+    SensorValue lat = latitudes.timeSearch(time);
+    SensorValue lon = longitudes.timeSearch(time);
+
+    LatLng result = null;
+
+    if (null != lat && null != lon && lat.getTime().equals(lon.getTime())) {
+      result = new LatLng(lat.getDoubleValue(), lon.getDoubleValue());
+    }
+
+    return result;
   }
 }

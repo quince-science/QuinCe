@@ -638,6 +638,25 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     // ms to s
     modeTimeStep = mode.getMode().intValue() / 1000;
   }
+
+  public Double[] getRange() {
+    Double min = Double.MAX_VALUE;
+    Double max = Double.MIN_VALUE;
+
+    for (SensorValue v : this) {
+      if (!v.isNaN()) {
+        if (v.getDoubleValue() > max) {
+          max = v.getDoubleValue();
+        }
+
+        if (v.getDoubleValue() < min) {
+          min = v.getDoubleValue();
+        }
+      }
+    }
+
+    return new Double[] { min, max };
+  }
 }
 
 class SensorValueTimeComparator implements Comparator<SensorValue> {

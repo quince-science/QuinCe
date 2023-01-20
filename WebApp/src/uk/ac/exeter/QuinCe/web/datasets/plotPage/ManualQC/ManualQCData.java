@@ -597,6 +597,7 @@ public class ManualQCData extends PlotPageData {
       try (Connection conn = dataSource.getConnection()) {
         DataSetDataDB.storeSensorValues(conn, changedValues);
       }
+      clearSelection();
       initPlots();
     } catch (Exception e) {
       error("Error while updating QC flags", e);
@@ -708,6 +709,7 @@ public class ManualQCData extends PlotPageData {
         DataSetDataDB.storeSensorValues(conn, changedValues);
       }
 
+      clearSelection();
       initPlots();
 
     } catch (Exception e) {
@@ -751,6 +753,7 @@ public class ManualQCData extends PlotPageData {
     return selectable;
   }
 
+  @Override
   protected List<LocalDateTime> getDataTimes() {
     return sensorValues.getTimes();
   }
@@ -888,7 +891,7 @@ public class ManualQCData extends PlotPageData {
   }
 
   @Override
-  protected PlotPageColumnHeading getDefaultYAxis1() {
+  protected PlotPageColumnHeading getDefaultYAxis1() throws Exception {
     // The first sensor
     return columnHeadings.get(SENSORS_FIELD_GROUP).get(0);
   }

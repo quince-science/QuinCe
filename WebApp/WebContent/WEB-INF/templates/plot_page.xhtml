@@ -12,6 +12,9 @@
   <ui:insert name="localHead"></ui:insert>
   <h:outputScript name="script/jquery.splitter.js" />
   <h:outputStylesheet name="style/jquery.splitter.css" />
+  <h:outputScript name="script/leaflet.js" />
+  <h:outputStylesheet name="style/leaflet.css" />
+  <h:outputScript name="script/jsColorScale.js" />
   <h:outputScript name="script/datatables.min.js" />
   <h:outputStylesheet name="style/datatables.min.css" />
   <h:outputScript name="script/dygraph.min.js" />
@@ -42,10 +45,14 @@
     <h:inputHidden id="rowIDs"
       value="#{sessionScope[beanName].data.rowIDsJson}" />
 
+    <h:inputHidden id="dataBounds"
+      value="#{sessionScope[beanName].dataBounds}" />
+
     <p:remoteCommand name="loadData"
       action="#{sessionScope[beanName].loadData}"
       process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis
-        :plot2Form:plot2XAxis :plot2Form:plot2YAxis columnHeadings extendedColumnHeadings rowIDs :statusForm"
+        :plot1Form:map1Column :plot2Form:plot2XAxis :plot2Form:plot2YAxis
+        :plot2Form:map2Column columnHeadings extendedColumnHeadings rowIDs :statusForm"
       oncomplete="dataLoaded()" />
 
   </h:form>
@@ -206,12 +213,31 @@
             value="#{sessionScope[beanName].data.plot1.xaxis}"/>
           <h:inputHidden id="plot1YAxis"
             value="#{sessionScope[beanName].data.plot1.yaxis}"/>
+          <h:inputHidden id="map1Column"
+            value="#{sessionScope[beanName].data.map1.column}"/>
+          <h:inputHidden id="map1Data"
+            value="#{sessionScope[beanName].data.map1.data}"/>
+          <h:inputHidden id="map1ScaleLimits"
+            value="#{sessionScope[beanName].data.map1.scaleLimits}"/>
+          <h:inputHidden id="map1DataBounds"
+            value="#{sessionScope[beanName].data.map1.dataBounds}"/>
+          <h:inputHidden id="map1Bounds"
+            value="#{sessionScope[beanName].data.map1.viewBounds}"/>
+          <h:inputHidden id="map1UpdateScale"
+            value="#{sessionScope[beanName].data.map1.updateScale}"/>
+          <h:outputText id="ttt"
+            value="#{sessionScope[beanName].data.map1.updateScale}"/>
 
           <p:remoteCommand name="loadPlot1"
             action="#{sessionScope[beanName].data.plot1.init}"
             process="@this plot1XAxis plot1YAxis"
             update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels plot1FlagLabels"
             oncomplete="drawPlot(1, true, true)" />
+
+          <p:remoteCommand name="map1GetData"
+            action="#{sessionScope[beanName].data.map1.generateMapData}"
+            process="map1Column map1Bounds map1UpdateScale"
+            update="map1DataBounds map1Data map1ScaleLimits" oncomplete="drawMap(1)" />
 
           <div id="plot1Container">
             <div id="plot1DataPlot" class="plot dataPlot"></div>
@@ -220,16 +246,11 @@
           </div>
           <div id="plot1Label" class="plotLabels"></div>
           <div id="map1Container" class="hidden"></div>
-          <div id="map1ScaleControlContainer"
-            class="ol-unselectable ol-control mapScaleControlContainer hidden">
-            <button type="button" onclick="toggleScale(1);">S</button>
-          </div>
-          <div id="map1Value" class="mapValue"></div>
           <div id="map1Scale" class="mapScale hidden"></div>
           <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
             <f:facet name="left">
-              <p:selectOneButton id="plotMode" widgetVar="plot1Mode"
-                styleClass="plotModeButtons" style="display: none"
+              <p:selectOneButton id="plot1Mode" widgetVar="plot1Mode"
+                styleClass="plotModeButtons"
                 value="0" onchange="initPlot(1)" unselectable="false">
                 <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
                 <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
@@ -267,12 +288,29 @@
             value="#{sessionScope[beanName].data.plot2.xaxis}"/>
           <h:inputHidden id="plot2YAxis"
             value="#{sessionScope[beanName].data.plot2.yaxis}"/>
+          <h:inputHidden id="map2Column"
+            value="#{sessionScope[beanName].data.map2.column}"/>
+          <h:inputHidden id="map2Data"
+            value="#{sessionScope[beanName].data.map2.data}"/>
+          <h:inputHidden id="map2ScaleLimits"
+            value="#{sessionScope[beanName].data.map2.scaleLimits}"/>
+          <h:inputHidden id="map2DataBounds"
+            value="#{sessionScope[beanName].data.map2.dataBounds}"/>
+          <h:inputHidden id="map2Bounds"
+            value="#{sessionScope[beanName].data.map2.viewBounds}"/>
+          <h:inputHidden id="map2UpdateScale"
+            value="#{sessionScope[beanName].data.map2.updateScale}"/>
 
           <p:remoteCommand name="loadPlot2"
             action="#{sessionScope[beanName].data.plot2.init}"
             process="@this plot2XAxis plot2YAxis"
             update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels plot2FlagLabels"
             oncomplete="drawPlot(2, true, true)" />
+
+          <p:remoteCommand name="map2GetData"
+            action="#{sessionScope[beanName].data.map2.generateMapData}"
+            process="map2Column map2Bounds map2UpdateScale"
+            update="map2DataBounds map2Data map2ScaleLimits" oncomplete="drawMap(2)" />
 
           <div id="plot2Container">
             <div id="plot2DataPlot" class="plot dataPlot"></div>
@@ -281,16 +319,10 @@
           </div>
           <div id="plot2Label" class="plotLabels"></div>
           <div id="map2Container" class="hidden"></div>
-          <div id="map2ScaleControlContainer"
-            class="ol-unselectable ol-control mapScaleControlContainer hidden">
-            <button type="button" onclick="toggleScale(2);">S</button>
-          </div>
-          <div id="map1Value" class="mapValue"></div>
-          <div id="map1Scale" class="mapScale hidden"></div>
           <p:toolbar id="plot2Toolbar" styleClass="plotPageFooter">
             <f:facet name="left">
-              <p:selectOneButton id="plotMode" widgetVar="plot2Mode"
-                styleClass="plotModeButtons" style="display: none"
+              <p:selectOneButton id="plot2Mode" widgetVar="plot2Mode"
+                styleClass="plotModeButtons"
                 value="0" onchange="initPlot(2)" unselectable="false">
                 <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
                 <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
@@ -354,6 +386,11 @@
             <p:remoteCommand name="selectRange"
               action="#{sessionScope[beanName].data.selectRange}"
               process="@form" update="selectedRows prevClickedRow lastSelectionAction"
+              oncomplete="selectionUpdated()" />
+
+            <p:remoteCommand name="updateSelectedRows"
+              action="#{sessionScope[beanName].noop}"
+              process="selectedRows" update="@none"
               oncomplete="selectionUpdated()" />
 
             <ui:insert name="selectionDialog" />
