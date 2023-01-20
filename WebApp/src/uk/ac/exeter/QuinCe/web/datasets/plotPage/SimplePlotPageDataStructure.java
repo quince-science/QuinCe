@@ -232,4 +232,8 @@ public class SimplePlotPageDataStructure {
 
     return result;
   }
+
+  public List<LocalDateTime> getTimes() {
+    return new ArrayList<LocalDateTime>(pageData.keySet());
+  }
 }

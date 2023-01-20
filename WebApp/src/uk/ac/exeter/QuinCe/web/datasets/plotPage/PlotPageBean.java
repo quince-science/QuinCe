@@ -391,4 +391,13 @@ public abstract class PlotPageBean extends BaseManagedBean {
     throws MissingParamException, DatabaseException {
     DataSetDB.storeUserMessages(getDataSource(), dataset);
   }
+
+  /**
+   * Get the bounds of the data as a JSON string
+   *
+   * @return The data bounds
+   */
+  public String getDataBounds() {
+    return dataset.getBounds().toJson();
+  }
 }

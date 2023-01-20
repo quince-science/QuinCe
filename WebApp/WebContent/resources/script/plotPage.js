@@ -10,9 +10,10 @@ const MAP1_LOADING = 1 << 3;
 const MAP2_LOADING = 1 << 4;
 const UPDATE_DATA = 1 << 5;
 
+const TIME_COLUMN_ID = -1100;
+
 // Initially the table and both plots are loading
 var loadingItems = TABLE_LOADING | PLOT1_LOADING | PLOT2_LOADING;
-
 
 function plotLoading(index, mode) {
   let item = 0;
@@ -56,6 +57,20 @@ function itemNotLoading(item) {
 const SELECT_ACTION = 1;
 const DESELECT_ACTION = -1;
 const FLAG_FLUSHING = -100;
+
+const MAP_MEASUREMENT_ID_INDEX = 2;
+const MAP_MANUAL_FLAG_INDEX = 3;
+const DATA_LAYER = 'data';
+const FLAG_LAYER = 'flags';
+const SELECTION_LAYER = 'selection';
+
+const FLAG_GOOD = 2;
+const FLAG_ASSUMED_GOOD = -2;
+const FLAG_QUESTIONABLE = 3;
+const FLAG_BAD = 4;
+const FLAG_FATAL = 44;
+const FLAG_NEEDS_FLAG = -10;
+const FLAG_IGNORED = -1002;
 
 /*
  * Variables for the plot/table layout
@@ -111,6 +126,11 @@ const VARIABLES_DIALOG_ENTRY_HEIGHT = 35;
 const PLOT_MODE_PLOT = 0;
 const PLOT_MODE_MAP = 1;
 
+// See MapRecordJsonSerializer.java
+const VALUE_TYPE = 0;
+const FLAG_TYPE = 1;
+const SELECTION_TYPE = 3;
+
 var currentPlot = 1;
 
 // Plot data is passed through form inputs.
@@ -137,6 +157,49 @@ var BASE_PLOT_OPTIONS = {
 }
 
 var updatingDialogButtons = false;
+
+var map1 = null;
+var map2 = null;
+
+var map1ColorScale = new ColorScale([[0,'#FFFFD4'],[0.25,'#FED98E'],[0.5,'#FE9929'],[0.75,'#D95F0E'],[1,'#993404']]);
+map1ColorScale.setFont('Noto Sans', 11);
+var map1ScaleVisible = true;
+
+var map2ColorScale = new ColorScale([[0,'#FFFFD4'],[0.25,'#FED98E'],[0.5,'#FE9929'],[0.75,'#D95F0E'],[1,'#993404']]);
+map2ColorScale.setFont('Noto Sans', 11);
+var map2ScaleVisible = true;
+
+var map1DataLayer = null;
+var map2DataLayer = null;
+
+var map1Extent = null;
+var map2Extent = null;
+
+var redrawMap = true;
+
+var scaleOptions = {
+    outliers: 'b',
+    outlierSize: 5,
+    decimalPlaces: 3
+};
+
+// We have to have one copy of the tiles for each map
+var mapTiles1 = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
+  attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  subdomains: 'abcd',
+  minZoom: 0,
+  maxZoom: 18,
+  ext: 'png'
+});
+
+var mapTiles2 = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
+  attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  subdomains: 'abcd',
+  minZoom: 0,
+  maxZoom: 18,
+  ext: 'png'
+});
+
 
 /*
  *********************************************
@@ -200,14 +263,15 @@ function scaleTableSplit() {
 
 // Handle split adjustment between the two plots
 function resizePlots() {
-  resizePlot(1);
-  resizePlot(2);
 
-//    if (null != window['map' + index]) {
-//      $('#map' + index + 'Container').width($('#plot' + index + 'Panel').width());
-//      $('#map' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
-//      window['map' + index].updateSize();
-//    }
+  for (let i = 1; i <= 2; i++) {
+    resizePlot(i);
+
+    if (null != window['map' + i]) {
+      $('#map' + i + 'Container').width($('#plot' + i + 'Panel').width());
+      $('#map' + i + 'Container').height($('#plot' + i + 'Panel').height() - 40);
+    }
+  }
 }
 
 function resizePlot(index) {
@@ -485,6 +549,8 @@ function setSelectedRows(rows) {
   $('#selectionForm\\:selectedRows').val(
     JSON.stringify([...new Set(rows.sort())])
   );
+
+  updateSelectedRows(); // PF remotecommand
 }
 
 //Get the ID of the clicked row
@@ -569,18 +635,12 @@ function selectionUpdated() {
     }
   }
 
-/*
   if (null != map1) {
-    drawMap(1);
+    getMapData(1);
   }
   if (null != map2) {
-    drawMap(2);
+    getMapData(2);
   }
-
-  if (canEdit && typeof postSelectionUpdated == 'function') {
-    postSelectionUpdated();
-  }
-*/
 }
 
 
@@ -1014,7 +1074,34 @@ function canSelectCell(rowIndex, colIndex) {
 //******************************************************
 
 function initPlot(index) {
-  eval('loadPlot' + index + '()'); // PF remoteCommand
+  currentPlot = index;
+  let mode = getPlotMode(index);
+  let redraw = false;
+
+  if (mode == PLOT_MODE_PLOT) {
+    setupPlotVariables(index);
+    $('#map' + index + 'Container').hide();
+    $('#plot' + index + 'Container').show();
+    PF('plot' + index + 'SelectMode').enable();
+
+    if (null == window['plot' + index]) {
+      redraw = true;
+    }
+  } else {
+    setupMapVariables(index);
+    $('#plot' + index + 'Container').hide();
+    $('#map' + index + 'Container').show();
+    PF('plot' + index + 'SelectMode').disable();
+
+    if (null == window['map' + index]) {
+      redraw = true;
+    }
+  }
+
+  if (redraw) {
+    variablesPlotIndex = index;
+    applyVariables();
+  }
 }
 
 function getPlotLabels(index) {
@@ -1305,23 +1392,6 @@ function getInteractionModel(index) {
   return interactionModel;
 }
 
-function resetZoom(index) {
-  window['dataPlot' + index].updateOptions({
-    yRangePad: 10,
-    xRangePad: 10
-  });
-
-  window['dataPlot' + index].resetZoom();
-  let nonDefaultYRange = getYRange(index);
-  if (null != nonDefaultYRange) {
-    window['dataPlot' + index].updateOptions({
-    valueRange: nonDefaultYRange
-    });
-  }
-
-  syncZoom(index);
-}
-
 /*
  * Get the Row ID from a given graph click event
  *
@@ -1455,7 +1525,7 @@ function setupMapVariables(plotIndex) {
       mapWidget.jq.show();
     }
   });
-  updateMapCheckboxes(plotIndex, $('#plot' + plotIndex + 'Form\\:mapVariable').val());
+  updateMapCheckboxes($('#plot' + plotIndex + 'Form\\:map' + plotIndex + 'Column').val());
 }
 
 //Select the specified variable in the dialog
@@ -1471,7 +1541,7 @@ function updateMapCheckboxes(variable) {
         if (widget) {
           if (id == variable) {
             widget.check();
-            $('#plot' + currentPlot + 'Form\\:mapVariable').val(variable);
+            $('#plot' + currentPlot + 'Form\\:map' + currentPlot + 'Column').val(variable);
           } else {
             widget.uncheck();
           }
@@ -1506,7 +1576,7 @@ function resizeVariablesDialog() {
 }
 
 function getPlotMode(index) {
-  return +$('[id^=plot1Form\\:plotMode]:checked').val();
+  return +$('[id^=plot' + index + 'Form\\:plot' + index + 'Mode]:checked').val();
 }
 
 function applyVariables() {
@@ -1520,7 +1590,7 @@ function applyVariables() {
 
   if (mode == PLOT_MODE_PLOT) {
     setPlotAxes(currentPlot);
-    initPlot(currentPlot);
+    eval('loadPlot' + currentPlot + '()'); // PF remoteCommand
   } else if (mode == PLOT_MODE_MAP) {
     eval('map' + currentPlot + 'GetData()'); // PF remoteCommand
     initMap(currentPlot);
@@ -1552,10 +1622,16 @@ function getSelectedCheckbox(prefix) {
   return axis;
 }
 
-
 function setPlotAxes(plotIndex) {
-  $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
-  $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
+  let xAxis = getSelectedXAxis();
+  if (xAxis != 0) {
+    $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
+  }
+
+  let yAxis = getSelectedYAxis();
+  if (yAxis != 0) {
+    $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
+  }
 }
 
 function setPlotSelectMode(index) {
@@ -1690,4 +1766,218 @@ function saveNotes() {
 function cancelNotes() {
   PF('notesDialog').hide();
   PF('notesRevert').jq[0].click();
+}
+
+function initMap(index) {
+  $('#map' + index +'Container').empty()
+  $('#map' + index + 'Container').width($('#plot' + index + 'Panel').width());
+  $('#map' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
+
+  let mapVar = 'map' + index;
+  let bounds = JSON.parse($('#plotPageForm\\:dataBounds').val());
+
+
+  if (null != window[mapVar]) {
+    window[mapVar].off();
+    window[mapVar].remove();
+    window[mapVar] = null;
+  }
+
+  window[mapVar] = L.map('map' + index + 'Container', {
+    renderer: L.canvas(),
+    zoomSnap: 0.5,
+    zoomControl: false,
+    attributionControl: false,
+    worldCopyJump: true
+  }).fitBounds([[bounds[1], bounds[0]], [bounds[3], bounds[2]]]);
+
+  window[mapVar].addLayer(window['mapTiles' + index]);
+
+  window[mapVar].on('moveend', updateMapData);
+  window[mapVar].on('zoomend', updateMapData);
+
+  $('#plot' + index + 'Form\\:mapUpdateScale').val(true);
+  redrawMap = true;
+  getMapData(index);
+}
+
+
+function updateMapData(event) {
+  getMapData(getMapIndex(event));
+  redrawMap = false;
+}
+
+function getMapData(index) {
+  let mapVar = 'map' + index;
+
+  let visibleBounds = window[mapVar].getBounds();
+
+  let extent = [];
+  extent.push(visibleBounds._southWest.lng);
+  extent.push(visibleBounds._southWest.lat);
+  extent.push(visibleBounds._northEast.lng);
+  extent.push(visibleBounds._northEast.lat);
+
+  $('#plot' + index + 'Form\\:map' + index + 'Bounds').val(extent);
+  $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
+  $('#plot' + index + 'Form\\:map' + index + 'Data').val("");
+  eval('map' + index + 'GetData()');
+}
+
+function drawMap(index) {
+  let mapVar = 'map' + index;
+  let dataLayerVar = mapVar + DATA_LAYER;
+  let flagLayerVar = mapVar + FLAG_LAYER;
+  let selectionLayerVar = mapVar + SELECTION_LAYER;
+  let colorScaleVar = mapVar + 'ColorScale';
+
+  // Remove old layers
+  if (null != window[dataLayerVar]) {
+  window[dataLayerVar].removeFrom(window[mapVar]);
+  window[flagLayerVar].removeFrom(window[mapVar]);
+  window[selectionLayerVar].removeFrom(window[mapVar]);
+  }
+
+  let mapData = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'Data').val());
+
+  window[flagLayerVar] = makeMapLayer(index, mapData[1], false).addTo(window[mapVar]);
+  window[selectionLayerVar] = makeMapLayer(index, mapData[2], false).addTo(window[mapVar]);
+  window[dataLayerVar] = makeMapLayer(index, mapData[0], true).addTo(window[mapVar]);
+
+  let scaleLimits = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'ScaleLimits').val());
+  window[colorScaleVar].setValueRange(scaleLimits[0], scaleLimits[1]);
+
+  //window[colorScaleVar].drawScale($('#map' + index + 'Scale'), scaleOptions);
+
+  if (redrawMap) {
+    $('#plot' + index + 'Form\\:map' + index + 'UpdateScale').val(false);
+    let bounds = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'DataBounds').val());
+    window[mapVar].fitBounds([[bounds[1], bounds[0]], [bounds[3], bounds[2]]]);
+    resetZoom(index);
+  }
+
+  // Destroy the plot, which is no longer visible
+  window['plot' + index] = null;
+
+  // We can't use the window object here because consts don't get put there.
+  if (index == 1) {
+    itemNotLoading(MAP1_LOADING);
+  } else if (index == 2) {
+    itemNotLoading(MAP2_LOADING);
+  }
+}
+
+function makeMapLayer(mapIndex, geojson, interactive) {
+  let result = L.layerGroup();
+
+  L.geoJSON(geojson, {
+    pointToLayer: (feature, latlng) => {
+    return new L.CircleMarker(latlng, {
+    interactive: interactive,
+    radius: getPointSize(feature),
+    stroke: false,
+    fill: true,
+    fillOpacity: 1,
+        fillColor: getPointColor(mapIndex, feature),
+    })
+    .bindTooltip(makeTooltip(feature, mapIndex))
+    .on('click', function(e) {
+      scrollToTableRow(feature.properties.rowID)
+      });
+  },
+  onEachFeature: (feature, layer) => {
+    layer.addTo(result);
+  }
+  });
+
+  return result;
+}
+
+function makeTooltip(point, mapIndex) {
+  if ($('#plot' + mapIndex + 'Form\\:map' + mapIndex + 'Column').val() == TIME_COLUMN_ID) {
+    return '' + new Date(Math.round(point.properties.value)).toISOString();
+  } else {
+    return '' + point.properties.value;
+  }
+}
+
+function getPointColor(mapIndex, point) {
+
+  switch (point.properties.type) {
+  case VALUE_TYPE: {
+    return window['map' + mapIndex + 'ColorScale']
+      .getColor(point.properties.value);
+  }
+  case FLAG_TYPE: {
+  switch (point.properties.flag) {
+  case 3: {
+    return '#FFA42B';
+  }
+  case 4: {
+    return '#FF0000';
+  }
+  case -10: {
+    return '#D7D6FF';
+  }
+  case -100: {
+    return '#C0C0C0';
+  }
+  default: {
+    console.log('INVALID FLAG VALUE ' + point.properties.flag);
+    return '#000000';
+  }
+  }
+  }
+  case SELECTION_TYPE: {
+    return '#FFFF00';
+  }
+  default: {
+  console.log('INVALID TYPE ' + point.properties.type);
+  return '#000000';
+  }
+  }
+}
+
+function getPointSize(point) {
+ if (point.properties.type == VALUE_TYPE) {
+   return DATA_POINT_HIGHLIGHT_SIZE;
+ } else {
+   return SELECTION_POINT_SIZE;
+ }
+}
+
+function resetZoom(index) {
+  let mode = getPlotMode(index)
+
+  if (mode == PLOT_MODE_MAP) {
+    let bounds = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'DataBounds').val());
+    window['map' + index].fitBounds([[bounds[1], bounds[0]], [bounds[3], bounds[2]]]);
+  } else {
+    window['dataPlot' + index].updateOptions({
+      yRangePad: 10,
+      xRangePad: 10
+    });
+
+    window['dataPlot' + index].resetZoom();
+    let nonDefaultYRange = getYRange(index);
+    if (null != nonDefaultYRange) {
+      window['dataPlot' + index].updateOptions({
+        valueRange: nonDefaultYRange
+      });
+    }
+
+    syncZoom(index);
+  }
+}
+
+function getMapIndex(event) {
+  let containerName = event.target._container.id;
+  return containerName.match(/map([0-9])/)[1];
+}
+
+function toggleScale(index) {
+  $('#map' + index + 'Scale').toggle(100, function() {
+    window['map' + index + 'ScaleVisible'] =
+      ($('#map' + index + 'Scale').css('display') === 'block');
+  });
 }

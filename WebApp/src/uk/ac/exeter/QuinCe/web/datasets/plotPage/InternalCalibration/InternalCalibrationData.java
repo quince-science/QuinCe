@@ -363,4 +363,9 @@ public class InternalCalibrationData extends PlotPageData {
   public Flag getWorstSelectedFlag() {
     return worstSelectedFlag;
   }
+
+  @Override
+  protected List<LocalDateTime> getDataTimes() {
+    return dataStructure.getTimes();
+  }
 }

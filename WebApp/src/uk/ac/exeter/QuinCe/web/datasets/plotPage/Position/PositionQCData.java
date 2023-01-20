@@ -29,6 +29,12 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
 
 public class PositionQCData extends ManualQCData {
 
+  private PlotPageColumnHeading timeHeading;
+
+  private PlotPageColumnHeading longitudeHeading;
+
+  private PlotPageColumnHeading latitudeHeading;
+
   protected PositionQCData(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
     super(dataSource, instrument, dataset);
@@ -56,8 +62,10 @@ public class PositionQCData extends ManualQCData {
     List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
       1);
 
-    rootColumns.add(new PlotPageColumnHeading(
-      FileDefinition.TIME_COLUMN_HEADING, false, false));
+    timeHeading = new PlotPageColumnHeading(FileDefinition.TIME_COLUMN_HEADING,
+      false, false);
+
+    rootColumns.add(timeHeading);
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
     extendedColumnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
@@ -72,19 +80,33 @@ public class PositionQCData extends ManualQCData {
       .add(new PlotPageColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
         "Position", "Position", "POSITION", null, true, false, true, false));
 
-    extendedSensorColumns.add(new PlotPageColumnHeading(
-      FileDefinition.LONGITUDE_COLUMN_HEADING, false, true));
-    extendedSensorColumns
-      .add(new PlotPageColumnHeading(FileDefinition.LATITUDE_COLUMN_HEADING,
-        false, true, FileDefinition.LONGITUDE_COLUMN_ID));
+    longitudeHeading = new PlotPageColumnHeading(
+      FileDefinition.LONGITUDE_COLUMN_HEADING, false, true);
+
+    extendedSensorColumns.add(longitudeHeading);
+
+    latitudeHeading = new PlotPageColumnHeading(
+      FileDefinition.LATITUDE_COLUMN_HEADING, false, true,
+      FileDefinition.LONGITUDE_COLUMN_ID);
+
+    extendedSensorColumns.add(latitudeHeading);
 
     columnHeadings.put(SENSORS_FIELD_GROUP, sensorColumns);
     extendedColumnHeadings.put(SENSORS_FIELD_GROUP, extendedSensorColumns);
   }
 
+  protected PlotPageColumnHeading getDefaultXAxis1() throws Exception {
+    return longitudeHeading;
+  }
+
+  @Override
+  protected PlotPageColumnHeading getDefaultYAxis1() throws Exception {
+    return latitudeHeading;
+  }
+
   @Override
   protected PlotPageColumnHeading getDefaultYAxis2() throws Exception {
-    return extendedColumnHeadings.get(SENSORS_FIELD_GROUP).get(1);
+    return latitudeHeading;
   }
 
   @Override
@@ -161,5 +183,10 @@ public class PositionQCData extends ManualQCData {
   public Map<Long, Integer> getNeedsFlagCounts() {
     return null == sensorValues ? null
       : sensorValues.getPositionNeedsFlagCounts();
+  }
+
+  @Override
+  protected PlotPageColumnHeading getDefaultMap2Column() throws Exception {
+    return longitudeHeading;
   }
 }
