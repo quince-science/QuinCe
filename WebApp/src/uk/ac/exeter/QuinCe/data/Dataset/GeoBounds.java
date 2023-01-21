@@ -9,17 +9,16 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class GeoBounds {
 
-  private double minLon;
-  private double maxLon;
-  private double minLat;
-  private double maxLat;
+  private final double minLon;
+  private final double maxLon;
+  private final double minLat;
+  private final double maxLat;
 
   public GeoBounds(double minLon, double maxLon, double minLat, double maxLat) {
     this.minLon = minLon;
     this.maxLon = maxLon;
     this.minLat = minLat;
     this.maxLat = maxLat;
-    normalise();
   }
 
   public GeoBounds(String boundsString) {
@@ -29,7 +28,6 @@ public class GeoBounds {
     this.maxLon = boundsList.get(2);
     this.minLat = boundsList.get(1);
     this.maxLat = boundsList.get(3);
-    normalise();
   }
 
   public boolean inBounds(LatLng position) {
@@ -69,19 +67,5 @@ public class GeoBounds {
 
   public String toString() {
     return "[[" + minLon + "," + minLat + "],[" + maxLon + "," + maxLat + "]]";
-  }
-
-  private void normalise() {
-    minLon = normaliseLon(minLon);
-    maxLon = normaliseLon(maxLon);
-    if (maxLon < minLon) {
-      double temp = minLon;
-      minLon = maxLon;
-      maxLon = temp;
-    }
-  }
-
-  private double normaliseLon(double lon) {
-    return lon;
   }
 }
