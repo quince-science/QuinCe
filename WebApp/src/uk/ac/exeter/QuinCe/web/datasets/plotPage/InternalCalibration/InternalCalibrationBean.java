@@ -207,4 +207,9 @@ public class InternalCalibrationBean extends PlotPageBean {
     // TODO Work out how to not need this.
     // NOOP
   }
+
+  @Override
+  public boolean allowMaps() {
+    return false;
+  }
 }

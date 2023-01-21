@@ -225,8 +225,6 @@
             value="#{sessionScope[beanName].data.map1.viewBounds}"/>
           <h:inputHidden id="map1UpdateScale"
             value="#{sessionScope[beanName].data.map1.updateScale}"/>
-          <h:outputText id="ttt"
-            value="#{sessionScope[beanName].data.map1.updateScale}"/>
 
           <p:remoteCommand name="loadPlot1"
             action="#{sessionScope[beanName].data.plot1.init}"
@@ -249,12 +247,14 @@
           <div id="map1Scale" class="mapScale hidden"></div>
           <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
             <f:facet name="left">
-              <p:selectOneButton id="plot1Mode" widgetVar="plot1Mode"
-                styleClass="plotModeButtons"
-                value="0" onchange="initPlot(1)" unselectable="false">
-                <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
-                <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
-              </p:selectOneButton>
+              <ui:fragment rendered="#{sessionScope[beanName].allowMaps()}">
+                <p:selectOneButton id="plot1Mode" widgetVar="plot1Mode"
+                  styleClass="plotModeButtons"
+                  value="0" onchange="initPlot(1)" unselectable="false">
+                  <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
+                  <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
+                </p:selectOneButton>
+              </ui:fragment>
               <div class="plotFooterButtonContainer">
                 <p:commandButton icon="selectVariableButton"
                   onclick="showVariableDialog(1); return false;"
@@ -321,12 +321,14 @@
           <div id="map2Container" class="hidden"></div>
           <p:toolbar id="plot2Toolbar" styleClass="plotPageFooter">
             <f:facet name="left">
-              <p:selectOneButton id="plot2Mode" widgetVar="plot2Mode"
-                styleClass="plotModeButtons"
-                value="0" onchange="initPlot(2)" unselectable="false">
-                <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
-                <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
-              </p:selectOneButton>
+              <ui:fragment rendered="#{sessionScope[beanName].allowMaps()}">
+                <p:selectOneButton id="plot2Mode" widgetVar="plot2Mode"
+                  styleClass="plotModeButtons"
+                  value="0" onchange="initPlot(2)" unselectable="false">
+                  <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
+                  <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
+                </p:selectOneButton>
+              </ui:fragment>
               <div class="plotFooterButtonContainer">
                 <p:commandButton icon="selectVariableButton"
                   onclick="showVariableDialog(2); return false;"

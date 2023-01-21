@@ -1576,7 +1576,11 @@ function resizeVariablesDialog() {
 }
 
 function getPlotMode(index) {
-  return +$('[id^=plot' + index + 'Form\\:plot' + index + 'Mode]:checked').val();
+  if (PF('plot' + index + 'Mode')) {
+    return +$('[id^=plot' + index + 'Form\\:plot' + index + 'Mode]:checked').val();
+  } else {
+    return PLOT_MODE_PLOT;
+  }
 }
 
 function applyVariables() {

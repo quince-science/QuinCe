@@ -400,4 +400,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
   public String getDataBounds() {
     return dataset.getBounds().toJson();
   }
+
+  public boolean allowMaps() {
+    return true;
+  }
 }
