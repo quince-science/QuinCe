@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
+
+import org.apache.commons.lang3.NotImplementedException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -18,10 +21,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
 public class MapRecords extends ArrayList<MapRecord> {
 
   private static final int DECIMATION_LIMIT = 1000;
-
-  public MapRecords(int size) {
-    super(size);
-  }
 
   private static Gson valueGson;
 
@@ -44,6 +43,16 @@ public class MapRecords extends ArrayList<MapRecord> {
       .registerTypeHierarchyAdapter(MapRecord.class,
         new MapRecordJsonSerializer(MapRecordJsonSerializer.SELECTION))
       .create();
+  }
+
+  private boolean valueRangeCalculated = false;
+
+  private Double min = Double.NaN;
+
+  private Double max = Double.NaN;
+
+  public MapRecords(int size) {
+    super(size);
   }
 
   public String getDisplayJson(GeoBounds bounds, List<Long> selectedRows,
@@ -149,5 +158,97 @@ public class MapRecords extends ArrayList<MapRecord> {
     object.addProperty("type", "FeatureCollection");
     object.add("features", gson.toJsonTree(points));
     return object;
+  }
+
+  private void resetRange() {
+    valueRangeCalculated = false;
+  }
+
+  private void calculateValueRange() {
+    min = Double.NaN;
+    max = Double.NaN;
+
+    forEach(r -> {
+      Double value = r.getValue();
+
+      if (!value.isNaN()) {
+        if (min.isNaN()) {
+          min = value;
+          max = value;
+        } else {
+          if (r.getValue() < min) {
+            min = r.getValue();
+          }
+          if (r.getValue() > max) {
+            max = r.getValue();
+          }
+        }
+      }
+    });
+
+    valueRangeCalculated = true;
+  }
+
+  public Double[] getValueRange() {
+    if (!valueRangeCalculated) {
+      calculateValueRange();
+    }
+
+    return new Double[] { min, max };
+  }
+
+  @Override
+  public void add(int index, MapRecord record) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public boolean add(MapRecord record) {
+    resetRange();
+    boolean result;
+
+    // Don't add NaN values
+    if (record.isNaN()) {
+      result = false;
+    } else {
+      result = super.add(record);
+    }
+
+    return result;
+  }
+
+  @Override
+  public boolean addAll(int index, Collection<? extends MapRecord> records) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public boolean addAll(Collection<? extends MapRecord> records) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public MapRecord remove(int index) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public boolean remove(Object o) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public boolean removeAll(Collection<?> c) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public boolean removeIf(Predicate<? super MapRecord> filter) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  protected void removeRange(int fromIndex, int toIndex) {
+    throw new NotImplementedException();
   }
 }

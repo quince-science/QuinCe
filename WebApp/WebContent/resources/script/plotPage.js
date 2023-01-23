@@ -178,7 +178,7 @@ var map2Extent = null;
 var redrawMap = true;
 
 var scaleOptions = {
-    outliers: 'b',
+    outliers: 'n',
     outlierSize: 5,
     decimalPlaces: 3
 };
@@ -1083,6 +1083,7 @@ function initPlot(index) {
     $('#map' + index + 'Container').hide();
     $('#plot' + index + 'Container').show();
     PF('plot' + index + 'SelectMode').enable();
+    $('#map' + index + 'Scale').hide();
 
     if (null == window['plot' + index]) {
       redraw = true;
@@ -1092,6 +1093,7 @@ function initPlot(index) {
     $('#plot' + index + 'Container').hide();
     $('#map' + index + 'Container').show();
     PF('plot' + index + 'SelectMode').disable();
+    $('#map' + index + 'Scale').show();
 
     if (null == window['map' + index]) {
       redraw = true;
@@ -1850,8 +1852,7 @@ function drawMap(index) {
 
   let scaleLimits = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'ScaleLimits').val());
   window[colorScaleVar].setValueRange(scaleLimits[0], scaleLimits[1]);
-
-  //window[colorScaleVar].drawScale($('#map' + index + 'Scale'), scaleOptions);
+  window[colorScaleVar].drawScale($('#map' + index + 'Scale'), scaleOptions);
 
   if (redrawMap) {
     $('#plot' + index + 'Form\\:map' + index + 'UpdateScale').val(false);

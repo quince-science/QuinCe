@@ -244,7 +244,6 @@
           </div>
           <div id="plot1Label" class="plotLabels"></div>
           <div id="map1Container" class="hidden"></div>
-          <div id="map1Scale" class="mapScale hidden"></div>
           <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
             <f:facet name="left">
               <ui:fragment rendered="#{sessionScope[beanName].allowMaps()}">
@@ -270,6 +269,9 @@
                   <f:selectItem itemLabel=" " itemValue="select" />
                 </p:selectOneButton>
               </ui:fragment>
+            </f:facet>
+            <f:facet name="right">
+              <div id="map1Scale" class="colorScaleContainer">Scale</div>
             </f:facet>
           </p:toolbar>
         </h:form>
@@ -344,6 +346,9 @@
                   <f:selectItem itemLabel=" " itemValue="select" />
                 </p:selectOneButton>
               </ui:fragment>
+            </f:facet>
+            <f:facet name="right">
+              <div id="map2Scale" class="colorScaleContainer">Scale</div>
             </f:facet>
           </p:toolbar>
         </h:form>

@@ -29,7 +29,13 @@ public class PlotPageValueMapRecord extends MapRecord {
 
   @Override
   public Double getValue() {
-    return Double.parseDouble(value.getValue());
+    Double result = Double.NaN;
+
+    if (null != value && null != value.getValue()) {
+      result = Double.parseDouble(value.getValue());
+    }
+
+    return result;
   }
 
   @Override
