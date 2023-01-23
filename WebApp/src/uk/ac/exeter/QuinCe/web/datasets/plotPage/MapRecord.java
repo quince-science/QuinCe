@@ -35,4 +35,8 @@ public abstract class MapRecord implements Comparable<MapRecord> {
   public abstract Double getValue();
 
   public abstract Flag getFlag(boolean ignoreNeeded);
+
+  public boolean isNaN() {
+    return (null == getValue() || getValue().isNaN());
+  }
 }

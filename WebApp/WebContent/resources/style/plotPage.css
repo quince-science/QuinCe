@@ -284,3 +284,7 @@ td.selected > div {
   margin-left: -8px;
   margin-top: -3px;
 }
+
+.colorScaleContainer {
+  height: 30px;
+}

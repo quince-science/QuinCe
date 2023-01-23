@@ -942,21 +942,15 @@ public abstract class PlotPageData {
     return map2;
   }
 
-  public Double[] getValueRange(PlotPageColumnHeading column) {
+  public Double[] getValueRange(PlotPageColumnHeading column) throws Exception {
 
     Double[] result;
 
-    if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
-      List<LocalDateTime> times = getDataTimes();
-      result = new Double[2];
-      result[0] = (double) DateTimeUtils.dateToLong(times.get(0));
-      result[1] = (double) DateTimeUtils
-        .dateToLong(times.get(times.size() - 1));
-    } else {
-      result = getAllSensorValues().getColumnValues(column.getId()).getRange();
+    if (!mapCache.containsKey(column)) {
+      buildMapCache(column);
     }
 
-    return result;
+    return mapCache.get(column).getValueRange();
   }
 
   protected abstract List<LocalDateTime> getDataTimes();
