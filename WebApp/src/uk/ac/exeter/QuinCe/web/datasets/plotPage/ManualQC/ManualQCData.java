@@ -384,16 +384,22 @@ public class ManualQCData extends PlotPageData {
 
           DataLatLng position = getMapPosition(times.get(i));
 
-          StringBuilder positionString = new StringBuilder();
-          positionString
-            .append(StringUtils.formatNumber(position.getLongitude()));
-          positionString.append(" | ");
-          positionString
-            .append(StringUtils.formatNumber(position.getLatitude()));
+          if (null != position) {
+            StringBuilder positionString = new StringBuilder();
+            positionString
+              .append(StringUtils.formatNumber(position.getLongitude()));
+            positionString.append(" | ");
+            positionString
+              .append(StringUtils.formatNumber(position.getLatitude()));
 
-          record.addColumn(positionString.toString(), position.getFlag(),
-            position.getQcMessage(sensorValues), position.getFlagNeeded(),
-            position.getType());
+            record.addColumn(positionString.toString(), position.getFlag(),
+              position.getQcMessage(sensorValues), position.getFlagNeeded(),
+              position.getType());
+          } else {
+            // Empty position column
+            record.addColumn("", Flag.GOOD, null, false,
+              PlotPageTableValue.NAN_TYPE);
+          }
         }
 
         for (long columnId : sensorColumnIds) {
@@ -1128,6 +1134,13 @@ public class ManualQCData extends PlotPageData {
     PlotPageTableValue latitude = getInterpolatedPositionValue(
       SensorType.LATITUDE_SENSOR_TYPE, time);
 
-    return new DataLatLng(latitude, longitude);
+    DataLatLng result = null;
+
+    if (null != longitude && !longitude.isNull() && null != latitude
+      && !latitude.isNull()) {
+      result = new DataLatLng(latitude, longitude);
+    }
+
+    return result;
   }
 }

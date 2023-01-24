@@ -20,6 +20,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -521,7 +522,9 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
       Set<String> messages = new TreeSet<String>();
 
       for (SensorValue value : allSensorValues.getById(sourceValues)) {
-        messages.add(value.getDisplayQCMessage(allSensorValues));
+        if (!(isPosition() && value.isPosition())) {
+          messages.add(value.getDisplayQCMessage(allSensorValues));
+        }
       }
 
       result = StringUtils.collectionToDelimited(messages, ";");
@@ -821,5 +824,9 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
       dirty = true;
     }
+  }
+
+  public boolean isPosition() {
+    return SensorType.isPosition(columnId);
   }
 }

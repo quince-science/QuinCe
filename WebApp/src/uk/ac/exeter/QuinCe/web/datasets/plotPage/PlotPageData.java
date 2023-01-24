@@ -981,8 +981,10 @@ public abstract class PlotPageData {
       for (Map.Entry<LocalDateTime, PlotPageTableValue> entry : values
         .entrySet()) {
         LatLng position = getMapPosition(entry.getKey());
-        records.add(new PlotPageValueMapRecord(position, entry.getKey(),
-          entry.getValue()));
+        if (null != position) {
+          records.add(new PlotPageValueMapRecord(position, entry.getKey(),
+            entry.getValue()));
+        }
       }
     }
 
