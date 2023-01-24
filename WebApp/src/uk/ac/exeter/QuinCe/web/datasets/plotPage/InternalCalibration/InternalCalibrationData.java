@@ -31,6 +31,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataLatLng;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
@@ -367,5 +368,10 @@ public class InternalCalibrationData extends PlotPageData {
   @Override
   protected List<LocalDateTime> getDataTimes() {
     return dataStructure.getTimes();
+  }
+
+  @Override
+  protected DataLatLng getMapPosition(LocalDateTime time) throws Exception {
+    return null;
   }
 }
