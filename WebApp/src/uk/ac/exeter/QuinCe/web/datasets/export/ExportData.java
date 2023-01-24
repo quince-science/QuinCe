@@ -194,7 +194,7 @@ public class ExportData extends ManualQCData {
       if (null != dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY,
         "depth")) {
         PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(DEPTH_ID,
-          "Depth", "Depth", "ADEPZZ01", "m", true, false, true);
+          "Depth", "Depth", "ADEPZZ01", "m", true, false, true, false);
         rootColumns.add(depthHeading);
 
         // Set up the fixed value ready for later
@@ -217,7 +217,8 @@ public class ExportData extends ManualQCData {
           if (null != variableHeading) {
 
             measurementValuesHeadings
-              .add(new PlotPageColumnHeading(variableHeading, true, false));
+              .add(new PlotPageColumnHeading(variableHeading, true, false,
+                sensorType.questionableFlagAllowed()));
           }
         }
       }

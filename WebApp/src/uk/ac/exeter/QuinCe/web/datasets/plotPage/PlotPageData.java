@@ -944,8 +944,6 @@ public abstract class PlotPageData {
 
   public Double[] getValueRange(PlotPageColumnHeading column) throws Exception {
 
-    Double[] result;
-
     if (!mapCache.containsKey(column)) {
       buildMapCache(column);
     }

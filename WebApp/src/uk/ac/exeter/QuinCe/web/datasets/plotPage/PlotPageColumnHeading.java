@@ -45,6 +45,12 @@ public class PlotPageColumnHeading extends ColumnHeading {
   private final long selectionColumn;
 
   /**
+   * Indicates whether or not the user can set a Questionable flag on values in
+   * this column.
+   */
+  private final boolean questionableAllowed;
+
+  /**
    * Simple constructor.
    *
    * @param heading
@@ -54,13 +60,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
    */
   public PlotPageColumnHeading(long id, String shortName, String longName,
     String codeName, String units, boolean includeType, boolean numeric,
-    boolean editable) {
+    boolean editable, boolean questionableAllowed) {
 
     super(id, shortName, longName, codeName, units, true, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
     this.referenceValue = null;
+    this.questionableAllowed = questionableAllowed;
   }
 
   /**
@@ -73,13 +80,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
    */
   public PlotPageColumnHeading(long id, String shortName, String longName,
     String codeName, String units, boolean includeType, boolean numeric,
-    boolean editable, boolean hasQC) {
+    boolean editable, boolean hasQC, boolean questionableAllowed) {
 
     super(id, shortName, longName, codeName, units, hasQC, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
     this.referenceValue = null;
+    this.questionableAllowed = questionableAllowed;
   }
 
   /**
@@ -92,13 +100,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
    */
   public PlotPageColumnHeading(long id, String shortName, String longName,
     String codeName, String units, boolean includeType, boolean numeric,
-    boolean editable, Double referenceValue) {
+    boolean editable, Double referenceValue, boolean questionableAllowed) {
 
     super(id, shortName, longName, codeName, units, true, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
     this.referenceValue = referenceValue;
+    this.questionableAllowed = questionableAllowed;
   }
 
   /**
@@ -111,13 +120,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
    */
   public PlotPageColumnHeading(long id, String shortName, String longName,
     String codeName, String units, boolean includeType, boolean numeric,
-    boolean editable, long selectionColumn) {
+    boolean editable, long selectionColumn, boolean questionableAllowed) {
 
     super(id, shortName, longName, codeName, units, true, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = selectionColumn;
     this.referenceValue = null;
+    this.questionableAllowed = questionableAllowed;
   }
 
   /**
@@ -133,6 +143,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.editable = false;
     this.selectionColumn = calculationParameter.getId();
     this.referenceValue = null;
+    this.questionableAllowed = false;
   }
 
   public PlotPageColumnHeading(SensorType sensorType) {
@@ -142,6 +153,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.editable = false;
     this.selectionColumn = sensorType.getId();
     this.referenceValue = null;
+    this.questionableAllowed = sensorType.questionableFlagAllowed();
   }
 
   /**
@@ -151,13 +163,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
    *          The calculation parameter
    */
   public PlotPageColumnHeading(ColumnHeading heading, boolean numeric,
-    boolean editable) {
+    boolean editable, boolean questionableAllowed) {
 
     super(heading);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = heading.getId();
     this.referenceValue = null;
+    this.questionableAllowed = questionableAllowed;
   }
 
   /**
@@ -167,13 +180,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
    *          The calculation parameter
    */
   public PlotPageColumnHeading(ColumnHeading heading, boolean numeric,
-    boolean editable, long selectionColumn) {
+    boolean editable, boolean questionableAllowed, long selectionColumn) {
 
     super(heading);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = selectionColumn;
     this.referenceValue = null;
+    this.questionableAllowed = questionableAllowed;
   }
 
   /**
@@ -196,5 +210,9 @@ public class PlotPageColumnHeading extends ColumnHeading {
 
   public Double getReferenceValue() {
     return referenceValue;
+  }
+
+  public boolean questionableAllowed() {
+    return questionableAllowed;
   }
 }

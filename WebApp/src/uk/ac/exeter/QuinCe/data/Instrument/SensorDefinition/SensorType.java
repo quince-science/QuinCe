@@ -509,4 +509,8 @@ public class SensorType extends ColumnHeading
       ? ((MeasurementValueSensorType) sensorType).getOriginalId()
       : sensorType.getId();
   }
+
+  public boolean questionableFlagAllowed() {
+    return !isDiagnostic() && !isPosition();
+  }
 }
