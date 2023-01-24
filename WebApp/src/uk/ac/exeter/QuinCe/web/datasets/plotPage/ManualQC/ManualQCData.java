@@ -688,11 +688,30 @@ public class ManualQCData extends PlotPageData {
       List<SensorValue> selectedValues = getSelectedSensorValues();
 
       for (SensorValue value : selectedValues) {
+
+        SensorValue otherPositionValue = null;
+
+        if (SensorType.isPosition(value.getColumnId())) {
+          if (value.getColumnId() == SensorType.LONGITUDE_ID) {
+            otherPositionValue = sensorValues.getSensorValue(value.getTime(),
+              SensorType.LATITUDE_ID);
+          } else {
+            otherPositionValue = sensorValues.getSensorValue(value.getTime(),
+              SensorType.LONGITUDE_ID);
+          }
+        }
+
         value.setUserQC(userFlag, userComment);
         changedValues.add(value);
-
         changedValues
           .addAll(sensorValues.applyQCCascade(value, runTypePeriods));
+
+        if (null != otherPositionValue) {
+          otherPositionValue.setUserQC(userFlag, userComment);
+          changedValues.add(otherPositionValue);
+          changedValues.addAll(
+            sensorValues.applyQCCascade(otherPositionValue, runTypePeriods));
+        }
       }
 
       // Store the updated sensor values
