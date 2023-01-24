@@ -24,6 +24,12 @@ function startUserQcFlags() {
 function showFlagDialog() {
   errorCheck();
 
+  if (getSelectedColumn().questionableAllowed) {
+    $('#selectionForm\\:manualFlag_panel').find("[data-label='Questionable']").show()
+  } else {
+    $('#selectionForm\\:manualFlag_panel').find("[data-label='Questionable']").hide()
+  }
+
   let woceRowHtml = getSelectedRows().length.toString() + ' row';
   if (getSelectedRows().length > 1) {
     woceRowHtml += 's';

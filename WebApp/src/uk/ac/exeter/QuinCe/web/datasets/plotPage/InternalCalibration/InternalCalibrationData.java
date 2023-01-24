@@ -121,7 +121,7 @@ public class InternalCalibrationData extends PlotPageData {
       List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
         1);
       rootColumns.add(new PlotPageColumnHeading(
-        FileDefinition.TIME_COLUMN_HEADING, false, false));
+        FileDefinition.TIME_COLUMN_HEADING, false, false, false));
 
       columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
 
@@ -153,7 +153,7 @@ public class InternalCalibrationData extends PlotPageData {
               PlotPageColumnHeading heading = new PlotPageColumnHeading(
                 columnId, columnName, sensorType.getLongName(),
                 sensorType.getCodeName(), sensorType.getUnits(), false, true,
-                true, calibrationValue);
+                true, calibrationValue, sensorType.questionableFlagAllowed());
               sensorTypeColumns.add(heading);
               columnCount++;
               if (columnCount == 1) {

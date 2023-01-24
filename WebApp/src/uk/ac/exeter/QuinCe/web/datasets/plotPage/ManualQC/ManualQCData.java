@@ -216,7 +216,7 @@ public class ManualQCData extends PlotPageData {
     List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
       3);
     rootColumns.add(new PlotPageColumnHeading(
-      FileDefinition.TIME_COLUMN_HEADING, false, false));
+      FileDefinition.TIME_COLUMN_HEADING, false, false, false));
 
     if (!dataset.fixedPosition()) {
       rootColumns
@@ -230,14 +230,14 @@ public class ManualQCData extends PlotPageData {
     List<PlotPageColumnHeading> extendedRootColumns = new ArrayList<PlotPageColumnHeading>(
       3);
     extendedRootColumns.add(new PlotPageColumnHeading(
-      FileDefinition.TIME_COLUMN_HEADING, false, false));
+      FileDefinition.TIME_COLUMN_HEADING, false, false, false));
 
     if (!dataset.fixedPosition()) {
       extendedRootColumns.add(new PlotPageColumnHeading(
-        FileDefinition.LONGITUDE_COLUMN_HEADING, false, true));
+        FileDefinition.LONGITUDE_COLUMN_HEADING, false, true, false));
       extendedRootColumns
         .add(new PlotPageColumnHeading(FileDefinition.LATITUDE_COLUMN_HEADING,
-          false, true, FileDefinition.LONGITUDE_COLUMN_ID));
+          false, true, false, FileDefinition.LONGITUDE_COLUMN_ID));
     }
 
     extendedColumnHeadings.put(ROOT_FIELD_GROUP, extendedRootColumns);
@@ -270,7 +270,8 @@ public class ManualQCData extends PlotPageData {
 
       SensorAssignment column = sensorColumns.get(i);
       sensorColumnHeadings
-        .add(new PlotPageColumnHeading(column.getColumnHeading(), true, true));
+        .add(new PlotPageColumnHeading(column.getColumnHeading(), true, true,
+          column.getSensorType().questionableFlagAllowed()));
       sensorColumnIds.add(column.getDatabaseId());
     }
 
@@ -286,8 +287,9 @@ public class ManualQCData extends PlotPageData {
 
         SensorAssignment column = diagnosticColumns.get(i);
 
-        diagnosticColumnNames.add(
-          new PlotPageColumnHeading(column.getColumnHeading(), true, true));
+        diagnosticColumnNames
+          .add(new PlotPageColumnHeading(column.getColumnHeading(), true, true,
+            column.getSensorType().questionableFlagAllowed()));
         diagnosticColumnIds.add(column.getDatabaseId());
       }
 
