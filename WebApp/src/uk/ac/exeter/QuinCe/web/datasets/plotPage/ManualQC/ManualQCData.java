@@ -222,7 +222,7 @@ public class ManualQCData extends PlotPageData {
     if (!dataset.fixedPosition()) {
       rootColumns
         .add(new PlotPageColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
-          "Position", "Position", "POSITION", null, true, false, true, false));
+          "Position", "Position", "POSITION", null, true, false, false, false));
     }
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
@@ -235,10 +235,10 @@ public class ManualQCData extends PlotPageData {
 
     if (!dataset.fixedPosition()) {
       extendedRootColumns.add(new PlotPageColumnHeading(
-        FileDefinition.LONGITUDE_COLUMN_HEADING, false, true, false));
+        FileDefinition.LONGITUDE_COLUMN_HEADING, false, false, false));
       extendedRootColumns
         .add(new PlotPageColumnHeading(FileDefinition.LATITUDE_COLUMN_HEADING,
-          false, true, false, FileDefinition.LONGITUDE_COLUMN_ID));
+          false, false, false, FileDefinition.LONGITUDE_COLUMN_ID));
     }
 
     extendedColumnHeadings.put(ROOT_FIELD_GROUP, extendedRootColumns);
