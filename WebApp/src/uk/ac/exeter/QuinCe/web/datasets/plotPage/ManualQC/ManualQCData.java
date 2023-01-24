@@ -45,6 +45,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataLatLng;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.NullPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
@@ -381,32 +382,18 @@ public class ManualQCData extends PlotPageData {
 
         if (!dataset.fixedPosition()) {
 
-          PlotPageTableValue longitude = getInterpolatedPositionValue(
-            SensorType.LONGITUDE_SENSOR_TYPE, times.get(i));
-          PlotPageTableValue latitude = getInterpolatedPositionValue(
-            SensorType.LATITUDE_SENSOR_TYPE, times.get(i));
+          DataLatLng position = getMapPosition(times.get(i));
 
-          // The lon/lat can be null if the instrument has a fixed position
-          if (null != longitude && null != latitude
-            && null != longitude.getValue() && null != latitude.getValue()) {
+          StringBuilder positionString = new StringBuilder();
+          positionString
+            .append(StringUtils.formatNumber(position.getLongitude()));
+          positionString.append(" | ");
+          positionString
+            .append(StringUtils.formatNumber(position.getLatitude()));
 
-            StringBuilder positionString = new StringBuilder();
-            if (null != longitude.getValue() && null != latitude.getValue()) {
-              positionString
-                .append(StringUtils.formatNumber(longitude.getValue()));
-              positionString.append(" | ");
-              positionString
-                .append(StringUtils.formatNumber(latitude.getValue()));
-            }
-
-            record.addColumn(positionString.toString(), longitude.getQcFlag(),
-              longitude.getQcMessage(sensorValues, false),
-              longitude.getFlagNeeded(), longitude.getType());
-          } else {
-            // Empty position column
-            record.addColumn("", Flag.GOOD, null, false,
-              PlotPageTableValue.NAN_TYPE);
-          }
+          record.addColumn(positionString.toString(), position.getFlag(),
+            position.getQcMessage(sensorValues), position.getFlagNeeded(),
+            position.getType());
         }
 
         for (long columnId : sensorColumnIds) {
@@ -512,7 +499,9 @@ public class ManualQCData extends PlotPageData {
 
         records.add(record);
       }
-    } catch (Exception e) {
+    } catch (
+
+    Exception e) {
       error("Error loading table data", e);
     }
 
@@ -1076,7 +1065,8 @@ public class ManualQCData extends PlotPageData {
 
     if (sensorType.isPosition()) {
       // If there is a measurement at this time, try using the value from that
-      Measurement measurement = measurements.get(time);
+      Measurement measurement = null == measurements ? null
+        : measurements.get(time);
 
       if (null != measurement) {
         if (measurement.hasMeasurementValue(sensorType)) {
@@ -1110,5 +1100,15 @@ public class ManualQCData extends PlotPageData {
   @Override
   public DatasetSensorValues getAllSensorValues() {
     return sensorValues;
+  }
+
+  @Override
+  protected DataLatLng getMapPosition(LocalDateTime time) throws Exception {
+    PlotPageTableValue longitude = getInterpolatedPositionValue(
+      SensorType.LONGITUDE_SENSOR_TYPE, time);
+    PlotPageTableValue latitude = getInterpolatedPositionValue(
+      SensorType.LATITUDE_SENSOR_TYPE, time);
+
+    return new DataLatLng(latitude, longitude);
   }
 }

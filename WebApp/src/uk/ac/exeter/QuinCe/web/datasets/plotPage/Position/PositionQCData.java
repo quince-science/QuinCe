@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataLatLng;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
@@ -188,5 +189,21 @@ public class PositionQCData extends ManualQCData {
   @Override
   protected PlotPageColumnHeading getDefaultMap2Column() throws Exception {
     return longitudeHeading;
+  }
+
+  @Override
+  protected DataLatLng getMapPosition(LocalDateTime time) throws Exception {
+    PlotPageTableValue longitude = getAllSensorValues()
+      .getRawPositionTableValue(SensorType.LONGITUDE_ID, time);
+    PlotPageTableValue latitude = getAllSensorValues()
+      .getRawPositionTableValue(SensorType.LATITUDE_ID, time);
+
+    DataLatLng result = null;
+
+    if (!longitude.isNull() && !latitude.isNull()) {
+      result = new DataLatLng(latitude, longitude);
+    }
+
+    return result;
   }
 }

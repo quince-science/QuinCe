@@ -980,8 +980,7 @@ public abstract class PlotPageData {
 
       for (Map.Entry<LocalDateTime, PlotPageTableValue> entry : values
         .entrySet()) {
-        LatLng position = getAllSensorValues()
-          .getClosestPosition(entry.getKey());
+        LatLng position = getMapPosition(entry.getKey());
         records.add(new PlotPageValueMapRecord(position, entry.getKey(),
           entry.getValue()));
       }
@@ -989,4 +988,7 @@ public abstract class PlotPageData {
 
     mapCache.put(column, records);
   }
+
+  protected abstract DataLatLng getMapPosition(LocalDateTime time)
+    throws Exception;
 }
