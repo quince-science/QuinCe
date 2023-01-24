@@ -206,4 +206,10 @@ public class PositionQCData extends ManualQCData {
 
     return result;
   }
+
+  @Override
+  protected boolean canSelectCell(long row, long column) throws Exception {
+    // All positions are selectable
+    return true;
+  }
 }

@@ -81,8 +81,10 @@ public class DatasetSensorValues {
 
     if (sensorValue.getColumnId() == SensorType.LONGITUDE_ID) {
       longitudes.add(sensorValue);
+      addById(sensorValue);
     } else if (sensorValue.getColumnId() == SensorType.LATITUDE_ID) {
       latitudes.add(sensorValue);
+      addById(sensorValue);
     } else if (!contains(sensorValue)) {
       SensorType sensorType = instrument.getSensorAssignments()
         .getSensorTypeForDBColumn(sensorValue.getColumnId());

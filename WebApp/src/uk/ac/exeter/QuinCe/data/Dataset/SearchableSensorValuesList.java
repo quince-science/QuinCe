@@ -346,11 +346,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
           priorPostValues = getPriorPost(time, startPoint);
 
-          // If the prior and post contain one non-null value and it is our
-          // exact
-          // value, that means no interpolation could be performed - usually
-          // because our exact value was not GOOD but there were no other GOOD
-          // values available.
+          // If the prior and post are both empty, then there are no
+          // interpolatable values available. Therefore we use the exact value.
           if (CollectionUtils.getNonNullCount(priorPostValues) == 1L
             && CollectionUtils.getFirstNonNull(priorPostValues).getTime()
               .equals(time)) {
@@ -550,7 +547,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
         closestGood = currentIndex;
         break mainLoop;
       }
-      case Flag.VALUE_BAD: {
+      case Flag.VALUE_BAD:
+      case Flag.VALUE_LOOKUP: {
         // Only do something if we aren't looking for GOOD flags only
         if (closestBad == -1) {
           closestBad = currentIndex;
