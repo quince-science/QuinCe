@@ -817,7 +817,6 @@ public class DataSetDataDB {
 
           dataReductionStmt.addBatch();
         }
-
       }
 
       dataReductionStmt.executeBatch();

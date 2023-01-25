@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.util.Collection;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
@@ -83,4 +85,9 @@ public interface PlotPageTableValue {
    * @return
    */
   public char getType();
+
+  /**
+   * Get the ID(s) of the source value(s) for this table value
+   */
+  public Collection<Long> getSources();
 }

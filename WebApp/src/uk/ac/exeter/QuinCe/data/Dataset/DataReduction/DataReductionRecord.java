@@ -6,14 +6,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 import uk.ac.exeter.QuinCe.utils.NoEmptyStringSet;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 public class DataReductionRecord implements Comparable<DataReductionRecord> {
 
@@ -75,7 +80,6 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
     this.calculationValues = calculationValues;
     this.qcFlag = qcFlag;
     this.qcMessages = qcMessages;
-
   }
 
   /**
@@ -89,7 +93,7 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
    *           If the QC message is empty.
    */
   public void setQc(Flag flag, String message) throws DataReductionException {
-    setQc(flag, Arrays.asList(new String[] { message }));
+    setQc(flag, Arrays.asList(message));
   }
 
   /**
@@ -115,6 +119,48 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
       }
 
       qcMessages = new NoEmptyStringSet(messages);
+    }
+  }
+
+  public void setCascadingQC(SensorValue source) {
+    SortedSet<Long> sources = qcFlag.equals(Flag.LOOKUP)
+      ? StringUtils.delimitedToLongSet(qcMessages.iterator().next())
+      : new TreeSet<Long>();
+
+    sources.add(source.getId());
+    qcFlag = Flag.LOOKUP;
+    qcMessages = new NoEmptyStringSet(
+      StringUtils.collectionToDelimited(sources, ","));
+  }
+
+  public void setCascadingQC(PlotPageTableValue source) {
+    SortedSet<Long> sources = qcFlag.equals(Flag.LOOKUP)
+      ? StringUtils.delimitedToLongSet(qcMessages.iterator().next())
+      : new TreeSet<Long>();
+
+    sources.addAll(source.getSources());
+    qcFlag = Flag.LOOKUP;
+    qcMessages = new NoEmptyStringSet(
+      StringUtils.collectionToDelimited(sources, ","));
+  }
+
+  public void removeCascadingQC(long sourceId) {
+
+    // If there is no cascading QC already registered, do nothing.
+    if (qcFlag.equals(Flag.LOOKUP)) {
+
+      SortedSet<Long> sources = StringUtils
+        .delimitedToLongSet(qcMessages.iterator().next());
+      sources.remove(sourceId);
+
+      if (sources.size() == 0) {
+        // Reset the flag to either NEEDED or ASSUMED_GOOD
+        qcFlag = Flag.ASSUMED_GOOD;
+        qcMessages = null;
+      } else {
+        qcMessages = new NoEmptyStringSet(
+          StringUtils.collectionToDelimited(sources, ","));
+      }
     }
   }
 

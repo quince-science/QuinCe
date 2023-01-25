@@ -2,8 +2,8 @@ package uk.ac.exeter.QuinCe.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  *
  */
 @SuppressWarnings("serial")
-public class NoEmptyStringSet extends HashSet<String> {
+public class NoEmptyStringSet extends TreeSet<String> {
 
   public NoEmptyStringSet() {
     super();
@@ -22,6 +22,13 @@ public class NoEmptyStringSet extends HashSet<String> {
 
   public NoEmptyStringSet(Collection<? extends String> c) {
     super(filterCollection(c));
+  }
+
+  public NoEmptyStringSet(String s) {
+    super();
+    if (!StringUtils.isBlank(s)) {
+      super.add(s);
+    }
   }
 
   @Override

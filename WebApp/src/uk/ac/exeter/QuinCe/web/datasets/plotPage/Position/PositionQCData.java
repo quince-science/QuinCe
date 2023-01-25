@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,13 +152,17 @@ public class PositionQCData extends ManualQCData {
               .append(StringUtils.formatNumber(latitude.getValue()));
           }
 
+          Collection<Long> sources = new ArrayList<Long>();
+          sources.addAll(longitude.getSources());
+          sources.addAll(latitude.getSources());
+
           record.addColumn(positionString.toString(), longitude.getQcFlag(),
             longitude.getQcMessage(sensorValues, false),
-            longitude.getFlagNeeded(), longitude.getType());
+            longitude.getFlagNeeded(), longitude.getType(), sources);
         } else {
           // Empty position column
           record.addColumn("", Flag.GOOD, null, false,
-            PlotPageTableValue.NAN_TYPE);
+            PlotPageTableValue.NAN_TYPE, null);
         }
 
         records.add(record);

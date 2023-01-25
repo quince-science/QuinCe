@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 /**
  * Represents a single sensor value
@@ -773,12 +774,23 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    *          The source of the QC flag
    */
   public void setCascadingQC(SensorValue source) {
-
     SortedSet<Long> sources = userQCFlag.equals(Flag.LOOKUP)
       ? StringUtils.delimitedToLongSet(userQCMessage)
       : new TreeSet<Long>();
 
     sources.add(source.getId());
+    userQCFlag = Flag.LOOKUP;
+    userQCMessage = StringUtils.collectionToDelimited(sources, ",");
+    dirty = true;
+  }
+
+  public void setCascadingQC(PlotPageTableValue source) {
+    SortedSet<Long> sources = userQCFlag.equals(Flag.LOOKUP)
+      ? StringUtils.delimitedToLongSet(userQCMessage)
+      : new TreeSet<Long>();
+
+    sources.addAll(source.getSources());
+
     userQCFlag = Flag.LOOKUP;
     userQCMessage = StringUtils.collectionToDelimited(sources, ",");
     dirty = true;
@@ -801,13 +813,13 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @param source
    *          The cascading QC source to be removed.
    */
-  public void removeCascadingQC(SensorValue source) {
+  public void removeCascadingQC(long sourceId) {
 
     // If there is no cascading QC already registered, do nothing.
     if (userQCFlag.equals(Flag.LOOKUP)) {
 
       SortedSet<Long> sources = StringUtils.delimitedToLongSet(userQCMessage);
-      sources.remove(source.getId());
+      sources.remove(sourceId);
 
       if (sources.size() == 0) {
         // Reset the flag to either NEEDED or ASSUMED_GOOD

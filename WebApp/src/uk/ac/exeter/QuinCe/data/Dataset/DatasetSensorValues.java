@@ -574,7 +574,7 @@ public class DatasetSensorValues {
     if (!source.getDisplayFlag().equals(Flag.GOOD)) {
       destination.setCascadingQC(source);
     } else {
-      destination.removeCascadingQC(source);
+      destination.removeCascadingQC(source.getId());
     }
   }
 

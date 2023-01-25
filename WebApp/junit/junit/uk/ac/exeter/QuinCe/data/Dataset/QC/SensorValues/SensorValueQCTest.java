@@ -277,7 +277,7 @@ public class SensorValueQCTest extends BaseTest {
     allValues.add(source2);
     allValues.add(target);
 
-    target.removeCascadingQC(source1);
+    target.removeCascadingQC(source1.getId());
 
     assertEquals(Flag.BAD, target.getDisplayFlag());
     assertEquals("Two Bad", target.getDisplayQCMessage(allValues));
@@ -302,7 +302,7 @@ public class SensorValueQCTest extends BaseTest {
     allValues.add(source);
     allValues.add(target);
 
-    target.removeCascadingQC(source);
+    target.removeCascadingQC(source.getId());
 
     assertEquals(Flag.NEEDED, target.getUserQCFlag());
   }
@@ -325,7 +325,7 @@ public class SensorValueQCTest extends BaseTest {
     allValues.add(source);
     allValues.add(target);
 
-    target.removeCascadingQC(source);
+    target.removeCascadingQC(source.getId());
 
     assertEquals(Flag.ASSUMED_GOOD, target.getUserQCFlag());
   }

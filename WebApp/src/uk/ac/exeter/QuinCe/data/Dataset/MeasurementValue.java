@@ -547,4 +547,9 @@ public class MeasurementValue implements PlotPageTableValue {
   public String toString() {
     return sensorType.getShortName() + " = " + calculatedValue;
   }
+
+  @Override
+  public Collection<Long> getSources() {
+    return sensorValueIds;
+  }
 }
