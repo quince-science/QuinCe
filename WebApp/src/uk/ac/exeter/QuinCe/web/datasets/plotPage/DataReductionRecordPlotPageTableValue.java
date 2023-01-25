@@ -1,5 +1,8 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -75,5 +78,10 @@ public class DataReductionRecordPlotPageTableValue
   @Override
   public char getType() {
     return PlotPageTableValue.DATA_REDUCTION_TYPE;
+  }
+
+  @Override
+  public Collection<Long> getSources() {
+    return Arrays.asList(record.getMeasurementId());
   }
 }

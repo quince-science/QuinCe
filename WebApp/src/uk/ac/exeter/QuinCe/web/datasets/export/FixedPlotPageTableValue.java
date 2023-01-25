@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.export;
 
+import java.util.Collection;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
@@ -51,5 +53,10 @@ public class FixedPlotPageTableValue implements PlotPageTableValue {
   @Override
   public char getType() {
     return PlotPageTableValue.NOMINAL_TYPE;
+  }
+
+  @Override
+  public Collection<Long> getSources() {
+    return null;
   }
 }

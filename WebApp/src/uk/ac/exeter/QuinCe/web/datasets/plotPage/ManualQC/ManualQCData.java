@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -394,11 +395,11 @@ public class ManualQCData extends PlotPageData {
 
             record.addColumn(positionString.toString(), position.getFlag(),
               position.getQcMessage(sensorValues), position.getFlagNeeded(),
-              position.getType());
+              position.getType(), position.getSourceIds());
           } else {
             // Empty position column
             record.addColumn("", Flag.GOOD, null, false,
-              PlotPageTableValue.NAN_TYPE);
+              PlotPageTableValue.NAN_TYPE, null);
           }
         }
 
@@ -493,7 +494,8 @@ public class ManualQCData extends PlotPageData {
 
               record.addColumn(stringValue, variableDataReduction.getQCFlag(),
                 variableDataReduction.getQCMessages().toString(), false,
-                PlotPageTableValue.DATA_REDUCTION_TYPE);
+                PlotPageTableValue.DATA_REDUCTION_TYPE,
+                Arrays.asList(variableDataReduction.getMeasurementId()));
             }
           } else {
             // Make blank columns

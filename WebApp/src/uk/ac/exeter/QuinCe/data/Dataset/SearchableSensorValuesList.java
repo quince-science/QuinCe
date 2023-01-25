@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
@@ -419,12 +420,15 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
       Double value = SensorValue.interpolate(valuesToUse.get(0),
         valuesToUse.get(1), time);
 
+      List<Long> ids = valuesToUse.stream().filter(Objects::nonNull)
+        .map(v -> v.getId()).toList();
+
       if (null != value) {
         try {
           result = new SimplePlotPageTableValue(String.valueOf(value),
             SensorValue.getCombinedDisplayFlag(valuesToUse),
             SensorValue.getCombinedQcComment(valuesToUse, allSensorValues),
-            false, PlotPageTableValue.INTERPOLATED_TYPE);
+            false, PlotPageTableValue.INTERPOLATED_TYPE, ids);
         } catch (RoutineException e) {
           throw new PlotPageDataException(
             "Unable to get SensorValue QC Comments", e);

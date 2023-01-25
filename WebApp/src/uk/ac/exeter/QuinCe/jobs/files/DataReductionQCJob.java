@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.PositionQCCascadeRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -73,6 +74,7 @@ public class DataReductionQCJob extends DataSetJob {
 
     try {
       conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
       DataSet dataSet = getDataset(conn);
       Instrument instrument = getInstrument(conn);
 
@@ -116,6 +118,10 @@ public class DataReductionQCJob extends DataSetJob {
               allSensorValues, flaggedItems);
           }
         }
+
+        PositionQCCascadeRoutine positionCascadeRoutine = new PositionQCCascadeRoutine();
+        positionCascadeRoutine.qc(conn, instrument, dataSet, var,
+          variableRecords, allSensorValues, flaggedItems);
       }
 
       DataSetDataDB.storeSensorValues(conn, flaggedItems.getSensorValues());
@@ -172,5 +178,4 @@ public class DataReductionQCJob extends DataSetJob {
   public String getJobName() {
     return jobName;
   }
-
 }

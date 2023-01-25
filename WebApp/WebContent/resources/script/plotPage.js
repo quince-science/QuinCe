@@ -68,6 +68,7 @@ const FLAG_GOOD = 2;
 const FLAG_ASSUMED_GOOD = -2;
 const FLAG_QUESTIONABLE = 3;
 const FLAG_BAD = 4;
+const FLAG_LOOKUP = -200;
 const FLAG_FATAL = 44;
 const FLAG_NEEDS_FLAG = -10;
 const FLAG_IGNORED = -1002;
@@ -318,11 +319,12 @@ function showQCMessage(qcFlag, qcMessage) {
     content += '<div class="qcInfoMessage ';
 
     switch (qcFlag) {
-    case 3: {
+    case FLAG_QUESTIONABLE: {
       content += 'questionable';
       break;
     }
-    case 4: {
+    case FLAG_BAD:
+    case FLAG_LOOKUP: {
       content += 'bad';
       break;
     }
@@ -897,15 +899,16 @@ function getColumnDefs() {
         if (null != data) {
           let flagClass = null;
           switch (data['qcFlag']) {
-          case 3: {
+          case FLAG_QUESTIONABLE: {
             flagClass = 'questionable';
               break;
           }
-          case 4: {
+          case FLAG_BAD:
+      case FLAG_LOOKUP: {
             flagClass = 'bad';
               break;
           }
-          case -100: {
+          case FLAG_FLUSHING: {
             flagClass = 'ignore';
           }
         }
@@ -1915,16 +1918,17 @@ function getPointColor(mapIndex, point) {
   }
   case FLAG_TYPE: {
   switch (point.properties.flag) {
-  case 3: {
+  case FLAG_QUESTIONABLE: {
     return '#FFA42B';
   }
-  case 4: {
+  case FLAG_BAD:
+  case FLAG_LOOKUP: {
     return '#FF0000';
   }
-  case -10: {
+  case FLAG_NEEDS_FLAG: {
     return '#D7D6FF';
   }
-  case -100: {
+  case FLAG_FLUSHING: {
     return '#C0C0C0';
   }
   default: {

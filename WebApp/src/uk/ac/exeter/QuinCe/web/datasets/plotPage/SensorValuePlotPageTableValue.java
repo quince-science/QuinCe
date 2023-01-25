@@ -1,5 +1,8 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -87,5 +90,10 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
   @Override
   public char getType() {
     return PlotPageTableValue.MEASURED_TYPE;
+  }
+
+  @Override
+  public Collection<Long> getSources() {
+    return Arrays.asList(sensorValue.getId());
   }
 }
