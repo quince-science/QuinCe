@@ -271,17 +271,17 @@
                       title="Sensor Offsets" />
                   </p:commandLink>
                 </ui:fragment>
+                <ui:fragment rendered="#{not dataSetsBean.getCurrentInstrument().fixedPosition()}">
+                  <p:commandLink onclick="goToPositionQc(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/position.svg"
+                      styleClass="actionIcon" alt="Position QC" title="Position QC" />
+                  </p:commandLink>
+                </ui:fragment>
                 <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
                   <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
                     <h:graphicImage value="/resources/image/calibration.svg"
                       styleClass="actionIcon" alt="Calibration"
                       title="Calibration" />
-                  </p:commandLink>
-                </ui:fragment>
-                <ui:fragment rendered="#{not dataSetsBean.getCurrentInstrument().fixedPosition()}">
-                  <p:commandLink onclick="goToPositionQc(#{dataset.id})">
-                    <h:graphicImage value="/resources/image/position.svg"
-                      styleClass="actionIcon" alt="Position QC" title="Position QC" />
                   </p:commandLink>
                 </ui:fragment>
                 <p:commandLink onclick="goToQc(#{dataset.id})">
@@ -299,15 +299,15 @@
                     value="/resources/image/offsets_disabled.svg"
                     styleClass="actionIcon" alt="Sensor Offsets" title="Sensor Offsets" />
                 </ui:fragment>
-                <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
-                  <h:graphicImage
-                    value="/resources/image/calibration_disabled.svg"
-                    styleClass="actionIcon" alt="Calibration" title="Calibration" />
-                </ui:fragment>
                 <ui:fragment rendered="#{not dataSetsBean.getCurrentInstrument().fixedPosition()}">
                   <h:graphicImage
                     value="/resources/image/position_disabled.svg"
                     styleClass="actionIcon" alt="Position QC" title="Position QC" />
+                </ui:fragment>
+                <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
+                  <h:graphicImage
+                    value="/resources/image/calibration_disabled.svg"
+                    styleClass="actionIcon" alt="Calibration" title="Calibration" />
                 </ui:fragment>
                 <h:graphicImage value="/resources/image/qc_disabled.svg"
                   styleClass="actionIcon" alt="Quality Control"
