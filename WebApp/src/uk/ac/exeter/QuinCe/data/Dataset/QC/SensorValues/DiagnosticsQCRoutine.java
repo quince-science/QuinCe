@@ -20,20 +20,9 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  */
 public class DiagnosticsQCRoutine {
 
-  private Instrument instrument;
-
-  private DatasetSensorValues sensorValues;
-
-  private RunTypePeriods runTypePeriods;
-
-  public DiagnosticsQCRoutine(Instrument instrument,
-    DatasetSensorValues sensorValues, RunTypePeriods runTypePeriods) {
-    this.instrument = instrument;
-    this.sensorValues = sensorValues;
-    this.runTypePeriods = runTypePeriods;
-  }
-
-  public void run() throws InvalidFlagException, RecordNotFoundException {
+  public void run(Instrument instrument, DatasetSensorValues sensorValues,
+    RunTypePeriods runTypePeriods)
+    throws InvalidFlagException, RecordNotFoundException {
 
     DiagnosticQCConfig diagnosticConfig = instrument.getDiagnosticQCConfig();
 

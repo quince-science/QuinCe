@@ -369,6 +369,17 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
   }
 
+  /**
+   * Copy the user QC info from the specified SensorValue.
+   * 
+   * @param source
+   *          The source SensorValue.
+   */
+  public void setUserQC(SensorValue source) {
+    userQCFlag = source.userQCFlag;
+    userQCMessage = source.userQCMessage;
+  }
+
   private void setUserQCAction(Flag flag, String message) {
     userQCFlag = flag;
     userQCMessage = message;
