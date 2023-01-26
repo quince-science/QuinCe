@@ -544,7 +544,7 @@ public class DatasetSensorValues {
       }
 
       if (null != other) {
-        cascade(source, other);
+        other.setUserQC(source);
         changedValues.add(other);
       }
     } else {

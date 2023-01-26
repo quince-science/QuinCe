@@ -448,6 +448,21 @@ public class Instrument {
     return result;
   }
 
+  public boolean isMeasurementRunType(String runType)
+    throws RunTypeCategoryException {
+
+    boolean result = false;
+
+    for (Variable variable : variables) {
+      if (getRunTypeCategory(variable.getId(), runType).isMeasurementType()) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
+  }
+
   /**
    * Get an InstrumentVaraible based on its ID
    *

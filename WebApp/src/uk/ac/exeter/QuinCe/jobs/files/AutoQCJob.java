@@ -24,6 +24,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.DiagnosticsQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCCascadeRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.SpeedQCRoutine;
@@ -270,9 +271,12 @@ public class AutoQCJob extends DataSetJob {
       }
 
       // Diagnostics QC
-      DiagnosticsQCRoutine diagnosticsQC = new DiagnosticsQCRoutine(instrument,
-        sensorValues, runTypePeriods);
-      diagnosticsQC.run();
+      DiagnosticsQCRoutine diagnosticsQC = new DiagnosticsQCRoutine();
+      diagnosticsQC.run(instrument, sensorValues, runTypePeriods);
+
+      // Cascade position QC to SensorValues
+      PositionQCCascadeRoutine positionQCCascade = new PositionQCCascadeRoutine();
+      positionQCCascade.run(instrument, sensorValues, runTypePeriods);
 
       // Send all sensor values to be stored. The storeSensorValues method only
       // writes those values whose 'dirty' flag is set.
