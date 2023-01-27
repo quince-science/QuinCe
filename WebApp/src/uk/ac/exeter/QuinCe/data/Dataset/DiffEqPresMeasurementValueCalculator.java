@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.sql.Connection;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
@@ -42,8 +43,12 @@ public class DiffEqPresMeasurementValueCalculator
         .addAll(getSensorValues(allSensorValues, pressAtInstrument));
 
       return new MeasurementValue(requiredSensorType, usedSensorValues, null,
-        finalPressure, diffEqPress.getMemberCount(), diffEqPress.getType());
+        allSensorValues, finalPressure, diffEqPress.getMemberCount(),
+        diffEqPress.getType());
 
+    } catch (RoutineException e) {
+      throw new MeasurementValueCalculatorException(
+        "Unable to extract QC flag information", e);
     } catch (SensorTypeNotFoundException e) {
       throw new MeasurementValueCalculatorException(
         "Invalid sensors configuration", e);

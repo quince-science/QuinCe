@@ -14,6 +14,7 @@ import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -73,7 +74,7 @@ public class DefaultMeasurementValueCalculator
     DataSet dataSet, Measurement measurement, SensorType coreSensorType,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException {
+    throws MeasurementValueCalculatorException, RoutineException {
 
     SensorAssignment requiredAssignment = instrument.getSensorAssignments()
       .get(requiredSensorType).first();
@@ -109,7 +110,7 @@ public class DefaultMeasurementValueCalculator
       char valueType = calcValueType(valueTime, valuesToUse);
 
       populateMeasurementValue(measurement.getTime(), result, valuesToUse,
-        valueType);
+        allSensorValues, valueType);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Cannot calculate time offset", e);
@@ -130,7 +131,8 @@ public class DefaultMeasurementValueCalculator
     DataSet dataSet, Measurement measurement, SensorType coreSensorType,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException, PositionException {
+    throws MeasurementValueCalculatorException, PositionException,
+    RoutineException {
 
     MeasurementValue result = new MeasurementValue(requiredSensorType);
 
@@ -152,7 +154,7 @@ public class DefaultMeasurementValueCalculator
       char valueType = calcValueType(positionTime, valuesToUse);
 
       populateMeasurementValue(measurement.getTime(), result, valuesToUse,
-        valueType);
+        allSensorValues, valueType);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Unable to apply sensor offsets", e);
@@ -185,10 +187,12 @@ public class DefaultMeasurementValueCalculator
    *          MeasurementValue. May be overridden by this method for
    *          interpolated values.
    * @throws MeasurementValueCalculatorException
+   * @throws RoutineException
    */
   private void populateMeasurementValue(LocalDateTime measurementTime,
     MeasurementValue measurementValue, List<SensorValue> valuesToUse,
-    char preferredType) throws MeasurementValueCalculatorException {
+    DatasetSensorValues allSensorValues, char preferredType)
+    throws MeasurementValueCalculatorException, RoutineException {
     switch (valuesToUse.size()) {
     case 0: {
       // We should not use a value here
@@ -201,9 +205,10 @@ public class DefaultMeasurementValueCalculator
        * it's measured or interpolated).
        */
       if (preferredType == PlotPageTableValue.MEASURED_TYPE) {
-        measurementValue.addSensorValue(valuesToUse.get(0));
+        measurementValue.addSensorValue(valuesToUse.get(0), allSensorValues);
       } else {
-        measurementValue.addInterpolatedSensorValue(valuesToUse.get(0), true);
+        measurementValue.addInterpolatedSensorValue(valuesToUse.get(0),
+          allSensorValues, true);
       }
 
       measurementValue.setCalculatedValue(valuesToUse.get(0).getDoubleValue());
@@ -213,7 +218,7 @@ public class DefaultMeasurementValueCalculator
       /*
        * Everything is always interpolated
        */
-      measurementValue.addSensorValues(valuesToUse);
+      measurementValue.addSensorValues(valuesToUse, allSensorValues);
       measurementValue.setCalculatedValue(SensorValue
         .interpolate(valuesToUse.get(0), valuesToUse.get(1), measurementTime));
       break;
