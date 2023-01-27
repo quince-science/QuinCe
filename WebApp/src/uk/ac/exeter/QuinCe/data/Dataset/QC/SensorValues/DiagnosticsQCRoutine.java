@@ -49,7 +49,9 @@ public class DiagnosticsQCRoutine {
           }
 
           if (bad) {
-            value.setUserQC(Flag.BAD, "Out of range");
+            value.setUserQC(Flag.BAD,
+              instrument.getSensorAssignments().getSensorTypeForDBColumn(
+                sensor.getDatabaseId()) + " out of range");
             sensorValues.applyQCCascade(value, runTypePeriods);
           }
         }
