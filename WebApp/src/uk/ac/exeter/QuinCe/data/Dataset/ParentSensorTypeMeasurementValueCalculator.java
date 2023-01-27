@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -47,9 +48,14 @@ public class ParentSensorTypeMeasurementValueCalculator
       valueType = PlotPageTableValue.INTERPOLATED_TYPE;
     }
 
-    return new MeasurementValue(requiredSensorType,
-      getSensorValues(childMeasurementValues, allSensorValues), null,
-      mean.getWeightedMean(), (int) Math.floor(mean.getSumOfWeights()),
-      valueType);
+    try {
+      return new MeasurementValue(requiredSensorType,
+        getSensorValues(childMeasurementValues, allSensorValues), null,
+        allSensorValues, mean.getWeightedMean(),
+        (int) Math.floor(mean.getSumOfWeights()), valueType);
+    } catch (RoutineException e) {
+      throw new MeasurementValueCalculatorException(
+        "Error extracting QC information", e);
+    }
   }
 }
