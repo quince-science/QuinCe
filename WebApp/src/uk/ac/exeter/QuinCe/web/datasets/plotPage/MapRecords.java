@@ -139,7 +139,8 @@ public class MapRecords extends ArrayList<MapRecord> {
     if (useNeededFlags) {
       json.add(flagGson.toJsonTree(makeFeatureCollection(flagGson, flags)));
     } else {
-      json.add(flagNrtGson.toJson(makeFeatureCollection(flagNrtGson, flags)));
+      json
+        .add(flagNrtGson.toJsonTree(makeFeatureCollection(flagNrtGson, flags)));
     }
 
     json.add(selectionGson

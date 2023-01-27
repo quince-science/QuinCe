@@ -552,7 +552,9 @@ function setSelectedRows(rows) {
     JSON.stringify([...new Set(rows.sort())])
   );
 
-  updateSelectedRows(); // PF remotecommand
+  if (typeof updateSelectedRows === 'function') {
+    updateSelectedRows(); // PF remotecommand
+  }
 }
 
 //Get the ID of the clicked row
@@ -1085,7 +1087,9 @@ function initPlot(index) {
     setupPlotVariables(index);
     $('#map' + index + 'Container').hide();
     $('#plot' + index + 'Container').show();
-    PF('plot' + index + 'SelectMode').enable();
+  if(PrimeFaces.widgets['plot' + index + 'SelectMode']) {
+      PF('plot' + index + 'SelectMode').enable();
+    }
     $('#map' + index + 'Scale').hide();
 
     if (null == window['plot' + index]) {
@@ -1095,7 +1099,9 @@ function initPlot(index) {
     setupMapVariables(index);
     $('#plot' + index + 'Container').hide();
     $('#map' + index + 'Container').show();
-    PF('plot' + index + 'SelectMode').disable();
+    if (PrimeFaces.widgets['plot' + index + 'SelectMode']) {
+      PF('plot' + index + 'SelectMode').disable();
+    }
     $('#map' + index + 'Scale').show();
 
     if (null == window['map' + index]) {
