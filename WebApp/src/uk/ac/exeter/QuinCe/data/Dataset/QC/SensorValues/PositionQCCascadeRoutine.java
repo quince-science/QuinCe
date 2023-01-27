@@ -1,14 +1,17 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.time.LocalDateTime;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 public class PositionQCCascadeRoutine {
@@ -24,7 +27,7 @@ public class PositionQCCascadeRoutine {
         PlotPageTableValue position = sensorValues
           .getPositionTableValue(SensorType.LONGITUDE_ID, time, true);
 
-        if (null != position && !position.getQcFlag().isGood()) {
+        if (null != position) {
           // Cascade the QC position to sensor values
           for (SensorValue value : sensorValues.get(time).values()) {
 
@@ -41,17 +44,31 @@ public class PositionQCCascadeRoutine {
               setCascade = false;
             }
 
-            if (setCascade) {
+            removePositionCascadeQC(value, sensorValues);
+
+            if (setCascade && !position.getQcFlag().isGood()) {
               value.setCascadingQC(position);
             }
           }
         }
       }
-    } catch (
-
-    Exception e) {
+    } catch (Exception e) {
       throw new RoutineException(e);
     }
+  }
 
+  private void removePositionCascadeQC(SensorValue value,
+    DatasetSensorValues allSensorValues) {
+    if (value.getUserQCFlag().equals(Flag.LOOKUP)) {
+      SortedSet<Long> sources = StringUtils
+        .delimitedToLongSet(value.getUserQCMessage());
+
+      for (Long sourceID : sources) {
+        SensorValue source = allSensorValues.getById(sourceID);
+        if (source.isPosition()) {
+          value.removeCascadingQC(sourceID);
+        }
+      }
+    }
   }
 }

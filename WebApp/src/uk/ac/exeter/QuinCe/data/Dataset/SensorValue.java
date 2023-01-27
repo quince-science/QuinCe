@@ -849,6 +849,31 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
   }
 
+  public void removeCascadingQC(PlotPageTableValue source) {
+    // If there is no cascading QC already registered, do nothing.
+    if (userQCFlag.equals(Flag.LOOKUP)) {
+
+      SortedSet<Long> sources = StringUtils.delimitedToLongSet(userQCMessage);
+
+      source.getSources().forEach(sources::remove);
+
+      if (sources.size() == 0) {
+        // Reset the flag to either NEEDED or ASSUMED_GOOD
+        if (autoQC.getOverallFlag().moreSignificantThan(Flag.GOOD)) {
+          userQCFlag = Flag.NEEDED;
+        } else {
+          userQCFlag = Flag.ASSUMED_GOOD;
+        }
+
+        userQCMessage = null;
+      } else {
+        userQCMessage = StringUtils.collectionToDelimited(sources, ",");
+      }
+
+      dirty = true;
+    }
+  }
+
   public boolean isPosition() {
     return SensorType.isPosition(columnId);
   }
