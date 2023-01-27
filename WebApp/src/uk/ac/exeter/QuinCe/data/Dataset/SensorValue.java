@@ -371,7 +371,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   /**
    * Copy the user QC info from the specified SensorValue.
-   * 
+   *
    * @param source
    *          The source SensorValue.
    */

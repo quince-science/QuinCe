@@ -5,17 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.commons.lang3.NotImplementedException;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.NoEmptyStringSet;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 /**
  * A read-only version of a {@link DataReductionRecord}.
@@ -203,53 +199,5 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    */
   public boolean isDirty() {
     return null != overrideQCFlag;
-  }
-
-  /*
-   * For cascading QC we always fully overwrite the original record QC, even if
-   * that was also a cascade.
-   */
-  public void setCascadingQC(SensorValue source) {
-    SortedSet<Long> sources = null != overrideQCFlag
-      && overrideQCFlag.equals(Flag.LOOKUP)
-        ? StringUtils.delimitedToLongSet(overrideQcMessages.iterator().next())
-        : new TreeSet<Long>();
-
-    sources.add(source.getId());
-    overrideQCFlag = Flag.LOOKUP;
-    overrideQcMessages = new NoEmptyStringSet(
-      StringUtils.collectionToDelimited(sources, ","));
-  }
-
-  public void setCascadingQC(PlotPageTableValue source) {
-    SortedSet<Long> sources = null != overrideQCFlag
-      && overrideQCFlag.equals(Flag.LOOKUP)
-        ? StringUtils.delimitedToLongSet(overrideQcMessages.iterator().next())
-        : new TreeSet<Long>();
-
-    sources.addAll(source.getSources());
-    overrideQCFlag = Flag.LOOKUP;
-    overrideQcMessages = new NoEmptyStringSet(
-      StringUtils.collectionToDelimited(sources, ","));
-  }
-
-  public void removeCascadingQC(long sourceId) {
-
-    // If there is no cascading QC already registered, do nothing.
-    if (overrideQCFlag.equals(Flag.LOOKUP)) {
-
-      SortedSet<Long> sources = StringUtils
-        .delimitedToLongSet(overrideQcMessages.iterator().next());
-      sources.remove(sourceId);
-
-      if (sources.size() == 0) {
-        // Reset the flag to either NEEDED or ASSUMED_GOOD
-        overrideQCFlag = null;
-        overrideQcMessages = null;
-      } else {
-        overrideQcMessages = new NoEmptyStringSet(
-          StringUtils.collectionToDelimited(sources, ","));
-      }
-    }
   }
 }
