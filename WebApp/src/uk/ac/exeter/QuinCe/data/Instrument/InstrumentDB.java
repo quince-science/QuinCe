@@ -152,9 +152,10 @@ public class InstrumentDB {
    * Query for retrieving the list of all instruments that provide NRT data
    */
   private static final String GET_NRT_INSTRUMENTS_QUERY = "SELECT "
-    + "i.id, i.name, CONCAT(u.surname, \", \", u.firstname) AS name "
-    + "FROM instrument AS i " + "INNER JOIN user AS u ON i.owner = u.id "
-    + "WHERE i.nrt = 1 " + "ORDER BY name ASC, i.name ASC";
+    + "i.id, CONCAT(i.platform_name, ': ', i.name) as instrument, "
+    + "CONCAT(u.surname, ', ', u.firstname) AS name " + "FROM instrument AS i "
+    + "INNER JOIN user AS u ON i.owner = u.id " + "WHERE i.nrt = 1 "
+    + "ORDER BY name ASC, instrument ASC";
 
   /**
    * Query used to determine if an instrument with a specified ID exists in the
@@ -215,7 +216,7 @@ public class InstrumentDB {
     + "INNER JOIN user u on i.owner = u.id "
     + "ORDER BY owner_name, i.owner, i.name";
 
-   private static final String PLATFORMS_QUERY = "SELECT "
+  private static final String PLATFORMS_QUERY = "SELECT "
     + "platform_name, platform_code FROM instrument "
     + "WHERE owner = ? ORDER BY created ASC";
 
@@ -225,7 +226,7 @@ public class InstrumentDB {
   private static final String SAVE_PROPERTIES_STATEMENT = "UPDATE instrument "
     + "SET properties = ? WHERE id = ?";
 
- /**
+  /**
    * Store a new instrument in the database
    *
    * @param dataSource

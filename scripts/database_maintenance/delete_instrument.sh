@@ -42,7 +42,7 @@ while getopts "vh" opt; do
 done
 
 mysql -u$db_user -p"$db_password" $db_name << EOF
-  SELECT id, name FROM instrument;
+  SELECT id, CONCAT(platform_name, ':', name) as name FROM instrument ORDER BY name;
 EOF
 echo ""
 
