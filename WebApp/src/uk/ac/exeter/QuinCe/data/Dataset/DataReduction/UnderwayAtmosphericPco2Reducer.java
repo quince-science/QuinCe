@@ -32,8 +32,8 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
     // We use equilibrator temperature as the presumed most realistic gas
     // temperature
-    Double equilibratorTemperature = measurement
-      .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
+    Double intakeTemperature = measurement
+      .getMeasurementValue("Intake Temperature").getCalculatedValue();
     Double salinity = measurement.getMeasurementValue("Salinity")
       .getCalculatedValue();
     Double atmosphericPressure = measurement
@@ -42,14 +42,14 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
       .getCalculatedValue();
 
     Double seaLevelPressure = Calculators.calcSeaLevelPressure(
-      atmosphericPressure, equilibratorTemperature,
+      atmosphericPressure, intakeTemperature,
       getFloatProperty("atm_pres_sensor_height"));
 
-    Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
+    Double pH2O = Calculators.calcPH2O(salinity, intakeTemperature);
 
     Double pCO2 = Calculators.calcpCO2TEWet(co2InGas, seaLevelPressure, pH2O);
     Double fCO2 = Calculators.calcfCO2(pCO2, co2InGas, seaLevelPressure,
-      equilibratorTemperature);
+      intakeTemperature);
 
     record.put("Sea Level Pressure", seaLevelPressure);
     record.put("pH₂O", pH2O);
@@ -59,7 +59,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   @Override
   protected String[] getRequiredTypeStrings() {
-    return new String[] { "Equilibrator Temperature", "Salinity",
+    return new String[] { "Intake Temperature", "Salinity",
       "Atmospheric Pressure", getXCO2Parameter() };
   }
 
