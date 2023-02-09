@@ -120,16 +120,7 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
    */
   @Override
   public boolean add(RoutineFlag flag) {
-
-    // Remove any existing flags from the same routine
-    Iterator<RoutineFlag> iterator = iterator();
-    while (iterator.hasNext()) {
-      RoutineFlag existingFlag = iterator.next();
-      if (existingFlag.getRoutineName().equals(flag.getRoutineName())) {
-        remove(existingFlag);
-      }
-    }
-
+    removeIf(i -> i.getRoutineName().equals(flag.getRoutineName()));
     return super.add(flag);
   }
 }
