@@ -25,33 +25,42 @@ public class ProOceanusAtmosphericCO2Reducer extends DataReducer {
 
     Double airTemperature = measurement.getMeasurementValue("Air Temperature")
       .getCalculatedValue();
-    Double membranePressure = measurement
-      .getMeasurementValue("Membrane Pressure").getCalculatedValue();
-    Double xCO2 = measurement.getMeasurementValue("xCO₂ (wet, no standards)")
+    Double cellGasPressure = measurement
+      .getMeasurementValue("Cell Gas Pressure").getCalculatedValue();
+    Double humidityPressure = measurement
+      .getMeasurementValue("Humidity Pressure").getCalculatedValue();
+    Double xCO2wet = measurement.getMeasurementValue("xCO₂ (wet, no standards)")
       .getCalculatedValue();
 
-    Double p = Calculators.hPaToAtmospheres(membranePressure);
-    Double pCO2 = xCO2 * p;
-    Double fCO2 = Calculators.calcfCO2(pCO2, xCO2, p, airTemperature);
+    // TODO Unit conversion?
+    Double xCO2dry = xCO2wet / (1 - (humidityPressure / cellGasPressure));
 
+    Double p = Calculators.hPaToAtmospheres(cellGasPressure);
+    Double pCO2 = xCO2wet * p;
+    Double fCO2 = Calculators.calcfCO2(pCO2, xCO2wet, p, airTemperature);
+
+    record.put("xCO₂", xCO2dry);
     record.put("pCO₂", pCO2);
     record.put("fCO₂", fCO2);
   }
 
   @Override
   protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Membrane Pressure",
-      "xCO₂ (wet, no standards)" };
+    return new String[] { "Intake Temperature", "Cell Gas Pressure",
+      "Humidity Pressure", "xCO₂ (wet, no standards)" };
   }
 
   @Override
   public List<CalculationParameter> getCalculationParameters() {
-    calculationParameters = new ArrayList<CalculationParameter>(2);
+    calculationParameters = new ArrayList<CalculationParameter>(3);
 
     calculationParameters.add(new CalculationParameter(makeParameterId(0),
-      "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
+      "xCO₂", "xCO₂ In Atmosphere", "XCO2DRAT", "μmol mol⁻¹", true));
 
     calculationParameters.add(new CalculationParameter(makeParameterId(1),
+      "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
+
+    calculationParameters.add(new CalculationParameter(makeParameterId(2),
       "fCO₂", "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true));
 
     return calculationParameters;

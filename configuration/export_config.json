@@ -68,8 +68,7 @@
       "FCO2IG02": "fCO2 In Water - Equilibrator Temperature [uatm]",
       "AWMXRCORR": "Atmosphere True Moisture [umol mol-1]",
       "CAPAZZ01": "Atmospheric Pressure At Sea Level [hPa]",
-      "XCO2DRAT": "xCO2 In Atmoshpere - Dry Air [mol mol-1]",
-      "XCO2DCMA": "xCO2 In Atmosphere - Calibrated In Dry Air [mol mol-1]",
+      "XCO2DRAT": "xCO2 in atmosphere [umol mol-1]",
       "LPRES0EQ_equil": "LICOR Pressure (Equilibrator) [hPa]",
       "LPRES0EQ_atm": "LICOR Pressure (Atmosphere) [hPa]",
       "CTMPZZ01": "Atmospheric Temperature [degC]"
@@ -78,7 +77,7 @@
   {
     "exportName": "ICOS OTC No Salinity Flags",
     "separator": "comma",
-    "includeCalculationColumns": true,
+    "includeCalculationColumns": false,
     "exportDataClass": "NeutraliseSalinityFlagsExportData",
     "visible": false,
     "timestampHeader": "Date/Time",
@@ -110,8 +109,7 @@
       "FCO2IG02": "fCO2 In Water - Equilibrator Temperature [uatm]",
       "AWMXRCORR": "Atmosphere True Moisture [umol mol-1]",
       "CAPAZZ01": "Atmospheric Pressure At Sea Level [hPa]",
-      "XCO2DRAT": "xCO2 In Atmoshpere - Dry Air [mol mol-1]",
-      "XCO2DCMA": "xCO2 In Atmosphere - Calibrated In Dry Air [mol mol-1]",
+      "XCO2DRAT": "xCO2 in atmosphere [umol mol-1]",
       "LPRES0EQ_equil": "LICOR Pressure (Equilibrator) [hPa]",
       "LPRES0EQ_atm": "LICOR Pressure (Atmosphere) [hPa]",
       "CTMPZZ01": "Atmospheric Temperature [degC]"

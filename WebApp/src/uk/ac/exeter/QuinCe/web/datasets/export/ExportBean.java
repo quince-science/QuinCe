@@ -426,8 +426,11 @@ public class ExportBean extends BaseManagedBean {
     columnsToCheck.addAll(
       data.getExtendedColumnHeadings().get(ExportData.SENSORS_FIELD_GROUP));
 
-    columnsToCheck.addAll(
-      data.getExtendedColumnHeadings().get(ExportData.DIAGNOSTICS_FIELD_GROUP));
+    if (null != data.getExtendedColumnHeadings()
+      .get(ExportData.DIAGNOSTICS_FIELD_GROUP)) {
+      columnsToCheck.addAll(data.getExtendedColumnHeadings()
+        .get(ExportData.DIAGNOSTICS_FIELD_GROUP));
+    }
 
     return columnsToCheck.stream().filter(c -> !exportOption.columnExcluded(c))
       .toList();

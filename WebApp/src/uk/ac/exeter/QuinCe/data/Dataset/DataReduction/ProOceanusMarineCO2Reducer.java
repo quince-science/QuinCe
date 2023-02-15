@@ -25,12 +25,12 @@ public class ProOceanusMarineCO2Reducer extends DataReducer {
 
     Double intakeTemperature = measurement
       .getMeasurementValue("Intake Temperature").getCalculatedValue();
-    Double membranePressure = measurement
-      .getMeasurementValue("Membrane Pressure").getCalculatedValue();
+    Double cellGasPressure = measurement
+      .getMeasurementValue("Cell Gas Pressure").getCalculatedValue();
     Double xCO2 = measurement.getMeasurementValue("xCO₂ (wet, no standards)")
       .getCalculatedValue();
 
-    Double p = Calculators.hPaToAtmospheres(membranePressure);
+    Double p = Calculators.hPaToAtmospheres(cellGasPressure);
     Double pCO2WetSST = xCO2 * p;
     Double fCO2 = Calculators.calcfCO2(pCO2WetSST, xCO2, p, intakeTemperature);
 
@@ -40,7 +40,7 @@ public class ProOceanusMarineCO2Reducer extends DataReducer {
 
   @Override
   protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Membrane Pressure",
+    return new String[] { "Intake Temperature", "Cell Gas Pressure",
       "xCO₂ (wet, no standards)" };
   }
 
