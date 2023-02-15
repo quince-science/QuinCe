@@ -28,7 +28,7 @@ def quince_req(call, dataset_id=-1):
   data = urllib.parse.urlencode({'id':str(dataset_id)})
   data = data.encode('ascii')
 
-  if dataset_id is -1:
+  if dataset_id == -1:
       request = urllib.request.Request(quince_url + '/api/export/' + call)
   else:
       request = urllib.request.Request(quince_url + '/api/export/' + call, 
