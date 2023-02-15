@@ -57,17 +57,19 @@ def add_instruments(ftp_conn, ftp_config, ids):
 def upload_file(ftp_conn, ftp_config, instrument_id, filename, contents):
     upload_result = UPLOAD_OK
 
-    destination_folder = get_instrument_folder(ftp_config, instrument_id) \
-        + "inbox/"
-    destination_file = destination_folder + filename
+    # Silently ignore empty files
+    if contents is not None:
+        destination_folder = get_instrument_folder(ftp_config, instrument_id) \
+            + "inbox/"
+        destination_file = destination_folder + filename
 
-    if not ftp_conn.isdir(destination_folder):
-        init_ftp_folder(ftp_conn, ftp_config, instrument_id)
+        if not ftp_conn.isdir(destination_folder):
+            init_ftp_folder(ftp_conn, ftp_config, instrument_id)
 
-    if ftp_conn.exists(destination_file):
-        upload_result = FILE_EXISTS
-    else:
-        ftp_conn.putfo(BytesIO(contents), destination_file)
+        if ftp_conn.exists(destination_file):
+            upload_result = FILE_EXISTS
+        else:
+            ftp_conn.putfo(BytesIO(contents), destination_file)
 
     return upload_result
 

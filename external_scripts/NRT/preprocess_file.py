@@ -18,9 +18,12 @@ def main():
     in_file.close()
     out_bytes = preprocessor.preprocess(BytesIO(in_bytes))
 
-    out_file = open(sys.argv[1] + ".processed", "wb")
-    out_file.write(out_bytes)
-    out_file.close()
+    if out_bytes is None:
+        print("No data")
+    else:
+        out_file = open(sys.argv[1] + ".processed", "wb")
+        out_file.write(out_bytes)
+        out_file.close()
 
 
 if __name__ == '__main__':
