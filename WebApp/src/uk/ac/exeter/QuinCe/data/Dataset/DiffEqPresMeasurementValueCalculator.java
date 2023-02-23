@@ -8,6 +8,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class DiffEqPresMeasurementValueCalculator
@@ -15,10 +16,9 @@ public class DiffEqPresMeasurementValueCalculator
 
   @Override
   public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
-    Measurement measurement, SensorType coreSensorType,
-    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException {
+    Measurement measurement, Variable variable, SensorType requiredSensorType,
+    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
+    Connection conn) throws MeasurementValueCalculatorException {
 
     try {
       SensorsConfiguration sensorConfig = ResourceManager.getInstance()
@@ -27,11 +27,11 @@ public class DiffEqPresMeasurementValueCalculator
         .getSensorType("Pressure at instrument");
 
       MeasurementValue diffEqPress = new DefaultMeasurementValueCalculator()
-        .calculate(instrument, dataSet, measurement, coreSensorType,
+        .calculate(instrument, dataSet, measurement, variable,
           requiredSensorType, allMeasurements, allSensorValues, conn);
 
       MeasurementValue pressAtInstrument = new DefaultMeasurementValueCalculator()
-        .calculate(instrument, dataSet, measurement, coreSensorType,
+        .calculate(instrument, dataSet, measurement, variable,
           pressAtInstrumentSensorType, allMeasurements, allSensorValues, conn);
 
       Double finalPressure = pressAtInstrument.getCalculatedValue()

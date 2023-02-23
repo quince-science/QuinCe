@@ -8,11 +8,12 @@ import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public abstract class MeasurementValueCalculator {
 
   public abstract MeasurementValue calculate(Instrument instrument,
-    DataSet dataSet, Measurement measurement, SensorType coreSensorType,
+    DataSet dataSet, Measurement measurement, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
     throws MeasurementValueCalculatorException;

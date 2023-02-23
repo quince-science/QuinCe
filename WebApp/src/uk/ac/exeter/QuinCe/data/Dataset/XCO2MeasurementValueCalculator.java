@@ -9,6 +9,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
@@ -27,23 +28,22 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
 
   @Override
   public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
-    Measurement measurement, SensorType coreSensorType,
-    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException {
+    Measurement measurement, Variable variable, SensorType requiredSensorType,
+    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
+    Connection conn) throws MeasurementValueCalculatorException {
 
     // Get the xCO2 as a simple value. Because it's a core sensor it will only
     // contain one
     MeasurementValue xCO2 = new DefaultMeasurementValueCalculator().calculate(
-      instrument, dataSet, measurement, coreSensorType, xco2SensorType,
+      instrument, dataSet, measurement, variable, xco2SensorType,
       allMeasurements, allSensorValues, conn);
 
     try {
-      if (xCO2.getMemberCount() > 0 && dryingRequired(instrument)) {
+      if (xCO2.getMemberCount() > 0 && dryingRequired(instrument, variable)) {
 
         MeasurementValue xH2O = new DefaultMeasurementValueCalculator()
-          .calculate(instrument, dataSet, measurement, coreSensorType,
-            xh2oSensorType, allMeasurements, allSensorValues, conn);
+          .calculate(instrument, dataSet, measurement, variable, xh2oSensorType,
+            allMeasurements, allSensorValues, conn);
 
         // result = new MeasurementValue(xco2SensorType);
         xCO2.addSensorValues(xCO2, allSensorValues);
@@ -60,21 +60,32 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
     return xCO2;
   }
 
-  private boolean dryingRequired(Instrument instrument)
+  private boolean dryingRequired(Instrument instrument, Variable variable)
     throws MeasurementValueCalculatorException {
 
-    TreeSet<SensorAssignment> co2Assignments = instrument.getSensorAssignments()
-      .get(xco2SensorType);
+    boolean result;
 
-    // TODO We assume there's only one CO2 sensor. Handle more.
-    if (co2Assignments.size() > 1) {
-      throw new MeasurementValueCalculatorException(
-        "Cannot handle multiple CO2 sensors yet!");
+    if (variable.getName().equals("Underway Marine pCO₂ from ¹²CO₂/¹³CO₂")
+      || variable.getName()
+        .equals("Underway Atmospheric pCO₂ from ¹²CO₂/¹³CO₂")) {
+      result = true;
+    } else {
+
+      TreeSet<SensorAssignment> co2Assignments = instrument
+        .getSensorAssignments().get(xco2SensorType);
+
+      // TODO We assume there's only one CO2 sensor. Handle more.
+      if (co2Assignments.size() > 1) {
+        throw new MeasurementValueCalculatorException(
+          "Cannot handle multiple CO2 sensors yet!");
+      }
+
+      SensorAssignment assignment = co2Assignments.first();
+
+      result = assignment.getDependsQuestionAnswer();
     }
 
-    SensorAssignment assignment = co2Assignments.first();
-
-    return assignment.getDependsQuestionAnswer();
+    return result;
   }
 
   /**

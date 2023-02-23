@@ -5,18 +5,19 @@ import java.sql.Connection;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class MeasurementValueCalculatorFactory {
 
   public static MeasurementValue calculateMeasurementValue(
     Instrument instrument, DataSet dataSet, Measurement measurement,
-    SensorType coreSensorType, SensorType requiredSensorType,
+    Variable variable, SensorType requiredSensorType,
     DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
     Connection conn) throws MeasurementValueCalculatorException {
 
     return getCalculator(requiredSensorType).calculate(instrument, dataSet,
-      measurement, coreSensorType, requiredSensorType, allMeasurements,
+      measurement, variable, requiredSensorType, allMeasurements,
       allSensorValues, conn);
   }
 
