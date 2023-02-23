@@ -34,6 +34,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -85,7 +86,7 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
 
   private SensorType sensorType;
 
-  private SensorType coreSensorType;
+  private Variable variable;
 
   /**
    * Build everything needed for the tests
@@ -145,8 +146,11 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
 
     sensorType = ResourceManager.getInstance().getSensorsConfiguration()
       .getSensorType("Intake Temperature");
-    coreSensorType = ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("xCO₂ (with standards)");
+
+    variable = Mockito.mock(Variable.class);
+    Mockito.when(variable.getCoreSensorType())
+      .thenReturn(ResourceManager.getInstance().getSensorsConfiguration()
+        .getSensorType("xCO₂ (with standards)"));
 
     List<Long> columnList = new ArrayList<Long>(1);
     columnList.add(COLUMN_ID);
@@ -240,7 +244,7 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
     DefaultMeasurementValueCalculator calculator = new DefaultMeasurementValueCalculator();
 
     MeasurementValue value = calculator.calculate(instrument, dataSet,
-      measurement, coreSensorType, sensorType, null, sensorValues,
+      measurement, variable, sensorType, null, sensorValues,
       getDataSource().getConnection());
 
     Double expectedValue = line.getDoubleField(EXPECTED_VALUE_COL);

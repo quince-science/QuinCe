@@ -45,17 +45,14 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
       atmosphericPressure, intakeTemperature,
       getFloatProperty("atm_pres_sensor_height"));
 
-    Double pH2O = Calculators.calcPH2O(salinity, intakeTemperature);
-
-    Double pCO2 = Calculators.calcpCO2TEWet(co2InGas, seaLevelPressure, pH2O);
-    Double fCO2 = Calculators.calcfCO2(pCO2, co2InGas, seaLevelPressure,
-      intakeTemperature);
+    Calculator calculator = new Calculator(intakeTemperature, salinity,
+      seaLevelPressure, co2InGas);
 
     record.put("Sea Level Pressure", seaLevelPressure);
-    record.put("pH₂O", pH2O);
+    record.put("pH₂O", calculator.pH2O);
     record.put("xCO₂", co2InGas);
-    record.put("pCO₂", pCO2);
-    record.put("fCO₂", fCO2);
+    record.put("pCO₂", calculator.pCO2);
+    record.put("fCO₂", calculator.fCO2);
   }
 
   @Override
@@ -90,5 +87,36 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   protected String getXCO2Parameter() {
     return "xCO₂ (with standards)";
+  }
+
+  class Calculator {
+
+    // Inputs
+    private final Double intakeTemperature;
+    private final Double salinity;
+    private final Double seaLevelPressure;
+    private final Double co2InGas;
+
+    // Outputs
+    protected Double pH2O = null;
+    protected Double pCO2 = null;
+    protected Double fCO2 = null;
+
+    protected Calculator(Double intakeTemperature, Double salinity,
+      Double seaLevelPressure, Double co2InGas) {
+
+      this.intakeTemperature = intakeTemperature;
+      this.salinity = salinity;
+      this.seaLevelPressure = seaLevelPressure;
+      this.co2InGas = co2InGas;
+      calculate();
+    }
+
+    protected void calculate() {
+      pH2O = Calculators.calcPH2O(salinity, intakeTemperature);
+      pCO2 = Calculators.calcpCO2TEWet(co2InGas, seaLevelPressure, pH2O);
+      fCO2 = Calculators.calcfCO2(pCO2, co2InGas, seaLevelPressure,
+        intakeTemperature);
+    }
   }
 }

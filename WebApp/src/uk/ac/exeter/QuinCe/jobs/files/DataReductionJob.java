@@ -166,10 +166,10 @@ public class DataReductionJob extends DataSetJob {
              * already done it.
              */
             if (!measurement.hasMeasurementValue(sensorType)) {
-              measurement.setMeasurementValue(MeasurementValueCalculatorFactory
-                .calculateMeasurementValue(instrument, dataSet, measurement,
-                  variable.getCoreSensorType(), sensorType, allMeasurements,
-                  allSensorValues, conn));
+              measurement.setMeasurementValue(
+                MeasurementValueCalculatorFactory.calculateMeasurementValue(
+                  instrument, dataSet, measurement, variable, sensorType,
+                  allMeasurements, allSensorValues, conn));
             }
           }
 

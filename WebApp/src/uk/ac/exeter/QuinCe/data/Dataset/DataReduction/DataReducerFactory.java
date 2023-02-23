@@ -47,6 +47,10 @@ public class DataReducerFactory {
     reducers.put("CH₄ Mixing ratio", NoReductionReducer.class);
     reducers.put("Ambient Pressure (Torr)", NoReductionReducer.class);
     reducers.put("D-Excess", DExcessReducer.class);
+    reducers.put("Underway Marine pCO₂ from ¹²CO₂/¹³CO₂",
+      UnderwayMarine12_13Pco2Reducer.class);
+    reducers.put("Underway Atmospheric pCO₂ from ¹²CO₂/¹³CO₂",
+      UnderwayAtmospheric12_13Pco2Reducer.class);
   }
 
   /**
