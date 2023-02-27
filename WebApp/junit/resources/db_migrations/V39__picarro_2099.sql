@@ -102,18 +102,18 @@ INSERT INTO variable_sensors (
   );
 
 -- Atmospheric variable sensors
--- Salinity
 -- SST
 INSERT INTO variable_sensors (
     variable_id, sensor_type, core, questionable_cascade, bad_cascade,
     export_column_short, export_column_long, export_column_code
   )
   VALUES (
-    (SELECT id FROM variables WHERE name = 'Underway Marine pCO₂ from ¹²CO₂/¹³CO₂'),
+    (SELECT id FROM variables WHERE name = 'Underway Atmospheric pCO₂ from ¹²CO₂/¹³CO₂'),
     (SELECT id FROM sensor_types WHERE column_code = 'TEMPPR01'),
     0, 3, 4, NULL, NULL, NULL
   );
 
+-- Salinity
 INSERT INTO variable_sensors (
     variable_id, sensor_type, core, questionable_cascade, bad_cascade,
     export_column_short, export_column_long, export_column_code
