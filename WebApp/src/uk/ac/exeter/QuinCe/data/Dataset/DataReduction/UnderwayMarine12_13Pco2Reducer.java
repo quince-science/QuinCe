@@ -34,16 +34,17 @@ public class UnderwayMarine12_13Pco2Reducer extends UnderwayMarinePco2Reducer {
     Double x13CO2 = measurement.getMeasurementValue("x¹³CO₂ (with standards)")
       .getCalculatedValue();
 
-    Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
-
-    Calculator x12CO2Calculator = new Calculator(intakeTemperature,
-      equilibratorTemperature, equilibratorPressure, pH2O, x12CO2);
-    Calculator x13CO2Calculator = new Calculator(intakeTemperature,
-      equilibratorTemperature, equilibratorPressure, pH2O, x13CO2);
+    Calculator x12CO2Calculator = new Calculator(intakeTemperature, salinity,
+      equilibratorTemperature, equilibratorPressure, x12CO2);
+    Calculator x13CO2Calculator = new Calculator(intakeTemperature, salinity,
+      equilibratorTemperature, equilibratorPressure, x13CO2);
 
     // Store the calculated values
     record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
-    record.put("pH₂O", pH2O);
+
+    // Will be the same for both 12C and 13C
+    record.put("pH₂O", x12CO2Calculator.pH2O);
+
     record.put("pCO₂ TE Wet",
       x12CO2Calculator.pCo2TEWet + x13CO2Calculator.pCo2TEWet);
     record.put("fCO₂ TE Wet",
