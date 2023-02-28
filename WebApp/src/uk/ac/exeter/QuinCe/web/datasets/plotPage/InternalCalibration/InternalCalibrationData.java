@@ -133,7 +133,8 @@ public class InternalCalibrationData extends PlotPageData {
 
       // Each SensorType with internal calibrations goes in its own group
       for (SensorType sensorType : instrument.getSensorAssignments().keySet()) {
-        if (sensorType.hasInternalCalibration()) {
+        if (sensorType.hasInternalCalibration()
+          && instrument.getSensorAssignments().isAssigned(sensorType)) {
 
           List<PlotPageColumnHeading> sensorTypeColumns = new ArrayList<PlotPageColumnHeading>();
 
