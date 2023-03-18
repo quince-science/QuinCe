@@ -188,9 +188,7 @@ public abstract class PlotPageData {
       loadDataAction();
 
       DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
-      try {
-        Connection conn = dataSource.getConnection();
-
+      try (Connection conn = dataSource.getConnection()) {
         runTypePeriods = DataSetDataDB.getRunTypePeriods(conn, instrument,
           dataset.getId());
       } catch (SQLException e) {
