@@ -579,93 +579,6 @@ public class SensorAssignmentsTest extends BaseTest {
   }
 
   /**
-   * Test that a Run Type assignment is not required for a file that has no
-   * {@link SensorType}s with internal calibrations required.
-   *
-   * <p>
-   * Tests both a file with a {@link SensorType} that does not require internal
-   * calibrations, and a file with no assignments at all.
-   * </p>
-   *
-   * @throws Exception
-   *           If any internal errors are encountered.
-   */
-  @Test
-  public void runTypeNotRequiredNoInternalCalibTest() throws Exception {
-    // Run type is not required if no sensor with internal calibration is
-    // assigned
-    assignments
-      .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
-
-    assertFalse(assignments.runTypeRequired(DATA_FILE_NAME));
-    assertFalse(assignments.runTypeRequired(DATA_FILE_2_NAME));
-  }
-
-  /**
-   * Tests that a Run Type {@link SensorType} is required only for a file with a
-   * {@link SensorType} assigned that requires internal calibrations.
-   *
-   * <p>
-   * Assigns a {@link SensorType} to a file that requires internal calibrations,
-   * and not to a second file. {@link SensorAssignments#runTypeRequired(String)}
-   * must return {@code true} for the first file and {@code false} for the
-   * second.
-   * </p>
-   *
-   * @throws Exception
-   *           If any internal errors are encountered.
-   */
-  @Test
-  public void runTypeRequiredOneInternalCalibTest() throws Exception {
-
-    assignments
-      .addAssignment(makeAssignment(getSensorType("xH₂O (with standards)"),
-        DATA_FILE_NAME, 1, "Sensor 1", true));
-
-    assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
-    assertFalse(assignments.runTypeRequired(DATA_FILE_2_NAME));
-  }
-
-  /**
-   * Test the a Run Type {@link SensorType} is required for multiple files, each
-   * of which is assigned a {@link SensorType} that has requires internal
-   * calibrations.
-   *
-   * @throws Exception
-   *           If any internal errors are encountered.
-   */
-  @Test
-  public void runTypeRequiredTwoInternalCalibTest() throws Exception {
-    assignments
-      .addAssignment(makeAssignment(getSensorType("xH₂O (with standards)"),
-        DATA_FILE_NAME, 1, "Sensor 1", true));
-    assignments
-      .addAssignment(makeAssignment(getSensorType("xH₂O (with standards)"),
-        DATA_FILE_2_NAME, 1, "Sensor 2", true));
-
-    assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
-    assertTrue(assignments.runTypeRequired(DATA_FILE_2_NAME));
-  }
-
-  /**
-   * Test the a Run Type {@link SensorType} is required for a file where more
-   * than one {@link SensorType} that has requires internal calibrations has
-   * been assigned.
-   *
-   * @throws Exception
-   *           If any internal errors are encountered.
-   */
-  @Test
-  public void runTypeRequiredBothInternalCalibTest() throws Exception {
-    assignments.addAssignment(makeAssignment(
-      getSensorType("xH₂O (with standards)"), DATA_FILE_NAME, 1, "xH2O", true));
-    assignments.addAssignment(makeAssignment(
-      getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 2, "xCO2", true));
-
-    assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
-  }
-
-  /**
    * Test that a variable with no sensors assigned registers as incomplete.
    *
    * @throws Exception
@@ -928,7 +841,7 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   @Test
   public void runTypeRequiredNoSensorTypesTest() throws Exception {
-    assertFalse(
+    assertTrue(
       assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
   }
 
@@ -946,7 +859,7 @@ public class SensorAssignmentsTest extends BaseTest {
     assignments
       .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
 
-    assertFalse(
+    assertTrue(
       assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
   }
 
