@@ -40,7 +40,7 @@
         <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
           <p:commandButton id="cancelButton" value="Cancel"
             action="#{signupBean.cancel}" immediate="true" />
-          <p:commandButton id="signupButton" value="Sign Up"
+          <p:commandButton id="signupButton" value="Sign Up" ajax="false"
             action="#{signupBean.signUp}" />
         </h:panelGrid>
       </h:form>
