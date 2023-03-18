@@ -252,8 +252,7 @@ public class SensorAssignments
 
       if (!result) {
         for (SensorType sensorType : keySet()) {
-          if (sensorType.hasInternalCalibration()
-            && get(sensorType).size() > 0) {
+          if (sensorType.hasInternalCalibration()) {
             result = true;
             break;
           }
@@ -689,31 +688,6 @@ public class SensorAssignments
     }
 
     return result;
-  }
-
-  /**
-   * Determine whether or not the Run Type is required in a given file, and has
-   * not yet been assigned.
-   *
-   * @param dataFileName
-   *          The data file to be checked
-   * @return {@code true} if the run type is required; {@code false} if not.
-   */
-  public boolean runTypeRequired(String dataFileName) {
-    boolean required = false;
-
-    for (SensorType type : keySet()) {
-      if (type.hasInternalCalibration()) {
-        for (SensorAssignment assignment : get(type)) {
-          if (assignment.getDataFile().equals(dataFileName)) {
-            required = true;
-            break;
-          }
-        }
-      }
-    }
-
-    return required;
   }
 
   /**
