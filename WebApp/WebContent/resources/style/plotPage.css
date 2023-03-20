@@ -191,6 +191,15 @@ td.selected > div {
   height: 25px !important;
 }
 
+.hideFlagsButton {
+  background-image: url("#{resource['image/noflags.svg']}") !important;
+  background-size: cover;
+  margin-left: -13px !important;
+  margin-top: -13px !important;
+  width: 25px !important;
+  height: 25px !important;
+}
+
 .selectModeButtons .ui-button:nth-child(1) {
   background-image: url("#{resource['image/zoom_button.svg']}") !important;
   background-size: 20px;

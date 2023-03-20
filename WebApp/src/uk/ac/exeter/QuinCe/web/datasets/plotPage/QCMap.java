@@ -32,6 +32,8 @@ public class QCMap {
 
   private static Gson gson;
 
+  private boolean hideFlags = false;
+
   static {
     gson = new Gson();
   }
@@ -104,5 +106,13 @@ public class QCMap {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public void setHideFlags(boolean hideFlags) {
+    this.hideFlags = hideFlags;
+  }
+
+  public boolean getHideFlags() {
+    return hideFlags;
   }
 }

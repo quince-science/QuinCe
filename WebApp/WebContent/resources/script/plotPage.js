@@ -1455,8 +1455,19 @@ function parseJsonWithDates(json) {
   });
 }
 
-function showVariableDialog(plotIndex) {
+function hideFlags(plotIndex) {
+  currentPlot = plotIndex;
+  let mode = getPlotMode(currentPlot);
+  plotLoading(currentPlot, mode);
+  if (mode == PLOT_MODE_PLOT) {
+    eval('loadPlot' + currentPlot + '()'); // PF remoteCommand
+  } else {
+    eval('map' + currentPlot + 'GetData()'); // PF remoteCommand
+    initMap(currentPlot);
+  }
+}
 
+function showVariableDialog(plotIndex) {
   currentPlot = plotIndex;
 
   let mode = getPlotMode(plotIndex);
@@ -1599,7 +1610,7 @@ function applyVariables() {
     PF('variableDialog').hide();
   }
 
-  var mode = getPlotMode(currentPlot);
+  let mode = getPlotMode(currentPlot);
 
   plotLoading(currentPlot, mode);
 
@@ -1610,7 +1621,6 @@ function applyVariables() {
     eval('map' + currentPlot + 'GetData()'); // PF remoteCommand
     initMap(currentPlot);
   }
-
 }
 
 function getSelectedXAxis() {
@@ -1622,7 +1632,6 @@ function getSelectedYAxis() {
 }
 
 function getSelectedCheckbox(prefix) {
-
   let axis = 0;
 
   let columnIds = getExtendedColumnIds();

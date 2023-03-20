@@ -54,6 +54,8 @@ public class Plot {
    */
   private TreeSet<PlotValue> plotValues = null;
 
+  private boolean hideFlags = false;
+
   static {
     MAIN_DATA_GSON = new GsonBuilder()
       .registerTypeAdapter(PlotValue.class, new MainPlotValueSerializer())
@@ -120,11 +122,12 @@ public class Plot {
    * @throws Exception
    */
   public String getMainData() {
-
     String result = "[]";
 
     if (null != plotValues) {
-      result = MAIN_DATA_GSON.toJson(plotValues.stream().filter(f -> !f.xNull())
+      result = MAIN_DATA_GSON.toJson(plotValues.stream()
+        .filter(f -> !f.xNull() && !hideFlags ? true
+          : (f.getFlag().isGood() || f.getFlag().equals(Flag.NEEDED)))
         .collect(Collectors.toList()));
     }
 
@@ -143,7 +146,9 @@ public class Plot {
 
     if (null != plotValues) {
       List<PlotValue> flagValues = plotValues.stream()
-        .filter(x -> x.inFlagPlot()).collect(Collectors.toList());
+        .filter(
+          x -> !hideFlags ? x.inFlagPlot() : x.getFlag().equals(Flag.NEEDED))
+        .collect(Collectors.toList());
 
       result = FLAGS_GSON.toJson(flagValues);
     }
@@ -229,5 +234,13 @@ public class Plot {
     labels.add("NEEDED");
 
     return new Gson().toJson(labels);
+  }
+
+  protected void setHideFlags(boolean hideFlags) {
+    this.hideFlags = hideFlags;
+  }
+
+  protected boolean getHideFlags() {
+    return hideFlags;
   }
 }

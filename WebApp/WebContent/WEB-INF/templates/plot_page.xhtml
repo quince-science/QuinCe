@@ -228,13 +228,13 @@
 
           <p:remoteCommand name="loadPlot1"
             action="#{sessionScope[beanName].data.plot1.init}"
-            process="@this plot1XAxis plot1YAxis"
+            process="@this plot1XAxis plot1YAxis plot1HideFlags"
             update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels plot1FlagLabels"
             oncomplete="drawPlot(1, true, true)" />
 
           <p:remoteCommand name="map1GetData"
             action="#{sessionScope[beanName].data.map1.generateMapData}"
-            process="map1Column map1Bounds map1UpdateScale"
+            process="map1Column map1Bounds map1UpdateScale plot1HideFlags"
             update="map1DataBounds map1Data map1ScaleLimits" oncomplete="drawMap(1)" />
 
           <div id="plot1Container">
@@ -260,6 +260,10 @@
                   styleClass="inlineButton tightButton plotFooterButton" />
                 <p:commandButton icon="zoomOutButton" onclick="resetZoom(1); return false;"
                   styleClass="inlineButton tightButton plotFooterButton" />
+                <p:selectBooleanButton onIcon="hideFlagsButton" offIcon="hideFlagsButton"
+                  value="#{sessionScope[beanName].data.plot1HideFlags}"
+                  id="plot1HideFlags" onchange="hideFlags(1); return false;"
+                  styleClass="inlineSelectBooleanButton tightButton plotFooterButton" />
               </div>
               <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
                 <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode"
@@ -305,13 +309,13 @@
 
           <p:remoteCommand name="loadPlot2"
             action="#{sessionScope[beanName].data.plot2.init}"
-            process="@this plot2XAxis plot2YAxis"
+            process="@this plot2XAxis plot2YAxis plot2HideFlags"
             update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels plot2FlagLabels"
             oncomplete="drawPlot(2, true, true)" />
 
           <p:remoteCommand name="map2GetData"
             action="#{sessionScope[beanName].data.map2.generateMapData}"
-            process="map2Column map2Bounds map2UpdateScale"
+            process="map2Column map2Bounds map2UpdateScale plot2HideFlags"
             update="map2DataBounds map2Data map2ScaleLimits" oncomplete="drawMap(2)" />
 
           <div id="plot2Container">
@@ -337,6 +341,10 @@
                   styleClass="inlineButton tightButton plotFooterButton" />
                 <p:commandButton icon="zoomOutButton" onclick="resetZoom(2); return false;"
                   styleClass="inlineButton tightButton plotFooterButton" />
+                <p:selectBooleanButton onIcon="hideFlagsButton" offIcon="hideFlagsButton"
+                  value="#{sessionScope[beanName].data.plot2HideFlags}"
+                  id="plot2HideFlags" onchange="hideFlags(2); return false;"
+                  styleClass="inlineSelectBooleanButton tightButton plotFooterButton" />
               </div>
               <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
                 <p:selectOneButton id="plotSelectMode" widgetVar="plot2SelectMode"
