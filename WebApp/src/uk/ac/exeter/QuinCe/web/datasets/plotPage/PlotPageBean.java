@@ -151,21 +151,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
       return internalError(e);
     }
 
-    /*
-     * try { reset();
-     *
-     * dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
-     *
-     * initData(); selectableRows = buildSelectableRows();
-     *
-     * plot1 = new Plot(this, dataset.getBounds(), getDefaultPlot1XAxis(),
-     * getDefaultPlot1YAxis(), getDefaultMap1Variable()); plot2 = new Plot(this,
-     * dataset.getBounds(), getDefaultPlot2XAxis(), getDefaultPlot2YAxis(),
-     * getDefaultMap2Variable());
-     *
-     * init(); dirty = false; } catch (Exception e) { e.printStackTrace(); }
-     */
-
     return getScreenNavigation();
   }
 

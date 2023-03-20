@@ -991,4 +991,22 @@ public abstract class PlotPageData {
 
   protected abstract DataLatLng getMapPosition(LocalDateTime time)
     throws Exception;
+
+  public boolean getPlot1HideFlags() {
+    return null == plot1 ? false : plot1.getHideFlags();
+  }
+
+  public void setPlot1HideFlags(boolean hide) {
+    plot1.setHideFlags(hide);
+    map1.setHideFlags(hide);
+  }
+
+  public boolean getPlot2HideFlags() {
+    return null == plot2 ? false : plot1.getHideFlags();
+  }
+
+  public void setPlot2HideFlags(boolean hide) {
+    plot2.setHideFlags(hide);
+    map2.setHideFlags(hide);
+  }
 }
