@@ -33,8 +33,8 @@ function calibrationUpdated() {
   
   PF('useDialog').hide();
   
-  drawFlagPlot(1);
-  drawFlagPlot(2);
+  drawPlot(1, true, false);
+  drawPlot(2, true, false);
   clearSelection();
   
   // Reload table data
