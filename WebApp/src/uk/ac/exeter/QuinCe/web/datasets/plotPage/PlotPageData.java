@@ -952,14 +952,14 @@ public abstract class PlotPageData {
   protected abstract List<LocalDateTime> getDataTimes();
 
   public String getMapData(PlotPageColumnHeading column, GeoBounds bounds,
-    boolean useNeededFlags) throws Exception {
+    boolean useNeededFlags, boolean hideNonGoodFlags) throws Exception {
 
     if (!mapCache.containsKey(column)) {
       buildMapCache(column);
     }
 
     return mapCache.get(column).getDisplayJson(bounds, selectedRows,
-      useNeededFlags);
+      useNeededFlags, hideNonGoodFlags);
   }
 
   private void buildMapCache(PlotPageColumnHeading column) throws Exception {
