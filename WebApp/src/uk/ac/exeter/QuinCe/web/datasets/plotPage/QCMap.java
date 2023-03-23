@@ -102,7 +102,7 @@ public class QCMap {
   public void generateMapData() {
     try {
       mapScaleLimits = data.getValueRange(dataColumn);
-      mapData = data.getMapData(dataColumn, bounds, useNeededFlags);
+      mapData = data.getMapData(dataColumn, bounds, useNeededFlags, hideFlags);
     } catch (Exception e) {
       e.printStackTrace();
     }

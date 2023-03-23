@@ -56,7 +56,7 @@ public class MapRecords extends ArrayList<MapRecord> {
   }
 
   public String getDisplayJson(GeoBounds bounds, List<Long> selectedRows,
-    boolean useNeededFlags) {
+    boolean useNeededFlags, boolean hideNonGoodFlags) {
 
     Set<MapRecord> boundedRecords = new TreeSet<MapRecord>();
 
@@ -68,22 +68,25 @@ public class MapRecords extends ArrayList<MapRecord> {
     // Find the records within the specified bounds, and also record the records
     // closest to the bound limits.
     for (MapRecord record : this) {
-      if (bounds.inBounds(record.position)) {
-        if (record.position.getLongitude() < minLon.position.getLongitude()) {
-          minLon = record;
-        } else if (record.position.getLongitude() > maxLon.position
-          .getLongitude()) {
-          maxLon = record;
-        }
 
-        if (record.position.getLatitude() < minLat.position.getLatitude()) {
-          minLat = record;
-        } else if (record.position.getLatitude() > maxLat.position
-          .getLatitude()) {
-          maxLat = record;
-        }
+      if (!hideNonGoodFlags || record.isGood() || record.flagNeeded()) {
+        if (bounds.inBounds(record.position)) {
+          if (record.position.getLongitude() < minLon.position.getLongitude()) {
+            minLon = record;
+          } else if (record.position.getLongitude() > maxLon.position
+            .getLongitude()) {
+            maxLon = record;
+          }
 
-        boundedRecords.add(record);
+          if (record.position.getLatitude() < minLat.position.getLatitude()) {
+            minLat = record;
+          } else if (record.position.getLatitude() > maxLat.position
+            .getLatitude()) {
+            maxLat = record;
+          }
+
+          boundedRecords.add(record);
+        }
       }
     }
 
