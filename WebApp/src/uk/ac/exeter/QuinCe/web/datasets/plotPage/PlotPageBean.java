@@ -389,4 +389,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
   public boolean allowMaps() {
     return true;
   }
+
+  public boolean dualYAxes() {
+    return false;
+  }
 }

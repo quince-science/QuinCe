@@ -59,4 +59,8 @@ public class MathUtils {
   public static boolean checkRange(double value, double min, double max) {
     return value >= min && value <= max;
   }
+
+  public static boolean isEmpty(Double d) {
+    return null == d || d.isNaN();
+  }
 }

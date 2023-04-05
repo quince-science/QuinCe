@@ -1160,6 +1160,21 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   data_options.animatedZooms = false;
   data_options.xRangePad = 10;
   data_options.yRangePad = 10;
+  
+  // If there's a second Y axis
+  if (labels.length == 6) {
+    data_options.y2label = labels[5];
+    data_options.visibility = [false, true, true, true, true];
+    data_options.colors = ['#FBCCFC', '#E0E0E0', '#01752D', '#C0C0C0',];
+    data_options.series = {
+	  [labels[4]]: {
+	    axis: 'y2'
+	  },
+	  [labels[5]]: {
+        axis: 'y2'
+	  }
+	}
+  }
 
   data_options.axes = {
     x: {
@@ -1169,7 +1184,10 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
       drawGrid: true,
       gridLinePattern: [1, 3],
       gridLineColor: 'rbg(200, 200, 200)',
-    }
+    },
+    y2: {
+	  drawGrid: false
+	}
   };
   data_options.interactionModel = getInteractionModel(index);
   data_options.clickCallback = function(e, x, points) {
@@ -1220,7 +1238,6 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
       data_options.valueRange = getYRange(index);
     }
   }
-
 
   window[plotVar] = new Dygraph(
     document.getElementById('plot' + index + 'DataPlot'),
@@ -1291,6 +1308,22 @@ function drawFlagPlot(index) {
     flag_options.xAxisHeight = 20;
     flag_options.interactionModel = null;
     flag_options.animatedZooms = false;
+    
+  // If there's a second Y axis
+  if (getPlotLabels(index).length == 6) {
+    flag_options.colors = ['#FF0000', '#FFA42B', '#817FFF', '#FF8888', '#FFFF88', '#FFDDDD'];
+    flag_options.series = {
+	  'BAD2': {
+	    axis: 'y2'
+	  },
+	  'QUESTIONABLE2': {
+        axis: 'y2'
+	  },
+	  'NEEDED2': {
+        axis: 'y2'
+	  }
+	}
+  }
 
     window['flagPlot' + index] = new Dygraph(
       document.getElementById('plot' + index + 'FlagPlot'),
@@ -1502,6 +1535,7 @@ function setupPlotVariables(plotIndex) {
 
   updateAxisButtons('x', $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val());
   updateAxisButtons('y', $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val());
+  updateAxisButtons('y2', $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'Y2Axis').val());
 }
 
 //Select the specified axis variable in the dialog
@@ -1516,9 +1550,13 @@ function updateAxisButtons(axis, variable) {
 
       // Not all variables will have an axis button
       if (widget) {
-        if (id == variable) {
-          widget.check();
-        } else {
+        if (axis != 'y2') {
+          if (id == variable) {
+            widget.check();
+          } else {
+            widget.uncheck();
+          }
+        } else if (id != variable) {
           widget.uncheck();
         }
       }
@@ -1631,6 +1669,10 @@ function getSelectedYAxis() {
   return getSelectedCheckbox('yAxis');
 }
 
+function getSelectedY2Axis() {
+  return getSelectedCheckbox('y2Axis');
+}
+
 function getSelectedCheckbox(prefix) {
   let axis = 0;
 
@@ -1649,13 +1691,16 @@ function getSelectedCheckbox(prefix) {
 function setPlotAxes(plotIndex) {
   let xAxis = getSelectedXAxis();
   if (xAxis != 0) {
-    $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
+    $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val(xAxis);
   }
 
   let yAxis = getSelectedYAxis();
   if (yAxis != 0) {
-    $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
+    $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val(yAxis);
   }
+
+  let y2Axis = getSelectedY2Axis();
+  $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'Y2Axis').val(y2Axis);
 }
 
 function setPlotSelectMode(index) {

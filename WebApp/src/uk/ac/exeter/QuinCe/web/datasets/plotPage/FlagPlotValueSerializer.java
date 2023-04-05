@@ -25,25 +25,54 @@ public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
       json.add(src.getXDouble());
     }
 
-    // Bad
-    if (src.getFlag().equals(Flag.BAD)) {
-      json.add(src.getY());
-    } else {
+    if (!src.hasY()) {
       json.add(JsonNull.INSTANCE);
+      json.add(JsonNull.INSTANCE);
+      json.add(JsonNull.INSTANCE);
+    } else {
+      // Bad
+      if (src.getFlag().equals(Flag.BAD)) {
+        json.add(src.getY());
+      } else {
+        json.add(JsonNull.INSTANCE);
+      }
+
+      // Questionable
+      if (src.getFlag().equals(Flag.QUESTIONABLE)) {
+        json.add(src.getY());
+      } else {
+        json.add(JsonNull.INSTANCE);
+      }
+
+      // Needed
+      if (src.getFlag().equals(Flag.NEEDED)) {
+        json.add(src.getY());
+      } else {
+        json.add(JsonNull.INSTANCE);
+      }
     }
 
-    // Questionable
-    if (src.getFlag().equals(Flag.QUESTIONABLE)) {
-      json.add(src.getY());
-    } else {
-      json.add(JsonNull.INSTANCE);
-    }
+    if (src.hasY2()) {
+      // Bad
+      if (src.getFlag2().equals(Flag.BAD)) {
+        json.add(src.getY2());
+      } else {
+        json.add(JsonNull.INSTANCE);
+      }
 
-    // Needed
-    if (src.getFlag().equals(Flag.NEEDED)) {
-      json.add(src.getY());
-    } else {
-      json.add(JsonNull.INSTANCE);
+      // Questionable
+      if (src.getFlag2().equals(Flag.QUESTIONABLE)) {
+        json.add(src.getY2());
+      } else {
+        json.add(JsonNull.INSTANCE);
+      }
+
+      // Needed
+      if (src.getFlag2().equals(Flag.NEEDED)) {
+        json.add(src.getY2());
+      } else {
+        json.add(JsonNull.INSTANCE);
+      }
     }
 
     return json;
