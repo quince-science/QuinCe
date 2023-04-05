@@ -10,9 +10,11 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONException;
-import org.primefaces.json.JSONObject;
+import org.primefaces.shaded.json.JSONArray;
+import org.primefaces.shaded.json.JSONObject;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
@@ -394,26 +396,27 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @throws MissingParamException
    */
   public String getUsedTargetsJson()
-    throws MissingParamException, JSONException, DatabaseException {
-    JSONArray groups = new JSONArray();
+    throws MissingParamException, DatabaseException {
+    JsonArray groups = new JsonArray();
 
     int counter = 0;
 
     for (String target : getCalibrations().keySet()) {
-      JSONObject group = new JSONObject();
-      group.put("id", StringUtils.tabToSpace(target));
-      group.put("order", counter);
-      group.put("content", StringUtils.tabToSpace(getTargets().get(target)));
+      JsonObject group = new JsonObject();
+      group.addProperty("id", StringUtils.tabToSpace(target));
+      group.addProperty("order", counter);
+      group.addProperty("content",
+        StringUtils.tabToSpace(getTargets().get(target)));
 
-      groups.put(group);
+      groups.add(group);
       counter++;
     }
 
-    JSONObject group = new JSONObject();
-    group.put("id", "Datasets");
-    group.put("order", counter);
-    group.put("content", "Datasets");
-    groups.put(group);
+    JsonObject group = new JsonObject();
+    group.addProperty("id", "Datasets");
+    group.addProperty("order", counter);
+    group.addProperty("content", "Datasets");
+    groups.add(group);
 
     return StringUtils.javascriptString(groups.toString());
   }

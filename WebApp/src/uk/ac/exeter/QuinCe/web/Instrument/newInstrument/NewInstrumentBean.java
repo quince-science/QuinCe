@@ -19,11 +19,12 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 
 import org.apache.commons.lang3.StringUtils;
-import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONObject;
 import org.primefaces.model.TreeNode;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -1749,15 +1750,15 @@ public class NewInstrumentBean extends FileUploadBean {
     }
 
     // Make the JSON output
-    JSONArray json = new JSONArray();
+    JsonArray json = new JsonArray();
 
     for (Map.Entry<RunTypeCategory, Integer> entry : assignedCategories
       .entrySet()) {
-      JSONArray entryJson = new JSONArray();
-      entryJson.put(entry.getKey().getDescription());
-      entryJson.put(entry.getValue());
+      JsonArray entryJson = new JsonArray();
+      entryJson.add(entry.getKey().getDescription());
+      entryJson.add(entry.getValue());
 
-      json.put(entryJson);
+      json.add(entryJson);
     }
 
     return json.toString();
@@ -1780,37 +1781,38 @@ public class NewInstrumentBean extends FileUploadBean {
    * @return The run type assignments
    */
   public String getRunTypeAssignments() {
-    JSONArray json = new JSONArray();
+    JsonArray json = new JsonArray();
 
     for (int i = 0; i < instrumentFiles.size(); i++) {
       FileDefinition file = instrumentFiles.get(i);
       if (file.hasRunTypes()) {
         RunTypeAssignments assignments = file.getRunTypes();
 
-        JSONObject fileAssignments = new JSONObject();
+        JsonObject fileAssignments = new JsonObject();
 
-        fileAssignments.put("index", i);
+        fileAssignments.addProperty("index", i);
 
-        JSONArray jsonAssignments = new JSONArray();
+        JsonArray jsonAssignments = new JsonArray();
 
         for (RunTypeAssignment assignment : assignments.values()) {
-          JSONObject jsonAssignment = new JSONObject();
-          jsonAssignment.put("runType", assignment.getRunName());
+          JsonObject jsonAssignment = new JsonObject();
+          jsonAssignment.addProperty("runType", assignment.getRunName());
 
           RunTypeCategory category = assignment.getCategory();
           if (null == category) {
-            jsonAssignment.put("category", JSONObject.NULL);
-            jsonAssignment.put("aliasTo", assignment.getAliasTo());
+            jsonAssignment.add("category", JsonNull.INSTANCE);
+            jsonAssignment.addProperty("aliasTo", assignment.getAliasTo());
           } else {
-            jsonAssignment.put("category", assignment.getCategory().getType());
-            jsonAssignment.put("aliasTo", JSONObject.NULL);
+            jsonAssignment.addProperty("category",
+              assignment.getCategory().getType());
+            jsonAssignment.add("aliasTo", JsonNull.INSTANCE);
           }
 
-          jsonAssignments.put(jsonAssignment);
+          jsonAssignments.add(jsonAssignment);
         }
 
-        fileAssignments.put("assignments", jsonAssignments);
-        json.put(fileAssignments);
+        fileAssignments.add("assignments", jsonAssignments);
+        json.add(fileAssignments);
       }
     }
 
@@ -2171,7 +2173,8 @@ public class NewInstrumentBean extends FileUploadBean {
     return NAV_ASSIGN_VARIABLES;
   }
 
-  public TreeNode getAssignmentsTree() throws Exception {
+  public TreeNode<AssignmentsTreeNodeData> getAssignmentsTree()
+    throws Exception {
     return assignmentsTree.getRoot();
   }
 

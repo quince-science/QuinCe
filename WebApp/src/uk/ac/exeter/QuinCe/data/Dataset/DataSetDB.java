@@ -17,11 +17,11 @@ import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
-import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONObject;
+import org.primefaces.shaded.json.JSONObject;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -273,13 +273,14 @@ public class DataSetDB {
 
     LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(11));
     String errorMessagesJson = record.getString(12);
-    JSONArray array = new JSONArray(errorMessagesJson);
+
+    JsonArray array = (JsonArray) JsonParser.parseString(errorMessagesJson);
     ArrayList<Message> errorMessage = new ArrayList<Message>();
     for (Object o : array) {
       if (o instanceof JSONObject) {
-        JSONObject jo = (JSONObject) o;
-        Message m = new Message(jo.getString("message"),
-          jo.getString("details"));
+        JsonObject jo = (JsonObject) o;
+        Message m = new Message(jo.get("message").getAsString(),
+          jo.get("details").getAsString());
         errorMessage.add(m);
       }
     }

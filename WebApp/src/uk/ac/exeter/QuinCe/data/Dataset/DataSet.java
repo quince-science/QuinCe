@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.primefaces.json.JSONArray;
+import com.google.gson.JsonArray;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
@@ -682,9 +682,9 @@ public class DataSet implements Comparable<DataSet> {
   }
 
   public String getErrorMessagesAsJSONString() {
-    JSONArray json = new JSONArray();
+    JsonArray json = new JsonArray();
     for (Message message : getMessages()) {
-      json.put(message.getAsJSON());
+      json.add(message.getAsJSON());
     }
     return json.toString();
   }

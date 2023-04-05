@@ -8,8 +8,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
@@ -71,22 +71,22 @@ public class ExportList {
       List<DataSet> datasets = DataSetDB.getDatasetsWithStatus(conn,
         DataSet.STATUS_READY_FOR_EXPORT);
 
-      JSONArray json = new JSONArray();
+      JsonArray json = new JsonArray();
 
       for (DataSet dataset : datasets) {
-        JSONObject datasetJson = new JSONObject();
+        JsonObject datasetJson = new JsonObject();
 
-        datasetJson.put("id", dataset.getId());
-        datasetJson.put("name", dataset.getName());
+        datasetJson.addProperty("id", dataset.getId());
+        datasetJson.addProperty("name", dataset.getName());
 
         Instrument instrument = InstrumentDB.getInstrument(conn,
           dataset.getInstrumentId());
-        JSONObject instrumentJson = new JSONObject();
-        instrumentJson.put("name", instrument.getName());
-        instrumentJson.put("user", instrument.getOwner().getFullName());
-        datasetJson.put("instrument", instrumentJson);
+        JsonObject instrumentJson = new JsonObject();
+        instrumentJson.addProperty("name", instrument.getName());
+        instrumentJson.addProperty("user", instrument.getOwner().getFullName());
+        datasetJson.add("instrument", instrumentJson);
 
-        json.put(datasetJson);
+        json.add(datasetJson);
       }
       result = json.toString();
     } catch (Exception e) {
