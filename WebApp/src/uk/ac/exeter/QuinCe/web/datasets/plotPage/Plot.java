@@ -50,6 +50,11 @@ public class Plot {
   private PlotPageColumnHeading yAxis = null;
 
   /**
+   * The column ID of the second Y axis
+   */
+  private PlotPageColumnHeading y2Axis = null;
+
+  /**
    * The plot values.
    */
   private TreeSet<PlotValue> plotValues = null;
@@ -101,9 +106,9 @@ public class Plot {
   }
 
   /**
-   * Get the y Axis label.
+   * Get the y Axis.
    *
-   * @return The y axis label.
+   * @return The y axis.
    */
   public long getYaxis() {
     return null == yAxis ? Long.MIN_VALUE : yAxis.getId();
@@ -112,6 +117,23 @@ public class Plot {
   public void setYaxis(long yAxis) throws Exception {
     if (yAxis != 0) {
       this.yAxis = data.getColumnHeading(yAxis);
+    }
+  }
+
+  /**
+   * Get the y Axis.
+   *
+   * @return The y axis.
+   */
+  public long getY2axis() {
+    return null == y2Axis ? Long.MIN_VALUE : y2Axis.getId();
+  }
+
+  public void setY2axis(long y2Axis) throws Exception {
+    if (y2Axis != 0) {
+      this.y2Axis = data.getColumnHeading(y2Axis);
+    } else {
+      this.y2Axis = null;
     }
   }
 
@@ -164,6 +186,10 @@ public class Plot {
     TreeMap<LocalDateTime, PlotPageTableValue> yValues = data
       .getColumnValues(yAxis);
 
+    TreeMap<LocalDateTime, PlotPageTableValue> y2Values = null == y2Axis
+      ? new TreeMap<LocalDateTime, PlotPageTableValue>()
+      : data.getColumnValues(y2Axis);
+
     plotValues = new TreeSet<PlotValue>();
 
     for (LocalDateTime time : xValues.keySet()) {
@@ -171,25 +197,43 @@ public class Plot {
 
         PlotPageTableValue x = xValues.get(time);
         PlotPageTableValue y = yValues.get(time);
+        PlotPageTableValue y2 = y2Values.get(time);
 
         PlotValue plotValue = null;
 
         if (null != y && null != y.getValue()) {
 
-          Flag valueFlag = y.getQcFlag();
-          if (useNeededFlags && y.getFlagNeeded()) {
-            valueFlag = Flag.NEEDED;
+          Double yValue = null;
+          boolean yGhost = false;
+          Flag yFlag = null;
+          if (null != y) {
+            yValue = MathUtils.nullableParseDouble(y.getValue());
+            yGhost = y.getQcFlag().equals(Flag.FLUSHING);
+            yFlag = y.getQcFlag();
+            if (useNeededFlags && y.getFlagNeeded()) {
+              yFlag = Flag.NEEDED;
+            }
+          }
+
+          Double y2Value = null;
+          boolean y2Ghost = false;
+          Flag y2Flag = null;
+          if (null != y2) {
+            y2Value = MathUtils.nullableParseDouble(y2.getValue());
+            y2Ghost = y2.getQcFlag().equals(Flag.FLUSHING);
+            y2Flag = y2.getQcFlag();
+            if (useNeededFlags && y2.getFlagNeeded()) {
+              y2Flag = Flag.NEEDED;
+            }
           }
 
           if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
-              MathUtils.nullableParseDouble(y.getValue()),
-              y.getQcFlag().equals(Flag.FLUSHING), valueFlag);
+              yValue, yGhost, yFlag, y2Value, y2Ghost, y2Flag);
           } else if (null != x && null != x.getValue() && null != y) {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time),
-              MathUtils.nullableParseDouble(x.getValue()),
-              MathUtils.nullableParseDouble(y.getValue()),
-              y.getQcFlag().equals(Flag.FLUSHING), valueFlag);
+              MathUtils.nullableParseDouble(x.getValue()), yValue, yGhost,
+              yFlag, y2Value, y2Ghost, y2Flag);
           }
         }
 
@@ -222,6 +266,11 @@ public class Plot {
     labels.add("GHOST");
     labels.add(yAxis.getShortName());
 
+    if (null != y2Axis) {
+      labels.add("GHOST");
+      labels.add(y2Axis.getShortName());
+    }
+
     return new Gson().toJson(labels);
 
   }
@@ -232,6 +281,12 @@ public class Plot {
     labels.add("BAD");
     labels.add("QUESTIONABLE");
     labels.add("NEEDED");
+
+    if (null != y2Axis) {
+      labels.add("BAD2");
+      labels.add("QUESTIONABLE2");
+      labels.add("NEEDED2");
+    }
 
     return new Gson().toJson(labels);
   }
