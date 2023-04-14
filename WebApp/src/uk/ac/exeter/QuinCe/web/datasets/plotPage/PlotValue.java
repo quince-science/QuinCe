@@ -38,6 +38,9 @@ class PlotValue implements Comparable<PlotValue> {
    */
   private final boolean ghost;
 
+  /**
+   * Indicates whether or not the Y2 value is a ghost
+   */
   private final boolean ghost2;
 
   /**
@@ -45,6 +48,9 @@ class PlotValue implements Comparable<PlotValue> {
    */
   private Flag flag;
 
+  /**
+   * The y2 value's QC flag - NEEDED is always converted to the Auto QC flag.
+   */
   private Flag flag2;
 
   /**

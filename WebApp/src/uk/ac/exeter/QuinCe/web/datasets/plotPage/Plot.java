@@ -17,15 +17,7 @@ import uk.ac.exeter.QuinCe.utils.MathUtils;
 
 public class Plot {
 
-  /**
-   * Gson generator for the main plot data
-   */
-  private static Gson MAIN_DATA_GSON;
-
-  /**
-   * Gson generator for the flag data
-   */
-  private static Gson FLAGS_GSON;
+  private static Gson Y2_GSON;
 
   /**
    * The source data for the plot
@@ -62,12 +54,8 @@ public class Plot {
   private boolean hideFlags = false;
 
   static {
-    MAIN_DATA_GSON = new GsonBuilder()
-      .registerTypeAdapter(PlotValue.class, new MainPlotValueSerializer())
-      .create();
-
-    FLAGS_GSON = new GsonBuilder()
-      .registerTypeAdapter(PlotValue.class, new FlagPlotValueSerializer())
+    Y2_GSON = new GsonBuilder()
+      .registerTypeAdapter(PlotValue.class, new Y2AxisPlotValueSerializer())
       .create();
   }
 
@@ -147,9 +135,25 @@ public class Plot {
     String result = "[]";
 
     if (null != plotValues) {
-      result = MAIN_DATA_GSON.toJson(plotValues.stream()
+      Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
+        new MainPlotValueSerializer(null != y2Axis)).create();
+
+      result = gson.toJson(plotValues.stream()
         .filter(f -> !f.xNull() && !hideFlags ? true
           : (f.getFlag().isGood() || f.getFlag().equals(Flag.NEEDED)))
+        .collect(Collectors.toList()));
+    }
+
+    return result;
+  }
+
+  public String getY2Data() {
+    String result = "[]";
+
+    if (null != y2Axis) {
+      result = Y2_GSON.toJson(plotValues.stream()
+        .filter(f -> !f.xNull() && !hideFlags ? true
+          : (f.getFlag2().isGood() || f.getFlag2().equals(Flag.NEEDED)))
         .collect(Collectors.toList()));
     }
 
@@ -172,7 +176,10 @@ public class Plot {
           x -> !hideFlags ? x.inFlagPlot() : x.getFlag().equals(Flag.NEEDED))
         .collect(Collectors.toList());
 
-      result = FLAGS_GSON.toJson(flagValues);
+      Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
+        new FlagPlotValueSerializer(null != y2Axis)).create();
+
+      result = gson.toJson(flagValues);
     }
 
     return result;
@@ -222,9 +229,7 @@ public class Plot {
             y2Value = MathUtils.nullableParseDouble(y2.getValue());
             y2Ghost = y2.getQcFlag().equals(Flag.FLUSHING);
             y2Flag = y2.getQcFlag();
-            if (useNeededFlags && y2.getFlagNeeded()) {
-              y2Flag = Flag.NEEDED;
-            }
+            // We never show NEEDED flags for Y2 axis
           }
 
           if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
@@ -267,12 +272,10 @@ public class Plot {
     labels.add(yAxis.getShortName());
 
     if (null != y2Axis) {
-      labels.add("GHOST");
-      labels.add(y2Axis.getShortName());
+      labels.add(""); // Y2 axis label
     }
 
     return new Gson().toJson(labels);
-
   }
 
   public String getFlagLabels() {
@@ -283,12 +286,29 @@ public class Plot {
     labels.add("NEEDED");
 
     if (null != y2Axis) {
-      labels.add("BAD2");
-      labels.add("QUESTIONABLE2");
-      labels.add("NEEDED2");
+      labels.add(""); // Y2 value column
     }
 
     return new Gson().toJson(labels);
+  }
+
+  public String getY2Labels() {
+    String result = null;
+
+    if (null != y2Axis) {
+      List<String> labels = new ArrayList<String>(5);
+      labels.add(xAxis.getShortName());
+      labels.add("ID");
+      labels.add(""); // Y1 axis
+      labels.add("BAD");
+      labels.add("QUESTIONABLE");
+      labels.add("GHOST");
+      labels.add(y2Axis.getShortName());
+
+      result = new Gson().toJson(labels);
+    }
+
+    return result;
   }
 
   protected void setHideFlags(boolean hideFlags) {

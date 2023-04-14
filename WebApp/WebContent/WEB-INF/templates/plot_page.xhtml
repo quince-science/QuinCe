@@ -213,6 +213,10 @@
             value="#{sessionScope[beanName].data.plot1.flagData}"/>
           <h:inputHidden id="plot1FlagLabels"
             value="#{sessionScope[beanName].data.plot1.flagLabels}"/>
+          <h:inputHidden id="plot1Y2Data"
+            value="#{sessionScope[beanName].data.plot1.y2Data}"/>
+          <h:inputHidden id="plot1Y2Labels"
+            value="#{sessionScope[beanName].data.plot1.y2Labels}"/>
           <h:inputHidden id="plot1XAxis"
             value="#{sessionScope[beanName].data.plot1.xaxis}"/>
           <h:inputHidden id="plot1YAxis"
@@ -235,7 +239,8 @@
           <p:remoteCommand name="loadPlot1"
             action="#{sessionScope[beanName].data.plot1.init}"
             process="@this plot1XAxis plot1YAxis plot1Y2Axis plot1HideFlags"
-            update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels plot1FlagLabels"
+            update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels
+              plot1FlagLabels plot1Y2Data plot1Y2Labels"
             oncomplete="drawPlot(1, true, true)" />
 
           <p:remoteCommand name="map1GetData"
@@ -244,6 +249,7 @@
             update="map1DataBounds map1Data map1ScaleLimits" oncomplete="drawMap(1)" />
 
           <div id="plot1Container">
+            <div id="plot1Y2Plot" class="plot y2Plot"></div>
             <div id="plot1DataPlot" class="plot dataPlot"></div>
             <div id="plot1SelectionPlot" class="plot selectionPlot"></div>
             <div id="plot1FlagPlot" class="plot flagPlot"></div>
@@ -296,6 +302,10 @@
             value="#{sessionScope[beanName].data.plot2.flagData}"/>
           <h:inputHidden id="plot2FlagLabels"
             value="#{sessionScope[beanName].data.plot2.flagLabels}"/>
+          <h:inputHidden id="plot2Y2Data"
+            value="#{sessionScope[beanName].data.plot2.y2Data}"/>
+          <h:inputHidden id="plot2Y2Labels"
+            value="#{sessionScope[beanName].data.plot2.y2Labels}"/>
           <h:inputHidden id="plot2XAxis"
             value="#{sessionScope[beanName].data.plot2.xaxis}"/>
           <h:inputHidden id="plot2YAxis"
@@ -318,7 +328,8 @@
           <p:remoteCommand name="loadPlot2"
             action="#{sessionScope[beanName].data.plot2.init}"
             process="@this plot2XAxis plot2YAxis plot2Y2Axis plot2HideFlags"
-            update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels plot2FlagLabels"
+            update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels
+              plot2FlagLabels plot2Y2Data plot2Y2Labels"
             oncomplete="drawPlot(2, true, true)" />
 
           <p:remoteCommand name="map2GetData"
@@ -327,6 +338,7 @@
             update="map2DataBounds map2Data map2ScaleLimits" oncomplete="drawMap(2)" />
 
           <div id="plot2Container">
+            <div id="plot2Y2Plot" class="plot y2Plot"></div>
             <div id="plot2DataPlot" class="plot dataPlot"></div>
             <div id="plot2SelectionPlot" class="plot selectionPlot"></div>
             <div id="plot2FlagPlot" class="plot flagPlot"></div>
