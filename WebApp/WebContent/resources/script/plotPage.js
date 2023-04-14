@@ -137,16 +137,14 @@ var currentPlot = 1;
 // Plot data is passed through form inputs.
 // On the page we move them to variables so the plot data isn't
 // constantly sent back to the server with ajax requests.
+var y2Plot1 = null;
 var dataPlot1 = null;
-var dataPlot1Data = null;
 var flagPlot1 = null;
-var flagPlot1Data = null;
 var selectionPlot1 = null;
 
+var y2Plot2 = null;
 var dataPlot2 = null;
-var dataPlot2Data = null;
 var flagPlot2 = null;
-var flagPlot2Data = null;
 var selectionPlot2 = null;
 
 var BASE_PLOT_OPTIONS = {
@@ -154,7 +152,8 @@ var BASE_PLOT_OPTIONS = {
   strokeWidth: 0.0,
   labelsUTC: true,
   labelsSeparateLine: true,
-  digitsAfterDecimal: 2
+  digitsAfterDecimal: 2,
+  animatedZooms: false
 }
 
 var updatingDialogButtons = false;
@@ -280,6 +279,10 @@ function resizePlot(index) {
     $('#plot' + index + 'Container').width('100%');
     $('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
     window['dataPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+
+    if (null != window['y2Plot' + index]) {
+      window['y2Plot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+    }
 
     if (null != window['flagPlot' + index]) {
       window['flagPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
@@ -709,7 +712,7 @@ function drawTable() {
       $('#tableForm\\:tableDataLength').val(data.length);
 
       // Clear the existing table data to stop it being sent back to the server
-      $('#tableForm\\:tableJsonData').val("");
+      $('#tableForm\\:tableJsonData').val('');
 
       // Submit the query to the server
       tableGetData(); // PF remoteCommand
@@ -1119,31 +1122,118 @@ function getPlotLabels(index) {
   return JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
 }
 
-function drawPlot(index, drawOtherPlots, resetZoom) {
-  errorCheck();
+function getPlotY2Labels(index) {
+  return JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'Y2Labels').val());
+}
 
+function hasY2(index) {
+  return $('#plot' + index + 'Form\\:plot' + index + 'Y2Labels').val().length > 0;
+}
+
+function drawY2Plot(index) {
+  let y2Var = 'y2Plot' + index;
+
+  let newY2Data = $('#plot' + index + 'Form\\:plot' + index + 'Y2Data').val();
+  if (newY2Data) {
+    window['y2Plot' + index + 'Data'] = parseJsonWithDates(newY2Data);
+
+    // Clear input so it doesn't get sent back to the server
+    $('#plot' + index + 'Form\\:plot' + index + 'y2Data').val('');
+  }
+
+  let labels = getPlotY2Labels(index);
+
+  if (null != window[y2Var]) {
+    window[y2Var].destroy();
+    window[y2Var] = null;
+  }
+
+  let y2_options = Object.assign({}, BASE_PLOT_OPTIONS);
+  y2_options.labels = labels;
+  y2_options.xlabel = labels[0];
+  y2_options.ylabel = labels[2];
+  y2_options.y2label = labels[6];
+  y2_options.legend = 'never';
+  y2_options.visibility = [false, true, true, true, true, true];
+  y2_options.colors = ['#00000000', '#00000000', '#E6B6A6', '#EFDCBF', '#C0C0C0', '#A9DBF9'];
+  y2_options.xRangePad = 10;
+  y2_options.yRangePad = 10;
+  y2_options.interactionModel = null;
+
+  y2_options.series = {
+    [labels[0]]: {
+      pointSize: 0,
+      highlightCircleSize: 0
+    },
+    [labels[1]]: {
+      pointSize: 0,
+      highlightCircleSize: 0
+    },
+    [labels[2]]: {
+      axis: 'y2',
+      pointSize: 0,
+      highlightCircleSize: 0
+    },
+    [labels[3]]: {
+      axis: 'y2',
+      pointSize: FLAG_POINT_SIZE,
+      highlightCircleSize: 0
+    },
+    [labels[4]]: {
+      axis: 'y2',
+      pointSize: FLAG_POINT_SIZE,
+      highlightCircleSize: 0
+    },
+    [labels[5]]: {
+      axis: 'y2',
+      pointSize: DATA_POINT_SIZE,
+      highlightCircleSize: 0
+    },
+    [labels[6]]: {
+      axis: 'y2',
+      pointSize: DATA_POINT_SIZE,
+      highlightCircleSize: 0
+    }
+  }
+  
+  y2_options.axes = {
+    x: {
+	  drawGrid: false
+	},
+    y: {
+	  drawGrid: false,
+      axisLabelFormatter: function(y) {
+        return '';
+      }
+    },
+    y2: {
+	  drawGrid: false
+	}
+  }
+
+  window[y2Var] = new Dygraph(
+    document.getElementById('plot' + index + 'Y2Plot'),
+    window['y2Plot' + index + 'Data'],
+    y2_options
+  );
+}
+
+function drawDataPlot1Y(index) {
   let plotVar = 'dataPlot' + index;
 
   // If there's new data, extract it
   let newPlotData = $('#plot' + index + 'Form\\:plot' + index + 'Data').val();
   if (newPlotData) {
     window['dataPlot' + index + 'Data'] = parseJsonWithDates(newPlotData);
-    $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
+    $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
   }
 
   let labels = getPlotLabels(index);
 
-  let xAxisRange = null;
-  let yAxisRange = null;
-
-  if (!resetZoom && null != window[plotVar]) {
-    xAxisRange = window[plotVar].xAxisRange();
-    yAxisRange = window[plotVar].yAxisRange();
-  }
-
   // Destroy the old plot
   if (null != window[plotVar]) {
     window[plotVar].destroy();
+    window[plotVar] = null;
   }
 
   let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
@@ -1157,38 +1247,123 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   data_options.pointSize = DATA_POINT_SIZE;
   data_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
   data_options.selectMode = 'euclidian';
-  data_options.animatedZooms = false;
   data_options.xRangePad = 10;
   data_options.yRangePad = 10;
   
-  // If there's a second Y axis
-  if (labels.length == 6) {
-    data_options.y2label = labels[5];
-    data_options.visibility = [false, true, true, true, true];
-    data_options.colors = ['#FBCCFC', '#E0E0E0', '#01752D', '#C0C0C0',];
-    data_options.series = {
-	  [labels[4]]: {
-	    axis: 'y2'
-	  },
-	  [labels[5]]: {
-        axis: 'y2'
-	  }
-	}
-  }
-
+  data_options.interactionModel = getInteractionModel(index);
+  data_options.clickCallback = function(e, x, points) {
+    scrollToTableRow(getRowId(e, x, points));
+  };
+  data_options.zoomCallback = function(xMin, xMax, yRange) {
+    syncZoom(index);
+  };
+  data_options.drawCallback = function(g, initial) {
+    resizePlot(index);
+  };
+  data_options.valueFormatter = function(value, opts, seriesName, dygraph, row, col) {
+    if (seriesName != 'Time') {
+      return value.toFixed(3);
+    } else {
+      return new Date(value).toISOString();
+    }
+  };
+  
   data_options.axes = {
     x: {
-      drawGrid: false
+	  drawGrid: false
     },
     y: {
       drawGrid: true,
       gridLinePattern: [1, 3],
       gridLineColor: 'rbg(200, 200, 200)',
-    },
-    y2: {
-	  drawGrid: false
 	}
-  };
+  }
+
+  // Reference value for gas standards and similar
+  let referenceValue = getColumnById($('#plot' + index + 'Form\\:plot' + index + 'YAxis').val()).referenceValue;
+  if (null != referenceValue) {
+    data_options.underlayCallback = function(canvas, area, g) {
+      let xmin = g.toDomXCoord(g.xAxisExtremes()[0]);
+      let xmax = g.toDomXCoord(g.xAxisExtremes()[1]);
+      let ycoord = g.toDomYCoord(referenceValue);
+
+      canvas.setLineDash([10, 5]);
+      canvas.strokeStyle = '#FF0000';
+      canvas.lineWidth = 3;
+      canvas.beginPath();
+      canvas.moveTo(xmin, ycoord);
+      canvas.lineTo(xmax, ycoord);
+      canvas.stroke();
+      canvas.setLineDash([]);
+    }
+  }
+
+  window[plotVar] = new Dygraph(
+    document.getElementById('plot' + index + 'DataPlot'),
+    window['dataPlot' + index + 'Data'],
+    data_options
+  );
+
+}
+
+function drawDataPlot2Y(index) {
+  let plotVar = 'dataPlot' + index;
+
+  // If there's new data, extract it
+  let newPlotData = $('#plot' + index + 'Form\\:plot' + index + 'Data').val();
+  if (newPlotData) {
+    window['dataPlot' + index + 'Data'] = parseJsonWithDates(newPlotData);
+    $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
+  }
+
+  let labels = getPlotLabels(index);
+
+  // Destroy the old plot
+  if (null != window[plotVar]) {
+    window[plotVar].destroy();
+    window[plotVar] = null;
+  }
+
+  let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
+  // Ghost data and series data colors
+  //data_options.colors = ['#C0C0C0', '#01752D', "#00000000"];
+  data_options.xlabel = labels[0];
+  data_options.ylabel = labels[3];
+  data_options.y2label = labels[4];
+  data_options.labels = labels;
+  data_options.labelsDiv = 'plot' + index + 'Label';
+  data_options.visibility = [false, true, true, true];
+  data_options.pointSize = DATA_POINT_SIZE;
+  data_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
+  data_options.selectMode = 'euclidian';
+  data_options.xRangePad = 10;
+  data_options.yRangePad = 10;
+
+  data_options.series = {
+    [labels[4]]: {
+	  axis: 'y2',
+      pointSize: 0,
+      highlightCircleSize: 0
+    }
+  }
+
+  data_options.axes = {
+    x: {
+	  drawGrid: false
+	},
+    y: {
+      drawGrid: true,
+      gridLinePattern: [1, 3],
+      gridLineColor: 'rbg(200, 200, 200)',
+	},
+    y2: {
+	  drawGrid: false,
+      axisLabelFormatter: function(y) {
+        return '';
+      }
+    }
+  }
+
   data_options.interactionModel = getInteractionModel(index);
   data_options.clickCallback = function(e, x, points) {
     scrollToTableRow(getRowId(e, x, points));
@@ -1226,31 +1401,47 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     }
   }
 
-  // Zoom
-  if (!resetZoom) {
-    data_options.dateWindow = xAxisRange;
-    data_options.valueRange = yAxisRange;
-    data_options.yRangePad = 0;
-    data_options.xRangePad = 0;
-  } else {
-    let nonDefaultYRange = getYRange(index);
-    if (null != nonDefaultYRange) {
-      data_options.valueRange = getYRange(index);
-    }
-  }
-
   window[plotVar] = new Dygraph(
     document.getElementById('plot' + index + 'DataPlot'),
     window['dataPlot' + index + 'Data'],
     data_options
   );
 
-  resizePlot(index);
+}
+
+function drawPlot(index, drawOtherPlots, resetZoom) {
+  errorCheck();
+
+  let xAxisRange = null;
+  let yAxisRange = null;
+  let y2AxisRange = null;
 
   if (drawOtherPlots) {
-    drawFlagPlot(index);
+    if (hasY2(index)) {
+      if (null != window['y2Plot' + index]) {
+        window['y2Plot' + index].destroy();
+        window['y2Plot' + index] = null;
+      }
+
+      drawY2Plot(index);
+    }
+    
     drawSelectionPlot(index);
   }
+  
+  if (hasY2(index)) {
+    if (drawOtherPlots) {
+      drawFlagPlot2Y(index);
+	}
+    drawDataPlot2Y(index);
+  } else {
+    if (drawOtherPlots) {
+      drawFlagPlot1Y(index);
+	}
+    drawDataPlot1Y(index);
+  }
+
+  resizePlot(index);
 
   // Enable/disable the selection mode controls
   if (canEdit()) {
@@ -1269,10 +1460,31 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   } else if (index == 2) {
     itemNotLoading(PLOT2_LOADING);
   }
-
 }
 
-function drawFlagPlot(index) {
+function drawPlotOld(index, drawOtherPlots, resetZoom) {
+  errorCheck();
+
+  if (!resetZoom && null != window[plotVar]) {
+    xAxisRange = window[plotVar].xAxisRange();
+    yAxisRange = window[plotVar].yAxisRange();
+  }
+
+  // Zoom
+  if (!resetZoom) {
+    data_options.dateWindow = xAxisRange;
+    data_options.valueRange = yAxisRange;
+    data_options.yRangePad = 0;
+    data_options.xRangePad = 0;
+  } else {
+    let nonDefaultYRange = getYRange(index);
+    if (null != nonDefaultYRange) {
+      data_options.valueRange = getYRange(index);
+    }
+  }
+}
+
+function drawFlagPlot1Y(index) {
   window['flagPlot' + index + 'Data'] =
     parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
 
@@ -1280,6 +1492,7 @@ function drawFlagPlot(index) {
 
   if (null != window['flagPlot' + index]) {
     window['flagPlot' + index].destroy();
+    window['flagPlot' + index] = null;
   }
 
   if (window['flagPlot' + index + 'Data'].length == 0) {
@@ -1294,8 +1507,8 @@ function drawFlagPlot(index) {
     flag_options.pointSize = FLAG_POINT_SIZE;
     flag_options.highlightCircleSize = 0;
     flag_options.selectMode = 'euclidian';
-    flag_options.xRangePad = 0;
-    flag_options.yRangePad = 0;
+    flag_options.xRangePad = 10;
+    flag_options.yRangePad = 10;
     flag_options.axes = {
       x: {
         drawGrid: false
@@ -1307,31 +1520,66 @@ function drawFlagPlot(index) {
     flag_options.axisLabelFontSize = 0;
     flag_options.xAxisHeight = 20;
     flag_options.interactionModel = null;
-    flag_options.animatedZooms = false;
-    
-  // If there's a second Y axis
-  if (getPlotLabels(index).length == 6) {
-    flag_options.colors = ['#FF0000', '#FFA42B', '#817FFF', '#FF8888', '#FFFF88', '#FFDDDD'];
-    flag_options.series = {
-	  'BAD2': {
-	    axis: 'y2'
-	  },
-	  'QUESTIONABLE2': {
-        axis: 'y2'
-	  },
-	  'NEEDED2': {
-        axis: 'y2'
-	  }
-	}
-  }
 
     window['flagPlot' + index] = new Dygraph(
       document.getElementById('plot' + index + 'FlagPlot'),
       window['flagPlot' + index + 'Data'],
       flag_options
     );
+  }
+}
 
-    resizePlot(index);
+function drawFlagPlot2Y(index) {
+  window['flagPlot' + index + 'Data'] =
+    parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
+
+  let labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
+
+  $('#plot' + index + 'Form\\:plot' + index + 'Flags').val("");
+
+  if (null != window['flagPlot' + index]) {
+    window['flagPlot' + index].destroy();
+    window['flagPlot' + index] = null;
+  }
+
+  if (window['flagPlot' + index + 'Data'].length == 0) {
+    window['flagPlot' + index] = null;
+  } else {
+    let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
+    // Flag colors
+    flag_options.colors = ['#FF0000', '#FFA42B', '#817FFF', "#00000000"];
+    flag_options.xlabel = ' ';
+    flag_options.ylabel = ' ';
+    flag_options.y2label = ' ';
+    flag_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
+    flag_options.pointSize = FLAG_POINT_SIZE;
+    flag_options.highlightCircleSize = 0;
+    flag_options.selectMode = 'euclidian';
+    flag_options.xRangePad = 10;
+    flag_options.yRangePad = 10;
+    
+    flag_options.series = {
+	  [labels[4]]: {
+	    axis: 'y2'
+	  }
+	}
+    flag_options.axes = {
+      x: {
+        drawGrid: false
+      },
+      y: {
+        drawGrid: false
+      }
+    };
+    flag_options.axisLabelFontSize = 0;
+    flag_options.xAxisHeight = 20;
+    flag_options.interactionModel = null;
+
+    window['flagPlot' + index] = new Dygraph(
+      document.getElementById('plot' + index + 'FlagPlot'),
+      window['flagPlot' + index + 'Data'],
+      flag_options
+    );
   }
 }
 
@@ -1358,7 +1606,6 @@ function drawSelectionPlot(index) {
         }
       }
 
-
       let selection_options = Object.assign({}, BASE_PLOT_OPTIONS);
       selection_options.colors = ['#FFFF00'];
       selection_options.xlabel = ' ';
@@ -1380,7 +1627,29 @@ function drawSelectionPlot(index) {
       selection_options.axisLabelFontSize = 0;
       selection_options.xAxisHeight = 20;
       selection_options.interactionModel = null;
-      selection_options.animatedZooms = false;
+      
+      // Adjust for Y2 plots
+      if (hasY2(index)) {
+        selection_options.colors = ['#FFFF00', '#00000000'];
+        selection_options.y2label = ' ';
+        selection_options.labels = [' ', ' ', 'Y2'];
+        selection_options.series = {
+		  'Y2': {
+		    axis: 'y2'
+		  }
+		}
+        selection_options.axes = {
+          x: {
+            drawGrid: false
+          },
+          y: {
+            drawGrid: false
+          },
+          y2: {
+            drawGrid: false
+          }
+        };
+	  }
 
       window[plotVar] = new Dygraph(
         document.getElementById('plot' + index + 'SelectionPlot'),
@@ -1396,14 +1665,18 @@ function drawSelectionPlot(index) {
 function syncZoom(index) {
 
   let zoomOptions = {
-      dateWindow: window['dataPlot' + index].xAxisRange(),
-      valueRange: window['dataPlot' + index].yAxisRange(),
-      yRangePad: 0,
-      xRangePad: 0
-    };
+    dateWindow: window['dataPlot' + index].xAxisRange(),
+    valueRange: window['dataPlot' + index].yAxisRange(),
+    yRangePad: 0,
+    xRangePad: 0
+  };
 
   if (null != window['flagPlot' + index]) {
     window['flagPlot' + index].updateOptions(zoomOptions);
+  }
+
+  if (null != window['y2Plot' + index]) {
+    window['y2Plot' + index].updateOptions(zoomOptions);
   }
 
   if (null != window['selectionPlot' + index]) {
@@ -1414,10 +1687,8 @@ function syncZoom(index) {
 
 //Get the interaction model for a plot
 function getInteractionModel(index) {
-  var plot = window['plot' + index];
-  var selectMode = $('[id^=plot' + index + 'Form\\:plotSelectMode]:checked').val();
-
-  var interactionModel = null;
+  let selectMode = $('[id^=plot' + index + 'Form\\:plotSelectMode]:checked').val();
+  let interactionModel = null;
 
   if (selectMode == 'select') {
     interactionModel = {
@@ -1426,10 +1697,10 @@ function getInteractionModel(index) {
       mousemove: selectModeMouseMove
     }
   } else {
-  // Use the default interaction model, but without
-  // double-click. We use the clickCallback property defined
-  // in BASE_GRAPH_OPTIONS above
-  interactionModel = Dygraph.defaultInteractionModel;
+    // Use the default interaction model, but without
+    // double-click. We use the clickCallback property defined
+    // in BASE_GRAPH_OPTIONS above
+    interactionModel = Dygraph.defaultInteractionModel;
     interactionModel.dblclick = null;
   }
 
@@ -1466,7 +1737,13 @@ function getSelectionPlotData(index) {
   if (null != window[plotDataVar]) {
     for (let i = 0; i < window[plotDataVar].length; i++) {
       if ($.inArray(window[plotDataVar][i][1], selectedIds) != -1) {
-        selectionData.push([window[plotDataVar][i][0], window[plotDataVar][i][3]]);
+		  
+		if (hasY2(index)) {
+          selectionData.push([window[plotDataVar][i][0], window[plotDataVar][i][3], null]);
+		} else {
+		  selectionData.push([window[plotDataVar][i][0], window[plotDataVar][i][3]]);
+		}
+		  
         if (selectionData.length == selectedIds.length) {
           break;
         }
@@ -1888,8 +2165,9 @@ function getMapData(index) {
   extent.push(visibleBounds._northEast.lat);
 
   $('#plot' + index + 'Form\\:map' + index + 'Bounds').val(extent);
-  $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
-  $('#plot' + index + 'Form\\:map' + index + 'Data').val("");
+  $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
+  $('#plot' + index + 'Form\\:plot' + index + 'y2Data').val('');
+  $('#plot' + index + 'Form\\:map' + index + 'Data').val('');
   eval('map' + index + 'GetData()');
 }
 

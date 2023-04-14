@@ -12,6 +12,12 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 public class MainPlotValueSerializer implements JsonSerializer<PlotValue> {
 
+  private boolean plotHasY2;
+
+  protected MainPlotValueSerializer(boolean plotHasY2) {
+    this.plotHasY2 = plotHasY2;
+  }
+
   @Override
   public JsonElement serialize(PlotValue src, Type typeOfSrc,
     JsonSerializationContext context) {
@@ -42,14 +48,8 @@ public class MainPlotValueSerializer implements JsonSerializer<PlotValue> {
       json.add(src.getY());
     }
 
-    if (src.hasY2()) {
-      if (src.isGhost2()) {
-        json.add(src.getY2());
-        json.add(JsonNull.INSTANCE);
-      } else {
-        json.add(JsonNull.INSTANCE);
-        json.add(src.getY2());
-      }
+    if (plotHasY2) {
+      json.add(JsonNull.INSTANCE);
     }
 
     return json;
