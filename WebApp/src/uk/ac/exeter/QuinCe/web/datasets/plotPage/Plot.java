@@ -99,7 +99,7 @@ public class Plot {
    * @return The y axis.
    */
   public long getYaxis() {
-    return null == yAxis ? Long.MIN_VALUE : yAxis.getId();
+    return null == yAxis ? 0 : yAxis.getId();
   }
 
   public void setYaxis(long yAxis) throws Exception {
@@ -114,7 +114,7 @@ public class Plot {
    * @return The y axis.
    */
   public long getY2axis() {
-    return null == y2Axis ? Long.MIN_VALUE : y2Axis.getId();
+    return null == y2Axis ? 0 : y2Axis.getId();
   }
 
   public void setY2axis(long y2Axis) throws Exception {

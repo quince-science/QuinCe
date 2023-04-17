@@ -127,15 +127,15 @@
                   onchange="updateMapCheckboxes(#{variable.id})" />
                 <p:selectBooleanButton widgetVar="xAxis-#{variable.id}"
                   onLabel="X" offLabel="X" styleClass="axisButton"
-                  onchange="updateAxisButtons('x', #{variable.id})" />
+                  onchange="axisButtonClicked('x', #{variable.id})" />
                 <ui:fragment rendered="#{variable.shortName ne 'Time'}">
                   <p:selectBooleanButton widgetVar="yAxis-#{variable.id}"
                     onLabel="Y" offLabel="Y" styleClass="axisButton"
-                    onchange="updateAxisButtons('y', #{variable.id})" />
+                    onchange="axisButtonClicked('y', #{variable.id})" />
                   <ui:fragment rendered="#{sessionScope[beanName].dualYAxes()}">
                     <p:selectBooleanButton widgetVar="y2Axis-#{variable.id}"
                       onLabel="Y2" offLabel="Y2" styleClass="wideAxisButton"
-                      onchange="updateAxisButtons('y2', #{variable.id})" />
+                      onchange="axisButtonClicked('y2', #{variable.id})" />
                   </ui:fragment>
                 </ui:fragment>
                 <ui:fragment rendered="#{variable.shortName eq 'Time'}">
