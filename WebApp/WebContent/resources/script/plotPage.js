@@ -1,8 +1,4 @@
-/*
- *********************************************
- * Controls for the Please Wait notification
- *********************************************
- */
+// Controls for the Please Wait notification
 const TABLE_LOADING = 1;
 const PLOT1_LOADING = 1 << 1;
 const PLOT2_LOADING = 1 << 2;
@@ -47,12 +43,6 @@ function itemNotLoading(item) {
   }
 }
 
-/*
- *********************************************
- * Page variables
- *********************************************
- */
-
 // PAGE CONSTANTS
 const SELECT_ACTION = 1;
 const DESELECT_ACTION = -1;
@@ -73,9 +63,8 @@ const FLAG_FATAL = 44;
 const FLAG_NEEDS_FLAG = -10;
 const FLAG_IGNORED = -1002;
 
-/*
- * Variables for the plot/table layout
- */
+// VARIABLES FOR THE PLOT/TABLE LAYOUT
+
 
 // Timer used to prevent event spamming during page resizes
 var resizeEventTimer = null;
@@ -86,21 +75,13 @@ var tableSplitProportion = 0.5;
 // The plot split ratio
 var plotSplitProportion = 0.5;
 
-/*
- *********************************************
- * General data variables
- *********************************************
- */
+// GENERAL DATA VARIABLES
 
 // Column Headers for table and plots
 var columnHeaders = null;
 var extendedColumnHeaders = null;
 
-/*
- *********************************************
- * Table variables
- *********************************************
- */
+// TABLE VARIABLES
 
 //The callback function for the DataTables drawing call
 var dataTableDrawCallback = null;
@@ -110,11 +91,7 @@ var tableScrollRow = null;
 var scrollEventTimer = null;
 var scrollEventTimeLimit = 300;
 
-/*
- *********************************************
- * Plot variables
- *********************************************
- */
+// PLOT VARIABLES
 
 // PLOT CONSTANTS
 const DATA_POINT_SIZE = 2;
@@ -141,11 +118,17 @@ var y2Plot1 = null;
 var dataPlot1 = null;
 var flagPlot1 = null;
 var selectionPlot1 = null;
+var plot1XAxisVar = null;
+var plot1YAxisVar = null;
+var plot1Y2AxisVar = null;
 
 var y2Plot2 = null;
 var dataPlot2 = null;
 var flagPlot2 = null;
 var selectionPlot2 = null;
+var plot2XAxisVar = null;
+var plot2YAxisVar = null;
+var plot2Y2AxisVar = null;
 
 var BASE_PLOT_OPTIONS = {
   drawPoints: true,
@@ -178,9 +161,9 @@ var map2Extent = null;
 var redrawMap = true;
 
 var scaleOptions = {
-    outliers: 'n',
-    outlierSize: 5,
-    decimalPlaces: 3
+  outliers: 'n',
+  outlierSize: 5,
+  decimalPlaces: 3
 };
 
 // We have to have one copy of the tiles for each map
@@ -200,12 +183,7 @@ var mapTiles2 = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{
   ext: 'png'
 });
 
-
-/*
- *********************************************
- * Page layout functions
- *********************************************
- */
+// PAGE LAYOUT FUNCTIONS
 
 // Initialise the whole page
 function initPage() {
@@ -232,9 +210,9 @@ function errorCheck() {
   let errorFound = false;
 
   if ($('#plotPageForm\\:error').val()) {
-   errorFound = true;
-   $('#errorMessageString').html($('#plotPageForm\\:error').val());
-   PF('errorMessage').show();
+    errorFound = true;
+    $('#errorMessageString').html($('#plotPageForm\\:error').val());
+    PF('errorMessage').show();
   }
 
   return errorFound;
@@ -246,13 +224,13 @@ function layoutPage() {
     orientation: 'horizontal',
     onDragEnd: function(){
       scaleTableSplit()}
-  });
+    });
 
   $('#plots').split({
     orientation: 'vertical',
     onDragEnd: function(){
       resizePlots()}
-  });
+    });
 }
 
 // Handle table/plot split adjustment
@@ -322,15 +300,15 @@ function showQCMessage(qcFlag, qcMessage) {
     content += '<div class="qcInfoMessage ';
 
     switch (qcFlag) {
-    case FLAG_QUESTIONABLE: {
-      content += 'questionable';
-      break;
-    }
-    case FLAG_BAD:
-    case FLAG_LOOKUP: {
-      content += 'bad';
-      break;
-    }
+      case FLAG_QUESTIONABLE: {
+        content += 'questionable';
+        break;
+      }
+      case FLAG_BAD:
+      case FLAG_LOOKUP: {
+        content += 'bad';
+        break;
+      }
     }
 
     content += '">';
@@ -348,11 +326,7 @@ function hideQCMessage() {
   $('#qcControls').show();
 }
 
-/*
- *******************************************************
- * General data functions
- *******************************************************
- */
+// GENERAL DATA FUNCTIONS
 
 // Draws the initial page data once loading is complete.
 // Called by oncomplete of loadData() PF remoteCommand
@@ -525,13 +499,8 @@ function getYRange(index) {
   return result;
 }
 
-/*
- *******************************************************
- * Selection functions
- *
- * The selection details are maintained via form inputs
- *******************************************************
- */
+// SELECTION FUNCTIONS
+// The selection details are maintained via form inputs
 
 // Get the selected column ID
 function getSelectedColumn() {
@@ -553,7 +522,7 @@ function getSelectedRows() {
 function setSelectedRows(rows) {
   $('#selectionForm\\:selectedRows').val(
     JSON.stringify([...new Set(rows.sort())])
-  );
+    );
 
   if (typeof updateSelectedRows === 'function') {
     updateSelectedRows(); // PF remotecommand
@@ -650,12 +619,7 @@ function selectionUpdated() {
   }
 }
 
-
-/*
- *******************************************************
- * Table functions
- *******************************************************
- */
+// TABLE FUNCTIONS
 
 // Draw the table. The table HTML is generated
 // (as a header only) and replaces the current contents of the
@@ -755,7 +719,7 @@ function drawTable() {
 // Calculate the value of the scrollY entry for the data table
 function calcTableScrollY() {
   return $('#tableContent').height() - $('#footerToolbar').outerHeight();
- }
+}
 
 // Initialise the click event handlers for the table
 function setupTableClickHandlers() {
@@ -814,7 +778,7 @@ function clickCellAction(cell, shiftClick) {
         // table range, we have to process it on the back end
         let loadedRows = jsDataTable.rows().ids();
         if (getPrevClickedRow() < loadedRows[0] ||
-            getPrevClickedRow() > loadedRows[loadedRows.length - 1]) {
+          getPrevClickedRow() > loadedRows[loadedRows.length - 1]) {
 
           immediateUpdate = false;
           selectRange(); // PF RemoteCommand
@@ -893,32 +857,32 @@ function isFixedColumn(columnIndex) {
 function getColumnDefs() {
 
   return [
-    {"defaultContent": "&nbsp;",
-      "targets": '_all'
-    },
-    {"render":
-      function (data, type, row, meta) {
+  {"defaultContent": "&nbsp;",
+  "targets": '_all'
+},
+{"render":
+function (data, type, row, meta) {
 
-        let result = '';
+  let result = '';
 
-        if (null != data) {
-          let flagClass = null;
-          switch (data['qcFlag']) {
-          case FLAG_QUESTIONABLE: {
-            flagClass = 'questionable';
-              break;
-          }
-          case FLAG_BAD:
+  if (null != data) {
+    let flagClass = null;
+    switch (data['qcFlag']) {
+      case FLAG_QUESTIONABLE: {
+        flagClass = 'questionable';
+        break;
+      }
+      case FLAG_BAD:
       case FLAG_LOOKUP: {
-            flagClass = 'bad';
-              break;
-          }
-          case FLAG_FLUSHING: {
-            flagClass = 'ignore';
-          }
-        }
+        flagClass = 'bad';
+        break;
+      }
+      case FLAG_FLUSHING: {
+        flagClass = 'ignore';
+      }
+    }
 
-        let classes = ['plotPageCell'];
+    let classes = ['plotPageCell'];
 
         // Cell coloring
         let columnGroup = getColumnGroup(meta.col);
@@ -952,7 +916,7 @@ function getColumnDefs() {
 
         result += '>';
         if (null == data['value'] || data['value'] == '') {
-        result += '&nbsp;';
+          result += '&nbsp;';
         } else {
           result += (data['value']);
         }
@@ -960,17 +924,15 @@ function getColumnDefs() {
         return result;
       }
 
-      },
-      "targets": '_all'
-    }
+    },
+    "targets": '_all'
+  }
   ];
 }
 
-/*
- * Called when table data has been downloaded from the server.
- * The previously stored callback function is triggered with
- * the data from the server.
- */
+// Called when table data has been downloaded from the server.
+// The previously stored callback function is triggered with
+// the data from the server.
 function tableDataDownload() {
   errorCheck();
   dataTableDrawCallback( {
@@ -986,11 +948,8 @@ function scrollToColumn(column) {
   console.log('Scrolling to column ' + column);
 }
 
-/*
- * Scroll to the table row with the given ID
- */
+//Scroll to the table row with the given ID
 function scrollToTableRow(rowId) {
-
   var tableRow = -1;
 
   if (null != rowId) {
@@ -1000,12 +959,12 @@ function scrollToTableRow(rowId) {
   if (tableRow >= 0) {
     jsDataTable.scroller().scrollToRow(tableRow - 2);
 
-    // Because we scroll to the row - 2, we know that the
-    // row we want to highlight is the third row
-    tableScrollRow = rowId;
+   // Because we scroll to the row - 2, we know that the
+   // row we want to highlight is the third row
+   tableScrollRow = rowId;
 
-    // The highlight is done as part of the table draw callback
-  }
+   // The highlight is done as part of the table draw callback
+ }
 }
 
 function highlightRow(rowId) {
@@ -1075,22 +1034,20 @@ function canSelectCell(rowIndex, colIndex) {
   return result;
 }
 
-//******************************************************
-//
-// Plot functions
-//
-//******************************************************
-
+// PLOT FUNCTIONS
 function initPlot(index) {
   currentPlot = index;
   let mode = getPlotMode(index);
   let redraw = false;
 
+  window['plot' + index + 'XAxisVar'] = $('#plot' + index + 'Form\\:plot' + index + 'XAxis').val();
+  window['plot' + index + 'YAxisVar'] = $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val();
+  window['plot' + index + 'Y2AxisVar'] = $('#plot' + index + 'Form\\:plot' + index + 'Y2Axis').val();
+
   if (mode == PLOT_MODE_PLOT) {
-    setupPlotVariables(index);
     $('#map' + index + 'Container').hide();
     $('#plot' + index + 'Container').show();
-  if(PrimeFaces.widgets['plot' + index + 'SelectMode']) {
+    if(PrimeFaces.widgets['plot' + index + 'SelectMode']) {
       PF('plot' + index + 'SelectMode').enable();
     }
     $('#map' + index + 'Scale').hide();
@@ -1099,7 +1056,6 @@ function initPlot(index) {
       redraw = true;
     }
   } else {
-    setupMapVariables(index);
     $('#plot' + index + 'Container').hide();
     $('#map' + index + 'Container').show();
     if (PrimeFaces.widgets['plot' + index + 'SelectMode']) {
@@ -1114,7 +1070,7 @@ function initPlot(index) {
 
   if (redraw) {
     variablesPlotIndex = index;
-    applyVariables();
+    eval('loadPlot' + currentPlot + '()');
   }
 }
 
@@ -1195,27 +1151,27 @@ function drawY2Plot(index) {
       highlightCircleSize: 0
     }
   }
-  
+
   y2_options.axes = {
     x: {
-	  drawGrid: false
-	},
+      drawGrid: false
+    },
     y: {
-	  drawGrid: false,
+      drawGrid: false,
       axisLabelFormatter: function(y) {
         return '';
       }
     },
     y2: {
-	  drawGrid: false
-	}
+      drawGrid: false
+    }
   }
 
   window[y2Var] = new Dygraph(
     document.getElementById('plot' + index + 'Y2Plot'),
     window['y2Plot' + index + 'Data'],
     y2_options
-  );
+    );
 }
 
 function drawDataPlot1Y(index) {
@@ -1249,7 +1205,7 @@ function drawDataPlot1Y(index) {
   data_options.selectMode = 'euclidian';
   data_options.xRangePad = 10;
   data_options.yRangePad = 10;
-  
+
   data_options.interactionModel = getInteractionModel(index);
   data_options.clickCallback = function(e, x, points) {
     scrollToTableRow(getRowId(e, x, points));
@@ -1267,16 +1223,16 @@ function drawDataPlot1Y(index) {
       return new Date(value).toISOString();
     }
   };
-  
+
   data_options.axes = {
     x: {
-	  drawGrid: false
+      drawGrid: false
     },
     y: {
       drawGrid: true,
       gridLinePattern: [1, 3],
       gridLineColor: 'rbg(200, 200, 200)',
-	}
+    }
   }
 
   // Reference value for gas standards and similar
@@ -1302,7 +1258,7 @@ function drawDataPlot1Y(index) {
     document.getElementById('plot' + index + 'DataPlot'),
     window['dataPlot' + index + 'Data'],
     data_options
-  );
+    );
 
 }
 
@@ -1326,7 +1282,7 @@ function drawDataPlot2Y(index) {
 
   let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
   // Ghost data and series data colors
-  //data_options.colors = ['#C0C0C0', '#01752D', "#00000000"];
+  data_options.colors = ['#00000000', '#C0C0C0', '#01752D'];
   data_options.xlabel = labels[0];
   data_options.ylabel = labels[3];
   data_options.y2label = labels[4];
@@ -1341,7 +1297,7 @@ function drawDataPlot2Y(index) {
 
   data_options.series = {
     [labels[4]]: {
-	  axis: 'y2',
+      axis: 'y2',
       pointSize: 0,
       highlightCircleSize: 0
     }
@@ -1349,15 +1305,15 @@ function drawDataPlot2Y(index) {
 
   data_options.axes = {
     x: {
-	  drawGrid: false
-	},
+      drawGrid: false
+    },
     y: {
       drawGrid: true,
       gridLinePattern: [1, 3],
       gridLineColor: 'rbg(200, 200, 200)',
-	},
+    },
     y2: {
-	  drawGrid: false,
+      drawGrid: false,
       axisLabelFormatter: function(y) {
         return '';
       }
@@ -1375,11 +1331,11 @@ function drawDataPlot2Y(index) {
     resizePlot(index);
   };
   data_options.valueFormatter = function(value, opts, seriesName, dygraph, row, col) {
-  if (seriesName != 'Time') {
-    return value.toFixed(3);
-  } else {
-    return new Date(value).toISOString();
-  }
+    if (seriesName != 'Time') {
+      return value.toFixed(3);
+    } else {
+      return new Date(value).toISOString();
+    }
   };
 
   // Reference value for gas standards and similar
@@ -1405,39 +1361,34 @@ function drawDataPlot2Y(index) {
     document.getElementById('plot' + index + 'DataPlot'),
     window['dataPlot' + index + 'Data'],
     data_options
-  );
+    );
 
 }
 
-function drawPlot(index, drawOtherPlots, resetZoom) {
+function drawPlot(index, drawOtherPlots) {
   errorCheck();
 
-  let xAxisRange = null;
-  let yAxisRange = null;
-  let y2AxisRange = null;
-
   if (drawOtherPlots) {
+    if (window['y2Plot' + index]) {
+      window['y2Plot' + index].destroy();
+      window['y2Plot' + index] = null;
+    }
     if (hasY2(index)) {
-      if (null != window['y2Plot' + index]) {
-        window['y2Plot' + index].destroy();
-        window['y2Plot' + index] = null;
-      }
-
       drawY2Plot(index);
     }
-    
+
     drawSelectionPlot(index);
   }
-  
+
   if (hasY2(index)) {
     if (drawOtherPlots) {
       drawFlagPlot2Y(index);
-	}
+    }
     drawDataPlot2Y(index);
   } else {
     if (drawOtherPlots) {
       drawFlagPlot1Y(index);
-	}
+    }
     drawDataPlot1Y(index);
   }
 
@@ -1462,31 +1413,9 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   }
 }
 
-function drawPlotOld(index, drawOtherPlots, resetZoom) {
-  errorCheck();
-
-  if (!resetZoom && null != window[plotVar]) {
-    xAxisRange = window[plotVar].xAxisRange();
-    yAxisRange = window[plotVar].yAxisRange();
-  }
-
-  // Zoom
-  if (!resetZoom) {
-    data_options.dateWindow = xAxisRange;
-    data_options.valueRange = yAxisRange;
-    data_options.yRangePad = 0;
-    data_options.xRangePad = 0;
-  } else {
-    let nonDefaultYRange = getYRange(index);
-    if (null != nonDefaultYRange) {
-      data_options.valueRange = getYRange(index);
-    }
-  }
-}
-
 function drawFlagPlot1Y(index) {
   window['flagPlot' + index + 'Data'] =
-    parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
+  parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
 
   $('#plot' + index + 'Form\\:plot' + index + 'Flags').val("");
 
@@ -1525,13 +1454,13 @@ function drawFlagPlot1Y(index) {
       document.getElementById('plot' + index + 'FlagPlot'),
       window['flagPlot' + index + 'Data'],
       flag_options
-    );
+      );
   }
 }
 
 function drawFlagPlot2Y(index) {
   window['flagPlot' + index + 'Data'] =
-    parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
+  parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
 
   let labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
 
@@ -1557,12 +1486,12 @@ function drawFlagPlot2Y(index) {
     flag_options.selectMode = 'euclidian';
     flag_options.xRangePad = 10;
     flag_options.yRangePad = 10;
-    
+
     flag_options.series = {
-	  [labels[4]]: {
-	    axis: 'y2'
-	  }
-	}
+      [labels[4]]: {
+        axis: 'y2'
+      }
+    }
     flag_options.axes = {
       x: {
         drawGrid: false
@@ -1579,7 +1508,7 @@ function drawFlagPlot2Y(index) {
       document.getElementById('plot' + index + 'FlagPlot'),
       window['flagPlot' + index + 'Data'],
       flag_options
-    );
+      );
   }
 }
 
@@ -1627,17 +1556,17 @@ function drawSelectionPlot(index) {
       selection_options.axisLabelFontSize = 0;
       selection_options.xAxisHeight = 20;
       selection_options.interactionModel = null;
-      
+
       // Adjust for Y2 plots
       if (hasY2(index)) {
         selection_options.colors = ['#FFFF00', '#00000000'];
         selection_options.y2label = ' ';
         selection_options.labels = [' ', ' ', 'Y2'];
         selection_options.series = {
-		  'Y2': {
-		    axis: 'y2'
-		  }
-		}
+          'Y2': {
+            axis: 'y2'
+          }
+        }
         selection_options.axes = {
           x: {
             drawGrid: false
@@ -1649,13 +1578,13 @@ function drawSelectionPlot(index) {
             drawGrid: false
           }
         };
-	  }
+      }
 
       window[plotVar] = new Dygraph(
         document.getElementById('plot' + index + 'SelectionPlot'),
         selectionData,
         selection_options
-      );
+        );
 
       resizePlot(index);
     }
@@ -1707,21 +1636,17 @@ function getInteractionModel(index) {
   return interactionModel;
 }
 
-/*
- * Get the Row ID from a given graph click event
- *
- * For now, this just looks up the row using the X value. This will
- * work for dates, but will need to be more intelligent for non-date plots.
- */
+// Get the Row ID from a given graph click event
+// For now, this just looks up the row using the X value. This will
+// work for dates, but will need to be more intelligent for non-date plots.
 function getRowId(event, xValue, points) {
-  var containerId = $(event.target).
-  parents().
+  let containerId = $(event.target).parents().
   filter(function() {
     return this.id.match(/plot[1-2]Container/)
   })[0]['id'];
 
-  var plotIndex = containerId.substring(4, 5);
-  var pointId = points[0]['idx'];
+  let plotIndex = containerId.substring(4, 5);
+  let pointId = points[0]['idx'];
 
   return window['dataPlot' + plotIndex + 'Data'][pointId][1];
 }
@@ -1737,13 +1662,13 @@ function getSelectionPlotData(index) {
   if (null != window[plotDataVar]) {
     for (let i = 0; i < window[plotDataVar].length; i++) {
       if ($.inArray(window[plotDataVar][i][1], selectedIds) != -1) {
-		  
-		if (hasY2(index)) {
+
+        if (hasY2(index)) {
           selectionData.push([window[plotDataVar][i][0], window[plotDataVar][i][3], null]);
-		} else {
-		  selectionData.push([window[plotDataVar][i][0], window[plotDataVar][i][3]]);
-		}
-		  
+        } else {
+          selectionData.push([window[plotDataVar][i][0], window[plotDataVar][i][3]]);
+        }
+
         if (selectionData.length == selectedIds.length) {
           break;
         }
@@ -1792,7 +1717,7 @@ function showVariableDialog(plotIndex) {
   resizeVariablesDialog();
 }
 
-function setupPlotVariables(plotIndex) {
+function setupPlotVariables(index) {
   getExtendedColumnIds().forEach(id => {
     let xWidget = PrimeFaces.widgets['xAxis-' + id];
     if (xWidget) {
@@ -1801,8 +1726,13 @@ function setupPlotVariables(plotIndex) {
 
     let yWidget = PrimeFaces.widgets['yAxis-' + id];
     if (yWidget) {
-        yWidget.jq.show();
-      }
+      yWidget.jq.show();
+    }
+
+    let y2Widget = PrimeFaces.widgets['y2Axis-' + id];
+    if (y2Widget) {
+      y2Widget.jq.show();
+    }
 
     let mapWidget = PrimeFaces.widgets['mapVar-' + id];
     if (mapWidget) {
@@ -1810,36 +1740,45 @@ function setupPlotVariables(plotIndex) {
     }
   });
 
-  updateAxisButtons('x', $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val());
-  updateAxisButtons('y', $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val());
-  updateAxisButtons('y2', $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'Y2Axis').val());
+  updateAxisButtons(index, 'x');
+  updateAxisButtons(index, 'y');
+  updateAxisButtons(index, 'y2');
 }
 
 //Select the specified axis variable in the dialog
-function updateAxisButtons(axis, variable) {
-
-
+function updateAxisButtons(index, axis) {
   if (!updatingDialogButtons) {
     updatingDialogButtons = true;
+
+    let axisVariable = window['plot' + index + axis.toUpperCase() + 'AxisVar'];
 
     getExtendedColumnIds().forEach(id => {
       let widget = PrimeFaces.widgets[axis + 'Axis-' + id];
 
       // Not all variables will have an axis button
       if (widget) {
-        if (axis != 'y2') {
-          if (id == variable) {
-            widget.check();
-          } else {
-            widget.uncheck();
-          }
-        } else if (id != variable) {
+        if (id == axisVariable) {
+          widget.check();
+        } else {
           widget.uncheck();
         }
       }
     });
 
     updatingDialogButtons = false;
+  }
+}
+
+function axisButtonClicked(axis, variable) {
+  if (!updatingDialogButtons) {
+    if (axis == 'y2' && variable == window['plot' + currentPlot + axis.toUpperCase() + 'AxisVar']) {
+      // Y2 axis buttons are toggles
+      window['plot' + currentPlot + axis.toUpperCase() + 'AxisVar'] = 0;
+    } else {
+      window['plot' + currentPlot + axis.toUpperCase() + 'AxisVar'] = variable;
+    }
+
+    updateAxisButtons(currentPlot, axis);
   }
 }
 
@@ -1854,8 +1793,13 @@ function setupMapVariables(plotIndex) {
 
     let yWidget = PrimeFaces.widgets['yAxis-' + id];
     if (yWidget) {
-        yWidget.jq.hide();
-      }
+      yWidget.jq.hide();
+    }
+
+    let y2Widget = PrimeFaces.widgets['y2Axis-' + id];
+    if (y2Widget) {
+      y2Widget.jq.hide();
+    }
 
     let mapWidget = PrimeFaces.widgets['mapVar-' + id];
     if (mapWidget) {
@@ -1872,7 +1816,7 @@ function updateMapCheckboxes(variable) {
     updatingDialogButtons = true;
 
     getExtendedColumnIds().forEach(id => {
-        let widget = PrimeFaces.widgets['mapVar-' + id];
+      let widget = PrimeFaces.widgets['mapVar-' + id];
 
         // Not all variables will have an axis button
         if (widget) {
@@ -1965,23 +1909,26 @@ function getSelectedCheckbox(prefix) {
   return axis;
 }
 
-function setPlotAxes(plotIndex) {
+function setPlotAxes(index) {
   let xAxis = getSelectedXAxis();
+  window['plot' + index + 'XAxisVar'] = xAxis;
   if (xAxis != 0) {
-    $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val(xAxis);
+    $('#plot' + index + 'Form\\:plot' + index + 'XAxis').val(xAxis);
   }
 
   let yAxis = getSelectedYAxis();
+  window['plot' + index + 'YAxisVar'] = yAxis;
   if (yAxis != 0) {
-    $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val(yAxis);
+    $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val(yAxis);
   }
 
   let y2Axis = getSelectedY2Axis();
-  $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'Y2Axis').val(y2Axis);
+  window['plot' + index + 'Y2AxisVar'] = y2Axis;
+  $('#plot' + index + 'Form\\:plot' + index + 'Y2Axis').val(y2Axis);
 }
 
 function setPlotSelectMode(index) {
-  drawPlot(index, false, false);
+  drawPlot(index, false);
 }
 
 function selectModeMouseDown(event, g, context) {
@@ -2180,9 +2127,9 @@ function drawMap(index) {
 
   // Remove old layers
   if (null != window[dataLayerVar]) {
-  window[dataLayerVar].removeFrom(window[mapVar]);
-  window[flagLayerVar].removeFrom(window[mapVar]);
-  window[selectionLayerVar].removeFrom(window[mapVar]);
+    window[dataLayerVar].removeFrom(window[mapVar]);
+    window[flagLayerVar].removeFrom(window[mapVar]);
+    window[selectionLayerVar].removeFrom(window[mapVar]);
   }
 
   let mapData = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'Data').val());
@@ -2218,22 +2165,22 @@ function makeMapLayer(mapIndex, geojson, interactive) {
 
   L.geoJSON(geojson, {
     pointToLayer: (feature, latlng) => {
-    return new L.CircleMarker(latlng, {
-    interactive: interactive,
-    radius: getPointSize(feature),
-    stroke: false,
-    fill: true,
-    fillOpacity: 1,
+      return new L.CircleMarker(latlng, {
+        interactive: interactive,
+        radius: getPointSize(feature),
+        stroke: false,
+        fill: true,
+        fillOpacity: 1,
         fillColor: getPointColor(mapIndex, feature),
-    })
-    .bindTooltip(makeTooltip(feature, mapIndex))
-    .on('click', function(e) {
-      scrollToTableRow(feature.properties.rowID)
+      })
+      .bindTooltip(makeTooltip(feature, mapIndex))
+      .on('click', function(e) {
+        scrollToTableRow(feature.properties.rowID)
       });
-  },
-  onEachFeature: (feature, layer) => {
-    layer.addTo(result);
-  }
+    },
+    onEachFeature: (feature, layer) => {
+      layer.addTo(result);
+    }
   });
 
   return result;
@@ -2250,47 +2197,47 @@ function makeTooltip(point, mapIndex) {
 function getPointColor(mapIndex, point) {
 
   switch (point.properties.type) {
-  case VALUE_TYPE: {
-    return window['map' + mapIndex + 'ColorScale']
+    case VALUE_TYPE: {
+      return window['map' + mapIndex + 'ColorScale']
       .getColor(point.properties.value);
-  }
-  case FLAG_TYPE: {
-  switch (point.properties.flag) {
-  case FLAG_QUESTIONABLE: {
-    return '#FFA42B';
-  }
-  case FLAG_BAD:
-  case FLAG_LOOKUP: {
-    return '#FF0000';
-  }
-  case FLAG_NEEDS_FLAG: {
-    return '#D7D6FF';
-  }
-  case FLAG_FLUSHING: {
-    return '#C0C0C0';
-  }
-  default: {
-    console.log('INVALID FLAG VALUE ' + point.properties.flag);
-    return '#000000';
-  }
-  }
-  }
-  case SELECTION_TYPE: {
-    return '#FFFF00';
-  }
-  default: {
-  console.log('INVALID TYPE ' + point.properties.type);
-  return '#000000';
-  }
+    }
+    case FLAG_TYPE: {
+      switch (point.properties.flag) {
+        case FLAG_QUESTIONABLE: {
+          return '#FFA42B';
+        }
+        case FLAG_BAD:
+        case FLAG_LOOKUP: {
+          return '#FF0000';
+        }
+        case FLAG_NEEDS_FLAG: {
+          return '#D7D6FF';
+        }
+        case FLAG_FLUSHING: {
+          return '#C0C0C0';
+        }
+        default: {
+          console.log('INVALID FLAG VALUE ' + point.properties.flag);
+          return '#000000';
+        }
+      }
+    }
+    case SELECTION_TYPE: {
+      return '#FFFF00';
+    }
+    default: {
+      console.log('INVALID TYPE ' + point.properties.type);
+      return '#000000';
+    }
   }
 }
 
 function getPointSize(point) {
- if (point.properties.type == VALUE_TYPE) {
-   return DATA_POINT_HIGHLIGHT_SIZE;
- } else {
-   return SELECTION_POINT_SIZE;
- }
+  if (point.properties.type == VALUE_TYPE) {
+    return DATA_POINT_HIGHLIGHT_SIZE;
+  } else {
+    return SELECTION_POINT_SIZE;
+  }
 }
 
 function resetZoom(index) {
@@ -2325,6 +2272,6 @@ function getMapIndex(event) {
 function toggleScale(index) {
   $('#map' + index + 'Scale').toggle(100, function() {
     window['map' + index + 'ScaleVisible'] =
-      ($('#map' + index + 'Scale').css('display') === 'block');
+    ($('#map' + index + 'Scale').css('display') === 'block');
   });
 }
