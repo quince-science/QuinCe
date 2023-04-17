@@ -306,21 +306,6 @@ public class Variable implements Comparable<Variable> {
     return result;
   }
 
-  /**
-   * Get a list of variable IDs from a list of variables
-   *
-   * @param variables
-   *          The variables
-   * @return The variable IDs
-   */
-  public static List<Long> getIDsList(List<Variable> variables) {
-    List<Long> ids = new ArrayList<Long>(variables.size());
-    for (Variable variable : variables) {
-      ids.add(variable.getId());
-    }
-    return ids;
-  }
-
   public boolean hasAttributes() {
     return attributes.size() > 0;
   }
