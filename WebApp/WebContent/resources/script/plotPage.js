@@ -1069,8 +1069,13 @@ function initPlot(index) {
   }
 
   if (redraw) {
-    variablesPlotIndex = index;
-    eval('loadPlot' + currentPlot + '()');
+    if (mode == PLOT_MODE_PLOT) {
+      variablesPlotIndex = index;
+      eval('loadPlot' + currentPlot + '()');  // PF remoteCommand
+    } else if (mode == PLOT_MODE_MAP) {
+      eval('map' + currentPlot + 'GetData()'); // PF remoteCommand
+      initMap(currentPlot);
+    }
   }
 }
 
