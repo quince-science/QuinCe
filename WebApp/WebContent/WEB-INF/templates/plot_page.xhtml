@@ -50,8 +50,8 @@
 
     <p:remoteCommand name="loadData"
       action="#{sessionScope[beanName].loadData}"
-      process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis
-        :plot1Form:map1Column :plot2Form:plot2XAxis :plot2Form:plot2YAxis
+      process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis :plot1Form:plot1Y2Axis
+        :plot1Form:map1Column :plot2Form:plot2XAxis :plot2Form:plot2YAxis :plot2Form:plot2Y2Axis
         :plot2Form:map2Column columnHeadings extendedColumnHeadings rowIDs :statusForm"
       oncomplete="dataLoaded()" />
 
@@ -127,18 +127,22 @@
                   onchange="updateMapCheckboxes(#{variable.id})" />
                 <p:selectBooleanButton widgetVar="xAxis-#{variable.id}"
                   onLabel="X" offLabel="X" styleClass="axisButton"
-                  onchange="updateAxisButtons('x', #{variable.id})" />
-                <ui:remove>
-                  <!-- Date/Time cannot be used for the Y axis -->
-                </ui:remove>
-                <!-- Time cannot be on Y axis -->
+                  onchange="axisButtonClicked('x', #{variable.id})" />
                 <ui:fragment rendered="#{variable.shortName ne 'Time'}">
                   <p:selectBooleanButton widgetVar="yAxis-#{variable.id}"
                     onLabel="Y" offLabel="Y" styleClass="axisButton"
-                    onchange="updateAxisButtons('y', #{variable.id})" />
+                    onchange="axisButtonClicked('y', #{variable.id})" />
+                  <ui:fragment rendered="#{sessionScope[beanName].dualYAxes()}">
+                    <p:selectBooleanButton widgetVar="y2Axis-#{variable.id}"
+                      onLabel="Y2" offLabel="Y2" styleClass="wideAxisButton"
+                      onchange="axisButtonClicked('y2', #{variable.id})" />
+                  </ui:fragment>
                 </ui:fragment>
                 <ui:fragment rendered="#{variable.shortName eq 'Time'}">
                   <div class="noAxisButton">&nbsp;</div>
+                  <ui:fragment rendered="#{sessionScope[beanName].dualYAxes()}">
+                    <div class="wideNoAxisButton">&nbsp;</div>
+                  </ui:fragment>
                 </ui:fragment>
               </div>
             </div>
@@ -209,10 +213,16 @@
             value="#{sessionScope[beanName].data.plot1.flagData}"/>
           <h:inputHidden id="plot1FlagLabels"
             value="#{sessionScope[beanName].data.plot1.flagLabels}"/>
+          <h:inputHidden id="plot1Y2Data"
+            value="#{sessionScope[beanName].data.plot1.y2Data}"/>
+          <h:inputHidden id="plot1Y2Labels"
+            value="#{sessionScope[beanName].data.plot1.y2Labels}"/>
           <h:inputHidden id="plot1XAxis"
             value="#{sessionScope[beanName].data.plot1.xaxis}"/>
           <h:inputHidden id="plot1YAxis"
             value="#{sessionScope[beanName].data.plot1.yaxis}"/>
+          <h:inputHidden id="plot1Y2Axis"
+            value="#{sessionScope[beanName].data.plot1.y2axis}"/>
           <h:inputHidden id="map1Column"
             value="#{sessionScope[beanName].data.map1.column}"/>
           <h:inputHidden id="map1Data"
@@ -228,8 +238,9 @@
 
           <p:remoteCommand name="loadPlot1"
             action="#{sessionScope[beanName].data.plot1.init}"
-            process="@this plot1XAxis plot1YAxis plot1HideFlags"
-            update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels plot1FlagLabels"
+            process="@this plot1XAxis plot1YAxis plot1Y2Axis plot1HideFlags"
+            update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels
+              plot1FlagLabels plot1Y2Data plot1Y2Labels"
             oncomplete="drawPlot(1, true, true)" />
 
           <p:remoteCommand name="map1GetData"
@@ -238,6 +249,7 @@
             update="map1DataBounds map1Data map1ScaleLimits" oncomplete="drawMap(1)" />
 
           <div id="plot1Container">
+            <div id="plot1Y2Plot" class="plot y2Plot"></div>
             <div id="plot1DataPlot" class="plot dataPlot"></div>
             <div id="plot1SelectionPlot" class="plot selectionPlot"></div>
             <div id="plot1FlagPlot" class="plot flagPlot"></div>
@@ -290,10 +302,16 @@
             value="#{sessionScope[beanName].data.plot2.flagData}"/>
           <h:inputHidden id="plot2FlagLabels"
             value="#{sessionScope[beanName].data.plot2.flagLabels}"/>
+          <h:inputHidden id="plot2Y2Data"
+            value="#{sessionScope[beanName].data.plot2.y2Data}"/>
+          <h:inputHidden id="plot2Y2Labels"
+            value="#{sessionScope[beanName].data.plot2.y2Labels}"/>
           <h:inputHidden id="plot2XAxis"
             value="#{sessionScope[beanName].data.plot2.xaxis}"/>
           <h:inputHidden id="plot2YAxis"
             value="#{sessionScope[beanName].data.plot2.yaxis}"/>
+          <h:inputHidden id="plot2Y2Axis"
+            value="#{sessionScope[beanName].data.plot2.y2axis}"/>
           <h:inputHidden id="map2Column"
             value="#{sessionScope[beanName].data.map2.column}"/>
           <h:inputHidden id="map2Data"
@@ -309,8 +327,9 @@
 
           <p:remoteCommand name="loadPlot2"
             action="#{sessionScope[beanName].data.plot2.init}"
-            process="@this plot2XAxis plot2YAxis plot2HideFlags"
-            update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels plot2FlagLabels"
+            process="@this plot2XAxis plot2YAxis plot2Y2Axis plot2HideFlags"
+            update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels
+              plot2FlagLabels plot2Y2Data plot2Y2Labels"
             oncomplete="drawPlot(2, true, true)" />
 
           <p:remoteCommand name="map2GetData"
@@ -319,6 +338,7 @@
             update="map2DataBounds map2Data map2ScaleLimits" oncomplete="drawMap(2)" />
 
           <div id="plot2Container">
+            <div id="plot2Y2Plot" class="plot y2Plot"></div>
             <div id="plot2DataPlot" class="plot dataPlot"></div>
             <div id="plot2SelectionPlot" class="plot selectionPlot"></div>
             <div id="plot2FlagPlot" class="plot flagPlot"></div>

@@ -17,15 +17,7 @@ import uk.ac.exeter.QuinCe.utils.MathUtils;
 
 public class Plot {
 
-  /**
-   * Gson generator for the main plot data
-   */
-  private static Gson MAIN_DATA_GSON;
-
-  /**
-   * Gson generator for the flag data
-   */
-  private static Gson FLAGS_GSON;
+  private static Gson Y2_GSON;
 
   /**
    * The source data for the plot
@@ -50,6 +42,11 @@ public class Plot {
   private PlotPageColumnHeading yAxis = null;
 
   /**
+   * The column ID of the second Y axis
+   */
+  private PlotPageColumnHeading y2Axis = null;
+
+  /**
    * The plot values.
    */
   private TreeSet<PlotValue> plotValues = null;
@@ -57,12 +54,8 @@ public class Plot {
   private boolean hideFlags = false;
 
   static {
-    MAIN_DATA_GSON = new GsonBuilder()
-      .registerTypeAdapter(PlotValue.class, new MainPlotValueSerializer())
-      .create();
-
-    FLAGS_GSON = new GsonBuilder()
-      .registerTypeAdapter(PlotValue.class, new FlagPlotValueSerializer())
+    Y2_GSON = new GsonBuilder()
+      .registerTypeAdapter(PlotValue.class, new Y2AxisPlotValueSerializer())
       .create();
   }
 
@@ -101,17 +94,34 @@ public class Plot {
   }
 
   /**
-   * Get the y Axis label.
+   * Get the y Axis.
    *
-   * @return The y axis label.
+   * @return The y axis.
    */
   public long getYaxis() {
-    return null == yAxis ? Long.MIN_VALUE : yAxis.getId();
+    return null == yAxis ? 0 : yAxis.getId();
   }
 
   public void setYaxis(long yAxis) throws Exception {
     if (yAxis != 0) {
       this.yAxis = data.getColumnHeading(yAxis);
+    }
+  }
+
+  /**
+   * Get the y Axis.
+   *
+   * @return The y axis.
+   */
+  public long getY2axis() {
+    return null == y2Axis ? 0 : y2Axis.getId();
+  }
+
+  public void setY2axis(long y2Axis) throws Exception {
+    if (y2Axis != 0) {
+      this.y2Axis = data.getColumnHeading(y2Axis);
+    } else {
+      this.y2Axis = null;
     }
   }
 
@@ -125,9 +135,25 @@ public class Plot {
     String result = "[]";
 
     if (null != plotValues) {
-      result = MAIN_DATA_GSON.toJson(plotValues.stream()
+      Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
+        new MainPlotValueSerializer(null != y2Axis)).create();
+
+      result = gson.toJson(plotValues.stream()
         .filter(f -> !f.xNull() && !hideFlags ? true
           : (f.getFlag().isGood() || f.getFlag().equals(Flag.NEEDED)))
+        .collect(Collectors.toList()));
+    }
+
+    return result;
+  }
+
+  public String getY2Data() {
+    String result = "[]";
+
+    if (null != y2Axis) {
+      result = Y2_GSON.toJson(plotValues.stream()
+        .filter(f -> !f.xNull() && !hideFlags ? true
+          : (f.getFlag2().isGood() || f.getFlag2().equals(Flag.NEEDED)))
         .collect(Collectors.toList()));
     }
 
@@ -150,7 +176,10 @@ public class Plot {
           x -> !hideFlags ? x.inFlagPlot() : x.getFlag().equals(Flag.NEEDED))
         .collect(Collectors.toList());
 
-      result = FLAGS_GSON.toJson(flagValues);
+      Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
+        new FlagPlotValueSerializer(null != y2Axis)).create();
+
+      result = gson.toJson(flagValues);
     }
 
     return result;
@@ -164,6 +193,10 @@ public class Plot {
     TreeMap<LocalDateTime, PlotPageTableValue> yValues = data
       .getColumnValues(yAxis);
 
+    TreeMap<LocalDateTime, PlotPageTableValue> y2Values = null == y2Axis
+      ? new TreeMap<LocalDateTime, PlotPageTableValue>()
+      : data.getColumnValues(y2Axis);
+
     plotValues = new TreeSet<PlotValue>();
 
     for (LocalDateTime time : xValues.keySet()) {
@@ -171,25 +204,41 @@ public class Plot {
 
         PlotPageTableValue x = xValues.get(time);
         PlotPageTableValue y = yValues.get(time);
+        PlotPageTableValue y2 = y2Values.get(time);
 
         PlotValue plotValue = null;
 
         if (null != y && null != y.getValue()) {
 
-          Flag valueFlag = y.getQcFlag();
-          if (useNeededFlags && y.getFlagNeeded()) {
-            valueFlag = Flag.NEEDED;
+          Double yValue = null;
+          boolean yGhost = false;
+          Flag yFlag = null;
+          if (null != y) {
+            yValue = MathUtils.nullableParseDouble(y.getValue());
+            yGhost = y.getQcFlag().equals(Flag.FLUSHING);
+            yFlag = y.getQcFlag();
+            if (useNeededFlags && y.getFlagNeeded()) {
+              yFlag = Flag.NEEDED;
+            }
+          }
+
+          Double y2Value = null;
+          boolean y2Ghost = false;
+          Flag y2Flag = null;
+          if (null != y2) {
+            y2Value = MathUtils.nullableParseDouble(y2.getValue());
+            y2Ghost = y2.getQcFlag().equals(Flag.FLUSHING);
+            y2Flag = y2.getQcFlag();
+            // We never show NEEDED flags for Y2 axis
           }
 
           if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
-              MathUtils.nullableParseDouble(y.getValue()),
-              y.getQcFlag().equals(Flag.FLUSHING), valueFlag);
+              yValue, yGhost, yFlag, y2Value, y2Ghost, y2Flag);
           } else if (null != x && null != x.getValue() && null != y) {
             plotValue = new PlotValue(DateTimeUtils.dateToLong(time),
-              MathUtils.nullableParseDouble(x.getValue()),
-              MathUtils.nullableParseDouble(y.getValue()),
-              y.getQcFlag().equals(Flag.FLUSHING), valueFlag);
+              MathUtils.nullableParseDouble(x.getValue()), yValue, yGhost,
+              yFlag, y2Value, y2Ghost, y2Flag);
           }
         }
 
@@ -222,8 +271,11 @@ public class Plot {
     labels.add("GHOST");
     labels.add(yAxis.getShortName());
 
-    return new Gson().toJson(labels);
+    if (null != y2Axis) {
+      labels.add(""); // Y2 axis label
+    }
 
+    return new Gson().toJson(labels);
   }
 
   public String getFlagLabels() {
@@ -233,7 +285,30 @@ public class Plot {
     labels.add("QUESTIONABLE");
     labels.add("NEEDED");
 
+    if (null != y2Axis) {
+      labels.add(""); // Y2 value column
+    }
+
     return new Gson().toJson(labels);
+  }
+
+  public String getY2Labels() {
+    String result = null;
+
+    if (null != y2Axis) {
+      List<String> labels = new ArrayList<String>(5);
+      labels.add(xAxis.getShortName());
+      labels.add("ID");
+      labels.add(""); // Y1 axis
+      labels.add("BAD");
+      labels.add("QUESTIONABLE");
+      labels.add("GHOST");
+      labels.add(y2Axis.getShortName());
+
+      result = new Gson().toJson(labels);
+    }
+
+    return result;
   }
 
   protected void setHideFlags(boolean hideFlags) {

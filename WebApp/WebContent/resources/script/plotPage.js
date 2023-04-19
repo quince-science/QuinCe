@@ -1,8 +1,4 @@
-/*
- *********************************************
- * Controls for the Please Wait notification
- *********************************************
- */
+// Controls for the Please Wait notification
 const TABLE_LOADING = 1;
 const PLOT1_LOADING = 1 << 1;
 const PLOT2_LOADING = 1 << 2;
@@ -47,12 +43,6 @@ function itemNotLoading(item) {
   }
 }
 
-/*
- *********************************************
- * Page variables
- *********************************************
- */
-
 // PAGE CONSTANTS
 const SELECT_ACTION = 1;
 const DESELECT_ACTION = -1;
@@ -73,9 +63,8 @@ const FLAG_FATAL = 44;
 const FLAG_NEEDS_FLAG = -10;
 const FLAG_IGNORED = -1002;
 
-/*
- * Variables for the plot/table layout
- */
+// VARIABLES FOR THE PLOT/TABLE LAYOUT
+
 
 // Timer used to prevent event spamming during page resizes
 var resizeEventTimer = null;
@@ -86,21 +75,13 @@ var tableSplitProportion = 0.5;
 // The plot split ratio
 var plotSplitProportion = 0.5;
 
-/*
- *********************************************
- * General data variables
- *********************************************
- */
+// GENERAL DATA VARIABLES
 
 // Column Headers for table and plots
 var columnHeaders = null;
 var extendedColumnHeaders = null;
 
-/*
- *********************************************
- * Table variables
- *********************************************
- */
+// TABLE VARIABLES
 
 //The callback function for the DataTables drawing call
 var dataTableDrawCallback = null;
@@ -110,11 +91,7 @@ var tableScrollRow = null;
 var scrollEventTimer = null;
 var scrollEventTimeLimit = 300;
 
-/*
- *********************************************
- * Plot variables
- *********************************************
- */
+// PLOT VARIABLES
 
 // PLOT CONSTANTS
 const DATA_POINT_SIZE = 2;
@@ -137,24 +114,29 @@ var currentPlot = 1;
 // Plot data is passed through form inputs.
 // On the page we move them to variables so the plot data isn't
 // constantly sent back to the server with ajax requests.
+var y2Plot1 = null;
 var dataPlot1 = null;
-var dataPlot1Data = null;
 var flagPlot1 = null;
-var flagPlot1Data = null;
 var selectionPlot1 = null;
+var plot1XAxisVar = null;
+var plot1YAxisVar = null;
+var plot1Y2AxisVar = null;
 
+var y2Plot2 = null;
 var dataPlot2 = null;
-var dataPlot2Data = null;
 var flagPlot2 = null;
-var flagPlot2Data = null;
 var selectionPlot2 = null;
+var plot2XAxisVar = null;
+var plot2YAxisVar = null;
+var plot2Y2AxisVar = null;
 
 var BASE_PLOT_OPTIONS = {
   drawPoints: true,
   strokeWidth: 0.0,
   labelsUTC: true,
   labelsSeparateLine: true,
-  digitsAfterDecimal: 2
+  digitsAfterDecimal: 2,
+  animatedZooms: false
 }
 
 var updatingDialogButtons = false;
@@ -179,9 +161,9 @@ var map2Extent = null;
 var redrawMap = true;
 
 var scaleOptions = {
-    outliers: 'n',
-    outlierSize: 5,
-    decimalPlaces: 3
+  outliers: 'n',
+  outlierSize: 5,
+  decimalPlaces: 3
 };
 
 // We have to have one copy of the tiles for each map
@@ -201,12 +183,7 @@ var mapTiles2 = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{
   ext: 'png'
 });
 
-
-/*
- *********************************************
- * Page layout functions
- *********************************************
- */
+// PAGE LAYOUT FUNCTIONS
 
 // Initialise the whole page
 function initPage() {
@@ -233,9 +210,9 @@ function errorCheck() {
   let errorFound = false;
 
   if ($('#plotPageForm\\:error').val()) {
-   errorFound = true;
-   $('#errorMessageString').html($('#plotPageForm\\:error').val());
-   PF('errorMessage').show();
+    errorFound = true;
+    $('#errorMessageString').html($('#plotPageForm\\:error').val());
+    PF('errorMessage').show();
   }
 
   return errorFound;
@@ -247,13 +224,13 @@ function layoutPage() {
     orientation: 'horizontal',
     onDragEnd: function(){
       scaleTableSplit()}
-  });
+    });
 
   $('#plots').split({
     orientation: 'vertical',
     onDragEnd: function(){
       resizePlots()}
-  });
+    });
 }
 
 // Handle table/plot split adjustment
@@ -280,6 +257,10 @@ function resizePlot(index) {
     $('#plot' + index + 'Container').width('100%');
     $('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
     window['dataPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+
+    if (null != window['y2Plot' + index]) {
+      window['y2Plot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+    }
 
     if (null != window['flagPlot' + index]) {
       window['flagPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
@@ -319,15 +300,15 @@ function showQCMessage(qcFlag, qcMessage) {
     content += '<div class="qcInfoMessage ';
 
     switch (qcFlag) {
-    case FLAG_QUESTIONABLE: {
-      content += 'questionable';
-      break;
-    }
-    case FLAG_BAD:
-    case FLAG_LOOKUP: {
-      content += 'bad';
-      break;
-    }
+      case FLAG_QUESTIONABLE: {
+        content += 'questionable';
+        break;
+      }
+      case FLAG_BAD:
+      case FLAG_LOOKUP: {
+        content += 'bad';
+        break;
+      }
     }
 
     content += '">';
@@ -345,11 +326,7 @@ function hideQCMessage() {
   $('#qcControls').show();
 }
 
-/*
- *******************************************************
- * General data functions
- *******************************************************
- */
+// GENERAL DATA FUNCTIONS
 
 // Draws the initial page data once loading is complete.
 // Called by oncomplete of loadData() PF remoteCommand
@@ -522,13 +499,8 @@ function getYRange(index) {
   return result;
 }
 
-/*
- *******************************************************
- * Selection functions
- *
- * The selection details are maintained via form inputs
- *******************************************************
- */
+// SELECTION FUNCTIONS
+// The selection details are maintained via form inputs
 
 // Get the selected column ID
 function getSelectedColumn() {
@@ -550,7 +522,7 @@ function getSelectedRows() {
 function setSelectedRows(rows) {
   $('#selectionForm\\:selectedRows').val(
     JSON.stringify([...new Set(rows.sort())])
-  );
+    );
 
   if (typeof updateSelectedRows === 'function') {
     updateSelectedRows(); // PF remotecommand
@@ -647,12 +619,7 @@ function selectionUpdated() {
   }
 }
 
-
-/*
- *******************************************************
- * Table functions
- *******************************************************
- */
+// TABLE FUNCTIONS
 
 // Draw the table. The table HTML is generated
 // (as a header only) and replaces the current contents of the
@@ -709,7 +676,7 @@ function drawTable() {
       $('#tableForm\\:tableDataLength').val(data.length);
 
       // Clear the existing table data to stop it being sent back to the server
-      $('#tableForm\\:tableJsonData').val("");
+      $('#tableForm\\:tableJsonData').val('');
 
       // Submit the query to the server
       tableGetData(); // PF remoteCommand
@@ -752,7 +719,7 @@ function drawTable() {
 // Calculate the value of the scrollY entry for the data table
 function calcTableScrollY() {
   return $('#tableContent').height() - $('#footerToolbar').outerHeight();
- }
+}
 
 // Initialise the click event handlers for the table
 function setupTableClickHandlers() {
@@ -811,7 +778,7 @@ function clickCellAction(cell, shiftClick) {
         // table range, we have to process it on the back end
         let loadedRows = jsDataTable.rows().ids();
         if (getPrevClickedRow() < loadedRows[0] ||
-            getPrevClickedRow() > loadedRows[loadedRows.length - 1]) {
+          getPrevClickedRow() > loadedRows[loadedRows.length - 1]) {
 
           immediateUpdate = false;
           selectRange(); // PF RemoteCommand
@@ -890,32 +857,32 @@ function isFixedColumn(columnIndex) {
 function getColumnDefs() {
 
   return [
-    {"defaultContent": "&nbsp;",
-      "targets": '_all'
-    },
-    {"render":
-      function (data, type, row, meta) {
+  {"defaultContent": "&nbsp;",
+  "targets": '_all'
+},
+{"render":
+function (data, type, row, meta) {
 
-        let result = '';
+  let result = '';
 
-        if (null != data) {
-          let flagClass = null;
-          switch (data['qcFlag']) {
-          case FLAG_QUESTIONABLE: {
-            flagClass = 'questionable';
-              break;
-          }
-          case FLAG_BAD:
+  if (null != data) {
+    let flagClass = null;
+    switch (data['qcFlag']) {
+      case FLAG_QUESTIONABLE: {
+        flagClass = 'questionable';
+        break;
+      }
+      case FLAG_BAD:
       case FLAG_LOOKUP: {
-            flagClass = 'bad';
-              break;
-          }
-          case FLAG_FLUSHING: {
-            flagClass = 'ignore';
-          }
-        }
+        flagClass = 'bad';
+        break;
+      }
+      case FLAG_FLUSHING: {
+        flagClass = 'ignore';
+      }
+    }
 
-        let classes = ['plotPageCell'];
+    let classes = ['plotPageCell'];
 
         // Cell coloring
         let columnGroup = getColumnGroup(meta.col);
@@ -949,7 +916,7 @@ function getColumnDefs() {
 
         result += '>';
         if (null == data['value'] || data['value'] == '') {
-        result += '&nbsp;';
+          result += '&nbsp;';
         } else {
           result += (data['value']);
         }
@@ -957,17 +924,15 @@ function getColumnDefs() {
         return result;
       }
 
-      },
-      "targets": '_all'
-    }
+    },
+    "targets": '_all'
+  }
   ];
 }
 
-/*
- * Called when table data has been downloaded from the server.
- * The previously stored callback function is triggered with
- * the data from the server.
- */
+// Called when table data has been downloaded from the server.
+// The previously stored callback function is triggered with
+// the data from the server.
 function tableDataDownload() {
   errorCheck();
   dataTableDrawCallback( {
@@ -983,11 +948,8 @@ function scrollToColumn(column) {
   console.log('Scrolling to column ' + column);
 }
 
-/*
- * Scroll to the table row with the given ID
- */
+//Scroll to the table row with the given ID
 function scrollToTableRow(rowId) {
-
   var tableRow = -1;
 
   if (null != rowId) {
@@ -997,12 +959,12 @@ function scrollToTableRow(rowId) {
   if (tableRow >= 0) {
     jsDataTable.scroller().scrollToRow(tableRow - 2);
 
-    // Because we scroll to the row - 2, we know that the
-    // row we want to highlight is the third row
-    tableScrollRow = rowId;
+   // Because we scroll to the row - 2, we know that the
+   // row we want to highlight is the third row
+   tableScrollRow = rowId;
 
-    // The highlight is done as part of the table draw callback
-  }
+   // The highlight is done as part of the table draw callback
+ }
 }
 
 function highlightRow(rowId) {
@@ -1072,22 +1034,20 @@ function canSelectCell(rowIndex, colIndex) {
   return result;
 }
 
-//******************************************************
-//
-// Plot functions
-//
-//******************************************************
-
+// PLOT FUNCTIONS
 function initPlot(index) {
   currentPlot = index;
   let mode = getPlotMode(index);
   let redraw = false;
 
+  window['plot' + index + 'XAxisVar'] = $('#plot' + index + 'Form\\:plot' + index + 'XAxis').val();
+  window['plot' + index + 'YAxisVar'] = $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val();
+  window['plot' + index + 'Y2AxisVar'] = $('#plot' + index + 'Form\\:plot' + index + 'Y2Axis').val();
+
   if (mode == PLOT_MODE_PLOT) {
-    setupPlotVariables(index);
     $('#map' + index + 'Container').hide();
     $('#plot' + index + 'Container').show();
-  if(PrimeFaces.widgets['plot' + index + 'SelectMode']) {
+    if(PrimeFaces.widgets['plot' + index + 'SelectMode']) {
       PF('plot' + index + 'SelectMode').enable();
     }
     $('#map' + index + 'Scale').hide();
@@ -1096,7 +1056,6 @@ function initPlot(index) {
       redraw = true;
     }
   } else {
-    setupMapVariables(index);
     $('#plot' + index + 'Container').hide();
     $('#map' + index + 'Container').show();
     if (PrimeFaces.widgets['plot' + index + 'SelectMode']) {
@@ -1110,8 +1069,13 @@ function initPlot(index) {
   }
 
   if (redraw) {
-    variablesPlotIndex = index;
-    applyVariables();
+    if (mode == PLOT_MODE_PLOT) {
+      variablesPlotIndex = index;
+      eval('loadPlot' + currentPlot + '()');  // PF remoteCommand
+    } else if (mode == PLOT_MODE_MAP) {
+      eval('map' + currentPlot + 'GetData()'); // PF remoteCommand
+      initMap(currentPlot);
+    }
   }
 }
 
@@ -1119,31 +1083,118 @@ function getPlotLabels(index) {
   return JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
 }
 
-function drawPlot(index, drawOtherPlots, resetZoom) {
-  errorCheck();
+function getPlotY2Labels(index) {
+  return JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'Y2Labels').val());
+}
 
+function hasY2(index) {
+  return $('#plot' + index + 'Form\\:plot' + index + 'Y2Labels').val().length > 0;
+}
+
+function drawY2Plot(index) {
+  let y2Var = 'y2Plot' + index;
+
+  let newY2Data = $('#plot' + index + 'Form\\:plot' + index + 'Y2Data').val();
+  if (newY2Data) {
+    window['y2Plot' + index + 'Data'] = parseJsonWithDates(newY2Data);
+
+    // Clear input so it doesn't get sent back to the server
+    $('#plot' + index + 'Form\\:plot' + index + 'y2Data').val('');
+  }
+
+  let labels = getPlotY2Labels(index);
+
+  if (null != window[y2Var]) {
+    window[y2Var].destroy();
+    window[y2Var] = null;
+  }
+
+  let y2_options = Object.assign({}, BASE_PLOT_OPTIONS);
+  y2_options.labels = labels;
+  y2_options.xlabel = labels[0];
+  y2_options.ylabel = labels[2];
+  y2_options.y2label = labels[6];
+  y2_options.legend = 'never';
+  y2_options.visibility = [false, true, true, true, true, true];
+  y2_options.colors = ['#00000000', '#00000000', '#E6B6A6', '#EFDCBF', '#C0C0C0', '#A9DBF9'];
+  y2_options.xRangePad = 10;
+  y2_options.yRangePad = 10;
+  y2_options.interactionModel = null;
+
+  y2_options.series = {
+    [labels[0]]: {
+      pointSize: 0,
+      highlightCircleSize: 0
+    },
+    [labels[1]]: {
+      pointSize: 0,
+      highlightCircleSize: 0
+    },
+    [labels[2]]: {
+      axis: 'y2',
+      pointSize: 0,
+      highlightCircleSize: 0
+    },
+    [labels[3]]: {
+      axis: 'y2',
+      pointSize: FLAG_POINT_SIZE,
+      highlightCircleSize: 0
+    },
+    [labels[4]]: {
+      axis: 'y2',
+      pointSize: FLAG_POINT_SIZE,
+      highlightCircleSize: 0
+    },
+    [labels[5]]: {
+      axis: 'y2',
+      pointSize: DATA_POINT_SIZE,
+      highlightCircleSize: 0
+    },
+    [labels[6]]: {
+      axis: 'y2',
+      pointSize: DATA_POINT_SIZE,
+      highlightCircleSize: 0
+    }
+  }
+
+  y2_options.axes = {
+    x: {
+      drawGrid: false
+    },
+    y: {
+      drawGrid: false,
+      axisLabelFormatter: function(y) {
+        return '';
+      }
+    },
+    y2: {
+      drawGrid: false
+    }
+  }
+
+  window[y2Var] = new Dygraph(
+    document.getElementById('plot' + index + 'Y2Plot'),
+    window['y2Plot' + index + 'Data'],
+    y2_options
+    );
+}
+
+function drawDataPlot1Y(index) {
   let plotVar = 'dataPlot' + index;
 
   // If there's new data, extract it
   let newPlotData = $('#plot' + index + 'Form\\:plot' + index + 'Data').val();
   if (newPlotData) {
     window['dataPlot' + index + 'Data'] = parseJsonWithDates(newPlotData);
-    $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
+    $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
   }
 
   let labels = getPlotLabels(index);
 
-  let xAxisRange = null;
-  let yAxisRange = null;
-
-  if (!resetZoom && null != window[plotVar]) {
-    xAxisRange = window[plotVar].xAxisRange();
-    yAxisRange = window[plotVar].yAxisRange();
-  }
-
   // Destroy the old plot
   if (null != window[plotVar]) {
     window[plotVar].destroy();
+    window[plotVar] = null;
   }
 
   let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
@@ -1157,20 +1208,9 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   data_options.pointSize = DATA_POINT_SIZE;
   data_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
   data_options.selectMode = 'euclidian';
-  data_options.animatedZooms = false;
   data_options.xRangePad = 10;
   data_options.yRangePad = 10;
 
-  data_options.axes = {
-    x: {
-      drawGrid: false
-    },
-    y: {
-      drawGrid: true,
-      gridLinePattern: [1, 3],
-      gridLineColor: 'rbg(200, 200, 200)',
-    }
-  };
   data_options.interactionModel = getInteractionModel(index);
   data_options.clickCallback = function(e, x, points) {
     scrollToTableRow(getRowId(e, x, points));
@@ -1182,11 +1222,125 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     resizePlot(index);
   };
   data_options.valueFormatter = function(value, opts, seriesName, dygraph, row, col) {
-  if (seriesName != 'Time') {
-    return value.toFixed(3);
-  } else {
-    return new Date(value).toISOString();
+    if (seriesName != 'Time') {
+      return value.toFixed(3);
+    } else {
+      return new Date(value).toISOString();
+    }
+  };
+
+  data_options.axes = {
+    x: {
+      drawGrid: false
+    },
+    y: {
+      drawGrid: true,
+      gridLinePattern: [1, 3],
+      gridLineColor: 'rbg(200, 200, 200)',
+    }
   }
+
+  // Reference value for gas standards and similar
+  let referenceValue = getColumnById($('#plot' + index + 'Form\\:plot' + index + 'YAxis').val()).referenceValue;
+  if (null != referenceValue) {
+    data_options.underlayCallback = function(canvas, area, g) {
+      let xmin = g.toDomXCoord(g.xAxisExtremes()[0]);
+      let xmax = g.toDomXCoord(g.xAxisExtremes()[1]);
+      let ycoord = g.toDomYCoord(referenceValue);
+
+      canvas.setLineDash([10, 5]);
+      canvas.strokeStyle = '#FF0000';
+      canvas.lineWidth = 3;
+      canvas.beginPath();
+      canvas.moveTo(xmin, ycoord);
+      canvas.lineTo(xmax, ycoord);
+      canvas.stroke();
+      canvas.setLineDash([]);
+    }
+  }
+
+  window[plotVar] = new Dygraph(
+    document.getElementById('plot' + index + 'DataPlot'),
+    window['dataPlot' + index + 'Data'],
+    data_options
+    );
+
+}
+
+function drawDataPlot2Y(index) {
+  let plotVar = 'dataPlot' + index;
+
+  // If there's new data, extract it
+  let newPlotData = $('#plot' + index + 'Form\\:plot' + index + 'Data').val();
+  if (newPlotData) {
+    window['dataPlot' + index + 'Data'] = parseJsonWithDates(newPlotData);
+    $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
+  }
+
+  let labels = getPlotLabels(index);
+
+  // Destroy the old plot
+  if (null != window[plotVar]) {
+    window[plotVar].destroy();
+    window[plotVar] = null;
+  }
+
+  let data_options = Object.assign({}, BASE_PLOT_OPTIONS);
+  // Ghost data and series data colors
+  data_options.colors = ['#00000000', '#C0C0C0', '#01752D'];
+  data_options.xlabel = labels[0];
+  data_options.ylabel = labels[3];
+  data_options.y2label = labels[4];
+  data_options.labels = labels;
+  data_options.labelsDiv = 'plot' + index + 'Label';
+  data_options.visibility = [false, true, true, true];
+  data_options.pointSize = DATA_POINT_SIZE;
+  data_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
+  data_options.selectMode = 'euclidian';
+  data_options.xRangePad = 10;
+  data_options.yRangePad = 10;
+
+  data_options.series = {
+    [labels[4]]: {
+      axis: 'y2',
+      pointSize: 0,
+      highlightCircleSize: 0
+    }
+  }
+
+  data_options.axes = {
+    x: {
+      drawGrid: false
+    },
+    y: {
+      drawGrid: true,
+      gridLinePattern: [1, 3],
+      gridLineColor: 'rbg(200, 200, 200)',
+    },
+    y2: {
+      drawGrid: false,
+      axisLabelFormatter: function(y) {
+        return '';
+      }
+    }
+  }
+
+  data_options.interactionModel = getInteractionModel(index);
+  data_options.clickCallback = function(e, x, points) {
+    scrollToTableRow(getRowId(e, x, points));
+  };
+  data_options.zoomCallback = function(xMin, xMax, yRange) {
+    syncZoom(index);
+  };
+  data_options.drawCallback = function(g, initial) {
+    resizePlot(index);
+  };
+  data_options.valueFormatter = function(value, opts, seriesName, dygraph, row, col) {
+    if (seriesName != 'Time') {
+      return value.toFixed(3);
+    } else {
+      return new Date(value).toISOString();
+    }
   };
 
   // Reference value for gas standards and similar
@@ -1208,32 +1362,42 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
     }
   }
 
-  // Zoom
-  if (!resetZoom) {
-    data_options.dateWindow = xAxisRange;
-    data_options.valueRange = yAxisRange;
-    data_options.yRangePad = 0;
-    data_options.xRangePad = 0;
-  } else {
-    let nonDefaultYRange = getYRange(index);
-    if (null != nonDefaultYRange) {
-      data_options.valueRange = getYRange(index);
-    }
-  }
-
-
   window[plotVar] = new Dygraph(
     document.getElementById('plot' + index + 'DataPlot'),
     window['dataPlot' + index + 'Data'],
     data_options
-  );
+    );
 
-  resizePlot(index);
+}
+
+function drawPlot(index, drawOtherPlots) {
+  errorCheck();
 
   if (drawOtherPlots) {
-    drawFlagPlot(index);
+    if (window['y2Plot' + index]) {
+      window['y2Plot' + index].destroy();
+      window['y2Plot' + index] = null;
+    }
+    if (hasY2(index)) {
+      drawY2Plot(index);
+    }
+
     drawSelectionPlot(index);
   }
+
+  if (hasY2(index)) {
+    if (drawOtherPlots) {
+      drawFlagPlot2Y(index);
+    }
+    drawDataPlot2Y(index);
+  } else {
+    if (drawOtherPlots) {
+      drawFlagPlot1Y(index);
+    }
+    drawDataPlot1Y(index);
+  }
+
+  resizePlot(index);
 
   // Enable/disable the selection mode controls
   if (canEdit()) {
@@ -1252,17 +1416,17 @@ function drawPlot(index, drawOtherPlots, resetZoom) {
   } else if (index == 2) {
     itemNotLoading(PLOT2_LOADING);
   }
-
 }
 
-function drawFlagPlot(index) {
+function drawFlagPlot1Y(index) {
   window['flagPlot' + index + 'Data'] =
-    parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
+  parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
 
   $('#plot' + index + 'Form\\:plot' + index + 'Flags').val("");
 
   if (null != window['flagPlot' + index]) {
     window['flagPlot' + index].destroy();
+    window['flagPlot' + index] = null;
   }
 
   if (window['flagPlot' + index + 'Data'].length == 0) {
@@ -1277,8 +1441,8 @@ function drawFlagPlot(index) {
     flag_options.pointSize = FLAG_POINT_SIZE;
     flag_options.highlightCircleSize = 0;
     flag_options.selectMode = 'euclidian';
-    flag_options.xRangePad = 0;
-    flag_options.yRangePad = 0;
+    flag_options.xRangePad = 10;
+    flag_options.yRangePad = 10;
     flag_options.axes = {
       x: {
         drawGrid: false
@@ -1290,15 +1454,66 @@ function drawFlagPlot(index) {
     flag_options.axisLabelFontSize = 0;
     flag_options.xAxisHeight = 20;
     flag_options.interactionModel = null;
-    flag_options.animatedZooms = false;
 
     window['flagPlot' + index] = new Dygraph(
       document.getElementById('plot' + index + 'FlagPlot'),
       window['flagPlot' + index + 'Data'],
       flag_options
-    );
+      );
+  }
+}
 
-    resizePlot(index);
+function drawFlagPlot2Y(index) {
+  window['flagPlot' + index + 'Data'] =
+  parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
+
+  let labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
+
+  $('#plot' + index + 'Form\\:plot' + index + 'Flags').val("");
+
+  if (null != window['flagPlot' + index]) {
+    window['flagPlot' + index].destroy();
+    window['flagPlot' + index] = null;
+  }
+
+  if (window['flagPlot' + index + 'Data'].length == 0) {
+    window['flagPlot' + index] = null;
+  } else {
+    let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
+    // Flag colors
+    flag_options.colors = ['#FF0000', '#FFA42B', '#817FFF', "#00000000"];
+    flag_options.xlabel = ' ';
+    flag_options.ylabel = ' ';
+    flag_options.y2label = ' ';
+    flag_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
+    flag_options.pointSize = FLAG_POINT_SIZE;
+    flag_options.highlightCircleSize = 0;
+    flag_options.selectMode = 'euclidian';
+    flag_options.xRangePad = 10;
+    flag_options.yRangePad = 10;
+
+    flag_options.series = {
+      [labels[4]]: {
+        axis: 'y2'
+      }
+    }
+    flag_options.axes = {
+      x: {
+        drawGrid: false
+      },
+      y: {
+        drawGrid: false
+      }
+    };
+    flag_options.axisLabelFontSize = 0;
+    flag_options.xAxisHeight = 20;
+    flag_options.interactionModel = null;
+
+    window['flagPlot' + index] = new Dygraph(
+      document.getElementById('plot' + index + 'FlagPlot'),
+      window['flagPlot' + index + 'Data'],
+      flag_options
+      );
   }
 }
 
@@ -1325,7 +1540,6 @@ function drawSelectionPlot(index) {
         }
       }
 
-
       let selection_options = Object.assign({}, BASE_PLOT_OPTIONS);
       selection_options.colors = ['#FFFF00'];
       selection_options.xlabel = ' ';
@@ -1347,13 +1561,35 @@ function drawSelectionPlot(index) {
       selection_options.axisLabelFontSize = 0;
       selection_options.xAxisHeight = 20;
       selection_options.interactionModel = null;
-      selection_options.animatedZooms = false;
+
+      // Adjust for Y2 plots
+      if (hasY2(index)) {
+        selection_options.colors = ['#FFFF00', '#00000000'];
+        selection_options.y2label = ' ';
+        selection_options.labels = [' ', ' ', 'Y2'];
+        selection_options.series = {
+          'Y2': {
+            axis: 'y2'
+          }
+        }
+        selection_options.axes = {
+          x: {
+            drawGrid: false
+          },
+          y: {
+            drawGrid: false
+          },
+          y2: {
+            drawGrid: false
+          }
+        };
+      }
 
       window[plotVar] = new Dygraph(
         document.getElementById('plot' + index + 'SelectionPlot'),
         selectionData,
         selection_options
-      );
+        );
 
       resizePlot(index);
     }
@@ -1363,14 +1599,18 @@ function drawSelectionPlot(index) {
 function syncZoom(index) {
 
   let zoomOptions = {
-      dateWindow: window['dataPlot' + index].xAxisRange(),
-      valueRange: window['dataPlot' + index].yAxisRange(),
-      yRangePad: 0,
-      xRangePad: 0
-    };
+    dateWindow: window['dataPlot' + index].xAxisRange(),
+    valueRange: window['dataPlot' + index].yAxisRange(),
+    yRangePad: 0,
+    xRangePad: 0
+  };
 
   if (null != window['flagPlot' + index]) {
     window['flagPlot' + index].updateOptions(zoomOptions);
+  }
+
+  if (null != window['y2Plot' + index]) {
+    window['y2Plot' + index].updateOptions(zoomOptions);
   }
 
   if (null != window['selectionPlot' + index]) {
@@ -1381,10 +1621,8 @@ function syncZoom(index) {
 
 //Get the interaction model for a plot
 function getInteractionModel(index) {
-  var plot = window['plot' + index];
-  var selectMode = $('[id^=plot' + index + 'Form\\:plotSelectMode]:checked').val();
-
-  var interactionModel = null;
+  let selectMode = $('[id^=plot' + index + 'Form\\:plotSelectMode]:checked').val();
+  let interactionModel = null;
 
   if (selectMode == 'select') {
     interactionModel = {
@@ -1393,31 +1631,27 @@ function getInteractionModel(index) {
       mousemove: selectModeMouseMove
     }
   } else {
-  // Use the default interaction model, but without
-  // double-click. We use the clickCallback property defined
-  // in BASE_GRAPH_OPTIONS above
-  interactionModel = Dygraph.defaultInteractionModel;
+    // Use the default interaction model, but without
+    // double-click. We use the clickCallback property defined
+    // in BASE_GRAPH_OPTIONS above
+    interactionModel = Dygraph.defaultInteractionModel;
     interactionModel.dblclick = null;
   }
 
   return interactionModel;
 }
 
-/*
- * Get the Row ID from a given graph click event
- *
- * For now, this just looks up the row using the X value. This will
- * work for dates, but will need to be more intelligent for non-date plots.
- */
+// Get the Row ID from a given graph click event
+// For now, this just looks up the row using the X value. This will
+// work for dates, but will need to be more intelligent for non-date plots.
 function getRowId(event, xValue, points) {
-  var containerId = $(event.target).
-  parents().
+  let containerId = $(event.target).parents().
   filter(function() {
     return this.id.match(/plot[1-2]Container/)
   })[0]['id'];
 
-  var plotIndex = containerId.substring(4, 5);
-  var pointId = points[0]['idx'];
+  let plotIndex = containerId.substring(4, 5);
+  let pointId = points[0]['idx'];
 
   return window['dataPlot' + plotIndex + 'Data'][pointId][1];
 }
@@ -1433,7 +1667,13 @@ function getSelectionPlotData(index) {
   if (null != window[plotDataVar]) {
     for (let i = 0; i < window[plotDataVar].length; i++) {
       if ($.inArray(window[plotDataVar][i][1], selectedIds) != -1) {
-        selectionData.push([window[plotDataVar][i][0], window[plotDataVar][i][3]]);
+
+        if (hasY2(index)) {
+          selectionData.push([window[plotDataVar][i][0], window[plotDataVar][i][3], null]);
+        } else {
+          selectionData.push([window[plotDataVar][i][0], window[plotDataVar][i][3]]);
+        }
+
         if (selectionData.length == selectedIds.length) {
           break;
         }
@@ -1482,7 +1722,7 @@ function showVariableDialog(plotIndex) {
   resizeVariablesDialog();
 }
 
-function setupPlotVariables(plotIndex) {
+function setupPlotVariables(index) {
   getExtendedColumnIds().forEach(id => {
     let xWidget = PrimeFaces.widgets['xAxis-' + id];
     if (xWidget) {
@@ -1491,8 +1731,13 @@ function setupPlotVariables(plotIndex) {
 
     let yWidget = PrimeFaces.widgets['yAxis-' + id];
     if (yWidget) {
-        yWidget.jq.show();
-      }
+      yWidget.jq.show();
+    }
+
+    let y2Widget = PrimeFaces.widgets['y2Axis-' + id];
+    if (y2Widget) {
+      y2Widget.jq.show();
+    }
 
     let mapWidget = PrimeFaces.widgets['mapVar-' + id];
     if (mapWidget) {
@@ -1500,23 +1745,24 @@ function setupPlotVariables(plotIndex) {
     }
   });
 
-  updateAxisButtons('x', $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val());
-  updateAxisButtons('y', $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val());
+  updateAxisButtons(index, 'x');
+  updateAxisButtons(index, 'y');
+  updateAxisButtons(index, 'y2');
 }
 
 //Select the specified axis variable in the dialog
-function updateAxisButtons(axis, variable) {
-
-
+function updateAxisButtons(index, axis) {
   if (!updatingDialogButtons) {
     updatingDialogButtons = true;
+
+    let axisVariable = window['plot' + index + axis.toUpperCase() + 'AxisVar'];
 
     getExtendedColumnIds().forEach(id => {
       let widget = PrimeFaces.widgets[axis + 'Axis-' + id];
 
       // Not all variables will have an axis button
       if (widget) {
-        if (id == variable) {
+        if (id == axisVariable) {
           widget.check();
         } else {
           widget.uncheck();
@@ -1525,6 +1771,19 @@ function updateAxisButtons(axis, variable) {
     });
 
     updatingDialogButtons = false;
+  }
+}
+
+function axisButtonClicked(axis, variable) {
+  if (!updatingDialogButtons) {
+    if (axis == 'y2' && variable == window['plot' + currentPlot + axis.toUpperCase() + 'AxisVar']) {
+      // Y2 axis buttons are toggles
+      window['plot' + currentPlot + axis.toUpperCase() + 'AxisVar'] = 0;
+    } else {
+      window['plot' + currentPlot + axis.toUpperCase() + 'AxisVar'] = variable;
+    }
+
+    updateAxisButtons(currentPlot, axis);
   }
 }
 
@@ -1539,8 +1798,13 @@ function setupMapVariables(plotIndex) {
 
     let yWidget = PrimeFaces.widgets['yAxis-' + id];
     if (yWidget) {
-        yWidget.jq.hide();
-      }
+      yWidget.jq.hide();
+    }
+
+    let y2Widget = PrimeFaces.widgets['y2Axis-' + id];
+    if (y2Widget) {
+      y2Widget.jq.hide();
+    }
 
     let mapWidget = PrimeFaces.widgets['mapVar-' + id];
     if (mapWidget) {
@@ -1557,7 +1821,7 @@ function updateMapCheckboxes(variable) {
     updatingDialogButtons = true;
 
     getExtendedColumnIds().forEach(id => {
-        let widget = PrimeFaces.widgets['mapVar-' + id];
+      let widget = PrimeFaces.widgets['mapVar-' + id];
 
         // Not all variables will have an axis button
         if (widget) {
@@ -1631,6 +1895,10 @@ function getSelectedYAxis() {
   return getSelectedCheckbox('yAxis');
 }
 
+function getSelectedY2Axis() {
+  return getSelectedCheckbox('y2Axis');
+}
+
 function getSelectedCheckbox(prefix) {
   let axis = 0;
 
@@ -1646,20 +1914,26 @@ function getSelectedCheckbox(prefix) {
   return axis;
 }
 
-function setPlotAxes(plotIndex) {
+function setPlotAxes(index) {
   let xAxis = getSelectedXAxis();
+  window['plot' + index + 'XAxisVar'] = xAxis;
   if (xAxis != 0) {
-    $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
+    $('#plot' + index + 'Form\\:plot' + index + 'XAxis').val(xAxis);
   }
 
   let yAxis = getSelectedYAxis();
+  window['plot' + index + 'YAxisVar'] = yAxis;
   if (yAxis != 0) {
-    $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
+    $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val(yAxis);
   }
+
+  let y2Axis = getSelectedY2Axis();
+  window['plot' + index + 'Y2AxisVar'] = y2Axis;
+  $('#plot' + index + 'Form\\:plot' + index + 'Y2Axis').val(y2Axis);
 }
 
 function setPlotSelectMode(index) {
-  drawPlot(index, false, false);
+  drawPlot(index, false);
 }
 
 function selectModeMouseDown(event, g, context) {
@@ -1843,8 +2117,9 @@ function getMapData(index) {
   extent.push(visibleBounds._northEast.lat);
 
   $('#plot' + index + 'Form\\:map' + index + 'Bounds').val(extent);
-  $('#plot' + index + 'Form\\:plot' + index + 'Data').val("");
-  $('#plot' + index + 'Form\\:map' + index + 'Data').val("");
+  $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
+  $('#plot' + index + 'Form\\:plot' + index + 'y2Data').val('');
+  $('#plot' + index + 'Form\\:map' + index + 'Data').val('');
   eval('map' + index + 'GetData()');
 }
 
@@ -1857,9 +2132,9 @@ function drawMap(index) {
 
   // Remove old layers
   if (null != window[dataLayerVar]) {
-  window[dataLayerVar].removeFrom(window[mapVar]);
-  window[flagLayerVar].removeFrom(window[mapVar]);
-  window[selectionLayerVar].removeFrom(window[mapVar]);
+    window[dataLayerVar].removeFrom(window[mapVar]);
+    window[flagLayerVar].removeFrom(window[mapVar]);
+    window[selectionLayerVar].removeFrom(window[mapVar]);
   }
 
   let mapData = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'Data').val());
@@ -1895,22 +2170,22 @@ function makeMapLayer(mapIndex, geojson, interactive) {
 
   L.geoJSON(geojson, {
     pointToLayer: (feature, latlng) => {
-    return new L.CircleMarker(latlng, {
-    interactive: interactive,
-    radius: getPointSize(feature),
-    stroke: false,
-    fill: true,
-    fillOpacity: 1,
+      return new L.CircleMarker(latlng, {
+        interactive: interactive,
+        radius: getPointSize(feature),
+        stroke: false,
+        fill: true,
+        fillOpacity: 1,
         fillColor: getPointColor(mapIndex, feature),
-    })
-    .bindTooltip(makeTooltip(feature, mapIndex))
-    .on('click', function(e) {
-      scrollToTableRow(feature.properties.rowID)
+      })
+      .bindTooltip(makeTooltip(feature, mapIndex))
+      .on('click', function(e) {
+        scrollToTableRow(feature.properties.rowID)
       });
-  },
-  onEachFeature: (feature, layer) => {
-    layer.addTo(result);
-  }
+    },
+    onEachFeature: (feature, layer) => {
+      layer.addTo(result);
+    }
   });
 
   return result;
@@ -1927,47 +2202,47 @@ function makeTooltip(point, mapIndex) {
 function getPointColor(mapIndex, point) {
 
   switch (point.properties.type) {
-  case VALUE_TYPE: {
-    return window['map' + mapIndex + 'ColorScale']
+    case VALUE_TYPE: {
+      return window['map' + mapIndex + 'ColorScale']
       .getColor(point.properties.value);
-  }
-  case FLAG_TYPE: {
-  switch (point.properties.flag) {
-  case FLAG_QUESTIONABLE: {
-    return '#FFA42B';
-  }
-  case FLAG_BAD:
-  case FLAG_LOOKUP: {
-    return '#FF0000';
-  }
-  case FLAG_NEEDS_FLAG: {
-    return '#D7D6FF';
-  }
-  case FLAG_FLUSHING: {
-    return '#C0C0C0';
-  }
-  default: {
-    console.log('INVALID FLAG VALUE ' + point.properties.flag);
-    return '#000000';
-  }
-  }
-  }
-  case SELECTION_TYPE: {
-    return '#FFFF00';
-  }
-  default: {
-  console.log('INVALID TYPE ' + point.properties.type);
-  return '#000000';
-  }
+    }
+    case FLAG_TYPE: {
+      switch (point.properties.flag) {
+        case FLAG_QUESTIONABLE: {
+          return '#FFA42B';
+        }
+        case FLAG_BAD:
+        case FLAG_LOOKUP: {
+          return '#FF0000';
+        }
+        case FLAG_NEEDS_FLAG: {
+          return '#D7D6FF';
+        }
+        case FLAG_FLUSHING: {
+          return '#C0C0C0';
+        }
+        default: {
+          console.log('INVALID FLAG VALUE ' + point.properties.flag);
+          return '#000000';
+        }
+      }
+    }
+    case SELECTION_TYPE: {
+      return '#FFFF00';
+    }
+    default: {
+      console.log('INVALID TYPE ' + point.properties.type);
+      return '#000000';
+    }
   }
 }
 
 function getPointSize(point) {
- if (point.properties.type == VALUE_TYPE) {
-   return DATA_POINT_HIGHLIGHT_SIZE;
- } else {
-   return SELECTION_POINT_SIZE;
- }
+  if (point.properties.type == VALUE_TYPE) {
+    return DATA_POINT_HIGHLIGHT_SIZE;
+  } else {
+    return SELECTION_POINT_SIZE;
+  }
 }
 
 function resetZoom(index) {
@@ -2002,6 +2277,6 @@ function getMapIndex(event) {
 function toggleScale(index) {
   $('#map' + index + 'Scale').toggle(100, function() {
     window['map' + index + 'ScaleVisible'] =
-      ($('#map' + index + 'Scale').css('display') === 'block');
+    ($('#map' + index + 'Scale').css('display') === 'block');
   });
 }

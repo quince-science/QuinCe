@@ -123,16 +123,20 @@ td.selected > div {
   left: 0px;
 }
 
-.dataPlot {
-  z-index: 100;
-}
-
-.flagPlot {
+.y2Plot {
   z-index: 10;
 }
 
+.dataPlot {
+  z-index: 40;
+}
+
+.flagPlot {
+  z-index: 20;
+}
+
 .selectionPlot {
-  z-index: 50;
+  z-index: 30;
 }
 
 .plotLabels {
@@ -277,10 +281,23 @@ td.selected > div {
   width: 16px;
   height: 16px;
   position: relative;
+  margin-right: 5px;
+}
+
+.wideAxisButton {
+  font-size: 12px !important;
+  width: 24px;
+  height: 16px;
+  position: relative;
 }
 
 .noAxisButton {
-  width: 19px;
+  width: 22.5px;
+  height: 16px;
+}
+
+.wideNoAxisButton {
+  width: 28px;
   height: 16px;
 }
 

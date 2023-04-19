@@ -149,7 +149,7 @@ public class FileDefinitionBuilder extends FileDefinition {
         }
 
         // Process the run types by longest first to ensure short substrings
-        // don get removed and leave longer strings behind
+        // don't get removed and leave longer strings behind
         StringUtils.sortByLength(runTypes, true);
 
         // All run types are stored in lower case

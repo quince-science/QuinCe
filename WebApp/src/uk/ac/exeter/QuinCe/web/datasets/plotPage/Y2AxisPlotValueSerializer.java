@@ -11,13 +11,7 @@ import com.google.gson.JsonSerializer;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
-public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
-
-  private boolean plotHasY2;
-
-  protected FlagPlotValueSerializer(boolean plotHasY2) {
-    this.plotHasY2 = plotHasY2;
-  }
+public class Y2AxisPlotValueSerializer implements JsonSerializer<PlotValue> {
 
   @Override
   public JsonElement serialize(PlotValue src, Type typeOfSrc,
@@ -25,44 +19,56 @@ public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
 
     JsonArray json = new JsonArray();
 
+    // X value
     if (src.xIsTime()) {
       json.add(DateTimeUtils.toIsoDate(src.getXTime()));
     } else {
-      json.add(src.getXDouble());
+      Double x = src.getXDouble();
+      if (null == x || x.isNaN()) {
+        json.add(JsonNull.INSTANCE);
+      } else {
+        json.add(src.getXDouble());
+      }
     }
 
-    if (!src.hasY()) {
+    // Data point ID
+    json.add(src.getId());
+
+    // Y1 axis, if we haven't put in a value already
+    json.add(JsonNull.INSTANCE);
+
+    // Y2 axis value
+    if (!src.hasY2()) {
+      json.add(JsonNull.INSTANCE);
       json.add(JsonNull.INSTANCE);
       json.add(JsonNull.INSTANCE);
       json.add(JsonNull.INSTANCE);
     } else {
-      // Bad
-      if (src.getFlag().equals(Flag.BAD)) {
-        json.add(src.getY());
+
+      // BAD value
+      if (src.getFlag2().equals(Flag.BAD)) {
+        json.add(src.getY2());
       } else {
         json.add(JsonNull.INSTANCE);
       }
 
-      // Questionable
-      if (src.getFlag().equals(Flag.QUESTIONABLE)) {
-        json.add(src.getY());
+      // QUESTIONABLE value
+      if (src.getFlag2().equals(Flag.QUESTIONABLE)) {
+        json.add(src.getY2());
       } else {
         json.add(JsonNull.INSTANCE);
       }
 
-      // Needed
-      if (src.getFlag().equals(Flag.NEEDED)) {
-        json.add(src.getY());
+      // The value
+      if (src.isGhost2()) {
+        json.add(src.getY2());
+        json.add(JsonNull.INSTANCE);
       } else {
         json.add(JsonNull.INSTANCE);
+        json.add(src.getY2());
       }
-    }
-
-    if (plotHasY2) {
-      json.add(JsonNull.INSTANCE);
     }
 
     return json;
   }
-
 }

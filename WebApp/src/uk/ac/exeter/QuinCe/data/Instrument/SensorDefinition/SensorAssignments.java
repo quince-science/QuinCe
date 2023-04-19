@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,8 @@ public class SensorAssignments
    * The database IDs of the variables that this set of assignments is targeting
    */
   private List<Long> variableIDs;
+
+  private HashMap<Long, SensorType> dbColumnSensorTypeCache = new HashMap<Long, SensorType>();
 
   /**
    * Initialise the assignments for the specified list of {@link Variable}s,
@@ -726,16 +729,22 @@ public class SensorAssignments
     } else if (columnId == FileDefinition.LATITUDE_COLUMN_ID) {
       result = SensorType.LATITUDE_SENSOR_TYPE;
     } else {
-      for (SensorType sensorType : keySet()) {
-        for (SensorAssignment assignment : get(sensorType)) {
-          if (assignment.getDatabaseId() == columnId) {
-            result = sensorType;
+      // Try to get the SensorType from the cache
+      result = dbColumnSensorTypeCache.get(columnId);
+
+      if (null == result) {
+        for (SensorType sensorType : keySet()) {
+          for (SensorAssignment assignment : get(sensorType)) {
+            if (assignment.getDatabaseId() == columnId) {
+              result = sensorType;
+              break;
+            }
+          }
+
+          if (null != result) {
+            dbColumnSensorTypeCache.put(columnId, result);
             break;
           }
-        }
-
-        if (null != result) {
-          break;
         }
       }
     }
