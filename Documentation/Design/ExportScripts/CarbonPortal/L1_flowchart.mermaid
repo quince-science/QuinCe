@@ -7,8 +7,6 @@ flowchart TD
   l1_l2{L1 or L2?}
   error2[ERROR<br>Cannot replace<br>L2 with L1]:::error
   same_start{Same start date?}
-  ends_before{New ends before existing?}
-  error3[ERROR<br>NRT cannot get shorter]:::error
   upload_nextver[Upload<br>isNextVersionOf]:::upload
   upload_partial[Upload<br>partialUpload<br>isNextVersionOf]:::upload
 
@@ -21,10 +19,9 @@ flowchart TD
   existing_count-->|One|l1_l2
   l1_l2-->|L1|same_start
   l1_l2-->|L2|error2
-  same_start-->|Yes|ends_before
-  ends_before-->|Yes|error3
-  ends_before-->|No|upload_nextver
-  same_start-->|No|upload_partial
+  same_start-->|Yes|upload_nextver
+  same_start-->|No, Start date before|upload_nextver
+  same_start-->|No, Start date after|upload_partial
 
   classDef upload fill:#42b4cb,stroke:#080
   classDef error fill:#f55,stroke:#800
