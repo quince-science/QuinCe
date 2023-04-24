@@ -39,13 +39,20 @@ This dataset is already uploaded to CP as an L1 dataset. At this stage it has no
 
 The table below describes how the creation of various possible L2 datasets can be created from this NRT data, and the relationships that will be built when the resulting datasets are uploaded to CP.
 
-| L2 start | L2 end | Reset NRT start | Reset NRT end | L2 relation to original NRT         | Reset NRT relation to original NRT  |
-|:--------:|:------:|:---------------:|:-------------:|-------------------------------------|-------------------------------------|
-| Jul 1    | Jul 2  | Jul 3           | Jul 4         | `partialDownload + isNextVersionOf` | `partialDownload + isNextVersionOf` |
-| Jul 2    | Jul 3  | Jul 4           | Jul 4         | `partialDownload + isNextVersionOf` | `partialDownload + isNextVersionOf` |
-| Jul 2    | Jul 4  | N/A             | N/A           | `isNextVersionOf`                   | N/A [^nonewnrt]                      |
+| L2 start | L2 end | Reset NRT start | Reset NRT end | L2 relation to original NRT       | Reset NRT relation to original NRT |
+|:--------:|:------:|:---------------:|:-------------:|-----------------------------------|------------------------------------|
+| Jul 1    | Jul 2  | Jul 3           | Jul 4         | `partialUpload + isNextVersionOf` | `partialUpload + isNextVersionOf`  |
+| Jul 2    | Jul 3  | Jul 4           | Jul 4         | `partialUpload + isNextVersionOf` | `partialUpload + isNextVersionOf`  |
+| Jul 2    | Jul 4  | N/A             | N/A           | `isNextVersionOf`                 | N/A [^nonewnrt]                    |
 
 [^nonewnrt]:The next NRT dataset will start on Jul 5 (when the new NRT data is received). However, this will have no relation to the previous NRT dataset because there will be no common data between them.
 
-
 Note that the creation and upload of these datasets are asynchronous, and can happen in any order at any time. The export script will decide at upload time which dataset is being deprecated, and whether it expects a second deprecating dataset to be uploaded later, and will set the relationships accordingly.
+
+In the last row of the table, the data from Jul 1 will become orphaned, not belonging to any dataset (as seen in the earlier figure). It is possible that the user will create an L2 dataset containing the Jul 1 data, in which case the relation of both datasets must become `partialUpload + isNextVersionOf`. This will require editing the metadata for the Jul 2 - Jul 4 dataset.
+
+# Export Logic
+This section describes the decisions that the QuinCe export scripts must take when uploading data to the Carbon Portal. The logic is different between NRT/L1 and L2 datasets.
+
+## L1
+![L1 Upload logic](L1_flowchart.png "L1 Upload logic")
