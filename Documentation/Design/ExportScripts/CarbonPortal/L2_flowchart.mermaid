@@ -1,0 +1,59 @@
+flowchart TD
+  exported[[L2 Dataset exported from QuinCe]]
+  q_existing[CP Query: Any L1/L2 dataset<br>overlapping exported dataset]:::query
+  any_existing{Any<br>existing<br>datasets?}
+
+  any_l2{Any<br>L2 datasets<br>found?}
+
+  multi_l2{>1 L2?}
+  err_multi_l2[ERROR<br>One L2 cannot update<br>multiple existing L2]:::error
+
+  l2_next_l2[Set isNextVersionOf<br>flag for existing L2]:::flags
+
+  l2_placeholder[Create placeholder<br>for upload flags]:::flags
+
+
+  upload_l2_no_flags[Upload dataset<br>with no flags]:::upload
+  upload_l2[Upload dataset with flags]:::upload
+
+  process_l1_target[[Process L1 datasets]]
+  process_l1_start[[Process L1 datasets]]
+
+  l1_loop[For each L1 dataset]
+  other_deprecate{Deprecated by<br>any other<br>datasets?}
+
+  set_l2_full[Add<br>isNextVersionOf<br>flag to upload]:::flags
+
+  set_l1_partial[Add partialUpload flag<br>to deprecating L1<br>if not set]:::upload
+  set_l2_partial[Add partialUpload,<br>isNextVersionOf<br>flags to upload]:::flags
+
+  exported-->q_existing
+  q_existing-->any_existing
+
+  any_existing--->|No|upload_l2_no_flags
+
+  any_existing-->|Yes|l2_placeholder
+  l2_placeholder-->any_l2
+
+  any_l2-->|Yes|multi_l2
+
+  multi_l2-->|Yes|err_multi_l2
+  multi_l2-->|No|l2_next_l2
+
+  l2_next_l2-->process_l1_target
+
+  any_l2-->|No|process_l1_target
+
+  process_l1_target-->upload_l2
+
+  process_l1_start-->l1_loop
+  l1_loop-->other_deprecate
+  other_deprecate-->|No|set_l2_full
+
+  other_deprecate-->|Yes|set_l1_partial
+  set_l1_partial-->set_l2_partial
+
+  classDef upload fill:#42b4cb,stroke:#080
+  classDef error fill:#f55,stroke:#800
+  classDef query fill:#ee0,stroke:#990
+  classDef flags fill:#fb7,stroke:#fa0
