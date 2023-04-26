@@ -3,7 +3,7 @@ flowchart TB
   subgraph l2[L2]
     l2_1[Jul 2]
     l2_2[Jul 3]
-    l2_1-->l2_2
+    l2_1~~~l2_2
   end
 
   subgraph nrt3[NRT v3]
@@ -15,9 +15,9 @@ flowchart TB
     nrt2_2[Jul 2]
     nrt2_3[Jul 3]
     nrt2_4[Jul 4]
-    nrt2_1-->nrt2_2
-    nrt2_2-->nrt2_3
-    nrt2_3-->nrt2_4
+    nrt2_1~~~nrt2_2
+    nrt2_2~~~nrt2_3
+    nrt2_3~~~nrt2_4
   end
 
   l2-->|partialUpload +<br/>isNextVersionOf|nrt2
@@ -27,8 +27,8 @@ flowchart TB
     nrt1_1[Jul 1]
     nrt1_2[Jul 2]
     nrt1_3[Jul 3]
-    nrt1_1-->nrt1_2
-    nrt1_2-->nrt1_3
+    nrt1_1~~~nrt1_2
+    nrt1_2~~~nrt1_3
   end
 
   nrt2-->|isNextVersionOf|nrt1

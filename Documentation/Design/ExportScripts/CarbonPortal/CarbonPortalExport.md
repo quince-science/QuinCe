@@ -54,7 +54,7 @@ This section describes the decisions that the QuinCe export scripts must take wh
 
 ## L1
 
-When a QuinCe NRT dataset is ready to be uploaded, we query CP to find any existing dataset that overlaps it. If there is no such overlapping dataset, we can simply upload our NRT dataset as is, and no links to previous data need to be created. If there is more than one overlapping dataset found (either L1 or L2) then something has gone wrong in a previous export activity, so an error will be thrown and the issue will have to be fixed manually.
+When a QuinCe NRT dataset is ready to be uploaded, we query CP to find any existing datasets that overlap it. If there is no such overlapping dataset, we can simply upload our NRT dataset as is, and no links to previous data need to be created. If there is more than one overlapping dataset found (either L1 or L2) then something has gone wrong in a previous export activity, so an error will be thrown and the issue will have to be fixed manually.
 
 If there is exactly one existing dataset, and it is L2, then we must throw an error - an L2 dataset cannot be updated with an L1 dataset.
 
@@ -65,3 +65,29 @@ If the new NRT start date is after the L1 start date, we assume that the user ha
 ![L1 Upload logic](L1_flowchart.png "L1 Upload logic")
 
 ## L2
+
+When a QuinCe L2 dataset is ready to be uploaded, we query CP to find any existing datasets that overlap it. If there is no such overlapping dataset, we can simply upload our dataset as is, and no links to previous data need to be created. If there are overlapping datasets found, we need to flag our uploaded dataset as a new version of those found, and in some cases update other flags.
+
+If our dataset overlaps more than one existing L2 dataset, then an error will be thrown - the data strategy for both QuinCe and ICOS means that this should not happen. If one L2 dataset is found, then the uploaded dataset will be marked as a new version of that using the `isNextVersion` flag as long as it has the same filename. Otherwise an error will be thrown.
+
+For overlapping L1 datasets, the flags set depend on whether that dataset has already been deprecated by another dataset. If it has, then the dataset is deprecated by multiple datasets: the existing deprecations plus ours. We need to ensure that the `partialUpload` flag is set as well as the `isNextVersionOf` flag for both our upload and the existing datasets. If there are no existing deprecations for an L1 dataset, we simply set `isNextVersionof` for our upload.
+
+![L2 Upload logic](L2_flowchart.png "L2 Upload logic")
+
+# Example SPARQL Queries
+
+Querying information about existing datasets in the Carbon Portal will be done through its SPARQL endpoint using the provided Python library.
+
+## Identifying a station
+Stations are identified in CP by a unique URL, which is unknown to QuinCe. However, QuinCe does know the name of the station. While we could look up the station by name every time, this will slow the subsequent queries. Therefore the first step of any activity will be to get the station's URL, which can then be plugged in to all subsequent queries.
+
+```sparql
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
+select ?uri
+from <http://meta.icos-cp.eu/resources/icos/>
+where {{
+    ?uri a cpmeta:OS ; cpmeta:hasName "{STATION_NAME}"^^xsd:string .
+}}
+```
+
