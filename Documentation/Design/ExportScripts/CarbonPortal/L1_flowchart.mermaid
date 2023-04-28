@@ -1,27 +1,40 @@
 flowchart TD
   exported[[L1 Dataset exported from QuinCe]]
   q_existing[CP Query: Any dataset<br>overlapping exported dataset]:::query
-  existing_count{Number of matches}
+  existing_count{Number<br>of matches}
   error1[ERROR<br>NRT cannot replace<br>multiple datasets]:::error
   upload_no_link[Upload<br>No deprecation]:::upload
   l1_l2{L1 or L2?}
   error2[ERROR<br>Cannot replace<br>L2 with L1]:::error
-  same_start{Same start date?}
+
+  other_deprecation{Already deprecated<br>by another dataset?}
+  other_l1{Other<br>dataset<br>is L1?}
+
   upload_nextver[Upload<br>isNextVersionOf]:::upload
+
+  err_deprecate_l1[ERROR<br>Cannot deprecate with<br>multiple L1 datasets]:::error
+  set_partial_upload[Set partialUpload<br>on other dataset]:::upload
   upload_partial[Upload<br>partialUpload<br>isNextVersionOf]:::upload
+
 
   exported-->q_existing
   q_existing-->existing_count
 
   existing_count-->|Zero|upload_no_link
-  existing_count-->|More than 1|error1
+  existing_count-->|More Than One|error1
 
   existing_count-->|One|l1_l2
-  l1_l2-->|L1|same_start
+  l1_l2-->|L1|other_deprecation
   l1_l2-->|L2|error2
-  same_start-->|Yes|upload_nextver
-  same_start-->|No, Start date before|upload_nextver
-  same_start-->|No, Start date after|upload_partial
+  other_deprecation-->|Yes|other_l1
+
+
+  other_l1-->|Yes|err_deprecate_l1
+  other_l1-->|No|set_partial_upload
+  other_deprecation-->|No|upload_nextver
+
+
+  set_partial_upload-->upload_partial
 
   classDef upload fill:#42b4cb,stroke:#080
   classDef error fill:#f55,stroke:#800

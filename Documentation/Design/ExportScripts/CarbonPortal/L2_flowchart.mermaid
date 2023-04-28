@@ -3,63 +3,44 @@ flowchart TD
   q_existing[CP Query: Any L1/L2 dataset<br>overlapping exported dataset]:::query
   any_existing{Any<br>existing<br>datasets?}
 
-  any_l2{Any<br>L2 datasets<br>found?}
+  err_multi[ERROR<br>Cannot deprecate<br>multiple datasets]:::error
+  upload_no_flags[Upload dataset<br>with no flags]:::upload
 
-  multi_l2{>1 L2?}
-  err_multi_l2[ERROR<br>One L2 cannot update<br>multiple existing L2]:::error
+  l1_already_deprecated{"Already<br>deprecated by<br>other dataset(s)?"}
+
+  l1_add_partial_to_other["Add partialUpload to<br>other deprecating dataset(s)"]:::upload
+  upload_with_partial_invo[Upload with partialUpload<br>and isNextVersionOf flags]:::upload
+  upload_with_invo[Upload with<br>isNextVersionOf flag]:::upload
 
   same_filename{Same filename<br>as upload?}
   err_diff_filename[ERROR<br>Cannot deprecate L2<br>with differenct filename]:::error
 
-  l2_next_l2[Set isNextVersionOf<br>flag for existing L2]:::flags
+  l2_deprecated{Already<br>deprecated by<br>another dataset?}
+  err_l2_deprecated[ERROR<br>L2 dataset cannot be deprecated<br>by more than one dataset]:::error
 
-  l2_placeholder[Create placeholder<br>for upload flags]:::flags
-
-
-  upload_l2_no_flags[Upload dataset<br>with no flags]:::upload
-  upload_l2[Upload dataset with flags]:::upload
-
-  process_l1_target[[Process L1 datasets]]
-  process_l1_start[[Process L1 datasets]]
-
-  l1_loop[For each L1 dataset]
-  other_deprecate{Deprecated by<br>any other<br>datasets?}
-
-  set_l2_full[Add<br>isNextVersionOf<br>flag to upload]:::flags
-
-  set_l1_partial[Add partialUpload flag<br>to deprecating L1<br>if not set]:::upload
-  set_l2_partial[Add partialUpload,<br>isNextVersionOf<br>flags to upload]:::flags
+  upload_with_invo_l2[Upload with<br>isNextVersionOf flag]:::upload
 
   exported-->q_existing
   q_existing-->any_existing
 
-  any_existing--->|No|upload_l2_no_flags
+  any_existing-->|No<br>datasets found|upload_no_flags
+  any_existing-->|Multiple datasets found|err_multi
 
-  any_existing-->|Yes|l2_placeholder
-  l2_placeholder-->any_l2
+  any_existing--->|L1 found|l1_already_deprecated
+  l1_already_deprecated-->|Yes|l1_add_partial_to_other
+  l1_add_partial_to_other-->upload_with_partial_invo
 
-  any_l2-->|Yes|multi_l2
+  l1_already_deprecated-->|No|upload_with_invo
 
-  multi_l2-->|Yes|err_multi_l2
-  multi_l2-->|No|same_filename
+  any_existing----->|L2 found|same_filename
 
   same_filename-->|No|err_diff_filename
-  same_filename-->|Yes|l2_next_l2
 
-  l2_next_l2-->process_l1_target
+  same_filename-->|Yes|l2_deprecated
 
-  any_l2-->|No|process_l1_target
-
-  process_l1_target-->upload_l2
-
-  process_l1_start-->l1_loop
-  l1_loop-->other_deprecate
-  other_deprecate-->|No|set_l2_full
-
-  other_deprecate-->|Yes|set_l1_partial
-  set_l1_partial-->set_l2_partial
+  l2_deprecated-->|Yes|err_l2_deprecated
+  l2_deprecated-->|No|upload_with_invo_l2
 
   classDef upload fill:#42b4cb,stroke:#080
   classDef error fill:#f55,stroke:#800
   classDef query fill:#ee0,stroke:#990
-  classDef flags fill:#fb7,stroke:#fa0
