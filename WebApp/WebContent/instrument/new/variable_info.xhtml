@@ -12,16 +12,25 @@
       One or more of your selected variables require extra information.
     </div>
     <h:form id="newInstrumentForm" method="post" charset="utf8">
-      <ui:repeat value="#{newInstrumentBean.getVariableProperties().entrySet()}"
-        var="varPropEntry">
-        <p:fieldset legend="#{varPropEntry.key.name}"
+      <ui:repeat value="#{newInstrumentBean.variablesWithAttributes}"
+        var="attrVar">
+        <p:fieldset legend="#{attrVar.name}"
           style="margin-bottom: 20px">
 
           <table class="form">
-            <ui:repeat value="#{varPropEntry.value}" var="attribute">
+            <ui:repeat value="#{attrVar.attributes}" var="attr">
               <tr>
-                <td class="labels"><h:outputText value="#{attribute.label}" /></td>
-                <td><p:inputNumber value="#{attribute.value}" /></td>
+                <td class="labels"><h:outputText value="#{attr.description}" /></td>
+                <td>
+                  <ui:fragment rendered="#{attr.type eq 'ENUM'}">
+                    <p:selectOneMenu value="#{attr.value}">
+                      <f:selectItems value="#{attr.enumEntries}"/>
+                    </p:selectOneMenu>
+                  </ui:fragment>
+                  <ui:fragment rendered="#{attr.type eq 'NUMBER'}">
+                    <p:inputNumber value="#{attr.value}"/>
+                  </ui:fragment>
+                </td>
               </tr>
             </ui:repeat>
           </table>

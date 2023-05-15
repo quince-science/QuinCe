@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,7 +45,7 @@ public class Variable implements Comparable<Variable> {
    * IDs and Labels for this variable's attributes, which must be defined by the
    * user when they create an instrument.
    */
-  private LinkedHashMap<String, String> attributes;
+  private VariableAttributes attributes;
 
   /**
    * The variable's properties
@@ -100,10 +99,9 @@ public class Variable implements Comparable<Variable> {
    *           If any cascade flags are invalid
    */
   protected Variable(SensorsConfiguration sensorConfig, long id, String name,
-    LinkedHashMap<String, String> attributes, String propertiesJson,
-    long coreSensorTypeId, List<Long> requiredSensorTypeIds,
-    List<Integer> questionableCascades, List<Integer> badCascades,
-    Map<SensorType, ColumnHeading> columnHeadings)
+    VariableAttributes attributes, String propertiesJson, long coreSensorTypeId,
+    List<Long> requiredSensorTypeIds, List<Integer> questionableCascades,
+    List<Integer> badCascades, Map<SensorType, ColumnHeading> columnHeadings)
     throws SensorTypeNotFoundException, SensorConfigurationException,
     InvalidFlagException {
 
@@ -317,7 +315,7 @@ public class Variable implements Comparable<Variable> {
     return attributes.size() > 0;
   }
 
-  public LinkedHashMap<String, String> getAttributes() {
+  public VariableAttributes getAttributes() {
     return attributes;
   }
 

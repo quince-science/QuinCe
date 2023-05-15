@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,8 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.GsonBuilder;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
@@ -161,7 +158,7 @@ public class SensorsConfiguration {
 
       long currentVariableId = -1;
       String name = null;
-      LinkedHashMap<String, String> attributes = null;
+      VariableAttributes attributes = null;
       String propertiesJson = null;
       long coreSensorType = -1L;
       List<Long> requiredSensorTypes = new ArrayList<Long>();
@@ -227,19 +224,12 @@ public class SensorsConfiguration {
     }
   }
 
-  private LinkedHashMap<String, String> makeAttributesMap(
-    String attributesJson) {
-    LinkedHashMap<String, String> result;
-
-    if (null == attributesJson) {
-      result = new LinkedHashMap<String, String>();
-    } else {
-      Type mapType = new TypeToken<LinkedHashMap<String, String>>() {
-      }.getType();
-      result = new Gson().fromJson(attributesJson, mapType);
-    }
-
-    return result;
+  private VariableAttributes makeAttributesMap(String attributesJson) {
+    return null == attributesJson ? new VariableAttributes()
+      : new GsonBuilder()
+        .registerTypeAdapter(VariableAttributes.class,
+          new VariableAttributesDeserializer())
+        .create().fromJson(attributesJson, VariableAttributes.class);
   }
 
   /**
