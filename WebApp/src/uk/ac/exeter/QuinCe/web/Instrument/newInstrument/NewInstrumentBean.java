@@ -385,16 +385,6 @@ public class NewInstrumentBean extends FileUploadBean {
   private List<Variable> instrumentVariables;
 
   /**
-   * The properties for the selected variables, structured for input from the
-   * front end.
-   * <p>
-   * These will be restructured into the required Properties objects when the
-   * instrument is saved.
-   * </p>
-   */
-  private Map<Variable, List<VariableProperty>> variableProperties;
-
-  /**
    * Indicates whether or not the instrument has a fixed position (i.e. does not
    * provide GPS data).
    */
@@ -609,7 +599,6 @@ public class NewInstrumentBean extends FileUploadBean {
       assignmentsTree = null;
       sensorGroups = null;
       instrumentVariables = null;
-      variableProperties = null;
       preFlushingTime = 0;
       postFlushingTime = 0;
       depth = 0;
@@ -667,28 +656,12 @@ public class NewInstrumentBean extends FileUploadBean {
       this.instrumentVariables = sensorConfig
         .getInstrumentVariables(instrumentVariables);
 
-      variableProperties = new HashMap<Variable, List<VariableProperty>>();
-
-      for (Variable var : this.instrumentVariables) {
-
-        if (var.hasAttributes()) {
-          List<VariableProperty> varProps = new ArrayList<VariableProperty>();
-          for (Map.Entry<String, String> attribute : var.getAttributes()
-            .entrySet()) {
-
-            varProps.add(
-              new VariableProperty(attribute.getKey(), attribute.getValue()));
-          }
-
-          variableProperties.put(var, varProps);
-        }
-      }
-
       sensorAssignments = new SensorAssignments(getDataSource(),
         instrumentVariables);
       assignmentsTree = new AssignmentsTree(this.instrumentVariables,
         sensorAssignments, !fixedPosition);
       sensorGroups = new SensorGroups();
+      this.instrumentVariables.forEach(v -> v.getAttributes().reset());
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
     }
@@ -1615,7 +1588,8 @@ public class NewInstrumentBean extends FileUploadBean {
    * @return The navigation target
    */
   public String goToVariableInfo() {
-    return variableProperties.size() > 0 ? NAV_VARIABLE_INFO : NAV_UPLOAD_FILE;
+    return instrumentVariables.stream().filter(v -> v.hasAttributes()).findAny()
+      .isPresent() ? NAV_VARIABLE_INFO : NAV_UPLOAD_FILE;
   }
 
   /**
@@ -1921,18 +1895,19 @@ public class NewInstrumentBean extends FileUploadBean {
     InstrumentException, DatabaseException, IOException {
 
     try {
-      // Convert user-entered properties to the format in which they'll be
+      // Convert user-entered attributes to the format in which they'll be
       // stored
       Map<Variable, Properties> storedVariableProperties = new HashMap<Variable, Properties>();
 
-      for (Map.Entry<Variable, List<VariableProperty>> inputProperties : variableProperties
-        .entrySet()) {
-        Properties props = new Properties();
-        for (VariableProperty prop : inputProperties.getValue()) {
-          props.put(prop.getId(), prop.getValue());
-        }
+      for (Variable var : instrumentVariables) {
+        if (var.hasAttributes()) {
+          Properties props = new Properties();
+          var.getAttributes().forEach(attr -> {
+            props.put(attr.getId(), attr.getValue());
+          });
 
-        storedVariableProperties.put(inputProperties.getKey(), props);
+          storedVariableProperties.put(var, props);
+        }
       }
 
       // Create the new Instrument object
@@ -2128,10 +2103,6 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public void setLatitude(double latitude) {
     this.latitude = latitude;
-  }
-
-  public Map<Variable, List<VariableProperty>> getVariableProperties() {
-    return variableProperties;
   }
 
   public boolean getHasDepth() {
@@ -2495,5 +2466,9 @@ public class NewInstrumentBean extends FileUploadBean {
     if (existingPlatforms.containsKey(platformName)) {
       platformCode = existingPlatforms.get(platformName);
     }
+  }
+
+  public List<Variable> getVariablesWithAttributes() {
+    return instrumentVariables.stream().filter(v -> v.hasAttributes()).toList();
   }
 }

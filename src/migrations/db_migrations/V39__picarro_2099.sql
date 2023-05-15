@@ -1,3 +1,12 @@
+-- Revise variable attributes setup
+UPDATE variables
+    SET attributes = '{"atm_pres_sensor_height": {"name": "Atmospheric Pressure Sensor Height (m)", "type": "NUMBER"}}'
+    WHERE name = 'Underway Atmospheric pCO₂';
+    
+UPDATE variables
+    SET attributes = '{"zero_flush": {"name": "Zero Flushing Time (s)", "type": "NUMBER"}}'
+    WHERE name = 'CONTROS pCO₂';
+
 -- New sensor types
 INSERT INTO sensor_types (
     name, vargroup, parent, depends_on, depends_question, internal_calibration,
@@ -17,11 +26,12 @@ INSERT INTO sensor_types (
 
 -- Variable
 INSERT INTO variables (name, attributes, properties)
-  VALUES ('Underway Marine pCO₂ from ¹²CO₂/¹³CO₂', NULL, NULL);
+  VALUES ('Underway Marine pCO₂ from ¹²CO₂/¹³CO₂',
+    '{"cal_gas_type": {"name": "Calibration Gas Type", "type": "ENUM", "values": ["¹²CO₂/¹³CO₂", "Total CO₂"]}}', NULL);
 
 INSERT INTO variables (name, attributes, properties)
   VALUES ('Underway Atmospheric pCO₂ from ¹²CO₂/¹³CO₂',
-    '{"atm_pres_sensor_height": "Atmospheric Pressure Sensor Height"}', NULL);
+    '{"atm_pres_sensor_height": {"name": "Atmospheric Pressure Sensor Height (m)", "type": "NUMBER"}}', NULL);
 
 -- Marine variable sensors
 -- SST
