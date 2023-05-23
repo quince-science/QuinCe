@@ -73,6 +73,7 @@ public class DataReductionQCJob extends DataSetJob {
 
     try {
       conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
       DataSet dataSet = getDataset(conn);
       Instrument instrument = getInstrument(conn);
 
@@ -172,5 +173,4 @@ public class DataReductionQCJob extends DataSetJob {
   public String getJobName() {
     return jobName;
   }
-
 }

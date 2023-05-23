@@ -65,50 +65,51 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
                     all_datasets.append(table_dataset)
 
             # Join and sort datasets
-            merged_data = all_datasets[0]
+            if len(all_datasets) > 0:
+                merged_data = all_datasets[0]
 
-            if len(all_datasets) > 1:
-                for i in range(1, len(all_datasets)):
-                    merged_data = merged_data.merge(all_datasets[i], how='outer', suffixes=(None, f'___{i}'),
-                                                    on=extractor_config['output']['timestamp_column'])
+                if len(all_datasets) > 1:
+                    for i in range(1, len(all_datasets)):
+                        merged_data = merged_data.merge(all_datasets[i], how='outer', suffixes=(None, f'___{i}'),
+                                                        on=extractor_config['output']['timestamp_column'])
 
-            # Merge columns from multiple tables with same names.
-            # NB Clashing values will be ignored - a correct configuration should not produce any.
-            #    Yes, I'm being lazy.
-            for col in merged_data.columns:
-                repeat_col = re.match('(.*)___[0-9]+$', col)
-                if repeat_col is not None:
-                    target_col = repeat_col.group(1)
-                    merged_data[target_col] = merged_data[target_col].combine_first(merged_data[col])
-                    merged_data.drop(col, axis=1, inplace=True)
+                # Merge columns from multiple tables with same names.
+                # NB Clashing values will be ignored - a correct configuration should not produce any.
+                #    Yes, I'm being lazy.
+                for col in merged_data.columns:
+                    repeat_col = re.match('(.*)___[0-9]+$', col)
+                    if repeat_col is not None:
+                        target_col = repeat_col.group(1)
+                        merged_data[target_col] = merged_data[target_col].combine_first(merged_data[col])
+                        merged_data.drop(col, axis=1, inplace=True)
 
-            # Perform all mappings
-            if 'column_mapping' in extractor_config:
-                for col_map in extractor_config['column_mapping']['mappings']:
+                # Perform all mappings
+                if 'column_mapping' in extractor_config:
+                    for col_map in extractor_config['column_mapping']['mappings']:
 
-                    mapped_values = []
+                        mapped_values = []
 
-                    merged_data[col_map['column']] = merged_data[col_map['column']].astype(str)
+                        merged_data[col_map['column']] = merged_data[col_map['column']].astype(str)
 
-                    for map_from, map_to in col_map['mapping']:
-                        merged_data[col_map['column']].replace(map_from, map_to, inplace=True)
-                        mapped_values.append(map_to)
+                        for map_from, map_to in col_map['mapping']:
+                            merged_data[col_map['column']].replace(map_from, map_to, inplace=True)
+                            mapped_values.append(map_to)
 
-                    column_index = merged_data.columns.get_loc(col_map['column'])
+                        column_index = merged_data.columns.get_loc(col_map['column'])
 
-                    for i in range(0, len(merged_data[col_map['column']])):
-                        if merged_data.iloc[i, column_index] not in mapped_values:
-                            merged_data.iloc[i, column_index] = col_map['other']
+                        for i in range(0, len(merged_data[col_map['column']])):
+                            if merged_data.iloc[i, column_index] not in mapped_values:
+                                merged_data.iloc[i, column_index] = col_map['other']
 
-            # Sort by time
-            merged_data.sort_values(by=extractor_config['output']['timestamp_column'], inplace=True)
+                # Sort by time
+                merged_data.sort_values(by=extractor_config['output']['timestamp_column'], inplace=True)
 
-            # Get data as CSV
-            date_format = '%Y-%m-%dT%H:%M:%SZ'
-            if 'timestamp_format' in extractor_config['output']:
-                date_format = extractor_config['output']['timestamp_format']
+                # Get data as CSV
+                date_format = '%Y-%m-%dT%H:%M:%SZ'
+                if 'timestamp_format' in extractor_config['output']:
+                    date_format = extractor_config['output']['timestamp_format']
 
-            result = merged_data.to_csv(None, index=False, date_format=date_format).encode("utf-8")
+                result = merged_data.to_csv(None, index=False, date_format=date_format).encode("utf-8")
 
         # Delete the temporary file
         try:

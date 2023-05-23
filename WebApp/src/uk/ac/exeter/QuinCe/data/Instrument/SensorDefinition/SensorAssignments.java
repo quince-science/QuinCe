@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,8 @@ public class SensorAssignments
    * The database IDs of the variables that this set of assignments is targeting
    */
   private List<Long> variableIDs;
+
+  private HashMap<Long, SensorType> dbColumnSensorTypeCache = new HashMap<Long, SensorType>();
 
   /**
    * Initialise the assignments for the specified list of {@link Variable}s,
@@ -252,8 +255,7 @@ public class SensorAssignments
 
       if (!result) {
         for (SensorType sensorType : keySet()) {
-          if (sensorType.hasInternalCalibration()
-            && get(sensorType).size() > 0) {
+          if (sensorType.hasInternalCalibration()) {
             result = true;
             break;
           }
@@ -692,31 +694,6 @@ public class SensorAssignments
   }
 
   /**
-   * Determine whether or not the Run Type is required in a given file, and has
-   * not yet been assigned.
-   *
-   * @param dataFileName
-   *          The data file to be checked
-   * @return {@code true} if the run type is required; {@code false} if not.
-   */
-  public boolean runTypeRequired(String dataFileName) {
-    boolean required = false;
-
-    for (SensorType type : keySet()) {
-      if (type.hasInternalCalibration()) {
-        for (SensorAssignment assignment : get(type)) {
-          if (assignment.getDataFile().equals(dataFileName)) {
-            required = true;
-            break;
-          }
-        }
-      }
-    }
-
-    return required;
-  }
-
-  /**
    * Get the number of columns assigned to a given SensorType. If the SensorType
    * is not found, returns 0
    *
@@ -752,16 +729,22 @@ public class SensorAssignments
     } else if (columnId == FileDefinition.LATITUDE_COLUMN_ID) {
       result = SensorType.LATITUDE_SENSOR_TYPE;
     } else {
-      for (SensorType sensorType : keySet()) {
-        for (SensorAssignment assignment : get(sensorType)) {
-          if (assignment.getDatabaseId() == columnId) {
-            result = sensorType;
+      // Try to get the SensorType from the cache
+      result = dbColumnSensorTypeCache.get(columnId);
+
+      if (null == result) {
+        for (SensorType sensorType : keySet()) {
+          for (SensorAssignment assignment : get(sensorType)) {
+            if (assignment.getDatabaseId() == columnId) {
+              result = sensorType;
+              break;
+            }
+          }
+
+          if (null != result) {
+            dbColumnSensorTypeCache.put(columnId, result);
             break;
           }
-        }
-
-        if (null != result) {
-          break;
         }
       }
     }
@@ -1081,5 +1064,55 @@ public class SensorAssignments
   public List<String> getAllSensorNames() {
     return values().stream().flatMap(Set::stream)
       .map(a -> a.getSensorName().toLowerCase()).collect(Collectors.toList());
+  }
+
+  /**
+   * Determines whether or not there are any diagnostic sensors assigned.
+   *
+   * @return {@code true} if at least one diagnostic sensor is assigned;
+   *         {@code false} otherwise.
+   */
+  public boolean hasDiagnosticSensors() {
+    return keySet().stream().filter(t -> t.isDiagnostic()).map(t -> get(t))
+      .filter(a -> a.size() > 0).findAny().isPresent();
+  }
+
+  /**
+   * Get the list of assigned diagnostic sensors.
+   *
+   * @return The diagnostic sensors.
+   */
+  public List<SensorAssignment> getDiagnosticSensors() {
+    return keySet().stream().filter(t -> t.isDiagnostic())
+      .flatMap(t -> get(t).stream()).collect(Collectors.toList());
+  }
+
+  /**
+   * Get the list of assigned non-diagnostic sensors.
+   *
+   * @return The diagnostic sensors.
+   */
+  public List<SensorAssignment> getNonDiagnosticSensors(
+    boolean includeSystemTypes) {
+    return keySet().stream().filter(
+      t -> !t.isDiagnostic() && (includeSystemTypes ? true : !t.isSystemType()))
+      .flatMap(t -> get(t).stream()).collect(Collectors.toList());
+  }
+
+  /**
+   * Get the {@link SensorAssignment} with the specified database ID.
+   *
+   * <p>
+   * Returns {@code null} if there is no assignment with that ID.
+   * </p>
+   *
+   * @param assignmentId
+   *          The database ID
+   * @return The SensorAssignment.
+   */
+  public SensorAssignment getById(long assignmentId) {
+    Optional<SensorAssignment> found = values().stream().flatMap(Set::stream)
+      .filter(a -> a.getDatabaseId() == assignmentId).findFirst();
+    return found.isPresent() ? found.get() : null;
   }
 }

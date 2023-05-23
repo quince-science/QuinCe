@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.utils.MathUtils;
 
 class PlotValue implements Comparable<PlotValue> {
 
@@ -28,14 +29,29 @@ class PlotValue implements Comparable<PlotValue> {
   private final Double y;
 
   /**
+   * The y2 value
+   */
+  private final Double y2;
+
+  /**
    * Indicates whether or not this is a ghost value
    */
   private final boolean ghost;
 
   /**
+   * Indicates whether or not the Y2 value is a ghost
+   */
+  private final boolean ghost2;
+
+  /**
    * The y value's QC flag
    */
   private Flag flag;
+
+  /**
+   * The y2 value's QC flag - NEEDED is always converted to the Auto QC flag.
+   */
+  private Flag flag2;
 
   /**
    * Constructor for all fields.
@@ -51,13 +67,17 @@ class PlotValue implements Comparable<PlotValue> {
    * @param flag
    *          The y value's QC flag.
    */
-  protected PlotValue(long id, Double x, Double y, boolean ghost, Flag flag) {
+  protected PlotValue(long id, Double x, Double y, boolean ghost, Flag flag,
+    Double y2, boolean ghost2, Flag flag2) {
     this.id = id;
     this.xDouble = x;
     this.xTime = null;
     this.y = y;
     this.ghost = ghost;
     this.flag = flag;
+    this.y2 = y2;
+    this.ghost2 = ghost2;
+    this.flag2 = flag2;
   }
 
   /**
@@ -75,13 +95,16 @@ class PlotValue implements Comparable<PlotValue> {
    *          The y value's QC flag.
    */
   protected PlotValue(long id, LocalDateTime x, Double y, boolean ghost,
-    Flag flag) {
+    Flag flag, Double y2, boolean ghost2, Flag flag2) {
     this.id = id;
     this.xDouble = 0D;
     this.xTime = x;
     this.y = y;
     this.ghost = ghost;
     this.flag = flag;
+    this.y2 = y2;
+    this.ghost2 = ghost2;
+    this.flag2 = flag2;
   }
 
   @Override
@@ -143,6 +166,10 @@ class PlotValue implements Comparable<PlotValue> {
     return y;
   }
 
+  public Double getY2() {
+    return y2;
+  }
+
   public long getId() {
     return id;
   }
@@ -153,6 +180,14 @@ class PlotValue implements Comparable<PlotValue> {
 
   public Flag getFlag() {
     return flag;
+  }
+
+  public boolean isGhost2() {
+    return ghost2;
+  }
+
+  public Flag getFlag2() {
+    return flag2;
   }
 
   /**
@@ -167,9 +202,14 @@ class PlotValue implements Comparable<PlotValue> {
    *         {@code false} otherwise.
    */
   public boolean inFlagPlot() {
-    return (null != xDouble && !xDouble.isNaN() && null != y && !y.isNaN()
-      && (flag.equals(Flag.BAD) || flag.equals(Flag.QUESTIONABLE)
-        || flag.equals(Flag.NEEDED)));
+    return !MathUtils.isEmpty(xDouble)
+      && (!MathUtils.isEmpty(y) && isPlotFlag(flag)
+        || (!MathUtils.isEmpty(y2) && isPlotFlag(flag2)));
+  }
+
+  private boolean isPlotFlag(Flag flag) {
+    return flag.equals(Flag.BAD) || flag.equals(Flag.QUESTIONABLE)
+      || flag.equals(Flag.NEEDED);
   }
 
   /**
@@ -191,5 +231,13 @@ class PlotValue implements Comparable<PlotValue> {
    */
   public boolean xNull() {
     return (!xIsTime() && null == getXDouble());
+  }
+
+  public boolean hasY() {
+    return !MathUtils.isEmpty(y);
+  }
+
+  public boolean hasY2() {
+    return !MathUtils.isEmpty(y2);
   }
 }

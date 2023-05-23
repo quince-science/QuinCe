@@ -14,9 +14,11 @@ import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -51,15 +53,20 @@ public class DefaultMeasurementValueCalculator
     DatasetSensorValues allSensorValues, Connection conn)
     throws MeasurementValueCalculatorException {
 
-    // TODO #1128 This currently assumes only one sensor for each SensorType.
-    // This will have to change eventually.
-    if (requiredSensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)
-      || requiredSensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
-      return getPositionValue(instrument, dataSet, measurement, coreSensorType,
-        requiredSensorType, allMeasurements, allSensorValues, conn);
-    } else {
-      return getSensorValue(instrument, dataSet, measurement, coreSensorType,
-        requiredSensorType, allMeasurements, allSensorValues, conn);
+    try {
+      // TODO #1128 This currently assumes only one sensor for each SensorType.
+      // This will have to change eventually.
+      if (requiredSensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)
+        || requiredSensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
+        return getPositionValue(instrument, dataSet, measurement,
+          coreSensorType, requiredSensorType, allMeasurements, allSensorValues,
+          conn);
+      } else {
+        return getSensorValue(instrument, dataSet, measurement, coreSensorType,
+          requiredSensorType, allMeasurements, allSensorValues, conn);
+      }
+    } catch (Exception e) {
+      throw new MeasurementValueCalculatorException(e);
     }
   }
 
@@ -67,7 +74,7 @@ public class DefaultMeasurementValueCalculator
     DataSet dataSet, Measurement measurement, SensorType coreSensorType,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException {
+    throws MeasurementValueCalculatorException, RoutineException {
 
     SensorAssignment requiredAssignment = instrument.getSensorAssignments()
       .get(requiredSensorType).first();
@@ -103,7 +110,7 @@ public class DefaultMeasurementValueCalculator
       char valueType = calcValueType(valueTime, valuesToUse);
 
       populateMeasurementValue(measurement.getTime(), result, valuesToUse,
-        valueType);
+        allSensorValues, valueType);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Cannot calculate time offset", e);
@@ -124,7 +131,8 @@ public class DefaultMeasurementValueCalculator
     DataSet dataSet, Measurement measurement, SensorType coreSensorType,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException {
+    throws MeasurementValueCalculatorException, PositionException,
+    RoutineException {
 
     MeasurementValue result = new MeasurementValue(requiredSensorType);
 
@@ -140,16 +148,13 @@ public class DefaultMeasurementValueCalculator
         .equals(SensorType.LONGITUDE_SENSOR_TYPE) ? SensorType.LONGITUDE_ID
           : SensorType.LATITUDE_ID;
 
-      SearchableSensorValuesList sensorValues = allSensorValues
-        .getColumnValues(columnId);
-
-      List<SensorValue> valuesToUse = sensorValues
-        .getWithInterpolation(positionTime, true, true);
+      List<SensorValue> valuesToUse = allSensorValues
+        .getPositionValues(columnId, measurement.getTime());
 
       char valueType = calcValueType(positionTime, valuesToUse);
 
       populateMeasurementValue(measurement.getTime(), result, valuesToUse,
-        valueType);
+        allSensorValues, valueType);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Unable to apply sensor offsets", e);
@@ -182,10 +187,12 @@ public class DefaultMeasurementValueCalculator
    *          MeasurementValue. May be overridden by this method for
    *          interpolated values.
    * @throws MeasurementValueCalculatorException
+   * @throws RoutineException
    */
   private void populateMeasurementValue(LocalDateTime measurementTime,
     MeasurementValue measurementValue, List<SensorValue> valuesToUse,
-    char preferredType) throws MeasurementValueCalculatorException {
+    DatasetSensorValues allSensorValues, char preferredType)
+    throws MeasurementValueCalculatorException, RoutineException {
     switch (valuesToUse.size()) {
     case 0: {
       // We should not use a value here
@@ -198,9 +205,10 @@ public class DefaultMeasurementValueCalculator
        * it's measured or interpolated).
        */
       if (preferredType == PlotPageTableValue.MEASURED_TYPE) {
-        measurementValue.addSensorValue(valuesToUse.get(0));
+        measurementValue.addSensorValue(valuesToUse.get(0), allSensorValues);
       } else {
-        measurementValue.addInterpolatedSensorValue(valuesToUse.get(0), true);
+        measurementValue.addInterpolatedSensorValue(valuesToUse.get(0),
+          allSensorValues, true);
       }
 
       measurementValue.setCalculatedValue(valuesToUse.get(0).getDoubleValue());
@@ -210,7 +218,7 @@ public class DefaultMeasurementValueCalculator
       /*
        * Everything is always interpolated
        */
-      measurementValue.addSensorValues(valuesToUse);
+      measurementValue.addSensorValues(valuesToUse, allSensorValues);
       measurementValue.setCalculatedValue(SensorValue
         .interpolate(valuesToUse.get(0), valuesToUse.get(1), measurementTime));
       break;

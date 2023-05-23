@@ -8,14 +8,20 @@
   <ui:define name="localHead">
     <c:set var="mainMenuActiveIndex" value="2" scope="request" />
     <script>
-      function goToStandards(id) {
+    function goToStandards(id) {
         $('#instrumentListForm\\:standardsInstrumentId').val(id);
         $('#instrumentListForm\\:showStandardsLink').click();
         return false;
       }
 
+    function goToDiagnosticsQC(id) {
+      $('#instrumentListForm\\:diagnosticQCInstrumentId').val(id);
+        $('#instrumentListForm\\:diagnostQCLink').click();
+        return false;
+      }
+
       function goToCalibrations(id) {
-        $('#instrumentListForm\\:calibrationssInstrumentId').val(id);
+        $('#instrumentListForm\\:calibrationsInstrumentId').val(id);
         $('#instrumentListForm\\:showCalibrationsLink').click();
         return false;
       }
@@ -34,7 +40,12 @@
       <p:commandLink id="showStandardsLink" ajax="false"
         action="#{externalStandardsBean.start}" />
 
-      <h:inputHidden id="calibrationssInstrumentId"
+      <h:inputHidden id="diagnosticQCInstrumentId"
+        value="#{diagnosticQCSetupBean.instrumentId}" />
+      <p:commandLink id="diagnostQCLink" ajax="false"
+        action="#{diagnosticQCSetupBean.start}" />
+
+      <h:inputHidden id="calibrationsInstrumentId"
         value="#{sensorCalibrationsBean.instrumentId}" />
       <p:commandLink id="showCalibrationsLink" ajax="false"
         action="#{sensorCalibrationsBean.start}" />
@@ -57,13 +68,20 @@
             <ui:fragment rendered="#{User.adminUser}">
               <h:outputText value="#{instrument.owner.surname}, #{instrument.owner.givenName} - "/>
             </ui:fragment>
-            <h:outputText value="#{instrument.name}"/>
+            <h:outputText value="#{instrument.displayName}"/>
           </b>
         </p:column>
         <p:column styleClass="centeredCell">
           <f:facet name="header">Sensor Calibrations</f:facet>
           <p:button value="Sensor Calibrations" styleClass="inlineButton"
             onclick="return goToCalibrations(#{instrument.id})" />
+        </p:column>
+        <p:column styleClass="centeredCell">
+          <f:facet name="header">Diagnostics QC</f:facet>
+          <ui:fragment rendered="#{instrument.hasDiagnosticSensors()}">
+            <p:button value="Diagnostics QC" styleClass="inlineButton"
+            onclick="return goToDiagnosticsQC(#{instrument.id})" />
+        </ui:fragment>
         </p:column>
         <p:column styleClass="centeredCell">
           <f:facet name="header">Calibration Gas Deployments</f:facet>

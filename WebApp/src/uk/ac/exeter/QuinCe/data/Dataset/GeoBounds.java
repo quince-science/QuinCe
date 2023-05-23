@@ -2,16 +2,17 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.util.List;
 
-import org.primefaces.json.JSONArray;
+import com.google.gson.JsonArray;
+import com.javadocmd.simplelatlng.LatLng;
 
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class GeoBounds {
 
-  public final double minLon;
-  public final double maxLon;
-  public final double minLat;
-  public final double maxLat;
+  private final double minLon;
+  private final double maxLon;
+  private final double minLat;
+  private final double maxLat;
 
   public GeoBounds(double minLon, double maxLon, double minLat, double maxLat) {
     this.minLon = minLon;
@@ -21,19 +22,22 @@ public class GeoBounds {
   }
 
   public GeoBounds(String boundsString) {
-    List<Double> boundsList = StringUtils.delimitedToDoubleList(
-      boundsString.substring(1, boundsString.length() - 1), ",");
+    List<Double> boundsList = StringUtils.delimitedToDoubleList(boundsString,
+      ",");
     this.minLon = boundsList.get(0);
     this.maxLon = boundsList.get(2);
     this.minLat = boundsList.get(1);
     this.maxLat = boundsList.get(3);
   }
 
-  public boolean inBounds(Position position) {
+  public boolean inBounds(LatLng position) {
     boolean result = true;
 
-    if (position.lon < minLon || position.lon > maxLon || position.lat < minLat
-      || position.lat > maxLat) {
+    if (null == position) {
+      result = false;
+    } else if (position.getLongitude() < minLon
+      || position.getLongitude() > maxLon || position.getLatitude() < minLat
+      || position.getLatitude() > maxLat) {
 
       result = false;
     }
@@ -51,13 +55,17 @@ public class GeoBounds {
 
   public String toJson() {
     // TODO Convert to GSON
-    JSONArray json = new JSONArray();
-    json.put(minLon);
-    json.put(minLat);
-    json.put(maxLon);
-    json.put(maxLat);
-    json.put(getMidLon());
-    json.put(getMidLat());
+    JsonArray json = new JsonArray();
+    json.add(minLon);
+    json.add(minLat);
+    json.add(maxLon);
+    json.add(maxLat);
+    json.add(getMidLon());
+    json.add(getMidLat());
     return json.toString();
+  }
+
+  public String toString() {
+    return "[[" + minLon + "," + minLat + "],[" + maxLon + "," + maxLat + "]]";
   }
 }

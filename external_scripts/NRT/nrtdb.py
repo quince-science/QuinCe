@@ -30,7 +30,7 @@ def get_instruments(conn):
     result = []
 
     c = conn.cursor()
-    c.execute("SELECT id, name, owner, type, preprocessor, check_hours FROM instrument ORDER BY id")
+    c.execute("SELECT id, name, owner, type, preprocessor, check_hours FROM instrument ORDER BY name")
     for row in c:
         record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4],
                   "check_hours": row[5]}

@@ -11,6 +11,7 @@ slack-sdk = "*"
 ftputil = "*"
 pandas = "*"
 netcdf4 = "*"
+numpy = "*"
 
 [requires]
 python_version = "3"

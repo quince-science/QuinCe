@@ -8,8 +8,8 @@ function qcFlagsAccepted() {
 
   PF('flagDialog').hide();
 
-  drawFlagPlot(1);
-  drawFlagPlot(2);
+  drawPlot(1, true, false);
+  drawPlot(2, true, false);
   clearSelection();
 
   // Reload table data
@@ -23,6 +23,12 @@ function startUserQcFlags() {
 
 function showFlagDialog() {
   errorCheck();
+
+  if (getSelectedColumn().questionableAllowed) {
+    $('#selectionForm\\:manualFlag_panel').find("[data-label='Questionable']").show()
+  } else {
+    $('#selectionForm\\:manualFlag_panel').find("[data-label='Questionable']").hide()
+  }
 
   let woceRowHtml = getSelectedRows().length.toString() + ' row';
   if (getSelectedRows().length > 1) {

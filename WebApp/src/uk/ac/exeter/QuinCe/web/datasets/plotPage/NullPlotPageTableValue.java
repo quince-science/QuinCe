@@ -1,5 +1,8 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.util.Collection;
+
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
@@ -32,7 +35,8 @@ public class NullPlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
-  public String getQcMessage(boolean replaceNewlines) {
+  public String getQcMessage(DatasetSensorValues allSensorValues,
+    boolean replaceNewlines) {
     return null;
   }
 
@@ -51,4 +55,8 @@ public class NullPlotPageTableValue implements PlotPageTableValue {
     return PlotPageTableValue.MEASURED_TYPE;
   }
 
+  @Override
+  public Collection<Long> getSources() {
+    return null;
+  }
 }

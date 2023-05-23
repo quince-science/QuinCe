@@ -1,9 +1,11 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.lang.reflect.Type;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,18 +15,24 @@ import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.javadocmd.simplelatlng.LatLng;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public abstract class PlotPageData {
 
@@ -54,6 +62,11 @@ public abstract class PlotPageData {
   protected final Instrument instrument;
 
   /**
+   * The Run Type periods
+   */
+  protected RunTypePeriods runTypePeriods;
+
+  /**
    * Json serialization type for lists of longs
    */
   Type longList = new TypeToken<List<Long>>() {
@@ -62,7 +75,7 @@ public abstract class PlotPageData {
   /**
    * Gson instance for serializing table data
    */
-  private static Gson tableDataGson;
+  private Gson tableDataGson;
 
   /**
    * An error string to display to the user if something goes wrong.
@@ -120,6 +133,21 @@ public abstract class PlotPageData {
   private Plot plot2 = null;
 
   /**
+   * Details for the first map
+   */
+  private QCMap map1 = null;
+
+  /**
+   * Details for the second map
+   */
+  private QCMap map2 = null;
+
+  /**
+   * Cache of data structured for maps
+   */
+  private Map<PlotPageColumnHeading, MapRecords> mapCache = new HashMap<PlotPageColumnHeading, MapRecords>();
+
+  /**
    * The indicator of the root field group.
    *
    * <p>
@@ -135,12 +163,6 @@ public abstract class PlotPageData {
   public static final String DIAGNOSTICS_FIELD_GROUP = "Diagnostics";
 
   public static final String MEASUREMENTVALUES_FIELD_GROUP = "Measurement Values";
-
-  static {
-    // Initialise Gson builder
-    tableDataGson = new GsonBuilder().registerTypeAdapter(
-      PlotPageTableRecord.class, new PlotPageTableRecordSerializer()).create();
-  }
 
   protected PlotPageData(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
@@ -165,11 +187,27 @@ public abstract class PlotPageData {
     try {
       loadDataAction();
 
+      DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
+      try (Connection conn = dataSource.getConnection()) {
+        runTypePeriods = DataSetDataDB.getRunTypePeriods(conn, instrument,
+          dataset.getId());
+      } catch (SQLException e) {
+        error("Error loading data", e);
+      }
+
+      // Initialise Gson builder
+      tableDataGson = new GsonBuilder()
+        .registerTypeAdapter(PlotPageTableRecord.class,
+          new PlotPageTableRecordSerializer(getAllSensorValues()))
+        .create();
+
       // Initialise the plots
-      plot1 = new Plot(this, getDefaultXAxis(), getDefaultYAxis1(),
+      plot1 = new Plot(this, getDefaultXAxis1(), getDefaultYAxis1(),
         !dataset.isNrt());
-      plot2 = new Plot(this, getDefaultXAxis(), getDefaultYAxis2(),
+      plot2 = new Plot(this, getDefaultXAxis2(), getDefaultYAxis2(),
         !dataset.isNrt());
+      map1 = new QCMap(this, getDefaultMap1Column(), !dataset.isNrt());
+      map2 = new QCMap(this, getDefaultMap2Column(), !dataset.isNrt());
 
       loaded = true;
     } catch (Exception e) {
@@ -184,6 +222,13 @@ public abstract class PlotPageData {
    *          A data source.
    */
   protected abstract void loadDataAction() throws Exception;
+
+  /**
+   * Get the complete set of {@link SensorValue}s for the dataset.
+   *
+   * @return The dataset's SensorValues.
+   */
+  protected abstract DatasetSensorValues getAllSensorValues();
 
   /**
    * Get the standard column headings for the table in groups, without QC
@@ -664,6 +709,10 @@ public abstract class PlotPageData {
     this.selectedRows = new Gson().fromJson(selectedRows, longList);
   }
 
+  public void clearSelection() {
+    this.selectedRows = new ArrayList<Long>();
+  }
+
   /**
    * Get the ID of the row that was just clicked.
    *
@@ -839,13 +888,25 @@ public abstract class PlotPageData {
     return result;
   }
 
-  protected PlotPageColumnHeading getDefaultXAxis() throws Exception {
+  protected PlotPageColumnHeading getDefaultXAxis1() throws Exception {
     return getColumnHeadings().get(ROOT_FIELD_GROUP).get(0);
+  }
+
+  protected PlotPageColumnHeading getDefaultXAxis2() throws Exception {
+    return getDefaultXAxis1();
   }
 
   protected abstract PlotPageColumnHeading getDefaultYAxis1() throws Exception;
 
   protected abstract PlotPageColumnHeading getDefaultYAxis2() throws Exception;
+
+  protected PlotPageColumnHeading getDefaultMap1Column() throws Exception {
+    return getDefaultYAxis1();
+  }
+
+  protected PlotPageColumnHeading getDefaultMap2Column() throws Exception {
+    return getDefaultYAxis2();
+  }
 
   /**
    * Get all the column headings as an unstructured list, i.e. not in their
@@ -869,5 +930,83 @@ public abstract class PlotPageData {
 
   public DataSet getDataset() {
     return dataset;
+  }
+
+  public QCMap getMap1() {
+    return map1;
+  }
+
+  public QCMap getMap2() {
+    return map2;
+  }
+
+  public Double[] getValueRange(PlotPageColumnHeading column) throws Exception {
+
+    if (!mapCache.containsKey(column)) {
+      buildMapCache(column);
+    }
+
+    return mapCache.get(column).getValueRange();
+  }
+
+  protected abstract List<LocalDateTime> getDataTimes();
+
+  public String getMapData(PlotPageColumnHeading column, GeoBounds bounds,
+    boolean useNeededFlags, boolean hideNonGoodFlags) throws Exception {
+
+    if (!mapCache.containsKey(column)) {
+      buildMapCache(column);
+    }
+
+    return mapCache.get(column).getDisplayJson(bounds, selectedRows,
+      useNeededFlags, hideNonGoodFlags);
+  }
+
+  private void buildMapCache(PlotPageColumnHeading column) throws Exception {
+
+    MapRecords records = new MapRecords(size());
+
+    if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
+      List<LocalDateTime> times = getDataTimes();
+      for (LocalDateTime time : times) {
+        LatLng position = getAllSensorValues().getClosestPosition(time);
+        records.add(new TimeMapRecord(position, time));
+      }
+    } else {
+      TreeMap<LocalDateTime, PlotPageTableValue> values = getColumnValues(
+        column);
+
+      for (Map.Entry<LocalDateTime, PlotPageTableValue> entry : values
+        .entrySet()) {
+        LatLng position = getMapPosition(entry.getKey());
+        if (null != position) {
+          records.add(new PlotPageValueMapRecord(position, entry.getKey(),
+            entry.getValue()));
+        }
+      }
+    }
+
+    mapCache.put(column, records);
+  }
+
+  protected abstract DataLatLng getMapPosition(LocalDateTime time)
+    throws Exception;
+
+  public boolean getPlot1HideFlags() {
+    return null == plot1 ? false : plot1.getHideFlags();
+  }
+
+  public void setPlot1HideFlags(boolean hide) {
+    plot1.setHideFlags(hide);
+    map1.setHideFlags(hide);
+  }
+
+  public boolean getPlot2HideFlags() {
+    return null == plot2 ? false : plot1.getHideFlags();
+  }
+
+  public void setPlot2HideFlags(boolean hide) {
+    plot2.setHideFlags(hide);
+    map2.setHideFlags(hide);
   }
 }

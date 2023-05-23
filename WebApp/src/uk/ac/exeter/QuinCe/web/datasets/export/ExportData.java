@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -193,7 +194,7 @@ public class ExportData extends ManualQCData {
       if (null != dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY,
         "depth")) {
         PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(DEPTH_ID,
-          "Depth", "Depth", "ADEPZZ01", "m", true, false, true);
+          "Depth", "Depth", "ADEPZZ01", "m", true, false, true, false);
         rootColumns.add(depthHeading);
 
         // Set up the fixed value ready for later
@@ -216,7 +217,8 @@ public class ExportData extends ManualQCData {
           if (null != variableHeading) {
 
             measurementValuesHeadings
-              .add(new PlotPageColumnHeading(variableHeading, true, false));
+              .add(new PlotPageColumnHeading(variableHeading, true, false,
+                sensorType.questionableFlagAllowed()));
           }
         }
       }
@@ -283,9 +285,11 @@ public class ExportData extends ManualQCData {
    *          The new QC comment
    * @throws InstrumentException
    * @throws DataReductionException
+   * @throws InvalidFlagException
    */
   protected void overrideQc(long rowId, long columnId, Flag qcFlag,
-    String qcComment) throws InstrumentException, DataReductionException {
+    String qcComment)
+    throws InstrumentException, DataReductionException, InvalidFlagException {
 
     // The rowId is the row time
     LocalDateTime rowTime = DateTimeUtils.longToDate(rowId);

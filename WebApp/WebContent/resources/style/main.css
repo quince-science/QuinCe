@@ -89,6 +89,10 @@ label {
   font-weight: 700;
 }
 
+.label {
+  font-weight: 700;
+}
+
 input {
   border-radius: 3px;
   border: 1px solid #666;
@@ -168,6 +172,14 @@ input[type="submit"][disabled="disabled"] {
   margin-top: 0px;
   margin-left: 5px;
   margin-right: 5px;
+}
+
+.inlineSelectBooleanButton {
+  margin-top: 0px;
+  margin-left: 5px;
+  margin-right: 5px;
+  height: 28px;
+  top: -3px;
 }
 
 input[type="submit"]:last-of-type, button:last-of-type {

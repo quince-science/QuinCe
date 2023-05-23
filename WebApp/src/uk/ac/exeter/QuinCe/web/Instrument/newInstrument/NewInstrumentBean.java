@@ -18,6 +18,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 import org.primefaces.model.TreeNode;
@@ -359,7 +360,12 @@ public class NewInstrumentBean extends FileUploadBean {
   private int depth;
 
   /**
-   * The averaging mode
+   * The platform name.
+   */
+  private String platformName = null;
+
+  /**
+   * The platform code.
    */
   private String platformCode = null;
 
@@ -481,12 +487,18 @@ public class NewInstrumentBean extends FileUploadBean {
   private int groupLinkDirection;
 
   /**
+   * Existing platform names/codes
+   */
+  private TreeMap<String, String> existingPlatforms;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
    */
   public String start() throws Exception {
     clearAllData();
+    existingPlatforms = InstrumentDB.getPlatforms(getDataSource(), getUser());
     return NAV_NAME;
   }
 
@@ -601,6 +613,7 @@ public class NewInstrumentBean extends FileUploadBean {
       preFlushingTime = 0;
       postFlushingTime = 0;
       depth = 0;
+      platformName = "";
       platformCode = "";
       fixedPosition = false;
       longitude = 0;
@@ -625,6 +638,10 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public String getInstrumentName() {
     return instrumentName;
+  }
+
+  public String getInstrumentDisplayName() {
+    return platformName + ";" + instrumentName;
   }
 
   /**
@@ -1555,7 +1572,40 @@ public class NewInstrumentBean extends FileUploadBean {
    * @return The navigation to the General Info page
    */
   public String goToGeneralInfo() {
-    return NAV_GENERAL_INFO;
+    return (nameValid() ? NAV_GENERAL_INFO : null);
+  }
+
+  private boolean nameValid() {
+    boolean result = true;
+
+    if (StringUtils.isBlank(platformName)) {
+      result = false;
+      setMessage(null, "Platform Name required");
+    }
+
+    if (StringUtils.isBlank(platformCode)) {
+      result = false;
+      setMessage(null, "Platform Code required");
+    }
+
+    if (StringUtils.isBlank(instrumentName)) {
+      result = false;
+      setMessage(null, "Instrument Name required");
+    }
+
+    try {
+      if (InstrumentDB.instrumentExists(getDataSource(), getUser(),
+        platformName, instrumentName)) {
+        result = false;
+        setMessage(null, "Platform/Instrument name combination already used");
+      }
+    } catch (Exception e) {
+      ExceptionUtils.printStackTrace(e);
+      result = false;
+      setMessage(null, "Error checking instrument name");
+    }
+
+    return result;
   }
 
   /**
@@ -1825,6 +1875,21 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
+   * @return the platformName
+   */
+  public String getPlatformName() {
+    return platformName;
+  }
+
+  /**
+   * @param platformName
+   *          the platform name to set
+   */
+  public void setPlatformName(String platformName) {
+    this.platformName = platformName;
+  }
+
+  /**
    * @return the platformCode
    */
   public String getPlatformCode() {
@@ -1874,7 +1939,7 @@ public class NewInstrumentBean extends FileUploadBean {
       // TODO groups in here.
       Instrument instrument = new Instrument(getUser(), instrumentName,
         instrumentFiles, instrumentVariables, storedVariableProperties,
-        sensorAssignments, sensorGroups, platformCode, false);
+        sensorAssignments, sensorGroups, platformName, platformCode, false);
 
       instrument.setProperty(Instrument.PROP_PRE_FLUSHING_TIME,
         preFlushingTime);
@@ -2409,7 +2474,6 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   public List<PositionFormatEntry> getLatitudeFormats() {
-
     if (null == latFormats) {
       TreeMap<Integer, String> latFormatsMap = LatitudeSpecification
         .getFormats();
@@ -2421,5 +2485,15 @@ public class NewInstrumentBean extends FileUploadBean {
     }
 
     return latFormats;
+  }
+
+  public List<String> getExistingPlatformNames() {
+    return new ArrayList<String>(existingPlatforms.keySet());
+  }
+
+  public void platformNameChanged() {
+    if (existingPlatforms.containsKey(platformName)) {
+      platformCode = existingPlatforms.get(platformName);
+    }
   }
 }

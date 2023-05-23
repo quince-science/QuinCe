@@ -75,7 +75,6 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
     this.calculationValues = calculationValues;
     this.qcFlag = qcFlag;
     this.qcMessages = qcMessages;
-
   }
 
   /**
@@ -89,7 +88,7 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
    *           If the QC message is empty.
    */
   public void setQc(Flag flag, String message) throws DataReductionException {
-    setQc(flag, Arrays.asList(new String[] { message }));
+    setQc(flag, Arrays.asList(message));
   }
 
   /**

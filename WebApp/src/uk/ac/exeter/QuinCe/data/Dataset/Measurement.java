@@ -33,8 +33,6 @@ public class Measurement implements Comparable<Measurement> {
 
   public static final MeasurementTimeComparator TIME_COMPARATOR = new MeasurementTimeComparator();
 
-  public static final String POSITION_QC_PREFIX = "Position QC:";
-
   protected static Gson gson;
 
   protected static Type MEASUREMENT_VALUES_TYPE;
@@ -332,58 +330,6 @@ public class Measurement implements Comparable<Measurement> {
    */
   public void addRunTypes(Measurement incoming) {
     this.runTypes.putAll(incoming.runTypes);
-  }
-
-  /**
-   * Perform final checks on measurement values before they are stored in the
-   * database.
-   *
-   * <p>
-   * Performs the following actions:
-   * </p>
-   * <ul>
-   * <li>If there are Position QC flags, apply them to all the measurement
-   * values. Anything with a bad position is bad by definition, so no other
-   * lesser flags are valid even if they're set by the user.</li>
-   * </ul>
-   */
-  public void postProcessMeasurementValues() {
-
-    MeasurementValue longitude = measurementValues.get(SensorType.LONGITUDE_ID);
-    if (null != longitude) {
-      Flag positionFlag = longitude.getQcFlag();
-      if (positionFlag.equals(Flag.QUESTIONABLE)
-        || positionFlag.equals(Flag.BAD)) {
-
-        String positionMessage = longitude.getQcMessage(false);
-
-        for (Map.Entry<Long, MeasurementValue> valueEntry : measurementValues
-          .entrySet()) {
-          if (valueEntry.getKey() != SensorType.LONGITUDE_ID
-            && valueEntry.getKey() != SensorType.LATITUDE_ID) {
-
-            MeasurementValue value = valueEntry.getValue();
-            Flag valueFlag = value.getQcFlag();
-
-            // Note that we override any QC on these values, even if the user
-            // set them.
-            if (positionFlag.moreSignificantThan(valueFlag)) {
-              value.overrideQC(positionFlag,
-                POSITION_QC_PREFIX + positionMessage);
-            } else {
-              Set<String> existingMessages = value.getQcMessages();
-
-              boolean hasPosition = existingMessages.stream()
-                .anyMatch(m -> m.startsWith(POSITION_QC_PREFIX));
-
-              if (!hasPosition) {
-                value.addQcMessage(POSITION_QC_PREFIX + positionMessage);
-              }
-            }
-          }
-        }
-      }
-    }
   }
 
   public Collection<MeasurementValue> getMeasurementValues() {

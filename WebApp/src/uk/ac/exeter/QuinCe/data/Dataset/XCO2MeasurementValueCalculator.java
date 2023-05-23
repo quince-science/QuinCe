@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.sql.Connection;
 import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -37,18 +38,23 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
       instrument, dataSet, measurement, coreSensorType, xco2SensorType,
       allMeasurements, allSensorValues, conn);
 
-    if (xCO2.getMemberCount() > 0 && dryingRequired(instrument)) {
+    try {
+      if (xCO2.getMemberCount() > 0 && dryingRequired(instrument)) {
 
-      MeasurementValue xH2O = new DefaultMeasurementValueCalculator().calculate(
-        instrument, dataSet, measurement, coreSensorType, xh2oSensorType,
-        allMeasurements, allSensorValues, conn);
+        MeasurementValue xH2O = new DefaultMeasurementValueCalculator()
+          .calculate(instrument, dataSet, measurement, coreSensorType,
+            xh2oSensorType, allMeasurements, allSensorValues, conn);
 
-      // result = new MeasurementValue(xco2SensorType);
-      xCO2.addSensorValues(xCO2, allSensorValues);
-      xCO2.addSupportingSensorValues(xH2O, allSensorValues);
+        // result = new MeasurementValue(xco2SensorType);
+        xCO2.addSensorValues(xCO2, allSensorValues);
+        xCO2.addSupportingSensorValues(xH2O, allSensorValues);
 
-      xCO2.setCalculatedValue(
-        dry(xCO2.getCalculatedValue(), xH2O.getCalculatedValue()));
+        xCO2.setCalculatedValue(
+          dry(xCO2.getCalculatedValue(), xH2O.getCalculatedValue()));
+      }
+    } catch (RoutineException e) {
+      throw new MeasurementValueCalculatorException(
+        "Error extraction QC information", e);
     }
 
     return xCO2;

@@ -1,13 +1,16 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.google.gson.Gson;
@@ -44,6 +47,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class Instrument {
 
   private static final String SENSOR_GROUPS_JSON_NAME = "sensorGroups";
+
+  private static final String DIAGNOSTIC_QC_JSON_NAME = "diagnosticQC";
 
   /**
    * Property name for the pre-flushing time
@@ -83,7 +88,7 @@ public class Instrument {
   /**
    * The name of the instrument
    */
-  private String name = null;
+  private final String name;
 
   /**
    * The instrument properties
@@ -116,9 +121,14 @@ public class Instrument {
   private SensorGroups sensorGroups = null;
 
   /**
+   * Platform name
+   */
+  private final String platformName;
+
+  /**
    * Platform code
    */
-  private String platformCode = null;
+  private final String platformCode;
 
   /**
    * Indicates whether or not this instrument supplies near-real-time data
@@ -128,6 +138,11 @@ public class Instrument {
    * to false.
    */
   private boolean nrt = false;
+
+  /**
+   * The configuration for the behaviour of diagnostic sensors QC.
+   */
+  private DiagnosticQCConfig diagnosticQC;
 
   /**
    * Create an instrument from an existing database record.
@@ -156,8 +171,9 @@ public class Instrument {
   public Instrument(User owner, long databaseId, String name,
     InstrumentFileSet fileDefinitions, List<Variable> variables,
     Map<Variable, Properties> variableProperties,
-    SensorAssignments sensorAssignments, String platformCode, boolean nrt,
-    String propertiesJson) throws SensorGroupsException {
+    SensorAssignments sensorAssignments, String platformName,
+    String platformCode, boolean nrt, String propertiesJson)
+    throws SensorGroupsException {
 
     this.owner = owner;
     this.id = databaseId;
@@ -166,7 +182,8 @@ public class Instrument {
     this.variables = variables;
     this.variableProperties = variableProperties;
     this.sensorAssignments = sensorAssignments;
-    this.setPlatformCode(platformCode);
+    this.platformName = platformName;
+    this.platformCode = platformCode;
     this.nrt = nrt;
     parsePropertiesJson(propertiesJson);
   }
@@ -195,8 +212,9 @@ public class Instrument {
    */
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
     List<Variable> variables, Map<Variable, Properties> variableProperties,
-    SensorAssignments sensorAssignments, String platformCode, boolean nrt,
-    String propertiesJson) throws SensorGroupsException {
+    SensorAssignments sensorAssignments, String platformName,
+    String platformCode, boolean nrt, String propertiesJson)
+    throws SensorGroupsException {
 
     this.owner = owner;
     this.name = name;
@@ -204,6 +222,7 @@ public class Instrument {
     this.variables = variables;
     this.variableProperties = variableProperties;
     this.sensorAssignments = sensorAssignments;
+    this.platformName = platformName;
     this.platformCode = platformCode;
     this.nrt = nrt;
     parsePropertiesJson(propertiesJson);
@@ -231,7 +250,7 @@ public class Instrument {
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
     List<Variable> variables, Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, SensorGroups sensorGroups,
-    String platformCode, boolean nrt) {
+    String platformName, String platformCode, boolean nrt) {
 
     this.owner = owner;
     this.name = name;
@@ -240,6 +259,7 @@ public class Instrument {
     this.variableProperties = variableProperties;
     this.sensorAssignments = sensorAssignments;
     this.sensorGroups = sensorGroups;
+    this.platformName = platformName;
     this.platformCode = platformCode;
     this.nrt = nrt;
     this.properties = new Properties();
@@ -317,6 +337,8 @@ public class Instrument {
   }
 
   /**
+   * Get the platform code.
+   *
    * @return the platformCode
    */
   public String getPlatformCode() {
@@ -324,11 +346,12 @@ public class Instrument {
   }
 
   /**
-   * @param platformCode
-   *          the platformCode to set
+   * Get the platform name.
+   *
+   * @return the platformCode
    */
-  public void setPlatformCode(String platformCode) {
-    this.platformCode = platformCode;
+  public String getPlatformName() {
+    return platformName;
   }
 
   /**
@@ -420,6 +443,21 @@ public class Instrument {
         }
       }
     }
+    }
+
+    return result;
+  }
+
+  public boolean isMeasurementRunType(String runType)
+    throws RunTypeCategoryException {
+
+    boolean result = false;
+
+    for (Variable variable : variables) {
+      if (getRunTypeCategory(variable.getId(), runType).isMeasurementType()) {
+        result = true;
+        break;
+      }
     }
 
     return result;
@@ -592,6 +630,33 @@ public class Instrument {
     }
 
     return result;
+  }
+
+  public Map<RunTypeCategory, TreeSet<RunTypeAssignment>> getAllRunTypes() {
+    Map<RunTypeCategory, TreeSet<RunTypeAssignment>> runTypes = new TreeMap<RunTypeCategory, TreeSet<RunTypeAssignment>>();
+
+    for (FileDefinition fileDef : fileDefinitions) {
+      RunTypeAssignments assignments = fileDef.getRunTypes();
+      if (null != assignments) {
+        for (RunTypeAssignment assignment : assignments.values()) {
+          if (!assignment.isAlias()) {
+            if (!runTypes.containsKey(assignment.getCategory())) {
+              runTypes.put(assignment.getCategory(),
+                new TreeSet<RunTypeAssignment>());
+            }
+
+            runTypes.get(assignment.getCategory()).add(assignment);
+          }
+        }
+      }
+    }
+
+    return runTypes;
+  }
+
+  public List<String> getAllRunTypeNames() {
+    return getAllRunTypes().values().stream().flatMap(v -> v.stream())
+      .map(r -> r.getRunName()).toList();
   }
 
   /**
@@ -850,6 +915,8 @@ public class Instrument {
 
     Gson gson = new GsonBuilder()
       .registerTypeAdapter(SensorGroups.class, new SensorGroupsSerializer())
+      .registerTypeAdapter(DiagnosticQCConfig.class,
+        new DiagnosticQCConfigSerializer())
       .create();
 
     // Get the basic properties Json
@@ -858,6 +925,10 @@ public class Instrument {
 
     // Add the Sensor Groups
     result.add(SENSOR_GROUPS_JSON_NAME, gson.toJsonTree(sensorGroups));
+
+    // Add diagnostic QC setup
+    result.add(DIAGNOSTIC_QC_JSON_NAME,
+      gson.toJsonTree(getDiagnosticQCConfig()));
 
     return result.toString();
   }
@@ -885,11 +956,19 @@ public class Instrument {
         JsonElement sensorGroupsElement = json.get(SENSOR_GROUPS_JSON_NAME);
         sensorGroups = new SensorGroups(sensorGroupsElement, sensorAssignments);
 
-        // Remove the SensorGroups elements and parse the remainder into
-        // Properties
+        // Remove the elements and parse the remainder into Properties
         json.remove(SENSOR_GROUPS_JSON_NAME);
       } else {
         sensorGroups = new SensorGroups(sensorAssignments);
+      }
+
+      if (json.has(DIAGNOSTIC_QC_JSON_NAME)) {
+        JsonElement diagnosticQCElement = json.get(DIAGNOSTIC_QC_JSON_NAME);
+        diagnosticQC = new DiagnosticQCConfig(diagnosticQCElement,
+          sensorAssignments);
+
+        // Remove the elements and parse the remainder into Properties
+        json.remove(DIAGNOSTIC_QC_JSON_NAME);
       }
 
       properties = new Gson().fromJson(json, Properties.class);
@@ -909,5 +988,80 @@ public class Instrument {
    */
   public boolean hasSensorGroups() {
     return null != sensorGroups && sensorGroups.size() > 1;
+  }
+
+  public String getDisplayName() {
+    return platformName + ";" + name;
+  }
+
+  /**
+   * Determine whether or not any diagnostic sensors have been assigned to this
+   * instrument.
+   *
+   * <p>
+   * This is just a passthrough to the {@link SensorAssignments} class, because
+   * PrimeFaces can't interact with it directly. It's confused by the fact that
+   * it's a {@link Map} and tries to do its own thing.
+   * </p>
+   *
+   * @return {@code true} if at least one diagnostic sensor is assigned;
+   *         {@code false} otherwise.
+   */
+  public boolean hasDiagnosticSensors() {
+    return sensorAssignments.hasDiagnosticSensors();
+  }
+
+  /**
+   * Get the Diagnostic Sensor QC configuration for the instrument.
+   *
+   * @return The diagnostic sensor QC configuration.
+   */
+  public DiagnosticQCConfig getDiagnosticQCConfig() {
+    if (null == diagnosticQC) {
+      diagnosticQC = new DiagnosticQCConfig();
+    }
+
+    return diagnosticQC;
+  }
+
+  /**
+   * Get a list of {@link Variable} objects for the specified variable IDs.
+   *
+   * <p>
+   * Only {@link Variable}s registered to this instrument will be matched. If a
+   * Variable with the specified ID is not present, an exception is thrown.
+   * </p>
+   *
+   * <p>
+   * The returned {@link List} will be in the iteration order of the supplied
+   * {@link Collection}.
+   * </p>
+   *
+   * @param ids
+   *          The variable IDs.
+   * @return The Variable objects.
+   * @throws VariableNotFoundException
+   *           If one of the IDs does not correspond to a Variable registered
+   *           with this Instrument.
+   */
+  public List<Variable> getVariables(Collection<Long> ids)
+    throws VariableNotFoundException {
+    List<Variable> result = new ArrayList<Variable>(
+      null == ids ? 0 : ids.size());
+
+    if (null != ids) {
+      for (Long id : ids) {
+        Optional<Variable> foundVariable = variables.stream()
+          .filter(v -> v.getId() == id).findAny();
+
+        if (foundVariable.isEmpty()) {
+          throw new VariableNotFoundException(id);
+        } else {
+          result.add(foundVariable.get());
+        }
+      }
+    }
+
+    return result;
   }
 }

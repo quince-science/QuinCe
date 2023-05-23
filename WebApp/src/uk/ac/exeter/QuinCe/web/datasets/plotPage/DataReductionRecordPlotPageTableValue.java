@@ -1,5 +1,9 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.util.Arrays;
+import java.util.Collection;
+
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -43,7 +47,8 @@ public class DataReductionRecordPlotPageTableValue
   }
 
   @Override
-  public String getQcMessage(boolean replaceNewlines) {
+  public String getQcMessage(DatasetSensorValues allSensorValues,
+    boolean replaceNewlines) {
 
     String result = StringUtils.collectionToDelimited(record.getQCMessages(),
       ";");
@@ -73,5 +78,10 @@ public class DataReductionRecordPlotPageTableValue
   @Override
   public char getType() {
     return PlotPageTableValue.DATA_REDUCTION_TYPE;
+  }
+
+  @Override
+  public Collection<Long> getSources() {
+    return Arrays.asList(record.getMeasurementId());
   }
 }

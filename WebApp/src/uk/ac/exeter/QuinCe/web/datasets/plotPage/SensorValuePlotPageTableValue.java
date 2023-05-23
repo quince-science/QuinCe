@@ -1,5 +1,9 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.util.Arrays;
+import java.util.Collection;
+
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
@@ -31,7 +35,8 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
 
   @Override
   public String getValue() {
-    return StringUtils.formatNumber(sensorValue.getValue());
+    return null == sensorValue ? ""
+      : StringUtils.formatNumber(sensorValue.getValue());
   }
 
   @Override
@@ -45,11 +50,12 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
-  public String getQcMessage(boolean replaceNewlines) {
+  public String getQcMessage(DatasetSensorValues allSensorValues,
+    boolean replaceNewlines) {
     String result = "*Error getting QC message*";
 
     try {
-      String message = sensorValue.getDisplayQCMessage();
+      String message = sensorValue.getDisplayQCMessage(allSensorValues);
       result = message;
     } catch (RoutineException e) {
       ExceptionUtils.printStackTrace(e);
@@ -84,5 +90,10 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
   @Override
   public char getType() {
     return PlotPageTableValue.MEASURED_TYPE;
+  }
+
+  @Override
+  public Collection<Long> getSources() {
+    return Arrays.asList(sensorValue.getId());
   }
 }

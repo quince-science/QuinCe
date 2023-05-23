@@ -2,7 +2,9 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -36,6 +38,8 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
 
   private final char type;
 
+  private Collection<Long> sources;
+
   /**
    * Simple constructor with all values.
    *
@@ -51,13 +55,14 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    *          Whether or not user QC is required.
    */
   public SimplePlotPageTableValue(String value, Flag qcFlag, String qcMessage,
-    boolean flagNeeded, char type) {
+    boolean flagNeeded, char type, Collection<Long> sources) {
     this.value = StringUtils.formatNumber(value);
     this.rawValue = value;
     this.qcFlag = qcFlag;
     this.qcMessage = qcMessage;
     this.flagNeeded = flagNeeded;
     this.type = type;
+    this.sources = sources;
   }
 
   /**
@@ -83,6 +88,7 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
     this.qcMessage = "";
     this.flagNeeded = false;
     this.type = PlotPageTableValue.MEASURED_TYPE;
+    this.sources = null;
   }
 
   /**
@@ -116,7 +122,8 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    * @return The QC message.
    */
   @Override
-  public String getQcMessage(boolean replaceNewlines) {
+  public String getQcMessage(DatasetSensorValues allSensorValues,
+    boolean replaceNewlines) {
     return replaceNewlines ? StringUtils.replaceNewlines(qcMessage) : qcMessage;
   }
 
@@ -143,5 +150,10 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
   @Override
   public String toString() {
     return value;
+  }
+
+  @Override
+  public Collection<Long> getSources() {
+    return sources;
   }
 }

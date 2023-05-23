@@ -5,22 +5,35 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import com.javadocmd.simplelatlng.LatLng;
+
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
 
 /**
  * Data structure holding all the {@code SensorValue}s for a dataset, accessible
  * by different lookups.
  *
- * @author Steve Jones
+ * <p>
+ * Position values are kept separate from the others, and can be accessed by a
+ * timestamp. This will give either the position for that timestamp, or an
+ * interpolated value. It will strive to give only GOOD values.
+ * </p>
  */
 public class DatasetSensorValues {
 
@@ -31,6 +44,10 @@ public class DatasetSensorValues {
   private Map<SensorType, TreeSet<SensorValue>> valuesBySensorType;
 
   private TreeMap<LocalDateTime, Map<Long, SensorValue>> valuesByDateAndColumn;
+
+  private SearchableSensorValuesList longitudes;
+
+  private SearchableSensorValuesList latitudes;
 
   private final Instrument instrument;
 
@@ -54,13 +71,21 @@ public class DatasetSensorValues {
     valuesByColumn = new HashMap<Long, SearchableSensorValuesList>();
     valuesBySensorType = new HashMap<SensorType, TreeSet<SensorValue>>();
     valuesByDateAndColumn = new TreeMap<LocalDateTime, Map<Long, SensorValue>>();
+    longitudes = new SearchableSensorValuesList(SensorType.LONGITUDE_ID);
+    latitudes = new SearchableSensorValuesList(SensorType.LATITUDE_ID);
 
     this.instrument = instrument;
   }
 
   public void add(SensorValue sensorValue) throws RecordNotFoundException {
 
-    if (!contains(sensorValue)) {
+    if (sensorValue.getColumnId() == SensorType.LONGITUDE_ID) {
+      longitudes.add(sensorValue);
+      addById(sensorValue);
+    } else if (sensorValue.getColumnId() == SensorType.LATITUDE_ID) {
+      latitudes.add(sensorValue);
+      addById(sensorValue);
+    } else if (!contains(sensorValue)) {
       SensorType sensorType = instrument.getSensorAssignments()
         .getSensorTypeForDBColumn(sensorValue.getColumnId());
 
@@ -108,11 +133,26 @@ public class DatasetSensorValues {
   }
 
   public SearchableSensorValuesList getColumnValues(long columnId) {
-    return valuesByColumn.get(columnId);
+
+    SearchableSensorValuesList values;
+
+    if (columnId == SensorType.LONGITUDE_ID) {
+      values = longitudes;
+    } else if (columnId == SensorType.LATITUDE_ID) {
+      values = latitudes;
+    } else {
+      values = valuesByColumn.get(columnId);
+    }
+
+    return values;
   }
 
   public SensorValue getById(long id) {
     return valuesById.get(id);
+  }
+
+  public List<SensorValue> getById(Collection<Long> ids) {
+    return ids.stream().map(id -> getById(id)).toList();
   }
 
   public TreeSet<SensorValue> getBySensorType(SensorType sensorType) {
@@ -215,15 +255,38 @@ public class DatasetSensorValues {
     return times;
   }
 
-  public Map<Long, SensorValue> get(LocalDateTime time) {
+  /**
+   * Get the times for which position values have been added.
+   *
+   * @return The position value times.
+   */
+  public List<LocalDateTime> getPositionTimes() {
 
+    TreeSet<LocalDateTime> result = new TreeSet<LocalDateTime>();
+
+    if (null != longitudes) {
+      result.addAll(longitudes.getTimes());
+    }
+
+    if (null != latitudes) {
+      result.addAll(latitudes.getTimes());
+    }
+
+    return new ArrayList<LocalDateTime>(result);
+  }
+
+  public Map<Long, SensorValue> get(LocalDateTime time) {
     return valuesByDateAndColumn.get(time);
   }
 
   public SensorValue getSensorValue(LocalDateTime time, long columnID) {
     SensorValue result = null;
 
-    if (valuesByDateAndColumn.containsKey(time)) {
+    if (columnID == SensorType.LONGITUDE_ID) {
+      result = longitudes.get(time);
+    } else if (columnID == SensorType.LATITUDE_ID) {
+      result = latitudes.get(time);
+    } else if (valuesByDateAndColumn.containsKey(time)) {
       result = valuesByDateAndColumn.get(time).get(columnID);
     }
 
@@ -316,7 +379,7 @@ public class DatasetSensorValues {
    *
    * @return The number of NEEDED flags
    */
-  public Map<Long, Integer> getNeedsFlagCounts() {
+  public Map<Long, Integer> getNonPositionNeedsFlagCounts() {
 
     Map<Long, Integer> result = new HashMap<Long, Integer>();
     int total = 0;
@@ -341,12 +404,40 @@ public class DatasetSensorValues {
     return result;
   }
 
+  public Map<Long, Integer> getPositionNeedsFlagCounts() {
+
+    Set<LocalDateTime> needsFlagTimes = new HashSet<LocalDateTime>();
+
+    int lonCount = 0;
+    for (SensorValue longitude : longitudes) {
+      if (longitude.getUserQCFlag().equals(Flag.NEEDED)) {
+        needsFlagTimes.add(longitude.getTime());
+        lonCount++;
+      }
+    }
+
+    int latCount = 0;
+    for (SensorValue latitude : latitudes) {
+      if (latitude.getUserQCFlag().equals(Flag.NEEDED)) {
+        needsFlagTimes.add(latitude.getTime());
+        latCount++;
+      }
+    }
+
+    Map<Long, Integer> result = new HashMap<Long, Integer>();
+    result.put(SensorType.LONGITUDE_ID, lonCount);
+    result.put(SensorType.LATITUDE_ID, latCount);
+    result.put(FLAG_TOTAL, needsFlagTimes.size());
+
+    return result;
+  }
+
   public Instrument getInstrument() {
     return instrument;
   }
 
   public int size() {
-    return valuesById.size();
+    return valuesById.size() + latitudes.size() + longitudes.size();
   }
 
   public boolean isOfSensorType(SensorValue sensorValue,
@@ -406,6 +497,193 @@ public class DatasetSensorValues {
 
     for (SensorValue sensorValue : valuesToAdd) {
       result.add(sensorValue);
+    }
+
+    return result;
+  }
+
+  /**
+   * Cascade QC values from the specified {@link SensorValue} to other sensors.
+   *
+   * <p>
+   * When QC flags are applied to certain {@link SensorValue}s, they also apply
+   * to other sensors. For example, a bad Position value means that all sensor
+   * values will be bad.
+   * </p>
+   *
+   * <p>
+   * For each affected sensor type, if there is a SensorValue for the same time
+   * as the source value, it will be flagged. If there is no value at that time,
+   * the values before and after the source value will be flagged because we
+   * don't know when the issue started. Flags will not be applied if the
+   * value(s) are not within a specified affected Run Type.
+   * </p>
+   *
+   * @param source
+   *          The source QCed SensorValue
+   * @param changedValues
+   *          The SensorValues that have been changed as part of this cascade.
+   *          Will be updated by this method.
+   * @throws RecordNotFoundException
+   */
+  public Set<SensorValue> applyQCCascade(SensorValue source,
+    RunTypePeriods runTypePeriods) throws RecordNotFoundException {
+
+    Set<SensorValue> changedValues = new HashSet<SensorValue>();
+
+    // For position values, we just copy from the source to the counterpart.
+    // Other sensors are sorted out as part of the Data Reduction QC.
+    if (SensorType.isPosition(source.getColumnId())) {
+
+      SensorValue other;
+
+      if (source.getColumnId() == SensorType.LONGITUDE_ID) {
+        other = getSensorValue(source.getTime(), SensorType.LATITUDE_ID);
+      } else {
+        other = getSensorValue(source.getTime(), SensorType.LONGITUDE_ID);
+      }
+
+      if (null != other) {
+        other.setUserQC(source);
+        changedValues.add(other);
+      }
+    } else {
+      Map<SensorAssignment, Collection<String>> affectedSensorAssignments = getCascadeAffectedSensorAssignments(
+        source);
+
+      for (SensorAssignment assignment : affectedSensorAssignments.keySet()) {
+        List<SensorValue> affectedSensorValues = valuesByColumn
+          .get(assignment.getDatabaseId()).getClosest(source.getTime());
+
+        for (SensorValue value : affectedSensorValues) {
+          String valueRunType = runTypePeriods.getRunType(value.getTime());
+          if (null == valueRunType || affectedSensorAssignments.get(assignment)
+            .contains(valueRunType)) {
+
+            cascade(source, value);
+            changedValues.add(value);
+          }
+        }
+      }
+    }
+
+    return changedValues;
+  }
+
+  private void cascade(SensorValue source, SensorValue destination) {
+    if (!source.getDisplayFlag().equals(Flag.GOOD)) {
+      destination.setCascadingQC(source);
+    } else {
+      destination.removeCascadingQC(source.getId());
+    }
+  }
+
+  /**
+   * Get the set of sensor assignments that will be affected by the cascading QC
+   * from the specified SensorValue, along with the run types that the cascade
+   * will apply to.
+   *
+   * <p>
+   * For sensors without calibrations, all run types are affected. For those
+   * with calibrations, either only measurement run types are affected, or those
+   * affected have been specified by the user elsewhere.
+   * </p>
+   *
+   * <p>
+   * Position values always affect all sensors, and calibrated sensors during
+   * measurements. Diagnostic sensors affect only those sensors specified in the
+   * instrument's configuration.
+   * </p>
+   *
+   * @param source
+   *          The source SensorValue
+   * @return The affected sensors and run types.
+   * @throws RecordNotFoundException
+   */
+  private Map<SensorAssignment, Collection<String>> getCascadeAffectedSensorAssignments(
+    SensorValue source) throws RecordNotFoundException {
+    SensorType sourceType = instrument.getSensorAssignments()
+      .getSensorTypeForDBColumn(source.getColumnId());
+
+    Map<SensorAssignment, Collection<String>> result = new HashMap<SensorAssignment, Collection<String>>();
+
+    if (sourceType.isDiagnostic()) {
+      // Diagnostics affect the sensors configured by the user
+      SensorAssignment sourceAssignment = instrument.getSensorAssignments()
+        .getById(source.getColumnId());
+
+      Collection<SensorAssignment> measurementSensors = instrument
+        .getSensorAssignments().getNonDiagnosticSensors(false);
+
+      DiagnosticQCConfig diagnosticQCConfig = instrument
+        .getDiagnosticQCConfig();
+
+      measurementSensors.forEach(m -> {
+        Collection<String> runTypes = diagnosticQCConfig
+          .getAssignedRunTypes(sourceAssignment, m);
+        if (!runTypes.isEmpty()) {
+          result.put(m, runTypes);
+        }
+      });
+    }
+
+    return result;
+  }
+
+  public PlotPageTableValue getRawPositionTableValue(long columnId,
+    LocalDateTime time) throws PositionException {
+
+    return new SensorValuePlotPageTableValue(
+      getPositionValuesList(columnId).get(time));
+  }
+
+  public PlotPageTableValue getPositionTableValue(long columnId,
+    LocalDateTime time, boolean preferGoodValues)
+    throws PositionException, PlotPageDataException {
+
+    return getPositionValuesList(columnId).getTableValue(time, false,
+      preferGoodValues, this);
+  }
+
+  public List<SensorValue> getPositionValues(long columnId, LocalDateTime time)
+    throws PositionException {
+
+    return getPositionValuesList(columnId).getWithInterpolation(time, false,
+      true);
+  }
+
+  public Collection<SensorValue> getAllPositionValues() {
+    Collection<SensorValue> result = new HashSet<SensorValue>();
+    result.addAll(longitudes);
+    result.addAll(latitudes);
+    return result;
+  }
+
+  public SearchableSensorValuesList getPositionValuesList(long columnId)
+    throws PositionException {
+
+    SearchableSensorValuesList values;
+
+    if (columnId == SensorType.LONGITUDE_ID) {
+      values = longitudes;
+    } else if (columnId == SensorType.LATITUDE_ID) {
+      values = latitudes;
+    } else {
+      throw new PositionException("Invalid position column ID");
+    }
+
+    return values;
+  }
+
+  public LatLng getClosestPosition(LocalDateTime time) {
+
+    SensorValue lat = latitudes.timeSearch(time);
+    SensorValue lon = longitudes.timeSearch(time);
+
+    LatLng result = null;
+
+    if (null != lat && null != lon && lat.getTime().equals(lon.getTime())) {
+      result = new LatLng(lat.getDoubleValue(), lon.getDoubleValue());
     }
 
     return result;

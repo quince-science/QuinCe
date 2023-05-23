@@ -21,7 +21,7 @@ if [ $verbose -eq 1 ]
 then
   if [ $retval -eq 0 ]
   then
-    echo "Pending batabase migrations conpleted successfully"
+    echo "Pending database migrations completed successfully"
   else
     >&2 printf "Database migration script failed\n"
   fi

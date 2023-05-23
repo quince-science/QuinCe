@@ -2,7 +2,7 @@
 <faces-config
     xmlns="http://xmlns.jcp.org/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
     version="2.2">
   <converter>
     <description>Converts strings to LocalDateTime objects</description>
@@ -39,12 +39,6 @@
     <managed-bean-class>uk.ac.exeter.QuinCe.web.KeepAliveBean</managed-bean-class>
     <managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
-  <validator>
-    <description>Ensures that instrument names are not empty, and are unique to the user</description>
-    <display-name>Instrument Name Validator</display-name>
-    <validator-id>instrumentNameValidator</validator-id>
-    <validator-class>uk.ac.exeter.QuinCe.web.Instrument.newInstrument.InstrumentNameValidator</validator-class>
-  </validator>
   <validator>
     <description>Checks that the file description for an instrument file is unique and not empty. This should be used in instrument/new/upload_file.xhtml, but I&amp;apos;m doing it in Javascript for now because it&amp;apos;s easier to work with and I&amp;apos;m not in the mood to mess around with it.</description>
     <display-name>Instrument File Description Validator</display-name>
@@ -198,6 +192,15 @@
     <navigation-case>
       <from-outcome>external_standards</from-outcome>
       <to-view-id>/instrument/external_standards.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+    <display-name>DiagnosticQCSetup</display-name>
+    <from-view-id>/instrument/diagnostic_qc_setup.xhtml</from-view-id>
+    <navigation-case>
+      <from-outcome>finish</from-outcome>
+      <to-view-id>/instrument/instrument_list.xhtml</to-view-id>
       <redirect/>
     </navigation-case>
   </navigation-rule>

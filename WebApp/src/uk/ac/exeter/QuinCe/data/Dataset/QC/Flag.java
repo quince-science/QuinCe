@@ -9,12 +9,14 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
  * values can be useful:
  * </p>
  * <ul>
+ * <li><b>NO QC:</b> No QC has been performed.</li>
+ * <li><b>Flushing:</b> The instrument is in Flushing mode, so values should be
+ * ignored.</li>
  * <li><b>Assumed Good:</b> Automatic processing has flagged the record as good,
  * and there is no indication that this should be changed.</li>
- * <li><b>Fatal:</b> The record has a fundamental problem which means it cannot
- * be processed at all.</li>
- * <li><b>Not Set:</b> A flag has not yet been assigned to this record.</li>
- * <li><b>Needed:</b> A flag must be assigned manually by a human operator.</li>
+ * <li><b>Needed:</b> A flag must be assigned manually by a human.</li>
+ * <li><b>Lookup:</b> The QC for this value is inherited from another value. The
+ * value ID(s) are stored in the comment.</li>
  * </ul>
  *
  * @author Steve Jones
@@ -93,6 +95,17 @@ public class Flag implements Comparable<Flag> {
   protected static final String TEXT_FLUSHING = "In flushing time";
 
   /**
+   * Flag indicating that the Auto QC flag must be used and cannot be
+   * overridden.
+   */
+  public static final int VALUE_LOOKUP = -200;
+
+  /**
+   * Text value for the Auto QC flag.
+   */
+  protected static final String TEXT_LOOKUP = "Lookup";
+
+  /**
    * An instance of a No QC flag
    */
   public static final Flag NO_QC = makeNoQCFlag();
@@ -126,6 +139,11 @@ public class Flag implements Comparable<Flag> {
    * An instance of a Flushing flag
    */
   public static final Flag FLUSHING = makeFlushingFlag();
+
+  /**
+   * An instance of an Auto QC flag
+   */
+  public static final Flag LOOKUP = makeLookupQCFlag();
 
   /**
    * The WOCE value for this flag
@@ -179,6 +197,10 @@ public class Flag implements Comparable<Flag> {
     }
     case 'X': {
       this.flagValue = VALUE_NO_QC;
+      break;
+    }
+    case 'L': {
+      this.flagValue = VALUE_LOOKUP;
       break;
     }
     default: {
@@ -243,6 +265,10 @@ public class Flag implements Comparable<Flag> {
       result = TEXT_FLUSHING;
       break;
     }
+    case VALUE_LOOKUP: {
+      result = TEXT_LOOKUP;
+      break;
+    }
     default: {
       // This should never happen!
       result = "***INVALID FLAG VALUE***";
@@ -263,8 +289,8 @@ public class Flag implements Comparable<Flag> {
   public static boolean isValidFlagValue(int value) {
     return (value == VALUE_NO_QC || value == VALUE_GOOD
       || value == VALUE_ASSUMED_GOOD || value == VALUE_QUESTIONABLE
-      || value == VALUE_BAD || value == VALUE_NEEDED
-      || value == VALUE_FLUSHING);
+      || value == VALUE_BAD || value == VALUE_NEEDED || value == VALUE_FLUSHING
+      || value == VALUE_LOOKUP);
   }
 
   /**
@@ -379,6 +405,22 @@ public class Flag implements Comparable<Flag> {
     return flag;
   }
 
+  /**
+   * Create an instance of an Auto QC flag
+   *
+   * @return An Auto QC flag
+   */
+  private static Flag makeLookupQCFlag() {
+    Flag flag = null;
+    try {
+      flag = new Flag(VALUE_LOOKUP);
+    } catch (InvalidFlagException e) {
+      // This won't be thrown; do nothing
+    }
+
+    return flag;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -421,6 +463,10 @@ public class Flag implements Comparable<Flag> {
 
     // FLUSHING > NEEDED > everything else
     if (null == flag) {
+      result = true;
+    } else if (flag.equals(Flag.LOOKUP)) {
+      result = false;
+    } else if (this.equals(Flag.LOOKUP)) {
       result = true;
     } else if (flag.equals(Flag.FLUSHING)) {
       result = false;
@@ -529,12 +575,25 @@ public class Flag implements Comparable<Flag> {
   /**
    * Get the fully simplified version of the Flag.
    *
-   * @return
+   * <p>
+   * Returns the basic {@link Flag} object on which a subclassed {@link Flag} is
+   * based.
+   * </p>
+   *
+   * @return The raw Flag object.
    */
   public Flag getSimpleFlag() {
     return this;
   }
 
+  /**
+   * Get the flag with the highest significance from a the supplied {@link Flag}
+   * objects.
+   *
+   * @param flags
+   *          The flags to check.
+   * @return The most significant flag.
+   */
   public static Flag getWorstFlag(Flag... flags) {
     Flag result = Flag.GOOD;
 

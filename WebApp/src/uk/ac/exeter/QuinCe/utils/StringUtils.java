@@ -7,13 +7,17 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,17 +25,15 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import java.util.Locale;
-import java.text.DecimalFormatSymbols;
-
-
 /**
- * Miscellaneous string utilities
+ * Miscellaneous string utilities.
  *
- * @author Steve Jones
- *
+ * <p>
+ * This class extends {@link org.apache.commons.lang3.StringUtils}, so methods
+ * from that class can be called directly through this one.
+ * </p>
  */
-public final class StringUtils {
+public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   private static DecimalFormat threeDecimalPoints;
 
@@ -41,7 +43,8 @@ public final class StringUtils {
     threeDecimalPoints.setMaximumFractionDigits(3);
     threeDecimalPoints.setGroupingUsed(false);
     threeDecimalPoints.setRoundingMode(RoundingMode.HALF_UP);
-    threeDecimalPoints.setDecimalFormatSymbols(new DecimalFormatSymbols(new Locale("en","US")));
+    threeDecimalPoints.setDecimalFormatSymbols(
+      new DecimalFormatSymbols(new Locale("en", "US")));
   }
 
   /**
@@ -223,6 +226,28 @@ public final class StringUtils {
     } else {
       String[] numberList = values.split(",");
       result = new ArrayList<Long>(numberList.length);
+
+      for (String number : numberList) {
+        result.add(Long.parseLong(number));
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Convert a comma-separated list of numbers to a {@link Set} of longs. The
+   * Set will be ordered.
+   *
+   * @param values
+   *          The numbers.
+   * @return The longs.
+   */
+  public static SortedSet<Long> delimitedToLongSet(String values) {
+    TreeSet<Long> result = new TreeSet<Long>();
+
+    if (null != values && values.trim().length() > 0) {
+      String[] numberList = values.split(",");
 
       for (String number : numberList) {
         result.add(Long.parseLong(number));

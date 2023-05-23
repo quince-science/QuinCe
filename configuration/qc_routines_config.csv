@@ -29,7 +29,7 @@ RangeCheck,"pCO₂ (wet at equilibration)",80,1200,0,50000
 RangeCheck,Membrane Pressure,900,1100,750,1250
 RangeCheck,Air Temperature,-5,40,-10,50
 RangeCheck,"xCO₂ (wet, no standards)",80,1200,0,50000
-RangeCheck,"ProOceanus Zero Count",44000,100000,44000,100000
+RangeCheck,"ProOceanus Zero Count",25000,100000,25000,100000
 Outlier,Intake Temperature,5
 Outlier,Salinity,5
 Outlier,Equilibrator Temperature,5

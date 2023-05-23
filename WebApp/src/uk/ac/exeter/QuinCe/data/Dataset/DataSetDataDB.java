@@ -102,6 +102,12 @@ public class DataSetDataDB {
     + "FROM sensor_values WHERE dataset_id = ? AND user_qc_flag != "
     + Flag.VALUE_FLUSHING;
 
+  private static final String GET_POSITION_SENSOR_VALUES_QUERY = "SELECT "
+    + "id, file_column, date, value, auto_qc, " // 5
+    + "user_qc_flag, user_qc_message " // 7
+    + "FROM sensor_values WHERE dataset_id = ? AND file_column IN ("
+    + SensorType.LONGITUDE_ID + ", " + SensorType.LATITUDE_ID + ")";
+
   /**
    * Statement to store a measurement record
    */
@@ -382,10 +388,12 @@ public class DataSetDataDB {
             updateStmt.setString(1, value.getAutoQcResult().toJson());
             updateStmt.setInt(2, value.getUserQCFlag().getFlagValue());
 
-            // Truncate user QC message
+            // Truncate user QC message (except for LOOKUP flags)
             String userQCMessage = value.getUserQCMessage();
-            if (userQCMessage.length() > 255) {
-              userQCMessage = userQCMessage.substring(0, 255);
+            if (!value.getUserQCFlag().equals(Flag.LOOKUP)) {
+              if (userQCMessage.length() > 255) {
+                userQCMessage = userQCMessage.substring(0, 255);
+              }
             }
 
             updateStmt.setString(3, userQCMessage);
@@ -491,6 +499,31 @@ public class DataSetDataDB {
     if (instrument.hasInternalCalibrations() && ignoreInternalCalibrations) {
       values.removeAll(
         getInternalCalibrationSensorValues(conn, instrument, datasetId));
+    }
+
+    return values;
+  }
+
+  public static DatasetSensorValues getPositionSensorValues(Connection conn,
+    Instrument instrument, long datasetId) throws DatabaseException {
+
+    DatasetSensorValues values = new DatasetSensorValues(instrument);
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(datasetId, "datasetId");
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(GET_POSITION_SENSOR_VALUES_QUERY)) {
+
+      stmt.setLong(1, datasetId);
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          values.add(sensorValueFromResultSet(records, datasetId));
+        }
+      }
+
+    } catch (Exception e) {
+      throw new DatabaseException("Error while retrieving sensor values", e);
     }
 
     return values;
@@ -784,7 +817,6 @@ public class DataSetDataDB {
 
           dataReductionStmt.addBatch();
         }
-
       }
 
       dataReductionStmt.executeBatch();
@@ -1161,8 +1193,6 @@ public class DataSetDataDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(measurement, "measurement");
 
-    measurement.postProcessMeasurementValues();
-
     try (PreparedStatement stmt = conn
       .prepareStatement(STORE_MEASUREMENT_VALUES_STATEMENT)) {
       stmt.setString(1, measurement.getMeasurementValuesJson());
@@ -1184,7 +1214,6 @@ public class DataSetDataDB {
       .prepareStatement(STORE_MEASUREMENT_VALUES_STATEMENT)) {
 
       for (Measurement measurement : measurements) {
-        measurement.postProcessMeasurementValues();
         stmt.setString(1, measurement.getMeasurementValuesJson());
         stmt.setLong(2, measurement.getId());
         stmt.addBatch();

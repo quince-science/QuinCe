@@ -151,21 +151,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
       return internalError(e);
     }
 
-    /*
-     * try { reset();
-     *
-     * dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
-     *
-     * initData(); selectableRows = buildSelectableRows();
-     *
-     * plot1 = new Plot(this, dataset.getBounds(), getDefaultPlot1XAxis(),
-     * getDefaultPlot1YAxis(), getDefaultMap1Variable()); plot2 = new Plot(this,
-     * dataset.getBounds(), getDefaultPlot2XAxis(), getDefaultPlot2YAxis(),
-     * getDefaultMap2Variable());
-     *
-     * init(); dirty = false; } catch (Exception e) { e.printStackTrace(); }
-     */
-
     return getScreenNavigation();
   }
 
@@ -360,7 +345,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @return The error message.
    */
   public String getError() {
-    return getData().getErrorMessage();
+    PlotPageData data = getData();
+    return null == data ? null : data.getErrorMessage();
   }
 
   /**
@@ -389,5 +375,22 @@ public abstract class PlotPageBean extends BaseManagedBean {
   public void saveUserComments()
     throws MissingParamException, DatabaseException {
     DataSetDB.storeUserMessages(getDataSource(), dataset);
+  }
+
+  /**
+   * Get the bounds of the data as a JSON string
+   *
+   * @return The data bounds
+   */
+  public String getDataBounds() {
+    return dataset.getBounds().toJson();
+  }
+
+  public boolean allowMaps() {
+    return true;
+  }
+
+  public boolean dualYAxes() {
+    return false;
   }
 }

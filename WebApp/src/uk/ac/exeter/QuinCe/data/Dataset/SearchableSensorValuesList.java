@@ -6,16 +6,22 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.utils.CollectionUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.ModeCalculator;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
 
 /**
  * A list of SensorValue objects with various search capabilities.
@@ -46,6 +52,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   private final TreeSet<Long> columnIds;
 
   private int modeTimeStep = 0;
+
+  private List<LocalDateTime> times = null;
 
   /**
    * Constructor for an empty list with one supported column ID
@@ -85,6 +93,10 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   @Override
   public boolean add(SensorValue value) {
     checkColumnId(value);
+
+    // Reset the times cache
+    times = null;
+
     return super.add(value);
   }
 
@@ -92,11 +104,18 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   public void add(int index, SensorValue value) {
     checkColumnId(value);
     super.add(index, value);
+
+    // Reset the times cache
+    times = null;
   }
 
   @Override
   public boolean addAll(Collection<? extends SensorValue> values) {
     values.forEach(this::add);
+
+    // Reset the times cache
+    times = null;
+
     return true;
   }
 
@@ -104,6 +123,10 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   public boolean addAll(int index, Collection<? extends SensorValue> values) {
     values.forEach(this::checkColumnId);
     super.addAll(index, values);
+
+    // Reset the times cache
+    times = null;
+
     return true;
   }
 
@@ -128,8 +151,7 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
     SensorValue result = null;
 
-    int searchIndex = Collections.binarySearch(this, dummySensorValue(time),
-      TIME_COMPARATOR);
+    int searchIndex = Collections.binarySearch(getTimes(), time);
 
     if (searchIndex > -1) {
       result = get(searchIndex);
@@ -141,6 +163,14 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     }
 
     return result;
+  }
+
+  public List<LocalDateTime> getTimes() {
+    if (null == times) {
+      times = stream().map(v -> v.getTime()).toList();
+    }
+
+    return times;
   }
 
   /**
@@ -213,6 +243,43 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   }
 
   /**
+   * Get the closest {@link SensorValue}(s) to the specified time.
+   *
+   * <p>
+   * If there is a value at exactly the specified time, that value is returned.
+   * If there is no such value, the values immediately before and after the time
+   * are returned, if they exist.
+   * </p>
+   *
+   * @param assignment
+   *          The column to search.
+   * @param time
+   *          The time.
+   * @return The closest values.
+   */
+  public List<SensorValue> getClosest(LocalDateTime time) {
+
+    List<SensorValue> result = new ArrayList<SensorValue>(2);
+
+    if (!isEmpty()) {
+      int valueIndex = Collections.binarySearch(this, dummySensorValue(time),
+        TIME_COMPARATOR);
+
+      if (valueIndex >= 0) {
+        result.add(get(valueIndex));
+      } else if (valueIndex == -1) {
+        result.add(get(0));
+      } else if (Math.abs(valueIndex) > size()) {
+        result.add(get(size() - 1));
+      } else {
+        result.add(get(Math.abs(valueIndex) - 2));
+        result.add(get(Math.abs(valueIndex) - 1));
+      }
+    }
+    return result;
+  }
+
+  /**
    * Get the {@link SensorValue}(s) most relevant for the specified time.
    * <p>
    * If there is a {@link SensorValue} at the specified time, that value is
@@ -222,9 +289,10 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    * value should not be used.
    * </p>
    * <p>
-   * If the requested time is before the first value or after the last value the
-   * method returns an empty list to prevent extrapolation beyond the range of
-   * the dataset.
+   * If {@code allowOutsideTimeRange} is {@code true}, allow the user to specify
+   * values outside the time range of these values. This will then return the
+   * first/last value as appropriate. If set to {@false}, an empty list is
+   * returned.
    * </p>
    * <p>
    * The above logic is overridden by {@code preferGoodFlags}. If this is set
@@ -236,6 +304,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    *
    * @param time
    *          The time to search for
+   * @param allowOutsideTimeRange
+   *          Allow the user to specify values outside the time range.
    * @param preferGoodFlags
    *          Only return values with {@link Flag#GOOD} QC flags if possible.
    * @return An array of either one {@link SensorValue} (if it exactly matches
@@ -277,11 +347,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
           priorPostValues = getPriorPost(time, startPoint);
 
-          // If the prior and post contain one non-null value and it is our
-          // exact
-          // value, that means no interpolation could be performed - usually
-          // because our exact value was not GOOD but there were no other GOOD
-          // values available.
+          // If the prior and post are both empty, then there are no
+          // interpolatable values available. Therefore we use the exact value.
           if (CollectionUtils.getNonNullCount(priorPostValues) == 1L
             && CollectionUtils.getFirstNonNull(priorPostValues).getTime()
               .equals(time)) {
@@ -307,6 +374,73 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
       } else {
         result = priorPostValues;
       }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the value to be displayed in a table.
+   *
+   * <p>
+   * Uses {@link #getWithInterpolation} to find suitable value(s), and
+   * interpolates as needed.
+   * </p>
+   *
+   * @param time
+   *          The required time.
+   * @param allowOutsideTimeRange
+   *          Allow/disallow the caller to specify a time outside the range of
+   *          these values.
+   * @param preferGoodFlags
+   *          Only use values with {@link Flag#GOOD} QC flags if possible.
+   * @return The table value.
+   * @throws PlotPageDataException
+   */
+  public PlotPageTableValue getTableValue(LocalDateTime time,
+    boolean allowOutsideTimeRange, boolean preferGoodFlags,
+    DatasetSensorValues allSensorValues) throws PlotPageDataException {
+
+    PlotPageTableValue result = null;
+
+    List<SensorValue> valuesToUse = getWithInterpolation(time,
+      allowOutsideTimeRange, preferGoodFlags);
+
+    switch (valuesToUse.size()) {
+    case 0: {
+      // Flushing value - do nothing
+      break;
+    }
+    case 1: {
+      // Value from exact time - use it directly
+      result = new SensorValuePlotPageTableValue(valuesToUse.get(0));
+      break;
+    }
+    case 2: {
+      Double value = SensorValue.interpolate(valuesToUse.get(0),
+        valuesToUse.get(1), time);
+
+      List<Long> ids = valuesToUse.stream().filter(Objects::nonNull)
+        .map(v -> v.getId()).toList();
+
+      if (null != value) {
+        try {
+          result = new SimplePlotPageTableValue(String.valueOf(value),
+            SensorValue.getCombinedDisplayFlag(valuesToUse),
+            SensorValue.getCombinedQcComment(valuesToUse, allSensorValues),
+            false, PlotPageTableValue.INTERPOLATED_TYPE, ids);
+        } catch (RoutineException e) {
+          throw new PlotPageDataException(
+            "Unable to get SensorValue QC Comments", e);
+        }
+      }
+
+      break;
+    }
+    default: {
+      throw new PlotPageDataException(
+        "Invalid number of values in sensor value search");
+    }
     }
 
     return result;
@@ -417,7 +551,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
         closestGood = currentIndex;
         break mainLoop;
       }
-      case Flag.VALUE_BAD: {
+      case Flag.VALUE_BAD:
+      case Flag.VALUE_LOOKUP: {
         // Only do something if we aren't looking for GOOD flags only
         if (closestBad == -1) {
           closestBad = currentIndex;
@@ -504,6 +639,25 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
     // ms to s
     modeTimeStep = mode.getMode().intValue() / 1000;
+  }
+
+  public Double[] getRange() {
+    Double min = Double.MAX_VALUE;
+    Double max = Double.MIN_VALUE;
+
+    for (SensorValue v : this) {
+      if (!v.isNaN()) {
+        if (v.getDoubleValue() > max) {
+          max = v.getDoubleValue();
+        }
+
+        if (v.getDoubleValue() < min) {
+          min = v.getDoubleValue();
+        }
+      }
+    }
+
+    return new Double[] { min, max };
   }
 }
 

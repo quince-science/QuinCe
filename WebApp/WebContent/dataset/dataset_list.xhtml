@@ -21,10 +21,17 @@
       return false;
     }
 
-      function goToQc(id) {
+    function goToQc(id) {
         window['keepAliveActive'] = false;
         $('#datasetListForm\\:manualQCDatasetId').val(id);
         $('#datasetListForm\\:manualQCLink').click();
+        return false;
+      }
+
+    function goToPositionQc(id) {
+        window['keepAliveActive'] = false;
+        $('#datasetListForm\\:positionQCDatasetId').val(id);
+        $('#datasetListForm\\:positionQCLink').click();
         return false;
       }
 
@@ -144,7 +151,7 @@
               value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
                 <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
                   itemValue="#{instrument.id}"
-                  itemLabel="#{instrument.owner.surname}, #{instrument.owner.givenName} - #{instrument.name}" />
+                  itemLabel="#{instrument.owner.surname}, #{instrument.owner.givenName} - #{instrument.displayName}" />
               <p:ajax event="change" update="datasets hasFiles" />
             </p:selectOneMenu>
           </ui:fragment>
@@ -153,7 +160,7 @@
               value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
                 <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
                   itemValue="#{instrument.id}"
-                  itemLabel="#{instrument.name}" />
+                  itemLabel="#{instrument.displayName}" />
               <p:ajax event="change" update="datasets hasFiles" />
             </p:selectOneMenu>
           </ui:fragment>
@@ -183,6 +190,10 @@
         <h:inputHidden id="manualQCDatasetId" value="#{manualQualityControlBean.datasetId}" />
         <p:commandLink id="manualQCLink" ajax="false"
           action="#{manualQualityControlBean.start}" />
+
+        <h:inputHidden id="positionQCDatasetId" value="#{positionQualityControlBean.datasetId}" />
+        <p:commandLink id="positionQCLink" ajax="false"
+          action="#{positionQualityControlBean.start}" />
 
         <p:remoteCommand name="updateList" update="datasets hasFiles"
           actionListener="#{dataSetsBean.updateDatasetList}"
@@ -260,6 +271,12 @@
                       title="Sensor Offsets" />
                   </p:commandLink>
                 </ui:fragment>
+                <ui:fragment rendered="#{not dataSetsBean.getCurrentInstrument().fixedPosition()}">
+                  <p:commandLink onclick="goToPositionQc(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/position.svg"
+                      styleClass="actionIcon" alt="Position QC" title="Position QC" />
+                  </p:commandLink>
+                </ui:fragment>
                 <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
                   <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
                     <h:graphicImage value="/resources/image/calibration.svg"
@@ -269,8 +286,7 @@
                 </ui:fragment>
                 <p:commandLink onclick="goToQc(#{dataset.id})">
                   <h:graphicImage value="/resources/image/qc.svg"
-                    styleClass="actionIcon" alt="Quality Control"
-                    title="Quality Control" />
+                    styleClass="actionIcon" alt="Quality Control" title="Quality Control" />
                 </p:commandLink>
               </ui:fragment>
               <ui:fragment
@@ -282,6 +298,11 @@
                   <h:graphicImage
                     value="/resources/image/offsets_disabled.svg"
                     styleClass="actionIcon" alt="Sensor Offsets" title="Sensor Offsets" />
+                </ui:fragment>
+                <ui:fragment rendered="#{not dataSetsBean.getCurrentInstrument().fixedPosition()}">
+                  <h:graphicImage
+                    value="/resources/image/position_disabled.svg"
+                    styleClass="actionIcon" alt="Position QC" title="Position QC" />
                 </ui:fragment>
                 <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
                   <h:graphicImage

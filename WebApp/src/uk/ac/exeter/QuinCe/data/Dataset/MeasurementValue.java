@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -145,10 +146,12 @@ public class MeasurementValue implements PlotPageTableValue {
    * @param sensorValues
    * @param calculatedValue
    * @param memberCount
+   * @throws RoutineException
    */
   public MeasurementValue(SensorType sensorType, List<SensorValue> sensorValues,
-    List<SensorValue> supportingSensorValues, Double calculatedValue,
-    int memberCount, char type) {
+    List<SensorValue> supportingSensorValues,
+    DatasetSensorValues allSensorValues, Double calculatedValue,
+    int memberCount, char type) throws RoutineException {
 
     this.sensorType = sensorType;
     this.sensorValueIds = new ArrayList<Long>();
@@ -159,7 +162,7 @@ public class MeasurementValue implements PlotPageTableValue {
     this.memberCount = memberCount;
     this.qcMessage = new HashSet<String>();
     this.properties = new Properties();
-    addSensorValues(sensorValues, false);
+    addSensorValues(sensorValues, allSensorValues, false);
     addSupportingSensorValues(supportingSensorValues);
     this.type = type;
   }
@@ -183,11 +186,16 @@ public class MeasurementValue implements PlotPageTableValue {
    *          The values to be added.
    * @param incrMemberCount
    *          Indicates whether or not the member count should be incremented.
+   * @throws RoutineException
    */
   private void addSensorValues(Collection<SensorValue> values,
-    boolean incrMemberCount) {
+    DatasetSensorValues allSensorValues, boolean incrMemberCount)
+    throws RoutineException {
 
-    values.forEach(v -> addSensorValue(v, incrMemberCount));
+    for (SensorValue value : values) {
+      addSensorValue(value, allSensorValues, incrMemberCount);
+    }
+
     if (incrMemberCount) {
       type = INTERPOLATED_TYPE;
     }
@@ -198,10 +206,15 @@ public class MeasurementValue implements PlotPageTableValue {
    *
    * @param sourceValues
    *          The source {@code MeasurementValue}s.
+   * @throws RoutineException
    */
-  public void addSensorValues(Collection<MeasurementValue> sourceValues,
-    DatasetSensorValues allSensorValues) {
-    sourceValues.forEach(x -> addSensorValues(x, allSensorValues));
+  public void addSensorValuesFromMeasurementValue(
+    Collection<MeasurementValue> sourceValues,
+    DatasetSensorValues allSensorValues) throws RoutineException {
+
+    for (MeasurementValue measurementValue : sourceValues) {
+      addSensorValues(measurementValue, allSensorValues);
+    }
   }
 
   /**
@@ -209,11 +222,12 @@ public class MeasurementValue implements PlotPageTableValue {
    *
    * @param sourceValues
    *          The source {@code MeasurementValue}.
+   * @throws RoutineException
    */
   public void addSensorValues(MeasurementValue sourceValue,
-    DatasetSensorValues allSensorValues) {
+    DatasetSensorValues allSensorValues) throws RoutineException {
     for (Long sensorValueId : sourceValue.getSensorValueIds()) {
-      addSensorValue(allSensorValues.getById(sensorValueId));
+      addSensorValue(allSensorValues.getById(sensorValueId), allSensorValues);
     }
   }
 
@@ -242,8 +256,11 @@ public class MeasurementValue implements PlotPageTableValue {
    * @param incrMemberCount
    *          Indicates whether or not this value should contribute to the
    *          member count.
+   * @throws RoutineException
    */
-  private void addSensorValue(SensorValue value, boolean incrMemberCount) {
+  private void addSensorValue(SensorValue value,
+    DatasetSensorValues allSensorValues, boolean incrMemberCount)
+    throws RoutineException {
     if (null != value) {
       if (!sensorValueIds.contains(value.getId())) {
         sensorValueIds.add(value.getId());
@@ -252,14 +269,14 @@ public class MeasurementValue implements PlotPageTableValue {
 
         if (valueFlag.equals(flag)) {
           if (value.getUserQCMessage().trim().length() > 0) {
-            qcMessage.add(value.getUserQCMessage());
+            qcMessage.add(value.getDisplayQCMessage(allSensorValues));
           }
         } else if (valueFlag.moreSignificantThan(flag)) {
           flag = valueFlag;
           qcMessage.clear();
 
           if (value.getUserQCMessage().trim().length() > 0) {
-            qcMessage.add(value.getUserQCMessage());
+            qcMessage.add(value.getDisplayQCMessage(allSensorValues));
           }
         }
 
@@ -271,12 +288,14 @@ public class MeasurementValue implements PlotPageTableValue {
     }
   }
 
-  public void addSensorValue(SensorValue sensorValue) {
-    addSensorValue(sensorValue, true);
+  public void addSensorValue(SensorValue sensorValue,
+    DatasetSensorValues allSensorValues) throws RoutineException {
+    addSensorValue(sensorValue, allSensorValues, true);
   }
 
-  public void addSensorValues(Collection<SensorValue> sensorValues) {
-    addSensorValues(sensorValues, true);
+  public void addSensorValues(Collection<SensorValue> sensorValues,
+    DatasetSensorValues allSensorValues) throws RoutineException {
+    addSensorValues(sensorValues, allSensorValues, true);
   }
 
   /**
@@ -289,10 +308,12 @@ public class MeasurementValue implements PlotPageTableValue {
    * @param incrMemberCount
    *          Indicates whether or not this value should contribute to the
    *          member count.
+   * @throws RoutineException
    */
   public void addInterpolatedSensorValue(SensorValue value,
-    boolean incrMemberCount) {
-    addSensorValue(value, incrMemberCount);
+    DatasetSensorValues allSensorValues, boolean incrMemberCount)
+    throws RoutineException {
+    addSensorValue(value, allSensorValues, incrMemberCount);
     type = INTERPOLATED_TYPE;
   }
 
@@ -518,7 +539,8 @@ public class MeasurementValue implements PlotPageTableValue {
   }
 
   @Override
-  public String getQcMessage(boolean replaceNewlines) {
+  public String getQcMessage(DatasetSensorValues allSensorValues,
+    boolean replaceNewlines) {
     String result = StringUtils.collectionToDelimited(getQcMessages(), ";");
     if (replaceNewlines) {
       result = StringUtils.replaceNewlines(result);
@@ -545,5 +567,10 @@ public class MeasurementValue implements PlotPageTableValue {
   @Override
   public String toString() {
     return sensorType.getShortName() + " = " + calculatedValue;
+  }
+
+  @Override
+  public Collection<Long> getSources() {
+    return sensorValueIds;
   }
 }

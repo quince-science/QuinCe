@@ -154,4 +154,9 @@ public class ManualQualityControlBean extends PlotPageBean {
   public String getNeededFlagCounts() {
     return new Gson().toJson(data.getNeedsFlagCounts());
   }
+
+  @Override
+  public boolean dualYAxes() {
+    return true;
+  }
 }

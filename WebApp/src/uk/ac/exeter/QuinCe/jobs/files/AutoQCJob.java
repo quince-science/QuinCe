@@ -23,8 +23,11 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRo
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.DiagnosticsQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCCascadeRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.SpeedQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -147,6 +150,13 @@ public class AutoQCJob extends DataSetJob {
       RunTypePeriods runTypePeriods = null;
       SearchableSensorValuesList runTypeValues = null;
 
+      // This will be populated if the instrument has position data
+      DatasetSensorValues positionValues = null;
+
+      // Get all the run type entries from the data set
+      TreeSet<SensorAssignment> runTypeColumns = sensorAssignments
+        .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+
       if (instrument.hasRunTypes()) {
         measurementRunTypes = instrument.getMeasurementRunTypes();
 
@@ -180,10 +190,16 @@ public class AutoQCJob extends DataSetJob {
       // call.
       if (!dataSet.fixedPosition()) {
 
-        PositionQCRoutine positionQC = new PositionQCRoutine(instrument,
-          sensorValues, runTypeValues);
+        positionValues = DataSetDataDB.getPositionSensorValues(conn, instrument,
+          dataSet.getId());
 
+        SensorValue.clearAutoQC(positionValues.getAllPositionValues());
+
+        PositionQCRoutine positionQC = new PositionQCRoutine(positionValues);
         positionQC.qc(null, null);
+
+        SpeedQCRoutine speedQC = new SpeedQCRoutine(positionValues);
+        speedQC.qc(null, null);
       }
 
       // Run the auto QC routines for each column
@@ -238,7 +254,7 @@ public class AutoQCJob extends DataSetJob {
         }
       }
 
-      // Now the External Standards routines
+      // External Standards routines
       if (instrument.hasInternalCalibrations()) {
         ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfig = ResourceManager
           .getInstance().getExternalStandardsRoutinesConfiguration();
@@ -263,9 +279,22 @@ public class AutoQCJob extends DataSetJob {
         }
       }
 
+      // Diagnostics QC
+      DiagnosticsQCRoutine diagnosticsQC = new DiagnosticsQCRoutine();
+      diagnosticsQC.run(instrument, sensorValues, runTypePeriods);
+
+      // Cascade position QC to SensorValues
+      PositionQCCascadeRoutine positionQCCascade = new PositionQCCascadeRoutine();
+      positionQCCascade.run(instrument, sensorValues, runTypePeriods);
+
       // Send all sensor values to be stored. The storeSensorValues method only
       // writes those values whose 'dirty' flag is set.
       DataSetDataDB.storeSensorValues(conn, sensorValues.getAll());
+
+      if (null != positionValues) {
+        DataSetDataDB.storeSensorValues(conn,
+          positionValues.getAllPositionValues());
+      }
 
       // Trigger the Build Measurements job
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);

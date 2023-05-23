@@ -32,8 +32,8 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
     // We use equilibrator temperature as the presumed most realistic gas
     // temperature
-    Double equilibratorTemperature = measurement
-      .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
+    Double intakeTemperature = measurement
+      .getMeasurementValue("Intake Temperature").getCalculatedValue();
     Double salinity = measurement.getMeasurementValue("Salinity")
       .getCalculatedValue();
     Double atmosphericPressure = measurement
@@ -42,31 +42,32 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
       .getCalculatedValue();
 
     Double seaLevelPressure = Calculators.calcSeaLevelPressure(
-      atmosphericPressure, equilibratorTemperature,
+      atmosphericPressure, intakeTemperature,
       getFloatProperty("atm_pres_sensor_height"));
 
-    Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
+    Double pH2O = Calculators.calcPH2O(salinity, intakeTemperature);
 
     Double pCO2 = Calculators.calcpCO2TEWet(co2InGas, seaLevelPressure, pH2O);
     Double fCO2 = Calculators.calcfCO2(pCO2, co2InGas, seaLevelPressure,
-      equilibratorTemperature);
+      intakeTemperature);
 
     record.put("Sea Level Pressure", seaLevelPressure);
     record.put("pH₂O", pH2O);
+    record.put("xCO₂", co2InGas);
     record.put("pCO₂", pCO2);
     record.put("fCO₂", fCO2);
   }
 
   @Override
   protected String[] getRequiredTypeStrings() {
-    return new String[] { "Equilibrator Temperature", "Salinity",
+    return new String[] { "Intake Temperature", "Salinity",
       "Atmospheric Pressure", getXCO2Parameter() };
   }
 
   @Override
   public List<CalculationParameter> getCalculationParameters() {
     if (null == calculationParameters) {
-      calculationParameters = new ArrayList<CalculationParameter>(4);
+      calculationParameters = new ArrayList<CalculationParameter>(5);
 
       calculationParameters.add(new CalculationParameter(makeParameterId(0),
         "Sea Level Pressure", "Sea Level Pressure", "CAPASS01", "hPa", false));
@@ -75,9 +76,12 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
         "pH₂O", "Atmosphere Water Vapour Pressure", "CPVPZZ01", "hPa", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(2),
-        "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
+        "xCO₂", "xCO₂ In Atmosphere", "XCO2DRAT", "μmol mol⁻¹", true));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(3),
+        "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
+
+      calculationParameters.add(new CalculationParameter(makeParameterId(4),
         "fCO₂", "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true));
     }
 

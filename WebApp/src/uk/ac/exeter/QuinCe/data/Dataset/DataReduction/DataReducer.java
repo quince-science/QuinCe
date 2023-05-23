@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -21,7 +22,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundEx
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -71,32 +71,39 @@ public abstract class DataReducer {
 
     doCalculation(instrument, measurement, record, conn);
 
+    Flag cascadeFlag = Flag.GOOD;
+    LinkedHashMap<SensorType, String> messages = new LinkedHashMap<SensorType, String>();
+
     // Apply QC flags to the data reduction records
     for (SensorType sensorType : variable.getAllSensorTypes(true)) {
 
       MeasurementValue value = measurement.getMeasurementValue(sensorType);
 
       if (null != value) {
-        List<String> qcMessages = new ArrayList<String>();
+        // Collect all QC messages together. Do not record the same message from
+        // multiple sources.
+        Flag valueFlag = variable.getCascade(value.getSensorType(),
+          value.getQcFlag(), instrument.getSensorAssignments());
 
-        for (String qcMessage : value.getQcMessages()) {
-          List<String> subMessages = StringUtils.delimitedToList(qcMessage,
-            ";");
-          for (String subMessage : subMessages) {
-            qcMessages.add(sensorType.getShortName() + " " + subMessage);
+        if (!valueFlag.isGood()) {
+          if (valueFlag.moreSignificantThan(cascadeFlag)) {
+            cascadeFlag = valueFlag;
+          }
+
+          for (String qcMessage : value.getQcMessages()) {
+            if (!messages.containsValue(qcMessage)) {
+              messages.put(sensorType, qcMessage);
+            }
           }
         }
 
-        Flag cascadeFlag = variable.getCascade(value.getSensorType(),
-          value.getQcFlag(), instrument.getSensorAssignments());
-
-        if (cascadeFlag.equals(Flag.GOOD)) {
-          qcMessages = null;
-        }
-
-        record.setQc(cascadeFlag, qcMessages);
       }
     }
+
+    List<String> qcMessages = messages.entrySet().stream()
+      .map(e -> e.getKey().getShortName() + " " + e.getValue()).toList();
+
+    record.setQc(cascadeFlag, qcMessages);
 
     return record;
   }

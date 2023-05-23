@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
@@ -256,7 +257,7 @@ public class ExportBean extends BaseManagedBean {
               column.getId());
 
             addValueToOutput(result, exportOption, column.getId(), value,
-              column.hasQC(), column.includeType());
+              column.hasQC(), column.includeType(), data.getAllSensorValues());
           }
         }
 
@@ -322,7 +323,8 @@ public class ExportBean extends BaseManagedBean {
 
             result.append(exportOption.getSeparator());
             addValueToOutput(result, exportOption, column.getId(),
-              useValueInThisColumn ? value : null, true, true);
+              useValueInThisColumn ? value : null, true, true,
+              data.getAllSensorValues());
           }
         }
 
@@ -340,7 +342,7 @@ public class ExportBean extends BaseManagedBean {
                 PlotPageTableValue value = data.getColumnValue(rowId,
                   param.getId());
                 addValueToOutput(result, exportOption, param.getId(), value,
-                  param.isResult(), false);
+                  param.isResult(), false, data.getAllSensorValues());
               }
             }
           }
@@ -357,7 +359,7 @@ public class ExportBean extends BaseManagedBean {
               PlotPageTableValue value = data.getColumnValue(rowId,
                 heading.getId());
               addValueToOutput(result, exportOption, heading.getId(), value,
-                true, false);
+                true, false, data.getAllSensorValues());
             }
           }
 
@@ -373,7 +375,7 @@ public class ExportBean extends BaseManagedBean {
                 PlotPageTableValue value = data.getColumnValue(rowId,
                   heading.getId());
                 addValueToOutput(result, exportOption, heading.getId(), value,
-                  true, false);
+                  true, false, data.getAllSensorValues());
               }
             }
           }
@@ -424,8 +426,11 @@ public class ExportBean extends BaseManagedBean {
     columnsToCheck.addAll(
       data.getExtendedColumnHeadings().get(ExportData.SENSORS_FIELD_GROUP));
 
-    columnsToCheck.addAll(
-      data.getExtendedColumnHeadings().get(ExportData.DIAGNOSTICS_FIELD_GROUP));
+    if (null != data.getExtendedColumnHeadings()
+      .get(ExportData.DIAGNOSTICS_FIELD_GROUP)) {
+      columnsToCheck.addAll(data.getExtendedColumnHeadings()
+        .get(ExportData.DIAGNOSTICS_FIELD_GROUP));
+    }
 
     return columnsToCheck.stream().filter(c -> !exportOption.columnExcluded(c))
       .toList();
@@ -502,7 +507,8 @@ public class ExportBean extends BaseManagedBean {
 
   private static void addValueToOutput(DatasetExport export,
     ExportOption exportOption, long columnId, PlotPageTableValue value,
-    boolean includeQcColumns, boolean includeType) {
+    boolean includeQcColumns, boolean includeType,
+    DatasetSensorValues allSensorValues) {
 
     if (null == value) {
 
@@ -569,8 +575,9 @@ public class ExportBean extends BaseManagedBean {
             // If the value is NULL, the QC flag is empty. So only put in the
             // flag if it's not null.
             if (null != value.getValue()) {
-              export.append(
-                '"' + exportOption.format(value.getQcMessage(true)) + '"');
+              export.append('"'
+                + exportOption.format(value.getQcMessage(allSensorValues, true))
+                + '"');
             }
           }
         }

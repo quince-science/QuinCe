@@ -4,10 +4,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -31,6 +34,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -42,6 +46,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataLatLng;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.NullPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
@@ -105,7 +110,7 @@ public class ManualQCData extends PlotPageData {
    * All row IDs for the dataset. Row IDs are the millisecond values of the
    * times.
    */
-  private List<Long> rowIDs = null;
+  protected List<Long> rowIDs = null;
 
   /**
    * The dataset's sensor values.
@@ -213,12 +218,12 @@ public class ManualQCData extends PlotPageData {
     List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
       3);
     rootColumns.add(new PlotPageColumnHeading(
-      FileDefinition.TIME_COLUMN_HEADING, false, false));
+      FileDefinition.TIME_COLUMN_HEADING, false, false, false));
 
     if (!dataset.fixedPosition()) {
       rootColumns
         .add(new PlotPageColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
-          "Position", "Position", "POSITION", null, true, false, true, false));
+          "Position", "Position", "POSITION", null, true, false, false, false));
     }
 
     columnHeadings.put(ROOT_FIELD_GROUP, rootColumns);
@@ -227,14 +232,14 @@ public class ManualQCData extends PlotPageData {
     List<PlotPageColumnHeading> extendedRootColumns = new ArrayList<PlotPageColumnHeading>(
       3);
     extendedRootColumns.add(new PlotPageColumnHeading(
-      FileDefinition.TIME_COLUMN_HEADING, false, false));
+      FileDefinition.TIME_COLUMN_HEADING, false, false, false));
 
     if (!dataset.fixedPosition()) {
       extendedRootColumns.add(new PlotPageColumnHeading(
-        FileDefinition.LONGITUDE_COLUMN_HEADING, false, true));
+        FileDefinition.LONGITUDE_COLUMN_HEADING, false, false, false));
       extendedRootColumns
         .add(new PlotPageColumnHeading(FileDefinition.LATITUDE_COLUMN_HEADING,
-          false, true, FileDefinition.LONGITUDE_COLUMN_ID));
+          false, false, false, FileDefinition.LONGITUDE_COLUMN_ID));
     }
 
     extendedColumnHeadings.put(ROOT_FIELD_GROUP, extendedRootColumns);
@@ -267,7 +272,8 @@ public class ManualQCData extends PlotPageData {
 
       SensorAssignment column = sensorColumns.get(i);
       sensorColumnHeadings
-        .add(new PlotPageColumnHeading(column.getColumnHeading(), true, true));
+        .add(new PlotPageColumnHeading(column.getColumnHeading(), true, true,
+          column.getSensorType().questionableFlagAllowed()));
       sensorColumnIds.add(column.getDatabaseId());
     }
 
@@ -283,8 +289,9 @@ public class ManualQCData extends PlotPageData {
 
         SensorAssignment column = diagnosticColumns.get(i);
 
-        diagnosticColumnNames.add(
-          new PlotPageColumnHeading(column.getColumnHeading(), true, true));
+        diagnosticColumnNames
+          .add(new PlotPageColumnHeading(column.getColumnHeading(), true, true,
+            column.getSensorType().questionableFlagAllowed()));
         diagnosticColumnIds.add(column.getDatabaseId());
       }
 
@@ -376,31 +383,23 @@ public class ManualQCData extends PlotPageData {
 
         if (!dataset.fixedPosition()) {
 
-          PlotPageTableValue longitude = getInterpolatedPositionValue(
-            SensorType.LONGITUDE_SENSOR_TYPE, times.get(i));
-          PlotPageTableValue latitude = getInterpolatedPositionValue(
-            SensorType.LATITUDE_SENSOR_TYPE, times.get(i));
+          DataLatLng position = getMapPosition(times.get(i));
 
-          // The lon/lat can be null if the instrument has a fixed position
-          if (null != longitude && null != latitude
-            && null != longitude.getValue() && null != latitude.getValue()) {
-
+          if (null != position) {
             StringBuilder positionString = new StringBuilder();
-            if (null != longitude.getValue() && null != latitude.getValue()) {
-              positionString
-                .append(StringUtils.formatNumber(longitude.getValue()));
-              positionString.append(" | ");
-              positionString
-                .append(StringUtils.formatNumber(latitude.getValue()));
-            }
+            positionString
+              .append(StringUtils.formatNumber(position.getLongitude()));
+            positionString.append(" | ");
+            positionString
+              .append(StringUtils.formatNumber(position.getLatitude()));
 
-            record.addColumn(positionString.toString(), longitude.getQcFlag(),
-              longitude.getQcMessage(false), longitude.getFlagNeeded(),
-              longitude.getType());
+            record.addColumn(positionString.toString(), position.getFlag(),
+              position.getQcMessage(sensorValues), position.getFlagNeeded(),
+              position.getType(), position.getSourceIds());
           } else {
             // Empty position column
             record.addColumn("", Flag.GOOD, null, false,
-              PlotPageTableValue.NAN_TYPE);
+              PlotPageTableValue.NAN_TYPE, null);
           }
         }
 
@@ -495,7 +494,8 @@ public class ManualQCData extends PlotPageData {
 
               record.addColumn(stringValue, variableDataReduction.getQCFlag(),
                 variableDataReduction.getQCMessages().toString(), false,
-                PlotPageTableValue.DATA_REDUCTION_TYPE);
+                PlotPageTableValue.DATA_REDUCTION_TYPE,
+                Arrays.asList(variableDataReduction.getMeasurementId()));
             }
           } else {
             // Make blank columns
@@ -507,7 +507,9 @@ public class ManualQCData extends PlotPageData {
 
         records.add(record);
       }
-    } catch (Exception e) {
+    } catch (
+
+    Exception e) {
       error("Error loading table data", e);
     }
 
@@ -551,28 +553,50 @@ public class ManualQCData extends PlotPageData {
   public void acceptAutoQC() {
 
     try {
+      List<SensorValue> selectedValues = getSelectedSensorValues();
 
-      List<SensorValue> sensorValues = getSelectedSensorValues();
+      List<SensorValue> changedValues = new ArrayList<SensorValue>(
+        selectedValues.size() * 2);
 
-      for (SensorValue sensorValue : sensorValues) {
-
+      for (SensorValue sensorValue : selectedValues) {
         // Only override the existing user QC if it has Needs Flag or Assumed
         // Good
+
+        SensorValue otherPositionValue = null;
+
+        if (SensorType.isPosition(sensorValue.getColumnId())) {
+          if (sensorValue.getColumnId() == SensorType.LONGITUDE_ID) {
+            otherPositionValue = sensorValues
+              .getSensorValue(sensorValue.getTime(), SensorType.LATITUDE_ID);
+          } else {
+            otherPositionValue = sensorValues
+              .getSensorValue(sensorValue.getTime(), SensorType.LONGITUDE_ID);
+          }
+        }
+
+        Flag setFlag = null;
+        String setMessage = null;
+
         if (sensorValue.getUserQCFlag().equals(Flag.NEEDED)
           || sensorValue.getUserQCFlag().equals(Flag.ASSUMED_GOOD)) {
-          sensorValue.setUserQC(sensorValue.getAutoQcFlag(),
-            sensorValue.getAutoQcResult().getAllMessages());
+
+          setFlag = sensorValue.getAutoQcFlag();
+          setMessage = sensorValue.getAutoQcResult().getAllMessages();
+
+          sensorValue.setUserQC(setFlag, setMessage);
+          changedValues.add(sensorValue);
+        }
+
+        if (null != otherPositionValue && null != setFlag) {
+          otherPositionValue.setUserQC(setFlag, setMessage);
+          changedValues.add(otherPositionValue);
         }
       }
 
-      // If we QCed the position update all related sensor values
-      if (FileDefinition.LONGITUDE_COLUMN_ID == selectedColumn) {
-        sensorValues.addAll(propagatePositionQC(sensorValues));
-      }
-
       try (Connection conn = dataSource.getConnection()) {
-        DataSetDataDB.storeSensorValues(conn, sensorValues);
+        DataSetDataDB.storeSensorValues(conn, changedValues);
       }
+      clearSelection();
       initPlots();
     } catch (Exception e) {
       error("Error while updating QC flags", e);
@@ -612,7 +636,8 @@ public class ManualQCData extends PlotPageData {
         worstSelectedFlag = sensorValue.getDisplayFlag();
       }
 
-      if (!sensorValue.flagNeeded()) {
+      if (!sensorValue.flagNeeded()
+        && !sensorValue.getUserQCFlag().equals(Flag.LOOKUP)) {
         comments.add(sensorValue.getUserQCMessage());
       } else {
         try {
@@ -666,118 +691,48 @@ public class ManualQCData extends PlotPageData {
 
   public void applyManualFlag() {
     try {
+      Set<SensorValue> changedValues = new HashSet<SensorValue>();
+
       List<SensorValue> selectedValues = getSelectedSensorValues();
 
-      // If we're doing position QC, apply it and update all related sensor
-      // values.
-      if (FileDefinition.LONGITUDE_COLUMN_ID == selectedColumn) {
-        selectedValues.forEach(v -> v.setUserQC(userFlag, userComment));
-        selectedValues.addAll(propagatePositionQC(selectedValues));
-      } else {
+      for (SensorValue value : selectedValues) {
 
-        for (SensorValue value : selectedValues) {
-          // If we are directly overwriting an existing position QC, go ahead
-          // and set it - the SensorValue will decide whether to update or not
-          if (value.hasPositionQC()) {
-            value.setUserQC(userFlag, userComment);
+        SensorValue otherPositionValue = null;
+
+        if (SensorType.isPosition(value.getColumnId())) {
+          if (value.getColumnId() == SensorType.LONGITUDE_ID) {
+            otherPositionValue = sensorValues.getSensorValue(value.getTime(),
+              SensorType.LATITUDE_ID);
           } else {
-
-            // Find the position QC for this sensor value, and see if we need to
-            // apply it.
-            SensorValue positionSensorValue = sensorValues
-              .getSensorValueOnOrBefore(FileDefinition.LONGITUDE_COLUMN_ID,
-                value.getTime());
-
-            if (null != positionSensorValue && positionSensorValue
-              .getDisplayFlag().moreSignificantThan(userFlag)) {
-
-              value.setUserQC(positionSensorValue.getDisplayFlag(),
-                positionSensorValue.getDisplayQCMessage());
-            } else {
-              value.setUserQC(userFlag, userComment);
-            }
+            otherPositionValue = sensorValues.getSensorValue(value.getTime(),
+              SensorType.LONGITUDE_ID);
           }
+        }
+
+        value.setUserQC(userFlag, userComment);
+        changedValues.add(value);
+        changedValues
+          .addAll(sensorValues.applyQCCascade(value, runTypePeriods));
+
+        if (null != otherPositionValue) {
+          otherPositionValue.setUserQC(userFlag, userComment);
+          changedValues.add(otherPositionValue);
+          changedValues.addAll(
+            sensorValues.applyQCCascade(otherPositionValue, runTypePeriods));
         }
       }
 
       // Store the updated sensor values
       try (Connection conn = dataSource.getConnection()) {
-        DataSetDataDB.storeSensorValues(conn, selectedValues);
+        DataSetDataDB.storeSensorValues(conn, changedValues);
       }
 
+      clearSelection();
       initPlots();
 
     } catch (Exception e) {
       error("Error storing QC data", e);
     }
-  }
-
-  /**
-   * Applies position QC flags to values from sensors.
-   *
-   * <p>
-   * If the position for a given sensor is bad, then that value must also be bad
-   * - a sensor value with an untrustworthy position is of no use. This is
-   * applied to any sensor values whose time is >= to the position's time and <
-   * the time of the next position value.
-   * </p>
-   *
-   * <p>
-   * This method takes in a list of position values, and finds all sensor values
-   * related to that position and propagates the QC flag to them. If the
-   * position flag is worse than the sensor's own flag, then it will be
-   * overridden.
-   * </p>
-   *
-   * @param positionValues
-   *          The position values
-   * @return The list of sensor values whose QC flags have been updated
-   * @throws RecordNotFoundException
-   * @throws RoutineException
-   */
-  private List<SensorValue> propagatePositionQC(
-    List<SensorValue> positionValues)
-    throws RecordNotFoundException, RoutineException {
-
-    List<SensorValue> updatedValues = new ArrayList<SensorValue>();
-
-    // Get all the position values as a sorted list
-    List<SensorValue> allPositionValues = new ArrayList<SensorValue>(
-      sensorValues.getBySensorType(SensorType.LONGITUDE_SENSOR_TYPE));
-
-    for (SensorValue positionValue : positionValues) {
-
-      int positionValueLocation = allPositionValues.indexOf(positionValue);
-      LocalDateTime nextPositionTime = allPositionValues
-        .get(positionValueLocation + 1).getTime();
-
-      List<SensorValue> relatedSensorValues = sensorValues
-        .getByTimeRange(positionValue.getTime(), nextPositionTime);
-
-      for (SensorValue value : relatedSensorValues) {
-
-        // For latitude, just copy the longitude QC
-        if (FileDefinition.LATITUDE_COLUMN_ID == value.getColumnId()) {
-          value.setUserQC(positionValue.getDisplayFlag(),
-            positionValue.getDisplayQCMessage());
-
-          // Skip the longitude - that's what we're basing this whole thing on
-          // in the first place.
-        } else if (FileDefinition.LONGITUDE_COLUMN_ID != value.getColumnId()) {
-          // Don't process diagnostics
-          if (!instrument.getSensorAssignments()
-            .getSensorTypeForDBColumn(value.getColumnId()).isDiagnostic()) {
-
-            value.setPositionQC(positionValue.getDisplayFlag(),
-              positionValue.getDisplayQCMessage());
-
-            updatedValues.add(value);
-          }
-        }
-      }
-    }
-
-    return updatedValues;
   }
 
   /**
@@ -816,6 +771,11 @@ public class ManualQCData extends PlotPageData {
     return selectable;
   }
 
+  @Override
+  protected List<LocalDateTime> getDataTimes() {
+    return sensorValues.getTimes();
+  }
+
   /**
    * Determine whether or not a given {@link SensorValue} should be regarded as
    * a ghost value (i.e. visible but not editable).
@@ -840,9 +800,11 @@ public class ManualQCData extends PlotPageData {
     TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
 
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
-      for (LocalDateTime time : sensorValues.getTimes()) {
+      for (LocalDateTime time : getDataTimes()) {
         result.put(time, new SimplePlotPageTableValue(time, null, true));
       }
+    } else if (SensorType.isPosition(column.getId())) {
+      result = getPositionValues(column.getId());
     } else if (sensorValues.containsColumn(column.getId())) {
 
       SensorType sensorType = instrument.getSensorAssignments()
@@ -927,15 +889,33 @@ public class ManualQCData extends PlotPageData {
     return result;
   }
 
+  protected TreeMap<LocalDateTime, PlotPageTableValue> getPositionValues(
+    long columnId) throws PlotPageDataException, PositionException {
+    return getPositionValuesAction(columnId, true);
+  }
+
+  protected TreeMap<LocalDateTime, PlotPageTableValue> getPositionValuesAction(
+    long columnId, boolean preferGoodFlags)
+    throws PlotPageDataException, PositionException {
+
+    TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
+
+    for (LocalDateTime time : getDataTimes()) {
+      result.put(time,
+        sensorValues.getPositionTableValue(columnId, time, preferGoodFlags));
+    }
+
+    return result;
+  }
+
   @Override
-  protected PlotPageColumnHeading getDefaultYAxis1() {
+  protected PlotPageColumnHeading getDefaultYAxis1() throws Exception {
     // The first sensor
     return columnHeadings.get(SENSORS_FIELD_GROUP).get(0);
   }
 
   @Override
   protected PlotPageColumnHeading getDefaultYAxis2() throws Exception {
-
     Variable variable = instrument.getVariables().get(0);
     SensorType coreSensorType = variable.getCoreSensorType();
     long coreColumn = instrument.getSensorAssignments()
@@ -950,7 +930,8 @@ public class ManualQCData extends PlotPageData {
    * @return The number of NEEDED flags
    */
   public Map<Long, Integer> getNeedsFlagCounts() {
-    return null == sensorValues ? null : sensorValues.getNeedsFlagCounts();
+    return null == sensorValues ? null
+      : sensorValues.getNonPositionNeedsFlagCounts();
   }
 
   /**
@@ -1104,13 +1085,15 @@ public class ManualQCData extends PlotPageData {
   }
 
   protected PlotPageTableValue getInterpolatedPositionValue(
-    SensorType sensorType, LocalDateTime time) throws PlotPageDataException {
+    SensorType sensorType, LocalDateTime time)
+    throws PlotPageDataException, PositionException {
 
     PlotPageTableValue result = null;
 
     if (sensorType.isPosition()) {
       // If there is a measurement at this time, try using the value from that
-      Measurement measurement = measurements.get(time);
+      Measurement measurement = null == measurements ? null
+        : measurements.get(time);
 
       if (null != measurement) {
         if (measurement.hasMeasurementValue(sensorType)) {
@@ -1133,44 +1116,31 @@ public class ManualQCData extends PlotPageData {
           long columnId = instrument.getSensorAssignments()
             .getColumnIds(sensorType).get(0);
 
-          List<SensorValue> valuesToUse = sensorValues.getColumnValues(columnId)
-            .getWithInterpolation(time, true, false);
-
-          switch (valuesToUse.size()) {
-          case 0: {
-            // Flushing value - do nothing
-            break;
-          }
-          case 1: {
-            // Value from exact time - use it directly
-            result = new SensorValuePlotPageTableValue(valuesToUse.get(0));
-            break;
-          }
-          case 2: {
-            Double value = SensorValue.interpolate(valuesToUse.get(0),
-              valuesToUse.get(1), time);
-
-            if (null != value) {
-              try {
-                result = new SimplePlotPageTableValue(String.valueOf(value),
-                  SensorValue.getCombinedDisplayFlag(valuesToUse),
-                  SensorValue.getCombinedQcComment(valuesToUse), false,
-                  PlotPageTableValue.INTERPOLATED_TYPE);
-              } catch (RoutineException e) {
-                throw new PlotPageDataException(
-                  "Unable to get SensorValue QC Comments", e);
-              }
-            }
-
-            break;
-          }
-          default: {
-            throw new PlotPageDataException(
-              "Invalid number of values in sensor value search");
-          }
-          }
+          result = sensorValues.getPositionTableValue(columnId, time, true);
         }
       }
+    }
+
+    return result;
+  }
+
+  @Override
+  public DatasetSensorValues getAllSensorValues() {
+    return sensorValues;
+  }
+
+  @Override
+  protected DataLatLng getMapPosition(LocalDateTime time) throws Exception {
+    PlotPageTableValue longitude = getInterpolatedPositionValue(
+      SensorType.LONGITUDE_SENSOR_TYPE, time);
+    PlotPageTableValue latitude = getInterpolatedPositionValue(
+      SensorType.LATITUDE_SENSOR_TYPE, time);
+
+    DataLatLng result = null;
+
+    if (null != longitude && !longitude.isNull() && null != latitude
+      && !latitude.isNull()) {
+      result = new DataLatLng(latitude, longitude);
     }
 
     return result;
