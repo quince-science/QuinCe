@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +74,8 @@ public abstract class FileUploadBean extends BaseManagedBean {
     }
     String fileContent = new String(getFile().getContents(),
       StandardCharsets.UTF_8);
-    List<String> fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
+    List<String> fileLines = new ArrayList<String>(
+      Arrays.asList(fileContent.split("[\\r\\n]+")));
 
     // Remove empty lines at the end of the file
     boolean blankLine = true;
