@@ -9,6 +9,8 @@ import java.util.List;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 
+import uk.ac.exeter.QuinCe.utils.StringUtils;
+
 /**
  * Extended version of the {@link BaseManagedBean} that includes file upload
  * handling.
@@ -77,16 +79,8 @@ public abstract class FileUploadBean extends BaseManagedBean {
     List<String> fileLines = new ArrayList<String>(
       Arrays.asList(fileContent.split("[\\r\\n]+")));
 
-    // Remove empty lines at the end of the file
-    boolean blankLine = true;
-    while (blankLine) {
-      String lastLine = fileLines.get(fileLines.size() - 1);
-      if (lastLine.trim().length() == 0) {
-        fileLines.remove(fileLines.size() - 1);
-      } else {
-        blankLine = false;
-      }
-    }
+    StringUtils.removeBlankTailLines(fileLines);
+
     return fileLines;
   }
 
