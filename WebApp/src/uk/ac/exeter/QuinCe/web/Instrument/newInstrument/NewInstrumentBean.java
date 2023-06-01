@@ -1895,20 +1895,7 @@ public class NewInstrumentBean extends FileUploadBean {
     InstrumentException, DatabaseException, IOException {
 
     try {
-      // Convert user-entered attributes to the format in which they'll be
-      // stored
-      Map<Variable, Properties> storedVariableProperties = new HashMap<Variable, Properties>();
-
-      for (Variable var : instrumentVariables) {
-        if (var.hasAttributes()) {
-          Properties props = new Properties();
-          var.getAttributes().forEach(attr -> {
-            props.put(attr.getId(), attr.getValue());
-          });
-
-          storedVariableProperties.put(var, props);
-        }
-      }
+      Map<Variable, Properties> storedVariableProperties = getVariableProperties();
 
       // Create the new Instrument object
       // TODO groups in here.
@@ -1942,6 +1929,27 @@ public class NewInstrumentBean extends FileUploadBean {
     }
 
     return NAV_INSTRUMENT_LIST;
+  }
+
+  /**
+   * Convert user-entered attributes to the format in which they'll be stored
+   *
+   * @return The variable attributes
+   */
+  protected Map<Variable, Properties> getVariableProperties() {
+    Map<Variable, Properties> storedVariableProperties = new HashMap<Variable, Properties>();
+
+    for (Variable var : instrumentVariables) {
+      if (var.hasAttributes()) {
+        Properties props = new Properties();
+        var.getAttributes().forEach(attr -> {
+          props.put(attr.getId(), attr.getValue());
+        });
+
+        storedVariableProperties.put(var, props);
+      }
+    }
+    return storedVariableProperties;
   }
 
   /**

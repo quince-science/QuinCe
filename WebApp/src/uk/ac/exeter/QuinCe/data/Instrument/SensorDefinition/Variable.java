@@ -63,6 +63,13 @@ public class Variable implements Comparable<Variable> {
   private List<SensorType> requiredSensorTypes;
 
   /**
+   * The set of attribute conditions that determine whether or not some sensor
+   * types are required. These sensor types are in {@link #requiredSensorTypes},
+   * but the enforcement will depend on the attribute values specified here.
+   */
+  private Map<Long, AttributeCondition> attributeConditions;
+
+  /**
    * The cascades from Questionable flags for each required SensorType to the
    * Core SensorType flag
    */
@@ -100,8 +107,10 @@ public class Variable implements Comparable<Variable> {
    */
   protected Variable(SensorsConfiguration sensorConfig, long id, String name,
     VariableAttributes attributes, String propertiesJson, long coreSensorTypeId,
-    List<Long> requiredSensorTypeIds, List<Integer> questionableCascades,
-    List<Integer> badCascades, Map<SensorType, ColumnHeading> columnHeadings)
+    List<Long> requiredSensorTypeIds,
+    Map<Long, AttributeCondition> attrConditions,
+    List<Integer> questionableCascades, List<Integer> badCascades,
+    Map<SensorType, ColumnHeading> columnHeadings)
     throws SensorTypeNotFoundException, SensorConfigurationException,
     InvalidFlagException {
 
@@ -135,6 +144,7 @@ public class Variable implements Comparable<Variable> {
 
     this.requiredSensorTypes = new ArrayList<SensorType>(
       requiredSensorTypeIds.size());
+    this.attributeConditions = attrConditions;
     this.questionableCascades = new HashMap<SensorType, Flag>();
     this.badCascades = new HashMap<SensorType, Flag>();
 
@@ -396,5 +406,10 @@ public class Variable implements Comparable<Variable> {
   public int compareTo(Variable o) {
     // Variables are ordered by name
     return name.compareTo(o.name);
+  }
+
+  protected AttributeCondition getAttributeCondition(SensorType sensorType) {
+    return null == attributeConditions ? null
+      : attributeConditions.get(sensorType.getId());
   }
 }
