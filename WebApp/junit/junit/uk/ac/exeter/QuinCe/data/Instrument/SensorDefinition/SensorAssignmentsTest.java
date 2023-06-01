@@ -842,7 +842,7 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void runTypeRequiredNoSensorTypesTest() throws Exception {
     assertTrue(
-      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
+      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE, null));
   }
 
   /**
@@ -860,7 +860,7 @@ public class SensorAssignmentsTest extends BaseTest {
       .addAssignment(makeAssignment(DATA_FILE_NAME, 1, "Sensor 1", true));
 
     assertTrue(
-      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
+      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE, null));
   }
 
   /**
@@ -878,7 +878,7 @@ public class SensorAssignmentsTest extends BaseTest {
       getSensorType("xCO₂ (with standards)"), DATA_FILE_NAME, 1, "xCO2", true));
 
     assertTrue(
-      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
+      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE, null));
   }
 
   /**
@@ -899,6 +899,6 @@ public class SensorAssignmentsTest extends BaseTest {
       DATA_FILE_NAME, 2, "Sensor 1", true));
 
     assertFalse(
-      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE));
+      assignments.isAssignmentRequired(SensorType.RUN_TYPE_SENSOR_TYPE, null));
   }
 }

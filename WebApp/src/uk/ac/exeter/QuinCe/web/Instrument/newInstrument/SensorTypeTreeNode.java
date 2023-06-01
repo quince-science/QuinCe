@@ -1,7 +1,10 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
@@ -9,6 +12,8 @@ import org.primefaces.model.TreeNode;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableAttributes;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 
 @SuppressWarnings("serial")
@@ -22,11 +27,16 @@ public class SensorTypeTreeNode extends DefaultTreeNode {
 
   private final SensorAssignments sensorAssignments;
 
+  private final List<Variable> variables;
+
+  private Map<Long, VariableAttributes> varAttributes = null;
+
   protected SensorTypeTreeNode(TreeNode parent, SensorType sensorType,
-    SensorAssignments sensorAssignments) {
+    List<Variable> variables, SensorAssignments sensorAssignments) {
 
     super(sensorType.getShortName(), parent);
     this.sensorType = sensorType;
+    this.variables = Collections.unmodifiableList(variables);
     this.sensorAssignments = sensorAssignments;
   }
 
@@ -36,14 +46,23 @@ public class SensorTypeTreeNode extends DefaultTreeNode {
     String result = "";
 
     try {
-      result = sensorAssignments.isAssignmentRequired(sensorType)
-        ? SENSOR_UNASSIGNED
-        : SENSOR_ASSIGNED;
+      result = sensorAssignments.isAssignmentRequired(sensorType,
+        getVarAttributesMap()) ? SENSOR_UNASSIGNED : SENSOR_ASSIGNED;
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
     }
 
     return result;
+  }
+
+  private Map<Long, VariableAttributes> getVarAttributesMap() {
+
+    if (null == varAttributes) {
+      varAttributes = new HashMap<Long, VariableAttributes>();
+      variables.forEach(v -> varAttributes.put(v.getId(), v.getAttributes()));
+    }
+
+    return varAttributes;
   }
 
   protected void removeAssignment(SensorAssignment assignment) {
