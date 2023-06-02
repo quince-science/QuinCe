@@ -2,14 +2,12 @@
 
 ################################################################################
 #
-# This script deletes a data set and all related records from the database
-# It is designed to be run from a gradle task
+# This script deletes an instrument set and all related records from the database
 #
-# The script takes the database url, username and password as parameters
-# It will prompt the user for the ID of the data set to be deleted
+# The script will prompt for instrument id if not set on the command line.
 #
-#
-# The script will prompt for dataset id if not set on the command line.
+# NOTE: There is no confirmation anywhere - this is an irreversible
+#       destructive script
 #
 ################################################################################
 read -r -d '' usage << EOM
@@ -26,8 +24,6 @@ db_name="$(scripts/get_setup_property.sh db_database)"
 db_user="$(scripts/get_setup_property.sh db_username)"
 db_password="$(scripts/get_setup_property.sh db_password)"
 filestore_folder="$(scripts/get_setup_property.sh filestore_folder)"
-
-
 
 
 verbose=0
@@ -85,6 +81,8 @@ then
     DELETE FROM run_type WHERE file_definition_id IN (SELECT id FROM file_definition WHERE instrument_id = $instrument_id);
     DELETE FROM file_column WHERE file_definition_id IN (SELECT id FROM file_definition WHERE instrument_id = $instrument_id);
     DELETE FROM file_definition WHERE instrument_id = $instrument_id;
+
+    DELETE FROM shared_instruments WHERE instrument_id = $instrument_id;
 
     DELETE FROM instrument_variables WHERE instrument_id = $instrument_id;
     DELETE FROM instrument WHERE id = $instrument_id;
