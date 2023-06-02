@@ -241,7 +241,7 @@
             process="@this plot1XAxis plot1YAxis plot1Y2Axis plot1HideFlags"
             update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels
               plot1FlagLabels plot1Y2Data plot1Y2Labels"
-            oncomplete="drawPlot(1, true, true)" />
+            oncomplete="drawPlot(1, true, false)" />
 
           <p:remoteCommand name="map1GetData"
             action="#{sessionScope[beanName].data.map1.generateMapData}"
@@ -330,7 +330,7 @@
             process="@this plot2XAxis plot2YAxis plot2Y2Axis plot2HideFlags"
             update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels
               plot2FlagLabels plot2Y2Data plot2Y2Labels"
-            oncomplete="drawPlot(2, true, true)" />
+            oncomplete="drawPlot(2, true, false)" />
 
           <p:remoteCommand name="map2GetData"
             action="#{sessionScope[beanName].data.map2.generateMapData}"
