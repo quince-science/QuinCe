@@ -1091,7 +1091,7 @@ function hasY2(index) {
   return $('#plot' + index + 'Form\\:plot' + index + 'Y2Labels').val().length > 0;
 }
 
-function drawY2Plot(index) {
+function drawY2Plot(index, keepZoom) {
   let y2Var = 'y2Plot' + index;
 
   let newY2Data = $('#plot' + index + 'Form\\:plot' + index + 'Y2Data').val();
@@ -1104,7 +1104,14 @@ function drawY2Plot(index) {
 
   let labels = getPlotY2Labels(index);
 
+  let zoomOptions = null;
+
   if (null != window[y2Var]) {
+    zoomOptions = {
+      dateWindow: window[y2Var].xAxisRange(),
+      valueRanges: window[y2Var].yAxisRanges()
+    };
+
     window[y2Var].destroy();
     window[y2Var] = null;
   }
@@ -1117,8 +1124,17 @@ function drawY2Plot(index) {
   y2_options.legend = 'never';
   y2_options.visibility = [false, true, true, true, true, true];
   y2_options.colors = ['#00000000', '#00000000', '#E6B6A6', '#EFDCBF', '#C0C0C0', '#A9DBF9'];
-  y2_options.xRangePad = 10;
-  y2_options.yRangePad = 10;
+
+  if (keepZoom && null != zoomOptions) {
+    y2_options.dateWindow = zoomOptions.dateWindow;
+    y2_options.valueRange = zoomOptions.valueRanges[0];
+    y2_options.xRangePad = 0;
+    y2_options.yRangePad = 0;
+  } else {
+    y2_options.xRangePad = 10;
+    y2_options.yRangePad = 10;
+  }
+
   y2_options.interactionModel = null;
 
   y2_options.series = {
@@ -1168,7 +1184,8 @@ function drawY2Plot(index) {
       }
     },
     y2: {
-      drawGrid: false
+      drawGrid: false,
+      valueRange: keepZoom && null != zoomOptions ? zoomOptions.valueRanges[1] : null
     }
   }
 
@@ -1179,7 +1196,7 @@ function drawY2Plot(index) {
     );
 }
 
-function drawDataPlot1Y(index) {
+function drawDataPlot1Y(index, keepZoom) {
   let plotVar = 'dataPlot' + index;
 
   // If there's new data, extract it
@@ -1191,8 +1208,15 @@ function drawDataPlot1Y(index) {
 
   let labels = getPlotLabels(index);
 
+  let zoomOptions = null;
+
   // Destroy the old plot
   if (null != window[plotVar]) {
+    zoomOptions = {
+      dateWindow: window[plotVar].xAxisRange(),
+      valueRange: window[plotVar].yAxisRange()
+    };
+
     window[plotVar].destroy();
     window[plotVar] = null;
   }
@@ -1208,8 +1232,17 @@ function drawDataPlot1Y(index) {
   data_options.pointSize = DATA_POINT_SIZE;
   data_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
   data_options.selectMode = 'euclidian';
-  data_options.xRangePad = 10;
-  data_options.yRangePad = 10;
+
+  if (keepZoom && null != zoomOptions) {
+    data_options.dateWindow = zoomOptions.dateWindow;
+    data_options.valueRange = zoomOptions.valueRange;
+    data_options.xRangePad = 0;
+    data_options.yRangePad = 0;
+  } else {
+    data_options.xRangePad = 10;
+    data_options.yRangePad = 10;
+  }
+
 
   data_options.interactionModel = getInteractionModel(index);
   data_options.clickCallback = function(e, x, points) {
@@ -1267,7 +1300,7 @@ function drawDataPlot1Y(index) {
 
 }
 
-function drawDataPlot2Y(index) {
+function drawDataPlot2Y(index, keepZoom) {
   let plotVar = 'dataPlot' + index;
 
   // If there's new data, extract it
@@ -1279,8 +1312,15 @@ function drawDataPlot2Y(index) {
 
   let labels = getPlotLabels(index);
 
+  let zoomOptions = null;
+
   // Destroy the old plot
   if (null != window[plotVar]) {
+    zoomOptions = {
+      dateWindow: window[plotVar].xAxisRange(),
+      valueRanges: window[plotVar].yAxisRanges()
+    };
+
     window[plotVar].destroy();
     window[plotVar] = null;
   }
@@ -1297,8 +1337,16 @@ function drawDataPlot2Y(index) {
   data_options.pointSize = DATA_POINT_SIZE;
   data_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
   data_options.selectMode = 'euclidian';
-  data_options.xRangePad = 10;
-  data_options.yRangePad = 10;
+
+  if (keepZoom && null != zoomOptions) {
+    data_options.dateWindow = zoomOptions.dateWindow;
+    data_options.valueRange = zoomOptions.valueRanges[0];
+    data_options.xRangePad = 0;
+    data_options.yRangePad = 0;
+  } else {
+    data_options.xRangePad = 10;
+    data_options.yRangePad = 10;
+  }
 
   data_options.series = {
     [labels[4]]: {
@@ -1321,7 +1369,8 @@ function drawDataPlot2Y(index) {
       drawGrid: false,
       axisLabelFormatter: function(y) {
         return '';
-      }
+      },
+      valueRange: keepZoom && null != zoomOptions ? zoomOptions.valueRanges[1] : null
     }
   }
 
@@ -1370,16 +1419,17 @@ function drawDataPlot2Y(index) {
 
 }
 
-function drawPlot(index, drawOtherPlots) {
+function drawPlot(index, drawOtherPlots, keepZoom) {
   errorCheck();
 
   if (drawOtherPlots) {
-    if (window['y2Plot' + index]) {
-      window['y2Plot' + index].destroy();
-      window['y2Plot' + index] = null;
-    }
     if (hasY2(index)) {
-      drawY2Plot(index);
+      drawY2Plot(index, keepZoom);
+    } else {
+      if (window['y2Plot' + index]) {
+        window['y2Plot' + index].destroy();
+        window['y2Plot' + index] = null;
+      }
     }
 
     drawSelectionPlot(index);
@@ -1387,14 +1437,14 @@ function drawPlot(index, drawOtherPlots) {
 
   if (hasY2(index)) {
     if (drawOtherPlots) {
-      drawFlagPlot2Y(index);
+      drawFlagPlot2Y(index, keepZoom);
     }
-    drawDataPlot2Y(index);
+    drawDataPlot2Y(index, keepZoom);
   } else {
     if (drawOtherPlots) {
-      drawFlagPlot1Y(index);
+      drawFlagPlot1Y(index, keepZoom);
     }
-    drawDataPlot1Y(index);
+    drawDataPlot1Y(index, keepZoom);
   }
 
   resizePlot(index);
@@ -1933,7 +1983,7 @@ function setPlotAxes(index) {
 }
 
 function setPlotSelectMode(index) {
-  drawPlot(index, false);
+  drawPlot(index, false, true);
 }
 
 function selectModeMouseDown(event, g, context) {
