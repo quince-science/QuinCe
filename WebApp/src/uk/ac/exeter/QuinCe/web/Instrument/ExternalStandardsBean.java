@@ -6,8 +6,8 @@ import javax.faces.bean.SessionScoped;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandard;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardFactory;
 
 /**
  * Bean for external standards
@@ -52,8 +52,8 @@ public class ExternalStandardsBean extends CalibrationBean {
   }
 
   @Override
-  protected Calibration initNewCalibration() {
-    return new ExternalStandard(instrument);
+  protected Calibration initNewCalibration() throws Exception {
+    return ExternalStandardFactory.getExternalStandard(instrument);
   }
 
   @Override
