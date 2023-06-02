@@ -13,9 +13,8 @@ public class DefaultExternalStandard extends ExternalStandard {
     super(instrument);
   }
 
-  protected DefaultExternalStandard(long id, Instrument instrument,
-    String target, LocalDateTime deploymentDate,
-    Map<String, String> coefficients) {
+  public DefaultExternalStandard(long id, Instrument instrument, String target,
+    LocalDateTime deploymentDate, Map<String, String> coefficients) {
     super(id, instrument, target, deploymentDate, coefficients);
   }
 
