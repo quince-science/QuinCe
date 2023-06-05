@@ -19,11 +19,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
-@FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
-  "resources/sql/testbase/instrument", "resources/sql/testbase/variable" })
 public class VariableTest extends BaseTest {
-
-  private Variable var;
 
   private SensorType getSensorType(String name) throws Exception {
     return ResourceManager.getInstance().getSensorsConfiguration()
@@ -33,32 +29,46 @@ public class VariableTest extends BaseTest {
   @BeforeEach
   public void loadVariable() throws VariableNotFoundException {
     initResourceManager();
-    var = ResourceManager.getInstance().getSensorsConfiguration()
-      .getInstrumentVariable(1000000L);
   }
 
-  @Test
-  public void getIdTest() {
-    assertEquals(1000000L, var.getId());
+  private Variable getVariable(long id) throws VariableNotFoundException {
+    return ResourceManager.getInstance().getSensorsConfiguration()
+      .getInstrumentVariable(id);
   }
 
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/variable" })
   @Test
-  public void getNameTest() {
-    assertEquals("testVar", var.getName());
+  public void getIdTest() throws VariableNotFoundException {
+    assertEquals(1000000L, getVariable(1000000L).getId());
   }
 
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/variable" })
   @Test
-  public void getCoreSensorTypeTest() throws SensorTypeNotFoundException {
+  public void getNameTest() throws VariableNotFoundException {
+    assertEquals("testVar", getVariable(1000000L).getName());
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/variable" })
+  @Test
+  public void getCoreSensorTypeTest()
+    throws SensorTypeNotFoundException, VariableNotFoundException {
     SensorType expectedCoreSensorType = ResourceManager.getInstance()
       .getSensorsConfiguration().getSensorType(1000000L);
-    assertEquals(expectedCoreSensorType, var.getCoreSensorType());
+    assertEquals(expectedCoreSensorType,
+      getVariable(1000000L).getCoreSensorType());
   }
 
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/variable" })
   @ParameterizedTest
   @ValueSource(booleans = { false, true })
   public void getRequiredSensorTypesTest(boolean includePosition)
     throws Exception {
-    List<SensorType> sensorTypes = var.getAllSensorTypes(includePosition);
+    List<SensorType> sensorTypes = getVariable(1000000L)
+      .getAllSensorTypes(includePosition);
 
     assertTrue(sensorTypes.contains(getSensorType("testSensor")));
     assertTrue(sensorTypes.contains(getSensorType("Intake Temperature")));
@@ -69,5 +79,20 @@ public class VariableTest extends BaseTest {
       sensorTypes.contains(SensorType.LONGITUDE_SENSOR_TYPE));
     assertEquals(includePosition,
       sensorTypes.contains(SensorType.LATITUDE_SENSOR_TYPE));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/variable" })
+  @Test
+  public void noInternalCalibrationsTest() throws VariableNotFoundException {
+    assertFalse(getVariable(1000000L).hasInternalCalibrations());
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
+    "resources/sql/data/Instrument/SensorDefinition/VariableTest/hasInternalCalibrations" })
+  @Test
+  public void hasInternalCalibrationsTest() throws VariableNotFoundException {
+    assertTrue(getVariable(2000000L).hasInternalCalibrations());
   }
 }
