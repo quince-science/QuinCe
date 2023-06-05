@@ -6,14 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.UnderwayMarine12_13Pco2Reducer;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class D12D13SensorExternalStandard extends DefaultExternalStandard {
-
-  private static final String TOTAL_CO2_PROP_VALUE = "Total CO₂";
 
   boolean useTotal = false;
 
@@ -42,13 +41,17 @@ public class D12D13SensorExternalStandard extends DefaultExternalStandard {
     if (null != marineProp && null != atmosProp
       && !marineProp.equals(atmosProp)) {
       throw new CalibrationException(
-        "cal_gas_type property must be the same for both marine and atmospheric variables");
+        UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR
+          + " property must be the same for both marine and atmospheric variables");
     } else if (null != marineProp) {
-      useTotal = marineProp.equals(TOTAL_CO2_PROP_VALUE);
+      useTotal = marineProp
+        .equals(UnderwayMarine12_13Pco2Reducer.TOTAL_CO2_GAS_CAL_TYPE);
     } else if (null != atmosProp) {
-      useTotal = atmosProp.equals(TOTAL_CO2_PROP_VALUE);
+      useTotal = atmosProp
+        .equals(UnderwayMarine12_13Pco2Reducer.TOTAL_CO2_GAS_CAL_TYPE);
     } else {
-      throw new CalibrationException("Missing cal_gas_type property");
+      throw new CalibrationException("Missing "
+        + UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR + " property");
     }
   }
 
@@ -62,7 +65,8 @@ public class D12D13SensorExternalStandard extends DefaultExternalStandard {
         .getSensorsConfiguration().getInstrumentVariable(variableName));
 
       if (null != marineProps) {
-        result = marineProps.getProperty("cal_gas_type");
+        result = marineProps
+          .getProperty(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR);
       }
     } catch (VariableNotFoundException e) {
       throw new CalibrationException(e);

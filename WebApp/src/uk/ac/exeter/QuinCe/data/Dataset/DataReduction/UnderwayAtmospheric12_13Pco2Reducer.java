@@ -1,11 +1,14 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public class UnderwayAtmospheric12_13Pco2Reducer
@@ -29,32 +32,79 @@ public class UnderwayAtmospheric12_13Pco2Reducer
     Double atmosphericPressure = measurement
       .getMeasurementValue("Atmospheric Pressure").getCalculatedValue();
 
+    Double seaLevelPressure = Calculators.calcSeaLevelPressure(
+      atmosphericPressure, intakeTemperature,
+      getFloatProperty("atm_pres_sensor_height"));
+
+    record.put("Sea Level Pressure", seaLevelPressure);
+
+    if (variable.getAttributes()
+      .get(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR)
+      .equals(UnderwayMarine12_13Pco2Reducer.SPLIT_CO2_GAS_CAL_TYPE)) {
+
+      doSplitCalculation(record, measurement, intakeTemperature, salinity,
+        seaLevelPressure);
+    } else {
+      doTotalCalculation(record, measurement, intakeTemperature, salinity,
+        seaLevelPressure);
+    }
+  }
+
+  @Override
+  protected String[] getRequiredTypeStrings() {
+    List<String> result = Arrays.asList(new String[] { "Intake Temperature",
+      "Salinity", "Atmospheric Pressure", "xH₂O (with standards)",
+      "x¹²CO₂ (with standards)", "x¹³CO₂ (with standards)" });
+
+    if (variable.getAttributes()
+      .get(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR)
+      .equals(UnderwayMarine12_13Pco2Reducer.SPLIT_CO2_GAS_CAL_TYPE)) {
+
+      result.add("x¹²CO₂ + x¹³CO₂ (with standards)");
+    }
+
+    return (String[]) result.toArray();
+  }
+
+  private void doSplitCalculation(DataReductionRecord record,
+    Measurement measurement, Double intakeTemperature, Double salinity,
+    Double seaLevelPressure)
+    throws SensorTypeNotFoundException, DataReductionException {
+
     // xCO2 values are dried as part of sorting out their Calculated Value
     Double x12CO2 = measurement.getMeasurementValue("x¹²CO₂ (with standards)")
       .getCalculatedValue();
     Double x13CO2 = measurement.getMeasurementValue("x¹³CO₂ (with standards)")
       .getCalculatedValue();
 
-    Double seaLevelPressure = Calculators.calcSeaLevelPressure(
-      atmosphericPressure, intakeTemperature,
-      getFloatProperty("atm_pres_sensor_height"));
-
     Calculator x12CO2Calculator = new Calculator(intakeTemperature, salinity,
       seaLevelPressure, x12CO2);
     Calculator x13CO2Calculator = new Calculator(intakeTemperature, salinity,
       seaLevelPressure, x13CO2);
 
-    record.put("Sea Level Pressure", seaLevelPressure);
-    record.put("pH₂O", x12CO2Calculator.pH2O + x13CO2Calculator.pH2O);
+    // Will be the same for both 12C and 13C
+    record.put("pH₂O", x12CO2Calculator.pH2O);
     record.put("xCO₂", x12CO2 + x13CO2);
     record.put("pCO₂", x12CO2Calculator.pCO2 + x13CO2Calculator.pCO2);
     record.put("fCO₂", x12CO2Calculator.fCO2 + x13CO2Calculator.fCO2);
   }
 
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Salinity",
-      "Atmospheric Pressure", "xH₂O (with standards)",
-      "x¹²CO₂ (with standards)", "x¹³CO₂ (with standards)" };
+  private void doTotalCalculation(DataReductionRecord record,
+    Measurement measurement, Double intakeTemperature, Double salinity,
+    Double seaLevelPressure)
+    throws SensorTypeNotFoundException, DataReductionException {
+
+    // xCO2 values are dried as part of sorting out their Calculated Value
+    Double co2 = measurement
+      .getMeasurementValue("x¹²CO₂ + x¹³CO₂ (with standards)")
+      .getCalculatedValue();
+
+    Calculator calculator = new Calculator(intakeTemperature, salinity,
+      seaLevelPressure, co2);
+
+    record.put("pH₂O", calculator.pH2O);
+    record.put("xCO₂", co2);
+    record.put("pCO₂", calculator.pCO2);
+    record.put("fCO₂", calculator.fCO2);
   }
 }
