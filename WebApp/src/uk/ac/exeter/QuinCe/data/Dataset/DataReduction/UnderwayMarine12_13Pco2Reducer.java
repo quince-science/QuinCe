@@ -1,14 +1,23 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public class UnderwayMarine12_13Pco2Reducer extends UnderwayMarinePco2Reducer {
+
+  public static final String CAL_GAS_TYPE_ATTR = "cal_gas_type";
+
+  public static final String SPLIT_CO2_GAS_CAL_TYPE = "¹²CO₂/¹³CO₂";
+
+  public static final String TOTAL_CO2_GAS_CAL_TYPE = "Total CO₂";
 
   public UnderwayMarine12_13Pco2Reducer(Variable variable,
     Map<String, Properties> properties) {
@@ -28,6 +37,42 @@ public class UnderwayMarine12_13Pco2Reducer extends UnderwayMarinePco2Reducer {
     Double equilibratorPressure = measurement
       .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
 
+    // Store the calculated values
+    record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
+
+    if (variable.getAttributes().get(CAL_GAS_TYPE_ATTR)
+      .equals(SPLIT_CO2_GAS_CAL_TYPE)) {
+
+      doSplitCalculation(record, measurement, intakeTemperature, salinity,
+        equilibratorTemperature, equilibratorPressure);
+    } else {
+      doTotalCalculation(record, measurement, intakeTemperature, salinity,
+        equilibratorTemperature, equilibratorPressure);
+    }
+  }
+
+  @Override
+  protected String[] getRequiredTypeStrings() {
+    List<String> result = Arrays.asList(new String[] { "Intake Temperature",
+      "Salinity", "Equilibrator Temperature", "Equilibrator Pressure",
+      "xH₂O (with standards)", "x¹²CO₂ (with standards)",
+      "x¹³CO₂ (with standards)" });
+
+    if (variable.getAttributes()
+      .get(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR)
+      .equals(UnderwayMarine12_13Pco2Reducer.SPLIT_CO2_GAS_CAL_TYPE)) {
+
+      result.add("x¹²CO₂ + x¹³CO₂ (with standards)");
+    }
+
+    return (String[]) result.toArray();
+  }
+
+  private void doSplitCalculation(DataReductionRecord record,
+    Measurement measurement, Double intakeTemperature, Double salinity,
+    Double equilibratorTemperature, Double equilibratorPressure)
+    throws SensorTypeNotFoundException, DataReductionException {
+
     // xCO2 values are dried as part of sorting out their Calculated Value
     Double x12CO2 = measurement.getMeasurementValue("x¹²CO₂ (with standards)")
       .getCalculatedValue();
@@ -38,9 +83,6 @@ public class UnderwayMarine12_13Pco2Reducer extends UnderwayMarinePco2Reducer {
       equilibratorTemperature, equilibratorPressure, x12CO2);
     Calculator x13CO2Calculator = new Calculator(intakeTemperature, salinity,
       equilibratorTemperature, equilibratorPressure, x13CO2);
-
-    // Store the calculated values
-    record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
 
     // Will be the same for both 12C and 13C
     record.put("pH₂O", x12CO2Calculator.pH2O);
@@ -53,11 +95,23 @@ public class UnderwayMarine12_13Pco2Reducer extends UnderwayMarinePco2Reducer {
     record.put("fCO₂", x12CO2Calculator.fCO2 + x13CO2Calculator.fCO2);
   }
 
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Salinity",
-      "Equilibrator Temperature", "Equilibrator Pressure",
-      "xH₂O (with standards)", "x¹²CO₂ (with standards)",
-      "x¹³CO₂ (with standards)" };
+  private void doTotalCalculation(DataReductionRecord record,
+    Measurement measurement, Double intakeTemperature, Double salinity,
+    Double equilibratorTemperature, Double equilibratorPressure)
+    throws SensorTypeNotFoundException, DataReductionException {
+
+    // xCO2 values are dried as part of sorting out their Calculated Value
+    Double co2 = measurement
+      .getMeasurementValue("x¹²CO₂ + x¹³CO₂ (with standards)")
+      .getCalculatedValue();
+
+    Calculator calculator = new Calculator(intakeTemperature, salinity,
+      equilibratorTemperature, equilibratorPressure, co2);
+
+    record.put("pH₂O", calculator.pH2O);
+    record.put("pCO₂ TE Wet", calculator.pCo2TEWet);
+    record.put("fCO₂ TE Wet", calculator.fCo2TEWet);
+    record.put("pCO₂ SST", calculator.pCO2SST);
+    record.put("fCO₂", calculator.fCO2);
   }
 }

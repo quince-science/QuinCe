@@ -69,10 +69,21 @@ public class DefaultMeasurementValueCalculator
     }
   }
 
-  private MeasurementValue getSensorValue(Instrument instrument,
+  protected MeasurementValue getSensorValue(Instrument instrument,
     DataSet dataSet, Measurement measurement, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException, RoutineException {
+
+    return getSensorValue(instrument, dataSet, measurement, variable,
+      requiredSensorType, allMeasurements, allSensorValues, true, conn);
+  }
+
+  protected MeasurementValue getSensorValue(Instrument instrument,
+    DataSet dataSet, Measurement measurement, Variable variable,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, boolean allowCalibration,
+    Connection conn)
     throws MeasurementValueCalculatorException, RoutineException {
 
     SensorAssignment requiredAssignment = instrument.getSensorAssignments()
@@ -117,7 +128,7 @@ public class DefaultMeasurementValueCalculator
 
     // Calibrate the value if (a) the SensorType can have calibrations, and
     // (b) the instrument has calibration Run Types defined.
-    if (requiredSensorType.hasInternalCalibration()
+    if (allowCalibration && requiredSensorType.hasInternalCalibration()
       && instrument.hasInternalCalibrations()) {
       calibrate(instrument, measurement, requiredSensorType, result,
         allMeasurements, sensorValues, conn);
@@ -229,7 +240,7 @@ public class DefaultMeasurementValueCalculator
     }
   }
 
-  private void calibrate(Instrument instrument, Measurement measurement,
+  protected void calibrate(Instrument instrument, Measurement measurement,
     SensorType sensorType, MeasurementValue value,
     DatasetMeasurements allMeasurements,
     SearchableSensorValuesList sensorValues, Connection conn)
