@@ -62,5 +62,27 @@
         }
       }      
     ]
+  },
+  {
+    "variable": "Underway Marine pCO₂ from ¹²CO₂/¹³CO₂",
+    "routines": [
+      {
+        "name": "D12D13TotalCO2Check",
+        "flagged_sensors": [
+          "x¹²CO₂ + x¹³CO₂ (with standards)"
+        ]
+      }
+    ]
+  },
+  {
+    "variable": "Underway Atmospheric pCO₂ from ¹²CO₂/¹³CO₂",
+    "routines": [
+      {
+        "name": "D12D13TotalCO2Check",
+        "flagged_sensors": [
+          "x¹²CO₂ + x¹³CO₂ (with standards)"
+        ]
+      }
+    ]
   }
 ]
