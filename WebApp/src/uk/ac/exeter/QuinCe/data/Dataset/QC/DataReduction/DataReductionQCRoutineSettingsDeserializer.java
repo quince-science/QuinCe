@@ -51,16 +51,13 @@ public class DataReductionQCRoutineSettingsDeserializer
     /**
      * Extract options
      */
-    if (!jsonObject.has("options")) {
-      throw new JsonParseException("Missing flagged_sensors entry");
-    }
-
-    JsonObject options = jsonObject.get("options").getAsJsonObject();
-    for (Map.Entry<String, JsonElement> entry : options.entrySet()) {
-      result.addOption(entry.getKey(), entry.getValue().getAsString());
+    if (jsonObject.has("options")) {
+      JsonObject options = jsonObject.get("options").getAsJsonObject();
+      for (Map.Entry<String, JsonElement> entry : options.entrySet()) {
+        result.addOption(entry.getKey(), entry.getValue().getAsString());
+      }
     }
 
     return result;
   }
-
 }
