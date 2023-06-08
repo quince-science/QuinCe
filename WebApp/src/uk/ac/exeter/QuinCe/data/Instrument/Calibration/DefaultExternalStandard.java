@@ -9,7 +9,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
 public class DefaultExternalStandard extends ExternalStandard {
 
-  protected DefaultExternalStandard(Instrument instrument) {
+  public DefaultExternalStandard(Instrument instrument) {
     super(instrument);
   }
 
