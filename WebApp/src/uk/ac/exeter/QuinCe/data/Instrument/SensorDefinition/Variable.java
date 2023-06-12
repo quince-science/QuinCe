@@ -314,20 +314,6 @@ public class Variable implements Comparable<Variable> {
     return attributes;
   }
 
-  public static boolean sensorTypeRequired(List<Variable> variables,
-    SensorType sensorType) {
-    boolean result = false;
-
-    for (Variable variable : variables) {
-      if (variable.requiredSensorTypes.contains(sensorType)) {
-        result = true;
-        break;
-      }
-    }
-
-    return result;
-  }
-
   public boolean hasInternalCalibrations() {
     boolean result = false;
 

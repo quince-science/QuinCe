@@ -1,4 +1,4 @@
-package junit.uk.ac.exeter.QuinCe.web.Instrument.SensorDefinition;
+package junit.uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
