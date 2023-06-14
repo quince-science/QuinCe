@@ -13,13 +13,23 @@ https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-i
 """
 
 import logging
+import os.path
 import traceback
 
+import toml
+import warnings
+
+from modules.CarbonPortal.CarbonPortalException import CarbonPortalException
 from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_code, get_platform_type, \
-    is_NRT, get_L1_filename, get_export_filename
+    is_NRT, get_L1_filename, get_export_filename, get_platform_name, get_start_time, get_end_time
 from modules.CarbonPortal.Export_CarbonPortal_metadata import build_metadata_package
 from modules.CarbonPortal.Export_CarbonPortal_SQL import sql_investigate, sql_commit
 from modules.CarbonPortal.Export_CarbonPortal_http import upload_to_cp
+from modules.CarbonPortal.Export_CarbonPortal_http import get_auth_cookie, get_station_uri, get_overlapping_datasets,\
+    get_existing_files, upload_file
+
+with open('config_carbon.toml') as f: config = toml.load(f)
+warnings.simplefilter("ignore", FutureWarning)
 
 OBJ_SPEC_URI = {}
 OBJ_SPEC_URI['L0'] = 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject'
@@ -112,3 +122,113 @@ def export_file_to_cp(manifest, filename, dataset_zip, index, auth_cookie, uploa
             success = 2
 
     return success, hashsum, err_msg, CP_pid
+
+
+def get_data_object_spec(platform_type, level):
+    result = None
+
+    if level == 'L0':
+        result = OBJ_SPEC_URI['L0']
+    else:
+        uri_platform_type = None
+        if platform_type in SOOP_PLATFORMS:
+            uri_platform_type = 'SOOP'
+        elif platform_type in FOS_PLATFORMS:
+            uri_platform_type = 'FOS'
+
+        if level == 'L1':
+            result = OBJ_SPEC_URI[uri_platform_type]['L1']
+        else:
+            result = OBJ_SPEC_URI[uri_platform_type]['L2']
+
+    return result
+
+def get_filename(dataset, manifest):
+    format_dir = 'ICOS OTC'
+    platform_name = get_platform_name(manifest)
+    if platform_name == 'NO-SOOP-Nuka__Arctica':
+        format_dir = format_dir + ' No Salinity Flags'
+
+    return os.path.join(dataset['name'], 'dataset', format_dir, f'{dataset["name"]}.csv')
+
+
+def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
+
+    CP_pid = None
+
+    station_uri = get_station_uri(get_platform_name(manifest, False))
+
+    platform_type = get_platform_type(get_platform_name(manifest, True))
+    upload_level = 'L1' if is_NRT(manifest) else 'L2'
+
+    existing_datasets = get_overlapping_datasets(station_uri, get_start_time(manifest), get_end_time(manifest))
+
+    data_object_spec = get_data_object_spec(platform_type, upload_level)
+    data_filename = get_filename(dataset, manifest)
+    deprecated_id = None
+
+    if len(existing_datasets) > 1:
+        raise CarbonPortalException(f'Dataset would deprecate multiple datasets {existing_datasets["dobj"]}')
+    elif existing_datasets.empty:
+        # Just to be explicit: We will upload the dataset and don't need to deprecate anything
+        pass
+    else:
+        deprecated_dataset = existing_datasets.iloc[0]
+        if upload_level == 'L1':
+            # We need to deprecate the previous dataset
+            if int(deprecated_dataset['dataLevel']) > 1:
+                raise CarbonPortalException(f'Cannot deprecate L{deprecated_dataset["dataLevel"]} dataset with L1')
+            deprecated_id = deprecated_dataset['dobj']
+        elif upload_level == 'L2':
+            if int(deprecated_dataset['dataLevel']) == 1:
+                deprecated_id = deprecated_dataset['dobj']
+            else:
+                if deprecated_dataset['fileName'] != get_export_filename():
+                    raise CarbonPortalException(f'Cannot deprecate L2 dataset with different filename ({deprecated_dataset["dobj"]})')
+                elif deprecated_dataset['nextVersion'] is not None:
+                    raise CarbonPortalException(f'Cannot deprecate L2 dataset because it already has a next version ({deprecated_dataset["dobj"]})')
+                else:
+                    deprecated_id = deprecated_dataset['hashSum']
+
+        else:
+            raise CarbonPortalException(f'Unrecognised Data Level {upload_level}')
+
+    # Now we upload the main (L1 or L2) dataset, deprecating the specified ID if required
+    cookie = get_auth_cookie()
+
+    # Upload all L0 files first - we need to link to them when we upload the main file
+    link_hashums = []
+    l0_basenames = [os.path.basename(f) for f in raw_filenames]
+    existing_l0 = get_existing_files(station_uri, l0_basenames, OBJ_SPEC_URI['L0'])
+
+    l0_index = -1
+    for l0_file in raw_filenames:
+        l0_index += 1
+        basename = os.path.basename(l0_file)
+        file_content = get_file_from_zip(dataset_zip, l0_file)
+        hashsum = get_hashsum(file_content, True)
+
+        upload_l0 = True
+        previous_l0 = None
+        existing_hashsums = existing_l0.loc[existing_l0['fileName'] == basename]['hashSum'].values
+        if hashsum in existing_hashsums:
+            upload_l0 = False
+        else:
+            if len(existing_hashsums) > 0:
+                previous_l0 = existing_hashsums[0]
+
+        if upload_l0:
+            l0_upload_result = upload_file(cookie, station_uri, dataset_zip, manifest, l0_index, l0_file, 'L0',
+                        OBJ_SPEC_URI['L0'], previous_l0, None)
+            if not l0_upload_result:
+                raise CarbonPortalException('Failed to upload L0 file(s). Aborting')
+
+        link_hashums.append(hashsum)
+
+    # Now upload the main data object. L1 objects don't get linked to L0
+    return upload_file(cookie, dataset_zip, manifest, 0, data_filename,
+                upload_level, data_object_spec, deprecated_id, link_hashums)
+
+
+
+

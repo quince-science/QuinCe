@@ -7,19 +7,14 @@ Maren K. Karlsen 2020.10.29
 
 import urllib
 import http.cookiejar
-import json
-import sys
-import os
-import traceback
 import logging
-import hashlib
-import datetime
-import sqlite3
-from zipfile import ZipFile
-import io
 import toml
+from icoscp.sparql.runsparql import RunSparql
+from modules.CarbonPortal.CarbonPortalException import CarbonPortalException
+from modules.CarbonPortal.Export_CarbonPortal_metadata import build_metadata_package
+from modules.Common.data_processing import get_hashsum, get_file_from_zip
+import pandas as pd
 
-from modules.Common.data_processing import get_file_from_zip
 from modules.Common.Slack import post_slack_msg
 
 
@@ -46,7 +41,7 @@ OBJECT_CONTENT_TYPE = 'text/csv'
 
 with open('config_carbon.toml') as f: config = toml.load(f)
 
-def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
+def upload_to_cp(auth_cookie, file, hashsum, meta):
   '''Uploads metadata and data object to Carbon Portal  '''
   success = True
 
@@ -75,6 +70,7 @@ def push_object(url,data,auth_cookie,content_type,method):
 
   headers = {'Content-Type':content_type,'Cookie':'cpauthToken=' + auth_cookie,}
   req = urllib.request.Request(url, data=data, headers=headers, method=method)
+  response = None
   try:
     response = urllib.request.urlopen(req).read()
     logging.debug(f'Post response: {response}')
@@ -113,7 +109,7 @@ def get_auth_cookie():
     
   data = urllib.parse.urlencode(auth_values).encode('utf-8')
   req = urllib.request.Request(auth_url, data)
-  response = opener.open(req)
+  opener.open(req)
 
   for cookie in cookies:
     if cookie.name == 'cpauthToken':
@@ -123,3 +119,110 @@ def get_auth_cookie():
       logging.debug('No cookie obtained')
 
   return auth_cookie
+
+
+def run_sparql(query):
+    return RunSparql(sparql_query=query, output_format='pandas').run()
+
+
+def get_station_uri(name):
+  station_query = f"""
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
+select ?uri
+from <http://meta.icos-cp.eu/resources/icos/>
+where {{
+    ?uri a cpmeta:OS ; cpmeta:hasName "{name}"^^xsd:string .
+}}
+"""
+
+  query_result = run_sparql(station_query)
+  if query_result.empty:
+    raise CarbonPortalException('Station not found')
+
+  return query_result['uri'][0]
+
+def get_overlapping_datasets(station_uri, start_date, end_date):
+
+    # This query gets all datasets for the station that overlap
+    # the specified time period
+    query = f"""
+prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
+prefix prov: <http://www.w3.org/ns/prov#>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+select ?dobj ?fileName ?hashSum ?dataLevel ?timeStart ?timeEnd ?next_version 
+where {{
+  ?dobj cpmeta:hasObjectSpec ?spec .
+  ?dobj cpmeta:wasAcquiredBy/prov:wasAssociatedWith <{station_uri}> .
+  ?dobj cpmeta:hasSizeInBytes ?size .
+  ?dobj cpmeta:hasName ?fileName .
+  ?dobj cpmeta:hasSha256sum ?hashSum .
+  ?dobj cpmeta:wasSubmittedBy/prov:endedAtTime ?submTime .
+  ?dobj cpmeta:wasAcquiredBy [prov:startedAtTime ?timeStart ; prov:endedAtTime ?timeEnd ] .
+  FILTER(?timeEnd >= "{start_date.strftime('%Y-%m-%dT%H:%M:%SZ')}"^^xsd:dateTime && ?timeStart <= "{end_date.strftime('%Y-%m-%dT%H:%M:%SZ')}"^^xsd:dateTime)
+  ?spec cpmeta:hasDataLevel ?dataLevel ; cpmeta:hasAssociatedProject <http://meta.icos-cp.eu/resources/projects/icos> .
+  FILTER(?dataLevel in ("1"^^xsd:integer, "2"^^xsd:integer))
+  OPTIONAL{{?next_version cpmeta:isNextVersionOf ?dobj}}
+}}
+order by DESC(?submTime)
+"""
+
+    query_result = run_sparql(query)
+
+    # Now we filter it to just get the most recent datasets
+    filtered = pd.DataFrame(data=None, columns=query_result.columns)
+
+    for (index, candidate) in query_result.iterrows():
+      if filtered.empty:
+        filtered.loc[len(filtered)] = candidate
+      else:
+        for (index, compare) in filtered.iterrows():
+          if not overlaps(candidate['timeStart'], candidate['timeEnd'], compare['timeStart'], compare['timeEnd']):
+            filtered.loc[len(filtered)] = candidate
+
+    return filtered
+
+def overlaps(startTime1, endTime1, startTime2, endTime2):
+    return max(startTime1, startTime2) < min(endTime1, endTime2)
+
+def get_existing_files(station_uri, filenames, data_object_spec):
+
+  in_clause = ','.join([f'"{f}"^^xsd:string' for f in filenames])
+  query = f"""
+prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
+prefix prov: <http://www.w3.org/ns/prov#>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+select ?dobj ?hasNextVersion ?fileName ?hashSum ?submTime
+where {{
+  VALUES ?spec {{<{data_object_spec}>}}
+  ?dobj cpmeta:hasObjectSpec ?spec .
+  ?dobj cpmeta:hasSha256sum ?hashSum .
+  BIND(EXISTS{{[] cpmeta:isNextVersionOf ?dobj}} AS ?hasNextVersion)
+  VALUES ?station {{<{station_uri}>}}
+  ?dobj cpmeta:wasAcquiredBy/prov:wasAssociatedWith ?station .
+  ?dobj cpmeta:hasName ?fileName .
+  FILTER(?fileName in ({in_clause}))
+  ?dobj cpmeta:wasSubmittedBy/prov:endedAtTime ?submTime .
+}}
+order by desc(?submTime)
+"""
+
+  return run_sparql(query)
+
+
+def upload_file(cookie, zip_source, manifest, file_index, filename, level, data_object_spec,
+                deprecate_hashsum, links):
+
+  extracted_file = get_file_from_zip(zip_source, filename)
+  hashsum = get_hashsum(extracted_file)
+  metadata = build_metadata_package(extracted_file, manifest, file_index, hashsum, data_object_spec,
+                                    level, links, deprecate_hashsum)
+
+  upload_result = None
+  if not config['CARBON']['do_upload']:
+    logging.info('Uploads disabled - dry run only')
+    upload_result = True
+  else:
+    upload_result, upload_response = upload_to_cp(cookie, extracted_file, hashsum, metadata)
+
+  return upload_result

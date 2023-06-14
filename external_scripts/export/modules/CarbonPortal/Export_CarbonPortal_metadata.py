@@ -4,20 +4,12 @@ Metadata package construction
 
 Maren K. Karlsen 2020.10.29
 '''
-import urllib
-import http.cookiejar
 import json
-import sys
 import os
-import traceback
 import logging
-import hashlib
 import datetime
-import sqlite3
-from zipfile import ZipFile
-import io
 
-from modules.Common.data_processing import get_file_from_zip, extract_filelist, get_platform_code, get_platform, get_export_filename
+from modules.Common.data_processing import get_file_from_zip, extract_filelist, get_platform_name, get_platform, get_export_filename
 
 def build_metadata_package(file,manifest,index,hashsum,
   obj_spec,level,L0_hashsums,is_next_version):
@@ -27,8 +19,8 @@ def build_metadata_package(file,manifest,index,hashsum,
   '''
 
   export_filename = get_export_filename(file,manifest,level)
-  platform_code = get_platform_code(manifest)
-  platform = get_platform(platform_code)
+  platform_name = get_platform_name(manifest)
+  platform = get_platform(platform_name)
 
   logging.debug('Constructing metadata-package')
   creation_date = datetime.datetime.utcnow().isoformat()+'Z'

@@ -126,66 +126,70 @@ def upload_to_copernicus(server,dataset,platforms):
   status = NOT_UPLOADED
   error_msg = ''
 
-  # create ftp-connection
-  with ftputil.FTPHost(
-    host=config['Copernicus'][server],
-    user=config['Copernicus']['user'],
-    passwd=config['Copernicus']['password'])as ftp:
+  if not config['Copernicus']['do_upload']:
+    error_msg = 'DRY RUN - NO UPLOAD PERFORMED'
+  else:
 
-    db = create_connection(CMEMS_DB)
+    # create ftp-connection
+    with ftputil.FTPHost(
+      host=config['Copernicus'][server],
+      user=config['Copernicus']['user'],
+      passwd=config['Copernicus']['password'])as ftp:
 
-    if empty_directory(ftp): # CHECK IF FTP IS EMPTY 
-      dnt_delete = delete_files_older_than_x_days(db) 
+      db = create_connection(CMEMS_DB)
 
-      ready_for_upload,status = get_files_ready_for_upload(db,status)
-      
-      dnt_upload = {}
-      for file in ready_for_upload:
-        # netCDF file
-        filename, filepath_local  = file[0], file[1]
-        upload_result, dnt_upload[filename],error_msg = (
-          upload_to_ftp(ftp, filepath_local,error_msg,db))
-        if upload_result == FAILED_INGESTION:
-          status = upload_result
+      if empty_directory(ftp): # CHECK IF FTP IS EMPTY
+        dnt_delete = delete_files_older_than_x_days(db)
 
-      if (dnt_upload or dnt_delete) and status != FAILED_INGESTION: # dnt_upload lists all files to be uploaded, dnt_delete to be deleted 
-        # INDEX file
-        index_filename = build_index(db)
-        if index_filename: 
-          upload_result, dnt_upload[index_filename],error_msg = upload_to_ftp(
-            ftp, index_filename,error_msg,db)
+        ready_for_upload,status = get_files_ready_for_upload(db,status)
 
-        # INDEX platform
-        index_platform,error_msg = build_index_platform(db,platforms,error_msg)
-        if index_platform:
-          upload_result, dnt_upload[index_platform], error_msg = upload_to_ftp(
-            ftp, index_platform,error_msg,db)
-          logging.debug(f'index platform upload result: {upload_result}')
+        dnt_upload = {}
+        for file in ready_for_upload:
+          # netCDF file
+          filename, filepath_local  = file[0], file[1]
+          upload_result, dnt_upload[filename],error_msg = (
+            upload_to_ftp(ftp, filepath_local,error_msg,db))
+          if upload_result == FAILED_INGESTION:
+            status = upload_result
 
-        try:
-          dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
-          response, error_msg = upload_DNT(
-            dnt_file,dnt_local_filepath,error_msg,ftp,db)
-          if len(response) == 0: status = UPLOADED
+        if (dnt_upload or dnt_delete) and status != FAILED_INGESTION: # dnt_upload lists all files to be uploaded, dnt_delete to be deleted
+          # INDEX file
+          index_filename = build_index(db)
+          if index_filename:
+            upload_result, dnt_upload[index_filename],error_msg = upload_to_ftp(
+              ftp, index_filename,error_msg,db)
 
-        except Exception as exception:
-         logging.error('Building DNT failed: ', exc_info=True)
-         status = FAILED_INGESTION
-         error_msg += 'Building DNT failed: ' + str(exception)
+          # INDEX platform
+          index_platform,error_msg = build_index_platform(db,platforms,error_msg)
+          if index_platform:
+            upload_result, dnt_upload[index_platform], error_msg = upload_to_ftp(
+              ftp, index_platform,error_msg,db)
+            logging.debug(f'index platform upload result: {upload_result}')
 
-        # FOLDER CLEAN UP
-        if dnt_delete:
-          logging.info('Delete empty directories')
-          try: 
-            dnt_local_filepath_f = build_fDNT(dnt_delete)
-            response, error_msg = uploading_DNT_file(
+          try:
+            dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
+            response, error_msg = upload_DNT(
               dnt_file,dnt_local_filepath,error_msg,ftp,db)
+            if len(response) == 0: status = UPLOADED
 
-          except Exception as e:
-            logging.error('Uploading fDNT failed: ', exc_info=True)
-            error_msg += 'Uploading fDNT failed: ' + str(e)
+          except Exception as exception:
+           logging.error('Building DNT failed: ', exc_info=True)
+           status = FAILED_INGESTION
+           error_msg += 'Building DNT failed: ' + str(exception)
 
-      if status == FAILED_INGESTION:
-        logging.error('Upload failed')
+          # FOLDER CLEAN UP
+          if dnt_delete:
+            logging.info('Delete empty directories')
+            try:
+              dnt_local_filepath_f = build_fDNT(dnt_delete)
+              response, error_msg = uploading_DNT_file(
+                dnt_file,dnt_local_filepath,error_msg,ftp,db)
+
+            except Exception as e:
+              logging.error('Uploading fDNT failed: ', exc_info=True)
+              error_msg += 'Uploading fDNT failed: ' + str(e)
+
+        if status == FAILED_INGESTION:
+          logging.error('Upload failed')
         
     return status, error_msg
