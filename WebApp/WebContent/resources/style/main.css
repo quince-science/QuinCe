@@ -567,8 +567,14 @@ table.fileDates {
 
 .actionIcon {
   margin-right: 7px;
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
+}
+
+.actionIconLarge {
+  margin-right: 7px;
+  width: 30px;
+  height: 30px;
 }
 
 .textActionIcon {
@@ -667,7 +673,11 @@ table.dialogTable td.dialogTableCell {
 }
 
 .centeredCell {
-  text-align: center
+  text-align: center;
+}
+
+.rightCell {
+  text-align: right;
 }
 
 .note {
