@@ -5,10 +5,13 @@ Contains functions related to API-calls towards QuinCe
 Maren K. Karlsen 2020.10.29
 '''
 import toml
+import logging
 from slack_sdk import WebClient
 
-with open('config_slack.toml') as f: CONFIG = toml.load(f)
 
+logging.getLogger('slack_sdk').setLevel(logging.WARNING)
+
+with open('config_slack.toml') as f: CONFIG = toml.load(f)
 
 def post_slack_msg(message,status=False):
   if status: workspace = 'err_workspace'

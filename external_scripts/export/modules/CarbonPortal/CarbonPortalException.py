@@ -1,0 +1,2 @@
+class CarbonPortalException(Exception):
+    pass

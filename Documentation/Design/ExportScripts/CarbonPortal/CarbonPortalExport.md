@@ -101,7 +101,9 @@ elif len(deprecation_candidates) == 0:
   upload(upload_dataset, no_flags)
 else:
   previous_dataset = deprecation_candidates[0]
-  if previous_dataset.has_next_versions():
+  if previous_dataset.level == 'L2':
+    ERROR
+  elif previous_dataset.has_next_versions():
     for next_version in previous_dataset.get_next_versions():
       next_version.addFlag(partialUpload)
 
@@ -209,18 +211,18 @@ Searching for previous datasets that overlap our upload dataset is simply a matt
 prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
 prefix prov: <http://www.w3.org/ns/prov#>
 prefix xsd: <http://www.w3.org/2001/XMLSchema#>
-select ?dobj ?next_version ?spec ?fileName ?size ?submTime ?timeStart ?timeEnd
+select ?dobj ?fileName ?dataLevel ?timeStart ?timeEnd ?next_version
 where {
   ?dobj cpmeta:hasObjectSpec ?spec .
-  ?dobj cpmeta:wasAcquiredBy/prov:wasAssociatedWith <STATION_URL> .
+  ?dobj cpmeta:wasAcquiredBy/prov:wasAssociatedWith <{station_uri}> .
   ?dobj cpmeta:hasSizeInBytes ?size .
   ?dobj cpmeta:hasName ?fileName .
   ?dobj cpmeta:wasSubmittedBy/prov:endedAtTime ?submTime .
   ?dobj cpmeta:wasAcquiredBy [prov:startedAtTime ?timeStart ; prov:endedAtTime ?timeEnd ] .
-  FILTER(?timeEnd >= "START_TIME"^^xsd:dateTime && ?timeStart <= "END_TIME"^^xsd:dateTime)
+  FILTER(?timeEnd >= "{start_date.strftime('%Y-%m-%dT%H:%M:%SZ')}"^^xsd:dateTime && ?timeStart <= "{end_date.strftime('%Y-%m-%dT%H:%M:%SZ')}"^^xsd:dateTime)
   ?spec cpmeta:hasDataLevel ?dataLevel ; cpmeta:hasAssociatedProject <http://meta.icos-cp.eu/resources/projects/icos> .
   FILTER(?dataLevel in ("1"^^xsd:integer, "2"^^xsd:integer))
   OPTIONAL{?next_version cpmeta:isNextVersionOf ?dobj}
 }
-order by ?submTime
+order by DESC(?submTime)
 ```

@@ -2,3 +2,4 @@
 auth_url='%carbon_portal_url%'
 auth_mail='%carbon_portal_mail%'
 auth_pwd='%carbon_portal_password%'
+do_upload=True
