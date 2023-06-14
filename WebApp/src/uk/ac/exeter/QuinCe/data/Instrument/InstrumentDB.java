@@ -205,7 +205,7 @@ public class InstrumentDB {
     + "INNER JOIN user u on i.owner = u.id " + "WHERE i.id IN ("
     + "SELECT id FROM instrument WHERE OWNER = ? " + "UNION "
     + "SELECT instrument_id FROM shared_instruments WHERE shared_with = ?"
-    + ") ORDER BY owner_name, i.owner, i.name";
+    + ") ORDER BY owner_name, i.owner, i.platform_name, i.name";
 
   private static final String ALL_INSTRUMENT_LIST_QUERY = "SELECT "
     + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, " // 6
@@ -214,7 +214,7 @@ public class InstrumentDB {
     + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 10
     + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
     + "INNER JOIN user u on i.owner = u.id "
-    + "ORDER BY owner_name, i.owner, i.name";
+    + "ORDER BY owner_name, i.owner, i.platform_name, i.name";
 
   private static final String PLATFORMS_QUERY = "SELECT "
     + "platform_name, platform_code FROM instrument "
