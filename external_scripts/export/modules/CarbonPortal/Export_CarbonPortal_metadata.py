@@ -19,7 +19,7 @@ def build_metadata_package(file,manifest,index,hashsum,
   '''
 
   export_filename = get_export_filename(file,manifest,level)
-  platform_name = get_platform_name(manifest)
+  platform_name = get_platform_name(manifest, True)
   platform = get_platform(platform_name)
 
   logging.debug('Constructing metadata-package')

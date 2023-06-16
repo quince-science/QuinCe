@@ -46,10 +46,10 @@ def upload_to_cp(auth_cookie, file, hashsum, meta):
   success = True
 
   logging.debug(f'\nPOSTING {file} metadata-object to {META_URL}')
-  resp = push_object(
-    META_URL,meta.encode('utf-8'),auth_cookie,META_CONTENT_TYPE,'POST')
+  resp = str(push_object(
+    META_URL,meta.encode('utf-8'),auth_cookie,META_CONTENT_TYPE,'POST'))
   logging.info(f'{file} metadata upload response: {resp}')
-  if 'IngestionFailure' in str(resp): 
+  if 'IngestionFailure' in resp or 'error' in resp.lower(): 
     success = False
     logging.error(f'failed to upload metadata: {resp}')
   else:
@@ -57,9 +57,9 @@ def upload_to_cp(auth_cookie, file, hashsum, meta):
     logging.debug(f'PUTTING data-object: {file} to {object_url}')
     with open(file) as f: 
       data = f.read().encode('utf-8')
-    resp = push_object(object_url,data,auth_cookie,OBJECT_CONTENT_TYPE,'PUT')
+    resp = str(push_object(object_url,data,auth_cookie,OBJECT_CONTENT_TYPE,'PUT'))
     logging.info(f'{file} Upload response: {resp}')
-    if 'IngestionFailure' in str(resp) or 'already has new version' in str(resp): 
+    if 'IngestionFailure' in resp or 'already has new version' in resp or 'error' in resp.lower(): 
       logging.error(f'failed to upload datafile: {resp}')
       success = False
 
@@ -81,10 +81,12 @@ def push_object(url,data,auth_cookie,content_type,method):
       \n\n Error message: {msg}\n',status=1)
     logging.error(f'HTTP error:  {code} {method} failed,\n {data} not sent.\
       \n\n Error message: {msg}\n')
+    response = f'HTTP error:  {code}, {msg}'
   except Exception as e:
     msg = e.read()
     post_slack_msg(f'{method} failed. Error message: {msg}\n',status=1)
     logging.exception(f'{method} failed,\n {data} not sent, {msg}')
+    response = f'Error: {method} failed: {msg}'
 
 
   return response
@@ -138,7 +140,7 @@ where {{
 
   query_result = run_sparql(station_query)
   if query_result.empty:
-    raise CarbonPortalException('Station not found')
+    raise CarbonPortalException(f'Station {name} not found')
 
   return query_result['uri'][0]
 
