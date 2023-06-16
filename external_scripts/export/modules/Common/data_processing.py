@@ -65,7 +65,7 @@ def get_platform_code(manifest):
 def get_platform_name(manifest, encode_for_toml=False):
   result = manifest['manifest']['metadata']['platformName']
   if encode_for_toml:
-    result = result.replace(" ", "__")
+    result = result.replace(" ", "__").replace(".", "__")
 
   return result
 

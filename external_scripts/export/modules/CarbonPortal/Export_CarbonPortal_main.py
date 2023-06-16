@@ -154,8 +154,6 @@ def get_filename(dataset, manifest):
 
 def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
 
-    CP_pid = None
-
     station_uri = get_station_uri(get_platform_name(manifest, False))
 
     platform_type = get_platform_type(get_platform_name(manifest, True))
@@ -165,7 +163,7 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
 
     data_object_spec = get_data_object_spec(platform_type, upload_level)
     data_filename = get_filename(dataset, manifest)
-    deprecated_id = None
+    deprecated_id = []
 
     if len(existing_datasets) > 1:
         raise CarbonPortalException(f'Dataset would deprecate multiple datasets {existing_datasets["dobj"]}')
@@ -178,17 +176,17 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
             # We need to deprecate the previous dataset
             if int(deprecated_dataset['dataLevel']) > 1:
                 raise CarbonPortalException(f'Cannot deprecate L{deprecated_dataset["dataLevel"]} dataset with L1')
-            deprecated_id = deprecated_dataset['dobj']
+            deprecated_id.append(deprecated_dataset['hashSum'])
         elif upload_level == 'L2':
             if int(deprecated_dataset['dataLevel']) == 1:
-                deprecated_id = deprecated_dataset['dobj']
+                deprecated_id.append(deprecated_dataset['hashSum'])
             else:
                 if deprecated_dataset['fileName'] != get_export_filename():
                     raise CarbonPortalException(f'Cannot deprecate L2 dataset with different filename ({deprecated_dataset["dobj"]})')
                 elif deprecated_dataset['nextVersion'] is not None:
                     raise CarbonPortalException(f'Cannot deprecate L2 dataset because it already has a next version ({deprecated_dataset["dobj"]})')
                 else:
-                    deprecated_id = deprecated_dataset['hashSum']
+                    deprecated_id.append(deprecated_dataset['hashSum'])
 
         else:
             raise CarbonPortalException(f'Unrecognised Data Level {upload_level}')
@@ -209,16 +207,16 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
         hashsum = get_hashsum(file_content, True)
 
         upload_l0 = True
-        previous_l0 = None
+        previous_l0 = []
         existing_hashsums = existing_l0.loc[existing_l0['fileName'] == basename]['hashSum'].values
         if hashsum in existing_hashsums:
             upload_l0 = False
         else:
             if len(existing_hashsums) > 0:
-                previous_l0 = existing_hashsums[0]
+                previous_l0.append(existing_hashsums[0])
 
         if upload_l0:
-            l0_upload_result = upload_file(cookie, station_uri, dataset_zip, manifest, l0_index, l0_file, 'L0',
+            l0_upload_result = upload_file(cookie, dataset_zip, manifest, l0_index, l0_file, 'L0',
                         OBJ_SPEC_URI['L0'], previous_l0, None)
             if not l0_upload_result:
                 raise CarbonPortalException('Failed to upload L0 file(s). Aborting')

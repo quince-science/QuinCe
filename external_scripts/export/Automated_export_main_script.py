@@ -73,13 +73,12 @@ def main():
                     key = ' No Salinity Flags' + key
 
                 successful_upload_CP = 0
-                CP_pid = None
                 successful_upload_CMEMS = 0
 
                 for destination in export_destination:
                     if 'ICOS' in destination:
-                        CP_pid = icos_upload(raw_filenames, manifest, dataset_zip, dataset)
-                        if CP_pid is not None:
+                        upload_result = icos_upload(raw_filenames, manifest, dataset_zip, dataset)
+                        if upload_result is not None:
                             successful_upload_CP = 1
 
                     if 'CMEMS' in destination:
@@ -124,6 +123,7 @@ def main():
 def icos_upload(raw_filenames, manifest, dataset_zip, dataset):
     upload_result = cp_upload(manifest, dataset, dataset_zip, raw_filenames)
     slack_export_report('Carbon Portal', get_platform_name(manifest), dataset, upload_result, None)
+    return upload_result
 
 
 if __name__ == '__main__':

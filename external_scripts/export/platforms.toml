@@ -1,7 +1,7 @@
 # New ICES code for G O Sars - in use from Jan 2021
 [NO-SOOP-G__O__Sars]
 platform_code = '58G2'
-name = 'G. O. Sars'
+name = 'G.O.Sars'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_GOSars'
 category_code = '31'
