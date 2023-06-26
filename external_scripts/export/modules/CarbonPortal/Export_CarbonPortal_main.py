@@ -12,19 +12,14 @@ https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-i
 
 """
 
-import logging
 import os.path
-import traceback
 
 import toml
 import warnings
 
 from modules.CarbonPortal.CarbonPortalException import CarbonPortalException
-from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_code, get_platform_type, \
-    is_NRT, get_L1_filename, get_export_filename, get_platform_name, get_start_time, get_end_time
-from modules.CarbonPortal.Export_CarbonPortal_metadata import build_metadata_package
-from modules.CarbonPortal.Export_CarbonPortal_SQL import sql_investigate, sql_commit
-from modules.CarbonPortal.Export_CarbonPortal_http import upload_to_cp
+from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_type, is_NRT, \
+    get_platform_name, get_start_time, get_end_time
 from modules.CarbonPortal.Export_CarbonPortal_http import get_auth_cookie, get_station_uri, get_overlapping_datasets,\
     get_existing_files, upload_file
 
@@ -103,7 +98,7 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
             if int(deprecated_dataset['dataLevel']) == 1:
                 deprecated_id.append(deprecated_dataset['hashSum'])
             else:
-                if deprecated_dataset['fileName'] != get_export_filename():
+                if deprecated_dataset['fileName'] != data_filename:
                     raise CarbonPortalException(f'Cannot deprecate L2 dataset with different filename ({deprecated_dataset["dobj"]})')
                 elif deprecated_dataset['nextVersion'] is not None:
                     raise CarbonPortalException(f'Cannot deprecate L2 dataset because it already has a next version ({deprecated_dataset["dobj"]})')

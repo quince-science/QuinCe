@@ -83,7 +83,7 @@ def push_object(url,data,auth_cookie,content_type,method):
       \n\n Error message: {msg}\n')
     response = f'HTTP error:  {code}, {msg}'
   except Exception as e:
-    msg = e.read()
+    msg = e.message if hasattr(e, 'message') else e
     post_slack_msg(f'{method} failed. Error message: {msg}\n',status=1)
     logging.exception(f'{method} failed,\n {data} not sent, {msg}')
     response = f'Error: {method} failed: {msg}'
