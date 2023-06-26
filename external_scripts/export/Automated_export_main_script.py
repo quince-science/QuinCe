@@ -86,16 +86,17 @@ def main():
                         cmems_err_msg = ''
 
                         # --- Creating netCDFs
-                        build_dataproduct(dataset_zip, dataset, key, CP_pid)
-                        try:
-                            if UPLOAD:
-                                successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus('nrt_server', dataset,
-                                                                                              platforms)
-                        except Exception:
-                            logging.error('Exception occurred: ', exc_info=True)
-                            successful_upload_CMEMS = 0
+                        raise NotImplementedError('CMEMS required CP_pid, but it is not available from new code')
+                        #build_dataproduct(dataset_zip, dataset, key, CP_pid)
+                        #try:
+                        #    if config_copernicus['do_upload']:
+                        #        successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus('nrt_server', dataset,
+                        #                                                                      platforms)
+                        #except Exception:
+                        #    logging.error('Exception occurred: ', exc_info=True)
+                        #    successful_upload_CMEMS = 0
 
-                        slack_export_report('CMEMS', platform_name, dataset, successful_upload_CMEMS, cmems_err_msg)
+                        #slack_export_report('CMEMS', platform_name, dataset, successful_upload_CMEMS, cmems_err_msg)
                     else:
                         successful_upload_CMEMS = True  # No export => no failure to report to QuinCe
 
