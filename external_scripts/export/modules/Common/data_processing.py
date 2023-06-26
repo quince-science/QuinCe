@@ -157,3 +157,6 @@ def get_hashsum(filename, b64=False):
   hashsum = hashlib.sha256(content.encode('utf-8'))
 
   return (base64.b64encode(hashsum.digest())).decode().strip('=') if b64 else hashsum.hexdigest()
+
+def b64_to_b64_url(b64):
+  return b64.replace('+', '-').replace('/', '_').replace('=', '')

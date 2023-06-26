@@ -9,10 +9,10 @@ import os
 import logging
 import datetime
 
-from modules.Common.data_processing import get_file_from_zip, extract_filelist, get_platform_name, get_platform, get_export_filename
+from modules.Common.data_processing import get_platform_name, get_platform, get_export_filename
 
 def build_metadata_package(file,manifest,index,hashsum,
-  obj_spec,level,L0_hashsums,is_next_version):
+  obj_spec,level,L0_hashsums,is_next_version,partial_upload):
   '''  Builds metadata-package, step 1 of 2 Carbon Portal upload process.
   https://github.com/ICOS-Carbon-Portal/meta#registering-the-metadata-package
   returns metadata json object
@@ -61,7 +61,8 @@ def build_metadata_package(file,manifest,index,hashsum,
     meta['fileName'] = os.path.split(file)[-1]
 
   meta['references'] = {
-    "duplicateFilenameAllowed": True
+    'duplicateFilenameAllowed': True,
+    'partialUpload': partial_upload
   }
 
   meta_JSON = json.dumps(meta) # converting from dictionary to json-object
