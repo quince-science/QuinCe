@@ -29,10 +29,8 @@ import os
 
 from modules.Common.QuinCe import get_export_list, report_abandon_export, report_complete_export
 from modules.Common.Slack import post_slack_msg, slack_export_report
-from modules.Common.data_processing import process_dataset, get_platform_code, get_platform_name, \
-    get_export_destination, construct_datafilename, is_NRT
+from modules.Common.data_processing import process_dataset, get_platform_name, get_export_destination, is_NRT
 from modules.CarbonPortal.Export_CarbonPortal_main import cp_upload
-from modules.CMEMS.Export_CMEMS_main import build_dataproduct, upload_to_copernicus
 
 with open('config_copernicus.toml') as f:
     config_copernicus = toml.load(f)
@@ -52,6 +50,7 @@ def main():
     logging.info(
         '\n \n***** Starting QuinCe NRT export ***** \n Obtaining IDs of datasets ready for export from QuinCe')
     export_list = None
+    dataset = None
     try:
         export_list = get_export_list()
         if not export_list:
@@ -115,7 +114,7 @@ def main():
         post_slack_msg(except_msg, SLACK_ERROR_MSG)
         logging.exception('')
         try:
-            if export_list is not None:
+            if dataset is not None:
                 report_abandon_export(dataset['id'])
         except Exception as e:
             post_slack_msg(f'Failed to abandon QuinCe export {e}', SLACK_ERROR_MSG)

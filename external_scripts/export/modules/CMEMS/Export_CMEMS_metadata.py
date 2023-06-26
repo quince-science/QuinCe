@@ -6,14 +6,10 @@ Maren K. Karlsen 2020.10.29
 '''
 
 import logging 
-import ftputil 
 import os
-import sys
-import re
 import hashlib
 import datetime
 import pandas as pd
-import numpy as np
 import netCDF4
 
 from modules.CMEMS.Export_CMEMS_netCDF_builder import buildnetcdfs 
@@ -22,9 +18,6 @@ from modules.CMEMS.Export_CMEMS_ftp import upload_to_ftp, evaluate_response_file
 from modules.CMEMS.Export_CMEMS_sql import update_db_dnt
 
 import xml.etree.ElementTree as ET
-import sqlite3
-import json
-import time
 
 dnt_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
@@ -211,18 +204,19 @@ def build_index(db):
   Creates index-file of CMEMS directory.
   Lists all files currently uploaded to the CMEMS server. 
   '''
+  index_filename = None
   try:
     db.execute("SELECT * FROM latest WHERE uploaded == 1")
     currently_uploaded = db.fetchall()
 
     date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
-    index_header = ('# Title : Carbon in-situ observations catalog \n'\
-      + '# Description : catalog of available in-situ observations per platform.\n'\
-      + '# Project : Copernicus \n# Format version : 1.0 \n'\
+    index_header = ('# Title : Carbon in-situ observations catalog \n'
+      + '# Description : catalog of available in-situ observations per platform.\n'
+      + '# Project : Copernicus \n# Format version : 1.0 \n'
       + '# Date of update : ' + date_header +'\n'
-      + '# catalog_id,file_name,geospatial_lat_min,geospatial_lat_max,'\
-      + 'geospatial_lon_min,geospatial_lon_max,time_coverage_start,'\
+      + '# catalog_id,file_name,geospatial_lat_min,geospatial_lat_max,'
+      + 'geospatial_lon_min,geospatial_lon_max,time_coverage_start,'
       + 'time_coverage_end,provider,date_update,data_mode,parameters\n')
 
     index_info = ''
@@ -255,10 +249,8 @@ def build_index(db):
    
     logging.debug('index file:\n' + index_latest)
 
-  except Exception as e:
+  except Exception:
     logging.error('Building index failed: ', exc_info=True)
-    status = 0
-    error += 'Building index failed: ' + str(e)
 
   return index_filename
 
@@ -268,12 +260,13 @@ def build_index_platform(db,platforms,error_msg):
   Creates index-file of CMEMS directory.
   Lists all platforms uploaded to the CMEMS server. 
   '''
+  index_filename = None
   try:
     date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
-    index_header = ('# Title : In Situ platforms catalog \n'\
-      + '# Description : catalog of available In Situ platforms.\n'\
-      + '# Project : Copernicus \n# Format version : 1.0 \n'\
+    index_header = ('# Title : In Situ platforms catalog \n'
+      + '# Description : catalog of available In Situ platforms.\n'
+      + '# Project : Copernicus \n# Format version : 1.0 \n'
       + '# Date of update : ' + date_header +'\n'
       + '# platform_code,creation_date,update_date,wmo_platform_code,data_source,'
       + 'institution,institution_edmo_code,parameter,last_latitude_observation,'
@@ -327,6 +320,7 @@ def upload_DNT(dnt_file,dnt_local_filepath,error_msg,ftp,db):
   dnt_local_folder = dnt_local_filepath.rsplit('/',1)[0]
   dnt_ftp_filename = dnt_local_filepath.rsplit('/',1)[-1]
 
+  response = None
   try:
     response = evaluate_response_file(
       ftp,dnt_ftp_filename,dnt_local_folder,db)
