@@ -1,4 +1,4 @@
-'''
+"""
 Automated export main script
 
 - Retrieves NRT, L2 and raw data from QuinCe.
@@ -20,7 +20,7 @@ Automated export main script
 - Export success/failure, and exceptions, are reported to Slack channel 'reports' and 'errors'
 
 Maren K. Karlsen 2020.10.29
-'''
+"""
 
 import logging
 import toml
@@ -34,9 +34,11 @@ from modules.CarbonPortal.Export_CarbonPortal_main import cp_upload
 
 with open('config_copernicus.toml') as f:
     config_copernicus = toml.load(f)
-with open('platforms.toml') as f: platforms = toml.load(f)
+with open('platforms.toml') as f:
+    platforms = toml.load(f)
 
-if not os.path.isdir('log'): os.mkdir('log')
+if not os.path.isdir('log'):
+    os.mkdir('log')
 logging.basicConfig(filename='log/console.log',
                     format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.DEBUG)
 # logging.basicConfig(stream=sys.stdout,format='%(asctime)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
@@ -49,7 +51,6 @@ SLACK_ERROR_MSG = True  # for differentiating between slack reports and slack er
 def main():
     logging.info(
         '\n \n***** Starting QuinCe NRT export ***** \n Obtaining IDs of datasets ready for export from QuinCe')
-    export_list = None
     dataset = None
     try:
         export_list = get_export_list()
@@ -67,39 +68,36 @@ def main():
                 platform_name = get_platform_name(manifest, True)
                 export_destination = get_export_destination(platform_name, is_NRT(manifest))
 
-                key = '/'
-                if platform_name == 'NO-SOOP-Nuka__Arctica':
-                    key = ' No Salinity Flags' + key
-
-                successful_upload_CP = 0
-                successful_upload_CMEMS = 0
+                successful_upload_cp = 0
+                successful_upload_cmems = 0
 
                 for destination in export_destination:
                     if 'ICOS' in destination:
                         upload_result = icos_upload(raw_filenames, manifest, dataset_zip, dataset)
                         if upload_result is not None:
-                            successful_upload_CP = 1
+                            successful_upload_cp = 1
 
                     if 'CMEMS' in destination:
-                        successful_upload_CMEMS = 0
-                        cmems_err_msg = ''
+                        raise NotImplementedError('CMEMS required CP_pid, but it is not available from new code')
+
+                        # successful_upload_cmems = 0
+                        # cmems_err_msg = ''
 
                         # --- Creating netCDFs
-                        raise NotImplementedError('CMEMS required CP_pid, but it is not available from new code')
-                        #build_dataproduct(dataset_zip, dataset, key, CP_pid)
-                        #try:
+                        # build_dataproduct(dataset_zip, dataset, key, CP_pid)
+                        # try:
                         #    if config_copernicus['do_upload']:
                         #        successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus('nrt_server', dataset,
                         #                                                                      platforms)
-                        #except Exception:
+                        # except Exception:
                         #    logging.error('Exception occurred: ', exc_info=True)
                         #    successful_upload_CMEMS = 0
 
-                        #slack_export_report('CMEMS', platform_name, dataset, successful_upload_CMEMS, cmems_err_msg)
+                        # slack_export_report('CMEMS', platform_name, dataset, successful_upload_cmems, cmems_err_msg)
                     else:
-                        successful_upload_CMEMS = True  # No export => no failure to report to QuinCe
+                        successful_upload_cmems = True  # No export => no failure to report to QuinCe
 
-                successful_upload = bool(successful_upload_CP) & bool(successful_upload_CMEMS)
+                successful_upload = bool(successful_upload_cp) & bool(successful_upload_cmems)
                 if successful_upload:
                     report_complete_export(dataset['id'])
                 else:
