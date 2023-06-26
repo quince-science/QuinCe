@@ -20,22 +20,23 @@ import warnings
 from modules.CarbonPortal.CarbonPortalException import CarbonPortalException
 from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_type, is_NRT, \
     get_platform_name, get_start_time, get_end_time
-from modules.CarbonPortal.Export_CarbonPortal_http import get_auth_cookie, get_station_uri, get_overlapping_datasets,\
+from modules.CarbonPortal.Export_CarbonPortal_http import get_auth_cookie, get_station_uri, get_overlapping_datasets, \
     get_existing_files, upload_file
 
 with open('config_carbon.toml') as f: config = toml.load(f)
 warnings.simplefilter("ignore", FutureWarning)
 
-OBJ_SPEC_URI = {}
-OBJ_SPEC_URI['L0'] = 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject'
-
-OBJ_SPEC_URI['SOOP'] = {}
-OBJ_SPEC_URI['SOOP']['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product_v2'
-OBJ_SPEC_URI['SOOP']['L2'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product'
-
-OBJ_SPEC_URI['FOS'] = {}
-OBJ_SPEC_URI['FOS']['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL1Product'
-OBJ_SPEC_URI['FOS']['L2'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL2Product'
+OBJ_SPEC_URI = {
+    'L0': 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject',
+    'SOOP': {
+        'L1': 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product_v2',
+        'L2': 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product'
+    },
+    'FOS': {
+        'L1': 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL1Product',
+        'L2': 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL2Product'
+    }
+}
 
 SOOP_PLATFORMS = ['31', '32', '3B']
 FOS_PLATFORMS = ['41']
@@ -60,6 +61,7 @@ def get_data_object_spec(platform_type, level):
 
     return result
 
+
 def get_filename(dataset, manifest):
     format_dir = 'ICOS OTC'
     platform_name = get_platform_name(manifest)
@@ -70,7 +72,6 @@ def get_filename(dataset, manifest):
 
 
 def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
-
     station_uri = get_station_uri(get_platform_name(manifest, False))
 
     platform_type = get_platform_type(get_platform_name(manifest, True))
@@ -99,9 +100,11 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
                 deprecated_id.append(deprecated_dataset['hashSum'])
             else:
                 if deprecated_dataset['fileName'] != data_filename:
-                    raise CarbonPortalException(f'Cannot deprecate L2 dataset with different filename ({deprecated_dataset["dobj"]})')
+                    raise CarbonPortalException(
+                        f'Cannot deprecate L2 dataset with different filename ({deprecated_dataset["dobj"]})')
                 elif deprecated_dataset['nextVersion'] is not None:
-                    raise CarbonPortalException(f'Cannot deprecate L2 dataset because it already has a next version ({deprecated_dataset["dobj"]})')
+                    raise CarbonPortalException(
+                        f'Cannot deprecate L2 dataset because it already has a next version ({deprecated_dataset["dobj"]})')
                 else:
                     deprecated_id.append(deprecated_dataset['hashSum'])
 
@@ -113,7 +116,7 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
 
     # Upload all L0 files first - we need to link to them when we upload the main file
     link_hashums = []
-    l0_basenames = [os.path.basename(f) for f in raw_filenames]
+    l0_basenames = [os.path.basename(file) for file in raw_filenames]
     existing_l0 = get_existing_files(station_uri, l0_basenames, OBJ_SPEC_URI['L0'])
 
     l0_index = -1
@@ -134,7 +137,7 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
 
         if upload_l0:
             l0_upload_result = upload_file(cookie, dataset_zip, manifest, l0_index, l0_file, 'L0',
-                        OBJ_SPEC_URI['L0'], previous_l0, None)
+                                           OBJ_SPEC_URI['L0'], previous_l0, None)
             if not l0_upload_result:
                 raise CarbonPortalException('Failed to upload L0 file(s). Aborting')
 
@@ -142,8 +145,4 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
 
     # Now upload the main data object. L1 objects don't get linked to L0
     return upload_file(cookie, dataset_zip, manifest, 0, data_filename,
-                upload_level, data_object_spec, deprecated_id, link_hashums)
-
-
-
-
+                       upload_level, data_object_spec, deprecated_id, link_hashums)
