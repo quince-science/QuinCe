@@ -12,7 +12,7 @@ import toml
 from icoscp.sparql.runsparql import RunSparql
 from modules.CarbonPortal.CarbonPortalException import CarbonPortalException
 from modules.CarbonPortal.Export_CarbonPortal_metadata import build_metadata_package
-from modules.Common.data_processing import get_hashsum, get_file_from_zip
+from modules.Common.data_processing import get_hashsum, get_file_from_zip, b64_to_b64_url
 import pandas as pd
 
 from modules.Common.Slack import post_slack_msg
@@ -212,13 +212,36 @@ order by desc(?submTime)
   return run_sparql(query)
 
 
+def has_next_version(base64_hashsum):
+  uri = f'https://meta.icos-cp.eu/objects/{b64_to_b64_url(base64_hashsum)[:24]}'
+
+  query = f"""
+prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+select ?dobj ?hasNextVersion
+where {{
+	VALUES ?dobj {{<{uri}>}}
+	BIND(EXISTS{{[] cpmeta:isNextVersionOf ?dobj}} AS ?hasNextVersion)
+}}
+"""
+
+  query_result = run_sparql(query)
+
+  return query_result['hasNextVersion'][0]
+
 def upload_file(cookie, zip_source, manifest, file_index, filename, level, data_object_spec,
                 deprecate_hashsum, links):
 
   extracted_file = get_file_from_zip(zip_source, filename)
   hashsum = get_hashsum(extracted_file)
+
+  partial_upload = False
+  if deprecate_hashsum:
+    partial_upload = has_next_version(deprecate_hashsum[0])
+
+
   metadata = build_metadata_package(extracted_file, manifest, file_index, hashsum, data_object_spec,
-                                    level, links, deprecate_hashsum)
+                                    level, links, deprecate_hashsum, partial_upload)
 
   upload_result = None
   if not config['CARBON']['do_upload']:
