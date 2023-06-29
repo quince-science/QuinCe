@@ -257,6 +257,15 @@
       <redirect/>
     </navigation-case>
   </navigation-rule>
+  <navigation-rule>
+    <display-name>To Instruments List Page</display-name>
+    <from-view-id>*</from-view-id>
+    <navigation-case>
+      <from-outcome>instrument_list</from-outcome>
+      <to-view-id>/instrument/instrument_list.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
+  </navigation-rule>
   <component>
     <component-type>org.primefaces.component.SelectOneMenu</component-type>
     <component-class>uk.ac.exeter.QuinCe.web.ui.FastSelectOneMenu</component-class>

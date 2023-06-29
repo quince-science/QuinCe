@@ -16,25 +16,49 @@
 
     function goToDiagnosticsQC(id) {
       $('#instrumentListForm\\:diagnosticQCInstrumentId').val(id);
-        $('#instrumentListForm\\:diagnostQCLink').click();
-        return false;
-      }
+      $('#instrumentListForm\\:diagnostQCLink').click();
+      return false;
+    }
 
-      function goToCalibrations(id) {
-        $('#instrumentListForm\\:calibrationsInstrumentId').val(id);
-        $('#instrumentListForm\\:showCalibrationsLink').click();
-        return false;
-      }
+    function goToCalibrations(id) {
+      $('#instrumentListForm\\:calibrationsInstrumentId').val(id);
+      $('#instrumentListForm\\:showCalibrationsLink').click();
+      return false;
+    }
 
-      function goToCalculationCoefficients(id) {
-        $('#instrumentListForm\\:calculationCoefficientsInstrumentId').val(id);
-        $('#instrumentListForm\\:showCalculationCoefficientsLink').click();
-        return false;
-      }
+    function goToCalculationCoefficients(id) {
+      $('#instrumentListForm\\:calculationCoefficientsInstrumentId').val(id);
+      $('#instrumentListForm\\:showCalculationCoefficientsLink').click();
+      return false;
+    }
+
+    function confirmInstrumentDelete(id, name) {
+      $('#instrumentListForm\\:deleteInstrumentId').val(id);
+      $('#deleteInstrumentName')[0].innerHTML = name;
+      PF('confirmDelete').show();
+    }
+
+    function deleteInstrument() {
+      $('#instrumentListForm\\:deleteInstrumentLink').click();
+      return false;
+    }
     </script>
   </ui:define>
   <ui:define name="content">
     <h:form id="instrumentListForm" method="post" accept-charset="utf8">
+
+      <p:dialog widgetVar="confirmDelete" modal="true" resizable="false"
+        closeable="false" header="Delete Instrument?">
+        Are you sure you want to delete the instrument
+        <br/>
+        "<span id="deleteInstrumentName"></span>"?
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:button value="Yes" ajax="false" onclick="deleteInstrument(); return false;"/>
+          <p:button value="No" ajax="false"
+            onclick="PF('confirmDelete').hide(); return false;"/>
+        </h:panelGrid>
+      </p:dialog>
+
       <h:inputHidden id="standardsInstrumentId"
         value="#{externalStandardsBean.instrumentId}" />
       <p:commandLink id="showStandardsLink" ajax="false"
@@ -54,6 +78,11 @@
         value="#{calculationCoefficientsBean.instrumentId}" />
       <p:commandLink id="showCalculationCoefficientsLink" ajax="false"
         action="#{calculationCoefficientsBean.start}" />
+
+      <h:inputHidden id="deleteInstrumentId"
+        value="#{instrumentListBean.chosenInstrument}" />
+      <p:commandLink id="deleteInstrumentLink" ajax="false"
+        action="#{instrumentListBean.deleteInstrument}" />
 
       <h:panelGrid columns="1" cellpadding="5"
         styleClass="buttonPanel contentList">
@@ -89,7 +118,7 @@
               </p:commandLink>
             </ui:fragment>
             <ui:fragment rendered="#{not instrument.hasDiagnosticSensors()}">
-              <h:graphicImage value="/resources/image/spacer.svg"
+              <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
                 styleClass="actionIconLarge"/>
             </ui:fragment>
             <ui:fragment rendered="#{instrument.hasInternalCalibrations()}">
@@ -100,7 +129,7 @@
               </p:commandLink>
             </ui:fragment>
             <ui:fragment rendered="#{not instrument.hasInternalCalibrations()}">
-              <h:graphicImage value="/resources/image/spacer.svg"
+              <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
                 styleClass="actionIconLarge"/>
             </ui:fragment>
             <ui:fragment rendered="#{instrument.hasCalculationCoefficients()}">
@@ -111,7 +140,17 @@
               </p:commandLink>
             </ui:fragment>
             <ui:fragment rendered="#{not instrument.hasCalculationCoefficients()}">
-              <h:graphicImage value="/resources/image/spacer.svg"
+              <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                styleClass="actionIconLarge"/>
+            </ui:fragment>
+            <ui:fragment rendered="#{not instrumentListBean.hasDatasets(instrument.id)}">
+              <p:commandLink onclick="confirmInstrumentDelete(#{instrument.id}, '#{instrument.displayName}')">
+                <h:graphicImage value="/resources/image/trash.svg" alt="Delete instrument"
+                  title="Delete instrument" styleClass="actionIconLarge"/>
+              </p:commandLink>
+            </ui:fragment>
+            <ui:fragment rendered="#{instrumentListBean.hasDatasets(instrument.id)}">
+              <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
                 styleClass="actionIconLarge"/>
             </ui:fragment>
         </p:column>

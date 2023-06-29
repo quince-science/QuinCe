@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Files;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,6 +22,7 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
@@ -740,6 +742,18 @@ public class DataFileDB {
     return result;
   }
 
+  public static void deleteFile(DataSource dataSource, Properties appConfig,
+    DataFile dataFile) throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+
+    try (Connection conn = dataSource.getConnection()) {
+      deleteFile(conn, appConfig, dataFile);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error deleting files", e);
+    }
+  }
+
   /**
    * Removes a file from the database and the underlying file store.
    *
@@ -756,18 +770,16 @@ public class DataFileDB {
    * @see #DELETE_FILE_STATEMENT
    * @see FileStore#deleteFile(String, DataFile)
    */
-  public static void deleteFile(DataSource dataSource, Properties appConfig,
+  public static void deleteFile(Connection conn, Properties appConfig,
     DataFile dataFile) throws MissingParamException, DatabaseException {
 
-    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(appConfig, "appConfig");
     MissingParam.checkMissing(dataFile, "dataFile");
 
-    Connection conn = null;
     PreparedStatement stmt = null;
 
     try {
-      conn = dataSource.getConnection();
       conn.setAutoCommit(false);
 
       // Send out sub-record delete requests
@@ -791,7 +803,6 @@ public class DataFileDB {
         throw new DatabaseException("Unable to reset connection autocommit", e);
       }
       DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -1147,6 +1158,23 @@ public class DataFileDB {
     }
 
     return fileCount;
+  }
+
+  public static void deleteAllFiles(Connection conn, Properties appConfig,
+    Instrument instrument, boolean deleteFolders)
+    throws DatabaseException, FileStoreException, IOException {
+
+    List<DataFile> files = getFiles(conn, appConfig, instrument.getId());
+    for (DataFile file : files) {
+      deleteFile(conn, appConfig, file);
+    }
+
+    if (deleteFolders) {
+      for (FileDefinition fileDefinition : instrument.getFileDefinitions()) {
+        FileStore.deleteFolder(appConfig.getProperty("filestore"),
+          fileDefinition.getDatabaseId());
+      }
+    }
   }
 
   /**
