@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <path d="m900 1e3v-650h-600v650c0 55 45 100 100 100h400c55 0 100-45 100-100z"/>
+  <path d="m250 200h700v100h-700z"/>
+  <path d="m850 300-150-150h-200l-150 150z"/>
+ </g>
+</svg>

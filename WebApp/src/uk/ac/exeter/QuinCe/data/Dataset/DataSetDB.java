@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -102,8 +103,12 @@ public class DataSetDB {
   /**
    * Statement to update the user messages for a dataset
    */
-  private static final String UPDATE_USER_MESSAGES_STATEMENT = "Update dataset set "
+  private static final String UPDATE_USER_MESSAGES_STATEMENT = "UPDATE dataset SET "
     + "user_messages = ? WHERE id = ?";
+
+  private static final String GET_DATASET_COUNTS_QUERY = "SELECT i.id, COUNT(ds.id) "
+    + "FROM instrument i LEFT JOIN dataset ds ON ds.instrument_id = i.id "
+    + "WHERE i.id IN " + DatabaseUtils.IN_PARAMS_TOKEN + " GROUP BY i.id";
 
   private static final String SENSOR_OFFSETS_PROPERTY = "__SENSOR_OFFSETS";
 
@@ -1148,5 +1153,39 @@ public class DataSetDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error storing user messages", e);
     }
+  }
+
+  public static Map<Long, Integer> getDataSetCounts(DataSource dataSource,
+    List<Long> instruments) throws DatabaseException {
+
+    Map<Long, Integer> result = new HashMap<Long, Integer>();
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(instruments, "instruments", true);
+
+    if (instruments.size() > 0) {
+      try (Connection conn = dataSource.getConnection()) {
+
+        String sql = DatabaseUtils.makeInStatementSql(GET_DATASET_COUNTS_QUERY,
+          instruments.size());
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+          for (int i = 0; i < instruments.size(); i++) {
+            stmt.setLong(i + 1, instruments.get(i));
+          }
+
+          try (ResultSet records = stmt.executeQuery()) {
+            while (records.next()) {
+              result.put(records.getLong(1), records.getInt(2));
+            }
+          }
+        }
+      } catch (SQLException e) {
+        throw new DatabaseException("Error getting dataset counts", e);
+      }
+    }
+
+    return result;
   }
 }

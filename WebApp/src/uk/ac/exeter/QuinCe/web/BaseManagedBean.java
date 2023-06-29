@@ -280,8 +280,7 @@ public abstract class BaseManagedBean {
       isForceInstrumentReload() ||
 
       // If the current instrument is now different to the one held in the
-      // session,
-      // remove it so it will get reloaded on next access
+      // session, remove it so it will get reloaded on next access
         (null != currentInstrument
           && currentInstrument.getId() != currentUserInstrument)) {
         getSession().removeAttribute(CURRENT_FULL_INSTRUMENT_ATTR);

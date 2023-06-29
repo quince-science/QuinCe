@@ -1,6 +1,10 @@
 package uk.ac.exeter.QuinCe.utils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Stream;
 
 /**
  * Miscellaneous file utils
@@ -31,4 +35,16 @@ public class FileUtils {
     return ok;
   }
 
+  public static boolean isDirectoryEmpty(File directory) throws IOException {
+
+    Path dir = directory.toPath();
+
+    if (!Files.isDirectory(dir)) {
+      throw new IOException("Path is not a directory");
+    }
+
+    try (Stream<Path> entries = Files.list(dir)) {
+      return !entries.findFirst().isPresent();
+    }
+  }
 }

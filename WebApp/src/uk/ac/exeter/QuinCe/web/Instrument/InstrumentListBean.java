@@ -1,15 +1,16 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
-import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for transient instrument operations, e.g. listing instruments.
@@ -42,27 +43,22 @@ public class InstrumentListBean extends BaseManagedBean {
    */
   protected static final String PAGE_INSTRUMENT_LIST = "instrument_list";
 
-  /**
-   * The list of instruments
-   */
-  private List<Instrument> instrumentList = null;
+  private Map<Long, Integer> datasetCounts;
 
   /**
    * The ID of the instrument chosen from the instrument list
    */
   private Instrument chosenInstrument = null;
 
-  /**
-   * Initialises the bean by pre-loading the list of instruments
-   */
-  public void init() {
-    // Load the instrument list
+  public String start() {
     try {
-      instrumentList = InstrumentDB
-        .getInstrumentList(ServletUtils.getDBDataSource(), getUser());
+      datasetCounts = DataSetDB.getDataSetCounts(getDataSource(),
+        getInstruments().stream().map(i -> i.getId()).toList());
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
+      internalError(e);
     }
+    return PAGE_INSTRUMENT_LIST;
   }
 
   /**
@@ -71,11 +67,7 @@ public class InstrumentListBean extends BaseManagedBean {
    * @return The instruments owned by the current user
    */
   public List<Instrument> getInstrumentList() {
-    if (null == instrumentList) {
-      init();
-    }
-
-    return instrumentList;
+    return getInstruments();
   }
 
   /**
@@ -129,12 +121,29 @@ public class InstrumentListBean extends BaseManagedBean {
    *          The instrument ID
    */
   public void setChosenInstrument(long chosenInstrument) {
-    for (Instrument instrument : instrumentList) {
+    for (Instrument instrument : getInstruments()) {
       if (instrument.getId() == chosenInstrument) {
         this.chosenInstrument = instrument;
         setCurrentInstrumentId(instrument.getId());
         break;
       }
     }
+  }
+
+  public boolean hasDatasets(long instrumentId) {
+    return datasetCounts.containsKey(instrumentId)
+      && datasetCounts.get(instrumentId) > 0;
+  }
+
+  public void deleteInstrument() {
+    try {
+      InstrumentDB.deleteInstrument(getDataSource(), chosenInstrument.getId());
+      initialiseInstruments();
+    } catch (Exception e) {
+      ExceptionUtils.printStackTrace(e);
+      internalError(e);
+    }
+
+    // We return to the instrument list page
   }
 }
