@@ -230,7 +230,7 @@ where {{
 
     query_result = run_sparql(query)
 
-    return query_result['hasNextVersion'][0]
+    return True if query_result['hasNextVersion'][0] == 'true' else False
 
 
 def upload_file(cookie, zip_source, manifest, file_index, filename, level, data_object_spec,
