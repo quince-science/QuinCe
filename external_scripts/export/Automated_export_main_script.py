@@ -73,9 +73,7 @@ def main():
 
                 for destination in export_destination:
                     if 'ICOS' in destination:
-                        upload_result = icos_upload(raw_filenames, manifest, dataset_zip, dataset)
-                        if upload_result is not None:
-                            successful_upload_cp = 1
+                        successful_upload_cp = icos_upload(raw_filenames, manifest, dataset_zip, dataset)
 
                     if 'CMEMS' in destination:
                         raise NotImplementedError('CMEMS required CP_pid, but it is not available from new code')
