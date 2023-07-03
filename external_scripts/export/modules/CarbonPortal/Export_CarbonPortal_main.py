@@ -13,7 +13,6 @@ https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-i
 """
 
 import os.path
-
 import toml
 import warnings
 
@@ -99,10 +98,10 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
             if int(deprecated_dataset['dataLevel']) == 1:
                 deprecated_id.append(deprecated_dataset['hashSum'])
             else:
-                if deprecated_dataset['fileName'] != data_filename:
+                if deprecated_dataset['fileName'] != os.path.basename(data_filename):
                     raise CarbonPortalException(
                         f'Cannot deprecate L2 dataset with different filename ({deprecated_dataset["dobj"]})')
-                elif deprecated_dataset['nextVersion'] is not None:
+                elif 'nextVersion' in deprecated_dataset:
                     raise CarbonPortalException(
                         f'Cannot deprecate L2 dataset because it already has a next version ({deprecated_dataset["dobj"]})')
                 else:
