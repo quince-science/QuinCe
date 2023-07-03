@@ -215,23 +215,31 @@ order by desc(?submTime)
     return run_sparql(query)
 
 
-def has_next_version(base64_hashsum):
+def get_info(base64_hashsum):
     uri = f'https://meta.icos-cp.eu/objects/{b64_to_b64_url(base64_hashsum)[:24]}'
 
     query = f"""
 prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
+prefix prov: <http://www.w3.org/ns/prov#>
 prefix xsd: <http://www.w3.org/2001/XMLSchema#>
-select ?dobj ?hasNextVersion
+select ?hasNextVersion ?timeStart ?timeEnd ?dataLevel
 where {{
     VALUES ?dobj {{<{uri}>}}
+    ?dobj cpmeta:hasStartTime | (cpmeta:wasAcquiredBy / prov:startedAtTime) ?timeStart .
+    ?dobj cpmeta:hasEndTime | (cpmeta:wasAcquiredBy / prov:endedAtTime) ?timeEnd .
+    ?dobj cpmeta:hasObjectSpec ?spec .
+    ?spec cpmeta:hasDataLevel ?dataLevel .
     BIND(EXISTS{{[] cpmeta:isNextVersionOf ?dobj}} AS ?hasNextVersion)
 }}
 """
 
-    query_result = run_sparql(query)
-
-    return True if query_result['hasNextVersion'][0] == 'true' else False
-
+    result = run_sparql(query)
+    result = result.astype({
+        'hasNextVersion': 'bool',
+        'timeStart': 'datetime64[ns, UTC]',
+        'timeEnd': 'datetime64[ns, UTC]',
+        'dataLevel': 'int'})
+    return result.iloc[0]
 
 def upload_file(cookie, zip_source, manifest, file_index, filename, level, data_object_spec,
                 deprecate_hashsum, links):
@@ -240,14 +248,25 @@ def upload_file(cookie, zip_source, manifest, file_index, filename, level, data_
 
     partial_upload = False
     if deprecate_hashsum:
-        partial_upload = has_next_version(deprecate_hashsum[0])
+        deprecated_info = get_info(deprecate_hashsum[0])
+        if level == 'L1':
+            new_start_date = pd.to_datetime(manifest['manifest']['metadata']['startdate'])
+            if new_start_date > deprecated_info['timeStart']:
+                partial_upload = True
+        elif level == 'L2':
+            new_start_date = pd.to_datetime(manifest['manifest']['metadata']['startdate'])
+            new_end_date = pd.to_datetime(manifest['manifest']['metadata']['enddate'])
+            if deprecated_info['dataLevel'] == 1 and \
+                new_start_date != deprecated_info['timeStart'] or new_end_date != deprecated_info['timeEnd']:
+
+                partial_upload = True
 
     metadata = build_metadata_package(extracted_file, manifest, file_index, hashsum, data_object_spec,
                                       level, links, deprecate_hashsum, partial_upload)
 
     if not config['CARBON']['do_upload']:
         logging.info('Uploads disabled - dry run only')
-        upload_result = True
+        upload_result = False
     else:
         upload_result, upload_response = upload_to_cp(cookie, extracted_file, hashsum, metadata)
 
