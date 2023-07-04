@@ -77,7 +77,7 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
                 # NB Clashing values will be ignored - a correct configuration should not produce any.
                 #    Yes, I'm being lazy.
                 for col in merged_data.columns:
-                    repeat_col = re.match('(.*)___[0-9]+$', col)
+                    repeat_col = re.match('(.*)___\\d+$', col)
                     if repeat_col is not None:
                         target_col = repeat_col.group(1)
                         merged_data[target_col] = merged_data[target_col].combine_first(merged_data[col])
@@ -101,8 +101,11 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
                             if merged_data.iloc[i, column_index] not in mapped_values:
                                 merged_data.iloc[i, column_index] = col_map['other']
 
-                # Sort by time
-                merged_data.sort_values(by=extractor_config['output']['timestamp_column'], inplace=True)
+                # Sort by timestamp, and merge repeated timestamps into single lines.
+                # If a given column is repeated in the same timestamp, use the first value
+                merged_data = merged_data.groupby(by=extractor_config['output']['timestamp_column'],
+                                                  as_index=False, sort=True, dropna=True).first()
+
 
                 # Get data as CSV
                 date_format = '%Y-%m-%dT%H:%M:%SZ'
