@@ -57,8 +57,8 @@ public class DataSetDB {
   private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
     + "(instrument_id, name, start, end, status, status_date, "
     + "nrt, properties, last_touched, error_messages, processing_messages, user_messages, "
-    + "min_longitude, max_longitude, min_latitude, max_latitude) "
-    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    + "min_longitude, max_longitude, min_latitude, max_latitude, exported) "
+    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement to update a data set in the database
@@ -70,7 +70,7 @@ public class DataSetDB {
     + "status_date = ?, nrt = ?, properties = ?, last_touched = ?, "
     + "error_messages = ?, processing_messages = ?, user_messages = ?, "
     + "min_longitude = ?, max_longitude = ?, "
-    + "min_latitude = ?, max_latitude = ? WHERE id = ?";
+    + "min_latitude = ?, max_latitude = ?, exported = ? WHERE id = ?";
 
   /**
    * Statement to delete a dataset record
@@ -86,7 +86,7 @@ public class DataSetDB {
     + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, "
     + "d.status_date, d.nrt, d.properties, d.created, d.last_touched, "
     + "COALESCE(d.error_messages, '[]'), processing_messages, user_messages, "
-    + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude "
+    + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude, d.exported "
     + "FROM dataset d WHERE ";
 
   private static final String GET_DATASETS_BETWEEN_DATES_QUERY = DATASET_QUERY_BASE
@@ -109,6 +109,9 @@ public class DataSetDB {
   private static final String GET_DATASET_COUNTS_QUERY = "SELECT i.id, COUNT(ds.id) "
     + "FROM instrument i LEFT JOIN dataset ds ON ds.instrument_id = i.id "
     + "WHERE i.id IN " + DatabaseUtils.IN_PARAMS_TOKEN + " GROUP BY i.id";
+
+  private static final String DATASET_EXPORTED_STATEMENT = "UPDATE dataset "
+    + "SET exported = 1 WHERE id = ?";
 
   private static final String SENSOR_OFFSETS_PROPERTY = "__SENSOR_OFFSETS";
 
@@ -298,10 +301,12 @@ public class DataSetDB {
     double maxLon = record.getDouble(16);
     double minLat = record.getDouble(17);
     double maxLat = record.getDouble(18);
+    boolean exported = record.getBoolean(19);
 
     return new DataSet(id, instrument, name, start, end, status, statusDate,
       nrt, properties, sensorOffsets, createdDate, lastTouched, errorMessage,
-      processingMessages, userMessages, minLon, minLat, maxLon, maxLat);
+      processingMessages, userMessages, minLon, minLat, maxLon, maxLat,
+      exported);
   }
 
   /**
@@ -406,9 +411,10 @@ public class DataSetDB {
       stmt.setDouble(14, dataSet.getMaxLon());
       stmt.setDouble(15, dataSet.getMinLat());
       stmt.setDouble(16, dataSet.getMaxLat());
+      stmt.setBoolean(17, dataSet.hasBeenExported());
 
       if (DatabaseUtils.NO_DATABASE_RECORD != dataSet.getId()) {
-        stmt.setLong(17, dataSet.getId());
+        stmt.setLong(18, dataSet.getId());
       }
 
       stmt.execute();
@@ -1187,5 +1193,20 @@ public class DataSetDB {
     }
 
     return result;
+  }
+
+  public static void setDatasetExported(Connection conn, long datasetId)
+    throws DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkPositive(datasetId, "datasetId");
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(DATASET_EXPORTED_STATEMENT)) {
+      stmt.setLong(1, datasetId);
+      stmt.execute();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error setting dataset export status", e);
+    }
   }
 }
