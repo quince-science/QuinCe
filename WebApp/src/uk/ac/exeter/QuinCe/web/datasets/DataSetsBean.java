@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,6 +167,8 @@ public class DataSetsBean extends BaseManagedBean {
         getCurrentInstrument().getId()) > 0;
       approvalDatasets = DataSetDB.getDatasetsWithStatus(getDataSource(),
         DataSet.STATUS_WAITING_FOR_APPROVAL);
+
+      Collections.sort(approvalDatasets, new DatasetNameComparator());
     } else {
       dataSets = null;
     }
@@ -518,7 +522,7 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   public String getInstrumentName(DataSet dataSet) {
-    return getInstrument(dataSet.getInstrumentId()).getName();
+    return getInstrument(dataSet.getInstrumentId()).getDisplayName();
   }
 
   public String getOwnerName(DataSet dataSet) {
@@ -536,5 +540,14 @@ public class DataSetsBean extends BaseManagedBean {
 
   public void setListView() {
     setCurrentView(NAV_DATASET_LIST);
+  }
+
+  class DatasetNameComparator implements Comparator<DataSet> {
+
+    @Override
+    public int compare(DataSet o1, DataSet o2) {
+      return o1.getName().compareTo(o2.getName());
+    }
+
   }
 }
