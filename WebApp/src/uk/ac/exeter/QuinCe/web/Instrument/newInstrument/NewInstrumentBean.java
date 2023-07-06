@@ -1921,6 +1921,7 @@ public class NewInstrumentBean extends FileUploadBean {
       setCurrentInstrumentId(instrument.getId());
 
       // Reinitialise beans to update their instrument lists
+      instrumentListBean.initialiseInstruments();
       dataFilesBean.initialiseInstruments();
       dataSetsBean.initialiseInstruments();
     } catch (Exception e) {
