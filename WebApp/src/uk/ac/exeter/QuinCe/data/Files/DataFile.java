@@ -887,8 +887,10 @@ public class DataFile {
       } else {
 
         // Strip leading zeros from integers - otherwise we get octal number
-        // nonsense.
-        if (!org.apache.commons.lang3.StringUtils.contains(result, '.')) {
+        // nonsense. (Unless it's a zero to begin with.)
+        if (!result.equals("0")
+          && !org.apache.commons.lang3.StringUtils.contains(result, '.')) {
+
           result = org.apache.commons.lang3.StringUtils.stripStart(result, "0");
         }
 
