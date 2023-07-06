@@ -263,7 +263,6 @@ public class ExtractDataSetJob extends DataSetJob {
                       }
                     }
                   }
-
                 }
               }
             }
