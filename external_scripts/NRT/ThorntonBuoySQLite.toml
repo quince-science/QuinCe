@@ -27,6 +27,7 @@
     "Wind Speed",
     "Air Temperature",
     "Atmospheric Pressure",
+    "Air Humidity",
     "Latitude",
     "Longitude",
     "TDGP Temp 1",
@@ -120,7 +121,7 @@
       ["Wind Speed", "windspeed"],
       ["Air Temperature", "temperature"],
       ["Atmospheric Pressure", "pressure"],
-      ["Humidity", "humidity"],
+      ["Air Humidity", "humidity"],
       ["Latitude", "latitude"],
       ["Longitude", "longitude"]
     ]
