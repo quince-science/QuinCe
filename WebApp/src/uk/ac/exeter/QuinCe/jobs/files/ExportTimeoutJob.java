@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Collection;
 
 import javax.servlet.annotation.WebListener;
 
@@ -32,8 +32,8 @@ public class ExportTimeoutJob extends BackgroundTask {
 
     try {
       conn = ResourceManager.getInstance().getDBDataSource().getConnection();
-      List<DataSet> dataSets = DataSetDB.getDatasetsWithStatus(conn,
-        DataSet.STATUS_EXPORTING);
+      Collection<DataSet> dataSets = DataSetDB
+        .getDatasetsWithStatus(conn, DataSet.STATUS_EXPORTING).values();
 
       for (DataSet dataset : dataSets) {
         if (now.minusMinutes(30).isAfter(dataset.getStatusDate())) {
@@ -52,5 +52,4 @@ public class ExportTimeoutJob extends BackgroundTask {
   protected long getRunInterval() {
     return 30;
   }
-
 }

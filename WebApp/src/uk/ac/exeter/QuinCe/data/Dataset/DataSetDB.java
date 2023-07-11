@@ -10,6 +10,7 @@ import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -151,14 +152,14 @@ public class DataSetDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static List<DataSet> getDataSets(DataSource dataSource,
+  public static LinkedHashMap<Long, DataSet> getDataSets(DataSource dataSource,
     long instrumentId, boolean includeNrt)
     throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
-    List<DataSet> result = null;
+    LinkedHashMap<Long, DataSet> result = null;
     Connection conn = null;
     try {
       conn = dataSource.getConnection();
@@ -188,13 +189,14 @@ public class DataSetDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static List<DataSet> getDataSets(Connection conn, long instrumentId,
-    boolean includeNrt) throws DatabaseException, MissingParamException {
+  public static LinkedHashMap<Long, DataSet> getDataSets(Connection conn,
+    long instrumentId, boolean includeNrt)
+    throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
-    List<DataSet> result = new ArrayList<DataSet>();
+    LinkedHashMap<Long, DataSet> result = new LinkedHashMap<Long, DataSet>();
 
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -208,7 +210,7 @@ public class DataSetDB {
       while (records.next()) {
         DataSet dataSet = dataSetFromRecord(conn, records);
         if (!dataSet.isNrt() || includeNrt) {
-          result.add(dataSet);
+          result.put(dataSet.getId(), dataSet);
         }
       }
 
@@ -685,7 +687,9 @@ public class DataSetDB {
     boolean includeNrt) throws MissingParamException, DatabaseException {
     DataSet result = null;
 
-    List<DataSet> datasets = getDataSets(conn, instrumentId, includeNrt);
+    List<DataSet> datasets = new ArrayList<DataSet>(
+      getDataSets(conn, instrumentId, includeNrt).values());
+
     if (datasets.size() > 0) {
       result = datasets.get(datasets.size() - 1);
     }
@@ -821,7 +825,6 @@ public class DataSetDB {
     PreparedStatement datasetStatement = null;
 
     try {
-
       currentAutoCommitStatus = conn.getAutoCommit();
       setDatasetStatus(conn, dataSet.getId(), DataSet.STATUS_DELETING);
       if (!currentAutoCommitStatus) {
@@ -948,8 +951,9 @@ public class DataSetDB {
     return result;
   }
 
-  public static List<DataSet> getDatasetsWithStatus(DataSource dataSource,
-    int status) throws MissingParamException, DatabaseException {
+  public static LinkedHashMap<Long, DataSet> getDatasetsWithStatus(
+    DataSource dataSource, int status)
+    throws MissingParamException, DatabaseException {
 
     try (Connection conn = dataSource.getConnection()) {
       return getDatasetsWithStatus(conn, status);
@@ -973,12 +977,13 @@ public class DataSetDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static List<DataSet> getDatasetsWithStatus(Connection conn, int status)
+  public static LinkedHashMap<Long, DataSet> getDatasetsWithStatus(
+    Connection conn, int status)
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
 
-    List<DataSet> dataSets = new ArrayList<DataSet>();
+    LinkedHashMap<Long, DataSet> dataSets = new LinkedHashMap<Long, DataSet>();
 
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -988,7 +993,8 @@ public class DataSetDB {
       stmt.setInt(1, status);
       records = stmt.executeQuery();
       while (records.next()) {
-        dataSets.add(dataSetFromRecord(conn, records));
+        DataSet dataset = dataSetFromRecord(conn, records);
+        dataSets.put(dataset.getId(), dataset);
       }
 
     } catch (Exception e) {

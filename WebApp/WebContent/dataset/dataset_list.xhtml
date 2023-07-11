@@ -96,6 +96,22 @@
         $('#messagesForm\\:datasetId').val(datasetId);
         loadProcessingMessages(); // PF remoteCommand
       }
+
+      function confirmDelete(id, name, exportWarn) {
+        $('#datasetListForm\\:datasetId').val(id);
+        $('#deleteDatasetName')[0].innerHTML = name;
+        if (exportWarn) {
+          $('#exportWarning').show();
+        } else {
+          $('#exportWarning').hide();
+        }
+        PF('confirmDelete').show();
+      }
+
+      function deleteDataset(id) {
+        PF('confirmDelete').hide();
+        $('#datasetListForm\\:deleteLink').click();
+      }
     </script>
   </ui:define>
   <ui:define name="content">
@@ -144,6 +160,22 @@
       <h:form id="datasetListForm" method="post" charset="utf8">
         <h:inputHidden id="hasFiles" value="#{dataSetsBean.hasFiles}"/>
 
+        <p:dialog widgetVar="confirmDelete" modal="true" resizable="false"
+          closeable="false" header="Delete Instrument?">
+
+          Are you sure you want to delete the dataset "<span id="deleteDatasetName"></span>"?
+          <span id="exportWarning" class="error">
+            <br/><br/>
+            <b>NB: Dataset has been exported!</b>
+          </span>
+          <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+            <p:button value="Yes" ajax="false" onclick="deleteDataset(); return false;"/>
+            <p:button value="No" ajax="false"
+              onclick="PF('confirmDelete').hide(); return false;"/>
+          </h:panelGrid>
+        </p:dialog>
+
+
         <h:panelGrid columns="3" cellpadding="5" class="buttonPanel contentList">
           <p:outputLabel for="instrumentAdmin" value="Select Instrument:" />
           <ui:fragment rendered="#{User.adminUser}">
@@ -186,6 +218,9 @@
 
         <p:commandLink id="approveLink" ajax="true"
           action="#{dataSetsBean.approve}" oncomplete="updateList()" />
+
+        <p:commandLink id="deleteLink" ajax="true"
+          action="#{dataSetsBean.delete}" oncomplete="updateList()" />
 
         <h:inputHidden id="manualQCDatasetId" value="#{manualQualityControlBean.datasetId}" />
         <p:commandLink id="manualQCLink" ajax="false"
@@ -349,6 +384,20 @@
                     <h:graphicImage
                       value="/resources/image/approve_disabled.svg"
                       styleClass="actionIcon" alt="Approve" title="Approve" />
+                  </ui:fragment>
+                </ui:fragment>
+                <ui:fragment rendered="#{dataset.status ge DataSet.STATUS_USER_QC}">
+                  <ui:fragment rendered="#{dataSetsBean.canExport(dataset.id) eq 0}">
+                    <p:commandLink onclick="confirmDelete(#{dataset.id}, '#{dataset.name}', false); return false">
+                      <h:graphicImage value="/resources/image/trash.svg"
+                        styleClass="actionIcon" alt="Delete" title="Delete"/>
+                    </p:commandLink>
+                  </ui:fragment>
+                  <ui:fragment rendered="#{dataSetsBean.canExport(dataset.id) eq 1}">
+                    <p:commandLink onclick="confirmDelete(#{dataset.id}, '#{dataset.name}', true); return false">
+                      <h:graphicImage value="/resources/image/trash-red.svg"
+                        styleClass="actionIcon" alt="Delete" title="Delete"/>
+                    </p:commandLink>
                   </ui:fragment>
                 </ui:fragment>
               </ui:fragment>
