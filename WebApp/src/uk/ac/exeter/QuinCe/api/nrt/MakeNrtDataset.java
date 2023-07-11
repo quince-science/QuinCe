@@ -102,7 +102,7 @@ public class MakeNrtDataset {
       createDataset = true;
     } else {
 
-      if (existingDataset.getStatus() == DataSet.STATUS_DELETE) {
+      if (existingDataset.getStatus() == DataSet.STATUS_REPROCESS) {
         createDataset = true;
       } else if (existingDataset.getStatus() == DataSet.STATUS_READY_FOR_EXPORT
         || existingDataset.getStatus() == DataSet.STATUS_EXPORT_COMPLETE) {

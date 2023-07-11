@@ -19,12 +19,6 @@ public class JobRunScheduler extends BackgroundTask {
     ResourceManager resourceManager = ResourceManager.getInstance();
     try {
       JobManager.resetInterruptedJobs(resourceManager);
-    } catch (Exception e) {
-      // We don't mind if this fails.
-    }
-
-    try {
-      JobManager.resetInterruptedJobs(resourceManager);
 
       boolean ranJob = true;
       while (ranJob) {

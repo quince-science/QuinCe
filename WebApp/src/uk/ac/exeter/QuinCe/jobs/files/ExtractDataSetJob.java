@@ -106,7 +106,7 @@ public class ExtractDataSetJob extends DataSetJob {
         dataSet.getInstrumentId());
       if (null != nrtDataset && DateTimeUtils.overlap(nrtDataset, dataSet)) {
         DataSetDB.setNrtDatasetStatus(dataSource, instrument,
-          DataSet.STATUS_DELETE);
+          DataSet.STATUS_REPROCESS);
       }
 
       // Reset the data set and all associated data

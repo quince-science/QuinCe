@@ -53,6 +53,10 @@ public class DataSet implements Comparable<DataSet> {
 
   private static final String PROCESSING_VERSION_PROPERTY = "ProcessingVersion";
 
+  public static final int STATUS_REPROCESS = -4;
+
+  public static final String STATUS_REPROCESS_NAME = "Marked for reprocessing";
+
   /**
    * The numeric value for the delete status.
    */
@@ -61,7 +65,7 @@ public class DataSet implements Comparable<DataSet> {
   /**
    * The string for the delete status
    */
-  public static final String STATUS_DELETING_NAME = "Reprocessing";
+  public static final String STATUS_DELETING_NAME = "Deleting";
 
   /**
    * The numeric value for the delete status.
@@ -71,7 +75,7 @@ public class DataSet implements Comparable<DataSet> {
   /**
    * The string for the delete status
    */
-  public static final String STATUS_DELETE_NAME = "Marked for reprocessing";
+  public static final String STATUS_DELETE_NAME = "Marked for delete";
 
   /**
    * The numeric value for the error status. The data set will be given this
@@ -303,6 +307,7 @@ public class DataSet implements Comparable<DataSet> {
 
   static {
     validStatuses = new HashMap<Integer, String>();
+    validStatuses.put(STATUS_REPROCESS, STATUS_REPROCESS_NAME);
     validStatuses.put(STATUS_DELETE, STATUS_DELETE_NAME);
     validStatuses.put(STATUS_ERROR, STATUS_ERROR_NAME);
     validStatuses.put(STATUS_WAITING, STATUS_WAITING_NAME);
@@ -955,7 +960,7 @@ public class DataSet implements Comparable<DataSet> {
 
   /**
    * Determine whether or not this dataset has ever been exported.
-   * 
+   *
    * @return {@code true} if the dataset has been exported; {@code false}
    *         otherwise.
    */

@@ -1759,7 +1759,8 @@ public class InstrumentDB {
       Instrument instrument = getInstrument(conn, instrumentId);
 
       // Make sure there are no datasets attached to the instrument
-      List<DataSet> datasets = DataSetDB.getDataSets(conn, instrumentId, true);
+      LinkedHashMap<Long, DataSet> datasets = DataSetDB.getDataSets(conn,
+        instrumentId, true);
       if (datasets.size() > 0) {
         throw new InstrumentException(
           "Cannot delete instrument - datasets present");

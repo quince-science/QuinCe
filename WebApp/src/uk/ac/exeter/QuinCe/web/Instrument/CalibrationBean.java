@@ -160,8 +160,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     if (ok) {
       try {
-        datasets = DataSetDB.getDataSets(getDataSource(), instrument.getId(),
-          true);
+        datasets = new ArrayList<DataSet>(DataSetDB
+          .getDataSets(getDataSource(), instrument.getId(), true).values());
         dbInstance = getDbInstance();
         loadCalibrations();
         affectedDatasets = null;
