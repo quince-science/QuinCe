@@ -142,10 +142,10 @@
           process="datasetId"
           update="messagesBox"
           oncomplete="PF('messagesDialog').show()"/>
+        <h:panelGrid columns="1" cellpadding="5" class="buttonPanel contentList">
+          <p:commandButton onclick="PF('messagesDialog').hide()" value="Close"/>
+        </h:panelGrid>
       </h:form>
-      <h:panelGrid columns="1" cellpadding="5" class="buttonPanel contentList">
-        <p:commandButton onclick="PF('messagesDialog').hide()" value="Close"/>
-      </h:panelGrid>
     </p:dialog>
 
     <ui:fragment rendered="#{not dataSetsBean.hasInstruments}">
