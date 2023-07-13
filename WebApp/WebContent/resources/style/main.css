@@ -767,22 +767,6 @@ form.inline {
   display: inline;
 }
 
-.applicationMenu > ul > li:nth-last-child(-n + 2) {
-  float: right !important;
-  border: none;
-  background: none;
-}
-
-.applicationMenu > ul > li:nth-last-child(-n + 2) a {
-  text-decoration: underline;
-}
-
-.creditsMenu {
-  font-size: 0.75em;
-  position: relative;
-  top: 6px;
-}
-
 /*****************************************
 * Default dialog style
 *****************************************/

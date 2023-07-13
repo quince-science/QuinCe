@@ -31,21 +31,21 @@
           browser details). No information from the QuinCe software is exchanged.
         </p>
       </p:dialog>
-      <div style="text-align: right">
-          <p:commandLink onclick="PF('cookieDialog').show()">Cookies and Privacy Policy</p:commandLink>
-      </div>
-      <div class="contentBox">
-        <div id="logoTitle">
-          <h:graphicImage id="logo" alt="logo" value="/resources/image/quince.png" style="margin-right: 20px;"/>
-          <span style="font-size: 38px">Q</span>uin<span style="font-size: 38px">C</span>e
+      <h:form id="loginform" method="post" accept-charset="utf8">
+        <div style="text-align: right">
+            <p:commandLink onclick="PF('cookieDialog').show(); return false;">Cookies and Privacy Policy</p:commandLink>
         </div>
-        <p:messages id="messages">
-          <p:autoUpdate/>
-        </p:messages>
-        <div class="errors">
-          <h:outputText value="Your session has expired. Please log in again." rendered="#{sessionScope.SESSION_EXPIRED != null}"/>
-        </div>
-        <h:form id="loginform" method="post" accept-charset="utf8">
+        <div class="contentBox">
+          <div id="logoTitle">
+            <h:graphicImage id="logo" alt="logo" value="/resources/image/quince.png" style="margin-right: 20px;"/>
+            <span style="font-size: 38px">Q</span>uin<span style="font-size: 38px">C</span>e
+          </div>
+          <p:messages id="messages">
+            <p:autoUpdate/>
+          </p:messages>
+          <div class="errors">
+            <h:outputText value="Your session has expired. Please log in again." rendered="#{sessionScope.SESSION_EXPIRED != null}"/>
+          </div>
           <h:panelGrid columns="2" styleClass="inputForm" columnClasses="inputLabels,inputInputs" cellpadding="5">
             <h:outputLabel for="email" value="Email Address"/>
             <p:inputText id="email" value="#{loginBean.emailAddress}" styleClass="inputFormInput" required="true" requiredMessage="Email address is required"/>
@@ -59,9 +59,9 @@
             <p:commandLink value="Sign Up" action="#{loginBean.signUp}" immediate="true"/>
             <p:commandLink value="Lost Password" action="#{loginBean.startLostPassword}" styleClass="rightText" immediate="true"/>
           </h:panelGrid>
-        </h:form>
-        <span style="font-size: 10px;"><a href="https://github.com/BjerknesClimateDataCentre/QuinCe/releases" target="_blank"><h:outputText value="#{loginBean.appVersion}"/></a></span>
-      </div>
+          <span style="font-size: 10px;"><a href="https://github.com/BjerknesClimateDataCentre/QuinCe/releases" target="_blank"><h:outputText value="#{loginBean.appVersion}"/></a></span>
+        </div>
+      </h:form>
 
       <div class="pageBlock" style="text-align: center">
         <i>Developed by</i>
