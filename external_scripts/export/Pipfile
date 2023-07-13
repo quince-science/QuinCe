@@ -12,6 +12,7 @@ ftputil = "*"
 pandas = "*"
 netcdf4 = "*"
 numpy = "*"
+icoscp = "*"
 
 [requires]
 python_version = "3"

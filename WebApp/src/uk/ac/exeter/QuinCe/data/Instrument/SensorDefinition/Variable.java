@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,7 +45,7 @@ public class Variable implements Comparable<Variable> {
    * IDs and Labels for this variable's attributes, which must be defined by the
    * user when they create an instrument.
    */
-  private LinkedHashMap<String, String> attributes;
+  private VariableAttributes attributes;
 
   /**
    * The variable's properties
@@ -62,6 +61,13 @@ public class Variable implements Comparable<Variable> {
    * The other sensors required for data reduction
    */
   private List<SensorType> requiredSensorTypes;
+
+  /**
+   * The set of attribute conditions that determine whether or not some sensor
+   * types are required. These sensor types are in {@link #requiredSensorTypes},
+   * but the enforcement will depend on the attribute values specified here.
+   */
+  private Map<Long, AttributeCondition> attributeConditions;
 
   /**
    * The cascades from Questionable flags for each required SensorType to the
@@ -100,8 +106,9 @@ public class Variable implements Comparable<Variable> {
    *           If any cascade flags are invalid
    */
   protected Variable(SensorsConfiguration sensorConfig, long id, String name,
-    LinkedHashMap<String, String> attributes, String propertiesJson,
-    long coreSensorTypeId, List<Long> requiredSensorTypeIds,
+    VariableAttributes attributes, String propertiesJson, long coreSensorTypeId,
+    List<Long> requiredSensorTypeIds,
+    Map<Long, AttributeCondition> attrConditions,
     List<Integer> questionableCascades, List<Integer> badCascades,
     Map<SensorType, ColumnHeading> columnHeadings)
     throws SensorTypeNotFoundException, SensorConfigurationException,
@@ -137,6 +144,7 @@ public class Variable implements Comparable<Variable> {
 
     this.requiredSensorTypes = new ArrayList<SensorType>(
       requiredSensorTypeIds.size());
+    this.attributeConditions = attrConditions;
     this.questionableCascades = new HashMap<SensorType, Flag>();
     this.badCascades = new HashMap<SensorType, Flag>();
 
@@ -317,7 +325,7 @@ public class Variable implements Comparable<Variable> {
     return attributes.size() > 0;
   }
 
-  public LinkedHashMap<String, String> getAttributes() {
+  public VariableAttributes getAttributes() {
     return attributes;
   }
 
@@ -398,5 +406,10 @@ public class Variable implements Comparable<Variable> {
   public int compareTo(Variable o) {
     // Variables are ordered by name
     return name.compareTo(o.name);
+  }
+
+  protected AttributeCondition getAttributeCondition(SensorType sensorType) {
+    return null == attributeConditions ? null
+      : attributeConditions.get(sensorType.getId());
   }
 }

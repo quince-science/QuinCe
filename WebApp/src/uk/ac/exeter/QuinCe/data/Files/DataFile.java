@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -790,18 +789,10 @@ public class DataFile {
    *          The contents
    */
   protected void setContents(String contents) {
-    this.contents = Arrays.asList(contents.split("\n"));
-    // Remove empty lines at the end of the list
-    ListIterator<String> li = this.contents.listIterator(getContentLineCount());
-    while (li.hasPrevious()) {
-      int index = li.previousIndex();
-      if (li.previous().trim().length() == 0) {
-        this.contents.remove(index);
-      } else {
-        // When we reach a non empty line, we stop the search
-        break;
-      }
-    }
+    this.contents = new ArrayList<String>(
+      Arrays.asList(contents.split("[\\r\\n]+")));
+
+    StringUtils.removeBlankTailLines(this.contents);
   }
 
   /**
@@ -896,8 +887,10 @@ public class DataFile {
       } else {
 
         // Strip leading zeros from integers - otherwise we get octal number
-        // nonsense.
-        if (!org.apache.commons.lang3.StringUtils.contains(result, '.')) {
+        // nonsense. (Unless it's a zero to begin with.)
+        if (!result.equals("0")
+          && !org.apache.commons.lang3.StringUtils.contains(result, '.')) {
+
           result = org.apache.commons.lang3.StringUtils.stripStart(result, "0");
         }
 

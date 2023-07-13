@@ -67,6 +67,7 @@ public abstract class SetExportStatus {
         responseCode = Status.FORBIDDEN;
       } else {
         DataSetDB.setDatasetStatus(conn, id, getNewStatus());
+        additionalAction(conn, id);
       }
     } catch (RecordNotFoundException e) {
       responseCode = Status.NOT_FOUND;
@@ -83,4 +84,8 @@ public abstract class SetExportStatus {
    * @return The new dataset status.
    */
   protected abstract int getNewStatus();
+
+  protected void additionalAction(Connection conn, long id) throws Exception {
+    // NOOP
+  }
 }

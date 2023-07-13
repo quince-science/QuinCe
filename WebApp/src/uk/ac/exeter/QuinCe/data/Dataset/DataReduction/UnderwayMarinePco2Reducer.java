@@ -37,29 +37,19 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
     Double equilibratorPressure = measurement
       .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
-    Double co2InGas = measurement.getMeasurementValue(getXCO2Parameter())
+    Double xCO2 = measurement.getMeasurementValue(getXCO2Parameter())
       .getCalculatedValue();
 
-    Double pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
-
-    Double pCo2TEWet = Calculators.calcpCO2TEWet(co2InGas, equilibratorPressure,
-      pH2O);
-    Double fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, co2InGas,
-      equilibratorPressure, equilibratorTemperature);
-
-    Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet,
-      equilibratorTemperature, intakeTemperature);
-
-    Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, equilibratorTemperature,
-      intakeTemperature);
+    Calculator calculator = new Calculator(intakeTemperature, salinity,
+      equilibratorTemperature, equilibratorPressure, xCO2);
 
     // Store the calculated values
     record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
-    record.put("pH₂O", pH2O);
-    record.put("pCO₂ TE Wet", pCo2TEWet);
-    record.put("fCO₂ TE Wet", fCo2TEWet);
-    record.put("pCO₂ SST", pCO2SST);
-    record.put("fCO₂", fCO2);
+    record.put("pH₂O", calculator.pH2O);
+    record.put("pCO₂ TE Wet", calculator.pCo2TEWet);
+    record.put("fCO₂ TE Wet", calculator.fCo2TEWet);
+    record.put("pCO₂ SST", calculator.pCO2SST);
+    record.put("fCO₂", calculator.fCO2);
   }
 
   @Override
@@ -100,5 +90,46 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
   protected String getXCO2Parameter() {
     return "xCO₂ (with standards)";
+  }
+
+  class Calculator {
+
+    // Inputs
+    private final Double intakeTemperature;
+    private final Double salinity;
+    private final Double equilibratorTemperature;
+    private final Double equilibratorPressure;
+    private final Double co2InGas;
+
+    // Outputs
+    protected Double pH2O = null;
+    protected Double pCo2TEWet = null;
+    protected Double fCo2TEWet = null;
+    protected Double pCO2SST = null;
+    protected Double fCO2 = null;
+
+    protected Calculator(Double intakeTemperature, Double salinity,
+      Double equilibratorTemperature, Double equilibratorPressure,
+      Double co2InGas) {
+
+      this.intakeTemperature = intakeTemperature;
+      this.salinity = salinity;
+      this.equilibratorTemperature = equilibratorTemperature;
+      this.equilibratorPressure = equilibratorPressure;
+      this.co2InGas = co2InGas;
+      calculate();
+    }
+
+    protected void calculate() {
+      pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
+      pCo2TEWet = Calculators.calcpCO2TEWet(co2InGas, equilibratorPressure,
+        pH2O);
+      fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, co2InGas,
+        equilibratorPressure, equilibratorTemperature);
+      pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet, equilibratorTemperature,
+        intakeTemperature);
+      fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, equilibratorTemperature,
+        intakeTemperature);
+    }
   }
 }

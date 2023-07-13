@@ -190,6 +190,9 @@ public class ExportBean extends BaseManagedBean {
       outputStream.write(outBytes);
 
       fc.responseComplete();
+
+      dataset.markExported();
+      DataSetDB.setDatasetExported(conn, dataset.getId());
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
     } finally {

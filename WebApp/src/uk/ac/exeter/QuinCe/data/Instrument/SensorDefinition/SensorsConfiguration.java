@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,8 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.GsonBuilder;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
@@ -57,7 +54,8 @@ public class SensorsConfiguration {
    */
   private static final String GET_VARIABLES_SENSOR_TYPES_QUERY = "SELECT "
     + "v.id, v.name, v.attributes, v.properties, "
-    + "s.sensor_type, s.core, s.questionable_cascade, s.bad_cascade, "
+    + "s.sensor_type, s.core, s.attribute_name, s.attribute_value, "
+    + "s.questionable_cascade, s.bad_cascade, "
     + "COALESCE(s.export_column_short, t.name), "
     + "COALESCE(s.export_column_long, t.column_heading), "
     + "COALESCE(s.export_column_code, t.column_code), t.units "
@@ -161,9 +159,10 @@ public class SensorsConfiguration {
 
       long currentVariableId = -1;
       String name = null;
-      LinkedHashMap<String, String> attributes = null;
+      VariableAttributes attributes = null;
       String propertiesJson = null;
       long coreSensorType = -1L;
+      Map<Long, AttributeCondition> attributeConditions = new HashMap<Long, AttributeCondition>();
       List<Long> requiredSensorTypes = new ArrayList<Long>();
       List<Integer> questionableCascades = new ArrayList<Integer>();
       List<Integer> badCascades = new ArrayList<Integer>();
@@ -178,7 +177,8 @@ public class SensorsConfiguration {
             instrumentVariables.put(currentVariableId,
               new Variable(this, currentVariableId, name, attributes,
                 propertiesJson, coreSensorType, requiredSensorTypes,
-                questionableCascades, badCascades, columnHeadings));
+                attributeConditions, questionableCascades, badCascades,
+                columnHeadings));
           }
 
           // Set up the new variable
@@ -187,6 +187,7 @@ public class SensorsConfiguration {
           attributes = makeAttributesMap(records.getString(3));
           propertiesJson = records.getString(4);
           coreSensorType = -1L;
+          attributeConditions = new HashMap<Long, AttributeCondition>();
           requiredSensorTypes = new ArrayList<Long>();
           questionableCascades = new ArrayList<Integer>();
           badCascades = new ArrayList<Integer>();
@@ -199,14 +200,22 @@ public class SensorsConfiguration {
           coreSensorType = sensorTypeId;
         } else {
           requiredSensorTypes.add(sensorTypeId);
-          questionableCascades.add(records.getInt(7));
-          badCascades.add(records.getInt(8));
+
+          String attributeName = records.getString(7);
+          String attributeValue = records.getString(8);
+          if (null != attributeName) {
+            attributeConditions.put(sensorTypeId,
+              new AttributeCondition(attributeName, attributeValue));
+          }
+
+          questionableCascades.add(records.getInt(9));
+          badCascades.add(records.getInt(10));
         }
 
-        String shortName = records.getString(9);
-        String longName = records.getString(10);
-        String code = records.getString(11);
-        String units = records.getString(12);
+        String shortName = records.getString(11);
+        String longName = records.getString(12);
+        String code = records.getString(13);
+        String units = records.getString(14);
 
         SensorType sensorType = this.getSensorType(sensorTypeId);
         columnHeadings.put(sensorType, new ColumnHeading(sensorTypeId,
@@ -216,8 +225,8 @@ public class SensorsConfiguration {
       // Write the last variable
       instrumentVariables.put(currentVariableId,
         new Variable(this, currentVariableId, name, attributes, propertiesJson,
-          coreSensorType, requiredSensorTypes, questionableCascades,
-          badCascades, columnHeadings));
+          coreSensorType, requiredSensorTypes, attributeConditions,
+          questionableCascades, badCascades, columnHeadings));
     } catch (SQLException e) {
       throw new DatabaseException("Error while loading instrument variables",
         e);
@@ -227,19 +236,12 @@ public class SensorsConfiguration {
     }
   }
 
-  private LinkedHashMap<String, String> makeAttributesMap(
-    String attributesJson) {
-    LinkedHashMap<String, String> result;
-
-    if (null == attributesJson) {
-      result = new LinkedHashMap<String, String>();
-    } else {
-      Type mapType = new TypeToken<LinkedHashMap<String, String>>() {
-      }.getType();
-      result = new Gson().fromJson(attributesJson, mapType);
-    }
-
-    return result;
+  private VariableAttributes makeAttributesMap(String attributesJson) {
+    return null == attributesJson ? new VariableAttributes()
+      : new GsonBuilder()
+        .registerTypeAdapter(VariableAttributes.class,
+          new VariableAttributesDeserializer())
+        .create().fromJson(attributesJson, VariableAttributes.class);
   }
 
   /**
@@ -576,7 +578,8 @@ public class SensorsConfiguration {
    *           If any variable ID is invalid
    */
   public boolean requiredForVariables(SensorType sensorType,
-    List<Long> variableIds) throws SensorConfigurationException {
+    List<Long> variableIds, Map<Long, VariableAttributes> varAttributes)
+    throws SensorConfigurationException {
 
     boolean required = false;
 
@@ -585,7 +588,8 @@ public class SensorsConfiguration {
       if (null == variable) {
         throw new SensorConfigurationException("Unknown variable ID " + varId);
       } else {
-        required = requiredForVariable(sensorType, variable);
+        required = requiredForVariable(sensorType, variable,
+          varAttributes.get(varId));
         if (required) {
           break;
         }
@@ -612,16 +616,27 @@ public class SensorsConfiguration {
    * @throws SensorConfigurationException
    *           If the sensor configuration is internally inconsistent
    */
-  public boolean requiredForVariable(SensorType sensorType, Variable variable)
-    throws SensorConfigurationException {
+  public boolean requiredForVariable(SensorType sensorType, Variable variable,
+    VariableAttributes attributes) throws SensorConfigurationException {
 
     boolean required = false;
 
     List<SensorType> variableSensorTypes = variable.getAllSensorTypes(false);
     for (SensorType varSensorType : variableSensorTypes) {
       if (varSensorType.equalsIncludingRelations(sensorType)) {
-        required = true;
-        break;
+
+        // See if the requirement is based on a variable attribute
+        AttributeCondition attrCondition = variable
+          .getAttributeCondition(sensorType);
+        if (null == attrCondition) {
+          required = true;
+        } else {
+          required = attrCondition.matches(attributes);
+        }
+
+        if (required) {
+          break;
+        }
       } else if (varSensorType.dependsOnOtherType()) {
         try {
           SensorType dependsOnType = getSensorType(

@@ -1,6 +1,9 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -56,12 +59,18 @@ public class DataSetsBean extends BaseManagedBean {
 
   public static final String CURRENT_VIEW_ATTR = "datasetListView";
 
+  public static final int DELETE_NOT_ALLOWED = -1;
+
+  public static final int DELETE_ALLOWED = 0;
+
+  public static final int DELETE_EXPORTED_ALLOWED = 1;
+
   /**
    * The data sets for the current instrument
    */
-  private List<DataSet> dataSets;
+  private LinkedHashMap<Long, DataSet> dataSets;
 
-  private List<DataSet> approvalDatasets;
+  private LinkedHashMap<Long, DataSet> approvalDatasets;
 
   /**
    * The file definitions for the current instrument in JSON format for the
@@ -136,12 +145,12 @@ public class DataSetsBean extends BaseManagedBean {
    *
    * @return The data sets
    */
-  public List<DataSet> getDataSets() {
-    return dataSets;
+  public Collection<DataSet> getDataSets() {
+    return null == dataSets ? null : dataSets.values();
   }
 
-  public List<DataSet> getDatasetsForApproval() {
-    return approvalDatasets;
+  public Collection<DataSet> getDatasetsForApproval() {
+    return null == approvalDatasets ? null : approvalDatasets.values();
   }
 
   /**
@@ -163,8 +172,17 @@ public class DataSetsBean extends BaseManagedBean {
         getCurrentInstrument().getId(), true);
       hasFiles = DataFileDB.getFileCount(getDataSource(),
         getCurrentInstrument().getId()) > 0;
-      approvalDatasets = DataSetDB.getDatasetsWithStatus(getDataSource(),
-        DataSet.STATUS_WAITING_FOR_APPROVAL);
+
+      // Approval datasets are sorted by name, which (mostly) also sorts them by
+      // instrument
+      LinkedHashMap<Long, DataSet> approvalDatasetsIn = DataSetDB
+        .getDatasetsWithStatus(getDataSource(),
+          DataSet.STATUS_WAITING_FOR_APPROVAL);
+
+      approvalDatasets = new LinkedHashMap<Long, DataSet>();
+      approvalDatasetsIn.values().stream().sorted(new DatasetNameComparator())
+        .forEach(d -> approvalDatasets.put(d.getId(), d));
+
     } else {
       dataSets = null;
     }
@@ -261,9 +279,7 @@ public class DataSetsBean extends BaseManagedBean {
         entriesJson.add(entry);
       }
 
-      for (int i = 0; i < dataSets.size(); i++) {
-        DataSet dataSet = dataSets.get(i);
-
+      for (DataSet dataSet : dataSets.values()) {
         JsonObject entry = new JsonObject();
 
         entry.addProperty("type", "background");
@@ -302,12 +318,14 @@ public class DataSetsBean extends BaseManagedBean {
 
     json.append('[');
 
-    for (int i = 0; i < dataSets.size(); i++) {
+    int count = -1;
+    for (DataSet dataSet : dataSets.values()) {
+      count++;
       json.append('"');
-      json.append(dataSets.get(i).getName());
+      json.append(dataSet.getName());
       json.append('"');
 
-      if (i < dataSets.size() - 1) {
+      if (count < dataSets.size() - 1) {
         json.append(',');
       }
     }
@@ -315,6 +333,7 @@ public class DataSetsBean extends BaseManagedBean {
     json.append(']');
 
     return json.toString();
+
   }
 
   /**
@@ -506,7 +525,7 @@ public class DataSetsBean extends BaseManagedBean {
     String result = null;
 
     if (null != dataSets) {
-      for (DataSet dataSet : dataSets) {
+      for (DataSet dataSet : dataSets.values()) {
         if (dataSet.getId() == processingMessagesId) {
           result = dataSet.getProcessingMessages().getDisplayString();
           break;
@@ -518,7 +537,7 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   public String getInstrumentName(DataSet dataSet) {
-    return getInstrument(dataSet.getInstrumentId()).getName();
+    return getInstrument(dataSet.getInstrumentId()).getDisplayName();
   }
 
   public String getOwnerName(DataSet dataSet) {
@@ -536,5 +555,40 @@ public class DataSetsBean extends BaseManagedBean {
 
   public void setListView() {
     setCurrentView(NAV_DATASET_LIST);
+  }
+
+  public int canExport(long datasetId) {
+    int result = DELETE_NOT_ALLOWED;
+
+    DataSet dataset = dataSets.get(datasetId);
+
+    if (!dataset.isNrt()) {
+      if (!dataset.hasBeenExported()) {
+        result = DELETE_ALLOWED;
+      } else if (getUser().isAdminUser()) {
+        result = DELETE_EXPORTED_ALLOWED;
+      }
+    }
+
+    return result;
+  }
+
+  public void delete() {
+    try {
+      if (canExport(datasetId) != DELETE_NOT_ALLOWED) {
+        dataSets.get(datasetId).setStatus(DataSet.STATUS_DELETE);
+        DataSetDB.updateDataSet(getDataSource(), dataSets.get(datasetId));
+      }
+    } catch (Exception e) {
+      ExceptionUtils.printStackTrace(e);
+    }
+  }
+
+  class DatasetNameComparator implements Comparator<DataSet> {
+    @Override
+    public int compare(DataSet o1, DataSet o2) {
+      return o1.getName().compareTo(o2.getName());
+    }
+
   }
 }

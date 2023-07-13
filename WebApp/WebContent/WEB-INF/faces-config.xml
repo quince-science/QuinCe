@@ -257,6 +257,15 @@
       <redirect/>
     </navigation-case>
   </navigation-rule>
+  <navigation-rule>
+    <display-name>To Instruments List Page</display-name>
+    <from-view-id>*</from-view-id>
+    <navigation-case>
+      <from-outcome>instrument_list</from-outcome>
+      <to-view-id>/instrument/instrument_list.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
+  </navigation-rule>
   <factory>
     <exception-handler-factory>
       uk.ac.exeter.QuinCe.web.system.CustomExceptionHandlerFactory

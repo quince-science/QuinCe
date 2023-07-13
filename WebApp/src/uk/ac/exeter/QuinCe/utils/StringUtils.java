@@ -577,4 +577,16 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
   public static String replaceNewlines(String str) {
     return null == str ? null : str.replaceAll("\\r?\\n", ";");
   }
+
+  public static void removeBlankTailLines(List<String> list) {
+    boolean blankLine = true;
+    while (blankLine) {
+      String lastLine = list.get(list.size() - 1);
+      if (lastLine.trim().length() == 0) {
+        list.remove(list.size() - 1);
+      } else {
+        blankLine = false;
+      }
+    }
+  }
 }

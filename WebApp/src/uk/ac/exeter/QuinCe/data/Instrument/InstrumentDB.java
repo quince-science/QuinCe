@@ -24,6 +24,10 @@ import com.google.gson.Gson;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.api.nrt.NrtInstrument;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.FileStoreException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
@@ -205,7 +209,7 @@ public class InstrumentDB {
     + "INNER JOIN user u on i.owner = u.id " + "WHERE i.id IN ("
     + "SELECT id FROM instrument WHERE OWNER = ? " + "UNION "
     + "SELECT instrument_id FROM shared_instruments WHERE shared_with = ?"
-    + ") ORDER BY owner_name, i.owner, i.name";
+    + ") ORDER BY owner_name, i.owner, i.platform_name, i.name";
 
   private static final String ALL_INSTRUMENT_LIST_QUERY = "SELECT "
     + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, " // 6
@@ -214,7 +218,7 @@ public class InstrumentDB {
     + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 10
     + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
     + "INNER JOIN user u on i.owner = u.id "
-    + "ORDER BY owner_name, i.owner, i.name";
+    + "ORDER BY owner_name, i.owner, i.platform_name, i.name";
 
   private static final String PLATFORMS_QUERY = "SELECT "
     + "platform_name, platform_code FROM instrument "
@@ -225,6 +229,28 @@ public class InstrumentDB {
 
   private static final String SAVE_PROPERTIES_STATEMENT = "UPDATE instrument "
     + "SET properties = ? WHERE id = ?";
+
+  private static final String DELETE_CALIBRATIONS_STATEMENT = "DELETE FROM calibration "
+    + "WHERE instrument_id = ?";
+
+  private static final String DELETE_RUN_TYPES_STATEMENT = "DELETE FROM run_type "
+    + "WHERE file_definition_id IN "
+    + "(SELECT id FROM file_definition WHERE instrument_id = ?)";
+
+  private static final String DELETE_FILE_COLUMNS_STATEMENT = "DELETE FROM file_column "
+    + "WHERE file_definition_id IN (SELECT id FROM file_definition WHERE instrument_id = ?)";
+
+  private static final String DELETE_FILE_DEFINITIONS_STATEMENT = "DELETE FROM "
+    + "file_definition WHERE instrument_id = ?";
+
+  private static final String DELETE_SHARED_INSTRUMENTS_STATEMENT = "DELETE FROM "
+    + "shared_instruments WHERE instrument_id = ?";
+
+  private static final String DELETE_INSTRUMENT_VARIABLES_STATEMENT = "DELETE FROM "
+    + "instrument_variables WHERE instrument_id = ?";
+
+  private static final String DELETE_INSTRUMENT_STATEMENT = "DELETE FROM "
+    + "instrument WHERE id = ?";
 
   /**
    * Store a new instrument in the database
@@ -548,6 +574,9 @@ public class InstrumentDB {
         stmt.setLong(2, ownerId);
       }
 
+      // The queries above select one row for each variable in each instrument,
+      // meaning we get multiple rows with the details for each of its
+      // variables.
       records = stmt.executeQuery();
 
       long currentInstrument = -1;
@@ -1715,6 +1744,51 @@ public class InstrumentDB {
       stmt.execute();
     } catch (SQLException e) {
       throw new DatabaseException("Error saving instrument properties", e);
+    }
+  }
+
+  public static void deleteInstrument(DataSource dataSource, long instrumentId)
+    throws DatabaseException, RecordNotFoundException, MissingParamException,
+    InstrumentException, SensorGroupsException, FileStoreException,
+    IOException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkPositive(instrumentId, "instrumentId");
+
+    try (Connection conn = dataSource.getConnection()) {
+      Instrument instrument = getInstrument(conn, instrumentId);
+
+      // Make sure there are no datasets attached to the instrument
+      LinkedHashMap<Long, DataSet> datasets = DataSetDB.getDataSets(conn,
+        instrumentId, true);
+      if (datasets.size() > 0) {
+        throw new InstrumentException(
+          "Cannot delete instrument - datasets present");
+      }
+
+      // Delete all data files
+      DataFileDB.deleteAllFiles(conn, ResourceManager.getInstance().getConfig(),
+        instrument, true);
+
+      runDeleteStatement(conn, DELETE_CALIBRATIONS_STATEMENT, instrumentId);
+      runDeleteStatement(conn, DELETE_RUN_TYPES_STATEMENT, instrumentId);
+      runDeleteStatement(conn, DELETE_FILE_COLUMNS_STATEMENT, instrumentId);
+      runDeleteStatement(conn, DELETE_FILE_DEFINITIONS_STATEMENT, instrumentId);
+      runDeleteStatement(conn, DELETE_SHARED_INSTRUMENTS_STATEMENT,
+        instrumentId);
+      runDeleteStatement(conn, DELETE_INSTRUMENT_VARIABLES_STATEMENT,
+        instrumentId);
+      runDeleteStatement(conn, DELETE_INSTRUMENT_STATEMENT, instrumentId);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error deleting instrument", e);
+    }
+  }
+
+  private static void runDeleteStatement(Connection conn, String query,
+    long instrumentId) throws SQLException {
+    try (PreparedStatement stmt = conn.prepareStatement(query)) {
+      stmt.setLong(1, instrumentId);
+      stmt.execute();
     }
   }
 }

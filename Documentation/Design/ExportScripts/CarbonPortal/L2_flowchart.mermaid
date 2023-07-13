@@ -1,0 +1,46 @@
+flowchart TD
+  exported[[L2 Dataset exported from QuinCe]]
+  q_existing[CP Query: Any L1/L2 dataset<br>overlapping exported dataset]:::query
+  any_existing{Any<br>existing<br>datasets?}
+
+  err_multi[ERROR<br>Cannot deprecate<br>multiple datasets]:::error
+  upload_no_flags[Upload dataset<br>with no flags]:::upload
+
+  l1_already_deprecated{"Already<br>deprecated by<br>other dataset(s)?"}
+
+  l1_add_partial_to_other["Add partialUpload to<br>other deprecating dataset(s)"]:::upload
+  upload_with_partial_invo[Upload with partialUpload<br>and isNextVersionOf flags]:::upload
+  upload_with_invo[Upload with<br>isNextVersionOf flag]:::upload
+
+  same_filename{Same filename<br>as upload?}
+  err_diff_filename[ERROR<br>Cannot deprecate L2<br>with differenct filename]:::error
+
+  l2_deprecated{Already<br>deprecated by<br>another dataset?}
+  err_l2_deprecated[ERROR<br>L2 dataset cannot be deprecated<br>by more than one dataset]:::error
+
+  upload_with_invo_l2[Upload with<br>isNextVersionOf flag]:::upload
+
+  exported-->q_existing
+  q_existing-->any_existing
+
+  any_existing-->|No<br>datasets found|upload_no_flags
+  any_existing-->|Multiple datasets found|err_multi
+
+  any_existing--->|L1 found|l1_already_deprecated
+  l1_already_deprecated-->|Yes|l1_add_partial_to_other
+  l1_add_partial_to_other-->upload_with_partial_invo
+
+  l1_already_deprecated-->|No|upload_with_invo
+
+  any_existing----->|L2 found|same_filename
+
+  same_filename-->|No|err_diff_filename
+
+  same_filename-->|Yes|l2_deprecated
+
+  l2_deprecated-->|Yes|err_l2_deprecated
+  l2_deprecated-->|No|upload_with_invo_l2
+
+  classDef upload fill:#42b4cb,stroke:#080
+  classDef error fill:#f55,stroke:#800
+  classDef query fill:#ee0,stroke:#990

@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.utils.FileUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -171,6 +172,24 @@ public class FileStore {
     } else if (!file.isDirectory()) {
       throw new FileStoreException(
         "The path to the instrument directory is not a directory!");
+    }
+  }
+
+  protected static void deleteFolder(String fileStore, long fileDefinitionId)
+    throws FileStoreException, IOException {
+
+    File dir = new File(getStorageDirectory(fileStore, fileDefinitionId));
+    if (dir.exists()) {
+      if (!dir.isDirectory()) {
+        throw new FileStoreException(
+          "The path to the instrument directory is not a directory!");
+      }
+
+      if (!FileUtils.isDirectoryEmpty(dir)) {
+        throw new FileStoreException("Directory is not empty");
+      }
+
+      dir.delete();
     }
   }
 

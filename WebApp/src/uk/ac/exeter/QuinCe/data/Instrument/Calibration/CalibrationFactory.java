@@ -47,8 +47,8 @@ public class CalibrationFactory {
     switch (calibrationType) {
     case ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE: {
       try {
-        result = new ExternalStandard(id, instrument, target, deploymentDate,
-          coefficients);
+        result = ExternalStandardFactory.getExternalStandard(id, instrument,
+          target, deploymentDate, coefficients);
       } catch (CalibrationException e) {
         throw e;
       } catch (Exception e) {

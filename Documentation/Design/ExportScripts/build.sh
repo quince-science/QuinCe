@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# mermain.cli module (npm install mermaid.cli) is required to build mermaid files.
+# mermaid.cli module (npm install mermaid.cli) is required to build mermaid files.
 # Images are checked in anyway so the document can be viewed with minimum effort
 
 #mmdc -w 1500 -i dataset_flow.mermaid -o dataset_flow.png

@@ -243,8 +243,10 @@ public class Measurement implements Comparable<Measurement> {
   }
 
   public void setMeasurementValue(MeasurementValue measurementValue) {
-    measurementValues.put(measurementValue.getSensorType().getId(),
-      measurementValue);
+    if (null != measurementValue) {
+      measurementValues.put(measurementValue.getSensorType().getId(),
+        measurementValue);
+    }
   }
 
   public MeasurementValue getMeasurementValue(SensorType sensorType) {

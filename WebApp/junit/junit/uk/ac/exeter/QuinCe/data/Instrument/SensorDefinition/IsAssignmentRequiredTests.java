@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterEach;
@@ -23,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableAttributes;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -160,6 +163,12 @@ public class IsAssignmentRequiredTests extends TestSetTest {
    * </p>
    */
   private SensorsConfiguration config = null;
+
+  /**
+   * An empty VariableAttributes map for basic tests. The functionality of this
+   * map will be tested elsewhere.
+   */
+  private Map<Long, VariableAttributes> emptyVarAttributes = new HashMap<Long, VariableAttributes>();
 
   /**
    * Read the variable and sensor configuration from the database.
@@ -338,7 +347,8 @@ public class IsAssignmentRequiredTests extends TestSetTest {
       assignDependentSibling(line);
 
       assertEquals(
-        assignments.isAssignmentRequired(getSensorType(line, SENSOR_TYPE_COL)),
+        assignments.isAssignmentRequired(getSensorType(line, SENSOR_TYPE_COL),
+          emptyVarAttributes),
         getExpectedAssignmentRequired(line),
         "Test failed for test set line " + line.getLineNumber());
     } catch (Exception e) {

@@ -1,21 +1,7 @@
-# Old ICES code for G O Sars, deprecated 2018 at ICES, stopped here Jan 2021
-[58GS]
-name = 'G. O. Sars'
-submitter_id = 'OTC'
-cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_GOSars'
-category_code = '31'
-call_sign = 'LMEL'
-creation_date = '2019-03-27T21:01:48Z'
-author_list = 'Skjelvan, Ingunn'
-NRT = 'False'
-
-	[58GS.export]
-	NRT = ['ICOS']
-	L2 = ['ICOS']
-
 # New ICES code for G O Sars - in use from Jan 2021
-[58G2]
-name = 'G. O. Sars'
+[NO-SOOP-G__O__Sars]
+platform_code = '58G2'
+name = 'G.O.Sars'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_GOSars'
 category_code = '31'
@@ -24,15 +10,15 @@ creation_date = '2021-01-20T09:24:23Z'
 author_list = 'Skjelvan, Ingunn'
 NRT = 'True'
 
-	[58G2.export]
+	[NO-SOOP-G__O__Sars.export]
 	NRT = ['ICOS']
 	L2 = ['ICOS']
 
 	[LMEL]
 	platform_id = '58G2'
 
-
-[26NA]
+[NO-SOOP-Nuka__Arctica]
+platform_code = "26NA"
 name = 'Nuka Arctica'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_26NA'
@@ -42,14 +28,15 @@ creation_date = '2019-03-27T14:54:38Z'
 author_list = 'Becker, Meike; Olsen, Are'
 NRT = 'True'
 
-	[26NA.export]
+	[NO-SOOP-Nuka__Arctica.export]
 	NRT = ['ICOS']
 	L2 = ['ICOS']
 
 	[OXYH2]
 	platform_id = '26NA'
 
-[26RA]
+[NO-SOOP-Tukuma__Arctica]
+platform_code = "26RA"
 name = 'Tukuma Arctica'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_26RA'
@@ -59,14 +46,15 @@ creation_date = '2021-01-01T00:00:00Z'
 author_list = 'Becker, Meike; Olsen, Are'
 NRT = 'True'
 
-	[26RA.export]
+	[NO-SOOP-Tukuma__Arctica.export]
 	NRT = ['ICOS']
 	L2 = ['ICOS']
 
 	[OYTR2]
 	platform_id = '26RA'
 
-[65DK]
+[FR-SOOP-France-Brazil]
+platform_code = "65DK"
 name = 'Cap San Lorenzo'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_VOS%20France-Brazil'
@@ -75,7 +63,7 @@ call_sign = 'OXOF2'
 creation_date = '2019-03-27T14:54:38Z'
 author_list = 'Lefèvre, Nathalie'
 
-	[65DK.export]
+	[FR-SOOP-France-Brazil.export]
 	NRT = ['ICOS']
 	L2 = ['ICOS']
 
@@ -83,7 +71,8 @@ author_list = 'Lefèvre, Nathalie'
 	platform_id = '65DK'
 
 
-[SD1030]
+[SailDrone__1030]
+platform_code = "SD1030"
 name = 'Saildrone 1030'
 submitter_id = 'OTC_SAILDRONE'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/SAILDRONE_SD1030'
@@ -97,7 +86,8 @@ author_list = ''
 	platform_id = 'SD1030'
 
 
-[SD1053]
+[SailDrone__1053]
+platform_code = "SD1053"
 name = 'Saildrone 1053'
 submitter_id = 'OTC_SAILDRONE'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/SAILDRONE_SD1053'
@@ -110,7 +100,8 @@ author_list = ''
 	[1801573]
 	platform_id = 'SD1053'
 
-[11SS]
+[BE-SOOP-Simon-Stevin]
+platform_code = "11SS"
 name = 'Simon Stevin'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_11SS'
@@ -121,14 +112,15 @@ author_list = "Gkritzalis, Thanos; Theetaert, Hannelore; Houthoofdt, Robin; T'Ja
 affiliation = 'Flanders Marine Institute (VLIZ), Wandelaarkaai 7, 8400, Ostend, BE'
 NRT = 'True'
 
-	[11SS.export]
+	[BE-SOOP-Simon-Stevin.export]
 	NRT = ['ICOS']
 	L2 = ['ICOS']
 
 	[ORBS]
 	platform_id = '11SS'
 
-[1199]
+[BE-FOS-Thornton__Buoy]
+platform_code = "1199"
 name = 'Thornton Buoy'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_1199'
@@ -139,7 +131,7 @@ author_list = "Gkritzalis, Thanos; Theetaert, Hannelore; Houthoofdt, Robin; T'Ja
 affiliation = 'Flanders Marine Institute (VLIZ), Wandelaarkaai 7, 8400, Ostend, BE'
 NRT = 'True'
 
-	[1199.export]
+	[BE-FOS-Thornton__Buoy.export]
 	NRT = ['ICOS']
 	L2 = ['ICOS']
 
@@ -188,7 +180,8 @@ NRT = 'True'
   NRT = ['ICOS']
   L2 = ['ICOS']
 
-[34FM]
+[DE-SOOP-Finnmaid]
+platform_code = "34FM"
 name = 'Finnmaid'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_BALTIC-VOS'
@@ -199,7 +192,7 @@ author_list = 'Glockzin, Michael; Rehder, Gregor'
 affiliation = 'Leibniz Institute for Baltic Sea Research' 
 NRT = 'False'
 
-  [34FM.export]
+  [DE-SOOP-Finnmaid.export]
   NRT = ['ICOS']
   L2 = ['ICOS']
 

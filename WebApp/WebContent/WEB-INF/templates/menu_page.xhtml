@@ -12,21 +12,23 @@
 <h:body>
   <!--  The main stylesheet goes here because it can then override PrimeFaces styles -->
   <h:outputStylesheet name="style/main.css" />
-  <p:tabMenu id="applicationMenu" activeIndex="#{mainMenuActiveIndex}">
-    <p:menuitem value="Data Sets" outcome="/dataset/dataset_list.xhtml"></p:menuitem>
-    <p:menuitem value="Files" outcome="/data_file/file_list.xhtml"></p:menuitem>
-    <p:menuitem value="Instruments" outcome="/instrument/instrument_list.xhtml"></p:menuitem>
-    <p:menuitem value="Account" outcome="/user/account.xhtml"
-      styleClass="hidden"></p:menuitem>
-    <p:menuitem value="Jobs" outcome="/job/job_list.xhtml"
-      rendered="#{User.jobManager}"></p:menuitem>
-    <p:menuitem value="Waiting for Approval" outcome="/dataset/for_approval_list.xhtml"
-      rendered="#{User.adminUser}"></p:menuitem>
-    <p:menuitem value="NRT Status" outcome="/job/nrt_status.xhtml"
-      rendered="#{User.adminUser}"></p:menuitem>
-    <p:menuitem value="Credits" url="/credits.xhtml" styleClass="creditsMenu"></p:menuitem>
-    <p:menuitem value="Log Out" url="/logout"></p:menuitem>
-  </p:tabMenu>
+  <h:form name="menuForm" onsubmit="return false;">
+    <p:tabMenu styleClass="applicationMenu" activeIndex="#{mainMenuActiveIndex}">
+      <p:menuitem value="Data Sets" outcome="/dataset/dataset_list.xhtml"></p:menuitem>
+      <p:menuitem value="Files" outcome="/data_file/file_list.xhtml"></p:menuitem>
+      <p:menuitem value="Instruments" action="#{instrumentListBean.start}"></p:menuitem>
+      <p:menuitem value="Account" outcome="/user/account.xhtml"
+        styleClass="hidden"></p:menuitem>
+      <p:menuitem value="Jobs" outcome="/job/job_list.xhtml"
+        rendered="#{User.jobManager}"></p:menuitem>
+      <p:menuitem value="Waiting for Approval" outcome="/dataset/for_approval_list.xhtml"
+        rendered="#{User.adminUser}"></p:menuitem>
+      <p:menuitem value="NRT Status" outcome="/job/nrt_status.xhtml"
+        rendered="#{User.adminUser}"></p:menuitem>
+      <p:menuitem value="Credits" url="/credits.xhtml" styleClass="creditsMenu"></p:menuitem>
+      <p:menuitem value="Log Out" url="/logout"></p:menuitem>
+    </p:tabMenu>
+  </h:form>
   <div id="content">
     <ui:insert name="content">No content supplied to template!</ui:insert>
   </div>

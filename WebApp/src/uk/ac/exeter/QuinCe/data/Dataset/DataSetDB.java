@@ -9,6 +9,8 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -56,8 +58,8 @@ public class DataSetDB {
   private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
     + "(instrument_id, name, start, end, status, status_date, "
     + "nrt, properties, last_touched, error_messages, processing_messages, user_messages, "
-    + "min_longitude, max_longitude, min_latitude, max_latitude) "
-    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    + "min_longitude, max_longitude, min_latitude, max_latitude, exported) "
+    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement to update a data set in the database
@@ -69,7 +71,7 @@ public class DataSetDB {
     + "status_date = ?, nrt = ?, properties = ?, last_touched = ?, "
     + "error_messages = ?, processing_messages = ?, user_messages = ?, "
     + "min_longitude = ?, max_longitude = ?, "
-    + "min_latitude = ?, max_latitude = ? WHERE id = ?";
+    + "min_latitude = ?, max_latitude = ?, exported = ? WHERE id = ?";
 
   /**
    * Statement to delete a dataset record
@@ -85,7 +87,7 @@ public class DataSetDB {
     + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, "
     + "d.status_date, d.nrt, d.properties, d.created, d.last_touched, "
     + "COALESCE(d.error_messages, '[]'), processing_messages, user_messages, "
-    + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude "
+    + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude, d.exported "
     + "FROM dataset d WHERE ";
 
   private static final String GET_DATASETS_BETWEEN_DATES_QUERY = DATASET_QUERY_BASE
@@ -102,8 +104,15 @@ public class DataSetDB {
   /**
    * Statement to update the user messages for a dataset
    */
-  private static final String UPDATE_USER_MESSAGES_STATEMENT = "Update dataset set "
+  private static final String UPDATE_USER_MESSAGES_STATEMENT = "UPDATE dataset SET "
     + "user_messages = ? WHERE id = ?";
+
+  private static final String GET_DATASET_COUNTS_QUERY = "SELECT i.id, COUNT(ds.id) "
+    + "FROM instrument i LEFT JOIN dataset ds ON ds.instrument_id = i.id "
+    + "WHERE i.id IN " + DatabaseUtils.IN_PARAMS_TOKEN + " GROUP BY i.id";
+
+  private static final String DATASET_EXPORTED_STATEMENT = "UPDATE dataset "
+    + "SET exported = 1 WHERE id = ?";
 
   private static final String SENSOR_OFFSETS_PROPERTY = "__SENSOR_OFFSETS";
 
@@ -143,14 +152,14 @@ public class DataSetDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static List<DataSet> getDataSets(DataSource dataSource,
+  public static LinkedHashMap<Long, DataSet> getDataSets(DataSource dataSource,
     long instrumentId, boolean includeNrt)
     throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
-    List<DataSet> result = null;
+    LinkedHashMap<Long, DataSet> result = null;
     Connection conn = null;
     try {
       conn = dataSource.getConnection();
@@ -180,13 +189,14 @@ public class DataSetDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static List<DataSet> getDataSets(Connection conn, long instrumentId,
-    boolean includeNrt) throws DatabaseException, MissingParamException {
+  public static LinkedHashMap<Long, DataSet> getDataSets(Connection conn,
+    long instrumentId, boolean includeNrt)
+    throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
-    List<DataSet> result = new ArrayList<DataSet>();
+    LinkedHashMap<Long, DataSet> result = new LinkedHashMap<Long, DataSet>();
 
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -200,7 +210,7 @@ public class DataSetDB {
       while (records.next()) {
         DataSet dataSet = dataSetFromRecord(conn, records);
         if (!dataSet.isNrt() || includeNrt) {
-          result.add(dataSet);
+          result.put(dataSet.getId(), dataSet);
         }
       }
 
@@ -294,10 +304,12 @@ public class DataSetDB {
     double maxLon = record.getDouble(16);
     double minLat = record.getDouble(17);
     double maxLat = record.getDouble(18);
+    boolean exported = record.getBoolean(19);
 
     return new DataSet(id, instrument, name, start, end, status, statusDate,
       nrt, properties, sensorOffsets, createdDate, lastTouched, errorMessage,
-      processingMessages, userMessages, minLon, minLat, maxLon, maxLat);
+      processingMessages, userMessages, minLon, minLat, maxLon, maxLat,
+      exported);
   }
 
   /**
@@ -402,9 +414,10 @@ public class DataSetDB {
       stmt.setDouble(14, dataSet.getMaxLon());
       stmt.setDouble(15, dataSet.getMinLat());
       stmt.setDouble(16, dataSet.getMaxLat());
+      stmt.setBoolean(17, dataSet.hasBeenExported());
 
       if (DatabaseUtils.NO_DATABASE_RECORD != dataSet.getId()) {
-        stmt.setLong(17, dataSet.getId());
+        stmt.setLong(18, dataSet.getId());
       }
 
       stmt.execute();
@@ -675,7 +688,9 @@ public class DataSetDB {
     boolean includeNrt) throws MissingParamException, DatabaseException {
     DataSet result = null;
 
-    List<DataSet> datasets = getDataSets(conn, instrumentId, includeNrt);
+    List<DataSet> datasets = new ArrayList<DataSet>(
+      getDataSets(conn, instrumentId, includeNrt).values());
+
     if (datasets.size() > 0) {
       result = datasets.get(datasets.size() - 1);
     }
@@ -811,7 +826,6 @@ public class DataSetDB {
     PreparedStatement datasetStatement = null;
 
     try {
-
       currentAutoCommitStatus = conn.getAutoCommit();
       setDatasetStatus(conn, dataSet.getId(), DataSet.STATUS_DELETING);
       if (!currentAutoCommitStatus) {
@@ -938,8 +952,9 @@ public class DataSetDB {
     return result;
   }
 
-  public static List<DataSet> getDatasetsWithStatus(DataSource dataSource,
-    int status) throws MissingParamException, DatabaseException {
+  public static LinkedHashMap<Long, DataSet> getDatasetsWithStatus(
+    DataSource dataSource, int status)
+    throws MissingParamException, DatabaseException {
 
     try (Connection conn = dataSource.getConnection()) {
       return getDatasetsWithStatus(conn, status);
@@ -963,12 +978,13 @@ public class DataSetDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static List<DataSet> getDatasetsWithStatus(Connection conn, int status)
+  public static LinkedHashMap<Long, DataSet> getDatasetsWithStatus(
+    Connection conn, int status)
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
 
-    List<DataSet> dataSets = new ArrayList<DataSet>();
+    LinkedHashMap<Long, DataSet> dataSets = new LinkedHashMap<Long, DataSet>();
 
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -978,7 +994,8 @@ public class DataSetDB {
       stmt.setInt(1, status);
       records = stmt.executeQuery();
       while (records.next()) {
-        dataSets.add(dataSetFromRecord(conn, records));
+        DataSet dataset = dataSetFromRecord(conn, records);
+        dataSets.put(dataset.getId(), dataset);
       }
 
     } catch (Exception e) {
@@ -1148,6 +1165,55 @@ public class DataSetDB {
       stmt.execute();
     } catch (SQLException e) {
       throw new DatabaseException("Error storing user messages", e);
+    }
+  }
+
+  public static Map<Long, Integer> getDataSetCounts(DataSource dataSource,
+    List<Long> instruments) throws DatabaseException {
+
+    Map<Long, Integer> result = new HashMap<Long, Integer>();
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(instruments, "instruments", true);
+
+    if (instruments.size() > 0) {
+      try (Connection conn = dataSource.getConnection()) {
+
+        String sql = DatabaseUtils.makeInStatementSql(GET_DATASET_COUNTS_QUERY,
+          instruments.size());
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+          for (int i = 0; i < instruments.size(); i++) {
+            stmt.setLong(i + 1, instruments.get(i));
+          }
+
+          try (ResultSet records = stmt.executeQuery()) {
+            while (records.next()) {
+              result.put(records.getLong(1), records.getInt(2));
+            }
+          }
+        }
+      } catch (SQLException e) {
+        throw new DatabaseException("Error getting dataset counts", e);
+      }
+    }
+
+    return result;
+  }
+
+  public static void setDatasetExported(Connection conn, long datasetId)
+    throws DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkPositive(datasetId, "datasetId");
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(DATASET_EXPORTED_STATEMENT)) {
+      stmt.setLong(1, datasetId);
+      stmt.execute();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error setting dataset export status", e);
     }
   }
 }

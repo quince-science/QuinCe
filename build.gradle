@@ -17,7 +17,7 @@ buildscript {
     classpath 'mysql:mysql-connector-java:8.0.29'
 
     // Gson
-    classpath 'com.google.code.gson:gson:2.8.8'
+    classpath 'com.google.code.gson:gson:2.10.1'
   }
 }
 
@@ -44,11 +44,6 @@ gretty {
 
 repositories {
   mavenCentral()
-
-  // primefaces repo needed for the cupertino theme
-  maven {
-    url "https://repository.primefaces.org"
-  }
 }
 
 dependencies {
@@ -79,7 +74,7 @@ dependencies {
   implementation 'org.flywaydb:flyway-core:7.15.0'
 
   // Google GSON library
-  implementation 'com.google.code.gson:gson:2.8.8'
+  implementation 'com.google.code.gson:gson:2.10.1'
 
   // JAX-B dependencies for JDK 9+
   implementation 'javax.xml.bind:jaxb-api:2.3.1'

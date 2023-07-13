@@ -567,8 +567,14 @@ table.fileDates {
 
 .actionIcon {
   margin-right: 7px;
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
+}
+
+.actionIconLarge {
+  margin-right: 7px;
+  width: 30px;
+  height: 30px;
 }
 
 .textActionIcon {
@@ -667,7 +673,11 @@ table.dialogTable td.dialogTableCell {
 }
 
 .centeredCell {
-  text-align: center
+  text-align: center;
+}
+
+.rightCell {
+  text-align: right;
 }
 
 .note {
@@ -742,13 +752,13 @@ form.inline {
   display: inline;
 }
 
-#applicationMenu > ul > li:nth-last-child(-n + 2) {
-  float: right;
+.applicationMenu > ul > li:nth-last-child(-n + 2) {
+  float: right !important;
   border: none;
   background: none;
 }
 
-#applicationMenu > ul > li:nth-last-child(-n + 2) a {
+.applicationMenu > ul > li:nth-last-child(-n + 2) a {
   text-decoration: underline;
 }
 

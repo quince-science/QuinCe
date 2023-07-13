@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.api.export;
 
 import java.sql.Connection;
-import java.util.List;
+import java.util.Collection;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -68,8 +68,8 @@ public class ExportList {
       ResourceManager resourceManager = ResourceManager.getInstance();
 
       conn = resourceManager.getDBDataSource().getConnection();
-      List<DataSet> datasets = DataSetDB.getDatasetsWithStatus(conn,
-        DataSet.STATUS_READY_FOR_EXPORT);
+      Collection<DataSet> datasets = DataSetDB
+        .getDatasetsWithStatus(conn, DataSet.STATUS_READY_FOR_EXPORT).values();
 
       JsonArray json = new JsonArray();
 

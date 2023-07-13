@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -16,13 +15,7 @@ import uk.ac.exeter.QuinCe.utils.ParameterException;
  * @author Steve Jones
  *
  */
-public class ExternalStandard extends Calibration {
-
-  private static final List<String> HIDDEN_SENSOR_TYPES;
-
-  static {
-    HIDDEN_SENSOR_TYPES = Arrays.asList("xH₂O (with standards)");
-  }
+public abstract class ExternalStandard extends Calibration {
 
   /**
    * Create an empty external standard placeholder that isn't bound to a
@@ -31,21 +24,8 @@ public class ExternalStandard extends Calibration {
    * @param instrumentId
    *          The instrument ID
    */
-  public ExternalStandard(Instrument instrument) {
+  protected ExternalStandard(Instrument instrument) {
     super(instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE);
-  }
-
-  /**
-   * Creates an empty external standard for a specified standard
-   *
-   * @param instrumentid
-   *          The instrument ID
-   * @param standard
-   *          The standard
-   */
-  protected ExternalStandard(Instrument instrument, String standard) {
-    super(instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
-      standard);
   }
 
   /**
@@ -122,7 +102,9 @@ public class ExternalStandard extends Calibration {
   @Override
   public List<CalibrationCoefficient> getEditableCoefficients() {
     return getCoefficients().stream()
-      .filter(c -> !HIDDEN_SENSOR_TYPES.contains(c.getName()))
+      .filter(c -> !getHiddenSensorTypes().contains(c.getName()))
       .collect(Collectors.toList());
   }
+
+  protected abstract List<String> getHiddenSensorTypes();
 }

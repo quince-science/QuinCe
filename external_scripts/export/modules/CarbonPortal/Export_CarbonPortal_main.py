@@ -12,56 +12,40 @@ https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-i
 
 """
 
-import logging
-import traceback
+import os.path
+import toml
+import warnings
 
-from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_code, get_platform_type, \
-    is_NRT, get_L1_filename, get_export_filename
-from modules.CarbonPortal.Export_CarbonPortal_metadata import build_metadata_package
-from modules.CarbonPortal.Export_CarbonPortal_SQL import sql_investigate, sql_commit
-from modules.CarbonPortal.Export_CarbonPortal_http import upload_to_cp
+from modules.CarbonPortal.CarbonPortalException import CarbonPortalException
+from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_type, is_NRT, \
+    get_platform_name, get_start_time, get_end_time
+from modules.CarbonPortal.Export_CarbonPortal_http import get_auth_cookie, get_station_uri, get_overlapping_datasets, \
+    get_existing_files, upload_file
 
-OBJ_SPEC_URI = {}
-OBJ_SPEC_URI['L0'] = 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject'
+with open('config_carbon.toml') as f: config = toml.load(f)
+warnings.simplefilter("ignore", FutureWarning)
 
-OBJ_SPEC_URI['SOOP'] = {}
-OBJ_SPEC_URI['SOOP']['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product_v2'
-OBJ_SPEC_URI['SOOP']['L2'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product'
-
-OBJ_SPEC_URI['FOS'] = {}
-OBJ_SPEC_URI['FOS']['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL1Product'
-OBJ_SPEC_URI['FOS']['L2'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL2Product'
+OBJ_SPEC_URI = {
+    'L0': 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject',
+    'SOOP': {
+        'L1': 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product_v2',
+        'L2': 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product'
+    },
+    'FOS': {
+        'L1': 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL1Product',
+        'L2': 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL2Product'
+    }
+}
 
 SOOP_PLATFORMS = ['31', '32', '3B']
 FOS_PLATFORMS = ['41']
 
 
-def export_file_to_cp(manifest, filename, dataset_zip, index, auth_cookie, upload, err_msg, L0, L0_hashsums=[]):
-    """
-    Upload routine for NRT data files
+def get_data_object_spec(platform_type, level):
+    result = None
 
-    Uploads both metadata and data object
-
-    L0_hashsums is list of L0 hashsums associated with L1 object, only applicable
-    for L1 exports. Currently not in use on request by Oleg.
-    """
-    success = 0
-    CP_pid = ''
-
-    file = get_file_from_zip(dataset_zip, filename)
-
-    hashsum = get_hashsum(file)
-    platform_code = get_platform_code(manifest)
-    platform_type = get_platform_type(platform_code)
-    nrt = is_NRT(manifest)  # True/False
-    L1_filename = get_L1_filename(manifest)
-
-    uri = None
-    level = None
-
-    if L0:
-        uri = OBJ_SPEC_URI['L0']
-        level = 'L0'
+    if level == 'L0':
+        result = OBJ_SPEC_URI['L0']
     else:
         uri_platform_type = None
         if platform_type in SOOP_PLATFORMS:
@@ -69,46 +53,95 @@ def export_file_to_cp(manifest, filename, dataset_zip, index, auth_cookie, uploa
         elif platform_type in FOS_PLATFORMS:
             uri_platform_type = 'FOS'
 
-        if nrt:
-            uri = OBJ_SPEC_URI[uri_platform_type]['L1']
-            level = 'L1'
+        if level == 'L1':
+            result = OBJ_SPEC_URI[uri_platform_type]['L1']
         else:
-            uri = OBJ_SPEC_URI[uri_platform_type]['L2']
-            level = 'L2'
+            result = OBJ_SPEC_URI[uri_platform_type]['L2']
 
-    logging.debug(f'\n\n --- Processing {level} file: {filename}')
+    return result
 
-    export_filename = get_export_filename(file, manifest, level)
 
-    logging.debug(f'Checking for previous export of {export_filename}')
-    [prev_exp, is_next_version, err_msg] = sql_investigate(
-        export_filename, hashsum, level, nrt, platform_code, err_msg)
+def get_filename(dataset, manifest):
+    format_dir = 'ICOS OTC'
+    platform_name = get_platform_name(manifest)
+    if platform_name == 'NO-SOOP-Nuka__Arctica':
+        format_dir = format_dir + ' No Salinity Flags'
 
-    if prev_exp['status'] == 'EXISTS':
-        success = 2
-    elif prev_exp['status'] == 'NEW' or prev_exp['status'] == 'UPDATE':
-        meta = build_metadata_package(
-            file, manifest, index, hashsum,
-            uri, level, L0_hashsums, is_next_version)
+    return os.path.join(dataset['name'], 'dataset', format_dir, f'{dataset["name"]}.csv')
 
-        if upload:
-            try:
-                upload_status, response = upload_to_cp(
-                    auth_cookie, file, hashsum, meta, uri)
-                logging.debug(f'Upload status: {upload_status}')
-                if upload_status:
-                    success = 1
-                    db_status = sql_commit(
-                        export_filename, hashsum, filename, level, L1_filename)
-                    logging.debug(f'{export_filename}: SQL commit {db_status}')
-                    if response.decode('utf-8'):
-                        CP_pid = "https://hdl.handle.net/" + response.decode('utf-8')
-                    else:
-                        CP_pid = ''
-            except Exception:
-                tb = traceback.format_exc()
-                err_msg += f'Failed to upload: {export_filename}, \nException: {tb}'
+
+def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
+    station_uri = get_station_uri(get_platform_name(manifest, False))
+
+    platform_type = get_platform_type(get_platform_name(manifest, True))
+    upload_level = 'L1' if is_NRT(manifest) else 'L2'
+
+    existing_datasets = get_overlapping_datasets(station_uri, get_start_time(manifest), get_end_time(manifest))
+
+    data_object_spec = get_data_object_spec(platform_type, upload_level)
+    data_filename = get_filename(dataset, manifest)
+    deprecated_id = []
+
+    if len(existing_datasets) > 1:
+        raise CarbonPortalException(f'Dataset would deprecate multiple datasets {existing_datasets["dobj"]}')
+    elif existing_datasets.empty:
+        # Just to be explicit: We will upload the dataset and don't need to deprecate anything
+        pass
+    else:
+        deprecated_dataset = existing_datasets.iloc[0]
+        if upload_level == 'L1':
+            # We need to deprecate the previous dataset
+            if int(deprecated_dataset['dataLevel']) > 1:
+                raise CarbonPortalException(f'Cannot deprecate L{deprecated_dataset["dataLevel"]} dataset with L1')
+            deprecated_id.append(deprecated_dataset['hashSum'])
+        elif upload_level == 'L2':
+            if int(deprecated_dataset['dataLevel']) == 1:
+                deprecated_id.append(deprecated_dataset['hashSum'])
+            else:
+                if deprecated_dataset['fileName'] != os.path.basename(data_filename):
+                    raise CarbonPortalException(
+                        f'Cannot deprecate L2 dataset with different filename ({os.path.basename(data_filename)} -> {deprecated_dataset["fileName"]})')
+                elif 'nextVersion' in deprecated_dataset:
+                    raise CarbonPortalException(
+                        f'Cannot deprecate L2 dataset because it already has a next version ({deprecated_dataset["dobj"]})')
+                else:
+                    deprecated_id.append(deprecated_dataset['hashSum'])
+
         else:
-            success = 2
+            raise CarbonPortalException(f'Unrecognised Data Level {upload_level}')
 
-    return success, hashsum, err_msg, CP_pid
+    # Now we upload the main (L1 or L2) dataset, deprecating the specified ID if required
+    cookie = get_auth_cookie()
+
+    # Upload all L0 files first - we need to link to them when we upload the main file
+    link_hashums = []
+    l0_basenames = [os.path.basename(file) for file in raw_filenames]
+    existing_l0 = get_existing_files(station_uri, l0_basenames, OBJ_SPEC_URI['L0'])
+
+    l0_index = -1
+    for l0_file in raw_filenames:
+        l0_index += 1
+        basename = os.path.basename(l0_file)
+        file_content = get_file_from_zip(dataset_zip, l0_file)
+        hashsum = get_hashsum(file_content, True)
+
+        upload_l0 = True
+        previous_l0 = []
+        existing_hashsums = existing_l0.loc[existing_l0['fileName'] == basename]['hashSum'].values
+        if hashsum in existing_hashsums:
+            upload_l0 = False
+        else:
+            if len(existing_hashsums) > 0:
+                previous_l0.append(existing_hashsums[0])
+
+        if upload_l0:
+            l0_upload_result = upload_file(cookie, dataset_zip, manifest, l0_index, l0_file, 'L0',
+                                           OBJ_SPEC_URI['L0'], previous_l0, None)
+            if not l0_upload_result:
+                raise CarbonPortalException('Failed to upload L0 file(s). Aborting')
+
+        link_hashums.append(hashsum)
+
+    # Now upload the main data object. L1 objects don't get linked to L0
+    return upload_file(cookie, dataset_zip, manifest, 0, data_filename,
+                       upload_level, data_object_spec, deprecated_id, link_hashums)

@@ -12,11 +12,11 @@ import hashlib
 import datetime
 import toml
 from zipfile import ZipFile
+import base64
 
 from modules.Common.QuinCe import get_export_dataset
 
 with open('platforms.toml') as f: platform = toml.load(f)
-
 
 def construct_datafilename(dataset,destination,key):
   if destination == 'CP': directory = 'ICOS OTC'
@@ -47,17 +47,31 @@ def get_start_date(manifest):
     manifest['manifest']['metadata']['startdate'],
     '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y%m%d')
 
+def get_start_time(manifest):
+  return datetime.datetime.strptime(
+    manifest['manifest']['metadata']['startdate'],
+    '%Y-%m-%dT%H:%M:%S.%fZ')
+
+def get_end_time(manifest):
+  return datetime.datetime.strptime(
+    manifest['manifest']['metadata']['enddate'],
+    '%Y-%m-%dT%H:%M:%S.%fZ')
+
 
 def get_platform_code(manifest):
   return manifest['manifest']['metadata']['platformCode']
 
 
-def get_platform_name(platform_code):
-  return platform[platform_code]['name']
+def get_platform_name(manifest, encode_for_toml=False):
+  result = manifest['manifest']['metadata']['platformName']
+  if encode_for_toml:
+    result = result.replace(" ", "__").replace(".", "__")
+
+  return result
 
 
-def get_platform_type(platform_code):
-  return platform[platform_code]['category_code']
+def get_platform_type(platform_name):
+  return platform[platform_name]['category_code']
 
 
 def is_NRT(manifest):
@@ -135,9 +149,14 @@ def get_file_from_zip(zip_folder,filename):
   return file
 
 
-def get_hashsum(filename):
+def get_hashsum(filename, b64=False):
   ''' returns a 256 hashsum corresponding to input file. '''
   logging.debug(f'Generating hashsum for datafile {filename}')
   with open(filename) as f: content = f.read()
 
-  return hashlib.sha256(content.encode('utf-8')).hexdigest()
+  hashsum = hashlib.sha256(content.encode('utf-8'))
+
+  return (base64.b64encode(hashsum.digest())).decode().strip('=') if b64 else hashsum.hexdigest()
+
+def b64_to_b64_url(b64):
+  return b64.replace('+', '-').replace('/', '_').replace('=', '')

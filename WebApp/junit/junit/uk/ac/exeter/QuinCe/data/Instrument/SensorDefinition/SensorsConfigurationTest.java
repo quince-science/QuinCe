@@ -13,7 +13,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.flywaydb.test.annotation.FlywayTest;
@@ -27,6 +29,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableAttributes;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -83,6 +86,12 @@ public class SensorsConfigurationTest extends BaseTest {
    * @see #initVarList()
    */
   private List<Long> invalidVarList = null;
+
+  /**
+   * An empty VariableAttributes map for basic tests. The functionality of this
+   * map will be tested elsewhere.
+   */
+  private Map<Long, VariableAttributes> emptyVarAttributes = new HashMap<Long, VariableAttributes>();
 
   /**
    * Build a standalone {@link SensorsConfiguration} from the test database.
@@ -872,9 +881,12 @@ public class SensorsConfigurationTest extends BaseTest {
     SensorsConfiguration config = getResourceManagerConfig();
     SensorType sensorType = config.getSensorType("Equilibrator Temperature");
 
-    assertTrue(config.requiredForVariables(sensorType, var1List));
-    assertFalse(config.requiredForVariables(sensorType, var2List));
-    assertTrue(config.requiredForVariables(sensorType, bothVarsList));
+    assertTrue(
+      config.requiredForVariables(sensorType, var1List, emptyVarAttributes));
+    assertFalse(
+      config.requiredForVariables(sensorType, var2List, emptyVarAttributes));
+    assertTrue(config.requiredForVariables(sensorType, bothVarsList,
+      emptyVarAttributes));
   }
 
   /**
@@ -904,9 +916,12 @@ public class SensorsConfigurationTest extends BaseTest {
     SensorsConfiguration config = getResourceManagerConfig();
     SensorType sensorType = config.getSensorType("xCO₂ (with standards)");
 
-    assertTrue(config.requiredForVariables(sensorType, var1List));
-    assertFalse(config.requiredForVariables(sensorType, var2List));
-    assertTrue(config.requiredForVariables(sensorType, bothVarsList));
+    assertTrue(
+      config.requiredForVariables(sensorType, var1List, emptyVarAttributes));
+    assertFalse(
+      config.requiredForVariables(sensorType, var2List, emptyVarAttributes));
+    assertTrue(config.requiredForVariables(sensorType, bothVarsList,
+      emptyVarAttributes));
   }
 
   /**
@@ -936,9 +951,12 @@ public class SensorsConfigurationTest extends BaseTest {
     SensorsConfiguration config = getResourceManagerConfig();
     SensorType sensorType = config.getSensorType("Salinity");
 
-    assertTrue(config.requiredForVariables(sensorType, var1List));
-    assertTrue(config.requiredForVariables(sensorType, var2List));
-    assertTrue(config.requiredForVariables(sensorType, bothVarsList));
+    assertTrue(
+      config.requiredForVariables(sensorType, var1List, emptyVarAttributes));
+    assertTrue(
+      config.requiredForVariables(sensorType, var2List, emptyVarAttributes));
+    assertTrue(config.requiredForVariables(sensorType, bothVarsList,
+      emptyVarAttributes));
   }
 
   /**
@@ -967,9 +985,12 @@ public class SensorsConfigurationTest extends BaseTest {
     SensorsConfiguration config = getResourceManagerConfig();
     SensorType sensorType = config.getSensorType("Atmospheric Pressure");
 
-    assertFalse(config.requiredForVariables(sensorType, var1List));
-    assertFalse(config.requiredForVariables(sensorType, var2List));
-    assertFalse(config.requiredForVariables(sensorType, bothVarsList));
+    assertFalse(
+      config.requiredForVariables(sensorType, var1List, emptyVarAttributes));
+    assertFalse(
+      config.requiredForVariables(sensorType, var2List, emptyVarAttributes));
+    assertFalse(config.requiredForVariables(sensorType, bothVarsList,
+      emptyVarAttributes));
   }
 
   /**
@@ -991,8 +1012,10 @@ public class SensorsConfigurationTest extends BaseTest {
     SensorType childType = config
       .getSensorType("Equilibrator Pressure (absolute)");
 
-    assertTrue(config.requiredForVariables(parentType, var1List));
-    assertTrue(config.requiredForVariables(childType, var1List));
+    assertTrue(
+      config.requiredForVariables(parentType, var1List, emptyVarAttributes));
+    assertTrue(
+      config.requiredForVariables(childType, var1List, emptyVarAttributes));
   }
 
   /**
@@ -1012,7 +1035,8 @@ public class SensorsConfigurationTest extends BaseTest {
     SensorType sensorType = config.getSensorType("Salinity");
 
     assertThrows(SensorConfigurationException.class, () -> {
-      config.requiredForVariables(sensorType, invalidVarList);
+      config.requiredForVariables(sensorType, invalidVarList,
+        emptyVarAttributes);
     });
   }
 

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 32 32"
+   x="0px"
+   y="0px"
+   version="1.1"
+   id="svg698"
+   sodipodi:docname="sensor_calibration.svg"
+   width="32"
+   height="32"
+   inkscape:version="1.2 (dc2aeda, 2022-05-15)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs702" />
+  <sodipodi:namedview
+     id="namedview700"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="22.25"
+     inkscape:cx="9.1910112"
+     inkscape:cy="20"
+     inkscape:window-width="1390"
+     inkscape:window-height="1040"
+     inkscape:window-x="0"
+     inkscape:window-y="44"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg698" />
+  <polygon
+     points="29.61,5.79 28.39,4.21 17,12.97 17,12 15,12 15,14 15.66,14 4,22.97 4,1 2,1 2,28 1,28 1,30 2,30 2,31 4,31 4,30 31,30 31,28 4,28 4,25.49 "
+     id="polygon680" />
+  <rect
+     x="11"
+     y="11"
+     width="2"
+     height="2"
+     id="rect682" />
+  <rect
+     x="16"
+     y="17"
+     width="2"
+     height="2"
+     id="rect684" />
+  <rect
+     x="23"
+     y="14"
+     width="2"
+     height="2"
+     id="rect686" />
+  <rect
+     x="25"
+     y="10"
+     width="2"
+     height="2"
+     id="rect688" />
+  <rect
+     x="7"
+     y="16"
+     width="2"
+     height="2"
+     id="rect690" />
+  <rect
+     x="20"
+     y="6"
+     width="2"
+     height="2"
+     id="rect692" />
+  <text
+     x="0"
+     y="47"
+     fill="#000000"
+     font-size="5px"
+     font-weight="bold"
+     font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif"
+     id="text694">Created by papergarden</text>
+  <text
+     x="0"
+     y="52"
+     fill="#000000"
+     font-size="5px"
+     font-weight="bold"
+     font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif"
+     id="text696">from the Noun Project</text>
+</svg>

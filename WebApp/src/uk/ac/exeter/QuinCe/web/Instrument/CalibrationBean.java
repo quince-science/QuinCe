@@ -162,8 +162,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     if (ok) {
       try {
-        datasets = DataSetDB.getDataSets(getDataSource(), instrument.getId(),
-          true);
+        datasets = new ArrayList<DataSet>(DataSetDB
+          .getDataSets(getDataSource(), instrument.getId(), true).values());
         dbInstance = getDbInstance();
         loadCalibrations();
         affectedDatasets = null;
@@ -426,7 +426,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *
    * @return The new object.
    */
-  protected abstract Calibration initNewCalibration();
+  protected abstract Calibration initNewCalibration() throws Exception;
 
   /**
    * Get the JSON for the individual calibrations.
@@ -512,8 +512,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
     this.selectedCalibrationId = selectedCalibrationId;
   }
 
-  public void loadSelectedCalibration()
-    throws RecordNotFoundException, MissingParamException, DatabaseException {
+  public void loadSelectedCalibration() throws Exception {
 
     calibration = null;
 

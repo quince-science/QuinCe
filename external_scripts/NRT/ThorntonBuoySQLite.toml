@@ -17,6 +17,9 @@
     "Pro Oceanus voltage",
     "SST",
     "Salinity",
+    "Sound Velocity",
+    "Specific Conductivity",
+    "Conductivity",
     "Pressure (depth)",
     "Oxygen",
     "Battery Voltage",
@@ -24,15 +27,12 @@
     "Wind Speed",
     "Air Temperature",
     "Atmospheric Pressure",
+    "Air Humidity",
     "Latitude",
     "Longitude",
     "TDGP Temp 1",
     "TDGP Temp 2",
     "TDGP Pressure",
-    "Victron Voltage",
-    "Victron Current",
-    "Victron Panel Power",
-    "Victron Panel Voltage"
   ]
 
   # Timestamp column.
@@ -59,8 +59,6 @@
       ["Humidity", "Humidity_Avg"],
       ["Humidity sensor temperature", "HumidTemp_Avg"],
       ["Cell gas pressure", "GasStrPressure_Avg"],
-      ["IRGA detector temperature", "IRGAdetTemp_Avg"],
-      ["IRGA source temperature", "IRGAsourceTemp_Avg"],
       ["Pro Oceanus voltage", "SupplyVoltage_Avg"]
     ]
 
@@ -83,8 +81,6 @@
       ["Humidity", "Humidity_Avg"],
       ["Humidity sensor temperature", "HumidTemp_Avg"],
       ["Cell gas pressure", "GasStrPressure_Avg"],
-      ["IRGA detector temperature", "IRGAdetTemp_Avg"],
-      ["IRGA source temperature", "IRGAsourceTemp_Avg"],
       ["Pro Oceanus voltage", "SupplyVoltage_Avg"]
     ]
 
@@ -96,9 +92,12 @@
     mapping = [
       ["Timestamp", "TimeStamp"],
       ["SST", "temperature"],
-      ["Salinity", "salinity"],
+      ["Conductivity", "conductivity"],
       ["Pressure (depth)", "pressure"],
-      ["Oxygen", "oxygen"]
+      ["Oxygen", "oxygen"],
+      ["Salinity", "salinity"],
+      ["Sound Velocity", "soundvelo"],
+      ["Specific Conductivity", "specificcond"]
     ]
 
     timestamp_format = "%Y-%m-%d %H:%M:%S"
@@ -122,11 +121,12 @@
       ["Wind Speed", "windspeed"],
       ["Air Temperature", "temperature"],
       ["Atmospheric Pressure", "pressure"],
+      ["Air Humidity", "humidity"],
       ["Latitude", "latitude"],
       ["Longitude", "longitude"]
     ]
 
-    timestamp_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    timestamp_format = "%Y-%m-%d %H:%M:%S"
 
   [[input.tables]]
     name = "tdgp"
@@ -134,21 +134,8 @@
     mapping = [
       ["Timestamp", "TimeStamp"],
       ["TDGP Temp 1", "temperature_1"],
-      ["TDGP Temp 2", "temperature_2"],
-      ["TDGP Pressure", "pressure"]
+      ["TDGP Pressure", "pressure"],
+      ["TDGP Temp 2", "temperature_2"]
     ]
 
-    timestamp_format = "\"%Y-%m-%d %H:%M:%S\""
-
-  [[input.tables]]
-    name = "victron"
-
-    mapping = [
-      ["Timestamp", "timestamp"],
-      ["Victron Voltage", "battv"],
-      ["Victron Current", "chargecurrent"],
-      ["Victron Panel Power", "panelpower"],
-      ["Victron Panel Voltage", "panelvoltage"]
-    ]
-
-    timestamp_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    timestamp_format = "%Y-%m-%d %H:%M:%S"

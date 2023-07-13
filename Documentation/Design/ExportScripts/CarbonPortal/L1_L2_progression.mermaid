@@ -1,0 +1,45 @@
+flowchart TB
+  subgraph nrt1[NRT v1]
+    nrt1_1[Jul 1]
+    nrt1_2[Jul 2]
+    nrt1_3[Jul 3]
+    nrt1_1~~~nrt1_2
+    nrt1_2~~~nrt1_3
+  end
+
+  subgraph nrt2[NRT v2]
+    nrt2_1[Jul 1]
+    nrt2_2[Jul 2]
+    nrt2_3[Jul 3]
+    nrt2_4[Jul 4]
+    nrt2_1~~~nrt2_2
+    nrt2_2~~~nrt2_3
+    nrt2_3~~~nrt2_4
+  end
+
+  nrt1-->|New NRT data received|nrt2
+
+  subgraph nodat[<i>Not in dataset</i>]
+    alone_jl1[Jul 1]
+  end
+
+  nrt2-->nodat
+
+  subgraph l2[L2]
+    l2_1[Jul 2]
+    l2_2[Jul 3]
+    l2_1~~~l2_2
+  end
+
+  nrt2-->|L2 created|l2
+
+  subgraph nrt3[NRT v3]
+    nrt3_4[Jul 4]
+  end
+
+  nrt2-->|NRT reset|nrt3
+
+  style nodat padding-left:10px,fill:#eee,stroke:#888,stroke-width:2px,stroke-dasharray: 5 5
+  style l2 fill:#b7ddf1,stroke:#0686B5
+
+

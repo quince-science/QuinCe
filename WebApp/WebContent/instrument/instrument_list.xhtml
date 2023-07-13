@@ -16,25 +16,49 @@
 
     function goToDiagnosticsQC(id) {
       $('#instrumentListForm\\:diagnosticQCInstrumentId').val(id);
-        $('#instrumentListForm\\:diagnostQCLink').click();
-        return false;
-      }
+      $('#instrumentListForm\\:diagnostQCLink').click();
+      return false;
+    }
 
-      function goToCalibrations(id) {
-        $('#instrumentListForm\\:calibrationsInstrumentId').val(id);
-        $('#instrumentListForm\\:showCalibrationsLink').click();
-        return false;
-      }
+    function goToCalibrations(id) {
+      $('#instrumentListForm\\:calibrationsInstrumentId').val(id);
+      $('#instrumentListForm\\:showCalibrationsLink').click();
+      return false;
+    }
 
-      function goToCalculationCoefficients(id) {
-        $('#instrumentListForm\\:calculationCoefficientsInstrumentId').val(id);
-        $('#instrumentListForm\\:showCalculationCoefficientsLink').click();
-        return false;
-      }
+    function goToCalculationCoefficients(id) {
+      $('#instrumentListForm\\:calculationCoefficientsInstrumentId').val(id);
+      $('#instrumentListForm\\:showCalculationCoefficientsLink').click();
+      return false;
+    }
+
+    function confirmInstrumentDelete(id, name) {
+      $('#instrumentListForm\\:deleteInstrumentId').val(id);
+      $('#deleteInstrumentName')[0].innerHTML = name;
+      PF('confirmDelete').show();
+    }
+
+    function deleteInstrument() {
+      $('#instrumentListForm\\:deleteInstrumentLink').click();
+      return false;
+    }
     </script>
   </ui:define>
   <ui:define name="content">
     <h:form id="instrumentListForm" method="post" accept-charset="utf8">
+
+      <p:dialog widgetVar="confirmDelete" modal="true" resizable="false"
+        closeable="false" header="Delete Instrument?">
+        Are you sure you want to delete the instrument
+        <br/>
+        "<span id="deleteInstrumentName"></span>"?
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:button value="Yes" ajax="false" onclick="deleteInstrument(); return false;"/>
+          <p:button value="No" ajax="false"
+            onclick="PF('confirmDelete').hide(); return false;"/>
+        </h:panelGrid>
+      </p:dialog>
+
       <h:inputHidden id="standardsInstrumentId"
         value="#{externalStandardsBean.instrumentId}" />
       <p:commandLink id="showStandardsLink" ajax="false"
@@ -55,6 +79,11 @@
       <p:commandLink id="showCalculationCoefficientsLink" ajax="false"
         action="#{calculationCoefficientsBean.start}" />
 
+      <h:inputHidden id="deleteInstrumentId"
+        value="#{instrumentListBean.chosenInstrument}" />
+      <p:commandLink id="deleteInstrumentLink" ajax="false"
+        action="#{instrumentListBean.deleteInstrument}" />
+
       <h:panelGrid columns="1" cellpadding="5"
         styleClass="buttonPanel contentList">
         <p:commandButton value="Add New Instrument" ajax="false"
@@ -62,40 +91,68 @@
       </h:panelGrid>
       <p:dataTable id="instruments" var="instrument"
         value="#{instrumentListBean.instrumentList}" styleClass="pageBlock">
+        <p:column rendered="#{User.adminUser}">
+          <f:facet name="header">Owner</f:facet>
+          <b><h:outputText value="#{instrument.owner.surname}, #{instrument.owner.givenName}"/></b>
+        </p:column>
+        <p:column>
+          <f:facet name="header">Platform</f:facet>
+          <b><h:outputText value="#{instrument.platformName}"/></b>
+        </p:column>
         <p:column>
           <f:facet name="header">Instrument Name</f:facet>
-          <b>
-            <ui:fragment rendered="#{User.adminUser}">
-              <h:outputText value="#{instrument.owner.surname}, #{instrument.owner.givenName} - "/>
+          <b><h:outputText value="#{instrument.name}"/></b>
+        </p:column>
+        <p:column styleClass="centeredCell">
+          <f:facet name="header">Configuration</f:facet>
+            <p:commandLink onclick="goToCalibrations(#{instrument.id})">
+              <h:graphicImage value="/resources/image/sensor_calibration.svg"
+                styleClass="actionIconLarge" alt="Sensor Calibrations"
+                title="Sensor Calibrations" />
+            </p:commandLink>
+            <ui:fragment rendered="#{instrument.hasDiagnosticSensors()}">
+              <p:commandLink onclick="goToDiagnosticsQC(#{instrument.id})">
+                <h:graphicImage value="/resources/image/diagnostics.svg"
+                  styleClass="actionIconLarge" alt="Diagnostics QC Setup"
+                  title="Diagnostics QC Setup" />
+              </p:commandLink>
             </ui:fragment>
-            <h:outputText value="#{instrument.displayName}"/>
-          </b>
-        </p:column>
-        <p:column styleClass="centeredCell">
-          <f:facet name="header">Sensor Calibrations</f:facet>
-          <p:button value="Sensor Calibrations" styleClass="inlineButton"
-            onclick="return goToCalibrations(#{instrument.id})" />
-        </p:column>
-        <p:column styleClass="centeredCell">
-          <f:facet name="header">Diagnostics QC</f:facet>
-          <ui:fragment rendered="#{instrument.hasDiagnosticSensors()}">
-            <p:button value="Diagnostics QC" styleClass="inlineButton"
-            onclick="return goToDiagnosticsQC(#{instrument.id})" />
-        </ui:fragment>
-        </p:column>
-        <p:column styleClass="centeredCell">
-          <f:facet name="header">Calibration Gas Deployments</f:facet>
-          <ui:fragment rendered="#{instrument.hasInternalCalibrations()}">
-            <p:button value="View Deployments" styleClass="inlineButton"
-              onclick="return goToStandards(#{instrument.id})" />
-          </ui:fragment>
-        </p:column>
-        <p:column styleClass="centeredCell">
-          <f:facet name="header">Calculation Coefficients</f:facet>
-          <ui:fragment rendered="#{instrument.hasCalculationCoefficients()}">
-            <p:button value="View Coefficients" styleClass="inlineButton"
-              onclick="return goToCalculationCoefficients(#{instrument.id})" />
-          </ui:fragment>
+            <ui:fragment rendered="#{not instrument.hasDiagnosticSensors()}">
+              <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                styleClass="actionIconLarge"/>
+            </ui:fragment>
+            <ui:fragment rendered="#{instrument.hasInternalCalibrations()}">
+              <p:commandLink onclick="goToStandards(#{instrument.id})">
+                <h:graphicImage value="/resources/image/standards.svg"
+                  styleClass="actionIconLarge" alt="External Standards"
+                  title="External Standards" />
+              </p:commandLink>
+            </ui:fragment>
+            <ui:fragment rendered="#{not instrument.hasInternalCalibrations()}">
+              <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                styleClass="actionIconLarge"/>
+            </ui:fragment>
+            <ui:fragment rendered="#{instrument.hasCalculationCoefficients()}">
+              <p:commandLink onclick="goToCalculationCoefficients(#{instrument.id})">
+                <h:graphicImage value="/resources/image/coefficients.svg"
+                  styleClass="actionIconLarge" alt="Calculation Coefficients"
+                  title="Calculation Coefficients" />
+              </p:commandLink>
+            </ui:fragment>
+            <ui:fragment rendered="#{not instrument.hasCalculationCoefficients()}">
+              <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                styleClass="actionIconLarge"/>
+            </ui:fragment>
+            <ui:fragment rendered="#{not instrumentListBean.hasDatasets(instrument.id)}">
+              <p:commandLink onclick="confirmInstrumentDelete(#{instrument.id}, '#{instrument.displayName}')">
+                <h:graphicImage value="/resources/image/trash.svg" alt="Delete instrument"
+                  title="Delete instrument" styleClass="actionIconLarge"/>
+              </p:commandLink>
+            </ui:fragment>
+            <ui:fragment rendered="#{instrumentListBean.hasDatasets(instrument.id)}">
+              <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                styleClass="actionIconLarge"/>
+            </ui:fragment>
         </p:column>
       </p:dataTable>
     </h:form>

@@ -8,6 +8,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.WeightedMeanCalculator;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -17,10 +18,9 @@ public class ParentSensorTypeMeasurementValueCalculator
 
   @Override
   public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
-    Measurement measurement, SensorType coreSensorType,
-    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException {
+    Measurement measurement, Variable variable, SensorType requiredSensorType,
+    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
+    Connection conn) throws MeasurementValueCalculatorException {
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
@@ -30,8 +30,8 @@ public class ParentSensorTypeMeasurementValueCalculator
     for (SensorType childType : sensorConfig.getChildren(requiredSensorType)) {
       if (instrument.getSensorAssignments().isAssigned(childType)) {
         childMeasurementValues.add(MeasurementValueCalculatorFactory
-          .calculateMeasurementValue(instrument, dataSet, measurement,
-            coreSensorType, childType, allMeasurements, allSensorValues, conn));
+          .calculateMeasurementValue(instrument, dataSet, measurement, variable,
+            childType, allMeasurements, allSensorValues, conn));
       }
     }
 

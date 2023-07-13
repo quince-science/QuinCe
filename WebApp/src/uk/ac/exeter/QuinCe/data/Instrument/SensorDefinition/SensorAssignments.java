@@ -199,7 +199,8 @@ public class SensorAssignments
    * @throws SensorConfigurationException
    *           If the internal configuration is invalid
    */
-  public boolean isAssignmentRequired(SensorType sensorType)
+  public boolean isAssignmentRequired(SensorType sensorType,
+    Map<Long, VariableAttributes> varAttributes)
     throws SensorAssignmentException, SensorConfigurationException {
 
     boolean result;
@@ -209,7 +210,7 @@ public class SensorAssignments
     } else {
       // Is the sensor required for the variables being measured?
       boolean required = getSensorConfig().requiredForVariables(sensorType,
-        variableIDs);
+        variableIDs, varAttributes);
 
       // Do other required sensors depend on this SensorType?
       if (hasAssignedDependents(sensorType)) {
@@ -938,7 +939,7 @@ public class SensorAssignments
 
         for (SensorType childType : getSensorConfig().getChildren(sensorType)) {
 
-          int assigned = variableCompleteSensorTypeCheck(childType);
+          int assigned = variableCompleteSensorTypeCheck(childType, variable);
 
           if (assigned == FULLY_ASSIGNED) {
             anyChildAssigned = true;
@@ -951,7 +952,8 @@ public class SensorAssignments
           break;
         }
       } else {
-        if (variableCompleteSensorTypeCheck(sensorType) != FULLY_ASSIGNED) {
+        if (variableCompleteSensorTypeCheck(sensorType,
+          variable) != FULLY_ASSIGNED) {
           complete = false;
           break;
         }
@@ -961,37 +963,44 @@ public class SensorAssignments
     return complete;
   }
 
-  private int variableCompleteSensorTypeCheck(SensorType sensorType)
-    throws SensorTypeNotFoundException {
+  private int variableCompleteSensorTypeCheck(SensorType sensorType,
+    Variable variable) throws SensorTypeNotFoundException {
 
     int result = FULLY_ASSIGNED;
 
-    if (!isAssigned(sensorType)) {
-      // If the sensor type isn't assigned, we can stop
-      result = NOT_ASSIGNED;
-    } else if (sensorType.dependsOnOtherType()) {
+    AttributeCondition attributeCondition = variable
+      .getAttributeCondition(sensorType);
 
-      boolean checkDependsOn = false;
+    // Only check the assignment if the variable attribute settings require it
+    if (null == attributeCondition
+      || attributeCondition.matches(variable.getAttributes())) {
+      if (!isAssigned(sensorType)) {
+        // If the sensor type isn't assigned, we can stop
+        result = NOT_ASSIGNED;
+      } else if (sensorType.dependsOnOtherType()) {
 
-      // If there's no depends question, we can directly check the dependsOn
-      if (!sensorType.hasDependsQuestion()) {
-        checkDependsOn = true;
-      } else {
+        boolean checkDependsOn = false;
 
-        // We only need to check dependsOn if the depends question has been
-        // answered True for any assignment
-        for (SensorAssignment assignment : get(sensorType)) {
-          if (assignment.getDependsQuestionAnswer()) {
-            checkDependsOn = true;
+        // If there's no depends question, we can directly check the dependsOn
+        if (!sensorType.hasDependsQuestion()) {
+          checkDependsOn = true;
+        } else {
+
+          // We only need to check dependsOn if the depends question has been
+          // answered True for any assignment
+          for (SensorAssignment assignment : get(sensorType)) {
+            if (assignment.getDependsQuestionAnswer()) {
+              checkDependsOn = true;
+            }
           }
         }
-      }
 
-      if (checkDependsOn) {
-        SensorType dependsOn = getSensorConfig()
-          .getSensorType(sensorType.getDependsOn());
-        if (!isAssigned(dependsOn)) {
-          result = ASSIGNED_WITHOUT_DEPENDENT;
+        if (checkDependsOn) {
+          SensorType dependsOn = getSensorConfig()
+            .getSensorType(sensorType.getDependsOn());
+          if (!isAssigned(dependsOn)) {
+            result = ASSIGNED_WITHOUT_DEPENDENT;
+          }
         }
       }
     }

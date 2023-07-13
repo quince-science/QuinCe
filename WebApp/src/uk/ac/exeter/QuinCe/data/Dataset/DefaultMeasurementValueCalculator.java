@@ -22,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
@@ -48,21 +49,19 @@ public class DefaultMeasurementValueCalculator
 
   @Override
   public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
-    Measurement measurement, SensorType coreSensorType,
-    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
-    DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException {
+    Measurement measurement, Variable variable, SensorType requiredSensorType,
+    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
+    Connection conn) throws MeasurementValueCalculatorException {
 
     try {
       // TODO #1128 This currently assumes only one sensor for each SensorType.
       // This will have to change eventually.
       if (requiredSensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)
         || requiredSensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
-        return getPositionValue(instrument, dataSet, measurement,
-          coreSensorType, requiredSensorType, allMeasurements, allSensorValues,
-          conn);
+        return getPositionValue(instrument, dataSet, measurement, variable,
+          requiredSensorType, allMeasurements, allSensorValues, conn);
       } else {
-        return getSensorValue(instrument, dataSet, measurement, coreSensorType,
+        return getSensorValue(instrument, dataSet, measurement, variable,
           requiredSensorType, allMeasurements, allSensorValues, conn);
       }
     } catch (Exception e) {
@@ -70,10 +69,21 @@ public class DefaultMeasurementValueCalculator
     }
   }
 
-  private MeasurementValue getSensorValue(Instrument instrument,
-    DataSet dataSet, Measurement measurement, SensorType coreSensorType,
+  protected MeasurementValue getSensorValue(Instrument instrument,
+    DataSet dataSet, Measurement measurement, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException, RoutineException {
+
+    return getSensorValue(instrument, dataSet, measurement, variable,
+      requiredSensorType, allMeasurements, allSensorValues, true, conn);
+  }
+
+  protected MeasurementValue getSensorValue(Instrument instrument,
+    DataSet dataSet, Measurement measurement, Variable variable,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, boolean allowCalibration,
+    Connection conn)
     throws MeasurementValueCalculatorException, RoutineException {
 
     SensorAssignment requiredAssignment = instrument.getSensorAssignments()
@@ -89,14 +99,14 @@ public class DefaultMeasurementValueCalculator
       // SensorType.
       // This will have to change eventually.
       SensorAssignment coreAssignment = instrument.getSensorAssignments()
-        .get(coreSensorType).first();
+        .get(variable.getCoreSensorType()).first();
 
       LocalDateTime valueTime = dataSet.getSensorOffsets().getOffsetTime(
         measurement.getTime(), coreAssignment, requiredAssignment);
 
       List<SensorValue> valuesToUse;
 
-      if (requiredSensorType.equals(coreSensorType)) {
+      if (requiredSensorType.equals(variable.getCoreSensorType())) {
         SensorValue sensorValue = sensorValues.get(valueTime);
         if (null == sensorValue) {
           valuesToUse = new ArrayList<SensorValue>();
@@ -118,7 +128,7 @@ public class DefaultMeasurementValueCalculator
 
     // Calibrate the value if (a) the SensorType can have calibrations, and
     // (b) the instrument has calibration Run Types defined.
-    if (requiredSensorType.hasInternalCalibration()
+    if (allowCalibration && requiredSensorType.hasInternalCalibration()
       && instrument.hasInternalCalibrations()) {
       calibrate(instrument, measurement, requiredSensorType, result,
         allMeasurements, sensorValues, conn);
@@ -128,7 +138,7 @@ public class DefaultMeasurementValueCalculator
   }
 
   private MeasurementValue getPositionValue(Instrument instrument,
-    DataSet dataSet, Measurement measurement, SensorType coreSensorType,
+    DataSet dataSet, Measurement measurement, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
     throws MeasurementValueCalculatorException, PositionException,
@@ -137,7 +147,7 @@ public class DefaultMeasurementValueCalculator
     MeasurementValue result = new MeasurementValue(requiredSensorType);
 
     SensorAssignment coreAssignment = instrument.getSensorAssignments()
-      .get(coreSensorType).first();
+      .get(variable.getCoreSensorType()).first();
 
     try {
       // If Lon/Lat, get offset to first group. Get lat/lon at that time.
@@ -230,7 +240,7 @@ public class DefaultMeasurementValueCalculator
     }
   }
 
-  private void calibrate(Instrument instrument, Measurement measurement,
+  protected void calibrate(Instrument instrument, Measurement measurement,
     SensorType sensorType, MeasurementValue value,
     DatasetMeasurements allMeasurements,
     SearchableSensorValuesList sensorValues, Connection conn)
