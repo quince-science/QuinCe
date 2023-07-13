@@ -280,7 +280,7 @@
               value="#{dataset.statusName}" />
             <p:commandButton
               rendered="#{dataset.status eq DataSet.STATUS_ERROR}"
-              icon="ui-icon-notice"
+              icon="pi pi-exclamation-triangle"
               onclick="displayDialog(getMessagesHTML($(this).data('messages')))"
               title="Errors" value="Errors" styleClass="inlineButton">
               <f:passThroughAttribute name="data-messages"

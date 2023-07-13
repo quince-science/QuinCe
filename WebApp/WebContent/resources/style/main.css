@@ -385,6 +385,10 @@ div.fullPage {
   color: #999 !important;
 }
 
+table {
+  font-variant-numeric: tabular-nums;
+}
+
 table.shrink {
   table-layout: unset;
 }
@@ -673,11 +677,11 @@ table.dialogTable td.dialogTableCell {
 }
 
 .centeredCell {
-  text-align: center;
+  text-align: center !important;
 }
 
 .rightCell {
-  text-align: right;
+  text-align: right !important;
 }
 
 .note {
@@ -738,6 +742,17 @@ table.dialogTable td.dialogTableCell {
 
 .ui-datatable shrink {
   width: unset;
+}
+
+.ui-datatable td {
+  padding: 8px !important;
+}
+
+.ui-datatable th {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
 }
 
 @keyframes rowFlash {
