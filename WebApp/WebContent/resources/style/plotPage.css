@@ -38,16 +38,19 @@ table.dataTable.compact td {
  *************************
  */
 .plotPageHeader {
-  height: 20px;
-  color: #2779AA;
+  height: 27px;
+  color: #2779AA !important;
+  font-weight: bold;
 }
 
 .plotPageFooter {
   position: absolute;
   bottom: 0px;
-  height: 30px;
-  width: calc(100% - 8px);
-  color: #2779AA;
+  height: 43px;
+  width: 100%;
+  color: #2779AA !important;
+  font-weight: bold;
+  padding-left: 10px !important;
 }
 
 .plotPageContent {
@@ -149,20 +152,36 @@ td.selected > div {
 }
 
 /* Plot footer controls */
+:root {
+  --plotFooterButtonSize: 35px !important;
+}
+
 .plotModeButtons .ui-button:nth-child(1) {
   background-image: url("#{resource['image/plot_button.svg']}") !important;
-  background-size: 20px;
-  background-repeat: no-repeat;
-  width: 46.77px !important;
-  height: 29.22px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 25px !important;
+  width: var(--plotFooterButtonSize);
+  height: var(--plotFooterButtonSize);
 }
 
 .plotModeButtons .ui-button:nth-child(2) {
   background-image: url("#{resource['image/globe_button.svg']}") !important;
-  background-size: 20px;
-  background-repeat: no-repeat;
-  width: 46.77px !important;
-  height: 29.22px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 25px !important;
+  width: var(--plotFooterButtonSize);
+  height: var(--plotFooterButtonSize);
+}
+
+.plotFooterButton {
+  width: var(--plotFooterButtonSize) !important;
+  height: var(--plotFooterButtonSize) !important;
+  margin-left: 10px !important;
+}
+
+.plotFooterButton.ui-selectbooleanbutton {
+  top: -10px;
 }
 
 .plotFooterButtonContainer {
@@ -170,11 +189,19 @@ td.selected > div {
   position:relative;
 }
 
+.plotFooterButtonContainer .ui-button {
+  background: #ffffff;
+}
+
+.plotFooterButtonContainer .ui-button.ui-state-hover {
+  background: #e6e9ec;
+}
+
 /* These buttons are sometimes mixed in with PrimeFaces stuff,
    which breaks the layout. This fixes the CSS when PF stuff is
    present (i.e. we aren't the only thing in the plot footer */
 .plotFooterButtonContainer:not(:only-child) {
-  top: -10px !important;
+  top: 2px !important;
 }
 
 .selectVariableButton {
@@ -204,20 +231,26 @@ td.selected > div {
   height: 25px !important;
 }
 
+.selectModeButtons {
+  margin-left: 10px;
+}
+
 .selectModeButtons .ui-button:nth-child(1) {
   background-image: url("#{resource['image/zoom_button.svg']}") !important;
-  background-size: 20px;
-  background-repeat: no-repeat;
-  width: 46.77px !important;
-  height: 29.22px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 25px !important;
+  width: var(--plotFooterButtonSize);
+  height: var(--plotFooterButtonSize);
 }
 
 .selectModeButtons .ui-button:nth-child(2) {
   background-image: url("#{resource['image/mark_button.svg']}") !important;
-  background-size: 20px;
-  background-repeat: no-repeat;
-  width: 46.77px !important;
-  height: 29.22px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 25px !important;
+  width: var(--plotFooterButtonSize);
+  height: var(--plotFooterButtonSize);
 }
 
 /* Variables Dialog */
@@ -229,7 +262,7 @@ td.selected > div {
 
 .variable {
   display: flex;
-  margin-bottom: 3px;
+  margin-bottom: 5px;
   margin-left: 10px;
   margin-right: 10px;
   height: 18px;
@@ -272,7 +305,7 @@ td.selected > div {
 
 .variableControls {
   display: flex;
-  align-content: center;
+  align-content: left;
   margin-left: 5px;
 }
 
@@ -281,7 +314,8 @@ td.selected > div {
   width: 16px;
   height: 16px;
   position: relative;
-  margin-right: 5px;
+  margin-right: 5px !important;
+  margin-top: 5px !important;
 }
 
 .wideAxisButton {
@@ -289,10 +323,11 @@ td.selected > div {
   width: 24px;
   height: 16px;
   position: relative;
+  margin-top: 5px !important;
 }
 
 .noAxisButton {
-  width: 22.5px;
+  width: 17px;
   height: 16px;
 }
 
@@ -301,16 +336,25 @@ td.selected > div {
   height: 16px;
 }
 
+.ui-selectbooleanbutton .ui-button-text {
+  margin-left: -12px;
+  margin-top: -10px;
+}
+
 .varInfo {
   padding-right: 4px;
   font-size: 0.8em;
-}
-
-.ui-selectbooleanbutton .ui-button-text {
-  margin-left: -8px;
-  margin-top: -3px;
+  margin-top: 4px;
 }
 
 .colorScaleContainer {
   height: 30px;
+}
+
+#selectedRowsCountDisplay {
+  margin-right: 5px;
+}
+
+#qcControls .tightIconButton {
+  top: 6px;
 }

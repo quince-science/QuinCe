@@ -269,13 +269,13 @@
               <div class="plotFooterButtonContainer">
                 <p:commandButton icon="selectVariableButton"
                   onclick="showVariableDialog(1); return false;"
-                  styleClass="inlineButton tightButton plotFooterButton" />
+                  styleClass="inlineButton tightIconButton plotFooterButton" />
                 <p:commandButton icon="zoomOutButton" onclick="resetZoom(1); return false;"
-                  styleClass="inlineButton tightButton plotFooterButton" />
+                  styleClass="inlineButton tightIconButton plotFooterButton" />
                 <p:selectBooleanButton onIcon="hideFlagsButton" offIcon="hideFlagsButton"
                   value="#{sessionScope[beanName].data.plot1HideFlags}"
                   id="plot1HideFlags" onchange="hideFlags(1); return false;"
-                  styleClass="inlineSelectBooleanButton tightButton plotFooterButton" />
+                  styleClass="tightIconButton plotFooterButton" />
               </div>
               <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
                 <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode"
@@ -358,13 +358,13 @@
               <div class="plotFooterButtonContainer">
                 <p:commandButton icon="selectVariableButton"
                   onclick="showVariableDialog(2); return false;"
-                  styleClass="inlineButton tightButton plotFooterButton" />
+                  styleClass="inlineButton tightIconButton plotFooterButton" />
                 <p:commandButton icon="zoomOutButton" onclick="resetZoom(2); return false;"
-                  styleClass="inlineButton tightButton plotFooterButton" />
+                  styleClass="inlineButton tightIconButton plotFooterButton" />
                 <p:selectBooleanButton onIcon="hideFlagsButton" offIcon="hideFlagsButton"
                   value="#{sessionScope[beanName].data.plot2HideFlags}"
                   id="plot2HideFlags" onchange="hideFlags(2); return false;"
-                  styleClass="inlineSelectBooleanButton tightButton plotFooterButton" />
+                  styleClass="tightIconButton plotFooterButton" />
               </div>
               <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
                 <p:selectOneButton id="plotSelectMode" widgetVar="plot2SelectMode"
@@ -406,7 +406,7 @@
             <span id="selectedColumnDisplay"></span>
             <span id="selectedRowsCountDisplay">0</span>
             <p:commandButton icon="clearSelectionButton"
-              onclick="clearSelection();" styleClass="inlineButton tightButton" />
+              onclick="clearSelection();" styleClass="inlineButton tightIconButton lightButton" />
             <h:inputHidden id="selectedColumn"
               value="#{sessionScope[beanName].data.selectedColumn}" />
             <h:inputHidden id="selectedRows"
@@ -435,14 +435,14 @@
             </div>
             |
             <p:commandButton widgetVar="notesButton" value="Notes"
-              onclick="showNotesDialog(); return false;" styleClass="inlineButton" />
+              onclick="showNotesDialog(); return false;" styleClass="inlineButton tightTextButton" />
           </h:form>
         </ui:fragment>
         |
         <h:form id="finishButtonForm" method="post" styleClass="inline">
          <p:commandButton widgetVar="finishButton" value="Finish" ajax="false"
            onmousedown="disableKeepAlive();" process="@none" action="#{sessionScope[beanName].finish}"
-           styleClass="inlineButton" />
+           styleClass="inlineButton tightTextButton" />
         </h:form>
       </div>
     </f:facet>
