@@ -1,21 +1,10 @@
 function showUseDialog() {
-  
-  // Select the first radio button, which is "Yes"
-  let targetRadioValue = 'true';
-  if ($('#selectionForm\\:worstSelectedFlag').val() != 2) {
-    targetRadioValue = 'false';	
-  }
-  
-  PF('useCalibrationsWidget').jq.find('input:radio[value=' + targetRadioValue + ']').parent().next().trigger('click.selectOneRadio');
-  
-  $(PF('useCalibrationsMessageWidget').jqId).val($('#selectionForm\\:userCommentList').val());
-  
   updateUseDialogControls();
   PF('useDialog').show();
 }
 
 function updateUseDialogControls() {
-  if (PF('useCalibrationsWidget').getJQ().find(':checked').val() == 'true') {
+  if (PF('useCalibrationsWidget').getJQ().find(':checked').val() == 2) {
     $('#reasonSection').css('visibility', 'hidden');
     PF('okButtonWidget').enable();
   } else {

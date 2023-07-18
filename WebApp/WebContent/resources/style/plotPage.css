@@ -358,3 +358,7 @@ td.selected > div {
 #qcControls .tightIconButton {
   top: 6px;
 }
+
+#qcMessage {
+  margin-top: 6px;
+}

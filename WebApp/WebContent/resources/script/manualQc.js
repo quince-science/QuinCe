@@ -36,9 +36,6 @@ function showFlagDialog() {
   }
   $('#manualRowCount').html(woceRowHtml);
 
-  $('#selectionForm\\:manualComment').val($('#selectionForm\\:userCommentList').val());
-
-  PF('flagMenu').selectValue($('#selectionForm\\:worstSelectedFlag').val());
   updateFlagDialogControls();
   PF('flagDialog').show();
 }
@@ -46,7 +43,7 @@ function showFlagDialog() {
 function updateFlagDialogControls() {
   var canSubmit = true;
 
-  if (PF('flagMenu').input.val() != 2) {
+  if (PF('flagMenu').getJQ().find(':checked').val() != 2) {
     if ($('#selectionForm\\:manualComment').val().trim().length == 0) {
       canSubmit = false;
     }

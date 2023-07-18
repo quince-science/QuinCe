@@ -14,16 +14,11 @@
   <ui:define name="pageStatus">
     <ui:fragment rendered="#{internalCalibrationBean.canEdit}">
       Flags needed:
-      <h:outputText id="needsFlagCount" value="#{internalCalibrationBean.needsFlagCount}"/>
+      <h:outputText id="needsFlagCount" value="#{internalCalibrationBean.data.needsFlagCount}"/>
     </ui:fragment>
   </ui:define>
 
   <ui:define name="selectionFormEntries">
-      <h:inputHidden id="userCommentList"
-        value="#{internalCalibrationBean.userCommentList}" />
-      <h:inputHidden id="worstSelectedFlag"
-        value="#{internalCalibrationBean.worstSelectedFlag}" />
-
       <p:remoteCommand name="submitAutoQC" action="#{internalCalibrationBean.acceptAutoQC}"
       partialSubmit="true"
       process="selectedColumn selectedRows"
@@ -32,9 +27,9 @@
       oncomplete="calibrationUpdated()" />
 
     <p:remoteCommand name="generateUserQCComments"
-      action="#{internalCalibrationBean.generateUserCommentsList}"
+      action="#{internalCalibrationBean.data.generateUserCommentsList}"
       partialSubmit="true" process="selectedColumn selectedRows"
-      update="userCommentList worstSelectedFlag :plotPageForm:error"
+      update="useCalibrationsMessage useCalibrations :plotPageForm:error"
       oncomplete="showUseDialog()" />
 
     <p:remoteCommand name="setUseCalibrations"
@@ -51,17 +46,17 @@
       <div class="insructions">
         Should these calibrations be used?
         <p:selectOneRadio id="useCalibrations" widgetVar="useCalibrationsWidget"
-          value="#{internalCalibrationBean.useCalibrations}"
+          value="#{internalCalibrationBean.data.userFlag}"
           onchange="updateUseDialogControls()">
-          <f:selectItem itemLabel="Yes" itemValue="true" />
-          <f:selectItem itemLabel="No" itemValue="false" />
+          <f:selectItem itemLabel="Yes" itemValue="2" />
+          <f:selectItem itemLabel="No" itemValue="4" />
         </p:selectOneRadio>
         <div id="reasonSection">
           <p:outputLabel for="useCalibrationsMessage" value="Reason:" />
           <br />
           <p:inputTextarea id="useCalibrationsMessage"
             widgetVar="useCalibrationsMessageWidget" rows="4" cols="40"
-            value="#{internalCalibrationBean.useCalibrationsMessage}"
+            value="#{internalCalibrationBean.data.userComment}"
             onkeyup="updateUseDialogControls()" />
         </div>
         <h:panelGrid columns="2" styleClass="buttonPanel">
@@ -76,9 +71,9 @@
 
   <ui:define name="selectionActions">
     <p:commandButton widgetVar="acceptQcButton" value="Accept Automatic QC"
-      onclick="acceptAutoQc(); return false;" styleClass="inlineButton" />
+      onclick="acceptAutoQc(); return false;" styleClass="inlineButton tightTextButton" />
     <p:commandButton widgetVar="useCalibrationsButton" value="Override Automatic QC"
-      onclick="startUserQcFlags(); return false;" styleClass="inlineButton" />
+      onclick="startUserQcFlags(); return false;" styleClass="inlineButton tightTextButton" />
   </ui:define>
 
 </ui:composition>

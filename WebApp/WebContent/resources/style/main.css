@@ -200,7 +200,10 @@ input.smallButton, button.smallButton {
 }
 
 .buttonPanel {
-  margin: auto;
+  margin-top: 10px;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .buttonPanel td {

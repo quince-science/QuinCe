@@ -19,11 +19,6 @@
   </ui:define>
 
   <ui:define name="selectionFormEntries">
-    <h:inputHidden id="userCommentList"
-      value="#{sessionScope[beanName].userCommentList}" />
-    <h:inputHidden id="worstSelectedFlag"
-      value="#{sessionScope[beanName].worstSelectedFlag}" />
-
     <p:remoteCommand name="submitAutoQC" action="#{sessionScope[beanName].acceptAutoQC}"
       partialSubmit="true"
       process="selectedColumn selectedRows"
@@ -32,9 +27,9 @@
       oncomplete="qcFlagsAccepted()" />
 
     <p:remoteCommand name="generateUserQCComments"
-      action="#{sessionScope[beanName].generateUserCommentsList}"
+      action="#{sessionScope[beanName].data.generateUserComment}"
       partialSubmit="true" process="selectedColumn selectedRows"
-      update="userCommentList worstSelectedFlag :plotPageForm:error"
+      update="manualFlag manualComment :plotPageForm:error"
       oncomplete="showFlagDialog()" />
 
     <p:remoteCommand name="applyManualFlag"
@@ -54,14 +49,14 @@
       </div>
       <h:panelGrid columns="2" width="100%">
         <p:outputLabel for="manualFlag" value="Flag:" />
-        <p:selectOneMenu widgetVar="flagMenu" id="manualFlag"
-          value="#{sessionScope[beanName].userFlag}" var="flag"
+        <p:selectOneRadio widgetVar="flagMenu" id="manualFlag"
+          value="#{sessionScope[beanName].data.userFlag}" var="flag"
           onchange="updateFlagDialogControls()">
           <f:selectItem itemLabel="Good" itemValue="2" />
           <f:selectItem itemLabel="Bad" itemValue="4" />
-        </p:selectOneMenu>
+        </p:selectOneRadio>
         <p:outputLabel for="manualComment" value="Comment:" />
-        <p:inputTextarea id="manualComment" value="#{sessionScope[beanName].userComment}"
+        <p:inputTextarea id="manualComment" value="#{sessionScope[beanName].data.userComment}"
           maxlength="255" style="width: 95%; height: 150px;"
           onkeyup="updateFlagDialogControls()" />
       </h:panelGrid>
@@ -75,9 +70,9 @@
 
   <ui:define name="selectionActions">
     <p:commandButton widgetVar="acceptQcButton" value="Accept Automatic QC"
-      onclick="acceptAutoQc(); return false;" styleClass="inlineButton" />
+      onclick="acceptAutoQc(); return false;" styleClass="inlineButton tightTextButton" />
     <p:commandButton widgetVar="overrideQcButton" value="Override Automatic QC"
-      onclick="startUserQcFlags(); return false;" styleClass="inlineButton" />
+      onclick="startUserQcFlags(); return false;" styleClass="inlineButton tightTextButton" />
   </ui:define>
 
 </ui:composition>

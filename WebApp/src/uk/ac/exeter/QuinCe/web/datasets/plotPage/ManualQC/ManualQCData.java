@@ -135,16 +135,6 @@ public class ManualQCData extends PlotPageData {
   private List<Long> diagnosticColumnIds = null;
 
   /**
-   * The initial user QC comments generated from the selected values.
-   */
-  private String userCommentsList = null;
-
-  /**
-   * The worst QC flag set on any of the selected values.
-   */
-  private Flag worstSelectedFlag = Flag.GOOD;
-
-  /**
    * The flag set during user QC
    */
   private Flag userFlag = Flag.GOOD;
@@ -628,14 +618,14 @@ public class ManualQCData extends PlotPageData {
    * Generate the QC comments list and find the worst QC flag from the currently
    * selected values.
    */
-  public void generateUserCommentsList() {
+  public void generateUserComment() {
 
     ValueCounter comments = new ValueCounter();
-    worstSelectedFlag = Flag.GOOD;
+    userFlag = Flag.GOOD;
 
     for (SensorValue sensorValue : getSelectedSensorValues()) {
-      if (sensorValue.getDisplayFlag().moreSignificantThan(worstSelectedFlag)) {
-        worstSelectedFlag = sensorValue.getDisplayFlag();
+      if (sensorValue.getDisplayFlag().moreSignificantThan(userFlag)) {
+        userFlag = sensorValue.getDisplayFlag();
       }
 
       if (!sensorValue.flagNeeded()
@@ -650,25 +640,7 @@ public class ManualQCData extends PlotPageData {
       }
     }
 
-    userCommentsList = comments.toString();
-  }
-
-  /**
-   * Get the QC comments generated from the current selection.
-   *
-   * @return The QC comments
-   */
-  public String getUserCommentsList() {
-    return userCommentsList;
-  }
-
-  /**
-   * Get the worst QC flag from the current selection.
-   *
-   * @return The QC flag.
-   */
-  public Flag getWorstSelectedFlag() {
-    return worstSelectedFlag;
+    userComment = comments.toString();
   }
 
   public int getUserFlag() {
