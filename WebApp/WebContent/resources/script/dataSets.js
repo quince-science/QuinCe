@@ -285,6 +285,14 @@ function setRangeFromClick(date, datasets) {
   }
 }
 
+// UGLY HACK ALERT!
+
+// We get and set the dates in the PrimeFaces date pickers using Javascript,
+// which means we get them all in the browser's local timezone instead of UTC.
+
+// These functions get and set dates in the date pickers and hack the dates in and
+// out of UTC to make them display as we want them.
+
 function getDateField(name) {
   let date = PF(name).getDate();
   if (date) {
