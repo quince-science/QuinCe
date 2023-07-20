@@ -779,6 +779,14 @@ table.dialogTable td.dialogTableCell {
   padding-top: 2px !important;
 }
 
+.hasDatepicker {
+  text-align: center !important;
+}
+
+.ui-datepicker td {
+  padding: 0px !important;
+}
+
 @keyframes rowFlash {
     0% {background-color: #fff;}
    25% {background-color: #fd0;}

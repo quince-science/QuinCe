@@ -7,8 +7,8 @@
 }
 
 .vis-item {
-  background-color: #D7EBF9;
-  border-color: #AED0EA;
+  background-color: #D7EBF9 !important;
+  border-color: #AED0EA !important;
 }
 
 .vis-range {

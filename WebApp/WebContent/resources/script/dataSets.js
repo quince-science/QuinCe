@@ -286,14 +286,16 @@ function setRangeFromClick(date, datasets) {
 }
 
 function getDateField(name) {
-  var date = PF(name).getDate();
+  let date = PF(name).getDate();
   if (date) {
-    date.setTime(date.getTime() - date.getTimezoneOffset() * 60 * 1000)
+    date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
+                    date.getHours(), date.getMinutes(), date.getSeconds()));
   }
   return date;
 }
 
 function setDateField(name, date) {
-  PF(name).setDate(new Date(date.getTime()
-      + date.getTimezoneOffset() * 60 * 1000));
+  let utcConversion = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
+                               date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds());
+  PF(name).setDate(utcConversion);
 }
