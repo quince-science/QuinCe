@@ -67,7 +67,7 @@ public class D12D13TotalCO2CheckRoutine extends DataReductionQCRoutine {
 
           Double difference = totalCO2 - (d12CO2 + d13CO2);
 
-          if (Math.abs(difference) > 0.0001D) {
+          if (Math.abs(difference) > 0.001D) {
             flagSensors(instrument, measurement, record, allSensorValues,
               new RoutineFlag(this, Flag.BAD, "", ""), flaggedItems);
           }
