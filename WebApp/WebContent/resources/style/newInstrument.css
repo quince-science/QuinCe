@@ -18,7 +18,7 @@
   margin-top: 20px;
   margin-left: 50px;
   margin-right: 50px;
-  margin-bottom: 25px;
+  margin-bottom: 125px;
 }
 
 #newInstrumentContent {
@@ -46,6 +46,19 @@
   width: 50%;
   margin: 10px auto 0px auto !important;
   height: 18px;
+}
+
+/*********************************
+ *
+ * VARIABLES
+ *
+ */
+table.ui-selectmanycheckbox > tbody > tr > td {
+  white-space: nowrap;
+}
+
+table.ui-selectmanycheckbox > tbody > tr > td > label {
+  white-space: normal;
 }
 
 /*********************************

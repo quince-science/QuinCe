@@ -20,7 +20,7 @@
         <tr>
           <td class="labels">Platform Name</td>
           <td>
-            <p:selectOneMenu id="platformName" editable="true"
+            <p:selectOneMenu id="platformName" editable="true" filter="true"
               value="#{newInstrumentBean.platformName}" maxlength="100">
               <f:selectItems value="#{newInstrumentBean.existingPlatformNames}"/>
               <p:ajax listener="#{newInstrumentBean.platformNameChanged}"

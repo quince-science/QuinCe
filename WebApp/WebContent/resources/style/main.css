@@ -134,6 +134,10 @@ input[type="submit"], input[type="button"], button {
   outline: none;
 }
 
+.ui-spinner-button {
+  min-width: 0px !important;
+}
+
 .contentList input[type="submit"],
 .contentList input[type="button"],
 .contentList button {

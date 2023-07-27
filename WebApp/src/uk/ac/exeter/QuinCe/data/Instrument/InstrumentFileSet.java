@@ -9,12 +9,8 @@ import java.util.List;
  * @author Steve Jones
  *
  */
+@SuppressWarnings("serial")
 public class InstrumentFileSet extends ArrayList<FileDefinition> {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = -998081927701592751L;
 
   /**
    * Simple constructor to create an empty set
@@ -103,27 +99,24 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
     return result;
   }
 
-  @Override
-  public boolean remove(Object o) {
-    boolean removed = false;
+  public boolean remove(String name) {
+    // Allow removal by file description
+    int fileToRemove = -1;
 
-    if (o instanceof FileDefinition) {
-      removed = super.remove(o);
-    } else if (o instanceof String) {
-      // Allow removal by file description
-      int fileToRemove = -1;
-
-      for (int i = 0; i < size(); i++) {
-        if (get(i).getFileDescription().equalsIgnoreCase((String) o)) {
-          fileToRemove = i;
-          break;
-        }
+    for (int i = 0; i < size(); i++) {
+      if (get(i).getFileDescription().equalsIgnoreCase(name)) {
+        fileToRemove = i;
+        break;
       }
-
-      remove(fileToRemove);
     }
 
-    return removed;
+    boolean result = false;
+    if (fileToRemove > -1) {
+      remove(fileToRemove);
+      result = true;
+    }
+
+    return result;
   }
 
   /**

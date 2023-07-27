@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -625,5 +626,18 @@ public class FileDefinitionBuilder extends FileDefinition {
    */
   private int getFirstDataRow() {
     return getHeaderLength() + getColumnHeaderRows();
+  }
+
+  public String getColumnName(int columnIndex) {
+    String result = "*** COLUMN NOT FOUND ***";
+
+    Optional<FileColumn> column = fileColumns.stream()
+      .filter(c -> c.getIndex() == columnIndex).findAny();
+
+    if (column.isPresent()) {
+      result = column.get().getName();
+    }
+
+    return result;
   }
 }

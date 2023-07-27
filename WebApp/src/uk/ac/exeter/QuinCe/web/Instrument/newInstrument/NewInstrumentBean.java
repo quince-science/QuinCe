@@ -1475,25 +1475,32 @@ public class NewInstrumentBean extends FileUploadBean {
    *
    * @return Navigation to either the upload page (if all files have been
    *         removed), or the assignment page
+   * @throws Exception
    */
-  @SuppressWarnings("unlikely-arg-type")
-  public String removeFile() {
-    String result;
+  public String removeFile() throws Exception {
 
-    if (null != removeFileName) {
-      instrumentFiles.remove(removeFileName);
-      sensorGroups.remove(sensorAssignments.getFileAssignments(removeFileName));
-      sensorAssignments.removeFileAssignments(removeFileName);
-      assignmentsTree.removeFile(removeFileName);
+    try {
+      String result;
+
+      if (null != removeFileName) {
+        instrumentFiles.remove(removeFileName);
+        sensorGroups
+          .remove(sensorAssignments.getFileAssignments(removeFileName));
+        sensorAssignments.removeFileAssignments(removeFileName);
+        assignmentsTree.removeFile(removeFileName);
+      }
+
+      if (instrumentFiles.size() == 0) {
+        result = NAV_UPLOAD_FILE;
+      } else {
+        result = NAV_ASSIGN_VARIABLES;
+      }
+
+      return result;
+    } catch (Exception e) {
+      ExceptionUtils.printStackTrace(e);
+      throw e;
     }
-
-    if (instrumentFiles.size() == 0) {
-      result = NAV_UPLOAD_FILE;
-    } else {
-      result = NAV_ASSIGN_VARIABLES;
-    }
-
-    return result;
   }
 
   /**
@@ -2027,9 +2034,10 @@ public class NewInstrumentBean extends FileUploadBean {
    *
    * @throws SensorAssignmentException
    * @throws SensorTypeNotFoundException
+   * @throws SensorConfigurationException
    */
-  public void assignRunType()
-    throws SensorAssignmentException, SensorTypeNotFoundException {
+  public void assignRunType() throws SensorAssignmentException,
+    SensorTypeNotFoundException, SensorConfigurationException {
 
     FileDefinitionBuilder file = instrumentFiles.getByDescription(runTypeFile);
     file.addRunTypeColumn(runTypeColumn);
