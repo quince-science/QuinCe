@@ -117,7 +117,7 @@
             </tr>
             <tr>
               <td colspan="2">
-                <span class="instructions">Empty string, NA or NaN are handled automatically</span>  
+                <span class="instructions">Empty string, NA or NaN are handled automatically</span>
               </td>
             </tr>
           </table>
@@ -412,7 +412,7 @@
       </p:dialog>
 
       <div id="assignmentsLayout">
-        <p:fieldset legend="File Columns" id="fileColumns">
+        <p:fieldset legend="File Columns" id="fileColumns" styleClass="assignmentsPanel">
           <p:tabView value="#{newInstrumentBean.instrumentFiles}" var="iFile"
             widgetVar="fileTabs">
             <p:tab>
@@ -427,18 +427,12 @@
               </f:facet>
               <p:dataTable value="#{iFile.fileColumns}" var="column" scrollable="true"
                 scrollHeight="300" tableStyleClass="fileColumnsTable">
-                <p:column>
-                  <f:facet name="header">
-                    <h:outputText value="Column"/>
-                  </f:facet>
+                <p:column headerText="Column">
                   <div id="col---#{iFile.fileDescription}---#{column.index}---#{column.name}" class="draggable" draggable="true">
                     <h:outputText value="#{column.name}"/>
                   </div>
                 </p:column>
-                <p:column styleClass="exampleValueCol">
-                  <f:facet name="header">
-                    <h:outputText value="Sample Value"/>
-                  </f:facet>
+                <p:column headerText="Sample Value" styleClass="exampleValueCol">
                   <h:outputText styleClass="exampleValue" value="#{column.exampleValue}"/>
                 </p:column>
               </p:dataTable>
@@ -454,7 +448,7 @@
           <br/>
           column name &gt;&gt;
         </div>
-        <p:fieldset legend="Assignments" id="assignments">
+        <p:fieldset legend="Assignments" id="assignments" styleClass="assignmentsPanel">
           <p:tree widgetVar="assignmentsTree" id="assignmentsTree"
             value="#{newInstrumentBean.assignmentsTree}" var="node" styleClass="assignmentsTree" animate="true">
             <p:ajax event="expand" listener="#{newInstrumentBean.treeNodeExpand}"/>
