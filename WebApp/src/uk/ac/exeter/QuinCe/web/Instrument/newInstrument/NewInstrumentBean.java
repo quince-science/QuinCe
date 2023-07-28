@@ -1698,66 +1698,6 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Get the details of the Run Type Category assignments as a JSON string
-   *
-   * @return The Run Type Category assignments
-   */
-  public String getCategoryAssignments() {
-
-    // Set up the category list
-    List<RunTypeCategory> categories = ResourceManager.getInstance()
-      .getRunTypeCategoryConfiguration().getCategories(false, false);
-    categories = removeUnusedVariables(categories);
-
-    TreeMap<RunTypeCategory, Integer> assignedCategories = new TreeMap<RunTypeCategory, Integer>();
-
-    for (RunTypeCategory category : categories) {
-      assignedCategories.put(category, 0);
-    }
-
-    // Find all the assigned categories from each file
-    for (FileDefinition file : instrumentFiles) {
-      RunTypeAssignments fileRunTypes = file.getRunTypes();
-      if (null != fileRunTypes) {
-        for (RunTypeAssignment assignment : fileRunTypes.values()) {
-          if (!assignment.isAlias()) {
-            RunTypeCategory category = assignment.getCategory();
-            if (!category.equals(RunTypeCategory.IGNORED)) {
-              assignedCategories.put(category,
-                assignedCategories.get(category) + 1);
-            }
-          }
-        }
-      }
-    }
-
-    // Make the JSON output
-    JsonArray json = new JsonArray();
-
-    for (Map.Entry<RunTypeCategory, Integer> entry : assignedCategories
-      .entrySet()) {
-      JsonArray entryJson = new JsonArray();
-      entryJson.add(entry.getKey().getDescription());
-      entryJson.add(entry.getValue());
-
-      json.add(entryJson);
-    }
-
-    return json.toString();
-  }
-
-  /**
-   * Dummy set method to go with {@link #getCategoryAssignments()}. Does
-   * nothing.
-   *
-   * @param dummy
-   *          Dummy string
-   */
-  public void setCategoryAssignments(String dummy) {
-    // Do nothing
-  }
-
-  /**
    * Get the run type assignments as a JSON string
    *
    * @return The run type assignments

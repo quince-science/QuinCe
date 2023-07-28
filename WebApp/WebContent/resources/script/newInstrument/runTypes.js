@@ -24,42 +24,6 @@ function setRunTypeCategory(fileIndex, runType) {
   }
 }
 
-function renderAssignedCategories() {
-  let categoriesOK = true;
-
-  let html = '';
-
-  let assignments = JSON.parse($('#newInstrumentForm\\:assignedCategories').val());
-
-  for (let i = 0; i < assignments.length; i++) {
-    let assignment = assignments[i];
-
-    html += '<div class="assignmentListEntry';
-    if (assignment[1] < assignment[2]) {
-      html += ' assignmentRequired';
-      categoriesOK = false;
-    }
-    html += '"><div class="assignmentLabel">';
-    html += assignment[0];
-    html += '</div><div class="assignmentCount">';
-    html += assignment[1];
-    if (assignment[2] > 0) {
-      html += '/';
-      html += assignment[2];
-    }
-    html += '</div>';
-    html += '</div>';
-  }
-
-  $('#categoriesList').html(html);
-
-  if (categoriesOK) {
-    PF('next').enable();
-  } else {
-    PF('next').disable();
-  }
-}
-
 function populateRunTypeMenus() {
   drawingPage = true;
   let runTypeAssignments = JSON.parse($('#newInstrumentForm\\:assignedRunTypes').val());
