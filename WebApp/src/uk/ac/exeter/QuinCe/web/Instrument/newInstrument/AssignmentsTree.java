@@ -446,7 +446,7 @@ public class AssignmentsTree {
 
   /**
    * Set the ASSIGNED/UNASSIGNED type on all non-diagnostic SensorType nodes.
-   * 
+   *
    * @throws SensorConfigurationException
    * @throws SensorAssignmentException
    * @throws SensorTypeNotFoundException

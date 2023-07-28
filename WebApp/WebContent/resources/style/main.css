@@ -704,6 +704,17 @@ table.dialogTable td.dialogTableCell {
   font-weight: 700;
 }
 
+.deleteIcon {
+  background-image: url("#{resource['image/x-red.svg']}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  margin-left: 5px;
+  margin-bottom: -4px;
+}
+
 /* PrimeFaces overrides */
 .ui-widget {
   font-family: 'Noto Sans', sans-serif !important;

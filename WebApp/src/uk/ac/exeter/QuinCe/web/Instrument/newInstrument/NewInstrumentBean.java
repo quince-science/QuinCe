@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -2450,7 +2451,7 @@ public class NewInstrumentBean extends FileUploadBean {
   public List<PositionFormatEntry> getLongitudeFormats() {
 
     if (null == lonFormats) {
-      TreeMap<Integer, String> lonFormatsMap = LongitudeSpecification
+      LinkedHashMap<Integer, String> lonFormatsMap = LongitudeSpecification
         .getFormats();
 
       lonFormats = new ArrayList<PositionFormatEntry>(lonFormatsMap.size());

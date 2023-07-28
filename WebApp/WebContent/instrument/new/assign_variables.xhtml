@@ -110,8 +110,15 @@
           <table>
             <tr>
               <td><p:outputLabel value="'Missing' Value: " /></td>
-              <td><p:inputText id="sensorAssignmentMissingValue"
-                  value="#{newInstrumentBean.sensorAssignmentMissingValue}" /></td>
+              <td>
+                <p:inputText id="sensorAssignmentMissingValue"
+                  value="#{newInstrumentBean.sensorAssignmentMissingValue}" />
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <span class="instructions">Empty string, NA or NaN are handled automatically</span>  
+              </td>
             </tr>
           </table>
         </div>
@@ -411,9 +418,11 @@
             <p:tab>
               <f:facet name="title">
                 <h:outputText id="tabTitle" value="#{iFile.fileDescription}"/>
+                <p:commandLink
+                  styleClass="deleteIcon" style="margin-bottom: 0px !important"
+                  onclick="removeFile('#{iFile.fileDescription}'); return false"/>
                 <p:contextMenu for="tabTitle">
                   <p:menuitem value="Rename" onclick="renameFile('#{iFile.fileDescription}')"/>
-                  <p:menuitem value="Delete" onclick="removeFile('#{iFile.fileDescription}')"/>
                 </p:contextMenu>
               </f:facet>
               <p:dataTable value="#{iFile.fileColumns}" var="column" scrollable="true"
@@ -464,10 +473,9 @@
             </p:treeNode>
             <p:treeNode type="SENSOR_TYPE_ASSIGNMENT" styleClass="sensorAssignment">
               <h:outputText id="nodeLabel" value="#{node.label}"/>
-              <p:contextMenu for="nodeLabel">
-                <p:menuitem value="Remove"
-                  onclick="removeSensorAssignment('#{node.sensorTypeId}', '#{node.file}', '#{node.column}')"/>
-              </p:contextMenu>
+              <p:commandLink
+                styleClass="deleteIcon"
+                onclick="removeSensorAssignment('#{node.sensorTypeId}', '#{node.file}', '#{node.column}'); return false"/>
             </p:treeNode>
             <p:treeNode type="UNFINISHED_DATETIME" styleClass="unassignedSensorType">
               <h:outputText value="#{node.label}"/>
@@ -483,10 +491,9 @@
             </p:treeNode>
             <p:treeNode type="DATETIME_ASSIGNMENT" styleClass="dateTimeAssignment">
               <h:outputText id="dateTimeLabel" value="#{node.label}"/>
-              <p:contextMenu for="dateTimeLabel">
-                <p:menuitem value="Remove"
-                  onclick="removeDateTimeAssignment('#{node.file}', #{node.column})"/>
-              </p:contextMenu>
+              <p:commandLink
+                styleClass="deleteIcon"
+                onclick="removeDateTimeAssignment('#{node.file}', #{node.column}); return false"/>
             </p:treeNode>
             <p:treeNode type="UNASSIGNED_LONGITUDE" styleClass="unassignedSensorType longitudeDropTarget">
               <h:outputText value="#{node.label}"/>
@@ -508,24 +515,21 @@
             </p:treeNode>
             <p:treeNode type="LONGITUDE_ASSIGNMENT" styleClass="positionAssignment">
               <h:outputText id="longitudeLabel" value="#{node.label}"/>
-              <p:contextMenu for="longitudeLabel">
-                <p:menuitem value="Remove"
-                  onclick="removePositionAssignment('#{node.file}', #{node.column})"/>
-              </p:contextMenu>
+              <p:commandLink
+                styleClass="deleteIcon"
+                onclick="removePositionAssignment('#{node.file}', #{node.column}); return false"/>
             </p:treeNode>
             <p:treeNode type="LATITUDE_ASSIGNMENT" styleClass="positionAssignment">
               <h:outputText id="latitudeLabel" value="#{node.label}"/>
-              <p:contextMenu for="latitudeLabel">
-                <p:menuitem value="Remove"
-                  onclick="removePositionAssignment('#{node.file}', #{node.column})"/>
-              </p:contextMenu>
+              <p:commandLink
+                styleClass="deleteIcon"
+                onclick="removePositionAssignment('#{node.file}', #{node.column}); return false"/>
             </p:treeNode>
             <p:treeNode type="HEMISPHERE_ASSIGNMENT" styleClass="positionAssignment">
               <h:outputText id="hemisphereLabel" value="#{node.label}"/>
-              <p:contextMenu for="hemisphereLabel">
-                <p:menuitem value="Remove"
-                  onclick="removePositionAssignment('#{node.file}', #{node.column})"/>
-              </p:contextMenu>
+              <p:commandLink
+                styleClass="deleteIcon"
+                onclick="removePositionAssignment('#{node.file}', #{node.column}); return false"/>
             </p:treeNode>
           </p:tree>
         </p:fieldset>
