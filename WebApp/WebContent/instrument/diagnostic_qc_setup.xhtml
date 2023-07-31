@@ -28,7 +28,7 @@
           <div>
             <div class="columnHeader label">Diagnostic Sensor</div>
             <p:selectOneListbox value="#{diagnosticQCSetupBean.currentDiagnosticSensor}"
-              id="diagnosticSensor" var="s">
+              id="diagnosticSensor" var="s" scrollHeight="350">
               <f:selectItems value="#{diagnosticQCSetupBean.diagnosticSensors}"
                 var="sensor" itemLabel="#{sensor.sensorName}" itemValue="#{sensor.databaseId}"/>
               <p:column>
@@ -62,7 +62,7 @@
                     id="rangeMax" value="#{diagnosticQCSetupBean.max}">
 
                     <p:ajax listener="#{diagnosticQCSetupBean.noop}"
-              process="@this" update="rangeMin rangeMax"/>
+                      process="@this" update="rangeMin rangeMax"/>
                   </p:inputNumber>
                 </td>
               </tr>
@@ -72,7 +72,7 @@
           <div>
             <div class="columnHeader label">Measurement Sensor</div>
             <p:selectOneListbox value="#{diagnosticQCSetupBean.currentMeasurementSensor}"
-              id="measurementSensor" var="s">
+              id="measurementSensor" var="s" scrollHeight="350">
               <f:selectItems value="#{diagnosticQCSetupBean.measurementSensors}"
                 var="sensor" itemLabel="#{sensor.sensorName}" itemValue="#{sensor.databaseId}"/>
               <p:column>
