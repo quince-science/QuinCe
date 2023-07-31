@@ -807,6 +807,15 @@ table.dialogTable td.dialogTableCell {
   padding: 0px !important;
 }
 
+/*
+  Fix for columns in scrollable dataTables
+  For some reason the table header is repeated, so we
+  hide the clone.
+ */
+.ui-datatable-scrollable-theadclone {
+  display: none;
+}
+
 @keyframes rowFlash {
     0% {background-color: #fff;}
    25% {background-color: #fd0;}

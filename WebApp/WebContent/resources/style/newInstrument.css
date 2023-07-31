@@ -240,13 +240,3 @@ table.ui-selectmanycheckbox > tbody > tr > td > label {
   display: flex;
   flex-wrap: wrap;
 }
-
-
-/*
-  Fix for the columns dataTable on the assignments page
-  For some reason the table header is repeated, so we
-  hide the clone.
- */
-.ui-datatable-scrollable-theadclone {
-  display: none;
-}
