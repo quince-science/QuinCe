@@ -692,6 +692,11 @@ table.dialogTable td.dialogTableCell {
   text-align: right !important;
 }
 
+.dateTimeCell {
+  text-align: right !important;
+  width: 170px;
+}
+
 .note {
   color: #888888;
   font-style: italic;

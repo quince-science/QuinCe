@@ -20,7 +20,7 @@
           </p:messages>
           <div id="messages" class="error listBox hidden"></div>
           <p:outputLabel value="Select a file to upload" />
-          <p:fileUpload fileUploadListener="#{fileUpload.handleFileUpload}"
+          <p:fileUpload listener="#{fileUpload.handleFileUpload}"
             mode="advanced" auto="false" oncomplete="extractNext()"
             multiple="true" update="fileDetails" widgetVar="fileUploadWidget" />
           <p:outputPanel id="fileDetails"
@@ -37,11 +37,11 @@
             <p:dataTable id="fileList" var="uploadedFile"
               value="#{fileUpload.uploadedFiles}"
               rowStyleClass="#{uploadedFile.hasMessages ? 'error' : ''}"
-              rowIndexVar="rowIndex">
+              stripedRows="true" rowIndexVar="rowIndex">
               <p:column headerText="Filename">
                 <h:outputText value="#{uploadedFile.name}" />
               </p:column>
-              <p:column headerText="Start date">
+              <p:column headerText="Start date" styleClass="dateTimeCell">
                 <ui:fragment rendered="#{!uploadedFile.processed}">
                   <div class="tablespinner loading" />
                 </ui:fragment>
@@ -50,7 +50,7 @@
                   <f:convertDateTime pattern="#{fileUpload.longDateFormat}" />
                 </h:outputText>
               </p:column>
-              <p:column headerText="End date">
+              <p:column headerText="End date" styleClass="dateTimeCell">
                 <ui:fragment rendered="#{!uploadedFile.processed}">
                   <div class="tablespinner loading" />
                 </ui:fragment>
@@ -59,7 +59,7 @@
                   <f:convertDateTime pattern="#{fileUpload.longDateFormat}" />
                 </h:outputText>
               </p:column>
-              <p:column headerText="No. of records">
+              <p:column headerText="No. of records" styleClass="rightCell" style="width: 140px">
                 <ui:fragment rendered="#{!uploadedFile.processed}">
                   <div class="tablespinner loading" />
                 </ui:fragment>
@@ -69,7 +69,8 @@
                   rendered="#{uploadedFile.processed} and #{uploadedFile.replacement}"
                   styleClass="note"></h:outputText>
               </p:column>
-              <p:column headerText="Store file to database">
+              <p:column headerText="Store file to database"
+                styleClass="centeredCell" style="width: 240px">
                 <ui:fragment rendered="#{!uploadedFile.processed}">
                   <div class="tablespinner loading" />
                 </ui:fragment>
@@ -78,7 +79,7 @@
                   value="#{uploadedFile.store}" />
                 <p:commandButton
                   rendered="#{uploadedFile.processed and uploadedFile.hasMessages}"
-                  icon="ui-icon-notice"
+                  icon="pi pi-exclamation-triangle"
                   onclick="renderMessages($(this).data('messages'))"
                   title="Errors" value="Errors">
                   <f:passThroughAttribute name="data-messages"
@@ -86,7 +87,7 @@
                 </p:commandButton>
                 <ui:fragment
                   rendered="#{uploadedFile.processed and uploadedFile.hasUnrecognisedRunTypes}">
-                  <p:commandButton icon="ui-icon-plus"
+                  <p:commandButton icon="pi pi-plus"
                     onclick="PF('runTypesDialog_#{rowIndex}').show()"
                     title="Unrecognised Run Types Found"
                     value="Unrecognised Run Types Found" />
@@ -121,7 +122,7 @@
                           </tr>
                         </ui:repeat>
                       </table>
-                      <p:commandButton icon="ui-icon-save"
+                      <p:commandButton icon="pi pi-save"
                         actionListener="#{fileUpload.updateRunTypes(uploadedFile.name)}"
                         title="Save Run Types" value="Save Run Types"
                         onclick="PF('runTypesDialog_#{rowIndex}').hide()"
@@ -149,7 +150,7 @@
       </div>
       <h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
         <p:commandButton id="storeFileButton"
-          styleClass="#{fileUpload.storeFileButtonClass}" icon="ui-icon-disk"
+          styleClass="#{fileUpload.storeFileButtonClass}" icon="pi pi-save"
           title="Store marked files to database"
           value="Store marked files to database"
           actionListener="#{fileUpload.store()}" ajax="true" update="fileList"
