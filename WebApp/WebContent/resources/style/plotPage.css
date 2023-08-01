@@ -153,7 +153,7 @@ td.selected > div {
 
 /* Plot footer controls */
 :root {
-  --plotFooterButtonSize: 35px !important;
+  --plotFooterButtonSize: 35px;
 }
 
 .plotModeButtons .ui-button:nth-child(1) {

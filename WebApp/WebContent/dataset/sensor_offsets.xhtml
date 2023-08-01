@@ -53,7 +53,7 @@
         #{sensorOffsetsBean.dataset.name} - Setting offsets for
 
         <p:selectOneMenu value="#{sensorOffsetsBean.currentPair}"
-          id="currentPair" onchange="newGroupSelected()">
+          id="currentPair" onchange="newGroupSelected()" styleClass="pairPicker">
           <f:selectItems
             value="#{sensorOffsetsBean.instrument.sensorGroups.groupPairs}"
             var="pair" itemValue="#{pair.id}"
@@ -87,7 +87,7 @@
           <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
             <f:facet name="left">
               <p:commandButton icon="zoomOutButton" onclick="resetZoom('timeSeriesPlot'); return false;"
-                styleClass="inlineButton tightButton plotFooterButton" />
+                styleClass="inlineButton tightIconButton plotFooterButton" />
 
               <p:selectBooleanButton id="showOffsetsButton" widgetVar="showOffsetsButton"
                 onIcon="offsetsButton" offIcon="offsetsButton"
@@ -96,7 +96,7 @@
             </f:facet>
             <f:facet name="right">
               <p:commandButton value="Add Offset..." onclick="startAddOffset(); return false;"
-                styleClass="inlineButton tightButton plotFooterButton"/>
+                styleClass="tightTextButton plotFooterButton addOffsetButton"/>
             </f:facet>
           </p:toolbar>
         </div>
@@ -122,16 +122,11 @@
           <div id="offsetsTable">
             <p:dataTable id="offsetsList" widgetVar="offsetsList"
               var="offset" value="#{sensorOffsetsBean.offsetsList}">
-              <p:column>
-                <f:facet name="header">
-                  Time
-                </f:facet>
+              <p:column headerText="Time">
                 <h:outputText value="#{offset.time}"/>
               </p:column>
-              <p:column styleClass="numericCol offsetTableOffsetColumn">
-                <f:facet name="header">
-                  Offset
-                </f:facet>
+              <p:column headerText="Offset"
+                styleClass="numericCol offsetTableOffsetColumn">
                 <h:outputText value="#{offset.offsetText}"/>
               </p:column>
               <p:column styleClass="buttonCol">
@@ -148,13 +143,13 @@
           <div id="offsetFormContainer">
             <table>
               <tr>
-                <td class="first">
+                <td class="first offsetFormVarCell">
                   <h:outputText id="firstName" value="#{sensorOffsetsBean.firstName}"/>
                 </td>
-                <td>
+                <td class="offsetFormTimestampCell">
                   <h:outputText id="firstTimeText"></h:outputText>
                 </td>
-                <td>
+                <td class="offsetFormButtonCell">
                   <p:selectBooleanButton id="firstSelect" widgetVar="firstSelect"
                     onIcon="pipetteButton" offIcon="pipetteButton"
                     onchange="firstSelectClick()"
@@ -162,13 +157,13 @@
                 </td>
               </tr>
               <tr>
-                <td class="second">
+                <td class="second offsetFormVarCell">
                   <h:outputText id="secondName" value="#{sensorOffsetsBean.secondName}"/>
                 </td>
-                <td>
+                <td class="offsetFormTimestampCell">
                   <h:outputText id="secondTimeText"></h:outputText>
                 </td>
-                <td>
+                <td class="offsetFormButtonCell">
                   <p:selectBooleanButton id="secondSelect" widgetVar="secondSelect"
                     onIcon="pipetteButton" offIcon="pipetteButton"
                     onchange="secondSelectClick()"
@@ -198,7 +193,7 @@
   <!-- The Finish button is its own thing -->
   <h:form id="finishButtonForm" method="post">
    <p:commandButton widgetVar="finishButton" value="Finish" ajax="false"
-     process="@none" action="#{sensorOffsetsBean.finish}" styleClass="finishButton" />
+     process="@none" action="#{sensorOffsetsBean.finish}" styleClass="finishButton tightTextButton" />
   </h:form>
 
   <script>

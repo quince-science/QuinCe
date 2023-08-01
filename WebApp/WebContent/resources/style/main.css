@@ -427,7 +427,7 @@ td.labelsNoPad {
 }
 
 table .numericCol {
-  text-align: right;
+  text-align: right !important;
 }
 
 table .centreCol {
