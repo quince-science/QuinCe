@@ -44,16 +44,10 @@ gretty {
 
 repositories {
   mavenCentral()
-
-  // primefaces repo needed for the cupertino theme
-  maven {
-    url "https://repository.primefaces.org"
-  }
 }
 
 dependencies {
-  implementation "org.primefaces:primefaces:6.2"
-  implementation "org.primefaces.themes:cupertino:1.0.10"
+  implementation "org.primefaces:primefaces:13.0.0"
   implementation 'joda-time:joda-time:2.7'
   implementation 'javax.el:javax.el-api:3.0.0'
   implementation 'mysql:mysql-connector-java:8.0.29'

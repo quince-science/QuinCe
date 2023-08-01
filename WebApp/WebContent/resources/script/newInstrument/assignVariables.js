@@ -92,7 +92,7 @@ function handleSensorTypeColumnDrop(e) {
   $(this).removeClass('dropTargetHover');
 
   // Get sensor type
-  let sensorTypeName = $(this).find('span[role="treeitem"]')[0].innerText;
+  let sensorTypeName = $(this).find('.ui-treenode-label')[0].innerText;
   let sensorTypeId = getSensorTypeID(sensorTypeName);
 
   // Get column details

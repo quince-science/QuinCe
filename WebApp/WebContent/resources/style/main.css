@@ -28,11 +28,9 @@
        url("#{resource['fonts/noto-sans-v25-latin-ext_latin-700.woff']}") format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
-
 body {
-  font-family: 'Noto Sans', sans-serif;
+  font-family: 'Noto Sans', sans-serif !important;
   font-size: 14px;
-  font-weight: 400;
   background: #F3F3F3;
   margin: 0px;
   overflow-x: hidden;
@@ -48,7 +46,7 @@ pre {
 }
 
 .contentBox {
-  max-width: 400px;
+  max-width: 600px;
   margin: 40px auto 28px;
   border: 1px solid #DEDEDE;
   padding: 15px;
@@ -61,7 +59,7 @@ pre {
 
 h1,h2 {
   margin-bottom: 30px;
-  display:flex;
+  display: flex;
   align-items: center;
   justify-content: center;
 }
@@ -77,7 +75,7 @@ h4:first-child {
 }
 
 #logoTitle {
-  display:flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
@@ -111,7 +109,6 @@ input.expand {
 }
 
 textarea {
-  font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
 }
 
@@ -127,7 +124,6 @@ input[type="submit"], input[type="button"], button {
   color: #222;
   background: #8CD5ED;
 
-  font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -136,6 +132,10 @@ input[type="submit"], input[type="button"], button {
   white-space: nowrap;
 
   outline: none;
+}
+
+.ui-spinner-button {
+  min-width: 0px !important;
 }
 
 .contentList input[type="submit"],
@@ -174,14 +174,6 @@ input[type="submit"][disabled="disabled"] {
   margin-right: 5px;
 }
 
-.inlineSelectBooleanButton {
-  margin-top: 0px;
-  margin-left: 5px;
-  margin-right: 5px;
-  height: 28px;
-  top: -3px;
-}
-
 input[type="submit"]:last-of-type, button:last-of-type {
     margin-right: 0px;
 }
@@ -190,8 +182,21 @@ input.smallButton, button.smallButton {
     margin-top: 0px;
 }
 
-.tightButton {
+.tightIconButton {
   min-width: 0px;
+  height: 30px;
+}
+
+.tightTextButton {
+  height: 30px;
+}
+
+.tightTextButton:not(:last-child) {
+  margin-right: 5px;
+}
+
+.tightTextButton .ui-button-text {
+  margin-top: -6px;
 }
 
 .highlightButton {
@@ -199,7 +204,10 @@ input.smallButton, button.smallButton {
 }
 
 .buttonPanel {
-  margin: auto;
+  margin-top: 10px;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .buttonPanel td {
@@ -385,6 +393,10 @@ div.fullPage {
   color: #999 !important;
 }
 
+table {
+  font-variant-numeric: tabular-nums;
+}
+
 table.shrink {
   table-layout: unset;
 }
@@ -415,7 +427,7 @@ td.labelsNoPad {
 }
 
 table .numericCol {
-  text-align: right;
+  text-align: right !important;
 }
 
 table .centreCol {
@@ -673,11 +685,16 @@ table.dialogTable td.dialogTableCell {
 }
 
 .centeredCell {
-  text-align: center;
+  text-align: center !important;
 }
 
 .rightCell {
-  text-align: right;
+  text-align: right !important;
+}
+
+.dateTimeCell {
+  text-align: right !important;
+  width: 170px;
 }
 
 .note {
@@ -692,7 +709,34 @@ table.dialogTable td.dialogTableCell {
   font-weight: 700;
 }
 
+.deleteIcon {
+  background-image: url("#{resource['image/x-red.svg']}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  margin-left: 5px;
+  margin-bottom: -4px;
+}
+
 /* PrimeFaces overrides */
+.ui-widget {
+  font-family: 'Noto Sans', sans-serif !important;
+}
+
+.ui-state-disabled {
+  opacity: 0.3 !important;
+}
+
+.ui-button.ui-state-active {
+  background: #b5dafc !important;
+}
+
+.lightButton {
+  background: #b5dafc !important;
+}
+
 .ui-panel-content td {
   vertical-align: middle;
 }
@@ -740,6 +784,38 @@ table.dialogTable td.dialogTableCell {
   width: unset;
 }
 
+.ui-datatable td {
+  padding: 8px !important;
+}
+
+.ui-datatable th {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+.ui-toolbar {
+  padding-top: 2px !important;
+}
+
+.hasDatepicker {
+  text-align: center !important;
+}
+
+.ui-datepicker td {
+  padding: 0px !important;
+}
+
+/*
+  Fix for columns in scrollable dataTables
+  For some reason the table header is repeated, so we
+  hide the clone.
+ */
+.ui-datatable-scrollable-theadclone {
+  display: none;
+}
+
 @keyframes rowFlash {
     0% {background-color: #fff;}
    25% {background-color: #fd0;}
@@ -750,22 +826,6 @@ table.dialogTable td.dialogTableCell {
 
 form.inline {
   display: inline;
-}
-
-.applicationMenu > ul > li:nth-last-child(-n + 2) {
-  float: right !important;
-  border: none;
-  background: none;
-}
-
-.applicationMenu > ul > li:nth-last-child(-n + 2) a {
-  text-decoration: underline;
-}
-
-.creditsMenu {
-  font-size: 0.75em;
-  position: relative;
-  top: 6px;
 }
 
 /*****************************************

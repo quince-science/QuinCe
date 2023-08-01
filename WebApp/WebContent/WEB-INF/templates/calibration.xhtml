@@ -196,16 +196,10 @@
             value="#{sessionScope[beanName].affectedDatasets}"
             emptyMessage="No datasets affected">
 
-            <p:column>
-              <f:facet name="header">
-                <h:outputText value="Dataset" />
-              </f:facet>
+            <p:column headerText="Dataset">
               <h:outputText value="#{entry.key.name}"/>
             </p:column>
-            <p:column width="150" style="text-align: center">
-              <f:facet name="header">
-                <h:outputText value="Can Reprocess?" />
-              </f:facet>
+            <p:column style="width: 150px" styleClass="centeredCell" headerText="Can Reprocess?">
               <ui:fragment rendered="#{entry.value}">
                 <h:graphicImage value="/resources/image/tick.svg" class="actionIcon"
                   alt="Can be reprocessed" title="Can be reprocessed" />

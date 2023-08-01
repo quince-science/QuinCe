@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
 import java.util.Arrays;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 /**
  * Handles all formats of longitudes, and the corresponding column assignments
@@ -49,13 +49,13 @@ public class LongitudeSpecification extends PositionSpecification {
 
   public static final String NAME_DDDMMmmm = "(-)DDDMM.mmm";
 
-  private static TreeMap<Integer, String> formats = null;
+  private static LinkedHashMap<Integer, String> formats = null;
 
   static {
-    formats = new TreeMap<Integer, String>();
+    formats = new LinkedHashMap<Integer, String>();
 
-    formats.put(FORMAT_0_360, NAME_0_360);
     formats.put(FORMAT_MINUS180_180, NAME_MINUS180_180);
+    formats.put(FORMAT_0_360, NAME_0_360);
     formats.put(FORMAT_0_180, NAME_0_180);
     formats.put(FORMAT_HDM, NAME_HDM);
     formats.put(FORMAT_H_DDDMMmmm, NAME_H_DDDMMmmm);
@@ -155,7 +155,7 @@ public class LongitudeSpecification extends PositionSpecification {
       Arrays.asList("W", "West"));
   }
 
-  public static TreeMap<Integer, String> getFormats() {
+  public static LinkedHashMap<Integer, String> getFormats() {
     return formats;
   }
 }

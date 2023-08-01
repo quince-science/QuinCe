@@ -53,7 +53,7 @@
         <div id="uploadFile" class="hidden">
           <p:outputLabel value="Select a file to upload" />
           <p:fileUpload
-            fileUploadListener="#{newInstrumentBean.handleFileUpload}"
+            listener="#{newInstrumentBean.handleFileUpload}"
             mode="advanced" auto="true" oncomplete="showProcessingMessage()" />
         </div>
         <div id="processingFileMessage" class="hidden">Processing file...

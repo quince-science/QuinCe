@@ -32,3 +32,14 @@
   font-weight: 400;
 }
 
+.ui-selectmanycheckbox > .ui-g {
+  flex-direction: column;
+}
+
+.ui-selectmanycheckbox > .ui-g .ui-md-1 {
+  width: unset;
+}
+
+body .ui-selectonelistbox .ui-selectlistbox-listcontainer .ui-selectlistbox-list .ui-selectlistbox-item > td {
+  padding: 10px;
+}

@@ -142,10 +142,10 @@
           process="datasetId"
           update="messagesBox"
           oncomplete="PF('messagesDialog').show()"/>
+        <h:panelGrid columns="1" cellpadding="5" class="buttonPanel contentList">
+          <p:commandButton onclick="PF('messagesDialog').hide()" value="Close"/>
+        </h:panelGrid>
       </h:form>
-      <h:panelGrid columns="1" cellpadding="5" class="buttonPanel contentList">
-        <p:commandButton onclick="PF('messagesDialog').hide()" value="Close"/>
-      </h:panelGrid>
     </p:dialog>
 
     <ui:fragment rendered="#{not dataSetsBean.hasInstruments}">
@@ -241,6 +241,7 @@
         <p:importConstants type="uk.ac.exeter.QuinCe.data.Dataset.DataSet"
           var="DataSet" />
         <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}"
+          stripedRows="true"
           var="dataset" styleClass="pageBlock">
           <p:column>
             <f:facet name="header">
@@ -248,13 +249,13 @@
             </f:facet>
             <h:outputText value="#{dataset.name}" />
           </p:column>
-          <p:column width="200" styleClass="rightCell">
+          <p:column width="200" styleClass="dateTimeCell">
             <f:facet name="header">
               <h:outputText value="Start Date" />
             </f:facet>
             <h:outputText value="#{dataset.start}" />
           </p:column>
-          <p:column width="200" styleClass="rightCell">
+          <p:column width="200" styleClass="dateTimeCell">
             <f:facet name="header">
               <h:outputText value="End Date" />
             </f:facet>
@@ -280,7 +281,7 @@
               value="#{dataset.statusName}" />
             <p:commandButton
               rendered="#{dataset.status eq DataSet.STATUS_ERROR}"
-              icon="ui-icon-notice"
+              icon="pi pi-exclamation-triangle"
               onclick="displayDialog(getMessagesHTML($(this).data('messages')))"
               title="Errors" value="Errors" styleClass="inlineButton">
               <f:passThroughAttribute name="data-messages"

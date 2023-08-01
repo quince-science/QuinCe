@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
@@ -74,7 +74,7 @@ public abstract class FileUploadBean extends BaseManagedBean {
     if (null == getFile()) {
       return Collections.emptyList();
     }
-    String fileContent = new String(getFile().getContents(),
+    String fileContent = new String(getFile().getContent(),
       StandardCharsets.UTF_8);
     List<String> fileLines = new ArrayList<String>(
       Arrays.asList(fileContent.split("[\\r\\n]+")));

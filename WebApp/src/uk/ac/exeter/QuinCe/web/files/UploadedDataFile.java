@@ -14,8 +14,8 @@ import javax.faces.application.FacesMessage.Severity;
 import javax.sql.DataSource;
 import javax.ws.rs.core.Response.Status;
 
-import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
@@ -183,22 +183,23 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
    * @return a json-array with messages
    */
   public String getMessages() {
-    JSONArray jsonArray = new JSONArray();
+    JsonArray jsonArray = new JsonArray();
     for (FacesMessage message : messages) {
-      JSONObject jsonObject = new JSONObject();
-      jsonObject.put("summary", message.getSummary());
-      jsonObject.put("severity", getSeverityLabel(message.getSeverity()));
-      jsonObject.put("type", "file");
-      jsonArray.put(jsonObject);
+      JsonObject jsonObject = new JsonObject();
+      jsonObject.addProperty("summary", message.getSummary());
+      jsonObject.addProperty("severity",
+        getSeverityLabel(message.getSeverity()));
+      jsonObject.addProperty("type", "file");
+      jsonArray.add(jsonObject);
     }
     if (null != dataFile) {
       for (DataFileMessage message : dataFile.getMessages()) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("summary", message.toString());
-        jsonObject.put("severity",
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("summary", message.toString());
+        jsonObject.addProperty("severity",
           getSeverityLabel(FacesMessage.SEVERITY_INFO));
-        jsonObject.put("type", "row");
-        jsonArray.put(jsonObject);
+        jsonObject.addProperty("type", "row");
+        jsonArray.add(jsonObject);
       }
     }
     return jsonArray.toString();

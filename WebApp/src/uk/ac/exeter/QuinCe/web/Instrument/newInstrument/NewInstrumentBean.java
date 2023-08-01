@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -19,11 +20,12 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 
 import org.apache.commons.lang3.StringUtils;
-import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONObject;
 import org.primefaces.model.TreeNode;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -1474,25 +1476,32 @@ public class NewInstrumentBean extends FileUploadBean {
    *
    * @return Navigation to either the upload page (if all files have been
    *         removed), or the assignment page
+   * @throws Exception
    */
-  @SuppressWarnings("unlikely-arg-type")
-  public String removeFile() {
-    String result;
+  public String removeFile() throws Exception {
 
-    if (null != removeFileName) {
-      instrumentFiles.remove(removeFileName);
-      sensorGroups.remove(sensorAssignments.getFileAssignments(removeFileName));
-      sensorAssignments.removeFileAssignments(removeFileName);
-      assignmentsTree.removeFile(removeFileName);
+    try {
+      String result;
+
+      if (null != removeFileName) {
+        instrumentFiles.remove(removeFileName);
+        sensorGroups
+          .remove(sensorAssignments.getFileAssignments(removeFileName));
+        sensorAssignments.removeFileAssignments(removeFileName);
+        assignmentsTree.removeFile(removeFileName);
+      }
+
+      if (instrumentFiles.size() == 0) {
+        result = NAV_UPLOAD_FILE;
+      } else {
+        result = NAV_ASSIGN_VARIABLES;
+      }
+
+      return result;
+    } catch (Exception e) {
+      ExceptionUtils.printStackTrace(e);
+      throw e;
     }
-
-    if (instrumentFiles.size() == 0) {
-      result = NAV_UPLOAD_FILE;
-    } else {
-      result = NAV_ASSIGN_VARIABLES;
-    }
-
-    return result;
   }
 
   /**
@@ -1689,102 +1698,43 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Get the details of the Run Type Category assignments as a JSON string
-   *
-   * @return The Run Type Category assignments
-   */
-  public String getCategoryAssignments() {
-
-    // Set up the category list
-    List<RunTypeCategory> categories = ResourceManager.getInstance()
-      .getRunTypeCategoryConfiguration().getCategories(false, false);
-    categories = removeUnusedVariables(categories);
-
-    TreeMap<RunTypeCategory, Integer> assignedCategories = new TreeMap<RunTypeCategory, Integer>();
-
-    for (RunTypeCategory category : categories) {
-      assignedCategories.put(category, 0);
-    }
-
-    // Find all the assigned categories from each file
-    for (FileDefinition file : instrumentFiles) {
-      RunTypeAssignments fileRunTypes = file.getRunTypes();
-      if (null != fileRunTypes) {
-        for (RunTypeAssignment assignment : fileRunTypes.values()) {
-          if (!assignment.isAlias()) {
-            RunTypeCategory category = assignment.getCategory();
-            if (!category.equals(RunTypeCategory.IGNORED)) {
-              assignedCategories.put(category,
-                assignedCategories.get(category) + 1);
-            }
-          }
-        }
-      }
-    }
-
-    // Make the JSON output
-    JSONArray json = new JSONArray();
-
-    for (Map.Entry<RunTypeCategory, Integer> entry : assignedCategories
-      .entrySet()) {
-      JSONArray entryJson = new JSONArray();
-      entryJson.put(entry.getKey().getDescription());
-      entryJson.put(entry.getValue());
-
-      json.put(entryJson);
-    }
-
-    return json.toString();
-  }
-
-  /**
-   * Dummy set method to go with {@link #getCategoryAssignments()}. Does
-   * nothing.
-   *
-   * @param dummy
-   *          Dummy string
-   */
-  public void setCategoryAssignments(String dummy) {
-    // Do nothing
-  }
-
-  /**
    * Get the run type assignments as a JSON string
    *
    * @return The run type assignments
    */
   public String getRunTypeAssignments() {
-    JSONArray json = new JSONArray();
+    JsonArray json = new JsonArray();
 
     for (int i = 0; i < instrumentFiles.size(); i++) {
       FileDefinition file = instrumentFiles.get(i);
       if (file.hasRunTypes()) {
         RunTypeAssignments assignments = file.getRunTypes();
 
-        JSONObject fileAssignments = new JSONObject();
+        JsonObject fileAssignments = new JsonObject();
 
-        fileAssignments.put("index", i);
+        fileAssignments.addProperty("index", i);
 
-        JSONArray jsonAssignments = new JSONArray();
+        JsonArray jsonAssignments = new JsonArray();
 
         for (RunTypeAssignment assignment : assignments.values()) {
-          JSONObject jsonAssignment = new JSONObject();
-          jsonAssignment.put("runType", assignment.getRunName());
+          JsonObject jsonAssignment = new JsonObject();
+          jsonAssignment.addProperty("runType", assignment.getRunName());
 
           RunTypeCategory category = assignment.getCategory();
           if (null == category) {
-            jsonAssignment.put("category", JSONObject.NULL);
-            jsonAssignment.put("aliasTo", assignment.getAliasTo());
+            jsonAssignment.add("category", JsonNull.INSTANCE);
+            jsonAssignment.addProperty("aliasTo", assignment.getAliasTo());
           } else {
-            jsonAssignment.put("category", assignment.getCategory().getType());
-            jsonAssignment.put("aliasTo", JSONObject.NULL);
+            jsonAssignment.addProperty("category",
+              assignment.getCategory().getType());
+            jsonAssignment.add("aliasTo", JsonNull.INSTANCE);
           }
 
-          jsonAssignments.put(jsonAssignment);
+          jsonAssignments.add(jsonAssignment);
         }
 
-        fileAssignments.put("assignments", jsonAssignments);
-        json.put(fileAssignments);
+        fileAssignments.add("assignments", jsonAssignments);
+        json.add(fileAssignments);
       }
     }
 
@@ -2025,9 +1975,10 @@ public class NewInstrumentBean extends FileUploadBean {
    *
    * @throws SensorAssignmentException
    * @throws SensorTypeNotFoundException
+   * @throws SensorConfigurationException
    */
-  public void assignRunType()
-    throws SensorAssignmentException, SensorTypeNotFoundException {
+  public void assignRunType() throws SensorAssignmentException,
+    SensorTypeNotFoundException, SensorConfigurationException {
 
     FileDefinitionBuilder file = instrumentFiles.getByDescription(runTypeFile);
     file.addRunTypeColumn(runTypeColumn);
@@ -2150,7 +2101,8 @@ public class NewInstrumentBean extends FileUploadBean {
     return NAV_ASSIGN_VARIABLES;
   }
 
-  public TreeNode getAssignmentsTree() throws Exception {
+  public TreeNode<AssignmentsTreeNodeData> getAssignmentsTree()
+    throws Exception {
     return assignmentsTree.getRoot();
   }
 
@@ -2439,7 +2391,7 @@ public class NewInstrumentBean extends FileUploadBean {
   public List<PositionFormatEntry> getLongitudeFormats() {
 
     if (null == lonFormats) {
-      TreeMap<Integer, String> lonFormatsMap = LongitudeSpecification
+      LinkedHashMap<Integer, String> lonFormatsMap = LongitudeSpecification
         .getFormats();
 
       lonFormats = new ArrayList<PositionFormatEntry>(lonFormatsMap.size());

@@ -5,7 +5,7 @@ import java.util.TreeSet;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;

@@ -110,8 +110,15 @@
           <table>
             <tr>
               <td><p:outputLabel value="'Missing' Value: " /></td>
-              <td><p:inputText id="sensorAssignmentMissingValue"
-                  value="#{newInstrumentBean.sensorAssignmentMissingValue}" /></td>
+              <td>
+                <p:inputText id="sensorAssignmentMissingValue"
+                  value="#{newInstrumentBean.sensorAssignmentMissingValue}" />
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <span class="instructions">Empty string, NA or NaN are handled automatically</span>
+              </td>
             </tr>
           </table>
         </div>
@@ -119,13 +126,19 @@
           <p:commandButton widgetVar="sensorAssignmentAssignButton"
             value="Assign" ajax="true"
             action="#{newInstrumentBean.storeSensorAssignment}"
-            process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue"
-            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue assignmentsTree assignedSensorNames"
+            process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType
+              sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer
+              sensorAssignmentMissingValue"
+            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType
+              sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer
+              sensorAssignmentMissingValue assignmentsTree assignedSensorNames"
             oncomplete="sensorAssigned();" />
           <p:commandButton value="Cancel" ajax="true"
             action="#{newInstrumentBean.resetSensorAssignmentValues}"
             process="@none"
-            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue"
+            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType
+              sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer
+              sensorAssignmentMissingValue"
             oncomplete="PF('sensorAssignmentDialog').hide();" />
         </h:panelGrid>
       </p:dialog>
@@ -399,30 +412,27 @@
       </p:dialog>
 
       <div id="assignmentsLayout">
-        <p:fieldset legend="File Columns" id="fileColumns">
+        <p:fieldset legend="File Columns" id="fileColumns" styleClass="assignmentsPanel">
           <p:tabView value="#{newInstrumentBean.instrumentFiles}" var="iFile"
             widgetVar="fileTabs">
             <p:tab>
               <f:facet name="title">
                 <h:outputText id="tabTitle" value="#{iFile.fileDescription}"/>
+                <p:commandLink
+                  styleClass="deleteIcon" style="margin-bottom: 0px !important"
+                  onclick="removeFile('#{iFile.fileDescription}'); return false"/>
                 <p:contextMenu for="tabTitle">
                   <p:menuitem value="Rename" onclick="renameFile('#{iFile.fileDescription}')"/>
-                  <p:menuitem value="Delete" onclick="removeFile('#{iFile.fileDescription}')"/>
                 </p:contextMenu>
               </f:facet>
-              <p:dataTable value="#{iFile.fileColumns}" var="column" scrollable="true" scrollHeight="300" tableStyleClass="fileColumnsTable">
-                <p:column>
-                  <f:facet name="header">
-                    <h:outputText value="Column"/>
-                  </f:facet>
+              <p:dataTable value="#{iFile.fileColumns}" var="column" scrollable="true"
+                scrollHeight="300" tableStyleClass="fileColumnsTable">
+                <p:column headerText="Column">
                   <div id="col---#{iFile.fileDescription}---#{column.index}---#{column.name}" class="draggable" draggable="true">
                     <h:outputText value="#{column.name}"/>
                   </div>
                 </p:column>
-                <p:column styleClass="exampleValueCol">
-                  <f:facet name="header">
-                    <h:outputText value="Sample Value"/>
-                  </f:facet>
+                <p:column headerText="Sample Value" styleClass="exampleValueCol">
                   <h:outputText styleClass="exampleValue" value="#{column.exampleValue}"/>
                 </p:column>
               </p:dataTable>
@@ -438,86 +448,82 @@
           <br/>
           column name &gt;&gt;
         </div>
-        <p:fieldset legend="Assignments" id="assignments">
-          <p:tree widgetVar="assignmentsTree" id="assignmentsTree" value="#{newInstrumentBean.assignmentsTree}" var="node" styleClass="assignmentsTree" animate="true">
+        <p:fieldset legend="Assignments" id="assignments" styleClass="assignmentsPanel">
+          <p:tree widgetVar="assignmentsTree" id="assignmentsTree"
+            value="#{newInstrumentBean.assignmentsTree}" var="node" styleClass="assignmentsTree" animate="true">
             <p:ajax event="expand" listener="#{newInstrumentBean.treeNodeExpand}"/>
             <p:ajax event="collapse" listener="#{newInstrumentBean.treeNodeCollapse}"/>
             <p:treeNode type="FINISHED_VARIABLE" styleClass="finishedVariable">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="UNFINISHED_VARIABLE" styleClass="unfinishedVariable">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="UNASSIGNED_SENSOR_TYPE" styleClass="sensorTypeDropTarget unassignedSensorType">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="ASSIGNED_SENSOR_TYPE" styleClass="sensorTypeDropTarget assignedSensorType">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="SENSOR_TYPE_ASSIGNMENT" styleClass="sensorAssignment">
-              <h:outputText id="nodeLabel" value="#{node.target}"/>
-              <p:contextMenu for="nodeLabel">
-                <p:menuitem value="Remove"
-                  onclick="removeSensorAssignment('#{node.sensorType.id}', '#{node.dataFile}', '#{node.column}')"/>
-              </p:contextMenu>
+              <h:outputText id="nodeLabel" value="#{node.label}"/>
+              <p:commandLink
+                styleClass="deleteIcon"
+                onclick="removeSensorAssignment('#{node.sensorTypeId}', '#{node.file}', '#{node.column}'); return false"/>
             </p:treeNode>
             <p:treeNode type="UNFINISHED_DATETIME" styleClass="unassignedSensorType">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="FINISHED_DATETIME" styleClass="assignedSensorType">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="UNASSIGNED_DATETIME" styleClass="unassignedDateTimeType dateTimeDropTarget">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="ASSIGNED_DATETIME" styleClass="assignedDateTimeType">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="DATETIME_ASSIGNMENT" styleClass="dateTimeAssignment">
-              <h:outputText id="dateTimeLabel" value="#{node.columnName}"/>
-              <p:contextMenu for="dateTimeLabel">
-                <p:menuitem value="Remove"
-                  onclick="removeDateTimeAssignment('#{node.file}', #{node.columnIndex})"/>
-              </p:contextMenu>
+              <h:outputText id="dateTimeLabel" value="#{node.label}"/>
+              <p:commandLink
+                styleClass="deleteIcon"
+                onclick="removeDateTimeAssignment('#{node.file}', #{node.column}); return false"/>
             </p:treeNode>
             <p:treeNode type="UNASSIGNED_LONGITUDE" styleClass="unassignedSensorType longitudeDropTarget">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="ASSIGNED_LONGITUDE" styleClass="assignedSensorType">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="UNASSIGNED_LATITUDE" styleClass="unassignedSensorType latitudeDropTarget">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="ASSIGNED_LATITUDE" styleClass="assignedSensorType">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="UNASSIGNED_HEMISPHERE" styleClass="unassignedSensorType hemisphereDropTarget">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="ASSIGNED_HEMISPHERE" styleClass="assignedSensorType">
-              <h:outputText value="#{node}"/>
+              <h:outputText value="#{node.label}"/>
             </p:treeNode>
             <p:treeNode type="LONGITUDE_ASSIGNMENT" styleClass="positionAssignment">
-              <h:outputText id="longitudeLabel" value="#{node.file}: #{node.columnName}"/>
-              <p:contextMenu for="longitudeLabel">
-                <p:menuitem value="Remove"
-                  onclick="removePositionAssignment('#{node.file}', #{node.columnIndex})"/>
-              </p:contextMenu>
+              <h:outputText id="longitudeLabel" value="#{node.label}"/>
+              <p:commandLink
+                styleClass="deleteIcon"
+                onclick="removePositionAssignment('#{node.file}', #{node.column}); return false"/>
             </p:treeNode>
             <p:treeNode type="LATITUDE_ASSIGNMENT" styleClass="positionAssignment">
-              <h:outputText id="latitudeLabel" value="#{node.file}: #{node.columnName}"/>
-              <p:contextMenu for="latitudeLabel">
-                <p:menuitem value="Remove"
-                  onclick="removePositionAssignment('#{node.file}', #{node.columnIndex})"/>
-              </p:contextMenu>
+              <h:outputText id="latitudeLabel" value="#{node.label}"/>
+              <p:commandLink
+                styleClass="deleteIcon"
+                onclick="removePositionAssignment('#{node.file}', #{node.column}); return false"/>
             </p:treeNode>
             <p:treeNode type="HEMISPHERE_ASSIGNMENT" styleClass="positionAssignment">
-              <h:outputText id="hemisphereLabel" value="#{node.file}: #{node.columnName}"/>
-              <p:contextMenu for="hemisphereLabel">
-                <p:menuitem value="Remove"
-                  onclick="removePositionAssignment('#{node.file}', #{node.columnIndex})"/>
-              </p:contextMenu>
+              <h:outputText id="hemisphereLabel" value="#{node.label}"/>
+              <p:commandLink
+                styleClass="deleteIcon"
+                onclick="removePositionAssignment('#{node.file}', #{node.column}); return false"/>
             </p:treeNode>
           </p:tree>
         </p:fieldset>

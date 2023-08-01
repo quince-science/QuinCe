@@ -1,6 +1,6 @@
 package uk.ac.exeter.QuinCe.utils;
 
-import org.primefaces.json.JSONObject;
+import com.google.gson.JsonObject;
 
 /**
  * @author jhe052
@@ -54,12 +54,12 @@ public class Message {
     this.message = message == null ? "" : message;
   }
 
-  public JSONObject getAsJSON() {
-    JSONObject json = null;
+  public JsonObject getAsJSON() {
+    JsonObject json = null;
     if (getMessage() != "") {
-      json = new JSONObject();
-      json.put(Message.MESSAGE_KEY, getMessage());
-      json.put(Message.DETAILS_KEY, getDetails());
+      json = new JsonObject();
+      json.addProperty(Message.MESSAGE_KEY, getMessage());
+      json.addProperty(Message.DETAILS_KEY, getDetails());
     }
     return json;
   }

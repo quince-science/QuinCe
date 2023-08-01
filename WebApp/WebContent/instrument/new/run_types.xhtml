@@ -10,7 +10,6 @@
     <script>
       $(document).ready(function() {
         setTimeout(function() {
-            renderAssignedCategories();
             populateRunTypeMenus();
           }, 500);
       });
@@ -19,8 +18,6 @@
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
       <p:defaultCommand target="nextButton" />
-      <h:inputHidden id="assignedCategories"
-        value="#{newInstrumentBean.categoryAssignments}" />
       <h:inputHidden id="assignedRunTypes"
         value="#{newInstrumentBean.runTypeAssignments}" />
       <h:inputHidden id="assignCategoryFile"
@@ -33,12 +30,7 @@
         value="#{newInstrumentBean.runTypeAssignAliasTo}" />
       <p:commandLink id="assignCategoryLink" style="invisible" ajax="true"
         action="#{newInstrumentBean.assignRunTypeCategory}"
-        process="assignCategoryFile assignCategoryRunType assignCategoryCode assignAliasTo"
-        update="assignedCategories" oncomplete="renderAssignedCategories();" />
-      <p:fieldset id="categoriesPanel" legend="Run Type Categories"
-        style="margin-bottom: 20px">
-        <div id="categoriesList" class="assignmentsList"></div>
-      </p:fieldset>
+        process="assignCategoryFile assignCategoryRunType assignCategoryCode assignAliasTo"/>
       <p:fieldset id="runTypesPanel" legend="Assign Run Types"
         style="margin-bottom: 20px">
         <div class="instructions">Below is a list of values from the Run

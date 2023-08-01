@@ -52,14 +52,14 @@ public class InternalCalibrationData extends PlotPageData {
   private DatasetSensorValues datasetSensorValues = null;
 
   /**
-   * The initial user QC comments generated from the selected values.
+   * The flag set during user QC
    */
-  private String userCommentsList = null;
+  private Flag userFlag = Flag.GOOD;
 
   /**
-   * The worst QC flag set on any of the selected values.
+   * The user QC comment
    */
-  private Flag worstSelectedFlag = Flag.GOOD;
+  private String userComment = null;
 
   /**
    * Construct the data object.
@@ -258,13 +258,13 @@ public class InternalCalibrationData extends PlotPageData {
       DateTimeUtils.longsToDates(selectedRows));
   }
 
-  protected void applyFlag(Flag flag, String message)
+  protected void applyManualFlag()
     throws MissingParamException, DatabaseException, InvalidFlagException {
 
     List<SensorValue> sensorValues = getSelectedSensorValues();
 
     for (SensorValue sensorValue : sensorValues) {
-      sensorValue.setUserQC(flag, message);
+      sensorValue.setUserQC(userFlag, userComment);
     }
 
     // Store the updated sensor values
@@ -327,11 +327,11 @@ public class InternalCalibrationData extends PlotPageData {
   public void generateUserCommentsList() {
 
     ValueCounter comments = new ValueCounter();
-    worstSelectedFlag = Flag.GOOD;
+    userFlag = Flag.GOOD;
 
     for (SensorValue sensorValue : getSelectedSensorValues()) {
-      if (sensorValue.getDisplayFlag().moreSignificantThan(worstSelectedFlag)) {
-        worstSelectedFlag = sensorValue.getDisplayFlag();
+      if (sensorValue.getDisplayFlag().moreSignificantThan(userFlag)) {
+        userFlag = sensorValue.getDisplayFlag();
       }
 
       if (!sensorValue.flagNeeded()) {
@@ -345,25 +345,27 @@ public class InternalCalibrationData extends PlotPageData {
       }
     }
 
-    userCommentsList = comments.toString();
+    userComment = comments.toString();
   }
 
-  /**
-   * Get the QC comments generated from the current selection.
-   *
-   * @return The QC comments
-   */
-  public String getUserCommentsList() {
-    return userCommentsList;
+  public int getUserFlag() {
+    return userFlag.getFlagValue();
   }
 
-  /**
-   * Get the worst QC flag from the current selection.
-   *
-   * @return The QC flag.
-   */
-  public Flag getWorstSelectedFlag() {
-    return worstSelectedFlag;
+  public void setUserFlag(int userFlag) {
+    try {
+      this.userFlag = new Flag(userFlag);
+    } catch (InvalidFlagException e) {
+      error("Error setting QC flag", e);
+    }
+  }
+
+  public String getUserComment() {
+    return userComment;
+  }
+
+  public void setUserComment(String userComment) {
+    this.userComment = userComment;
   }
 
   @Override

@@ -9,12 +9,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
  * @author Steve Jones
  *
  */
+@SuppressWarnings("serial")
 public class NewInstrumentFileSet extends InstrumentFileSet {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = 3353458532623379331L;
 
   /**
    * Simple constructor to create an empty set

@@ -10,7 +10,6 @@ import java.util.TreeSet;
 
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
-import org.primefaces.util.TreeUtils;
 
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
@@ -21,10 +20,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentExce
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableAttributes;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
-import uk.ac.exeter.QuinCe.web.ui.EditableTreeNode;
 
 /**
  * Holds details of the assigned sensors in tree form for the
@@ -63,52 +63,66 @@ public class AssignmentsTree {
 
   private static final String HEMISPHERE_ASSIGNMENT = "HEMISPHERE_ASSIGNMENT";
 
+  protected static final String VAR_UNFINISHED = "UNFINISHED_VARIABLE";
+
+  protected static final String VAR_FINISHED = "FINISHED_VARIABLE";
+
+  protected static final String SENSOR_TYPE_ASSIGNED = "ASSIGNED_SENSOR_TYPE";
+
+  protected static final String SENSOR_TYPE_UNASSIGNED = "UNASSIGNED_SENSOR_TYPE";
+
+  protected static final String ASSIGNMENT = "SENSOR_TYPE_ASSIGNMENT";
+
   private final SensorAssignments assignments;
 
   private final boolean needsPosition;
 
-  private DefaultTreeNode root;
+  private DefaultTreeNode<AssignmentsTreeNodeData> root;
 
-  private DefaultTreeNode dateTimeNode;
+  private DefaultTreeNode<AssignmentsTreeNodeData> dateTimeNode;
 
-  private Map<String, EditableTreeNode> dateTimeNodes;
+  private Map<String, DefaultTreeNode<AssignmentsTreeNodeData>> dateTimeNodes;
 
-  private DefaultTreeNode positionNode;
+  private DefaultTreeNode<AssignmentsTreeNodeData> positionNode;
 
-  private Map<SensorType, List<SensorTypeTreeNode>> sensorTypeNodes;
+  private List<DefaultTreeNode<AssignmentsTreeNodeData>> variableNodes;
+
+  private Map<SensorType, List<DefaultTreeNode<AssignmentsTreeNodeData>>> sensorTypeNodes;
 
   private TreeSet<FileDefinitionBuilder> files;
 
-  private static SensorAssignmentTreeNodeComparator nodeComparator;
+  private final List<Variable> variables;
 
-  static {
-    nodeComparator = new SensorAssignmentTreeNodeComparator();
-  }
+  private Map<Long, VariableAttributes> varAttributes = null;
 
   protected AssignmentsTree(List<Variable> variables,
     SensorAssignments assignments, boolean needsPosition)
-    throws SensorConfigurationException, SensorAssignmentException {
+    throws SensorConfigurationException, SensorAssignmentException,
+    SensorTypeNotFoundException {
 
-    root = new DefaultTreeNode("Root", null);
+    root = new DefaultTreeNode<AssignmentsTreeNodeData>(
+      new StringNodeData("Root"), null);
+    this.variables = variables;
     this.assignments = assignments;
     this.needsPosition = needsPosition;
-    sensorTypeNodes = new HashMap<SensorType, List<SensorTypeTreeNode>>();
+    sensorTypeNodes = new HashMap<SensorType, List<DefaultTreeNode<AssignmentsTreeNodeData>>>();
     files = new TreeSet<FileDefinitionBuilder>();
 
     buildTree(variables);
   }
 
   private void buildTree(List<Variable> variables)
-    throws SensorConfigurationException, SensorAssignmentException {
+    throws SensorConfigurationException, SensorAssignmentException,
+    SensorTypeNotFoundException {
 
-    dateTimeNode = new DefaultTreeNode(VariableTreeNode.VAR_UNFINISHED,
-      "Date/Time", root);
+    dateTimeNode = new DefaultTreeNode<AssignmentsTreeNodeData>(VAR_UNFINISHED,
+      new StringNodeData("Date/Time"), root);
     dateTimeNode.setExpanded(true);
-    dateTimeNodes = new TreeMap<String, EditableTreeNode>();
+    dateTimeNodes = new TreeMap<String, DefaultTreeNode<AssignmentsTreeNodeData>>();
 
     if (needsPosition) {
-      positionNode = new DefaultTreeNode(VariableTreeNode.VAR_UNFINISHED,
-        "Position", root);
+      positionNode = new DefaultTreeNode<AssignmentsTreeNodeData>(
+        VAR_UNFINISHED, new StringNodeData("Position"), root);
       positionNode.setExpanded(true);
       updatePositionNodes(null);
     }
@@ -116,83 +130,114 @@ public class AssignmentsTree {
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
 
+    variableNodes = new ArrayList<DefaultTreeNode<AssignmentsTreeNodeData>>(
+      variables.size());
+
     for (Variable var : variables) {
-      TreeNode varNode = new VariableTreeNode(root, var, assignments);
+      DefaultTreeNode<AssignmentsTreeNodeData> varNode = new DefaultTreeNode<AssignmentsTreeNodeData>(
+        new VariableNodeData(var), root);
+
+      varNode.setType(
+        assignments.isVariableComplete(var) ? VAR_FINISHED : VAR_UNFINISHED);
+      varNode.setExpanded(true);
+
+      variableNodes.add(varNode);
 
       for (SensorType sensorType : sensorConfig.getSensorTypes(var.getId(),
         true, true, true)) {
 
-        addSensorTypeNode(sensorType,
-          new SensorTypeTreeNode(varNode, sensorType, variables, assignments));
+        DefaultTreeNode<AssignmentsTreeNodeData> node = new DefaultTreeNode<AssignmentsTreeNodeData>(
+          new SensorTypeNodeData(sensorType), varNode);
+
+        node.setType(assignments.isAssigned(sensorType) ? SENSOR_TYPE_ASSIGNED
+          : SENSOR_TYPE_UNASSIGNED);
+
+        addSensorTypeNode(sensorType, node);
       }
     }
 
-    TreeNode diagnosticsNode = new DefaultTreeNode(
-      VariableTreeNode.VAR_FINISHED, "Diagnostics", root);
+    DefaultTreeNode<AssignmentsTreeNodeData> diagnosticsNode = new DefaultTreeNode<AssignmentsTreeNodeData>(
+      VAR_FINISHED, new StringNodeData("Diagnostics"), root);
 
     for (SensorType diagnosticType : sensorConfig.getDiagnosticSensorTypes()) {
-
-      addSensorTypeNode(diagnosticType, new SensorTypeTreeNode(diagnosticsNode,
-        diagnosticType, variables, assignments));
+      addSensorTypeNode(diagnosticType,
+        new DefaultTreeNode<AssignmentsTreeNodeData>(SENSOR_TYPE_ASSIGNED,
+          new SensorTypeNodeData(diagnosticType), diagnosticsNode));
     }
   }
 
   private void addSensorTypeNode(SensorType sensorType,
-    SensorTypeTreeNode node) {
+    DefaultTreeNode<AssignmentsTreeNodeData> node) {
 
     if (!sensorTypeNodes.containsKey(sensorType)) {
-      sensorTypeNodes.put(sensorType, new ArrayList<SensorTypeTreeNode>());
+      sensorTypeNodes.put(sensorType,
+        new ArrayList<DefaultTreeNode<AssignmentsTreeNodeData>>());
     }
 
     sensorTypeNodes.get(sensorType).add(node);
-
   }
 
-  protected TreeNode getRoot() {
+  protected DefaultTreeNode<AssignmentsTreeNodeData> getRoot() {
     return root;
   }
 
-  protected void addAssignment(SensorAssignment assignment) {
+  protected void addAssignment(SensorAssignment assignment)
+    throws SensorAssignmentException, SensorConfigurationException,
+    SensorTypeNotFoundException {
 
-    for (SensorTypeTreeNode sensorTypeNode : sensorTypeNodes
+    for (DefaultTreeNode<AssignmentsTreeNodeData> sensorTypeNode : sensorTypeNodes
       .get(assignment.getSensorType())) {
 
-      new SensorAssignmentTreeNode(sensorTypeNode, assignment);
-      TreeUtils.sortNode(sensorTypeNode, nodeComparator);
+      new DefaultTreeNode<AssignmentsTreeNodeData>(ASSIGNMENT,
+        new SensorAssignmentNodeData(assignment), sensorTypeNode);
+
       sensorTypeNode.setExpanded(true);
     }
+
+    updateVariableNodes();
   }
 
-  protected void removeFile(String fileName) {
+  protected void removeFile(String fileName) throws SensorAssignmentException,
+    SensorConfigurationException, SensorTypeNotFoundException {
 
     dateTimeNodes.remove(fileName);
 
-    Iterator<TreeNode> nodeSearch = dateTimeNode.getChildren().iterator();
+    Iterator<TreeNode<AssignmentsTreeNodeData>> nodeSearch = dateTimeNode
+      .getChildren().iterator();
     while (nodeSearch.hasNext()) {
-      TreeNode node = nodeSearch.next();
-      if (node.getData().equals(fileName)) {
+      TreeNode<AssignmentsTreeNodeData> node = nodeSearch.next();
+      FileNodeData nodeData = (FileNodeData) node.getData();
+
+      if (nodeData.getFileDescription().equals(fileName)) {
         nodeSearch.remove();
       }
     }
 
     // Remove any sensor type nodes assigned from the file
-    for (List<SensorTypeTreeNode> sensorTypeNodes : sensorTypeNodes.values()) {
-      for (SensorTypeTreeNode sensorTypeNode : sensorTypeNodes) {
 
-        @SuppressWarnings("unchecked")
-        List<SensorAssignmentTreeNode> assignmentNodes = (List<SensorAssignmentTreeNode>) (Object) sensorTypeNode
+    // Loop through all nodes for each SensorType
+    for (List<DefaultTreeNode<AssignmentsTreeNodeData>> sensorTypeNodes : sensorTypeNodes
+      .values()) {
+      for (DefaultTreeNode<AssignmentsTreeNodeData> sensorTypeNode : sensorTypeNodes) {
+
+        // Get the children of the SensorType node
+        List<TreeNode<AssignmentsTreeNodeData>> assignmentNodes = sensorTypeNode
           .getChildren();
 
-        List<TreeNode> filteredChildren = new ArrayList<TreeNode>(
+        List<TreeNode<AssignmentsTreeNodeData>> keptChildren = new ArrayList<TreeNode<AssignmentsTreeNodeData>>(
           assignmentNodes.size());
 
-        for (SensorAssignmentTreeNode node : assignmentNodes) {
-          if (!node.getTargetFile().equals(fileName)) {
-            filteredChildren.add(node);
+        for (TreeNode<AssignmentsTreeNodeData> node : assignmentNodes) {
+
+          SensorAssignmentNodeData nodeData = (SensorAssignmentNodeData) node
+            .getData();
+          if (nodeData.getAssignment().getDataFile().equals(fileName)) {
+            keptChildren.add(node);
           }
         }
 
-        sensorTypeNode.setChildren(filteredChildren);
+        sensorTypeNode.setChildren(keptChildren);
+        updateVariableNodes();
       }
     }
 
@@ -208,12 +253,28 @@ public class AssignmentsTree {
     updatePositionNodes(null);
   }
 
-  protected void removeAssignment(SensorAssignment assignment) {
-    List<SensorTypeTreeNode> typeNodes = sensorTypeNodes
+  protected void removeAssignment(SensorAssignment assignment)
+    throws SensorAssignmentException, SensorConfigurationException,
+    SensorTypeNotFoundException {
+    List<DefaultTreeNode<AssignmentsTreeNodeData>> typeNodes = sensorTypeNodes
       .get(assignment.getSensorType());
-    for (SensorTypeTreeNode node : typeNodes) {
-      node.removeAssignment(assignment);
+
+    for (DefaultTreeNode<AssignmentsTreeNodeData> node : typeNodes) {
+
+      Iterator<TreeNode<AssignmentsTreeNodeData>> nodeSearch = node
+        .getChildren().iterator();
+
+      while (nodeSearch.hasNext()) {
+        TreeNode<AssignmentsTreeNodeData> assignmentNode = nodeSearch.next();
+        SensorAssignmentNodeData nodeData = (SensorAssignmentNodeData) assignmentNode
+          .getData();
+        if (nodeData.getAssignment().equals(assignment)) {
+          nodeSearch.remove();
+        }
+      }
     }
+
+    updateVariableNodes();
   }
 
   protected void addFile(FileDefinitionBuilder file)
@@ -226,8 +287,9 @@ public class AssignmentsTree {
 
   private void makeDateTimeNode(FileDefinitionBuilder file, boolean expanded)
     throws DateTimeSpecificationException {
-    EditableTreeNode fileDateTimeNode = new EditableTreeNode(
-      DATETIME_UNFINISHED, file.getFileDescription(), dateTimeNode);
+
+    DefaultTreeNode<AssignmentsTreeNodeData> fileDateTimeNode = new DefaultTreeNode<AssignmentsTreeNodeData>(
+      DATETIME_UNFINISHED, new FileNodeData(file), dateTimeNode);
     fileDateTimeNode.setExpanded(true);
 
     dateTimeNodes.put(file.getFileDescription(), fileDateTimeNode);
@@ -239,11 +301,11 @@ public class AssignmentsTree {
 
     DateTimeSpecification dateTimeSpec = file.getDateTimeSpecification();
 
-    DefaultTreeNode parent = (DefaultTreeNode) dateTimeNodes
+    DefaultTreeNode<AssignmentsTreeNodeData> parent = dateTimeNodes
       .get(file.getFileDescription());
 
     // Remove all existing nodes
-    parent.setChildren(new ArrayList<TreeNode>());
+    parent.setChildren(new ArrayList<TreeNode<AssignmentsTreeNodeData>>());
 
     // Build set of nodes for date/time
     parent.setType(dateTimeSpec.assignmentComplete() ? DATETIME_FINISHED
@@ -253,33 +315,31 @@ public class AssignmentsTree {
       .getAssignedAndRequiredEntries().entrySet()) {
 
       if (entry.getValue()) {
-        new DefaultTreeNode(DATETIME_UNASSIGNED, entry.getKey(), parent);
+        new DefaultTreeNode<AssignmentsTreeNodeData>(DATETIME_UNASSIGNED,
+          new StringNodeData(entry.getKey()), parent);
       } else {
-        TreeNode child = new DefaultTreeNode(DATETIME_ASSIGNED, entry.getKey(),
-          parent);
+        DefaultTreeNode<AssignmentsTreeNodeData> child = new DefaultTreeNode<AssignmentsTreeNodeData>(
+          DATETIME_ASSIGNED, new StringNodeData(entry.getKey()), parent);
         child.setExpanded(true);
 
         DateTimeColumnAssignment assignment = dateTimeSpec.getAssignment(
           DateTimeSpecification.getAssignmentIndex(entry.getKey()));
 
-        new DefaultTreeNode(DATETIME_ASSIGNMENT,
-          new FileAndColumn(file.getFileDescription(), assignment.getColumn(),
-            file.getFileColumns().get(assignment.getColumn()).getName()),
-          child);
-
+        new DefaultTreeNode<AssignmentsTreeNodeData>(DATETIME_ASSIGNMENT,
+          new DateTimeAssignmentNodeData(file, assignment), child);
       }
     }
 
     boolean dateTimeFinished = true;
-    for (TreeNode node : dateTimeNodes.values()) {
+    for (DefaultTreeNode<AssignmentsTreeNodeData> node : dateTimeNodes
+      .values()) {
       if (node.getType().equals(DATETIME_UNFINISHED)) {
         dateTimeFinished = false;
         break;
       }
     }
 
-    dateTimeNode.setType(dateTimeFinished ? VariableTreeNode.VAR_FINISHED
-      : VariableTreeNode.VAR_UNFINISHED);
+    dateTimeNode.setType(dateTimeFinished ? VAR_FINISHED : VAR_UNFINISHED);
   }
 
   protected void renameFile(String oldName, FileDefinitionBuilder renamedFile)
@@ -287,17 +347,19 @@ public class AssignmentsTree {
 
     // We only need to update the date/time assignments;
     // sensor assignments are updated in the SensorAssignment objects
-    EditableTreeNode node = dateTimeNodes.remove(oldName);
-    node.setData(renamedFile.getFileDescription());
+    DefaultTreeNode<AssignmentsTreeNodeData> node = dateTimeNodes
+      .remove(oldName);
+    node.setData(new FileNodeData(renamedFile));
     dateTimeNodes.put(renamedFile.getFileDescription(), node);
   }
 
   protected void updatePositionNodes(String expand) {
     if (null != positionNode) {
-      positionNode.setChildren(new ArrayList<TreeNode>());
+      positionNode
+        .setChildren(new ArrayList<TreeNode<AssignmentsTreeNodeData>>());
 
-      DefaultTreeNode longitudeNode = null;
-      DefaultTreeNode latitudeNode = null;
+      DefaultTreeNode<AssignmentsTreeNodeData> longitudeNode = null;
+      DefaultTreeNode<AssignmentsTreeNodeData> latitudeNode = null;
 
       longitudeNode = makePositionNodes("Longitude", longitudeNode,
         null != expand && expand.equals("Longitude"));
@@ -306,7 +368,8 @@ public class AssignmentsTree {
 
       boolean allAssigned = true;
 
-      for (TreeNode child : positionNode.getChildren()) {
+      for (TreeNode<AssignmentsTreeNodeData> child : positionNode
+        .getChildren()) {
         if (child.getType().equals(LONGITUDE_UNASSIGNED)
           || child.getType().equals(LATITUDE_UNASSIGNED)
           || child.getType().equals(HEMISPHERE_UNASSIGNED)) {
@@ -315,13 +378,13 @@ public class AssignmentsTree {
         }
       }
 
-      positionNode.setType(allAssigned ? VariableTreeNode.VAR_FINISHED
-        : VariableTreeNode.VAR_UNFINISHED);
+      positionNode.setType(allAssigned ? VAR_FINISHED : VAR_UNFINISHED);
     }
   }
 
-  private DefaultTreeNode makePositionNodes(String positionType,
-    DefaultTreeNode mainNode, boolean expand) {
+  private DefaultTreeNode<AssignmentsTreeNodeData> makePositionNodes(
+    String positionType, DefaultTreeNode<AssignmentsTreeNodeData> mainNode,
+    boolean expand) {
 
     String hemisphereNodeName = positionType + " Hemisphere";
     String unassignedType;
@@ -344,8 +407,8 @@ public class AssignmentsTree {
       }
 
       if (null == mainNode) {
-        mainNode = new DefaultTreeNode(unassignedType, positionType,
-          positionNode);
+        mainNode = new DefaultTreeNode<AssignmentsTreeNodeData>(unassignedType,
+          new StringNodeData(positionType), positionNode);
         if (expand) {
           mainNode.setExpanded(true);
         }
@@ -353,28 +416,26 @@ public class AssignmentsTree {
 
       if (posSpec.getValueColumn() > -1) {
 
-        new DefaultTreeNode(assignmentNodeType,
-          new FileAndColumn(file.getFileDescription(), posSpec.getValueColumn(),
-            file.getFileColumns().get(posSpec.getValueColumn()).getName()),
+        new DefaultTreeNode<AssignmentsTreeNodeData>(assignmentNodeType,
+          new PositionSpecNodeData(file, posSpec, PositionSpecNodeData.VALUE),
           mainNode);
-
         mainNode.setType(assignedType);
 
         if (posSpec.hemisphereRequired()
           && posSpec.getHemisphereColumn() == -1) {
-          new DefaultTreeNode(HEMISPHERE_UNASSIGNED, hemisphereNodeName,
-            positionNode);
-
+          new DefaultTreeNode<AssignmentsTreeNodeData>(HEMISPHERE_UNASSIGNED,
+            new StringNodeData(hemisphereNodeName), positionNode);
         } else if (posSpec.getHemisphereColumn() > -1) {
-          DefaultTreeNode hemisphereNode = new DefaultTreeNode(
-            HEMISPHERE_ASSIGNED, hemisphereNodeName, positionNode);
+          DefaultTreeNode<AssignmentsTreeNodeData> hemisphereNode = new DefaultTreeNode<AssignmentsTreeNodeData>(
+            HEMISPHERE_ASSIGNED, new StringNodeData(hemisphereNodeName),
+            positionNode);
           if (expand) {
             hemisphereNode.setExpanded(true);
           }
 
-          new DefaultTreeNode(HEMISPHERE_ASSIGNMENT, new FileAndColumn(
-            file.getFileDescription(), posSpec.getHemisphereColumn(),
-            file.getFileColumns().get(posSpec.getHemisphereColumn()).getName()),
+          new DefaultTreeNode<AssignmentsTreeNodeData>(HEMISPHERE_ASSIGNMENT,
+            new PositionSpecNodeData(file, posSpec,
+              PositionSpecNodeData.HEMISPHERE),
             hemisphereNode);
         }
       }
@@ -383,29 +444,43 @@ public class AssignmentsTree {
     return mainNode;
   }
 
-  public class FileAndColumn {
-    private final String file;
+  /**
+   * Set the ASSIGNED/UNASSIGNED type on all non-diagnostic SensorType nodes.
+   *
+   * @throws SensorConfigurationException
+   * @throws SensorAssignmentException
+   * @throws SensorTypeNotFoundException
+   */
+  private void updateVariableNodes() throws SensorAssignmentException,
+    SensorConfigurationException, SensorTypeNotFoundException {
 
-    private final int columnIndex;
-
-    private final String columnName;
-
-    private FileAndColumn(String file, int columnIndex, String columnName) {
-      this.file = file;
-      this.columnIndex = columnIndex;
-      this.columnName = columnName;
+    for (DefaultTreeNode<AssignmentsTreeNodeData> varNode : variableNodes) {
+      VariableNodeData data = (VariableNodeData) varNode.getData();
+      varNode.setType(
+        assignments.isVariableComplete(data.getVariable()) ? VAR_FINISHED
+          : VAR_UNFINISHED);
     }
 
-    public String getFile() {
-      return file;
+    for (Map.Entry<SensorType, List<DefaultTreeNode<AssignmentsTreeNodeData>>> entry : sensorTypeNodes
+      .entrySet()) {
+
+      SensorType sensorType = entry.getKey();
+
+      if (!sensorType.isDiagnostic()) {
+        String type = assignments.isAssignmentRequired(sensorType,
+          getVarAttributesMap()) ? SENSOR_TYPE_UNASSIGNED
+            : SENSOR_TYPE_ASSIGNED;
+        entry.getValue().stream().forEach(n -> n.setType(type));
+      }
+    }
+  }
+
+  private Map<Long, VariableAttributes> getVarAttributesMap() {
+    if (null == varAttributes) {
+      varAttributes = new HashMap<Long, VariableAttributes>();
+      variables.forEach(v -> varAttributes.put(v.getId(), v.getAttributes()));
     }
 
-    public int getColumnIndex() {
-      return columnIndex;
-    }
-
-    public String getColumnName() {
-      return columnName;
-    }
+    return varAttributes;
   }
 }

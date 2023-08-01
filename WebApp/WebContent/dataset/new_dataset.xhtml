@@ -52,18 +52,18 @@
             pt:data-platform-code="#{dataSetsBean.currentInstrument.platformCode}" />
           <p:outputLabel for="startDate" value="Start Date" />
           <p:outputLabel for="endDate" value="End Date" />
-          <p:calendar id="startDate" widgetVar="pStartDate"
-            value="#{dataSetsBean.newDataSet.start}" mode="popup" maxLength="19"
-            size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true"
+          <p:datePicker id="startDate" widgetVar="pStartDate"
+            value="#{dataSetsBean.newDataSet.start}" timeInput="true"
+            pattern="yyyy-MM-dd HH:mm:ss"
+            monthNavigator="true" yearNavigator="true"
             onchange="processNewDataSet('start');">
-            <f:converter converterId="localDateTimeConverter" />
-          </p:calendar>
-          <p:calendar id="endDate" widgetVar="pEndDate"
-            value="#{dataSetsBean.newDataSet.end}" mode="popup" maxLength="19"
-            size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true"
+          </p:datePicker>
+          <p:datePicker id="endDate" widgetVar="pEndDate"
+            value="#{dataSetsBean.newDataSet.end}" timeInput="true"
+            pattern="yyyy-MM-dd HH:mm:ss"
+            monthNavigator="true" yearNavigator="true"
             onchange="processNewDataSet();">
-            <f:converter converterId="localDateTimeConverter" />
-          </p:calendar>
+          </p:datePicker>
         </h:panelGrid>
         <div id="errorList" class="errors hidden"></div>
       </div>
