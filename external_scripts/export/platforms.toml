@@ -150,7 +150,7 @@ NRT = 'False'
 	NRT = ['ICOS']
 	L2 = ['ICOS']
 
-[BHNQ]
+[NO-SOOP-Trans__Carrier]
 name = 'Trans Carrier'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_TCarrier'
@@ -161,12 +161,12 @@ author_list = 'Omar, Abdirahman; Skjelvan, Ingunn; de Lange, Tor'
 affiliation = 'NORCE Norwegian Research Centre AS'
 NRT = 'True'
 
-  [BHNQ.export]
+  [NO-SOOP-Trans__Carrier.export]
   NRT = ['ICOS']
   L2 = ['ICOS']
 
-[74FS]
-name = 'PAP'
+[UK-FOS-PAP]
+name = 'Porcupine Abyssal Plain'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_74FS'
 category_code = '41'
@@ -176,7 +176,7 @@ author_list = 'Hartman, Sue; Lampitt, Richard'
 affiliation = 'National Oceanography Centre, UK'
 NRT = 'True'
 
-  [74FS.export]
+  [UK-FOS-PAP.export]
   NRT = ['ICOS']
   L2 = ['ICOS']
 
