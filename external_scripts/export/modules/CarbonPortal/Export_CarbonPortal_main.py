@@ -15,6 +15,7 @@ https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-i
 import os.path
 import toml
 import warnings
+import logging
 
 from modules.CarbonPortal.CarbonPortalException import CarbonPortalException
 from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_platform_type, is_NRT, \
@@ -22,7 +23,8 @@ from modules.Common.data_processing import get_file_from_zip, get_hashsum, get_p
 from modules.CarbonPortal.Export_CarbonPortal_http import get_auth_cookie, get_station_uri, get_overlapping_datasets, \
     get_existing_files, upload_file
 
-with open('config_carbon.toml') as f: config = toml.load(f)
+with open('config_carbon.toml') as f:
+    config = toml.load(f)
 warnings.simplefilter("ignore", FutureWarning)
 
 OBJ_SPEC_URI = {
@@ -42,8 +44,6 @@ FOS_PLATFORMS = ['41']
 
 
 def get_data_object_spec(platform_type, level):
-    result = None
-
     if level == 'L0':
         result = OBJ_SPEC_URI['L0']
     else:
@@ -81,6 +81,7 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
     data_object_spec = get_data_object_spec(platform_type, upload_level)
     data_filename = get_filename(dataset, manifest)
     deprecated_id = []
+    bypass_upload = False
 
     if len(existing_datasets) > 1:
         raise CarbonPortalException(f'Dataset would deprecate multiple datasets {existing_datasets["dobj"]}')
@@ -89,6 +90,14 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
         pass
     else:
         deprecated_dataset = existing_datasets.iloc[0]
+
+        extracted_file = get_file_from_zip(dataset_zip, data_filename)
+        export_hashsum = get_hashsum(extracted_file, True)
+
+        if export_hashsum == deprecated_dataset['hashSum']:
+            logging.info('Hashsum has already been uploaded. Skipping.')
+            bypass_upload = True
+
         if upload_level == 'L1':
             # We need to deprecate the previous dataset
             if int(deprecated_dataset['dataLevel']) > 1:
@@ -110,38 +119,43 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
         else:
             raise CarbonPortalException(f'Unrecognised Data Level {upload_level}')
 
-    # Now we upload the main (L1 or L2) dataset, deprecating the specified ID if required
-    cookie = get_auth_cookie()
+    if bypass_upload:
+        upload_result = True
+    else:
+        # Now we upload the main (L1 or L2) dataset, deprecating the specified ID if required
+        cookie = get_auth_cookie()
 
-    # Upload all L0 files first - we need to link to them when we upload the main file
-    link_hashums = []
-    l0_basenames = [os.path.basename(file) for file in raw_filenames]
-    existing_l0 = get_existing_files(station_uri, l0_basenames, OBJ_SPEC_URI['L0'])
+        # Upload all L0 files first - we need to link to them when we upload the main file
+        link_hashums = []
+        l0_basenames = [os.path.basename(file) for file in raw_filenames]
+        existing_l0 = get_existing_files(station_uri, l0_basenames, OBJ_SPEC_URI['L0'])
 
-    l0_index = -1
-    for l0_file in raw_filenames:
-        l0_index += 1
-        basename = os.path.basename(l0_file)
-        file_content = get_file_from_zip(dataset_zip, l0_file)
-        hashsum = get_hashsum(file_content, True)
+        l0_index = -1
+        for l0_file in raw_filenames:
+            l0_index += 1
+            basename = os.path.basename(l0_file)
+            file_content = get_file_from_zip(dataset_zip, l0_file)
+            hashsum = get_hashsum(file_content, True)
 
-        upload_l0 = True
-        previous_l0 = []
-        existing_hashsums = existing_l0.loc[existing_l0['fileName'] == basename]['hashSum'].values
-        if hashsum in existing_hashsums:
-            upload_l0 = False
-        else:
-            if len(existing_hashsums) > 0:
-                previous_l0.append(existing_hashsums[0])
+            upload_l0 = True
+            previous_l0 = []
+            existing_hashsums = existing_l0.loc[existing_l0['fileName'] == basename]['hashSum'].values
+            if hashsum in existing_hashsums:
+                upload_l0 = False
+            else:
+                if len(existing_hashsums) > 0:
+                    previous_l0.append(existing_hashsums[0])
 
-        if upload_l0:
-            l0_upload_result = upload_file(cookie, dataset_zip, manifest, l0_index, l0_file, 'L0',
-                                           OBJ_SPEC_URI['L0'], previous_l0, None)
-            if not l0_upload_result:
-                raise CarbonPortalException('Failed to upload L0 file(s). Aborting')
+            if upload_l0:
+                l0_upload_result = upload_file(cookie, dataset_zip, manifest, l0_index, l0_file, 'L0',
+                                               OBJ_SPEC_URI['L0'], previous_l0, None)
+                if not l0_upload_result:
+                    raise CarbonPortalException('Failed to upload L0 file(s). Aborting')
 
-        link_hashums.append(hashsum)
+            link_hashums.append(hashsum)
 
-    # Now upload the main data object. L1 objects don't get linked to L0
-    return upload_file(cookie, dataset_zip, manifest, 0, data_filename,
-                       upload_level, data_object_spec, deprecated_id, link_hashums)
+        # Now upload the main data object. L1 objects don't get linked to L0
+        upload_result = upload_file(cookie, dataset_zip, manifest, 0, data_filename,
+                                    upload_level, data_object_spec, deprecated_id, link_hashums)
+
+    return upload_result
