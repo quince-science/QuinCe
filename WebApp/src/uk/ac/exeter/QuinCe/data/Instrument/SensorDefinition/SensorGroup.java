@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
 
@@ -415,6 +416,11 @@ public class SensorGroup {
       throw new SensorGroupsException("Invalid link direction");
     }
     }
+  }
+
+  protected List<SensorAssignment> getMatchingAssignments(
+    SensorAssignment assignment) {
+    return members.stream().filter(a -> a.matches(assignment)).toList();
   }
 
   @Override

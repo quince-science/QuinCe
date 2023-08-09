@@ -443,11 +443,19 @@ public class SensorGroups implements Iterable<SensorGroup> {
     SensorGroup sourceGroup = getAssignmentGroup(sensorName);
     SensorAssignment assignment = sourceGroup.getAssignment(sensorName);
 
-    // If a sensor is moving to its own group, do nothing
+    // If a sensor is moving to its current group, do nothing
     if (!sourceGroup.getName().equalsIgnoreCase(groupName)) {
       SensorGroup destinationGroup = getGroup(groupName);
-      sourceGroup.remove(assignment);
-      destinationGroup.addAssignment(assignment);
+
+      // Sometimes the same sensor is used for multiple purposes.
+      // We need to move all of them.
+      Collection<SensorAssignment> movingAssignments = sourceGroup
+        .getMatchingAssignments(assignment);
+
+      movingAssignments.stream().forEach(a -> {
+        sourceGroup.remove(a);
+        destinationGroup.addAssignment(a);
+      });
     }
   }
 
