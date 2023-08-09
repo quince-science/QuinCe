@@ -119,8 +119,8 @@ public class DefaultMeasurementValueCalculator
 
       char valueType = calcValueType(valueTime, valuesToUse);
 
-      populateMeasurementValue(measurement.getTime(), result, valuesToUse,
-        allSensorValues, valueType);
+      populateMeasurementValue(measurement.getTime(), valueTime, result,
+        valuesToUse, allSensorValues, valueType);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Cannot calculate time offset", e);
@@ -163,8 +163,8 @@ public class DefaultMeasurementValueCalculator
 
       char valueType = calcValueType(positionTime, valuesToUse);
 
-      populateMeasurementValue(measurement.getTime(), result, valuesToUse,
-        allSensorValues, valueType);
+      populateMeasurementValue(measurement.getTime(), positionTime, result,
+        valuesToUse, allSensorValues, valueType);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Unable to apply sensor offsets", e);
@@ -187,21 +187,10 @@ public class DefaultMeasurementValueCalculator
     return result;
   }
 
-  /**
-   *
-   * @param measurementTime
-   * @param measurementValue
-   * @param valuesToUse
-   * @param preferredType
-   *          The type that the calling function would like to set for the
-   *          MeasurementValue. May be overridden by this method for
-   *          interpolated values.
-   * @throws MeasurementValueCalculatorException
-   * @throws RoutineException
-   */
   private void populateMeasurementValue(LocalDateTime measurementTime,
-    MeasurementValue measurementValue, List<SensorValue> valuesToUse,
-    DatasetSensorValues allSensorValues, char preferredType)
+    LocalDateTime offsetTime, MeasurementValue measurementValue,
+    List<SensorValue> valuesToUse, DatasetSensorValues allSensorValues,
+    char preferredType)
     throws MeasurementValueCalculatorException, RoutineException {
     switch (valuesToUse.size()) {
     case 0: {
@@ -230,7 +219,7 @@ public class DefaultMeasurementValueCalculator
        */
       measurementValue.addSensorValues(valuesToUse, allSensorValues);
       measurementValue.setCalculatedValue(SensorValue
-        .interpolate(valuesToUse.get(0), valuesToUse.get(1), measurementTime));
+        .interpolate(valuesToUse.get(0), valuesToUse.get(1), offsetTime));
       break;
     }
     default: {

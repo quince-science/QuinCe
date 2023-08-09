@@ -314,6 +314,22 @@ public class SensorAssignment implements Comparable<SensorAssignment> {
     if (result == 0) {
       result = column - o.column;
     }
+    if (result == 0) {
+      result = sensorName.compareTo(o.sensorName);
+    }
     return result;
+  }
+
+  /**
+   * Determines whether or not this assignment is from the same file and column
+   * as the specified assignment.
+   * 
+   * @param o
+   *          The assignment to be compared.
+   * @return {@code true} if the assignment is from the same file and column;
+   *         {@code false} otherwise
+   */
+  public boolean matches(SensorAssignment o) {
+    return dataFile.equals(o.dataFile) && column == o.column;
   }
 }
