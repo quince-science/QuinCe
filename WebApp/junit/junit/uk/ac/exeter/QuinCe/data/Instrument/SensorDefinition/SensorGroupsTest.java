@@ -12,8 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -21,8 +21,16 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroup;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupPair;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroups;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class SensorGroupsTest extends BaseTest {
+
+  @BeforeEach
+  public void init() {
+    initResourceManager();
+  }
 
   /**
    * Test the construction of the {@link SensorGroups} object and its default
@@ -216,30 +224,30 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void addAssignmentOnlyGroup() throws SensorGroupsException {
+  public void addAssignmentOnlyGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     SensorGroup group = groups.first();
     TreeSet<SensorAssignment> assignments = group.getMembers();
     assertEquals("Sensor 1", assignments.first().getSensorName());
   }
 
   @Test
-  public void addAssignmentMultipleGroups() throws SensorGroupsException {
+  public void addAssignmentMultipleGroups() throws Exception {
     SensorGroups groups = new SensorGroups();
     groups.addGroup("NewGroup1", null);
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     SensorGroup group = groups.first();
     TreeSet<SensorAssignment> assignments = group.getMembers();
     assertEquals("Sensor 1", assignments.first().getSensorName());
   }
 
   @Test
-  public void addAssignmentExistsInFirstGroup() throws SensorGroupsException {
+  public void addAssignmentExistsInFirstGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
     groups.addGroup("NewGroup1", null);
 
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
 
     assertThrows(SensorGroupsException.class, () -> {
@@ -248,10 +256,10 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void addAssignmentExistsInOtherGroup() throws SensorGroupsException {
+  public void addAssignmentExistsInOtherGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
 
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
 
     // Add to the single group
     groups.addAssignment(assignment);
@@ -266,36 +274,34 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void containsDoesntContainNoOtherAssignments()
-    throws SensorGroupsException {
+  public void containsDoesntContainNoOtherAssignments() throws Exception {
     SensorGroups groups = makeThreeGroups();
-    assertFalse(groups.contains(makeAssignment("Sensor 1")));
+    assertFalse(groups.contains(makeAssignment(1)));
   }
 
   @Test
-  public void containsDoesntContainHasOtherAssignments()
-    throws SensorGroupsException {
+  public void containsDoesntContainHasOtherAssignments() throws Exception {
 
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     groups.addGroup("NewGroup1", null);
-    groups.addAssignment(makeAssignment("Sensor 2"));
+    groups.addAssignment(makeAssignment(2));
 
-    assertFalse(groups.contains(makeAssignment("Sensor 3")));
+    assertFalse(groups.contains(makeAssignment(3)));
   }
 
   @Test
-  public void containsInFirstGroup() throws SensorGroupsException {
+  public void containsInFirstGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     assertTrue(groups.contains(assignment));
   }
 
   @Test
-  public void containsInOtherGroup() throws SensorGroupsException {
+  public void containsInOtherGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     groups.addGroup("NewGroup1", null);
     assertTrue(groups.contains(assignment));
@@ -305,16 +311,16 @@ public class SensorGroupsTest extends BaseTest {
   public void getGroupNotInEmptyOnlyGroup() {
     SensorGroups groups = new SensorGroups();
     assertThrows(SensorGroupsException.class, () -> {
-      groups.getGroup(makeAssignment("Sensor 1"));
+      groups.getGroup(makeAssignment(1));
     });
   }
 
   @Test
-  public void getGroupNotInPopulatedOnlyGroup() throws SensorGroupsException {
+  public void getGroupNotInPopulatedOnlyGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     assertThrows(SensorGroupsException.class, () -> {
-      groups.getGroup(makeAssignment("Sensor 2"));
+      groups.getGroup(makeAssignment(2));
     });
   }
 
@@ -323,48 +329,46 @@ public class SensorGroupsTest extends BaseTest {
     SensorGroups groups = new SensorGroups();
     groups.addGroup("NewGroup1", null);
     assertThrows(SensorGroupsException.class, () -> {
-      groups.getGroup(makeAssignment("Sensor 1"));
+      groups.getGroup(makeAssignment(1));
     });
   }
 
   @Test
-  public void getGroupNotInPopulatedMultipleGroups()
-    throws SensorGroupsException {
+  public void getGroupNotInPopulatedMultipleGroups() throws Exception {
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     groups.addGroup("NewGroup1", null);
-    groups.addAssignment(makeAssignment("Sensor 2"));
+    groups.addAssignment(makeAssignment(2));
 
     assertThrows(SensorGroupsException.class, () -> {
-      groups.getGroup(makeAssignment("Sensor 3"));
+      groups.getGroup(makeAssignment(3));
     });
   }
 
   @Test
-  public void getGroupInOnlyGroupOnlyAssignment() throws SensorGroupsException {
+  public void getGroupInOnlyGroupOnlyAssignment() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     SensorGroup group = groups.getGroup(assignment);
     assertEquals("Default", group.getName());
   }
 
   @Test
-  public void getGroupInOnlyGroupMultipleAssignments()
-    throws SensorGroupsException {
+  public void getGroupInOnlyGroupMultipleAssignments() throws Exception {
 
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
-    groups.addAssignment(makeAssignment("Sensor 2"));
+    groups.addAssignment(makeAssignment(2));
     SensorGroup group = groups.getGroup(assignment);
     assertEquals("Default", group.getName());
   }
 
   @Test
-  public void getGroupInAnyGroupOnlyAssignment() throws SensorGroupsException {
+  public void getGroupInAnyGroupOnlyAssignment() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     groups.addGroup("NewGroup1", null);
     SensorGroup group = groups.getGroup(assignment);
@@ -372,15 +376,14 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void getGroupInAnyGroupMultipleAssignments()
-    throws SensorGroupsException {
+  public void getGroupInAnyGroupMultipleAssignments() throws Exception {
 
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
-    groups.addAssignment(makeAssignment("Sensor 2"));
+    groups.addAssignment(makeAssignment(2));
     groups.addGroup("NewGroup1", null);
-    groups.addAssignment(makeAssignment("Sensor 3"));
+    groups.addAssignment(makeAssignment(3));
 
     SensorGroup group = groups.getGroup(assignment);
     assertEquals("Default", group.getName());
@@ -411,33 +414,31 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void removeAssignmentNotAssignedOnlyGroup()
-    throws SensorGroupsException {
+  public void removeAssignmentNotAssignedOnlyGroup() throws Exception {
 
     // Should run without any errors
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
-    groups.remove(makeAssignment("Sensor 2"));
+    groups.addAssignment(makeAssignment(1));
+    groups.remove(makeAssignment(2));
   }
 
   @Test
-  public void removeAssignmentNotAssignedMultipleGroups()
-    throws SensorGroupsException {
+  public void removeAssignmentNotAssignedMultipleGroups() throws Exception {
 
     // Should run without any errors
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     groups.addGroup("NewGroup1", null);
-    groups.addAssignment(makeAssignment("Sensor 2"));
-    groups.remove(makeAssignment("Sensor 3"));
+    groups.addAssignment(makeAssignment(2));
+    groups.remove(makeAssignment(3));
   }
 
   @Test
-  public void removeAssignmentFromFirstGroup() throws SensorGroupsException {
+  public void removeAssignmentFromFirstGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     groups.addGroup("NewGroup1", null);
-    SensorAssignment assignment = makeAssignment("Sensor 2");
+    SensorAssignment assignment = makeAssignment(2);
     groups.addAssignment(assignment);
 
     groups.remove(assignment);
@@ -445,35 +446,35 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void removeAssignmentFromOtherGroup() throws SensorGroupsException {
+  public void removeAssignmentFromOtherGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     groups.addGroup("NewGroup1", null);
-    groups.addAssignment(makeAssignment("Sensor 2"));
+    groups.addAssignment(makeAssignment(2));
 
     groups.remove(assignment);
     assertFalse(groups.contains(assignment));
   }
 
   @Test
-  public void removeAssignmentsNotAssignedOnlyGroup() {
+  public void removeAssignmentsNotAssignedOnlyGroup() throws Exception {
 
     // Should run without errors
     SensorGroups groups = new SensorGroups();
     List<SensorAssignment> assignments = new ArrayList<SensorAssignment>();
-    assignments.add(makeAssignment("Sensor 1"));
-    assignments.add(makeAssignment("Sensor 2"));
+    assignments.add(makeAssignment(1));
+    assignments.add(makeAssignment(2));
     groups.remove(assignments);
   }
 
   @Test
-  public void removeAssignmentsAcrossGroups() throws SensorGroupsException {
+  public void removeAssignmentsAcrossGroups() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment1 = makeAssignment("Sensor 1");
-    SensorAssignment assignment2 = makeAssignment("Sensor 2");
-    SensorAssignment assignment3 = makeAssignment("Sensor 3");
-    SensorAssignment assignment4 = makeAssignment("Sensor 4");
+    SensorAssignment assignment1 = makeAssignment(1);
+    SensorAssignment assignment2 = makeAssignment(2);
+    SensorAssignment assignment3 = makeAssignment(3);
+    SensorAssignment assignment4 = makeAssignment(4);
 
     groups.addAssignment(assignment1);
     groups.addAssignment(assignment2);
@@ -503,19 +504,19 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void moveSensorToNonExistentGroup() throws SensorGroupsException {
+  public void moveSensorToNonExistentGroup() throws Exception {
     SensorGroups groups = makeThreeGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     assertThrows(SensorGroupsException.class, () -> {
       groups.moveSensor("Sensor 1", "I Don't Exist");
     });
   }
 
   @Test
-  public void moveSensorToOwnGroup() throws SensorGroupsException {
+  public void moveSensorToOwnGroup() throws Exception {
     SensorGroups groups = makeThreeGroups();
 
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
 
     groups.moveSensor("Sensor 1", "Default");
@@ -523,10 +524,10 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void moveSensorToOtherGroup() throws SensorGroupsException {
+  public void moveSensorToOtherGroup() throws Exception {
     SensorGroups groups = makeThreeGroups();
 
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
 
     groups.moveSensor("Sensor 1", "NewGroup2");
@@ -567,9 +568,9 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void deleteGroupAssignmentsTransferred() throws SensorGroupsException {
+  public void deleteGroupAssignmentsTransferred() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     groups.addGroup("NewGroup1", null);
     groups.deleteGroup("Default");
@@ -607,9 +608,9 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void setNextLink() throws SensorGroupsException {
+  public void setNextLink() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     SensorGroup group = groups.getGroup("Default");
     group.setLink(assignment.getSensorName(), SensorGroup.NEXT);
@@ -618,9 +619,9 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void setPrevLink() throws SensorGroupsException {
+  public void setPrevLink() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     SensorGroup group = groups.getGroup("Default");
     group.setLink(assignment.getSensorName(), SensorGroup.PREVIOUS);
@@ -629,9 +630,9 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void setLinkInvalidDirection() throws SensorGroupsException {
+  public void setLinkInvalidDirection() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     SensorGroup group = groups.getGroup("Default");
     assertThrows(SensorGroupsException.class, () -> {
@@ -646,16 +647,16 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void populatedGroupIsEmpty() throws SensorGroupsException {
+  public void populatedGroupIsEmpty() throws Exception {
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     assertFalse(groups.first().isEmpty());
   }
 
   @Test
-  public void removeNextLinkAssignment() throws SensorGroupsException {
+  public void removeNextLinkAssignment() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     groups.first().setLink("Sensor 1", SensorGroup.NEXT);
     groups.remove(assignment);
@@ -663,9 +664,9 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void removePrevLinkAssignment() throws SensorGroupsException {
+  public void removePrevLinkAssignment() throws Exception {
     SensorGroups groups = new SensorGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     groups.first().setLink("Sensor 1", SensorGroup.PREVIOUS);
     groups.remove(assignment);
@@ -673,9 +674,9 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void moveSensorNextLinkAssignment() throws SensorGroupsException {
+  public void moveSensorNextLinkAssignment() throws Exception {
     SensorGroups groups = makeThreeGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     groups.first().setLink("Sensor 1", SensorGroup.NEXT);
     groups.moveSensor("Sensor 1", "NewGroup1");
@@ -683,9 +684,9 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void moveSensorPrevLinkAssignment() throws SensorGroupsException {
+  public void moveSensorPrevLinkAssignment() throws Exception {
     SensorGroups groups = makeThreeGroups();
-    SensorAssignment assignment = makeAssignment("Sensor 1");
+    SensorAssignment assignment = makeAssignment(1);
     groups.addAssignment(assignment);
     groups.first().setLink("Sensor 1", SensorGroup.PREVIOUS);
     groups.moveSensor("Sensor 1", "NewGroup1");
@@ -693,9 +694,9 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void isCompleteSingleGroup() throws SensorGroupsException {
+  public void isCompleteSingleGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     assertTrue(groups.isComplete());
   }
 
@@ -706,50 +707,49 @@ public class SensorGroupsTest extends BaseTest {
   }
 
   @Test
-  public void isCompleteEmptyOnlyOnePopulatedGroup()
-    throws SensorGroupsException {
+  public void isCompleteEmptyOnlyOnePopulatedGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
     groups.addGroup("NewGroup", "Default");
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     groups.first().setLink("Sensor 1", SensorGroup.NEXT);
     assertFalse(groups.isComplete());
   }
 
   @Test
-  public void isCompleteAllPopulatedNoLinks() throws SensorGroupsException {
+  public void isCompleteAllPopulatedNoLinks() throws Exception {
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     groups.addGroup("NewGroup", null);
-    groups.addAssignment(makeAssignment("Sensor 2"));
+    groups.addAssignment(makeAssignment(2));
     assertFalse(groups.isComplete());
   }
 
   @Test
-  public void isCompleteAllPopulatedNoNextLink() throws SensorGroupsException {
+  public void isCompleteAllPopulatedNoNextLink() throws Exception {
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     groups.addGroup("NewGroup", null);
-    groups.addAssignment(makeAssignment("Sensor 2"));
+    groups.addAssignment(makeAssignment(2));
     groups.getGroup("Default").setLink("Sensor 1", SensorGroup.PREVIOUS);
     assertFalse(groups.isComplete());
   }
 
   @Test
-  public void isCompleteAllPopulatedNoPrevLink() throws SensorGroupsException {
+  public void isCompleteAllPopulatedNoPrevLink() throws Exception {
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     groups.addGroup("NewGroup", null);
-    groups.addAssignment(makeAssignment("Sensor 2"));
+    groups.addAssignment(makeAssignment(2));
     groups.getGroup("NewGroup").setLink("Sensor 2", SensorGroup.NEXT);
     assertFalse(groups.isComplete());
   }
 
   @Test
-  public void isCompleteComplete() throws SensorGroupsException {
+  public void isCompleteComplete() throws Exception {
     SensorGroups groups = new SensorGroups();
-    groups.addAssignment(makeAssignment("Sensor 1"));
+    groups.addAssignment(makeAssignment(1));
     groups.addGroup("NewGroup", null);
-    groups.addAssignment(makeAssignment("Sensor 2"));
+    groups.addAssignment(makeAssignment(2));
     groups.getGroup("Default").setLink("Sensor 1", SensorGroup.PREVIOUS);
     groups.getGroup("NewGroup").setLink("Sensor 2", SensorGroup.NEXT);
     assertTrue(groups.isComplete());
@@ -762,10 +762,33 @@ public class SensorGroupsTest extends BaseTest {
     return groups;
   }
 
-  private SensorAssignment makeAssignment(String sensorName) {
-    SensorAssignment assignment = Mockito.mock(SensorAssignment.class);
-    Mockito.when(assignment.getSensorName()).thenReturn(sensorName);
-    return assignment;
+  private SensorAssignment makeAssignment(int sensorNumber) throws Exception {
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+
+    SensorType sensorType = null;
+    switch (sensorNumber) {
+    case 1: {
+      sensorType = sensorConfig.getSensorType("Intake Temperature");
+      break;
+    }
+    case 2: {
+      sensorType = sensorConfig.getSensorType("Salinity");
+      break;
+    }
+    case 3: {
+      sensorType = sensorConfig.getSensorType("Air Temperature");
+      break;
+    }
+    case 4: {
+      sensorType = sensorConfig.getSensorType("Equilibrator Temperature");
+      break;
+    }
+    }
+
+    return new SensorAssignment("File 1", sensorNumber, sensorType,
+      "Sensor " + sensorNumber, true, false, null);
   }
 
   private boolean checkGroupOrder(SensorGroups groups, String... names) {

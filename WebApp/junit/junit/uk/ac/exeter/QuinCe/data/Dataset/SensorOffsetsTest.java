@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -23,15 +24,23 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorOffsetsException;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroup;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupPair;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroups;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class SensorOffsetsTest extends BaseTest {
 
+  @BeforeEach
+  public void init() {
+    initResourceManager();
+  }
+
   @Test
-  public void addOffset() throws SensorGroupsException, SensorOffsetsException {
+  public void addOffset() throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
     List<SensorGroupPair> pairs = sensorGroups.getGroupPairs();
 
@@ -47,8 +56,7 @@ public class SensorOffsetsTest extends BaseTest {
   }
 
   @Test
-  public void offsetsOrdered()
-    throws SensorGroupsException, SensorOffsetsException {
+  public void offsetsOrdered() throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
     List<SensorGroupPair> pairs = sensorGroups.getGroupPairs();
 
@@ -68,8 +76,7 @@ public class SensorOffsetsTest extends BaseTest {
   }
 
   @Test
-  public void duplicateOffsetTime()
-    throws SensorGroupsException, SensorOffsetsException {
+  public void duplicateOffsetTime() throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
     List<SensorGroupPair> pairs = sensorGroups.getGroupPairs();
 
@@ -84,8 +91,7 @@ public class SensorOffsetsTest extends BaseTest {
   }
 
   @Test
-  public void deleteOffset()
-    throws SensorOffsetsException, SensorGroupsException {
+  public void deleteOffset() throws Exception {
 
     SensorGroups sensorGroups = makeSensorGroups();
     List<SensorGroupPair> pairs = sensorGroups.getGroupPairs();
@@ -106,7 +112,7 @@ public class SensorOffsetsTest extends BaseTest {
   }
 
   @Test
-  public void getOffsetNoOffsets() throws SensorGroupsException {
+  public void getOffsetNoOffsets() throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
     SensorAssignment base = sensorGroups.getGroup("Group 2").getMembers()
       .first();
@@ -122,7 +128,7 @@ public class SensorOffsetsTest extends BaseTest {
   @ParameterizedTest
   @CsvSource({ "30, 29", "20, 19", "40, 39" })
   public void getOffsetSingleOffset(int minuteToOffset, int expectedMinute)
-    throws SensorGroupsException, SensorOffsetsException {
+    throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
     SensorGroupPair groupPair = sensorGroups.getGroupPairs().get(0);
     SensorAssignment base = sensorGroups.getGroup("Group 2").getMembers()
@@ -146,7 +152,7 @@ public class SensorOffsetsTest extends BaseTest {
   @ParameterizedTest
   @CsvSource({ "8, 6", "10, 8", "20, 17", "30, 26", "50, 46" })
   public void getOffsetMultipleOffsets(int minuteToOffset, int expectedMinute)
-    throws SensorGroupsException, SensorOffsetsException {
+    throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
     SensorGroupPair groupPair = sensorGroups.getGroupPairs().get(0);
     SensorAssignment base = sensorGroups.getGroup("Group 2").getMembers()
@@ -172,7 +178,7 @@ public class SensorOffsetsTest extends BaseTest {
   @ParameterizedTest
   @CsvSource({ "8, 10", "10, 12", "20, 23", "30, 34", "50, 54" })
   public void getReverseOffsetMultipleOffsets(int minuteToOffset,
-    int expectedMinute) throws SensorGroupsException, SensorOffsetsException {
+    int expectedMinute) throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
     SensorGroupPair groupPair = sensorGroups.getGroupPairs().get(0);
     SensorAssignment base = sensorGroups.getGroup("Group 1").getMembers()
@@ -199,7 +205,7 @@ public class SensorOffsetsTest extends BaseTest {
   @CsvSource({ "3, 1, -7", "3, 2, -2", "2, 1, -5", "1, 2, 5", "1, 3, 7",
     "2, 3, 2" })
   public void getOffsetAcrossGroups(int baseSensor, int targetSensor,
-    long expectedOffset) throws SensorGroupsException, SensorOffsetsException {
+    long expectedOffset) throws Exception {
 
     SensorGroups sensorGroups = makeSensorGroups();
     SensorOffsets offsets = new SensorOffsets(sensorGroups);
@@ -232,7 +238,7 @@ public class SensorOffsetsTest extends BaseTest {
   @ParameterizedTest
   @CsvSource({ "1, 0", "2, -5", "3, -7" })
   public void getOffsetToFirstGroup(int baseSensor, long expectedOffset)
-    throws SensorGroupsException, SensorOffsetsException {
+    throws Exception {
 
     SensorGroups sensorGroups = makeSensorGroups();
     SensorOffsets offsets = new SensorOffsets(sensorGroups);
@@ -260,15 +266,18 @@ public class SensorOffsetsTest extends BaseTest {
   }
 
   @Test
-  public void sensorValuesOffsets()
-    throws SensorGroupsException, SensorOffsetsException {
+  public void sensorValuesOffsets() throws Exception {
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
 
     SensorGroups sensorGroups = new SensorGroups();
     sensorGroups.renameGroup("Default", "Group 1");
     sensorGroups.addGroup("Group 2", "Group 1");
 
-    sensorGroups.addAssignment(makeAssignment("Sensor 1"));
-    sensorGroups.addAssignment(makeAssignment("Sensor 2"));
+    sensorGroups.addAssignment(makeAssignment("Sensor 1", "File 1", 1,
+      sensorConfig.getSensorType("Intake Temperature")));
+    sensorGroups.addAssignment(makeAssignment("Sensor 2", "File 1", 2,
+      sensorConfig.getSensorType("Salinity")));
     sensorGroups.moveSensor("Sensor 2", "Group 2");
 
     SensorOffsets offsets = new SensorOffsets(sensorGroups);
@@ -301,15 +310,18 @@ public class SensorOffsetsTest extends BaseTest {
   }
 
   @Test
-  public void sensorValuesOffsetsFilterNotGood()
-    throws SensorGroupsException, SensorOffsetsException {
+  public void sensorValuesOffsetsFilterNotGood() throws Exception {
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
 
     SensorGroups sensorGroups = new SensorGroups();
     sensorGroups.renameGroup("Default", "Group 1");
     sensorGroups.addGroup("Group 2", "Group 1");
 
-    sensorGroups.addAssignment(makeAssignment("Sensor 1"));
-    sensorGroups.addAssignment(makeAssignment("Sensor 2"));
+    sensorGroups.addAssignment(makeAssignment("Sensor 1", "File 1", 1,
+      sensorConfig.getSensorType("Intake Temperature")));
+    sensorGroups.addAssignment(makeAssignment("Sensor 2", "File 1", 2,
+      sensorConfig.getSensorType("Salinity")));
     sensorGroups.moveSensor("Sensor 2", "Group 2");
 
     SensorOffsets offsets = new SensorOffsets(sensorGroups);
@@ -337,16 +349,22 @@ public class SensorOffsetsTest extends BaseTest {
         appliedOffsets.get(2).getTime().get(ChronoField.MINUTE_OF_HOUR)));
   }
 
-  private SensorGroups makeSensorGroups() throws SensorGroupsException {
+  private SensorGroups makeSensorGroups() throws Exception {
     SensorGroups groups = new SensorGroups();
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
 
     groups.renameGroup("Default", "Group 1");
     groups.addGroup("Group 2", "Group 1");
     groups.addGroup("Group 3", "Group 2");
 
-    groups.addAssignment(makeAssignment("Sensor 1"));
-    groups.addAssignment(makeAssignment("Sensor 2"));
-    groups.addAssignment(makeAssignment("Sensor 3"));
+    groups.addAssignment(makeAssignment("Sensor 1", "File 1", 1,
+      sensorConfig.getSensorType("Intake Temperature")));
+    groups.addAssignment(makeAssignment("Sensor 2", "File 1", 2,
+      sensorConfig.getSensorType("Salinity")));
+    groups.addAssignment(makeAssignment("Sensor 3", "File 1", 3,
+      sensorConfig.getSensorType("Air Temperature")));
 
     groups.moveSensor("Sensor 1", "Group 1");
     groups.moveSensor("Sensor 2", "Group 2");
@@ -361,10 +379,10 @@ public class SensorOffsetsTest extends BaseTest {
     return groups;
   }
 
-  private SensorAssignment makeAssignment(String name) {
-    SensorAssignment assignment = Mockito.mock(SensorAssignment.class);
-    Mockito.when(assignment.getSensorName()).thenReturn(name);
-    return assignment;
+  private SensorAssignment makeAssignment(String name, String file, int column,
+    SensorType sensorType) throws SensorAssignmentException {
+    return new SensorAssignment(file, column, sensorType, name, true, false,
+      null);
   }
 
   private SensorValue makeSensorValue(int minute, Flag flag) {
