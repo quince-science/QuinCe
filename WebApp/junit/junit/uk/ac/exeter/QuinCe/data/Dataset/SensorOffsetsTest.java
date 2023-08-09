@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,6 +40,7 @@ public class SensorOffsetsTest extends BaseTest {
     initResourceManager();
   }
 
+  @FlywayTest
   @Test
   public void addOffset() throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
@@ -55,6 +57,7 @@ public class SensorOffsetsTest extends BaseTest {
       () -> assertEquals(1000L, pairOffsets.first().getOffset()));
   }
 
+  @FlywayTest
   @Test
   public void offsetsOrdered() throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
@@ -75,6 +78,7 @@ public class SensorOffsetsTest extends BaseTest {
       () -> assertEquals(LocalDateTime.of(2021, 01, 01, 12, 00, 00), time2));
   }
 
+  @FlywayTest
   @Test
   public void duplicateOffsetTime() throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
@@ -90,6 +94,7 @@ public class SensorOffsetsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void deleteOffset() throws Exception {
 
@@ -111,6 +116,7 @@ public class SensorOffsetsTest extends BaseTest {
 
   }
 
+  @FlywayTest
   @Test
   public void getOffsetNoOffsets() throws Exception {
     SensorGroups sensorGroups = makeSensorGroups();
@@ -125,6 +131,7 @@ public class SensorOffsetsTest extends BaseTest {
     assertEquals(time, offsets.getOffsetTime(time, base, target));
   }
 
+  @FlywayTest
   @ParameterizedTest
   @CsvSource({ "30, 29", "20, 19", "40, 39" })
   public void getOffsetSingleOffset(int minuteToOffset, int expectedMinute)
@@ -149,6 +156,7 @@ public class SensorOffsetsTest extends BaseTest {
       offsets.getOffsetTime(timeToOffset, base, target));
   }
 
+  @FlywayTest
   @ParameterizedTest
   @CsvSource({ "8, 6", "10, 8", "20, 17", "30, 26", "50, 46" })
   public void getOffsetMultipleOffsets(int minuteToOffset, int expectedMinute)
@@ -175,6 +183,7 @@ public class SensorOffsetsTest extends BaseTest {
       offsets.getOffsetTime(timeToOffset, base, target));
   }
 
+  @FlywayTest
   @ParameterizedTest
   @CsvSource({ "8, 10", "10, 12", "20, 23", "30, 34", "50, 54" })
   public void getReverseOffsetMultipleOffsets(int minuteToOffset,
@@ -201,6 +210,7 @@ public class SensorOffsetsTest extends BaseTest {
       offsets.getOffsetTime(timeToOffset, base, target));
   }
 
+  @FlywayTest
   @ParameterizedTest
   @CsvSource({ "3, 1, -7", "3, 2, -2", "2, 1, -5", "1, 2, 5", "1, 3, 7",
     "2, 3, 2" })
@@ -235,6 +245,7 @@ public class SensorOffsetsTest extends BaseTest {
     assertEquals(expectedOffset, minutesDifference);
   }
 
+  @FlywayTest
   @ParameterizedTest
   @CsvSource({ "1, 0", "2, -5", "3, -7" })
   public void getOffsetToFirstGroup(int baseSensor, long expectedOffset)
