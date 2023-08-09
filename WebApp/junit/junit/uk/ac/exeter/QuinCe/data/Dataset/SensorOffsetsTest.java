@@ -320,6 +320,7 @@ public class SensorOffsetsTest extends BaseTest {
         appliedOffsets.get(4).getTime().get(ChronoField.MINUTE_OF_HOUR)));
   }
 
+  @FlywayTest
   @Test
   public void sensorValuesOffsetsFilterNotGood() throws Exception {
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
