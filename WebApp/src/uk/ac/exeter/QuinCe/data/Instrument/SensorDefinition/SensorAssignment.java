@@ -323,7 +323,7 @@ public class SensorAssignment implements Comparable<SensorAssignment> {
   /**
    * Determines whether or not this assignment is from the same file and column
    * as the specified assignment.
-   * 
+   *
    * @param o
    *          The assignment to be compared.
    * @return {@code true} if the assignment is from the same file and column;
