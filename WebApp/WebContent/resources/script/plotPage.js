@@ -1449,6 +1449,10 @@ function drawPlot(index, drawOtherPlots, keepZoom) {
 
   resizePlot(index);
 
+  if (!keepZoom) {
+    resetZoom(index);
+  }
+
   // Enable/disable the selection mode controls
   if (canEdit()) {
     let plotVariable = $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val();
