@@ -51,7 +51,7 @@ public class DataReductionRecordCompareTest extends TestSetTest {
 
   /**
    * Create a mock {@link Measurement} object with the specified database ID.
-   * 
+   *
    * @param id
    *          The database ID.
    * @return The Measurement object.
@@ -64,7 +64,7 @@ public class DataReductionRecordCompareTest extends TestSetTest {
 
   /**
    * Create a mock {@link Variable} object with the specified database ID.
-   * 
+   *
    * @param id
    *          The database ID.
    * @return The Variable object.
@@ -78,7 +78,7 @@ public class DataReductionRecordCompareTest extends TestSetTest {
   /**
    * Create a dummy set of parameters for a constructed
    * {@link DataReductionRecord}.
-   * 
+   *
    * @return The parameters.
    */
   private List<String> makeParameters() {
@@ -88,7 +88,7 @@ public class DataReductionRecordCompareTest extends TestSetTest {
   /**
    * Run the comparison tests defined in the test set specified by
    * {@link #getTestSetName()}.
-   * 
+   *
    * <p>
    * These are defined in the file
    * {@code WebApp/junit/resources/testsets/DataReductionRecordCompare.csv}. The
