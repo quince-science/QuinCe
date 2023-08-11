@@ -359,7 +359,7 @@ public class IsAssignmentRequiredTests extends TestSetTest {
 
   /**
    * Get the assigned {@link SensorType} for the specified test line and column.
-   * 
+   *
    * @param line
    *          The line number in the test file.
    * @param col
