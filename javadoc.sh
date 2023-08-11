@@ -92,10 +92,10 @@ javadoc -sourcepath "$sourcePath" -d "$output" \
         -windowtitle "QuinCe Javadoc" -doctitle "QuinCe Javadoc" \
         -classpath "$classPath" \
         -link https://docs.oracle.com/en/java/javase/11/docs/api \
-        -link http://www.joda.org/joda-time/apidocs/ \
+        -link https://www.joda.org/joda-time/apidocs/package-list/ \
         -link https://javadoc.io/doc/org.primefaces/primefaces/12.0.0/ \
         -link https://commons.apache.org/proper/commons-email/javadocs/api-release/ \
         -link https://junit.org/junit5/docs/5.7.0/api/ \
         -link https://docs.spring.io/spring-framework/docs/current/javadoc-api/ \
-        -link https://static.javadoc.io/org.mockito/mockito-core/2.15.0/ \
+        -link https://www.javadoc.io/doc/org.mockito/mockito-core/2.15.0/package-list/ \
 

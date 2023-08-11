@@ -31,8 +31,8 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Tests for the {@link SensorAssignments#isAssignmentRequired(SensorType)}
- * method.
+ * Tests for the {@link SensorAssignments#isAssignmentRequired(SensorType,
+ * Map<Long, VariableAttributes>)} method.
  *
  * <p>
  * These are complex and many, so live in their own class to make the main
@@ -49,97 +49,97 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class IsAssignmentRequiredTests extends TestSetTest {
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int SENSOR_TYPE_COL = 0;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int SENSOR_ASSIGN_PRIMARY_COL = 1;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int SENSOR_ASSIGN_SECONDARY_COL = 2;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int RELATION_COL = 3;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int SIBLING_ASSIGNED_PRIMARY_COL = 4;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int SIBLING_ASSIGNED_SECONDARY_COL = 5;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int DEPENDENT_COL = 6;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int HAS_DEPENDS_QUESTION_COL = 7;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int DEPENDENT_ASSIGNED_PRIMARY_COL = 8;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int DEPENDENT_ASSIGNED_PRIMARY_DEPENDS_QUESTION_ANSWER_COL = 9;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int DEPENDENT_ASSIGNED_SECONDARY_COL = 10;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int DEPENDENT_ASSIGNED_SECONDARY_DEPENDS_QUESTION_ANSWER_COL = 11;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int DEPENDENT_SIBLING_COL = 12;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int DEPENDENT_SIBLING_ASSIGNED_PRIMARY_COL = 13;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int DEPENDENT_SIBLING_ASSIGNED_SECONDARY_COL = 14;
 
   /**
-   * A column in the Test Set file for
+   * A column index in the Test Set file for
    * {@link #isAssignmentRequiredTests(TestSetLine)}.
    */
   private static final int IS_ASSIGNMENT_REQUIRED_COL = 15;
@@ -165,8 +165,8 @@ public class IsAssignmentRequiredTests extends TestSetTest {
   private SensorsConfiguration config = null;
 
   /**
-   * An empty VariableAttributes map for basic tests. The functionality of this
-   * map will be tested elsewhere.
+   * An empty {@link VariableAttributes} map for basic tests. The functionality
+   * of this map will be tested elsewhere.
    */
   private Map<Long, VariableAttributes> emptyVarAttributes = new HashMap<Long, VariableAttributes>();
 
@@ -357,6 +357,17 @@ public class IsAssignmentRequiredTests extends TestSetTest {
 
   }
 
+  /**
+   * Get the assigned {@link SensorType} for the specified test line and column.
+   * 
+   * @param line
+   *          The line number in the test file.
+   * @param col
+   *          The column index.
+   * @return The assigned {@link SensorType}.
+   * @throws Exception
+   *           If the assignment is invalid.
+   */
   private SensorType getSensorType(TestSetLine line, int col) throws Exception {
     return config.getSensorType(line.getStringField(col, true));
   }
