@@ -16,7 +16,7 @@ public class RoutineFlag extends Flag {
   private final String requiredValue;
 
   /**
-   * The actual value
+   * The actual (invalid) value encountered
    */
   private final String actualValue;
 
