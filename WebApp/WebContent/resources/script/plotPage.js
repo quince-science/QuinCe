@@ -349,7 +349,7 @@ function plotError() {
   // We can't use the window object here because consts don't get put there.
   itemNotLoading(PLOT1_LOADING);
   itemNotLoading(PLOT2_LOADING);
-  
+
   alert('Unhandled error in plot/map. If you see this, please report it with details of what you were trying to do');
 }
 
