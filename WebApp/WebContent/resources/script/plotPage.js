@@ -1107,7 +1107,7 @@ function drawY2Plot(index, keepZoom) {
     window['y2Plot' + index + 'Data'] = parseJsonWithDates(newY2Data);
 
     // Clear input so it doesn't get sent back to the server
-    $('#plot' + index + 'Form\\:plot' + index + 'y2Data').val('');
+    $('#plot' + index + 'Form\\:plot' + index + 'Y2Data').val('');
   }
 
   let labels = getPlotY2Labels(index);
@@ -1316,6 +1316,7 @@ function drawDataPlot2Y(index, keepZoom) {
   if (newPlotData) {
     window['dataPlot' + index + 'Data'] = parseJsonWithDates(newPlotData);
     $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
+    $('#plot' + index + 'Form\\:plot' + index + 'Y2Data').val('');
   }
 
   let labels = getPlotLabels(index);
@@ -1484,7 +1485,7 @@ function drawFlagPlot1Y(index) {
   window['flagPlot' + index + 'Data'] =
   parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
 
-  $('#plot' + index + 'Form\\:plot' + index + 'Flags').val("");
+  $('#plot' + index + 'Form\\:plot' + index + 'Flags').val('');
 
   if (null != window['flagPlot' + index]) {
     window['flagPlot' + index].destroy();
@@ -1531,7 +1532,7 @@ function drawFlagPlot2Y(index) {
 
   let labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
 
-  $('#plot' + index + 'Form\\:plot' + index + 'Flags').val("");
+  $('#plot' + index + 'Form\\:plot' + index + 'Flags').val('');
 
   if (null != window['flagPlot' + index]) {
     window['flagPlot' + index].destroy();
@@ -2180,7 +2181,7 @@ function getMapData(index) {
 
   $('#plot' + index + 'Form\\:map' + index + 'Bounds').val(extent);
   $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
-  $('#plot' + index + 'Form\\:plot' + index + 'y2Data').val('');
+  $('#plot' + index + 'Form\\:plot' + index + 'Y2Data').val('');
   $('#plot' + index + 'Form\\:map' + index + 'Data').val('');
   eval('map' + index + 'GetData()');
 }
