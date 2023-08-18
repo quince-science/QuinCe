@@ -57,7 +57,6 @@ classPath="${classPath}:${jarsDir}/jersey-hk2-2.34.jar"
 classPath="${classPath}:${jarsDir}/jersey-media-moxy-2.34.jar"
 classPath="${classPath}:${jarsDir}/jersey-media-multipart-2.34.jar"
 classPath="${classPath}:${jarsDir}/jersey-server-2.34.jar"
-classPath="${classPath}:${jarsDir}/joda-time-2.7.jar"
 classPath="${classPath}:${jarsDir}/mimepull-1.9.13.jar"
 classPath="${classPath}:${jarsDir}/myfaces-api-2.2.8.jar"
 classPath="${classPath}:${jarsDir}/myfaces-bundle-2.2.8.jar"
@@ -92,7 +91,6 @@ javadoc -sourcepath "$sourcePath" -d "$output" \
         -windowtitle "QuinCe Javadoc" -doctitle "QuinCe Javadoc" \
         -classpath "$classPath" \
         -link https://docs.oracle.com/en/java/javase/11/docs/api \
-        -link https://www.joda.org/joda-time/apidocs/package-list/ \
         -link https://javadoc.io/doc/org.primefaces/primefaces/12.0.0/ \
         -link https://commons.apache.org/proper/commons-email/javadocs/api-release/ \
         -link https://junit.org/junit5/docs/5.7.0/api/ \
