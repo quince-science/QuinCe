@@ -2,159 +2,218 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
 /**
  * Represents a Flag placed on a data record.
- * <p>
- * Flags are based on the WOCE flags, with values for Good, Questionable and
- * Bad. All records exported from a system should ultimately have one of these
- * three flags assigned to it. However, during processing a number of other flag
- * values can be useful:
- * </p>
- * <ul>
- * <li><b>NO QC:</b> No QC has been performed.</li>
- * <li><b>Flushing:</b> The instrument is in Flushing mode, so values should be
- * ignored.</li>
- * <li><b>Assumed Good:</b> Automatic processing has flagged the record as good,
- * and there is no indication that this should be changed.</li>
- * <li><b>Needed:</b> A flag must be assigned manually by a human.</li>
- * <li><b>Lookup:</b> The QC for this value is inherited from another value. The
- * value ID(s) are stored in the comment.</li>
- * </ul>
  *
- * @author Steve Jones
+ * <p>
+ * Flags are based on the <a href=
+ * "https://exchange-format.readthedocs.io/en/latest/quality.html#woce-ctd-quality-codes">WOCE
+ * CTD Quality Codes</a>, with primary values for Good (2), Questionable (3) and
+ * Bad (4). This convention is used in the global
+ * <a href="https://www.socat.info">SOCAT</a> database. All records exported
+ * from a system should ultimately have one of these three flags assigned to it.
+ * However, during processing a number of other flag values can be useful. The
+ * complete list of flag values used in QuinCe is in the table below.
+ * </p>
+ *
+ * <table>
+ * <caption>All flag values used in QuinCe.</caption>
+ * <tr>
+ * <th>Flag</th>
+ * <th>Value</th>
+ * <th>Meaning</th>
+ * </tr>
+ * <tr>
+ * <td>Good</td>
+ * <td style="text-align: right">{@code 2}</td>
+ * <td>The value is good and can be used.</td>
+ * </tr>
+ * <tr>
+ * <td>Questionable</td>
+ * <td style="text-align: right">{@code 3}</td>
+ * <td>The value is of questionable quality.</td>
+ * </tr>
+ * <tr>
+ * <td>Bad</td>
+ * <td style="text-align: right">{@code 4}</td>
+ * <td>The value is bad and should not be used.</td>
+ * </tr>
+ * <tr>
+ * <td>No QC</td>
+ * <td style="text-align: right">{@code 0}</td>
+ * <td>The value has not yet been quality controlled.</td>
+ * </tr>
+ * <tr>
+ * <td>Assumed Good</td>
+ * <td style="text-align: right">{@code -2}</td>
+ * <td>The value is assumed to be good. This is set by automatic QC routines
+ * that do not find anything wrong with the checked values.</td>
+ * </tr>
+ * <tr>
+ * <td>Flushing</td>
+ * <td style="text-align: right">{@code -100}</td>
+ * <td>The instrument is in Flushing mode, so values should be ignored.</td>
+ * </tr>
+ * <tr>
+ * <td>Needed</td>
+ * <td style="text-align: right">{@code -10}</td>
+ * <td>A flag must be assigned manually by a human.</td>
+ * </tr>
+ * <tr>
+ * <td>Lookup</td>
+ * <td style="text-align: right">{@code -200}</td>
+ * <td>The flag for this value is inherited from another value. The value ID(s)
+ * are stored in the QC comment. These flags cannot be overridden by the
+ * user.</td>
+ * </tr>
+ * </table>
+ *
+ * <p>
+ * Each flag value has a corresponding text value for display to users.
+ * </p>
+ *
+ * <p>
+ * This class provides instances of each type of flag to remove the need to
+ * repeatedly construct them. These instances can be used repeatedly without
+ * issues in most cases.
+ * </p>
  */
-public class Flag implements Comparable<Flag> {
+public class Flag {
 
   /**
-   * Value indicating that no QC has been performed
+   * Numeric value for a {@link #NO_QC} flag.
    */
   public static final int VALUE_NO_QC = 0;
 
   /**
-   * The WOCE value for a good flag
+   * Text value for a {@link #NO_QC} flag.
+   */
+  protected static final String TEXT_NO_QC = "No QC";
+
+  /**
+   * Numeric value for a {@link #GOOD} flag.
    */
   public static final int VALUE_GOOD = 2;
 
   /**
-   * The text value for a good flag
+   * Text value for a {@link #GOOD} flag.
    */
   protected static final String TEXT_GOOD = "Good";
 
   /**
-   * The WOCE value for a good flag
+   * Numeric value for an {@link #ASSUMED_GOOD} flag.
    */
   public static final int VALUE_ASSUMED_GOOD = -2;
 
   /**
-   * The text indicating that no QC has been performed
-   */
-  public static final String TEXT_NO_QC = "No QC";
-
-  /**
-   * The text value for a good flag
+   * Text value for an {@link #ASSUMED_GOOD} flag.
    */
   protected static final String TEXT_ASSUMED_GOOD = "Assumed Good";
 
   /**
-   * The WOCE value for a questionable flag
+   * Numeric value for a {@link #QUESTIONABLE} flag.
    */
   public static final int VALUE_QUESTIONABLE = 3;
 
   /**
-   * The text value for a questionable flag
+   * Text value for a {@link #QUESTIONABLE} flag.
    */
   protected static final String TEXT_QUESTIONABLE = "Questionable";
 
   /**
-   * The WOCE value for a bad flag
+   * Numeric value for a {@link #BAD} flag.
    */
   public static final int VALUE_BAD = 4;
 
   /**
-   * The text value for a bad flag
+   * Text value for a {@link #BAD} flag.
    */
   protected static final String TEXT_BAD = "Bad";
 
   /**
-   * The special value for a needed flag
+   * Numeric value for a {@link #NEEDED} flag.
    */
   public static final int VALUE_NEEDED = -10;
 
   /**
-   * The text value for a needed flag
+   * Text value for a {@link #NEEDED} flag.
    */
   protected static final String TEXT_NEEDED = "Needed";
 
   /**
-   * The special flag for a sensor value taken during the instrument's flushing
-   * period
+   * Numeric value for a {@link #FLUSHING} flag.
    */
   public static final int VALUE_FLUSHING = -100;
 
   /**
-   * The text value for a flushing period flag
+   * Text value for a {@link #FLUSHING} flag.
    */
   protected static final String TEXT_FLUSHING = "In flushing time";
 
   /**
-   * Flag indicating that the Auto QC flag must be used and cannot be
-   * overridden.
+   * Numeric value for a {@link #LOOKUP} flag.
    */
   public static final int VALUE_LOOKUP = -200;
 
   /**
-   * Text value for the Auto QC flag.
+   * Text value for a {@link #LOOKUP} flag.
    */
   protected static final String TEXT_LOOKUP = "Lookup";
 
   /**
-   * An instance of a No QC flag
+   * Reusable instance of a flag indicating that no QC has been performed.
    */
   public static final Flag NO_QC = makeNoQCFlag();
 
   /**
-   * An instance of a Good flag
+   * Reusable instance of a flag indicating that a value is good and can be
+   * used.
    */
   public static final Flag GOOD = makeGoodFlag();
 
   /**
-   * An instance of an Assumed Good flag
+   * Reusable instance of a flag indicating that automatic QC has not found any
+   * fault with a value.
    */
   public static final Flag ASSUMED_GOOD = makeAssumedGoodFlag();
 
   /**
-   * An instance of a Questionable flag
+   * Reusable instance of a flag indicating that a value's quality is
+   * questionable.
    */
   public static final Flag QUESTIONABLE = makeQuestionableFlag();
 
   /**
-   * An instance of a Bad flag
+   * Reusable instance of a flag indicating that a value is bad and should not
+   * be used.
    */
   public static final Flag BAD = makeBadFlag();
 
   /**
-   * An instance of a Needed flag
+   * Reusable instance of a flag indicating that a human must provide a QC flag.
    */
   public static final Flag NEEDED = makeNeededFlag();
 
   /**
-   * An instance of a Flushing flag
+   * Reusable instance of a flag indicating that the instrument is in flushing
+   * mode and values should be ignored.
    */
   public static final Flag FLUSHING = makeFlushingFlag();
 
   /**
-   * An instance of an Auto QC flag
+   * Reusable instance of a flag indicating that a value's QC flag is linked to
+   * the QC flag of another value.
    */
   public static final Flag LOOKUP = makeLookupQCFlag();
 
   /**
-   * The WOCE value for this flag
+   * The numeric value for this flag.
    */
   protected int flagValue;
 
   /**
-   * Creates a Flag instance with the specified value
+   * Creates a flag instance with the specified numeric value.
    *
    * @param flagValue
-   *          The flag's WOCE value
+   *          The flag's numeric value.
    * @throws InvalidFlagException
    *           If the flag value is invalid
    */
@@ -166,6 +225,15 @@ public class Flag implements Comparable<Flag> {
     this.flagValue = flagValue;
   }
 
+  /**
+   * <b>Use only for unit testing.</b> Create a flag instance from either a
+   * numeric value or a single character indicating the flag type.
+   *
+   * @param flagLetter
+   *          The flag character
+   * @throws InvalidFlagException
+   *           If the character is not recognised.
+   */
   public Flag(char flagLetter) throws InvalidFlagException {
     switch (Character.toUpperCase(flagLetter)) {
     case 'G':
@@ -207,11 +275,11 @@ public class Flag implements Comparable<Flag> {
       throw new InvalidFlagException(flagLetter);
     }
     }
-
   }
 
   /**
-   * Create a flag based on an existing flag. Used by internal classes only
+   * Create a new basic flag based on an existing flag (usually an extending
+   * class). Used by internal classes only.
    *
    * @param sourceFlag
    *          The source flag
@@ -221,7 +289,7 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Returns the flag's numeric value
+   * Get the flag's numeric value
    *
    * @return The flag's numeric value
    */
@@ -230,7 +298,7 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Converts the flag's numeric value into a String value
+   * Get the flag's text value.
    */
   @Override
   public String toString() {
@@ -279,8 +347,7 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Checks to ensure that a flag value is valid. If the value is valid, the
-   * method does nothing. If it is not valid, an exception is thrown.
+   * Checks to ensure that a numeric flag value is valid.
    *
    * @param value
    *          The flag value
@@ -294,9 +361,9 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Create an instance of a Good flag
+   * Create an instance of a No QC flag.
    *
-   * @return A Good flag
+   * @return A No QC flag.
    */
   private static Flag makeNoQCFlag() {
     Flag flag = null;
@@ -310,9 +377,9 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Create an instance of a Good flag
+   * Create an instance of a Good flag.
    *
-   * @return A Good flag
+   * @return A Good flag.
    */
   private static Flag makeGoodFlag() {
     Flag flag = null;
@@ -326,9 +393,9 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Create an instance of a Good flag
+   * Create an instance of an Assumed Good flag.
    *
-   * @return A Good flag
+   * @return An Assumed Good flag.
    */
   private static Flag makeAssumedGoodFlag() {
     Flag flag = null;
@@ -342,9 +409,9 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Create an instance of a Questionable flag
+   * Create an instance of a Questionable flag.
    *
-   * @return A Questionable flag
+   * @return A Questionable flag.
    */
   private static Flag makeQuestionableFlag() {
     Flag flag = null;
@@ -358,9 +425,9 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Create an instance of a Bad flag
+   * Create an instance of a Bad flag.
    *
-   * @return A Bad flag
+   * @return A Bad flag.
    */
   private static Flag makeBadFlag() {
     Flag flag = null;
@@ -374,9 +441,9 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Create an instance of a Not Set flag
+   * Create an instance of a Needed flag.
    *
-   * @return A Not Set flag
+   * @return A Needed flag.
    */
   private static Flag makeNeededFlag() {
     Flag flag = null;
@@ -390,9 +457,9 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Create an instance of a Flushing flag
+   * Create an instance of a Flushing flag.
    *
-   * @return A Flushing flag
+   * @return A Flushing flag.
    */
   private static Flag makeFlushingFlag() {
     Flag flag = null;
@@ -406,9 +473,9 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Create an instance of an Auto QC flag
+   * Create an instance of a Lookup flag.
    *
-   * @return An Auto QC flag
+   * @return A Lookup flag.
    */
   private static Flag makeLookupQCFlag() {
     Flag flag = null;
@@ -429,6 +496,9 @@ public class Flag implements Comparable<Flag> {
     return result;
   }
 
+  /**
+   * Establishes equality using the numeric flag value.
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -443,15 +513,25 @@ public class Flag implements Comparable<Flag> {
     return true;
   }
 
-  @Override
-  public int compareTo(Flag flag) {
-    return this.flagValue - flag.flagValue;
-  }
-
   /**
    * Determines whether or not this flag is more significant than the specified
-   * flag. The order of significance for flags is (lowest significance first):
-   * Not Set, Good, Questionable, Bad, Needed
+   * flag.
+   *
+   * <p>
+   * Flag significant is used to determine which flag takes precedence in
+   * situations where multiple QC flags are under consideration, e.g. when
+   * multiple automatic QC routines try to apply flags to a single value.
+   * </p>
+   *
+   * <ul>
+   * <li>{@link #LOOKUP}</li>
+   * <li>{@link #FLUSHING}</li>
+   * <li>{@link #NEEDED}</li>
+   * <li>{@link #BAD}</li>
+   * <li>{@link #QUESTIONABLE}</li>
+   * <li>{@link #GOOD}/{@link #ASSUMED_GOOD}</li>
+   * <li>{@link #NO_QC}</li>
+   * </ul>
    *
    * @param flag
    *          The flag to be compared
@@ -461,7 +541,6 @@ public class Flag implements Comparable<Flag> {
   public boolean moreSignificantThan(Flag flag) {
     boolean result = false;
 
-    // FLUSHING > NEEDED > everything else
     if (null == flag) {
       result = true;
     } else if (flag.equals(Flag.LOOKUP)) {
@@ -477,7 +556,7 @@ public class Flag implements Comparable<Flag> {
     } else if (this.equals(Flag.NEEDED)) {
       result = true;
     } else {
-      result = (compareTo(flag) > 0);
+      result = (this.flagValue - flag.flagValue > 0);
     }
 
     return result;
@@ -486,6 +565,10 @@ public class Flag implements Comparable<Flag> {
   /**
    * Determines whether or not this flag is less significant than the specified
    * flag.
+   *
+   * <p>
+   * See {@link #moreSignificantThan(Flag)} for flag precedence rules.
+   * </p>
    *
    * @param flag
    *          The flag to be compared.
