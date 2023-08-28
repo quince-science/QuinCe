@@ -310,7 +310,7 @@ public class ExportBean extends BaseManagedBean {
                 // column for the Run Type somewhere (or perhaps not, if it's a
                 // non-measurement run type eg gas standard run)
                 String runType = measurement
-                  .getRunType(Measurement.GENERIC_RUN_TYPE_VARIABLE);
+                  .getRunType(Measurement.RUN_TYPE_DEFINES_VARIABLE);
 
                 // Look through all the column headings defined for the run type
                 // to

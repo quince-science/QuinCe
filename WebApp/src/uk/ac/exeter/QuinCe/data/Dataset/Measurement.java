@@ -37,12 +37,28 @@ public class Measurement implements Comparable<Measurement> {
 
   protected static Type MEASUREMENT_VALUES_TYPE;
 
-  public static final long GENERIC_RUN_TYPE_VARIABLE = -1L;
+  /**
+   * Value stored in the database indicating that the measurement's Run Type
+   * will be used to determine which {@link Variable} it applies to.
+   */
+  public static final long RUN_TYPE_DEFINES_VARIABLE = -1L;
 
+  /**
+   * Auto-generated run type name for ignored measurements identified by QuinCe
+   * without a dedicated Run Type identification column.
+   */
   public static final String IGNORED_RUN_TYPE = "__I";
 
+  /**
+   * Auto-generated run type name for internal calibration records identified by
+   * QuinCe without a dedicated Run Type identification column.
+   */
   public static final String INTERNAL_CALIBRATION_RUN_TYPE = "__C";
 
+  /**
+   * Auto-generated run type name for measurements identified by QuinCe without
+   * a dedicated Run Type identification column.
+   */
   public static final String MEASUREMENT_RUN_TYPE = "__M";
 
   /**
@@ -65,7 +81,7 @@ public class Measurement implements Comparable<Measurement> {
    *
    * <p>
    * Multiple run types may be applicable to different variables. Use
-   * {@link #GENERIC_RUN_TYPE_VARIABLE} for the generic run type.
+   * {@link #RUN_TYPE_DEFINES_VARIABLE} for the generic run type.
    */
   private final Map<Long, String> runTypes;
 
