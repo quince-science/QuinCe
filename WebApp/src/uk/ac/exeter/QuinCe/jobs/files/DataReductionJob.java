@@ -120,7 +120,7 @@ public class DataReductionJob extends DataSetJob {
           // See if this run type is for the GENERIC variable - this is a value
           // from the Run Type column which determines which variable(s) it
           // belongs to
-          if (runTypeEntry.getKey() == Measurement.GENERIC_RUN_TYPE_VARIABLE) {
+          if (runTypeEntry.getKey() == Measurement.RUN_TYPE_DEFINES_VARIABLE) {
 
             for (Variable variable : instrument.getVariables()) {
               if (instrument.isRunTypeForVariable(variable,
@@ -221,7 +221,7 @@ public class DataReductionJob extends DataSetJob {
           if (instrument.isRunTypeForVariable(variable,
             measurement.getRunType(variable))
             || instrument.isRunTypeForVariable(variable,
-              measurement.getRunType(Measurement.GENERIC_RUN_TYPE_VARIABLE))) {
+              measurement.getRunType(Measurement.RUN_TYPE_DEFINES_VARIABLE))) {
 
             DataReductionRecord dataReductionRecord = reducer
               .performDataReduction(instrument, measurement, conn);

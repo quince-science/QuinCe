@@ -312,10 +312,10 @@ public class DefaultMeasurementValueCalculator
 
         if (direction == PRIOR) {
           runTypeMeasurements = allMeasurements.getRunBefore(
-            Measurement.GENERIC_RUN_TYPE_VARIABLE, runType, measurementTime);
+            Measurement.RUN_TYPE_DEFINES_VARIABLE, runType, measurementTime);
         } else {
           runTypeMeasurements = allMeasurements.getRunAfter(
-            Measurement.GENERIC_RUN_TYPE_VARIABLE, runType, measurementTime);
+            Measurement.RUN_TYPE_DEFINES_VARIABLE, runType, measurementTime);
         }
 
         /*

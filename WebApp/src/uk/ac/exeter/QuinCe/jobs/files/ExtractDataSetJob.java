@@ -316,7 +316,7 @@ public class ExtractDataSetJob extends DataSetJob {
             // We can only tell this for "Generic" instruments, ie those with a
             // Run Type column
             if (instrument
-              .getRunTypeCategory(Measurement.GENERIC_RUN_TYPE_VARIABLE,
+              .getRunTypeCategory(Measurement.RUN_TYPE_DEFINES_VARIABLE,
                 currentPeriod.getRunType())
               .equals(RunTypeCategory.IGNORED)) {
               valuesIter.remove();
