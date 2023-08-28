@@ -16,6 +16,7 @@ import com.javadocmd.simplelatlng.LatLng;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -31,41 +32,84 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
  *
  * <p>
  * Position values are kept separate from the others, and can be accessed by a
- * timestamp. This will give either the position for that timestamp, or an
- * interpolated value. It will strive to give only GOOD values.
+ * {@link LocalDateTime}. This will give either the position for that time, or
+ * an interpolated value. It will strive to give only GOOD values.
  * </p>
  */
 public class DatasetSensorValues {
 
+  /**
+   * The {@link SensorValue}s mapped by their database ID.
+   */
   private Map<Long, SensorValue> valuesById;
 
+  /**
+   * The {@link SensorValues}s grouped by their source {@link FileColumn} ID.
+   */
   private Map<Long, SearchableSensorValuesList> valuesByColumn;
 
+  /**
+   * The {@link SensorValues}s grouped by {@link SensorType}.
+   */
   private Map<SensorType, TreeSet<SensorValue>> valuesBySensorType;
 
+  /**
+   * The {@link SensorValue}s grouped by date and then source {@link FileColumn}
+   * ID.
+   */
   private TreeMap<LocalDateTime, Map<Long, SensorValue>> valuesByDateAndColumn;
 
+  /**
+   * The longitudes in the dataset.
+   */
   private SearchableSensorValuesList longitudes;
 
+  /**
+   * The latitudes in the dataset.
+   */
   private SearchableSensorValuesList latitudes;
 
+  /**
+   * The {@link Instrument} to which the {@link SensorValue}s belong.
+   */
   private final Instrument instrument;
 
+  /**
+   * A special {@link Map} key used to indicate a summed total of flag values.
+   *
+   * <p>
+   * Used by {@link #getNonPositionNeedsFlagCounts()} and
+   * {@link #getPositionNeedsFlagCounts()}.
+   * </p>
+   */
   public static final long FLAG_TOTAL = -1L;
 
   /**
-   * A cache of all the times in the dataset
+   * A cache of all the timestamps in the dataset.
    *
    * @see #getTimes()
    */
   private List<LocalDateTime> times = null;
 
   /**
-   * Some datasets have columns that contain no data. You can ensure that they
-   * are catered for by adding them as optional columns.
+   * A set of optional columns in the dataset.
+   *
+   * <p>
+   * Some datasets have columns that contain no data (e.g. some diagnostic
+   * columns do not contain data in all datasets). They can be added as optional
+   * columns to ensure that the data structures are consistent between datasets
+   * from the same {@link Instrument}.
+   * </p>
    */
   private TreeSet<Long> optionalColumns = new TreeSet<Long>();
 
+  /**
+   * Initialise an empty instance for a dataset attached to a given
+   * {@link Instrument}.
+   *
+   * @param instrument
+   *          The instrument.
+   */
   public DatasetSensorValues(Instrument instrument) {
     valuesById = new HashMap<Long, SensorValue>();
     valuesByColumn = new HashMap<Long, SearchableSensorValuesList>();
@@ -77,6 +121,14 @@ public class DatasetSensorValues {
     this.instrument = instrument;
   }
 
+  /**
+   * Add a single {@link SensorValue}.
+   *
+   * @param sensorValue
+   *          The SensorValue.
+   * @throws RecordNotFoundException
+   *           If the {@link Instrument} configuration is invalid.
+   */
   public void add(SensorValue sensorValue) throws RecordNotFoundException {
 
     if (sensorValue.getColumnId() == SensorType.LONGITUDE_ID) {
@@ -96,20 +148,53 @@ public class DatasetSensorValues {
     }
   }
 
+  /**
+   * Add an optional {@link FileColumn}, which will be used in the data output
+   * but which will not contain any {@link SensorValue}s.
+   *
+   * @param columnId
+   *          The column's database ID.
+   */
   public void addOptionalColumn(long columnId) {
     if (!valuesByColumn.containsKey(columnId)) {
       optionalColumns.add(columnId);
     }
   }
 
+  /**
+   * Determines whether or not the specified {@link SensorValue} is has already
+   * been added.
+   *
+   * @param sensorValue
+   *          The candidate {@link SensorValue}.
+   * @return {@code true} if the {@link SensorValue} has been added;
+   *         {@code false} otherwise.
+   */
   public boolean contains(SensorValue sensorValue) {
     return valuesById.containsKey(sensorValue.getId());
   }
 
+  /**
+   * Determines whether any {@link SensorValue}s have been added with the
+   * specified timestamp.
+   *
+   * @param time
+   *          The timestamp.
+   * @return {@code true} if a {@link SensorValue} with the timestamp exists;
+   *         {@code false} otherwise.
+   */
   public boolean contains(LocalDateTime time) {
     return valuesByDateAndColumn.containsKey(time);
   }
 
+  /**
+   * Remove the specified {@link SensorValue} from the data structure.
+   *
+   * @param sensorValue
+   *          The {@link SensorValue} to be removed.
+   * @throws RecordNotFoundException
+   *           If the {@link Instrument} configuration is invalid.
+   */
   public void remove(SensorValue sensorValue) throws RecordNotFoundException {
     SensorType sensorType = instrument.getSensorAssignments()
       .getSensorTypeForDBColumn(sensorValue.getColumnId());
@@ -120,6 +205,14 @@ public class DatasetSensorValues {
     removeByDateAndColumn(sensorValue);
   }
 
+  /**
+   * Remove all the specified {@link SensorValue}s from the data structure.
+   *
+   * @param values
+   *          The {@link SensorValue}s to be removed.
+   * @throws RecordNotFoundException
+   *           If the {@link Instrument} configuration is invalid.
+   */
   public void removeAll(Collection<? extends SensorValue> values)
     throws RecordNotFoundException {
 
@@ -128,10 +221,24 @@ public class DatasetSensorValues {
     }
   }
 
+  /**
+   * Get the database IDs of all the {@link FileColumn}s represented in the data
+   * structure, excluding the optional columns.
+   *
+   * @return The column IDs.
+   */
   public Set<Long> getColumnIds() {
     return valuesByColumn.keySet();
   }
 
+  /**
+   * Get the {@link SensorValue}s for a specified {@link FileColumn} using its
+   * database ID.
+   *
+   * @param columnId
+   *          The {@link FileColumn} ID.
+   * @return The {@link SensorValue}s in the column.
+   */
   public SearchableSensorValuesList getColumnValues(long columnId) {
 
     SearchableSensorValuesList values;
@@ -147,30 +254,105 @@ public class DatasetSensorValues {
     return values;
   }
 
+  /**
+   * Retrieve a {@link SensorValue} using its database ID.
+   *
+   * @param id
+   *          The {@link SensorValue}'s ID.
+   * @return The {@link SensorValue}, or {@code null} if it is not in the data
+   *         structure.
+   */
   public SensorValue getById(long id) {
     return valuesById.get(id);
   }
 
+  /**
+   * Retrieve a set of {@link SensorValue}s using their database IDs.
+   *
+   * <p>
+   * The returned {@link SensorValue}s will be in a {@link List} with the same
+   * iteration order as the passed in {@link Collection} of IDs. Any IDs that
+   * are not in the data structure will result in a {@code null} value in the
+   * corresponding list position.
+   * </p>
+   *
+   * @param ids
+   *          The {@link SensorValue} IDs.
+   * @return The {@link SensorValue} objects.
+   */
   public List<SensorValue> getById(Collection<Long> ids) {
     return ids.stream().map(id -> getById(id)).toList();
   }
 
+  /**
+   * Retrieve all the {@link SensorValue}s for a given {@link SensorType}.
+   *
+   * @param sensorType
+   *          The {@link SensorType}.
+   * @return The {@link SensorValue}s from the {@link SensorType}.
+   */
   public TreeSet<SensorValue> getBySensorType(SensorType sensorType) {
     return valuesBySensorType.get(sensorType);
   }
 
+  /**
+   * Retrieve all the {@link SensorValue}s from the data structure.
+   *
+   * <p>
+   * The order of the {@link SensorValue}s is not defined.
+   * </p>
+   *
+   * <p>
+   * Position values are not included in the result. Use
+   * {@link #getAllPositionValues()}.
+   * </p>
+   *
+   * @return The {@link SensorValue}s in the data structure.
+   */
   public Collection<SensorValue> getAll() {
     return valuesById.values();
   }
 
+  /**
+   * Add the given {@link SensorValue} to the {@link #valuesById} lookup.
+   *
+   * <p>
+   * Used by {@link #add(SensorValue)}.
+   * </p>
+   *
+   * @param sensorValue
+   *          The {@link SensorValue}.
+   */
   private void addById(SensorValue sensorValue) {
     valuesById.put(sensorValue.getId(), sensorValue);
   }
 
+  /**
+   * Remove the given {@link SensorValue} from the {@link #valuesById} lookup.
+   *
+   * <p>
+   * Used by {@link #remove(SensorValue)}.
+   * </p>
+   */
   private void removeById(SensorValue sensorValue) {
     valuesById.remove(sensorValue.getId());
   }
 
+  /**
+   * Add the given {@link SensorValue} to the {@link #valuesByColumn} lookup.
+   *
+   * <p>
+   * If the {@link SensorValue}'s column is in the {@link #optionalColumns}
+   * list, it is removed from there.
+   * </p>
+   *
+   * <p>
+   * Used by {@link #add(SensorValue)}.
+   * </p>
+   *
+   * @param sensorValue
+   *          The {@link SensorValue}.
+   */
   private void addByColumn(SensorValue sensorValue) {
     long columnId = sensorValue.getColumnId();
 
@@ -184,16 +366,43 @@ public class DatasetSensorValues {
     valuesByColumn.get(columnId).add(sensorValue);
   }
 
+  /**
+   * Remove the given {@link SensorValue} from the {@link #valuesByColumn}
+   * lookup.
+   *
+   * <p>
+   * If this is the only {@link SensorValue} for the column, that column is
+   * moved to the {@link #optionalColumns} list.
+   * </p>
+   *
+   * <p>
+   * Used by {@link #remove(SensorValue)}.
+   * </p>
+   */
   private void removeByColumn(SensorValue sensorValue) {
     long columnId = sensorValue.getColumnId();
     if (valuesByColumn.containsKey(columnId)) {
       valuesByColumn.get(columnId).remove(sensorValue);
       if (valuesByColumn.get(columnId).isEmpty()) {
         valuesByColumn.remove(columnId);
+        optionalColumns.add(columnId);
       }
     }
   }
 
+  /**
+   * Add the given {@link SensorValue} to the {@link #valuesBySensorType}
+   * lookup.
+   *
+   * <p>
+   * Used by {@link #add(SensorValue)}.
+   * </p>
+   *
+   * @param sensorValue
+   *          The {@link SensorValue}.
+   * @param sensorType
+   *          The {@link SensorType}.
+   */
   private void addBySensorType(SensorValue sensorValue, SensorType sensorType) {
     if (!valuesBySensorType.containsKey(sensorType)) {
       valuesBySensorType.put(sensorType, new TreeSet<SensorValue>());
@@ -202,6 +411,19 @@ public class DatasetSensorValues {
     valuesBySensorType.get(sensorType).add(sensorValue);
   }
 
+  /**
+   * Remove the given {@link SensorValue} from the {@link #valuesBySensorType}
+   * lookup.
+   *
+   * <p>
+   * Used by {@link #remove(SensorValue)}.
+   * </p>
+   *
+   * @param sensorValue
+   *          The {@link SensorValue}.
+   * @param sensorType
+   *          The {@link SensorType}.
+   */
   private void removeBySensorType(SensorValue sensorValue,
     SensorType sensorType) {
     if (valuesBySensorType.containsKey(sensorType)) {
@@ -212,9 +434,18 @@ public class DatasetSensorValues {
     }
   }
 
-  private void addByDateAndColumn(SensorValue sensorValue)
-    throws RecordNotFoundException {
-
+  /**
+   * Add the given {@link SensorValue} to the {@link #valuesByDateAndColumn}
+   * lookup.
+   *
+   * <p>
+   * Used by {@link #add(SensorValue)}.
+   * </p>
+   *
+   * @param sensorValue
+   *          The {@link SensorValue}.
+   */
+  private void addByDateAndColumn(SensorValue sensorValue) {
     LocalDateTime time = sensorValue.getTime();
 
     if (!valuesByDateAndColumn.containsKey(time)) {
@@ -227,6 +458,17 @@ public class DatasetSensorValues {
     times = null;
   }
 
+  /**
+   * Remove the given {@link SensorValue} from the
+   * {@link #valuesByDateAndColumn} lookup.
+   *
+   * <p>
+   * Used by {@link #remove(SensorValue)}.
+   * </p>
+   *
+   * @param sensorValue
+   *          The {@link SensorValue}.
+   */
   private void removeByDateAndColumn(SensorValue sensorValue)
     throws RecordNotFoundException {
 
@@ -247,6 +489,16 @@ public class DatasetSensorValues {
     times = null;
   }
 
+  /**
+   * Get all the timestamps for which non-position {@link SensorValue}s have
+   * been added.
+   *
+   * <p>
+   * The returned {@link List} is in ascending time order.
+   * </p>
+   *
+   * @return The timestamps.
+   */
   public List<LocalDateTime> getTimes() {
     if (null == times) {
       times = new ArrayList<LocalDateTime>(valuesByDateAndColumn.keySet());
@@ -256,9 +508,13 @@ public class DatasetSensorValues {
   }
 
   /**
-   * Get the times for which position values have been added.
+   * Get the timestamps for which position values have been added.
    *
-   * @return The position value times.
+   * <p>
+   * The returned {@link List} is in ascending time order.
+   * </p>
+   *
+   * @return The position value timesteps.
    */
   public List<LocalDateTime> getPositionTimes() {
 
@@ -275,10 +531,31 @@ public class DatasetSensorValues {
     return new ArrayList<LocalDateTime>(result);
   }
 
+  /**
+   * Get all the {@link SensorValue}s with the specified timestamp.
+   *
+   * <p>
+   * The returned values are grouped by their source (@link FileColumn}.
+   *
+   * @param time
+   *          The required timestamp.
+   * @return The {@link SensorValue}s with the timestamp.
+   */
   public Map<Long, SensorValue> get(LocalDateTime time) {
     return valuesByDateAndColumn.get(time);
   }
 
+  /**
+   * Get the {@link SensorValue} from the specified {@link FileColumn} with the
+   * specified timestamp.
+   *
+   * @param time
+   *          The timestamp.
+   * @param columnID
+   *          The {@link FileColumn}'s database ID.
+   * @return The matching {@link SensorValue}, or {@code null} if there is no
+   *         such value.
+   */
   public SensorValue getSensorValue(LocalDateTime time, long columnID) {
     SensorValue result = null;
 
@@ -294,7 +571,7 @@ public class DatasetSensorValues {
   }
 
   /**
-   * Get all sensor values within a specified time range.
+   * Get all {@link SensorValue}s within a specified time range.
    * <p>
    * The start time is inclusive, while the end time is exclusive.
    * </p>
@@ -307,7 +584,7 @@ public class DatasetSensorValues {
    *          The start time (inclusive).
    * @param end
    *          The end time (exclusive).
-   * @return The sensor values that fall within the time range.
+   * @return The {@link SensorValue}s that fall within the time range.
    */
   public List<SensorValue> getByTimeRange(LocalDateTime start,
     LocalDateTime end) {
@@ -332,14 +609,21 @@ public class DatasetSensorValues {
   }
 
   /**
-   * Get the {@link SensorValue} for a column that occurs either on or before
-   * the specified time.
+   * Get the {@link SensorValue} for a {@link FileColumn} that occurs either on
+   * or before the specified time.
+   *
+   * <p>
+   * If there is no {@link SensorValue} available for the exact timestamp, the
+   * latest {@link SensorValue} before the timestamp is returned. There is no
+   * limit on how far before the requested timestamp this may be.
+   * </p>
    *
    * @param columnId
-   *          The required column
+   *          The required {@link FileColumn}'s database ID.
    * @param time
-   *          The time
-   * @return The {@link SensorValue}.
+   *          The timestamp.
+   * @return The {@link SensorValue}, or {@code null} if no suitable value is
+   *         found.
    */
   public SensorValue getSensorValueOnOrBefore(long columnId,
     LocalDateTime time) {
@@ -358,12 +642,18 @@ public class DatasetSensorValues {
   }
 
   /**
-   * Determines whether or not this data contains the specified column,
-   * identified by its ID.
+   * Determines whether or not this data contains the specified
+   * {@link FileColumn}, identified by its database ID.
+   *
+   * <p>
+   * The method will search both the {@link #valuesByColumn} and
+   * {@link #optionalColumns} lookups.
+   * </p>
    *
    * @param columnId
-   *          The column ID.
-   * @return {@code true} if the column exists; {@code false} if it does not.
+   *          The {@link FileColumn}'s database ID.
+   * @return {@code true} if the {@link FileColumn} is registered in the
+   *         dataset; {@code false} if it does not.
    */
   public boolean containsColumn(long columnId) {
     return valuesByColumn.containsKey(columnId)
@@ -371,13 +661,15 @@ public class DatasetSensorValues {
   }
 
   /**
-   * Get the number of NEEDED flags in the dataset.
+   * Get the number of {@link Flag#NEEDED} flags set on non-position
+   * {@link SensorValue}s in the dataset.
+   *
    * <p>
    * The flags are grouped by column ID, with an additional {@link #FLAG_TOTAL}
-   * entry giving the total number of NEEDED flags.
+   * entry giving the total number of flags across all columns.
    * </p>
    *
-   * @return The number of NEEDED flags
+   * @return The number of non-position values with a {@link Flag#NEEDED} flag.
    */
   public Map<Long, Integer> getNonPositionNeedsFlagCounts() {
 
@@ -404,6 +696,17 @@ public class DatasetSensorValues {
     return result;
   }
 
+  /**
+   * Get the number of {@link Flag#NEEDED} flags set on position
+   * {@link SensorValue}s in the dataset.
+   *
+   * <p>
+   * The flags are grouped by column ID, with an additional {@link #FLAG_TOTAL}
+   * entry giving the total number of flags across all columns.
+   * </p>
+   *
+   * @return The number of position values with a {@link Flag#NEEDED} flag.
+   */
   public Map<Long, Integer> getPositionNeedsFlagCounts() {
 
     Set<LocalDateTime> needsFlagTimes = new HashSet<LocalDateTime>();
@@ -432,14 +735,45 @@ public class DatasetSensorValues {
     return result;
   }
 
+  /**
+   * Get the {@link Instrument} for which these {@link SensorValue}s were
+   * recorded.
+   *
+   * @return The {@link Instrument}.
+   */
   public Instrument getInstrument() {
     return instrument;
   }
 
+  /**
+   * Get the total number of {@link SensorValue}s added to the data structure.
+   *
+   * <p>
+   * Includes both non-position and position values.
+   * </p>
+   *
+   * @return The number of {@link SensorValue}s.
+   */
   public int size() {
     return valuesById.size() + latitudes.size() + longitudes.size();
   }
 
+  /**
+   * Determine whether or not the specified {@link SensorValue} is of the
+   * specified {@link SensorType}.
+   *
+   * <p>
+   * Returns {@code false} if the {@link SensorValue} has not been added to the
+   * data structure.
+   * </p>
+   *
+   * @param sensorValue
+   *          The {@link SensorValue} to be checked.
+   * @param sensorType
+   *          The target {@link SensorType}.
+   * @return {@code true} if the {@link SensorValue} is of the specified
+   *         {@link SensorType}; {@code false} otherwise.
+   */
   public boolean isOfSensorType(SensorValue sensorValue,
     SensorType sensorType) {
     boolean result;
@@ -454,20 +788,24 @@ public class DatasetSensorValues {
   }
 
   /**
-   * Create a subset of this object containing the specified items.
+   * Create a subset of this object containing the specified
+   * {@link SensorValue}s, identified by their database IDs.
    *
    * <p>
-   * All values with the specified time are kept, plus those with the specified
-   * ids and all position values. If any specified times or ids are not in this
-   * object they will be ignored.
+   * All {@link SensorValue}s with the specified timestamp are kept, plus those
+   * with the specified database IDs and all position {@link SensorValue}s. If
+   * any of the specified timestamps or {@link SensorValue} IDs are not in the
+   * data structure they will be ignored.
    * </p>
    *
    * @param times
-   *          The times of values to keep
+   *          The timestamps of {@link SensorValues} to keep.
    * @param ids
-   *          The additional {@lonk SensorValue} ids to keep
-   * @return The subsetted values
+   *          The additional {@link SensorValue}s to keep.
+   * @return A new {@link DatasetSensorValues} object containing only the
+   *         selected {@link SensorValue}s.
    * @throws RecordNotFoundException
+   *           If the {@link Instrument}'s configuration is invalid.
    */
   public DatasetSensorValues subset(TreeSet<LocalDateTime> times,
     TreeSet<Long> ids) throws RecordNotFoundException {
@@ -512,18 +850,19 @@ public class DatasetSensorValues {
    * </p>
    *
    * <p>
-   * For each affected sensor type, if there is a SensorValue for the same time
-   * as the source value, it will be flagged. If there is no value at that time,
-   * the values before and after the source value will be flagged because we
-   * don't know when the issue started. Flags will not be applied if the
-   * value(s) are not within a specified affected Run Type.
+   * For each affected sensor type, if there is a {@link SensorValue} for the
+   * same time as the source value, it will be flagged. If there is no value at
+   * that time, the values before and after the source value will be flagged
+   * because we don't know when the issue started. Flags will not be applied if
+   * the value(s) are not within a specified set of Run Type periods.
    * </p>
    *
    * @param source
-   *          The source QCed SensorValue
-   * @param changedValues
-   *          The SensorValues that have been changed as part of this cascade.
-   *          Will be updated by this method.
+   *          The source QCed {@link SensorValue}.
+   * @param runTypePeriods
+   *          The run type periods to which the cascade should be applied.
+   * @return The {@link SensorValues} that have been changed as part of this
+   *         cascade.
    * @throws RecordNotFoundException
    */
   public Set<SensorValue> applyQCCascade(SensorValue source,
@@ -560,7 +899,12 @@ public class DatasetSensorValues {
           if (null == valueRunType || affectedSensorAssignments.get(assignment)
             .contains(valueRunType)) {
 
-            cascade(source, value);
+            if (!source.getDisplayFlag().equals(Flag.GOOD)) {
+              value.setCascadingQC(source);
+            } else {
+              value.removeCascadingQC(source.getId());
+            }
+
             changedValues.add(value);
           }
         }
@@ -570,18 +914,10 @@ public class DatasetSensorValues {
     return changedValues;
   }
 
-  private void cascade(SensorValue source, SensorValue destination) {
-    if (!source.getDisplayFlag().equals(Flag.GOOD)) {
-      destination.setCascadingQC(source);
-    } else {
-      destination.removeCascadingQC(source.getId());
-    }
-  }
-
   /**
-   * Get the set of sensor assignments that will be affected by the cascading QC
-   * from the specified SensorValue, along with the run types that the cascade
-   * will apply to.
+   * Get the set of {@link SensorAssignment}s that will be affected by the
+   * cascading QC from the specified {@link SensorValue}, along with the run
+   * types that the cascade will apply to.
    *
    * <p>
    * For sensors without calibrations, all run types are affected. For those
@@ -596,9 +932,10 @@ public class DatasetSensorValues {
    * </p>
    *
    * @param source
-   *          The source SensorValue
+   *          The source {@link SensorValue}.
    * @return The affected sensors and run types.
    * @throws RecordNotFoundException
+   *           If the {@link Instrument}'s configuration is invalid.
    */
   private Map<SensorAssignment, Collection<String>> getCascadeAffectedSensorAssignments(
     SensorValue source) throws RecordNotFoundException {
@@ -630,6 +967,24 @@ public class DatasetSensorValues {
     return result;
   }
 
+  /**
+   * Get the position value at the specified timestamp without performing any
+   * interpolation.
+   *
+   * <p>
+   * The {@code columnId} must be either
+   * {@link FileDefinition#LONGITUDE_COLUMN_ID} or
+   * {@link FileDefinition#LATITUDE_COLUMN_ID}.
+   * </p>
+   *
+   * @param columnId
+   *          The position column ID.
+   * @param time
+   *          The timestamp.
+   * @return The position value.
+   * @throws PositionException
+   *           If the supplied {@code columnId} is invalid.
+   */
   public PlotPageTableValue getRawPositionTableValue(long columnId,
     LocalDateTime time) throws PositionException {
 
@@ -637,6 +992,27 @@ public class DatasetSensorValues {
       getPositionValuesList(columnId).get(time));
   }
 
+  /**
+   * Get the position value at the specified timestamp, interpolating values if
+   * necessary.
+   *
+   * <p>
+   * The {@code columnId} must be either
+   * {@link FileDefinition#LONGITUDE_COLUMN_ID} or
+   * {@link FileDefinition#LATITUDE_COLUMN_ID}.
+   * </p>
+   *
+   * @param columnId
+   *          The position column ID.
+   * @param time
+   *          The timestamp.
+   * @param preferGoodValues
+   *          Indicate whether or not the method should try to find values with
+   *          {@link Flag#GOOD} flags over closer values with non-GOOD flags.
+   * @return The position value.
+   * @throws PositionException
+   *           If the supplied {@code columnId} is invalid.
+   */
   public PlotPageTableValue getPositionTableValue(long columnId,
     LocalDateTime time, boolean preferGoodValues)
     throws PositionException, PlotPageDataException {
@@ -645,6 +1021,29 @@ public class DatasetSensorValues {
       preferGoodValues, this);
   }
 
+  /**
+   * Get the position values to establish a position at the specified timestamp,
+   * providing before/after values if interpolation is necessary.
+   *
+   * <p>
+   * The {@code columnId} must be either
+   * {@link FileDefinition#LONGITUDE_COLUMN_ID} or
+   * {@link FileDefinition#LATITUDE_COLUMN_ID}.
+   * </p>
+   *
+   * <p>
+   * The method will try to find values with {@link Flag#GOOD} flags over closer
+   * values with non-GOOD flags.
+   * </p>
+   *
+   * @param columnId
+   *          The position column ID.
+   * @param time
+   *          The timestamp.
+   * @return The position values.
+   * @throws PositionException
+   *           If the supplied {@code columnId} is invalid.
+   */
   public List<SensorValue> getPositionValues(long columnId, LocalDateTime time)
     throws PositionException {
 
@@ -652,6 +1051,15 @@ public class DatasetSensorValues {
       true);
   }
 
+  /**
+   * Get all the position {@link SensorValue}s added to the data structure.
+   *
+   * <p>
+   * The iteration order of the returned values is undefined.
+   * </p>
+   *
+   * @return The position values.
+   */
   public Collection<SensorValue> getAllPositionValues() {
     Collection<SensorValue> result = new HashSet<SensorValue>();
     result.addAll(longitudes);
@@ -659,6 +1067,22 @@ public class DatasetSensorValues {
     return result;
   }
 
+  /**
+   * Get all the position {@link SensorValue}s for the specified position
+   * column.
+   *
+   * <p>
+   * The {@code columnId} must be either
+   * {@link FileDefinition#LONGITUDE_COLUMN_ID} or
+   * {@link FileDefinition#LATITUDE_COLUMN_ID}.
+   * </p>
+   *
+   * @param columnId
+   *          The position column ID.
+   * @return The position {@link SensorValue}s.
+   * @throws PositionException
+   *           If the supplied {@code columnId} is invalid.
+   */
   public SearchableSensorValuesList getPositionValuesList(long columnId)
     throws PositionException {
 
@@ -675,6 +1099,20 @@ public class DatasetSensorValues {
     return values;
   }
 
+  /**
+   * Get the position values (both latitude and longitude) measured at or before
+   * the specified timestamp.
+   *
+   * <p>
+   * If there is no position available for the exact timestamp, the latest
+   * position before the timestamp is returned. There is no limit on how far
+   * before the requested timestamp this may be.
+   * </p>
+   *
+   * @param time
+   *          The time.
+   * @return The position measurements.
+   */
   public LatLng getClosestPosition(LocalDateTime time) {
 
     SensorValue lat = latitudes.timeSearch(time);
