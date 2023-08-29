@@ -34,25 +34,48 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
  * <li>{@code timeSearch}: Find the value on or immediately before a specified
  * time.</li>
  * </ul>
- * <p>
- * <b>NOTE: It is the user's responsibility to ensure that entries are added in
- * the correct order.</b>
- * </p>
  *
- * @author Steve Jones
+ * <p>
+ * The list is maintained in time order of its members. Attempting to add two
+ * {@link SensorValue}s with the same timestamp will result in an
+ * {@link UnsupportedOperationException}.
+ * </p>
  */
 @SuppressWarnings("serial")
 public class SearchableSensorValuesList extends ArrayList<SensorValue> {
 
-  // The furthest we are allowed to interpolate values in seconds
+  private static final IllegalArgumentException SAME_TIMESTAMP_EXCEPTION = new IllegalArgumentException(
+    "Cannot add two SensorValues with the same timestamp");
+
+  private static final UnsupportedOperationException ADD_INDEX_EXCEPTION = new UnsupportedOperationException(
+    "Cannot add a value in a custom location");
+
+  /**
+   * The default maximum interpolation limit in seconds.
+   */
   private static final long DEFAULT_INTERPOLATION_LIMIT = 300;
 
+  /**
+   * An instance of the comparator used to compare two {@link SensorValue}s by
+   * their timestamp.
+   */
   private static final SensorValueTimeComparator TIME_COMPARATOR = new SensorValueTimeComparator();
 
+  /**
+   * The list of {@link FileColumn} database IDs whose {@link SensorValue}s are
+   * allowed to be members of this list.
+   */
   private final TreeSet<Long> columnIds;
 
+  /**
+   * The most common time interval between consecutive {@link SensorValue}s in
+   * the list.
+   */
   private int modeTimeStep = 0;
 
+  /**
+   * A cache of the timestamps of all the {@link SensorValue}s in the list.
+   */
   private List<LocalDateTime> times = null;
 
   /**
@@ -90,50 +113,78 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     return list;
   }
 
+  /**
+   * We ensure that the added values are inserted into the list in the correct
+   * position according to time order.
+   */
   @Override
   public boolean add(SensorValue value) {
-    checkColumnId(value);
+
+    // Null values are not allowed
+    if (null == value) {
+      throw new IllegalArgumentException("null values are not permitted");
+    }
+
+    // The value must have a columnId that matches one of the specified
+    // columnIDs
+    if (!columnIds.contains(value.getColumnId())) {
+      throw new IllegalArgumentException("Invalid column ID");
+    }
+
+    if (size() == 0) {
+      super.add(value);
+    } else {
+      int lastComparison = TIME_COMPARATOR.compare(value, last());
+
+      if (lastComparison == 0) {
+        // Values with identical timestamps are not allowed
+        throw SAME_TIMESTAMP_EXCEPTION;
+      } else if (lastComparison > 0) {
+        // The value being added is after the last value, so we just add it to
+        // the end.
+        super.add(value);
+      } else {
+
+        int binarySearchResult = Collections.binarySearch(this, value,
+          TIME_COMPARATOR);
+
+        // Values with the identical timestamps are not allowed
+        if (binarySearchResult >= 0) {
+          throw SAME_TIMESTAMP_EXCEPTION;
+        } else {
+          super.add((binarySearchResult * -1) - 1, value);
+        }
+      }
+    }
 
     // Reset the times cache
     times = null;
 
-    return super.add(value);
+    return true;
   }
 
+  /**
+   * We do not allow adding values in specified locations; the list order is
+   * maintained internally.
+   */
   @Override
   public void add(int index, SensorValue value) {
-    checkColumnId(value);
-    super.add(index, value);
-
-    // Reset the times cache
-    times = null;
+    throw ADD_INDEX_EXCEPTION;
   }
 
   @Override
   public boolean addAll(Collection<? extends SensorValue> values) {
     values.forEach(this::add);
-
-    // Reset the times cache
-    times = null;
-
     return true;
   }
 
+  /**
+   * We do not allow adding values in specified locations; the list order is
+   * maintained internally.
+   */
   @Override
   public boolean addAll(int index, Collection<? extends SensorValue> values) {
-    values.forEach(this::checkColumnId);
-    super.addAll(index, values);
-
-    // Reset the times cache
-    times = null;
-
-    return true;
-  }
-
-  private void checkColumnId(SensorValue value) {
-    if (!columnIds.contains(value.getColumnId())) {
-      throw new IllegalArgumentException("Invalid column ID");
-    }
+    throw ADD_INDEX_EXCEPTION;
   }
 
   /**
@@ -641,23 +692,13 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     modeTimeStep = mode.getMode().intValue() / 1000;
   }
 
-  public Double[] getRange() {
-    Double min = Double.MAX_VALUE;
-    Double max = Double.MIN_VALUE;
-
-    for (SensorValue v : this) {
-      if (!v.isNaN()) {
-        if (v.getDoubleValue() > max) {
-          max = v.getDoubleValue();
-        }
-
-        if (v.getDoubleValue() < min) {
-          min = v.getDoubleValue();
-        }
-      }
-    }
-
-    return new Double[] { min, max };
+  /**
+   * Get the last value in the list.
+   *
+   * @return The last value.
+   */
+  private SensorValue last() {
+    return get(size() - 1);
   }
 }
 
