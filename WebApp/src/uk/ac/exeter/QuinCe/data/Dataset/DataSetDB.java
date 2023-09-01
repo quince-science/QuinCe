@@ -19,8 +19,6 @@ import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
-import org.primefaces.shaded.json.JSONObject;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -287,7 +285,7 @@ public class DataSetDB {
     JsonArray array = (JsonArray) JsonParser.parseString(errorMessagesJson);
     ArrayList<Message> errorMessage = new ArrayList<Message>();
     for (Object o : array) {
-      if (o instanceof JSONObject) {
+      if (o instanceof JsonObject) {
         JsonObject jo = (JsonObject) o;
         Message m = new Message(jo.get("message").getAsString(),
           jo.get("details").getAsString());
