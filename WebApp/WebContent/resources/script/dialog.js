@@ -45,5 +45,5 @@ function getMessagesHTML(messages) {
     row.append(details)
     html.append(row);
   }
-  return html;
+  return html[0];
 }

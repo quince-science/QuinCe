@@ -42,6 +42,7 @@ a {
 
 pre {
   font-family: 'Inconsolata', monospace;
+  font-size: 14px;
   margin: 0px;
 }
 
@@ -468,6 +469,11 @@ table .buttonCol {
   left: 10px;
   padding-bottom: 20px;
   font-weight: 700;
+}
+
+#messageText {
+  font-family: 'Inconsolata', monospace;
+  font-size: 12px;
 }
 
 .scrollable {
