@@ -10,9 +10,6 @@ import uk.ac.exeter.QuinCe.web.files.UploadedDataFile;
 
 /**
  * {#UploadedDataFile} instance for use with simple Strings
- *
- * @author Steve Jones
- *
  */
 public class APIUploadedDataFile extends UploadedDataFile {
 

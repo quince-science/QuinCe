@@ -11,6 +11,7 @@ import java.util.TreeSet;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
@@ -29,76 +30,205 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * Holds details of the assigned sensors in tree form for the
  * {@code assign_variables.xhtml} page.
- *
- * @author stevej
- *
  */
 public class AssignmentsTree {
 
+  /**
+   * Node type indicating that the date/time has not been fully assigned.
+   */
   private static final String DATETIME_UNFINISHED = "UNFINISHED_DATETIME";
 
+  /**
+   * Node type indicating that the date/time has been fully assigned.
+   */
   private static final String DATETIME_FINISHED = "FINISHED_DATETIME";
 
+  /**
+   * Node type indicating an unassigned date/time node.
+   */
   private static final String DATETIME_UNASSIGNED = "UNASSIGNED_DATETIME";
 
+  /**
+   * Node type indicating an assigned date/time node.
+   */
   private static final String DATETIME_ASSIGNED = "ASSIGNED_DATETIME";
 
+  /**
+   * Node type for an assigned date/time column.
+   */
   private static final String DATETIME_ASSIGNMENT = "DATETIME_ASSIGNMENT";
 
+  /**
+   * Node type indicating that the longitude has not been fully assigned.
+   */
   private static final String LONGITUDE_UNASSIGNED = "UNASSIGNED_LONGITUDE";
 
+  /**
+   * Node type indicating that the longitude has been fully assigned.
+   */
   private static final String LONGITUDE_ASSIGNED = "ASSIGNED_LONGITUDE";
 
+  /**
+   * Node type for an assigned longitude column.
+   */
   private static final String LONGITUDE_ASSIGNMENT = "LONGITUDE_ASSIGNMENT";
 
+  /**
+   * Node type indicating that the latitude has not been fully assigned.
+   */
   private static final String LATITUDE_UNASSIGNED = "UNASSIGNED_LATITUDE";
 
+  /**
+   * Node type indicating that the latitude has been fully assigned.
+   */
   private static final String LATITUDE_ASSIGNED = "ASSIGNED_LATITUDE";
 
+  /**
+   * Node type for an assigned latitude column.
+   */
   private static final String LATITUDE_ASSIGNMENT = "LATITUDE_ASSIGNMENT";
 
+  /**
+   * Node type indicating that a hemisphere entry has not been fully assigned.
+   */
   private static final String HEMISPHERE_UNASSIGNED = "UNASSIGNED_HEMISPHERE";
 
+  /**
+   * Node type indicating that a hemisphere entry has been fully assigned.
+   */
   private static final String HEMISPHERE_ASSIGNED = "ASSIGNED_HEMISPHERE";
 
+  /**
+   * Node type for an assigned hemisphere column.
+   */
   private static final String HEMISPHERE_ASSIGNMENT = "HEMISPHERE_ASSIGNMENT";
 
+  /**
+   * Node type for a variable that has not been fully assigned (including the
+   * position).
+   */
   protected static final String VAR_UNFINISHED = "UNFINISHED_VARIABLE";
 
+  /**
+   * Node type for a variable that has been fully assigned (including the
+   * position).
+   */
   protected static final String VAR_FINISHED = "FINISHED_VARIABLE";
 
-  protected static final String SENSOR_TYPE_ASSIGNED = "ASSIGNED_SENSOR_TYPE";
-
+  /**
+   * Node type indicating that a {@link SensorType} has not been fully assigned.
+   */
   protected static final String SENSOR_TYPE_UNASSIGNED = "UNASSIGNED_SENSOR_TYPE";
 
+  /**
+   * Node type indicating that a {@link SensorType} has been fully assigned.
+   */
+  protected static final String SENSOR_TYPE_ASSIGNED = "ASSIGNED_SENSOR_TYPE";
+
+  /**
+   * Node type for an assigned {@link SensorType} column.
+   */
   protected static final String ASSIGNMENT = "SENSOR_TYPE_ASSIGNMENT";
 
+  /**
+   * The set of sensor assignments being built.
+   */
   private final SensorAssignments assignments;
 
+  /**
+   * Indicates whether or not position information needs to be assigned for the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   *
+   * <p>
+   * Note that this indicates whether positions are needed <i>at all</i>, and
+   * not whether required position details have been assigned.
+   * </p>
+   */
   private final boolean needsPosition;
 
+  /**
+   * The root node of the whole assignments tree.
+   */
   private DefaultTreeNode<AssignmentsTreeNodeData> root;
 
+  /**
+   * The 'root' node of the Date/Time portion of the tree.
+   */
   private DefaultTreeNode<AssignmentsTreeNodeData> dateTimeNode;
 
+  /**
+   * The parent Date/Time nodes for each of the {@link FileDefinition}s
+   * specified for the {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   */
   private Map<String, DefaultTreeNode<AssignmentsTreeNodeData>> dateTimeNodes;
 
+  /**
+   * The 'root' node of the Position section of the tree.
+   */
   private DefaultTreeNode<AssignmentsTreeNodeData> positionNode;
 
+  /**
+   * The 'root' node for each of the {@link Variable}s measured by the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   */
   private List<DefaultTreeNode<AssignmentsTreeNodeData>> variableNodes;
 
+  /**
+   * The nodes representing the columns assigned to each of the
+   * {@link SensorType}s.
+   *
+   * <p>
+   * These nodes may appear multiple times in the tree if the same
+   * {@link SensorType} is used by multiple {@link Variable}s.
+   * </p>
+   */
   private Map<SensorType, List<DefaultTreeNode<AssignmentsTreeNodeData>>> sensorTypeNodes;
 
+  /**
+   * The set of {@link FileDefinition}s specified for the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   */
   private TreeSet<FileDefinitionBuilder> files;
 
+  /**
+   * The {@link Variable}s measured by the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   */
   private final List<Variable> variables;
 
+  /**
+   * The attributes assigned for each variable.
+   *
+   * <p>
+   * The attributes can determine which {@link SensorType}s are required in the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}'s configuration.
+   * </p>
+   *
+   * <p>
+   * The key for the {@link Map} is the database ID of each {@link Variable}.
+   * </p>
+   */
   private Map<Long, VariableAttributes> varAttributes = null;
 
+  /**
+   * Initialise and construct the assignments tree.
+   *
+   * @param variables
+   *          The {@link Variable}s measured by the
+   *          {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   * @param assignments
+   *          The object holding the assignments columns columns to times,
+   *          positions, {@link SensorType}s etc.
+   * @param needsPosition
+   *          Indicates whether or not position columns are needed.
+   * @throws SensorConfigurationException
+   *           If the system's sensor configuration is invalid.
+   * @throws SensorTypeNotFoundException
+   *           If any referenced {@link SensorType} does not exist.
+   */
   protected AssignmentsTree(List<Variable> variables,
     SensorAssignments assignments, boolean needsPosition)
-    throws SensorConfigurationException, SensorAssignmentException,
-    SensorTypeNotFoundException {
+    throws SensorConfigurationException, SensorTypeNotFoundException {
 
     root = new DefaultTreeNode<AssignmentsTreeNodeData>(
       new StringNodeData("Root"), null);
@@ -111,9 +241,19 @@ public class AssignmentsTree {
     buildTree(variables);
   }
 
+  /**
+   * Construct the base structure of the tree ready to be populated.
+   *
+   * @param variables
+   *          The {@link Variable}s measured by the
+   *          {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   * @throws SensorConfigurationException
+   *           If the system's sensor configuration is invalid.
+   * @throws SensorTypeNotFoundException
+   *           If any referenced {@link SensorType} does not exist.
+   */
   private void buildTree(List<Variable> variables)
-    throws SensorConfigurationException, SensorAssignmentException,
-    SensorTypeNotFoundException {
+    throws SensorConfigurationException, SensorTypeNotFoundException {
 
     dateTimeNode = new DefaultTreeNode<AssignmentsTreeNodeData>(VAR_UNFINISHED,
       new StringNodeData("Date/Time"), root);
@@ -166,6 +306,16 @@ public class AssignmentsTree {
     }
   }
 
+  /**
+   * Add a node for a specific {@link SensorType} to the structure tracking
+   * these nodes.
+   *
+   * @param sensorType
+   *          The {@link SensorType}
+   * @param node
+   *          The node for the {@link SensorType}.
+   * @see #sensorTypeNodes
+   */
   private void addSensorTypeNode(SensorType sensorType,
     DefaultTreeNode<AssignmentsTreeNodeData> node) {
 
@@ -177,13 +327,30 @@ public class AssignmentsTree {
     sensorTypeNodes.get(sensorType).add(node);
   }
 
+  /**
+   * Get the overall root node of the tree.
+   *
+   * @return The root node.
+   */
   protected DefaultTreeNode<AssignmentsTreeNodeData> getRoot() {
     return root;
   }
 
+  /**
+   * Update the tree with the details of a new assignment.
+   *
+   * @param assignment
+   *          The assignment.
+   * @throws SensorConfigurationException
+   *           If the system's sensor configuration is invalid.
+   * @throws SensorTypeNotFoundException
+   *           If any referenced {@link SensorType} does not exist.
+   * @throws SensorAssignmentException
+   *           If the assignment is invalid.
+   */
   protected void addAssignment(SensorAssignment assignment)
-    throws SensorAssignmentException, SensorConfigurationException,
-    SensorTypeNotFoundException {
+    throws SensorConfigurationException, SensorTypeNotFoundException,
+    SensorAssignmentException {
 
     for (DefaultTreeNode<AssignmentsTreeNodeData> sensorTypeNode : sensorTypeNodes
       .get(assignment.getSensorType())) {
@@ -197,10 +364,29 @@ public class AssignmentsTree {
     updateVariableNodes();
   }
 
-  protected void removeFile(String fileName) throws SensorAssignmentException,
-    SensorConfigurationException, SensorTypeNotFoundException {
+  /**
+   * Update the tree to reflect the removal of a {@link FileDefinition} from the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}'s configuration.
+   *
+   * <p>
+   * The date/time nodes for the {@link FileDefinition} will be removed, along
+   * with any nodes related to {@link SensorAssignment}s from that file.
+   * </p>
+   *
+   * @param fileDescription
+   *          The file description.
+   * @throws SensorConfigurationException
+   *           If the system's sensor configuration is invalid.
+   * @throws SensorTypeNotFoundException
+   *           If any referenced {@link SensorType} does not exist.
+   * @throws SensorAssignmentException
+   *           If any assignments in the adjusted tree are invalid.
+   */
+  protected void removeFile(String fileDescription)
+    throws SensorConfigurationException, SensorTypeNotFoundException,
+    SensorAssignmentException {
 
-    dateTimeNodes.remove(fileName);
+    dateTimeNodes.remove(fileDescription);
 
     Iterator<TreeNode<AssignmentsTreeNodeData>> nodeSearch = dateTimeNode
       .getChildren().iterator();
@@ -208,7 +394,7 @@ public class AssignmentsTree {
       TreeNode<AssignmentsTreeNodeData> node = nodeSearch.next();
       FileNodeData nodeData = (FileNodeData) node.getData();
 
-      if (nodeData.getFileDescription().equals(fileName)) {
+      if (nodeData.getFileDescription().equals(fileDescription)) {
         nodeSearch.remove();
       }
     }
@@ -231,7 +417,7 @@ public class AssignmentsTree {
 
           SensorAssignmentNodeData nodeData = (SensorAssignmentNodeData) node
             .getData();
-          if (nodeData.getAssignment().getDataFile().equals(fileName)) {
+          if (nodeData.getAssignment().getDataFile().equals(fileDescription)) {
             keptChildren.add(node);
           }
         }
@@ -244,7 +430,7 @@ public class AssignmentsTree {
     Iterator<FileDefinitionBuilder> fileSearch = files.iterator();
     while (fileSearch.hasNext()) {
       FileDefinitionBuilder file = fileSearch.next();
-      if (file.getFileDescription().equals(fileName)) {
+      if (file.getFileDescription().equals(fileDescription)) {
         fileSearch.remove();
         break;
       }
@@ -253,6 +439,18 @@ public class AssignmentsTree {
     updatePositionNodes(null);
   }
 
+  /**
+   * Remove the details of a {@link SensorAssignment} from the tree.
+   *
+   * @param assignment
+   *          The {@link SensorAssignment} to be removed.
+   * @throws SensorConfigurationException
+   *           If the system's sensor configuration is invalid.
+   * @throws SensorTypeNotFoundException
+   *           If any referenced {@link SensorType} does not exist.
+   * @throws SensorAssignmentException
+   *           If any assignments in the adjusted tree are invalid.
+   */
   protected void removeAssignment(SensorAssignment assignment)
     throws SensorAssignmentException, SensorConfigurationException,
     SensorTypeNotFoundException {
@@ -277,6 +475,19 @@ public class AssignmentsTree {
     updateVariableNodes();
   }
 
+  /**
+   * Update the tree to reflect the addition of a new {@link FileDefinition} to
+   * the {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   *
+   * <p>
+   * Date/Time nodes are added for the file, and the tree is refreshed.
+   * </p>
+   *
+   * @param file
+   *          The file being added.
+   * @throws DateTimeSpecificationException
+   *           If an error occurs while setting up the date/time nodes.
+   */
   protected void addFile(FileDefinitionBuilder file)
     throws DateTimeSpecificationException {
 
@@ -285,6 +496,17 @@ public class AssignmentsTree {
     updatePositionNodes(null);
   }
 
+  /**
+   * Create the date/time nodes for the specified {@link FileDefinition}.
+   *
+   * @param file
+   *          The file.
+   * @param expanded
+   *          Indicates whether the date/time nodes for the file should be
+   *          expanded in the display.
+   * @throws DateTimeSpecificationException
+   *           If an error occurs while setting up the date/time nodes.
+   */
   private void makeDateTimeNode(FileDefinitionBuilder file, boolean expanded)
     throws DateTimeSpecificationException {
 
@@ -296,6 +518,15 @@ public class AssignmentsTree {
     setDateTimeAssignment(file);
   }
 
+  /**
+   * Rebuild the date/time nodes for a {@link FileDefinition} after an update to
+   * its date/time specification.
+   *
+   * @param file
+   *          The file that has been updated.
+   * @throws DateTimeSpecificationException
+   *           If the file's date/time specification is invalid.
+   */
   protected void setDateTimeAssignment(FileDefinitionBuilder file)
     throws DateTimeSpecificationException {
 
@@ -342,6 +573,20 @@ public class AssignmentsTree {
     dateTimeNode.setType(dateTimeFinished ? VAR_FINISHED : VAR_UNFINISHED);
   }
 
+  /**
+   * Update the tree to reflect the renaming of a {@link FileDefinition}.
+   *
+   * <p>
+   * All nodes with the file's name in their text are updated.
+   * </p>
+   *
+   * @param oldName
+   *          The file's previous name.
+   * @param renamedFile
+   *          The file's new name.
+   * @throws DateTimeSpecificationException
+   *           If the date/time specification for the file is invalid.
+   */
   protected void renameFile(String oldName, FileDefinitionBuilder renamedFile)
     throws DateTimeSpecificationException {
 
@@ -353,6 +598,15 @@ public class AssignmentsTree {
     dateTimeNodes.put(renamedFile.getFileDescription(), node);
   }
 
+  /**
+   * Update the position nodes for the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   *
+   * @param expand
+   *          Indicates whether the {@code Longitude} or {@code Latitude} nodes
+   *          should be expanded (if it equals either of those values), or
+   *          neither (if any other value is set).
+   */
   protected void updatePositionNodes(String expand) {
     if (null != positionNode) {
       positionNode
@@ -382,6 +636,25 @@ public class AssignmentsTree {
     }
   }
 
+  /**
+   * Build the position nodes for the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   *
+   * <p>
+   * This builds either the Longitude or Latitude node (according to
+   * {@code positionType}. If the node does not exist ({@code mainNode} is
+   * {@code null}) it is created; otherwise it is rebuilt.
+   * </p>
+   *
+   * @param positionType
+   *          Indicates whether the {@code Longitude} or {@code Latitude} nodes
+   *          are to be created.
+   * @param mainNode
+   *          The 'root' node for the position nodes.
+   * @param expand
+   *          Indicates whether or not the node should be expanded.
+   * @return The position node, either created or an updated {@code mainNode}.
+   */
   private DefaultTreeNode<AssignmentsTreeNodeData> makePositionNodes(
     String positionType, DefaultTreeNode<AssignmentsTreeNodeData> mainNode,
     boolean expand) {
@@ -445,14 +718,18 @@ public class AssignmentsTree {
   }
 
   /**
-   * Set the ASSIGNED/UNASSIGNED type on all non-diagnostic SensorType nodes.
+   * Update all non-diagnostic {@link SensorType} nodes, setting their
+   * Assigned/Unassigned status.
    *
    * @throws SensorConfigurationException
-   * @throws SensorAssignmentException
+   *           If the system's sensor configuration is invalid.
    * @throws SensorTypeNotFoundException
+   *           If any referenced {@link SensorType} does not exist.
+   * @throws SensorAssignmentException
+   *           If any assignments in the adjusted tree are invalid.
    */
-  private void updateVariableNodes() throws SensorAssignmentException,
-    SensorConfigurationException, SensorTypeNotFoundException {
+  private void updateVariableNodes() throws SensorConfigurationException,
+    SensorTypeNotFoundException, SensorAssignmentException {
 
     for (DefaultTreeNode<AssignmentsTreeNodeData> varNode : variableNodes) {
       VariableNodeData data = (VariableNodeData) varNode.getData();
@@ -475,6 +752,12 @@ public class AssignmentsTree {
     }
   }
 
+  /**
+   * Build a cached {@link Map} of the attributes for each of the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}'s {@link Variable}s.
+   *
+   * @return The constructed Map.
+   */
   private Map<Long, VariableAttributes> getVarAttributesMap() {
     if (null == varAttributes) {
       varAttributes = new HashMap<Long, VariableAttributes>();
