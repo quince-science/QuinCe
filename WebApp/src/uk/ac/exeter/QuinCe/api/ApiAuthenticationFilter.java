@@ -22,10 +22,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * This class provides authentication checking for the QuinCe REST API services.
  * API calls are restricted by user authentication, and only users with the
  * {@link User#BIT_API_USER} bit set are allowed to make API calls.
- *
- *
- * @author Steve Jones
- *
  */
 @WebFilter(servletNames = { "API Servlet" })
 public class ApiAuthenticationFilter implements javax.servlet.Filter {
