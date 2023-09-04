@@ -7,9 +7,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 /**
  * API call to report to QuinCe that an export has been abandoned. This will
  * return the dataset's status to {@link DataSet#STATUS_READY_FOR_EXPORT}.
- *
- * @author Steve Jones
- *
  */
 @Path("/export/abandonExport")
 public class AbandonExport extends SetExportStatus {

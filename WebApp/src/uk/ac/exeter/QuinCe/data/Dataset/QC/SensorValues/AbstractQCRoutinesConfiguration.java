@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,29 +17,74 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
+/**
+ * Base class for QC Routine configurations.
+ *
+ * <p>
+ * QC Routines run at different stages of the data processing pipeline are
+ * configured slightly differently, but they all need similar functionality at
+ * their core. This class provides those common functions as a parent class of
+ * the specific instances.
+ * </p>
+ *
+ * <p>
+ * Routines are configured in a CSV file with the columns listed below. The
+ * column names must be included as the first line of the file.
+ * </p>
+ *
+ * <p>
+ * The same routine can be configured multiple times for different
+ * {@link SensorType}s, which may need the same type of check but with different
+ * limits (a range check is the obvious example).
+ * </p>
+ *
+ * <table>
+ * <caption>QC Routine configuration file columns</caption>
+ * <tr>
+ * <th>Column Name</th>
+ * <th>Purpose</th>
+ * </tr>
+ * <tr>
+ * <td>Class</td>
+ * <td>The name of the routine, which is also the root of the
+ * {@link AbstractAutoQCRoutine} class name for the routine. The
+ * {@link #getRoutine(String)} method is responsible for retrieving concrete
+ * routine instances from the name.</td>
+ * </tr>
+ * <tr>
+ * <td>Sensor Type</td>
+ * <td>The {@link SensorType} to which this routine will be applied.</td>
+ * </tr>
+ * <tr>
+ * <td>Option...</td>
+ * <td>The options for the routine. The number and type of options will vary
+ * between Routines, so the validation of these options is left to the specific
+ * Routine's {@link AbstractAutoQCRoutine#validateParameters()} method.</td>
+ * </tr>
+ * </table>
+ */
 public abstract class AbstractQCRoutinesConfiguration {
 
   /**
-   * The QC routines
+   * The configured QC routines grouped by their target {@link SensorType}s.
    */
   private Map<SensorType, List<AbstractAutoQCRoutine>> routines;
 
   /**
-   * Main constructor - parses supplied config file and builds all Routine
-   * objects.
+   * Build the configuration from a configuration file.
    *
+   * @param sensorsConfig
+   *          The sensor configuration for the
+   *          {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} whose
+   *          values are being processed.
    * @param configFile
-   *          The configuration file
+   *          The path of the configuration file.
    * @throws QCRoutinesConfigurationException
-   *           If the configuration is invalid
-   * @throws MissingParamException
-   *           If any required parameters are missing
+   *           If the configuration is invalid.
    */
   public AbstractQCRoutinesConfiguration(SensorsConfiguration sensorsConfig,
-    String configFile)
-    throws QCRoutinesConfigurationException, MissingParamException {
+    String configFile) throws QCRoutinesConfigurationException {
 
     MissingParam.checkMissing(configFile, "configFile");
     routines = new HashMap<SensorType, List<AbstractAutoQCRoutine>>();
@@ -47,24 +92,23 @@ public abstract class AbstractQCRoutinesConfiguration {
   }
 
   /**
-   * Add a Routine to the configuration
+   * Add a routine to the configuration.
    *
    * @param sensorType
-   *          The target sensor type
-   * @param routine
-   *          The routine
-   * @throws RoutineException
-   * @throws SecurityException
-   * @throws NoSuchMethodException
-   * @throws InvocationTargetException
-   * @throws IllegalArgumentException
-   * @throws IllegalAccessException
-   * @throws InstantiationException
+   *          The routine's target {@link SensorType}. It will be run on all
+   *          values for sensors of that type.
+   * @param routineClass
+   *          The routine's Java class.
+   * @param parameters
+   *          The routine parameters (specified in the Option columns in the
+   *          configuration file).
+   * @throws Exception
+   *           If the {@code routineClass} is not of the correct type, or it
+   *           cannot be instantiated.
+   * @see #makeInstance(Class, List)
    */
-  protected void addRoutine(SensorType sensorType, Class<?> routineClass,
-    List<String> parameters) throws RoutineException, InstantiationException,
-    IllegalAccessException, IllegalArgumentException, InvocationTargetException,
-    NoSuchMethodException, SecurityException {
+  private void addRoutine(SensorType sensorType, Class<?> routineClass,
+    List<String> parameters) throws Exception {
 
     if (!routines.containsKey(sensorType)) {
       routines.put(sensorType, new ArrayList<AbstractAutoQCRoutine>());
@@ -78,10 +122,23 @@ public abstract class AbstractQCRoutinesConfiguration {
     routines.get(sensorType).add(makeInstance(routineClass, parameters));
   }
 
-  protected AbstractAutoQCRoutine makeInstance(Class<?> routineClass,
-    List<String> parameters) throws InstantiationException,
-    IllegalAccessException, IllegalArgumentException, InvocationTargetException,
-    NoSuchMethodException, SecurityException, RoutineException {
+  /**
+   * Create a concrete instance of an Auto QC Routine.
+   *
+   * @param routineClass
+   *          The routine class.
+   * @param parameters
+   *          The parameters for the routine (specified in the Option columns in
+   *          the configuration file).
+   * @return The routine instance.
+   * @throws Exception
+   *           If the routine class cannot be instantiated, or the supplied
+   *           parameters are invalid.
+   * @see Constructor#newInstance
+   * @see AbstractAutoQCRoutine#validateParameters()
+   */
+  private AbstractAutoQCRoutine makeInstance(Class<?> routineClass,
+    List<String> parameters) throws Exception {
 
     AbstractAutoQCRoutine instance = (AbstractAutoQCRoutine) routineClass
       .getDeclaredConstructor().newInstance();
@@ -90,15 +147,32 @@ public abstract class AbstractQCRoutinesConfiguration {
 
   }
 
+  /**
+   * Get the super-class from which a specific Auto QC Routine must be
+   * inherited.
+   *
+   * <p>
+   * Each Auto QC Routine type has a specific super-class providing
+   * functionality specific to that type, so all routines of that type must
+   * inherit from that class. This method provides the super-class so the
+   * necessary checks can be made when configuring the routines.
+   * </p>
+   *
+   * @return The super-class for an Auto QC Routine.
+   */
   protected abstract Class<? extends AbstractAutoQCRoutine> getRoutineSuperClass();
 
   /**
-   * Initialise the configuration from the supplied file
+   * Initialise the QC routines from a supplied configuration file.
    *
+   * @param sensorsConfig
+   *          The sensor configuration for the
+   *          {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} whose
+   *          values are being processed.
    * @param configFilename
-   *          The filename
+   *          The path to the confiugration file.
    * @throws QCRoutinesConfigurationException
-   *           If the configuration is invalid
+   *           If the configuration is invalid.
    */
   private void init(SensorsConfiguration sensorsConfig, String configFilename)
     throws QCRoutinesConfigurationException {
@@ -149,7 +223,7 @@ public abstract class AbstractQCRoutinesConfiguration {
   }
 
   /**
-   * Get the full class name from a routine name
+   * Get the full class name from a routine name.
    *
    * @param routineName
    *          The routine name
@@ -168,11 +242,14 @@ public abstract class AbstractQCRoutinesConfiguration {
   }
 
   /**
-   * Get the shortcut name of a concrete Routine class, for storage in the
-   * database.
+   * Get the short name of a Routine from a {@link Class} object for storage in
+   * the database.
    *
+   * <p>
    * This is the class name without the package prefix, and with the word
-   * 'Routine' stripped off the end
+   * 'Routine' stripped off the end. It will match the name stored in the
+   * "Class" column of the configuration file.
+   * </p>
    *
    * @param clazz
    *          The class
@@ -183,21 +260,34 @@ public abstract class AbstractQCRoutinesConfiguration {
   }
 
   /**
-   * Get the shortcut name of a concrete Routine instance, for storage in the
-   * database.
+   * Get the short name of a Routine from a concrete instance object for storage
+   * in the database.
    *
-   * This is the class name without the package prefix, and with the word
-   * 'Routine' stripped off the end
+   * <p>
+   * This is the object's class name without the package prefix, and with the
+   * word 'Routine' stripped off the end. It will match the name stored in the
+   * "Class" column of the configuration file.
+   * </p>
    *
    * @param routine
-   *          The instance
-   * @return The shortcut name.
+   *          The concrete routine instance.
+   * @return The short routine name.
    */
   public String getRoutineName(AbstractAutoQCRoutine routine) {
     return getRoutineClassPackage() + "." + routine.getClass().getSimpleName()
       .replaceAll(getRoutineClassTail() + "$", "");
   }
 
+  /**
+   * Get a concrete instance of a Routine given its short name (as recorded in
+   * the configuration file).
+   *
+   * @param routineName
+   *          The routine's short name.
+   * @return The routine instance.
+   * @throws RoutineException
+   *           If the routine cannot be instantiated.
+   */
   public AbstractAutoQCRoutine getRoutine(String routineName)
     throws RoutineException {
 
@@ -212,7 +302,11 @@ public abstract class AbstractQCRoutinesConfiguration {
   }
 
   /**
-   * Get the root package containing QC routines.
+   * Get the name of the Java package containing all Auto QC Routines.
+   *
+   * <p>
+   * This package contains one sub-package for each type of Auto QC Routine.
+   * </p>
    *
    * @return The QC routines root package.
    */
@@ -221,12 +315,13 @@ public abstract class AbstractQCRoutinesConfiguration {
   }
 
   /**
-   * Get the name of the package in which all sensor value routine classes will
-   * be.
+   * Get the name of the package that contains the Auto QC Routines of a given
+   * type.
    *
    * <p>
    * This must be a child of the package returned by
-   * {@link #getRoutineClassRoot()}.
+   * {@link #getRoutineClassRoot()}. It must be the name of the package only,
+   * and not its full path.
    * </p>
    *
    * @return The name of the package containing QC routines.
@@ -241,18 +336,18 @@ public abstract class AbstractQCRoutinesConfiguration {
    * method returns the tail.
    * </p>
    *
-   * @return The standard routine class tail.
+   * @return The standard routine class name tail.
    */
   protected String getRoutineClassTail() {
     return "Routine";
   }
 
   /**
-   * Get the QC routines for a given sensor type
+   * Get the QC Routines registered for a given {@link SensorType}.
    *
    * @param sensorType
-   *          The sensor type
-   * @return The routines to be run
+   *          The required Sensor Type.
+   * @return The Auto QC Routines.
    */
   public List<AbstractAutoQCRoutine> getRoutines(SensorType sensorType) {
     List<AbstractAutoQCRoutine> result = routines.get(sensorType);
