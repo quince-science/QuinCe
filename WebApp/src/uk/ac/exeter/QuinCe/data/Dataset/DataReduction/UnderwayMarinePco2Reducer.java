@@ -27,35 +27,33 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    Double intakeTemperature = measurement
-      .getMeasurementValue("Intake Temperature").getCalculatedValue();
-    Double salinity = measurement.getMeasurementValue("Salinity")
-      .getCalculatedValue();
-    Double equilibratorTemperature = measurement
-      .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
-    Double equilibratorPressure = measurement
-      .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
-    Double xCO2 = measurement.getMeasurementValue(getXCO2Parameter())
-      .getCalculatedValue();
+    try {
+      Double intakeTemperature = measurement
+        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double salinity = measurement.getMeasurementValue("Salinity")
+        .getCalculatedValue();
+      Double equilibratorTemperature = measurement
+        .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
+      Double equilibratorPressure = measurement
+        .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
+      Double xCO2 = measurement.getMeasurementValue(getXCO2Parameter())
+        .getCalculatedValue();
 
-    Calculator calculator = new Calculator(intakeTemperature, salinity,
-      equilibratorTemperature, equilibratorPressure, xCO2);
+      Calculator calculator = new Calculator(intakeTemperature, salinity,
+        equilibratorTemperature, equilibratorPressure, xCO2);
 
-    // Store the calculated values
-    record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
-    record.put("pH₂O", calculator.pH2O);
-    record.put("pCO₂ TE Wet", calculator.pCo2TEWet);
-    record.put("fCO₂ TE Wet", calculator.fCo2TEWet);
-    record.put("pCO₂ SST", calculator.pCO2SST);
-    record.put("fCO₂", calculator.fCO2);
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Salinity",
-      "Equilibrator Temperature", "Equilibrator Pressure", getXCO2Parameter() };
+      // Store the calculated values
+      record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
+      record.put("pH₂O", calculator.pH2O);
+      record.put("pCO₂ TE Wet", calculator.pCo2TEWet);
+      record.put("fCO₂ TE Wet", calculator.fCo2TEWet);
+      record.put("pCO₂ SST", calculator.pCO2SST);
+      record.put("fCO₂", calculator.fCO2);
+    } catch (Exception e) {
+      throw new DataReductionException(e);
+    }
   }
 
   @Override

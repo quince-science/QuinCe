@@ -21,27 +21,26 @@ public class ProOceanusMarineCO2Reducer extends DataReducer {
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    Double intakeTemperature = measurement
-      .getMeasurementValue("Intake Temperature").getCalculatedValue();
-    Double cellGasPressure = measurement
-      .getMeasurementValue("Cell Gas Pressure").getCalculatedValue();
-    Double xCO2 = measurement.getMeasurementValue("xCO₂ (wet, no standards)")
-      .getCalculatedValue();
+    try {
+      Double intakeTemperature = measurement
+        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double cellGasPressure = measurement
+        .getMeasurementValue("Cell Gas Pressure").getCalculatedValue();
+      Double xCO2 = measurement.getMeasurementValue("xCO₂ (wet, no standards)")
+        .getCalculatedValue();
 
-    Double p = Calculators.hPaToAtmospheres(cellGasPressure);
-    Double pCO2WetSST = xCO2 * p;
-    Double fCO2 = Calculators.calcfCO2(pCO2WetSST, xCO2, p, intakeTemperature);
+      Double p = Calculators.hPaToAtmospheres(cellGasPressure);
+      Double pCO2WetSST = xCO2 * p;
+      Double fCO2 = Calculators.calcfCO2(pCO2WetSST, xCO2, p,
+        intakeTemperature);
 
-    record.put("pCO₂ SST", pCO2WetSST);
-    record.put("fCO₂", fCO2);
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Cell Gas Pressure",
-      "xCO₂ (wet, no standards)" };
+      record.put("pCO₂ SST", pCO2WetSST);
+      record.put("fCO₂", fCO2);
+    } catch (Exception e) {
+      throw new DataReductionException(e);
+    }
   }
 
   @Override

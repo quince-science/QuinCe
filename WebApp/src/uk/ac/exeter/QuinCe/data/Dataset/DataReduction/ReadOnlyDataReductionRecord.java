@@ -26,9 +26,6 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * {@link DataSetDataDB#storeDataReductionQC}. Attempting to store changes to
  * the actual data values will result in an Exception.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class ReadOnlyDataReductionRecord extends DataReductionRecord {
 
