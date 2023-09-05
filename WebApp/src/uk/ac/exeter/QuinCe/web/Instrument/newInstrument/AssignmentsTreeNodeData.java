@@ -1,12 +1,15 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 /**
- * Node data type for the Assignments Tree
+ * Base class for node data types in the
+ * {@link uk.ac.exeter.QuinCe.web.Instrument.newInstrument.AssignmentsTree}.
  */
 public abstract class AssignmentsTreeNodeData {
 
   /**
-   * Get the node's label
+   * Get the node's text label.
+   *
+   * @return The node's label.
    */
   public abstract String getLabel();
 }
