@@ -242,7 +242,6 @@ public class DataReductionJob extends DataSetJob {
         // Requeue the data reduction job
         JobManager.requeueJob(conn, id);
       } else {
-
         Properties jobParams = new Properties();
         jobParams.put(LocateMeasurementsJob.ID_PARAM,
           String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
@@ -253,7 +252,6 @@ public class DataReductionJob extends DataSetJob {
         dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION_QC);
         dataSet.setProcessingVersion();
         DataSetDB.updateDataSet(conn, dataSet);
-
       }
 
       conn.commit();

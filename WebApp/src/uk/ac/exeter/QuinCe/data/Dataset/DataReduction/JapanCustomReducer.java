@@ -35,64 +35,67 @@ public class JapanCustomReducer extends DataReducer {
 
   @Override
   public void preprocess(Connection conn, Instrument instrument,
-    DataSet dataset, List<Measurement> allMeasurements) throws Exception {
+    DataSet dataset, List<Measurement> allMeasurements)
+    throws DataReductionException {
 
-    // Get the calibration slope information
+    try {
+      // Get the calibration slope information
+      CalibrationSet coefficients = CalculationCoefficientDB.getInstance()
+        .getMostRecentCalibrations(conn, instrument,
+          allMeasurements.get(0).getTime());
 
-    CalibrationSet coefficients = CalculationCoefficientDB.getInstance()
-      .getMostRecentCalibrations(conn, instrument,
-        allMeasurements.get(0).getTime());
+      baseSlope = CalculationCoefficient
+        .getCoefficient(coefficients, variable, "Base Slope")
+        .getBigDecimalValue();
 
-    baseSlope = CalculationCoefficient
-      .getCoefficient(coefficients, variable, "Base Slope")
-      .getBigDecimalValue();
+      baseIntercept = CalculationCoefficient
+        .getCoefficient(coefficients, variable, "Base Intercept")
+        .getBigDecimalValue();
 
-    baseIntercept = CalculationCoefficient
-      .getCoefficient(coefficients, variable, "Base Intercept")
-      .getBigDecimalValue();
+      slopeAdjustment = CalculationCoefficient
+        .getCoefficient(coefficients, variable, "Slope Adjustment")
+        .getBigDecimalValue();
 
-    slopeAdjustment = CalculationCoefficient
-      .getCoefficient(coefficients, variable, "Slope Adjustment")
-      .getBigDecimalValue();
-
-    interceptAdjustment = CalculationCoefficient
-      .getCoefficient(coefficients, variable, "Intercept Adjustment")
-      .getBigDecimalValue();
+      interceptAdjustment = CalculationCoefficient
+        .getCoefficient(coefficients, variable, "Intercept Adjustment")
+        .getBigDecimalValue();
+    } catch (Exception e) {
+      throw new DataReductionException(e);
+    }
   }
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    Double intakeTemperature = measurement
-      .getMeasurementValue("Intake Temperature").getCalculatedValue();
-    Double equilibrationTemperature = measurement
-      .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
-    BigDecimal pCO2TEWet = new BigDecimal(measurement
-      .getMeasurementValue("pCO₂ (wet at equilibration)").getCalculatedValue());
-    BigDecimal index = new BigDecimal(measurement
-      .getMeasurementValue("Measurement Index").getCalculatedValue());
+    try {
+      Double intakeTemperature = measurement
+        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double equilibrationTemperature = measurement
+        .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
+      BigDecimal pCO2TEWet = new BigDecimal(
+        measurement.getMeasurementValue("pCO₂ (wet at equilibration)")
+          .getCalculatedValue());
+      BigDecimal index = new BigDecimal(measurement
+        .getMeasurementValue("Measurement Index").getCalculatedValue());
 
-    BigDecimal slopeAdjust = slopeAdjustment.multiply(index);
-    BigDecimal interceptAdjust = interceptAdjustment.multiply(index);
+      BigDecimal slopeAdjust = slopeAdjustment.multiply(index);
+      BigDecimal interceptAdjust = interceptAdjustment.multiply(index);
 
-    BigDecimal slope = baseSlope.add(slopeAdjust);
-    BigDecimal intercept = baseIntercept.add(interceptAdjust);
+      BigDecimal slope = baseSlope.add(slopeAdjust);
+      BigDecimal intercept = baseIntercept.add(interceptAdjust);
 
-    Double calibratedCO2 = pCO2TEWet.multiply(slope).add(intercept)
-      .doubleValue();
+      Double calibratedCO2 = pCO2TEWet.multiply(slope).add(intercept)
+        .doubleValue();
 
-    Double pCO2SST = Calculators.calcCO2AtSST(calibratedCO2,
-      equilibrationTemperature, intakeTemperature);
+      Double pCO2SST = Calculators.calcCO2AtSST(calibratedCO2,
+        equilibrationTemperature, intakeTemperature);
 
-    record.put("ΔT", Math.abs(intakeTemperature - equilibrationTemperature));
-    record.put("pCO₂ SST", pCO2SST);
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Equilibrator Temperature",
-      "pCO₂ (wet at equilibration)" };
+      record.put("ΔT", Math.abs(intakeTemperature - equilibrationTemperature));
+      record.put("pCO₂ SST", pCO2SST);
+    } catch (Exception e) {
+      throw new DataReductionException(e);
+    }
   }
 
   @Override

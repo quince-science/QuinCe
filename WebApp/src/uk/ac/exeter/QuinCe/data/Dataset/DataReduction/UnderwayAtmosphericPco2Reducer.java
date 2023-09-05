@@ -28,37 +28,35 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    // We use equilibrator temperature as the presumed most realistic gas
-    // temperature
-    Double intakeTemperature = measurement
-      .getMeasurementValue("Intake Temperature").getCalculatedValue();
-    Double salinity = measurement.getMeasurementValue("Salinity")
-      .getCalculatedValue();
-    Double atmosphericPressure = measurement
-      .getMeasurementValue("Atmospheric Pressure").getCalculatedValue();
-    Double co2InGas = measurement.getMeasurementValue(getXCO2Parameter())
-      .getCalculatedValue();
+    try {
+      // We use equilibrator temperature as the presumed most realistic gas
+      // temperature
+      Double intakeTemperature = measurement
+        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double salinity = measurement.getMeasurementValue("Salinity")
+        .getCalculatedValue();
+      Double atmosphericPressure = measurement
+        .getMeasurementValue("Atmospheric Pressure").getCalculatedValue();
+      Double co2InGas = measurement.getMeasurementValue(getXCO2Parameter())
+        .getCalculatedValue();
 
-    Double seaLevelPressure = Calculators.calcSeaLevelPressure(
-      atmosphericPressure, intakeTemperature,
-      getFloatProperty("atm_pres_sensor_height"));
+      Double seaLevelPressure = Calculators.calcSeaLevelPressure(
+        atmosphericPressure, intakeTemperature,
+        getFloatProperty("atm_pres_sensor_height"));
 
-    Calculator calculator = new Calculator(intakeTemperature, salinity,
-      seaLevelPressure, co2InGas);
+      Calculator calculator = new Calculator(intakeTemperature, salinity,
+        seaLevelPressure, co2InGas);
 
-    record.put("Sea Level Pressure", seaLevelPressure);
-    record.put("pH₂O", calculator.pH2O);
-    record.put("xCO₂", co2InGas);
-    record.put("pCO₂", calculator.pCO2);
-    record.put("fCO₂", calculator.fCO2);
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Salinity",
-      "Atmospheric Pressure", getXCO2Parameter() };
+      record.put("Sea Level Pressure", seaLevelPressure);
+      record.put("pH₂O", calculator.pH2O);
+      record.put("xCO₂", co2InGas);
+      record.put("pCO₂", calculator.pCO2);
+      record.put("fCO₂", calculator.fCO2);
+    } catch (Exception e) {
+      throw new DataReductionException(e);
+    }
   }
 
   @Override

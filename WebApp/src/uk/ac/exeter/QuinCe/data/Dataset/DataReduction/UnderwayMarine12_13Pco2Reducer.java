@@ -1,8 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -26,46 +24,33 @@ public class UnderwayMarine12_13Pco2Reducer extends UnderwayMarinePco2Reducer {
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    Double intakeTemperature = measurement
-      .getMeasurementValue("Intake Temperature").getCalculatedValue();
-    Double salinity = measurement.getMeasurementValue("Salinity")
-      .getCalculatedValue();
-    Double equilibratorTemperature = measurement
-      .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
-    Double equilibratorPressure = measurement
-      .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
+    try {
+      Double intakeTemperature = measurement
+        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double salinity = measurement.getMeasurementValue("Salinity")
+        .getCalculatedValue();
+      Double equilibratorTemperature = measurement
+        .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
+      Double equilibratorPressure = measurement
+        .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
 
-    // Store the calculated values
-    record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
+      // Store the calculated values
+      record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
 
-    if (variable.getAttributes().get(CAL_GAS_TYPE_ATTR)
-      .equals(SPLIT_CO2_GAS_CAL_TYPE)) {
+      if (variable.getAttributes().get(CAL_GAS_TYPE_ATTR)
+        .equals(SPLIT_CO2_GAS_CAL_TYPE)) {
 
-      doSplitCalculation(record, measurement, intakeTemperature, salinity,
-        equilibratorTemperature, equilibratorPressure);
-    } else {
-      doTotalCalculation(record, measurement, intakeTemperature, salinity,
-        equilibratorTemperature, equilibratorPressure);
+        doSplitCalculation(record, measurement, intakeTemperature, salinity,
+          equilibratorTemperature, equilibratorPressure);
+      } else {
+        doTotalCalculation(record, measurement, intakeTemperature, salinity,
+          equilibratorTemperature, equilibratorPressure);
+      }
+    } catch (Exception e) {
+      throw new DataReductionException(e);
     }
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    List<String> result = Arrays.asList(new String[] { "Intake Temperature",
-      "Salinity", "Equilibrator Temperature", "Equilibrator Pressure",
-      "xH₂O (with standards)", "x¹²CO₂ (with standards)",
-      "x¹³CO₂ (with standards)" });
-
-    if (variable.getAttributes()
-      .get(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR)
-      .equals(UnderwayMarine12_13Pco2Reducer.SPLIT_CO2_GAS_CAL_TYPE)) {
-
-      result.add("x¹²CO₂ + x¹³CO₂ (with standards)");
-    }
-
-    return (String[]) result.toArray();
   }
 
   private void doSplitCalculation(DataReductionRecord record,

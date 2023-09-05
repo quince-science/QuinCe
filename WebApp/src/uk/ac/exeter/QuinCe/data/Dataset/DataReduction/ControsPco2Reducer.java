@@ -60,162 +60,163 @@ public class ControsPco2Reducer extends DataReducer {
 
   @Override
   public void preprocess(Connection conn, Instrument instrument,
-    DataSet dataset, List<Measurement> allMeasurements) throws Exception {
+    DataSet dataset, List<Measurement> allMeasurements)
+    throws DataReductionException {
 
-    // Get prior and post coefficients
-    priorCoefficients = CalculationCoefficientDB.getInstance()
-      .getMostRecentCalibrations(conn, instrument,
-        allMeasurements.get(0).getTime());
+    try {
+      // Get prior and post coefficients
+      priorCoefficients = CalculationCoefficientDB.getInstance()
+        .getMostRecentCalibrations(conn, instrument,
+          allMeasurements.get(0).getTime());
 
-    postCoefficients = CalculationCoefficientDB.getInstance()
-      .getCalibrationsAfter(conn, instrument,
-        allMeasurements.get(allMeasurements.size() - 1).getTime());
+      postCoefficients = CalculationCoefficientDB.getInstance()
+        .getCalibrationsAfter(conn, instrument,
+          allMeasurements.get(allMeasurements.size() - 1).getTime());
 
-    // Extract coefficients that will be used multiple times
-    k1Prior = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
-      "k1");
-    k2Prior = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
-      "k2");
-    k3Prior = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
-      "k3");
-    runTimePrior = CalculationCoefficient.getCoefficient(priorCoefficients,
-      variable, "Runtime");
+      // Extract coefficients that will be used multiple times
+      k1Prior = CalculationCoefficient.getCoefficient(priorCoefficients,
+        variable, "k1");
+      k2Prior = CalculationCoefficient.getCoefficient(priorCoefficients,
+        variable, "k2");
+      k3Prior = CalculationCoefficient.getCoefficient(priorCoefficients,
+        variable, "k3");
+      runTimePrior = CalculationCoefficient.getCoefficient(priorCoefficients,
+        variable, "Runtime");
 
-    k1Post = getPost("k1");
-    k2Post = getPost("k2");
-    k3Post = getPost("k3");
-    runTimePost = getPost("Runtime");
+      k1Post = getPost("k1");
+      k2Post = getPost("k2");
+      k3Post = getPost("k3");
+      runTimePost = getPost("Runtime");
 
-    // Calculate zero Sbeam values
-    zeroS2Beams = new TreeMap<Double, Double>();
+      // Calculate zero Sbeam values
+      zeroS2Beams = new TreeMap<Double, Double>();
 
-    // We calculate zero beams as averages within their run
-    String currentRunType = "";
-    MeanCalculator runTimes = new MeanCalculator();
-    MeanCalculator s2Beams = new MeanCalculator();
+      // We calculate zero beams as averages within their run
+      String currentRunType = "";
+      MeanCalculator runTimes = new MeanCalculator();
+      MeanCalculator s2Beams = new MeanCalculator();
 
-    for (Measurement measurement : allMeasurements) {
+      for (Measurement measurement : allMeasurements) {
 
-      String runType = measurement.getRunType(variable);
+        String runType = measurement.getRunType(variable);
 
-      if (!runType.equals(currentRunType)) {
-        if (currentRunType.equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
-          if (runTimes.getCount() > 0) {
-            zeroS2Beams.put(runTimes.mean(), s2Beams.mean());
-            runTimes = new MeanCalculator();
-            s2Beams = new MeanCalculator();
+        if (!runType.equals(currentRunType)) {
+          if (currentRunType
+            .equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
+            if (runTimes.getCount() > 0) {
+              zeroS2Beams.put(runTimes.mean(), s2Beams.mean());
+              runTimes = new MeanCalculator();
+              s2Beams = new MeanCalculator();
+            }
+          }
+          currentRunType = runType;
+        }
+
+        if (runType.equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
+
+          Double rawSignal = measurement
+            .getMeasurementValue("Contros pCO₂ Raw Detector Signal")
+            .getCalculatedValue();
+
+          if (!rawSignal.isNaN()) {
+            runTimes.add(measurement.getMeasurementValue("Contros pCO₂ Runtime")
+              .getCalculatedValue());
+            s2Beams.add(calcS2Beam(measurement));
           }
         }
-        currentRunType = runType;
       }
 
-      if (runType.equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
-
-        Double rawSignal = measurement
-          .getMeasurementValue("Contros pCO₂ Raw Detector Signal")
-          .getCalculatedValue();
-
-        if (!rawSignal.isNaN()) {
-          runTimes.add(measurement.getMeasurementValue("Contros pCO₂ Runtime")
-            .getCalculatedValue());
-          s2Beams.add(calcS2Beam(measurement));
-        }
+      if (runTimes.getCount() > 0) {
+        zeroS2Beams.put(runTimes.mean(), s2Beams.mean());
+        runTimes = new MeanCalculator();
+        s2Beams = new MeanCalculator();
       }
-    }
 
-    if (runTimes.getCount() > 0) {
-      zeroS2Beams.put(runTimes.mean(), s2Beams.mean());
-      runTimes = new MeanCalculator();
-      s2Beams = new MeanCalculator();
+      dataset.setProperty(variable, ZEROS_PROP, new Gson().toJson(zeroS2Beams));
+    } catch (Exception e) {
+      throw new DataReductionException(e);
     }
-
-    dataset.setProperty(variable, ZEROS_PROP, new Gson().toJson(zeroS2Beams));
   }
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    // We use BigDecimals to maintain the precision on the k parameters,
-    // which are on the order of 1e-10
+    try {
+      // We use BigDecimals to maintain the precision on the k parameters,
+      // which are on the order of 1e-10
 
-    BigDecimal F = new BigDecimal(CalculationCoefficient
-      .getCoefficient(priorCoefficients, variable, "F").getValue());
+      BigDecimal F = new BigDecimal(CalculationCoefficient
+        .getCoefficient(priorCoefficients, variable, "F").getValue());
 
-    BigDecimal measurementRunTime = new BigDecimal(measurement
-      .getMeasurementValue("Contros pCO₂ Runtime").getCalculatedValue());
+      BigDecimal measurementRunTime = new BigDecimal(measurement
+        .getMeasurementValue("Contros pCO₂ Runtime").getCalculatedValue());
 
-    Double measurementS2Beam = calcS2Beam(measurement);
+      Double measurementS2Beam = calcS2Beam(measurement);
 
-    if (!measurementS2Beam.isNaN()) {
-      BigDecimal bdMeasurementS2Beam = new BigDecimal(measurementS2Beam);
-      BigDecimal zeroS2Beam = new BigDecimal(
-        getInterpZeroS2Beam(measurementRunTime.doubleValue()));
+      if (!measurementS2Beam.isNaN()) {
+        BigDecimal bdMeasurementS2Beam = new BigDecimal(measurementS2Beam);
+        BigDecimal zeroS2Beam = new BigDecimal(
+          getInterpZeroS2Beam(measurementRunTime.doubleValue()));
 
-      BigDecimal sProc = F.multiply(new BigDecimal(1D).subtract(
-        (bdMeasurementS2Beam.divide(zeroS2Beam, 10, RoundingMode.HALF_UP))));
+        BigDecimal sProc = F.multiply(new BigDecimal(1D).subtract(
+          (bdMeasurementS2Beam.divide(zeroS2Beam, 10, RoundingMode.HALF_UP))));
 
-      BigDecimal k1Interp = CalculationCoefficient.interpolateBigDecimal(
-        runTimePrior, k1Prior, runTimePost, k1Post, measurementRunTime);
-      BigDecimal k2Interp = CalculationCoefficient.interpolateBigDecimal(
-        runTimePrior, k2Prior, runTimePost, k2Post, measurementRunTime);
-      BigDecimal k3Interp = CalculationCoefficient.interpolateBigDecimal(
-        runTimePrior, k3Prior, runTimePost, k3Post, measurementRunTime);
+        BigDecimal k1Interp = CalculationCoefficient.interpolateBigDecimal(
+          runTimePrior, k1Prior, runTimePost, k1Post, measurementRunTime);
+        BigDecimal k2Interp = CalculationCoefficient.interpolateBigDecimal(
+          runTimePrior, k2Prior, runTimePost, k2Post, measurementRunTime);
+        BigDecimal k3Interp = CalculationCoefficient.interpolateBigDecimal(
+          runTimePrior, k3Prior, runTimePost, k3Post, measurementRunTime);
 
-      BigDecimal sProcCubed = sProc.pow(3);
-      BigDecimal sProcSquared = sProc.pow(2);
+        BigDecimal sProcCubed = sProc.pow(3);
+        BigDecimal sProcSquared = sProc.pow(2);
 
-      BigDecimal k3Part = k3Interp.multiply(sProcCubed);
-      BigDecimal k2Part = k2Interp.multiply(sProcSquared);
-      BigDecimal k1Part = k1Interp.multiply(sProc);
+        BigDecimal k3Part = k3Interp.multiply(sProcCubed);
+        BigDecimal k2Part = k2Interp.multiply(sProcSquared);
+        BigDecimal k1Part = k1Interp.multiply(sProc);
 
-      // We can drop back to double precision now
-      Double xco2ProcPart = k3Part.add(k2Part).add(k1Part).doubleValue();
+        // We can drop back to double precision now
+        Double xco2ProcPart = k3Part.add(k2Part).add(k1Part).doubleValue();
 
-      Double gasTemperature = measurement
-        .getMeasurementValue("Gas Stream Temperature").getCalculatedValue()
-        + T0;
-      Double gasPressure = measurement
-        .getMeasurementValue("Gas Stream Pressure").getCalculatedValue();
+        Double gasTemperature = measurement
+          .getMeasurementValue("Gas Stream Temperature").getCalculatedValue()
+          + T0;
+        Double gasPressure = measurement
+          .getMeasurementValue("Gas Stream Pressure").getCalculatedValue();
 
-      Double xco2PresTempPart = (P0 * gasTemperature) / (T0 * gasPressure);
+        Double xco2PresTempPart = (P0 * gasTemperature) / (T0 * gasPressure);
 
-      Double xco2 = xco2ProcPart * xco2PresTempPart;
+        Double xco2 = xco2ProcPart * xco2PresTempPart;
 
-      Double membranePressure = measurement
-        .getMeasurementValue("Membrane Pressure").getCalculatedValue();
+        Double membranePressure = measurement
+          .getMeasurementValue("Membrane Pressure").getCalculatedValue();
 
-      Double pCo2TEWet = xco2 * (membranePressure / P0);
-      Double fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, xco2, membranePressure,
-        gasTemperature);
+        Double pCo2TEWet = xco2 * (membranePressure / P0);
+        Double fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, xco2,
+          membranePressure, gasTemperature);
 
-      Double sst = measurement.getMeasurementValue("Intake Temperature")
-        .getCalculatedValue() + T0;
-      Double membraneTemp = measurement
-        .getMeasurementValue("Membrane Temperature").getCalculatedValue() + T0;
+        Double sst = measurement.getMeasurementValue("Intake Temperature")
+          .getCalculatedValue() + T0;
+        Double membraneTemp = measurement
+          .getMeasurementValue("Membrane Temperature").getCalculatedValue()
+          + T0;
 
-      Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet, membraneTemp, sst);
-      Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, membraneTemp, sst);
+        Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet, membraneTemp, sst);
+        Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, membraneTemp, sst);
 
-      record.put("Zero S₂beam", zeroS2Beam.doubleValue());
-      record.put("S₂beam", measurementS2Beam.doubleValue());
-      record.put("Sproc", sProc.doubleValue());
-      record.put("xCO₂", xco2);
-      record.put("pCO₂ TE Wet", pCo2TEWet);
-      record.put("fCO₂ TE Wet", fCo2TEWet);
-      record.put("pCO₂ SST", pCO2SST);
-      record.put("fCO₂", fCO2);
+        record.put("Zero S₂beam", zeroS2Beam.doubleValue());
+        record.put("S₂beam", measurementS2Beam.doubleValue());
+        record.put("Sproc", sProc.doubleValue());
+        record.put("xCO₂", xco2);
+        record.put("pCO₂ TE Wet", pCo2TEWet);
+        record.put("fCO₂ TE Wet", fCo2TEWet);
+        record.put("pCO₂ SST", pCO2SST);
+        record.put("fCO₂", fCO2);
+      }
+    } catch (Exception e) {
+      throw new DataReductionException(e);
     }
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Salinity",
-      "Contros pCO₂ Raw Detector Signal", "Contros pCO₂ Reference Signal",
-      "Contros pCO₂ Zero Mode", "Contros pCO₂ Flush Mode",
-      "Contros pCO₂ Runtime", "Gas Stream Temperature", "Gas Stream Pressure",
-      "Membrane Temperature", "Membrane Pressure",
-      "Diagnostic Relative Humidity" };
   }
 
   @Override

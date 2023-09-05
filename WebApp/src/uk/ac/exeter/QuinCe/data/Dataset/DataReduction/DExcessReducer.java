@@ -20,19 +20,18 @@ public class DExcessReducer extends DataReducer {
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    Double dH218O = measurement.getMeasurementValue("δH₂¹⁸O")
-      .getCalculatedValue();
-    Double dHD16O = measurement.getMeasurementValue("δHD¹⁶O")
-      .getCalculatedValue();
+    try {
+      Double dH218O = measurement.getMeasurementValue("δH₂¹⁸O")
+        .getCalculatedValue();
+      Double dHD16O = measurement.getMeasurementValue("δHD¹⁶O")
+        .getCalculatedValue();
 
-    record.put("D-Excess", dHD16O - 8 * dH218O);
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "δH₂¹⁸O", "δHD¹⁶O" };
+      record.put("D-Excess", dHD16O - 8 * dH218O);
+    } catch (Exception e) {
+      throw new DataReductionException(e);
+    }
   }
 
   @Override

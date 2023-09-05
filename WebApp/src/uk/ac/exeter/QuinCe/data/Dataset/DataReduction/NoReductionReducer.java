@@ -30,16 +30,11 @@ public class NoReductionReducer extends DataReducer {
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
     SensorType coreType = variable.getCoreSensorType();
     record.put(coreType.getShortName(),
       measurement.getMeasurementValue(coreType).getCalculatedValue());
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] {};
   }
 
   @Override

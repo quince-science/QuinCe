@@ -32,28 +32,27 @@ public class SamiPco2DataReducer extends DataReducer {
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    Double intakeTemperature = measurement
-      .getMeasurementValue("Intake Temperature").getCalculatedValue();
-    Double pCO2TEWet = measurement
-      .getMeasurementValue("pCO₂ (wet at equilibration)").getCalculatedValue();
-    Double pressure = measurement.getMeasurementValue("Pressure at instrument")
-      .getCalculatedValue();
+    try {
+      Double intakeTemperature = measurement
+        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double pCO2TEWet = measurement
+        .getMeasurementValue("pCO₂ (wet at equilibration)")
+        .getCalculatedValue();
+      Double pressure = measurement
+        .getMeasurementValue("Pressure at instrument").getCalculatedValue();
 
-    Double pCO2SST = Calculators.calcCO2AtSST(pCO2TEWet, intakeTemperature,
-      intakeTemperature);
-    Double fCO2 = Calculators.calcfCO2(pCO2SST, pCO2SST, pressure,
-      intakeTemperature);
+      Double pCO2SST = Calculators.calcCO2AtSST(pCO2TEWet, intakeTemperature,
+        intakeTemperature);
+      Double fCO2 = Calculators.calcfCO2(pCO2SST, pCO2SST, pressure,
+        intakeTemperature);
 
-    record.put("pCO₂ SST", pCO2SST);
-    record.put("fCO₂", fCO2);
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Equilibrator Temperature",
-      "pCO₂ (wet at equilibration)", "Pressure at instrument" };
+      record.put("pCO₂ SST", pCO2SST);
+      record.put("fCO₂", fCO2);
+    } catch (Exception e) {
+      throw new DataReductionException(e);
+    }
   }
 
   @Override

@@ -21,33 +21,31 @@ public class ProOceanusAtmosphericCO2Reducer extends DataReducer {
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    Double airTemperature = measurement.getMeasurementValue("Air Temperature")
-      .getCalculatedValue();
-    Double cellGasPressure = measurement
-      .getMeasurementValue("Cell Gas Pressure").getCalculatedValue();
-    Double humidityPressure = measurement
-      .getMeasurementValue("Humidity Pressure").getCalculatedValue();
-    Double xCO2wet = measurement.getMeasurementValue("xCO₂ (wet, no standards)")
-      .getCalculatedValue();
+    try {
+      Double airTemperature = measurement.getMeasurementValue("Air Temperature")
+        .getCalculatedValue();
+      Double cellGasPressure = measurement
+        .getMeasurementValue("Cell Gas Pressure").getCalculatedValue();
+      Double humidityPressure = measurement
+        .getMeasurementValue("Humidity Pressure").getCalculatedValue();
+      Double xCO2wet = measurement
+        .getMeasurementValue("xCO₂ (wet, no standards)").getCalculatedValue();
 
-    // TODO Unit conversion?
-    Double xCO2dry = xCO2wet / (1 - (humidityPressure / cellGasPressure));
+      // TODO Unit conversion?
+      Double xCO2dry = xCO2wet / (1 - (humidityPressure / cellGasPressure));
 
-    Double p = Calculators.hPaToAtmospheres(cellGasPressure);
-    Double pCO2 = xCO2wet * p;
-    Double fCO2 = Calculators.calcfCO2(pCO2, xCO2wet, p, airTemperature);
+      Double p = Calculators.hPaToAtmospheres(cellGasPressure);
+      Double pCO2 = xCO2wet * p;
+      Double fCO2 = Calculators.calcfCO2(pCO2, xCO2wet, p, airTemperature);
 
-    record.put("xCO₂", xCO2dry);
-    record.put("pCO₂", pCO2);
-    record.put("fCO₂", fCO2);
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "Intake Temperature", "Cell Gas Pressure",
-      "Humidity Pressure", "xCO₂ (wet, no standards)" };
+      record.put("xCO₂", xCO2dry);
+      record.put("pCO₂", pCO2);
+      record.put("fCO₂", fCO2);
+    } catch (Exception e) {
+      throw new DataReductionException(e);
+    }
   }
 
   @Override

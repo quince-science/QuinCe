@@ -1,8 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -21,49 +19,37 @@ public class UnderwayAtmospheric12_13Pco2Reducer
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    // We use equilibrator temperature as the presumed most realistic gas
-    // temperature
-    Double intakeTemperature = measurement
-      .getMeasurementValue("Intake Temperature").getCalculatedValue();
-    Double salinity = measurement.getMeasurementValue("Salinity")
-      .getCalculatedValue();
-    Double atmosphericPressure = measurement
-      .getMeasurementValue("Atmospheric Pressure").getCalculatedValue();
+    try {
+      // We use equilibrator temperature as the presumed most realistic gas
+      // temperature
+      Double intakeTemperature = measurement
+        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double salinity = measurement.getMeasurementValue("Salinity")
+        .getCalculatedValue();
+      Double atmosphericPressure = measurement
+        .getMeasurementValue("Atmospheric Pressure").getCalculatedValue();
 
-    Double seaLevelPressure = Calculators.calcSeaLevelPressure(
-      atmosphericPressure, intakeTemperature,
-      getFloatProperty("atm_pres_sensor_height"));
+      Double seaLevelPressure = Calculators.calcSeaLevelPressure(
+        atmosphericPressure, intakeTemperature,
+        getFloatProperty("atm_pres_sensor_height"));
 
-    record.put("Sea Level Pressure", seaLevelPressure);
+      record.put("Sea Level Pressure", seaLevelPressure);
 
-    if (variable.getAttributes()
-      .get(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR)
-      .equals(UnderwayMarine12_13Pco2Reducer.SPLIT_CO2_GAS_CAL_TYPE)) {
+      if (variable.getAttributes()
+        .get(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR)
+        .equals(UnderwayMarine12_13Pco2Reducer.SPLIT_CO2_GAS_CAL_TYPE)) {
 
-      doSplitCalculation(record, measurement, intakeTemperature, salinity,
-        seaLevelPressure);
-    } else {
-      doTotalCalculation(record, measurement, intakeTemperature, salinity,
-        seaLevelPressure);
+        doSplitCalculation(record, measurement, intakeTemperature, salinity,
+          seaLevelPressure);
+      } else {
+        doTotalCalculation(record, measurement, intakeTemperature, salinity,
+          seaLevelPressure);
+      }
+    } catch (Exception e) {
+      throw new DataReductionException(e);
     }
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    List<String> result = Arrays.asList(new String[] { "Intake Temperature",
-      "Salinity", "Atmospheric Pressure", "xH₂O (with standards)",
-      "x¹²CO₂ (with standards)", "x¹³CO₂ (with standards)" });
-
-    if (variable.getAttributes()
-      .get(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR)
-      .equals(UnderwayMarine12_13Pco2Reducer.SPLIT_CO2_GAS_CAL_TYPE)) {
-
-      result.add("x¹²CO₂ + x¹³CO₂ (with standards)");
-    }
-
-    return (String[]) result.toArray();
   }
 
   private void doSplitCalculation(DataReductionRecord record,

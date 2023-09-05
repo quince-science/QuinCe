@@ -35,32 +35,31 @@ public class SaildroneAtmosphericPco2Reducer extends DataReducer {
 
   @Override
   public void doCalculation(Instrument instrument, Measurement measurement,
-    DataReductionRecord record, Connection conn) throws Exception {
+    DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    Double airTemperature = measurement.getMeasurementValue("Air Temperature")
-      .getCalculatedValue();
-    Double salinity = measurement.getMeasurementValue("Salinity")
-      .getCalculatedValue();
-    Double licorPressure = measurement
-      .getMeasurementValue("LICOR Pressure (Atmosphere)").getCalculatedValue();
-    Double xCo2 = measurement
-      .getMeasurementValue("xCO₂ atmosphere (dry, no standards)")
-      .getCalculatedValue();
+    try {
+      Double airTemperature = measurement.getMeasurementValue("Air Temperature")
+        .getCalculatedValue();
+      Double salinity = measurement.getMeasurementValue("Salinity")
+        .getCalculatedValue();
+      Double licorPressure = measurement
+        .getMeasurementValue("LICOR Pressure (Atmosphere)")
+        .getCalculatedValue();
+      Double xCo2 = measurement
+        .getMeasurementValue("xCO₂ atmosphere (dry, no standards)")
+        .getCalculatedValue();
 
-    Double pH2O = Calculators.calcPH2O(salinity, airTemperature);
+      Double pH2O = Calculators.calcPH2O(salinity, airTemperature);
 
-    Double pCO2 = Calculators.calcpCO2TEWet(xCo2, licorPressure, pH2O);
-    Double fCO2 = Calculators.calcfCO2(pCO2, xCo2, licorPressure,
-      airTemperature);
+      Double pCO2 = Calculators.calcpCO2TEWet(xCo2, licorPressure, pH2O);
+      Double fCO2 = Calculators.calcfCO2(pCO2, xCo2, licorPressure,
+        airTemperature);
 
-    record.put("pCO₂", pCO2);
-    record.put("fCO₂", fCO2);
-  }
-
-  @Override
-  protected String[] getRequiredTypeStrings() {
-    return new String[] { "Air Temperature", "Salinity",
-      "LICOR Pressure (Atmosphere)", "xCO₂ atmosphere (dry, no standards)" };
+      record.put("pCO₂", pCO2);
+      record.put("fCO₂", fCO2);
+    } catch (Exception e) {
+      throw new DataReductionException(e);
+    }
   }
 
   @Override
