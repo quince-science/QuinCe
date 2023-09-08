@@ -845,6 +845,10 @@ public class SensorAssignments
     return result;
   }
 
+  public boolean isOfSensorType(long columnId, SensorType sensorType) {
+    return getColumnIds(sensorType).contains(columnId);
+  }
+
   public List<Long> getColumnIds(String sensorTypeName)
     throws SensorTypeNotFoundException {
 
