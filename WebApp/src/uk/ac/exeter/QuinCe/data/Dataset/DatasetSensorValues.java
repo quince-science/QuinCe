@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,11 +46,6 @@ public class DatasetSensorValues {
    * The {@link SensorValues}s grouped by their source {@link FileColumn} ID.
    */
   private Map<Long, SearchableSensorValuesList> valuesByColumn;
-
-  /**
-   * The {@link SensorValues}s grouped by {@link SensorType}.
-   */
-  private Map<SensorType, TreeSet<SensorValue>> valuesBySensorType;
 
   /**
    * The {@link SensorValue}s grouped by date and then source {@link FileColumn}
@@ -113,7 +107,6 @@ public class DatasetSensorValues {
   public DatasetSensorValues(Instrument instrument) {
     valuesById = new HashMap<Long, SensorValue>();
     valuesByColumn = new HashMap<Long, SearchableSensorValuesList>();
-    valuesBySensorType = new HashMap<SensorType, TreeSet<SensorValue>>();
     valuesByDateAndColumn = new TreeMap<LocalDateTime, Map<Long, SensorValue>>();
     longitudes = new SearchableSensorValuesList(SensorType.LONGITUDE_ID);
     latitudes = new SearchableSensorValuesList(SensorType.LATITUDE_ID);
@@ -138,12 +131,8 @@ public class DatasetSensorValues {
       latitudes.add(sensorValue);
       addById(sensorValue);
     } else if (!contains(sensorValue)) {
-      SensorType sensorType = instrument.getSensorAssignments()
-        .getSensorTypeForDBColumn(sensorValue.getColumnId());
-
       addById(sensorValue);
       addByColumn(sensorValue);
-      addBySensorType(sensorValue, sensorType);
       addByDateAndColumn(sensorValue);
     }
   }
@@ -196,12 +185,8 @@ public class DatasetSensorValues {
    *           If the {@link Instrument} configuration is invalid.
    */
   public void remove(SensorValue sensorValue) throws RecordNotFoundException {
-    SensorType sensorType = instrument.getSensorAssignments()
-      .getSensorTypeForDBColumn(sensorValue.getColumnId());
-
     removeById(sensorValue);
     removeByColumn(sensorValue);
-    removeBySensorType(sensorValue, sensorType);
     removeByDateAndColumn(sensorValue);
   }
 
@@ -282,17 +267,6 @@ public class DatasetSensorValues {
    */
   public List<SensorValue> getById(Collection<Long> ids) {
     return ids.stream().map(id -> getById(id)).toList();
-  }
-
-  /**
-   * Retrieve all the {@link SensorValue}s for a given {@link SensorType}.
-   *
-   * @param sensorType
-   *          The {@link SensorType}.
-   * @return The {@link SensorValue}s from the {@link SensorType}.
-   */
-  public TreeSet<SensorValue> getBySensorType(SensorType sensorType) {
-    return valuesBySensorType.get(sensorType);
   }
 
   /**
@@ -386,50 +360,6 @@ public class DatasetSensorValues {
       if (valuesByColumn.get(columnId).isEmpty()) {
         valuesByColumn.remove(columnId);
         optionalColumns.add(columnId);
-      }
-    }
-  }
-
-  /**
-   * Add the given {@link SensorValue} to the {@link #valuesBySensorType}
-   * lookup.
-   *
-   * <p>
-   * Used by {@link #add(SensorValue)}.
-   * </p>
-   *
-   * @param sensorValue
-   *          The {@link SensorValue}.
-   * @param sensorType
-   *          The {@link SensorType}.
-   */
-  private void addBySensorType(SensorValue sensorValue, SensorType sensorType) {
-    if (!valuesBySensorType.containsKey(sensorType)) {
-      valuesBySensorType.put(sensorType, new TreeSet<SensorValue>());
-    }
-
-    valuesBySensorType.get(sensorType).add(sensorValue);
-  }
-
-  /**
-   * Remove the given {@link SensorValue} from the {@link #valuesBySensorType}
-   * lookup.
-   *
-   * <p>
-   * Used by {@link #remove(SensorValue)}.
-   * </p>
-   *
-   * @param sensorValue
-   *          The {@link SensorValue}.
-   * @param sensorType
-   *          The {@link SensorType}.
-   */
-  private void removeBySensorType(SensorValue sensorValue,
-    SensorType sensorType) {
-    if (valuesBySensorType.containsKey(sensorType)) {
-      valuesBySensorType.get(sensorType).remove(sensorValue);
-      if (valuesBySensorType.get(sensorType).isEmpty()) {
-        valuesBySensorType.remove(sensorType);
       }
     }
   }
@@ -571,77 +501,6 @@ public class DatasetSensorValues {
   }
 
   /**
-   * Get all {@link SensorValue}s within a specified time range.
-   * <p>
-   * The start time is inclusive, while the end time is exclusive.
-   * </p>
-   * <p>
-   * <strong>Note:</strong> The start time must be present in the dataset for
-   * this method to work.
-   * </p>
-   *
-   * @param start
-   *          The start time (inclusive).
-   * @param end
-   *          The end time (exclusive).
-   * @return The {@link SensorValue}s that fall within the time range.
-   */
-  public List<SensorValue> getByTimeRange(LocalDateTime start,
-    LocalDateTime end) {
-
-    List<SensorValue> result = new ArrayList<SensorValue>();
-
-    List<LocalDateTime> times = getTimes();
-
-    int timeIndex = Collections.binarySearch(times, start);
-    if (timeIndex >= 0) {
-      while (times.get(timeIndex).isBefore(end)) {
-
-        Map<Long, SensorValue> timeSensorValues = valuesByDateAndColumn
-          .get(times.get(timeIndex));
-
-        result.addAll(timeSensorValues.values());
-        timeIndex++;
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Get the {@link SensorValue} for a {@link FileColumn} that occurs either on
-   * or before the specified time.
-   *
-   * <p>
-   * If there is no {@link SensorValue} available for the exact timestamp, the
-   * latest {@link SensorValue} before the timestamp is returned. There is no
-   * limit on how far before the requested timestamp this may be.
-   * </p>
-   *
-   * @param columnId
-   *          The required {@link FileColumn}'s database ID.
-   * @param time
-   *          The timestamp.
-   * @return The {@link SensorValue}, or {@code null} if no suitable value is
-   *         found.
-   */
-  public SensorValue getSensorValueOnOrBefore(long columnId,
-    LocalDateTime time) {
-
-    SensorValue result = valuesByDateAndColumn.get(time).get(columnId);
-
-    if (null == result) {
-      int timeIndex = getTimes().indexOf(time);
-      while (null == result && timeIndex > 0) {
-        timeIndex--;
-        result = valuesByDateAndColumn.get(time).get(columnId);
-      }
-    }
-
-    return result;
-  }
-
-  /**
    * Determines whether or not this data contains the specified
    * {@link FileColumn}, identified by its database ID.
    *
@@ -756,35 +615,6 @@ public class DatasetSensorValues {
    */
   public int size() {
     return valuesById.size() + latitudes.size() + longitudes.size();
-  }
-
-  /**
-   * Determine whether or not the specified {@link SensorValue} is of the
-   * specified {@link SensorType}.
-   *
-   * <p>
-   * Returns {@code false} if the {@link SensorValue} has not been added to the
-   * data structure.
-   * </p>
-   *
-   * @param sensorValue
-   *          The {@link SensorValue} to be checked.
-   * @param sensorType
-   *          The target {@link SensorType}.
-   * @return {@code true} if the {@link SensorValue} is of the specified
-   *         {@link SensorType}; {@code false} otherwise.
-   */
-  public boolean isOfSensorType(SensorValue sensorValue,
-    SensorType sensorType) {
-    boolean result;
-
-    if (!valuesBySensorType.containsKey(sensorType)) {
-      result = false;
-    } else {
-      result = valuesBySensorType.get(sensorType).contains(sensorValue);
-    }
-
-    return result;
   }
 
   /**
