@@ -152,6 +152,10 @@ public class DateTimeUtils {
     return LocalDateTime.parse(dateTimeString, displayDateTimeFormatter);
   }
 
+  public static LocalDateTime parseISODateTime(String dateTimeString) {
+    return LocalDateTime.parse(dateTimeString, isoDateTimeFormatter);
+  }
+
   public static List<LocalDateTime> longsToDates(List<Long> millisecondses) {
     return millisecondses.stream().map(x -> longToDate(x))
       .collect(Collectors.toList());

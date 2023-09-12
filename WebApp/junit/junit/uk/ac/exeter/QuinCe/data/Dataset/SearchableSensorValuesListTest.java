@@ -4,12 +4,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
@@ -17,6 +24,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 public class SearchableSensorValuesListTest extends BaseTest {
 
@@ -377,5 +385,40 @@ public class SearchableSensorValuesListTest extends BaseTest {
     values.add(makeSensorValue(12L, 32));
     list.addAll(values);
     assertTrue(listIsOrdered(list));
+  }
+
+  private static Stream<Arguments> measurementModeParams() {
+    return Stream.of(Arguments.of(1, SearchableSensorValuesList.MODE_PERIODIC),
+      Arguments.of(2, SearchableSensorValuesList.MODE_CONTINUOUS),
+      Arguments.of(3, SearchableSensorValuesList.MODE_CONTINUOUS),
+      Arguments.of(4, SearchableSensorValuesList.MODE_CONTINUOUS),
+      Arguments.of(5, SearchableSensorValuesList.MODE_CONTINUOUS),
+      Arguments.of(6, SearchableSensorValuesList.MODE_PERIODIC),
+      Arguments.of(7, SearchableSensorValuesList.MODE_PERIODIC),
+      Arguments.of(8, SearchableSensorValuesList.MODE_PERIODIC));
+  }
+
+  @ParameterizedTest
+  @MethodSource("measurementModeParams")
+  public void measurementModeTest(int fileNumber, int expectedMode)
+    throws Exception {
+
+    // Load dates
+    File timesFile = context.getResource(
+      "classpath:resources/testdata/data/DataSet/SearchableSensorValuesList/measurementMode"
+        + fileNumber + ".csv")
+      .getFile();
+
+    SearchableSensorValuesList list = new SearchableSensorValuesList(1L);
+
+    BufferedReader in = new BufferedReader(new FileReader(timesFile));
+    String line;
+    while ((line = in.readLine()) != null) {
+      LocalDateTime timestamp = DateTimeUtils.parseISODateTime(line);
+      list.add(new SensorValue(1L, 1L, timestamp, "1"));
+    }
+    in.close();
+
+    assertEquals(expectedMode, list.getMeasurementMode());
   }
 }

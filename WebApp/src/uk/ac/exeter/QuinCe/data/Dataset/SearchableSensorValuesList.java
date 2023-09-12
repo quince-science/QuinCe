@@ -40,6 +40,23 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
  * {@link SensorValue}s with the same timestamp will result in an
  * {@link UnsupportedOperationException}.
  * </p>
+ * 
+ * <p>
+ * When retrieving values, the list is aware of the different measurement
+ * strategies (or MODEs as named here) used by different sensors. These are:
+ * </p>
+ * <ul>
+ * <li>CONTINUOUS mode: Regular measurements at short intervals (≤ 5
+ * minutes).</li>
+ * <li>PERIODIC mode: Groups of measurements at long intervals (e.g. 5
+ * measurements at one minute intervals, every 4 hours). This also encompasses
+ * single measurements taken at extended intervals.</li>
+ * </ul>
+ *
+ * <p>
+ * When retrieving values by {@link LocalDateTime}, the default behaviour is to
+ * retrieve values according to which mode is determined for the list.
+ * </p>
  */
 @SuppressWarnings("serial")
 public class SearchableSensorValuesList extends ArrayList<SensorValue> {
@@ -51,9 +68,27 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     "Cannot add a value in a custom location");
 
   /**
-   * The default maximum interpolation limit in seconds.
+   * The maximum time between two measurements that can still be considered
+   * continuous. This is also used as the limit for interpolating data in time.
    */
-  private static final long DEFAULT_INTERPOLATION_LIMIT = 300;
+  private static final long CONTINUOUS_MEASUREMENT_LIMIT = 300;
+
+  /**
+   * The threshold group size between PERIODIC and CONTINUOUS measurements.
+   * 
+   * @see #calculateMeasurementMode()
+   */
+  private static final int MAX_PERIODIC_GROUP_SIZE = 25;
+
+  /**
+   * Indicator for measurements in continuous mode
+   */
+  public static final int MODE_CONTINUOUS = 0;
+
+  /**
+   * Indicator for measurement in periodic mode
+   */
+  public static final int MODE_PERIODIC = 1;
 
   /**
    * An instance of the comparator used to compare two {@link SensorValue}s by
@@ -66,6 +101,11 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    * allowed to be members of this list.
    */
   private final TreeSet<Long> columnIds;
+
+  /**
+   * The measurement mode of these {@link SensorValue}s.
+   */
+  private int measurementMode = -1;
 
   /**
    * The most common time interval between consecutive {@link SensorValue}s in
@@ -157,8 +197,9 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
       }
     }
 
-    // Reset the times cache
+    // Reset the times cache and measurement mode
     times = null;
+    measurementMode = -1;
 
     return true;
   }
@@ -195,6 +236,7 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    * @return The matching SensorValue
    * @throws MissingParamException
    */
+  @Deprecated
   public SensorValue timeSearch(LocalDateTime time)
     throws MissingParamException {
 
@@ -216,6 +258,7 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
     return result;
   }
 
+  @Deprecated
   public List<LocalDateTime> getTimes() {
     if (null == times) {
       times = stream().map(v -> v.getTime()).toList();
@@ -666,8 +709,8 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
   }
 
   private double getInterpolationLimit() {
-    return getModeTimeStep() / 2 < DEFAULT_INTERPOLATION_LIMIT
-      ? DEFAULT_INTERPOLATION_LIMIT
+    return getModeTimeStep() / 2 < CONTINUOUS_MEASUREMENT_LIMIT
+      ? CONTINUOUS_MEASUREMENT_LIMIT
       : modeTimeStep / 2;
   }
 
@@ -699,6 +742,93 @@ public class SearchableSensorValuesList extends ArrayList<SensorValue> {
    */
   private SensorValue last() {
     return get(size() - 1);
+  }
+
+  /**
+   * Get the measurement mode for the {@link SensorValue}s.
+   * 
+   * <p>
+   * This is either CONTINUOUS mode if most measurements are taken within the
+   * {@link #CONTINUOUS_MEASUREMENT_LIMIT}, or PERIODIC mode if measurements are
+   * taken in small groups with a longer 'sleep' periods between.
+   * </p>
+   * 
+   * @return The measurement mode.
+   */
+  public int getMeasurementMode() {
+    if (measurementMode == -1) {
+      calculateMeasurementMode();
+    }
+
+    return measurementMode;
+  }
+
+  /**
+   * Calculate the measurement mode for these {@link SensorValue}s.
+   * 
+   * <p>
+   * We create groups of {@link SensorValue}s whose timestamps are within the
+   * {@link #CONTINUOUS_MEASUREMENT_LIMIT}. If either the mean group size or the
+   * largest group size are within the {@link #MAX_PERIODIC_GROUP_SIZE} then the
+   * measurement mode is {@link #MODE_PERIODIC}; otherwise it is
+   * {@link #MODE_CONTINUOUS}.
+   * </p>
+   */
+  private void calculateMeasurementMode() {
+
+    List<LocalDateTime> times = stream().map(v -> v.getTime()).toList();
+
+    // The largest group size
+    int maxGroupSize = 0;
+
+    // Calculate the mean group size as we go along
+    float groupCount = 0f;
+    float meanGroupSize = 0f;
+
+    int groupSize = 0;
+    for (int i = 1; i < times.size(); i++) {
+      long timeDiff = DateTimeUtils.secondsBetween(times.get(i - 1),
+        times.get(i));
+
+      if (timeDiff > CONTINUOUS_MEASUREMENT_LIMIT) {
+        if (groupSize > 0) {
+
+          // Update the max group size
+          if (groupSize > maxGroupSize) {
+            maxGroupSize = groupSize;
+          }
+
+          // Update the running mean group size
+          groupCount++;
+          meanGroupSize = meanGroupSize
+            + (groupSize - meanGroupSize) / groupCount;
+
+          // Reset the group
+          groupSize = 0;
+        }
+      }
+
+      groupSize++;
+    }
+
+    // Tidy up from the last value
+    if (groupSize > 0) {
+      // Update the max group size
+      if (groupSize > maxGroupSize) {
+        maxGroupSize = groupSize;
+      }
+
+      // Update the running mean group size
+      groupCount++;
+      meanGroupSize = meanGroupSize + (groupSize - meanGroupSize) / groupCount;
+    }
+
+    if (meanGroupSize <= MAX_PERIODIC_GROUP_SIZE
+      || maxGroupSize <= MAX_PERIODIC_GROUP_SIZE) {
+      measurementMode = MODE_PERIODIC;
+    } else {
+      measurementMode = MODE_CONTINUOUS;
+    }
   }
 }
 
