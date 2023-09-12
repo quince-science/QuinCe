@@ -317,7 +317,7 @@ public class SensorAssignments
    *          assignment
    * @return {@code true} if the sensor has been assigned; {@code false} if not
    */
-  private boolean isAssigned(SensorType sensorType, boolean primaryOnly,
+  public boolean isAssigned(SensorType sensorType, boolean primaryOnly,
     boolean includeRelations) {
     return isAssigned(sensorType, null, primaryOnly, includeRelations);
   }
