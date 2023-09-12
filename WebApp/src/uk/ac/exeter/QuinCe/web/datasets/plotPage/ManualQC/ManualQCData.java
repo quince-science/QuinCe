@@ -304,7 +304,8 @@ public class ManualQCData extends PlotPageData {
 
       // Get the SensorTypes for this variable
       variable.getAllSensorTypes(true).stream()
-        .filter(s -> instrument.getSensorAssignments().isAssigned(s))
+        .filter(
+          s -> instrument.getSensorAssignments().isAssigned(s, false, true))
         .forEach(s -> {
           measurementSensorTypes.add(new MeasurementValueSensorType(s));
         });
