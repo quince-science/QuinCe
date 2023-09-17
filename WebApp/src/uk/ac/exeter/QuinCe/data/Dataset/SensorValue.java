@@ -459,6 +459,19 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
   }
 
+  /**
+   * Clear the automatic QC information for a set of SensorValues
+   *
+   * @param values
+   *          The values
+   *
+   * @throws RecordNotFoundException
+   */
+  public static void clearAutoQC(SensorValuesList values)
+    throws RecordNotFoundException {
+    clearAutoQC(values.getRawValues());
+  }
+
   public static boolean contains(List<SensorValue> values, String searchValue) {
     boolean result = false;
 
@@ -872,6 +885,10 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
       dirty = true;
     }
+  }
+
+  public boolean isNumeric() {
+    return StringUtils.isNumeric(value);
   }
 
   public boolean isPosition() {

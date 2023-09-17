@@ -193,7 +193,7 @@ public class SensorGroup {
    *
    * @return The link to the previous group.
    */
-  protected SensorAssignment getPrevLink() {
+  public SensorAssignment getPrevLink() {
     return prevGroupLink;
   }
 
@@ -206,7 +206,7 @@ public class SensorGroup {
    *
    * @return The link to the next group.
    */
-  protected SensorAssignment getNextLink() {
+  public SensorAssignment getNextLink() {
     return nextGroupLink;
   }
 

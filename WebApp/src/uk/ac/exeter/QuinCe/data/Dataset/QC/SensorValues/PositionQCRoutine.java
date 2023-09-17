@@ -41,16 +41,13 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * <b>Note:</b> This routine should only set BAD QC flags. The behaviour of
  * subsequent QC if the position QC is QUESTIONABLE is undefined.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class PositionQCRoutine extends AutoQCRoutine {
 
   /**
    * The complete set of sensor values for the current dataset
    */
-  protected DatasetSensorValues positionSensorValues;
+  protected DatasetSensorValues allSensorValues;
 
   /**
    * Empty instance constructor used to get messages
@@ -84,7 +81,7 @@ public class PositionQCRoutine extends AutoQCRoutine {
 
     MissingParam.checkMissing(positionSensorValues, "allSensorValues");
 
-    this.positionSensorValues = positionSensorValues;
+    this.allSensorValues = positionSensorValues;
   }
 
   /**
@@ -107,13 +104,13 @@ public class PositionQCRoutine extends AutoQCRoutine {
 
     try {
       // Step through each time in the dataset
-      for (LocalDateTime time : positionSensorValues.getPositionTimes()) {
+      for (LocalDateTime time : allSensorValues.getRawPositionTimes()) {
 
         // Get the position values for this time
-        SensorValue longitude = positionSensorValues.getSensorValue(time,
-          SensorType.LONGITUDE_ID);
-        SensorValue latitude = positionSensorValues.getSensorValue(time,
-          SensorType.LATITUDE_ID);
+        SensorValue longitude = allSensorValues
+          .getRawSensorValue(SensorType.LONGITUDE_ID, time);
+        SensorValue latitude = allSensorValues
+          .getRawSensorValue(SensorType.LATITUDE_ID, time);
 
         if (null == longitude || longitude.isNaN()) {
           flag(longitude, latitude);

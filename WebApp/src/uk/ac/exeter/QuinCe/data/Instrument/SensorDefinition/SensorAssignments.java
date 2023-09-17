@@ -1128,4 +1128,16 @@ public class SensorAssignments
       .filter(a -> a.getDatabaseId() == assignmentId).findFirst();
     return found.isPresent() ? found.get() : null;
   }
+
+  /**
+   * Get the database column IDs from a collection of {@link SensorAssignment}s.
+   *
+   * @param assignments
+   *          The sensor assignments.
+   * @return The assigned column IDs.
+   */
+  public static Collection<Long> getColumnIdsForAssignments(
+    Collection<SensorAssignment> assignments) {
+    return assignments.stream().map(a -> a.getDatabaseId()).toList();
+  }
 }

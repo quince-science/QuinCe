@@ -29,23 +29,25 @@ public class SimpleMeasurementLocator extends MeasurementLocator {
       measurementColumnIds.addAll(instrument.getSensorAssignments()
         .getColumnIds(variable.getCoreSensorType()));
 
+      DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
+        instrument, dataset.getId(), false, true);
+
       // Get all the sensor values for the identified columns
-      List<SensorValue> sensorValues = DataSetDataDB.getSensorValuesForColumns(
-        conn, dataset.getId(), new ArrayList<Long>(measurementColumnIds));
+      SensorValuesList sensorValues = allSensorValues
+        .getSensorValues(measurementColumnIds);
 
       // Since we're only dealing with one variable, we don't want multiple
       // measurements for the same time. Get all the unique times and make
       // measurements from them. Ignore any SensorValues with NaN values.
 
       HashSet<LocalDateTime> seenTimes = new HashSet<LocalDateTime>(
-        sensorValues.size());
+        sensorValues.valuesSize());
 
       List<Measurement> measurements = new ArrayList<Measurement>(
-        sensorValues.size());
+        sensorValues.valuesSize());
 
-      sensorValues.stream()
-        .filter(v -> !seenTimes.contains(v.getTime()) && !v.isNaN())
-        .forEach(v -> {
+      sensorValues.getValues().stream()
+        .filter(v -> !seenTimes.contains(v.getTime())).forEach(v -> {
           // Add the new time to the set of seen times
           seenTimes.add(v.getTime());
 

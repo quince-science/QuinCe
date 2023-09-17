@@ -1,12 +1,8 @@
 package uk.ac.exeter.QuinCe.web.datasets.SensorOffsets;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -17,12 +13,11 @@ import com.google.gson.GsonBuilder;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorOffset;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorOffsetsException;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupPair;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -56,7 +51,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
   /**
    * The sensor values for the columns used to link sensor groups.
    */
-  private Map<String, List<SensorValue>> sensorValues;
+  private DatasetSensorValues sensorValues;
 
   /**
    * The ID of the group whose offsets are being edited.
@@ -158,18 +153,8 @@ public class SensorOffsetsBean extends BaseManagedBean {
 
   public void loadData() throws Exception {
     try {
-      // Get the sensor values for the link columns
-      Set<SensorAssignment> linkColumns = instrument.getSensorGroups()
-        .getLinkColumns();
-
-      sensorValues = new HashMap<String, List<SensorValue>>(linkColumns.size());
-
-      for (SensorAssignment column : linkColumns) {
-        sensorValues.put(column.getSensorName(),
-          DataSetDataDB.getSensorValuesForColumns(getDataSource(),
-            dataset.getId(), Arrays.asList(column.getDatabaseId())));
-      }
-
+      sensorValues = DataSetDataDB.getSensorValues(
+        getDataSource().getConnection(), instrument, datasetId, true, true);
       preparePlotData();
     } catch (Exception e) {
       e.printStackTrace();
@@ -205,11 +190,9 @@ public class SensorOffsetsBean extends BaseManagedBean {
     if (null != sensorValues) {
       SensorGroupPair pair = getCurrentPairObject();
 
-      String firstName = pair.first().getNextLinkName();
-      String secondName = pair.second().getPrevLinkName();
-
-      plotData = new TimeSeriesPlotData(sensorValues.get(firstName),
-        sensorValues.get(secondName));
+      plotData = new TimeSeriesPlotData(
+        sensorValues.getColumnValues(pair.first().getNextLink()),
+        sensorValues.getColumnValues(pair.second().getPrevLink()));
     }
   }
 

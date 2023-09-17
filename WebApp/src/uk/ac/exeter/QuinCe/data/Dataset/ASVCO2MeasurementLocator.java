@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -35,11 +34,10 @@ public class ASVCO2MeasurementLocator extends MeasurementLocator {
       HashMap<Long, String> atmRunTypes = new HashMap<Long, String>();
       atmRunTypes.put(atmVar.getId(), Measurement.MEASUREMENT_RUN_TYPE);
 
-      TreeMap<LocalDateTime, String> runTypes = getRunTypes(conn, dataset,
-        instrument);
-
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
         instrument, dataset.getId(), false, true);
+
+      SensorValuesList runTypes = sensorValues.getRunTypes();
 
       // Loop through all the rows, examining the zero/flush columns to decide
       // what to do
@@ -47,7 +45,11 @@ public class ASVCO2MeasurementLocator extends MeasurementLocator {
         sensorValues.getTimes().size());
 
       for (LocalDateTime recordTime : sensorValues.getTimes()) {
-        String runType = runTypes.get(recordTime);
+
+        SensorValuesListValue runTypeValue = runTypes
+          .getValueOnOrBefore(recordTime);
+        String runType = null == runTypeValue ? null
+          : runTypeValue.getStringValue();
 
         // Records from external files (i.e. SST/Salinity) will not have run
         // types. Ignore them.

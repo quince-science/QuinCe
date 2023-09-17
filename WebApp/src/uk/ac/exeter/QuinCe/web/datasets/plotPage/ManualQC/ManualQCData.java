@@ -23,6 +23,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
@@ -560,10 +561,10 @@ public class ManualQCData extends PlotPageData {
         if (SensorType.isPosition(sensorValue.getColumnId())) {
           if (sensorValue.getColumnId() == SensorType.LONGITUDE_ID) {
             otherPositionValue = sensorValues
-              .getSensorValue(sensorValue.getTime(), SensorType.LATITUDE_ID);
+              .getRawSensorValue(SensorType.LATITUDE_ID, sensorValue.getTime());
           } else {
-            otherPositionValue = sensorValues
-              .getSensorValue(sensorValue.getTime(), SensorType.LONGITUDE_ID);
+            otherPositionValue = sensorValues.getRawSensorValue(
+              SensorType.LONGITUDE_ID, sensorValue.getTime());
           }
         }
 
@@ -607,8 +608,8 @@ public class ManualQCData extends PlotPageData {
 
     if (null != selectedRows) {
       for (Long rowId : selectedRows) {
-        values.add(sensorValues.getSensorValue(DateTimeUtils.longToDate(rowId),
-          selectedColumn));
+        values.add(sensorValues.getRawSensorValue(selectedColumn,
+          DateTimeUtils.longToDate(rowId)));
       }
     }
 
@@ -676,11 +677,11 @@ public class ManualQCData extends PlotPageData {
 
         if (SensorType.isPosition(value.getColumnId())) {
           if (value.getColumnId() == SensorType.LONGITUDE_ID) {
-            otherPositionValue = sensorValues.getSensorValue(value.getTime(),
-              SensorType.LATITUDE_ID);
+            otherPositionValue = sensorValues
+              .getRawSensorValue(SensorType.LATITUDE_ID, value.getTime());
           } else {
-            otherPositionValue = sensorValues.getSensorValue(value.getTime(),
-              SensorType.LONGITUDE_ID);
+            otherPositionValue = sensorValues
+              .getRawSensorValue(SensorType.LONGITUDE_ID, value.getTime());
           }
         }
 
@@ -779,7 +780,14 @@ public class ManualQCData extends PlotPageData {
         result.put(time, new SimplePlotPageTableValue(time, null, true));
       }
     } else if (SensorType.isPosition(column.getId())) {
-      result = getPositionValues(column.getId());
+
+      // We can't do a direct cast so we have to copy the values.
+      TreeMap<LocalDateTime, MeasurementValue> temp = sensorValues
+        .getColumnValues(column.getId()).getMeasurementValues();
+
+      temp.entrySet().forEach(e -> {
+        result.put(e.getKey(), (PlotPageTableValue) e.getValue());
+      });
     } else if (sensorValues.containsColumn(column.getId())) {
 
       SensorType sensorType = instrument.getSensorAssignments()
@@ -797,7 +805,7 @@ public class ManualQCData extends PlotPageData {
 
       if (useAllValues) {
         for (SensorValue sensorValue : sensorValues
-          .getColumnValues(column.getId())) {
+          .getColumnValues(column.getId()).getRawValues()) {
 
           result.put(sensorValue.getTime(),
             new SensorValuePlotPageTableValue(sensorValue));
@@ -805,7 +813,7 @@ public class ManualQCData extends PlotPageData {
       } else {
 
         for (SensorValue sensorValue : sensorValues
-          .getColumnValues(column.getId())) {
+          .getColumnValues(column.getId()).getRawValues()) {
 
           // Get the run type from the closest measurement
           Measurement concurrentMeasurement = getConcurrentMeasurement(
@@ -859,25 +867,6 @@ public class ManualQCData extends PlotPageData {
           }
         }
       }
-    }
-
-    return result;
-  }
-
-  protected TreeMap<LocalDateTime, PlotPageTableValue> getPositionValues(
-    long columnId) throws PlotPageDataException, PositionException {
-    return getPositionValuesAction(columnId, true);
-  }
-
-  protected TreeMap<LocalDateTime, PlotPageTableValue> getPositionValuesAction(
-    long columnId, boolean preferGoodFlags)
-    throws PlotPageDataException, PositionException {
-
-    TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
-
-    for (LocalDateTime time : getDataTimes()) {
-      result.put(time,
-        sensorValues.getPositionTableValue(columnId, time, preferGoodFlags));
     }
 
     return result;
@@ -948,8 +937,8 @@ public class ManualQCData extends PlotPageData {
       } else if (sensorValues.containsColumn(columnId)) {
 
         // Get the SensorValue
-        SensorValue sensorValue = sensorValues.getSensorValue(rowTime,
-          columnId);
+        SensorValue sensorValue = sensorValues.getRawSensorValue(columnId,
+          rowTime);
         if (null != sensorValue) {
 
           SensorType sensorType = instrument.getSensorAssignments()
@@ -1061,7 +1050,7 @@ public class ManualQCData extends PlotPageData {
 
   protected PlotPageTableValue getInterpolatedPositionValue(
     SensorType sensorType, LocalDateTime time)
-    throws PlotPageDataException, PositionException {
+    throws PlotPageDataException, PositionException, SensorValuesListException {
 
     PlotPageTableValue result = null;
 
@@ -1091,7 +1080,7 @@ public class ManualQCData extends PlotPageData {
           long columnId = instrument.getSensorAssignments()
             .getColumnIds(sensorType).get(0);
 
-          result = sensorValues.getPositionTableValue(columnId, time, true);
+          result = sensorValues.getPositionTableValue(columnId, time);
         }
       }
     }

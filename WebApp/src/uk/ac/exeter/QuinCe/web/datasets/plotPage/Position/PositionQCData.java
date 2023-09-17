@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -18,13 +17,11 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataLatLng;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
@@ -50,7 +47,7 @@ public class PositionQCData extends ManualQCData {
     }
 
     // Build the row IDs
-    rowIDs = sensorValues.getPositionTimes().stream()
+    rowIDs = sensorValues.getRawPositionTimes().stream()
       .map(t -> DateTimeUtils.dateToLong(t)).collect(Collectors.toList());
   }
 
@@ -120,7 +117,7 @@ public class PositionQCData extends ManualQCData {
 
     try {
 
-      List<LocalDateTime> times = sensorValues.getPositionTimes();
+      List<LocalDateTime> times = sensorValues.getRawPositionTimes();
 
       // Make sure we don't fall off the end of the dataset
       int lastRecord = start + length;
@@ -176,13 +173,7 @@ public class PositionQCData extends ManualQCData {
 
   @Override
   protected List<LocalDateTime> getDataTimes() {
-    return sensorValues.getPositionTimes();
-  }
-
-  @Override
-  protected TreeMap<LocalDateTime, PlotPageTableValue> getPositionValues(
-    long columnId) throws PlotPageDataException, PositionException {
-    return getPositionValuesAction(columnId, false);
+    return sensorValues.getRawPositionTimes();
   }
 
   @Override

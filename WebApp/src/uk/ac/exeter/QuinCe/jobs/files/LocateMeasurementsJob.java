@@ -31,11 +31,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Identifies individual measurements in a dataset and stores them in the
- * database. Followed by the ChooseSensorValues job, which picks the
- * SensorValues to use for that measurement
- *
- * @author Steve Jones
- *
+ * database.
  */
 // TODO The detailed selection operations are not yet implemented.
 public class LocateMeasurementsJob extends DataSetJob {

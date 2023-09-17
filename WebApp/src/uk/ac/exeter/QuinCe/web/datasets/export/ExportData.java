@@ -297,7 +297,8 @@ public class ExportData extends ManualQCData {
     if (sensorValues.containsColumn(columnId)) {
 
       // Get the SensorValue
-      SensorValue sensorValue = sensorValues.getSensorValue(rowTime, columnId);
+      SensorValue sensorValue = sensorValues.getRawSensorValue(columnId,
+        rowTime);
       if (null != sensorValue) {
         sensorValue.setUserQC(qcFlag, qcComment);
       }

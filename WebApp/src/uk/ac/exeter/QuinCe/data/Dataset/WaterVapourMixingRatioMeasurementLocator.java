@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -44,15 +43,16 @@ public class WaterVapourMixingRatioMeasurementLocator
       Variable var = sensorConfig
         .getInstrumentVariable("Water Vapour Mixing Ratio");
 
-      TreeMap<LocalDateTime, String> runTypes = getRunTypes(conn, dataset,
-        instrument);
-
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
         instrument, dataset.getId(), false, true);
 
+      SensorValuesList runTypes = sensorValues.getRunTypes();
+
       for (LocalDateTime recordTime : sensorValues.getTimes()) {
+        SensorValuesListValue runType = runTypes.getValueOnOrBefore(recordTime);
+
         RunTypeCategory category = instrument
-          .getRunTypeCategory(dExcessVar.getId(), runTypes.get(recordTime));
+          .getRunTypeCategory(dExcessVar.getId(), runType.getStringValue());
         if (category.isMeasurementType()) {
           HashMap<Long, String> runTypesMap = new HashMap<Long, String>();
           runTypesMap.put(var.getId(), Measurement.MEASUREMENT_RUN_TYPE);

@@ -213,6 +213,19 @@ public class DateTimeUtils {
   }
 
   /**
+   * Get the mid point between two times.
+   *
+   * @param t1
+   *          The first time.
+   * @param t2
+   *          The second time.
+   * @return The mid point between the times.
+   */
+  public static LocalDateTime midPoint(LocalDateTime t1, LocalDateTime t2) {
+    return t1.plusSeconds(secondsBetween(t1, t2) / 2);
+  }
+
+  /**
    * Create a {@link DateTimeFormatter} of the specified format, ensuring that
    * it uses the UTC timezone.
    *

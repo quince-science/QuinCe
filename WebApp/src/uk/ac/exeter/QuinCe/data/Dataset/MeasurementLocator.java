@@ -1,14 +1,10 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public abstract class MeasurementLocator {
 
@@ -67,19 +63,5 @@ public abstract class MeasurementLocator {
     }
 
     return result;
-  }
-
-  protected TreeMap<LocalDateTime, String> getRunTypes(Connection conn,
-    DataSet dataset, Instrument instrument)
-    throws MissingParamException, DatabaseException {
-    TreeMap<LocalDateTime, String> runTypes = new TreeMap<LocalDateTime, String>();
-
-    List<SensorValue> runTypeSensorValues = DataSetDataDB
-      .getSensorValuesForColumns(conn, dataset.getId(),
-        instrument.getSensorAssignments().getRunTypeColumnIDs());
-
-    runTypeSensorValues.forEach(v -> runTypes.put(v.getTime(), v.getValue()));
-
-    return runTypes;
   }
 }

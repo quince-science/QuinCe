@@ -53,13 +53,13 @@ public class SpeedQCRoutine extends PositionQCRoutine {
       LatLng lastPos = null;
 
       // Step through each time in the dataset
-      for (LocalDateTime time : positionSensorValues.getPositionTimes()) {
+      for (LocalDateTime time : allSensorValues.getRawPositionTimes()) {
 
         // Get the position values for this time
-        SensorValue longitude = positionSensorValues.getSensorValue(time,
-          SensorType.LONGITUDE_ID);
-        SensorValue latitude = positionSensorValues.getSensorValue(time,
-          SensorType.LATITUDE_ID);
+        SensorValue longitude = allSensorValues
+          .getRawSensorValue(SensorType.LONGITUDE_ID, time);
+        SensorValue latitude = allSensorValues
+          .getRawSensorValue(SensorType.LATITUDE_ID, time);
 
         if (null != longitude && null != latitude && !longitude.isNaN()
           && !latitude.isNaN() && longitude.getDisplayFlag().isGood()

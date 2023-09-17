@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
@@ -34,10 +34,10 @@ public class DiagnosticsQCRoutine {
         Double rangeMin = diagnosticConfig.getRangeMin(sensor);
         Double rangeMax = diagnosticConfig.getRangeMax(sensor);
 
-        SearchableSensorValuesList values = sensorValues
+        SensorValuesList values = sensorValues
           .getColumnValues(sensor.getDatabaseId());
 
-        for (SensorValue value : values) {
+        for (SensorValue value : values.getRawValues()) {
           boolean bad = false;
 
           if (!value.isNaN()) {

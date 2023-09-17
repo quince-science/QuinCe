@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -61,11 +60,10 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
       long co2Column = instrument.getSensorAssignments().getColumnIds(co2Type)
         .get(0);
 
-      TreeMap<LocalDateTime, String> runTypes = getRunTypes(conn, dataset,
-        instrument);
-
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
         instrument, dataset.getId(), false, true);
+
+      SensorValuesList runTypes = sensorValues.getRunTypes();
 
       // Loop through all the rows, examining the zero/flush columns to decide
       // what to do
@@ -79,12 +77,15 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
       for (LocalDateTime recordTime : sensorValues.getTimes()) {
         Map<Long, SensorValue> recordValues = sensorValues.get(recordTime);
 
-        String runType = runTypes.get(recordTime);
-        // Null run types can happen if data is coming from multiple files (eg
-        // TSG data)
-        // The TSG will have timestamps that don't match up to the Pro Oceanus
-        // data,
-        // so they won't have a run type.
+        SensorValuesListValue runTypeValue = runTypes
+          .getValueOnOrBefore(recordTime);
+        String runType = null == runTypeValue ? null
+          : runTypeValue.getStringValue();
+
+        /*
+         * Null run types can happen if data is coming from multiple files (eg
+         * TSG data).
+         */
         if (null != runType && !runType.equals("")
           && !runType.equalsIgnoreCase("NaN")) {
 

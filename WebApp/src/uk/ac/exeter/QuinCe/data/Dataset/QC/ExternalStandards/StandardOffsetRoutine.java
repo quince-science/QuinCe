@@ -1,7 +1,9 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards;
 
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
@@ -27,14 +29,15 @@ public class StandardOffsetRoutine extends ExternalStandardsQCRoutine {
 
   @Override
   protected void qcAction(CalibrationSet calibrationSet,
-    SearchableSensorValuesList runTypeValues,
-    SearchableSensorValuesList sensorValues) throws RoutineException {
+    SensorValuesList runTypeValues, SensorValuesList sensorValues)
+    throws SensorValuesListException, RoutineException {
 
-    for (SensorValue sensorValue : sensorValues) {
+    for (SensorValue sensorValue : sensorValues.getRawValues()) {
 
-      SensorValue runTypeValue = runTypeValues.get(sensorValue.getTime());
+      SensorValuesListValue runTypeValue = runTypeValues
+        .getValueOnOrBefore(sensorValue.getTime());
       if (null != runTypeValue) {
-        String runType = runTypeValue.getValue();
+        String runType = runTypeValue.getStringValue();
         if (calibrationSet.containsTarget(runType)) {
 
           try {
