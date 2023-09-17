@@ -24,7 +24,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.DefaultMeasurementValueCalculator;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorOffsets;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -212,7 +212,7 @@ public class DefaultMeasurementValueCalculatorInterpolationTest
       sensorValues.add(sensorValue);
     }
 
-    SearchableSensorValuesList ssvl = SearchableSensorValuesList
+    SensorValuesList ssvl = SensorValuesList
       .newFromSensorValueCollection(sensorValues);
 
     DatasetSensorValues mock = Mockito.mock(DatasetSensorValues.class);

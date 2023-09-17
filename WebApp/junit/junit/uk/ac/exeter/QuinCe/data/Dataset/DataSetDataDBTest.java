@@ -18,7 +18,7 @@ import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidSensorValueException;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
@@ -61,7 +61,7 @@ public class DataSetDataDBTest extends BaseTest {
 
     assertEquals(1, storedValues.size());
 
-    SearchableSensorValuesList columnValues = storedValues
+    SensorValuesList columnValues = storedValues
       .getColumnValues(COLUMN_ID);
 
     assertEquals(1, columnValues.size());

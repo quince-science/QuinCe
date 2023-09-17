@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorOffsets;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupPair;
@@ -29,8 +30,8 @@ public class TimeSeriesPlotData {
 
   private List<SensorValue> series2;
 
-  protected TimeSeriesPlotData(List<SensorValue> series1Points,
-    List<SensorValue> series2Points) {
+  protected TimeSeriesPlotData(SensorValuesList series1Points,
+    SensorValuesList series2Points) {
 
     data = new TreeMap<LocalDateTime, Tuple>();
 
@@ -39,31 +40,33 @@ public class TimeSeriesPlotData {
     processSeries2(series2Points);
 
     // Store the second series separately - we need it to apply offsets to.
-    this.series2 = series2Points;
+    this.series2 = series2Points.getRawValues();
   }
 
-  private void processSeries1(List<SensorValue> points) {
-    points.stream().filter(p -> p.getUserQCFlag().isGood()).forEach(p -> {
-      if (!p.getDoubleValue().isNaN()) {
-        Tuple tuple = new Tuple();
-        tuple.setFirst(p.getDoubleValue());
-        data.put(p.getTime(), tuple);
-      }
-    });
-  }
-
-  private void processSeries2(List<SensorValue> points) {
-    points.stream().filter(p -> p.getUserQCFlag().isGood()).forEach(p -> {
-      if (!p.getDoubleValue().isNaN()) {
-        if (data.containsKey(p.getTime())) {
-          data.get(p.getTime()).setSecond(p.getDoubleValue());
-        } else {
+  private void processSeries1(SensorValuesList points) {
+    points.getRawValues().stream().filter(p -> p.getUserQCFlag().isGood())
+      .forEach(p -> {
+        if (!p.getDoubleValue().isNaN()) {
           Tuple tuple = new Tuple();
-          tuple.setSecond(p.getDoubleValue());
+          tuple.setFirst(p.getDoubleValue());
           data.put(p.getTime(), tuple);
         }
-      }
-    });
+      });
+  }
+
+  private void processSeries2(SensorValuesList points) {
+    points.getRawValues().stream().filter(p -> p.getUserQCFlag().isGood())
+      .forEach(p -> {
+        if (!p.getDoubleValue().isNaN()) {
+          if (data.containsKey(p.getTime())) {
+            data.get(p.getTime()).setSecond(p.getDoubleValue());
+          } else {
+            Tuple tuple = new Tuple();
+            tuple.setSecond(p.getDoubleValue());
+            data.put(p.getTime(), tuple);
+          }
+        }
+      });
   }
 
   protected String getArray(SensorOffsets sensorOffsets,

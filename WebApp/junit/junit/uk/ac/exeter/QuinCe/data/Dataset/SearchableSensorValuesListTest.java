@@ -20,7 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
@@ -28,8 +28,8 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 public class SearchableSensorValuesListTest extends BaseTest {
 
-  private SearchableSensorValuesList makePopulatedList() {
-    SearchableSensorValuesList list = new SearchableSensorValuesList(1L);
+  private SensorValuesList makePopulatedList() {
+    SensorValuesList list = new SensorValuesList(1L);
 
     list.add(makeSensorValue(1L, 20));
     list.add(makeSensorValue(2L, 25));
@@ -102,13 +102,13 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void emptyConstructorTest() {
-    SearchableSensorValuesList list = new SearchableSensorValuesList(1);
+    SensorValuesList list = new SensorValuesList(1);
     assertEquals(0, list.size());
   }
 
   @Test
   public void listConstructorTest() {
-    SearchableSensorValuesList list = SearchableSensorValuesList
+    SensorValuesList list = SensorValuesList
       .newFromSensorValueCollection(makePopulatedList());
     assertEquals(makePopulatedList().size(), list.size());
   }
@@ -209,7 +209,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void getClosestExactTest() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     List<SensorValue> found = list.getClosest(makeTime(35));
     assertEquals(1, found.size());
     assertEquals(4L, found.get(0).getId());
@@ -217,14 +217,14 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void getClosestEmptyTest() {
-    SearchableSensorValuesList list = new SearchableSensorValuesList(4L);
+    SensorValuesList list = new SensorValuesList(4L);
     List<SensorValue> found = list.getClosest(makeTime(35));
     assertTrue(found.isEmpty());
   }
 
   @Test
   public void getClosestBetweenTest() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     List<SensorValue> found = list.getClosest(makeTime(32));
     assertEquals(2, found.size());
     assertEquals(3L, found.get(0).getId());
@@ -233,7 +233,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void getClosestStartTest() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     List<SensorValue> found = list.getClosest(makeTime(15));
     assertEquals(1, found.size());
     assertEquals(1L, found.get(0).getId());
@@ -241,7 +241,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void getClosestEndTest() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     List<SensorValue> found = list.getClosest(makeTime(50));
     assertEquals(1, found.size());
     assertEquals(6L, found.get(0).getId());
@@ -255,19 +255,19 @@ public class SearchableSensorValuesListTest extends BaseTest {
     List<SensorValue> values = new ArrayList<SensorValue>();
     values.add(makeSensorValue(1L, 4L, 30));
     values.add(makeSensorValue(2L, 8L, 31));
-    SearchableSensorValuesList.newFromSensorValueCollection(values);
+    SensorValuesList.newFromSensorValueCollection(values);
   }
 
   @Test
   public void addToEmptyListTest() {
-    SearchableSensorValuesList list = new SearchableSensorValuesList(1L);
+    SensorValuesList list = new SensorValuesList(1L);
     list.add(makeSensorValue(1L, 30));
     assertEquals(1, list.size());
   }
 
   @Test
   public void addNullTest() {
-    SearchableSensorValuesList list = new SearchableSensorValuesList(1L);
+    SensorValuesList list = new SensorValuesList(1L);
     assertThrows(IllegalArgumentException.class, () -> {
       list.add(null);
     });
@@ -275,7 +275,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void singleColumnInvalidColumnTest() {
-    SearchableSensorValuesList list = new SearchableSensorValuesList(1L);
+    SensorValuesList list = new SensorValuesList(1L);
     assertThrows(IllegalArgumentException.class, () -> {
       list.add(makeSensorValue(1L, 2L, 30));
     });
@@ -284,7 +284,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
   @Test
   public void addMultipleColumnsTest() {
     List<Long> columns = Arrays.asList(1L, 2L);
-    SearchableSensorValuesList list = new SearchableSensorValuesList(columns);
+    SensorValuesList list = new SensorValuesList(columns);
     list.add(makeSensorValue(1L, 10));
     list.add(makeSensorValue(2L, 20));
     assertEquals(2, list.size());
@@ -293,7 +293,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
   @Test
   public void invalidMultipleColumnsTest() {
     List<Long> columns = Arrays.asList(1L, 2L);
-    SearchableSensorValuesList list = new SearchableSensorValuesList(columns);
+    SensorValuesList list = new SensorValuesList(columns);
     assertThrows(IllegalArgumentException.class, () -> {
       list.add(makeSensorValue(1L, 3L, 30));
     });
@@ -301,7 +301,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void sameTimeAsLastTest() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     assertThrows(IllegalArgumentException.class, () -> {
       list.add(makeSensorValue(10L, 45));
     });
@@ -309,7 +309,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void sameTimeAsFirstTest() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     assertThrows(IllegalArgumentException.class, () -> {
       list.add(makeSensorValue(10L, 20));
     });
@@ -317,13 +317,13 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void sameTimeAsMidTest() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     assertThrows(IllegalArgumentException.class, () -> {
       list.add(makeSensorValue(10L, 30));
     });
   }
 
-  private boolean listIsOrdered(SearchableSensorValuesList list) {
+  private boolean listIsOrdered(SensorValuesList list) {
     boolean result = true;
 
     for (int i = 1; i < list.size(); i++) {
@@ -340,28 +340,28 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void addBeforeFirst() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     list.add(makeSensorValue(10L, 0));
     assertTrue(listIsOrdered(list));
   }
 
   @Test
   public void addAfterLast() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     list.add(makeSensorValue(10L, 59));
     assertTrue(listIsOrdered(list));
   }
 
   @Test
   public void addInMiddle() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     list.add(makeSensorValue(10L, 32));
     assertTrue(listIsOrdered(list));
   }
 
   @Test
   public void addInPositionForbidden() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     assertThrows(UnsupportedOperationException.class, () -> {
       list.add(1, makeSensorValue(10L, 50));
     });
@@ -369,7 +369,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void addMultipleInPositionForbidden() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     List<SensorValue> values = new ArrayList<SensorValue>();
     assertThrows(UnsupportedOperationException.class, () -> {
       list.addAll(1, values);
@@ -378,7 +378,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
 
   @Test
   public void addMultiple() {
-    SearchableSensorValuesList list = makePopulatedList();
+    SensorValuesList list = makePopulatedList();
     List<SensorValue> values = new ArrayList<SensorValue>();
     values.add(makeSensorValue(10L, 0));
     values.add(makeSensorValue(11L, 50));
@@ -388,14 +388,14 @@ public class SearchableSensorValuesListTest extends BaseTest {
   }
 
   private static Stream<Arguments> measurementModeParams() {
-    return Stream.of(Arguments.of(1, SearchableSensorValuesList.MODE_PERIODIC),
-      Arguments.of(2, SearchableSensorValuesList.MODE_CONTINUOUS),
-      Arguments.of(3, SearchableSensorValuesList.MODE_CONTINUOUS),
-      Arguments.of(4, SearchableSensorValuesList.MODE_CONTINUOUS),
-      Arguments.of(5, SearchableSensorValuesList.MODE_CONTINUOUS),
-      Arguments.of(6, SearchableSensorValuesList.MODE_PERIODIC),
-      Arguments.of(7, SearchableSensorValuesList.MODE_PERIODIC),
-      Arguments.of(8, SearchableSensorValuesList.MODE_PERIODIC));
+    return Stream.of(Arguments.of(1, SensorValuesList.MODE_PERIODIC),
+      Arguments.of(2, SensorValuesList.MODE_CONTINUOUS),
+      Arguments.of(3, SensorValuesList.MODE_CONTINUOUS),
+      Arguments.of(4, SensorValuesList.MODE_CONTINUOUS),
+      Arguments.of(5, SensorValuesList.MODE_CONTINUOUS),
+      Arguments.of(6, SensorValuesList.MODE_PERIODIC),
+      Arguments.of(7, SensorValuesList.MODE_PERIODIC),
+      Arguments.of(8, SensorValuesList.MODE_PERIODIC));
   }
 
   @ParameterizedTest
@@ -409,7 +409,7 @@ public class SearchableSensorValuesListTest extends BaseTest {
         + fileNumber + ".csv")
       .getFile();
 
-    SearchableSensorValuesList list = new SearchableSensorValuesList(1L);
+    SensorValuesList list = new SensorValuesList(1L);
 
     BufferedReader in = new BufferedReader(new FileReader(timesFile));
     String line;

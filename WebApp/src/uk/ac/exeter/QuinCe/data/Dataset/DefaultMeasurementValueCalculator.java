@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -14,18 +13,15 @@ import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 /**
  * The default implementation of {@link MeasurementValueCalculator}.
@@ -73,7 +69,7 @@ public class DefaultMeasurementValueCalculator
     DataSet dataSet, Measurement measurement, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException, RoutineException {
+    throws MeasurementValueCalculatorException, SensorValuesListException {
 
     return getSensorValue(instrument, dataSet, measurement, variable,
       requiredSensorType, allMeasurements, allSensorValues, true, conn);
@@ -84,15 +80,15 @@ public class DefaultMeasurementValueCalculator
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, boolean allowCalibration,
     Connection conn)
-    throws MeasurementValueCalculatorException, RoutineException {
+    throws MeasurementValueCalculatorException, SensorValuesListException {
 
     SensorAssignment requiredAssignment = instrument.getSensorAssignments()
       .get(requiredSensorType).first();
 
-    SearchableSensorValuesList sensorValues = allSensorValues
+    SensorValuesList sensorValues = allSensorValues
       .getColumnValues(requiredAssignment.getDatabaseId());
 
-    MeasurementValue result = new MeasurementValue(requiredSensorType);
+    MeasurementValue result;
 
     try {
       // TODO #1128 This currently assumes only one sensor for each
@@ -104,23 +100,7 @@ public class DefaultMeasurementValueCalculator
       LocalDateTime valueTime = dataSet.getSensorOffsets().getOffsetTime(
         measurement.getTime(), coreAssignment, requiredAssignment);
 
-      List<SensorValue> valuesToUse;
-
-      if (requiredSensorType.equals(variable.getCoreSensorType())) {
-        SensorValue sensorValue = sensorValues.get(valueTime);
-        if (null == sensorValue) {
-          valuesToUse = new ArrayList<SensorValue>();
-        } else {
-          valuesToUse = Arrays.asList(sensorValues.get(valueTime));
-        }
-      } else {
-        valuesToUse = sensorValues.getWithInterpolation(valueTime, true, true);
-      }
-
-      char valueType = calcValueType(valueTime, valuesToUse);
-
-      populateMeasurementValue(measurement.getTime(), valueTime, result,
-        valuesToUse, allSensorValues, valueType);
+      result = sensorValues.getMeasurementValue(valueTime);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Cannot calculate time offset", e);
@@ -141,10 +121,9 @@ public class DefaultMeasurementValueCalculator
     DataSet dataSet, Measurement measurement, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
-    throws MeasurementValueCalculatorException, PositionException,
-    RoutineException {
+    throws SensorValuesListException, MeasurementValueCalculatorException {
 
-    MeasurementValue result = new MeasurementValue(requiredSensorType);
+    MeasurementValue result;
 
     SensorAssignment coreAssignment = instrument.getSensorAssignments()
       .get(variable.getCoreSensorType()).first();
@@ -158,13 +137,7 @@ public class DefaultMeasurementValueCalculator
         .equals(SensorType.LONGITUDE_SENSOR_TYPE) ? SensorType.LONGITUDE_ID
           : SensorType.LATITUDE_ID;
 
-      List<SensorValue> valuesToUse = allSensorValues
-        .getPositionValues(columnId, measurement.getTime());
-
-      char valueType = calcValueType(positionTime, valuesToUse);
-
-      populateMeasurementValue(measurement.getTime(), positionTime, result,
-        valuesToUse, allSensorValues, valueType);
+      result = allSensorValues.getMeasurementValue(columnId, positionTime);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Unable to apply sensor offsets", e);
@@ -173,67 +146,10 @@ public class DefaultMeasurementValueCalculator
     return result;
   }
 
-  private char calcValueType(LocalDateTime usedTime,
-    List<SensorValue> usedValues) {
-    char result;
-
-    if (usedValues.size() == 1
-      && usedValues.get(0).getTime().equals(usedTime)) {
-      result = PlotPageTableValue.MEASURED_TYPE;
-    } else {
-      result = PlotPageTableValue.INTERPOLATED_TYPE;
-    }
-
-    return result;
-  }
-
-  private void populateMeasurementValue(LocalDateTime measurementTime,
-    LocalDateTime offsetTime, MeasurementValue measurementValue,
-    List<SensorValue> valuesToUse, DatasetSensorValues allSensorValues,
-    char preferredType)
-    throws MeasurementValueCalculatorException, RoutineException {
-    switch (valuesToUse.size()) {
-    case 0: {
-      // We should not use a value here
-      measurementValue.setCalculatedValue(Double.NaN);
-      break;
-    }
-    case 1: {
-      /*
-       * For a single value we trust what the provided type tells us (whether
-       * it's measured or interpolated).
-       */
-      if (preferredType == PlotPageTableValue.MEASURED_TYPE) {
-        measurementValue.addSensorValue(valuesToUse.get(0), allSensorValues);
-      } else {
-        measurementValue.addInterpolatedSensorValue(valuesToUse.get(0),
-          allSensorValues, true);
-      }
-
-      measurementValue.setCalculatedValue(valuesToUse.get(0).getDoubleValue());
-      break;
-    }
-    case 2: {
-      /*
-       * Everything is always interpolated
-       */
-      measurementValue.addSensorValues(valuesToUse, allSensorValues);
-      measurementValue.setCalculatedValue(SensorValue
-        .interpolate(valuesToUse.get(0), valuesToUse.get(1), offsetTime));
-      break;
-    }
-    default: {
-      throw new MeasurementValueCalculatorException(
-        "Invalid number of values in search result");
-    }
-    }
-  }
-
   protected void calibrate(Instrument instrument, Measurement measurement,
     SensorType sensorType, MeasurementValue value,
-    DatasetMeasurements allMeasurements,
-    SearchableSensorValuesList sensorValues, Connection conn)
-    throws MeasurementValueCalculatorException {
+    DatasetMeasurements allMeasurements, SensorValuesList sensorValues,
+    Connection conn) throws MeasurementValueCalculatorException {
 
     if (!value.getCalculatedValue().isNaN()) {
 
@@ -290,7 +206,7 @@ public class DefaultMeasurementValueCalculator
 
   private CalibrationOffset getCalibrationOffset(int direction,
     CalibrationSet calibrationSet, DatasetMeasurements allMeasurements,
-    SearchableSensorValuesList sensorValues, SensorType sensorType,
+    SensorValuesList sensorValues, SensorType sensorType,
     LocalDateTime measurementTime, MeasurementValue value)
     throws RecordNotFoundException {
 
@@ -323,8 +239,8 @@ public class DefaultMeasurementValueCalculator
          * filtering out any bad ones.
          */
         List<SensorValue> runSensorValues = runTypeMeasurements.stream()
-          .map(m -> sensorValues.get(m.getTime())).filter(v -> null != v)
-          .filter(v -> !v.getDoubleValue().isNaN())
+          .map(m -> sensorValues.getRawSensorValue(m.getTime()))
+          .filter(v -> null != v).filter(v -> !v.getDoubleValue().isNaN())
           .filter(v -> v.getUserQCFlag().isGood()).collect(Collectors.toList());
 
         Mean mean = new Mean();

@@ -16,9 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -156,15 +154,6 @@ public class DataSetDataDB {
   private static final String DELETE_MEASUREMENTS_STATEMENT = "DELETE FROM "
     + "measurements WHERE dataset_id = ?";
 
-  private static final String GET_SENSOR_VALUES_FOR_COLUMNS_QUERY = "SELECT "
-    + "id, file_column, date, value, auto_qc, " // 5
-    + "user_qc_flag, user_qc_message " // 8
-    + "FROM sensor_values WHERE dataset_id = ? AND file_column IN "
-    + DatabaseUtils.IN_PARAMS_TOKEN + "ORDER BY date";
-
-  private static final String GET_SENSOR_VALUE_DATES_QUERY = "SELECT DISTINCT "
-    + "date FROM sensor_values WHERE dataset_id = ? ORDER BY date ASC";
-
   private static final String GET_REQUIRED_FLAGS_QUERY = "SELECT "
     + "COUNT(*) FROM sensor_values WHERE dataset_id = ? "
     + "AND user_qc_flag = " + Flag.VALUE_NEEDED;
@@ -190,7 +179,6 @@ public class DataSetDataDB {
     + "INNER JOIN measurements m ON m.date = sv.date "
     + "INNER JOIN measurement_run_types mrt ON m.id = mrt.measurement_id "
     + "WHERE m.dataset_id = ? AND mrt.run_type IN "
-    + DatabaseUtils.IN_PARAMS_TOKEN + " AND sv.file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN;
 
   private static final String UPDATE_MEASUREMENT_TIME_STATEMENT = "UPDATE measurements "
@@ -505,7 +493,8 @@ public class DataSetDataDB {
   }
 
   public static DatasetSensorValues getPositionSensorValues(Connection conn,
-    Instrument instrument, long datasetId) throws DatabaseException {
+    Instrument instrument, long datasetId)
+    throws DatabaseException, RecordNotFoundException {
 
     DatasetSensorValues values = new DatasetSensorValues(instrument);
 
@@ -915,104 +904,6 @@ public class DataSetDataDB {
     }
   }
 
-  public static List<SensorValue> getSensorValuesForColumns(
-    DataSource dataSource, long datasetId, List<Long> columnIds)
-    throws MissingParamException, DatabaseException {
-
-    try (Connection conn = dataSource.getConnection()) {
-      return getSensorValuesForColumns(conn, datasetId, columnIds);
-    } catch (SQLException e) {
-      throw new DatabaseException("Error getting sensor values", e);
-    }
-  }
-
-  /**
-   * Get all the sensor values for the given columns.
-   *
-   * @param conn
-   *          A database connection
-   * @param datasetId
-   *          The dataset's database ID
-   * @param columnIds
-   *          The column IDs
-   * @return The matching {@link SensorValue}s.
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws DatabaseException
-   *           If a database error occurs
-   */
-  public static List<SensorValue> getSensorValuesForColumns(Connection conn,
-    long datasetId, List<Long> columnIds)
-    throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkPositive(datasetId, "datasetId");
-    MissingParam.checkMissing(columnIds, "columnIds", false);
-
-    List<SensorValue> result = new ArrayList<SensorValue>();
-
-    String sql = DatabaseUtils.makeInStatementSql(
-      GET_SENSOR_VALUES_FOR_COLUMNS_QUERY, columnIds.size());
-    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-      stmt.setLong(1, datasetId);
-      for (int i = 0; i < columnIds.size(); i++) {
-        stmt.setLong(i + 2, columnIds.get(i));
-      }
-
-      try (ResultSet records = stmt.executeQuery()) {
-        while (records.next()) {
-          result.add(sensorValueFromResultSet(records, datasetId));
-        }
-      }
-
-    } catch (SQLException | InvalidFlagException e) {
-      throw new DatabaseException("Error getting sensor values", e);
-    }
-
-    return result;
-  }
-
-  /**
-   * Get the unique list of dates for which sensor values have been recorded for
-   * a given dataset. This ignores any values recorded during flushing times.
-   *
-   * @param dataSource
-   *          A data source
-   * @param datasetId
-   *          The dataset's database ID
-   * @return The sensor value dates
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws DatabaseException
-   *           If a database error occurs
-   */
-  public static List<LocalDateTime> getSensorValueTimes(DataSource dataSource,
-    long datasetId) throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkZeroPositive(datasetId, "dataSetId");
-
-    List<LocalDateTime> times = new ArrayList<LocalDateTime>();
-
-    try (Connection conn = dataSource.getConnection();
-      PreparedStatement stmt = conn
-        .prepareStatement(GET_SENSOR_VALUE_DATES_QUERY);) {
-
-      stmt.setLong(1, datasetId);
-
-      try (ResultSet records = stmt.executeQuery();) {
-        while (records.next()) {
-          times.add(DateTimeUtils.longToDate(records.getLong(1)));
-        }
-      }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting sensor value dates", e);
-    }
-
-    return times;
-  }
-
   public static int getFlagsRequired(DataSource dataSource, long datasetId)
     throws MissingParamException, DatabaseException {
 
@@ -1291,74 +1182,6 @@ public class DataSetDataDB {
     }
 
     return result;
-  }
-
-  /**
-   * Get the times for which {@link SensorValue}s of a given {@link SensorType}
-   * contain the specified value.
-   * <p>
-   * The times are returned as a {@link HashSet} for fast interrogation using
-   * {@link Set#contains}. They are not ordered.
-   * </p>
-   *
-   * @param conn
-   *          A database connection
-   * @param sensorType
-   *          The required {@link SensorType}
-   * @param value
-   *          The value being searched for
-   * @return The times of the {@link SensorValue}s that match the passed in
-   *         value.
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws DatabaseException
-   *           If a database error occurs
-   */
-  public static HashSet<LocalDateTime> getFilteredSensorValueTimes(
-    Connection conn, Instrument instrument, DataSet dataset,
-    SensorType sensorType, String value)
-    throws MissingParamException, DatabaseException {
-
-    List<SensorValue> allValues = getSensorValuesForColumns(conn,
-      dataset.getId(),
-      instrument.getSensorAssignments().getColumnIds(sensorType));
-
-    return allValues.stream().filter(v -> v.getValue().equals(value))
-      .map(v -> v.getTime()).collect(Collectors.toCollection(HashSet::new));
-  }
-
-  /**
-   * Get the times for which {@link SensorValue}s of a given {@link SensorType}
-   * contain the specified value.
-   * <p>
-   * The times are returned as a {@link HashSet} for fast interrogation using
-   * {@link Set#contains}. They are not ordered.
-   * </p>
-   *
-   * @param conn
-   *          A database connection
-   * @param sensorType
-   *          The required {@link SensorType}
-   * @param value
-   *          The value being searched for
-   * @return The times of the {@link SensorValue}s that match the passed in
-   *         value.
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws DatabaseException
-   *           If a database error occurs
-   */
-  public static HashSet<LocalDateTime> getFilteredSensorValueTimes(
-    Connection conn, Instrument instrument, DataSet dataset,
-    SensorType sensorType, double value)
-    throws MissingParamException, DatabaseException {
-
-    List<SensorValue> allValues = getSensorValuesForColumns(conn,
-      dataset.getId(),
-      instrument.getSensorAssignments().getColumnIds(sensorType));
-
-    return allValues.stream().filter(v -> v.getDoubleValue().equals(value))
-      .map(v -> v.getTime()).collect(Collectors.toCollection(HashSet::new));
   }
 
   public static void updateMeasurementTime(Connection conn,

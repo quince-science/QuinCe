@@ -30,8 +30,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * standards, which also requires xH₂O). These can be implemented by overriding
  * classes.
  * </p>
- *
- * @author Steve Jones
  */
 public class MeasurementValue implements PlotPageTableValue {
 
@@ -157,7 +155,6 @@ public class MeasurementValue implements PlotPageTableValue {
     this.sensorValueIds = new ArrayList<Long>();
     this.memberCount = memberCount;
     this.supportingSensorValueIds = new ArrayList<Long>();
-    this.supportingSensorValueIds = new ArrayList<Long>();
     this.calculatedValue = calculatedValue;
     this.memberCount = memberCount;
     this.qcMessage = new HashSet<String>();
@@ -165,6 +162,24 @@ public class MeasurementValue implements PlotPageTableValue {
     addSensorValues(sensorValues, allSensorValues, false);
     addSupportingSensorValues(supportingSensorValues);
     this.type = type;
+  }
+
+  public MeasurementValue(SensorValuesListValue value) {
+    this.sensorType = value.getSensorType();
+    this.sensorValueIds = value.getSourceSensorValues().stream()
+      .map(SensorValue::getDatasetId).toList();
+    this.memberCount = value.getSourceSensorValues().size();
+    this.supportingSensorValueIds = new ArrayList<Long>();
+    this.calculatedValue = value.getDoubleValue();
+
+    qcMessage = new HashSet<String>();
+    qcMessage.addAll(StringUtils.delimitedToList(value.getQCMessage(), ";"));
+
+    this.properties = new Properties();
+
+    this.type = value.getSourceSensorValues().size() > 1
+      ? PlotPageTableValue.INTERPOLATED_TYPE
+      : PlotPageTableValue.MEASURED_TYPE;
   }
 
   /**

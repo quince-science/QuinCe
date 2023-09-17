@@ -2,7 +2,8 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards;
 
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
@@ -35,15 +36,15 @@ public abstract class ExternalStandardsQCRoutine extends AbstractAutoQCRoutine {
    *           If the Routine is not configured correctly, or fails during
    *           processing.
    */
-  public void qc(CalibrationSet calibrationSet,
-    SearchableSensorValuesList runTypeValues,
-    SearchableSensorValuesList sensorValues) throws RoutineException {
+  public void qc(CalibrationSet calibrationSet, SensorValuesList runTypeValues,
+    SensorValuesList sensorValues)
+    throws SensorValuesListException, RoutineException {
 
     checkSetup();
     qcAction(calibrationSet, runTypeValues, sensorValues);
   }
 
   protected abstract void qcAction(CalibrationSet calibrationSet,
-    SearchableSensorValuesList runTypeValues,
-    SearchableSensorValuesList sensorValues) throws RoutineException;
+    SensorValuesList runTypeValues, SensorValuesList sensorValues)
+    throws RoutineException, SensorValuesListException;
 }

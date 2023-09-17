@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
@@ -15,8 +14,9 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
-import uk.ac.exeter.QuinCe.data.Dataset.SearchableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRoutinesConfiguration;
@@ -31,7 +31,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.SpeedQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -155,18 +154,7 @@ public class AutoQCJob extends DataSetJob {
       // This will be populated if the instrument has position data
       DatasetSensorValues positionValues = null;
 
-      // Get all the run type entries from the data set
-      TreeSet<SensorAssignment> runTypeColumns = sensorAssignments
-        .get(SensorType.RUN_TYPE_SENSOR_TYPE);
-
-      TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
-      for (SensorAssignment column : runTypeColumns) {
-        runTypeValuesTemp
-          .addAll(sensorValues.getColumnValues(column.getDatabaseId()));
-      }
-
-      SearchableSensorValuesList runTypeValues = SearchableSensorValuesList
-        .newFromSensorValueCollection(runTypeValuesTemp);
+      SensorValuesList runTypeValues = sensorValues.getRunTypes();
 
       // Get the Run Type Periods for the dataset
       RunTypePeriods runTypePeriods = DataSetDataDB.getRunTypePeriods(conn,
@@ -184,7 +172,7 @@ public class AutoQCJob extends DataSetJob {
         positionValues = DataSetDataDB.getPositionSensorValues(conn, instrument,
           dataSet.getId());
 
-        SensorValue.clearAutoQC(positionValues.getAllPositionValues());
+        SensorValue.clearAutoQC(positionValues.getAllPositionSensorValues());
 
         PositionQCRoutine positionQC = new PositionQCRoutine(positionValues);
         positionQC.qc(null, null);
@@ -201,32 +189,35 @@ public class AutoQCJob extends DataSetJob {
 
         // Where sensors have internal calibrations, their values need to be //
         // QCed in separate groups.
-        Map<String, SearchableSensorValuesList> valuesForQC = new HashMap<String, SearchableSensorValuesList>();
+        Map<String, SensorValuesList> valuesForQC = new HashMap<String, SensorValuesList>();
 
         if (!sensorType.hasInternalCalibration()) {
           // All the values can be QCed as a single group
           valuesForQC.put("", sensorValues.getColumnValues(columnId));
         } else {
-          for (SensorValue value : sensorValues.getColumnValues(columnId)) {
+          for (SensorValue value : sensorValues.getColumnValues(columnId)
+            .getRawValues()) {
 
-            SensorValue runType = runTypeValues.timeSearch(value.getTime());
+            SensorValuesListValue runType = runTypeValues
+              .getValueOnOrBefore(value.getTime());
 
-            if (!valuesForQC.containsKey(runType.getValue())) {
-              valuesForQC.put(runType.getValue(),
-                new SearchableSensorValuesList(columnId));
+            if (!valuesForQC.containsKey(runType.getStringValue())) {
+              valuesForQC.put(runType.getStringValue(),
+                new SensorValuesList(columnId, sensorValues));
             }
 
-            valuesForQC.get(runType.getValue()).add(value);
+            valuesForQC.get(runType.getStringValue()).add(value);
           }
         }
 
         // QC each group of sensor values in turn
-        for (Map.Entry<String, SearchableSensorValuesList> values : valuesForQC
+        for (Map.Entry<String, SensorValuesList> values : valuesForQC
           .entrySet()) {
 
           SensorValue.clearAutoQC(values.getValue());
 
-          List<SensorValue> filteredValues = values.getValue().stream()
+          List<SensorValue> filteredValues = values.getValue().getRawValues()
+            .stream()
             .filter(x -> !(x.getUserQCFlag().equals(Flag.BAD)
               | x.getUserQCFlag().equals(Flag.QUESTIONABLE)))
             .collect(Collectors.toList());
@@ -241,7 +232,6 @@ public class AutoQCJob extends DataSetJob {
               ((AutoQCRoutine) routine).qc(filteredValues, runTypePeriods);
             }
           }
-
         }
       }
 
@@ -284,7 +274,7 @@ public class AutoQCJob extends DataSetJob {
 
       if (null != positionValues) {
         DataSetDataDB.storeSensorValues(conn,
-          positionValues.getAllPositionValues());
+          positionValues.getAllPositionSensorValues());
       }
 
       // Trigger the Build Measurements job

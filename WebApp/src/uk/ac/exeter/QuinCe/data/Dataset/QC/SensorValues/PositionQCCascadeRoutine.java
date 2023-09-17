@@ -25,7 +25,7 @@ public class PositionQCCascadeRoutine {
 
       for (LocalDateTime time : allTimes) {
         PlotPageTableValue position = sensorValues
-          .getPositionTableValue(SensorType.LONGITUDE_ID, time, true);
+          .getPositionTableValue(SensorType.LONGITUDE_ID, time);
 
         if (null != position) {
           // Cascade the QC position to sensor values
