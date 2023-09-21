@@ -29,7 +29,7 @@ public class FileDefinitionBuilder extends FileDefinition {
   /**
    * The maximum number of lines from an uploaded file to be stored
    */
-  protected static final int MAX_DISPLAY_LINES = 250;
+  protected static final int MAX_DISPLAY_LINES = 500;
 
   /**
    * The number of lines to search in order to determine the file's column
