@@ -738,7 +738,7 @@ public class ManualQCData extends PlotPageData {
     if (selectable) {
       SensorValue sensorValue = sensorValues.get(DateTimeUtils.longToDate(row))
         .get(column);
-      if (sensorValue.isNaN() || isGhost(sensorValue)) {
+      if (null == sensorValue || sensorValue.isNaN() || isGhost(sensorValue)) {
         selectable = false;
       }
     }
