@@ -7,14 +7,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -27,15 +25,10 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * A list of SensorValue objects with various search capabilities.
  *
  * <p>
- * There are two search types that can be performed:
+ * <b>IMPORTANT: READ ALL OF THIS DESCRIPTION, PARTICULARLY THE NOTE IN THE LAST
+ * PARAGRAPH.</b>
  * </p>
- * <ul>
- * <li>{@code rangeSearch}: Search for the set of values within a range of
- * dates, such that {@code date1 <= valueDate < date2}</li>
- * <li>{@code timeSearch}: Find the value on or immediately before a specified
- * time.</li>
- * </ul>
- *
+ * 
  * <p>
  * The list is maintained in time order of its members. Attempting to add two
  * {@link SensorValue}s with the same timestamp will result in an
@@ -47,9 +40,9 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * strategies (or MODEs as named here) used by different sensors. These are:
  * </p>
  * <ul>
- * <li>CONTINUOUS mode: Regular measurements at short intervals (≤ 5
+ * <li><b>CONTINUOUS mode:</b> Regular measurements at short intervals (≤ 5
  * minutes).</li>
- * <li>PERIODIC mode: Groups of measurements at long intervals (e.g. 5
+ * <li><b>PERIODIC mode:</b> Groups of measurements at long intervals (e.g. 5
  * measurements at one minute intervals, every 4 hours). This also encompasses
  * single measurements taken at extended intervals.</li>
  * </ul>
@@ -73,6 +66,17 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * <p>
  * Values mode results are automatically stripped of {@link Flag#FLUSHING}
  * values.
+ * </p>
+ * 
+ * <p>
+ * <b>Note:</b> For the PERIODIC mode, the auto-generated
+ * {@link SensorValuesListValue}s may not be suitable for use. For example, a
+ * sensor may wake up, take water and air measurements in sequence, and then
+ * sleep. The automatic algorithm cannot detect this, and will group both sets
+ * of measurements together. To work around this, you must determine the group
+ * boundaries elsewhere (most likely in the {@link SensorValuesList} for the Run
+ * Type), and use the {@link #getValue(LocalDateTime, LocalDateTime)} method to
+ * construct values covering the correct time periods.
  * </p>
  */
 public class SensorValuesList {
@@ -335,7 +339,7 @@ public class SensorValuesList {
   }
 
   /**
-   * Construct the ouptut values available via this list.
+   * Construct the output values available via this list.
    *
    * <p>
    * If the measurement mode is CONTINUOUS, the values will match the timestamps
@@ -348,6 +352,8 @@ public class SensorValuesList {
    * @throws SensorValuesListException
    */
   private void buildOutputValues() throws SensorValuesListException {
+
+    outputValues = new ArrayList<SensorValuesListValue>();
 
     switch (getMeasurementMode()) {
     case MODE_CONTINUOUS: {
@@ -581,11 +587,11 @@ public class SensorValuesList {
       MeanCalculator mean = new MeanCalculator(
         usedValues.stream().map(SensorValue::getDoubleValue).toList());
 
-      LocalDateTime valueTime = DateTimeUtils.midPoint(
-        usedValues.get(0).getTime(),
-        usedValues.get(usedValues.size() - 1).getTime());
+      LocalDateTime startTime = usedValues.get(0).getTime();
+      LocalDateTime endTime = usedValues.get(usedValues.size() - 1).getTime();
 
-      return new SensorValuesListValue(valueTime, usedValues, sensorType,
+      return new SensorValuesListValue(
+        DateTimeUtils.midPoint(startTime, endTime), usedValues, sensorType,
         mean.mean(), chosenFlag,
         StringUtils.collectionToDelimited(qcMessages, ";"));
     } catch (Exception e) {
@@ -619,7 +625,6 @@ public class SensorValuesList {
    * @throws SensorValuesListException
    */
   private void buildContinuousOutputValues() throws SensorValuesListException {
-    outputValues = new ArrayList<SensorValuesListValue>();
     for (SensorValue sensorValue : list) {
       // We skip null values
       if (null != sensorValue.getValue()
@@ -657,15 +662,14 @@ public class SensorValuesList {
   }
 
   /**
-   * Construct a {@link MeasurementValue} for the specified time using the
+   * Construct a {@link SensorValuesListValue} for the specified time using the
    * values in this list.
    *
    * <p>
    * The value will be constructed from the {@link #outputValues}. If there is a
    * value exactly corresponding to the specified time it will be used as the
-   * basis for the {@link MeasurementValue}. Otherwise the
-   * {@link MeasurementValue} will be constructed from an interpolation as
-   * follows:
+   * result. Otherwise the {@link SensorValuesListValue} will be constructed
+   * from an interpolation as follows:
    * </p>
    *
    * <p>
@@ -700,77 +704,87 @@ public class SensorValuesList {
    * @throws SensorValuesListException
    *           If the {@link MeasurementValue} cannot be constructed.
    */
-  public MeasurementValue getMeasurementValue(LocalDateTime time)
+  public SensorValuesListValue getValue(LocalDateTime time)
     throws SensorValuesListException {
 
-    MeasurementValue result;
+    if (null == outputValues) {
+      buildOutputValues();
+    }
 
-    switch (getMeasurementMode()) {
-    case MODE_CONTINUOUS: {
-      result = getMeasurementValueContinuous(time);
-      break;
-    }
-    case MODE_PERIODIC: {
-      result = getMeasurementValuePeriodic(time);
-      break;
-    }
-    default: {
-      throw new IllegalStateException("Invalid measurement mode");
-    }
+    SensorValuesListValue result;
+
+    if (outputValues.size() == 0) {
+      result = null;
+    } else {
+      switch (getMeasurementMode()) {
+      case MODE_CONTINUOUS: {
+        result = getValueContinuous(time);
+        break;
+      }
+      case MODE_PERIODIC: {
+        result = getValuePeriodic(time);
+        break;
+      }
+      default: {
+        throw new IllegalStateException("Invalid measurement mode");
+      }
+      }
     }
 
     return result;
   }
 
   /**
-   * Get all the {@link MeasurementValue} objects available from this list.
-   *
-   * @return The {@link MeasurementValue}s.
-   * @throws SensorValuesListException
-   *           If any value cannot be created.
-   * @see #getMeasurementValue(LocalDateTime)
-   */
-  public TreeMap<LocalDateTime, MeasurementValue> getMeasurementValues()
-    throws SensorValuesListException {
-
-    TreeMap<LocalDateTime, MeasurementValue> result = new TreeMap<LocalDateTime, MeasurementValue>();
-
-    for (LocalDateTime time : getValueTimes()) {
-      result.put(time, getMeasurementValue(time));
-    }
-
-    return result;
-  }
-
-  /**
-   * Construct a {@link MeasureemntValue} for the list in CONTINUOUS mode.
+   * Construct a {@link SensorValuesListValue} for the list in CONTINUOUS mode.
    *
    * @param time
    *          The required time.
-   * @return The constructed {@link MeasurementValue}.
+   * @return The constructed {@link SensorValuesListValue}.
    * @throws SensorValuesListException
    *           If the value cannot be constructed.
-   * @see #getMeasurementValue(LocalDateTime)
+   * @see #getValue(LocalDateTime)
    */
-  private MeasurementValue getMeasurementValueContinuous(LocalDateTime time)
+  private SensorValuesListValue getValueContinuous(LocalDateTime time)
     throws SensorValuesListException {
 
-    MeasurementValue result;
+    SensorValuesListValue result;
 
     int searchIndex = Collections.binarySearch(valueTimesCache, time);
+    SensorValuesListValue exactMatch = null;
 
     if (searchIndex >= 0) {
-      result = new MeasurementValue(outputValues.get(searchIndex));
+      exactMatch = outputValues.get(searchIndex);
+    }
+
+    if (null != exactMatch && exactMatch.getQCFlag().isGood()) {
+      // If the exact match is GOOD, use it
+      result = exactMatch;
     } else {
-      int priorIndex = Math.abs(searchIndex) - 2;
-      int postIndex = Math.abs(searchIndex) - 1;
+
+      // Get the best possible interpolated value
+      int priorIndex = searchIndex >= 0 ? searchIndex - 1
+        : Math.abs(searchIndex) - 2;
+      int postIndex = searchIndex >= 0 ? searchIndex + 1
+        : Math.abs(searchIndex) - 1;
 
       SensorValuesListValue prior = findInterpContinuousValue(priorIndex, time,
         -1, (x) -> x >= 0);
       SensorValuesListValue post = findInterpContinuousValue(postIndex, time, 1,
-        (x) -> x < list.size());
+        (x) -> x < outputValues.size());
 
-      result = buildInterpolatedMeasurementValue(prior, post);
+      SensorValuesListValue interpolated = buildInterpolatedValue(prior, post,
+        time);
+
+      // If the interpolated value has a better flag than the exact match,
+      // use that.
+      if (null == interpolated) {
+        result = exactMatch;
+      } else if (null == exactMatch || exactMatch.getQCFlag()
+        .moreSignificantThan(interpolated.getQCFlag())) {
+        result = interpolated;
+      } else {
+        result = exactMatch;
+      }
     }
 
     return result;
@@ -783,6 +797,11 @@ public class SensorValuesList {
     boolean stopSearch = false;
 
     int currentIndex = startIndex;
+
+    // If the start point is already outside the bounds, abort.
+    if (!limitTest.test(currentIndex)) {
+      stopSearch = true;
+    }
 
     while (!stopSearch) {
       SensorValuesListValue testValue = outputValues.get(currentIndex);
@@ -825,24 +844,24 @@ public class SensorValuesList {
   }
 
   /**
-   * Construct a {@link MeasureemntValue} for the list in PERIODIC mode.
+   * Construct a {@link SensorValuesListValue} for the list in PERIODIC mode.
    *
    * @param time
    *          The required time.
-   * @return The constructed {@link MeasurementValue}.
+   * @return The constructed {@link SensorValuesListValue}.
    * @throws SensorValuesListException
    *           If the value cannot be constructed.
-   * @see #getMeasurementValue(LocalDateTime)
+   * @see #getValue(LocalDateTime)
    */
-  private MeasurementValue getMeasurementValuePeriodic(LocalDateTime time)
+  private SensorValuesListValue getValuePeriodic(LocalDateTime time)
     throws SensorValuesListException {
 
-    MeasurementValue result;
+    SensorValuesListValue result;
 
     int searchIndex = Collections.binarySearch(valueTimesCache, time);
 
     if (searchIndex >= 0) {
-      result = new MeasurementValue(outputValues.get(searchIndex));
+      result = outputValues.get(searchIndex);
     } else {
       int priorIndex = Math.abs(searchIndex) - 2;
       int postIndex = Math.abs(searchIndex) - 1;
@@ -854,7 +873,7 @@ public class SensorValuesList {
         ? outputValues.get(postIndex)
         : null;
 
-      result = buildInterpolatedMeasurementValue(prior, post);
+      result = buildInterpolatedValue(prior, post, time);
     }
 
     return result;
@@ -862,64 +881,54 @@ public class SensorValuesList {
   }
 
   /**
-   * Construct an interpolated {@link MeasurementValue} from two
+   * Construct an interpolated {@link SensorValuesListValue} from two
    * {@link SensorValuesListValue}s.
+   * 
+   * <p>
+   * The value of the result will be the linear interpolation of the supplied
+   * values to the specified target time.
+   * </p>
    *
    * @param first
    *          The first value.
    * @param second
    *          The second value.
-   * @return The constructed {@link MeasurementValue}.
+   * @param targetTime
+   *          The target time.
+   * @return The constructed {@link SensorValuesListValue}.
    * @throws SensorValuesListException
    *           If the value cannot be constructed.
    */
-  private MeasurementValue buildInterpolatedMeasurementValue(
-    SensorValuesListValue first, SensorValuesListValue second)
-    throws SensorValuesListException {
+  private SensorValuesListValue buildInterpolatedValue(
+    SensorValuesListValue first, SensorValuesListValue second,
+    LocalDateTime targetTime) throws SensorValuesListException {
 
-    MeasurementValue result;
+    SensorValuesListValue result;
 
     if (null == first && null == second) {
       result = null;
     } else if (second == null) {
       // Use prior value only
-      result = new MeasurementValue(first);
-
-      try {
-        result.setType(PlotPageTableValue.INTERPOLATED_TYPE);
-      } catch (MeasurementValueException e) {
-        throw new SensorValuesListException(e);
-      }
+      result = first;
     } else if (first == null) {
       // Use post value only
-      result = new MeasurementValue(second);
-
-      try {
-        result.setType(PlotPageTableValue.INTERPOLATED_TYPE);
-      } catch (MeasurementValueException e) {
-        throw new SensorValuesListException(e);
-      }
+      result = second;
     } else {
       // Interpolate between the two
 
-      LocalDateTime interpTime = DateTimeUtils.midPoint(first.getTime(),
-        second.getTime());
-
       Double interpValue = Calculators.interpolate(first.getTime(),
         first.getDoubleValue(), second.getTime(), second.getDoubleValue(),
-        interpTime);
+        targetTime);
 
-      List<SensorValue> sourceSensorValues = new ArrayList<SensorValue>(
-        first.getSourceSensorValues());
-      sourceSensorValues.addAll(second.getSourceSensorValues());
+      TreeSet<SensorValue> combinedSourceValues = new TreeSet<SensorValue>(
+        TIME_COMPARATOR);
+      combinedSourceValues.addAll(first.getSourceSensorValues());
+      combinedSourceValues.addAll(second.getSourceSensorValues());
 
-      try {
-        result = new MeasurementValue(sensorType, sourceSensorValues, null,
-          allSensorValues, interpValue, sourceSensorValues.size(),
-          PlotPageTableValue.INTERPOLATED_TYPE);
-      } catch (RoutineException e) {
-        throw new SensorValuesListException(e);
-      }
+      result = new SensorValuesListValue(targetTime, combinedSourceValues,
+        first.getSensorType(), interpValue,
+        Flag.getWorstFlag(first.getQCFlag(), second.getQCFlag()),
+        StringUtils.combine(first.getQCMessage(), second.getQCMessage(), ";"));
     }
     return result;
   }
@@ -1003,7 +1012,7 @@ public class SensorValuesList {
     int maxGroupSize = 0;
 
     // Calculate the mean group size as we go along
-    float groupCount = 0f;
+    int groupCount = 0;
     float meanGroupSize = 0f;
 
     int groupSize = 0;
@@ -1041,11 +1050,12 @@ public class SensorValuesList {
 
       // Update the running mean group size
       groupCount++;
-      meanGroupSize = meanGroupSize + (groupSize - meanGroupSize) / groupCount;
+      meanGroupSize = meanGroupSize
+        + (groupSize - meanGroupSize) / (float) groupCount;
     }
 
-    if (meanGroupSize <= MAX_PERIODIC_GROUP_SIZE
-      || maxGroupSize <= MAX_PERIODIC_GROUP_SIZE) {
+    if (groupCount > 1 && (meanGroupSize <= MAX_PERIODIC_GROUP_SIZE
+      || maxGroupSize <= MAX_PERIODIC_GROUP_SIZE)) {
       measurementMode = MODE_PERIODIC;
     } else {
       measurementMode = MODE_CONTINUOUS;
@@ -1085,7 +1095,7 @@ public class SensorValuesList {
   }
 
   /**
-   * Get the closest {@link SensorValue}(s) to the specified time.
+   * Get the closest raw {@link SensorValue}(s) to the specified time.
    *
    * <p>
    * If there is a value at exactly the specified time, that value is returned.
@@ -1131,7 +1141,7 @@ public class SensorValuesList {
    *
    * @return The total number of {@link SensorValue}s in the list.
    */
-  public int rawValuesSize() {
+  public int rawSize() {
     return list.size();
   }
 
@@ -1183,9 +1193,75 @@ public class SensorValuesList {
        * returned insertion point.
        */
       if (searchIndex < -1) {
-        result = outputValues.get(Math.abs(searchIndex) - 2);
+        int getIndex = Math.abs(searchIndex) - 2;
+        if (getIndex >= 0) {
+          result = outputValues.get(getIndex);
+        }
       }
 
+    }
+
+    return result;
+  }
+
+  /**
+   * Construct a {@link SensorValuesListValue} using {@link SensorValue}s in the
+   * specified time range.
+   * 
+   * <p>
+   * Only values with the best {@link Flag} from the selected values are used.
+   * </p>
+   * 
+   * @param start
+   *          The start time.
+   * @param end
+   *          The end time.
+   * @return The constructed {@link SensorValuesListValue}.
+   * @throws SensorValuesListException
+   *           If the value cannot be constructed.
+   */
+  public SensorValuesListValue getValue(LocalDateTime start, LocalDateTime end)
+    throws SensorValuesListException {
+
+    SensorValuesListValue result;
+
+    switch (getMeasurementMode()) {
+    case MODE_CONTINUOUS: {
+
+      List<SensorValue> usedValues = new ArrayList<SensorValue>();
+
+      // Search for the start time
+      int startSearchIndex = Collections.binarySearch(getRawTimes(), start);
+
+      int currentIndex;
+      if (startSearchIndex >= 0) {
+        currentIndex = startSearchIndex;
+      } else {
+        // Get the index immediately after the requested time
+        currentIndex = Math.abs(startSearchIndex) - 1;
+        if (currentIndex < 0) {
+          currentIndex = 0;
+        }
+      }
+
+      // Get all the values between the start and end times
+      while (currentIndex < getRawTimes().size()
+        && !getRawTimes().get(currentIndex).isAfter(end)) {
+        usedValues.add(list.get(currentIndex));
+        currentIndex++;
+      }
+
+      result = usedValues.size() == 0 ? null : makeNumericValue(usedValues);
+
+      break;
+    }
+    case MODE_PERIODIC: {
+      result = null;
+      break;
+    }
+    default: {
+      throw new IllegalStateException("Invalid measurement mode");
+    }
     }
 
     return result;

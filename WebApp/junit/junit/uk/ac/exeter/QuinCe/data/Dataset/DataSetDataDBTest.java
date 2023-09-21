@@ -18,8 +18,8 @@ import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidSensorValueException;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
@@ -52,7 +52,8 @@ public class DataSetDataDBTest extends BaseTest {
    * @return The value retrieved from the database
    * @throws Exception
    */
-  private SensorValue retrieveSingleStoredValue() throws Exception {
+  private SensorValue retrieveSingleStoredValue(LocalDateTime time)
+    throws Exception {
 
     DatasetSensorValues storedValues = DataSetDataDB.getSensorValues(
       getConnection(),
@@ -61,11 +62,10 @@ public class DataSetDataDBTest extends BaseTest {
 
     assertEquals(1, storedValues.size());
 
-    SensorValuesList columnValues = storedValues
-      .getColumnValues(COLUMN_ID);
+    SensorValuesList columnValues = storedValues.getColumnValues(COLUMN_ID);
 
-    assertEquals(1, columnValues.size());
-    return columnValues.get(0);
+    assertEquals(1, columnValues.rawSize());
+    return columnValues.getRawSensorValue(time);
   }
 
   /**
@@ -87,7 +87,7 @@ public class DataSetDataDBTest extends BaseTest {
 
     DataSetDataDB.storeSensorValues(getConnection(),
       Arrays.asList(sensorValue));
-    SensorValue storedValue = retrieveSingleStoredValue();
+    SensorValue storedValue = retrieveSingleStoredValue(valueTime);
 
     // Show that the SensorValue's ID has not been updated
     assertEquals(DatabaseUtils.NO_DATABASE_RECORD, sensorValue.getId(),
@@ -114,12 +114,13 @@ public class DataSetDataDBTest extends BaseTest {
     "resources/sql/testbase/dataset" })
   @Test
   public void storeSensorValuesNullValueTest() throws Exception {
-    SensorValue sensorValue = new SensorValue(DATASET_ID, COLUMN_ID,
-      LocalDateTime.of(2021, 1, 1, 0, 0, 0), null);
+    LocalDateTime valueTime = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
+    SensorValue sensorValue = new SensorValue(DATASET_ID, COLUMN_ID, valueTime,
+      null);
 
     DataSetDataDB.storeSensorValues(getConnection(),
       Arrays.asList(sensorValue));
-    SensorValue storedValue = retrieveSingleStoredValue();
+    SensorValue storedValue = retrieveSingleStoredValue(valueTime);
 
     assertNull(storedValue.getValue(), "Stored value not null");
   }
@@ -129,8 +130,10 @@ public class DataSetDataDBTest extends BaseTest {
     "resources/sql/testbase/dataset" })
   @Test
   public void storeSensorValuesCustomUserQCValueTest() throws Exception {
-    SensorValue sensorValue = new SensorValue(DATASET_ID, COLUMN_ID,
-      LocalDateTime.of(2021, 1, 1, 0, 0, 0), "20");
+    LocalDateTime valueTime = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
+
+    SensorValue sensorValue = new SensorValue(DATASET_ID, COLUMN_ID, valueTime,
+      "20");
 
     Flag qcFlag = Flag.QUESTIONABLE;
     String qcMessage = "I question this value";
@@ -138,7 +141,7 @@ public class DataSetDataDBTest extends BaseTest {
 
     DataSetDataDB.storeSensorValues(getConnection(),
       Arrays.asList(sensorValue));
-    SensorValue storedValue = retrieveSingleStoredValue();
+    SensorValue storedValue = retrieveSingleStoredValue(valueTime);
 
     assertEquals(qcFlag, storedValue.getUserQCFlag(), "Incorrect user QC flag");
     assertEquals(qcMessage, storedValue.getUserQCMessage(),
@@ -150,13 +153,14 @@ public class DataSetDataDBTest extends BaseTest {
     "resources/sql/testbase/dataset" })
   @Test
   public void updateSensorValueTest() throws Exception {
-    SensorValue sensorValue = new SensorValue(DATASET_ID, COLUMN_ID,
-      LocalDateTime.of(2021, 1, 1, 0, 0, 0), "20");
+    LocalDateTime valueTime = LocalDateTime.of(2021, 1, 1, 0, 0, 0);
+    SensorValue sensorValue = new SensorValue(DATASET_ID, COLUMN_ID, valueTime,
+      "20");
 
     DataSetDataDB.storeSensorValues(getConnection(),
       Arrays.asList(sensorValue));
 
-    SensorValue originalStoredValue = retrieveSingleStoredValue();
+    SensorValue originalStoredValue = retrieveSingleStoredValue(valueTime);
 
     Flag userQCFlag = Flag.QUESTIONABLE;
     String userQCMessage = "Updated User QC";
@@ -172,7 +176,7 @@ public class DataSetDataDBTest extends BaseTest {
     // Check that the dirty flag is cleared
     assertFalse(originalStoredValue.isDirty(), "Dirty flag not cleared");
 
-    SensorValue updatedValue = retrieveSingleStoredValue();
+    SensorValue updatedValue = retrieveSingleStoredValue(valueTime);
 
     assertEquals(autoQC, updatedValue.getAutoQcResult(), "Incorrect Auto QC");
     assertEquals(userQCFlag, updatedValue.getUserQCFlag(),

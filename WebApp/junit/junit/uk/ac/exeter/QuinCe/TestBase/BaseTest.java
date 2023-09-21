@@ -2,6 +2,7 @@ package junit.uk.ac.exeter.QuinCe.TestBase;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -195,6 +196,33 @@ public class BaseTest {
           result = false;
           break;
         }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Determine whether or not a list of {@link LocalDateTime} objects is in
+   * ascending order.
+   * 
+   * <p>
+   * Identical values are allowed.
+   * </p>
+   * 
+   * @param list
+   *          The list.
+   * @return {@code true} if the list is ordered; {@code false} otherwise.
+   */
+  protected boolean timesOrdered(List<LocalDateTime> list) {
+    boolean result = true;
+
+    for (int i = 1; i < list.size(); i++) {
+      LocalDateTime prev = list.get(i - 1);
+      LocalDateTime current = list.get(i);
+      if (prev.isAfter(current)) {
+        result = false;
+        break;
       }
     }
 
