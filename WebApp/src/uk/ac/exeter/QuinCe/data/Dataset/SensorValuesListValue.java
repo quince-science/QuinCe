@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.commons.collections.collection.UnmodifiableCollection;
-
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -23,9 +21,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
  *
  * <p>
  * Note that if the source {@link SensorValuesList} has a PERIODIC measurement
- * mode, the timestamp will be the midpoint of the measurement group that
- * matched the query, and as such may not even exactly match a timestamp in the
- * source list.
+ * mode the calculated value is the mean of multiple source
+ * {@link SensorValue}s. We also store the first and last timestamp of those
+ * values, which can be used to obtain values from other columns later on.
+ * Asking for the 'default' timestamp will give the midpoint between the start
+ * and end times.
  * </p>
  *
  * <p>
@@ -40,7 +40,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
  *
  * @see SensorValuesList
  */
-public class SensorValuesListValue implements Comparable<SensorValuesListValue> {
+public class SensorValuesListValue
+  implements Comparable<SensorValuesListValue> {
 
   /**
    * Indicates that this value holds a {@link String}.
@@ -64,8 +65,14 @@ public class SensorValuesListValue implements Comparable<SensorValuesListValue> 
 
   /**
    * The {@link SensorValue}s used to calculate the value.
+   * 
+   * <p>
+   * The {@link Collection} is unmodifiable.
+   * </p>
+   * 
+   * @see Collections#unmodifiableCollection(Collection)
    */
-  private final UnmodifiableCollection sourceSensorValues;
+  private final Collection<SensorValue> sourceSensorValues;
 
   /**
    * The {@link String} value.
@@ -102,7 +109,7 @@ public class SensorValuesListValue implements Comparable<SensorValuesListValue> 
     throws SensorValuesListException {
 
     this.time = sourceSensorValue.getTime();
-    sourceSensorValues = (UnmodifiableCollection) Collections
+    sourceSensorValues = Collections
       .unmodifiableCollection(Arrays.asList(sourceSensorValue));
     this.sensorType = sensorType;
 
@@ -144,10 +151,20 @@ public class SensorValuesListValue implements Comparable<SensorValuesListValue> 
     Collection<SensorValue> sourceSensorValues, SensorType sensorType,
     String value, Flag qcFlag, String qcMessage) {
     this.time = time;
-    this.sourceSensorValues = (UnmodifiableCollection) Collections
+    this.sourceSensorValues = Collections
       .unmodifiableCollection(sourceSensorValues);
     this.sensorType = sensorType;
     this.stringValue = value;
+
+    // Ensure that all the source sensor values contain the specified string
+    // value
+    if (sourceSensorValues.stream()
+      .anyMatch(v -> !v.getValue().equals(value))) {
+
+      throw new IllegalArgumentException(
+        "All SensorValues must equal the passed value");
+    }
+
     this.doubleValue = null;
     this.qcFlag = qcFlag;
     this.qcMessage = qcMessage;
@@ -171,7 +188,7 @@ public class SensorValuesListValue implements Comparable<SensorValuesListValue> 
     Collection<SensorValue> sourceSensorValues, SensorType sensorType,
     Double value, Flag qcFlag, String qcMessage) {
     this.time = time;
-    this.sourceSensorValues = (UnmodifiableCollection) Collections
+    this.sourceSensorValues = Collections
       .unmodifiableCollection(sourceSensorValues);
     this.sensorType = sensorType;
     this.doubleValue = value;
@@ -183,7 +200,7 @@ public class SensorValuesListValue implements Comparable<SensorValuesListValue> 
   /**
    * Get the value's timestamp.
    *
-   * @return The value's timestamp.
+   * @return The timestamp.
    */
   public LocalDateTime getTime() {
     return time;
@@ -199,7 +216,6 @@ public class SensorValuesListValue implements Comparable<SensorValuesListValue> 
    *
    * @return The source {@link SensorValue}s.
    */
-  @SuppressWarnings("unchecked")
   public Collection<SensorValue> getSourceSensorValues() {
     return sourceSensorValues;
   }
@@ -269,6 +285,6 @@ public class SensorValuesListValue implements Comparable<SensorValuesListValue> 
 
   @Override
   public int compareTo(SensorValuesListValue o) {
-    return time.compareTo(o.time);
+    return getTime().compareTo(o.getTime());
   }
 }

@@ -24,6 +24,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
@@ -780,14 +781,9 @@ public class ManualQCData extends PlotPageData {
         result.put(time, new SimplePlotPageTableValue(time, null, true));
       }
     } else if (SensorType.isPosition(column.getId())) {
-
-      // We can't do a direct cast so we have to copy the values.
-      TreeMap<LocalDateTime, MeasurementValue> temp = sensorValues
-        .getColumnValues(column.getId()).getMeasurementValues();
-
-      temp.entrySet().forEach(e -> {
-        result.put(e.getKey(), (PlotPageTableValue) e.getValue());
-      });
+      List<SensorValuesListValue> values = sensorValues
+        .getColumnValues(column.getId()).getValues();
+      values.forEach(v -> result.put(v.getTime(), new MeasurementValue(v)));
     } else if (sensorValues.containsColumn(column.getId())) {
 
       SensorType sensorType = instrument.getSensorAssignments()

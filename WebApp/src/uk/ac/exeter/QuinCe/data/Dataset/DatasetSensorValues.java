@@ -48,12 +48,12 @@ public class DatasetSensorValues {
   /**
    * The longitudes in the dataset.
    */
-  private SensorValuesList longitudes;
+  private SensorValuesList longitudes = null;
 
   /**
    * The latitudes in the dataset.
    */
-  private SensorValuesList latitudes;
+  private SensorValuesList latitudes = null;
 
   /**
    * The {@link Instrument} to which the {@link SensorValue}s belong.
@@ -94,10 +94,12 @@ public class DatasetSensorValues {
     throws RecordNotFoundException {
     valuesById = new HashMap<Long, SensorValue>();
     valuesByColumn = new HashMap<Long, SensorValuesList>();
-    longitudes = new SensorValuesList(SensorType.LONGITUDE_ID, this);
-    latitudes = new SensorValuesList(SensorType.LATITUDE_ID, this);
-
     this.instrument = instrument;
+
+    /*
+     * The longitudes and latitudes cannot be instatiated in the constructor.
+     * They will be initiated on demand.
+     */
   }
 
   /**
@@ -111,9 +113,15 @@ public class DatasetSensorValues {
   public void add(SensorValue sensorValue) throws RecordNotFoundException {
 
     if (sensorValue.getColumnId() == SensorType.LONGITUDE_ID) {
+      if (null == longitudes) {
+        longitudes = new SensorValuesList(SensorType.LONGITUDE_ID, this);
+      }
       longitudes.add(sensorValue);
       addById(sensorValue);
     } else if (sensorValue.getColumnId() == SensorType.LATITUDE_ID) {
+      if (null == latitudes) {
+        latitudes = new SensorValuesList(SensorType.LATITUDE_ID, this);
+      }
       latitudes.add(sensorValue);
       addById(sensorValue);
     } else if (!contains(sensorValue)) {
@@ -185,8 +193,16 @@ public class DatasetSensorValues {
    *           If the {@link Instrument} configuration is invalid.
    */
   public void remove(SensorValue sensorValue) throws RecordNotFoundException {
-    removeById(sensorValue);
-    removeByColumn(sensorValue);
+
+    if (sensorValue.getColumnId() == SensorType.LONGITUDE_ID) {
+      longitudes.remove(sensorValue);
+    }
+    if (sensorValue.getColumnId() == SensorType.LATITUDE_ID) {
+      latitudes.remove(sensorValue);
+    } else {
+      removeById(sensorValue);
+      removeByColumn(sensorValue);
+    }
   }
 
   /**
@@ -469,11 +485,12 @@ public class DatasetSensorValues {
     MeasurementValue result = null;
 
     if (columnID == SensorType.LONGITUDE_ID) {
-      result = longitudes.getMeasurementValue(time);
+      result = new MeasurementValue(longitudes.getValue(time));
     } else if (columnID == SensorType.LATITUDE_ID) {
-      result = latitudes.getMeasurementValue(time);
+      result = new MeasurementValue(latitudes.getValue(time));
     } else if (valuesByColumn.containsKey(columnID)) {
-      result = valuesByColumn.get(columnID).getMeasurementValue(time);
+      result = new MeasurementValue(
+        valuesByColumn.get(columnID).getValue(time));
     }
 
     return result;
@@ -592,8 +609,15 @@ public class DatasetSensorValues {
    * @return The number of {@link SensorValue}s.
    */
   public int size() {
-    return valuesById.size() + latitudes.rawValuesSize()
-      + longitudes.rawValuesSize();
+    int result = valuesById.size();
+    if (null != latitudes) {
+      result += latitudes.rawSize();
+    }
+    if (null != longitudes) {
+      result += longitudes.rawSize();
+    }
+
+    return result;
   }
 
   /**
@@ -827,7 +851,7 @@ public class DatasetSensorValues {
   public PlotPageTableValue getPositionTableValue(long columnId,
     LocalDateTime time) throws SensorValuesListException, PositionException {
 
-    return getPositionValuesList(columnId).getMeasurementValue(time);
+    return new MeasurementValue(getPositionValuesList(columnId).getValue(time));
   }
 
   /**

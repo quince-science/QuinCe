@@ -760,8 +760,6 @@ public class InstrumentDB {
    * @param runTypeConfiguration
    *          The run type category configuration
    * @return The complete Instrument object
-   * @throws MissingParamException
-   *           If the data source is not supplied
    * @throws DatabaseException
    *           If an error occurs while retrieving the instrument details
    * @throws RecordNotFoundException
@@ -771,8 +769,8 @@ public class InstrumentDB {
    * @throws SensorGroupsException
    */
   public static Instrument getInstrument(Connection conn, long instrumentId)
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException {
+    throws DatabaseException, RecordNotFoundException, InstrumentException,
+    SensorGroupsException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(instrumentId, "instrumentId");

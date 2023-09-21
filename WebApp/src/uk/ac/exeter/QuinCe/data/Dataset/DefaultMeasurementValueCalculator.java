@@ -100,7 +100,7 @@ public class DefaultMeasurementValueCalculator
       LocalDateTime valueTime = dataSet.getSensorOffsets().getOffsetTime(
         measurement.getTime(), coreAssignment, requiredAssignment);
 
-      result = sensorValues.getMeasurementValue(valueTime);
+      result = new MeasurementValue(sensorValues.getValue(valueTime));
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Cannot calculate time offset", e);

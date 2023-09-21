@@ -216,6 +216,17 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @return The longs
    */
   public static List<Long> delimitedToLongList(String values) {
+    return delimitedToLongList(values, ',');
+  }
+
+  /**
+   * Convert a comma-separated list of numbers to a list of longs
+   *
+   * @param values
+   *          The numbers
+   * @return The longs
+   */
+  public static List<Long> delimitedToLongList(String values, char delimiter) {
     // TODO This is the preferred way of doing this. Make the other methods do
     // the same.
 
@@ -224,7 +235,7 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     if (null == values || values.trim().length() == 0) {
       result = new ArrayList<Long>(0);
     } else {
-      String[] numberList = values.split(",");
+      String[] numberList = values.split(String.valueOf(delimiter));
       result = new ArrayList<Long>(numberList.length);
 
       for (String number : numberList) {
@@ -588,5 +599,40 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
         blankLine = false;
       }
     }
+  }
+
+  public static boolean isNumeric(String value) {
+    boolean result = true;
+    if (null == value) {
+      result = false;
+    } else {
+      try {
+        Double.parseDouble(value);
+      } catch (NumberFormatException e) {
+        result = false;
+      }
+    }
+
+    return result;
+  }
+
+  public static String combine(String string1, String string2,
+    String combiner) {
+    String result = null;
+
+    if (!isEmpty(string1.trim())) {
+      result = string1.trim();
+    }
+
+    if (!isEmpty(string2.trim())) {
+      if (!isEmpty(result)) {
+        result += combiner;
+        result += string2.trim();
+      } else {
+        result = string2.trim();
+      }
+    }
+
+    return result;
   }
 }
