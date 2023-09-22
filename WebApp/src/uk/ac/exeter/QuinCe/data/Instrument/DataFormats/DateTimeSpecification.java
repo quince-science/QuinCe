@@ -266,7 +266,7 @@ public class DateTimeSpecification {
     Properties timeProps, int hourCol, int minuteCol, int secondCol,
     int unixCol) throws DateTimeSpecificationException {
 
-    throw new DateTimeSpecificationException("MUST NOT BE USED");
+    System.out.println("NO LONGER USED - DO NOT USE IN PRODUCTION");
   }
 
   /**
