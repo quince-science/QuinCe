@@ -914,21 +914,29 @@ public class SensorValuesList {
       // Use post value only
       result = second;
     } else {
-      // Interpolate between the two
 
-      Double interpValue = Calculators.interpolate(first.getTime(),
-        first.getDoubleValue(), second.getTime(), second.getDoubleValue(),
-        targetTime);
+      if (second.getQCFlag().moreSignificantThan(first.getQCFlag())) {
+        result = first;
+      } else if (first.getQCFlag().moreSignificantThan(second.getQCFlag())) {
+        result = second;
+      } else {
 
-      TreeSet<SensorValue> combinedSourceValues = new TreeSet<SensorValue>(
-        TIME_COMPARATOR);
-      combinedSourceValues.addAll(first.getSourceSensorValues());
-      combinedSourceValues.addAll(second.getSourceSensorValues());
+        // Interpolate between the two
 
-      result = new SensorValuesListValue(targetTime, combinedSourceValues,
-        first.getSensorType(), interpValue,
-        Flag.getWorstFlag(first.getQCFlag(), second.getQCFlag()),
-        StringUtils.combine(first.getQCMessage(), second.getQCMessage(), ";"));
+        Double interpValue = Calculators.interpolate(first.getTime(),
+          first.getDoubleValue(), second.getTime(), second.getDoubleValue(),
+          targetTime);
+
+        TreeSet<SensorValue> combinedSourceValues = new TreeSet<SensorValue>(
+          TIME_COMPARATOR);
+        combinedSourceValues.addAll(first.getSourceSensorValues());
+        combinedSourceValues.addAll(second.getSourceSensorValues());
+
+        result = new SensorValuesListValue(targetTime, combinedSourceValues,
+          first.getSensorType(), interpValue,
+          Flag.getWorstFlag(first.getQCFlag(), second.getQCFlag()), StringUtils
+            .combine(first.getQCMessage(), second.getQCMessage(), ";"));
+      }
     }
     return result;
   }
