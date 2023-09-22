@@ -439,10 +439,20 @@ public class DataFile {
 
     DateTimeSpecification dateTimeSpec = fileDefinition
       .getDateTimeSpecification();
+
+    DateTimeColumnAssignment assignment = null;
+
     if (dateTimeSpec.isAssigned(DateTimeSpecification.HOURS_FROM_START)) {
+      assignment = dateTimeSpec
+        .getAssignment(DateTimeSpecification.HOURS_FROM_START);
+    } else if (dateTimeSpec
+      .isAssigned(DateTimeSpecification.SECONDS_FROM_START)) {
+      assignment = dateTimeSpec
+        .getAssignment(DateTimeSpecification.SECONDS_FROM_START);
+    }
+
+    if (null != assignment) {
       try {
-        DateTimeColumnAssignment assignment = dateTimeSpec
-          .getAssignment(DateTimeSpecification.HOURS_FROM_START);
         HighlightedString matchedLine = fileDefinition.getHeaderLine(contents,
           assignment.getPrefix(), assignment.getSuffix());
         headerDate = LocalDateTime.parse(matchedLine.getHighlightedPortion(),

@@ -1,3 +1,4 @@
+
 const RUN_TYPE_SENSOR_TYPE_ID = -1;
 const ALIAS_RUN_TYPE = '-2';
 
@@ -15,6 +16,7 @@ const HOUR = '9';
 const MINUTE = '10';
 const SECOND = '11';
 const UNIX = '12';
+const SECONDS_FROM_START = '13';
 
 function assignVariablesInit() {
   window.sensorTypes = JSON.parse($('#referenceDataForm\\:sensorTypes').val());
@@ -237,7 +239,8 @@ function openDateTimeAssignDialog(dateTimeType, column) {
     showDialog = true;
     break;
   }
-  case HOURS_FROM_START: {
+  case HOURS_FROM_START:
+  case SECONDS_FROM_START: {
     PF('startTimePrefix').jq.val('');
     PF('startTimeSuffix').jq.val('');
     PF('startTimeFormat').selectValue('MMM dd yyyy HH:mm:ss');
@@ -279,6 +282,10 @@ function getDateTimeTypeIndex(dateTimeType) {
     }
     case 'Hours from start of file': {
     result = HOURS_FROM_START;
+      break;
+    }
+    case 'Seconds from start of file': {
+    result = SECONDS_FROM_START;
       break;
     }
     case 'Date': {
