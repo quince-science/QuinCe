@@ -1316,6 +1316,11 @@ public class NewInstrumentBean extends FileUploadBean {
         startTimeSuffix, startTimeFormat);
       break;
     }
+    case DateTimeSpecification.SECONDS_FROM_START: {
+      dateTimeSpec.assignSecondsFromStart(dateTimeColumn, startTimePrefix,
+        startTimeSuffix, startTimeFormat);
+      break;
+    }
     default: {
       dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, null);
       break;

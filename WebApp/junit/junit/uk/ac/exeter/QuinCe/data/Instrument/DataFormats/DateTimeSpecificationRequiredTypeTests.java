@@ -59,6 +59,7 @@ public class DateTimeSpecificationRequiredTypeTests extends TestSetTest {
     List<Integer> expected = new ArrayList<Integer>();
     expected.add(DateTimeSpecification.DATE_TIME);
     expected.add(DateTimeSpecification.HOURS_FROM_START);
+    expected.add(DateTimeSpecification.SECONDS_FROM_START);
     expected.add(DateTimeSpecification.DATE);
     expected.add(DateTimeSpecification.YEAR);
     expected.add(DateTimeSpecification.JDAY_TIME);

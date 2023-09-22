@@ -11,7 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
@@ -42,7 +41,7 @@ public class DateTimeSpecification {
   public static final int HOURS_FROM_START = 1;
 
   /**
-   * Name for date string
+   * Name for hours since start date of file
    */
   public static final String HOURS_FROM_START_NAME = "Hours from start of file";
 
@@ -147,19 +146,29 @@ public class DateTimeSpecification {
   public static final String SECOND_NAME = "Second";
 
   /**
-   * Key for second
+   * Key for UNIX time
    */
   public static final int UNIX = 12;
 
   /**
-   * Name for second
+   * Name for UNIX time
    */
   public static final String UNIX_NAME = "UNIX Time";
 
   /**
+   * Key for seconds since start date of file
+   */
+  public static final int SECONDS_FROM_START = 13;
+
+  /**
+   * Name for seconds since start date of file
+   */
+  public static final String SECONDS_FROM_START_NAME = "Seconds from start of file";
+
+  /**
    * The largest assignment index
    */
-  private static final int MAX_INDEX = 12;
+  private static final int MAX_INDEX = 13;
 
   /**
    * The column assignments
@@ -180,12 +189,14 @@ public class DateTimeSpecification {
    *          has a header
    */
   public DateTimeSpecification(boolean fileHasHeader) {
-    assignments = new TreeMap<Integer, DateTimeColumnAssignment>();
+    assignments = new LinkedHashMap<Integer, DateTimeColumnAssignment>();
 
     assignments.put(DATE_TIME, new DateTimeColumnAssignment(DATE_TIME));
     assignments.put(DATE, new DateTimeColumnAssignment(DATE));
     assignments.put(HOURS_FROM_START,
       new DateTimeColumnAssignment(HOURS_FROM_START));
+    assignments.put(SECONDS_FROM_START,
+      new DateTimeColumnAssignment(SECONDS_FROM_START));
     assignments.put(JDAY_TIME, new DateTimeColumnAssignment(JDAY_TIME));
     assignments.put(JDAY, new DateTimeColumnAssignment(JDAY));
     assignments.put(YEAR, new DateTimeColumnAssignment(YEAR));
@@ -201,7 +212,13 @@ public class DateTimeSpecification {
   }
 
   /**
-   * Constructor for a complete specification to be built from raw values
+   * <b>DO NOT USE</b>. Obsolete constructor for a complete specification to be
+   * built from raw values.
+   *
+   * <p>
+   * This was used in some old database migrations so cannot be deleted. But it
+   * must not be used, and will simply throw an exception if you try.
+   * </p>
    *
    * @param fileHasHeader
    *          Indicates whether or not the file containing this specification
@@ -241,6 +258,7 @@ public class DateTimeSpecification {
    * @throws DateTimeSpecificationException
    *           If the specification is incomplete
    */
+  @Deprecated
   public DateTimeSpecification(boolean fileHasHeader, int dateTimeCol,
     Properties dateTimeProps, int dateCol, Properties dateProps,
     int hoursFromStartCol, Properties hoursFromStartProps, int jdayTimeCol,
@@ -248,34 +266,7 @@ public class DateTimeSpecification {
     Properties timeProps, int hourCol, int minuteCol, int secondCol,
     int unixCol) throws DateTimeSpecificationException {
 
-    assignments = new TreeMap<Integer, DateTimeColumnAssignment>();
-
-    assignments.put(DATE_TIME,
-      new DateTimeColumnAssignment(DATE_TIME, dateTimeCol, dateTimeProps));
-    assignments.put(DATE,
-      new DateTimeColumnAssignment(DATE, dateCol, dateProps));
-    assignments.put(HOURS_FROM_START, new DateTimeColumnAssignment(
-      HOURS_FROM_START, hoursFromStartCol, hoursFromStartProps));
-    assignments.put(JDAY_TIME,
-      new DateTimeColumnAssignment(JDAY_TIME, jdayTimeCol, null));
-    assignments.put(JDAY, new DateTimeColumnAssignment(JDAY, jdayCol, null));
-    assignments.put(YEAR, new DateTimeColumnAssignment(YEAR, yearCol, null));
-    assignments.put(MONTH, new DateTimeColumnAssignment(MONTH, monthCol, null));
-    assignments.put(DAY, new DateTimeColumnAssignment(DAY, dayCol, null));
-    assignments.put(TIME,
-      new DateTimeColumnAssignment(TIME, timeCol, timeProps));
-    assignments.put(HOUR, new DateTimeColumnAssignment(HOUR, hourCol, null));
-    assignments.put(MINUTE,
-      new DateTimeColumnAssignment(MINUTE, minuteCol, null));
-    assignments.put(SECOND,
-      new DateTimeColumnAssignment(SECOND, secondCol, null));
-    assignments.put(UNIX, new DateTimeColumnAssignment(UNIX, unixCol, null));
-
-    this.fileHasHeader = fileHasHeader;
-
-    if (!assignmentComplete()) {
-      throw new DateTimeSpecificationException("Specification is not complete");
-    }
+    throw new DateTimeSpecificationException("MUST NOT BE USED");
   }
 
   /**
@@ -290,7 +281,8 @@ public class DateTimeSpecification {
     boolean timeAssigned = false;
 
     if (isAssigned(DATE_TIME) || isAssigned(JDAY_TIME)
-      || isAssigned(HOURS_FROM_START) || isAssigned(UNIX)) {
+      || isAssigned(HOURS_FROM_START) || isAssigned(SECONDS_FROM_START)
+      || isAssigned(UNIX)) {
       dateAssigned = true;
       timeAssigned = true;
     } else {
@@ -330,6 +322,7 @@ public class DateTimeSpecification {
         JDAY_TIME, JDAY, MONTH, DAY, TIME, HOUR, MINUTE, SECOND);
       if (fileHasHeader) {
         availableMask = setMaskBits(availableMask, HOURS_FROM_START);
+        availableMask = setMaskBits(availableMask, SECONDS_FROM_START);
       }
     } else if (isAssigned(DATE_TIME)) {
       availableMask = setMaskBits(availableMask, DATE_TIME);
@@ -344,9 +337,15 @@ public class DateTimeSpecification {
         timeProcessed = true;
       }
 
-      // Julian day/time from start of file requires no other entries
+      // Hours/Seconds from start of file requires no other entries
       if (!dateProcessed && isAssigned(HOURS_FROM_START)) {
         availableMask = setMaskBits(availableMask, HOURS_FROM_START);
+        dateProcessed = true;
+        timeProcessed = true;
+      }
+
+      if (!dateProcessed && isAssigned(SECONDS_FROM_START)) {
+        availableMask = setMaskBits(availableMask, SECONDS_FROM_START);
         dateProcessed = true;
         timeProcessed = true;
       }
@@ -521,6 +520,10 @@ public class DateTimeSpecification {
       result = HOURS_FROM_START_NAME;
       break;
     }
+    case SECONDS_FROM_START: {
+      result = SECONDS_FROM_START_NAME;
+      break;
+    }
     case DATE: {
       result = DATE_NAME;
       break;
@@ -596,6 +599,10 @@ public class DateTimeSpecification {
       result = HOURS_FROM_START;
       break;
     }
+    case SECONDS_FROM_START_NAME: {
+      result = SECONDS_FROM_START;
+      break;
+    }
     case DATE_NAME: {
       result = DATE;
       break;
@@ -668,6 +675,11 @@ public class DateTimeSpecification {
         "Cannot use assign with Hours From Start Of File; use assignHoursFromStart");
     }
 
+    if (assignmentIndex == SECONDS_FROM_START) {
+      throw new DateTimeSpecificationException(
+        "Cannot use assign with Hours From Start Of File; use assignSecondsFromStart");
+    }
+
     DateTimeColumnAssignment assignment = assignments.get(assignmentIndex);
     assignment.setColumn(column);
 
@@ -693,9 +705,44 @@ public class DateTimeSpecification {
    */
   public void assignHoursFromStart(int column, String headerPrefix,
     String headerSuffix, String format) throws DateTimeSpecificationException {
-    DateTimeColumnAssignment assignment = assignments.get(HOURS_FROM_START);
+
+    assignPeriodFromStart(HOURS_FROM_START, column, headerPrefix, headerSuffix,
+      format);
+  }
+
+  /**
+   * Assign a column to the {@link #SECONDS_FROM_START} assignment
+   *
+   * @param column
+   *          The column index
+   * @param headerPrefix
+   *          The header prefix
+   * @param headerSuffix
+   *          The header suffix
+   * @param format
+   *          The date format
+   * @throws DateTimeSpecificationException
+   *           If the assignment cannot be made
+   */
+  public void assignSecondsFromStart(int column, String headerPrefix,
+    String headerSuffix, String format) throws DateTimeSpecificationException {
+
+    assignPeriodFromStart(SECONDS_FROM_START, column, headerPrefix,
+      headerSuffix, format);
+  }
+
+  private void assignPeriodFromStart(int format, int column,
+    String headerPrefix, String headerSuffix, String dateFormat)
+    throws DateTimeSpecificationException {
+
+    if (format != HOURS_FROM_START && format != SECONDS_FROM_START) {
+      throw new DateTimeSpecificationException(
+        "Must use HOURS_FROM_START or SECONDS_FROM_START");
+    }
+
+    DateTimeColumnAssignment assignment = assignments.get(format);
     assignment.setColumn(column);
-    assignment.setDateFormatString(format);
+    assignment.setDateFormatString(dateFormat);
     assignment.setPrefix(headerPrefix);
     assignment.setSuffix(headerSuffix);
   }
@@ -756,6 +803,11 @@ public class DateTimeSpecification {
         throw new DateTimeSpecificationException("File header date is null");
       }
       result = getHoursFromStartDate(headerDate, line);
+    } else if (isAssigned(SECONDS_FROM_START)) {
+      if (null == headerDate) {
+        throw new DateTimeSpecificationException("File header date is null");
+      }
+      result = getSecondsFromStartDate(headerDate, line);
     } else if (isAssigned(DATE_TIME)) {
       result = getDateTime(line);
     } else if (isAssigned(UNIX)) {
@@ -823,6 +875,46 @@ public class DateTimeSpecification {
     LocalDateTime result;
     try {
       result = headerDate.plusSeconds(lineSeconds);
+    } catch (DateTimeException e) {
+      ExceptionUtils.printStackTrace(e);
+      throw new DateTimeSpecificationException(
+        "Invalid hours value: " + e.getMessage());
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the date of a line using the Seconds From Start Date specification
+   *
+   * @param headerDate
+   *          The file's start date from the header
+   * @param line
+   *          The line whose date is to be extracted
+   * @return The date
+   * @throws DataFileException
+   *           If the hours column is empty
+   */
+  private LocalDateTime getSecondsFromStartDate(LocalDateTime headerDate,
+    List<String> line) throws DateTimeSpecificationException {
+
+    DateTimeColumnAssignment assignment = getAssignment(SECONDS_FROM_START);
+    Double seconds;
+
+    try {
+      seconds = DataFile
+        .extractDoubleFieldValue(line.get(assignment.getColumn()), null);
+    } catch (ValueNotNumericException e) {
+      throw new DateTimeSpecificationException("Hours column is not numeric");
+    }
+
+    if (null == seconds) {
+      throw new DateTimeSpecificationException("Seconds column is empty");
+    }
+
+    LocalDateTime result;
+    try {
+      result = headerDate.plusSeconds(Math.round(seconds));
     } catch (DateTimeException e) {
       ExceptionUtils.printStackTrace(e);
       throw new DateTimeSpecificationException(
@@ -1185,6 +1277,8 @@ public class DateTimeSpecification {
     boolean dateTimeRequired = !isAssigned(DATE_TIME);
     boolean hoursFromStartRequired = fileHasHeader
       && !isAssigned(HOURS_FROM_START);
+    boolean secondsFromStartRequired = fileHasHeader
+      && !isAssigned(SECONDS_FROM_START);
     boolean dateRequired = !isAssigned(DATE);
     boolean yearRequired = !isAssigned(YEAR);
     boolean jdayTimeRequired = !isAssigned(JDAY_TIME);
@@ -1198,9 +1292,10 @@ public class DateTimeSpecification {
     boolean unixRequired = !isAssigned(UNIX);
 
     if (isAssigned(DATE_TIME) || isAssigned(HOURS_FROM_START)
-      || isAssigned(UNIX)) {
+      || isAssigned(SECONDS_FROM_START) || isAssigned(UNIX)) {
       dateTimeRequired = false;
       hoursFromStartRequired = false;
+      secondsFromStartRequired = false;
       dateRequired = false;
       yearRequired = false;
       jdayTimeRequired = false;
@@ -1217,6 +1312,7 @@ public class DateTimeSpecification {
     if (isAssigned(DATE)) {
       dateTimeRequired = false;
       hoursFromStartRequired = false;
+      secondsFromStartRequired = false;
       yearRequired = false;
       jdayTimeRequired = false;
       jdayRequired = false;
@@ -1228,6 +1324,7 @@ public class DateTimeSpecification {
     if (isAssigned(YEAR)) {
       dateTimeRequired = false;
       hoursFromStartRequired = false;
+      secondsFromStartRequired = false;
       dateRequired = false;
       unixRequired = false;
     }
@@ -1235,6 +1332,7 @@ public class DateTimeSpecification {
     if (isAssigned(JDAY_TIME)) {
       dateTimeRequired = false;
       hoursFromStartRequired = false;
+      secondsFromStartRequired = false;
       dateRequired = false;
       jdayRequired = false;
       monthRequired = false;
@@ -1249,6 +1347,7 @@ public class DateTimeSpecification {
     if (isAssigned(JDAY)) {
       dateTimeRequired = false;
       hoursFromStartRequired = false;
+      secondsFromStartRequired = false;
       dateRequired = false;
       jdayTimeRequired = false;
       monthRequired = false;
@@ -1259,6 +1358,7 @@ public class DateTimeSpecification {
     if (isAssigned(MONTH) || isAssigned(DAY)) {
       dateTimeRequired = false;
       hoursFromStartRequired = false;
+      secondsFromStartRequired = false;
       dateRequired = false;
       jdayTimeRequired = false;
       jdayRequired = false;
@@ -1268,6 +1368,7 @@ public class DateTimeSpecification {
     if (isAssigned(TIME)) {
       dateTimeRequired = false;
       hoursFromStartRequired = false;
+      secondsFromStartRequired = false;
       jdayTimeRequired = false;
       hourRequired = false;
       minuteRequired = false;
@@ -1278,6 +1379,7 @@ public class DateTimeSpecification {
     if (isAssigned(HOUR) || isAssigned(MINUTE) || isAssigned(SECOND)) {
       dateTimeRequired = false;
       hoursFromStartRequired = false;
+      secondsFromStartRequired = false;
       jdayTimeRequired = false;
       timeRequired = false;
       unixRequired = false;
@@ -1288,6 +1390,9 @@ public class DateTimeSpecification {
     }
     if (hoursFromStartRequired) {
       result.add(HOURS_FROM_START);
+    }
+    if (secondsFromStartRequired) {
+      result.add(SECONDS_FROM_START);
     }
     if (dateRequired) {
       result.add(DATE);
@@ -1332,7 +1437,7 @@ public class DateTimeSpecification {
     LinkedHashMap<String, Boolean> result = new LinkedHashMap<String, Boolean>();
     List<Integer> requiredTypes = getRequiredTypes();
 
-    for (int i = 0; i <= MAX_INDEX; i++) {
+    for (int i : assignments.keySet()) {
       if (isAssigned(i)) {
         result.put(getAssignmentName(i), false);
       } else if (requiredTypes.contains(i)) {

@@ -130,7 +130,8 @@ public class DateTimeColumnAssignment {
     case DateTimeSpecification.DATE_TIME:
     case DateTimeSpecification.DATE:
     case DateTimeSpecification.TIME:
-    case DateTimeSpecification.HOURS_FROM_START: {
+    case DateTimeSpecification.HOURS_FROM_START:
+    case DateTimeSpecification.SECONDS_FROM_START: {
       properties.setProperty(FORMAT_PROPERTY, format);
       break;
     }
@@ -200,7 +201,8 @@ public class DateTimeColumnAssignment {
 
   /**
    * Set the header prefix for the
-   * {@link DateTimeSpecification#HOURS_FROM_START} assignment
+   * {@link DateTimeSpecification#HOURS_FROM_START} or
+   * {@link DateTimeSpecification#SECONDS_FROM_START} assignment
    *
    * @param prefix
    *          The prefix
@@ -208,7 +210,8 @@ public class DateTimeColumnAssignment {
    *           If an attempt is made to set a prefix for a different assignment
    */
   public void setPrefix(String prefix) throws DateTimeSpecificationException {
-    if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START) {
+    if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START
+      && assignmentIndex != DateTimeSpecification.SECONDS_FROM_START) {
       throw new DateTimeSpecificationException(
         "Cannot set header prefix for spec field " + assignmentIndex);
     }
@@ -218,14 +221,16 @@ public class DateTimeColumnAssignment {
 
   /**
    * Get the header prefix for the
-   * {@link DateTimeSpecification#HOURS_FROM_START} assignment
+   * {@link DateTimeSpecification#HOURS_FROM_START} or
+   * {@link DateTimeSpecification#SECONDS_FROM_START} assignment
    *
    * @return The prefix
    * @throws DateTimeSpecificationException
    *           If an attempt is made to set a prefix for a different assignment
    */
   public String getPrefix() throws DateTimeSpecificationException {
-    if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START) {
+    if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START
+      && assignmentIndex != DateTimeSpecification.SECONDS_FROM_START) {
       throw new DateTimeSpecificationException(
         "Cannot get header prefix for spec field " + assignmentIndex);
     }
@@ -235,7 +240,8 @@ public class DateTimeColumnAssignment {
 
   /**
    * Set the header suffix for the
-   * {@link DateTimeSpecification#HOURS_FROM_START} assignment
+   * {@link DateTimeSpecification#HOURS_FROM_START} or
+   * {@link DateTimeSpecification#SECONDS_FROM_START} assignment
    *
    * @param suffix
    *          The suffix
@@ -243,7 +249,8 @@ public class DateTimeColumnAssignment {
    *           If an attempt is made to set a suffix for a different assignment
    */
   public void setSuffix(String suffix) throws DateTimeSpecificationException {
-    if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START) {
+    if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START
+      && assignmentIndex != DateTimeSpecification.SECONDS_FROM_START) {
       throw new DateTimeSpecificationException(
         "Cannot set header suffix for spec field " + assignmentIndex);
     }
@@ -253,14 +260,16 @@ public class DateTimeColumnAssignment {
 
   /**
    * Get the header suffix for the
-   * {@link DateTimeSpecification#HOURS_FROM_START} assignment
+   * {@link DateTimeSpecification#HOURS_FROM_START} or
+   * {@link DateTimeSpecification#SECONDS_FROM_START} assignment
    *
    * @return suffix The suffix
    * @throws DateTimeSpecificationException
    *           If an attempt is made to set a suffix for a different assignment
    */
   public String getSuffix() throws DateTimeSpecificationException {
-    if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START) {
+    if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START
+      && assignmentIndex != DateTimeSpecification.SECONDS_FROM_START) {
       throw new DateTimeSpecificationException(
         "Cannot set header suffix for spec field " + assignmentIndex);
     }
