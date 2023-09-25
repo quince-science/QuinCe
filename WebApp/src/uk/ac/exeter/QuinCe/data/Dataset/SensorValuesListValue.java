@@ -8,15 +8,15 @@ import java.util.Collections;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * Represents a value retrieved from a {@link SensorValuesList}.
  *
  * <p>
- * Since it's possible to request values for timestamps that don't exactly match
- * the records in a {@link SensorValuesList}, this object contains both the
- * found value and its true timestamp (which may differ from the requested
- * timestamp).
+ * These values contain both a start time and an end time to support PERIODIC
+ * mode {@link SensorValuesList}s, where values can be grouped together. (See
+ * {@link SensorValuesList#getMeasurementMode()}.
  * <p>
  *
  * <p>
@@ -59,9 +59,14 @@ public class SensorValuesListValue
   private final SensorType sensorType;
 
   /**
-   * The timestamp of the returned value.
+   * The beginning of the time period covered by this value.
    */
-  private final LocalDateTime time;
+  private final LocalDateTime startTime;
+
+  /**
+   * The end of the time period covered by this value.
+   */
+  private final LocalDateTime endTime;
 
   /**
    * The {@link SensorValue}s used to calculate the value.
@@ -108,7 +113,8 @@ public class SensorValuesListValue
     SensorType sensorType, DatasetSensorValues allSensorValues)
     throws SensorValuesListException {
 
-    this.time = sourceSensorValue.getTime();
+    this.startTime = sourceSensorValue.getTime();
+    this.endTime = sourceSensorValue.getTime();
     sourceSensorValues = Collections
       .unmodifiableCollection(Arrays.asList(sourceSensorValue));
     this.sensorType = sensorType;
@@ -147,10 +153,11 @@ public class SensorValuesListValue
    * @param qcMessage
    *          The value's QC message.
    */
-  protected SensorValuesListValue(LocalDateTime time,
-    Collection<SensorValue> sourceSensorValues, SensorType sensorType,
-    String value, Flag qcFlag, String qcMessage) {
-    this.time = time;
+  protected SensorValuesListValue(LocalDateTime startTime,
+    LocalDateTime endTime, Collection<SensorValue> sourceSensorValues,
+    SensorType sensorType, String value, Flag qcFlag, String qcMessage) {
+    this.startTime = startTime;
+    this.endTime = endTime;
     this.sourceSensorValues = Collections
       .unmodifiableCollection(sourceSensorValues);
     this.sensorType = sensorType;
@@ -184,10 +191,11 @@ public class SensorValuesListValue
    * @param qcMessage
    *          The value's QC message.
    */
-  protected SensorValuesListValue(LocalDateTime time,
-    Collection<SensorValue> sourceSensorValues, SensorType sensorType,
-    Double value, Flag qcFlag, String qcMessage) {
-    this.time = time;
+  protected SensorValuesListValue(LocalDateTime startTime,
+    LocalDateTime endTime, Collection<SensorValue> sourceSensorValues,
+    SensorType sensorType, Double value, Flag qcFlag, String qcMessage) {
+    this.startTime = startTime;
+    this.endTime = endTime;
     this.sourceSensorValues = Collections
       .unmodifiableCollection(sourceSensorValues);
     this.sensorType = sensorType;
@@ -198,12 +206,31 @@ public class SensorValuesListValue
   }
 
   /**
-   * Get the value's timestamp.
+   * Get the value's timestamp. This is the midpoint of the {@link #startTime}
+   * and {@link #endTime}.
    *
    * @return The timestamp.
    */
   public LocalDateTime getTime() {
-    return time;
+    return DateTimeUtils.midPoint(startTime, endTime);
+  }
+
+  /**
+   * Get the start time of the period covered by this value.
+   * 
+   * @return The start time.
+   */
+  public LocalDateTime getStartTime() {
+    return startTime;
+  }
+
+  /**
+   * Get the end time of the period covered by this value.
+   * 
+   * @return The end time.
+   */
+  public LocalDateTime getEndTime() {
+    return endTime;
   }
 
   /**
@@ -270,6 +297,34 @@ public class SensorValuesListValue
    */
   public SensorType getSensorType() {
     return sensorType;
+  }
+
+  /**
+   * Determine whether or not this is an interpolated value.
+   * 
+   * <p>
+   * The value is deemed to be interpolated if (a) there is more than one source
+   * {@link SensorValue} or (b) the single source {@link SensorValue} has a
+   * different timestamp to that assigned to this value (i.e. the result of
+   * calling {@link #getTime()}}.
+   * </p>
+   * 
+   * @return {@code true} if this value is interpolated; {@code false} if it is
+   *         not.
+   */
+  public boolean isInterpolated() {
+    boolean result;
+
+    if (sourceSensorValues.size() > 1) {
+      result = true;
+    } else if (!sourceSensorValues.stream().findFirst().get().getTime()
+      .equals(getTime())) {
+      result = true;
+    } else {
+      result = false;
+    }
+
+    return result;
   }
 
   /**
