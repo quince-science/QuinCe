@@ -450,9 +450,8 @@ public class SensorValuesList {
               SensorValue firstValue = groupMembers.stream().findFirst().get();
 
               SensorValuesListValue outputValue = new SensorValuesListValue(
-                DateTimeUtils.midPoint(groupStartTime, groupEndTime),
-                groupMembers, sensorType, firstValue.getValue(),
-                firstValue.getDisplayFlag(),
+                groupStartTime, groupEndTime, groupMembers, sensorType,
+                firstValue.getValue(), firstValue.getDisplayFlag(),
                 firstValue.getDisplayQCMessage(allSensorValues));
               outputValues.add(outputValue);
 
@@ -476,8 +475,8 @@ public class SensorValuesList {
         SensorValue firstValue = groupMembers.stream().findFirst().get();
 
         SensorValuesListValue outputValue = new SensorValuesListValue(
-          DateTimeUtils.midPoint(groupStartTime, groupEndTime), groupMembers,
-          sensorType, firstValue.getValue(), firstValue.getDisplayFlag(),
+          groupStartTime, groupEndTime, groupMembers, sensorType,
+          firstValue.getValue(), firstValue.getDisplayFlag(),
           firstValue.getDisplayQCMessage(allSensorValues));
         outputValues.add(outputValue);
       }
@@ -546,7 +545,9 @@ public class SensorValuesList {
    *
    * <p>
    * The {@link SensorValue}s are assumed to be in ascending time order for the
-   * purposes of calculating the result's timestamp.
+   * purposes of calculating the result's timestamp. The timestamp is calculated
+   * from the values that are not missing or flushing: even if the first value
+   * is {@link Flag#BAD}, its timestamp will count.
    * </p>
    *
    * @param sensorValues
@@ -556,6 +557,14 @@ public class SensorValuesList {
    */
   private SensorValuesListValue makeNumericValue(List<SensorValue> sensorValues)
     throws SensorValuesListException {
+
+    // Get the timestamps for the value
+    List<LocalDateTime> timestamps = sensorValues.stream()
+      .filter(v -> !v.isNaN() && !v.getDisplayFlag().equals(Flag.FLUSHING))
+      .map(v -> v.getTime()).toList();
+
+    LocalDateTime startTime = timestamps.get(0);
+    LocalDateTime endTime = timestamps.get(timestamps.size() - 1);
 
     // Work out which flags are represented in the sensor values
     List<Flag> presentFlags = sensorValues.stream()
@@ -587,12 +596,8 @@ public class SensorValuesList {
       MeanCalculator mean = new MeanCalculator(
         usedValues.stream().map(SensorValue::getDoubleValue).toList());
 
-      LocalDateTime startTime = usedValues.get(0).getTime();
-      LocalDateTime endTime = usedValues.get(usedValues.size() - 1).getTime();
-
-      return new SensorValuesListValue(
-        DateTimeUtils.midPoint(startTime, endTime), usedValues, sensorType,
-        mean.mean(), chosenFlag,
+      return new SensorValuesListValue(startTime, endTime, usedValues,
+        sensorType, mean.mean(), chosenFlag,
         StringUtils.collectionToDelimited(qcMessages, ";"));
     } catch (Exception e) {
       throw new SensorValuesListException(e);
@@ -932,10 +937,11 @@ public class SensorValuesList {
         combinedSourceValues.addAll(first.getSourceSensorValues());
         combinedSourceValues.addAll(second.getSourceSensorValues());
 
-        result = new SensorValuesListValue(targetTime, combinedSourceValues,
-          first.getSensorType(), interpValue,
-          Flag.getWorstFlag(first.getQCFlag(), second.getQCFlag()), StringUtils
-            .combine(first.getQCMessage(), second.getQCMessage(), ";"));
+        result = new SensorValuesListValue(first.getStartTime(),
+          second.getEndTime(), combinedSourceValues, first.getSensorType(),
+          interpValue, Flag.getWorstFlag(first.getQCFlag(), second.getQCFlag()),
+          StringUtils.combine(first.getQCMessage(), second.getQCMessage(),
+            ";"));
       }
     }
     return result;
