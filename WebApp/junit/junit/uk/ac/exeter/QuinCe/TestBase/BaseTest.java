@@ -205,11 +205,11 @@ public class BaseTest {
   /**
    * Determine whether or not a list of {@link LocalDateTime} objects is in
    * ascending order.
-   * 
+   *
    * <p>
    * Identical values are allowed.
    * </p>
-   * 
+   *
    * @param list
    *          The list.
    * @return {@code true} if the list is ordered; {@code false} otherwise.

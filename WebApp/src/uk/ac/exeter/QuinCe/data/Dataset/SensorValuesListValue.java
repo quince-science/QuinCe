@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,10 +15,13 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * Represents a value retrieved from a {@link SensorValuesList}.
  *
  * <p>
- * These values contain both a start time and an end time to support PERIODIC
- * mode {@link SensorValuesList}s, where values can be grouped together. (See
- * {@link SensorValuesList#getMeasurementMode()}.
- * <p>
+ * The value contains three times. Start and End times indicate the time range
+ * of the source {@link SensorValue}s from which the value has been
+ * constructed/calculated, and is useful for PERIODIC measurement modes and
+ * interpolated values. The Nominal time is a single reference timestamp for the
+ * value. This may be the centre point of a group of values, or the target time
+ * of an interpolated value.
+ * </p>
  *
  * <p>
  * Note that if the source {@link SensorValuesList} has a PERIODIC measurement
@@ -69,12 +73,17 @@ public class SensorValuesListValue
   private final LocalDateTime endTime;
 
   /**
+   * The nominal single timestamp for this value.
+   */
+  private final LocalDateTime nominalTime;
+
+  /**
    * The {@link SensorValue}s used to calculate the value.
-   * 
+   *
    * <p>
    * The {@link Collection} is unmodifiable.
    * </p>
-   * 
+   *
    * @see Collections#unmodifiableCollection(Collection)
    */
   private final Collection<SensorValue> sourceSensorValues;
@@ -115,6 +124,7 @@ public class SensorValuesListValue
 
     this.startTime = sourceSensorValue.getTime();
     this.endTime = sourceSensorValue.getTime();
+    this.nominalTime = sourceSensorValue.getTime();
     sourceSensorValues = Collections
       .unmodifiableCollection(Arrays.asList(sourceSensorValue));
     this.sensorType = sensorType;
@@ -154,10 +164,12 @@ public class SensorValuesListValue
    *          The value's QC message.
    */
   protected SensorValuesListValue(LocalDateTime startTime,
-    LocalDateTime endTime, Collection<SensorValue> sourceSensorValues,
-    SensorType sensorType, String value, Flag qcFlag, String qcMessage) {
+    LocalDateTime endTime, LocalDateTime nominalTime,
+    Collection<SensorValue> sourceSensorValues, SensorType sensorType,
+    String value, Flag qcFlag, String qcMessage) {
     this.startTime = startTime;
     this.endTime = endTime;
+    this.nominalTime = nominalTime;
     this.sourceSensorValues = Collections
       .unmodifiableCollection(sourceSensorValues);
     this.sensorType = sensorType;
@@ -178,6 +190,30 @@ public class SensorValuesListValue
   }
 
   /**
+   * Create a copy of an existing {@link SensorValuesListValue} with a new
+   * nominal time.
+   *
+   * @param original
+   *          The original value.
+   * @param nominalTime
+   *          The new nominal time.
+   */
+  protected SensorValuesListValue(SensorValuesListValue original,
+    LocalDateTime nominalTime) {
+
+    this.sensorType = original.sensorType;
+    this.doubleValue = original.doubleValue;
+    this.stringValue = original.stringValue;
+    this.startTime = original.startTime;
+    this.endTime = original.endTime;
+    this.nominalTime = nominalTime;
+    this.qcFlag = original.qcFlag;
+    this.qcMessage = original.qcMessage;
+    this.sourceSensorValues = new ArrayList<SensorValue>(
+      original.sourceSensorValues);
+  }
+
+  /**
    * Constructor for a value based on multiple {@link SensorValue}s.
    *
    * @param time
@@ -192,10 +228,12 @@ public class SensorValuesListValue
    *          The value's QC message.
    */
   protected SensorValuesListValue(LocalDateTime startTime,
-    LocalDateTime endTime, Collection<SensorValue> sourceSensorValues,
-    SensorType sensorType, Double value, Flag qcFlag, String qcMessage) {
+    LocalDateTime endTime, LocalDateTime nominalTime,
+    Collection<SensorValue> sourceSensorValues, SensorType sensorType,
+    Double value, Flag qcFlag, String qcMessage) {
     this.startTime = startTime;
     this.endTime = endTime;
+    this.nominalTime = nominalTime;
     this.sourceSensorValues = Collections
       .unmodifiableCollection(sourceSensorValues);
     this.sensorType = sensorType;
@@ -217,7 +255,7 @@ public class SensorValuesListValue
 
   /**
    * Get the start time of the period covered by this value.
-   * 
+   *
    * @return The start time.
    */
   public LocalDateTime getStartTime() {
@@ -226,11 +264,20 @@ public class SensorValuesListValue
 
   /**
    * Get the end time of the period covered by this value.
-   * 
+   *
    * @return The end time.
    */
   public LocalDateTime getEndTime() {
     return endTime;
+  }
+
+  /**
+   * Get the nominal timestamp for this value.
+   *
+   * @return The nominal timestamp.
+   */
+  public LocalDateTime getNominalTime() {
+    return nominalTime;
   }
 
   /**
@@ -301,14 +348,14 @@ public class SensorValuesListValue
 
   /**
    * Determine whether or not this is an interpolated value.
-   * 
+   *
    * <p>
    * The value is deemed to be interpolated if (a) there is more than one source
    * {@link SensorValue} or (b) the single source {@link SensorValue} has a
    * different timestamp to that assigned to this value (i.e. the result of
    * calling {@link #getTime()}}.
    * </p>
-   * 
+   *
    * @return {@code true} if this value is interpolated; {@code false} if it is
    *         not.
    */
