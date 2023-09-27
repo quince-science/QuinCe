@@ -52,7 +52,7 @@ public class SensorValuesListTest extends BaseTest {
 
   /**
    * Create a {@link DatasetSensorValues} object.
-   * 
+   *
    * @return The {@link DatasetSensorValues}.
    * @throws Exception
    *           If the construction fails.
@@ -64,12 +64,12 @@ public class SensorValuesListTest extends BaseTest {
 
   /**
    * Make a {@link SensorValue} for a given column, hour and minute.
-   * 
+   *
    * <p>
    * The time will always have the same date - just the time will change
    * according to the parameters. The value will always be the same.
    * </p>
-   * 
+   *
    * @param column
    *          The column ID
    * @param hour

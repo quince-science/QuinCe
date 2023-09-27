@@ -28,7 +28,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * <b>IMPORTANT: READ ALL OF THIS DESCRIPTION, PARTICULARLY THE NOTE IN THE LAST
  * PARAGRAPH.</b>
  * </p>
- * 
+ *
  * <p>
  * The list is maintained in time order of its members. Attempting to add two
  * {@link SensorValue}s with the same timestamp will result in an
@@ -67,7 +67,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * Values mode results are automatically stripped of {@link Flag#FLUSHING}
  * values.
  * </p>
- * 
+ *
  * <p>
  * <b>Note:</b> For the PERIODIC mode, the auto-generated
  * {@link SensorValuesListValue}s may not be suitable for use. For example, a
@@ -450,8 +450,10 @@ public class SensorValuesList {
               SensorValue firstValue = groupMembers.stream().findFirst().get();
 
               SensorValuesListValue outputValue = new SensorValuesListValue(
-                groupStartTime, groupEndTime, groupMembers, sensorType,
-                firstValue.getValue(), firstValue.getDisplayFlag(),
+                groupStartTime, groupEndTime,
+                DateTimeUtils.midPoint(groupStartTime, groupEndTime),
+                groupMembers, sensorType, firstValue.getValue(),
+                firstValue.getDisplayFlag(),
                 firstValue.getDisplayQCMessage(allSensorValues));
               outputValues.add(outputValue);
 
@@ -475,8 +477,9 @@ public class SensorValuesList {
         SensorValue firstValue = groupMembers.stream().findFirst().get();
 
         SensorValuesListValue outputValue = new SensorValuesListValue(
-          groupStartTime, groupEndTime, groupMembers, sensorType,
-          firstValue.getValue(), firstValue.getDisplayFlag(),
+          groupStartTime, groupEndTime,
+          DateTimeUtils.midPoint(groupStartTime, groupEndTime), groupMembers,
+          sensorType, firstValue.getValue(), firstValue.getDisplayFlag(),
           firstValue.getDisplayQCMessage(allSensorValues));
         outputValues.add(outputValue);
       }
@@ -596,8 +599,9 @@ public class SensorValuesList {
       MeanCalculator mean = new MeanCalculator(
         usedValues.stream().map(SensorValue::getDoubleValue).toList());
 
-      return new SensorValuesListValue(startTime, endTime, usedValues,
-        sensorType, mean.mean(), chosenFlag,
+      return new SensorValuesListValue(startTime, endTime,
+        DateTimeUtils.midPoint(startTime, endTime), usedValues, sensorType,
+        mean.mean(), chosenFlag,
         StringUtils.collectionToDelimited(qcMessages, ";"));
     } catch (Exception e) {
       throw new SensorValuesListException(e);
@@ -645,6 +649,18 @@ public class SensorValuesList {
     }
   }
 
+  /**
+   * Get the list of times for values in the list.
+   *
+   * <p>
+   * For CONTINUOUS mode, this is the list of every valid {@link SensorValue}.
+   * For PERIODIC mode, this is the midpoint of every group of values.
+   * </p>
+   *
+   * @return The list of times.
+   * @throws SensorValuesListException
+   *           If the times cannot be retrieved.
+   */
   public List<LocalDateTime> getValueTimes() throws SensorValuesListException {
     if (null == outputValues) {
       buildOutputValues();
@@ -863,32 +879,81 @@ public class SensorValuesList {
 
     SensorValuesListValue result;
 
-    int searchIndex = Collections.binarySearch(valueTimesCache, time);
+    /*
+     * Search for a group of the specified time. This works as a binary search,
+     * but: 1. If the time is inside a group, we have an exact match and get the
+     * index of that group. 2. If we fall between groups, we get the negative
+     * result per a standard binary search.
+     */
+    int searchIndex = Collections.binarySearch(outputValues,
+      makeDummyValue(time), new SensorValuesListValueTimeComparator());
 
-    if (searchIndex >= 0) {
-      result = outputValues.get(searchIndex);
+    SensorValuesListValue exactMatch = searchIndex >= 0
+      ? outputValues.get(searchIndex)
+      : null;
+
+    if (null != exactMatch) {
+      // If the exact match is GOOD, use it
+      result = new SensorValuesListValue(exactMatch, time);
     } else {
-      int priorIndex = Math.abs(searchIndex) - 2;
-      int postIndex = Math.abs(searchIndex) - 1;
 
-      SensorValuesListValue prior = priorIndex >= 0
-        ? outputValues.get(priorIndex)
-        : null;
-      SensorValuesListValue post = postIndex < outputValues.size()
-        ? outputValues.get(postIndex)
-        : null;
+      // Get the previous and next groups
+      SensorValuesListValue prior = null;
+      SensorValuesListValue post = null;
 
-      result = buildInterpolatedValue(prior, post, time);
+      // Get the best possible interpolated value
+      int priorIndex = searchIndex >= 0 ? searchIndex - 1
+        : Math.abs(searchIndex) - 2;
+
+      if (priorIndex >= 0 && priorIndex < outputValues.size()) {
+        prior = outputValues.get(priorIndex);
+      }
+
+      int postIndex = searchIndex >= 0 ? searchIndex + 1
+        : Math.abs(searchIndex) - 1;
+
+      if (postIndex >= 0 && postIndex < outputValues.size()) {
+        post = outputValues.get(postIndex);
+      }
+
+      if (null == prior) {
+        result = new SensorValuesListValue(post, time);
+      } else if (null == post) {
+        result = new SensorValuesListValue(prior, time);
+      } else {
+        result = getBestOrInterpolate(prior, post, time);
+      }
     }
 
     return result;
+  }
 
+  private SensorValuesListValue getBestOrInterpolate(
+    SensorValuesListValue first, SensorValuesListValue second,
+    LocalDateTime targetTime) throws SensorValuesListException {
+    SensorValuesListValue result;
+
+    if (first.getQCFlag().moreSignificantThan(second.getQCFlag())) {
+      result = second;
+    } else if (second.getQCFlag().moreSignificantThan(first.getQCFlag())) {
+      result = first;
+    } else {
+      // Equal flags -> interpolate
+      result = buildInterpolatedValue(first, second, targetTime);
+    }
+
+    return result;
+  }
+
+  private SensorValuesListValue makeDummyValue(LocalDateTime time) {
+    return new SensorValuesListValue(time, time, time,
+      new ArrayList<SensorValue>(), sensorType, "DUMMY", Flag.BAD, "DUMMY");
   }
 
   /**
    * Construct an interpolated {@link SensorValuesListValue} from two
    * {@link SensorValuesListValue}s.
-   * 
+   *
    * <p>
    * The value of the result will be the linear interpolation of the supplied
    * values to the specified target time.
@@ -914,16 +979,16 @@ public class SensorValuesList {
       result = null;
     } else if (second == null) {
       // Use prior value only
-      result = first;
+      result = new SensorValuesListValue(first, targetTime);
     } else if (first == null) {
       // Use post value only
-      result = second;
+      result = new SensorValuesListValue(second, targetTime);
     } else {
 
       if (second.getQCFlag().moreSignificantThan(first.getQCFlag())) {
-        result = first;
+        result = new SensorValuesListValue(first, targetTime);
       } else if (first.getQCFlag().moreSignificantThan(second.getQCFlag())) {
-        result = second;
+        result = new SensorValuesListValue(second, targetTime);
       } else {
 
         // Interpolate between the two
@@ -938,10 +1003,10 @@ public class SensorValuesList {
         combinedSourceValues.addAll(second.getSourceSensorValues());
 
         result = new SensorValuesListValue(first.getStartTime(),
-          second.getEndTime(), combinedSourceValues, first.getSensorType(),
-          interpValue, Flag.getWorstFlag(first.getQCFlag(), second.getQCFlag()),
-          StringUtils.combine(first.getQCMessage(), second.getQCMessage(),
-            ";"));
+          second.getEndTime(), targetTime, combinedSourceValues,
+          first.getSensorType(), interpValue,
+          Flag.getWorstFlag(first.getQCFlag(), second.getQCFlag()), StringUtils
+            .combine(first.getQCMessage(), second.getQCMessage(), ";"));
       }
     }
     return result;
@@ -1221,11 +1286,11 @@ public class SensorValuesList {
   /**
    * Construct a {@link SensorValuesListValue} using {@link SensorValue}s in the
    * specified time range.
-   * 
+   *
    * <p>
    * Only values with the best {@link Flag} from the selected values are used.
    * </p>
-   * 
+   *
    * @param start
    *          The start time.
    * @param end
