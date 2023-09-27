@@ -6,20 +6,27 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
- * Test the {@link SensorValuesList#getValue(java.time.LocalDateTime)} method
- * for periodic measurements.
+ * Test the
+ * {@link SensorValuesList#getValue(java.time.LocalDateTime, java.time.LocalDateTime)}
+ * method.
  */
 @TestInstance(Lifecycle.PER_CLASS)
-public class SensorValuesListGetValuePeriodicTest
+public class SensorValuesListGetValueRangeTest
   extends SensorValuesListGetValueContinuousTest {
+
+  private static final int START_TIME_COL = 2;
+
+  private static final int END_TIME_COL = 3;
 
   @Override
   protected String getTestSetName() {
-    return "SensorValuesListGetValuePeriodic";
+    return "SensorValuesListGetValueRange";
   }
 
   @Override
@@ -28,27 +35,13 @@ public class SensorValuesListGetValuePeriodicTest
 
     makeSensorValues(allSensorValues, line, 0, 11);
     makeSensorValues(allSensorValues, line, 1, 21);
-    makeSensorValues(allSensorValues, line, 2, 35);
   }
 
   @Override
-  protected int getExpectedUsedValuesCol() {
-    return 9;
-  }
-
-  @Override
-  protected int getExpectedFlagCol() {
-    return 8;
-  }
-
-  @Override
-  protected int getExpectedNominalTimeCol() {
-    return 6;
-  }
-
-  @Override
-  protected int getExpectedEndTimeCol() {
-    return 5;
+  protected SensorValuesListValue getValue(SensorValuesList list,
+    TestSetLine line) throws SensorValuesListException {
+    return list.getValue(makeTime(line.getIntField(START_TIME_COL)),
+      makeTime(line.getIntField(END_TIME_COL)));
   }
 
   @Override
@@ -57,12 +50,28 @@ public class SensorValuesListGetValuePeriodicTest
   }
 
   @Override
+  protected int getExpectedEndTimeCol() {
+    return 5;
+  }
+
+  @Override
+  protected int getExpectedNominalTimeCol() {
+    return 6;
+  }
+
+  @Override
   protected int getExpectedValueCol() {
     return 7;
   }
 
   @Override
-  protected int getRequestedMinuteCol() {
-    return 3;
+  protected int getExpectedFlagCol() {
+    return 8;
   }
+
+  @Override
+  protected int getExpectedUsedValuesCol() {
+    return 9;
+  }
+
 }
