@@ -18,6 +18,7 @@ import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
@@ -29,7 +30,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Test the {@link SensorValuesList#getValue(java.time.LocalDateTime)} method
- * for continuous measurements
+ * for continuous measurements.
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public class SensorValuesListGetValueContinuousTest extends TestSetTest {
@@ -88,8 +89,7 @@ public class SensorValuesListGetValueContinuousTest extends TestSetTest {
 
     SensorValuesList list = allSensorValues.getColumnValues(1L);
 
-    SensorValuesListValue value = list
-      .getValue(makeTime(line.getIntField(getRequestedMinuteCol())));
+    SensorValuesListValue value = getValue(list, line);
 
     String expectedValueString = line.getStringField(getExpectedValueCol(),
       true);
@@ -130,6 +130,11 @@ public class SensorValuesListGetValueContinuousTest extends TestSetTest {
       assertEquals(expectedUsedValueIds, actualUsedValueIds,
         "Used values incorrect");
     }
+  }
+
+  protected SensorValuesListValue getValue(SensorValuesList list,
+    TestSetLine line) throws SensorValuesListException {
+    return list.getValue(makeTime(line.getIntField(getRequestedMinuteCol())));
   }
 
   protected int getExpectedUsedValuesCol() {

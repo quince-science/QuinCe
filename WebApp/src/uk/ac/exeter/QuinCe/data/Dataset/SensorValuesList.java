@@ -528,7 +528,11 @@ public class SensorValuesList {
             .getTime();
           if (DateTimeUtils.secondsBetween(groupEndTime,
             sensorValue.getTime()) > CONTINUOUS_MEASUREMENT_LIMIT) {
-            outputValues.add(makeNumericValue(groupMembers));
+
+            LocalDateTime groupStartTime = groupMembers.get(0).getTime();
+
+            outputValues.add(makeNumericValue(groupMembers,
+              DateTimeUtils.midPoint(groupStartTime, groupEndTime)));
             groupMembers = new ArrayList<SensorValue>();
           }
 
@@ -538,7 +542,11 @@ public class SensorValuesList {
     }
 
     if (groupMembers.size() > 0) {
-      outputValues.add(makeNumericValue(groupMembers));
+      LocalDateTime groupStartTime = groupMembers.get(0).getTime();
+      LocalDateTime groupEndTime = groupMembers.get(groupMembers.size() - 1)
+        .getTime();
+      outputValues.add(makeNumericValue(groupMembers,
+        DateTimeUtils.midPoint(groupStartTime, groupEndTime)));
     }
   }
 
@@ -558,8 +566,8 @@ public class SensorValuesList {
    * @return The generated value.
    * @throws SensorValuesListException
    */
-  private SensorValuesListValue makeNumericValue(List<SensorValue> sensorValues)
-    throws SensorValuesListException {
+  private SensorValuesListValue makeNumericValue(List<SensorValue> sensorValues,
+    LocalDateTime nominalTime) throws SensorValuesListException {
 
     // Get the timestamps for the value
     List<LocalDateTime> timestamps = sensorValues.stream()
@@ -590,7 +598,8 @@ public class SensorValuesList {
       List<SensorValue> usedValues = sensorValues.stream()
         .filter(v -> v.getDisplayFlag().equals(chosenFlag)).toList();
 
-      List<String> qcMessages = new ArrayList<String>(usedValues.size());
+      // Use a Set so we don't get duplicate QC messages in the output value
+      TreeSet<String> qcMessages = new TreeSet<String>();
 
       for (SensorValue v : usedValues) {
         qcMessages.add(v.getDisplayQCMessage(allSensorValues));
@@ -599,9 +608,8 @@ public class SensorValuesList {
       MeanCalculator mean = new MeanCalculator(
         usedValues.stream().map(SensorValue::getDoubleValue).toList());
 
-      return new SensorValuesListValue(startTime, endTime,
-        DateTimeUtils.midPoint(startTime, endTime), usedValues, sensorType,
-        mean.mean(), chosenFlag,
+      return new SensorValuesListValue(startTime, endTime, nominalTime,
+        usedValues, sensorType, mean.mean(), chosenFlag,
         StringUtils.collectionToDelimited(qcMessages, ";"));
     } catch (Exception e) {
       throw new SensorValuesListException(e);
@@ -1288,7 +1296,9 @@ public class SensorValuesList {
    * specified time range.
    *
    * <p>
-   * Only values with the best {@link Flag} from the selected values are used.
+   * The method ignores the measurement mode for the list, and uses the raw
+   * values directly. No interpolation is performed. Only the values with the
+   * best available quality flag are included.
    * </p>
    *
    * @param start
@@ -1302,48 +1312,31 @@ public class SensorValuesList {
   public SensorValuesListValue getValue(LocalDateTime start, LocalDateTime end)
     throws SensorValuesListException {
 
-    SensorValuesListValue result;
+    List<SensorValue> usedValues = new ArrayList<SensorValue>();
 
-    switch (getMeasurementMode()) {
-    case MODE_CONTINUOUS: {
+    // Search for the start time
+    int startSearchIndex = Collections.binarySearch(getRawTimes(), start);
 
-      List<SensorValue> usedValues = new ArrayList<SensorValue>();
-
-      // Search for the start time
-      int startSearchIndex = Collections.binarySearch(getRawTimes(), start);
-
-      int currentIndex;
-      if (startSearchIndex >= 0) {
-        currentIndex = startSearchIndex;
-      } else {
-        // Get the index immediately after the requested time
-        currentIndex = Math.abs(startSearchIndex) - 1;
-        if (currentIndex < 0) {
-          currentIndex = 0;
-        }
+    int currentIndex;
+    if (startSearchIndex >= 0) {
+      currentIndex = startSearchIndex;
+    } else {
+      // Get the index immediately after the requested time
+      currentIndex = Math.abs(startSearchIndex) - 1;
+      if (currentIndex < 0) {
+        currentIndex = 0;
       }
-
-      // Get all the values between the start and end times
-      while (currentIndex < getRawTimes().size()
-        && !getRawTimes().get(currentIndex).isAfter(end)) {
-        usedValues.add(list.get(currentIndex));
-        currentIndex++;
-      }
-
-      result = usedValues.size() == 0 ? null : makeNumericValue(usedValues);
-
-      break;
-    }
-    case MODE_PERIODIC: {
-      result = null;
-      break;
-    }
-    default: {
-      throw new IllegalStateException("Invalid measurement mode");
-    }
     }
 
-    return result;
+    // Get all the values between the start and end times
+    while (currentIndex < getRawTimes().size()
+      && !getRawTimes().get(currentIndex).isAfter(end)) {
+      usedValues.add(list.get(currentIndex));
+      currentIndex++;
+    }
+
+    return usedValues.size() == 0 ? null
+      : makeNumericValue(usedValues, DateTimeUtils.midPoint(start, end));
   }
 
   /**
