@@ -4,8 +4,9 @@ import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -15,12 +16,30 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Measurement locator for Pro Oceanus CO2 sensors. Handles both marine and
- * atmospheric variables (use a dummy locator for the actual Atmospheric
- * variable).
+ * Measurement locator for Pro Oceanus CO2 sensors.
  *
- * @author stevej
+ * <p>
+ * This handles both marine and atmospheric variables (use the
+ * {@link DummyMeasurementLocator} for the atmospheric variable).
+ * </p>
  *
+ * <p>
+ * A flushing time is often not required for Pro Oceanus sensors. However, if
+ * one is set the flushing is applied when either:
+ * <ul>
+ * <li>The value of the Zero A/D column changes</li>
+ * <li>The run mode changes (W M) or (A M)</li>
+ * </ul>
+ * If both of these happen at the same time, the flushing periods are combined.
+ * Flushing flags are applied to the CO2 column.
+ * </p>
+ *
+ * <p>
+ * Measurements are located after the flushing flags have been applied. If the
+ * sensor is not measuring continuously, the CO2 values should be detected in
+ * PERIODIC mode (see {@link SensorValuesList}), so there will be one
+ * measurement per period of W M and A M readings.
+ * </p>
  */
 public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
 
@@ -49,10 +68,14 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
       HashMap<Long, String> atmRunTypes = new HashMap<Long, String>();
       atmRunTypes.put(atmVar.getId(), Measurement.MEASUREMENT_RUN_TYPE);
 
+      DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
+        instrument, dataset.getId(), false, true);
+
       SensorType zeroCountType = sensorConfig
         .getSensorType("ProOceanus Zero Count");
       SensorType co2Type = sensorConfig
         .getSensorType("xCO₂ (wet, no standards)");
+      SensorValuesList runTypes = sensorValues.getRunTypes();
 
       // Assume one column of each type
       long zeroCountColumn = instrument.getSensorAssignments()
@@ -60,63 +83,93 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
       long co2Column = instrument.getSensorAssignments().getColumnIds(co2Type)
         .get(0);
 
-      DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataset.getId(), false, true);
+      // Loop through all the rows, examining the zero/run type columns to
+      // locate flushing values.
+      Set<SensorValue> flaggedSensorValues = new HashSet<SensorValue>();
 
-      SensorValuesList runTypes = sensorValues.getRunTypes();
+      SensorValuesList co2Values = sensorValues.getColumnValues(co2Column);
 
-      // Loop through all the rows, examining the zero/flush columns to decide
-      // what to do
-      List<SensorValue> flaggedSensorValues = new ArrayList<SensorValue>();
-      List<Measurement> measurements = new ArrayList<Measurement>(
-        sensorValues.getTimes().size());
+      // First, the zero values
+      SensorValuesList zeroValues = sensorValues
+        .getColumnValues(zeroCountColumn);
 
-      String lastZero = null;
-      LocalDateTime flushingEndTime = LocalDateTime.MIN;
+      if (instrument.getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME) > 0) {
 
-      for (LocalDateTime recordTime : sensorValues.getTimes()) {
-        Map<Long, SensorValue> recordValues = sensorValues.get(recordTime);
+        String lastZero = "";
+        for (SensorValue zero : zeroValues.getRawValues()) {
+          String newZero = zero.getValue();
+          if (!newZero.equals(lastZero)) {
+            LocalDateTime flushingStart = zero.getTime();
+            LocalDateTime flushingEnd = flushingStart.plusSeconds(
+              instrument.getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME));
 
-        SensorValuesListValue runTypeValue = runTypes
-          .getValueOnOrBefore(recordTime);
-        String runType = null == runTypeValue ? null
-          : runTypeValue.getStringValue();
+            for (SensorValue flushingCO2 : co2Values.getRawValues(flushingStart,
+              flushingEnd)) {
+              flushingCO2.setUserQC(Flag.FLUSHING, "Flushing");
+              flaggedSensorValues.add(flushingCO2);
+            }
 
+            for (SensorValue flushingRunType : runTypes
+              .getRawValues(flushingStart, flushingEnd)) {
+              flushingRunType.setUserQC(Flag.FLUSHING, "Flushing");
+              flaggedSensorValues.add(flushingRunType);
+            }
+          }
+
+          lastZero = newZero;
+        }
+
+        // Now do the same for run types
+        String lastRunType = "";
+        for (SensorValue runType : runTypes.getRawValues()) {
+          String newRunType = runType.getValue();
+          if (!newRunType.equals(lastRunType)) {
+            LocalDateTime flushingStart = runType.getTime();
+            LocalDateTime flushingEnd = flushingStart.plusSeconds(
+              instrument.getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME));
+
+            for (SensorValue flushingCO2 : co2Values.getRawValues(flushingStart,
+              flushingEnd)) {
+              flushingCO2.setUserQC(Flag.FLUSHING, "Flushing");
+              flaggedSensorValues.add(flushingCO2);
+            }
+
+            for (SensorValue flushingRunType : runTypes
+              .getRawValues(flushingStart, flushingEnd)) {
+              flushingRunType.setUserQC(Flag.FLUSHING, "Flushing");
+              flaggedSensorValues.add(flushingRunType);
+            }
+          }
+
+          lastRunType = newRunType;
+        }
+
+        // Force the CO2 and Run Type output values to be recalculated now that
+        // some values have had their flags changed.
+        co2Values.resetOutput();
+        runTypes.resetOutput();
+      }
+
+      // Now we construct measurements based on the remaining run types.
+      List<Measurement> measurements = new ArrayList<Measurement>();
+
+      for (SensorValuesListValue runType : runTypes.getValues()) {
         /*
          * Null run types can happen if data is coming from multiple files (eg
          * TSG data).
          */
-        if (null != runType && !runType.equals("")
-          && !runType.equalsIgnoreCase("NaN")) {
-
-          if (!runType.equals(WATER_MODE) && !runType.equals(ATM_MODE)) {
+        if (null != runType) {
+          if (runType.getStringValue().equals(WATER_MODE)
+            && instrument.hasVariable(waterVar)) {
+            measurements.add(new Measurement(dataset.getId(),
+              runType.getNominalTime(), waterRunTypes));
+          } else if (runType.getStringValue().equals(ATM_MODE)
+            && instrument.hasVariable(atmVar)) {
+            measurements.add(new Measurement(dataset.getId(),
+              runType.getNominalTime(), atmRunTypes));
+          } else {
             throw new MeasurementLocatorException(
               "Unrecognised ProOceanus mode '" + runType + "'");
-          }
-
-          String zero = recordValues.get(zeroCountColumn).getValue();
-          if (!zero.equals(lastZero)) {
-            flushingEndTime = recordTime.plusSeconds(
-              instrument.getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME));
-            lastZero = zero;
-          }
-
-          if (recordTime.isBefore(flushingEndTime)
-            || (recordTime.isEqual(flushingEndTime) && instrument
-              .getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME) > 0)) {
-            SensorValue co2 = recordValues.get(co2Column);
-            co2.setUserQC(Flag.FLUSHING, "Flushing");
-            flaggedSensorValues.add(co2);
-          }
-
-          if (runType.equals(WATER_MODE) && instrument.hasVariable(waterVar)) {
-            measurements
-              .add(new Measurement(dataset.getId(), recordTime, waterRunTypes));
-          }
-
-          if (runType.equals(ATM_MODE) && instrument.hasVariable(atmVar)) {
-            measurements
-              .add(new Measurement(dataset.getId(), recordTime, atmRunTypes));
           }
         }
       }

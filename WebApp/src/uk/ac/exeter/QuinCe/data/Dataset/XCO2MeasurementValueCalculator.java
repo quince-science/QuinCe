@@ -28,22 +28,23 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
 
   @Override
   public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
-    Measurement measurement, Variable variable, SensorType requiredSensorType,
-    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
-    Connection conn) throws MeasurementValueCalculatorException {
+    SensorValuesListValue timeReference, Variable variable,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException {
 
     // Get the xCO2 as a simple value. Because it's a core sensor it will only
     // contain one
     MeasurementValue xCO2 = new DefaultMeasurementValueCalculator().calculate(
-      instrument, dataSet, measurement, variable, xco2SensorType,
+      instrument, dataSet, timeReference, variable, xco2SensorType,
       allMeasurements, allSensorValues, conn);
 
     try {
       if (xCO2.getMemberCount() > 0 && dryingRequired(instrument, variable)) {
 
         MeasurementValue xH2O = new DefaultMeasurementValueCalculator()
-          .calculate(instrument, dataSet, measurement, variable, xh2oSensorType,
-            allMeasurements, allSensorValues, conn);
+          .calculate(instrument, dataSet, timeReference, variable,
+            xh2oSensorType, allMeasurements, allSensorValues, conn);
 
         // result = new MeasurementValue(xco2SensorType);
         xCO2.addSensorValues(xCO2, allSensorValues);

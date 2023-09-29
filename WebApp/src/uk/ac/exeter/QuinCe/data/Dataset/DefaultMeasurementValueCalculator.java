@@ -25,39 +25,36 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * The default implementation of {@link MeasurementValueCalculator}.
- * <p>
- * Applies interpolation based on quality flags, and standard calibration as
- * needed.
- * </p>
  *
- * @author stevej
+ * <p>
+ * Applies temporal offsets between sensor groups and calibrations as needed.
+ * </p>
  */
 public class DefaultMeasurementValueCalculator
   extends MeasurementValueCalculator {
-
-  public static final String STANDARDS_COUNT_PROPERTY = "stdcount";
 
   private static final int PRIOR = -1;
 
   private static final int POST = 1;
 
-  // TODO Need limits on how far interpolation goes before giving up.
+  public static final String STANDARDS_COUNT_PROPERTY = "stdcount";
 
   @Override
   public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
-    Measurement measurement, Variable variable, SensorType requiredSensorType,
-    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
-    Connection conn) throws MeasurementValueCalculatorException {
+    SensorValuesListValue timeReference, Variable variable,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException {
 
     try {
       // TODO #1128 This currently assumes only one sensor for each SensorType.
       // This will have to change eventually.
       if (requiredSensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)
         || requiredSensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)) {
-        return getPositionValue(instrument, dataSet, measurement, variable,
+        return getPositionValue(instrument, dataSet, timeReference, variable,
           requiredSensorType, allMeasurements, allSensorValues, conn);
       } else {
-        return getSensorValue(instrument, dataSet, measurement, variable,
+        return getSensorValue(instrument, dataSet, timeReference, variable,
           requiredSensorType, allMeasurements, allSensorValues, conn);
       }
     } catch (Exception e) {
@@ -66,17 +63,17 @@ public class DefaultMeasurementValueCalculator
   }
 
   protected MeasurementValue getSensorValue(Instrument instrument,
-    DataSet dataSet, Measurement measurement, Variable variable,
+    DataSet dataSet, SensorValuesListValue timeReference, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
     throws MeasurementValueCalculatorException, SensorValuesListException {
 
-    return getSensorValue(instrument, dataSet, measurement, variable,
+    return getSensorValue(instrument, dataSet, timeReference, variable,
       requiredSensorType, allMeasurements, allSensorValues, true, conn);
   }
 
   protected MeasurementValue getSensorValue(Instrument instrument,
-    DataSet dataSet, Measurement measurement, Variable variable,
+    DataSet dataSet, SensorValuesListValue timeReference, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, boolean allowCalibration,
     Connection conn)
@@ -98,7 +95,7 @@ public class DefaultMeasurementValueCalculator
         .get(variable.getCoreSensorType()).first();
 
       LocalDateTime valueTime = dataSet.getSensorOffsets().getOffsetTime(
-        measurement.getTime(), coreAssignment, requiredAssignment);
+        timeReference.getNominalTime(), coreAssignment, requiredAssignment);
 
       result = new MeasurementValue(sensorValues.getValue(valueTime));
     } catch (SensorGroupsException e) {
@@ -110,15 +107,46 @@ public class DefaultMeasurementValueCalculator
     // (b) the instrument has calibration Run Types defined.
     if (allowCalibration && requiredSensorType.hasInternalCalibration()
       && instrument.hasInternalCalibrations()) {
-      calibrate(instrument, measurement, requiredSensorType, result,
+      calibrate(instrument, timeReference, requiredSensorType, result,
         allMeasurements, sensorValues, conn);
     }
 
     return result;
   }
 
+  /**
+   * Get the {@link MeasurementValue} for a position (longitude or latitude).
+   * Automatically applies a time offset to the first sensor group defined for
+   * the instrument.
+   *
+   * @param instrument
+   *          The {@link Instrument} for which measurements are being
+   *          calculated.
+   * @param dataSet
+   *          The {@link DataSet} for which measurements are being calculated.
+   * @param timeReference
+   *          A {link SensorValuesListValue} containing details of the time
+   *          period to be considered when building the {@link MeasuremntValue}.
+   * @param variable
+   *          The {@link Variable} for the current {@link Measurement}.
+   * @param requiredSensorType
+   *          The {@link SensorType} for which a value is required.
+   * @param allMeasurements
+   *          The complete set of {@link Measurements} for the current
+   *          {@link DataSet}.
+   * @param allSensorValues
+   *          The complete set of {@link SensorValue}s for the current
+   *          {@link DataSet}.
+   * @param conn
+   *          A database connection.
+   * @return The calculated {@link MeasurementValue}.
+   * @throws SensorValuesListException
+   *           If {@link SensorValue}s cannot be retrieved for the position.
+   * @throws MeasurementValueCalculatorException
+   *           If the value cannot be constructed.
+   */
   private MeasurementValue getPositionValue(Instrument instrument,
-    DataSet dataSet, Measurement measurement, Variable variable,
+    DataSet dataSet, SensorValuesListValue timeReference, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
     throws SensorValuesListException, MeasurementValueCalculatorException {
@@ -131,13 +159,14 @@ public class DefaultMeasurementValueCalculator
     try {
       // If Lon/Lat, get offset to first group. Get lat/lon at that time.
       LocalDateTime positionTime = dataSet.getSensorOffsets()
-        .offsetToFirstGroup(measurement.getTime(), coreAssignment);
+        .offsetToFirstGroup(timeReference.getNominalTime(), coreAssignment);
 
       long columnId = requiredSensorType
         .equals(SensorType.LONGITUDE_SENSOR_TYPE) ? SensorType.LONGITUDE_ID
           : SensorType.LATITUDE_ID;
 
-      result = allSensorValues.getMeasurementValue(columnId, positionTime);
+      result = new MeasurementValue(
+        allSensorValues.getColumnValues(columnId).getValue(positionTime));
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Unable to apply sensor offsets", e);
@@ -146,27 +175,52 @@ public class DefaultMeasurementValueCalculator
     return result;
   }
 
-  protected void calibrate(Instrument instrument, Measurement measurement,
-    SensorType sensorType, MeasurementValue value,
-    DatasetMeasurements allMeasurements, SensorValuesList sensorValues,
-    Connection conn) throws MeasurementValueCalculatorException {
+  /**
+   * Apply calibration to a {@link MeasurementValue}.
+   *
+   * @param instrument
+   *          The {@link Instrument} for which measurements are being
+   *          calculated.
+   * @param measurement
+   *          The {@link Measurement} being calculated.
+   * @param sensorType
+   *          The {@link SensorType} of the value being calibrated.
+   * @param value
+   *          The value to be calculated.
+   * @param allMeasurements
+   *          The complete set of {@link Measurements} for the current
+   *          {@link DataSet}.
+   * @param allSensorValues
+   *          The complete set of {@link SensorValue}s for the current
+   *          {@link DataSet}.
+   * @param conn
+   *          A database connection.
+   * @throws MeasurementValueCalculatorException
+   *           If the calibration cannot be performed.
+   */
+  protected void calibrate(Instrument instrument,
+    SensorValuesListValue timeReference, SensorType sensorType,
+    MeasurementValue value, DatasetMeasurements allMeasurements,
+    SensorValuesList sensorValues, Connection conn)
+    throws MeasurementValueCalculatorException {
 
     if (!value.getCalculatedValue().isNaN()) {
 
       try {
         CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
-          .getMostRecentCalibrations(conn, instrument, measurement.getTime());
+          .getMostRecentCalibrations(conn, instrument,
+            timeReference.getNominalTime());
 
         // Get the calibration offset for the standard run prior to the
         // measurement
         CalibrationOffset prior = getCalibrationOffset(PRIOR, calibrationSet,
-          allMeasurements, sensorValues, sensorType, measurement.getTime(),
-          value);
+          allMeasurements, sensorValues, sensorType,
+          timeReference.getNominalTime(), value);
 
         // Get the calibration offset for the standard run after the measurement
         CalibrationOffset post = getCalibrationOffset(POST, calibrationSet,
-          allMeasurements, sensorValues, sensorType, measurement.getTime(),
-          value);
+          allMeasurements, sensorValues, sensorType,
+          timeReference.getNominalTime(), value);
 
         /*
          * Note that even though we know QC messages are required here, we can't
@@ -190,7 +244,7 @@ public class DefaultMeasurementValueCalculator
           // interpolated to the time of the measured value.
           double offset = Calculators.interpolate(prior.getTime(),
             prior.getOffset(), post.getTime(), post.getOffset(),
-            measurement.getTime());
+            timeReference.getNominalTime());
 
           applyOffset(value, offset);
 
@@ -279,9 +333,6 @@ public class DefaultMeasurementValueCalculator
   /**
    * Inner class to hold the results of calculating the offset for a given value
    * from a set of gas standard runs.
-   *
-   * @author Steve Jones
-   *
    */
   class CalibrationOffset {
 

@@ -18,9 +18,10 @@ public class ParentSensorTypeMeasurementValueCalculator
 
   @Override
   public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
-    Measurement measurement, Variable variable, SensorType requiredSensorType,
-    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
-    Connection conn) throws MeasurementValueCalculatorException {
+    SensorValuesListValue timeReference, Variable variable,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException {
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
@@ -30,8 +31,8 @@ public class ParentSensorTypeMeasurementValueCalculator
     for (SensorType childType : sensorConfig.getChildren(requiredSensorType)) {
       if (instrument.getSensorAssignments().isAssigned(childType)) {
         childMeasurementValues.add(MeasurementValueCalculatorFactory
-          .calculateMeasurementValue(instrument, dataSet, measurement, variable,
-            childType, allMeasurements, allSensorValues, conn));
+          .calculateMeasurementValue(instrument, dataSet, timeReference,
+            variable, childType, allMeasurements, allSensorValues, conn));
       }
     }
 

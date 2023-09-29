@@ -480,22 +480,6 @@ public class DatasetSensorValues {
     return result;
   }
 
-  public MeasurementValue getMeasurementValue(long columnID, LocalDateTime time)
-    throws SensorValuesListException {
-    MeasurementValue result = null;
-
-    if (columnID == SensorType.LONGITUDE_ID) {
-      result = new MeasurementValue(longitudes.getValue(time));
-    } else if (columnID == SensorType.LATITUDE_ID) {
-      result = new MeasurementValue(latitudes.getValue(time));
-    } else if (valuesByColumn.containsKey(columnID)) {
-      result = new MeasurementValue(
-        valuesByColumn.get(columnID).getValue(time));
-    }
-
-    return result;
-  }
-
   /**
    * Determines whether or not this data contains the specified
    * {@link FileColumn}, identified by its database ID.
