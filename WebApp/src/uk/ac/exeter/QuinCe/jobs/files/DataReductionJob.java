@@ -16,6 +16,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCalculatorFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -127,7 +129,6 @@ public class DataReductionJob extends DataSetJob {
                 runTypeEntry.getValue())) {
 
                 variablesToProcess.add(variable);
-
               }
             }
           } else {
@@ -138,25 +139,65 @@ public class DataReductionJob extends DataSetJob {
           }
         }
 
-        // A store of one of the variables we will calculate. This is useful
-        // later.
+        dataReductionRecords.ensureCapacity(
+          dataReductionRecords.size() + variablesToProcess.size());
+
+        /*
+         * A store of one of the values we will calculate. This is used later on
+         * for final adjustments to the Measurement object.
+         */
         Variable usedVariable = null;
 
         // Loop through each variable
         for (Variable variable : variablesToProcess) {
 
-          // Process each measurement
-          dataReductionRecords.ensureCapacity(
-            dataReductionRecords.size() + variablesToProcess.size());
+          /*
+           * If there's a run type, and it's for this variable...
+           */
+          String runType = null;
+
+          if (instrument.isRunTypeForVariable(variable,
+            measurement.getRunType(variable))) {
+            runType = measurement.getRunType(variable);
+          } else if (instrument.isRunTypeForVariable(variable,
+            measurement.getRunType(Measurement.RUN_TYPE_DEFINES_VARIABLE))) {
+            runType = measurement
+              .getRunType(Measurement.RUN_TYPE_DEFINES_VARIABLE);
+          }
 
           /*
-           * Get all the sensor values for this measurement. This searches all
-           * the sensor values for each required sensor type, finding either the
-           * sensor value at the same time as the measurement or the values
-           * immediately before and after the measurement time. "Immediately"
-           * may mean that we try to find a Good value within a reasonable
-           * timespan, or we fall back to a Questionable or Bad value.
+           * The sensor values used for a given measurement will depend on the
+           * measurement mode of the instrument as a whole. To find this, we get
+           * the measurement mode of either the Run Type column (if the Variable
+           * has uses run types) or the core sensor type.
+           *
+           * We retrieve the SensorValuesListValue of the chosen column, which
+           * gives a start and end time for which we must retrieve the values
+           * for all SensorTypes. For CONTINUOUS mode measurements the start and
+           * end times will be identical (meaning we retrieve one record) or for
+           * PERIODIC mode we will get a range of times.
            */
+
+          SensorValuesListValue referenceValuesListValue;
+
+          if (null != runType) {
+
+            // Assume only 1 run type column
+            long runTypeColumn = instrument.getSensorAssignments()
+              .getColumnIds(SensorType.RUN_TYPE_SENSOR_TYPE).get(0);
+            SensorValuesList runTypeValues = allSensorValues
+              .getColumnValues(runTypeColumn);
+            referenceValuesListValue = runTypeValues
+              .getValue(measurement.getTime());
+
+          } else {
+            long coreSensorTypeColumn = instrument.getSensorAssignments()
+              .getColumnIds(variable.getCoreSensorType()).get(0);
+            SensorValuesList coreSensorValues = allSensorValues
+              .getColumnValues(coreSensorTypeColumn);
+            referenceValuesListValue = coreSensorValues
+              .getValue(measurement.getTime());
+          }
 
           for (SensorType sensorType : variable
             .getAllSensorTypes(!dataSet.fixedPosition())) {
@@ -168,16 +209,10 @@ public class DataReductionJob extends DataSetJob {
             if (!measurement.hasMeasurementValue(sensorType)) {
               measurement.setMeasurementValue(
                 MeasurementValueCalculatorFactory.calculateMeasurementValue(
-                  instrument, dataSet, measurement, variable, sensorType,
-                  allMeasurements, allSensorValues, conn));
+                  instrument, dataSet, referenceValuesListValue, variable,
+                  sensorType, allMeasurements, allSensorValues, conn));
             }
           }
-
-          /*
-           * If any of the core sensor values are linked to this measurement are
-           * empty, this means the measurement isn't actually available (usually
-           * because it's in a FLUSHING state). So we don't process it.
-           */
 
           // Otherwise store the measurement values for processing.
           if (measurement.hasMeasurementValue(variable.getCoreSensorType())) {
@@ -190,12 +225,14 @@ public class DataReductionJob extends DataSetJob {
           }
         }
 
-        // Finally we adjust the measurement time.
-        // The original measurement time was the time of the value from the core
-        // sensor type. We apply an offset to the first sensor group, since this
-        // is the point of first acquisition of data relevant to the measurement
-        // and therefore closest to the real time for the measurement.
-        // We can use any of the insturment's variables for this purpose.
+        /*
+         * Finally we adjust the measurement time. The original measurement time
+         * was the time of the value from the core sensor type. We apply an
+         * offset to the first sensor group, since this is the point of first
+         * acquisition of data relevant to the measurement and therefore closest
+         * to the real time for the measurement. We can use any of the
+         * insturment's variables for this purpose.
+         */
         if (null != usedVariable) {
           SensorType coreSensorType = usedVariable.getCoreSensorType();
           SensorAssignment coreAssignment = instrument.getSensorAssignments()
@@ -255,7 +292,9 @@ public class DataReductionJob extends DataSetJob {
       }
 
       conn.commit();
-    } catch (Exception e) {
+    } catch (
+
+    Exception e) {
       DatabaseUtils.rollBack(conn);
       ExceptionUtils.printStackTrace(e);
       try {

@@ -12,9 +12,10 @@ public class D12D13CMeasurementValueCalculator
 
   @Override
   public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
-    Measurement measurement, Variable variable, SensorType requiredSensorType,
-    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
-    Connection conn) throws MeasurementValueCalculatorException {
+    SensorValuesListValue timeReference, Variable variable,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException {
 
     MeasurementValue result;
 
@@ -28,13 +29,13 @@ public class D12D13CMeasurementValueCalculator
         switch (requiredSensorType.getShortName()) {
         case "x¹²CO₂ (with standards)":
         case "x¹³CO₂ (with standards)": {
-          result = super.getSensorValue(instrument, dataSet, measurement,
+          result = super.getSensorValue(instrument, dataSet, timeReference,
             variable, requiredSensorType, allMeasurements, allSensorValues,
             false, conn);
           break;
         }
         case "x¹²CO₂ + x¹³CO₂ (with standards)": {
-          result = super.getSensorValue(instrument, dataSet, measurement,
+          result = super.getSensorValue(instrument, dataSet, timeReference,
             variable, requiredSensorType, allMeasurements, allSensorValues,
             true, conn);
           break;
@@ -51,7 +52,7 @@ public class D12D13CMeasurementValueCalculator
         switch (requiredSensorType.getShortName()) {
         case "x¹²CO₂ (with standards)":
         case "x¹³CO₂ (with standards)": {
-          result = super.getSensorValue(instrument, dataSet, measurement,
+          result = super.getSensorValue(instrument, dataSet, timeReference,
             variable, requiredSensorType, allMeasurements, allSensorValues,
             true, conn);
           break;
@@ -60,7 +61,7 @@ public class D12D13CMeasurementValueCalculator
           if (instrument.getSensorAssignments()
             .isAssigned(requiredSensorType)) {
 
-            result = super.getSensorValue(instrument, dataSet, measurement,
+            result = super.getSensorValue(instrument, dataSet, timeReference,
               variable, requiredSensorType, allMeasurements, allSensorValues,
               false, conn);
           } else {

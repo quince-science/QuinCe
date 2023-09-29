@@ -16,9 +16,10 @@ public class DiffEqPresMeasurementValueCalculator
 
   @Override
   public MeasurementValue calculate(Instrument instrument, DataSet dataSet,
-    Measurement measurement, Variable variable, SensorType requiredSensorType,
-    DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
-    Connection conn) throws MeasurementValueCalculatorException {
+    SensorValuesListValue timeReference, Variable variable,
+    SensorType requiredSensorType, DatasetMeasurements allMeasurements,
+    DatasetSensorValues allSensorValues, Connection conn)
+    throws MeasurementValueCalculatorException {
 
     try {
       SensorsConfiguration sensorConfig = ResourceManager.getInstance()
@@ -27,11 +28,11 @@ public class DiffEqPresMeasurementValueCalculator
         .getSensorType("Pressure at instrument");
 
       MeasurementValue diffEqPress = new DefaultMeasurementValueCalculator()
-        .calculate(instrument, dataSet, measurement, variable,
+        .calculate(instrument, dataSet, timeReference, variable,
           requiredSensorType, allMeasurements, allSensorValues, conn);
 
       MeasurementValue pressAtInstrument = new DefaultMeasurementValueCalculator()
-        .calculate(instrument, dataSet, measurement, variable,
+        .calculate(instrument, dataSet, timeReference, variable,
           pressAtInstrumentSensorType, allMeasurements, allSensorValues, conn);
 
       Double finalPressure = pressAtInstrument.getCalculatedValue()

@@ -1,5 +1,7 @@
 package junit.uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
@@ -9,6 +11,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
@@ -40,8 +43,12 @@ public class SensorValuesListGetValueRangeTest
   @Override
   protected SensorValuesListValue getValue(SensorValuesList list,
     TestSetLine line) throws SensorValuesListException {
-    return list.getValue(makeTime(line.getIntField(START_TIME_COL)),
-      makeTime(line.getIntField(END_TIME_COL)));
+
+    LocalDateTime startTime = makeTime(line.getIntField(START_TIME_COL));
+    LocalDateTime endTime = makeTime(line.getIntField(END_TIME_COL));
+
+    return list.getValue(startTime, endTime,
+      DateTimeUtils.midPoint(startTime, endTime));
   }
 
   @Override

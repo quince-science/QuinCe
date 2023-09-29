@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -75,7 +76,8 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * sleep. The automatic algorithm cannot detect this, and will group both sets
  * of measurements together. To work around this, you must determine the group
  * boundaries elsewhere (most likely in the {@link SensorValuesList} for the Run
- * Type), and use the {@link #getValue(LocalDateTime, LocalDateTime)} method to
+ * Type), and use the
+ * {@link #getValue(LocalDateTime, LocalDateTime, LocalDateTime)} method to
  * construct values covering the correct time periods.
  * </p>
  */
@@ -1150,7 +1152,7 @@ public class SensorValuesList {
   }
 
   /**
-   * Get a view of all the {@link SensorValue} objects in the list.
+   * Get all the raw {@link SensorValue} objects in the list.
    *
    * <p>
    * This allows access to the individual {@link SensorValue} objects without
@@ -1161,6 +1163,41 @@ public class SensorValuesList {
    */
   public List<SensorValue> getRawValues() {
     return Collections.unmodifiableList(list);
+  }
+
+  /**
+   * Get the raw {@link SensorValue}s between two times. Both times are
+   * inclusive.
+   *
+   * @param start
+   *          The start time.
+   * @param end
+   *          The end time.
+   * @return The {@link SensorValue}s between the given times.
+   */
+  public List<SensorValue> getRawValues(LocalDateTime start,
+    LocalDateTime end) {
+
+    List<SensorValue> result = new ArrayList<SensorValue>();
+
+    int currentIndex = Collections.binarySearch(getRawTimes(), start);
+
+    // If we didn't get an exact match, move to the index after the returned
+    // insertion point.
+    if (currentIndex < 0) {
+      currentIndex = Math.abs(currentIndex) - 1;
+      if (currentIndex < 0) {
+        currentIndex = 0;
+      }
+    }
+
+    while (currentIndex < list.size() - 1
+      && !list.get(currentIndex).getTime().isAfter(end)) {
+      result.add(list.get(currentIndex));
+      currentIndex++;
+    }
+
+    return result;
   }
 
   /**
@@ -1296,21 +1333,46 @@ public class SensorValuesList {
    * specified time range.
    *
    * <p>
-   * The method ignores the measurement mode for the list, and uses the raw
-   * values directly. No interpolation is performed. Only the values with the
-   * best available quality flag are included.
+   * The method finds values to use in two stages.
+   * </p>
+   *
+   * <p>
+   * First, it ignores the measurement mode and looks directly at the raw
+   * values. If values are found within the range of the start and end time
+   * (both inclusive), it collects the values with the best available QC flag
+   * and provides an averaged value as the result.
+   * </p>
+   *
+   * <p>
+   * If no usable raw values are found, the method falls back to using the
+   * {@link #getValue(LocalDateTime)} method, using the nominal time as the
+   * parameter.
+   * </p>
+   *
+   * <p>
+   * This method exists to handle cases of PERIODIC measurements where the
+   * instrument wakes up, measures some measurements in one mode (aka Run Type)
+   * and some in another mode (e.g. water and air) back to back. The standard
+   * methods provided here cannot distinguish these, so an external method (e.g.
+   * {@link DataReductionJob}) will determine the periods for each Run Type and
+   * request the values from those periods only. The fallback described above is
+   * for if a given sensor is measuring to a different schedule, which indicates
+   * that it's running independently of the run types and therefore using
+   * different values doesn't matter.
    * </p>
    *
    * @param start
    *          The start time.
    * @param end
    *          The end time.
+   * @param nominalTime
+   *          The nominal time for the constructed value.
    * @return The constructed {@link SensorValuesListValue}.
    * @throws SensorValuesListException
    *           If the value cannot be constructed.
    */
-  public SensorValuesListValue getValue(LocalDateTime start, LocalDateTime end)
-    throws SensorValuesListException {
+  public SensorValuesListValue getValue(LocalDateTime start, LocalDateTime end,
+    LocalDateTime nominalTime) throws SensorValuesListException {
 
     List<SensorValue> usedValues = new ArrayList<SensorValue>();
 
@@ -1335,8 +1397,39 @@ public class SensorValuesList {
       currentIndex++;
     }
 
-    return usedValues.size() == 0 ? null
-      : makeNumericValue(usedValues, DateTimeUtils.midPoint(start, end));
+    SensorValuesListValue result;
+
+    if (usedValues.size() > 0) {
+      result = makeNumericValue(usedValues, nominalTime);
+    } else {
+      result = getValue(nominalTime);
+    }
+
+    return result;
+  }
+
+  /**
+   * Construct a {@link SensorValuesListValue} using {@link SensorValue}s in the
+   * time range specified in the provided {@link SensorValuesListValue}.
+   *
+   * <p>
+   * This method simply extracts the times and passes them to
+   * {@link #getValue(LocalDateTime, LocalDateTime, LocalDateTime)}.
+   * </p>
+   *
+   *
+   * @param timeReference
+   *          A {@link SensorValuesListValue} object containing the times
+   *          required.
+   * @return The constructed {@link SensorValuesListValue}.
+   * @throws SensorValuesListException
+   *           If the value cannot be constructed.
+   */
+  public SensorValuesListValue getValue(SensorValuesListValue timeReference)
+    throws SensorValuesListException {
+
+    return getValue(timeReference.getStartTime(), timeReference.getEndTime(),
+      timeReference.getNominalTime());
   }
 
   /**
@@ -1350,6 +1443,14 @@ public class SensorValuesList {
    */
   public boolean containsTime(LocalDateTime time) {
     return Collections.binarySearch(getRawTimes(), time) >= 0;
+  }
+
+  /**
+   * Clear any already calculated output values, forcing them to be recalculated
+   * at the next call to {@code getValue} methods.
+   */
+  public void resetOutput() {
+    outputValues = null;
   }
 }
 
