@@ -153,7 +153,8 @@ public class Plot {
     if (null != y2Axis) {
       result = Y2_GSON.toJson(plotValues.stream()
         .filter(f -> !f.xNull() && !hideFlags ? true
-          : (f.getFlag2().isGood() || f.getFlag2().equals(Flag.NEEDED)))
+          : (null != f
+            && (f.getFlag2().isGood() || f.getFlag2().equals(Flag.NEEDED))))
         .collect(Collectors.toList()));
     }
 
