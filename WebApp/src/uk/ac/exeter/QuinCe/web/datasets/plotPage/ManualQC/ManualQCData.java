@@ -783,7 +783,8 @@ public class ManualQCData extends PlotPageData {
     } else if (SensorType.isPosition(column.getId())) {
       List<SensorValuesListValue> values = sensorValues
         .getColumnValues(column.getId()).getValues();
-      values.forEach(v -> result.put(v.getTime(), new MeasurementValue(v)));
+      values.forEach(v -> result.put(v.getTime(),
+        new MeasurementValue(v.getSensorType(), v)));
     } else if (sensorValues.containsColumn(column.getId())) {
 
       SensorType sensorType = instrument.getSensorAssignments()

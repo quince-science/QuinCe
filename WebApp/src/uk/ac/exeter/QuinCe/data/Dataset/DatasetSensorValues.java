@@ -835,7 +835,12 @@ public class DatasetSensorValues {
   public PlotPageTableValue getPositionTableValue(long columnId,
     LocalDateTime time) throws SensorValuesListException, PositionException {
 
-    return new MeasurementValue(getPositionValuesList(columnId).getValue(time));
+    SensorType sensorType = columnId == FileDefinition.LONGITUDE_COLUMN_ID
+      ? SensorType.LONGITUDE_SENSOR_TYPE
+      : SensorType.LATITUDE_SENSOR_TYPE;
+
+    return new MeasurementValue(sensorType,
+      getPositionValuesList(columnId).getValue(time, true));
   }
 
   /**
