@@ -134,7 +134,8 @@ public class SensorValuesListGetValueContinuousTest extends TestSetTest {
 
   protected SensorValuesListValue getValue(SensorValuesList list,
     TestSetLine line) throws SensorValuesListException {
-    return list.getValue(makeTime(line.getIntField(getRequestedMinuteCol())));
+    return list.getValue(makeTime(line.getIntField(getRequestedMinuteCol())),
+      true);
   }
 
   protected int getExpectedUsedValuesCol() {

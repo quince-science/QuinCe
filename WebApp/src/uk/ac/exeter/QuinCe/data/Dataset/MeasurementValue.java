@@ -164,22 +164,34 @@ public class MeasurementValue implements PlotPageTableValue {
     this.type = type;
   }
 
-  public MeasurementValue(SensorValuesListValue value) {
-    this.sensorType = value.getSensorType();
-    this.sensorValueIds = value.getSourceSensorValues().stream()
-      .map(SensorValue::getDatasetId).toList();
-    this.memberCount = value.getSourceSensorValues().size();
-    this.supportingSensorValueIds = new ArrayList<Long>();
-    this.calculatedValue = value.getDoubleValue();
+  public MeasurementValue(SensorType sensorType, SensorValuesListValue value) {
+    if (null == value) {
+      this.sensorType = sensorType;
+      this.calculatedValue = Double.NaN;
+      this.type = PlotPageTableValue.NAN_TYPE;
+      this.sensorValueIds = new ArrayList<Long>();
+      this.supportingSensorValueIds = new ArrayList<Long>();
+      this.memberCount = 0;
+      this.flag = Flag.BAD;
+      this.qcMessage = new HashSet<String>();
+      this.properties = new Properties();
+    } else {
+      this.sensorType = value.getSensorType();
+      this.sensorValueIds = value.getSourceSensorValues().stream()
+        .map(SensorValue::getId).toList();
+      this.memberCount = value.getSourceSensorValues().size();
+      this.supportingSensorValueIds = new ArrayList<Long>();
+      this.calculatedValue = value.getDoubleValue();
+      this.flag = value.getQCFlag();
+      qcMessage = new HashSet<String>();
+      qcMessage.addAll(StringUtils.delimitedToList(value.getQCMessage(), ";"));
 
-    qcMessage = new HashSet<String>();
-    qcMessage.addAll(StringUtils.delimitedToList(value.getQCMessage(), ";"));
+      this.properties = new Properties();
 
-    this.properties = new Properties();
-
-    this.type = value.getSourceSensorValues().size() > 1
-      ? PlotPageTableValue.INTERPOLATED_TYPE
-      : PlotPageTableValue.MEASURED_TYPE;
+      this.type = value.getSourceSensorValues().size() > 1
+        ? PlotPageTableValue.INTERPOLATED_TYPE
+        : PlotPageTableValue.MEASURED_TYPE;
+    }
   }
 
   /**

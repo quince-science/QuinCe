@@ -735,8 +735,8 @@ public class SensorValuesList {
    * @throws SensorValuesListException
    *           If the {@link MeasurementValue} cannot be constructed.
    */
-  public SensorValuesListValue getValue(LocalDateTime time)
-    throws SensorValuesListException {
+  public SensorValuesListValue getValue(LocalDateTime time,
+    boolean allowInterpolation) throws SensorValuesListException {
 
     if (null == outputValues) {
       buildOutputValues();
@@ -749,11 +749,11 @@ public class SensorValuesList {
     } else {
       switch (getMeasurementMode()) {
       case MODE_CONTINUOUS: {
-        result = getValueContinuous(time);
+        result = getValueContinuous(time, allowInterpolation);
         break;
       }
       case MODE_PERIODIC: {
-        result = getValuePeriodic(time);
+        result = getValuePeriodic(time, allowInterpolation);
         break;
       }
       default: {
@@ -775,8 +775,8 @@ public class SensorValuesList {
    *           If the value cannot be constructed.
    * @see #getValue(LocalDateTime)
    */
-  private SensorValuesListValue getValueContinuous(LocalDateTime time)
-    throws SensorValuesListException {
+  private SensorValuesListValue getValueContinuous(LocalDateTime time,
+    boolean allowInterpolation) throws SensorValuesListException {
 
     SensorValuesListValue result;
 
@@ -787,11 +787,11 @@ public class SensorValuesList {
       exactMatch = outputValues.get(searchIndex);
     }
 
-    if (null != exactMatch && exactMatch.getQCFlag().isGood()) {
+    if (!allowInterpolation
+      || (null != exactMatch && exactMatch.getQCFlag().isGood())) {
       // If the exact match is GOOD, use it
       result = exactMatch;
     } else {
-
       // Get the best possible interpolated value
       int priorIndex = searchIndex >= 0 ? searchIndex - 1
         : Math.abs(searchIndex) - 2;
@@ -884,8 +884,8 @@ public class SensorValuesList {
    *           If the value cannot be constructed.
    * @see #getValue(LocalDateTime)
    */
-  private SensorValuesListValue getValuePeriodic(LocalDateTime time)
-    throws SensorValuesListException {
+  private SensorValuesListValue getValuePeriodic(LocalDateTime time,
+    boolean allowInterpolation) throws SensorValuesListException {
 
     SensorValuesListValue result;
 
@@ -902,11 +902,9 @@ public class SensorValuesList {
       ? outputValues.get(searchIndex)
       : null;
 
-    if (null != exactMatch) {
-      // If the exact match is GOOD, use it
+    if (null != exactMatch || !allowInterpolation) {
       result = new SensorValuesListValue(exactMatch, time);
     } else {
-
       // Get the previous and next groups
       SensorValuesListValue prior = null;
       SensorValuesListValue post = null;
@@ -1344,7 +1342,8 @@ public class SensorValuesList {
    * </p>
    *
    * <p>
-   * If no usable raw values are found, the method falls back to using the
+   * If no usable raw values are found and {@code allowInterpolation} is
+   * {@code true}, the method falls back to using the
    * {@link #getValue(LocalDateTime)} method, using the nominal time as the
    * parameter.
    * </p>
@@ -1367,12 +1366,16 @@ public class SensorValuesList {
    *          The end time.
    * @param nominalTime
    *          The nominal time for the constructed value.
+   * @param allowInterpolation
+   *          Indicates whether interpolation can be used to try to find a value
+   *          if nothing is available in the specified range.
    * @return The constructed {@link SensorValuesListValue}.
    * @throws SensorValuesListException
    *           If the value cannot be constructed.
    */
   public SensorValuesListValue getValue(LocalDateTime start, LocalDateTime end,
-    LocalDateTime nominalTime) throws SensorValuesListException {
+    LocalDateTime nominalTime, boolean allowInterpolation)
+    throws SensorValuesListException {
 
     List<SensorValue> usedValues = new ArrayList<SensorValue>();
 
@@ -1397,12 +1400,12 @@ public class SensorValuesList {
       currentIndex++;
     }
 
-    SensorValuesListValue result;
+    SensorValuesListValue result = null;
 
     if (usedValues.size() > 0) {
       result = makeNumericValue(usedValues, nominalTime);
-    } else {
-      result = getValue(nominalTime);
+    } else if (allowInterpolation) {
+      result = getValue(nominalTime, true);
     }
 
     return result;
@@ -1421,15 +1424,18 @@ public class SensorValuesList {
    * @param timeReference
    *          A {@link SensorValuesListValue} object containing the times
    *          required.
+   * @param allowInterpolation
+   *          Indicates whether interpolation can be used to try to find a value
+   *          if nothing is available in the time range of the passed in value.
    * @return The constructed {@link SensorValuesListValue}.
    * @throws SensorValuesListException
    *           If the value cannot be constructed.
    */
-  public SensorValuesListValue getValue(SensorValuesListValue timeReference)
-    throws SensorValuesListException {
+  public SensorValuesListValue getValue(SensorValuesListValue timeReference,
+    boolean allowInterpolation) throws SensorValuesListException {
 
     return getValue(timeReference.getStartTime(), timeReference.getEndTime(),
-      timeReference.getNominalTime());
+      timeReference.getNominalTime(), allowInterpolation);
   }
 
   /**

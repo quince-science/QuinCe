@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -15,7 +16,9 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetMeasurements;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCalculatorFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCollector;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCollectorFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
@@ -152,7 +155,7 @@ public class DataReductionJob extends DataSetJob {
         for (Variable variable : variablesToProcess) {
 
           /*
-           * If there's a run type, and it's for this variable...
+           * Get the Run Type for this variable if it has one
            */
           String runType = null;
 
@@ -169,7 +172,7 @@ public class DataReductionJob extends DataSetJob {
            * The sensor values used for a given measurement will depend on the
            * measurement mode of the instrument as a whole. To find this, we get
            * the measurement mode of either the Run Type column (if the Variable
-           * has uses run types) or the core sensor type.
+           * uses run types) or the core sensor type.
            *
            * We retrieve the SensorValuesListValue of the chosen column, which
            * gives a start and end time for which we must retrieve the values
@@ -188,7 +191,7 @@ public class DataReductionJob extends DataSetJob {
             SensorValuesList runTypeValues = allSensorValues
               .getColumnValues(runTypeColumn);
             referenceValuesListValue = runTypeValues
-              .getValue(measurement.getTime());
+              .getValue(measurement.getTime(), false);
 
           } else {
             long coreSensorTypeColumn = instrument.getSensorAssignments()
@@ -196,32 +199,32 @@ public class DataReductionJob extends DataSetJob {
             SensorValuesList coreSensorValues = allSensorValues
               .getColumnValues(coreSensorTypeColumn);
             referenceValuesListValue = coreSensorValues
-              .getValue(measurement.getTime());
+              .getValue(measurement.getTime(), false);
           }
 
-          for (SensorType sensorType : variable
-            .getAllSensorTypes(!dataSet.fixedPosition())) {
+          /*
+           * Now we get the MeasurementValues for the Measurement based on the
+           * reference value calculated above.
+           */
+          MeasurementValueCollector measurementValueCollector = MeasurementValueCollectorFactory
+            .getCollector(variable);
 
-            /*
-             * Create the MeasurementValue for this SensorType if we haven't
-             * already done it.
-             */
-            if (!measurement.hasMeasurementValue(sensorType)) {
-              measurement.setMeasurementValue(
-                MeasurementValueCalculatorFactory.calculateMeasurementValue(
-                  instrument, dataSet, referenceValuesListValue, variable,
-                  sensorType, allMeasurements, allSensorValues, conn));
-            }
-          }
+          Collection<MeasurementValue> measurementValues = measurementValueCollector
+            .collectMeasurementValues(instrument, dataSet, variable,
+              allMeasurements, allSensorValues, conn, referenceValuesListValue);
 
           // Otherwise store the measurement values for processing.
-          if (measurement.hasMeasurementValue(variable.getCoreSensorType())) {
-            DataSetDataDB.storeMeasurementValues(conn, measurement);
-
-            // Store this variable for use below
-            if (null == usedVariable) {
-              usedVariable = variable;
+          measurementValues.forEach(mv -> {
+            if (!measurement.hasMeasurementValue(mv.getSensorType())) {
+              measurement.setMeasurementValue(mv);
             }
+          });
+
+          DataSetDataDB.storeMeasurementValues(conn, measurement);
+
+          // Store this variable for use below
+          if (null == usedVariable) {
+            usedVariable = variable;
           }
         }
 

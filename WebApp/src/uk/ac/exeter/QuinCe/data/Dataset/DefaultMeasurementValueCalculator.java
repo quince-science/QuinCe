@@ -97,7 +97,12 @@ public class DefaultMeasurementValueCalculator
       LocalDateTime valueTime = dataSet.getSensorOffsets().getOffsetTime(
         timeReference.getNominalTime(), coreAssignment, requiredAssignment);
 
-      result = new MeasurementValue(sensorValues.getValue(valueTime));
+      /*
+       * Values from the core SensorType do not get interpolated, because they
+       * are the basis for measurements. Other SensorTypes can be interpolated.
+       */
+      result = new MeasurementValue(requiredSensorType, sensorValues.getValue(
+        valueTime, !requiredSensorType.equals(variable.getCoreSensorType())));
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Cannot calculate time offset", e);
@@ -165,8 +170,8 @@ public class DefaultMeasurementValueCalculator
         .equals(SensorType.LONGITUDE_SENSOR_TYPE) ? SensorType.LONGITUDE_ID
           : SensorType.LATITUDE_ID;
 
-      result = new MeasurementValue(
-        allSensorValues.getColumnValues(columnId).getValue(positionTime));
+      result = new MeasurementValue(requiredSensorType,
+        allSensorValues.getColumnValues(columnId).getValue(positionTime, true));
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Unable to apply sensor offsets", e);

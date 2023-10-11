@@ -179,6 +179,7 @@ public class DataSetDataDB {
     + "INNER JOIN measurements m ON m.date = sv.date "
     + "INNER JOIN measurement_run_types mrt ON m.id = mrt.measurement_id "
     + "WHERE m.dataset_id = ? AND mrt.run_type IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + " AND sv.file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN;
 
   private static final String UPDATE_MEASUREMENT_TIME_STATEMENT = "UPDATE measurements "
