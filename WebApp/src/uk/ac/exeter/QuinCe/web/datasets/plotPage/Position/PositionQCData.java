@@ -8,12 +8,14 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -24,6 +26,8 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataLatLng;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
 
 public class PositionQCData extends ManualQCData {
@@ -207,5 +211,28 @@ public class PositionQCData extends ManualQCData {
   protected boolean canSelectCell(long row, long column) throws Exception {
     // All positions are selectable
     return true;
+  }
+
+  @Override
+  protected TreeMap<LocalDateTime, PlotPageTableValue> getColumnValues(
+    PlotPageColumnHeading column) throws Exception {
+
+    TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
+
+    if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
+      for (LocalDateTime time : getDataTimes()) {
+        result.put(time, new SimplePlotPageTableValue(time, null, true));
+      }
+    } else if (SensorType.isPosition(column.getId())) {
+      List<SensorValue> values = sensorValues.getColumnValues(column.getId())
+        .getRawValues();
+      values.forEach(
+        v -> result.put(v.getTime(), new SensorValuePlotPageTableValue(v)));
+    } else {
+      throw new IllegalArgumentException(
+        "Can only use time or position columns");
+    }
+
+    return result;
   }
 }
