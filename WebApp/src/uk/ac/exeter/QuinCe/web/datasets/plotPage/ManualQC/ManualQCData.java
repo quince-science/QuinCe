@@ -86,9 +86,6 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
  * <li>Finally, interpolate the position using the closest available position
  * {@link SensorValue}s.
  * </ol>
- *
- * @author Steve Jones
- *
  */
 public class ManualQCData extends PlotPageData {
 
