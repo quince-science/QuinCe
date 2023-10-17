@@ -585,7 +585,8 @@ public class SensorValuesList {
 
     Flag chosenFlag;
 
-    if (presentFlags.contains(Flag.GOOD)) {
+    if (presentFlags.contains(Flag.GOOD)
+      || presentFlags.contains(Flag.ASSUMED_GOOD)) {
       chosenFlag = Flag.GOOD;
     } else if (presentFlags.contains(Flag.QUESTIONABLE)) {
       chosenFlag = Flag.QUESTIONABLE;
@@ -597,8 +598,15 @@ public class SensorValuesList {
 
     try {
 
-      List<SensorValue> usedValues = sensorValues.stream()
-        .filter(v -> v.getDisplayFlag().equals(chosenFlag)).toList();
+      List<SensorValue> usedValues;
+
+      if (chosenFlag.isGood()) {
+        usedValues = sensorValues.stream()
+          .filter(v -> v.getDisplayFlag().isGood()).toList();
+      } else {
+        usedValues = sensorValues.stream()
+          .filter(v -> v.getDisplayFlag().equals(chosenFlag)).toList();
+      }
 
       // Use a Set so we don't get duplicate QC messages in the output value
       TreeSet<String> qcMessages = new TreeSet<String>();

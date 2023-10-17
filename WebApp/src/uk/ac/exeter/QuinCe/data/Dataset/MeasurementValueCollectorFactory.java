@@ -1,7 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
@@ -15,17 +13,10 @@ public class MeasurementValueCollectorFactory {
     MeasurementValueCollector result;
 
     switch (variable.getName()) {
-    case "Pro Oceanus CO₂ Water": {
-      throw new NotImplementedException();
-
-      // result = new ProOceanusWaterMeasurementValueCollector();
-      // break;
-    }
+    case "Pro Oceanus CO₂ Water":
     case "Pro Oceanus CO₂ Atmosphere": {
-      throw new NotImplementedException();
-
-      // result = new ProOceanusAtmosphereMeasurementValueCollector();
-      // break;
+      result = new ProOceanusMeasurementValueCollector();
+      break;
     }
     default: {
       result = new DefaultMeasurementValueCollector();

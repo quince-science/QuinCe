@@ -60,7 +60,17 @@ public class QCMap {
   }
 
   public String getScaleLimits() {
-    return null == mapScaleLimits ? "[0, 1]" : gson.toJson(mapScaleLimits);
+
+    String result;
+
+    if (null == mapScaleLimits || mapScaleLimits[0].isNaN()
+      || mapScaleLimits[1].isNaN()) {
+      result = "[0, 0]";
+    } else {
+      result = gson.toJson(mapScaleLimits);
+    }
+
+    return result;
   }
 
   /**
