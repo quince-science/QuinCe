@@ -17,7 +17,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * reference {@link SensorValuesListValue}.
  */
 public class DefaultMeasurementValueCollector
-  extends MeasurementValueCollector {
+  implements MeasurementValueCollector {
 
   public Collection<MeasurementValue> collectMeasurementValues(
     Instrument instrument, DataSet dataSet, Variable variable,

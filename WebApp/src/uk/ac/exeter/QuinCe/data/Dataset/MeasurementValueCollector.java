@@ -10,7 +10,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * MeasurementValueCollectors are responsible for generating all the
  * {@link MeasurementValue} objects for a {@link Measurement} object.
  */
-public abstract class MeasurementValueCollector {
+public interface MeasurementValueCollector {
 
   public abstract Collection<MeasurementValue> collectMeasurementValues(
     Instrument instrument, DataSet dataSet, Variable variable,
