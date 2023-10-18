@@ -10,6 +10,15 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
+/**
+ * Calculator for atmospheric measurements from Pro Oceanus CO₂ sensors.
+ *
+ * <p>
+ * Incorporates humidity pressure correction developed by Thanos Gkritzalis. See
+ * {@code CO2PROATM_AtmosphericData_corrections.docx} in the QuinCe code
+ * repository.
+ * </p>
+ */
 public class ProOceanusAtmosphericCO2Reducer extends DataReducer {
 
   private static List<CalculationParameter> calculationParameters = null;
