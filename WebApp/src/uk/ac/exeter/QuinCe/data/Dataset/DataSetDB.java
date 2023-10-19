@@ -30,6 +30,10 @@ import com.google.gson.reflect.TypeToken;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -946,6 +950,58 @@ public class DataSetDB {
     boundsObject.addProperty("east", dataset.getMaxLon());
     boundsObject.addProperty("north", dataset.getMaxLat());
     result.add("bounds", boundsObject);
+
+    // Calibrations
+    JsonObject calibrationObject = new JsonObject();
+
+    // External standards
+    JsonArray externalStandards = new JsonArray();
+
+    CalibrationSet standards = ExternalStandardDB.getInstance()
+      .getStandardsSet(conn, instrument, dataset.getStart());
+
+    for (Calibration calibration : standards) {
+      JsonObject calibObject = new JsonObject();
+      calibObject.addProperty("name", calibration.getTarget());
+      calibObject.addProperty("concentration",
+        Double.parseDouble(calibration.getHumanReadableCoefficients()));
+      calibObject.addProperty("date",
+        DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
+
+      externalStandards.add(calibObject);
+    }
+
+    calibrationObject.add("gasStandards", externalStandards);
+
+    // Sensors
+    CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
+      .getMostRecentCalibrations(conn, instrument, dataset.getStart());
+
+    if (sensorCalibrations.size() > 0) {
+      JsonArray calibsArray = new JsonArray();
+
+      for (Calibration calibration : sensorCalibrations) {
+        if (calibration.isSet()) {
+          JsonObject calibObject = new JsonObject();
+
+          long columnId = Long.parseLong(calibration.getTarget());
+          String sensorName = instrument.getSensorAssignments()
+            .getById(columnId).getSensorName();
+
+          calibObject.addProperty("name", sensorName);
+          calibObject.addProperty("formula",
+            calibration.getHumanReadableCoefficients());
+          calibObject.addProperty("date",
+            DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
+
+          calibsArray.add(calibObject);
+        }
+      }
+
+      calibrationObject.add("sesnorCalibrations", calibsArray);
+    }
+
+    result.add("calibration", calibrationObject);
 
     return result;
   }

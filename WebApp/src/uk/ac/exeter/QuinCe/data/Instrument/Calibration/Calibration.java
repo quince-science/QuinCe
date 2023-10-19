@@ -483,4 +483,8 @@ public abstract class Calibration implements Comparable<Calibration> {
     coefficients.forEach(c -> json.addProperty(c.getName(), c.getValue()));
     return json.toString();
   }
+
+  public boolean isSet() {
+    return null != coefficients;
+  }
 }
