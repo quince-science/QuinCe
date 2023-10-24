@@ -153,6 +153,7 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
       // Now we construct measurements based on the remaining run types.
       List<Measurement> measurements = new ArrayList<Measurement>();
 
+      runTypes.allowStringValuesToDefineGroups(true);
       for (SensorValuesListValue runType : runTypes.getValues()) {
         /*
          * Null run types can happen if data is coming from multiple files (eg

@@ -11,4 +11,8 @@ public class SensorValuesListException extends Exception {
     super(cause);
   }
 
+  public SensorValuesListException(String message) {
+    super(message);
+  }
+
 }
