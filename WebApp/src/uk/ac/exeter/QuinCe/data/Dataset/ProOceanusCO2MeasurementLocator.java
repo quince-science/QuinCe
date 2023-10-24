@@ -133,12 +133,6 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
               flushingCO2.setUserQC(Flag.FLUSHING, "Flushing");
               flaggedSensorValues.add(flushingCO2);
             }
-
-            for (SensorValue flushingRunType : runTypes
-              .getRawValues(flushingStart, flushingEnd)) {
-              flushingRunType.setUserQC(Flag.FLUSHING, "Flushing");
-              flaggedSensorValues.add(flushingRunType);
-            }
           }
 
           lastRunType = newRunType;

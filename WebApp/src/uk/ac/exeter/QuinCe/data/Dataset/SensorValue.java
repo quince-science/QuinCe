@@ -364,7 +364,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
       }
     }
 
-    if (setQC && !isNaN()) {
+    if (setQC && isNumeric() && !isNaN()) {
       setUserQCAction(flag, message);
     }
   }
