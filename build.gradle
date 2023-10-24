@@ -107,6 +107,11 @@ dependencies {
 
   // JUnit resources
   testImplementation files('WebApp/junit')
+
+  // Fix for Eclipse 2023-09
+  // Use JUnit Jupiter for testing.
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 sourceSets {

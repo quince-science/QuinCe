@@ -158,6 +158,14 @@ public class SensorValuesList {
   private List<LocalDateTime> valueTimesCache = null;
 
   /**
+   * Indicates whether or not String values can be used to determine groups when
+   * calculating the measurement mode
+   *
+   * @see #calculateMeasurementMode()
+   */
+  private boolean allowStringPeriodicGroups = false;
+
+  /**
    * Create a list for a single file column.
    *
    * @param sensorAssignments
@@ -1097,25 +1105,41 @@ public class SensorValuesList {
    * measurement mode is {@link #MODE_PERIODIC}; otherwise it is
    * {@link #MODE_CONTINUOUS}.
    * </p>
+   *
+   * <p>
+   * If the list contains String values, we also create new groups whenever the
+   * value changes (in addition to the time difference threshold).
+   * </p>
    */
   private void calculateMeasurementMode() {
 
-    List<LocalDateTime> times = list.stream().map(SensorValue::getTime)
-      .toList();
+    // If the list contains string values, we operate slightly differently.
+    boolean stringMode = allowStringPeriodicGroups && containsStringValue();
 
     // The largest group size
     int maxGroupSize = 0;
 
     // Calculate the mean group size as we go along
-    int groupCount = 0;
+    int groupsByTime = 0;
+    int totalGroupCount = 0;
     float meanGroupSize = 0f;
 
     int groupSize = 0;
-    for (int i = 1; i < times.size(); i++) {
-      long timeDiff = DateTimeUtils.secondsBetween(times.get(i - 1),
-        times.get(i));
+    for (int i = 1; i < list.size(); i++) {
+      long timeDiff = DateTimeUtils.secondsBetween(list.get(i - 1).getTime(),
+        list.get(i).getTime());
 
-      if (timeDiff > CONTINUOUS_MEASUREMENT_LIMIT) {
+      boolean newGroupFromTime = timeDiff > CONTINUOUS_MEASUREMENT_LIMIT;
+
+      boolean newGroupFromValue = stringMode
+        ? SensorValue.valuesEqual(list.get(i - 1), list.get(i))
+        : false;
+
+      if (newGroupFromTime || newGroupFromValue) {
+        if (newGroupFromTime) {
+          groupsByTime++;
+        }
+
         if (groupSize > 0) {
 
           // Update the max group size
@@ -1124,9 +1148,9 @@ public class SensorValuesList {
           }
 
           // Update the running mean group size
-          groupCount++;
+          totalGroupCount++;
           meanGroupSize = meanGroupSize
-            + (groupSize - meanGroupSize) / groupCount;
+            + (groupSize - meanGroupSize) / totalGroupCount;
 
           // Reset the group
           groupSize = 0;
@@ -1144,12 +1168,12 @@ public class SensorValuesList {
       }
 
       // Update the running mean group size
-      groupCount++;
+      totalGroupCount++;
       meanGroupSize = meanGroupSize
-        + (groupSize - meanGroupSize) / (float) groupCount;
+        + (groupSize - meanGroupSize) / (float) totalGroupCount;
     }
 
-    if (groupCount > 1 && (meanGroupSize <= MAX_PERIODIC_GROUP_SIZE
+    if (groupsByTime > 1 && (meanGroupSize <= MAX_PERIODIC_GROUP_SIZE
       || maxGroupSize <= MAX_PERIODIC_GROUP_SIZE)) {
       measurementMode = MODE_PERIODIC;
     } else {
@@ -1465,6 +1489,27 @@ public class SensorValuesList {
    */
   public void resetOutput() {
     outputValues = null;
+  }
+
+  /**
+   * Set a flag indicating whether or not changes in String values can be used
+   * to identify measurement groups.
+   *
+   * @param allow
+   *          Indicates whether string groups are allowed
+   * @throws SensorValuesListException
+   * @see #calculateMeasurementMode()
+   */
+  public void allowStringValuesToDefineGroups(boolean allow)
+    throws SensorValuesListException {
+
+    if (allow && !containsStringValue()) {
+      throw new SensorValuesListException("No string values in list");
+    } else if (allow != allowStringPeriodicGroups) {
+      // Only reset things if we're actually changing the flag
+      allowStringPeriodicGroups = allow;
+      resetOutput();
+    }
   }
 }
 

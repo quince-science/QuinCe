@@ -19,8 +19,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCollector;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCollectorFactory;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -154,64 +152,12 @@ public class DataReductionJob extends DataSetJob {
         // Loop through each variable
         for (Variable variable : variablesToProcess) {
 
-          /*
-           * Get the Run Type for this variable if it has one
-           */
-          String runType = null;
-
-          if (instrument.isRunTypeForVariable(variable,
-            measurement.getRunType(variable))) {
-            runType = measurement.getRunType(variable);
-          } else if (instrument.isRunTypeForVariable(variable,
-            measurement.getRunType(Measurement.RUN_TYPE_DEFINES_VARIABLE))) {
-            runType = measurement
-              .getRunType(Measurement.RUN_TYPE_DEFINES_VARIABLE);
-          }
-
-          /*
-           * The sensor values used for a given measurement will depend on the
-           * measurement mode of the instrument as a whole. To find this, we get
-           * the measurement mode of either the Run Type column (if the Variable
-           * uses run types) or the core sensor type.
-           *
-           * We retrieve the SensorValuesListValue of the chosen column, which
-           * gives a start and end time for which we must retrieve the values
-           * for all SensorTypes. For CONTINUOUS mode measurements the start and
-           * end times will be identical (meaning we retrieve one record) or for
-           * PERIODIC mode we will get a range of times.
-           */
-
-          SensorValuesListValue referenceValuesListValue;
-
-          if (null != runType) {
-
-            // Assume only 1 run type column
-            long runTypeColumn = instrument.getSensorAssignments()
-              .getColumnIds(SensorType.RUN_TYPE_SENSOR_TYPE).get(0);
-            SensorValuesList runTypeValues = allSensorValues
-              .getColumnValues(runTypeColumn);
-            referenceValuesListValue = runTypeValues
-              .getValue(measurement.getTime(), false);
-
-          } else {
-            long coreSensorTypeColumn = instrument.getSensorAssignments()
-              .getColumnIds(variable.getCoreSensorType()).get(0);
-            SensorValuesList coreSensorValues = allSensorValues
-              .getColumnValues(coreSensorTypeColumn);
-            referenceValuesListValue = coreSensorValues
-              .getValue(measurement.getTime(), false);
-          }
-
-          /*
-           * Now we get the MeasurementValues for the Measurement based on the
-           * reference value calculated above.
-           */
           MeasurementValueCollector measurementValueCollector = MeasurementValueCollectorFactory
             .getCollector(variable);
 
           Collection<MeasurementValue> measurementValues = measurementValueCollector
             .collectMeasurementValues(instrument, dataSet, variable,
-              allMeasurements, allSensorValues, conn, referenceValuesListValue);
+              allMeasurements, allSensorValues, conn, measurement);
 
           // Otherwise store the measurement values for processing.
           measurementValues.forEach(mv -> {

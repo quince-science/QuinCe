@@ -53,38 +53,56 @@ public class ProOceanusMeasurementValueCollector
   public Collection<MeasurementValue> collectMeasurementValues(
     Instrument instrument, DataSet dataSet, Variable variable,
     DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
-    Connection conn, SensorValuesListValue referenceValue)
-    throws MeasurementValueCalculatorException {
+    Connection conn, Measurement measurement)
+    throws MeasurementValueCollectorException {
 
-    List<MeasurementValue> result = new ArrayList<MeasurementValue>();
+    try {
+      SensorValuesListValue referenceValue = getReferenceValue(instrument,
+        measurement, allSensorValues);
 
-    for (SensorType sensorType : variable
-      .getAllSensorTypes(!dataSet.fixedPosition())) {
+      List<MeasurementValue> result = new ArrayList<MeasurementValue>();
 
-      if (INTERNAL_SENSOR_TYPES.contains(sensorType.getShortName())) {
+      for (SensorType sensorType : variable
+        .getAllSensorTypes(!dataSet.fixedPosition())) {
 
-        try {
-          long columnId = instrument.getSensorAssignments()
-            .getColumnIds(sensorType).get(0);
-          SensorValuesList sensorValuesList = allSensorValues
-            .getColumnValues(columnId);
+        if (INTERNAL_SENSOR_TYPES.contains(sensorType.getShortName())) {
 
-          SensorValuesListValue value = sensorValuesList
-            .getValue(referenceValue, false);
+          try {
+            long columnId = instrument.getSensorAssignments()
+              .getColumnIds(sensorType).get(0);
+            SensorValuesList sensorValuesList = allSensorValues
+              .getColumnValues(columnId);
 
-          result.add(new MeasurementValue(sensorType, value));
-        } catch (SensorValuesListException e) {
-          throw new MeasurementValueCalculatorException(
-            "Error getting Pro Oceanus value");
+            SensorValuesListValue value = sensorValuesList
+              .getValue(referenceValue, false);
+
+            result.add(new MeasurementValue(sensorType, value));
+          } catch (SensorValuesListException e) {
+            throw new MeasurementValueCalculatorException(
+              "Error getting Pro Oceanus value");
+          }
+        } else {
+          result.add(MeasurementValueCalculatorFactory
+            .calculateMeasurementValue(instrument, dataSet, referenceValue,
+              variable, sensorType, allMeasurements, allSensorValues, conn));
         }
-      } else {
-        result.add(MeasurementValueCalculatorFactory.calculateMeasurementValue(
-          instrument, dataSet, referenceValue, variable, sensorType,
-          allMeasurements, allSensorValues, conn));
       }
-    }
 
-    return result;
+      return result;
+    } catch (Exception e) {
+      throw new MeasurementValueCollectorException(e);
+    }
   }
 
+  private SensorValuesListValue getReferenceValue(Instrument instrument,
+    Measurement measurement, DatasetSensorValues allSensorValues)
+    throws SensorValuesListException {
+
+    long runTypeColumn = instrument.getSensorAssignments()
+      .getColumnIds(SensorType.RUN_TYPE_SENSOR_TYPE).get(0);
+    SensorValuesList runTypeValues = allSensorValues
+      .getColumnValues(runTypeColumn);
+    runTypeValues.allowStringValuesToDefineGroups(true);
+    return runTypeValues.getValue(measurement.getTime(), false);
+  }
 }

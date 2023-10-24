@@ -894,4 +894,36 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   public boolean isPosition() {
     return SensorType.isPosition(columnId);
   }
+
+  /**
+   * Determine whether or not two {@link SensorValue} object have the same
+   * value. All other attributes from the objects are ignored.
+   *
+   * <p>
+   * If both values are {@code null}, the values are considered equal.
+   * </p>
+   *
+   * @param value1
+   *          The first value.
+   * @param value2
+   *          The second value.
+   * @return {@code true} if the values are the same; {@code false} otherwise.
+   */
+  public static boolean valuesEqual(SensorValue value1, SensorValue value2) {
+
+    boolean result;
+
+    String val1 = value1.value;
+    String val2 = value2.value;
+
+    if (null == val1 && null == val2) {
+      result = true;
+    } else if (null == val1 || null == val2) {
+      result = false;
+    } else {
+      result = val1.equals(val2);
+    }
+
+    return result;
+  }
 }

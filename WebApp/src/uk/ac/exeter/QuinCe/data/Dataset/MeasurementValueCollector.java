@@ -12,9 +12,9 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  */
 public interface MeasurementValueCollector {
 
-  public abstract Collection<MeasurementValue> collectMeasurementValues(
+  public Collection<MeasurementValue> collectMeasurementValues(
     Instrument instrument, DataSet dataSet, Variable variable,
     DatasetMeasurements allMeasurements, DatasetSensorValues allSensorValues,
-    Connection conn, SensorValuesListValue referenceValue)
-    throws MeasurementValueCalculatorException;
+    Connection conn, Measurement measurement)
+    throws MeasurementValueCollectorException;
 }
