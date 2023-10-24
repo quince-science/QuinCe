@@ -1174,7 +1174,7 @@ public class SensorValuesList {
     }
 
     if (groupsByTime > 1 && (meanGroupSize <= MAX_PERIODIC_GROUP_SIZE
-      || maxGroupSize <= MAX_PERIODIC_GROUP_SIZE)) {
+      && maxGroupSize <= MAX_PERIODIC_GROUP_SIZE)) {
       measurementMode = MODE_PERIODIC;
     } else {
       measurementMode = MODE_CONTINUOUS;
