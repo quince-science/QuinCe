@@ -954,24 +954,27 @@ public class DataSetDB {
     // Calibrations
     JsonObject calibrationObject = new JsonObject();
 
-    // External standards
-    JsonArray externalStandards = new JsonArray();
+    if (instrument.hasInternalCalibrations()) {
 
-    CalibrationSet standards = ExternalStandardDB.getInstance()
-      .getStandardsSet(conn, instrument, dataset.getStart());
+      // External standards
+      JsonArray externalStandards = new JsonArray();
 
-    for (Calibration calibration : standards) {
-      JsonObject calibObject = new JsonObject();
-      calibObject.addProperty("name", calibration.getTarget());
-      calibObject.addProperty("concentration",
-        Double.parseDouble(calibration.getHumanReadableCoefficients()));
-      calibObject.addProperty("date",
-        DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
+      CalibrationSet standards = ExternalStandardDB.getInstance()
+        .getStandardsSet(conn, instrument, dataset.getStart());
 
-      externalStandards.add(calibObject);
+      for (Calibration calibration : standards) {
+        JsonObject calibObject = new JsonObject();
+        calibObject.addProperty("name", calibration.getTarget());
+        calibObject.addProperty("concentration",
+          Double.parseDouble(calibration.getHumanReadableCoefficients()));
+        calibObject.addProperty("date",
+          DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
+
+        externalStandards.add(calibObject);
+      }
+
+      calibrationObject.add("gasStandards", externalStandards);
     }
-
-    calibrationObject.add("gasStandards", externalStandards);
 
     // Sensors
     CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
@@ -996,12 +999,17 @@ public class DataSetDB {
 
           calibsArray.add(calibObject);
         }
+
       }
 
-      calibrationObject.add("sesnorCalibrations", calibsArray);
+      if (calibsArray.size() > 0) {
+        calibrationObject.add("sensorCalibrations", calibsArray);
+      }
     }
 
-    result.add("calibration", calibrationObject);
+    if (calibrationObject.size() > 0) {
+      result.add("calibration", calibrationObject);
+    }
 
     return result;
   }
