@@ -265,8 +265,10 @@ public class AutoQCJob extends DataSetJob {
       diagnosticsQC.run(instrument, sensorValues, runTypePeriods);
 
       // Cascade position QC to SensorValues
-      PositionQCCascadeRoutine positionQCCascade = new PositionQCCascadeRoutine();
-      positionQCCascade.run(instrument, sensorValues, runTypePeriods);
+      if (!instrument.fixedPosition()) {
+        PositionQCCascadeRoutine positionQCCascade = new PositionQCCascadeRoutine();
+        positionQCCascade.run(instrument, sensorValues, runTypePeriods);
+      }
 
       // Send all sensor values to be stored. The storeSensorValues method only
       // writes those values whose 'dirty' flag is set.
