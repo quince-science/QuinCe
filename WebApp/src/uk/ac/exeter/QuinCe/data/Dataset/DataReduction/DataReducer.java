@@ -175,16 +175,23 @@ public abstract class DataReducer {
     Float result = null;
 
     try {
-      if (properties.containsKey(variable.getName())) {
-        String stringProp = properties.get(variable.getName())
-          .getProperty(property);
-        if (null != stringProp) {
-          result = Float.parseFloat(stringProp);
-        }
+      String stringValue = getStringProperty(property);
+      if (null != stringValue) {
+        result = Float.parseFloat(stringValue);
       }
     } catch (NumberFormatException e) {
       ExceptionUtils.printStackTrace(e);
       // Swallow the exception so that the result is null
+    }
+
+    return result;
+  }
+
+  public String getStringProperty(String property) {
+    String result = null;
+
+    if (properties.containsKey(variable.getName())) {
+      result = properties.get(variable.getName()).getProperty(property);
     }
 
     return result;
