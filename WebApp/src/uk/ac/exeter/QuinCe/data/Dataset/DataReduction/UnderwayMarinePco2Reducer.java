@@ -12,9 +12,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Data Reduction class for underway marine pCO₂
- *
- * @author Steve Jones
- *
  */
 public class UnderwayMarinePco2Reducer extends DataReducer {
 

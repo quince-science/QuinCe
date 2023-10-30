@@ -37,8 +37,7 @@ public class UnderwayAtmospheric12_13Pco2Reducer
 
       record.put("Sea Level Pressure", seaLevelPressure);
 
-      if (variable.getAttributes()
-        .get(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR)
+      if (getStringProperty(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR)
         .equals(UnderwayMarine12_13Pco2Reducer.SPLIT_CO2_GAS_CAL_TYPE)) {
 
         doSplitCalculation(record, measurement, intakeTemperature, salinity,
