@@ -21,9 +21,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Tests for the {@link DataReductionRecord} class.
- *
- * @author Steve Jones
- *
  */
 public class DataReductionRecordTest extends BaseTest {
 
