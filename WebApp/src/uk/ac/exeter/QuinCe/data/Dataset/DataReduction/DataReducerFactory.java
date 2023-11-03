@@ -156,7 +156,14 @@ public class DataReducerFactory {
     long parameterId) throws DataReductionException {
 
     int parameterIndex = (int) (parameterId % ID_MULTIPLIER);
-    return getSkeletonReducer(variable).getCalculationParameters()
-      .get(parameterIndex);
+
+    List<CalculationParameter> params = getSkeletonReducer(variable)
+      .getCalculationParameters();
+
+    if (parameterIndex < 0 || parameterIndex > params.size() - 1) {
+      throw new DataReductionException("Invalid paramater index");
+    }
+
+    return params.get(parameterIndex);
   }
 }
