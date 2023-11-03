@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,12 @@ public abstract class DataReducer {
    */
   public DataReducer(Variable variable, Map<String, Properties> properties) {
     this.variable = variable;
-    this.properties = properties;
+
+    if (null == properties) {
+      properties = new HashMap<String, Properties>();
+    } else {
+      this.properties = properties;
+    }
   }
 
   /**
