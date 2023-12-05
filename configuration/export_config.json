@@ -7,7 +7,7 @@
     "includeCalculationColumns": true,
     "includeUnits": false,
     "measurementsOnly": true,
-    "goodOnly": true,
+    "skipBad": true,
     "timestampHeader": "date time",
     "timestampFormat": "uuuu-MM-dd HH:mm:ss",
     "replaceColumnHeaders": {

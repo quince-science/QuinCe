@@ -95,12 +95,12 @@ public class ExportData extends ManualQCData {
     /*
      * Filter measurements to only contain those with Good QC flags if required
      */
-    if (exportOption.goodOnly()) {
+    if (exportOption.skipBad()) {
       TreeMap<LocalDateTime, Measurement> filteredMeasurements = new TreeMap<LocalDateTime, Measurement>();
 
       for (Map.Entry<LocalDateTime, Measurement> entry : measurements
         .entrySet()) {
-        if (entry.getValue().getQCFlag().isGood()) {
+        if (!entry.getValue().getQCFlag().equals(Flag.BAD)) {
           filteredMeasurements.put(entry.getKey(), entry.getValue());
         }
       }
@@ -137,9 +137,9 @@ public class ExportData extends ManualQCData {
        * If we don't want values from only Measurements, but we do want only
        * Good values, filter them here.
        */
-      if (!exportOption.measurementsOnly() && exportOption.goodOnly()) {
+      if (!exportOption.measurementsOnly() && exportOption.skipBad()) {
         List<Long> goodIds = sensorValues.getAll().stream()
-          .filter(v -> v.getUserQCFlag().isGood()).map(v -> v.getId()).toList();
+          .filter(v -> !v.getUserQCFlag().equals(Flag.BAD)).map(v -> v.getId()).toList();
 
         filteredIds.addAll(goodIds);
       }
