@@ -151,8 +151,8 @@ public class ExportOptionDeserializer
           .setMeasurementsOnly(jsonObj.get("measurementsOnly").getAsBoolean());
       }
 
-      if (jsonObj.has("goodOnly")) {
-        option.setGoodOnly(jsonObj.get("goodOnly").getAsBoolean());
+      if (jsonObj.has("skipBad")) {
+        option.setSkipBad(jsonObj.get("skipBad").getAsBoolean());
       }
 
       if (jsonObj.has("exportDataClass")) {

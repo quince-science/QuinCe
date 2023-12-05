@@ -131,14 +131,14 @@ public class ExportOption {
   private boolean measurementsOnly = false;
 
   /**
-   * Only export good measurements and/or sensor values.
+   * Do not export Bad  measurements and/or sensor values.
    *
    * <p>
    * If a bad sensor value is used by a good measurement, it will still be
    * included.
    * </p>
    */
-  private boolean goodOnly = false;
+  private boolean skipBad = false;
 
   /**
    * Indicates whether export option should be visible in webapp
@@ -228,8 +228,8 @@ public class ExportOption {
     this.measurementsOnly = measurementsOnly;
   }
 
-  protected void setGoodOnly(boolean goodOnly) {
-    this.goodOnly = goodOnly;
+  protected void setSkipBad(boolean skipBad) {
+    this.skipBad = skipBad;
   }
 
   protected void setDataClass(Class<? extends ExportData> dataClass) {
@@ -308,12 +308,12 @@ public class ExportOption {
     return measurementsOnly;
   }
 
-  public boolean goodOnly() {
-    return goodOnly;
+  public boolean skipBad() {
+    return skipBad;
   }
 
   public boolean filterSensorValues() {
-    return measurementsOnly || goodOnly;
+    return measurementsOnly || skipBad;
   }
 
   public boolean getVisible() {
