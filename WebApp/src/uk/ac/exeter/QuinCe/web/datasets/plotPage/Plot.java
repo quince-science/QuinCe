@@ -138,10 +138,12 @@ public class Plot {
       Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
         new MainPlotValueSerializer(null != y2Axis)).create();
 
-      result = gson.toJson(plotValues.stream()
-        .filter(f -> !f.xNull() && !hideFlags ? true
-          : (f.getFlag().isGood() || f.getFlag().equals(Flag.NEEDED)))
-        .collect(Collectors.toList()));
+      result = gson
+        .toJson(plotValues.stream()
+          .filter(f -> !f.xNull() && !hideFlags ? true
+            : (null == f.getFlag() || f.getFlag().isGood()
+              || f.getFlag().equals(Flag.NEEDED)))
+          .collect(Collectors.toList()));
     }
 
     return result;
@@ -153,8 +155,8 @@ public class Plot {
     if (null != y2Axis) {
       result = Y2_GSON.toJson(plotValues.stream()
         .filter(f -> !f.xNull() && !hideFlags ? true
-          : (null != f
-            && (f.getFlag2().isGood() || f.getFlag2().equals(Flag.NEEDED))))
+          : (null != f && (null == f.getFlag2() || f.getFlag2().isGood()
+            || f.getFlag2().equals(Flag.NEEDED))))
         .collect(Collectors.toList()));
     }
 
@@ -173,8 +175,8 @@ public class Plot {
 
     if (null != plotValues) {
       List<PlotValue> flagValues = plotValues.stream()
-        .filter(
-          x -> !hideFlags ? x.inFlagPlot() : x.getFlag().equals(Flag.NEEDED))
+        .filter(x -> !hideFlags ? x.inFlagPlot()
+          : null != x.getFlag() && x.getFlag().equals(Flag.NEEDED))
         .collect(Collectors.toList());
 
       Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
@@ -195,21 +197,24 @@ public class Plot {
       .getColumnValues(yAxis);
 
     TreeMap<LocalDateTime, PlotPageTableValue> y2Values = null == y2Axis
-      ? new TreeMap<LocalDateTime, PlotPageTableValue>()
+      ? new TreeMap<>()
       : data.getColumnValues(y2Axis);
 
-    plotValues = new TreeSet<PlotValue>();
+    plotValues = new TreeSet<>();
 
     for (LocalDateTime time : xValues.keySet()) {
-      if (yValues.containsKey(time)) {
+      if (yValues.containsKey(time) || y2Values.containsKey(time)) {
 
         PlotPageTableValue x = xValues.get(time);
         PlotPageTableValue y = yValues.get(time);
         PlotPageTableValue y2 = y2Values.get(time);
 
+        boolean hasYValue = null != y && null != y.getValue();
+        boolean hasY2Value = null != y2 && null != y2.getValue();
+
         PlotValue plotValue = null;
 
-        if (null != y && null != y.getValue()) {
+        if (hasYValue || hasY2Value) {
 
           Double yValue = null;
           boolean yGhost = false;
@@ -266,7 +271,7 @@ public class Plot {
   }
 
   public String getDataLabels() {
-    List<String> labels = new ArrayList<String>(4);
+    List<String> labels = new ArrayList<>(4);
     labels.add(xAxis.getShortName());
     labels.add("ID");
     labels.add("GHOST");
@@ -280,7 +285,7 @@ public class Plot {
   }
 
   public String getFlagLabels() {
-    List<String> labels = new ArrayList<String>(4);
+    List<String> labels = new ArrayList<>(4);
     labels.add(xAxis.getShortName());
     labels.add("BAD");
     labels.add("QUESTIONABLE");
@@ -297,7 +302,7 @@ public class Plot {
     String result = null;
 
     if (null != y2Axis) {
-      List<String> labels = new ArrayList<String>(5);
+      List<String> labels = new ArrayList<>(5);
       labels.add(xAxis.getShortName());
       labels.add("ID");
       labels.add(""); // Y1 axis
