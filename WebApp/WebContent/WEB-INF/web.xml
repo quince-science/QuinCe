@@ -127,4 +127,21 @@
     <listener-class>uk.ac.exeter.QuinCe.web.User.UserSessionListener</listener-class>
   </listener>
 
+  <!-- Auth for JavaMelody. Requires a manager user in conf/tomcat-users.xml -->
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>Monitoring</realm-name>
+  </login-config>
+  <security-role>
+    <role-name>monitoring</role-name>
+  </security-role>
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Monitoring</web-resource-name>
+      <url-pattern>/monitoring</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>monitoring</role-name>
+    </auth-constraint>
+  </security-constraint>
 </web-app>

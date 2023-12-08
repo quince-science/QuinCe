@@ -112,6 +112,10 @@ dependencies {
   // Use JUnit Jupiter for testing.
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  
+  // JavaMelody monitoring
+  // Can't use v2 until we use Tomcat 10
+  implementation 'net.bull.javamelody:javamelody-core:1.95.0'
 }
 
 sourceSets {
