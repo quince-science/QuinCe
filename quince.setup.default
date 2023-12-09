@@ -13,6 +13,9 @@
 # The folder where uploaded data files will be stored
 %filestore_folder%=/home/centos/FILESTORE
 
+# The folder for java_melody stats
+%java_melody_folder%=/home/centos/java_melody
+
 # MySQL database connection details
 %db_username%=quince_dev
 %db_password%=quince_dev
