@@ -806,8 +806,8 @@ public class DatasetSensorValues {
   public PlotPageTableValue getRawPositionTableValue(long columnId,
     LocalDateTime time) throws PositionException {
 
-    return new SensorValuePlotPageTableValue(
-      getPositionValuesList(columnId).getRawSensorValue(time));
+    SensorValue value = getPositionValuesList(columnId).getRawSensorValue(time);
+    return null == value ? null : new SensorValuePlotPageTableValue(value);
   }
 
   /**
