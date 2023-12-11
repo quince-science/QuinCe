@@ -200,7 +200,7 @@ public class PositionQCData extends ManualQCData {
 
     DataLatLng result = null;
 
-    if (!longitude.isNull() && !latitude.isNull()) {
+    if (null != longitude && null != latitude) {
       result = new DataLatLng(latitude, longitude);
     }
 
