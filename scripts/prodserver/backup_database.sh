@@ -23,4 +23,4 @@ password=$(grep -m 1 -o 'password=[\x27"][^\x27"]*[\x27"]' WebApp/WebContent/MET
 
 database=$(grep -m 1 -o 'jdbc\:mysql\:\/\/localhost:3306\/[a-zA-Z0-9_]\+' WebApp/WebContent/META-INF/context.xml|sed -e 's/^.*\/\([^\/]\+\)$/\1/')
 
-mysqldump --user=$username --password=$password $database |gzip -> ${path}/quince${tag}.sql.gz
+mysqldump --single-transaction --quick --user=$username --password=$password --hex-blob $database |gzip -> ${path}/quince${tag}.sql.gz
