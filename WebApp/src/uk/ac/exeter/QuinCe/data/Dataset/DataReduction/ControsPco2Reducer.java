@@ -25,10 +25,6 @@ public class ControsPco2Reducer extends DataReducer {
 
   public static final String ZEROS_PROP = "contros.zeros";
 
-  private static final double P0 = 1013.25;
-
-  private static final double T0 = 273.15;
-
   private static List<CalculationParameter> calculationParameters = null;
 
   private TreeMap<Double, Double> zeroS2Beams;
@@ -36,6 +32,10 @@ public class ControsPco2Reducer extends DataReducer {
   private CalibrationSet priorCoefficients;
 
   private CalibrationSet postCoefficients;
+
+  private CalculationCoefficient p0 = null;
+
+  private CalculationCoefficient t0 = null;
 
   private CalculationCoefficient k1Prior = null;
 
@@ -52,6 +52,12 @@ public class ControsPco2Reducer extends DataReducer {
   private CalculationCoefficient k3Post = null;
 
   private CalculationCoefficient runTimePost = null;
+
+  private BigDecimal k1Step = null;
+
+  private BigDecimal k2Step = null;
+
+  private BigDecimal k3Step = null;
 
   public ControsPco2Reducer(Variable variable,
     Map<String, Properties> properties) throws SensorTypeNotFoundException {
@@ -74,6 +80,12 @@ public class ControsPco2Reducer extends DataReducer {
           allMeasurements.get(allMeasurements.size() - 1).getTime());
 
       // Extract coefficients that will be used multiple times
+      p0 = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
+        "p0");
+
+      t0 = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
+        "T0");
+
       k1Prior = CalculationCoefficient.getCoefficient(priorCoefficients,
         variable, "k1");
       k2Prior = CalculationCoefficient.getCoefficient(priorCoefficients,
@@ -88,7 +100,23 @@ public class ControsPco2Reducer extends DataReducer {
       k3Post = getPost("k3");
       runTimePost = getPost("Runtime");
 
-      // Calculate zero Sbeam values
+      BigDecimal runtimePeriod = runTimePost.getBigDecimalValue()
+        .subtract(runTimePrior.getBigDecimalValue());
+
+      BigDecimal k1Diff = k1Post.getBigDecimalValue()
+        .subtract(k1Prior.getBigDecimalValue())
+        .setScale(50, RoundingMode.HALF_UP);
+      k1Step = k1Diff.divide(runtimePeriod, 50, RoundingMode.HALF_UP);
+
+      BigDecimal k2Diff = k2Post.getBigDecimalValue()
+        .subtract(k2Prior.getBigDecimalValue());
+      k2Step = k2Diff.divide(runtimePeriod, 50, RoundingMode.HALF_UP);
+
+      BigDecimal k3Diff = k3Post.getBigDecimalValue()
+        .subtract(k3Prior.getBigDecimalValue());
+      k3Step = k3Diff.divide(runtimePeriod, 50, RoundingMode.HALF_UP);
+
+      // Calculate zero S₂beam values
       zeroS2Beams = new TreeMap<Double, Double>();
 
       // We calculate zero beams as averages within their run
@@ -115,12 +143,11 @@ public class ControsPco2Reducer extends DataReducer {
         if (runType.equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
 
           Double rawSignal = measurement
-            .getMeasurementValue("Contros pCO₂ Raw Detector Signal")
-            .getCalculatedValue();
+            .getMeasurementValue("Raw Detector Signal").getCalculatedValue();
 
           if (!rawSignal.isNaN()) {
-            runTimes.add(measurement.getMeasurementValue("Contros pCO₂ Runtime")
-              .getCalculatedValue());
+            runTimes.add(
+              measurement.getMeasurementValue("Runtime").getCalculatedValue());
             s2Beams.add(calcS2Beam(measurement));
           }
         }
@@ -149,25 +176,27 @@ public class ControsPco2Reducer extends DataReducer {
       BigDecimal F = new BigDecimal(CalculationCoefficient
         .getCoefficient(priorCoefficients, variable, "F").getValue());
 
-      BigDecimal measurementRunTime = new BigDecimal(measurement
-        .getMeasurementValue("Contros pCO₂ Runtime").getCalculatedValue());
+      BigDecimal measurementRuntime = new BigDecimal(
+        measurement.getMeasurementValue("Runtime").getCalculatedValue());
 
       Double measurementS2Beam = calcS2Beam(measurement);
 
       if (!measurementS2Beam.isNaN()) {
         BigDecimal bdMeasurementS2Beam = new BigDecimal(measurementS2Beam);
         BigDecimal zeroS2Beam = new BigDecimal(
-          getInterpZeroS2Beam(measurementRunTime.doubleValue()));
+          getInterpZeroS2Beam(measurementRuntime.doubleValue()));
 
-        BigDecimal sProc = F.multiply(new BigDecimal(1D).subtract(
-          (bdMeasurementS2Beam.divide(zeroS2Beam, 10, RoundingMode.HALF_UP))));
+        BigDecimal sDC = bdMeasurementS2Beam.divide(zeroS2Beam,
+          RoundingMode.HALF_UP);
 
-        BigDecimal k1Interp = CalculationCoefficient.interpolateBigDecimal(
-          runTimePrior, k1Prior, runTimePost, k1Post, measurementRunTime);
-        BigDecimal k2Interp = CalculationCoefficient.interpolateBigDecimal(
-          runTimePrior, k2Prior, runTimePost, k2Post, measurementRunTime);
-        BigDecimal k3Interp = CalculationCoefficient.interpolateBigDecimal(
-          runTimePrior, k3Prior, runTimePost, k3Post, measurementRunTime);
+        BigDecimal sProc = F.multiply(new BigDecimal(1D).subtract(sDC));
+
+        BigDecimal k1Interp = k1Prior.getBigDecimalValue()
+          .add(k1Step.multiply(measurementRuntime));
+        BigDecimal k2Interp = k2Prior.getBigDecimalValue()
+          .add(k2Step.multiply(measurementRuntime));
+        BigDecimal k3Interp = k3Prior.getBigDecimalValue()
+          .add(k3Step.multiply(measurementRuntime));
 
         BigDecimal sProcCubed = sProc.pow(3);
         BigDecimal sProcSquared = sProc.pow(2);
@@ -176,42 +205,43 @@ public class ControsPco2Reducer extends DataReducer {
         BigDecimal k2Part = k2Interp.multiply(sProcSquared);
         BigDecimal k1Part = k1Interp.multiply(sProc);
 
-        // We can drop back to double precision now
-        Double xco2ProcPart = k3Part.add(k2Part).add(k1Part).doubleValue();
+        BigDecimal xco2ProcPart = k3Part.add(k2Part).add(k1Part);
 
-        Double gasTemperature = measurement
-          .getMeasurementValue("Gas Stream Temperature").getCalculatedValue()
-          + T0;
-        Double gasPressure = measurement
-          .getMeasurementValue("Gas Stream Pressure").getCalculatedValue();
+        // Gas temperature in Kelvin
+        BigDecimal gasTemperature = new BigDecimal(measurement
+          .getMeasurementValue("Gas Stream Temperature").getCalculatedValue())
+          .add(t0.getBigDecimalValue());
 
-        Double xco2PresTempPart = (P0 * gasTemperature) / (T0 * gasPressure);
+        BigDecimal gasPressure = new BigDecimal(measurement
+          .getMeasurementValue("Gas Stream Pressure").getCalculatedValue());
 
-        Double xco2 = xco2ProcPart * xco2PresTempPart;
+        BigDecimal membranePressure = new BigDecimal(measurement
+          .getMeasurementValue("Membrane Pressure").getCalculatedValue());
 
-        Double membranePressure = measurement
-          .getMeasurementValue("Membrane Pressure").getCalculatedValue();
+        BigDecimal pressureTimesTemp = p0.getBigDecimalValue()
+          .multiply(gasTemperature);
 
-        Double pCo2TEWet = xco2 * (membranePressure / P0);
-        Double fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, xco2,
-          membranePressure, gasTemperature);
+        BigDecimal tempTimesPressure = t0.getBigDecimalValue()
+          .multiply(gasPressure);
 
-        Double sst = measurement.getMeasurementValue("Intake Temperature")
-          .getCalculatedValue() + T0;
-        Double membraneTemp = measurement
-          .getMeasurementValue("Membrane Temperature").getCalculatedValue()
-          + T0;
+        BigDecimal xcoPresTempPart = pressureTimesTemp.divide(tempTimesPressure,
+          50, RoundingMode.HALF_UP);
 
-        Double pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet, membraneTemp, sst);
-        Double fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, membraneTemp, sst);
+        BigDecimal xco2 = xco2ProcPart.multiply(xcoPresTempPart);
+
+        BigDecimal pco2PressurePart = membranePressure
+          .divide(p0.getBigDecimalValue(), 50, RoundingMode.HALF_UP);
+
+        BigDecimal pCO2SST = xco2.multiply(pco2PressurePart);
+        Double fCO2 = Calculators.calcfCO2(pCO2SST.doubleValue(),
+          xco2.doubleValue(), membranePressure.doubleValue(),
+          gasTemperature.doubleValue());
 
         record.put("Zero S₂beam", zeroS2Beam.doubleValue());
         record.put("S₂beam", measurementS2Beam.doubleValue());
         record.put("Sproc", sProc.doubleValue());
-        record.put("xCO₂", xco2);
-        record.put("pCO₂ TE Wet", pCo2TEWet);
-        record.put("fCO₂ TE Wet", fCo2TEWet);
-        record.put("pCO₂ SST", pCO2SST);
+        record.put("xCO₂", xco2.doubleValue());
+        record.put("pCO₂ SST", pCO2SST.doubleValue());
         record.put("fCO₂", fCO2);
       }
     } catch (Exception e) {
@@ -237,17 +267,9 @@ public class ControsPco2Reducer extends DataReducer {
         "xCO₂", "xCO₂ In Water", "XCO2WBDY", "μmol/mol", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(4),
-        "pCO₂ TE Wet", "pCO₂ In Water - Equilibrator Temperature", "PCO2IG02",
-        "μatm", false));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(5),
-        "fCO₂ TE Wet", "fCO₂ In Water - Equilibrator Temperature", "FCO2IG02",
-        "μatm", false));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(6),
         "pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(7),
+      calculationParameters.add(new CalculationParameter(makeParameterId(5),
         "fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true));
     }
 
@@ -256,16 +278,10 @@ public class ControsPco2Reducer extends DataReducer {
 
   private Double calcS2Beam(Measurement measurement)
     throws SensorTypeNotFoundException {
-    Double s2Beam = measurement
-      .getMeasurementValue("Contros pCO₂ Raw Detector Signal")
+    return measurement.getMeasurementValue("Raw Detector Signal")
       .getCalculatedValue()
-      / measurement.getMeasurementValue("Contros pCO₂ Reference Signal")
+      / measurement.getMeasurementValue("Reference Signal")
         .getCalculatedValue();
-
-    Double fTSensor = CalculationCoefficient
-      .getCoefficient(priorCoefficients, variable, "f(Tsensor)").getValue();
-
-    return s2Beam * fTSensor;
   }
 
   private CalculationCoefficient getPost(String coefficient) {

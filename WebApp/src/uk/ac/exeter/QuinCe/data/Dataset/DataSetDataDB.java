@@ -47,8 +47,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class for handling database queries related to dataset data
- *
- * @author Steve Jones
  */
 public class DataSetDataDB {
 
@@ -1053,27 +1051,29 @@ public class DataSetDataDB {
     List<Long> runTypeColumnIds = instrument.getSensorAssignments()
       .getRunTypeColumnIDs();
 
-    String sensorValuesSQL = DatabaseUtils
-      .makeInStatementSql(GET_RUN_TYPES_QUERY, runTypeColumnIds.size());
+    if (runTypeColumnIds.size() > 0) {
+      String sensorValuesSQL = DatabaseUtils
+        .makeInStatementSql(GET_RUN_TYPES_QUERY, runTypeColumnIds.size());
 
-    try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
+      try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
 
-      stmt.setLong(1, datasetId);
+        stmt.setLong(1, datasetId);
 
-      int currentParam = 2;
-      for (long column : runTypeColumnIds) {
-        stmt.setLong(currentParam, column);
-        currentParam++;
-      }
-
-      try (ResultSet records = stmt.executeQuery()) {
-        while (records.next()) {
-          result.add(records.getString(2),
-            DateTimeUtils.longToDate(records.getLong(1)));
+        int currentParam = 2;
+        for (long column : runTypeColumnIds) {
+          stmt.setLong(currentParam, column);
+          currentParam++;
         }
+
+        try (ResultSet records = stmt.executeQuery()) {
+          while (records.next()) {
+            result.add(records.getString(2),
+              DateTimeUtils.longToDate(records.getLong(1)));
+          }
+        }
+      } catch (SQLException e) {
+        throw new DatabaseException("Error while getting run type periods", e);
       }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting run type periods", e);
     }
 
     return result;

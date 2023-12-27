@@ -182,7 +182,7 @@ public class Calculators {
 
       BigDecimal top = Y0timesX1minusX.add(Y1timesXminusX0);
 
-      result = top.divide(X1minusX0, 10, RoundingMode.HALF_UP);
+      result = top.divide(X1minusX0, 50, RoundingMode.HALF_UP);
     } else if (!priorNull) {
       result = y0;
     } else if (!postNull) {
