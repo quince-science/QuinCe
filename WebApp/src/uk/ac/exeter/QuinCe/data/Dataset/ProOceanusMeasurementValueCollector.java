@@ -14,7 +14,7 @@ import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
  * {@link MeasurementValueCollector} for Pro Oceanus CO₂ sensors.
  *
  * <p>
- * The reference value must be the run type value ({@code a m } or {@code w m}),
+ * The reference value must be the run type value ({@code a m} or {@code w m}),
  * which should represent a group of measurements in PERIODIC mode (see
  * {@link SensorValuesList}). The values from the Pro Oceanus will be retrieved
  * from the list directly based on the time period of the reference value

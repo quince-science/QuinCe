@@ -4,16 +4,9 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
  * Exception for sensor types that can't be found
- *
- * @author Steve Jones
- *
  */
+@SuppressWarnings("serial")
 public class SensorTypeNotFoundException extends InstrumentException {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = 7707562190864340444L;
 
   /**
    * Sensor name not found

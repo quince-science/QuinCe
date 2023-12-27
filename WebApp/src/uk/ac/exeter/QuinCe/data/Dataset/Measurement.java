@@ -386,6 +386,25 @@ public class Measurement implements Comparable<Measurement> {
 
     return result;
   }
+
+  /**
+   * Determines whether or not a given run type is <i>not</i> sourced from a
+   * column in a data file.
+   *
+   * This is determined by checking the run type against those that can be
+   * defined programmatically ({@link #MEASUREMENT_RUN_TYPE},
+   * {@link #INTERNAL_CALIBRATION_RUN_TYPE} or {@link #IGNORED_RUN_TYPE}).
+   *
+   * @param runType
+   *          The run type
+   * @return {@code true} if the run type is defined outside a data file;
+   *         {@code false} if it is defined in a file.
+   */
+  public static boolean isNonColumnRunType(String runType) {
+    return runType.equals(MEASUREMENT_RUN_TYPE)
+      || runType.equals(INTERNAL_CALIBRATION_RUN_TYPE)
+      || runType.equals(IGNORED_RUN_TYPE);
+  }
 }
 
 class MeasurementTimeComparator implements Comparator<Measurement> {
