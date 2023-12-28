@@ -30,16 +30,16 @@ function processNewDataSet(eventType) {
   // Remove the existing entry
   timeline.itemsData.getDataSet().remove(newDataSetItem);
 
-  if (null == PF('pStartDate').getDate()) {
+  if (null == PF('startDate').getDate()) {
     newDataSetItem['start'] = null;
   } else {
-    newDataSetItem['start'] = getDateField('pStartDate');
+    newDataSetItem['start'] = getDateField('startDate');
   }
 
-  if (null == PF('pEndDate').getDate()) {
+  if (null == PF('endDate').getDate()) {
     newDataSetItem['end'] = null;
   } else {
-    newDataSetItem['end'] = getDateField('pEndDate');
+    newDataSetItem['end'] = getDateField('endDate');
   }
   let validData = validateNewDataSet();
   if (validData) {
@@ -277,8 +277,8 @@ function setRangeFromClick(date, datasets) {
     max = max_file_date
   }
   if (!inside_existing) {
-    setDateField('pStartDate', min);
-    setDateField('pEndDate', max);
+    setDateField('startDate', min);
+    setDateField('endDate', max);
   }
   else {
     alert('You clicked on an area that already has a data set defined');

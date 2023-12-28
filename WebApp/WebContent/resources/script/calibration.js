@@ -6,7 +6,7 @@ function addDeployment() {
   hideSelectionDetails();
   $('#deploymentForm\\:calibrationId').val(-1);
   $('#deploymentForm\\:editAction').val(ADD);
-  newCalibration();
+  newCalibration(); // PF remoteCommand in calibration.xhtml
 }
 
 function selectDeployment(item) {
