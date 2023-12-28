@@ -87,10 +87,12 @@ public abstract class Calibration implements Comparable<Calibration> {
    * @param type
    *          The calibration type.
    */
-  protected Calibration(Instrument instrument, String type) {
+  protected Calibration(Instrument instrument, String type,
+    LocalDateTime deploymentDate) {
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.instrument = instrument;
     this.type = type;
+    this.deploymentDate = deploymentDate;
   }
 
   /**

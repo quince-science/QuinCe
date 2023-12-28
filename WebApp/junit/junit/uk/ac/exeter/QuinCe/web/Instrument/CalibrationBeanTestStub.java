@@ -1,5 +1,7 @@
 package junit.uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.time.LocalDateTime;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
@@ -57,8 +59,8 @@ public class CalibrationBeanTestStub extends CalibrationBean {
   }
 
   @Override
-  protected Calibration initNewCalibration() {
-    return new CalibrationTestStub(instrument);
+  protected Calibration initNewCalibration(LocalDateTime date) {
+    return new CalibrationTestStub(instrument, date);
   }
 
   @Override

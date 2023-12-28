@@ -1,5 +1,6 @@
 package junit.uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,8 +9,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 
 public class CalibrationTestStub extends Calibration {
 
-  protected CalibrationTestStub(Instrument instrument) {
-    super(instrument, "TEST_TYPE");
+  protected CalibrationTestStub(Instrument instrument, LocalDateTime date) {
+    super(instrument, "TEST_TYPE", date);
   }
 
   @Override

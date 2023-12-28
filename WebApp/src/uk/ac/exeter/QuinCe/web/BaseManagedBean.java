@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -64,6 +65,14 @@ public abstract class BaseManagedBean {
    * The session attribute where the current full instrument is stored
    */
   private static final String CURRENT_FULL_INSTRUMENT_ATTR = "currentFullInstrument";
+
+  /**
+   * Session attribute to store the last date selected by the user.
+   *
+   * Used to pre-populate date selectors, since many actions happen for the same
+   * date.
+   */
+  private static final String LAST_DATE_ATTR = "lastDate";
 
   /**
    * The instruments owned by the user
@@ -548,6 +557,32 @@ public abstract class BaseManagedBean {
       result = DataSetsBean.NAV_DATASET_LIST;
     }
 
+    return result;
+  }
+
+  /**
+   * Set the last used date session attribute for later use.
+   *
+   * @param date
+   *          The date.
+   */
+  public void setLastDate(LocalDateTime date) {
+    getSession().setAttribute(LAST_DATE_ATTR, date);
+  }
+
+  /**
+   * Get the last used date from the session.
+   *
+   * If the date has not been set, returns the current date.
+   *
+   * @return The last date used date.
+   */
+  public LocalDateTime getLastDate() {
+    LocalDateTime result = (LocalDateTime) getSession()
+      .getAttribute(LAST_DATE_ATTR);
+    if (null == result) {
+      result = LocalDateTime.now().toLocalDate().atStartOfDay();
+    }
     return result;
   }
 }

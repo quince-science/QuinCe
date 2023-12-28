@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.time.LocalDateTime;
+
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -52,8 +54,9 @@ public class ExternalStandardsBean extends CalibrationBean {
   }
 
   @Override
-  protected Calibration initNewCalibration() throws Exception {
-    return ExternalStandardFactory.getExternalStandard(instrument);
+  protected Calibration initNewCalibration(LocalDateTime date)
+    throws Exception {
+    return ExternalStandardFactory.getExternalStandard(instrument, date);
   }
 
   @Override

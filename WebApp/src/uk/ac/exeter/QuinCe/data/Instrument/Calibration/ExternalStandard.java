@@ -24,8 +24,9 @@ public abstract class ExternalStandard extends Calibration {
    * @param instrumentId
    *          The instrument ID
    */
-  protected ExternalStandard(Instrument instrument) {
-    super(instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE);
+  protected ExternalStandard(Instrument instrument, LocalDateTime date) {
+    super(instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
+      date);
   }
 
   /**

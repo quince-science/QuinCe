@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.time.LocalDateTime;
+
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -55,8 +57,8 @@ public class CalculationCoefficientsBean extends CalibrationBean {
   }
 
   @Override
-  protected Calibration initNewCalibration() {
-    return new CalculationCoefficient(instrument);
+  protected Calibration initNewCalibration(LocalDateTime date) {
+    return new CalculationCoefficient(instrument, date);
   }
 
   @Override

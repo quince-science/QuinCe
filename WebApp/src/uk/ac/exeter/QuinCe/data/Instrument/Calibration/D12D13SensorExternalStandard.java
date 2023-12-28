@@ -16,8 +16,9 @@ public class D12D13SensorExternalStandard extends DefaultExternalStandard {
 
   boolean useTotal = false;
 
-  public D12D13SensorExternalStandard(Instrument instrument) {
-    super(instrument);
+  public D12D13SensorExternalStandard(Instrument instrument,
+    LocalDateTime date) {
+    super(instrument, date);
     calculateUseTotal(instrument);
   }
 

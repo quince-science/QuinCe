@@ -9,8 +9,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
 public class DefaultExternalStandard extends ExternalStandard {
 
-  public DefaultExternalStandard(Instrument instrument) {
-    super(instrument);
+  public DefaultExternalStandard(Instrument instrument, LocalDateTime date) {
+    super(instrument, date);
   }
 
   public DefaultExternalStandard(long id, Instrument instrument, String target,
