@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.time.LocalDateTime;
+
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -58,8 +60,8 @@ public class SensorCalibrationsBean extends CalibrationBean {
   }
 
   @Override
-  protected Calibration initNewCalibration() {
-    return new PolynomialSensorCalibration(instrument);
+  protected Calibration initNewCalibration(LocalDateTime date) {
+    return new PolynomialSensorCalibration(instrument, date);
   }
 
   @Override

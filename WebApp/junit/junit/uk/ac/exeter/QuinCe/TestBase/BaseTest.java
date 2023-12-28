@@ -1,11 +1,14 @@
 package junit.uk.ac.exeter.QuinCe.TestBase;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -73,6 +76,9 @@ public class BaseTest {
   @Mock
   protected static FacesContext facesContext;
 
+  @Mock
+  protected static ExternalContext externalContext;
+
   /**
    * A mock Servlet Context Event
    */
@@ -86,9 +92,10 @@ public class BaseTest {
   @BeforeAll
   public static void createServletContextEvent() {
 
-    // I have read that you shouldn't create mocks of classes that you don't
-    // own.
-    // But I don't know how to do this any other way, so bollocks to it.
+    /*
+     * I have read that you shouldn't create mocks of classes that you don't
+     * own. But I don't know how to do this any other way, so bollocks to it.
+     */
     servletContext = Mockito.mock(ServletContext.class);
     Mockito.doReturn(TestResourceManager.DATABASE_NAME).when(servletContext)
       .getInitParameter("database.name");
@@ -100,6 +107,12 @@ public class BaseTest {
     servletContextEvent = Mockito.mock(ServletContextEvent.class);
     Mockito.doReturn(servletContext).when(servletContextEvent)
       .getServletContext();
+
+    externalContext = Mockito.mock(ExternalContext.class);
+    Mockito.when(facesContext.getExternalContext()).thenReturn(externalContext);
+
+    TestBaseSession session = new TestBaseSession();
+    Mockito.when(externalContext.getSession(anyBoolean())).thenReturn(session);
   }
 
   /**

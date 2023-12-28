@@ -32,8 +32,8 @@ public abstract class SensorCalibration extends Calibration {
    * @param instrumentId
    *          The instrument that the calibration is for
    */
-  protected SensorCalibration(Instrument instrument) {
-    super(instrument, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE);
+  protected SensorCalibration(Instrument instrument, LocalDateTime date) {
+    super(instrument, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE, date);
   }
 
   /**

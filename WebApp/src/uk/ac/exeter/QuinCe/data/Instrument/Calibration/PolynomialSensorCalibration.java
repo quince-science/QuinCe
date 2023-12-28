@@ -54,8 +54,9 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    * @param instrumentId
    *          The instrument to which the calibration target belongs
    */
-  public PolynomialSensorCalibration(Instrument instrument) {
-    super(instrument);
+  public PolynomialSensorCalibration(Instrument instrument,
+    LocalDateTime date) {
+    super(instrument, date);
   }
 
   /**

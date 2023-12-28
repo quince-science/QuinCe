@@ -167,7 +167,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
         dbInstance = getDbInstance();
         loadCalibrations();
         affectedDatasets = null;
-        calibration = initNewCalibration();
+        calibration = initNewCalibration(getLastDate());
       } catch (Exception e) {
         ExceptionUtils.printStackTrace(e);
         nav = internalError(e);
@@ -247,10 +247,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
       switch (editAction) {
       case ADD_ACTION: {
         addCalibration();
+        setLastDate(calibration.getDeploymentDate());
         break;
       }
       case EDIT_ACTION: {
         updateCalibration();
+        setLastDate(calibration.getDeploymentDate());
         break;
       }
       case DELETE_ACTION: {
@@ -264,7 +266,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
       }
 
       loadCalibrations();
-      calibration = initNewCalibration();
+      calibration = initNewCalibration(getLastDate());
 
       // Trigger reprocessing for all affected datasets
       if (null != affectedDatasets) {
@@ -426,7 +428,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *
    * @return The new object.
    */
-  protected abstract Calibration initNewCalibration() throws Exception;
+  protected abstract Calibration initNewCalibration(LocalDateTime date)
+    throws Exception;
 
   /**
    * Get the JSON for the individual calibrations.
@@ -517,7 +520,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
     calibration = null;
 
     if (selectedCalibrationId == DatabaseUtils.NO_DATABASE_RECORD) {
-      calibration = initNewCalibration();
+      calibration = initNewCalibration(getLastDate());
     } else {
 
       calibration = getCalibration(selectedCalibrationId);

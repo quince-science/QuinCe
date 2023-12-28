@@ -39,9 +39,9 @@ public class CalculationCoefficient extends Calibration {
    * @param instrumentId
    *          The instrument to which the calibration target belongs
    */
-  public CalculationCoefficient(Instrument instrument) {
+  public CalculationCoefficient(Instrument instrument, LocalDateTime date) {
     super(instrument,
-      CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE);
+      CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE, date);
   }
 
   /**
