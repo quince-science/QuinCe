@@ -10,6 +10,7 @@
    - #{sessionScope[beanName].instrumentName}</ui:define>
   <ui:define name="localHead">
     <h:outputScript name="script/calibration.js" />
+    <h:outputScript name="script/dateFormat.js" />
     <h:outputScript name="script/vis-timeline-graph2d.min.js" />
     <h:outputStylesheet name="style/vis-timeline-graph2d.min.css" />
     <h:outputStylesheet name="style/calibration.css" />
@@ -25,7 +26,7 @@
         <p:remoteCommand name="newCalibration"
           action="#{sessionScope[beanName].loadSelectedCalibration}"
           process="calibrationId editAction" update="@(form :not(.noupdate))"
-          oncomplete="PF('deploymentDialog').show()"/>
+          oncomplete="PF('deploymentDialog').show();"/>
 
         <div id="timelineContainer" class="noupdate"></div>
         <script>
@@ -119,12 +120,14 @@
 
           <div id="deploymentPanelContent">
             <div id="deploymentCalendar">
-              <p:calendar id="deploymentDate" widgetVar="deploymentDate"
-                mode="inline"
+              <p:datePicker id="deploymentDate" widgetVar="deploymentDate"
+                inline="true" monthNavigator="true" yearNavigator="true"
+                onMonthChange="autoSelectDay"
+                onYearChange="autoSelectDay"
                 value="#{sessionScope[beanName].calibration.deploymentDate}"
                 pattern="yyyy-MM-dd HH:mm:ss" navigator="true">
                 <f:converter converterId="localDateTimeConverter" />
-              </p:calendar>
+              </p:datePicker>
             </div>
             <div id="deploymentFields">
               <table>

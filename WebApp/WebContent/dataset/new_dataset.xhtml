@@ -52,16 +52,20 @@
             pt:data-platform-code="#{dataSetsBean.currentInstrument.platformCode}" />
           <p:outputLabel for="startDate" value="Start Date" />
           <p:outputLabel for="endDate" value="End Date" />
-          <p:datePicker id="startDate" widgetVar="pStartDate"
+          <p:datePicker id="startDate" widgetVar="startDate"
             value="#{dataSetsBean.newDataSet.start}" timeInput="true"
             pattern="yyyy-MM-dd HH:mm:ss"
             monthNavigator="true" yearNavigator="true"
+            onMonthChange="autoSelectDay"
+            onYearChange="autoSelectDay"
             onchange="processNewDataSet('start');">
           </p:datePicker>
-          <p:datePicker id="endDate" widgetVar="pEndDate"
+          <p:datePicker id="endDate" widgetVar="endDate"
             value="#{dataSetsBean.newDataSet.end}" timeInput="true"
             pattern="yyyy-MM-dd HH:mm:ss"
             monthNavigator="true" yearNavigator="true"
+            onMonthChange="autoSelectDay"
+            onYearChange="autoSelectDay"
             onchange="processNewDataSet();">
           </p:datePicker>
         </h:panelGrid>
