@@ -22,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
@@ -94,9 +95,9 @@ public class DataSetsBean extends BaseManagedBean {
   private long datasetId;
 
   /**
-   * Says whether the dataset being defined has valid calibrations, both for
-   * sensors and external standards. This defaults to true, but is actually
-   * checked when the form is submitted.
+   * Says whether the dataset being defined has valid calibrations, (for
+   * sensors, external standards, and calculation coefficients). This defaults
+   * to true, but is actually checked when the form is submitted.
    */
   private boolean validCalibration = true;
 
@@ -432,7 +433,7 @@ public class DataSetsBean extends BaseManagedBean {
       .getExternalContext().getRequestParameterMap();
 
     String startTime = params.get("uploadForm:startDate_input");
-    // startTime not yet set
+
     if (startTime.length() > 0) {
       try {
 
@@ -444,8 +445,9 @@ public class DataSetsBean extends BaseManagedBean {
         if (!calibrations.isValid()) {
           validCalibration = false;
           validCalibrationMessage = "One or more sensor calibration equations are missing";
-        } else {
+        }
 
+        if (validCalibration) {
           // Check for external standards if required.
           if (getCurrentInstrument().hasInternalCalibrations()) {
 
@@ -467,7 +469,21 @@ public class DataSetsBean extends BaseManagedBean {
              * "One external standard must have a zero concentration"; }
              */
           }
+        }
 
+        if (validCalibration) {
+          // Check calculation coefficients, if there are any
+          if (getCurrentInstrument().hasCalculationCoefficients()) {
+            CalibrationSet coefficients = new CalculationCoefficientDB()
+              .getMostRecentCalibrations(getDataSource(),
+                getCurrentInstrument(),
+                DateTimeUtils.parseDisplayDateTime(startTime));
+
+            if (!coefficients.isValid()) {
+              validCalibration = false;
+              validCalibrationMessage = "One or more calculation coefficents are missing";
+            }
+          }
         }
       } catch (Exception e) {
         ExceptionUtils.printStackTrace(e);
