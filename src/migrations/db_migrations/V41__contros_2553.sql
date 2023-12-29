@@ -20,7 +20,7 @@ UPDATE sensor_types SET name = 'Flush Mode' WHERE name = 'Contros pCO₂ Flush M
 UPDATE sensor_types SET name = 'Runtime' WHERE name = 'Contros pCO₂ Runtime';
 
 -- Change required coefficients
-UPDATE variables SET properties = '{"coefficients": ["F", "p0", "T0", "Runtime", "k1", "k2", "k3"]}' WHERE id = 6;
+UPDATE variables SET properties = '{"coefficients": ["F", "Runtime", "k1", "k2", "k3"]}' WHERE id = 6;
 
 -- Add zero interpolation mode question
 UPDATE variables SET attributes =

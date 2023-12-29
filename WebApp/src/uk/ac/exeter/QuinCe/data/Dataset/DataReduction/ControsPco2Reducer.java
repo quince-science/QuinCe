@@ -25,6 +25,10 @@ public class ControsPco2Reducer extends DataReducer {
 
   public static final String ZEROS_PROP = "contros.zeros";
 
+  private static final BigDecimal T0 = new BigDecimal("273.15");
+
+  private static final BigDecimal P0 = new BigDecimal("1013.25");
+
   private static List<CalculationParameter> calculationParameters = null;
 
   private TreeMap<Double, Double> zeroS2Beams;
@@ -32,10 +36,6 @@ public class ControsPco2Reducer extends DataReducer {
   private CalibrationSet priorCoefficients;
 
   private CalibrationSet postCoefficients;
-
-  private CalculationCoefficient p0 = null;
-
-  private CalculationCoefficient t0 = null;
 
   private CalculationCoefficient k1Prior = null;
 
@@ -78,13 +78,6 @@ public class ControsPco2Reducer extends DataReducer {
       postCoefficients = CalculationCoefficientDB.getInstance()
         .getCalibrationsAfter(conn, instrument,
           allMeasurements.get(allMeasurements.size() - 1).getTime());
-
-      // Extract coefficients that will be used multiple times
-      p0 = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
-        "p0");
-
-      t0 = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
-        "T0");
 
       k1Prior = CalculationCoefficient.getCoefficient(priorCoefficients,
         variable, "k1");
@@ -210,7 +203,7 @@ public class ControsPco2Reducer extends DataReducer {
         // Gas temperature in Kelvin
         BigDecimal gasTemperature = new BigDecimal(measurement
           .getMeasurementValue("Gas Stream Temperature").getCalculatedValue())
-          .add(t0.getBigDecimalValue());
+          .add(T0);
 
         BigDecimal gasPressure = new BigDecimal(measurement
           .getMeasurementValue("Gas Stream Pressure").getCalculatedValue());
@@ -218,19 +211,17 @@ public class ControsPco2Reducer extends DataReducer {
         BigDecimal membranePressure = new BigDecimal(measurement
           .getMeasurementValue("Membrane Pressure").getCalculatedValue());
 
-        BigDecimal pressureTimesTemp = p0.getBigDecimalValue()
-          .multiply(gasTemperature);
+        BigDecimal pressureTimesTemp = P0.multiply(gasTemperature);
 
-        BigDecimal tempTimesPressure = t0.getBigDecimalValue()
-          .multiply(gasPressure);
+        BigDecimal tempTimesPressure = T0.multiply(gasPressure);
 
         BigDecimal xcoPresTempPart = pressureTimesTemp.divide(tempTimesPressure,
           50, RoundingMode.HALF_UP);
 
         BigDecimal xco2 = xco2ProcPart.multiply(xcoPresTempPart);
 
-        BigDecimal pco2PressurePart = membranePressure
-          .divide(p0.getBigDecimalValue(), 50, RoundingMode.HALF_UP);
+        BigDecimal pco2PressurePart = membranePressure.divide(P0, 50,
+          RoundingMode.HALF_UP);
 
         BigDecimal pCO2SST = xco2.multiply(pco2PressurePart);
         Double fCO2 = Calculators.calcfCO2(pCO2SST.doubleValue(),
