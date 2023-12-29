@@ -141,6 +141,31 @@ public class CalibrationSet extends TreeSet<Calibration> {
   }
 
   /**
+   * Determines whether or not {@code Calibration}s for the specified targets
+   * have been added to the set. The method does not check whether or not the
+   * targets are in the list of allowed targets.
+   *
+   * Empty calibrations are not detected by this method.
+   *
+   * @param targets
+   *          The targets to find
+   * @return {@code true} if calibrations for all targets are found;
+   *         {@code false} otherwise
+   */
+  public boolean containsTargets(Collection<String> targets) {
+    boolean result = true;
+
+    for (String target : targets) {
+      if (!containsTarget(target)) {
+        result = false;
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * Determines whether or not a {@code Calibration} for the specified target
    * (as a database ID) has been added to the set. The method does not check
    * whether or not the target is in the list of allowed targets.

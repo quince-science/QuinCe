@@ -79,15 +79,29 @@ public class ControsPco2Reducer extends DataReducer {
         .getCalibrationsAfter(conn, instrument,
           allMeasurements.get(allMeasurements.size() - 1).getTime());
 
-      k1Prior = CalculationCoefficient.getCoefficient(priorCoefficients,
-        variable, "k1");
-      k2Prior = CalculationCoefficient.getCoefficient(priorCoefficients,
-        variable, "k2");
-      k3Prior = CalculationCoefficient.getCoefficient(priorCoefficients,
-        variable, "k3");
-      runTimePrior = CalculationCoefficient.getCoefficient(priorCoefficients,
-        variable, "Runtime");
+      calcKSteps();
 
+      calcZeroS2Beams(dataset, allMeasurements);
+
+    } catch (Exception e) {
+      throw new DataReductionException(e);
+    }
+  }
+
+  private void calcKSteps() {
+    k1Prior = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
+      "k1");
+    k2Prior = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
+      "k2");
+    k3Prior = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
+      "k3");
+    runTimePrior = CalculationCoefficient.getCoefficient(priorCoefficients,
+      variable, "Runtime");
+
+    List<String> coefficientFullNames = CalculationCoefficient
+      .getCoeffecientNames(variable, "Runtime", "k1", "k2", "k3");
+
+    if (postCoefficients.containsTargets(coefficientFullNames)) {
       k1Post = getPost("k1");
       k2Post = getPost("k2");
       k3Post = getPost("k3");
@@ -108,54 +122,62 @@ public class ControsPco2Reducer extends DataReducer {
       BigDecimal k3Diff = k3Post.getBigDecimalValue()
         .subtract(k3Prior.getBigDecimalValue());
       k3Step = k3Diff.divide(runtimePeriod, 50, RoundingMode.HALF_UP);
-
-      // Calculate zero S₂beam values
-      zeroS2Beams = new TreeMap<Double, Double>();
-
-      // We calculate zero beams as averages within their run
-      String currentRunType = "";
-      MeanCalculator runTimes = new MeanCalculator();
-      MeanCalculator s2Beams = new MeanCalculator();
-
-      for (Measurement measurement : allMeasurements) {
-
-        String runType = measurement.getRunType(variable);
-
-        if (!runType.equals(currentRunType)) {
-          if (currentRunType
-            .equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
-            if (runTimes.getCount() > 0) {
-              zeroS2Beams.put(runTimes.mean(), s2Beams.mean());
-              runTimes = new MeanCalculator();
-              s2Beams = new MeanCalculator();
-            }
-          }
-          currentRunType = runType;
-        }
-
-        if (runType.equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
-
-          Double rawSignal = measurement
-            .getMeasurementValue("Raw Detector Signal").getCalculatedValue();
-
-          if (!rawSignal.isNaN()) {
-            runTimes.add(
-              measurement.getMeasurementValue("Runtime").getCalculatedValue());
-            s2Beams.add(calcS2Beam(measurement));
-          }
-        }
-      }
-
-      if (runTimes.getCount() > 0) {
-        zeroS2Beams.put(runTimes.mean(), s2Beams.mean());
-        runTimes = new MeanCalculator();
-        s2Beams = new MeanCalculator();
-      }
-
-      dataset.setProperty(variable, ZEROS_PROP, new Gson().toJson(zeroS2Beams));
-    } catch (Exception e) {
-      throw new DataReductionException(e);
+    } else {
+      k1Step = BigDecimal.ZERO;
+      k2Step = BigDecimal.ZERO;
+      k3Step = BigDecimal.ZERO;
     }
+  }
+
+  /**
+   * Calculate zero S₂beam values
+   *
+   * @throws SensorTypeNotFoundException
+   */
+  private void calcZeroS2Beams(DataSet dataset,
+    List<Measurement> allMeasurements) throws SensorTypeNotFoundException {
+    zeroS2Beams = new TreeMap<Double, Double>();
+
+    // We calculate zero beams as averages within their run
+    String currentRunType = "";
+    MeanCalculator runTimes = new MeanCalculator();
+    MeanCalculator s2Beams = new MeanCalculator();
+
+    for (Measurement measurement : allMeasurements) {
+
+      String runType = measurement.getRunType(variable);
+
+      if (!runType.equals(currentRunType)) {
+        if (currentRunType.equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
+          if (runTimes.getCount() > 0) {
+            zeroS2Beams.put(runTimes.mean(), s2Beams.mean());
+            runTimes = new MeanCalculator();
+            s2Beams = new MeanCalculator();
+          }
+        }
+        currentRunType = runType;
+      }
+
+      if (runType.equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
+
+        Double rawSignal = measurement
+          .getMeasurementValue("Raw Detector Signal").getCalculatedValue();
+
+        if (!rawSignal.isNaN()) {
+          runTimes.add(
+            measurement.getMeasurementValue("Runtime").getCalculatedValue());
+          s2Beams.add(calcS2Beam(measurement));
+        }
+      }
+    }
+
+    if (runTimes.getCount() > 0) {
+      zeroS2Beams.put(runTimes.mean(), s2Beams.mean());
+      runTimes = new MeanCalculator();
+      s2Beams = new MeanCalculator();
+    }
+
+    dataset.setProperty(variable, ZEROS_PROP, new Gson().toJson(zeroS2Beams));
   }
 
   @Override
