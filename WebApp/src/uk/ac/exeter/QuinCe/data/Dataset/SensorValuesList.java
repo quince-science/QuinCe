@@ -1113,7 +1113,7 @@ public class SensorValuesList {
         result = new SensorValuesListValue(first.getStartTime(),
           second.getEndTime(), targetTime, combinedSourceValues,
           first.getSensorType(), interpValue,
-          Flag.getWorstFlag(first.getQCFlag(), second.getQCFlag()), StringUtils
+          Flag.getMostSignificantFlag(first.getQCFlag(), second.getQCFlag()), StringUtils
             .combine(first.getQCMessage(), second.getQCMessage(), ";"));
       }
     }
