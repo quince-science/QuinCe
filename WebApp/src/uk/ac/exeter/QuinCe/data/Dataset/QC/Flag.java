@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
+import java.util.HashMap;
+
 /**
  * Represents a Flag placed on a data record.
  *
@@ -20,6 +22,11 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
  * <th>Flag</th>
  * <th>Value</th>
  * <th>Meaning</th>
+ * </tr>
+ * <tr>
+ * <td>Not Calibrated</td>
+ * <td style="text-align: right">{@code 1}</td>
+ * <td>The value has not been calibrated.</td>
  * </tr>
  * <tr>
  * <td>Good</td>
@@ -71,6 +78,26 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
  * </p>
  *
  * <p>
+ * In many cases a single value could have multiple possible Flags, e.g. a
+ * calculated value will have its Flag set according to the Flags of the values
+ * used in that calculation. Flags are therefore given relative significance
+ * values so the correct final Flag for those values is set. The significance
+ * order of Flags is as follows:
+ * </p>
+ *
+ * *
+ * <ul>
+ * <li>{@link #FLUSHING}</li>
+ * <li>{@link #LOOKUP}</li>
+ * <li>{@link #NEEDED}</li>
+ * <li>{@link #NO_QC}</li>
+ * <li>{@link #BAD}</li>
+ * <li>{@link #QUESTIONABLE}</li>
+ * <li>{@link #NOT_CALIBRATED}</li>
+ * <li>{@link #GOOD}/{@link #ASSUMED_GOOD}</li>
+ * </ul>
+ *
+ * <p>
  * This class provides instances of each type of flag to remove the need to
  * repeatedly construct them. These instances can be used repeatedly without
  * issues in most cases.
@@ -87,6 +114,16 @@ public class Flag {
    * Text value for a {@link #NO_QC} flag.
    */
   protected static final String TEXT_NO_QC = "No QC";
+
+  /**
+   * Numeric value for a {@link #NOT_CALIBRATED} flag.
+   */
+  public static final int VALUE_NOT_CALIBRATED = 1;
+
+  /**
+   * Text value for a {@link #NOT_CALIBRATED} flag.
+   */
+  protected static final String TEXT_NOT_CALIBRATED = "Not calibrated";
 
   /**
    * Numeric value for a {@link #GOOD} flag.
@@ -164,6 +201,12 @@ public class Flag {
   public static final Flag NO_QC = makeNoQCFlag();
 
   /**
+   * Reusable instance of a flag indicating that a value has not been
+   * calibrated.
+   */
+  public static final Flag NOT_CALIBRATED = makeNotCalibratedFlag();
+
+  /**
    * Reusable instance of a flag indicating that a value is good and can be
    * used.
    */
@@ -205,9 +248,33 @@ public class Flag {
   public static final Flag LOOKUP = makeLookupQCFlag();
 
   /**
+   * Stores the relative significance of all Flag types.
+   *
+   * Larger numbers in the Map indicate more significant Flags.
+   *
+   * @see #moreSignificantThan(Flag)
+   * @see #lessSignificantThan(Flag)
+   */
+  private static HashMap<Flag, Integer> FLAG_SIGNIFICANCE;
+
+  /**
    * The numeric value for this flag.
    */
-  protected int flagValue;
+  private int flagValue;
+
+  static {
+    FLAG_SIGNIFICANCE = new HashMap<Flag, Integer>();
+
+    FLAG_SIGNIFICANCE.put(Flag.FLUSHING, 70);
+    FLAG_SIGNIFICANCE.put(Flag.LOOKUP, 60);
+    FLAG_SIGNIFICANCE.put(Flag.NEEDED, 50);
+    FLAG_SIGNIFICANCE.put(Flag.NO_QC, 40);
+    FLAG_SIGNIFICANCE.put(Flag.BAD, 30);
+    FLAG_SIGNIFICANCE.put(Flag.QUESTIONABLE, 20);
+    FLAG_SIGNIFICANCE.put(Flag.NOT_CALIBRATED, 10);
+    FLAG_SIGNIFICANCE.put(Flag.GOOD, 00);
+    FLAG_SIGNIFICANCE.put(Flag.ASSUMED_GOOD, 00);
+  }
 
   /**
    * Creates a flag instance with the specified numeric value.
@@ -226,8 +293,10 @@ public class Flag {
   }
 
   /**
-   * <b>Use only for unit testing.</b> Create a flag instance from either a
-   * numeric value or a single character indicating the flag type.
+   * <b>Use only for unit testing.</b>
+   *
+   * Create a flag instance from either a numeric value or a single character
+   * indicating the flag type.
    *
    * @param flagLetter
    *          The flag character
@@ -236,6 +305,11 @@ public class Flag {
    */
   public Flag(char flagLetter) throws InvalidFlagException {
     switch (Character.toUpperCase(flagLetter)) {
+    case 'C':
+    case '1': {
+      this.flagValue = VALUE_NOT_CALIBRATED;
+      break;
+    }
     case 'G':
     case '2': {
       this.flagValue = VALUE_GOOD;
@@ -309,6 +383,10 @@ public class Flag {
       result = TEXT_NO_QC;
       break;
     }
+    case VALUE_NOT_CALIBRATED: {
+      result = TEXT_NOT_CALIBRATED;
+      break;
+    }
     case VALUE_GOOD: {
       result = TEXT_GOOD;
       break;
@@ -354,9 +432,10 @@ public class Flag {
    * @return {@code true} if the flag value is valid; {@code false} if it is not
    */
   public static boolean isValidFlagValue(int value) {
-    return (value == VALUE_NO_QC || value == VALUE_GOOD
-      || value == VALUE_ASSUMED_GOOD || value == VALUE_QUESTIONABLE
-      || value == VALUE_BAD || value == VALUE_NEEDED || value == VALUE_FLUSHING
+    return (value == VALUE_NO_QC || value == VALUE_NOT_CALIBRATED
+      || value == VALUE_GOOD || value == VALUE_ASSUMED_GOOD
+      || value == VALUE_QUESTIONABLE || value == VALUE_BAD
+      || value == VALUE_NEEDED || value == VALUE_FLUSHING
       || value == VALUE_LOOKUP);
   }
 
@@ -369,6 +448,22 @@ public class Flag {
     Flag flag = null;
     try {
       flag = new Flag(VALUE_NO_QC);
+    } catch (InvalidFlagException e) {
+      // This won't be thrown; do nothing
+    }
+
+    return flag;
+  }
+
+  /**
+   * Create an instance of a Not Calibrated flag.
+   *
+   * @return A Good flag.
+   */
+  private static Flag makeNotCalibratedFlag() {
+    Flag flag = null;
+    try {
+      flag = new Flag(VALUE_NOT_CALIBRATED);
     } catch (InvalidFlagException e) {
       // This won't be thrown; do nothing
     }
@@ -514,69 +609,30 @@ public class Flag {
   }
 
   /**
-   * Determines whether or not this flag is more significant than the specified
-   * flag.
+   * Determines whether or not this Flag is more significant than the specified
+   * Flag.
    *
-   * <p>
-   * Flag significant is used to determine which flag takes precedence in
-   * situations where multiple QC flags are under consideration, e.g. when
-   * multiple automatic QC routines try to apply flags to a single value.
-   * </p>
-   *
-   * <ul>
-   * <li>{@link #LOOKUP}</li>
-   * <li>{@link #FLUSHING}</li>
-   * <li>{@link #NEEDED}</li>
-   * <li>{@link #BAD}</li>
-   * <li>{@link #QUESTIONABLE}</li>
-   * <li>{@link #GOOD}/{@link #ASSUMED_GOOD}</li>
-   * <li>{@link #NO_QC}</li>
-   * </ul>
-   *
-   * @param flag
+   * @param otherFlag
    *          The flag to be compared
    * @return {@code true} if this flag is more significant than the supplied
    *         flag; {@code false} if it is not.
+   * @see #FLAG_SIGNIFICANCE
    */
-  public boolean moreSignificantThan(Flag flag) {
-    boolean result = false;
-
-    if (null == flag) {
-      result = true;
-    } else if (flag.equals(Flag.LOOKUP)) {
-      result = false;
-    } else if (this.equals(Flag.LOOKUP)) {
-      result = true;
-    } else if (flag.equals(Flag.FLUSHING)) {
-      result = false;
-    } else if (this.equals(Flag.FLUSHING)) {
-      result = true;
-    } else if (flag.equals(Flag.NEEDED)) {
-      result = false;
-    } else if (this.equals(Flag.NEEDED)) {
-      result = true;
-    } else {
-      result = (this.flagValue - flag.flagValue > 0);
-    }
-
-    return result;
+  public boolean moreSignificantThan(Flag otherFlag) {
+    return FLAG_SIGNIFICANCE.get(this) > FLAG_SIGNIFICANCE.get(otherFlag);
   }
 
   /**
-   * Determines whether or not this flag is less significant than the specified
-   * flag.
+   * Determines whether or not this Flag is less significant than the specified
+   * Flag.
    *
-   * <p>
-   * See {@link #moreSignificantThan(Flag)} for flag precedence rules.
-   * </p>
-   *
-   * @param flag
+   * @param otherFlag
    *          The flag to be compared.
    * @return {@code true} if this flag is less significant than the supplied
    *         flag; {@code false} if it is not.
    */
-  public boolean lessSignificantThan(Flag flag) {
-    return !moreSignificantThan(flag) && !equalSignificance(flag);
+  public boolean lessSignificantThan(Flag otherFlag) {
+    return FLAG_SIGNIFICANCE.get(this) < FLAG_SIGNIFICANCE.get(otherFlag);
   }
 
   /**
@@ -617,6 +673,10 @@ public class Flag {
     int result;
 
     switch (flagValue) {
+    case VALUE_NOT_CALIBRATED: {
+      result = 1;
+      break;
+    }
     case VALUE_GOOD:
     case VALUE_ASSUMED_GOOD: {
       result = 2;
@@ -640,11 +700,6 @@ public class Flag {
 
   /**
    * Check whether the supplied flag is of equal significance to this flag.
-   * <p>
-   * Uses the output of {@link #getWoceValue()} for comparison. A {@code false}
-   * result does not indicate which flag is more significant; use
-   * {@link #moreSignificantThan(Flag)}.
-   * </p>
    *
    * @param otherFlag
    *          The flag to be compared.
@@ -652,7 +707,7 @@ public class Flag {
    *         flag; {@code false} otherwise.
    */
   public boolean equalSignificance(Flag otherFlag) {
-    return otherFlag.getWoceValue() == getWoceValue();
+    return FLAG_SIGNIFICANCE.get(this) == FLAG_SIGNIFICANCE.get(otherFlag);
   }
 
   /**
@@ -666,7 +721,7 @@ public class Flag {
    * @return The raw Flag object.
    */
   public Flag getSimpleFlag() {
-    return this;
+    return new Flag(this);
   }
 
   /**
@@ -677,12 +732,14 @@ public class Flag {
    *          The flags to check.
    * @return The most significant flag.
    */
-  public static Flag getWorstFlag(Flag... flags) {
-    Flag result = Flag.GOOD;
+  public static Flag getMostSignificantFlag(Flag... flags) {
+    Flag result = null;
 
     for (Flag flag : flags) {
-      if (flag.moreSignificantThan(result)) {
-        result = flag;
+      if (null != flag) {
+        if (null == result || flag.moreSignificantThan(result)) {
+          result = flag;
+        }
       }
     }
 
