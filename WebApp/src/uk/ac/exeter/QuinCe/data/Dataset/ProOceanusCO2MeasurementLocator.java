@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Measurement locator for Pro Oceanus CO2 sensors.
+ * Measurement locator for Pro Oceanus CO₂ sensors.
  *
  * <p>
  * This handles both marine and atmospheric variables (use the
@@ -26,17 +26,19 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <p>
  * A flushing time is often not required for Pro Oceanus sensors. However, if
  * one is set the flushing is applied when either:
+ * </p>
  * <ul>
  * <li>The value of the Zero A/D column changes</li>
  * <li>The run mode changes (W M) or (A M)</li>
  * </ul>
+ * <p>
  * If both of these happen at the same time, the flushing periods are combined.
- * Flushing flags are applied to the CO2 column.
+ * Flushing flags are applied to the CO₂ column.
  * </p>
  *
  * <p>
  * Measurements are located after the flushing flags have been applied. If the
- * sensor is not measuring continuously, the CO2 values should be detected in
+ * sensor is not measuring continuously, the CO₂ values should be detected in
  * PERIODIC mode (see {@link SensorValuesList}), so there will be one
  * measurement per period of W M and A M readings.
  * </p>
@@ -45,8 +47,14 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
 
   // Run types are converted to lower case
 
+  /**
+   * Indicates that the sensor is taking water measurements.
+   */
   private static final String WATER_MODE = "w m";
 
+  /**
+   * Indicates that the sensor is taking atmospheric measurements.
+   */
   private static final String ATM_MODE = "a m";
 
   @Override

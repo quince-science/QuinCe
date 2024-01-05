@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
- * The default implementation of the {@link MeasurementValuesCollector}.
+ * The default implementation of the {@link MeasurementValueCollector}.
  *
  * This collects the {@link MeasurementValue}s for all the {@link Variable}'s
  * required {@link SensorType}s according to the time specified in the supplied
@@ -46,6 +46,42 @@ public class DefaultMeasurementValueCollector
     }
   }
 
+  /**
+   * Obtain the reference value for a {@link Measurement}.
+   *
+   * <p>
+   * The reference value defines the base point for collecting values to be used
+   * in data reduction for a given {@link Measurement}. At the most basic level,
+   * this is the {@link SensorValue} of the core {@link SensorType} measured at
+   * the time of the {@link Measurement}. Values for all the other required
+   * {@link SensorType}s for the data reduction are collected based on the
+   * timestamp of the 'core' {@link SensorValue}.
+   * </p>
+   *
+   * <p>
+   * For instruments that sleep for periods between taking measurements (see
+   * {@link SensorValuesList#getMeasurementMode()}), each group of measurements
+   * is averaged. Therefore the reference value will encompass the time period
+   * of the waking period. From this, the other values collected in
+   * {@link #collectMeasurementValues(Instrument, DataSet, Variable, DatasetMeasurements, DatasetSensorValues, Connection, Measurement)}
+   * will be selected as the mean of all the {@link SensorValue}s that fall
+   * within that time period.
+   * </p>
+   *
+   * @param instrument
+   *          The {@link Instrument} taking the measurements.
+   * @param variable
+   *          The {@link Variable} being processed.
+   * @param measurement
+   *          The {@link Measurement} currently being processed.
+   * @param allSensorValues
+   *          The set of all {@link SensorValue}s in the current dataset.
+   * @return The reference value for the {@link Measurement}.
+   * @throws SensorValuesListException
+   *           If an error occurs while accessing the {@link SensorValue}s.
+   * @throws RunTypeCategoryException
+   *           If the run type for the measurement cannot be established.
+   */
   private SensorValuesListValue getReferenceValue(Instrument instrument,
     Variable variable, Measurement measurement,
     DatasetSensorValues allSensorValues)
