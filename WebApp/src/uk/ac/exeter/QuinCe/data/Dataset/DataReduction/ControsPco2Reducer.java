@@ -206,12 +206,15 @@ public class ControsPco2Reducer extends DataReducer {
 
         BigDecimal sProc = F.multiply(new BigDecimal(1D).subtract(sDC));
 
+        BigDecimal runtimeSincePre = measurementRuntime
+          .subtract(runTimePrior.getBigDecimalValue());
+
         BigDecimal k1Interp = k1Prior.getBigDecimalValue()
-          .add(k1Step.multiply(measurementRuntime));
+          .add(k1Step.multiply(runtimeSincePre));
         BigDecimal k2Interp = k2Prior.getBigDecimalValue()
-          .add(k2Step.multiply(measurementRuntime));
+          .add(k2Step.multiply(runtimeSincePre));
         BigDecimal k3Interp = k3Prior.getBigDecimalValue()
-          .add(k3Step.multiply(measurementRuntime));
+          .add(k3Step.multiply(runtimeSincePre));
 
         BigDecimal sProcCubed = sProc.pow(3);
         BigDecimal sProcSquared = sProc.pow(2);
