@@ -60,8 +60,8 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  *
  * <p>
  * Methods are named accordingly, e.g. {@code valuesSize} or {@code rawSize}.
- * Typically, QC activities will access the {@link raw} methods and data
- * reduction will access the {@link values} methods.
+ * Typically, QC activities will access the {@code raw} methods and data
+ * reduction will access the {@code values} methods.
  * </p>
  *
  * <p>
@@ -83,6 +83,16 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  */
 public class SensorValuesList {
 
+  /**
+   * Pre-defined exception thrown when an attempt is made to a
+   * {@link SensorValue} with the same timestamp as an existing
+   * {@link SensorValue}.
+   *
+   * <p>
+   * Note that this is a {@link RuntimeException} and as such must be explicitly
+   * caught if required.
+   * </p>
+   */
   private static final IllegalArgumentException SAME_TIMESTAMP_EXCEPTION = new IllegalArgumentException(
     "Cannot add two SensorValues with the same timestamp");
 
@@ -306,6 +316,17 @@ public class SensorValuesList {
     valueTimesCache = null;
   }
 
+  /**
+   * Add all the supplied {@link SensorValue}s to the list.
+   *
+   * <p>
+   * All the restrictions for adding values enforced in the
+   * {@link #add(SensorValue)} method apply.
+   * </p>
+   *
+   * @param values
+   *          The values to add.
+   */
   private void addAll(Collection<? extends SensorValue> values) {
     values.forEach(this::add);
   }
@@ -837,6 +858,32 @@ public class SensorValuesList {
     return result;
   }
 
+  /**
+   * Attempt to find the best value from the list to use in constructing an
+   * interpolated value.
+   *
+   * <p>
+   * The search will start at {@code startIndex}, and proceed in the direction
+   * specified by {@link stepDirection}. The value must have a timestamp within
+   * the {@link #CONTINUOUS_MEASUREMENT_LIMIT} of the {@code referenceTime}, and
+   * also pass the test predicate provided by {@code limitTest}.
+   * </p>
+   *
+   * <p>
+   * The method will return the value with the best {@link Flag} that meets the
+   * above criteria.
+   * </p>
+   *
+   * @param startIndex
+   *          The start point for the search.
+   * @param referenceTime
+   *          The time used to determine the temporal limit of the search.
+   * @param stepDirection
+   *          The search direction.
+   * @param limitTest
+   *          An additional test that the value must meet.
+   * @return The found value.
+   */
   private SensorValuesListValue findInterpContinuousValue(int startIndex,
     LocalDateTime referenceTime, int stepDirection, IntPredicate limitTest) {
 
@@ -952,6 +999,21 @@ public class SensorValuesList {
     return result;
   }
 
+  /**
+   * Takes two values and returns either the value with the best quality
+   * {@link Flag}, or an interpolation of the two values if they both have the
+   * same quality {@link Flag}.
+   *
+   * @param first
+   *          The first value.
+   * @param second
+   *          The second value.
+   * @param targetTime
+   *          The timestamp to use for the interpolated value, if required.
+   * @return The selected or interpolated value.
+   * @throws SensorValuesListException
+   *           If the interpolation cannot be performed.
+   */
   private SensorValuesListValue getBestOrInterpolate(
     SensorValuesListValue first, SensorValuesListValue second,
     LocalDateTime targetTime) throws SensorValuesListException {
@@ -969,6 +1031,19 @@ public class SensorValuesList {
     return result;
   }
 
+  /**
+   * Create a dummy value with the specified timestamp.
+   *
+   * <p>
+   * Used to search for values based on a timestamp for which a value may or may
+   * not exist. If such a value does not exist, it will trigger the
+   * interpolation mechanism.
+   * </p>
+   *
+   * @param time
+   *          The required timestamp.
+   * @return The dummy value.
+   */
   private SensorValuesListValue makeDummyValue(LocalDateTime time) {
     return new SensorValuesListValue(time, time, time,
       new ArrayList<SensorValue>(), sensorType, "DUMMY", Flag.BAD, "DUMMY");
@@ -1059,6 +1134,14 @@ public class SensorValuesList {
       .unmodifiableList(new ArrayList<SensorValuesListValue>(outputValues));
   }
 
+  /**
+   * Returns the number of values in the list taking into account any averaging
+   * performed for PERIODIC mode.
+   *
+   * @return The number of values in the list.
+   * @throws SensorValuesListException
+   *           If the output values cannot be constructed.
+   */
   public int valuesSize() throws SensorValuesListException {
     if (null == outputValues) {
       buildOutputValues();
