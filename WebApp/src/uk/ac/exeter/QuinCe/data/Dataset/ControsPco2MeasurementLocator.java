@@ -107,6 +107,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             refValue.setUserQC(Flag.FLUSHING, "Flushing");
             flaggedSensorValues.add(rawValue);
             flaggedSensorValues.add(refValue);
+            recordStatus = FLUSHING;
           }
 
           if (recordStatus != FLUSHING) {
