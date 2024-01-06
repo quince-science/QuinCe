@@ -267,8 +267,17 @@ public class SensorValuesList {
   }
 
   /**
-   * We ensure that the added values are inserted into the list in the correct
-   * position according to time order.
+   * Add a {@link SensorValue} to the list.
+   *
+   * <p>
+   * Attempting to add a value from a column other than those listed in
+   * {@link #columnIds} will result in an {@link IllegalArgumentException}.
+   * Attempting to add a value with a timestamp identical to a value already in
+   * the list will also cause an {@link IllegalArgumentException}.
+   * </p>
+   *
+   * @param value
+   *          The value to add.
    */
   public void add(SensorValue value) {
 
