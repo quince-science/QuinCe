@@ -771,10 +771,21 @@ public class ExportBean extends BaseManagedBean {
       datasetObject.addProperty("filename",
         dataset.getName() + option.getFileExtension());
       datasetObject.addProperty("records", export.getRecordCount());
-      datasetObject.addProperty("validStartDate",
-        DateTimeUtils.toIsoDate(export.getStartDate()));
-      datasetObject.addProperty("validEndDate",
-        DateTimeUtils.toIsoDate(export.getEndDate()));
+
+      // Empty exports have no valid dates
+      if (null == export.getStartDate()) {
+        datasetObject.addProperty("validStartDate", "");
+      } else {
+        datasetObject.addProperty("validStartDate",
+          DateTimeUtils.toIsoDate(export.getStartDate()));
+      }
+
+      if (null == export.getEndDate()) {
+        datasetObject.addProperty("validEndDate", "");
+      } else {
+        datasetObject.addProperty("validEndDate",
+          DateTimeUtils.toIsoDate(export.getEndDate()));
+      }
 
       if (instrument.fixedPosition()) {
         datasetObject.add("validBounds", makeFixedBoundsJson(instrument));

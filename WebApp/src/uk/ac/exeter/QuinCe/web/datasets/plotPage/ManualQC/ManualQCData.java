@@ -23,6 +23,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
@@ -782,7 +783,8 @@ public class ManualQCData extends PlotPageData {
         .getColumnValues(column.getId()).getValues();
       values.forEach(v -> result.put(v.getTime(),
         new MeasurementValue(v.getSensorType(), v)));
-    } else if (sensorValues.containsColumn(column.getId())) {
+    } else if (instrument.getSensorAssignments().getSensorColumnIds()
+      .contains(column.getId())) {
 
       SensorType sensorType = instrument.getSensorAssignments()
         .getSensorTypeForDBColumn(column.getId());
@@ -797,28 +799,28 @@ public class ManualQCData extends PlotPageData {
         useAllValues = false;
       }
 
-      if (useAllValues) {
-        for (SensorValue sensorValue : sensorValues
-          .getColumnValues(column.getId()).getRawValues()) {
+      SensorValuesList svList = sensorValues.getColumnValues(column.getId());
+      if (null != svList) {
+        if (useAllValues) {
+          for (SensorValue sensorValue : svList.getRawValues()) {
 
-          result.put(sensorValue.getTime(),
-            new SensorValuePlotPageTableValue(sensorValue));
-        }
-      } else {
-
-        for (SensorValue sensorValue : sensorValues
-          .getColumnValues(column.getId()).getRawValues()) {
-
-          // Get the run type from the closest measurement
-          Measurement concurrentMeasurement = getConcurrentMeasurement(
-            sensorValue.getTime());
-
-          // Only include the value if the run type is not an internal
-          // calibration
-          if (null != concurrentMeasurement
-            && isMeasurementForAnyVariable(concurrentMeasurement)) {
             result.put(sensorValue.getTime(),
               new SensorValuePlotPageTableValue(sensorValue));
+          }
+        } else {
+          for (SensorValue sensorValue : svList.getRawValues()) {
+
+            // Get the run type from the closest measurement
+            Measurement concurrentMeasurement = getConcurrentMeasurement(
+              sensorValue.getTime());
+
+            // Only include the value if the run type is not an internal
+            // calibration
+            if (null != concurrentMeasurement
+              && isMeasurementForAnyVariable(concurrentMeasurement)) {
+              result.put(sensorValue.getTime(),
+                new SensorValuePlotPageTableValue(sensorValue));
+            }
           }
         }
       }

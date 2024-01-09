@@ -85,35 +85,41 @@ public class DefaultMeasurementValueCalculator
     SensorValuesList sensorValues = allSensorValues
       .getColumnValues(requiredAssignment.getDatabaseId());
 
-    MeasurementValue result;
+    MeasurementValue result = null;
 
-    try {
-      // TODO #1128 This currently assumes only one sensor for each
-      // SensorType.
-      // This will have to change eventually.
-      SensorAssignment coreAssignment = instrument.getSensorAssignments()
-        .get(variable.getCoreSensorType()).first();
+    // This can be happen if a sensor has no values at all.
+    if (null == sensorValues) {
+      result = new MeasurementValue(requiredSensorType);
+    } else {
+      try {
+        // TODO #1128 This currently assumes only one sensor for each
+        // SensorType.
+        // This will have to change eventually.
+        SensorAssignment coreAssignment = instrument.getSensorAssignments()
+          .get(variable.getCoreSensorType()).first();
 
-      LocalDateTime valueTime = dataSet.getSensorOffsets().getOffsetTime(
-        timeReference.getNominalTime(), coreAssignment, requiredAssignment);
+        LocalDateTime valueTime = dataSet.getSensorOffsets().getOffsetTime(
+          timeReference.getNominalTime(), coreAssignment, requiredAssignment);
 
-      /*
-       * Values from the core SensorType do not get interpolated, because they
-       * are the basis for measurements. Other SensorTypes can be interpolated.
-       */
-      result = new MeasurementValue(requiredSensorType, sensorValues.getValue(
-        valueTime, !requiredSensorType.equals(variable.getCoreSensorType())));
-    } catch (SensorGroupsException e) {
-      throw new MeasurementValueCalculatorException(
-        "Cannot calculate time offset", e);
-    }
+        /*
+         * Values from the core SensorType do not get interpolated, because they
+         * are the basis for measurements. Other SensorTypes can be
+         * interpolated.
+         */
+        result = new MeasurementValue(requiredSensorType, sensorValues.getValue(
+          valueTime, !requiredSensorType.equals(variable.getCoreSensorType())));
+      } catch (SensorGroupsException e) {
+        throw new MeasurementValueCalculatorException(
+          "Cannot calculate time offset", e);
+      }
 
-    // Calibrate the value if (a) the SensorType can have calibrations, and
-    // (b) the instrument has calibration Run Types defined.
-    if (allowCalibration && requiredSensorType.hasInternalCalibration()
-      && instrument.hasInternalCalibrations()) {
-      calibrate(instrument, timeReference, requiredSensorType, result,
-        allMeasurements, sensorValues, conn);
+      // Calibrate the value if (a) the SensorType can have calibrations, and
+      // (b) the instrument has calibration Run Types defined.
+      if (allowCalibration && requiredSensorType.hasInternalCalibration()
+        && instrument.hasInternalCalibrations()) {
+        calibrate(instrument, timeReference, requiredSensorType, result,
+          allMeasurements, sensorValues, conn);
+      }
     }
 
     return result;
