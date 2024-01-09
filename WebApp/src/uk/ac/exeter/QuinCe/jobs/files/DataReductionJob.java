@@ -161,8 +161,10 @@ public class DataReductionJob extends DataSetJob {
 
           // Otherwise store the measurement values for processing.
           measurementValues.forEach(mv -> {
-            if (!measurement.hasMeasurementValue(mv.getSensorType())) {
-              measurement.setMeasurementValue(mv);
+            if (null != mv) {
+              if (!measurement.hasMeasurementValue(mv.getSensorType())) {
+                measurement.setMeasurementValue(mv);
+              }
             }
           });
 
