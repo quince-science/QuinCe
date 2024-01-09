@@ -326,7 +326,7 @@ public class DataFile {
     if (firstDataLine > -1) {
 
       // For each line in the file, check that:
-      // (a) The date/time are present and monotonic in the file
+      // (a) The date/time is monotonic in the file (bad date/times are ignored)
       // (b) Has the correct number of columns (for Run Types that aren't
       // IGNORED)
       // (c) The Run Type is recognised
@@ -343,10 +343,8 @@ public class DataFile {
               addMessage(lineNumber, "Date/Time is not monotonic");
             }
           }
-        } catch (MissingDateTimeException e) {
-          // We don't mind this while scanning the file
-        } catch (DateTimeSpecificationException e) {
-          addMessage(lineNumber, e.getMessage());
+        } catch (MissingDateTimeException | DateTimeSpecificationException e) {
+          // We don't mind bad dates in the file.
         }
 
         boolean checkColumnCount = true;
