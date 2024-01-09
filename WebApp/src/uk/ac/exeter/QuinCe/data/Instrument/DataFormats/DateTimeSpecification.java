@@ -1075,7 +1075,6 @@ public class DateTimeSpecification {
         try {
           result = LocalDate.parse(fieldValue, assignment.getFormatter());
         } catch (Exception e) {
-          ExceptionUtils.printStackTrace(e);
           throw new DateTimeSpecificationException(
             "Invalid date value '" + fieldValue + "'");
         }
