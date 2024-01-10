@@ -84,5 +84,14 @@
         ]
       }
     ]
+  },
+    {
+    "variable": "CONTROS pCO₂",
+    "routines": [
+      {
+        "name": "PostCalibrationCheck",
+        "flagged_sensors": []
+      }
+    ]
   }
 ]
