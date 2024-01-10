@@ -774,6 +774,12 @@ public class ManualQCData extends PlotPageData {
 
     TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
 
+    List<Long> sensorColumnIds = instrument.getSensorAssignments()
+      .getSensorColumnIds();
+
+    List<Long> diagnosticColumnIds = instrument.getSensorAssignments()
+      .getDiagnosticColumnIds();
+
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
       for (LocalDateTime time : getDataTimes()) {
         result.put(time, new SimplePlotPageTableValue(time, null, true));
@@ -783,8 +789,8 @@ public class ManualQCData extends PlotPageData {
         .getColumnValues(column.getId()).getValues();
       values.forEach(v -> result.put(v.getTime(),
         new MeasurementValue(v.getSensorType(), v)));
-    } else if (instrument.getSensorAssignments().getSensorColumnIds()
-      .contains(column.getId())) {
+    } else if (sensorColumnIds.contains(column.getId())
+      || diagnosticColumnIds.contains(column.getId())) {
 
       SensorType sensorType = instrument.getSensorAssignments()
         .getSensorTypeForDBColumn(column.getId());
