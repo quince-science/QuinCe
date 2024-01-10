@@ -917,6 +917,12 @@ public class ManualQCData extends PlotPageData {
       // The rowId is the row time
       LocalDateTime rowTime = DateTimeUtils.longToDate(rowId);
 
+      List<Long> sensorColumnIds = instrument.getSensorAssignments()
+        .getSensorColumnIds();
+
+      List<Long> diagnosticColumnIds = instrument.getSensorAssignments()
+        .getDiagnosticColumnIds();
+
       // The time is just the time
       if (columnId == FileDefinition.TIME_COLUMN_ID) {
         result = new SimplePlotPageTableValue(rowTime, null, false);
@@ -930,7 +936,8 @@ public class ManualQCData extends PlotPageData {
           DateTimeUtils.longToDate(rowId));
 
         // Sensor Value
-      } else if (sensorValues.containsColumn(columnId)) {
+      } else if (sensorColumnIds.contains(columnId)
+        || diagnosticColumnIds.contains(columnId)) {
 
         // Get the SensorValue
         SensorValue sensorValue = sensorValues.getRawSensorValue(columnId,
