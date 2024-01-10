@@ -342,6 +342,10 @@ li.menuitem:hover, li.smallMenuitem:hover {
   color: #FF0000;
 }
 
+.notCalibrated {
+  color: #AC9326;
+}
+
 .questionable {
   color: #FFA42B;
 }

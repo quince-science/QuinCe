@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -25,12 +26,25 @@ public class FlaggedItems {
     sensorValues.add(sensorValue);
   }
 
+  public void addSensorValues(Collection<SensorValue> sensorValues) {
+    this.sensorValues.addAll(sensorValues);
+  }
+
   public void add(Measurement measurement) {
     measurements.add(measurement);
   }
 
+  public void addMeasurements(Collection<Measurement> measurements) {
+    this.measurements.addAll(measurements);
+  }
+
   public void add(ReadOnlyDataReductionRecord dataReductionRecord) {
     dataReductionRecords.add(dataReductionRecord);
+  }
+
+  public void addDataReductionRecords(
+    Collection<ReadOnlyDataReductionRecord> dataReductionRecords) {
+    this.dataReductionRecords.addAll(dataReductionRecords);
   }
 
   public Set<SensorValue> getSensorValues() {

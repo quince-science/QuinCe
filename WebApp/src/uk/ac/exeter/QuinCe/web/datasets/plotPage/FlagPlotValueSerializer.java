@@ -35,6 +35,7 @@ public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
       json.add(JsonNull.INSTANCE);
       json.add(JsonNull.INSTANCE);
       json.add(JsonNull.INSTANCE);
+      json.add(JsonNull.INSTANCE);
     } else {
       // Bad
       if (src.getFlag().equals(Flag.BAD)) {
@@ -45,6 +46,13 @@ public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
 
       // Questionable
       if (src.getFlag().equals(Flag.QUESTIONABLE)) {
+        json.add(src.getY());
+      } else {
+        json.add(JsonNull.INSTANCE);
+      }
+
+      // Not Calibrated
+      if (src.getFlag().equals(Flag.NOT_CALIBRATED)) {
         json.add(src.getY());
       } else {
         json.add(JsonNull.INSTANCE);

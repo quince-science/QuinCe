@@ -209,7 +209,7 @@ class PlotValue implements Comparable<PlotValue> {
 
   private boolean isPlotFlag(Flag flag) {
     return flag.equals(Flag.BAD) || flag.equals(Flag.QUESTIONABLE)
-      || flag.equals(Flag.NEEDED);
+      || flag.equals(Flag.NOT_CALIBRATED) || flag.equals(Flag.NEEDED);
   }
 
   /**
