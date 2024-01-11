@@ -183,6 +183,11 @@ public class DataSetDataDB {
   private static final String UPDATE_MEASUREMENT_TIME_STATEMENT = "UPDATE measurements "
     + "SET date = ? WHERE id = ?";
 
+  private static final String HAS_CALIBRATION_NEEDED_FLAGS_QUERY = "SELECT "
+    + "COUNT(*) FROM data_reduction WHERE measurement_id IN "
+    + "(SELECT id FROM measurements WHERE dataset_id = ?) " + "AND qc_flag = "
+    + Flag.VALUE_NOT_CALIBRATED;
+
   /**
    * Take a list of fields, and return those which come from the dataset data.
    * Any others will come from calculation data and will be left alone.
@@ -923,6 +928,48 @@ public class DataSetDataDB {
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting flag info", e);
+    }
+
+    return result;
+  }
+
+  /**
+   * Determine whether or not calibration is required for a dataset prior to
+   * setting its status.
+   *
+   * Searches for any data reduction records with a QC flag of
+   * {@link Flag#NOT_CALIBRATED}.
+   *
+   * @param dataSource
+   *          A data source.
+   * @param datasetId
+   *          The dataset ID.
+   * @return {@code true} if any NOT_CALIBRATED flags are set; {@code false}
+   *         otherwise.
+   * @throws DatabaseException
+   *           If the check fails.
+   */
+  public static boolean hasCalibrationRequiredFlags(DataSource dataSource,
+    long datasetId) throws DatabaseException {
+
+    boolean result = false;
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(HAS_CALIBRATION_NEEDED_FLAGS_QUERY);) {
+
+      stmt.setLong(1, datasetId);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        records.next();
+        result = records.getInt(1) > 0;
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting calibration flag info", e);
     }
 
     return result;
