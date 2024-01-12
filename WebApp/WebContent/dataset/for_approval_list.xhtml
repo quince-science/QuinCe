@@ -28,6 +28,13 @@
         return false;
       }
 
+      function goToPositionQc(id) {
+          window['keepAliveActive'] = false;
+          $('#datasetListForm\\:positionQCDatasetId').val(id);
+          $('#datasetListForm\\:positionQCLink').click();
+          return false;
+        }
+
       function recalculate(id) {
         $('#datasetListForm\\:datasetId').val(id);
         $('#datasetListForm\\:recalculateLink').click();
@@ -146,6 +153,10 @@
        <p:commandLink id="manualQCLink" ajax="false"
          action="#{manualQualityControlBean.start}" />
 
+       <h:inputHidden id="positionQCDatasetId" value="#{positionQualityControlBean.datasetId}" />
+       <p:commandLink id="positionQCLink" ajax="false"
+         action="#{positionQualityControlBean.start}" />
+
        <p:remoteCommand name="updateList" update="datasets hasFiles"
          actionListener="#{dataSetsBean.updateDatasetList}"
          onerror="updateFailed()"/>
@@ -200,20 +211,34 @@
                    styleClass="actionIcon" alt="Recalculate"
                    title="Recalculate" />
                </p:commandLink>
-               <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasSensorGroups()}">
+               <ui:fragment rendered="#{dataset.instrument.hasSensorGroups()}">
                  <p:commandLink onclick="goToSensorOffsets(#{dataset.id})">
                    <h:graphicImage value="/resources/image/offsets.svg"
                      styleClass="actionIcon" alt="Sensor Offsets"
                      title="Sensor Offsets" />
                  </p:commandLink>
                </ui:fragment>
-               <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
+                <ui:fragment rendered="#{not dataset.instrument.fixedPosition()}">
+                  <p:commandLink onclick="goToPositionQc(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/position.svg"
+                      styleClass="actionIcon" alt="Position QC" title="Position QC" />
+                  </p:commandLink>
+                </ui:fragment>
+              <ui:fragment rendered="#{dataset.instrument.fixedPosition()}">
+                <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                  styleClass="actionIcon"/>
+              </ui:fragment>
+               <ui:fragment rendered="#{dataset.instrument.hasInternalCalibrations()}">
                  <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
                    <h:graphicImage value="/resources/image/calibration.svg"
                      styleClass="actionIcon" alt="Calibration"
                      title="Calibration" />
                  </p:commandLink>
                </ui:fragment>
+              <ui:fragment rendered="#{not dataset.instrument.hasInternalCalibrations()}">
+                <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                  styleClass="actionIcon"/>
+              </ui:fragment>
                <p:commandLink onclick="goToQc(#{dataset.id})">
                  <h:graphicImage value="/resources/image/qc.svg"
                    styleClass="actionIcon" alt="Quality Control"
@@ -225,12 +250,12 @@
                <h:graphicImage value="/resources/image/calculate_disabled.svg"
                  styleClass="actionIcon" alt="Data Reduction"
                  title="Data Reduction" />
-               <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasSensorGroups()}">
+               <ui:fragment rendered="#{dataset.instrument.hasSensorGroups()}">
                  <h:graphicImage
                    value="/resources/image/offsets_disabled.svg"
                    styleClass="actionIcon" alt="Sensor Offsets" title="Sensor Offsets" />
                </ui:fragment>
-               <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
+               <ui:fragment rendered="#{dataset.instrument.hasInternalCalibrations()}">
                  <h:graphicImage
                    value="/resources/image/calibration_disabled.svg"
                    styleClass="actionIcon" alt="Calibration" title="Calibration" />

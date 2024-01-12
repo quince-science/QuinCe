@@ -506,6 +506,15 @@ public class DataSet implements Comparable<DataSet> {
   }
 
   /**
+   * Get the {@link Instrument} to which this data set belongs.
+   *
+   * @return The instrument.
+   */
+  public Instrument getInstrument() {
+    return instrument;
+  }
+
+  /**
    * Get the database ID of the instrument to which this data set belongs
    *
    * @return The instrument's database ID
