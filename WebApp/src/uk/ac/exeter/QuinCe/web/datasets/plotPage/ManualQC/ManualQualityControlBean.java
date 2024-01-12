@@ -93,4 +93,9 @@ public class ManualQualityControlBean extends PlotPageBean {
   public boolean dualYAxes() {
     return true;
   }
+
+  @Override
+  public boolean allowMaps() {
+    return !dataset.fixedPosition();
+  }
 }
