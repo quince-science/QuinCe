@@ -533,6 +533,15 @@ public class DataSetsBean extends BaseManagedBean {
       }
     }
 
+    if (null == result && null != approvalDatasets) {
+      for (DataSet dataSet : approvalDatasets.values()) {
+        if (dataSet.getId() == processingMessagesId) {
+          result = dataSet.getProcessingMessages().getDisplayString();
+          break;
+        }
+      }
+    }
+
     return result;
   }
 
