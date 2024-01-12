@@ -23,7 +23,15 @@ import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 
 public class ControsPco2Reducer extends DataReducer {
 
-  public static final String ZEROS_PROP = "contros.zeros";
+  private static final String MODE_PROPERTY = "zero_mode";
+
+  private static final String MODE_CONTINUOUS = "Continuous";
+
+  private static final String MODE_ZERO_BEFORE_SLEEP = "Zero before sleep";
+
+  private static final String MODE_ZERO_AFTER_SLEEP = "Zero after sleep";
+
+  private static final String ZEROS_PROP = "contros.zeros";
 
   private static final BigDecimal T0 = new BigDecimal("273.15");
 
@@ -196,62 +204,85 @@ public class ControsPco2Reducer extends DataReducer {
 
       Double measurementS2Beam = calcS2Beam(measurement);
 
+      Double zeroS2Beam;
+      Double sProc;
+      Double xco2;
+      Double pCO2SST;
+      Double fCO2;
+
       if (!measurementS2Beam.isNaN()) {
         BigDecimal bdMeasurementS2Beam = new BigDecimal(measurementS2Beam);
-        BigDecimal zeroS2Beam = new BigDecimal(
-          getInterpZeroS2Beam(measurementRuntime.doubleValue()));
 
-        BigDecimal sDC = bdMeasurementS2Beam.divide(zeroS2Beam,
-          RoundingMode.HALF_UP);
+        Double interpZeroS2Beam = getInterpZeroS2Beam(
+          measurementRuntime.doubleValue());
 
-        BigDecimal sProc = F.multiply(new BigDecimal(1D).subtract(sDC));
+        if (null != interpZeroS2Beam) {
+          BigDecimal bdZeroS2Beam = new BigDecimal(interpZeroS2Beam);
 
-        BigDecimal runtimeSincePre = measurementRuntime
-          .subtract(runTimePrior.getBigDecimalValue());
+          BigDecimal sDC = bdMeasurementS2Beam.divide(bdZeroS2Beam,
+            RoundingMode.HALF_UP);
 
-        BigDecimal k1Interp = k1Prior.getBigDecimalValue()
-          .add(k1Step.multiply(runtimeSincePre));
-        BigDecimal k2Interp = k2Prior.getBigDecimalValue()
-          .add(k2Step.multiply(runtimeSincePre));
-        BigDecimal k3Interp = k3Prior.getBigDecimalValue()
-          .add(k3Step.multiply(runtimeSincePre));
+          BigDecimal bdSProc = F.multiply(new BigDecimal(1D).subtract(sDC));
 
-        BigDecimal sProcCubed = sProc.pow(3);
-        BigDecimal sProcSquared = sProc.pow(2);
+          BigDecimal runtimeSincePre = measurementRuntime
+            .subtract(runTimePrior.getBigDecimalValue());
 
-        BigDecimal k3Part = k3Interp.multiply(sProcCubed);
-        BigDecimal k2Part = k2Interp.multiply(sProcSquared);
-        BigDecimal k1Part = k1Interp.multiply(sProc);
+          BigDecimal k1Interp = k1Prior.getBigDecimalValue()
+            .add(k1Step.multiply(runtimeSincePre));
+          BigDecimal k2Interp = k2Prior.getBigDecimalValue()
+            .add(k2Step.multiply(runtimeSincePre));
+          BigDecimal k3Interp = k3Prior.getBigDecimalValue()
+            .add(k3Step.multiply(runtimeSincePre));
 
-        BigDecimal xco2ProcPart = k3Part.add(k2Part).add(k1Part);
+          BigDecimal sProcCubed = bdSProc.pow(3);
+          BigDecimal sProcSquared = bdSProc.pow(2);
 
-        // Gas temperature in Kelvin
-        BigDecimal gasTemperature = new BigDecimal(measurement
-          .getMeasurementValue("Gas Stream Temperature").getCalculatedValue())
-          .add(T0);
+          BigDecimal k3Part = k3Interp.multiply(sProcCubed);
+          BigDecimal k2Part = k2Interp.multiply(sProcSquared);
+          BigDecimal k1Part = k1Interp.multiply(bdSProc);
 
-        BigDecimal gasPressure = new BigDecimal(measurement
-          .getMeasurementValue("Gas Stream Pressure").getCalculatedValue());
+          BigDecimal xco2ProcPart = k3Part.add(k2Part).add(k1Part);
 
-        BigDecimal membranePressure = new BigDecimal(measurement
-          .getMeasurementValue("Membrane Pressure").getCalculatedValue());
+          // Gas temperature in Kelvin
+          BigDecimal gasTemperature = new BigDecimal(measurement
+            .getMeasurementValue("Gas Stream Temperature").getCalculatedValue())
+            .add(T0);
 
-        BigDecimal pressureTimesTemp = P0.multiply(gasTemperature);
+          BigDecimal gasPressure = new BigDecimal(measurement
+            .getMeasurementValue("Gas Stream Pressure").getCalculatedValue());
 
-        BigDecimal tempTimesPressure = T0.multiply(gasPressure);
+          BigDecimal membranePressure = new BigDecimal(measurement
+            .getMeasurementValue("Membrane Pressure").getCalculatedValue());
 
-        BigDecimal xcoPresTempPart = pressureTimesTemp.divide(tempTimesPressure,
-          50, RoundingMode.HALF_UP);
+          BigDecimal pressureTimesTemp = P0.multiply(gasTemperature);
 
-        BigDecimal xco2 = xco2ProcPart.multiply(xcoPresTempPart);
+          BigDecimal tempTimesPressure = T0.multiply(gasPressure);
 
-        BigDecimal pco2PressurePart = membranePressure.divide(P0, 50,
-          RoundingMode.HALF_UP);
+          BigDecimal xcoPresTempPart = pressureTimesTemp
+            .divide(tempTimesPressure, 50, RoundingMode.HALF_UP);
 
-        BigDecimal pCO2SST = xco2.multiply(pco2PressurePart);
-        Double fCO2 = Calculators.calcfCO2(pCO2SST.doubleValue(),
-          xco2.doubleValue(), membranePressure.doubleValue(),
-          gasTemperature.doubleValue());
+          BigDecimal bdXCO2 = xco2ProcPart.multiply(xcoPresTempPart);
+
+          BigDecimal pco2PressurePart = membranePressure.divide(P0, 50,
+            RoundingMode.HALF_UP);
+
+          BigDecimal bdPCO2SST = bdXCO2.multiply(pco2PressurePart);
+          fCO2 = Calculators.calcfCO2(bdPCO2SST.doubleValue(),
+            bdXCO2.doubleValue(), membranePressure.doubleValue(),
+            gasTemperature.doubleValue());
+
+          // Make Double values for data reduction record
+          zeroS2Beam = bdZeroS2Beam.doubleValue();
+          sProc = bdSProc.doubleValue();
+          xco2 = bdXCO2.doubleValue();
+          pCO2SST = bdPCO2SST.doubleValue();
+        } else {
+          zeroS2Beam = Double.NaN;
+          sProc = Double.NaN;
+          xco2 = Double.NaN;
+          pCO2SST = Double.NaN;
+          fCO2 = Double.NaN;
+        }
 
         record.put("Zero S₂beam", zeroS2Beam.doubleValue());
         record.put("S₂beam", measurementS2Beam.doubleValue());
@@ -260,6 +291,8 @@ public class ControsPco2Reducer extends DataReducer {
         record.put("pCO₂ SST", pCO2SST.doubleValue());
         record.put("fCO₂", fCO2);
       }
+    } catch (DataReductionException e) {
+      throw e;
     } catch (Exception e) {
       throw new DataReductionException(e);
     }
@@ -305,9 +338,30 @@ public class ControsPco2Reducer extends DataReducer {
       coefficient);
   }
 
-  private Double getInterpZeroS2Beam(Double runTime) {
+  private Double getInterpZeroS2Beam(Double runTime)
+    throws DataReductionException {
     Map.Entry<Double, Double> prior = zeroS2Beams.floorEntry(runTime);
     Map.Entry<Double, Double> post = zeroS2Beams.ceilingEntry(runTime);
-    return Calculators.interpolate(prior, post, runTime);
+
+    Double result;
+
+    switch (getStringProperty(MODE_PROPERTY)) {
+    case MODE_CONTINUOUS: {
+      result = Calculators.interpolate(prior, post, runTime);
+      break;
+    }
+    case MODE_ZERO_AFTER_SLEEP: {
+      result = null == prior ? null : prior.getValue();
+      break;
+    }
+    case MODE_ZERO_BEFORE_SLEEP: {
+      result = null == post ? null : post.getValue();
+      break;
+    }
+    default:
+      throw new DataReductionException("Invalid zero mode");
+    }
+
+    return result;
   }
 }
