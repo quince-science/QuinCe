@@ -8,15 +8,28 @@ import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
- * Data Reduction class for underway marine pCO₂
+ * Data Reduction class for underway marine pCO₂ measurements taken by
+ * equilibrator-based systems.
  */
 public class UnderwayMarinePco2Reducer extends DataReducer {
 
+  /**
+   * The reducer's calculation parameters.
+   */
   private static List<CalculationParameter> calculationParameters = null;
 
+  /**
+   * Basic {@link DataReducer} constructor.
+   *
+   * @param variable
+   *          The {@link Variable} being processed.
+   * @param properties
+   *          The variable properties.
+   */
   public UnderwayMarinePco2Reducer(Variable variable,
     Map<String, Properties> properties) {
     super(variable, properties);
@@ -83,26 +96,85 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     return calculationParameters;
   }
 
+  /**
+   * Get the name of the {@link SensorType} to use to get the base xCO₂ value
+   * for the calculation.
+   *
+   * @return The xCO₂ {@link SensorType} to use.
+   */
   protected String getXCO2Parameter() {
     return "xCO₂ (with standards)";
   }
 
+  /**
+   * Class that takes in the required parameters and calculates pCO₂ and fCO₂.
+   */
   class Calculator {
 
-    // Inputs
+    /**
+     * Measured intake temperature.
+     */
     private final Double intakeTemperature;
+
+    /**
+     * Measured salinity.
+     */
     private final Double salinity;
+
+    /**
+     * Measured temperature inside the equilibrator.
+     */
     private final Double equilibratorTemperature;
+
+    /**
+     * Measured pressure inside the equilibrator.
+     */
     private final Double equilibratorPressure;
+
+    /**
+     * The CO₂ value measured by the gas analyser.
+     */
     private final Double co2InGas;
 
-    // Outputs
+    /**
+     * Calculated water vapour pressure.
+     */
     protected Double pH2O = null;
+
+    /**
+     * Calculated pCO₂ at 100% humidity at equilibrator temperature.
+     */
     protected Double pCo2TEWet = null;
+
+    /**
+     * Calculated fCO₂ at 100% humidity at equilibrator temperature.
+     */
     protected Double fCo2TEWet = null;
+
+    /**
+     * Calculated pCO₂ at 100% humidity at intake temperature.
+     */
     protected Double pCO2SST = null;
+
+    /**
+     * Calculated fCO₂ at 100% humidity at intake temperature.
+     */
     protected Double fCO2 = null;
 
+    /**
+     * Initialise the calculator with the required measured values.
+     *
+     * @param intakeTemperature
+     *          Intake temperature.
+     * @param salinity
+     *          Salinity.
+     * @param equilibratorTemperature
+     *          Equlibrator temperature.
+     * @param equilibratorPressure
+     *          Equilibrator pressure.
+     * @param co2InGas
+     *          Measure CO₂.
+     */
     protected Calculator(Double intakeTemperature, Double salinity,
       Double equilibratorTemperature, Double equilibratorPressure,
       Double co2InGas) {
@@ -115,6 +187,10 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       calculate();
     }
 
+    /**
+     * Perform the calculation to produce {@link #pH2O}, and the pCO₂/fCO₂
+     * combinations.
+     */
     protected void calculate() {
       pH2O = Calculators.calcPH2O(salinity, equilibratorTemperature);
       pCo2TEWet = Calculators.calcpCO2TEWet(co2InGas, equilibratorPressure,

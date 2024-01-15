@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Test the
- * {@link SensorValuesList#getValue(java.time.LocalDateTime, java.time.LocalDateTime)}
+ * {@link SensorValuesList#getValue(LocalDateTime, LocalDateTime, LocalDateTime, boolean)}
  * method.
  */
 @TestInstance(Lifecycle.PER_CLASS)

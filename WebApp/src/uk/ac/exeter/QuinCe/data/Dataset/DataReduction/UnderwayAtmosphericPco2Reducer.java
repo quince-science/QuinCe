@@ -8,15 +8,28 @@ import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
- * Data Reduction class for underway atmospheric pCO₂
+ * Data Reduction class for underway atmospheric pCO₂ measurements taken by
+ * equilibrator-based systems.
  */
 public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
+  /**
+   * The reducer's calculation parameters.
+   */
   private static List<CalculationParameter> calculationParameters = null;
 
+  /**
+   * Basic {@link DataReducer} constructor.
+   *
+   * @param variable
+   *          The {@link Variable} being processed.
+   * @param properties
+   *          The variable properties.
+   */
   public UnderwayAtmosphericPco2Reducer(Variable variable,
     Map<String, Properties> properties) {
 
@@ -80,23 +93,74 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     return calculationParameters;
   }
 
+  /**
+   * Get the name of the {@link SensorType} to use to get the base xCO₂ value
+   * for the calculation.
+   *
+   * @return The xCO₂ {@link SensorType} to use.
+   */
   protected String getXCO2Parameter() {
     return "xCO₂ (with standards)";
   }
 
+  /**
+   * Class that takes in the required parameters and calculates pCO₂ and fCO₂.
+   */
   class Calculator {
 
-    // Inputs
+    /**
+     * Measured intake temperature.
+     */
     private final Double intakeTemperature;
+
+    /**
+     * Measured salinity.
+     */
     private final Double salinity;
+
+    /**
+     * Atmospheric pressure at sea level.
+     *
+     * <p>
+     * Must be created in advance using
+     * {@link Calculators#calcSeaLevelPressure(Double, Double, Float)}.
+     * </p>
+     */
     private final Double seaLevelPressure;
+
+    /**
+     * The CO₂ value measured by the gas analyser.
+     */
     private final Double co2InGas;
 
-    // Outputs
+    /**
+     * The calculated water vapour pressure.
+     */
     protected Double pH2O = null;
+
+    /**
+     * The calculated pCO₂.
+     */
     protected Double pCO2 = null;
+
+    /**
+     * The calculated fCO₂.
+     */
     protected Double fCO2 = null;
 
+    /**
+     * Initialise the calculator with the required measured values.
+     *
+     * @param intakeTemperature
+     *          Intake temperature.
+     * @param salinity
+     *          Salinity.
+     * @param seaLevel
+     *          Pressure Sea level pressure. Must be created in advance using
+     *          {@link Calculators#calcSeaLevelPressure(Double, Double, Float)}.
+     * @param co2InGas
+     *          The CO₂ value measured by the gas analyser.
+     */
     protected Calculator(Double intakeTemperature, Double salinity,
       Double seaLevelPressure, Double co2InGas) {
 
@@ -107,6 +171,10 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
       calculate();
     }
 
+    /**
+     * Perform the calculation to produce {@link #pH2O}, {@link #pCO2} and
+     * {@link #fCO2}.
+     */
     protected void calculate() {
       pH2O = Calculators.calcPH2O(salinity, intakeTemperature);
       pCO2 = Calculators.calcpCO2TEWet(co2InGas, seaLevelPressure, pH2O);

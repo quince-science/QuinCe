@@ -77,8 +77,8 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * of measurements together. To work around this, you must determine the group
  * boundaries elsewhere (most likely in the {@link SensorValuesList} for the Run
  * Type), and use the
- * {@link #getValue(LocalDateTime, LocalDateTime, LocalDateTime)} method to
- * construct values covering the correct time periods.
+ * {@link #getValue(LocalDateTime, LocalDateTime, LocalDateTime, boolean)}
+ * method to construct values covering the correct time periods.
  * </p>
  */
 public class SensorValuesList {
