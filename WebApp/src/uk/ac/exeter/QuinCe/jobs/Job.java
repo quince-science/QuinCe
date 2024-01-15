@@ -16,9 +16,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * Abstract class containing all the required parts for a background job. All
  * jobs created for QuinCe must extend this class.
- *
- * @author Steve Jones
- *
  */
 public abstract class Job {
 
@@ -95,20 +92,20 @@ public abstract class Job {
   private String finishState = FINISHED_STATUS;
 
   /**
-   * Constructs a job object, and validates the parameters passed to it
+   * Constructs a job object and validates the parameters passed to it.
    *
    * @param resourceManager
-   *          The system resource manager
+   *          The application resource manager.
    * @param config
-   *          The application properties
+   *          The application global properties.
    * @param id
-   *          The id of the job in the database
-   * @param parameters
-   *          The parameters for the job
-   * @throws InvalidJobParametersException
-   *           If the parameters are not valid for the job
+   *          The job's database ID.
+   * @param properties
+   *          The parameters for the job.
    * @throws MissingParamException
-   *           If any required parameters are missing
+   *           If any required parameters are missig.
+   * @throws InvalidJobParametersException
+   *           If any of the supplied job parameters are invalid.
    */
   public Job(ResourceManager resourceManager, Properties config, long id,
     Properties properties)
@@ -140,37 +137,37 @@ public abstract class Job {
   }
 
   /**
-   * Performs the job tasks
+   * Performs the job tasks.
    *
    * @param thread
-   *          The thread that will be running the job
+   *          The thread that will be running the job.
    * @throws JobFailedException
-   *           If an error occurs during the job
+   *           If an error occurs during the job.
    */
   protected abstract void execute(JobThread thread) throws JobFailedException;
 
   /**
-   * Validate the parameters passed in to this job
+   * Validate the parameters passed in to this job.
    *
    * @throws InvalidJobParametersException
-   *           If the parameters are invalid
+   *           If the parameters are invalid.
    */
   protected abstract void validateParameters()
     throws InvalidJobParametersException;
 
   /**
-   * Set the progress for the job, as a percentage
+   * Set the progress for the job, as a percentage.
    *
    * @param progress
-   *          The progress
+   *          The progress.
    * @throws BadProgressException
-   *           If the progress is not between 0 and 100
+   *           If the progress is not between 0 and 100.
    * @throws NoSuchJobException
-   *           If the job is not in the database
+   *           If the job is not in the database.
    * @throws DatabaseException
-   *           If an error occurs while updating the database
+   *           If an error occurs while updating the database.
    * @throws MissingParamException
-   *           If any required parameters are missing in internal calls
+   *           If any required parameters are missing in internal calls.
    */
   protected void setProgress(double progress) throws MissingParamException,
     BadProgressException, NoSuchJobException, DatabaseException {
@@ -189,16 +186,16 @@ public abstract class Job {
   /**
    * Log the fact that the job has been started in the appropriate locations.
    * Initially this is just in the job manager, but it can be extended by other
-   * classes
+   * classes.
    *
    * @param threadName
-   *          The thread name
+   *          The thread name.
    * @throws MissingParamException
-   *           If any of the parameters to the underlying commands are missing
+   *           If any of the parameters to the underlying commands are missing.
    * @throws DatabaseException
-   *           If an error occurs while updating the database
+   *           If an error occurs while updating the database.
    * @throws NoSuchJobException
-   *           If the job has disappeared.
+   *           If the job has disappeared from the system.
    */
   protected void logStarted(String threadName)
     throws MissingParamException, DatabaseException, NoSuchJobException {
@@ -217,12 +214,12 @@ public abstract class Job {
   /**
    * Log the fact that the job has been finished in the appropriate locations.
    * Initially this is just in the job manager, but it can be extended by other
-   * classes
+   * classes.
    *
    * @throws MissingParamException
-   *           If any of the parameters to the underlying commands are missing
+   *           If any of the parameters to the underlying commands are missing.
    * @throws DatabaseException
-   *           If an error occurs while updating the database
+   *           If an error occurs while updating the database.
    * @throws NoSuchJobException
    *           If the job has disappeared.
    */
@@ -243,12 +240,12 @@ public abstract class Job {
   /**
    * Log the fact that the job has been finished in the appropriate locations.
    * Initially this is just in the job manager, but it can be extended by other
-   * classes
+   * classes.
    *
    * @throws MissingParamException
-   *           If any of the parameters to the underlying commands are missing
+   *           If any of the parameters to the underlying commands are missing.
    * @throws DatabaseException
-   *           If an error occurs while updating the database
+   *           If an error occurs while updating the database.
    * @throws NoSuchJobException
    *           If the job has disappeared.
    */
@@ -267,16 +264,16 @@ public abstract class Job {
   }
 
   /**
-   * Logs a job error to the appropriate locations
+   * Logs a job error to the appropriate locations.
    *
    * @param error
-   *          The error
+   *          The error.
    * @throws DatabaseException
-   *           If an error occurs while updating the database
+   *           If an error occurs while updating the database.
    * @throws NoSuchJobException
-   *           If the job has disappeared
+   *           If the job has disappeared.
    * @throws MissingParamException
-   *           If any parameters in called methods are missing
+   *           If any parameters in called methods are missing.
    */
   protected void logError(Throwable error)
     throws DatabaseException, MissingParamException, NoSuchJobException {
@@ -294,16 +291,16 @@ public abstract class Job {
   }
 
   /**
-   * Get the job's ID
+   * Get the job's database ID.
    *
-   * @return The job ID
+   * @return The job ID.
    */
   public long getID() {
     return id;
   }
 
   /**
-   * Destroys the job object, releasing the database connection.
+   * Destroys the job object, releasing its database connection.
    */
   protected void destroy() {
     properties = null;
@@ -316,9 +313,9 @@ public abstract class Job {
    * of {@link Job#FINISHED_STATUS} or {@link Job#KILLED_STATUS}.
    *
    * @param finishState
-   *          The finish state of the job
+   *          The finish state of the job.
    * @throws JobException
-   *           If the supplied finish state is invalid
+   *           If the supplied finish state is invalid.
    * @see #finishState
    */
   protected void setFinishState(String finishState) throws JobException {
@@ -335,12 +332,17 @@ public abstract class Job {
   /**
    * Return the finish state of this job. See {@link #finishState}.
    *
-   * @return The job's finish state
+   * @return The job's finish state.
    */
   protected String getFinishState() {
     return finishState;
 
   }
 
+  /**
+   * Get the human-readable name of this job.
+   *
+   * @return The job name.
+   */
   public abstract String getJobName();
 }

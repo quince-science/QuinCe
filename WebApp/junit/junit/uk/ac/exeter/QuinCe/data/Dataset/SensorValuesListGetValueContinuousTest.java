@@ -29,8 +29,8 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Test the {@link SensorValuesList#getValue(java.time.LocalDateTime)} method
- * for continuous measurements.
+ * Test the {@link SensorValuesList#getValue(LocalDateTime, boolean)} method for
+ * continuous measurements.
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public class SensorValuesListGetValueContinuousTest extends TestSetTest {

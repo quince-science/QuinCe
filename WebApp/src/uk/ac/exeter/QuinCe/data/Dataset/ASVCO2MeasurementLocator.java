@@ -5,10 +5,20 @@ import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
+/**
+ * <b>NOTE: THIS IS NOT CURRENTLY FUNCTIONAL PENDING A REVIEW OF CALCULATION
+ * REQUIREMENTS.</b> {@link MeasurementLocator} for the AVSCO2 sensor.
+ */
 public class ASVCO2MeasurementLocator extends MeasurementLocator {
 
+  /**
+   * Value indicating that the sensor is taking water measurements.
+   */
   private static final String WATER_MODE = "ep";
 
+  /**
+   * Value indicating that the sensor is taking atmospheric measurements.
+   */
   private static final String ATM_MODE = "ap";
 
   @Override
