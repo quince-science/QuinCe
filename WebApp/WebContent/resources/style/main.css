@@ -724,6 +724,7 @@ table.dialogTable td.dialogTableCell {
   display: inline-block;
   margin-left: 5px;
   margin-bottom: -4px;
+  cursor: pointer !important;
 }
 
 /* PrimeFaces overrides */
