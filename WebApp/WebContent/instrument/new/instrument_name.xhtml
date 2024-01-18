@@ -38,7 +38,7 @@
           <td class="labels">Platform Name</td>
           <td>
             <p:selectOneMenu id="platformName" widgetVar="platformName"
-              editable="true" filter="true"
+              editable="true" filter="true" filterMatchMode="contains"
               onchange="updateNextButton()" onblur="updateNextButton()"
               value="#{newInstrumentBean.platformName}" maxlength="100">
               <f:selectItems value="#{newInstrumentBean.existingPlatformNames}"/>
