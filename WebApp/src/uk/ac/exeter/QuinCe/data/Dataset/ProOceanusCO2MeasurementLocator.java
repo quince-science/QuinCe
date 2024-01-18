@@ -162,17 +162,20 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
          * TSG data).
          */
         if (null != runType) {
-          if (runType.getStringValue().equals(WATER_MODE)
-            && instrument.hasVariable(waterVar)) {
-            measurements.add(new Measurement(dataset.getId(),
-              runType.getNominalTime(), waterRunTypes));
-          } else if (runType.getStringValue().equals(ATM_MODE)
-            && instrument.hasVariable(atmVar)) {
-            measurements.add(new Measurement(dataset.getId(),
-              runType.getNominalTime(), atmRunTypes));
+          if (runType.getStringValue().equals(WATER_MODE)) {
+            if (instrument.hasVariable(waterVar)) {
+              measurements.add(new Measurement(dataset.getId(),
+                runType.getNominalTime(), waterRunTypes));
+            }
+          } else if (runType.getStringValue().equals(ATM_MODE)) {
+            if (instrument.hasVariable(atmVar)) {
+              measurements.add(new Measurement(dataset.getId(),
+                runType.getNominalTime(), atmRunTypes));
+            }
           } else {
             throw new MeasurementLocatorException(
-              "Unrecognised ProOceanus mode '" + runType + "'");
+              "Unrecognised ProOceanus mode '" + runType.getStringValue()
+                + "'");
           }
         }
       }
