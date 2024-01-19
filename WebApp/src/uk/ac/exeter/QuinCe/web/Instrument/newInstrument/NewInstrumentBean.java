@@ -2436,4 +2436,23 @@ public class NewInstrumentBean extends FileUploadBean {
   public List<Variable> getVariablesWithAttributes() {
     return instrumentVariables.stream().filter(v -> v.hasAttributes()).toList();
   }
+
+  /**
+   * Get a JSON object specifying which data files have had columns assigned.
+   *
+   * <p>
+   * Assignment of date/time is not considered.
+   * </p>
+   *
+   * @return The assignment status of the data files.
+   */
+  public String getAssignedFiles() {
+    Map<String, Boolean> map = new HashMap<String, Boolean>();
+    instrumentFiles.stream().forEach(f -> {
+      map.put(f.getFileDescription(), f.hasPosition()
+        || sensorAssignments.isFileAssigned(f.getFileDescription()));
+    });
+
+    return getGson().toJson(map);
+  }
 }

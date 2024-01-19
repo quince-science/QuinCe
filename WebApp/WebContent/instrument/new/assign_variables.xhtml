@@ -14,6 +14,8 @@
     <h:form id="referenceDataForm" method="post" charset="utf8">
       <h:inputHidden id="sensorTypes"
         value="#{newInstrumentBean.sensorTypesJson}" />
+      <h:inputHidden id="filesAssigned"
+        value="#{newInstrumentBean.assignedFiles}" />
     </h:form>
     <h:form id="newInstrumentForm" method="post" charset="utf8">
 
@@ -28,7 +30,7 @@
 
       <p:remoteCommand name="assignHemisphereAction" action="#{newInstrumentBean.assignHemisphere}"
         process="hemisphereFile hemisphereCoordinate hemisphereColumn"
-        update="hemisphereFile hemisphereCoordinate hemisphereColumn assignmentsTree"
+        update="hemisphereFile hemisphereCoordinate hemisphereColumn assignmentsTree referenceDataForm:filesAssigned"
         oncomplete="positionAssigned();" />
 
       <!-- Multiple assignment error dialog -->
@@ -131,7 +133,8 @@
               sensorAssignmentMissingValue"
             update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType
               sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer
-              sensorAssignmentMissingValue assignmentsTree assignedSensorNames"
+              sensorAssignmentMissingValue assignmentsTree assignedSensorNames
+                referenceDataForm:filesAssigned"
             oncomplete="sensorAssigned();" />
           <p:commandButton value="Cancel" ajax="true"
             action="#{newInstrumentBean.resetSensorAssignmentValues}"
@@ -178,7 +181,8 @@
           <p:commandButton value="Assign" ajax="true"
             action="#{newInstrumentBean.assignLongitude}"
             process="longitudeFile longitudeColumn longitudeFormat"
-            update="longitudeFile longitudeColumn longitudeFormat assignmentsTree"
+            update="longitudeFile longitudeColumn longitudeFormat assignmentsTree
+              referenceDataForm:filesAssigned"
             oncomplete="positionAssigned();" />
           <p:commandButton value="Cancel"
             onclick="PF('longitudeAssignmentDialog').hide(); return false;" />
@@ -218,7 +222,8 @@
           <p:commandButton value="Assign" ajax="true"
             action="#{newInstrumentBean.assignLatitude}"
             process="latitudeFile latitudeColumn latitudeFormat"
-            update="latitudeFile latitudeColumn latitudeFormat assignmentsTree"
+            update="latitudeFile latitudeColumn latitudeFormat assignmentsTree
+              referenceDataForm:filesAssigned"
             oncomplete="positionAssigned();" />
           <p:commandButton value="Cancel"
             onclick="PF('latitudeAssignmentDialog').hide(); return false;" />
@@ -565,7 +570,7 @@
         value="#{newInstrumentBean.runTypeColumn}" />
       <p:remoteCommand name="assignRunTypeAction"
         action="#{newInstrumentBean.assignRunType}"
-        process="runTypeFile runTypeColumn" update="assignmentsTree"
+        process="runTypeFile runTypeColumn" update="assignmentsTree referenceDataForm:filesAssigned"
         oncomplete="sensorAssigned();" />
 
 
@@ -579,12 +584,14 @@
       <p:remoteCommand name="removeSensorAssignmentCommand"
         action="#{newInstrumentBean.removeSensorAssignment}"
         process="removeAssignmentSensorType removeAssignmentDataFile removeAssignmentColumn"
-        update="assignmentsTree assignedSensorNames" oncomplete="sensorAssigned();"/>
+        update="assignmentsTree assignedSensorNames referenceDataForm:filesAssigned"
+        oncomplete="sensorAssigned();"/>
 
       <p:remoteCommand name="removePositionAssignmentAction"
         action="#{newInstrumentBean.removePositionAssignment}"
         process="removeAssignmentDataFile removeAssignmentColumn"
-        update="assignmentsTree" oncomplete="positionAssigned();"/>
+        update="assignmentsTree referenceDataForm:filesAssigned"
+        oncomplete="positionAssigned();"/>
 
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">

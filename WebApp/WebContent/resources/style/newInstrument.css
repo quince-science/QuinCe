@@ -240,3 +240,7 @@ table.ui-selectmanycheckbox > tbody > tr > td > label {
   display: flex;
   flex-wrap: wrap;
 }
+
+.unassignedFile {
+  background-color: #FFbbbb !important;
+}
