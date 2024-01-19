@@ -665,6 +665,36 @@ public class SensorAssignments
   }
 
   /**
+   * Determine whether or not the specified file has had any columns assigned in
+   * this set of assignments.
+   *
+   * <p>
+   * Date/time columns are not considered to be assignments for the purposes of
+   * this check.
+   * </p>
+   *
+   * @param fileDescription
+   *          The file description.
+   * @return {@code true} if at least one column from the file has been
+   *         assigned; {@code false} otherwise.
+   */
+  public boolean isFileAssigned(String fileDescription) {
+    boolean result = false;
+
+    search: for (Map.Entry<SensorType, TreeSet<SensorAssignment>> entry : entrySet()) {
+      TreeSet<SensorAssignment> assignments = entry.getValue();
+      for (SensorAssignment assignment : assignments) {
+        if (assignment.getDataFile().equalsIgnoreCase(fileDescription)) {
+          result = true;
+          break search;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * Determines whether or not a Core Sensor has been assigned within any file
    *
    * @param dataFileName

@@ -450,7 +450,9 @@ function checkSensorName(enteredName) {
   }
 
   if (nameOK) {
-    if ($.inArray(enteredName.toLowerCase(), JSON.parse($('#newInstrumentForm\\:assignedSensorNames').val())) >= 0) {
+    if ($.inArray(enteredName.toLowerCase(),
+      JSON.parse($('#newInstrumentForm\\:assignedSensorNames').val())) >= 0) {
+      
       nameOK = false;
     }
   }
@@ -540,9 +542,51 @@ function removePositionAssignment(file, column) {
 }
 
 function updateAssignmentsNextButton() {
-  if ($('[data-nodetype$="UNFINISHED_VARIABLE"]').length > 0) {
-  PF('next').disable();
+
+  highlightFileTabs();
+
+  if (!allFilesAssigned() ||
+        $('[data-nodetype$="UNFINISHED_VARIABLE"]').length > 0) {
+    PF('next').disable();
   } else {
-  PF('next').enable();
+    PF('next').enable();
   }
+}
+
+function highlightFileTabs() {
+  let filesAssigned = JSON.parse($('#referenceDataForm\\:filesAssigned').val());
+  for (let [file, assigned] of Object.entries(filesAssigned)) {
+    let fileTab = getFileTab(file);
+    if (null != fileTab) {
+      if (assigned) {
+	    $(fileTab).removeClass('unassignedFile');
+	  } else {
+        $(fileTab).addClass('unassignedFile');
+	  }
+    }
+  }
+}
+
+function getFileTab(file) {
+  let foundTab = null;
+  $('span[id$="tabTitle"]').each(function () {
+    if ($(this).text() == file) {
+      foundTab = $(this).parents('.ui-tabs-header')[0];
+	}
+  });
+  
+  return foundTab;
+}
+
+function allFilesAssigned() {
+  let result = true;
+  let filesAssigned = JSON.parse($('#referenceDataForm\\:filesAssigned').val());
+  for (let [file, assigned] of Object.entries(filesAssigned)) {
+    if (!assigned) {
+      result = false;
+      break;
+    }
+  }
+  
+  return result;
 }
