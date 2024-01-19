@@ -484,6 +484,11 @@ public class NewInstrumentBean extends FileUploadBean {
   private TreeMap<String, String> existingPlatforms;
 
   /**
+   * Record the file which has just been updated.
+   */
+  private String updatedFile = null;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
@@ -721,6 +726,7 @@ public class NewInstrumentBean extends FileUploadBean {
   public String useFile() throws DateTimeSpecificationException {
     instrumentFiles.add(currentInstrumentFile);
     assignmentsTree.addFile(currentInstrumentFile);
+    updatedFile = currentInstrumentFile.getFileDescription();
     clearFile();
     return NAV_ASSIGN_VARIABLES;
   }
@@ -1502,6 +1508,7 @@ public class NewInstrumentBean extends FileUploadBean {
         result = NAV_ASSIGN_VARIABLES;
       }
 
+      updatedFile = null;
       return result;
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
@@ -2103,6 +2110,8 @@ public class NewInstrumentBean extends FileUploadBean {
       assignmentsTree.renameFile(renameOldFile, fileDefinition);
     }
 
+    updatedFile = fileDefinition.getFileDescription();
+
     return NAV_ASSIGN_VARIABLES;
   }
 
@@ -2454,5 +2463,18 @@ public class NewInstrumentBean extends FileUploadBean {
     });
 
     return getGson().toJson(map);
+  }
+
+  /**
+   * Get the most recently updated file.
+   *
+   * <p>
+   * This is used to set the selected file tab when the page loads.
+   * </p>
+   *
+   * @return The updated file.
+   */
+  public String getUpdatedFile() {
+    return updatedFile;
   }
 }

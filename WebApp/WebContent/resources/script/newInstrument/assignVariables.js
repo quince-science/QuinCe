@@ -21,6 +21,7 @@ const SECONDS_FROM_START = '13';
 function assignVariablesInit() {
   window.sensorTypes = JSON.parse($('#referenceDataForm\\:sensorTypes').val());
   window.suspendEvents = false;
+  selectUpdatedFile();
   setupDragDropEvents();
 }
 
@@ -578,6 +579,17 @@ function getFileTab(file) {
   return foundTab;
 }
 
+function getFileIndex(file) {
+  let foundTab = null;
+  $('span[id$="tabTitle"]').each(function (index, tabFile) {
+    if ($(tabFile).text() == file) {
+      foundTab = index;
+	}
+  });
+  
+  return foundTab;
+}
+
 function allFilesAssigned() {
   let result = true;
   let filesAssigned = JSON.parse($('#referenceDataForm\\:filesAssigned').val());
@@ -589,4 +601,11 @@ function allFilesAssigned() {
   }
   
   return result;
+}
+
+function selectUpdatedFile() {
+  let updatedFile = $('#referenceDataForm\\:updatedFile').val();
+  if (null != updatedFile) {
+    PF('fileTabs').select(getFileIndex(updatedFile));
+  }
 }
