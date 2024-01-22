@@ -314,7 +314,7 @@ td.selected > div {
   width: 16px;
   height: 16px;
   position: relative;
-  margin-right: 5px !important;
+  margin-right: 8px !important;
   margin-top: 5px !important;
 }
 
@@ -327,7 +327,7 @@ td.selected > div {
 }
 
 .noAxisButton {
-  width: 17px;
+  width: 20px;
   height: 16px;
 }
 
