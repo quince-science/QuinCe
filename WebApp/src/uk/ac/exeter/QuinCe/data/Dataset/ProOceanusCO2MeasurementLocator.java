@@ -4,9 +4,7 @@ import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -93,7 +91,7 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
 
       // Loop through all the rows, examining the zero/run type columns to
       // locate flushing values.
-      Set<SensorValue> flaggedSensorValues = new HashSet<SensorValue>();
+      List<SensorValue> flaggedSensorValues = new ArrayList<SensorValue>();
 
       SensorValuesList co2Values = sensorValues.getColumnValues(co2Column);
 
@@ -115,12 +113,6 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
               flushingEnd)) {
               flushingCO2.setUserQC(Flag.FLUSHING, "Flushing");
               flaggedSensorValues.add(flushingCO2);
-            }
-
-            for (SensorValue flushingRunType : runTypes
-              .getRawValues(flushingStart, flushingEnd)) {
-              flushingRunType.setUserQC(Flag.FLUSHING, "Flushing");
-              flaggedSensorValues.add(flushingRunType);
             }
           }
 
@@ -146,10 +138,12 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
           lastRunType = newRunType;
         }
 
-        // Force the CO2 and Run Type output values to be recalculated now that
+        // Store the updated flags
+        DataSetDataDB.storeSensorValues(conn, flaggedSensorValues);
+
+        // Force the CO2 output values to be recalculated now that
         // some values have had their flags changed.
         co2Values.resetOutput();
-        runTypes.resetOutput();
       }
 
       // Now we construct measurements based on the remaining run types.
@@ -162,25 +156,31 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
          * TSG data).
          */
         if (null != runType) {
-          if (runType.getStringValue().equals(WATER_MODE)) {
-            if (instrument.hasVariable(waterVar)) {
-              measurements.add(new Measurement(dataset.getId(),
-                runType.getNominalTime(), waterRunTypes));
+
+          SensorValuesListValue co2Value = co2Values.getValue(runType.getTime(),
+            false);
+
+          // We only make measurements for non-flushing CO2 values
+          if (null != co2Value) {
+            if (runType.getStringValue().equals(WATER_MODE)) {
+              if (instrument.hasVariable(waterVar)) {
+                measurements.add(new Measurement(dataset.getId(),
+                  runType.getNominalTime(), waterRunTypes));
+              }
+            } else if (runType.getStringValue().equals(ATM_MODE)) {
+              if (instrument.hasVariable(atmVar)) {
+                measurements.add(new Measurement(dataset.getId(),
+                  runType.getNominalTime(), atmRunTypes));
+              }
+            } else {
+              throw new MeasurementLocatorException(
+                "Unrecognised ProOceanus mode '" + runType.getStringValue()
+                  + "'");
             }
-          } else if (runType.getStringValue().equals(ATM_MODE)) {
-            if (instrument.hasVariable(atmVar)) {
-              measurements.add(new Measurement(dataset.getId(),
-                runType.getNominalTime(), atmRunTypes));
-            }
-          } else {
-            throw new MeasurementLocatorException(
-              "Unrecognised ProOceanus mode '" + runType.getStringValue()
-                + "'");
           }
         }
       }
 
-      DataSetDataDB.storeSensorValues(conn, flaggedSensorValues);
       return measurements;
     } catch (Exception e) {
       if (e instanceof MeasurementLocatorException) {

@@ -974,8 +974,10 @@ public class SensorValuesList {
       ? outputValues.get(searchIndex)
       : null;
 
-    if (null != exactMatch || !allowInterpolation) {
+    if (null != exactMatch) {
       result = new SensorValuesListValue(exactMatch, time);
+    } else if (!allowInterpolation) {
+      result = null;
     } else {
       // Get the previous and next groups
       SensorValuesListValue prior = null;
