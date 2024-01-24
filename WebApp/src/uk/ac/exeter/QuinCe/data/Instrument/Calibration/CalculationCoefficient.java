@@ -107,15 +107,10 @@ public class CalculationCoefficient extends Calibration {
   }
 
   public static List<String> getCoeffecientNames(Variable variable,
-    String... coefficients) {
+    List<String> coefficients) {
 
-    List<String> result = new ArrayList<String>(coefficients.length);
-
-    for (String coefficient : coefficients) {
-      result.add(getCoeffecientName(variable, coefficient));
-    }
-
-    return result;
+    return coefficients.stream().map(c -> getCoeffecientName(variable, c))
+      .toList();
   }
 
   public Double getValue() {
