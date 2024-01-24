@@ -20,7 +20,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
-public class PostCalibrationCheckRoutine extends DataReductionQCRoutine {
+public class PostDataSetCalculationCoefficientCheckRoutine
+  extends DataReductionQCRoutine {
 
   @Override
   public String getShortMessage() {
@@ -42,7 +43,7 @@ public class PostCalibrationCheckRoutine extends DataReductionQCRoutine {
     try {
       // See if we have a post-calibration for the dataset
       List<String> calibrationCoefficientNames = CalculationCoefficient
-        .getCoeffecientNames(variable, "Runtime", "k1", "k2", "k3");
+        .getCoeffecientNames(variable, settings.getListOption("coefficients"));
 
       CalibrationSet postCoefficients = CalculationCoefficientDB.getInstance()
         .getCalibrationsAfter(conn, instrument,

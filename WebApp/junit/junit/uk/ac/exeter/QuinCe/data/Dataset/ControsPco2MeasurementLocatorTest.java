@@ -23,7 +23,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Tests for the {@link ControsPco2MeasurementLocator}.
- * 
+ *
  * <p>
  * Uses the same Flyway test data as {@link ControsPco2ReducerTest}.
  * </p>

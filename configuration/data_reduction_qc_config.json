@@ -89,8 +89,11 @@
     "variable": "CONTROS pCO₂",
     "routines": [
       {
-        "name": "PostCalibrationCheck",
-        "flagged_sensors": []
+        "name": "PostDataSetCalculationCoefficientCheck",
+        "flagged_sensors": [],
+        "options": {
+          "coefficients": ["Runtime", "k1", "k2", "k3"]
+		}
       }
     ]
   }

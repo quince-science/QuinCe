@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -107,7 +108,8 @@ public class ControsPco2Reducer extends DataReducer {
       variable, "Runtime");
 
     List<String> coefficientFullNames = CalculationCoefficient
-      .getCoeffecientNames(variable, "Runtime", "k1", "k2", "k3");
+      .getCoeffecientNames(variable,
+        Arrays.asList("Runtime", "k1", "k2", "k3"));
 
     if (postCoefficients.containsTargets(coefficientFullNames)) {
       k1Post = getPost("k1");

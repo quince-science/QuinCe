@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction;
 
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.JsonArray;
@@ -54,7 +55,16 @@ public class DataReductionQCRoutineSettingsDeserializer
     if (jsonObject.has("options")) {
       JsonObject options = jsonObject.get("options").getAsJsonObject();
       for (Map.Entry<String, JsonElement> entry : options.entrySet()) {
-        result.addOption(entry.getKey(), entry.getValue().getAsString());
+
+        if (entry.getValue().isJsonArray()) {
+          JsonArray array = entry.getValue().getAsJsonArray();
+          List<String> arrayEntries = array.asList().stream()
+            .map(e -> e.getAsString()).toList();
+          result.addListOption(entry.getKey(), arrayEntries);
+        } else {
+          result.addSingleOption(entry.getKey(),
+            entry.getValue().getAsString());
+        }
       }
     }
 
