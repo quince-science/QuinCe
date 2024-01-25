@@ -806,6 +806,14 @@ table.dialogTable td.dialogTableCell {
   padding-bottom: 12px !important;
 }
 
+/*
+ * Override the default highlight text colour for
+ * selected cells in QC tables
+ */
+table.dataTable > tbody > tr > .selected {
+  color: black;
+}
+
 .ui-toolbar {
   padding-top: 2px !important;
 }
@@ -842,6 +850,6 @@ form.inline {
 /*****************************************
 * Default dialog style
 *****************************************/
-.messageDialog>.ui-dialog-content>.ui-scrollpanel {
+.messageDialog > .ui-dialog-content > .ui-scrollpanel {
   padding: 10px
 }
