@@ -341,7 +341,7 @@ public class ManualQCData extends PlotPageData {
 
   @Override
   public int size() {
-    return (null != sensorValues ? sensorValues.size() : -1);
+    return (null != rowIDs ? rowIDs.size() : -1);
   }
 
   @Override
