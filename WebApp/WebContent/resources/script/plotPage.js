@@ -729,7 +729,7 @@ function drawTable() {
 
 // Calculate the value of the scrollY entry for the data table
 function calcTableScrollY() {
-  return $('#tableContent').height() - $('#footerToolbar').outerHeight();
+  return $('#tableContent').height() - $('#footerToolbar').outerHeight() + 10;
 }
 
 // Initialise the click event handlers for the table
@@ -971,6 +971,7 @@ function scrollToTableRow(rowId) {
     tableRow = JSON.parse($('#plotPageForm\\:rowIDs').val()).indexOf(rowId);
   }
 
+  console.log(tableRow);
   if (tableRow >= 0) {
     jsDataTable.scroller().scrollToRow(tableRow - 2);
 
