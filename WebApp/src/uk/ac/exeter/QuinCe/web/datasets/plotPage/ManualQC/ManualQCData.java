@@ -570,15 +570,11 @@ public class ManualQCData extends PlotPageData {
         Flag setFlag = null;
         String setMessage = null;
 
-        if (sensorValue.getUserQCFlag().equals(Flag.NEEDED)
-          || sensorValue.getUserQCFlag().equals(Flag.ASSUMED_GOOD)) {
+        setFlag = sensorValue.getAutoQcFlag();
+        setMessage = sensorValue.getAutoQcResult().getAllMessages();
 
-          setFlag = sensorValue.getAutoQcFlag();
-          setMessage = sensorValue.getAutoQcResult().getAllMessages();
-
-          sensorValue.setUserQC(setFlag, setMessage);
-          changedValues.add(sensorValue);
-        }
+        sensorValue.setUserQC(setFlag, setMessage);
+        changedValues.add(sensorValue);
 
         if (null != otherPositionValue && null != setFlag) {
           otherPositionValue.setUserQC(setFlag, setMessage);
