@@ -24,15 +24,15 @@ public class UnderwayAtmospheric12_13Pco2Reducer
     try {
       // We use equilibrator temperature as the presumed most realistic gas
       // temperature
-      Double intakeTemperature = measurement
-        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double waterTemperature = measurement
+        .getMeasurementValue("Water Temperature").getCalculatedValue();
       Double salinity = measurement.getMeasurementValue("Salinity")
         .getCalculatedValue();
       Double atmosphericPressure = measurement
         .getMeasurementValue("Atmospheric Pressure").getCalculatedValue();
 
       Double seaLevelPressure = Calculators.calcSeaLevelPressure(
-        atmosphericPressure, intakeTemperature,
+        atmosphericPressure, waterTemperature,
         getFloatProperty("atm_pres_sensor_height"));
 
       record.put("Sea Level Pressure", seaLevelPressure);
@@ -40,10 +40,10 @@ public class UnderwayAtmospheric12_13Pco2Reducer
       if (getStringProperty(UnderwayMarine12_13Pco2Reducer.CAL_GAS_TYPE_ATTR)
         .equals(UnderwayMarine12_13Pco2Reducer.SPLIT_CO2_GAS_CAL_TYPE)) {
 
-        doSplitCalculation(record, measurement, intakeTemperature, salinity,
+        doSplitCalculation(record, measurement, waterTemperature, salinity,
           seaLevelPressure);
       } else {
-        doTotalCalculation(record, measurement, intakeTemperature, salinity,
+        doTotalCalculation(record, measurement, waterTemperature, salinity,
           seaLevelPressure);
       }
     } catch (Exception e) {
@@ -52,7 +52,7 @@ public class UnderwayAtmospheric12_13Pco2Reducer
   }
 
   private void doSplitCalculation(DataReductionRecord record,
-    Measurement measurement, Double intakeTemperature, Double salinity,
+    Measurement measurement, Double waterTemperature, Double salinity,
     Double seaLevelPressure)
     throws SensorTypeNotFoundException, DataReductionException {
 
@@ -62,9 +62,9 @@ public class UnderwayAtmospheric12_13Pco2Reducer
     Double x13CO2 = measurement.getMeasurementValue("x¹³CO₂ (with standards)")
       .getCalculatedValue();
 
-    Calculator x12CO2Calculator = new Calculator(intakeTemperature, salinity,
+    Calculator x12CO2Calculator = new Calculator(waterTemperature, salinity,
       seaLevelPressure, x12CO2);
-    Calculator x13CO2Calculator = new Calculator(intakeTemperature, salinity,
+    Calculator x13CO2Calculator = new Calculator(waterTemperature, salinity,
       seaLevelPressure, x13CO2);
 
     // Will be the same for both 12C and 13C
@@ -75,7 +75,7 @@ public class UnderwayAtmospheric12_13Pco2Reducer
   }
 
   private void doTotalCalculation(DataReductionRecord record,
-    Measurement measurement, Double intakeTemperature, Double salinity,
+    Measurement measurement, Double waterTemperature, Double salinity,
     Double seaLevelPressure)
     throws SensorTypeNotFoundException, DataReductionException {
 
@@ -84,7 +84,7 @@ public class UnderwayAtmospheric12_13Pco2Reducer
       .getMeasurementValue("x¹²CO₂ + x¹³CO₂ (with standards)")
       .getCalculatedValue();
 
-    Calculator calculator = new Calculator(intakeTemperature, salinity,
+    Calculator calculator = new Calculator(waterTemperature, salinity,
       seaLevelPressure, co2);
 
     record.put("pH₂O", calculator.pH2O);

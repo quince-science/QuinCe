@@ -41,10 +41,10 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     DataReductionRecord record, Connection conn) throws DataReductionException {
 
     try {
-      // We use equilibrator temperature as the presumed most realistic gas
+      // We use water temperature as the presumed most realistic gas
       // temperature
-      Double intakeTemperature = measurement
-        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double waterTemperature = measurement
+        .getMeasurementValue("Water Temperature").getCalculatedValue();
       Double salinity = measurement.getMeasurementValue("Salinity")
         .getCalculatedValue();
       Double atmosphericPressure = measurement
@@ -53,10 +53,10 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
         .getCalculatedValue();
 
       Double seaLevelPressure = Calculators.calcSeaLevelPressure(
-        atmosphericPressure, intakeTemperature,
+        atmosphericPressure, waterTemperature,
         getFloatProperty("atm_pres_sensor_height"));
 
-      Calculator calculator = new Calculator(intakeTemperature, salinity,
+      Calculator calculator = new Calculator(waterTemperature, salinity,
         seaLevelPressure, co2InGas);
 
       record.put("Sea Level Pressure", seaLevelPressure);
@@ -109,9 +109,9 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   class Calculator {
 
     /**
-     * Measured intake temperature.
+     * Measured water temperature.
      */
-    private final Double intakeTemperature;
+    private final Double waterTemperature;
 
     /**
      * Measured salinity.
@@ -151,8 +151,8 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     /**
      * Initialise the calculator with the required measured values.
      *
-     * @param intakeTemperature
-     *          Intake temperature.
+     * @param waterTemperature
+     *          Water temperature.
      * @param salinity
      *          Salinity.
      * @param seaLevel
@@ -161,10 +161,10 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
      * @param co2InGas
      *          The CO₂ value measured by the gas analyser.
      */
-    protected Calculator(Double intakeTemperature, Double salinity,
+    protected Calculator(Double waterTemperature, Double salinity,
       Double seaLevelPressure, Double co2InGas) {
 
-      this.intakeTemperature = intakeTemperature;
+      this.waterTemperature = waterTemperature;
       this.salinity = salinity;
       this.seaLevelPressure = seaLevelPressure;
       this.co2InGas = co2InGas;
@@ -176,10 +176,10 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
      * {@link #fCO2}.
      */
     protected void calculate() {
-      pH2O = Calculators.calcPH2O(salinity, intakeTemperature);
+      pH2O = Calculators.calcPH2O(salinity, waterTemperature);
       pCO2 = Calculators.calcpCO2TEWet(co2InGas, seaLevelPressure, pH2O);
       fCO2 = Calculators.calcfCO2(pCO2, co2InGas, seaLevelPressure,
-        intakeTemperature);
+        waterTemperature);
     }
   }
 }

@@ -79,7 +79,7 @@ public class VariableTest extends BaseTest {
       .getAllSensorTypes(includePosition);
 
     assertTrue(sensorTypes.contains(getSensorType("testSensor")));
-    assertTrue(sensorTypes.contains(getSensorType("Intake Temperature")));
+    assertTrue(sensorTypes.contains(getSensorType("Water Temperature")));
     assertTrue(sensorTypes.contains(getSensorType("Salinity")));
     assertFalse(sensorTypes.contains(getSensorType("Unused sensor")));
 

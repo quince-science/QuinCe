@@ -55,7 +55,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </p>
  *
  * <ul>
- * <li>Intake Temperature</li>
+ * <li>Water Temperature</li>
  * <li>Salinity</li>
  * <li>Equilibrator Temperature</li>
  * <li>Equilibrator Pressure</li>
@@ -67,7 +67,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * There is also a second variable defined for these tests, which requires:
  * </p>
  * <ul>
- * <li>Intake Temperature</li>
+ * <li>Water Temperature</li>
  * <li>Salinity</li>
  * <li>testSensor <i>(core)</i>*</li>
  * </ul>
@@ -191,7 +191,7 @@ public class SensorAssignmentsTest extends BaseTest {
 
   private static SensorType getTestSensorType() throws Exception {
     return ResourceManager.getInstance().getSensorsConfiguration()
-      .getSensorType("Intake Temperature");
+      .getSensorType("Water Temperature");
   }
 
   private static SensorType getTestSensorType2() throws Exception {
@@ -309,7 +309,7 @@ public class SensorAssignmentsTest extends BaseTest {
    * Test that a basic sensor can be assigned using the {@link SensorType} ID.
    *
    * <p>
-   * Adds an assignment for an Intake Temperature sensor.
+   * Adds an assignment for an Water Temperature sensor.
    * </p>
    *
    * @throws Exception
@@ -598,9 +598,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteOneAssignmentTest() throws Exception {
 
-    assignments
-      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
-        DATA_FILE_NAME, 1, "Sensor 1", true));
+    assignments.addAssignment(makeAssignment(getSensorType("Water Temperature"),
+      DATA_FILE_NAME, 1, "Sensor 1", true));
     assertFalse(assignments.isVariableComplete(co2Var));
   }
 
@@ -613,9 +612,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteNoDependsTest() throws Exception {
 
-    assignments
-      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
-        DATA_FILE_NAME, 1, "Intake Temperature", true));
+    assignments.addAssignment(makeAssignment(getSensorType("Water Temperature"),
+      DATA_FILE_NAME, 1, "Water Temperature", true));
 
     assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
       DATA_FILE_NAME, 2, "Salinity", true));
@@ -646,9 +644,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteRunTypeNotSetTest() throws Exception {
 
-    assignments
-      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
-        DATA_FILE_NAME, 1, "Intake Temperature", true));
+    assignments.addAssignment(makeAssignment(getSensorType("Water Temperature"),
+      DATA_FILE_NAME, 1, "Water Temperature", true));
 
     assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
       DATA_FILE_NAME, 2, "Salinity", true));
@@ -677,9 +674,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteDependsNotSetTest() throws Exception {
 
-    assignments
-      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
-        DATA_FILE_NAME, 1, "Intake Temperature", true));
+    assignments.addAssignment(makeAssignment(getSensorType("Water Temperature"),
+      DATA_FILE_NAME, 1, "Water Temperature", true));
 
     assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
       DATA_FILE_NAME, 2, "Salinity", true));
@@ -712,9 +708,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteDependsSetTest() throws Exception {
 
-    assignments
-      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
-        DATA_FILE_NAME, 1, "Intake Temperature", true));
+    assignments.addAssignment(makeAssignment(getSensorType("Water Temperature"),
+      DATA_FILE_NAME, 1, "Water Temperature", true));
 
     assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
       DATA_FILE_NAME, 2, "Salinity", true));
@@ -759,9 +754,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteDependsQuestionNotSetTest() throws Exception {
 
-    assignments
-      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
-        DATA_FILE_NAME, 1, "Intake Temperature", true));
+    assignments.addAssignment(makeAssignment(getSensorType("Water Temperature"),
+      DATA_FILE_NAME, 1, "Water Temperature", true));
 
     assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
       DATA_FILE_NAME, 2, "Salinity", true));
@@ -800,9 +794,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void variableCompleteDependsQuestionSetTest() throws Exception {
 
-    assignments
-      .addAssignment(makeAssignment(getSensorType("Intake Temperature"),
-        DATA_FILE_NAME, 1, "Intake Temperature", true));
+    assignments.addAssignment(makeAssignment(getSensorType("Water Temperature"),
+      DATA_FILE_NAME, 1, "Water Temperature", true));
 
     assignments.addAssignment(makeAssignment(getSensorType("Salinity"),
       DATA_FILE_NAME, 2, "Salinity", true));

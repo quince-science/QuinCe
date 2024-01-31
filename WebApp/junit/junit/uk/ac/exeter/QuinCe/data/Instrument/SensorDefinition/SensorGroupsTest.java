@@ -770,7 +770,7 @@ public class SensorGroupsTest extends BaseTest {
     SensorType sensorType = null;
     switch (sensorNumber) {
     case 1: {
-      sensorType = sensorConfig.getSensorType("Intake Temperature");
+      sensorType = sensorConfig.getSensorType("Water Temperature");
       break;
     }
     case 2: {

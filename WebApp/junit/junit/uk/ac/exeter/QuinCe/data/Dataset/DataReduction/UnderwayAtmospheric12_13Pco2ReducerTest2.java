@@ -79,8 +79,7 @@ public class UnderwayAtmospheric12_13Pco2ReducerTest2 extends DataReducerTest {
       variable, props);
 
     List<MeasurementValue> allMeasurementValues = new ArrayList<MeasurementValue>();
-    allMeasurementValues
-      .add(makeMeasurementValue("Intake Temperature", 6.061D));
+    allMeasurementValues.add(makeMeasurementValue("Water Temperature", 6.061D));
     allMeasurementValues.add(makeMeasurementValue("Salinity", 34.441D));
     allMeasurementValues
       .add(makeMeasurementValue("Atmospheric Pressure", 1023.58D));

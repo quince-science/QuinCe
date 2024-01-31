@@ -64,8 +64,9 @@ DataPreparation/MapCO2/*csv
 # Lock files
 **/.~lock*
 
-# PyCharm files
+# IDE files
 **/.idea
+**/.vscode
 
 # Jupyter Notebooks
 **/.ipynb_checkpoints

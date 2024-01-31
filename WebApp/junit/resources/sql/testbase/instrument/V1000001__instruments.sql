@@ -17,7 +17,7 @@ INSERT INTO file_definition VALUES
 
 -- File Columns
 
--- Intake temperature
+-- Water temperature
 INSERT INTO file_column VALUES (1,1,14,1,1,'SWTemp',0,'','2019-01-28 13:31:21','2019-01-28 14:31:21');
 
 -- Salinity

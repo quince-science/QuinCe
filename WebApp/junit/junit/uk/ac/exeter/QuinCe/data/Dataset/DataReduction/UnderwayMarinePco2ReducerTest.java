@@ -42,7 +42,7 @@ public class UnderwayMarinePco2ReducerTest extends DataReducerTest {
     UnderwayMarinePco2Reducer reducer = new UnderwayMarinePco2Reducer(variable,
       new HashMap<String, Properties>());
 
-    MeasurementValue intakeTemp = makeMeasurementValue("Intake Temperature",
+    MeasurementValue waterTemp = makeMeasurementValue("Water Temperature",
       11.912D);
 
     MeasurementValue salinity = makeMeasurementValue("Salinity", 35.224D);
@@ -56,7 +56,7 @@ public class UnderwayMarinePco2ReducerTest extends DataReducerTest {
     MeasurementValue xco2 = makeMeasurementValue("xCO₂ (with standards)",
       374.977D);
 
-    Measurement measurement = makeMeasurement(intakeTemp, salinity, eqTemp,
+    Measurement measurement = makeMeasurement(waterTemp, salinity, eqTemp,
       eqPressure, xco2);
 
     // Make a record to work with
