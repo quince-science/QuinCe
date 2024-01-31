@@ -35,9 +35,9 @@ CO2 Type,N,Y,
 Date/Time,S,Y,
 Longitude,N,Y,
 Latitude,N,Y,
-Intake Temp 1,N,Y,Mean Intake Temp|3|4
-Intake Temp 2,N,N,Mean Intake Temp|3|4
-Intake Temp 3,N,N,Mean Intake Temp|3|4
+Water Temp 1,N,Y,Mean Water Temp|3|4
+Water Temp 2,N,N,Mean Water Temp|3|4
+Water Temp 3,N,N,Mean Water Temp|3|4
 Salinity 1,N,Y,Mean Salinity|3|4
 Salinity 2,N,N,Mean Salinity|3|4
 Salinity 3,N,N,Mean Salinity|3|4
@@ -50,7 +50,7 @@ Equilibrator Pressure 3,N,N,Mean Equilibrator Pressure|3|4
 xH2O,N,Y,True xH2O|3|4
 Ambient Pressure,N,Y,
 CO2,N,Y,
-Mean Intake Temp,N,Y,
+Mean Water Temp,N,Y,
 Mean Salinity,N,Y,
 Mean Equilibrator Temperature,N,Y,
 Mean Equilibrator Pressure,N,Y,

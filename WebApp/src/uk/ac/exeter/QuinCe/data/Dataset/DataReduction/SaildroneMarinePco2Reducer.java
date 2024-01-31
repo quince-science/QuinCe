@@ -35,8 +35,8 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
     DataReductionRecord record, Connection conn) throws DataReductionException {
 
     try {
-      Double intakeTemperature = measurement
-        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double waterTemperature = measurement
+        .getMeasurementValue("Water Temperature").getCalculatedValue();
       Double salinity = measurement.getMeasurementValue("Salinity")
         .getCalculatedValue();
       Double licorPressure = measurement
@@ -46,10 +46,10 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
         .getMeasurementValue("xCO₂ water (dry, no standards)")
         .getCalculatedValue();
 
-      Double pH2O = Calculators.calcPH2O(salinity, intakeTemperature);
+      Double pH2O = Calculators.calcPH2O(salinity, waterTemperature);
       Double pCO2 = Calculators.calcpCO2TEWet(co2InGas, licorPressure, pH2O);
       Double fCO2 = Calculators.calcfCO2(pCO2, co2InGas, licorPressure,
-        intakeTemperature);
+        waterTemperature);
 
       record.put("pCO₂", pCO2);
       record.put("fCO₂", fCO2);

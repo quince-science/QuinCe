@@ -33,7 +33,7 @@ public class ProOceanusMarineCO2ReducerTest extends DataReducerTest {
     ProOceanusMarineCO2Reducer reducer = new ProOceanusMarineCO2Reducer(
       variable, new HashMap<String, Properties>());
 
-    MeasurementValue intakeTemp = makeMeasurementValue("Intake Temperature",
+    MeasurementValue waterTemp = makeMeasurementValue("Water Temperature",
       10.777D);
 
     MeasurementValue cellGasPressure = makeMeasurementValue("Cell Gas Pressure",
@@ -42,7 +42,7 @@ public class ProOceanusMarineCO2ReducerTest extends DataReducerTest {
     MeasurementValue xco2 = makeMeasurementValue("xCO₂ (wet, no standards)",
       393.722D);
 
-    Measurement measurement = makeMeasurement(intakeTemp, cellGasPressure,
+    Measurement measurement = makeMeasurement(waterTemp, cellGasPressure,
       xco2);
 
     // Make a record to work with

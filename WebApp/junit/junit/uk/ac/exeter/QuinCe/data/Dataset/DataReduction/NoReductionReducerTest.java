@@ -33,7 +33,7 @@ public class NoReductionReducerTest extends DataReducerTest {
     initResourceManager();
 
     SensorType coreSensorType = ResourceManager.getInstance()
-      .getSensorsConfiguration().getSensorType("Intake Temperature");
+      .getSensorsConfiguration().getSensorType("Water Temperature");
 
     // Mock objects
     Instrument instrument = Mockito.mock(Instrument.class);
@@ -46,10 +46,10 @@ public class NoReductionReducerTest extends DataReducerTest {
     NoReductionReducer reducer = new NoReductionReducer(variable,
       new HashMap<String, Properties>());
 
-    MeasurementValue intakeTemp = makeMeasurementValue("Intake Temperature",
+    MeasurementValue waterTemp = makeMeasurementValue("Water Temperature",
       9.889D);
 
-    Measurement measurement = makeMeasurement(intakeTemp);
+    Measurement measurement = makeMeasurement(waterTemp);
 
     DataReductionRecord record = new DataReductionRecord(measurement, variable,
       reducer.getCalculationParameterNames());
@@ -57,10 +57,10 @@ public class NoReductionReducerTest extends DataReducerTest {
     reducer.doCalculation(instrument, measurement, record,
       getDataSource().getConnection());
 
-    assertEquals(9.889D, record.getCalculationValue("Intake Temperature"),
+    assertEquals(9.889D, record.getCalculationValue("Water Temperature"),
       0.0001);
 
-    List<String> paramNames = Arrays.asList("Intake Temperature");
+    List<String> paramNames = Arrays.asList("Water Temperature");
     assertTrue(listsEqual(paramNames, reducer.getCalculationParameterNames()));
   }
 }

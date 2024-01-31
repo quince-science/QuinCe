@@ -1,7 +1,7 @@
--- Remove unused sensors
+-- Rename Intake Temperature to Water Temperature (universal for all variables)
+UPDATE sensor_types SET name = 'Water Temperature' WHERE name = 'Intake Temperature';
 
--- Intake Temperature isn't used - we assume Membrane Temp = Intake Temp
-DELETE FROM variable_sensors WHERE variable_id = 6 AND sensor_type = 1;
+-- Remove unused sensors
 
 -- Membrane temperature
 DELETE FROM variable_sensors WHERE variable_id = 6 AND sensor_type = 39;

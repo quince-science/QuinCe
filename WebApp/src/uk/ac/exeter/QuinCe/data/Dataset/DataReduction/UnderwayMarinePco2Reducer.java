@@ -40,8 +40,8 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     DataReductionRecord record, Connection conn) throws DataReductionException {
 
     try {
-      Double intakeTemperature = measurement
-        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double waterTemperature = measurement
+        .getMeasurementValue("Water Temperature").getCalculatedValue();
       Double salinity = measurement.getMeasurementValue("Salinity")
         .getCalculatedValue();
       Double equilibratorTemperature = measurement
@@ -51,11 +51,11 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       Double xCO2 = measurement.getMeasurementValue(getXCO2Parameter())
         .getCalculatedValue();
 
-      Calculator calculator = new Calculator(intakeTemperature, salinity,
+      Calculator calculator = new Calculator(waterTemperature, salinity,
         equilibratorTemperature, equilibratorPressure, xCO2);
 
       // Store the calculated values
-      record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
+      record.put("ΔT", Math.abs(waterTemperature - equilibratorTemperature));
       record.put("pH₂O", calculator.pH2O);
       record.put("pCO₂ TE Wet", calculator.pCo2TEWet);
       record.put("fCO₂ TE Wet", calculator.fCo2TEWet);
@@ -112,9 +112,9 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   class Calculator {
 
     /**
-     * Measured intake temperature.
+     * Measured water temperature.
      */
-    private final Double intakeTemperature;
+    private final Double waterTemperature;
 
     /**
      * Measured salinity.
@@ -152,20 +152,20 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     protected Double fCo2TEWet = null;
 
     /**
-     * Calculated pCO₂ at 100% humidity at intake temperature.
+     * Calculated pCO₂ at 100% humidity at water temperature.
      */
     protected Double pCO2SST = null;
 
     /**
-     * Calculated fCO₂ at 100% humidity at intake temperature.
+     * Calculated fCO₂ at 100% humidity at water temperature.
      */
     protected Double fCO2 = null;
 
     /**
      * Initialise the calculator with the required measured values.
      *
-     * @param intakeTemperature
-     *          Intake temperature.
+     * @param waterTemperature
+     *          Water temperature.
      * @param salinity
      *          Salinity.
      * @param equilibratorTemperature
@@ -175,11 +175,11 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
      * @param co2InGas
      *          Measure CO₂.
      */
-    protected Calculator(Double intakeTemperature, Double salinity,
+    protected Calculator(Double waterTemperature, Double salinity,
       Double equilibratorTemperature, Double equilibratorPressure,
       Double co2InGas) {
 
-      this.intakeTemperature = intakeTemperature;
+      this.waterTemperature = waterTemperature;
       this.salinity = salinity;
       this.equilibratorTemperature = equilibratorTemperature;
       this.equilibratorPressure = equilibratorPressure;
@@ -198,9 +198,9 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       fCo2TEWet = Calculators.calcfCO2(pCo2TEWet, co2InGas,
         equilibratorPressure, equilibratorTemperature);
       pCO2SST = Calculators.calcCO2AtSST(pCo2TEWet, equilibratorTemperature,
-        intakeTemperature);
+        waterTemperature);
       fCO2 = Calculators.calcCO2AtSST(fCo2TEWet, equilibratorTemperature,
-        intakeTemperature);
+        waterTemperature);
     }
   }
 }

@@ -1,8 +1,8 @@
 Sensor Type,Assigned Primary,Assigned Secondary,Relation,Sibling Assigned Primary,Sibling Assigned Secondary,Dependent,Has Depends Question,Dependent Assigned Primary,Depends Question Answer,Dependent Assigned Secondary,Depends Question Answer,Dependent Has Relation?,Dependent Sibling Assigned Primary,Dependent Sibling Assigned Secondary,Sensor Type Required
-Intake Temperature,false,false,,,,,,,,,,,,,true
-Intake Temperature,false,true,,,,,,,,,,,,,true
-Intake Temperature,true,false,,,,,,,,,,,,,false
-Intake Temperature,true,true,,,,,,,,,,,,,false
+Water Temperature,false,false,,,,,,,,,,,,,true
+Water Temperature,false,true,,,,,,,,,,,,,true
+Water Temperature,true,false,,,,,,,,,,,,,false
+Water Temperature,true,true,,,,,,,,,,,,,false
 Atmospheric Pressure,false,false,,,,,,,,,,,,,false
 Atmospheric Pressure,false,true,,,,,,,,,,,,,false
 Atmospheric Pressure,true,false,,,,,,,,,,,,,false

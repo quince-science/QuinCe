@@ -48,7 +48,7 @@ public class UnderwayAtmosphericPco2ReducerTest extends DataReducerTest {
     UnderwayAtmosphericPco2Reducer reducer = new UnderwayAtmosphericPco2Reducer(
       variable, reducerProps);
 
-    MeasurementValue intakeTemp = makeMeasurementValue("Intake Temperature",
+    MeasurementValue waterTemp = makeMeasurementValue("Water Temperature",
       15.453D);
 
     MeasurementValue salinity = makeMeasurementValue("Salinity", 35.224D);
@@ -59,7 +59,7 @@ public class UnderwayAtmosphericPco2ReducerTest extends DataReducerTest {
     MeasurementValue xco2 = makeMeasurementValue("xCO₂ (with standards)",
       402.043D);
 
-    Measurement measurement = makeMeasurement(intakeTemp, salinity, atmPressure,
+    Measurement measurement = makeMeasurement(waterTemp, salinity, atmPressure,
       xco2);
 
     // Make a record to work with

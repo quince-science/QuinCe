@@ -286,7 +286,7 @@ public class SensorOffsetsTest extends BaseTest {
     sensorGroups.addGroup("Group 2", "Group 1");
 
     sensorGroups.addAssignment(makeAssignment("Sensor 1", "File 1", 1,
-      sensorConfig.getSensorType("Intake Temperature")));
+      sensorConfig.getSensorType("Water Temperature")));
     sensorGroups.addAssignment(makeAssignment("Sensor 2", "File 1", 2,
       sensorConfig.getSensorType("Salinity")));
     sensorGroups.moveSensor("Sensor 2", "Group 2");
@@ -331,7 +331,7 @@ public class SensorOffsetsTest extends BaseTest {
     sensorGroups.addGroup("Group 2", "Group 1");
 
     sensorGroups.addAssignment(makeAssignment("Sensor 1", "File 1", 1,
-      sensorConfig.getSensorType("Intake Temperature")));
+      sensorConfig.getSensorType("Water Temperature")));
     sensorGroups.addAssignment(makeAssignment("Sensor 2", "File 1", 2,
       sensorConfig.getSensorType("Salinity")));
     sensorGroups.moveSensor("Sensor 2", "Group 2");
@@ -372,7 +372,7 @@ public class SensorOffsetsTest extends BaseTest {
     groups.addGroup("Group 3", "Group 2");
 
     groups.addAssignment(makeAssignment("Sensor 1", "File 1", 1,
-      sensorConfig.getSensorType("Intake Temperature")));
+      sensorConfig.getSensorType("Water Temperature")));
     groups.addAssignment(makeAssignment("Sensor 2", "File 1", 2,
       sensorConfig.getSensorType("Salinity")));
     groups.addAssignment(makeAssignment("Sensor 3", "File 1", 3,
