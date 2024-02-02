@@ -269,9 +269,12 @@ public class ControsPco2Reducer extends DataReducer {
             RoundingMode.HALF_UP);
 
           BigDecimal bdPCO2SST = bdXCO2.multiply(pco2PressurePart);
+
+          Double waterTemp = measurement
+            .getMeasurementValue("Water Temperature").getCalculatedValue();
+
           fCO2 = Calculators.calcfCO2(bdPCO2SST.doubleValue(),
-            bdXCO2.doubleValue(), membranePressure.doubleValue(),
-            gasTemperature.doubleValue());
+            bdXCO2.doubleValue(), membranePressure.doubleValue(), waterTemp);
 
           // Make Double values for data reduction record
           zeroS2Beam = bdZeroS2Beam.doubleValue();
@@ -287,7 +290,8 @@ public class ControsPco2Reducer extends DataReducer {
         }
 
         record.put("Zero S₂beam", zeroS2Beam.doubleValue());
-        record.put("S₂beam", measurementS2Beam.doubleValue());
+        record.put("S₂beam",
+          zeroS2Beam.isNaN() ? Double.NaN : measurementS2Beam.doubleValue());
         record.put("Sproc", sProc.doubleValue());
         record.put("xCO₂", xco2.doubleValue());
         record.put("pCO₂ SST", pCO2SST.doubleValue());
