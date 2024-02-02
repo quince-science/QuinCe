@@ -3,13 +3,13 @@
 -- 1625961600000 = 2021-07-11 00:00:00
 
 INSERT INTO calibration (instrument_id, type, target, deployment_date, coefficients, class)
-  VALUES (116, 'CALC_COEFFICIENT', '6.Runtime', 1625961600000, '{"Value":"1468557"}', 'CalculationCoefficient');
+  VALUES (124, 'CALC_COEFFICIENT', '6.Runtime', 1704931200000, '{"Value":"4121874"}', 'CalculationCoefficient');
 
 INSERT INTO calibration (instrument_id, type, target, deployment_date, coefficients, class)
-  VALUES (116, 'CALC_COEFFICIENT', '6.k1', 1625961600000, '{"Value":"6.050551e-02"}', 'CalculationCoefficient');
+  VALUES (124, 'CALC_COEFFICIENT', '6.k1', 1704931200000, '{"Value":"6.347129e-02"}', 'CalculationCoefficient');
 
 INSERT INTO calibration (instrument_id, type, target, deployment_date, coefficients, class)
-  VALUES (116, 'CALC_COEFFICIENT', '6.k2', 1625961600000, '{"Value":"3.729867e-06"}', 'CalculationCoefficient');
+  VALUES (124, 'CALC_COEFFICIENT', '6.k2', 1704931200000, '{"Value":"2.713467e-06"}', 'CalculationCoefficient');
 
 INSERT INTO calibration (instrument_id, type, target, deployment_date, coefficients, class)
-  VALUES (116, 'CALC_COEFFICIENT', '6.k3', 1625961600000, '{"Value":"2.945140e-10"}', 'CalculationCoefficient');
+  VALUES (124, 'CALC_COEFFICIENT', '6.k3', 1704931200000, '{"Value":"3.840130e-10"}', 'CalculationCoefficient');

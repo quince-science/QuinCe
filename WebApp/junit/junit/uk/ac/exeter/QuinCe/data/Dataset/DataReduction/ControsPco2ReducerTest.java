@@ -195,18 +195,18 @@ public class ControsPco2ReducerTest extends DataReducerTest {
   /**
    * The database ID of the {@link Instrument} in the FlyWay test data.
    */
-  private static final long INSTRUMENT_ID = 116L;
+  private static final long INSTRUMENT_ID = 124L;
 
   /**
    * The database ID of the {@link DataSet} in the FlyWay test data.
    */
-  private static final long DATASET_ID = 2717L;
+  private static final long DATASET_ID = 2765L;
 
   /**
    * Date of the {@link Measurement} whose data reduction will be tested.
    */
   private static final LocalDateTime MEASUREMENT_TIME = DateTimeUtils
-    .parseISODateTime("2021-06-28T17:05:58.000Z");
+    .parseISODateTime("2023-06-08T23:50:13.000Z");
 
   /**
    * Initialise the Resource Manager.
@@ -339,17 +339,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.812D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5964.458D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4474.686D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(589.452D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(379.587D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(607.312D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(406.287D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(613.229D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(404.817D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -384,17 +384,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.812D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5966.390D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4499.48D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(589.733D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(382.405D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(607.601D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(409.303D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(613.521D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(407.823D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -429,17 +429,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.809D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5741.454D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4445.223D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(557.532D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(376.251D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(574.425D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(402.716D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(580.022D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(401.26D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -473,17 +473,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.812D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5964.458D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4474.686D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(588.651D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(380.287D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(606.486D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(407.035D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(612.396D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(405.563D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -517,17 +517,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.812D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5966.390D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4499.48D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(588.932D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(383.121D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(606.775D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(410.069D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(612.688D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(408.586D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -561,17 +561,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.809D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5741.454D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4445.223D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(556.740D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(376.931D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(573.608D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(403.444D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(579.198D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(401.985D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -606,17 +606,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.809D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5741.454D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4445.223D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(557.532D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(376.251D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(574.425D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(402.716D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(580.022D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(401.26D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -653,8 +653,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     assertEquals(Double.NaN,
       dataReductionRecord.getCalculationValue("Zero S₂beam"), 0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
-      0.001D);
+    assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("S₂beam"));
     assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
     assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("xCO₂"),
@@ -696,17 +695,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.809D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5741.454D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4445.223D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(557.532D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(376.251D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(574.425D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(402.716D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(580.022D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(401.26D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -740,17 +739,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.809D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5741.454D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4445.223D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(556.740D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(376.931D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(573.608D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(403.444D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(579.198D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(401.985D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -786,8 +785,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     assertEquals(Double.NaN,
       dataReductionRecord.getCalculationValue("Zero S₂beam"), 0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
-      0.001D);
+    assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("S₂beam"));
     assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
     assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("xCO₂"),
@@ -828,17 +826,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.809D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5741.454D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4445.223D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(556.740D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(376.931D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(573.608D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(403.444D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(579.198D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(401.985D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -873,17 +871,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.812D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5966.390D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4499.48D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(589.733D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(382.405D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(607.601D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(409.303D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(613.521D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(407.823D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -918,17 +916,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.812D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5966.390D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4499.48D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(589.733D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(382.405D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(607.601D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(409.303D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(613.521D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(407.823D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -965,8 +963,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     assertEquals(Double.NaN,
       dataReductionRecord.getCalculationValue("Zero S₂beam"), 0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
-      0.001D);
+    assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("S₂beam"));
     assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
     assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("xCO₂"),
@@ -1007,17 +1004,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.812D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5966.390D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4499.48D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(588.932D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(383.121D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(606.775D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(410.069D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(612.687D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(408.586D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -1051,17 +1048,17 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
       instrument, getTestMeasurement(measurements), getConnection());
 
-    assertEquals(0.812D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
+    assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
+    assertEquals(0.749D, dataReductionRecord.getCalculationValue("S₂beam"),
       0.001D);
-    assertEquals(5966.390D, dataReductionRecord.getCalculationValue("Sproc"),
+    assertEquals(4499.48D, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
-    assertEquals(588.932D, dataReductionRecord.getCalculationValue("xCO₂"),
+    assertEquals(383.121D, dataReductionRecord.getCalculationValue("xCO₂"),
       0.001D);
-    assertEquals(606.775D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
+    assertEquals(410.069D, dataReductionRecord.getCalculationValue("pCO₂ SST"),
       0.001D);
-    assertEquals(612.688D, dataReductionRecord.getCalculationValue("fCO₂"),
+    assertEquals(408.586D, dataReductionRecord.getCalculationValue("fCO₂"),
       0.001D);
   }
 
@@ -1097,8 +1094,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     assertEquals(Double.NaN,
       dataReductionRecord.getCalculationValue("Zero S₂beam"), 0.001D);
-    assertEquals(0.733D, dataReductionRecord.getCalculationValue("S₂beam"),
-      0.001D);
+    assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("S₂beam"));
     assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("Sproc"),
       0.001D);
     assertEquals(Double.NaN, dataReductionRecord.getCalculationValue("xCO₂"),
