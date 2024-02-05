@@ -27,6 +27,11 @@ class ConfigurableItem(object):
         print("Enter configuration values")
         print("--------------------------")
 
+        instructions = self._get_config_instructions();
+        if instructions is not None:
+            print(instructions)
+            print('\n')
+
         for key, existing_value in self._configuration.items():
             new_value = None
             if existing_value is None:
@@ -46,6 +51,8 @@ class ConfigurableItem(object):
                 new_value = input_value
 
             self._configuration[key] = new_value
+
+        print('\n')
 
         return self.test_configuration()
 
@@ -69,3 +76,8 @@ class ConfigurableItem(object):
 
     def has_config(self):
         return len(self._configuration) > 0
+
+    # Get any configuration instructions
+    @staticmethod
+    def _get_config_instructions():
+        return None
