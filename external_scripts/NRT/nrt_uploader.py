@@ -1,6 +1,6 @@
 import logging
-
 import toml
+from slack_sdk import WebClient
 
 # Local modules
 import nrtftp
@@ -10,6 +10,10 @@ import quince
 # Log a message for a specific instrument
 def log_instrument(logger, instrument_id, level, message):
     logger.log(level, str(instrument_id) + ":" + message)
+
+def post_slack_msg(config, message):
+    client = WebClient(token=config['api_token'])
+    client.chat_postMessage(channel='#' + config['workspace'], text=f'{message}')
 
 
 ##########################################################
@@ -55,6 +59,9 @@ def main():
                     log_instrument(logger, instrument_id, logging.ERROR,
                                    "Upload failed (status code " + str(status_code) + ")")
                     log_instrument(logger, instrument_id, logging.ERROR, upload_result.text)
+
+                    post_slack_msg(config['slack'],
+                            f'Failed to upload {file}: {upload_result.text}')
 
                     nrtftp.upload_failed(ftp_conn, config["FTP"], instrument_id, file)
 
