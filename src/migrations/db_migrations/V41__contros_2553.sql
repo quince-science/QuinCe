@@ -26,3 +26,7 @@ UPDATE variables SET properties = '{"coefficients": ["F", "Runtime", "k1", "k2",
 UPDATE variables SET attributes =
   '{"zero_mode": {"name": "Measurement mode", "type": "ENUM", "values": ["Continuous", "Zero before sleep", "Zero after sleep"]}, "zero_flush": {"name": "Zero Flushing Time (s)", "type": "NUMBER"}}'
   WHERE id = 6;
+  
+-- Add Water Temperature as a required sensor
+INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  VALUES (6, 1, 0, 3, 4);
