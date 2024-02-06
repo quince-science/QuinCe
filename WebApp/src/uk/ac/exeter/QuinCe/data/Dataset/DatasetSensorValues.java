@@ -168,9 +168,9 @@ public class DatasetSensorValues {
   public boolean contains(LocalDateTime time) {
     boolean result = false;
 
-    result = longitudes.containsTime(time);
+    result = null != longitudes && longitudes.containsTime(time);
     if (!result) {
-      result = latitudes.containsTime(time);
+      result = null != latitudes && latitudes.containsTime(time);
     }
     if (!result) {
       for (SensorValuesList sensorValues : valuesByColumn.values()) {
