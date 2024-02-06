@@ -21,7 +21,9 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
@@ -145,6 +147,32 @@ public class ExtractDataSetJob extends DataSetJob {
           try {
 
             List<String> line = file.getLine(currentLine);
+
+            // Check the number of columns on the line
+            boolean checkColumnCount = true;
+
+            if (fileDefinition.hasRunTypes()) {
+              try {
+                RunTypeCategory runType = fileDefinition.getRunType(line, true)
+                  .getCategory();
+                if (runType.equals(RunTypeCategory.IGNORED)) {
+                  checkColumnCount = false;
+                }
+              } catch (FileDefinitionException e) {
+                dataSet.addProcessingMessage(jobName, file, currentLine, e);
+                if (e instanceof MissingRunTypeException) {
+                  dataSet.addProcessingMessage(jobName, file, currentLine,
+                    "Unrecognised Run Type");
+                }
+              }
+            }
+
+            if (checkColumnCount
+              && line.size() != fileDefinition.getColumnCount()) {
+              dataSet.addProcessingMessage(jobName, file, currentLine,
+                "Incorrect number of columns");
+            }
+
             LocalDateTime time = file.getOffsetTime(line);
 
             if ((time.equals(dataSet.getStart())
