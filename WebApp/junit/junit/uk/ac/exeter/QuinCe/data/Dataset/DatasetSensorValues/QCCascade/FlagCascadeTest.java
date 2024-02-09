@@ -40,6 +40,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 @TestInstance(Lifecycle.PER_CLASS)
 public class FlagCascadeTest extends TestSetTest {
 
+  private static final long VAR_ID = 1000000L;
+
   private static final int SST_Q_CASCADE_COL = 0;
 
   private static final int SST_B_CASCADE_COL = 1;
@@ -54,21 +56,23 @@ public class FlagCascadeTest extends TestSetTest {
 
   private static final int DATA_REDUCTION_FLAG_COL = 6;
 
-  private void setCascade(Connection conn, String sensorType,
+  private int setCascade(Connection conn, String sensorType,
     int questionableCascade, int badCascade) throws SQLException {
 
     PreparedStatement stmt = conn.prepareStatement("UPDATE "
       + "variable_sensors SET questionable_cascade = ?, bad_cascade = ? "
-      + "WHERE variable_id = 1000000 AND sensor_type = "
+      + "WHERE variable_id = " + VAR_ID + " AND sensor_type = "
       + "(SELECT id FROM sensor_types WHERE name = ?)");
 
     stmt.setInt(1, questionableCascade);
     stmt.setInt(2, badCascade);
     stmt.setString(3, sensorType);
 
-    stmt.executeUpdate();
+    int updateCount = stmt.executeUpdate();
     stmt.close();
     conn.commit();
+
+    return updateCount;
   }
 
   /**
@@ -80,7 +84,7 @@ public class FlagCascadeTest extends TestSetTest {
    */
   @FlywayTest(locationsForMigrate = {
     "resources/sql/testbase/DataReduction/base",
-    "resources/sql/testbase/DataReduction/sameTimeMeasurement" })
+    "resources/sql/testbase/DataReduction/singleMeasurement" })
   @ParameterizedTest
   @MethodSource("getLines")
   public void flagCascadeTest(TestSetLine line) throws Exception {
@@ -92,13 +96,14 @@ public class FlagCascadeTest extends TestSetTest {
       int sstQuestionableCascade = line.getIntField(SST_Q_CASCADE_COL);
       int sstBadCascade = line.getIntField(SST_B_CASCADE_COL);
 
-      setCascade(conn, "Intake Temperature", sstQuestionableCascade,
-        sstBadCascade);
+      assertEquals(1, setCascade(conn, "Intake Temperature",
+        sstQuestionableCascade, sstBadCascade));
 
       int salQuestionableCascade = line.getIntField(SAL_Q_CASCADE_COL);
       int salBadCascade = line.getIntField(SAL_B_CASCADE_COL);
 
-      setCascade(conn, "Salinity", salQuestionableCascade, salBadCascade);
+      assertEquals(1,
+        setCascade(conn, "Salinity", salQuestionableCascade, salBadCascade));
     }
 
     // Reinitialise the Resource Manager so the new cascades are loaded
@@ -114,8 +119,8 @@ public class FlagCascadeTest extends TestSetTest {
       DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
         instrument, dataset.getId(), false, false);
 
-      SensorValue sstVal = allSensorValues.getById(1L);
-      SensorValue salVal = allSensorValues.getById(2L);
+      SensorValue sstVal = allSensorValues.getById(2L);
+      SensorValue salVal = allSensorValues.getById(3L);
 
       sstVal.setUserQC(new Flag(line.getIntField(SST_FLAG_COL)), "Comment");
       salVal.setUserQC(new Flag(line.getIntField(SAL_FLAG_COL)), "Comment");
