@@ -383,6 +383,20 @@ public class Measurement implements Comparable<Measurement> {
 
     return result;
   }
+
+  /**
+   * Determines whether or not a given Run Type is an auto-generated Run Type.
+   *
+   * @param runType
+   *          The Run Type to test.
+   * @return {@code true} if the Run Type is auto-generated; {@code false} if it
+   *         is not.
+   */
+  public static boolean isAutoRunType(String runType) {
+    return runType.equals(IGNORED_RUN_TYPE)
+      || runType.equals(INTERNAL_CALIBRATION_RUN_TYPE)
+      || runType.equals(MEASUREMENT_RUN_TYPE);
+  }
 }
 
 class MeasurementTimeComparator implements Comparator<Measurement> {

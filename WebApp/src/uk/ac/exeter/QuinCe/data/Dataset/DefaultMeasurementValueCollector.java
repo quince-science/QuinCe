@@ -115,7 +115,7 @@ public class DefaultMeasurementValueCollector
 
     SensorValuesListValue referenceValuesListValue;
 
-    if (null != runType) {
+    if (null != runType && !Measurement.isAutoRunType(runType)) {
 
       // Assume only 1 run type column
       long runTypeColumn = instrument.getSensorAssignments()

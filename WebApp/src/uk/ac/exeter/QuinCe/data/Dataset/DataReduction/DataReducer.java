@@ -100,8 +100,7 @@ public abstract class DataReducer {
 
         if (null != value) {
           // Collect all QC messages together. Do not record the same message
-          // from
-          // multiple sources.
+          // from multiple sources.
           Flag valueFlag = variable.getCascade(value.getSensorType(),
             value.getQcFlag(), instrument.getSensorAssignments());
 
