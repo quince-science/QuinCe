@@ -281,7 +281,9 @@ function resizeAllContent() {
   resizePlots();
 
   if (null != jsDataTable) {
-    $('.dataTables_scrollBody').height(calcTableScrollY());
+  let tableHeight = calcTableScrollY();
+  $('.dataTables_scrollBody').css('max-height',tableHeight);
+  $('.dataTables_scrollBody').css('height', tableHeight);
     jsDataTable.draw();
   }
 
