@@ -136,7 +136,7 @@ prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
 select ?uri
 from <http://meta.icos-cp.eu/resources/icos/>
 where {{
-    ?uri a cpmeta:OS ; cpmeta:hasName "{name}"^^xsd:string .
+    ?uri a cpmeta:OS ; cpmeta:hasStationId "{name}"^^xsd:string .
 }}
 """
 
