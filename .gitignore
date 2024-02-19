@@ -74,6 +74,10 @@ DataPreparation/MapCO2/*csv
 
 DataPreparation/HaraldSodemann/netCDFConverter/config.yaml
 
+# Monitoring
 scripts/monitoring/exception_monitor/config.toml
-
 scripts/monitoring/exception_monitor/lastLine.txt
+
+# File Combiner
+external_scripts/other/file_combiner/config.toml
+external_scripts/other/file_combiner/*json
