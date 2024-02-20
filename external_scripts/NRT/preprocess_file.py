@@ -11,7 +11,8 @@ def main():
 
     preprocessor = PreprocessorFactory.get_new_instance(PreprocessorFactory.ask_preprocessor_type())
 
-    preprocessor.enter_configuration()
+    while not preprocessor.enter_configuration():
+        print('Configuration invalid\n')
 
     in_file = open(sys.argv[1], "rb")
     in_bytes = in_file.read()

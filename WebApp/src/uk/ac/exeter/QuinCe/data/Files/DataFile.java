@@ -344,28 +344,20 @@ public class DataFile {
             }
           }
         } catch (MissingDateTimeException | DateTimeSpecificationException e) {
-          // We don't mind bad dates in the file.
+          // We don't mind bad dates in the file -
+          // we'll just ignore those lines
         }
 
-        boolean checkColumnCount = true;
-
+        // Check the run type
         if (fileDefinition.hasRunTypes()) {
           try {
-            RunTypeCategory runType = fileDefinition.getRunTypeCategory(line);
-            if (runType.equals(RunTypeCategory.IGNORED)) {
-              checkColumnCount = false;
-            }
+            fileDefinition.getRunTypeCategory(line);
           } catch (FileDefinitionException e) {
             addMessage(lineNumber, e.getMessage());
             if (e instanceof MissingRunTypeException) {
               missingRunTypes.add(((MissingRunTypeException) e).getRunType());
             }
           }
-        }
-
-        if (checkColumnCount && fileDefinition.extractFields(line)
-          .size() != fileDefinition.getColumnCount()) {
-          addMessage(lineNumber, "Incorrect number of columns");
         }
       }
     }

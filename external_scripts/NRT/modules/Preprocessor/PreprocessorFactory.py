@@ -2,12 +2,14 @@ from modules.Preprocessor.AddSalinityPreprocessor import AddSalinityPreprocessor
 from modules.Preprocessor.NonePreprocessor import NonePreprocessor
 from modules.Preprocessor.SQLiteExtractor import SQLiteExtractor
 from modules.Preprocessor.GORunTypeFilter import GORunTypeFilter
+from modules.Preprocessor.FixNewlinesPreprocessor import FixNewlinesPreprocessor
 
 
 def _get_retriever_classes():
     return [
         NonePreprocessor,
         AddSalinityPreprocessor,
+        FixNewlinesPreprocessor,
         GORunTypeFilter,
         SQLiteExtractor
     ]
