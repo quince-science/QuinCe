@@ -38,6 +38,12 @@ class Combiner():
                 if output_key is None:
                     raise ValueError(f'Cannot find key for line: {line}')
 
+                key_config = self._config[output_key]
+
+                # Remove extra empty columns if required
+                if key_config['strip_empty_fields']:
+                    stripped_line = stripped_line.strip(key_config['separator'])
+
                 self._output[output_key] = self._output[output_key] + f'{stripped_line}\n'
 
     def write_output(self, folder):
