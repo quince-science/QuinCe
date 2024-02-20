@@ -4,9 +4,12 @@ Class to combine data from multiple files into a unified output.
 Data can be split into multiple files according to the supplied configuration.
 """
 from datetime import datetime
+from io import StringIO
+import csv
+import operator
 
 
-class Combiner():
+class Combiner:
 
     def __init__(self, config):
         """
@@ -45,6 +48,25 @@ class Combiner():
                     stripped_line = stripped_line.strip(key_config['separator'])
 
                 self._output[output_key] = self._output[output_key] + f'{stripped_line}\n'
+
+    def post_process(self):
+        """
+        Finalise the data ready for output.
+
+        Ensures that the data is sorted by the specified field in ascending order.
+        We assume that this will be a date field that's in a format for easy sorting.
+        More complex requirements will be dealt with as we find them.
+        :return: Nothing
+        """
+        for key in self._output:
+            with StringIO(self._output[key]) as buf:
+                reader = csv.reader(buf, delimiter=self._config[key]['separator'])
+                sorted_data = sorted(reader, key=operator.itemgetter(self._config[key]['sort_field']))
+
+                with StringIO() as out_buf:
+                    writer = csv.writer(out_buf, delimiter=self._config[key]['separator'])
+                    writer.writerows(sorted_data)
+                    self._output[key] = out_buf.getvalue()
 
     def write_output(self, folder):
         """

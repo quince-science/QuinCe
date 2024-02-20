@@ -18,9 +18,11 @@ separator = ','
   id_field = 0
   id_value = '$PCO2PROW'
   strip_empty_fields = false
+  sort_field = 2
 
   [mambo.combiner.Seabird]
   separator = ','
   id_field = 0
   id_value = '$SBE37O'
   strip_empty_fields = true
+  sort_field = 2
