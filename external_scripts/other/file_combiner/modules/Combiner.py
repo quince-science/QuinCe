@@ -79,9 +79,10 @@ class Combiner:
         date_string = self._date.strftime('%Y%m%d%H%M%S')
 
         for key in self._output:
-            filename = f'{key}_{date_string}'
-            with open(f'{folder}/{filename}', 'w') as out:
-                out.write(f'{self._output[key]}\n')
+            if len(self._output[key].strip()) > 0:
+                filename = f'{key}_{date_string}'
+                with open(f'{folder}/{filename}', 'w') as out:
+                    out.write(f'{self._output[key]}\n')
 
     def _get_key(self, line):
         """
