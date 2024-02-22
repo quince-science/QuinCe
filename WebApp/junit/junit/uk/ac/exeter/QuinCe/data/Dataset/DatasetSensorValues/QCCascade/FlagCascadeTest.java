@@ -148,7 +148,7 @@ public class FlagCascadeTest extends TestSetTest {
         .collectMeasurementValues(instrument, dataset, variable,
           allMeasurements, allSensorValues, conn, measurement);
 
-      // Otherwise store the measurement values for processing.
+      // Store the measurement values for processing.
       measurementValues.forEach(mv -> {
         if (null != mv) {
           if (!measurement.hasMeasurementValue(mv.getSensorType())) {

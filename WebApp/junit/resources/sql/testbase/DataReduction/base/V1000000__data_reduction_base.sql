@@ -107,6 +107,23 @@ INSERT INTO file_column
   (4, 1, 5, 1,
    (SELECT id FROM sensor_types WHERE name = 'xCO₂ (wet, no standards)'),
    'CO2');
+   
+-- Two diagnostic sensors
+INSERT INTO file_column
+  (id, file_definition_id, file_column, primary_sensor, sensor_type, sensor_name)
+  VALUES
+  (5, 1, 6, 1,
+   (SELECT id FROM sensor_types WHERE name = 'Diagnostic Water Flow'),
+   'Water Flow');
+
+INSERT INTO file_column
+  (id, file_definition_id, file_column, primary_sensor, sensor_type, sensor_name)
+  VALUES
+  (6, 1, 7, 1,
+   (SELECT id FROM sensor_types WHERE name = 'Diagnostic Gas Flow'),
+   'Air Flow');
+
+
 
  -- A dataset.
  -- Start date = 2024-01-01 00:00:00

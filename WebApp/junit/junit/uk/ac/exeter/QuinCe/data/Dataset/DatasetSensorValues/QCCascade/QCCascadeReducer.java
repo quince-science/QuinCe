@@ -52,5 +52,4 @@ public class QCCascadeReducer extends DataReducer {
 
     return calculationParameters;
   }
-
 }

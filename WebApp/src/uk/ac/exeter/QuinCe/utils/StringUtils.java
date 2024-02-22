@@ -92,6 +92,11 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     return collectionToDelimited(selection, delimiter);
   }
 
+  public static String listToDelimited(Collection<String> list,
+    String delimiter) {
+    return list.stream().collect(Collectors.joining(";"));
+  }
+
   /**
    * Converts a String containing values separated a specified delimiter into a
    * list of String values.
