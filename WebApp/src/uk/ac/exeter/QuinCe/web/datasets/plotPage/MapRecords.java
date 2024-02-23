@@ -196,12 +196,30 @@ public class MapRecords extends ArrayList<MapRecord> {
     valueRangeCalculated = true;
   }
 
+  /**
+   * Get the minimum and maximum value.
+   *
+   * <p>
+   * If the minimum and maximum are equal, they are offset by a minimum amount
+   * (±0.001) to ensure the map colour scale is rendered properly.
+   * </p>
+   *
+   * @return The minimum and maximum value.
+   */
   public Double[] getValueRange() {
     if (!valueRangeCalculated) {
       calculateValueRange();
     }
 
-    return new Double[] { min, max };
+    Double outMin = min;
+    Double outMax = max;
+
+    if (outMin == outMax) {
+      outMin = outMin - 0.001D;
+      outMax = outMax + 0.001D;
+    }
+
+    return new Double[] { outMin, outMax };
   }
 
   @Override
