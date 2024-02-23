@@ -144,6 +144,9 @@ var updatingDialogButtons = false;
 var map1 = null;
 var map2 = null;
 
+var map1Zoomed = false;
+var map2Zoomed = false;
+
 var map1ColorScale = new ColorScale([[0,'#FFFFD4'],[0.25,'#FED98E'],[0.5,'#FE9929'],[0.75,'#D95F0E'],[1,'#993404']]);
 map1ColorScale.setFont('Noto Sans', 11);
 var map1ScaleVisible = true;
@@ -2136,8 +2139,16 @@ function initMap(index) {
   $('#map' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
 
   let mapVar = 'map' + index;
-  let bounds = JSON.parse($('#plotPageForm\\:dataBounds').val());
 
+  let bounds = null;
+  if (window['map' + index + 'Zoomed']) {
+    bounds = window[mapVar].getBounds();
+    redrawMap = false;
+  } else {
+    let dataBounds = JSON.parse($('#plotPageForm\\:dataBounds').val());
+    bounds = [[dataBounds[1], dataBounds[0]], [dataBounds[3], dataBounds[2]]];
+    redrawMap = true;
+  }
 
   if (null != window[mapVar]) {
     window[mapVar].off();
@@ -2151,7 +2162,7 @@ function initMap(index) {
     zoomControl: false,
     attributionControl: false,
     worldCopyJump: true
-  }).fitBounds([[bounds[1], bounds[0]], [bounds[3], bounds[2]]]);
+  }).fitBounds(bounds);
 
   window[mapVar].addLayer(window['mapTiles' + index]);
 
@@ -2159,13 +2170,13 @@ function initMap(index) {
   window[mapVar].on('zoomend', updateMapData);
 
   $('#plot' + index + 'Form\\:mapUpdateScale').val(true);
-  redrawMap = true;
   getMapData(index);
 }
 
 
 function updateMapData(event) {
   getMapData(getMapIndex(event));
+  window['map' + getMapIndex(event) + 'Zoomed'] = true;
   redrawMap = false;
 }
 
@@ -2315,6 +2326,7 @@ function resetZoom(index) {
   if (mode == PLOT_MODE_MAP) {
     let bounds = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'DataBounds').val());
     window['map' + index].fitBounds([[bounds[1], bounds[0]], [bounds[3], bounds[2]]]);
+    window['map' + index + 'Zoomed'] = false;
   } else {
     window['dataPlot' + index].updateOptions({
       yRangePad: 10,
