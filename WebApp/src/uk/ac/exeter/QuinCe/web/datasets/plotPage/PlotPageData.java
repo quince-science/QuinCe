@@ -963,6 +963,15 @@ public abstract class PlotPageData {
       useNeededFlags, hideNonGoodFlags);
   }
 
+  public GeoBounds getMapBounds(PlotPageColumnHeading column,
+    boolean hideNonGoodFlags) throws Exception {
+    if (!mapCache.containsKey(column)) {
+      buildMapCache(column);
+    }
+
+    return mapCache.get(column).getBounds(hideNonGoodFlags);
+  }
+
   private void buildMapCache(PlotPageColumnHeading column) throws Exception {
 
     MapRecords records = new MapRecords(size());
