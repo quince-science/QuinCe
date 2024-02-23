@@ -940,13 +940,14 @@ public abstract class PlotPageData {
     return map2;
   }
 
-  public Double[] getValueRange(PlotPageColumnHeading column) throws Exception {
+  public Double[] getValueRange(PlotPageColumnHeading column, boolean hideFlags)
+    throws Exception {
 
     if (!mapCache.containsKey(column)) {
       buildMapCache(column);
     }
 
-    return mapCache.get(column).getValueRange();
+    return mapCache.get(column).getValueRange(hideFlags);
   }
 
   protected abstract List<LocalDateTime> getDataTimes();

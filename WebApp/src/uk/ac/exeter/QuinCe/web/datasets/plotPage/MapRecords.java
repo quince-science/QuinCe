@@ -51,6 +51,10 @@ public class MapRecords extends ArrayList<MapRecord> {
 
   private Double max = Double.NaN;
 
+  private Double minNoFlags = Double.NaN;
+
+  private Double maxNoFlags = Double.NaN;
+
   public MapRecords(int size) {
     super(size);
   }
@@ -174,11 +178,43 @@ public class MapRecords extends ArrayList<MapRecord> {
   private void calculateValueRange() {
     min = Double.NaN;
     max = Double.NaN;
+    minNoFlags = Double.NaN;
+    maxNoFlags = Double.NaN;
 
     forEach(r -> {
       Double value = r.getValue();
 
       if (!value.isNaN()) {
+
+        if (min.isNaN()) {
+          min = value;
+          max = value;
+        }
+
+        if (value < min) {
+          min = value;
+        }
+
+        if (value > max) {
+          max = value;
+        }
+
+        if (r.isGood()) {
+          if (minNoFlags.isNaN()) {
+            minNoFlags = value;
+            maxNoFlags = value;
+          }
+
+          if (value < minNoFlags) {
+            minNoFlags = value;
+          }
+
+          if (value > maxNoFlags) {
+            maxNoFlags = value;
+          }
+
+        }
+
         if (min.isNaN()) {
           min = value;
           max = value;
@@ -206,13 +242,21 @@ public class MapRecords extends ArrayList<MapRecord> {
    *
    * @return The minimum and maximum value.
    */
-  public Double[] getValueRange() {
+  public Double[] getValueRange(boolean hideFlags) {
     if (!valueRangeCalculated) {
       calculateValueRange();
     }
 
-    Double outMin = min;
-    Double outMax = max;
+    Double outMin;
+    Double outMax;
+
+    if (!hideFlags) {
+      outMin = min;
+      outMax = max;
+    } else {
+      outMin = minNoFlags;
+      outMax = maxNoFlags;
+    }
 
     if (outMin == outMax) {
       outMin = outMin - 0.001D;

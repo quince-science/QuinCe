@@ -111,7 +111,7 @@ public class QCMap {
 
   public void generateMapData() {
     try {
-      mapScaleLimits = data.getValueRange(dataColumn);
+      mapScaleLimits = data.getValueRange(dataColumn, hideFlags);
       mapData = data.getMapData(dataColumn, bounds, useNeededFlags, hideFlags);
     } catch (Exception e) {
       e.printStackTrace();
