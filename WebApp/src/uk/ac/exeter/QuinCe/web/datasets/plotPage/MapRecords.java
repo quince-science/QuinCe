@@ -266,6 +266,38 @@ public class MapRecords extends ArrayList<MapRecord> {
     return new Double[] { outMin, outMax };
   }
 
+  public GeoBounds getBounds(boolean hideNonGoodFlags) {
+    double minLon = Double.MAX_VALUE;
+    double maxLon = Double.MIN_VALUE;
+    double minLat = Double.MAX_VALUE;
+    double maxLat = Double.MIN_VALUE;
+
+    for (MapRecord record : this) {
+      if (!hideNonGoodFlags || record.isGood() || record.flagNeeded()) {
+        double lat = record.position.getLatitude();
+        double lon = record.position.getLongitude();
+
+        if (lon < minLon) {
+          minLon = lon;
+        }
+
+        if (lon > maxLon) {
+          maxLon = lon;
+        }
+
+        if (lat < minLat) {
+          minLat = lat;
+        }
+
+        if (lat > maxLat) {
+          maxLat = lat;
+        }
+      }
+    }
+
+    return new GeoBounds(minLon, maxLon, minLat, maxLat);
+  }
+
   @Override
   public void add(int index, MapRecord record) {
     throw new NotImplementedException();
