@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * A DataReducer will perform all data reduction calculations for a given
@@ -91,7 +93,7 @@ public abstract class DataReducer {
       doCalculation(instrument, measurement, record, conn);
 
       Flag cascadeFlag = Flag.GOOD;
-      LinkedHashMap<SensorType, String> messages = new LinkedHashMap<SensorType, String>();
+      LinkedHashMap<SensorType, List<String>> messages = new LinkedHashMap<SensorType, List<String>>();
 
       // Apply QC flags to the data reduction records
       for (SensorType sensorType : variable.getAllSensorTypes(true)) {
@@ -110,16 +112,26 @@ public abstract class DataReducer {
             }
 
             for (String qcMessage : value.getQcMessages()) {
-              if (!messages.containsValue(qcMessage)) {
-                messages.put(sensorType, qcMessage);
+              if (!messages.containsKey(sensorType)) {
+                messages.put(sensorType, new ArrayList<String>());
+              }
+              if (!messages.get(sensorType).contains(qcMessage)) {
+                messages.get(sensorType).add(qcMessage);
               }
             }
           }
         }
       }
 
-      List<String> qcMessages = messages.entrySet().stream()
-        .map(e -> e.getKey().getShortName() + " " + e.getValue()).toList();
+      List<String> qcMessages = new ArrayList<String>();
+
+      for (Map.Entry<SensorType, List<String>> entry : messages.entrySet()) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(entry.getKey().getShortName());
+        builder.append(' ');
+        builder.append(StringUtils.listToDelimited(entry.getValue(), ";"));
+        qcMessages.add(builder.toString());
+      }
 
       record.setQc(cascadeFlag, qcMessages);
 

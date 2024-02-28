@@ -41,14 +41,14 @@ INSERT INTO variable_sensors
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'xCO₂ (wet, no standards)'),
-    1, 2, 2
+    1, 3, 4
   );
 
   
 -- Instrument
 INSERT INTO instrument
   (id, owner, name, platform_name, platform_code, nrt, properties)
-  VALUES (1, 1, 'Instrument', 'Platform', 'CODE' ,0 , '{"latitude":"0","longitude":"0"}');
+  VALUES (1, 1, 'Instrument', 'Platform', 'CODE' ,0 , '{"latitude":"0","longitude":"0","diagnosticQC":{"5":{"rangeMin":1.5,"rangeMax":2.5,"affectedRunTypes":{"2":["var_1","var_2"],"4":["var_1","var_3"]}},"6":{"rangeMin":9.5,"rangeMax":10,"affectedRunTypes":{"4":["var_2","var_3"]}}}}');
   
 INSERT INTO instrument_variables (instrument_id, variable_id)
   VALUES (1, 1000000);
@@ -77,6 +77,10 @@ INSERT INTO run_type
 INSERT INTO run_type
   (file_definition_id, run_name, category_code)
   VALUES (1, 'var_2', 1000000);
+
+INSERT INTO run_type
+  (file_definition_id, run_name, category_code)
+  VALUES (1, 'var_3', 1000000);
 
 INSERT INTO run_type
   (file_definition_id, run_name, category_code)
@@ -122,8 +126,6 @@ INSERT INTO file_column
   (6, 1, 7, 1,
    (SELECT id FROM sensor_types WHERE name = 'Diagnostic Gas Flow'),
    'Air Flow');
-
-
 
  -- A dataset.
  -- Start date = 2024-01-01 00:00:00
