@@ -41,7 +41,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Tests for setting Diagnostic sensor flags manually.
- * 
+ *
  * <p>
  * The database setup for this will be as follows:
  * </p>
@@ -51,23 +51,20 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * <tr>
  * <th>Diagnostic Sensor</th>
  * <th>Affects SST with Run Types</th>
- * <th>Affects Salinity with Run Types</th>
  * <th>Affects CO₂ with Run Types</th>
  * </tr>
  * <tr>
  * <td>Water Flow</td>
- * <td>var_1, var_2</td>
  * <td>var_1, var_2</td>
  * <td>var_1</td>
  * </tr>
  * <tr>
  * <td>Air Flow</td>
  * <td>None</td>
- * <td>None</td>
  * <td>var_2</td>
  * </tr>
  * </table>
- * 
+ *
  * <p>
  * The tests will create a Dataset with no QC flags set. Then the following
  * actions are taken:
@@ -83,14 +80,12 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * <li>(Optional) Run Data Reduction</li>
  * <li>(Optional) Check flags on data reduction results</li>
  * </ol>
- * 
+ *
  * <p>
  * Auto-QC flags are always
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public class ManualDiagnosticFlagTest extends TestSetTest {
-
-  private static final long VAR_ID = 1000000L;
 
   private static final long RUNTYPE_VAL_ID = 1L;
 
@@ -165,7 +160,7 @@ public class ManualDiagnosticFlagTest extends TestSetTest {
 
   /**
    * Run the test as described in the introduction.
-   * 
+   *
    * @param line
    *          The test line.
    * @throws Exception
@@ -329,12 +324,12 @@ public class ManualDiagnosticFlagTest extends TestSetTest {
 
   /**
    * Check that the User QC for a {@link SensorValue} is as expected.
-   * 
+   *
    * <ul>
    * <li>The User QC flag should match the specified flag</li>
    * <li>The User QC comment should contain the specified comments. If the
    * specified comment is empty, the User QC comment should also be empty.</li>
-   * 
+   *
    * @param sensorValue
    * @param expectedFlag
    * @param expectedComment
@@ -368,7 +363,8 @@ public class ManualDiagnosticFlagTest extends TestSetTest {
       flagOK = valueFlag.getFlagValue() == expectedFlag;
     }
 
-    assertTrue(flagOK, name + " flag incorrect");
+    assertTrue(flagOK, name + " flag incorrect (expected " + expectedFlag
+      + ", was " + valueFlag.getFlagValue() + ")");
 
     boolean commentOK = true;
 
@@ -388,11 +384,11 @@ public class ManualDiagnosticFlagTest extends TestSetTest {
 
   /**
    * Set the Auto QC for a {@link SensorValue}.
-   * 
+   *
    * <p>
    * If the flag is {@link Flag.GOOD} no action is taken.
    * </p>
-   * 
+   *
    * @param sensorValue
    *          The value whose Auto QC is to be set.
    * @param flag
@@ -419,7 +415,7 @@ public class ManualDiagnosticFlagTest extends TestSetTest {
   /**
    * Generate a {@link RunTypePeriods} object based on the specified
    * {@link SensorValue}.
-   * 
+   *
    * @param source
    *          The source SensorValue.
    * @return The RunTypePeriods object.
