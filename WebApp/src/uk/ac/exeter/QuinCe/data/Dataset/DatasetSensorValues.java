@@ -723,9 +723,15 @@ public class DatasetSensorValues {
               value.removeCascadingQC(source.getId());
             }
 
+            // Update the value in the By ID lookup map
+            valuesById.put(value.getId(), value);
+
             changedValues.add(value);
           }
         }
+
+        // Reset the output cache for the SensorType
+        valuesByColumn.get(assignment.getDatabaseId()).resetOutput();
       }
     }
 

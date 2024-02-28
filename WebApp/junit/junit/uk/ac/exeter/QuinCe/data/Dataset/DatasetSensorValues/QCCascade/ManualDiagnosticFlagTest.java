@@ -369,7 +369,7 @@ public class ManualDiagnosticFlagTest extends TestSetTest {
     boolean commentOK = true;
 
     if (expectedComment.size() == 0) {
-      commentOK = valueComment.length() == 0;
+      commentOK = null == valueComment || valueComment.length() == 0;
     } else {
       for (String commentPart : expectedComment) {
         if (!valueComment.contains(commentPart)) {
