@@ -44,18 +44,34 @@
   <ui:define name="selectionDialog">
     <p:dialog widgetVar="flagDialog" modal="true" header="Set QC Flag"
       width="50%">
+
+      <p:selectOneRadio widgetVar="flagMenu" id="manualFlag"
+        value="#{sessionScope[beanName].data.userFlag}" var="flag"
+        onchange="updateFlagDialogControls()" layout="custom">
+
+        <f:selectItem itemLabel="Good" itemValue="2" />
+        <f:selectItem itemLabel="Questionable" itemValue="3" />
+        <f:selectItem itemLabel="Bad" itemValue="4" />
+      </p:selectOneRadio>
+
+
       <div class="dialogTitle">
         Set QC Flag for <span id="manualRowCount">row count</span>
       </div>
-      <h:panelGrid columns="2" width="100%">
-        <p:outputLabel for="manualFlag" value="Flag:" />
-        <p:selectOneRadio widgetVar="flagMenu" id="manualFlag"
-          value="#{sessionScope[beanName].data.userFlag}" var="flag"
-          onchange="updateFlagDialogControls()">
-          <f:selectItem itemLabel="Good" itemValue="2" />
-          <f:selectItem id="questionableEntry" itemLabel="Questionable" itemValue="3" />
-          <f:selectItem itemLabel="Bad" itemValue="4" />
-        </p:selectOneRadio>
+
+
+      <h:panelGrid columns="2" width="100%" id="manualFlag_panel">
+      <p:outputLabel for="manualFlag" value="Flag:" />
+
+    <h:panelGrid columns="6" id="flagButtons">
+      <p:radioButton id="goodFlag" for="manualFlag" itemIndex="0"/>
+      <p:outputLabel for="goodFlag" value="Good" />
+      <p:radioButton id="questionableFlag" for="manualFlag" itemIndex="1"/>
+      <p:outputLabel id="questionableLabel" for="questionableFlag" value="Questionable" />
+      <p:radioButton id="badFlag" for="manualFlag" itemIndex="2"/>
+      <p:outputLabel for="badFlag" value="Bad" />
+    </h:panelGrid>
+
         <p:outputLabel for="manualComment" value="Comment:" />
         <p:inputTextarea widgetVar="manualComment" id="manualComment"
           value="#{sessionScope[beanName].data.userComment}"

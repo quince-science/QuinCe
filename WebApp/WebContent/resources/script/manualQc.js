@@ -25,9 +25,11 @@ function showFlagDialog() {
   errorCheck();
 
   if (getSelectedColumn().questionableAllowed) {
-    $('#selectionForm\\:manualFlag_panel').find("[data-label='Questionable']").show()
+    $('#selectionForm\\:questionableFlag').show();
+    $('#selectionForm\\:questionableLabel').show();
   } else {
-    $('#selectionForm\\:manualFlag_panel').find("[data-label='Questionable']").hide()
+    $('#selectionForm\\:questionableFlag').hide();
+    $('#selectionForm\\:questionableLabel').hide();
   }
 
   let woceRowHtml = getSelectedRows().length.toString() + ' row';
