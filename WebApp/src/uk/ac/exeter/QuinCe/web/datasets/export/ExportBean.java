@@ -1,12 +1,16 @@
 package uk.ac.exeter.QuinCe.web.datasets.export;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -32,6 +36,7 @@ import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -799,13 +804,23 @@ public class ExportBean extends BaseManagedBean {
     // Add the dataset details to the manifest
     manifest.getAsJsonObject("manifest").add("exportFiles", exportFilesJson);
 
-    for (DataFile file : files) {
-      String filePath = dirRoot + "/raw/" + file.getFilename();
+    // Add the raw files
+    Map<FileDefinition, List<DataFile>> groupedFiles = files.stream()
+      .collect(Collectors.groupingBy(DataFile::getFileDefinition));
 
-      ZipEntry rawEntry = new ZipEntry(filePath);
-      zip.putNextEntry(rawEntry);
-      zip.write(file.getBytes());
-      zip.closeEntry();
+    for (FileDefinition fileDefinition : groupedFiles.keySet()) {
+      double meanFileLength = DataFile
+        .getMeanFileLength(groupedFiles.get(fileDefinition));
+
+      boolean combineFiles = !fileDefinition.hasHeader()
+        && fileDefinition.getColumnHeaderRows() == 0 && meanFileLength < 3600D;
+
+      if (!combineFiles) {
+        addRawFilesToZip(zip, dirRoot, groupedFiles.get(fileDefinition));
+      } else {
+        combineAndAddRawFilesToZip(zip, dirRoot, fileDefinition,
+          groupedFiles.get(fileDefinition));
+      }
     }
 
     // Manifest
@@ -820,6 +835,52 @@ public class ExportBean extends BaseManagedBean {
     zipOut.close();
 
     return outBytes;
+  }
+
+  private static void addRawFilesToZip(ZipOutputStream zip, String dirRoot,
+    List<DataFile> files) throws IOException {
+
+    for (DataFile file : files) {
+      String filePath = dirRoot + "/raw/" + file.getFilename();
+
+      ZipEntry rawEntry = new ZipEntry(filePath);
+      zip.putNextEntry(rawEntry);
+      zip.write(file.getBytes());
+      zip.closeEntry();
+    }
+  }
+
+  private static void combineAndAddRawFilesToZip(ZipOutputStream zip,
+    String dirRoot, FileDefinition fileDefinition, List<DataFile> files)
+    throws IOException, DataFileException {
+
+    LocalDate currentDate = null;
+    ZipEntry currentEntry = null;
+
+    for (DataFile file : files) {
+
+      LocalDate fileDate = file.getRawStartTime().toLocalDate();
+      if (!fileDate.equals(currentDate)) {
+        if (null != currentEntry) {
+          zip.closeEntry();
+        }
+
+        currentDate = fileDate;
+
+        String filePath = dirRoot + "/raw/"
+          + fileDefinition.getFileDescription() + "_" + fileDate;
+
+        currentEntry = new ZipEntry(filePath);
+        zip.putNextEntry(currentEntry);
+      }
+
+      zip.write(file.getBytes());
+      if (!file.getContents().endsWith("\n")) {
+        zip.write("\n".getBytes());
+      }
+    }
+
+    zip.closeEntry();
   }
 
   private static JsonObject makeFixedBoundsJson(Instrument instrument) {
