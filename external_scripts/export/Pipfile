@@ -14,5 +14,8 @@ netcdf4 = "*"
 numpy = "*"
 icoscp = "*"
 
+# Required for python 3.12
+setuptools = "*"
+
 [requires]
 python_version = "3"
