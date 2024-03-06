@@ -83,13 +83,12 @@ def process_station(db, name, config):
 
                 # Write the output files
                 splitter.write_output(config['output_location'])
+
+                # Store the file details to the database
+                filename, modification_date = retriever.get_file_details(file_id)
+                record_last_file(db, name, filename, modification_date)
             except Exception:
                 post_slack_msg(f'Error processing {filename}:\n{traceback.format_exc()}')
-
-        # Store the details of the last file
-        last_file_id = file_list[-1]
-        filename, modification_date = retriever.get_file_details(last_file_id)
-        record_last_file(db, name, filename, modification_date)
 
     except Exception:
         post_slack_msg(f'Error processing station {name}:\n{traceback.format_exc()}')
@@ -103,6 +102,7 @@ def record_last_file(db, station, file, file_date):
         with closing(db.cursor()) as c:
             c.execute('UPDATE station SET last_file=?, last_file_time=? WHERE name=?',
                       [file, int(file_date.timestamp()), station])
+    db.commit()
 
 
 def station_exists(db, station):
