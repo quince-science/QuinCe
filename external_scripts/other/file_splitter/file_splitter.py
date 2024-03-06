@@ -74,14 +74,17 @@ def process_station(db, name, config):
         file_list = retriever.get_files(last_processed_file, last_processed_date)
 
         for file_id, filename in file_list:
-            # Initialise the splitter
-            splitter = Splitter(config['splitter'])
+            try:
+                # Initialise the splitter
+                splitter = Splitter(config['splitter'])
 
-            file_content = retriever.get_file(file_id)
-            splitter.set_data(filename, file_content)
+                file_content = retriever.get_file(file_id)
+                splitter.set_data(filename, file_content)
 
-            # Write the output files
-            splitter.write_output(config['output_location'])
+                # Write the output files
+                splitter.write_output(config['output_location'])
+            except Exception:
+                post_slack_msg(f'Error processing {filename}:\n{traceback.format_exc()}')
 
         # Store the details of the last file
         last_file_id = file_list[-1]
