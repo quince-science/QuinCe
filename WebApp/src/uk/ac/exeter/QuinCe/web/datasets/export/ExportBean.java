@@ -1,10 +1,12 @@
 package uk.ac.exeter.QuinCe.web.datasets.export;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -688,25 +690,11 @@ public class ExportBean extends BaseManagedBean {
    *
    * @return The manifest JSON
    */
-  private static JsonObject makeManifest(Connection conn, DataSet dataset,
-    List<DataFile> rawFiles) throws Exception {
+  private static JsonObject makeManifest(Connection conn, DataSet dataset)
+    throws Exception {
 
     JsonObject result = new JsonObject();
-
     JsonObject manifest = new JsonObject();
-    JsonArray raw = new JsonArray();
-    for (DataFile file : rawFiles) {
-      JsonObject fileJson = new JsonObject();
-      fileJson.addProperty("filename", file.getFilename());
-      fileJson.addProperty("startDate",
-        DateTimeUtils.toIsoDate(file.getRawStartTime()));
-      fileJson.addProperty("endDate",
-        DateTimeUtils.toIsoDate(file.getRawEndTime()));
-      fileJson.addProperty("timeOffset", file.getTimeOffset());
-      raw.add(fileJson);
-    }
-    manifest.add("raw", raw);
-
     JsonObject metadata = DataSetDB.getMetadataJson(conn, dataset);
 
     metadata.addProperty("quince_information",
@@ -744,7 +732,7 @@ public class ExportBean extends BaseManagedBean {
       ResourceManager.getInstance().getConfig(), rawIds);
 
     // Get the base manifest. We will add to it as we go.
-    JsonObject manifest = makeManifest(conn, dataset, files);
+    JsonObject manifest = makeManifest(conn, dataset);
 
     /*
      * Create the dataset array, which contains details of each export format.
@@ -808,6 +796,8 @@ public class ExportBean extends BaseManagedBean {
     Map<FileDefinition, List<DataFile>> groupedFiles = files.stream()
       .collect(Collectors.groupingBy(DataFile::getFileDefinition));
 
+    JsonArray rawManifest = new JsonArray();
+
     for (FileDefinition fileDefinition : groupedFiles.keySet()) {
       double meanFileLength = DataFile
         .getMeanFileLength(groupedFiles.get(fileDefinition));
@@ -816,11 +806,14 @@ public class ExportBean extends BaseManagedBean {
         && fileDefinition.getColumnHeaderRows() == 0 && meanFileLength < 3600D;
 
       if (!combineFiles) {
-        addRawFilesToZip(zip, dirRoot, groupedFiles.get(fileDefinition));
+        addRawFilesToZip(zip, rawManifest, dirRoot,
+          groupedFiles.get(fileDefinition));
       } else {
-        combineAndAddRawFilesToZip(zip, dirRoot, fileDefinition,
+        combineAndAddRawFilesToZip(zip, rawManifest, dirRoot, fileDefinition,
           groupedFiles.get(fileDefinition));
       }
+
+      manifest.add("raw", rawManifest);
     }
 
     // Manifest
@@ -837,8 +830,9 @@ public class ExportBean extends BaseManagedBean {
     return outBytes;
   }
 
-  private static void addRawFilesToZip(ZipOutputStream zip, String dirRoot,
-    List<DataFile> files) throws IOException {
+  private static void addRawFilesToZip(ZipOutputStream zip,
+    JsonArray rawManifest, String dirRoot, List<DataFile> files)
+    throws IOException {
 
     for (DataFile file : files) {
       String filePath = dirRoot + "/raw/" + file.getFilename();
@@ -847,14 +841,20 @@ public class ExportBean extends BaseManagedBean {
       zip.putNextEntry(rawEntry);
       zip.write(file.getBytes());
       zip.closeEntry();
+
+      rawManifest.add(makeRawFileJson(file.getFilename(),
+        file.getRawStartTime(), file.getRawEndTime(), file.getTimeOffset()));
     }
   }
 
   private static void combineAndAddRawFilesToZip(ZipOutputStream zip,
-    String dirRoot, FileDefinition fileDefinition, List<DataFile> files)
-    throws IOException, DataFileException {
+    JsonArray rawManifest, String dirRoot, FileDefinition fileDefinition,
+    List<DataFile> files) throws IOException, DataFileException {
 
     LocalDate currentDate = null;
+    String filePath = null;
+    LocalDateTime startTime = null;
+    LocalDateTime endTime = null;
     ZipEntry currentEntry = null;
 
     for (DataFile file : files) {
@@ -863,12 +863,14 @@ public class ExportBean extends BaseManagedBean {
       if (!fileDate.equals(currentDate)) {
         if (null != currentEntry) {
           zip.closeEntry();
+          rawManifest.add(makeRawFileJson(filePath, startTime, endTime, 0));
         }
 
         currentDate = fileDate;
+        startTime = file.getRawStartTime();
 
-        String filePath = dirRoot + "/raw/"
-          + fileDefinition.getFileDescription() + "_" + fileDate;
+        filePath = dirRoot + "/raw/" + fileDefinition.getFileDescription() + "_"
+          + fileDate;
 
         currentEntry = new ZipEntry(filePath);
         zip.putNextEntry(currentEntry);
@@ -878,9 +880,24 @@ public class ExportBean extends BaseManagedBean {
       if (!file.getContents().endsWith("\n")) {
         zip.write("\n".getBytes());
       }
+
+      endTime = file.getRawEndTime();
     }
 
     zip.closeEntry();
+    rawManifest.add(makeRawFileJson(filePath, startTime, endTime, 0));
+  }
+
+  private static JsonObject makeRawFileJson(String filePath,
+    LocalDateTime start, LocalDateTime end, long offset) {
+
+    JsonObject fileJson = new JsonObject();
+    fileJson.addProperty("filename", new File(filePath).getName());
+    fileJson.addProperty("startDate", DateTimeUtils.toIsoDate(start));
+    fileJson.addProperty("endDate", DateTimeUtils.toIsoDate(end));
+    fileJson.addProperty("timeOffset", offset);
+
+    return fileJson;
   }
 
   private static JsonObject makeFixedBoundsJson(Instrument instrument) {
