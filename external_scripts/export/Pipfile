@@ -12,7 +12,7 @@ ftputil = "*"
 pandas = "*"
 netcdf4 = "*"
 numpy = "*"
-icoscp = "*"
+icoscp = "~=0.1.20"
 
 # Required for python 3.12
 setuptools = "*"
