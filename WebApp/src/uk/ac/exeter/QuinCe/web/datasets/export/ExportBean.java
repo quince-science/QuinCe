@@ -813,7 +813,7 @@ public class ExportBean extends BaseManagedBean {
           groupedFiles.get(fileDefinition));
       }
 
-      manifest.add("raw", rawManifest);
+      manifest.getAsJsonObject("manifest").add("raw", rawManifest);
     }
 
     // Manifest

@@ -150,20 +150,20 @@ NRT = 'False'
 	NRT = ['ICOS']
 	L2 = ['ICOS']
 
-[NO-SOOP-Trans__Carrier]
-name = 'Trans Carrier'
+[NO-SOOP-Sea-Cargo__Express]
+name = 'Sea-Cargo Express'
 submitter_id = 'OTC'
 cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_TCarrier'
 category_code = '31'
-call_sign = 'C6RM5'
-creation_date = '2020-05-05T00:00:00Z'
+call_sign = '9HA3034'
+creation_date = '2023-12-20T15:58:18'
 author_list = 'Omar, Abdirahman; Skjelvan, Ingunn; de Lange, Tor'
 affiliation = 'NORCE Norwegian Research Centre AS'
 NRT = 'True'
 
-  [NO-SOOP-Trans__Carrier.export]
-  NRT = ['ICOS']
-  L2 = ['ICOS']
+  [NO-SOOP-Sea-Cargo__Express.export]
+  NRT = []
+  L2 = []
 
 [UK-FOS-PAP]
 name = 'Porcupine Abyssal Plain'
@@ -196,3 +196,18 @@ NRT = 'False'
   NRT = ['ICOS']
   L2 = ['ICOS']
 
+[IT-FOS-MIRAMARE]
+platform_code = '48MB'
+name = 'MIRAMARE'
+submitter_id = 'OTC'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_48MB'
+category_code = '41'
+call_sign = ''
+creation_date = '2024-02-20T16:04:00Z'
+author_list = 'Giani, Michele'
+affiliation = 'Istituto Nazionale di Oceanografia e di Geofisica Sperimentale'
+NRT = 'True'
+
+  [IT-FOS-MIRAMARE.export]
+  NRT = ['ICOS']
+  L2 = ['ICOS']
