@@ -6,33 +6,47 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
+/**
+ * Represents the result of the {@link AutoQCJob} run on a particular
+ * {@link SensorValue}.
+ *
+ * <p>
+ * An {@code AutoQCResult} consists of multiple {@link RoutineFlag} objects,
+ * representing the results of all the {@link AutoQCRoutine}s run on the
+ * {@link SensorValue}. The automatic QC result will be the 'worst'
+ * {@link RoutineFlag} (ranked according to
+ * {@link Flag#moreSignificantThan(Flag)}), and the QC message will be the
+ * combination of messages from all the contributing {@link RoutineFlag}s.
+ * </p>
+ */
+@SuppressWarnings("serial")
 public class AutoQCResult extends HashSet<RoutineFlag> {
 
   /**
-   * Serial Version UID
+   * GSON (de)serializer.
    */
-  private static final long serialVersionUID = 5112798751950377386L;
-
   private static Gson GSON = null;
 
   /**
-   * Create an empty AutoQCResult
+   * Create an empty AutoQCResult.
    */
   public AutoQCResult() {
     super();
   }
 
   /**
-   * Build an AutoQCResult from a JSON string
+   * Build an AutoQCResult from a JSON string, as stored in the database.
    *
    * @param json
-   *          The JSON string
-   * @return The AutoQCResult
+   *          The JSON string.
+   * @return The AutoQCResult.
    */
   public static AutoQCResult buildFromJson(String json) {
     AutoQCResult result = null;
@@ -45,6 +59,11 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
     return result;
   }
 
+  /**
+   * Returns the {@link #GSON} instance, creating it if required.
+   *
+   * @return The GSON instance.
+   */
   private static Gson getGson() {
     if (null == GSON) {
       GSON = new Gson();
@@ -55,11 +74,11 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
 
   /**
    * Return the overall flag that results from a set of flags from QC routines.
-   * This is the most significant flag of the set
+   * This is the most significant flag of the set.
    *
    * @param flags
-   *          The flags
-   * @return The most significant flag
+   *          The flags.
+   * @return The most significant flag.
    */
   public Flag getOverallFlag() {
     Flag result = Flag.GOOD;
@@ -74,9 +93,9 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
   }
 
   /**
-   * Generate a JSON representation of this result
+   * Generate a JSON representation of this result.
    *
-   * @return The JSON representation
+   * @return The JSON representation.
    */
   public String toJson() {
     String json = null;
@@ -89,16 +108,24 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
   }
 
   /**
-   * Get the short messages for each QC flag in this result
+   * Get the short messages for each QC flag in this result as a delimited
+   * {@link String}.
    *
-   * @return The messages
+   * @return The messages.
    * @throws RoutineException
-   *           If a message cannot be retrieved
+   *           If a message cannot be retrieved.
    */
   public String getAllMessages() throws RoutineException {
     return StringUtils.collectionToDelimited(getAllMessagesSet(), ";");
   }
 
+  /**
+   * Get the short messages for each QC flag in this result as a {@link Set}.
+   *
+   * @return The messages.
+   * @throws RoutineException
+   *           If a message cannot be retrieved.
+   */
   public Set<String> getAllMessagesSet() throws RoutineException {
 
     Set<String> messages = new HashSet<String>();
@@ -112,10 +139,11 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
   }
 
   /**
-   * Add a new {@link RoutineFlag}.
+   * Add a new {@link RoutineFlag} to this result.
    *
    * <p>
-   * If an entry for the flag's source routine already exists, it is replaced.
+   * If an entry for the flag's source {@link AutoQCRoutine} already exists, it
+   * is replaced.
    * </p>
    */
   @Override
