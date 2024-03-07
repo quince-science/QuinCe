@@ -35,9 +35,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * This class provides methods to manage the job queue
- *
- * @author Steve Jones
- *
  */
 public class JobManager {
 
@@ -180,8 +177,8 @@ public class JobManager {
    *          The job's owner (can be {@code null}
    * @param jobClass
    *          The class name of the job to be run
-   * @param parameters
-   *          The parameters of the job
+   * @param properties
+   *          The parameters for the job
    * @return The database ID of the created job
    * @throws DatabaseException
    *           If a database error occurs
@@ -231,8 +228,8 @@ public class JobManager {
    *          The job's owner (can be {@code null}
    * @param jobClass
    *          The class name of the job to be run
-   * @param parameters
-   *          The parameters of the job
+   * @param properties
+   *          The parameters for the job
    * @return The database ID of the created job
    * @throws DatabaseException
    *           If a database error occurs
@@ -359,8 +356,8 @@ public class JobManager {
    *          The job's owner (can be {@code null}
    * @param jobClass
    *          The class name of the job to be run
-   * @param parameters
-   *          The parameters of the job
+   * @param properties
+   *          The parameters for the job
    * @throws DatabaseException
    *           If a database error occurs
    * @throws MissingParamException
