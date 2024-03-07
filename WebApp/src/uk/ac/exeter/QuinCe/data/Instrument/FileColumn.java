@@ -5,9 +5,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 /**
  * Class to represent a file column. Contains the file column and sensor type
  * references
- *
- * @author Steve Jones
- *
  */
 public class FileColumn {
 

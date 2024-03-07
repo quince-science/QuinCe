@@ -25,9 +25,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  * Any sensors that may be required because CORE or REQUIRED depend on them are
  * not included; these are calculated on the fly elsewhere.
- *
- * @author Steve Jones
- *
  */
 public class Variable implements Comparable<Variable> {
 

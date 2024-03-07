@@ -14,9 +14,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * JSF Managed Bean for handling new user sign-up
- *
- * @author Steve Jones
- *
  */
 public class SignupBean extends BaseManagedBean {
 

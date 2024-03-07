@@ -11,9 +11,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * However, high priority jobs will always be given a thread, so the true number
  * of threads may occasionally be larger. Any extra threads will be destroyed
  * when they are finished.
- *
- * @author Steve Jones
- *
  */
 public class JobThreadPool {
 

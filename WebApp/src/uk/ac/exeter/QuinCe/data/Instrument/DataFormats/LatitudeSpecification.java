@@ -5,9 +5,6 @@ import java.util.TreeMap;
 
 /**
  * Specifies the latitude format for a data file
- *
- * @author Steve Jones
- *
  */
 public class LatitudeSpecification extends PositionSpecification {
 

@@ -4,9 +4,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
  * Exception for run type category errors
- *
- * @author Steve Jones
- *
  */
 public class RunTypeCategoryException extends InstrumentException {
 

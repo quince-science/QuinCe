@@ -41,8 +41,9 @@ import javax.crypto.spec.PBEKeySpec;
  * POSSIBILITY OF SUCH DAMAGE.
  * </p>
  *
- * @author havoc AT defuse.ca
- * @author Steve Jones
+ * <p>
+ * Original author: havoc AT defuse.ca
+ * </p>
  */
 public class PasswordHash {
   /**

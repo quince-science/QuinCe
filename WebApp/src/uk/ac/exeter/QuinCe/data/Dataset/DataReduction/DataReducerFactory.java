@@ -14,9 +14,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Factory class for Data Reducers
- *
- * @author Steve Jones
- *
  */
 public class DataReducerFactory {
 

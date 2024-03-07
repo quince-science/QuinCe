@@ -7,9 +7,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 /**
  * An empty calibration object, used as a placeholder when a calibration is
  * missing
- *
- * @author Steve Jones
- *
  */
 public class EmptyCalibration extends Calibration {
 

@@ -19,7 +19,6 @@ import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
 /**
  * Class to hold details of a single export configuration
  *
- * @author Steve Jones
  * @see ExportConfig
  */
 public class ExportOption {
@@ -131,7 +130,7 @@ public class ExportOption {
   private boolean measurementsOnly = false;
 
   /**
-   * Do not export Bad  measurements and/or sensor values.
+   * Do not export Bad measurements and/or sensor values.
    *
    * <p>
    * If a bad sensor value is used by a good measurement, it will still be

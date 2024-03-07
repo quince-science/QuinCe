@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 /**
  * Exceptions thrown when handling calibrations
- *
- * @author Steve Jones
- *
  */
 public class CalibrationException extends RuntimeException {
 

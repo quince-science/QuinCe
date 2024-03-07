@@ -9,8 +9,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
  * Abstract class for sensor calibrations. Sensor calibrations are of a common
  * type, but the calculations are made in different ways and may require
  * different parameters.
- *
- * @author Steve Jones
  */
 public abstract class SensorCalibration extends Calibration {
 

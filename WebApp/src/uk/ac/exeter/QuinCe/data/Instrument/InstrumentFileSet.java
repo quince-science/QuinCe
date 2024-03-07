@@ -5,9 +5,6 @@ import java.util.List;
 
 /**
  * Methods to handle and process a set of file definitions for an instrument
- *
- * @author Steve Jones
- *
  */
 @SuppressWarnings("serial")
 public class InstrumentFileSet extends ArrayList<FileDefinition> {

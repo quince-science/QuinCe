@@ -47,8 +47,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class for handling database queries related to dataset data
- *
- * @author Steve Jones
  */
 public class DataSetDataDB {
 

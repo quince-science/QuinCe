@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.jobs;
 
 /**
  * Exception for uncaught errors that occur in running jobs
- *
- * @author Steve Jones
- *
  */
 public class JobFailedException extends Exception {
 

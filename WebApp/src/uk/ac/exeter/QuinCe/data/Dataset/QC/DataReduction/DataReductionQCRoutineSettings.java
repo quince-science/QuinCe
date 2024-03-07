@@ -9,9 +9,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
  * Holds the settings for a {@link DataReductionQCRoutine}.
- *
- * @author Steve Jones
- *
  */
 public class DataReductionQCRoutineSettings {
 

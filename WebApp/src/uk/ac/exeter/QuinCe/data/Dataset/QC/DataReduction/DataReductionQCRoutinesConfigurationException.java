@@ -3,9 +3,6 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction;
 /**
  * Exception class for errors encountered in the configuration of data reduction
  * QC routines.
- *
- * @author Steve Jones
- *
  */
 @SuppressWarnings("serial")
 public class DataReductionQCRoutinesConfigurationException extends Exception {

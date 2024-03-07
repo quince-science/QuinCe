@@ -19,9 +19,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
  * is the only supported version right now. This will need to be genericised
  * when the full framework of different calibration formulae is implemented.
  * </p>
- *
- * @author Steve Jones
- *
  */
 @ManagedBean
 @SessionScoped

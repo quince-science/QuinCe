@@ -4,9 +4,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
  * Exception class for errors when handling an instrument's sensor configuration
- *
- * @author Steve Jones
- *
  */
 public class SensorConfigurationException extends InstrumentException {
 

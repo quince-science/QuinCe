@@ -9,9 +9,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
 /**
  * Factory for creating {@link Calibration} objects
- *
- * @author Steve Jones
- *
  */
 public class CalibrationFactory {
 

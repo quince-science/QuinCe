@@ -6,9 +6,6 @@ package uk.ac.exeter.QuinCe.jobs;
  *
  * This MUST NOT be used to throw exceptions from a job's normal running. Any
  * such errors must be handled by the jobs themselves.
- *
- * @author Steve Jones
- *
  */
 public class JobException extends Exception {
 

@@ -124,18 +124,13 @@ import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
  * <p>
  * The export options are held in a list, kept in the same order as the options
  * appear in the configuration file.
- *
  * </p>
- *
  *
  * <p>
  * This class exists as a singleton that must be initialised before it is used
  * by calling the {@link #init(Connection, SensorsConfiguration, String)}
  * method.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class ExportConfig {
 

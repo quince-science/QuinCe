@@ -6,9 +6,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 
 /**
  * Class representing a specific line in a data file
- *
- * @author Steve Jones
- *
  */
 public class DataFileLine {
 

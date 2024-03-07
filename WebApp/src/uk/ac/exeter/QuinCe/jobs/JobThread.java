@@ -8,9 +8,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A thread object that is used to run a job.
- *
- * @author Steve Jones
- *
  */
 public class JobThread extends Thread implements Comparable<JobThread> {
 

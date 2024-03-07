@@ -10,9 +10,6 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 /**
  * Exception class for handling attempts to store raw data files that already
  * exist
- *
- * @author Steve Jones
- *
  */
 public class FileExistsException extends Exception {
 

@@ -9,9 +9,6 @@ import uk.ac.exeter.QuinCe.User.User;
 /**
  * Basic class containing the read-omly summary of a job. This cannot be used to
  * manipulate jobs - the {@link JobManager} must be used for that.
- *
- * @author Steve Jones
- *
  */
 public class JobSummary {
 

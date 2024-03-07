@@ -13,9 +13,6 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * sensor group pairs, i.e. the sensor values in the second group should be
  * moved backwards in time by the specified offset.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class SensorOffset implements Comparable<SensorOffset> {
 

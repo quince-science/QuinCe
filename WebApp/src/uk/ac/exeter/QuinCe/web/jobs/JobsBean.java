@@ -15,9 +15,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for handling jobs in the web application
- *
- * @author Steve Jones
- *
  */
 public class JobsBean extends BaseManagedBean {
 

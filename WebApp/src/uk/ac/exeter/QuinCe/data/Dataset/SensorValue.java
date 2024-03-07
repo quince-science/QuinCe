@@ -29,8 +29,6 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 /**
  * Represents a single sensor value
- *
- * @author Steve Jones
  */
 public class SensorValue implements Comparable<SensorValue>, Cloneable {
 

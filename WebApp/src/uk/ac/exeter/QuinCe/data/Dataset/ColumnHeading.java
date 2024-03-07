@@ -10,9 +10,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
  * <p>
  * This class is used for both the web application (e.g. QC pages) and exports.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class ColumnHeading {
 

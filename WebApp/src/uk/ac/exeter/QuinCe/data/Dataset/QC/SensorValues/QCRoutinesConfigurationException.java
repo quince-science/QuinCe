@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 /**
  * Exception class for errors encountered in the configuration of QC routines.
- *
- * @author Steve Jones
- *
  */
 @SuppressWarnings("serial")
 public class QCRoutinesConfigurationException extends Exception {

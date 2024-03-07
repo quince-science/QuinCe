@@ -20,9 +20,6 @@ import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
 /**
  * This is a specialised instance of the InstrumentFile class that provides
  * special functions used only when an instrument is being defined.
- *
- * @author Steve Jones
- *
  */
 public class FileDefinitionBuilder extends FileDefinition {
 

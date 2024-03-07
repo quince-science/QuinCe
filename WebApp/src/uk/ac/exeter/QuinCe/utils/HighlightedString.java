@@ -4,9 +4,6 @@ import com.google.gson.JsonObject;
 
 /**
  * Class for a string with a highlighted region
- *
- * @author Steve Jones
- *
  */
 public class HighlightedString {
 

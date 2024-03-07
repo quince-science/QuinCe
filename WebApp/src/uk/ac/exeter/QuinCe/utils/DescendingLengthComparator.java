@@ -9,9 +9,6 @@ import java.util.Comparator;
  * {@code null} strings are considered to be shorter than zero-length strings.
  * Strings of equal length are not sorted further.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class DescendingLengthComparator implements Comparator<String> {
 

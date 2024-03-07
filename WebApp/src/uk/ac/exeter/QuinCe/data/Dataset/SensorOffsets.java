@@ -18,9 +18,6 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * Holds information regarding time offsets between sensor groups.
- *
- * @author Steve Jones
- *
  */
 public class SensorOffsets {
 

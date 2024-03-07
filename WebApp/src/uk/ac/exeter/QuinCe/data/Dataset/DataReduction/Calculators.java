@@ -9,9 +9,6 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * Provides static methods for common calculations in data reduction.
- *
- * @author Steve Jones
- *
  */
 public class Calculators {
 

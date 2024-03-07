@@ -17,9 +17,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Background job to send email verification codes to users
- *
- * @author Steve Jones
- *
  */
 public abstract class SendCodeJob extends Job {
 

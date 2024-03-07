@@ -16,9 +16,6 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * Columns are added using the {@code addColumn} methods. The class assumes that
  * all columns are added in display order.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class PlotPageTableRecord {
 

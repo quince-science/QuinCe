@@ -8,9 +8,6 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 /**
  * Abstract class for position specifications. Longitudinal and latitudinal
  * positions share much similar functionality.
- *
- * @author Steve Jones
- *
  */
 public abstract class PositionSpecification {
 

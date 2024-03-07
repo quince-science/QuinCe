@@ -13,9 +13,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * anything.
  *
  * The natural ordering of this class is the name of the run type.
- *
- * @author zuj007
- *
  */
 public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 

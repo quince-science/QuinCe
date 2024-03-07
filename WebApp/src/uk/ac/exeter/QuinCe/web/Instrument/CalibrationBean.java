@@ -43,9 +43,6 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 /**
  * Bean for handling calibrations
- *
- * @author Steve Jones
- *
  */
 public abstract class CalibrationBean extends BaseManagedBean {
 

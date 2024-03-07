@@ -22,9 +22,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Base class for QC routines to be run during data reduction
- *
- * @author Steve Jones
- *
  */
 public abstract class DataReductionQCRoutine implements Routine {
 

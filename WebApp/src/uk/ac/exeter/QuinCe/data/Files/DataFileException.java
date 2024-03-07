@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Files;
 
 /**
  * Exception for errors in data files
- *
- * @author Steve Jones
- *
  */
 public class DataFileException extends Exception {
 

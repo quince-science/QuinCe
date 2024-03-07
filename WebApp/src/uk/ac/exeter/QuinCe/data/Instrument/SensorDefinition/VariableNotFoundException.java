@@ -4,9 +4,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
  * Exception for variables that can't be found
- *
- * @author Steve Jones
- *
  */
 public class VariableNotFoundException extends InstrumentException {
 

@@ -8,9 +8,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 /**
  * An extended version of the {@link SensorValue} that includes the run type
  * relevant to that value.
- *
- * @author Steve Jones
- *
  */
 public class RunTypeSensorValue extends SensorValue {
 

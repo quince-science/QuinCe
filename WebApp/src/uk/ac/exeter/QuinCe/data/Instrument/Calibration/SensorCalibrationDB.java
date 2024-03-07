@@ -12,9 +12,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Methods for storing and retrieving sensor calibrations from the database
- *
- * @author Steve Jones
- *
  */
 public class SensorCalibrationDB extends CalibrationDB {
 

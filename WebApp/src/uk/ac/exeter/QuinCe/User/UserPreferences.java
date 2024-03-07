@@ -9,9 +9,6 @@ import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 
 /**
  * User Preferences
- *
- * @author Steve Jones
- *
  */
 public class UserPreferences extends Properties {
 

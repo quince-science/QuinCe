@@ -39,9 +39,6 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * flag as Questionable for all records, since the climatological value is
  * probably reasonable but shouldn't be relied on.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class NeutraliseSalinityFlagsExportData extends ExportData {
 

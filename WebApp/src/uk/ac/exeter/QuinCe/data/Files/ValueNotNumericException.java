@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Files;
 
 /**
  * Exception for non-numeric values found in data files
- *
- * @author Steve Jones
- *
  */
 public class ValueNotNumericException extends Exception {
 

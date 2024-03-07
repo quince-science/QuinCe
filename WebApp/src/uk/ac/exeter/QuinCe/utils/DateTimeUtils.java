@@ -14,9 +14,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 
 /**
  * Miscellaneous date/time utilities
- *
- * @author Steve Jones
- *
  */
 public class DateTimeUtils {
 
