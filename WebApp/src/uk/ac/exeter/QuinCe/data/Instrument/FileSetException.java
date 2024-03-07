@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 
 /**
  * Simple exception for errors in file sets
- *
- * @author Steve Jones
- *
  */
 public class FileSetException extends Exception {
 

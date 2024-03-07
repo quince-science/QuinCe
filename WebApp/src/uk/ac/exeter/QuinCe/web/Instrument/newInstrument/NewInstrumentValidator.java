@@ -10,9 +10,6 @@ import javax.faces.validator.ValidatorException;
 /**
  * Base validator for validation of entries in a new instrument. Extracts the
  * bean and passes it to the concrete validation method
- *
- * @author Steve Jones
- *
  */
 public abstract class NewInstrumentValidator implements Validator {
 

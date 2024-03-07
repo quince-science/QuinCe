@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.utils;
 
 /**
  * Exception for date/time strings that can't be parsed.
- *
- * @author Steve Jones
- *
  */
 public class InvalidDateTimeStringException extends Exception {
 

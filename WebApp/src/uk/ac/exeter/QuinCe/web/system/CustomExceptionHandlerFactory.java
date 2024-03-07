@@ -5,9 +5,6 @@ import javax.faces.context.ExceptionHandlerFactory;
 
 /**
  * Factory class for custom exception handlers
- *
- * @author Steve Jones
- *
  */
 public class CustomExceptionHandlerFactory extends ExceptionHandlerFactory {
 

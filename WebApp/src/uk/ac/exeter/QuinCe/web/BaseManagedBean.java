@@ -32,9 +32,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 /**
  * Several Managed Beans are used in the QuinCe application. This abstract class
  * provides a set of useful methods for inheriting concrete bean classes to use.
- *
- * @author Steve Jones
- *
  */
 public abstract class BaseManagedBean {
 

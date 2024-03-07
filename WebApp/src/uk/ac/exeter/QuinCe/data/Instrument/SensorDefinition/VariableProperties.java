@@ -11,9 +11,6 @@ import java.util.List;
  * traditional constructors - only an empty constructor for the case where the
  * properties stored in the database are empty.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class VariableProperties {
 

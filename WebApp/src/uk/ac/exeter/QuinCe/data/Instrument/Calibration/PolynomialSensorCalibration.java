@@ -9,9 +9,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
 /**
  * A calibration that applies up to a fifth-order polynomial adjustment
- *
- * @author Steve Jones
- *
  */
 public class PolynomialSensorCalibration extends SensorCalibration {
 

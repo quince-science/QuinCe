@@ -8,18 +8,15 @@ import java.util.TreeMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorOffsets;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupPair;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * Data structure for building main time series plot data for the Sensor Offsets
  * page.
- *
- * @author Steve Jones
- *
  */
 public class TimeSeriesPlotData {
 
@@ -134,9 +131,6 @@ public class TimeSeriesPlotData {
 
   /**
    * A simple Tuple of two Double values
-   *
-   * @author Steve Jones
-   *
    */
   private class Tuple {
 

@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 /**
  * Simple object for a single calibration coefficient
- *
- * @author Steve Jones
- *
  */
 public class CalibrationCoefficient {
 

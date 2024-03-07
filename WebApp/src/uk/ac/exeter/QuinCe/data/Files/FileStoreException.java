@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Files;
 
 /**
  * An exception class for errors in the on-disk data file store
- *
- * @author Steve Jones
- *
  */
 public class FileStoreException extends Exception {
 

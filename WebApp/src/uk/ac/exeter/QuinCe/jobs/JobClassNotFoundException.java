@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.jobs;
 
 /**
  * Exception indicating that a specified job class cannot be found.
- *
- * @author Steve Jones
- *
  */
 public class JobClassNotFoundException extends Exception {
 

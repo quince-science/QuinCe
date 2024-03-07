@@ -37,9 +37,6 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * <p>
  * The data structure can be built using the {@link #add} method.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class SimplePlotPageDataStructure {
 

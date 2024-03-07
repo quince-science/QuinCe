@@ -4,11 +4,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
 /**
  * Miscellaneous utility functions for {@link Collection}s.
- *
- * @author Steve Jones
  */
 public class CollectionUtils {
 

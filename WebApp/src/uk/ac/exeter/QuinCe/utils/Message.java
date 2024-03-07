@@ -2,10 +2,6 @@ package uk.ac.exeter.QuinCe.utils;
 
 import com.google.gson.JsonObject;
 
-/**
- * @author jhe052
- *
- */
 public class Message {
 
   public static final String MESSAGE_KEY = "message";

@@ -29,9 +29,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Database methods for database actions related to calibrations
- *
- * @author Steve Jones
- *
  */
 public abstract class CalibrationDB {
 

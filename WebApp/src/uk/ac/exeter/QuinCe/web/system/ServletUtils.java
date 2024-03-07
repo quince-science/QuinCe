@@ -6,9 +6,6 @@ import javax.sql.DataSource;
 
 /**
  * Utility functions for beans, filters, servlets etc.
- *
- * @author Steve Jones
- *
  */
 public class ServletUtils {
 

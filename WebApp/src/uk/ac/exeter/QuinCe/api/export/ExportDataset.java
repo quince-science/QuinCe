@@ -103,9 +103,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *   }
  * }
  * </pre>
- *
- * @author Steve Jones
- *
  */
 @Path("/export/exportDataset")
 public class ExportDataset {

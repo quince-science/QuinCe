@@ -17,9 +17,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * Note that it is not possible to calculate fCO₂ from the sensor values because
  * we are missing xCO₂ and the pressure in the sensor.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class SamiPco2DataReducer extends DataReducer {
 

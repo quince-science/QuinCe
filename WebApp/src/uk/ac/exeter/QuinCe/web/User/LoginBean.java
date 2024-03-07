@@ -16,9 +16,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for handling user logins
- *
- * @author Steve Jones
- *
  */
 @ManagedBean
 @RequestScoped

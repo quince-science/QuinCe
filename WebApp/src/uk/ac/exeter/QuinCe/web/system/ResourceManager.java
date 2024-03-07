@@ -29,9 +29,6 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
  * Utility class for handling resources required by the web application. The
  * Resource Manager is a singleton object, which is created during
  * initialisation of the web application
- *
- * @author Steve Jones
- *
  */
 public class ResourceManager implements ServletContextListener {
 

@@ -4,9 +4,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
  * Exception for sensor types that can't be found
- *
- * @author Steve Jones
- *
  */
 public class SensorTypeNotFoundException extends InstrumentException {
 

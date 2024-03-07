@@ -16,9 +16,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * <p>
  * Calculations from Sutton et al. 2014 (doi: 10.5194/essd-6-353-2014).
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class SaildroneMarinePco2Reducer extends DataReducer {
 

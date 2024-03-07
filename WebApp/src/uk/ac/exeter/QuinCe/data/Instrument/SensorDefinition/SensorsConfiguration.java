@@ -26,11 +26,6 @@ import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
-/**
- *
- * @author Steve Jones
- *
- */
 public class SensorsConfiguration {
 
   /**

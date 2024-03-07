@@ -6,9 +6,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
  * Holds the properties of a column heading on the plot page.
- *
- * @author Steve Jones
- *
  */
 public class PlotPageColumnHeading extends ColumnHeading {
 

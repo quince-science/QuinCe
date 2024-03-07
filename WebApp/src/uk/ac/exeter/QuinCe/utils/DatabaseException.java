@@ -4,9 +4,6 @@ package uk.ac.exeter.QuinCe.utils;
  * An exception class for any database-level exceptions. Most
  * {@code DatabaseException}s will be wrappers around an
  * {@link java.sql.SQLException}.
- *
- * @author Steve Jones
- *
  */
 public class DatabaseException extends Exception {
 

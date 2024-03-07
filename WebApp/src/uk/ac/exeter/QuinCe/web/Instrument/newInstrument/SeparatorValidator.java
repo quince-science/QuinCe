@@ -7,9 +7,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 
 /**
  * Check that the chosen separator results in more than 0 columns
- *
- * @author Steve Jones
- *
  */
 public class SeparatorValidator extends NewInstrumentValidator {
 

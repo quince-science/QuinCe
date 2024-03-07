@@ -13,9 +13,6 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * Holder for a set of run type assignments for a file definition. This class
  * does not reference the file definition to which it belongs - it is stored as
  * a field of the FileDefinition class.
- *
- * @author zuj007
- *
  */
 @SuppressWarnings("serial")
 public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {

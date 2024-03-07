@@ -65,8 +65,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Bean for collecting data about a new instrument
- *
- * @author Steve Jones
  */
 @ManagedBean
 @SessionScoped

@@ -50,9 +50,6 @@ import com.google.gson.JsonParseException;
  * <p>
  * Group names are case-insensitive and must be unique.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class SensorGroups implements Iterable<SensorGroup> {
 

@@ -11,8 +11,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Defines an individual sensor type for an instrument
- *
- * @author Steve Jones
  */
 public class SensorType extends ColumnHeading
   implements Comparable<SensorType> {

@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
 /**
  * Exception for errors raised within QC routines
- *
- * @author Steve Jones
- *
  */
 @SuppressWarnings("serial")
 public class RoutineException extends Exception {

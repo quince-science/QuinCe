@@ -6,7 +6,6 @@ import org.apache.commons.lang3.mutable.MutableInt;
  * An extension of the Apache Commons MutableInt class with some useful
  * functions
  *
- * @author Steve Jones
  * @see MutableInt
  */
 public class ExtendedMutableInt extends MutableInt {

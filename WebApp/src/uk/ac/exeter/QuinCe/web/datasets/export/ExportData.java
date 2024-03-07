@@ -43,9 +43,6 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.MeasurementValueSensor
  * Based on the data for the {@link ManualQCData} for manual QC pages, since
  * that contains everything we need.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class ExportData extends ManualQCData {
 
@@ -139,7 +136,8 @@ public class ExportData extends ManualQCData {
        */
       if (!exportOption.measurementsOnly() && exportOption.skipBad()) {
         List<Long> goodIds = sensorValues.getAll().stream()
-          .filter(v -> !v.getUserQCFlag().equals(Flag.BAD)).map(v -> v.getId()).toList();
+          .filter(v -> !v.getUserQCFlag().equals(Flag.BAD)).map(v -> v.getId())
+          .toList();
 
         filteredIds.addAll(goodIds);
       }

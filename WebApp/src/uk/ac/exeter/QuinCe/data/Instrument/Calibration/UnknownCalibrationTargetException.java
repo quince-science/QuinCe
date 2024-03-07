@@ -2,16 +2,9 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 /**
  * Exception for unrecognised calibration targets
- *
- * @author Steve Jones
- *
  */
+@SuppressWarnings("serial")
 public class UnknownCalibrationTargetException extends CalibrationException {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = -2855585676136712015L;
 
   /**
    * Basic constructor

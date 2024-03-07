@@ -23,9 +23,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * The configuration of QC routines to be run after data reduction.
- *
- * @author Steve Jones
- *
  */
 public class DataReductionQCRoutinesConfiguration {
 

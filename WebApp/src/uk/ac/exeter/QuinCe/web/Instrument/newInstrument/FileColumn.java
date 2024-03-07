@@ -5,9 +5,6 @@ import java.util.List;
 
 /**
  * Simple class to hold a column's name and an example value
- *
- * @author Steve Jones
- *
  */
 public class FileColumn {
 

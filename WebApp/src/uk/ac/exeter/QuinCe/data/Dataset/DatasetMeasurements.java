@@ -21,9 +21,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * view of all measurements in time order is accessible through
  * {@link #getTimeOrderedMeasurements()}.
  * </p>
- *
- * @author stevej
- *
  */
 public class DatasetMeasurements {
 

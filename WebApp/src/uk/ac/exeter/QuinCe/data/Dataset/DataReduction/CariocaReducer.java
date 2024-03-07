@@ -25,9 +25,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * need a proper reference for it. In the meantime, the calibration sheet is in
  * the Github repository at {@code Documentation/Calculations/Carioca}.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class CariocaReducer extends DataReducer {
 

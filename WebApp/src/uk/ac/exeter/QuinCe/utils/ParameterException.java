@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.utils;
 
 /**
  * Exception for errors in method parameters
- *
- * @author Steve Jones
- *
  */
 @SuppressWarnings("serial")
 public class ParameterException extends RuntimeException {

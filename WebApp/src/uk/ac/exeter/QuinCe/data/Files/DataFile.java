@@ -36,9 +36,6 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Class representing a data file
- *
- * @author Steve Jones
- *
  */
 public class DataFile {
 

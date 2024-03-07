@@ -46,9 +46,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Job to extract the data for a data set from the uploaded data files
- *
- * @author Steve Jones
- *
  */
 public class ExtractDataSetJob extends DataSetJob {
 

@@ -650,9 +650,6 @@ public abstract class PlotPageData {
    * This is used by {@link PlotPageData#getColumnHeadingsJson()} to construct
    * the JSON object.
    * </p>
-   *
-   * @author Steve Jones
-   *
    */
   class JsonColumnGroup {
 

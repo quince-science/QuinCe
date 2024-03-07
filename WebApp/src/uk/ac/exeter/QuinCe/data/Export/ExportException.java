@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Export;
 
 /**
  * Exception class for errors encountered in data export mechanism
- *
- * @author Steve Jones
- *
  */
 public class ExportException extends Exception {
 

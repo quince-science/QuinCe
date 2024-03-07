@@ -16,9 +16,6 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * JSON Serializer for {@link SensorOffset} objects. Note that this serializer
  * is only for use by the {@link SensorOffsetsBean}, and assumes a great deal
  * from the bean's context.
- *
- * @author Steve Jones
- *
  */
 public class SensorOffsetSerializer implements JsonSerializer<SensorOffset> {
 

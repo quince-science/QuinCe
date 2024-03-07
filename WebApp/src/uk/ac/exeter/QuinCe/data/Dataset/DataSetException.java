@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 /**
  * Exception for errors encountered while handling data sets
- *
- * @author Steve Jones
- *
  */
 public class DataSetException extends Exception {
 

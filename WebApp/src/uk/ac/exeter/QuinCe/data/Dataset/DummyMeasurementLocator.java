@@ -14,9 +14,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
  * {@link MeasurementLocator} in one pass, so the other variables don't need
  * processing.
  * </p>
- *
- * @author stevej
- *
  */
 public class DummyMeasurementLocator extends MeasurementLocator {
 

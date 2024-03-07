@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 
 /**
  * Defines a Run Type Category
- *
- * @author Steve Jones
- *
  */
 public class RunTypeCategory implements Comparable<RunTypeCategory> {
 

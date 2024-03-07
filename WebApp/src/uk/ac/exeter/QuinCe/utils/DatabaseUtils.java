@@ -10,8 +10,6 @@ import java.util.List;
 /**
  * A utility class providing useful methods for dealing with database-related
  * objects
- *
- * @author Steve Jones
  */
 public class DatabaseUtils {
 

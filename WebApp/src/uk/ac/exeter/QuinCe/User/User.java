@@ -7,9 +7,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Object to represent a user and perform various user-related tasks.
- *
- * @author Steve Jones
- *
  */
 public class User {
 

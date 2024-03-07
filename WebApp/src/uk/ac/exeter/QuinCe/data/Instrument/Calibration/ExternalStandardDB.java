@@ -24,9 +24,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 /**
  * Methods for storing and retrieving external standards information from the
  * database
- *
- * @author Steve Jones
- *
  */
 public class ExternalStandardDB extends CalibrationDB {
 

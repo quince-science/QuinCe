@@ -4,9 +4,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
  * Exception class for errors encountered while dealing with sensor assignments
- *
- * @author Steve Jones
- *
  */
 public class SensorAssignmentException extends InstrumentException {
 

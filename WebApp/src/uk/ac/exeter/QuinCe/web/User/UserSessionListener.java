@@ -11,9 +11,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Class to perform user-related actions when a session is created or destroyed
- *
- * @author Steve Jones
- *
  */
 public class UserSessionListener implements HttpSessionListener {
 

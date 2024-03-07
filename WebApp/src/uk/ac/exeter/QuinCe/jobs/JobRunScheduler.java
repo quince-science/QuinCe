@@ -8,9 +8,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Monitors the job queue and runs jobs if needed
- *
- * @author Steve Jones
- *
  */
 @WebListener
 public class JobRunScheduler extends BackgroundTask {
