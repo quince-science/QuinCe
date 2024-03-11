@@ -32,8 +32,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.RangeCheckRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -99,59 +97,53 @@ public class ManualDiagnosticFlagTest extends TestSetTest {
 
   private static final long DIAGNOSTIC_GAS_VAL_ID = 6L;
 
-  private static final int SST_AUTO_QC_COL = 0;
+  private static final int SST_MANUAL_QC_COL = 0;
 
-  private static final int SST_MANUAL_QC_COL = 1;
+  private static final int SALINITY_MANUAL_QC_COL = 1;
 
-  private static final int SALINITY_AUTO_QC_COL = 2;
+  private static final int CO2_MANUAL_QC_COL = 2;
 
-  private static final int SALINITY_MANUAL_QC_COL = 3;
+  private static final int RUN_TYPE_COL = 3;
 
-  private static final int CO2_AUTO_QC_COL = 4;
+  private static final int DIAGNOSTIC_WATER_FLAG_COL = 4;
 
-  private static final int CO2_MANUAL_QC_COL = 5;
+  private static final int DIAGNOSTIC_GAS_FLAG_COL = 5;
 
-  private static final int RUN_TYPE_COL = 6;
+  private static final int EXPECTED_SST_FLAG_1_COL = 6;
 
-  private static final int DIAGNOSTIC_WATER_FLAG_COL = 7;
+  private static final int EXPECTED_SST_COMMENT_1_COL = 7;
 
-  private static final int DIAGNOSTIC_GAS_FLAG_COL = 8;
+  private static final int EXPECTED_SALINITY_FLAG_1_COL = 8;
 
-  private static final int EXPECTED_SST_FLAG_1_COL = 9;
+  private static final int EXPECTED_SALINITY_COMMENT_1_COL = 9;
 
-  private static final int EXPECTED_SST_COMMENT_1_COL = 10;
+  private static final int EXPECTED_CO2_FLAG_1_COL = 10;
 
-  private static final int EXPECTED_SALINITY_FLAG_1_COL = 11;
+  private static final int EXPECTED_CO2_COMMENT_1_COL = 11;
 
-  private static final int EXPECTED_SALINITY_COMMENT_1_COL = 12;
+  private static final int EXPECTED_DATA_REDUCTION_FLAG_1_COL = 12;
 
-  private static final int EXPECTED_CO2_FLAG_1_COL = 13;
+  private static final int EXPECTED_DATA_REDUCTION_COMMENT_1_COL = 13;
 
-  private static final int EXPECTED_CO2_COMMENT_1_COL = 14;
+  private static final int UPDATED_DIAG_WATER_FLAG_COL = 14;
 
-  private static final int EXPECTED_DATA_REDUCTION_FLAG_1_COL = 15;
+  private static final int UPDATED_DIAG_GAS_FLAG_COL = 15;
 
-  private static final int EXPECTED_DATA_REDUCTION_COMMENT_1_COL = 16;
+  private static final int EXPECTED_SST_FLAG_2_COL = 16;
 
-  private static final int UPDATED_DIAG_WATER_FLAG_COL = 17;
+  private static final int EXPECTED_SST_COMMENT_2_COL = 17;
 
-  private static final int UPDATED_DIAG_GAS_FLAG_COL = 18;
+  private static final int EXPECTED_SALINITY_FLAG_2_COL = 18;
 
-  private static final int EXPECTED_SST_FLAG_2_COL = 19;
+  private static final int EXPECTED_SALINITY_COMMENT_2_COL = 19;
 
-  private static final int EXPECTED_SST_COMMENT_2_COL = 20;
+  private static final int EXPECTED_CO2_FLAG_2_COL = 20;
 
-  private static final int EXPECTED_SALINITY_FLAG_2_COL = 21;
+  private static final int EXPECTED_CO2_COMMENT_2_COL = 21;
 
-  private static final int EXPECTED_SALINITY_COMMENT_2_COL = 22;
+  private static final int EXPECTED_DATA_REDUCTION_FLAG_2_COL = 22;
 
-  private static final int EXPECTED_CO2_FLAG_2_COL = 23;
-
-  private static final int EXPECTED_CO2_COMMENT_2_COL = 24;
-
-  private static final int EXPECTED_DATA_REDUCTION_FLAG_2_COL = 25;
-
-  private static final int EXPECTED_DATA_REDUCTION_COMMENT_2_COL = 26;
+  private static final int EXPECTED_DATA_REDUCTION_COMMENT_2_COL = 23;
 
   @Override
   protected String getTestSetName() {
@@ -186,15 +178,12 @@ public class ManualDiagnosticFlagTest extends TestSetTest {
 
       // Set the auto QC and user QC values for the data SensorValues
       SensorValue sst = allSensorValues.getById(SST_VAL_ID);
-      setAutoQC(sst, line.getIntField(SST_AUTO_QC_COL));
       setUserQC(sst, line.getIntField(SST_MANUAL_QC_COL));
 
       SensorValue salinity = allSensorValues.getById(SALINITY_VAL_ID);
-      setAutoQC(salinity, line.getIntField(SALINITY_AUTO_QC_COL));
       setUserQC(salinity, line.getIntField(SALINITY_MANUAL_QC_COL));
 
       SensorValue co2 = allSensorValues.getById(CO2_VAL_ID);
-      setAutoQC(co2, line.getIntField(CO2_AUTO_QC_COL));
       setUserQC(co2, line.getIntField(CO2_MANUAL_QC_COL));
 
       // Set the run type
@@ -380,28 +369,6 @@ public class ManualDiagnosticFlagTest extends TestSetTest {
     }
 
     assertTrue(commentOK, name + " comment incorrect");
-  }
-
-  /**
-   * Set the Auto QC for a {@link SensorValue}.
-   *
-   * <p>
-   * If the flag is {@link Flag.GOOD} no action is taken.
-   * </p>
-   *
-   * @param sensorValue
-   *          The value whose Auto QC is to be set.
-   * @param flag
-   *          The flag value.
-   * @throws Exception
-   *           If the Auto QC cannot be set.
-   */
-  private void setAutoQC(SensorValue sensorValue, int flag) throws Exception {
-    if (flag != Flag.VALUE_GOOD) {
-      sensorValue.clearAutomaticQC();
-      sensorValue.addAutoQCFlag(
-        new RoutineFlag(new RangeCheckRoutine(), new Flag(flag), "77", "88"));
-    }
   }
 
   private void setUserQC(SensorValue sensorValue, int flagValue)
