@@ -48,7 +48,7 @@ INSERT INTO variable_sensors
 -- Instrument
 INSERT INTO instrument
   (id, owner, name, platform_name, platform_code, nrt, properties)
-  VALUES (1, 1, 'Instrument', 'Platform', 'CODE' ,0 , '{"latitude":"0","longitude":"0","diagnosticQC":{"5":{"rangeMin":1.5,"rangeMax":2.5,"affectedRunTypes":{"2":["var_1","var_2"],"4":["var_1","var_3"]}},"6":{"rangeMin":9.5,"rangeMax":10,"affectedRunTypes":{"4":["var_2","var_3"]}}}}');
+  VALUES (1, 1, 'Instrument', 'Platform', 'CODE' ,0 , '{"latitude":"0","longitude":"0","diagnosticQC":{"5":{"affectedRunTypes":{"2":["var_1","var_2"],"4":["var_1","var_3"]}},"6":{"affectedRunTypes":{"4":["var_2","var_3"]}}}}');
   
 INSERT INTO instrument_variables (instrument_id, variable_id)
   VALUES (1, 1000000);
@@ -118,14 +118,14 @@ INSERT INTO file_column
   VALUES
   (5, 1, 6, 1,
    (SELECT id FROM sensor_types WHERE name = 'Diagnostic Water Flow'),
-   'Water Flow');
+   'Liquid');
 
 INSERT INTO file_column
   (id, file_definition_id, file_column, primary_sensor, sensor_type, sensor_name)
   VALUES
   (6, 1, 7, 1,
    (SELECT id FROM sensor_types WHERE name = 'Diagnostic Gas Flow'),
-   'Air Flow');
+   'Air');
 
  -- A dataset.
  -- Start date = 2024-01-01 00:00:00
