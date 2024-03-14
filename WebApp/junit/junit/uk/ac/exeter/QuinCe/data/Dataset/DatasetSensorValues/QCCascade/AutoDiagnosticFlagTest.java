@@ -18,13 +18,15 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.DiagnosticsQCRoutine;
+import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
- * Tests for setting Diagnostic sensor flags manually.
+ * Tests for setting Diagnostic sensor flags through Auto QC.
  *
  * <p>
  * The database setup for this will be as follows:
@@ -55,11 +57,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * </p>
  * <ol>
  * <li>Set sensor value flags</li>
- * <li>Set diagnostic flags</li>
+ * <li>Set diagnostic ranges</li>
  * <li>Check sensor value flags</li>
  * <li>Run Data Reduction</li>
  * <li>Check flags on data reduction results</li>
- * <li>(Optional) Change diagnostic flags</li>
+ * <li>(Optional) Change diagnostic ranges</li>
  * <li>(Optional) Check sensor value flags</li>
  * <li>(Optional) Run Data Reduction</li>
  * <li>(Optional) Check flags on data reduction results</li>
@@ -69,7 +71,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * Auto-QC flags are always
  */
 @TestInstance(Lifecycle.PER_CLASS)
-public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
+public class AutoDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
 
   private static final long RUNTYPE_VAL_ID = 1L;
 
@@ -91,49 +93,65 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
 
   private static final int RUN_TYPE_COL = 3;
 
-  private static final int DIAGNOSTIC_WATER_FLAG_COL = 4;
+  private static final int DIAGNOSTIC_WATER_MIN_COL = 4;
 
-  private static final int DIAGNOSTIC_GAS_FLAG_COL = 5;
+  private static final int DIAGNOSTIC_WATER_MAX_COL = 5;
 
-  private static final int EXPECTED_SST_FLAG_1_COL = 6;
+  private static final int DIAGNOSTIC_GAS_MIN_COL = 6;
 
-  private static final int EXPECTED_SST_COMMENT_1_COL = 7;
+  private static final int DIAGNOSTIC_GAS_MAX_COL = 7;
 
-  private static final int EXPECTED_SALINITY_FLAG_1_COL = 8;
+  private static final int EXPECTED_SST_FLAG_1_COL = 8;
 
-  private static final int EXPECTED_SALINITY_COMMENT_1_COL = 9;
+  private static final int EXPECTED_SST_COMMENT_1_COL = 9;
 
-  private static final int EXPECTED_CO2_FLAG_1_COL = 10;
+  private static final int EXPECTED_SALINITY_FLAG_1_COL = 10;
 
-  private static final int EXPECTED_CO2_COMMENT_1_COL = 11;
+  private static final int EXPECTED_SALINITY_COMMENT_1_COL = 11;
 
-  private static final int EXPECTED_DATA_REDUCTION_FLAG_1_COL = 12;
+  private static final int EXPECTED_CO2_FLAG_1_COL = 12;
 
-  private static final int EXPECTED_DATA_REDUCTION_COMMENT_1_COL = 13;
+  private static final int EXPECTED_CO2_COMMENT_1_COL = 13;
 
-  private static final int UPDATED_DIAG_WATER_FLAG_COL = 14;
+  private static final int EXPECTED_DIAG_WATER_FLAG_1_COL = 14;
 
-  private static final int UPDATED_DIAG_GAS_FLAG_COL = 15;
+  private static final int EXPECTED_DIAG_GAS_FLAG_1_COL = 15;
 
-  private static final int EXPECTED_SST_FLAG_2_COL = 16;
+  private static final int EXPECTED_DATA_REDUCTION_FLAG_1_COL = 16;
 
-  private static final int EXPECTED_SST_COMMENT_2_COL = 17;
+  private static final int EXPECTED_DATA_REDUCTION_COMMENT_1_COL = 17;
 
-  private static final int EXPECTED_SALINITY_FLAG_2_COL = 18;
+  private static final int UPDATED_DIAG_WATER_MIN_COL = 18;
 
-  private static final int EXPECTED_SALINITY_COMMENT_2_COL = 19;
+  private static final int UPDATED_DIAG_WATER_MAX_COL = 19;
 
-  private static final int EXPECTED_CO2_FLAG_2_COL = 20;
+  private static final int UPDATED_DIAG_GAS_MIN_COL = 20;
 
-  private static final int EXPECTED_CO2_COMMENT_2_COL = 21;
+  private static final int UPDATED_DIAG_GAS_MAX_COL = 21;
 
-  private static final int EXPECTED_DATA_REDUCTION_FLAG_2_COL = 22;
+  private static final int EXPECTED_SST_FLAG_2_COL = 22;
 
-  private static final int EXPECTED_DATA_REDUCTION_COMMENT_2_COL = 23;
+  private static final int EXPECTED_SST_COMMENT_2_COL = 23;
+
+  private static final int EXPECTED_SALINITY_FLAG_2_COL = 24;
+
+  private static final int EXPECTED_SALINITY_COMMENT_2_COL = 25;
+
+  private static final int EXPECTED_CO2_FLAG_2_COL = 26;
+
+  private static final int EXPECTED_CO2_COMMENT_2_COL = 27;
+
+  private static final int EXPECTED_DIAG_WATER_FLAG_2_COL = 28;
+
+  private static final int EXPECTED_DIAG_GAS_FLAG_2_COL = 29;
+
+  private static final int EXPECTED_DATA_REDUCTION_FLAG_2_COL = 30;
+
+  private static final int EXPECTED_DATA_REDUCTION_COMMENT_2_COL = 31;
 
   @Override
   protected String getTestSetName() {
-    return "ManualDiagnosticFlagTest";
+    return "AutoDiagnosticFlagTest";
   }
 
   /**
@@ -149,7 +167,7 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
     "resources/sql/testbase/DataReduction/singleMeasurement" })
   @ParameterizedTest
   @MethodSource("getLines")
-  public void manualDiagnosticFlagTest(TestSetLine line) throws Exception {
+  public void autoDiagnosticFlagTest(TestSetLine line) throws Exception {
 
     initResourceManager();
 
@@ -157,6 +175,12 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
 
       // Load Dataset data
       Instrument instrument = InstrumentDB.getInstrument(conn, 1L);
+      SensorAssignment diagnosticWater = instrument.getSensorAssignments()
+        .getById(DIAGNOSTIC_WATER_VAL_ID);
+      SensorAssignment diagnosticGas = instrument.getSensorAssignments()
+        .getById(DIAGNOSTIC_GAS_VAL_ID);
+      DiagnosticQCConfig diagnosticQCConfig = instrument
+        .getDiagnosticQCConfig();
       Variable variable = instrument.getVariables().get(0);
       DataSet dataset = DataSetDB.getDataSet(conn, 1L);
       DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
@@ -180,21 +204,20 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
       DataSetDataDB.storeSensorValues(conn,
         Arrays.asList(sst, salinity, co2, runType));
 
-      // Set the Diagnostic QC flags and apply the cascade
+      // Set the Diagnostic Auto QC limits
+      diagnosticQCConfig.setRangeMin(diagnosticWater,
+        line.getDoubleField(DIAGNOSTIC_WATER_MIN_COL));
+      diagnosticQCConfig.setRangeMax(diagnosticWater,
+        line.getDoubleField(DIAGNOSTIC_WATER_MAX_COL));
+      diagnosticQCConfig.setRangeMin(diagnosticGas,
+        line.getDoubleField(DIAGNOSTIC_GAS_MIN_COL));
+      diagnosticQCConfig.setRangeMax(diagnosticGas,
+        line.getDoubleField(DIAGNOSTIC_GAS_MAX_COL));
+
+      // Run the Diagnostics Auto QC Routine
       RunTypePeriods runTypePeriods = makeRunTypePeriods(runType);
-
-      SensorValue waterFlow = allSensorValues.getById(DIAGNOSTIC_WATER_VAL_ID);
-      waterFlow.setUserQC(new Flag(line.getIntField(DIAGNOSTIC_WATER_FLAG_COL)),
-        "Liquid");
-
-      allSensorValues.applyQCCascade(waterFlow, runTypePeriods);
-
-      SensorValue gasFlow = allSensorValues.getById(DIAGNOSTIC_GAS_VAL_ID);
-      gasFlow.setUserQC(new Flag(line.getIntField(DIAGNOSTIC_GAS_FLAG_COL)),
-        "Air");
-
-      allSensorValues.applyQCCascade(gasFlow, runTypePeriods);
-
+      DiagnosticsQCRoutine diagnosticsQC = new DiagnosticsQCRoutine();
+      diagnosticsQC.run(instrument, allSensorValues, runTypePeriods);
       DataSetDataDB.storeSensorValues(conn, allSensorValues.getAll());
 
       // Run the Data Reduction
@@ -206,7 +229,7 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
       List<String> expectedSSTComment1 = expectedCommentList(line,
         EXPECTED_SST_COMMENT_1_COL);
 
-      checkQC("SST", allSensorValues.getById(SST_VAL_ID), expectedSSTFlag1,
+      checkQC("SST 1", allSensorValues.getById(SST_VAL_ID), expectedSSTFlag1,
         expectedSSTComment1, allSensorValues);
 
       // Check the Salinity QC flag
@@ -215,7 +238,7 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
       List<String> expectedSalinityComment1 = expectedCommentList(line,
         EXPECTED_SALINITY_COMMENT_1_COL);
 
-      checkQC("Salinity", allSensorValues.getById(SALINITY_VAL_ID),
+      checkQC("Salinity 1", allSensorValues.getById(SALINITY_VAL_ID),
         expectedSalinityFlag1, expectedSalinityComment1, allSensorValues);
 
       // Check the CO2 QC flag
@@ -223,8 +246,19 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
       List<String> expectedCO2Comment1 = expectedCommentList(line,
         EXPECTED_CO2_COMMENT_1_COL);
 
-      checkQC("CO2", allSensorValues.getById(CO2_VAL_ID), expectedCO2Flag1,
+      checkQC("CO2 1", allSensorValues.getById(CO2_VAL_ID), expectedCO2Flag1,
         expectedCO2Comment1, allSensorValues);
+
+      // Check diagnostic QC flags
+      int expectedDiagWaterFlag1 = line
+        .getIntField(EXPECTED_DIAG_WATER_FLAG_1_COL);
+      checkQC("Diagnostic Water 1",
+        allSensorValues.getById(DIAGNOSTIC_WATER_VAL_ID),
+        expectedDiagWaterFlag1);
+
+      int expectedDiagGasFlag1 = line.getIntField(EXPECTED_DIAG_GAS_FLAG_1_COL);
+      checkQC("Diagnostic Gas 1",
+        allSensorValues.getById(DIAGNOSTIC_GAS_VAL_ID), expectedDiagGasFlag1);
 
       // Check the Data Reduction QC flag
       int expectedDataReductionFlag1 = line
@@ -236,19 +270,20 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
         expectedDataReductionComment1);
 
       // Update the diagnostic flags and re-test if required
-      if (!line.isFieldEmpty(UPDATED_DIAG_WATER_FLAG_COL)) {
+      if (!line.isFieldEmpty(UPDATED_DIAG_WATER_MIN_COL)) {
 
-        // Update diagnostic flags
-        waterFlow.setUserQC(
-          new Flag(line.getIntField(UPDATED_DIAG_WATER_FLAG_COL)), "Liquid");
+        // Update diagnostic limits
+        diagnosticQCConfig.setRangeMin(diagnosticWater,
+          line.getDoubleField(UPDATED_DIAG_WATER_MIN_COL));
+        diagnosticQCConfig.setRangeMax(diagnosticWater,
+          line.getDoubleField(UPDATED_DIAG_WATER_MAX_COL));
+        diagnosticQCConfig.setRangeMin(diagnosticGas,
+          line.getDoubleField(UPDATED_DIAG_GAS_MIN_COL));
+        diagnosticQCConfig.setRangeMax(diagnosticGas,
+          line.getDoubleField(UPDATED_DIAG_GAS_MAX_COL));
 
-        allSensorValues.applyQCCascade(waterFlow, runTypePeriods);
-
-        gasFlow.setUserQC(new Flag(line.getIntField(UPDATED_DIAG_GAS_FLAG_COL)),
-          "Air");
-
-        allSensorValues.applyQCCascade(gasFlow, runTypePeriods);
-
+        DiagnosticsQCRoutine newDiagnosticsQC = new DiagnosticsQCRoutine();
+        newDiagnosticsQC.run(instrument, allSensorValues, runTypePeriods);
         DataSetDataDB.storeSensorValues(conn, allSensorValues.getAll());
 
         // Run the Data Reduction
@@ -260,7 +295,7 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
         List<String> expectedSSTComment2 = expectedCommentList(line,
           EXPECTED_SST_COMMENT_2_COL);
 
-        checkQC("SST", allSensorValues.getById(SST_VAL_ID), expectedSSTFlag2,
+        checkQC("SST 2", allSensorValues.getById(SST_VAL_ID), expectedSSTFlag2,
           expectedSSTComment2, allSensorValues);
 
         // Check the Salinity QC flag
@@ -269,7 +304,7 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
         List<String> expectedSalinityComment2 = expectedCommentList(line,
           EXPECTED_SALINITY_COMMENT_2_COL);
 
-        checkQC("Salinity", allSensorValues.getById(SALINITY_VAL_ID),
+        checkQC("Salinity 2", allSensorValues.getById(SALINITY_VAL_ID),
           expectedSalinityFlag2, expectedSalinityComment2, allSensorValues);
 
         // Check the CO2 QC flag
@@ -277,8 +312,20 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
         List<String> expectedCO2Comment2 = expectedCommentList(line,
           EXPECTED_CO2_COMMENT_2_COL);
 
-        checkQC("CO2", allSensorValues.getById(CO2_VAL_ID), expectedCO2Flag2,
+        checkQC("CO2 2", allSensorValues.getById(CO2_VAL_ID), expectedCO2Flag2,
           expectedCO2Comment2, allSensorValues);
+
+        // Check diagnostic QC flags
+        int expectedDiagWaterFlag2 = line
+          .getIntField(EXPECTED_DIAG_WATER_FLAG_2_COL);
+        checkQC("Diagnostic Water 2",
+          allSensorValues.getById(DIAGNOSTIC_WATER_VAL_ID),
+          expectedDiagWaterFlag2);
+
+        int expectedDiagGasFlag2 = line
+          .getIntField(EXPECTED_DIAG_GAS_FLAG_2_COL);
+        checkQC("Diagnostic Gas 2",
+          allSensorValues.getById(DIAGNOSTIC_GAS_VAL_ID), expectedDiagGasFlag2);
 
         // Check the Data Reduction QC flag
         int expectedDataReductionFlag2 = line

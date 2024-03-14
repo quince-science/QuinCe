@@ -2,8 +2,8 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
@@ -49,11 +49,12 @@ public class DiagnosticsQCRoutine {
           }
 
           if (bad) {
-            value.setUserQC(Flag.BAD,
-              instrument.getSensorAssignments().getSensorTypeForDBColumn(
-                sensor.getDatabaseId()) + " out of range");
-            sensorValues.applyQCCascade(value, runTypePeriods);
+            value.setUserQC(Flag.BAD, sensor.getSensorName() + " out of range");
+          } else {
+            value.setUserQC(Flag.GOOD, null);
           }
+
+          sensorValues.applyQCCascade(value, runTypePeriods);
         }
       }
     }
