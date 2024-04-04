@@ -301,11 +301,17 @@
                     title="Recalculate" />
                 </p:commandLink>
                 <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasSensorGroups()}">
-                  <p:commandLink onclick="goToSensorOffsets(#{dataset.id})">
-                    <h:graphicImage value="/resources/image/offsets.svg"
-                      styleClass="actionIcon" alt="Sensor Offsets"
-                      title="Sensor Offsets" />
-                  </p:commandLink>
+                  <ui:fragment rendered="#{!dataset.nrt}">
+                    <p:commandLink onclick="goToSensorOffsets(#{dataset.id})">
+                      <h:graphicImage value="/resources/image/offsets.svg"
+                        styleClass="actionIcon" alt="Sensor Offsets"
+                        title="Sensor Offsets" />
+                    </p:commandLink>
+                  </ui:fragment>
+                  <ui:fragment rendered="#{dataset.nrt}">
+                    <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                      styleClass="actionIcon"/>
+                  </ui:fragment>
                 </ui:fragment>
                 <ui:fragment rendered="#{not dataSetsBean.getCurrentInstrument().fixedPosition()}">
                   <p:commandLink onclick="goToPositionQc(#{dataset.id})">
