@@ -55,6 +55,12 @@
         </p:outputPanel>
       </div>
       <h:panelGrid columns="1" styleClass="buttonPanel">
+        <ui:fragment rendered="#{exportBean.dataset.status eq 50}">
+          <p:staticMessage severity="warn" summary="WARNING" detail="QC is not complete"/>
+        </ui:fragment>
+        <ui:fragment rendered="#{exportBean.dataset.status eq 60}">
+          <p:staticMessage severity="warn" summary="WARNING" detail="Dataset requires calibration information"/>
+        </ui:fragment>
         <p:commandButton value="Export..." ajax="false"
           widgetVar="exportButton" action="#{exportBean.exportDataset}" />
       </h:panelGrid>

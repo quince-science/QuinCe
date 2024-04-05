@@ -145,6 +145,16 @@ public class DataSet implements Comparable<DataSet> {
    */
   public static final String STATUS_USER_QC_NAME = "Ready for Manual QC";
 
+  /***
+   * The numeric value for the Calibration Required status.
+   */
+  public static final int STATUS_CALIBRATION_REQUIRED = 60;
+
+  /**
+   * The string for the Calibration Required status.
+   */
+  public static final String STATUS_CALIBRATION_REQUIRED_NAME = "Calibration info required";
+
   /**
    * The numeric value for the ready for submission status
    */
@@ -313,6 +323,8 @@ public class DataSet implements Comparable<DataSet> {
     validStatuses.put(STATUS_DATA_REDUCTION, STATUS_DATA_REDUCTION_NAME);
     validStatuses.put(STATUS_DATA_REDUCTION_QC, STATUS_DATA_REDUCTION_QC_NAME);
     validStatuses.put(STATUS_USER_QC, STATUS_USER_QC_NAME);
+    validStatuses.put(STATUS_CALIBRATION_REQUIRED,
+      STATUS_CALIBRATION_REQUIRED_NAME);
     validStatuses.put(STATUS_READY_FOR_SUBMISSION,
       STATUS_READY_FOR_SUBMISSION_NAME);
     validStatuses.put(STATUS_WAITING_FOR_APPROVAL,

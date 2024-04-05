@@ -69,8 +69,8 @@ public class JapanCustomReducer extends DataReducer {
     DataReductionRecord record, Connection conn) throws DataReductionException {
 
     try {
-      Double intakeTemperature = measurement
-        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double waterTemperature = measurement
+        .getMeasurementValue("Water Temperature").getCalculatedValue();
       Double equilibrationTemperature = measurement
         .getMeasurementValue("Equilibrator Temperature").getCalculatedValue();
       BigDecimal pCO2TEWet = new BigDecimal(
@@ -89,9 +89,9 @@ public class JapanCustomReducer extends DataReducer {
         .doubleValue();
 
       Double pCO2SST = Calculators.calcCO2AtSST(calibratedCO2,
-        equilibrationTemperature, intakeTemperature);
+        equilibrationTemperature, waterTemperature);
 
-      record.put("ΔT", Math.abs(intakeTemperature - equilibrationTemperature));
+      record.put("ΔT", Math.abs(waterTemperature - equilibrationTemperature));
       record.put("pCO₂ SST", pCO2SST);
     } catch (Exception e) {
       throw new DataReductionException(e);

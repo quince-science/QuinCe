@@ -1,5 +1,5 @@
 Class,Sensor Type,Option,Option....
-ConstantValue,Intake Temperature,120
+ConstantValue,Water Temperature,120
 ConstantValue,Salinity,120
 ConstantValue,Equilibrator Temperature,120
 ConstantValue,Equilibrator Pressure (absolute),120
@@ -9,7 +9,7 @@ ConstantValue,Pressure at instrument,120
 ConstantValue,xCO₂ (with standards),120
 ConstantValue,"xCO₂ water (dry, no standards)",120
 ConstantValue,"xCO₂ atmosphere (dry, no standards)",120
-RangeCheck,Intake Temperature,-5,40,-10,50
+RangeCheck,Water Temperature,-5,40,-10,50
 RangeCheck,Salinity,0,42,0,50
 RangeCheck,Equilibrator Temperature,-5,40,-10,50
 RangeCheck,Equilibrator Pressure (absolute),-3,1100,-5,1250
@@ -19,7 +19,7 @@ RangeCheck,xH₂O (with standards),0,100,0,100
 RangeCheck,xCO₂ (with standards),80,1200,0,50000
 RangeCheck,"xCO₂ water (dry, no standards)",80,1200,0,50000
 RangeCheck,"xCO₂ atmosphere (dry, no standards)",80,1200,0,50000
-Outlier,Intake Temperature,3
+Outlier,Water Temperature,3
 Outlier,Salinity,3
 Outlier,Equilibrator Temperature,3
 Outlier,Equilibrator Pressure (absolute),3
@@ -29,7 +29,7 @@ Outlier,Pressure at instrument,3
 Outlier,xCO₂ (with standards),3
 Outlier,"xCO₂ water (dry, no standards)",3
 Outlier,"xCO₂ atmosphere (dry, no standards)",3
-HighDelta,Intake Temperature,3
+HighDelta,Water Temperature,3
 HighDelta,Salinity,3
 HighDelta,Equilibrator Temperature,3
 HighDelta,Equilibrator Pressure (absolute),50

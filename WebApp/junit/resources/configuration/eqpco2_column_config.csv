@@ -34,7 +34,7 @@
 Date,S,Y,
 Longitude,N,Y,
 Latitude,N,Y,
-Intake Temperature,N,Y,fCO2|3|4
+Water Temperature,N,Y,fCO2|3|4
 Salinity,N,Y,fCO2|3|3
 Equilibrator Temperature,N,Y,fCO2|3|4
 Equilibrator Pressure,N,Y,fCO2|3|3

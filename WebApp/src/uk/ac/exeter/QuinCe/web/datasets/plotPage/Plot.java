@@ -290,6 +290,7 @@ public class Plot {
     labels.add("BAD");
     labels.add("QUESTIONABLE");
     labels.add("NEEDED");
+    labels.add("NOT_CALIBRATED");
 
     if (null != y2Axis) {
       labels.add(""); // Y2 value column
@@ -308,6 +309,7 @@ public class Plot {
       labels.add(""); // Y1 axis
       labels.add("BAD");
       labels.add("QUESTIONABLE");
+      labels.add("NOT_CALIBRATED");
       labels.add("GHOST");
       labels.add(y2Axis.getShortName());
 

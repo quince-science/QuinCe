@@ -24,8 +24,8 @@ public class ProOceanusMarineCO2Reducer extends DataReducer {
     DataReductionRecord record, Connection conn) throws DataReductionException {
 
     try {
-      Double intakeTemperature = measurement
-        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double waterTemperature = measurement
+        .getMeasurementValue("Water Temperature").getCalculatedValue();
       Double cellGasPressure = measurement
         .getMeasurementValue("Cell Gas Pressure").getCalculatedValue();
       Double xCO2 = measurement.getMeasurementValue("xCO₂ (wet, no standards)")
@@ -33,8 +33,7 @@ public class ProOceanusMarineCO2Reducer extends DataReducer {
 
       Double p = Calculators.hPaToAtmospheres(cellGasPressure);
       Double pCO2WetSST = xCO2 * p;
-      Double fCO2 = Calculators.calcfCO2(pCO2WetSST, xCO2, p,
-        intakeTemperature);
+      Double fCO2 = Calculators.calcfCO2(pCO2WetSST, xCO2, p, waterTemperature);
 
       record.put("pCO₂ SST", pCO2WetSST);
       record.put("fCO₂", fCO2);

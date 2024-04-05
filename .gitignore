@@ -71,6 +71,7 @@ DataPreparation/MapCO2/*csv
 
 # Jupyter Notebooks
 **/.ipynb_checkpoints
+Documentation/Algorithms/CONTROS_CO2/output.csv
 
 DataPreparation/HaraldSodemann/netCDFConverter/config.yaml
 

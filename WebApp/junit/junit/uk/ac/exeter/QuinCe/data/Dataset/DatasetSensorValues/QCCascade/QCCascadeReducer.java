@@ -28,14 +28,14 @@ public class QCCascadeReducer extends DataReducer {
     DataReductionRecord record, Connection conn) throws DataReductionException {
 
     try {
-      Double intakeTemperature = measurement
-        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double waterTemperature = measurement
+        .getMeasurementValue("Water Temperature").getCalculatedValue();
       Double salinity = measurement.getMeasurementValue("Salinity")
         .getCalculatedValue();
       Double co2 = measurement.getMeasurementValue("xCO₂ (wet, no standards)")
         .getCalculatedValue();
 
-      record.put("Sum", intakeTemperature + salinity + co2);
+      record.put("Sum", waterTemperature + salinity + co2);
     } catch (Exception e) {
       throw new DataReductionException(e);
     }

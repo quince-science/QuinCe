@@ -125,11 +125,16 @@ public class DataReductionQCJob extends DataSetJob {
       DataSetDataDB.storeDataReductionQC(conn,
         flaggedItems.getDataReductionRecords());
 
+      conn.commit();
+
       if (dataSet.isNrt()) {
         dataSet.setStatus(DataSet.STATUS_READY_FOR_EXPORT);
       } else {
         if (DataSetDataDB.getFlagsRequired(dataSource, dataSet.getId()) > 0) {
           dataSet.setStatus(DataSet.STATUS_USER_QC);
+        } else if (DataSetDataDB.hasCalibrationRequiredFlags(dataSource,
+          dataSet.getId())) {
+          dataSet.setStatus(DataSet.STATUS_CALIBRATION_REQUIRED);
         } else {
           dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);
         }

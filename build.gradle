@@ -100,7 +100,7 @@ dependencies {
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
   testImplementation 'com.h2database:h2:1.4.197'
   testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:7.0.0'
-  testImplementation 'org.mockito:mockito-core:3.5.10'
+  testImplementation 'org.mockito:mockito-core:5.8.0'
 
   // Flyway library for Java-based migrations
   testImplementation 'org.flywaydb:flyway-core:7.15.0'
@@ -136,6 +136,10 @@ sourceSets {
 
 compileJava {
   options.encoding = "UTF-8"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
 }
 
 test {

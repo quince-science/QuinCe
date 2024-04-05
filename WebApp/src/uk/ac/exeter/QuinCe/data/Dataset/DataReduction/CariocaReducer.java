@@ -203,7 +203,7 @@ public class CariocaReducer extends DataReducer {
       // pCO2 is slightly off which makes fCO2 quite a long way off
       // Double fCO2 = a * pCO2 + b;
 
-      record.put("Intake Temperature", celsius);
+      record.put("Water Temperature", celsius);
       record.put("K", K);
       record.put("R_temp", R_temp);
       record.put("lnR", lnR.doubleValue());
@@ -253,7 +253,7 @@ public class CariocaReducer extends DataReducer {
       calculationParameters = new ArrayList<CalculationParameter>();
 
       calculationParameters.add(new CalculationParameter(makeParameterId(0),
-        "Intake Temperature", "Water Temperature", "TEMPPR01", "°C", false));
+        "Water Temperature", "Water Temperature", "TEMPPR01", "°C", false));
 
       calculationParameters.add(
         new CalculationParameter(makeParameterId(1), "K", "K", "K", "", false));

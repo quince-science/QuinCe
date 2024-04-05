@@ -96,7 +96,7 @@ public class FlagCascadeTest extends TestSetTest {
       int sstQuestionableCascade = line.getIntField(SST_Q_CASCADE_COL);
       int sstBadCascade = line.getIntField(SST_B_CASCADE_COL);
 
-      assertEquals(1, setCascade(conn, "Intake Temperature",
+      assertEquals(1, setCascade(conn, "Water Temperature",
         sstQuestionableCascade, sstBadCascade));
 
       int salQuestionableCascade = line.getIntField(SAL_Q_CASCADE_COL);

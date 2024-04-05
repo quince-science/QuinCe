@@ -22,7 +22,7 @@ INSERT INTO instrument_variables (instrument_id, variable_id) VALUES (1000000, 1
   
 -- Some file columns with calibratable sensors
 
--- Intake Temp
+-- Water Temp
 INSERT INTO file_column (id, file_definition_id, file_column, primary_sensor,
     sensor_type, sensor_name)
   VALUES (1001, 1000000, 4, 1, 1, 'SENSOR1');

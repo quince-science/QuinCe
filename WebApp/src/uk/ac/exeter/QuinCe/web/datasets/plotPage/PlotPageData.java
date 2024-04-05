@@ -187,12 +187,16 @@ public abstract class PlotPageData {
     try {
       loadDataAction();
 
-      DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
-      try (Connection conn = dataSource.getConnection()) {
-        runTypePeriods = DataSetDataDB.getRunTypePeriods(conn, instrument,
-          dataset.getId());
-      } catch (SQLException e) {
-        error("Error loading data", e);
+      if (instrument.hasRunTypes()) {
+        DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
+        try (Connection conn = dataSource.getConnection()) {
+          runTypePeriods = DataSetDataDB.getRunTypePeriods(conn, instrument,
+            dataset.getId());
+        } catch (SQLException e) {
+          error("Error loading data", e);
+        }
+      } else {
+        runTypePeriods = new RunTypePeriods();
       }
 
       // Initialise Gson builder

@@ -183,6 +183,11 @@ public class DataSetDataDB {
   private static final String UPDATE_MEASUREMENT_TIME_STATEMENT = "UPDATE measurements "
     + "SET date = ? WHERE id = ?";
 
+  private static final String HAS_CALIBRATION_NEEDED_FLAGS_QUERY = "SELECT "
+    + "COUNT(*) FROM data_reduction WHERE measurement_id IN "
+    + "(SELECT id FROM measurements WHERE dataset_id = ?) " + "AND qc_flag = "
+    + Flag.VALUE_NOT_CALIBRATED;
+
   /**
    * Take a list of fields, and return those which come from the dataset data.
    * Any others will come from calculation data and will be left alone.
@@ -929,6 +934,48 @@ public class DataSetDataDB {
   }
 
   /**
+   * Determine whether or not calibration is required for a dataset prior to
+   * setting its status.
+   *
+   * Searches for any data reduction records with a QC flag of
+   * {@link Flag#NOT_CALIBRATED}.
+   *
+   * @param dataSource
+   *          A data source.
+   * @param datasetId
+   *          The dataset ID.
+   * @return {@code true} if any NOT_CALIBRATED flags are set; {@code false}
+   *         otherwise.
+   * @throws DatabaseException
+   *           If the check fails.
+   */
+  public static boolean hasCalibrationRequiredFlags(DataSource dataSource,
+    long datasetId) throws DatabaseException {
+
+    boolean result = false;
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(HAS_CALIBRATION_NEEDED_FLAGS_QUERY);) {
+
+      stmt.setLong(1, datasetId);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        records.next();
+        result = records.getInt(1) > 0;
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting calibration flag info", e);
+    }
+
+    return result;
+  }
+
+  /**
    * Get the data reduction data for a dataset.
    * <p>
    * Returns a Map structure of Measurement ID -&gt; Variable -&gt;
@@ -1051,27 +1098,29 @@ public class DataSetDataDB {
     List<Long> runTypeColumnIds = instrument.getSensorAssignments()
       .getRunTypeColumnIDs();
 
-    String sensorValuesSQL = DatabaseUtils
-      .makeInStatementSql(GET_RUN_TYPES_QUERY, runTypeColumnIds.size());
+    if (runTypeColumnIds.size() > 0) {
+      String sensorValuesSQL = DatabaseUtils
+        .makeInStatementSql(GET_RUN_TYPES_QUERY, runTypeColumnIds.size());
 
-    try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
+      try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
 
-      stmt.setLong(1, datasetId);
+        stmt.setLong(1, datasetId);
 
-      int currentParam = 2;
-      for (long column : runTypeColumnIds) {
-        stmt.setLong(currentParam, column);
-        currentParam++;
-      }
-
-      try (ResultSet records = stmt.executeQuery()) {
-        while (records.next()) {
-          result.add(records.getString(2),
-            DateTimeUtils.longToDate(records.getLong(1)));
+        int currentParam = 2;
+        for (long column : runTypeColumnIds) {
+          stmt.setLong(currentParam, column);
+          currentParam++;
         }
+
+        try (ResultSet records = stmt.executeQuery()) {
+          while (records.next()) {
+            result.add(records.getString(2),
+              DateTimeUtils.longToDate(records.getLong(1)));
+          }
+        }
+      } catch (SQLException e) {
+        throw new DatabaseException("Error while getting run type periods", e);
       }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting run type periods", e);
     }
 
     return result;

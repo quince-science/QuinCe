@@ -54,6 +54,7 @@ const DATA_LAYER = 'data';
 const FLAG_LAYER = 'flags';
 const SELECTION_LAYER = 'selection';
 
+const FLAG_NOT_CALIBRATED = 1;
 const FLAG_GOOD = 2;
 const FLAG_ASSUMED_GOOD = -2;
 const FLAG_QUESTIONABLE = 3;
@@ -297,12 +298,16 @@ function resizeAllContent() {
 
 function showQCMessage(qcFlag, qcMessage) {
 
-  if (qcMessage != "") {
+  if (qcMessage != '') {
 
     let content = '';
     content += '<div class="qcInfoMessage ';
 
     switch (qcFlag) {
+      case FLAG_NOT_CALIBRATED: {
+        content += 'notCalibrated';
+        break;
+      }
       case FLAG_QUESTIONABLE: {
         content += 'questionable';
         break;
@@ -342,7 +347,7 @@ function dataLoaded() {
     initPlot(1);
     initPlot(2);
 
-    if (typeof dataLoadedLocal === "function") {
+    if (typeof dataLoadedLocal === 'function') {
       dataLoadedLocal();
     }
   }
@@ -825,7 +830,7 @@ function drawTableSelection() {
   if (canEdit()) {
     // Clear all selection display. This clears both the main table
     // and the overlaid fixed columns table
-    $("td.selected").removeClass('selected');
+    $('td.selected').removeClass('selected');
 
     // Highlight selected cells
     let selectedRows = getSelectedRows();
@@ -879,6 +884,10 @@ function (data, type, row, meta) {
   if (null != data) {
     let flagClass = null;
     switch (data['qcFlag']) {
+      case FLAG_NOT_CALIBRATED: {
+        flagClass = 'notCalibrated';
+        break;
+      }
       case FLAG_QUESTIONABLE: {
         flagClass = 'questionable';
         break;
@@ -1036,7 +1045,7 @@ function canSelectCell(rowIndex, colIndex) {
     result = false;
   } else {
     let cellData = jsDataTable.cell(rowIndex, colIndex).data();
-    if (null == cellData || null == cellData.value || "" == cellData.value) {
+    if (null == cellData || null == cellData.value || '' == cellData.value) {
       result = false;
     } else if (cellData.qcFlag == FLAG_FLUSHING || cellData.type == 'I') {
       result = false;
@@ -1132,10 +1141,10 @@ function drawY2Plot(index, keepZoom) {
   y2_options.labels = labels;
   y2_options.xlabel = labels[0];
   y2_options.ylabel = labels[2];
-  y2_options.y2label = labels[6];
+  y2_options.y2label = labels[7];
   y2_options.legend = 'never';
-  y2_options.visibility = [false, true, true, true, true, true];
-  y2_options.colors = ['#00000000', '#00000000', '#E6B6A6', '#EFDCBF', '#C0C0C0', '#A9DBF9'];
+  y2_options.visibility = [false, true, true, true, true, true, true];
+  y2_options.colors = ['#00000000', '#00000000', '#E6B6A6', '#EFDCBF', '#CCCBAF', '#C0C0C0', '#A9DBF9'];
 
   if (keepZoom && null != zoomOptions) {
     y2_options.dateWindow = zoomOptions.dateWindow;
@@ -1174,11 +1183,16 @@ function drawY2Plot(index, keepZoom) {
       highlightCircleSize: 0
     },
     [labels[5]]: {
+      pointSize: FLAG_POINT_SIZE,
+      axis: 'y2',
+      highlightCircleSize: 0
+    },
+    [labels[6]]: {
       axis: 'y2',
       pointSize: DATA_POINT_SIZE,
       highlightCircleSize: 0
     },
-    [labels[6]]: {
+    [labels[7]]: {
       axis: 'y2',
       pointSize: DATA_POINT_SIZE,
       highlightCircleSize: 0
@@ -1501,7 +1515,7 @@ function drawFlagPlot1Y(index) {
   } else {
     let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
     // Flag colors
-    flag_options.colors = ['#FF0000', '#FFA42B', '#817FFF'];
+    flag_options.colors = ['#FF0000', '#FFA42B', '#AC9326', '#817FFF', '#FFA42B'];
     flag_options.xlabel = ' ';
     flag_options.ylabel = ' ';
     flag_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
@@ -1548,7 +1562,7 @@ function drawFlagPlot2Y(index) {
   } else {
     let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
     // Flag colors
-    flag_options.colors = ['#FF0000', '#FFA42B', '#817FFF', "#00000000"];
+    flag_options.colors = ['#FF0000', '#FFA42B', '#AC9326', '#817FFF', '#00000000'];
     flag_options.xlabel = ' ';
     flag_options.ylabel = ' ';
     flag_options.y2label = ' ';
@@ -1601,7 +1615,7 @@ function drawSelectionPlot(index) {
       let plotLabels = getPlotLabels(index);
 
       // Convert X values to dates if required
-      if (plotLabels[0] == "Time") {
+      if (plotLabels[0] == 'Time') {
         for (let i = 0; i < selectionData.length; i++) {
           selectionData[i][0] = new Date(selectionData[i][0]);
         }
@@ -2070,7 +2084,7 @@ function drawSelectRect(graph, context) {
       (context.prevEndY - context.dragStartY))
   }
 
-  ctx.fillStyle = "rgba(128,128,128,0.33)";
+  ctx.fillStyle = 'rgba(128,128,128,0.33)';
   ctx.fillRect(context.dragStartX, context.dragStartY,
     (context.dragEndX - context.dragStartX),
     (context.dragEndY - context.dragStartY))

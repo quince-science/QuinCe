@@ -32,18 +32,18 @@ public class SamiPco2DataReducer extends DataReducer {
     DataReductionRecord record, Connection conn) throws DataReductionException {
 
     try {
-      Double intakeTemperature = measurement
-        .getMeasurementValue("Intake Temperature").getCalculatedValue();
+      Double waterTemperature = measurement
+        .getMeasurementValue("Water Temperature").getCalculatedValue();
       Double pCO2TEWet = measurement
         .getMeasurementValue("pCO₂ (wet at equilibration)")
         .getCalculatedValue();
       Double pressure = measurement
         .getMeasurementValue("Pressure at instrument").getCalculatedValue();
 
-      Double pCO2SST = Calculators.calcCO2AtSST(pCO2TEWet, intakeTemperature,
-        intakeTemperature);
+      Double pCO2SST = Calculators.calcCO2AtSST(pCO2TEWet, waterTemperature,
+        waterTemperature);
       Double fCO2 = Calculators.calcfCO2(pCO2SST, pCO2SST, pressure,
-        intakeTemperature);
+        waterTemperature);
 
       record.put("pCO₂ SST", pCO2SST);
       record.put("fCO₂", fCO2);

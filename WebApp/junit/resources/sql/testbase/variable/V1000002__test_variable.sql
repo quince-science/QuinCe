@@ -12,7 +12,7 @@ INSERT INTO variable_sensors
   (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
-    (SELECT id FROM sensor_types WHERE name = 'Intake Temperature'),
+    (SELECT id FROM sensor_types WHERE name = 'Water Temperature'),
     0, 3, 4
   );
 

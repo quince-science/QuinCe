@@ -43,6 +43,7 @@ public class Y2AxisPlotValueSerializer implements JsonSerializer<PlotValue> {
       json.add(JsonNull.INSTANCE);
       json.add(JsonNull.INSTANCE);
       json.add(JsonNull.INSTANCE);
+      json.add(JsonNull.INSTANCE);
     } else {
 
       // BAD value
@@ -54,6 +55,13 @@ public class Y2AxisPlotValueSerializer implements JsonSerializer<PlotValue> {
 
       // QUESTIONABLE value
       if (src.getFlag2().equals(Flag.QUESTIONABLE)) {
+        json.add(src.getY2());
+      } else {
+        json.add(JsonNull.INSTANCE);
+      }
+
+      // NOT_CALIBRATED value
+      if (src.getFlag2().equals(Flag.NOT_CALIBRATED)) {
         json.add(src.getY2());
       } else {
         json.add(JsonNull.INSTANCE);

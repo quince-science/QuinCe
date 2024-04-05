@@ -106,6 +106,13 @@ public class CalculationCoefficient extends Calibration {
     return variable.getId() + "." + coefficient;
   }
 
+  public static List<String> getCoeffecientNames(Variable variable,
+    List<String> coefficients) {
+
+    return coefficients.stream().map(c -> getCoeffecientName(variable, c))
+      .toList();
+  }
+
   public Double getValue() {
     return getDoubleCoefficient("Value");
   }

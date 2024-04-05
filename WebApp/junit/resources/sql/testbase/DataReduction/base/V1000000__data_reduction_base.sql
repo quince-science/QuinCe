@@ -24,7 +24,7 @@ INSERT INTO variable_sensors
   (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
-    (SELECT id FROM sensor_types WHERE name = 'Intake Temperature'),
+    (SELECT id FROM sensor_types WHERE name = 'Water Temperature'),
     0, 2, 2
   );
 
@@ -95,7 +95,7 @@ INSERT INTO file_column
   (id, file_definition_id, file_column, primary_sensor, sensor_type, sensor_name)
   VALUES
   (2, 1, 3, 1,
-   (SELECT id FROM sensor_types WHERE name = 'Intake Temperature'),
+   (SELECT id FROM sensor_types WHERE name = 'Water Temperature'),
    'SST');
 
 INSERT INTO file_column

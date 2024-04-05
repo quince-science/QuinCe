@@ -311,7 +311,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @Test
   public void missingSensorNameTest() throws Exception {
     List<String> names = new ArrayList<String>(2);
-    names.add("Intake Temperature");
+    names.add("Water Temperature");
     names.add("Flurble");
 
     assertThrows(SensorConfigurationException.class, () -> {
@@ -338,7 +338,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @Test
   public void validSensorNameTest() throws Exception {
     List<String> names = new ArrayList<String>(2);
-    names.add("Intake Temperature");
+    names.add("Water Temperature");
     names.add("Salinity");
     names.add("Run Type"); // Include the special Run Type for giggles
     getConfig().validateSensorNames(names);
@@ -650,7 +650,7 @@ public class SensorsConfigurationTest extends BaseTest {
     Set<SensorType> testSensorTypes = config.getSensorTypes(var2List, false,
       false, false);
     assertTrue(
-      testSensorTypes.contains(config.getSensorType("Intake Temperature")));
+      testSensorTypes.contains(config.getSensorType("Water Temperature")));
     assertTrue(testSensorTypes.contains(config.getSensorType("Salinity")));
     assertTrue(testSensorTypes.contains(config.getSensorType("testSensor")));
     assertFalse(testSensorTypes

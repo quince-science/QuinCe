@@ -30,6 +30,12 @@ public class DefaultMeasurementValueCollector
       SensorValuesListValue referenceValue = getReferenceValue(instrument,
         variable, measurement, allSensorValues);
 
+      if (null == referenceValue) {
+        throw new MeasurementValueCollectorException(
+          "Failed to get referenceValue for measurement at "
+            + measurement.getTime());
+      }
+
       List<MeasurementValue> result = new ArrayList<MeasurementValue>();
 
       for (SensorType sensorType : variable
@@ -41,6 +47,8 @@ public class DefaultMeasurementValueCollector
       }
 
       return result;
+    } catch (MeasurementValueCollectorException e) {
+      throw e;
     } catch (Exception e) {
       throw new MeasurementValueCollectorException(e);
     }
@@ -115,7 +123,7 @@ public class DefaultMeasurementValueCollector
 
     SensorValuesListValue referenceValuesListValue;
 
-    if (null != runType && !Measurement.isAutoRunType(runType)) {
+    if (null != runType && !Measurement.isNonColumnRunType(runType)) {
 
       // Assume only 1 run type column
       long runTypeColumn = instrument.getSensorAssignments()

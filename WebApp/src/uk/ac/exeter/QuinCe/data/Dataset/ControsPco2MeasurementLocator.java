@@ -35,17 +35,14 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
 
       Variable variable = sensorConfig.getInstrumentVariable("CONTROS pCO₂");
 
-      float zeroFlushTime = Float.parseFloat(dataset.getAllProperties()
-        .get(variable.getName()).getProperty("zero_flush"));
+      long zeroFlushTime = Math.round(Double.parseDouble(dataset
+        .getAllProperties().get(variable.getName()).getProperty("zero_flush")));
 
-      SensorType zeroType = sensorConfig
-        .getSensorType("Contros pCO₂ Zero Mode");
-      SensorType flushingType = sensorConfig
-        .getSensorType("Contros pCO₂ Flush Mode");
+      SensorType zeroType = sensorConfig.getSensorType("Zero Mode");
+      SensorType flushingType = sensorConfig.getSensorType("Flush Mode");
       SensorType rawSensorType = sensorConfig
-        .getSensorType("Contros pCO₂ Raw Detector Signal");
-      SensorType refSensorType = sensorConfig
-        .getSensorType("Contros pCO₂ Reference Signal");
+        .getSensorType("Raw Detector Signal");
+      SensorType refSensorType = sensorConfig.getSensorType("Reference Signal");
 
       // Assume one column of each type
       long zeroColumn = instrument.getSensorAssignments().getColumnIds(zeroType)
@@ -88,8 +85,9 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
           String runType;
 
           if (currentStatus == ZERO) {
-            if (DateTimeUtils.secondsBetween(currentStatusStart,
-              recordTime) <= zeroFlushTime) {
+            if (zeroFlushTime > 0
+              && DateTimeUtils.secondsBetween(currentStatusStart,
+                recordTime) <= zeroFlushTime) {
               flushSensors = true;
             }
 
@@ -109,10 +107,13 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             refValue.setUserQC(Flag.FLUSHING, "Flushing");
             flaggedSensorValues.add(rawValue);
             flaggedSensorValues.add(refValue);
+            recordStatus = FLUSHING;
           }
 
-          measurements
-            .add(makeMeasurement(dataset, recordTime, variable, runType));
+          if (recordStatus != FLUSHING) {
+            measurements
+              .add(makeMeasurement(dataset, recordTime, variable, runType));
+          }
         }
       }
 

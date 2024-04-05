@@ -27,13 +27,13 @@ import com.google.gson.JsonParseException;
  * The sensors for an instrument may be located in different physical locations,
  * which needs to be taken into account during data reduction; for example, it
  * takes water a significant amount of time to travel from one end of the ship
- * to the other, so if the intake temperature sensor and CO₂ sensor are at
+ * to the other, so if the water temperature sensor and CO₂ sensor are at
  * opposite ends, the calculation must offset the time taken.
  * </p>
  *
  * <p>
  * Offsets between groups of sensors are identified by a linking sensor in each
- * group. For example, two groups may be linked by Intake Temperature in the
+ * group. For example, two groups may be linked by Water Temperature in the
  * first group and Equilibrator Temperature in the second. The data reduction
  * routines will use values from these sensors to calculate the offset to be
  * applied.

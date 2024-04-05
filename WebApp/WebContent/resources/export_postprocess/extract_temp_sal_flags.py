@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 ''' 
-This script finds error flags denoting bad intake temperature and 
+This script finds error flags denoting bad water temperature* and 
 salinity values, it creates a corresponding boolean value in a 
 separate column.
 This script requires two variables as system input arguments;
  - read_file
  - write_file
 
- -Maren 16.11.18
- '''
+ * processed messages for both "intake temperature" and "water temperature"
+'''
 
 import sys
 import pandas as pd
@@ -26,6 +26,7 @@ try:
         df = pd.read_csv(read_file) #dataframe
 
         temperature_err_msg = ['intake temperature','sst']
+        temperature2_err_msg = ['water temperature','sst']
         salinity_err_msg = ['salinity','sss']
 
         def get_error(row,error_name):
@@ -37,6 +38,9 @@ try:
 
         df['Temperature error'] = df.apply(lambda row: 
         	get_error(row,temperature_err_msg),axis=1)
+        
+        df['Temperature error'] = df.apply(lambda row: 
+        	get_error(row,temperature2_err_msg),axis=1)
         
         df['Salinity error'] = df.apply(lambda row: 
         	get_error(row,salinity_err_msg),axis=1)

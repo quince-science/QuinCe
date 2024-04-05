@@ -179,7 +179,7 @@ public class Calculators {
 
       BigDecimal top = Y0timesX1minusX.add(Y1timesXminusX0);
 
-      result = top.divide(X1minusX0, 10, RoundingMode.HALF_UP);
+      result = top.divide(X1minusX0, 50, RoundingMode.HALF_UP);
     } else if (!priorNull) {
       result = y0;
     } else if (!postNull) {
@@ -225,7 +225,7 @@ public class Calculators {
   }
 
   /**
-   * Calculates pCO<sub>2</sub> at the intake (sea surface) temperature. From
+   * Calculates pCO<sub>2</sub> at the water (sea surface) temperature. From
    * Takahashi et al. (2009)
    *
    * @param pco2TEWet
@@ -233,8 +233,8 @@ public class Calculators {
    * @param eqt
    *          The equilibrator temperature
    * @param sst
-   *          The intake temperature
-   * @return The pCO<sub>2</sub> at intake temperature
+   *          The water temperature
+   * @return The pCO<sub>2</sub> at water temperature
    */
   public static Double calcCO2AtSST(Double co2AtEquilibrator, Double eqt,
     Double sst) {

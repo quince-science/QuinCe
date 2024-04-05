@@ -138,7 +138,6 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
       if (!flag.lessSignificantThan(super.getQCFlag())) {
         overrideQCFlag = flag;
         overrideQcMessages = filteredMessages;
-
       }
     } else {
       if (flag.equalSignificance(overrideQCFlag)) {
