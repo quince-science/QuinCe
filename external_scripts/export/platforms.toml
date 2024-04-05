@@ -189,7 +189,7 @@ category_code = '31'
 call_sign = 'OJMI'
 creation_date = '2022-09-27T00:00:00Z'
 author_list = 'Glockzin, Michael; Rehder, Gregor'
-affiliation = 'Leibniz Institute for Baltic Sea Research' 
+affiliation = 'Leibniz Institute for Baltic Sea Research'
 NRT = 'False'
 
   [DE-SOOP-Finnmaid.export]
@@ -211,3 +211,20 @@ NRT = 'True'
   [IT-FOS-MIRAMARE.export]
   NRT = ['ICOS']
   L2 = ['ICOS']
+
+[ES-SOOP-CanOA]
+platform_code = '687B'
+name = 'CanOA'
+submitter_id = 'OTC'
+cp_url = 'https://meta.icos-cp.eu/resources/otcmeta/ES-SOOP-CanOA'
+category_code = '31'
+call_sign = 'CQHZ'
+cration_date = '2024-04-05T10:53:00Z'
+author_list = 'González-Dávila, Melchor; Santana-Casiano, J. Magdalena'
+affiliation = 'Universidad de Las Palmas de Gran Canaria'
+NRT = 'True'
+
+  [ES-SOOP-CanOA.export]
+  NRT = ['ICOS']
+  L2 = ['ICOS']
+
