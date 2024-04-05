@@ -23,9 +23,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  * Calibrations can only be added to the set if they are for the correct
  * instrument and of the correct type.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class CalibrationSet extends TreeSet<Calibration> {
 

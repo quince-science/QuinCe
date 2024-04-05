@@ -22,9 +22,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  *
  * Handles reading/writing of user details and all the functions that shouldn't
  * be performed at the session level.
- *
- * @author Steve Jones
- *
  */
 public class UserDB {
 

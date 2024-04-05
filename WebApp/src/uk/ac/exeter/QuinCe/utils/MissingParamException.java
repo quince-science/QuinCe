@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.utils;
 
 /**
  * Exception thrown when a {@link MissingParam} check fails.
- *
- * @author Steve Jones
- *
  */
 @SuppressWarnings("serial")
 public class MissingParamException extends ParameterException {

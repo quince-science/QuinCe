@@ -10,9 +10,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 /**
  * API call to report to QuinCe that an export has been completed. This will
  * return the dataset's status to {@link DataSet#STATUS_EXPORT_COMPLETE}.
- *
- * @author Steve Jones
- *
  */
 @Path("/export/completeExport")
 public class CompleteExport extends SetExportStatus {

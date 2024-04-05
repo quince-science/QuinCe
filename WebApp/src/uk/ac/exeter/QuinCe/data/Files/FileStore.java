@@ -21,7 +21,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * are made through the {@code DataFileDB} class.
  * </p>
  *
- * @author Steve Jones
  * @see DataFileDB
  */
 public class FileStore {

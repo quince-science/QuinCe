@@ -52,14 +52,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Database methods dealing with instruments
- *
- * @author Steve Jones
- *
  */
 public class InstrumentDB {
-
-  ////////// *** CONSTANTS *** ///////////////
-
   /**
    * Statement for inserting an instrument record
    */

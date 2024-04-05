@@ -13,7 +13,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
-import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
@@ -49,20 +48,20 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * <p>
- * This {@link Job} class runs a set of QC routines on the sensor values for a
- * given data set.
+ * This {@link Job} class runs a set of QC routines on the {@link SensorValue}s
+ * for a given data set.
  * </p>
  *
  * <p>
- * Once the QC has been completed, {@link AutoQCResult} is set. If the QC result
- * was {@link Flag#GOOD}, the WOCE flag for the record will be set to
- * {@link Flag#ASSUMED_GOOD}, to indicate that the software will assume that the
- * record is good unless the user overrides it. Otherwise the WOCE Flag will be
- * set to {@link Flag#NEEDED}. The user will be required to manually choose a
- * value for the WOCE Flag, either by accepting the suggestion from the QC job,
- * or overriding the flag and choosing their own. The WOCE Comment will default
- * to being identical to the QC Message, but this can also be changed if
- * required.
+ * Once the QC has been completed, an {@link AutoQCResult} is set on the
+ * {@link SensorValue}. If the QC result was {@link Flag#GOOD}, the WOCE flag
+ * for the record will be set to {@link Flag#ASSUMED_GOOD}, to indicate that the
+ * software will assume that the record is good unless the user overrides it.
+ * Otherwise the WOCE Flag will be set to {@link Flag#NEEDED}. The user will be
+ * required to manually choose a value for the WOCE Flag, either by accepting
+ * the suggestion from the QC job, or overriding the flag and choosing their
+ * own. The WOCE Comment will default to being identical to the QC Message, but
+ * this can also be changed if required.
  * </p>
  *
  * <p>
@@ -81,6 +80,10 @@ public class AutoQCJob extends DataSetJob {
    */
   private final String jobName = "Sensor Quality Control";
 
+  /**
+   * The Run Type strings for the {@link Instrument} that indicate measurements
+   * (as opposed to calibrations or other statuses).
+   */
   private List<String> measurementRunTypes;
 
   /**
@@ -93,14 +96,12 @@ public class AutoQCJob extends DataSetJob {
    *          The application configuration
    * @param jobId
    *          The database ID of the job
-   * @param parameters
+   * @param properties
    *          The job parameters
-   * @throws MissingParamException
-   *           If any parameters are missing
    * @throws InvalidJobParametersException
-   *           If any of the job parameters are invalid
+   *           If any of the job properties are invalid
    * @throws DatabaseException
-   *           If a database occurs
+   *           If a database error occurs
    * @throws RecordNotFoundException
    *           If any required database records are missing
    * @see JobManager#getNextJob(ResourceManager, Properties)
@@ -347,17 +348,12 @@ public class AutoQCJob extends DataSetJob {
    *
    * Delete all related records and reset the status
    *
-   * @throws MissingParamException
-   *           If any of the parameters are invalid
-   * @throws InvalidDataSetStatusException
-   *           If the method sets an invalid data set status
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws RecordNotFoundException
-   *           If the record don't exist
+   * @param conn
+   *          A database connection.
+   * @throws JobFailedException
+   *           If the reset action fails.
    */
   protected void reset(Connection conn) throws JobFailedException {
-
     try {
       DataSetDataDB.deleteDataReduction(conn, getDataset(conn).getId());
       DataSetDataDB.deleteMeasurements(conn, getDataset(conn).getId());

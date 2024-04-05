@@ -13,8 +13,6 @@ import javax.servlet.ServletContextListener;
  * This abstract class provides a framework for those tasks, providing
  * scheduling details and ensuring that only one instance of a given task is
  * running concurrently.
- *
- * @author Steve Jones
  */
 public abstract class BackgroundTask
   implements ServletContextListener, Runnable {

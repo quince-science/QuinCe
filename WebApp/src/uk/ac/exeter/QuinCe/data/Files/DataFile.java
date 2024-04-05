@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -25,17 +26,16 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
+import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Class representing a data file
- *
- * @author Steve Jones
- *
  */
 public class DataFile {
 
@@ -956,6 +956,25 @@ public class DataFile {
 
   private LocalDateTime applyTimeOffset(LocalDateTime rawTime) {
     return rawTime.plusSeconds(getTimeOffset());
+  }
+
+  /**
+   * Calculate the mean length (in seconds) of collection of DataFiles.
+   *
+   * <p>
+   * The length of each file is calculated as {@code endDate - startDate}, so
+   * files with a single line will be zero seconds long.
+   * </p>
+   *
+   * @param files
+   *          The files.
+   * @return The mean file length.
+   */
+  public static double getMeanFileLength(Collection<DataFile> files) {
+    MeanCalculator mean = new MeanCalculator();
+    files.forEach(
+      f -> mean.add(DateTimeUtils.secondsBetween(f.startDate, f.endDate)));
+    return mean.mean();
   }
 
   @Override

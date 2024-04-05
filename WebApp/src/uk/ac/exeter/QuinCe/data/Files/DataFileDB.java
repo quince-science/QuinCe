@@ -48,7 +48,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * directly (they are {@code protected} within this package).
  * </p>
  *
- * @author Steve Jones
  * @see FileStore
  */
 public class DataFileDB {

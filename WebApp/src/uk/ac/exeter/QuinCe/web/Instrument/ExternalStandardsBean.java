@@ -13,9 +13,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardFactory;
 
 /**
  * Bean for external standards
- *
- * @author Steve Jones
- *
  */
 @ManagedBean
 @SessionScoped

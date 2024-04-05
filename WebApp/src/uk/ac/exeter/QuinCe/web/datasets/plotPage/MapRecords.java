@@ -51,6 +51,10 @@ public class MapRecords extends ArrayList<MapRecord> {
 
   private Double max = Double.NaN;
 
+  private Double minNoFlags = Double.NaN;
+
+  private Double maxNoFlags = Double.NaN;
+
   public MapRecords(int size) {
     super(size);
   }
@@ -174,11 +178,43 @@ public class MapRecords extends ArrayList<MapRecord> {
   private void calculateValueRange() {
     min = Double.NaN;
     max = Double.NaN;
+    minNoFlags = Double.NaN;
+    maxNoFlags = Double.NaN;
 
     forEach(r -> {
       Double value = r.getValue();
 
       if (!value.isNaN()) {
+
+        if (min.isNaN()) {
+          min = value;
+          max = value;
+        }
+
+        if (value < min) {
+          min = value;
+        }
+
+        if (value > max) {
+          max = value;
+        }
+
+        if (r.isGood()) {
+          if (minNoFlags.isNaN()) {
+            minNoFlags = value;
+            maxNoFlags = value;
+          }
+
+          if (value < minNoFlags) {
+            minNoFlags = value;
+          }
+
+          if (value > maxNoFlags) {
+            maxNoFlags = value;
+          }
+
+        }
+
         if (min.isNaN()) {
           min = value;
           max = value;
@@ -196,12 +232,70 @@ public class MapRecords extends ArrayList<MapRecord> {
     valueRangeCalculated = true;
   }
 
-  public Double[] getValueRange() {
+  /**
+   * Get the minimum and maximum value.
+   *
+   * <p>
+   * If the minimum and maximum are equal, they are offset by a minimum amount
+   * (±0.001) to ensure the map colour scale is rendered properly.
+   * </p>
+   *
+   * @return The minimum and maximum value.
+   */
+  public Double[] getValueRange(boolean hideFlags) {
     if (!valueRangeCalculated) {
       calculateValueRange();
     }
 
-    return new Double[] { min, max };
+    Double outMin;
+    Double outMax;
+
+    if (!hideFlags) {
+      outMin = min;
+      outMax = max;
+    } else {
+      outMin = minNoFlags;
+      outMax = maxNoFlags;
+    }
+
+    if (outMin == outMax) {
+      outMin = outMin - 0.001D;
+      outMax = outMax + 0.001D;
+    }
+
+    return new Double[] { outMin, outMax };
+  }
+
+  public GeoBounds getBounds(boolean hideNonGoodFlags) {
+    double minLon = Double.MAX_VALUE;
+    double maxLon = Double.MIN_VALUE;
+    double minLat = Double.MAX_VALUE;
+    double maxLat = Double.MIN_VALUE;
+
+    for (MapRecord record : this) {
+      if (!hideNonGoodFlags || record.isGood() || record.flagNeeded()) {
+        double lat = record.position.getLatitude();
+        double lon = record.position.getLongitude();
+
+        if (lon < minLon) {
+          minLon = lon;
+        }
+
+        if (lon > maxLon) {
+          maxLon = lon;
+        }
+
+        if (lat < minLat) {
+          minLat = lat;
+        }
+
+        if (lat > maxLat) {
+          maxLat = lat;
+        }
+      }
+    }
+
+    return new GeoBounds(minLon, maxLon, minLat, maxLat);
   }
 
   @Override

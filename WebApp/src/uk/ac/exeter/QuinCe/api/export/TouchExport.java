@@ -28,9 +28,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
  * dataset was last altered (it is this time that QuinCe watches to determine
  * whether or not the export has timed out).
  * </p>
- *
- * @author Steve Jones
- *
  */
 @Path("/export/touchExport")
 public class TouchExport extends SetExportStatus {

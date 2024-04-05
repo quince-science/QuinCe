@@ -6,9 +6,6 @@ import javax.faces.validator.ValidatorException;
 /**
  * Validator for instrument names. Ensures that the name contains at least one
  * character, and is unique for the current user
- *
- * @author Steve Jones
- *
  */
 public class InstrumentFileDescriptionValidator extends NewInstrumentValidator {
 

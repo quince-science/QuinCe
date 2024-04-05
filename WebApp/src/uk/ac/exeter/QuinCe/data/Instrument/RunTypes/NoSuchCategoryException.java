@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 
 /**
  * Exception thrown if a specified run type category cannot be found
- *
- * @author Steve Jones
- *
  */
 public class NoSuchCategoryException extends RunTypeCategoryException {
 

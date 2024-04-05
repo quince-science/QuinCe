@@ -11,9 +11,6 @@ import uk.ac.exeter.QuinCe.utils.ParameterException;
 
 /**
  * Represents a external standard calibration
- *
- * @author Steve Jones
- *
  */
 public abstract class ExternalStandard extends Calibration {
 

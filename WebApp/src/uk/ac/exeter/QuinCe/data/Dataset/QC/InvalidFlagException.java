@@ -2,8 +2,6 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
 /**
  * Exception thrown when an invalid numeric flag value is encountered
- *
- * @author Steve Jones
  */
 public class InvalidFlagException extends Exception {
 

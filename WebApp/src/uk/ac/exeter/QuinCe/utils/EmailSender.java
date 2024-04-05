@@ -8,9 +8,6 @@ import org.apache.commons.mail.SimpleEmail;
 
 /**
  * Utility class for sending emails
- *
- * @author Steve Jones
- *
  */
 public class EmailSender {
 

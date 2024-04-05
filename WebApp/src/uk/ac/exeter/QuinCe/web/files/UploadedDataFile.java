@@ -27,10 +27,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
-/**
- * @author Jonas F. Henriksen
- *
- */
 public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
   /**

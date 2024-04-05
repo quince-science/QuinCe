@@ -14,9 +14,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 /**
  * The ServletUtilsBean holds utility functions and data that needs to last
  * throughout the session, and can be used globally by the QuinCe application.
- *
- * @author Jonas F. Henriksen
- *
  */
 @ManagedBean(name = "utils")
 @SessionScoped

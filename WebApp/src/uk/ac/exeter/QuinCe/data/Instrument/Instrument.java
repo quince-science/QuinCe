@@ -40,9 +40,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Object to hold all the details of an instrument
- *
- * @author Steve Jones
- *
  */
 public class Instrument {
 

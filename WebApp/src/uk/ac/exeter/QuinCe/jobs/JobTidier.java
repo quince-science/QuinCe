@@ -19,7 +19,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * The job will run once per day.
  * </p>
  *
- * @author Steve Jones
  * @see JobManager#deleteFinishedJobs(DataSource, int)
  */
 @WebListener

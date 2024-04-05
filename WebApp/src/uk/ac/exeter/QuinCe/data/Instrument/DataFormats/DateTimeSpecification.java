@@ -19,9 +19,6 @@ import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 
 /**
  * Defines how the date and time are stored in a data file
- *
- * @author Steve Jones
- *
  */
 public class DateTimeSpecification {
 

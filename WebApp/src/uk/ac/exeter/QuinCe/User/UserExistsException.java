@@ -3,9 +3,6 @@ package uk.ac.exeter.QuinCe.User;
 /**
  * An exception that indicates an attempt to add a user whose email already
  * exists in the database.
- *
- * @author Steve Jones
- *
  */
 public class UserExistsException extends Exception {
 

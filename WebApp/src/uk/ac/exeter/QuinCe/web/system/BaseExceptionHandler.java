@@ -18,9 +18,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Based on <a href=
  * "https://web.archive.org/web/20210125143705/https://www.networkworld.com/article/2224081/how-to-add-exception-handling-to-jsf-applications.html">
  * How to add exception handling to JSF applications</a>.
- *
- * @author Steve Jones
- *
  */
 public class BaseExceptionHandler extends ExceptionHandlerWrapper {
 

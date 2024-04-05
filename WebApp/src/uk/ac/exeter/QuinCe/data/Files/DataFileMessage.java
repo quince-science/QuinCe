@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.data.Files;
 
 /**
  * Class to hold a message related to a data file
- *
- * @author Steve Jones
- *
  */
 public class DataFileMessage implements Comparable<DataFileMessage> {
 

@@ -26,9 +26,6 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
  * removing things manually may result in unpredictable behaviour in the
  * application. Please use only the methods provided here.
  * </p>
- *
- * @author steve
- *
  */
 @SuppressWarnings("serial")
 public class DatasetProcessingMessages

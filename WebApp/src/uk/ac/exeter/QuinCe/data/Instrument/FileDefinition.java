@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
@@ -21,10 +22,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Holds a description of a sample data file uploaded during the creation of a
- * new instrument
- *
- * @author Steve Jones
- *
+ * new instrument.
  */
 public class FileDefinition implements Comparable<FileDefinition> {
 
@@ -315,26 +313,6 @@ public class FileDefinition implements Comparable<FileDefinition> {
   public int compareTo(FileDefinition o) {
     return fileDescription.toLowerCase()
       .compareTo(o.fileDescription.toLowerCase());
-  }
-
-  /**
-   * Equals compares on the unique file description (case insensitive)
-   */
-  @Override
-  public boolean equals(Object o) {
-    boolean result = true;
-
-    if (null == o) {
-      result = false;
-    } else if (!(o instanceof FileDefinition)) {
-      result = false;
-    } else {
-      FileDefinition oFile = (FileDefinition) o;
-      result = oFile.fileDescription.toLowerCase() == fileDescription
-        .toLowerCase();
-    }
-
-    return result;
   }
 
   /**
@@ -1095,5 +1073,23 @@ public class FileDefinition implements Comparable<FileDefinition> {
     }
 
     return result;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(databaseId, fileDescription);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    FileDefinition other = (FileDefinition) obj;
+    return databaseId == other.databaseId
+      && Objects.equals(fileDescription, other.fileDescription);
   }
 }

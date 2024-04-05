@@ -40,8 +40,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * The background job to perform data reduction on a data file.
- *
- * @author Steve Jones
  */
 public class DataReductionJob extends DataSetJob {
 

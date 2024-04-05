@@ -21,7 +21,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * decide if it wants to check the file again during processing.
  * </p>
  *
- * @author Steve Jones
  * @see Job
  */
 public abstract class FileJob extends Job {

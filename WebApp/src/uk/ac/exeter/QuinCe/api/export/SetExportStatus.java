@@ -35,9 +35,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * can be changed). If the dataset is not currently being exported, the API call
  * will return {@link javax.ws.rs.core.Response.Status#FORBIDDEN}.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public abstract class SetExportStatus {
 

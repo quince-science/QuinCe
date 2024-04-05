@@ -24,9 +24,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * API call for uploading new files for an instrument
- *
- * @author Steve Jones
- *
  */
 @Path("/nrt/UploadFile")
 public class UploadFile {

@@ -12,7 +12,6 @@ import java.util.Properties;
  * This class contains the data for such an assignment, and will be part of the
  * mapped assignments in the main date/time specification.
  *
- * @author Steve Jones
  * @see DateTimeSpecification
  */
 public class DateTimeColumnAssignment {

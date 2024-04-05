@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
+import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 
 public class QCMap {
 
@@ -22,7 +23,20 @@ public class QCMap {
    */
   private final boolean useNeededFlags;
 
-  private GeoBounds bounds;
+  /**
+   * The maximum bounds of the dataset (including all data points).
+   */
+  private GeoBounds viewBounds;
+
+  /**
+   * The bounds of the data currently being viewed.
+   *
+   * <p>
+   * This may not include all data points depending on the configuration of the
+   * map view.
+   * </p>
+   */
+  private GeoBounds dataBounds = null;
 
   private boolean updateScale;
 
@@ -44,7 +58,7 @@ public class QCMap {
     this.data = data;
     this.dataColumn = dataColumn;
     this.useNeededFlags = useNeededFlags;
-    this.bounds = data.getDataset().getBounds();
+    this.viewBounds = data.getDataset().getBounds();
   }
 
   public long getColumn() {
@@ -77,7 +91,7 @@ public class QCMap {
    * @return the mapBounds
    */
   public String getViewBounds() {
-    return bounds.toJson();
+    return viewBounds.toJson();
   }
 
   /**
@@ -86,12 +100,21 @@ public class QCMap {
    */
   public void setViewBounds(String bounds) {
     if (!StringUtils.isEmpty(bounds)) {
-      this.bounds = new GeoBounds(bounds);
+      this.viewBounds = new GeoBounds(bounds);
     }
   }
 
   public String getDataBounds() {
-    return data.getDataset().getBounds().toJson();
+    if (null == dataBounds) {
+      try {
+        dataBounds = data.getMapBounds(dataColumn, hideFlags);
+      } catch (Exception e) {
+        ExceptionUtils.printStackTrace(e);
+        dataBounds = data.getDataset().getBounds();
+      }
+    }
+
+    return dataBounds.toJson();
   }
 
   /**
@@ -111,8 +134,10 @@ public class QCMap {
 
   public void generateMapData() {
     try {
-      mapScaleLimits = data.getValueRange(dataColumn);
-      mapData = data.getMapData(dataColumn, bounds, useNeededFlags, hideFlags);
+      mapScaleLimits = data.getValueRange(dataColumn, hideFlags);
+      mapData = data.getMapData(dataColumn, viewBounds, useNeededFlags,
+        hideFlags);
+      dataBounds = null;
     } catch (Exception e) {
       e.printStackTrace();
     }

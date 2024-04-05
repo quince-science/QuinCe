@@ -21,9 +21,6 @@ import uk.ac.exeter.QuinCe.User.User;
  * This is an abstract class. Implementing classes will determine which
  * permission they will check.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public abstract class PermissionsFilter implements Filter {
 

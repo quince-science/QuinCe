@@ -15,7 +15,6 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * Extended version of the {@link BaseManagedBean} that includes file upload
  * handling.
  *
- * @author Steve Jones
  * @see BaseManagedBean
  */
 public abstract class FileUploadBean extends BaseManagedBean {

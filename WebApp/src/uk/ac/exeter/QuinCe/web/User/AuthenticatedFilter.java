@@ -35,9 +35,6 @@ import uk.ac.exeter.QuinCe.User.User;
  * @see <a href=
  *      "http://stackoverflow.com/questions/8480100/how-implement-a-login-filter-in-jsf">How
  *      implement a login filter in JSF?</a>
- *
- * @author Steve Jones
- *
  */
 @WebFilter(servletNames = { "Faces Servlet", "Logout" })
 public class AuthenticatedFilter implements Filter {

@@ -1,10 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 /**
- * Excpeption thrown if an invalid header type is specified
- *
- * @author Steve Jones
- *
+ * Exception thrown if an invalid header type is specified
  */
 public class InvalidHeaderTypeException extends FileDefinitionException {
 

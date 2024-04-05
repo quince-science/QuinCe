@@ -39,8 +39,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 
 /**
  * Bean for handling the creation and management of data sets
- *
- * @author Steve Jones
  */
 @ManagedBean
 @SessionScoped

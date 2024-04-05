@@ -42,12 +42,30 @@ public class MeanCalculator {
    *
    * <p>
    * {@code null} and {@code NaN} values are ignored.
+   * </p>
    *
    * @param value
    *          The value to add.
    */
   public void add(Double value) {
     if (null != value && !value.isNaN()) {
+      sum.add(value);
+      count.increment();
+    }
+  }
+
+  /**
+   * Add a value to the calculator.
+   *
+   * <p>
+   * {@code null} values are ignored.
+   * </p>
+   *
+   * @param value
+   *          The value to add.
+   */
+  public void add(Long value) {
+    if (null != value) {
       sum.add(value);
       count.increment();
     }

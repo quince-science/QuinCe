@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.utils;
 /**
  * Exception for errors raised while processing Strings
  *
- * @author Steve Jones
  * @see StringUtils
  */
 public class StringFormatException extends Exception {

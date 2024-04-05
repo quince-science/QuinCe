@@ -9,7 +9,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
  * Represents a column in the plot page table.
  *
  * @see PlotPageTableRecord
- * @author Steve Jones
  */
 public interface PlotPageTableValue {
 

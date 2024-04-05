@@ -32,9 +32,6 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * Comparison operations on this class compare the instrument ID, type and
  * target in that order.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public abstract class Calibration implements Comparable<Calibration> {
 

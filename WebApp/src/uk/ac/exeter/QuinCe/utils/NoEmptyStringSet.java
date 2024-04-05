@@ -9,9 +9,6 @@ import java.util.stream.Collectors;
 /**
  * Special list of strings that ignores all empty strings. Also trims all
  * supplied strings
- *
- * @author Steve Jones
- *
  */
 @SuppressWarnings("serial")
 public class NoEmptyStringSet extends TreeSet<String> {

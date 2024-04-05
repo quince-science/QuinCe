@@ -7,9 +7,6 @@ import java.util.Map;
 
 /**
  * Utility methods for checking method parameters
- *
- * @author Steve Jones
- *
  */
 public class MissingParam {
 

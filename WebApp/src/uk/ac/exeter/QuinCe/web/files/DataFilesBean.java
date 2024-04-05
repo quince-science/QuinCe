@@ -17,8 +17,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 
 /**
  * Bean for handling raw data files
- *
- * @author Steve Jones
  */
 @ManagedBean
 @SessionScoped

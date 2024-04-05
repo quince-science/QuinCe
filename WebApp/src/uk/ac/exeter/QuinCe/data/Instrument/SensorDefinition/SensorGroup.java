@@ -10,8 +10,6 @@ import java.util.TreeSet;
  * the purposes of data reduction.
  *
  * @see SensorGroups
- * @author Steve Jones.
- *
  */
 public class SensorGroup {
 

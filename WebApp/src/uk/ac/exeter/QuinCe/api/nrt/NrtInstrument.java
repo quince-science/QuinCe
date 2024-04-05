@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.api.nrt;
 
 /**
  * POJO bean for an NRT instrument. Used by GetNrtInstruments
- *
- * @author Steve Jones
- *
  */
 public class NrtInstrument {
 

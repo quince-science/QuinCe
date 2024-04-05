@@ -6,14 +6,11 @@ import java.util.List;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
  * Configuration for the run type categories used in the application
- *
- * @author Steve Jones
- *
  */
 public class RunTypeCategoryConfiguration {
 

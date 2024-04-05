@@ -14,9 +14,6 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 /**
  * Bean for transient instrument operations, e.g. listing instruments.
- *
- * @author Steve Jones
- *
  */
 @ManagedBean
 @SessionScoped

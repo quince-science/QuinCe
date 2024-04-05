@@ -46,9 +46,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Methods for manipulating data sets in the database
- *
- * @author Steve Jones
- *
  */
 public class DataSetDB {
 

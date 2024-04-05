@@ -79,6 +79,8 @@ DataPreparation/HaraldSodemann/netCDFConverter/config.yaml
 scripts/monitoring/exception_monitor/config.toml
 scripts/monitoring/exception_monitor/lastLine.txt
 
-# File Combiner
+# File Combiner/Splitter
 external_scripts/other/file_combiner/config.toml
 external_scripts/other/file_combiner/*json
+external_scripts/other/file_splitter/config.toml
+external_scripts/other/file_splitter/*json

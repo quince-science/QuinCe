@@ -11,9 +11,6 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 /**
  * An exported dataset ready to be written to a file. Contains the file contents
  * and some metadata.
- *
- * @author Steve Jones
- *
  */
 public class DatasetExport {
 

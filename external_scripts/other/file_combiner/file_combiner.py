@@ -23,8 +23,8 @@ def post_slack_msg(message):
     :return: Nothing
     """
     client = WebClient(token=_SLACK_CONFIG['api_token'])
-    # client.chat_postMessage(channel='#' + _SLACK_CONFIG['workspace'], text=f'{message}')
-    print(message)
+    client.chat_postMessage(channel='#' + _SLACK_CONFIG['workspace'], text=f'{message}')
+    # print(message)
 
 
 def main():
@@ -81,6 +81,10 @@ def process_station(db, name, config):
             for file_id in file_list:
                 file_content = retriever.get_file(file_id)
                 combiner.add_data(file_content)
+
+            # Post-process the extracted data
+            # Make sure lines are in date order etc.
+            combiner.post_process()
 
             # Write the output files
             combiner.write_output(config['output_location'])

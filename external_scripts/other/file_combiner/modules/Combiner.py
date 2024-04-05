@@ -4,9 +4,12 @@ Class to combine data from multiple files into a unified output.
 Data can be split into multiple files according to the supplied configuration.
 """
 from datetime import datetime
+from io import StringIO
+import csv
+import operator
 
 
-class Combiner():
+class Combiner:
 
     def __init__(self, config):
         """
@@ -46,6 +49,25 @@ class Combiner():
 
                 self._output[output_key] = self._output[output_key] + f'{stripped_line}\n'
 
+    def post_process(self):
+        """
+        Finalise the data ready for output.
+
+        Ensures that the data is sorted by the specified field in ascending order.
+        We assume that this will be a date field that's in a format for easy sorting.
+        More complex requirements will be dealt with as we find them.
+        :return: Nothing
+        """
+        for key in self._output:
+            with StringIO(self._output[key]) as buf:
+                reader = csv.reader(buf, delimiter=self._config[key]['separator'])
+                sorted_data = sorted(reader, key=operator.itemgetter(self._config[key]['sort_field']))
+
+                with StringIO() as out_buf:
+                    writer = csv.writer(out_buf, delimiter=self._config[key]['separator'])
+                    writer.writerows(sorted_data)
+                    self._output[key] = out_buf.getvalue()
+
     def write_output(self, folder):
         """
         Write all outputs to the specified folder.
@@ -57,9 +79,10 @@ class Combiner():
         date_string = self._date.strftime('%Y%m%d%H%M%S')
 
         for key in self._output:
-            filename = f'{key}_{date_string}'
-            with open(f'{folder}/{filename}', 'w') as out:
-                out.write(f'{self._output[key]}\n')
+            if len(self._output[key].strip()) > 0:
+                filename = f'{key}_{date_string}'
+                with open(f'{folder}/{filename}', 'w') as out:
+                    out.write(f'{self._output[key]}\n')
 
     def _get_key(self, line):
         """

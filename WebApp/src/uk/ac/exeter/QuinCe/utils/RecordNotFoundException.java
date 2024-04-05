@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.utils;
 
 /**
  * Exception raised when database records cannot be found
- *
- * @author Steve Jones
- *
  */
 public class RecordNotFoundException extends Exception {
 

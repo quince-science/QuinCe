@@ -5,9 +5,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 
 /**
  * Class to define a set of InstrumentFiles when creating an instrument
- *
- * @author Steve Jones
- *
  */
 @SuppressWarnings("serial")
 public class NewInstrumentFileSet extends InstrumentFileSet {

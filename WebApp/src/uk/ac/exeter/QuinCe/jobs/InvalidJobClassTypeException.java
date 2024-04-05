@@ -3,9 +3,6 @@ package uk.ac.exeter.QuinCe.jobs;
 /**
  * Exception to indicate that the specified job class is not of the correct
  * type, i.e. it doesn't extend the abstract {@link Job} class.
- *
- * @author Steve Jones
- *
  */
 public class InvalidJobClassTypeException extends Exception {
 

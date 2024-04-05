@@ -1,0 +1,337 @@
+SST User QC,Salinity User QC,CO2 User QC,Run Type,Diagnostic Water Flag,Diagnostic Gas Flag,Expected SST Flag,Expected SST Comment,Expected Salinity Flag,Expected Salinity Comment,Expected CO2 Flag,Expected CO2 Comment,Expected Data Reduction Flag,Expected Data Reduction Comment,Updated Diagnostic Water Flag,Updated Diagnostic Gas Flag,Expected SST Flag,Expected SST Comment,Expected Salinity Flag,Expected Salinity Comment,Expected CO2 Flag,Expected CO2 Comment,Expected Data Reduction Flag,Expected Data Reduction Comment
+2,2,2,var_1,2,2,2,,2,,2,,2,,,,,,,,,,,
+3,2,2,var_1,2,2,3,User QC,2,,2,,2,,,,,,,,,,,
+4,2,2,var_1,2,2,4,User QC,2,,2,,2,,,,,,,,,,,
+2,3,2,var_1,2,2,2,,3,User QC,2,,2,,,,,,,,,,,
+2,4,2,var_1,2,2,2,,4,User QC,2,,2,,,,,,,,,,,
+2,2,3,var_1,2,2,2,,2,,3,User QC,3,User QC,,,,,,,,,,
+2,2,4,var_1,2,2,2,,2,,4,User QC,4,User QC,,,,,,,,,,
+2,2,2,var_2,2,2,2,,2,,2,,2,,,,,,,,,,,
+3,2,2,var_2,2,2,3,User QC,2,,2,,2,,,,,,,,,,,
+4,2,2,var_2,2,2,4,User QC,2,,2,,2,,,,,,,,,,,
+2,3,2,var_2,2,2,2,,3,User QC,2,,2,,,,,,,,,,,
+2,4,2,var_2,2,2,2,,4,User QC,2,,2,,,,,,,,,,,
+2,2,3,var_2,2,2,2,,2,,3,User QC,3,User QC,,,,,,,,,,
+2,2,4,var_2,2,2,2,,2,,4,User QC,4,User QC,,,,,,,,,,
+2,2,2,var_3,2,2,2,,2,,2,,2,,,,,,,,,,,
+3,2,2,var_3,2,2,3,User QC,2,,2,,2,,,,,,,,,,,
+4,2,2,var_3,2,2,4,User QC,2,,2,,2,,,,,,,,,,,
+2,3,2,var_3,2,2,2,,3,User QC,2,,2,,,,,,,,,,,
+2,4,2,var_3,2,2,2,,4,User QC,2,,2,,,,,,,,,,,
+2,2,3,var_3,2,2,2,,2,,3,User QC,3,User QC,,,,,,,,,,
+2,2,4,var_3,2,2,2,,2,,4,User QC,4,User QC,,,,,,,,,,
+2,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,,,,,,,,,,
+3,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,,,,,,,,,,
+4,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,,,,,,,,,,
+2,3,2,var_1,4,2,4,Liquid,3,User QC,4,Liquid,4,Liquid,,,,,,,,,,
+2,4,2,var_1,4,2,4,Liquid,4,User QC,4,Liquid,4,Liquid,,,,,,,,,,
+2,2,3,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,,,,,,,,,,
+2,2,4,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,,,,,,,,,,
+2,2,2,var_2,4,2,4,Liquid,2,,2,,2,,,,,,,,,,,
+3,2,2,var_2,4,2,4,Liquid,2,,2,,2,,,,,,,,,,,
+4,2,2,var_2,4,2,4,Liquid,2,,2,,2,,,,,,,,,,,
+2,3,2,var_2,4,2,4,Liquid,3,User QC,2,,2,,,,,,,,,,,
+2,4,2,var_2,4,2,4,Liquid,4,User QC,2,,2,,,,,,,,,,,
+2,2,3,var_2,4,2,4,Liquid,2,,3,User QC,3,User QC,,,,,,,,,,
+2,2,4,var_2,4,2,4,Liquid,2,,4,User QC,4,User QC,,,,,,,,,,
+2,2,2,var_3,4,2,2,,2,,4,Liquid,4,Liquid,,,,,,,,,,
+3,2,2,var_3,4,2,3,User QC,2,,4,Liquid,4,Liquid,,,,,,,,,,
+4,2,2,var_3,4,2,4,User QC,2,,4,Liquid,4,Liquid,,,,,,,,,,
+2,3,2,var_3,4,2,2,,3,User QC,4,Liquid,4,Liquid,,,,,,,,,,
+2,4,2,var_3,4,2,2,,4,User QC,4,Liquid,4,Liquid,,,,,,,,,,
+2,2,3,var_3,4,2,2,,2,,4,Liquid,4,Liquid,,,,,,,,,,
+2,2,4,var_3,4,2,2,,2,,4,Liquid,4,Liquid,,,,,,,,,,
+2,2,2,var_1,2,4,2,,2,,2,,2,,,,,,,,,,,
+3,2,2,var_1,2,4,3,User QC,2,,2,,2,,,,,,,,,,,
+4,2,2,var_1,2,4,4,User QC,2,,2,,2,,,,,,,,,,,
+2,3,2,var_1,2,4,2,,3,User QC,2,,2,,,,,,,,,,,
+2,4,2,var_1,2,4,2,,4,User QC,2,,2,,,,,,,,,,,
+2,2,3,var_1,2,4,2,,2,,3,User QC,3,User QC,,,,,,,,,,
+2,2,4,var_1,2,4,2,,2,,4,User QC,4,User QC,,,,,,,,,,
+2,2,2,var_2,2,4,2,,2,,4,Air,4,Air,,,,,,,,,,
+3,2,2,var_2,2,4,3,User QC,2,,4,Air,4,Air,,,,,,,,,,
+4,2,2,var_2,2,4,4,User QC,2,,4,Air,4,Air,,,,,,,,,,
+2,3,2,var_2,2,4,2,,3,User QC,4,Air,4,Air,,,,,,,,,,
+2,4,2,var_2,2,4,2,,4,User QC,4,Air,4,Air,,,,,,,,,,
+2,2,3,var_2,2,4,2,,2,,4,Air,4,Air,,,,,,,,,,
+2,2,4,var_2,2,4,2,,2,,4,Air,4,Air,,,,,,,,,,
+2,2,2,var_3,2,4,2,,2,,4,Air,4,Air,,,,,,,,,,
+3,2,2,var_3,2,4,3,User QC,2,,4,Air,4,Air,,,,,,,,,,
+4,2,2,var_3,2,4,4,User QC,2,,4,Air,4,Air,,,,,,,,,,
+2,3,2,var_3,2,4,2,,3,User QC,4,Air,4,Air,,,,,,,,,,
+2,4,2,var_3,2,4,2,,4,User QC,4,Air,4,Air,,,,,,,,,,
+2,2,3,var_3,2,4,2,,2,,4,Air,4,Air,,,,,,,,,,
+2,2,4,var_3,2,4,2,,2,,4,Air,4,Air,,,,,,,,,,
+2,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,,,,,,,,,,
+3,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,,,,,,,,,,
+4,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,,,,,,,,,,
+2,3,2,var_1,4,4,4,Liquid,3,User QC,4,Liquid,4,Liquid,,,,,,,,,,
+2,4,2,var_1,4,4,4,Liquid,4,User QC,4,Liquid,4,Liquid,,,,,,,,,,
+2,2,3,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,,,,,,,,,,
+2,2,4,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,,,,,,,,,,
+2,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,,,,,,,,,,
+3,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,,,,,,,,,,
+4,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,,,,,,,,,,
+2,3,2,var_2,4,4,4,Liquid,3,User QC,4,Air,4,Air,,,,,,,,,,
+2,4,2,var_2,4,4,4,Liquid,4,User QC,4,Air,4,Air,,,,,,,,,,
+2,2,3,var_2,4,4,4,Liquid,2,,4,Air,4,Air,,,,,,,,,,
+2,2,4,var_2,4,4,4,Liquid,2,,4,Air,4,Air,,,,,,,,,,
+2,2,2,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,,,,,,,,,,
+3,2,2,var_3,4,4,3,User QC,2,,4,Liquid;Air,4,Liquid;Air,,,,,,,,,,
+4,2,2,var_3,4,4,4,User QC,2,,4,Liquid;Air,4,Liquid;Air,,,,,,,,,,
+2,3,2,var_3,4,4,2,,3,User QC,4,Liquid;Air,4,Liquid;Air,,,,,,,,,,
+2,4,2,var_3,4,4,2,,4,User QC,4,Liquid;Air,4,Liquid;Air,,,,,,,,,,
+2,2,3,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,,,,,,,,,,
+2,2,4,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,,,,,,,,,,
+2,2,2,var_1,2,2,2,,2,,2,,2,,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+3,2,2,var_1,2,2,3,User QC,2,,2,,2,,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+4,2,2,var_1,2,2,4,User QC,2,,2,,2,,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,3,2,var_1,2,2,2,,3,User QC,2,,2,,4,2,4,Liquid,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_1,2,2,2,,4,User QC,2,,2,,4,2,4,Liquid,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_1,2,2,2,,2,,3,User QC,3,User QC,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,4,var_1,2,2,2,,2,,4,User QC,4,User QC,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,2,var_2,2,2,2,,2,,2,,2,,4,2,4,Liquid,2,,2,,2,
+3,2,2,var_2,2,2,3,User QC,2,,2,,2,,4,2,4,Liquid,2,,2,,2,
+4,2,2,var_2,2,2,4,User QC,2,,2,,2,,4,2,4,Liquid,2,,2,,2,
+2,3,2,var_2,2,2,2,,3,User QC,2,,2,,4,2,4,Liquid,3,User QC,2,,2,
+2,4,2,var_2,2,2,2,,4,User QC,2,,2,,4,2,4,Liquid,4,User QC,2,,2,
+2,2,3,var_2,2,2,2,,2,,3,User QC,3,User QC,4,2,4,Liquid,2,,3,User QC,3,User QC
+2,2,4,var_2,2,2,2,,2,,4,User QC,4,User QC,4,2,4,Liquid,2,,4,User QC,4,User QC
+2,2,2,var_3,2,2,2,,2,,2,,2,,4,2,2,,2,,4,Liquid,4,Liquid
+3,2,2,var_3,2,2,3,User QC,2,,2,,2,,4,2,3,User QC,2,,4,Liquid,4,Liquid
+4,2,2,var_3,2,2,4,User QC,2,,2,,2,,4,2,4,User QC,2,,4,Liquid,4,Liquid
+2,3,2,var_3,2,2,2,,3,User QC,2,,2,,4,2,2,,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_3,2,2,2,,4,User QC,2,,2,,4,2,2,,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_3,2,2,2,,2,,3,User QC,3,User QC,4,2,2,,2,,4,Liquid,4,Liquid
+2,2,4,var_3,2,2,2,,2,,4,User QC,4,User QC,4,2,2,,2,,4,Liquid,4,Liquid
+2,2,2,var_1,2,2,2,,2,,2,,2,,2,4,2,,2,,2,,2,
+3,2,2,var_1,2,2,3,User QC,2,,2,,2,,2,4,3,User QC,2,,2,,2,
+4,2,2,var_1,2,2,4,User QC,2,,2,,2,,2,4,4,User QC,2,,2,,2,
+2,3,2,var_1,2,2,2,,3,User QC,2,,2,,2,4,2,,3,User QC,2,,2,
+2,4,2,var_1,2,2,2,,4,User QC,2,,2,,2,4,2,,4,User QC,2,,2,
+2,2,3,var_1,2,2,2,,2,,3,User QC,3,User QC,2,4,2,,2,,3,User QC,3,User QC
+2,2,4,var_1,2,2,2,,2,,4,User QC,4,User QC,2,4,2,,2,,4,User QC,4,User QC
+2,2,2,var_2,2,2,2,,2,,2,,2,,2,4,2,,2,,4,Air,4,Air
+3,2,2,var_2,2,2,3,User QC,2,,2,,2,,2,4,3,User QC,2,,4,Air,4,Air
+4,2,2,var_2,2,2,4,User QC,2,,2,,2,,2,4,4,User QC,2,,4,Air,4,Air
+2,3,2,var_2,2,2,2,,3,User QC,2,,2,,2,4,2,,3,User QC,4,Air,4,Air
+2,4,2,var_2,2,2,2,,4,User QC,2,,2,,2,4,2,,4,User QC,4,Air,4,Air
+2,2,3,var_2,2,2,2,,2,,3,User QC,3,User QC,2,4,2,,2,,4,Air,4,Air
+2,2,4,var_2,2,2,2,,2,,4,User QC,4,User QC,2,4,2,,2,,4,Air,4,Air
+2,2,2,var_3,2,2,2,,2,,2,,2,,2,4,2,,2,,4,Air,4,Air
+3,2,2,var_3,2,2,3,User QC,2,,2,,2,,2,4,3,User QC,2,,4,Air,4,Air
+4,2,2,var_3,2,2,4,User QC,2,,2,,2,,2,4,4,User QC,2,,4,Air,4,Air
+2,3,2,var_3,2,2,2,,3,User QC,2,,2,,2,4,2,,3,User QC,4,Air,4,Air
+2,4,2,var_3,2,2,2,,4,User QC,2,,2,,2,4,2,,4,User QC,4,Air,4,Air
+2,2,3,var_3,2,2,2,,2,,3,User QC,3,User QC,2,4,2,,2,,4,Air,4,Air
+2,2,4,var_3,2,2,2,,2,,4,User QC,4,User QC,2,4,2,,2,,4,Air,4,Air
+2,2,2,var_1,2,2,2,,2,,2,,2,,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+3,2,2,var_1,2,2,3,User QC,2,,2,,2,,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+4,2,2,var_1,2,2,4,User QC,2,,2,,2,,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,3,2,var_1,2,2,2,,3,User QC,2,,2,,4,4,4,Liquid,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_1,2,2,2,,4,User QC,2,,2,,4,4,4,Liquid,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_1,2,2,2,,2,,3,User QC,3,User QC,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,4,var_1,2,2,2,,2,,4,User QC,4,User QC,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,2,var_2,2,2,2,,2,,2,,2,,4,4,4,Liquid,2,,4,Air,4,Air
+3,2,2,var_2,2,2,3,User QC,2,,2,,2,,4,4,4,Liquid,2,,4,Air,4,Air
+4,2,2,var_2,2,2,4,User QC,2,,2,,2,,4,4,4,Liquid,2,,4,Air,4,Air
+2,3,2,var_2,2,2,2,,3,User QC,2,,2,,4,4,4,Liquid,3,User QC,4,Air,4,Air
+2,4,2,var_2,2,2,2,,4,User QC,2,,2,,4,4,4,Liquid,4,User QC,4,Air,4,Air
+2,2,3,var_2,2,2,2,,2,,3,User QC,3,User QC,4,4,4,Liquid,2,,4,Air,4,Air
+2,2,4,var_2,2,2,2,,2,,4,User QC,4,User QC,4,4,4,Liquid,2,,4,Air,4,Air
+2,2,2,var_3,2,2,2,,2,,2,,2,,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+3,2,2,var_3,2,2,3,User QC,2,,2,,2,,4,4,3,User QC,2,,4,Liquid;Air,4,Liquid;Air
+4,2,2,var_3,2,2,4,User QC,2,,2,,2,,4,4,4,User QC,2,,4,Liquid;Air,4,Liquid;Air
+2,3,2,var_3,2,2,2,,3,User QC,2,,2,,4,4,2,,3,User QC,4,Liquid;Air,4,Liquid;Air
+2,4,2,var_3,2,2,2,,4,User QC,2,,2,,4,4,2,,4,User QC,4,Liquid;Air,4,Liquid;Air
+2,2,3,var_3,2,2,2,,2,,3,User QC,3,User QC,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+2,2,4,var_3,2,2,2,,2,,4,User QC,4,User QC,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+2,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+3,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+4,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,3,2,var_1,4,2,4,Liquid,3,User QC,4,Liquid,4,Liquid,4,2,4,Liquid,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_1,4,2,4,Liquid,4,User QC,4,Liquid,4,Liquid,4,2,4,Liquid,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,4,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,2,var_2,4,2,4,Liquid,2,,2,,2,,4,2,4,Liquid,2,,2,,2,
+3,2,2,var_2,4,2,4,Liquid,2,,2,,2,,4,2,4,Liquid,2,,2,,2,
+4,2,2,var_2,4,2,4,Liquid,2,,2,,2,,4,2,4,Liquid,2,,2,,2,
+2,3,2,var_2,4,2,4,Liquid,3,User QC,2,,2,,4,2,4,Liquid,3,User QC,2,,2,
+2,4,2,var_2,4,2,4,Liquid,4,User QC,2,,2,,4,2,4,Liquid,4,User QC,2,,2,
+2,2,3,var_2,4,2,4,Liquid,2,,3,User QC,3,User QC,4,2,4,Liquid,2,,3,User QC,3,User QC
+2,2,4,var_2,4,2,4,Liquid,2,,4,User QC,4,User QC,4,2,4,Liquid,2,,4,User QC,4,User QC
+2,2,2,var_3,4,2,2,,2,,4,Liquid,4,Liquid,4,2,2,,2,,4,Liquid,4,Liquid
+3,2,2,var_3,4,2,3,User QC,2,,4,Liquid,4,Liquid,4,2,3,User QC,2,,4,Liquid,4,Liquid
+4,2,2,var_3,4,2,4,User QC,2,,4,Liquid,4,Liquid,4,2,4,User QC,2,,4,Liquid,4,Liquid
+2,3,2,var_3,4,2,2,,3,User QC,4,Liquid,4,Liquid,4,2,2,,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_3,4,2,2,,4,User QC,4,Liquid,4,Liquid,4,2,2,,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_3,4,2,2,,2,,4,Liquid,4,Liquid,4,2,2,,2,,4,Liquid,4,Liquid
+2,2,4,var_3,4,2,2,,2,,4,Liquid,4,Liquid,4,2,2,,2,,4,Liquid,4,Liquid
+2,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,2,4,2,,2,,2,,2,
+3,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,2,4,2,,2,,2,,2,
+4,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,2,4,2,,2,,2,,2,
+2,3,2,var_1,4,2,4,Liquid,3,User QC,4,Liquid,4,Liquid,2,4,2,,3,User QC,2,,2,
+2,4,2,var_1,4,2,4,Liquid,4,User QC,4,Liquid,4,Liquid,2,4,2,,4,User QC,2,,2,
+2,2,3,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,2,4,2,,2,,2,,2,
+2,2,4,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,2,4,2,,2,,2,,2,
+2,2,2,var_2,4,2,4,Liquid,2,,2,,2,,2,4,2,,2,,4,Air,4,Air
+3,2,2,var_2,4,2,4,Liquid,2,,2,,2,,2,4,2,,2,,4,Air,4,Air
+4,2,2,var_2,4,2,4,Liquid,2,,2,,2,,2,4,2,,2,,4,Air,4,Air
+2,3,2,var_2,4,2,4,Liquid,3,User QC,2,,2,,2,4,2,,3,User QC,4,Air,4,Air
+2,4,2,var_2,4,2,4,Liquid,4,User QC,2,,2,,2,4,2,,4,User QC,4,Air,4,Air
+2,2,3,var_2,4,2,4,Liquid,2,,3,User QC,3,User QC,2,4,2,,2,,4,Air,4,Air
+2,2,4,var_2,4,2,4,Liquid,2,,4,User QC,4,User QC,2,4,2,,2,,4,Air,4,Air
+2,2,2,var_3,4,2,2,,2,,4,Liquid,4,Liquid,2,4,2,,2,,4,Air,4,Air
+3,2,2,var_3,4,2,3,User QC,2,,4,Liquid,4,Liquid,2,4,3,User QC,2,,4,Air,4,Air
+4,2,2,var_3,4,2,4,User QC,2,,4,Liquid,4,Liquid,2,4,4,User QC,2,,4,Air,4,Air
+2,3,2,var_3,4,2,2,,3,User QC,4,Liquid,4,Liquid,2,4,2,,3,User QC,4,Air,4,Air
+2,4,2,var_3,4,2,2,,4,User QC,4,Liquid,4,Liquid,2,4,2,,4,User QC,4,Air,4,Air
+2,2,3,var_3,4,2,2,,2,,4,Liquid,4,Liquid,2,4,2,,2,,4,Air,4,Air
+2,2,4,var_3,4,2,2,,2,,4,Liquid,4,Liquid,2,4,2,,2,,4,Air,4,Air
+2,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+3,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+4,2,2,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,3,2,var_1,4,2,4,Liquid,3,User QC,4,Liquid,4,Liquid,4,4,4,Liquid,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_1,4,2,4,Liquid,4,User QC,4,Liquid,4,Liquid,4,4,4,Liquid,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,4,var_1,4,2,4,Liquid,2,,4,Liquid,4,Liquid,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,2,var_2,4,2,4,Liquid,2,,2,,2,,4,4,4,Liquid,2,,4,Air,4,Air
+3,2,2,var_2,4,2,4,Liquid,2,,2,,2,,4,4,4,Liquid,2,,4,Air,4,Air
+4,2,2,var_2,4,2,4,Liquid,2,,2,,2,,4,4,4,Liquid,2,,4,Air,4,Air
+2,3,2,var_2,4,2,4,Liquid,3,User QC,2,,2,,4,4,4,Liquid,3,User QC,4,Air,4,Air
+2,4,2,var_2,4,2,4,Liquid,4,User QC,2,,2,,4,4,4,Liquid,4,User QC,4,Air,4,Air
+2,2,3,var_2,4,2,4,Liquid,2,,3,User QC,3,User QC,4,4,4,Liquid,2,,4,Air,4,Air
+2,2,4,var_2,4,2,4,Liquid,2,,4,User QC,4,User QC,4,4,4,Liquid,2,,4,Air,4,Air
+2,2,2,var_3,4,2,2,,2,,4,Liquid,4,Liquid,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+3,2,2,var_3,4,2,3,User QC,2,,4,Liquid,4,Liquid,4,4,3,User QC,2,,4,Liquid;Air,4,Liquid;Air
+4,2,2,var_3,4,2,4,User QC,2,,4,Liquid,4,Liquid,4,4,4,User QC,2,,4,Liquid;Air,4,Liquid;Air
+2,3,2,var_3,4,2,2,,3,User QC,4,Liquid,4,Liquid,4,4,2,,3,User QC,4,Liquid;Air,4,Liquid;Air
+2,4,2,var_3,4,2,2,,4,User QC,4,Liquid,4,Liquid,4,4,2,,4,User QC,4,Liquid;Air,4,Liquid;Air
+2,2,3,var_3,4,2,2,,2,,4,Liquid,4,Liquid,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+2,2,4,var_3,4,2,2,,2,,4,Liquid,4,Liquid,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+2,2,2,var_1,2,4,2,,2,,2,,2,,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+3,2,2,var_1,2,4,3,User QC,2,,2,,2,,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+4,2,2,var_1,2,4,4,User QC,2,,2,,2,,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,3,2,var_1,2,4,2,,3,User QC,2,,2,,4,2,4,Liquid,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_1,2,4,2,,4,User QC,2,,2,,4,2,4,Liquid,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_1,2,4,2,,2,,3,User QC,3,User QC,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,4,var_1,2,4,2,,2,,4,User QC,4,User QC,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,2,var_2,2,4,2,,2,,4,Air,4,Air,4,2,4,Liquid,2,,2,,2,
+3,2,2,var_2,2,4,3,User QC,2,,4,Air,4,Air,4,2,4,Liquid,2,,2,,2,
+4,2,2,var_2,2,4,4,User QC,2,,4,Air,4,Air,4,2,4,Liquid,2,,2,,2,
+2,3,2,var_2,2,4,2,,3,User QC,4,Air,4,Air,4,2,4,Liquid,3,User QC,2,,2,
+2,4,2,var_2,2,4,2,,4,User QC,4,Air,4,Air,4,2,4,Liquid,4,User QC,2,,2,
+2,2,3,var_2,2,4,2,,2,,4,Air,4,Air,4,2,4,Liquid,2,,2,,2,
+2,2,4,var_2,2,4,2,,2,,4,Air,4,Air,4,2,4,Liquid,2,,2,,2,
+2,2,2,var_3,2,4,2,,2,,4,Air,4,Air,4,2,2,,2,,4,Liquid,4,Liquid
+3,2,2,var_3,2,4,3,User QC,2,,4,Air,4,Air,4,2,3,User QC,2,,4,Liquid,4,Liquid
+4,2,2,var_3,2,4,4,User QC,2,,4,Air,4,Air,4,2,4,User QC,2,,4,Liquid,4,Liquid
+2,3,2,var_3,2,4,2,,3,User QC,4,Air,4,Air,4,2,2,,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_3,2,4,2,,4,User QC,4,Air,4,Air,4,2,2,,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_3,2,4,2,,2,,4,Air,4,Air,4,2,2,,2,,4,Liquid,4,Liquid
+2,2,4,var_3,2,4,2,,2,,4,Air,4,Air,4,2,2,,2,,4,Liquid,4,Liquid
+2,2,2,var_1,2,4,2,,2,,2,,2,,2,4,2,,2,,2,,2,
+3,2,2,var_1,2,4,3,User QC,2,,2,,2,,2,4,3,User QC,2,,2,,2,
+4,2,2,var_1,2,4,4,User QC,2,,2,,2,,2,4,4,User QC,2,,2,,2,
+2,3,2,var_1,2,4,2,,3,User QC,2,,2,,2,4,2,,3,User QC,2,,2,
+2,4,2,var_1,2,4,2,,4,User QC,2,,2,,2,4,2,,4,User QC,2,,2,
+2,2,3,var_1,2,4,2,,2,,3,User QC,3,User QC,2,4,2,,2,,3,User QC,3,User QC
+2,2,4,var_1,2,4,2,,2,,4,User QC,4,User QC,2,4,2,,2,,4,User QC,4,User QC
+2,2,2,var_2,2,4,2,,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+3,2,2,var_2,2,4,3,User QC,2,,4,Air,4,Air,2,4,3,User QC,2,,4,Air,4,Air
+4,2,2,var_2,2,4,4,User QC,2,,4,Air,4,Air,2,4,4,User QC,2,,4,Air,4,Air
+2,3,2,var_2,2,4,2,,3,User QC,4,Air,4,Air,2,4,2,,3,User QC,4,Air,4,Air
+2,4,2,var_2,2,4,2,,4,User QC,4,Air,4,Air,2,4,2,,4,User QC,4,Air,4,Air
+2,2,3,var_2,2,4,2,,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+2,2,4,var_2,2,4,2,,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+2,2,2,var_3,2,4,2,,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+3,2,2,var_3,2,4,3,User QC,2,,4,Air,4,Air,2,4,3,User QC,2,,4,Air,4,Air
+4,2,2,var_3,2,4,4,User QC,2,,4,Air,4,Air,2,4,4,User QC,2,,4,Air,4,Air
+2,3,2,var_3,2,4,2,,3,User QC,4,Air,4,Air,2,4,2,,3,User QC,4,Air,4,Air
+2,4,2,var_3,2,4,2,,4,User QC,4,Air,4,Air,2,4,2,,4,User QC,4,Air,4,Air
+2,2,3,var_3,2,4,2,,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+2,2,4,var_3,2,4,2,,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+2,2,2,var_1,2,4,2,,2,,2,,2,,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+3,2,2,var_1,2,4,3,User QC,2,,2,,2,,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+4,2,2,var_1,2,4,4,User QC,2,,2,,2,,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,3,2,var_1,2,4,2,,3,User QC,2,,2,,4,4,4,Liquid,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_1,2,4,2,,4,User QC,2,,2,,4,4,4,Liquid,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_1,2,4,2,,2,,3,User QC,3,User QC,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,4,var_1,2,4,2,,2,,4,User QC,4,User QC,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,2,var_2,2,4,2,,2,,4,Air,4,Air,4,4,4,Liquid,2,,4,Air,4,Air
+3,2,2,var_2,2,4,3,User QC,2,,4,Air,4,Air,4,4,4,Liquid,2,,4,Air,4,Air
+4,2,2,var_2,2,4,4,User QC,2,,4,Air,4,Air,4,4,4,Liquid,2,,4,Air,4,Air
+2,3,2,var_2,2,4,2,,3,User QC,4,Air,4,Air,4,4,4,Liquid,3,User QC,4,Air,4,Air
+2,4,2,var_2,2,4,2,,4,User QC,4,Air,4,Air,4,4,4,Liquid,4,User QC,4,Air,4,Air
+2,2,3,var_2,2,4,2,,2,,4,Air,4,Air,4,4,4,Liquid,2,,4,Air,4,Air
+2,2,4,var_2,2,4,2,,2,,4,Air,4,Air,4,4,4,Liquid,2,,4,Air,4,Air
+2,2,2,var_3,2,4,2,,2,,4,Air,4,Air,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+3,2,2,var_3,2,4,3,User QC,2,,4,Air,4,Air,4,4,3,User QC,2,,4,Liquid;Air,4,Liquid;Air
+4,2,2,var_3,2,4,4,User QC,2,,4,Air,4,Air,4,4,4,User QC,2,,4,Liquid;Air,4,Liquid;Air
+2,3,2,var_3,2,4,2,,3,User QC,4,Air,4,Air,4,4,2,,3,User QC,4,Liquid;Air,4,Liquid;Air
+2,4,2,var_3,2,4,2,,4,User QC,4,Air,4,Air,4,4,2,,4,User QC,4,Liquid;Air,4,Liquid;Air
+2,2,3,var_3,2,4,2,,2,,4,Air,4,Air,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+2,2,4,var_3,2,4,2,,2,,4,Air,4,Air,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+2,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+3,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+4,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,3,2,var_1,4,4,4,Liquid,3,User QC,4,Liquid,4,Liquid,4,2,4,Liquid,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_1,4,4,4,Liquid,4,User QC,4,Liquid,4,Liquid,4,2,4,Liquid,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,4,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,4,2,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,4,2,4,Liquid,2,,2,,2,
+3,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,4,2,4,Liquid,2,,2,,2,
+4,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,4,2,4,Liquid,2,,2,,2,
+2,3,2,var_2,4,4,4,Liquid,3,User QC,4,Air,4,Air,4,2,4,Liquid,3,User QC,2,,2,
+2,4,2,var_2,4,4,4,Liquid,4,User QC,4,Air,4,Air,4,2,4,Liquid,4,User QC,2,,2,
+2,2,3,var_2,4,4,4,Liquid,2,,4,Air,4,Air,4,2,4,Liquid,2,,2,,2,
+2,2,4,var_2,4,4,4,Liquid,2,,4,Air,4,Air,4,2,4,Liquid,2,,2,,2,
+2,2,2,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,4,2,2,,2,,4,Liquid,4,Liquid
+3,2,2,var_3,4,4,3,User QC,2,,4,Liquid;Air,4,Liquid;Air,4,2,3,User QC,2,,4,Liquid,4,Liquid
+4,2,2,var_3,4,4,4,User QC,2,,4,Liquid;Air,4,Liquid;Air,4,2,4,User QC,2,,4,Liquid,4,Liquid
+2,3,2,var_3,4,4,2,,3,User QC,4,Liquid;Air,4,Liquid;Air,4,2,2,,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_3,4,4,2,,4,User QC,4,Liquid;Air,4,Liquid;Air,4,2,2,,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,4,2,2,,2,,4,Liquid,4,Liquid
+2,2,4,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,4,2,2,,2,,4,Liquid,4,Liquid
+2,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,2,4,2,,2,,2,,2,
+3,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,2,4,2,,2,,2,,2,
+4,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,2,4,2,,2,,2,,2,
+2,3,2,var_1,4,4,4,Liquid,3,User QC,4,Liquid,4,Liquid,2,4,2,,3,User QC,2,,2,
+2,4,2,var_1,4,4,4,Liquid,4,User QC,4,Liquid,4,Liquid,2,4,2,,4,User QC,2,,2,
+2,2,3,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,2,4,2,,2,,2,,2,
+2,2,4,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,2,4,2,,2,,2,,2,
+2,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+3,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+4,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+2,3,2,var_2,4,4,4,Liquid,3,User QC,4,Air,4,Air,2,4,2,,3,User QC,4,Air,4,Air
+2,4,2,var_2,4,4,4,Liquid,4,User QC,4,Air,4,Air,2,4,2,,4,User QC,4,Air,4,Air
+2,2,3,var_2,4,4,4,Liquid,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+2,2,4,var_2,4,4,4,Liquid,2,,4,Air,4,Air,2,4,2,,2,,4,Air,4,Air
+2,2,2,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,2,4,2,,2,,4,Air,4,Air
+3,2,2,var_3,4,4,3,User QC,2,,4,Liquid;Air,4,Liquid;Air,2,4,3,User QC,2,,4,Air,4,Air
+4,2,2,var_3,4,4,4,User QC,2,,4,Liquid;Air,4,Liquid;Air,2,4,4,User QC,2,,4,Air,4,Air
+2,3,2,var_3,4,4,2,,3,User QC,4,Liquid;Air,4,Liquid;Air,2,4,2,,3,User QC,4,Air,4,Air
+2,4,2,var_3,4,4,2,,4,User QC,4,Liquid;Air,4,Liquid;Air,2,4,2,,4,User QC,4,Air,4,Air
+2,2,3,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,2,4,2,,2,,4,Air,4,Air
+2,2,4,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,2,4,2,,2,,4,Air,4,Air
+2,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+3,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+4,2,2,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,3,2,var_1,4,4,4,Liquid,3,User QC,4,Liquid,4,Liquid,4,4,4,Liquid,3,User QC,4,Liquid,4,Liquid
+2,4,2,var_1,4,4,4,Liquid,4,User QC,4,Liquid,4,Liquid,4,4,4,Liquid,4,User QC,4,Liquid,4,Liquid
+2,2,3,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,4,var_1,4,4,4,Liquid,2,,4,Liquid,4,Liquid,4,4,4,Liquid,2,,4,Liquid,4,Liquid
+2,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,4,4,4,Liquid,2,,4,Air,4,Air
+3,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,4,4,4,Liquid,2,,4,Air,4,Air
+4,2,2,var_2,4,4,4,Liquid,2,,4,Air,4,Air,4,4,4,Liquid,2,,4,Air,4,Air
+2,3,2,var_2,4,4,4,Liquid,3,User QC,4,Air,4,Air,4,4,4,Liquid,3,User QC,4,Air,4,Air
+2,4,2,var_2,4,4,4,Liquid,4,User QC,4,Air,4,Air,4,4,4,Liquid,4,User QC,4,Air,4,Air
+2,2,3,var_2,4,4,4,Liquid,2,,4,Air,4,Air,4,4,4,Liquid,2,,4,Air,4,Air
+2,2,4,var_2,4,4,4,Liquid,2,,4,Air,4,Air,4,4,4,Liquid,2,,4,Air,4,Air
+2,2,2,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+3,2,2,var_3,4,4,3,User QC,2,,4,Liquid;Air,4,Liquid;Air,4,4,3,User QC,2,,4,Liquid;Air,4,Liquid;Air
+4,2,2,var_3,4,4,4,User QC,2,,4,Liquid;Air,4,Liquid;Air,4,4,4,User QC,2,,4,Liquid;Air,4,Liquid;Air
+2,3,2,var_3,4,4,2,,3,User QC,4,Liquid;Air,4,Liquid;Air,4,4,2,,3,User QC,4,Liquid;Air,4,Liquid;Air
+2,4,2,var_3,4,4,2,,4,User QC,4,Liquid;Air,4,Liquid;Air,4,4,2,,4,User QC,4,Liquid;Air,4,Liquid;Air
+2,2,3,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air
+2,2,4,var_3,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air,4,4,2,,2,,4,Liquid;Air,4,Liquid;Air

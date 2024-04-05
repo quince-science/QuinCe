@@ -6,9 +6,6 @@ import java.util.LinkedHashMap;
 /**
  * Handles all formats of longitudes, and the corresponding column assignments
  * within a data file
- *
- * @author Steve Jones
- *
  */
 public class LongitudeSpecification extends PositionSpecification {
 

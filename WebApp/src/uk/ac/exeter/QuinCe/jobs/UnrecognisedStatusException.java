@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.jobs;
 
 /**
  * Exception raised for an unrecognised job status
- *
- * @author Steve Jones
- *
  */
 public class UnrecognisedStatusException extends Exception {
 

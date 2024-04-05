@@ -654,9 +654,6 @@ public abstract class PlotPageData {
    * This is used by {@link PlotPageData#getColumnHeadingsJson()} to construct
    * the JSON object.
    * </p>
-   *
-   * @author Steve Jones
-   *
    */
   class JsonColumnGroup {
 
@@ -944,13 +941,14 @@ public abstract class PlotPageData {
     return map2;
   }
 
-  public Double[] getValueRange(PlotPageColumnHeading column) throws Exception {
+  public Double[] getValueRange(PlotPageColumnHeading column, boolean hideFlags)
+    throws Exception {
 
     if (!mapCache.containsKey(column)) {
       buildMapCache(column);
     }
 
-    return mapCache.get(column).getValueRange();
+    return mapCache.get(column).getValueRange(hideFlags);
   }
 
   protected abstract List<LocalDateTime> getDataTimes();
@@ -964,6 +962,15 @@ public abstract class PlotPageData {
 
     return mapCache.get(column).getDisplayJson(bounds, selectedRows,
       useNeededFlags, hideNonGoodFlags);
+  }
+
+  public GeoBounds getMapBounds(PlotPageColumnHeading column,
+    boolean hideNonGoodFlags) throws Exception {
+    if (!mapCache.containsKey(column)) {
+      buildMapCache(column);
+    }
+
+    return mapCache.get(column).getBounds(hideNonGoodFlags);
   }
 
   private void buildMapCache(PlotPageColumnHeading column) throws Exception {

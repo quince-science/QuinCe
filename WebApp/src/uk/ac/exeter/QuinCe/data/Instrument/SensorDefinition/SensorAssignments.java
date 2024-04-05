@@ -25,14 +25,13 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Map of sensors to their assignments in an instrument's data files.
+ *
  * <p>
  * Although this class extends the Map interface, you should use the convenience
  * methods defined here to change the contents of the Map. You can do it all
  * yourself if you like, but you'll need to perform all validity checks yourself
  * too. Good luck...
  * </p>
- *
- * @author Steve Jones
  */
 @SuppressWarnings("serial")
 public class SensorAssignments

@@ -8,9 +8,6 @@ import java.util.stream.Stream;
 
 /**
  * Miscellaneous file utils
- *
- * @author Steve Jones
- *
  */
 public class FileUtils {
 

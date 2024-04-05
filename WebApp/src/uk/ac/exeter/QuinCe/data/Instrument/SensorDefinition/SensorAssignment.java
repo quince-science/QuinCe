@@ -6,9 +6,6 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 /**
  * Records the data file and column number that have been assigned a particular
  * sensor role
- *
- * @author Steve Jones
- *
  */
 public class SensorAssignment implements Comparable<SensorAssignment> {
 

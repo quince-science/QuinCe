@@ -25,9 +25,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Root object for a single measurement in a dataset
- *
- * @author Steve Jones
- *
  */
 public class Measurement implements Comparable<Measurement> {
 

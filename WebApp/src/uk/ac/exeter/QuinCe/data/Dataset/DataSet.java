@@ -25,9 +25,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Object to represent a data set
- *
- * @author Steve Jones
- *
  */
 public class DataSet implements Comparable<DataSet> {
 
