@@ -179,7 +179,7 @@
         <h:panelGrid columns="3" cellpadding="5" class="buttonPanel contentList">
           <p:outputLabel for="instrumentAdmin" value="Select Instrument:" />
           <ui:fragment rendered="#{User.adminUser}">
-            <p:selectOneMenu id="instrumentAdmin"
+            <p:selectOneMenu id="instrumentAdmin" filter="true" filterMatchMode="contains"
               value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
                 <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
                   itemValue="#{instrument.id}"
@@ -188,7 +188,7 @@
             </p:selectOneMenu>
           </ui:fragment>
           <ui:fragment rendered="#{not User.adminUser}">
-            <p:selectOneMenu id="instrumentNonAdmin"
+            <p:selectOneMenu id="instrumentNonAdmin" filter="true" filterMatchMode="contains"
               value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
                 <f:selectItems value="#{dataSetsBean.instruments}" var="instrument"
                   itemValue="#{instrument.id}"
