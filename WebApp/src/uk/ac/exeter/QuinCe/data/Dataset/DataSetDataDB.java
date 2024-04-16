@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -179,6 +180,14 @@ public class DataSetDataDB {
     + "WHERE m.dataset_id = ? AND mrt.run_type IN "
     + DatabaseUtils.IN_PARAMS_TOKEN + " AND sv.file_column IN "
     + DatabaseUtils.IN_PARAMS_TOKEN;
+
+  private static final String GET_INTERNAL_CALIBRATION_SENSOR_VALUE_IDS_QUERY = "SELECT "
+    + "sv.id FROM sensor_values sv "
+    + "INNER JOIN measurements m ON m.date = sv.date "
+    + "INNER JOIN measurement_run_types mrt ON m.id = mrt.measurement_id "
+    + "WHERE m.dataset_id = ? AND mrt.run_type IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + " AND sv.file_column IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY sv.id";
 
   private static final String UPDATE_MEASUREMENT_TIME_STATEMENT = "UPDATE measurements "
     + "SET date = ? WHERE id = ?";
@@ -468,6 +477,13 @@ public class DataSetDataDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
 
+    TreeSet<Long> ignoredSensorValues = new TreeSet<Long>();
+
+    if (instrument.hasInternalCalibrations() && ignoreInternalCalibrations) {
+      ignoredSensorValues = getInternalCalibrationSensorValueIDs(conn,
+        instrument, datasetId);
+    }
+
     DatasetSensorValues values = new DatasetSensorValues(instrument);
 
     String query = ignoreFlushing
@@ -481,16 +497,14 @@ public class DataSetDataDB {
       try (ResultSet records = stmt.executeQuery()) {
 
         while (records.next()) {
-          values.add(sensorValueFromResultSet(records, datasetId));
+          SensorValue value = sensorValueFromResultSet(records, datasetId);
+          if (!ignoredSensorValues.contains(value.getId())) {
+            values.add(value);
+          }
         }
       }
     } catch (Exception e) {
       throw new DatabaseException("Error while retrieving sensor values", e);
-    }
-
-    if (instrument.hasInternalCalibrations() && ignoreInternalCalibrations) {
-      values.removeAll(
-        getInternalCalibrationSensorValues(conn, instrument, datasetId));
     }
 
     return values;
@@ -1181,9 +1195,58 @@ public class DataSetDataDB {
     }
   }
 
+  public static TreeSet<Long> getInternalCalibrationSensorValueIDs(
+    Connection conn, Instrument instrument, long datasetId)
+    throws DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(instrument, "Instrument");
+    MissingParam.checkPositive(datasetId, "datasetId");
+
+    TreeSet<Long> result = new TreeSet<Long>();
+
+    List<String> calibrationRunTypes = instrument
+      .getInternalCalibrationRunTypes();
+    List<Long> calibratedColumns = instrument.getSensorAssignments()
+      .getInternalCalibrationSensors();
+
+    String sql = DatabaseUtils.makeInStatementSql(
+      GET_INTERNAL_CALIBRATION_SENSOR_VALUE_IDS_QUERY,
+      calibrationRunTypes.size(), calibratedColumns.size());
+
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setLong(1, datasetId);
+
+      int currentParam = 1;
+
+      for (String runType : calibrationRunTypes) {
+        currentParam++;
+        stmt.setString(currentParam, runType);
+      }
+
+      for (Long column : calibratedColumns) {
+        currentParam++;
+        stmt.setLong(currentParam, column);
+      }
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.add(records.getLong(1));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException(
+        "Error while getting calibration sensor values", e);
+    }
+
+    return result;
+  }
+
   public static List<RunTypeSensorValue> getInternalCalibrationSensorValues(
     Connection conn, Instrument instrument, long datasetId)
-    throws MissingParamException, DatabaseException, InvalidFlagException {
+    throws DatabaseException, InvalidFlagException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(instrument, "Instrument");
