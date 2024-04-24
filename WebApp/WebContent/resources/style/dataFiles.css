@@ -53,3 +53,8 @@
 .runTypeFile >.ui-fieldset {
   margin:  0 0 20px 0;
 }
+
+#runTypesDialogContent {
+  display: flex;
+  flex-wrap: nowrap;
+}

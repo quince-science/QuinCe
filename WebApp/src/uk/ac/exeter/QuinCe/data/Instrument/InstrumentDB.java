@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -48,6 +49,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.files.MissingRunType;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -1330,24 +1332,24 @@ public class InstrumentDB {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
-  public static void storeFileRunTypes(DataSource dataSource, long fileId,
-    List<RunTypeAssignment> assignments)
+  public static void storeFileRunTypes(DataSource dataSource,
+    Collection<MissingRunType> runTypes)
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkPositive(fileId, "fileDefinitionId");
-    MissingParam.checkMissing(assignments, "runTypes", true);
+    MissingParam.checkMissing(runTypes, "runTypes", true);
 
     List<PreparedStatement> stmts = new ArrayList<PreparedStatement>(
-      assignments.size());
+      runTypes.size());
     Connection conn = null;
 
     try {
       conn = dataSource.getConnection();
       conn.setAutoCommit(false);
 
-      for (RunTypeAssignment assignment : assignments) {
-        stmts.add(storeFileRunType(conn, fileId, assignment));
+      for (MissingRunType runType : runTypes) {
+        stmts.add(storeFileRunType(conn,
+          runType.fileDefinition().getDatabaseId(), runType.runType()));
       }
 
       conn.commit();

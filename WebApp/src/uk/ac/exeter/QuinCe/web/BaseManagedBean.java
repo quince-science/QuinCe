@@ -87,6 +87,11 @@ public abstract class BaseManagedBean {
   private boolean forceInstrumentReload = false;
 
   /**
+   * Information for a progress bar.
+   */
+  protected Progress progress = new Progress();
+
+  /**
    * Set a message that can be displayed to the user on a form
    *
    * @param componentID
@@ -581,5 +586,14 @@ public abstract class BaseManagedBean {
       result = LocalDateTime.now().toLocalDate().atStartOfDay();
     }
     return result;
+  }
+
+  /**
+   * Get the progress bar information.
+   *
+   * @return The progress bar information.
+   */
+  public Progress getProgress() {
+    return progress;
   }
 }

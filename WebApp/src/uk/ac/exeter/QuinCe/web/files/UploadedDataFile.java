@@ -24,6 +24,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -261,6 +262,11 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
    */
   public boolean getHasUnrecognisedRunTypes() {
     return null != dataFile && dataFile.getMissingRunTypes().size() > 0;
+  }
+
+  public List<RunTypeAssignment> getMissingRunTypes() {
+    return null == dataFile ? new ArrayList<RunTypeAssignment>()
+      : dataFile.getMissingRunTypes();
   }
 
   /**
