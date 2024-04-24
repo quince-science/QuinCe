@@ -23,7 +23,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 public class DataFilesBean extends FileUploadBean {
 
   /**
-   * Navigation to the file upload page
+   * Navigation to the file list page
    */
   public static final String NAV_FILE_LIST = "file_list";
 

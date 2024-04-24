@@ -1,22 +1,11 @@
-ALIAS_RUN_TYPE = '-2';
-
-// Hide dialog with escape key
-$(document).on('keydown', function(e) {
-  if (e.keyCode === 27) {
-    $.each(PrimeFaces.widgets, function(index, val) {
-      if (index.match(/dialog/i)) {
-        PF(index).hide();
-      }
-    })
-  }
-});
+const ALIAS_RUN_TYPE = '-2';
 
 function renderMessages(messages) {
-  var html = $('<ul/>');
-  for (var i = 0; i < messages.length; i++) {
-    var row = $('<li/>');
+  let html = $('<ul/>');
+  for (let i = 0; i < messages.length; i++) {
+    let row = $('<li/>');
     row.addClass(messages[i].severity);
-    var summary = $('<span>');
+    let summary = $('<span>');
     if (messages[i].type == "file") {
       summary = $('<h3/>');
     }
@@ -29,17 +18,36 @@ function renderMessages(messages) {
   $('.ui-scrollpanel')[0].scrollTop = 0;
 }
 
-function reprocessUploadedFiles() {
-  $('#uploadForm\\:fileList_data>tr').each(function() {
-    extractNext();
-  });
+function runTypeChanged(rowIndex) {
+  let runType = PF('runType_' + rowIndex).getSelectedValue();
+  if (runType == ALIAS_RUN_TYPE) {
+    PF('alias_' + rowIndex).jq.show()
+  } else {
+    PF('alias_' + rowIndex).jq.hide()
+  }
 }
 
-function runTypeChanged(rowIndex, runTypeIndex) {
-  var runType = PF('missingRunType_' + rowIndex + '_' + runTypeIndex).getSelectedValue();
-  if (runType == ALIAS_RUN_TYPE) {
-    PF('alias_' + rowIndex + '_' + runTypeIndex).jq.show()
+function fileUploaded() {
+  if (PF('fileUploadWidget').files.length == 0) {
+    extractFiles();
+  }
+}
+
+function extractFiles() {
+  $('#uploadForm\\:uploadFiles').hide();
+  processAllFiles(); // PF RemoteCommand
+  PF('extractProgress').show();
+  PF('processedProgress').start();
+}
+
+function allFilesProcessed() {
+  PF('processedProgress').cancel();
+  PF('extractProgress').hide();
+  if ($('#uploadForm\\:unrecognisedRunTypeCount').val() > 0) {
+    PF('runTypesDialog').show();
   } else {
-    PF('alias_' + rowIndex + '_' + runTypeIndex).jq.hide()
+    $('#uploadForm\\:fileDetails').show();
+    $('#uploadForm\\:storeFileButton').show();
+    updateFileList(); // PF remoteCommand
   }
 }
