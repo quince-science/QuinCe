@@ -57,11 +57,15 @@ public class Progress {
    *          The value.
    */
   public void setValue(float value) {
-    this.value = value;
+    synchronized (this) {
+      this.value = value;
+    }
   }
 
   public void increment() {
-    this.value += 1;
+    synchronized (this) {
+      this.value += 1;
+    }
   }
 
   /**
