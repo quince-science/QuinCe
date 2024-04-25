@@ -39,13 +39,13 @@ In an environment where multiple simultaneous users are more common, the current
 ### Garbage Collection
 It may be desirable to adjust the JVM's garbage collection strategy to reduce delays in the application. This is most commonly seen when loading the QC page for a dataset, because it involves creating a large number of objects and is therefore likely to trigger a major garbage collection action.
 
-The latest experiments involve using the [Z Garbage Collector](https://docs.oracle.com/en/java/javase/17/gctuning/z-garbage-collector.html). If the maximum heap size is less than 10Gb, then set the ZGC soft limit to 4Gb; otherwise set it to 8Gb. Example command line options are below.
+The latest experiments involve using the [Z Garbage Collector](https://docs.oracle.com/en/java/javase/17/gctuning/z-garbage-collector.html) (`-XX:+UseZGC`) which attempts to perform all garbage collection concurrently and eliminate large pauses while the JVM is locked (which can happen with the default GC). Although not documented, there is a feature that gives the ZGC a target heap size to maintain that is smaller than the maximum heap size. Try setting this to either 4Gb (for maximum heaps less than 10Gb) or 8Gb, i.e.:
 
-`-Xmx10g -XX:+UseZGC -XX:SoftMaxHeapSize=4g`
+`-Xmx6g -XX:+UseZGC -XX:SoftMaxHeapSize=4g`
 
 `-Xmx32g -XX:+UseZGC -XX:SoftMaxHeapSize=8g`
 
-Note that more modern JVM have a new Generational version of the ZGC which supports setting a target "soft" heap size, but this is not available in JDK17.
+Note that more modern JVMs have a new Generational version of the ZGC but this is not available in JDK 17.
 
 
 ## Creating the first user
