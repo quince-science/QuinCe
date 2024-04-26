@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +37,7 @@ public class SensorGroupsTest extends BaseTest {
    * Test the construction of the {@link SensorGroups} object and its default
    * group.
    */
+  @FlywayTest
   @Test
   public void basicConstructorTest() {
 
@@ -50,6 +52,7 @@ public class SensorGroupsTest extends BaseTest {
       () -> assertFalse(defaultGroup.hasPrev()));
   }
 
+  @FlywayTest
   @Test
   public void addGroupBeforeFirst() throws SensorGroupsException {
     SensorGroups groups = new SensorGroups();
@@ -65,6 +68,7 @@ public class SensorGroupsTest extends BaseTest {
       () -> assertFalse(origGroup.hasNext()));
   }
 
+  @FlywayTest
   @Test
   public void addGroupAfterLast() throws SensorGroupsException {
     SensorGroups groups = new SensorGroups();
@@ -79,6 +83,7 @@ public class SensorGroupsTest extends BaseTest {
       () -> assertFalse(newGroup.hasNext()));
   }
 
+  @FlywayTest
   @Test
   public void addGroupInMiddle() throws SensorGroupsException {
     SensorGroups groups = new SensorGroups();
@@ -91,6 +96,7 @@ public class SensorGroupsTest extends BaseTest {
       () -> assertEquals(3, groups.size()));
   }
 
+  @FlywayTest
   @Test
   public void addGroupNonExistentAfter() {
     SensorGroups groups = new SensorGroups();
@@ -100,6 +106,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void addGroupExistingName() {
     SensorGroups groups = new SensorGroups();
@@ -109,6 +116,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void deleteOnlyGroup() {
     SensorGroups groups = new SensorGroups();
@@ -118,6 +126,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void deleteNonExistentGroup() throws SensorGroupsException {
     SensorGroups groups = new SensorGroups();
@@ -130,6 +139,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void deleteFirstGroup() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -140,6 +150,7 @@ public class SensorGroupsTest extends BaseTest {
       () -> assertEquals("NewGroup1", groups.first().getName()));
   }
 
+  @FlywayTest
   @Test
   public void deleteMiddleGroup() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -147,6 +158,7 @@ public class SensorGroupsTest extends BaseTest {
     assertTrue(checkGroupOrder(groups, "Default", "NewGroup2"));
   }
 
+  @FlywayTest
   @Test
   public void deleteLastGroup() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -154,6 +166,7 @@ public class SensorGroupsTest extends BaseTest {
     assertTrue(checkGroupOrder(groups, "Default", "NewGroup1"));
   }
 
+  @FlywayTest
   @Test
   public void renameGroup() throws SensorGroupsException {
     SensorGroups groups = new SensorGroups();
@@ -161,6 +174,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("NewName", groups.first().getName());
   }
 
+  @FlywayTest
   @Test
   public void renameGroupToExistingName() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -170,6 +184,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void renameGroupToItself() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -177,6 +192,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("Default", groups.first().getName());
   }
 
+  @FlywayTest
   @Test
   public void renameNonExistentGroup() {
     SensorGroups groups = new SensorGroups();
@@ -185,6 +201,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void asListTest() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -197,12 +214,14 @@ public class SensorGroupsTest extends BaseTest {
       () -> assertEquals("NewGroup2", groupsList.get(2).getName()));
   }
 
+  @FlywayTest
   @Test
   public void getGroupExists() throws SensorGroupsException {
     SensorGroups groups = new SensorGroups();
     assertEquals("Default", groups.getGroup("Default").getName());
   }
 
+  @FlywayTest
   @Test
   public void getGroupDoesntExist() {
     SensorGroups groups = new SensorGroups();
@@ -211,18 +230,21 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void groupExistsExists() {
     SensorGroups groups = new SensorGroups();
     assertTrue(groups.groupExists("Default"));
   }
 
+  @FlywayTest
   @Test
   public void groupExistsDoesntExist() {
     SensorGroups groups = new SensorGroups();
     assertFalse(groups.groupExists("I Don't Exist"));
   }
 
+  @FlywayTest
   @Test
   public void addAssignmentOnlyGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -232,6 +254,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("Sensor 1", assignments.first().getSensorName());
   }
 
+  @FlywayTest
   @Test
   public void addAssignmentMultipleGroups() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -242,6 +265,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("Sensor 1", assignments.first().getSensorName());
   }
 
+  @FlywayTest
   @Test
   public void addAssignmentExistsInFirstGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -255,6 +279,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void addAssignmentExistsInOtherGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -273,12 +298,14 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void containsDoesntContainNoOtherAssignments() throws Exception {
     SensorGroups groups = makeThreeGroups();
     assertFalse(groups.contains(makeAssignment(1)));
   }
 
+  @FlywayTest
   @Test
   public void containsDoesntContainHasOtherAssignments() throws Exception {
 
@@ -290,6 +317,7 @@ public class SensorGroupsTest extends BaseTest {
     assertFalse(groups.contains(makeAssignment(3)));
   }
 
+  @FlywayTest
   @Test
   public void containsInFirstGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -298,6 +326,7 @@ public class SensorGroupsTest extends BaseTest {
     assertTrue(groups.contains(assignment));
   }
 
+  @FlywayTest
   @Test
   public void containsInOtherGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -307,6 +336,7 @@ public class SensorGroupsTest extends BaseTest {
     assertTrue(groups.contains(assignment));
   }
 
+  @FlywayTest
   @Test
   public void getGroupNotInEmptyOnlyGroup() {
     SensorGroups groups = new SensorGroups();
@@ -315,6 +345,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void getGroupNotInPopulatedOnlyGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -324,6 +355,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void getGroupNotInEmptyMultipleGroups() throws SensorGroupsException {
     SensorGroups groups = new SensorGroups();
@@ -333,6 +365,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void getGroupNotInPopulatedMultipleGroups() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -345,6 +378,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void getGroupInOnlyGroupOnlyAssignment() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -354,6 +388,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("Default", group.getName());
   }
 
+  @FlywayTest
   @Test
   public void getGroupInOnlyGroupMultipleAssignments() throws Exception {
 
@@ -365,6 +400,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("Default", group.getName());
   }
 
+  @FlywayTest
   @Test
   public void getGroupInAnyGroupOnlyAssignment() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -375,6 +411,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("Default", group.getName());
   }
 
+  @FlywayTest
   @Test
   public void getGroupInAnyGroupMultipleAssignments() throws Exception {
 
@@ -389,6 +426,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("Default", group.getName());
   }
 
+  @FlywayTest
   @Test
   public void getGroupIndexDoesntExist() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -399,6 +437,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void getGroupIndexFirst() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -406,6 +445,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals(0, groups.getGroupIndex(group));
   }
 
+  @FlywayTest
   @Test
   public void getGroupIndexNotFirst() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -413,6 +453,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals(1, groups.getGroupIndex(group));
   }
 
+  @FlywayTest
   @Test
   public void removeAssignmentNotAssignedOnlyGroup() throws Exception {
 
@@ -422,6 +463,7 @@ public class SensorGroupsTest extends BaseTest {
     groups.remove(makeAssignment(2));
   }
 
+  @FlywayTest
   @Test
   public void removeAssignmentNotAssignedMultipleGroups() throws Exception {
 
@@ -433,6 +475,7 @@ public class SensorGroupsTest extends BaseTest {
     groups.remove(makeAssignment(3));
   }
 
+  @FlywayTest
   @Test
   public void removeAssignmentFromFirstGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -445,6 +488,7 @@ public class SensorGroupsTest extends BaseTest {
     assertFalse(groups.contains(assignment));
   }
 
+  @FlywayTest
   @Test
   public void removeAssignmentFromOtherGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -457,6 +501,7 @@ public class SensorGroupsTest extends BaseTest {
     assertFalse(groups.contains(assignment));
   }
 
+  @FlywayTest
   @Test
   public void removeAssignmentsNotAssignedOnlyGroup() throws Exception {
 
@@ -468,6 +513,7 @@ public class SensorGroupsTest extends BaseTest {
     groups.remove(assignments);
   }
 
+  @FlywayTest
   @Test
   public void removeAssignmentsAcrossGroups() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -495,6 +541,7 @@ public class SensorGroupsTest extends BaseTest {
       () -> assertTrue(groups.contains(assignment4)));
   }
 
+  @FlywayTest
   @Test
   public void moveNonExistentSensor() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -503,6 +550,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void moveSensorToNonExistentGroup() throws Exception {
     SensorGroups groups = makeThreeGroups();
@@ -512,6 +560,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void moveSensorToOwnGroup() throws Exception {
     SensorGroups groups = makeThreeGroups();
@@ -523,6 +572,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("Default", groups.getGroup(assignment).getName());
   }
 
+  @FlywayTest
   @Test
   public void moveSensorToOtherGroup() throws Exception {
     SensorGroups groups = makeThreeGroups();
@@ -534,6 +584,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("NewGroup2", groups.getGroup(assignment).getName());
   }
 
+  @FlywayTest
   @Test
   public void groupPairs() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -552,6 +603,7 @@ public class SensorGroupsTest extends BaseTest {
       () -> assertEquals("NewGroup1".hashCode(), pair2.getId()));
   }
 
+  @FlywayTest
   @Test
   public void getPairById() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -559,6 +611,7 @@ public class SensorGroupsTest extends BaseTest {
       groups.getGroupPair("Default".hashCode()).first().getName());
   }
 
+  @FlywayTest
   @Test
   public void getNonExistentPair() throws SensorGroupsException {
     SensorGroups groups = makeThreeGroups();
@@ -567,6 +620,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void deleteGroupAssignmentsTransferred() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -577,18 +631,21 @@ public class SensorGroupsTest extends BaseTest {
     assertTrue(groups.contains(assignment));
   }
 
+  @FlywayTest
   @Test
   public void initNoNextName() throws SensorGroupsException {
     SensorGroups groups = new SensorGroups();
     assertNull(groups.getGroup("Default").getNextLinkName());
   }
 
+  @FlywayTest
   @Test
   public void initNoPrevName() throws SensorGroupsException {
     SensorGroups groups = new SensorGroups();
     assertNull(groups.getGroup("Default").getPrevLinkName());
   }
 
+  @FlywayTest
   @Test
   public void setNextLinkNoSensor() {
     SensorGroups groups = new SensorGroups();
@@ -598,6 +655,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void setPrevLinkNoSensor() {
     SensorGroups groups = new SensorGroups();
@@ -607,6 +665,7 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void setNextLink() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -618,6 +677,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("Sensor 1", group.getNextLinkName());
   }
 
+  @FlywayTest
   @Test
   public void setPrevLink() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -629,6 +689,7 @@ public class SensorGroupsTest extends BaseTest {
     assertEquals("Sensor 1", group.getPrevLinkName());
   }
 
+  @FlywayTest
   @Test
   public void setLinkInvalidDirection() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -640,12 +701,14 @@ public class SensorGroupsTest extends BaseTest {
     });
   }
 
+  @FlywayTest
   @Test
   public void emptyGroupIsEmpty() {
     SensorGroups groups = new SensorGroups();
     assertTrue(groups.first().isEmpty());
   }
 
+  @FlywayTest
   @Test
   public void populatedGroupIsEmpty() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -653,6 +716,7 @@ public class SensorGroupsTest extends BaseTest {
     assertFalse(groups.first().isEmpty());
   }
 
+  @FlywayTest
   @Test
   public void removeNextLinkAssignment() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -663,6 +727,7 @@ public class SensorGroupsTest extends BaseTest {
     assertNull(groups.first().getNextLinkName());
   }
 
+  @FlywayTest
   @Test
   public void removePrevLinkAssignment() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -673,6 +738,7 @@ public class SensorGroupsTest extends BaseTest {
     assertNull(groups.first().getPrevLinkName());
   }
 
+  @FlywayTest
   @Test
   public void moveSensorNextLinkAssignment() throws Exception {
     SensorGroups groups = makeThreeGroups();
@@ -683,6 +749,7 @@ public class SensorGroupsTest extends BaseTest {
     assertNull(groups.first().getNextLinkName());
   }
 
+  @FlywayTest
   @Test
   public void moveSensorPrevLinkAssignment() throws Exception {
     SensorGroups groups = makeThreeGroups();
@@ -693,6 +760,7 @@ public class SensorGroupsTest extends BaseTest {
     assertNull(groups.first().getPrevLinkName());
   }
 
+  @FlywayTest
   @Test
   public void isCompleteSingleGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -700,12 +768,14 @@ public class SensorGroupsTest extends BaseTest {
     assertTrue(groups.isComplete());
   }
 
+  @FlywayTest
   @Test
   public void isCompleteEmptySingleGroup() {
     SensorGroups groups = new SensorGroups();
     assertFalse(groups.isComplete());
   }
 
+  @FlywayTest
   @Test
   public void isCompleteEmptyOnlyOnePopulatedGroup() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -715,6 +785,7 @@ public class SensorGroupsTest extends BaseTest {
     assertFalse(groups.isComplete());
   }
 
+  @FlywayTest
   @Test
   public void isCompleteAllPopulatedNoLinks() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -724,6 +795,7 @@ public class SensorGroupsTest extends BaseTest {
     assertFalse(groups.isComplete());
   }
 
+  @FlywayTest
   @Test
   public void isCompleteAllPopulatedNoNextLink() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -734,6 +806,7 @@ public class SensorGroupsTest extends BaseTest {
     assertFalse(groups.isComplete());
   }
 
+  @FlywayTest
   @Test
   public void isCompleteAllPopulatedNoPrevLink() throws Exception {
     SensorGroups groups = new SensorGroups();
@@ -744,6 +817,7 @@ public class SensorGroupsTest extends BaseTest {
     assertFalse(groups.isComplete());
   }
 
+  @FlywayTest
   @Test
   public void isCompleteComplete() throws Exception {
     SensorGroups groups = new SensorGroups();
