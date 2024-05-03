@@ -1066,7 +1066,10 @@ public class SensorValuesList {
    *
    * <p>
    * The value of the result will be the linear interpolation of the supplied
-   * values to the specified target time.
+   * values to the specified target time. If there is only a prior or post
+   * value, no interpolation will be performed and a {@code null} value will be
+   * returned. If the prior and post values have different flags, the
+   * interpolated value will be given the worst of those flags.
    * </p>
    *
    * @param first
@@ -1085,24 +1088,14 @@ public class SensorValuesList {
 
     SensorValuesListValue result;
 
-    if (null == first && null == second) {
+    if (null == first || null == second) {
+      // Only 'interpolate' if we have values both before and after
       result = null;
-    } else if (second == null) {
-      // Use prior value only
-      result = new SensorValuesListValue(first, targetTime);
-    } else if (first == null) {
-      // Use post value only
-      result = new SensorValuesListValue(second, targetTime);
     } else {
-
-      if (second.getQCFlag().moreSignificantThan(first.getQCFlag())) {
-        result = new SensorValuesListValue(first, targetTime);
-      } else if (first.getQCFlag().moreSignificantThan(second.getQCFlag())) {
-        result = new SensorValuesListValue(second, targetTime);
+      if (!first.getQCFlag().isGood() || !second.getQCFlag().isGood()) {
+        // We only interpolate good values
+        result = null;
       } else {
-
-        // Interpolate between the two
-
         Double interpValue = Calculators.interpolate(first.getTime(),
           first.getDoubleValue(), second.getTime(), second.getDoubleValue(),
           targetTime);
@@ -1115,8 +1108,9 @@ public class SensorValuesList {
         result = new SensorValuesListValue(first.getStartTime(),
           second.getEndTime(), targetTime, combinedSourceValues,
           first.getSensorType(), interpValue,
-          Flag.getMostSignificantFlag(first.getQCFlag(), second.getQCFlag()), StringUtils
-            .combine(first.getQCMessage(), second.getQCMessage(), ";"));
+          Flag.getMostSignificantFlag(first.getQCFlag(), second.getQCFlag()),
+          StringUtils.combine(first.getQCMessage(), second.getQCMessage(),
+            ";"));
       }
     }
     return result;
