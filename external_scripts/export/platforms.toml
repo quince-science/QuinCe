@@ -100,7 +100,7 @@ author_list = ''
 	[1801573]
 	platform_id = 'SD1053'
 
-[BE-SOOP-Simon-Stevin]
+[BE-SOOP-Simon__Stevin]
 platform_code = "11SS"
 name = 'Simon Stevin'
 submitter_id = 'OTC'
@@ -112,7 +112,7 @@ author_list = "Gkritzalis, Thanos; Theetaert, Hannelore; Houthoofdt, Robin; T'Ja
 affiliation = 'Flanders Marine Institute (VLIZ), Wandelaarkaai 7, 8400, Ostend, BE'
 NRT = 'True'
 
-	[BE-SOOP-Simon-Stevin.export]
+	[BE-SOOP-Simon__Stevin.export]
 	NRT = ['ICOS']
 	L2 = ['ICOS']
 
@@ -132,7 +132,7 @@ affiliation = 'Flanders Marine Institute (VLIZ), Wandelaarkaai 7, 8400, Ostend, 
 NRT = 'True'
 
 	[BE-FOS-Thornton__Buoy.export]
-	NRT = ['ICOS']
+	NRT = []
 	L2 = ['ICOS']
 
 [58US]
@@ -216,7 +216,7 @@ NRT = 'True'
 platform_code = '687B'
 name = 'CanOA'
 submitter_id = 'OTC'
-cp_url = 'https://meta.icos-cp.eu/resources/otcmeta/ES-SOOP-CanOA'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_687B'
 category_code = '31'
 call_sign = 'CQHZ'
 cration_date = '2024-04-05T10:53:00Z'
