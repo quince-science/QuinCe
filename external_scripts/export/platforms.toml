@@ -228,3 +228,34 @@ NRT = 'True'
   NRT = ['ICOS']
   L2 = ['ICOS']
 
+[IT-FOS-W1M3A]
+platform_code = '4899'
+name = 'W1M3A'
+submitter_id = 'OTC'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_IT-FOS-W1M3A'
+category_code = '41'
+call_sign = ''
+creation_date = '2024-02-20T16:04:00Z'
+author_list = 'Pensieri, Sara;Bozzano, Roberto'
+affiliation = 'Consiglio Nazionale delle Ricerche'
+NRT = 'False'
+
+  [IT-FOS-W1M3A.export]
+  NRT = []
+  L2 = ['ICOS']
+
+[IT-FOS-PALOMA]
+platform_code = '48MB'
+name = 'PALOMA'
+submitter_id = 'OTC'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_PALOMA'
+category_code = '41'
+call_sign = ''
+creation_date = '2024-02-20T16:04:00Z'
+author_list = 'Cantoni, Carolina;Castelli, Giuliano;Luchetta,Anna'
+affiliation = ' 	Istituto di Scienze Marine Trieste'
+NRT = 'False'
+
+  [IT-FOS-PALOMA.export]
+  NRT = []
+  L2 = ['ICOS']
