@@ -116,9 +116,6 @@ public class ControsPco2MeasurementLocatorTest extends BaseTest {
     times.add(LocalDateTime.of(2023, 6, 8, 18, 10, 53));
     times.add(LocalDateTime.of(2023, 6, 8, 18, 11, 3));
     times.add(LocalDateTime.of(2023, 6, 8, 18, 11, 13));
-    times.add(LocalDateTime.of(2023, 6, 8, 23, 50, 13));
-    times.add(LocalDateTime.of(2023, 6, 8, 23, 51, 13));
-    times.add(LocalDateTime.of(2023, 6, 8, 23, 52, 13));
     times.add(LocalDateTime.of(2023, 6, 8, 23, 53, 13));
     times.add(LocalDateTime.of(2023, 6, 8, 23, 54, 13));
     times.add(LocalDateTime.of(2023, 6, 8, 23, 55, 13));

@@ -9,6 +9,9 @@ import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -24,6 +27,8 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
   private static final int FLUSHING = 1;
 
   private static final int MEASUREMENT = 2;
+
+  private static final int RESPONSE_TIME_MULTIPLIER = 7;
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
@@ -57,6 +62,14 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
       DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
         instrument, dataset.getId(), false, true);
 
+      CalibrationSet priorCoefficients = CalculationCoefficientDB.getInstance()
+        .getMostRecentCalibrations(conn, instrument,
+          sensorValues.getTimes().get(0));
+
+      long defaultFlushingTime = Math.round(CalculationCoefficient
+        .getCoefficient(priorCoefficients, variable, "Response Time")
+        .getValue()) * RESPONSE_TIME_MULTIPLIER;
+
       // Loop through all the rows, examining the zero/flush columns to decide
       // what to do
       List<SensorValue> flaggedSensorValues = new ArrayList<SensorValue>();
@@ -64,6 +77,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
         sensorValues.getTimes().size());
 
       int currentStatus = NO_STATUS;
+      int lastStatus = NO_STATUS;
       LocalDateTime currentStatusStart = null;
 
       for (LocalDateTime recordTime : sensorValues.getTimes()) {
@@ -77,6 +91,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             flushingColumn);
 
           if (recordStatus != currentStatus) {
+            lastStatus = currentStatus;
             currentStatus = recordStatus;
             currentStatusStart = recordTime;
           }
@@ -95,6 +110,15 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
           } else {
             if (recordStatus == FLUSHING) {
               flushSensors = true;
+            } else {
+              // If there hasn't been a FLUSHING flag since the last zero,
+              // flush for the default period calculated from the response time.
+              if (lastStatus == ZERO
+                && DateTimeUtils.secondsBetween(currentStatusStart,
+                  recordTime) <= defaultFlushingTime) {
+
+                flushSensors = true;
+              }
             }
 
             runType = Measurement.MEASUREMENT_RUN_TYPE;

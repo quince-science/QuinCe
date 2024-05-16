@@ -48,7 +48,8 @@ public class MultipleFileUploadBean extends FileUploadBean {
 
   public List<RunTypeAssignment> getAllRunTypes() {
     return getCurrentInstrument().getFileDefinitions().stream()
-      .map(df -> df.getRunTypes().values()).flatMap(Collection::stream)
+      .filter(fd -> fd.getRunTypes() != null)
+      .map(fd -> fd.getRunTypes().values()).flatMap(Collection::stream)
       .distinct().collect(Collectors.toList());
   }
 
