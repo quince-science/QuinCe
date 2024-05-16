@@ -1,9 +1,9 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.sql.Connection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -31,7 +31,7 @@ public class CalculationCoefficientDB extends CalibrationDB {
     // If there's only one variable, leave the variable name off the
     // human-readable side
 
-    Map<String, String> targets = new TreeMap<String, String>();
+    Map<String, String> targets = new LinkedHashMap<String, String>();
 
     List<Variable> variablesWithCoefficients = instrument.getVariables()
       .stream().filter(v -> v.hasCoefficients()).collect(Collectors.toList());
