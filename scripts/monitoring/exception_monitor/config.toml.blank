@@ -1,6 +1,13 @@
 [log]
 file=''
 
+[messages]
+destination = 'telegram'
+
 [slack]
 api_token = ''
 workspace = ''
+
+[telegram]
+token = ''
+chat_id = ''
