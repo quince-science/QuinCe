@@ -66,12 +66,12 @@ def get_file_lines(log_file):
 
 
 def post_slack_msg(config, message):
-    client = WebClient(token=config['slack']['api_token'])
-    client.chat_postMessage(channel='#'+config['slack']['workspace'], text=f'{message}')
+    client = WebClient(token=config['api_token'])
+    client.chat_postMessage(channel='#'+config['workspace'], text=f'{message}')
 
 
 def post_telegram_msg(config, message):
-    url = f"https://api.telegram.org/bot{config['telegram']['token']}/sendMessage?chat_id={config['telegram']['chat_id']}&text=EXCEPTION MONITOR: {message}"
+    url = f"https://api.telegram.org/bot{config['token']}/sendMessage?chat_id={config['chat_id']}&text=EXCEPTION MONITOR: {message}"
     r = requests.get(url)
 
 
@@ -133,10 +133,10 @@ def main(config):
                 error_log = error_log + "\n\n"
                 error_log = error_log + exception
 
-            post_slack_msg(config, error_log)
+            post_slack_msg(config['slack'], error_log)
         elif message_destination == 'telegram':
             for exception in exceptions:
-                post_telegram_msg(config, exception)
+                post_telegram_msg(config['telegram'], exception)
         else:
             print('UNRECOGNISED MESSAGE DESTINATION')
             print(error_log)

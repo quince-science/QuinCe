@@ -26,9 +26,9 @@ PREPROCESSOR_FAILED = -10
 def post_msg(config, message):
     message_destination = config['messages']['destination']
     if message_destination == 'slack':
-        post_slack_msg(config, message)
+        post_slack_msg(config['slack'], message)
     elif message_destination == 'telegram':
-        post_telegram_msg(config, message)
+        post_telegram_msg(config['telegram'], message)
     else:
         print('UNRECOGNISED MESSAGE DESTINATION')
         print(message)
@@ -40,7 +40,7 @@ def post_slack_msg(config, message):
 
 
 def post_telegram_msg(config, message):
-    url = f"https://api.telegram.org/bot{config['telegram']['token']}/sendMessage?chat_id={config['telegram']['chat_id']}&text=EXCEPTION MONITOR: {message}"
+    url = f"https://api.telegram.org/bot{config['token']}/sendMessage?chat_id={config['chat_id']}&text=EXCEPTION MONITOR: {message}"
     requests.get(url)
 
 
@@ -212,7 +212,7 @@ def main():
                                 except Exception as e:
                                     log_instrument(logger, instrument_id, logging.ERROR,
                                                    f"Error processing file {file['filename']}  for instrument {instrument_id}:\n{traceback.format_exc()}")
-                                    post_msg(config['slack'],
+                                    post_msg(config,
                                              f"Error processing NRT for instrument {instrument_id}")
                                     retriever.file_failed()
 
@@ -222,7 +222,7 @@ def main():
         except Exception as e:
             log_instrument(logger, instrument_id, logging.ERROR,
                            f"Error processing instrument {instrument_id}: {traceback.format_exc()}")
-            post_msg(config['slack'], f"Error processing NRT for instrument {instrument_id}")
+            post_msg(config, f"Error processing NRT for instrument {instrument_id}")
 
     if ftp_conn is not None:
         ftp_conn.close()
