@@ -8,8 +8,8 @@ from zipfile import ZipFile
 from datetime import datetime, timedelta
 from bisect import bisect
 from slack_sdk import WebClient
-
 import toml
+import requests
 
 from modules.Preprocessor import PreprocessorFactory
 from modules.Retriever import RetrieverFactory
@@ -23,9 +23,25 @@ IGNORE_REGEXPS = [".*err.txt"]
 PREPROCESSOR_FAILED = -10
 
 
+def post_msg(config, message):
+    message_destination = config['messages']['destination']
+    if message_destination == 'slack':
+        post_slack_msg(config, message)
+    elif message_destination == 'telegram':
+        post_telegram_msg(config, message)
+    else:
+        print('UNRECOGNISED MESSAGE DESTINATION')
+        print(message)
+
+
 def post_slack_msg(config, message):
     client = WebClient(token=config['api_token'])
     client.chat_postMessage(channel='#' + config['workspace'], text=f'{message}')
+
+
+def post_telegram_msg(config, message):
+    url = f"https://api.telegram.org/bot{config['telegram']['token']}/sendMessage?chat_id={config['telegram']['chat_id']}&text=EXCEPTION MONITOR: {message}"
+    requests.get(url)
 
 
 # See if a file should be ignored based on its filename
@@ -196,8 +212,8 @@ def main():
                                 except Exception as e:
                                     log_instrument(logger, instrument_id, logging.ERROR,
                                                    f"Error processing file {file['filename']}  for instrument {instrument_id}:\n{traceback.format_exc()}")
-                                    post_slack_msg(config['slack'],
-                                                   f"Error processing NRT for instrument {instrument_id}")
+                                    post_msg(config['slack'],
+                                             f"Error processing NRT for instrument {instrument_id}")
                                     retriever.file_failed()
 
                         retriever.shutdown()
@@ -206,7 +222,7 @@ def main():
         except Exception as e:
             log_instrument(logger, instrument_id, logging.ERROR,
                            f"Error processing instrument {instrument_id}: {traceback.format_exc()}")
-            post_slack_msg(config['slack'], f"Error processing NRT for instrument {instrument_id}")
+            post_msg(config['slack'], f"Error processing NRT for instrument {instrument_id}")
 
     if ftp_conn is not None:
         ftp_conn.close()
