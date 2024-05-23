@@ -4,7 +4,7 @@
 import os
 import toml
 from slack_sdk import WebClient
-
+import requests
 
 # Constants
 LAST_LINE_FILE = 'lastLine.txt'
@@ -70,6 +70,11 @@ def post_slack_msg(config, message):
     client.chat_postMessage(channel='#'+config['slack']['workspace'], text=f'{message}')
 
 
+def post_telegram_msg(config, message):
+    url = f"https://api.telegram.org/bot{config['telegram']['token']}/sendMessage?chat_id={config['telegram']['chat_id']}&text=EXCEPTION MONITOR: {message}"
+    r = requests.get(url)
+
+
 def main(config):
     last_line = load_last_line()
     exceptions = []
@@ -122,11 +127,19 @@ def main(config):
         # Send an HTTP POST with the exceptions we found
         error_log = f'Exceptions found in {config["log"]["file"]}'
 
-        for exception in exceptions:
-            error_log = error_log + "\n\n"
-            error_log = error_log + exception
+        message_destination = config['messages']['destination']
+        if message_destination == 'slack':
+            for exception in exceptions:
+                error_log = error_log + "\n\n"
+                error_log = error_log + exception
 
-        post_slack_msg(config, error_log)
+            post_slack_msg(config, error_log)
+        elif message_destination == 'telegram':
+            for exception in exceptions:
+                post_telegram_msg(config, exception)
+        else:
+            print('UNRECOGNISED MESSAGE DESTINATION')
+            print(error_log)
 
     # Store the last processed line ready for next time
     save_last_line(current_line - 1)
