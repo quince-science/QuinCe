@@ -5,15 +5,33 @@ from slack_sdk import WebClient
 # Local modules
 import nrtftp
 import quince
+import requests
 
 
 # Log a message for a specific instrument
 def log_instrument(logger, instrument_id, level, message):
     logger.log(level, str(instrument_id) + ":" + message)
 
+
+def post_msg(config, message):
+    message_destination = config['messages']['destination']
+    if message_destination == 'slack':
+        post_slack_msg(config['slack'], message)
+    elif message_destination == 'telegram':
+        post_telegram_msg(config['telegram'], message)
+    else:
+        print('UNRECOGNISED MESSAGE DESTINATION')
+        print(message)
+
+
 def post_slack_msg(config, message):
     client = WebClient(token=config['api_token'])
     client.chat_postMessage(channel='#' + config['workspace'], text=f'{message}')
+
+
+def post_telegram_msg(config, message):
+    url = f"https://api.telegram.org/bot{config['token']}/sendMessage?chat_id={config['chat_id']}&text=EXCEPTION MONITOR: {message}"
+    requests.get(url)
 
 
 ##########################################################
@@ -60,8 +78,8 @@ def main():
                                    "Upload failed (status code " + str(status_code) + ")")
                     log_instrument(logger, instrument_id, logging.ERROR, upload_result.text)
 
-                    post_slack_msg(config['slack'],
-                            f'Failed to upload {file}: {upload_result.text}')
+                    post_msg(config['slack'],
+                             f'Failed to upload {file}: {upload_result.text}')
 
                     nrtftp.upload_failed(ftp_conn, config["FTP"], instrument_id, file)
 
