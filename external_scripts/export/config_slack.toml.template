@@ -1,4 +1,0 @@
-[slack]
-api_token = '%slack_api_token%'
-err_workspace = '%slack_err%'
-rep_workspace = '%slack_rep%'

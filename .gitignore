@@ -40,7 +40,7 @@ external_scripts/NRT/Saildrone_conversion/data_files
 
 Documentation/ForCoders/Overview.pdf
 
-external_scripts/export/config_slack.toml
+external_scripts/export/config_messaging.toml
 external_scripts/export/config_quince.toml
 external_scripts/export/config_copernicus.toml
 external_scripts/export/config_carbon.toml

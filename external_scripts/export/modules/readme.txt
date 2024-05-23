@@ -1,6 +1,6 @@
 Directory for storing modules containing functions used by AutomatedExportMain.py.
 
-Common contains all functions directed towards QuinCe, Slack and file processing functions common for all export-destinations.
+Common contains all functions directed towards QuinCe, messaging and file processing functions common for all export-destinations.
 
 CarbonPortal contains all functions directly related to exporting files from QuinCe to the ICOS Carbon Portal. The functions are divided into a main module and task specific submodules handling metadata, SQL-queries and HTTP-requestes.
 

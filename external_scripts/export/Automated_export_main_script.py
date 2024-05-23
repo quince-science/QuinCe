@@ -17,9 +17,7 @@ Automated export main script
     -  Uploads index file, detailing current content of FTP-server
     -  Uploads ready for ingestion 'delivery notice', DNT.
     -  Retrieves and investigates return DNT to evaluatate successful ingestion
-- Export success/failure, and exceptions, are reported to Slack channel 'reports' and 'errors'
-
-Maren K. Karlsen 2020.10.29
+- Export success/failure, and exceptions, are reported to Slack or Telegram
 """
 
 import logging
@@ -28,7 +26,7 @@ import sys
 import os
 
 from modules.Common.QuinCe import get_export_list, report_abandon_export, report_complete_export
-from modules.Common.Slack import post_slack_msg, slack_export_report
+from modules.Common.Messaging import post_msg, export_report
 from modules.Common.data_processing import process_dataset, get_platform_name, get_export_destination, is_NRT
 from modules.CarbonPortal.Export_CarbonPortal_main import cp_upload
 
@@ -45,7 +43,7 @@ logging.basicConfig(filename='log/console.log',
 # level=logging.DEBUG) #Logs to console, for debugging only.
 
 # UPLOAD flag removed - now set in each destination's config file
-SLACK_ERROR_MSG = True  # for differentiating between slack reports and slack errors, slack msg defaults to report
+ERROR_MSG = True  # for differentiating between reports and errors, msg defaults to report (for Slack only)
 
 
 def main():
@@ -91,7 +89,7 @@ def main():
                         #    logging.error('Exception occurred: ', exc_info=True)
                         #    successful_upload_CMEMS = 0
 
-                        # slack_export_report('CMEMS', platform_name, dataset, successful_upload_cmems, cmems_err_msg)
+                        # export_report('CMEMS', platform_name, dataset, successful_upload_cmems, cmems_err_msg)
                     else:
                         successful_upload_cmems = True  # No export => no failure to report to QuinCe
 
@@ -107,18 +105,18 @@ def main():
         except_msg = (f'Failed to run. Encountered: {e} \n \
       type: {exc_type} \n file name: {fname} \n line number: {exc_tb.tb_lineno}')
 
-        post_slack_msg(except_msg, SLACK_ERROR_MSG)
+        post_msg(except_msg, ERROR_MSG)
         logging.exception('')
         try:
             if dataset is not None:
                 report_abandon_export(dataset['id'])
         except Exception as e:
-            post_slack_msg(f'Failed to abandon QuinCe export {e}', SLACK_ERROR_MSG)
+            post_msg(f'Failed to abandon QuinCe export {e}', ERROR_MSG)
 
 
 def icos_upload(raw_filenames, manifest, dataset_zip, dataset):
     upload_result = cp_upload(manifest, dataset, dataset_zip, raw_filenames)
-    slack_export_report('Carbon Portal', get_platform_name(manifest), dataset, upload_result, None)
+    export_report('Carbon Portal', get_platform_name(manifest), dataset, upload_result, None)
     return upload_result
 
 
