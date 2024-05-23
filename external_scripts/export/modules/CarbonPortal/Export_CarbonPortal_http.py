@@ -15,7 +15,7 @@ from modules.CarbonPortal.Export_CarbonPortal_metadata import build_metadata_pac
 from modules.Common.data_processing import get_hashsum, get_file_from_zip, b64_to_b64_url
 import pandas as pd
 
-from modules.Common.Slack import post_slack_msg
+from modules.Common.Messaging import post_msg
 
 # from py_func.meta_handling import get_hashsum, get_file_from_zip
 '''Carbon Portal submission process
@@ -79,14 +79,14 @@ def push_object(url, data, auth_cookie, content_type, method):
     except urllib.error.HTTPError as e:
         code = e.code
         msg = e.read()
-        post_slack_msg(f'\n\nHTTP error:  {code} {method} failed,\n {data} not sent. \
+        post_msg(f'\n\nHTTP error:  {code} {method} failed,\n {data} not sent. \
       \n\n Error message: {msg}\n', status=1)
         logging.error(f'HTTP error:  {code} {method} failed,\n {data} not sent.\
       \n\n Error message: {msg}\n')
         response = f'HTTP error:  {code}, {msg}'
     except Exception as e:
         msg = e.message if hasattr(e, 'message') else e
-        post_slack_msg(f'{method} failed. Error message: {msg}\n', status=1)
+        post_msg(f'{method} failed. Error message: {msg}\n', status=1)
         logging.exception(f'{method} failed,\n {data} not sent, {msg}')
         response = f'Error: {method} failed: {msg}'
 
