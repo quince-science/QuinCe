@@ -30,7 +30,7 @@ def post_slack_msg(config, message):
 
 
 def post_telegram_msg(config, message):
-    url = f"https://api.telegram.org/bot{config['token']}/sendMessage?chat_id={config['chat_id']}&text=EXCEPTION MONITOR: {message}"
+    url = f"https://api.telegram.org/bot{config['token']}/sendMessage?chat_id={config['chat_id']}&text=NRT UPLOADER: {message}"
     requests.get(url)
 
 
@@ -78,7 +78,7 @@ def main():
                                    "Upload failed (status code " + str(status_code) + ")")
                     log_instrument(logger, instrument_id, logging.ERROR, upload_result.text)
 
-                    post_msg(config['slack'],
+                    post_msg(config,
                              f'Failed to upload {file}: {upload_result.text}')
 
                     nrtftp.upload_failed(ftp_conn, config["FTP"], instrument_id, file)
