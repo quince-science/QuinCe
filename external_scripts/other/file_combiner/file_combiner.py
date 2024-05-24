@@ -6,25 +6,43 @@ from slack_sdk import WebClient
 import toml
 from modules.FileRetriever import FileRetrieverFactory
 from modules.Combiner import Combiner
-
+import requests
 
 # Database details
 DB_FILE = 'file_combiner.sqlite'
 DB_TABLE = 'station'
 
-# Global Slack Config
-_SLACK_CONFIG = None
+
+def post_msg(config, message):
+    message_destination = config['messages']['destination']
+    if message_destination == 'slack':
+        _post_slack_msg(config['slack'], message)
+    elif message_destination == 'telegram':
+        _post_telegram_msg(config['telegram'], message)
+    else:
+        raise ValueError('Unrecognised message destination')
 
 
-def post_slack_msg(message):
+def _post_slack_msg(config, message):
     """
     Post a message to Slack
+    :param config: The Slack configuration
     :param message: The message
     :return: Nothing
     """
-    client = WebClient(token=_SLACK_CONFIG['api_token'])
-    client.chat_postMessage(channel='#' + _SLACK_CONFIG['workspace'], text=f'{message}')
-    # print(message)
+    client = WebClient(token=config['api_token'])
+    client.chat_postMessage(channel='#' + config['workspace'], text=f'{message}')
+
+
+def _post_telegram_msg(config, message):
+    """
+    Post a message to Telegram
+    :param config: The Telegram configuration
+    :param message: The message
+    :return: Nothing
+    """
+    url = f"https://api.telegram.org/bot{config['token']}/sendMessage?chat_id={config['chat_id']}&text=EXCEPTION MONITOR: {message}"
+    r = requests.get(url)
 
 
 def main():
@@ -42,9 +60,6 @@ def main():
     if '_slack' not in config:
         print('Missing Slack config')
         exit()
-
-    global _SLACK_CONFIG
-    _SLACK_CONFIG = config['_slack']
 
     with sqlite3.connect(DB_FILE) as db:
         # Make sure the database is set up
@@ -95,7 +110,7 @@ def process_station(db, name, config):
             record_last_file(db, name, filename, modification_date)
 
     except Exception:
-        post_slack_msg(f'Error processing station {name}:\n{traceback.format_exc()}')
+        post_msg(config, f'Error processing station {name}:\n{traceback.format_exc()}')
 
 
 def record_last_file(db, station, file, file_date):
