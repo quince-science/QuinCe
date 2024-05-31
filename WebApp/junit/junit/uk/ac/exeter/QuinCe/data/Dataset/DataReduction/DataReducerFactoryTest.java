@@ -73,7 +73,7 @@ public class DataReducerFactoryTest extends BaseTest {
   }
 
   @ParameterizedTest
-  @CsvSource({ "true,5", "false,3" })
+  @CsvSource({ "true,4", "false,2" })
   public void getCalculationParametersWithCalcColumnsTest(
     boolean includeCalculationColumns, int expectedSize) throws Exception {
     List<CalculationParameter> params = DataReducerFactory
@@ -97,7 +97,7 @@ public class DataReducerFactoryTest extends BaseTest {
     Map<Variable, List<CalculationParameter>> params = DataReducerFactory
       .getCalculationParameters(vars);
 
-    assertEquals(5, params.get(var1).size());
+    assertEquals(4, params.get(var1).size());
     assertEquals(6, params.get(var2).size());
   }
 
@@ -150,7 +150,7 @@ public class DataReducerFactoryTest extends BaseTest {
     CalculationParameter param = DataReducerFactory
       .getVariableParameter(makeVariable(), 2);
 
-    assertEquals("xCO₂ In Atmosphere", param.getLongName());
+    assertEquals("pCO₂ In Atmosphere", param.getLongName());
   }
 
   @Test

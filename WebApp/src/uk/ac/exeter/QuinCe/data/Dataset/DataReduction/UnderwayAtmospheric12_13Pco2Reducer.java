@@ -69,7 +69,6 @@ public class UnderwayAtmospheric12_13Pco2Reducer
 
     // Will be the same for both 12C and 13C
     record.put("pH₂O", x12CO2Calculator.pH2O);
-    record.put("xCO₂", x12CO2 + x13CO2);
     record.put("pCO₂", x12CO2Calculator.pCO2 + x13CO2Calculator.pCO2);
     record.put("fCO₂", x12CO2Calculator.fCO2 + x13CO2Calculator.fCO2);
   }
@@ -88,7 +87,6 @@ public class UnderwayAtmospheric12_13Pco2Reducer
       seaLevelPressure, co2);
 
     record.put("pH₂O", calculator.pH2O);
-    record.put("xCO₂", co2);
     record.put("pCO₂", calculator.pCO2);
     record.put("fCO₂", calculator.fCO2);
   }
