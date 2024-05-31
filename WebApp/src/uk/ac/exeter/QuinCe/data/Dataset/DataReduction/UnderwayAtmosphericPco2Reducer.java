@@ -61,7 +61,6 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
       record.put("Sea Level Pressure", seaLevelPressure);
       record.put("pH₂O", calculator.pH2O);
-      record.put("xCO₂", co2InGas);
       record.put("pCO₂", calculator.pCO2);
       record.put("fCO₂", calculator.fCO2);
     } catch (Exception e) {
@@ -81,12 +80,9 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
         "pH₂O", "Atmosphere Water Vapour Pressure", "CPVPZZ01", "hPa", false));
 
       calculationParameters.add(new CalculationParameter(makeParameterId(2),
-        "xCO₂", "xCO₂ In Atmosphere", "XCO2DRAT", "μmol mol⁻¹", true));
-
-      calculationParameters.add(new CalculationParameter(makeParameterId(3),
         "pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
 
-      calculationParameters.add(new CalculationParameter(makeParameterId(4),
+      calculationParameters.add(new CalculationParameter(makeParameterId(3),
         "fCO₂", "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true));
     }
 

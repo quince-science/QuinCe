@@ -69,6 +69,7 @@
       "AWMXRCORR": "Atmosphere True Moisture [umol mol-1]",
       "CAPAZZ01": "Atmospheric Pressure At Sea Level [hPa]",
       "XCO2DRAT": "xCO2 in atmosphere [umol mol-1]",
+      "XCO2DCMA": "xCO2 in atmosphere [umol mol-1]",
       "LPRES0EQ_equil": "LICOR Pressure (Equilibrator) [hPa]",
       "LPRES0EQ_atm": "LICOR Pressure (Atmosphere) [hPa]",
       "CTMPZZ01": "Atmospheric Temperature [degC]"
@@ -110,6 +111,7 @@
       "AWMXRCORR": "Atmosphere True Moisture [umol mol-1]",
       "CAPAZZ01": "Atmospheric Pressure At Sea Level [hPa]",
       "XCO2DRAT": "xCO2 in atmosphere [umol mol-1]",
+      "XCO2DCMA": "xCO2 in atmosphere [umol mol-1]",
       "LPRES0EQ_equil": "LICOR Pressure (Equilibrator) [hPa]",
       "LPRES0EQ_atm": "LICOR Pressure (Atmosphere) [hPa]",
       "CTMPZZ01": "Atmospheric Temperature [degC]"
