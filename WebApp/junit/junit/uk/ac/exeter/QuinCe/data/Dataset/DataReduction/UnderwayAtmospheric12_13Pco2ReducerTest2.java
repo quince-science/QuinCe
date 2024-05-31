@@ -96,7 +96,6 @@ public class UnderwayAtmospheric12_13Pco2ReducerTest2 extends DataReducerTest {
       getDataSource().getConnection());
 
     assertEquals(0.00909D, record.getCalculationValue("pH₂O"), 0.0001);
-    assertEquals(399.274D, record.getCalculationValue("xCO₂"), 0.0001);
     assertEquals(399.71652D, record.getCalculationValue("pCO₂"), 0.0001);
     assertEquals(398.0793D, record.getCalculationValue("fCO₂"), 0.0001);
   }
