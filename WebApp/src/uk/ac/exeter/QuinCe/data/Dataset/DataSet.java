@@ -21,12 +21,13 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.Message;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.TimeRange;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Object to represent a data set
  */
-public class DataSet implements Comparable<DataSet> {
+public class DataSet implements Comparable<DataSet>, TimeRange {
 
   public static final long TIMEPOS_FIELDSET_ID = 0L;
 

@@ -33,11 +33,12 @@ import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.utils.TimeRange;
 
 /**
  * Class representing a data file
  */
-public class DataFile {
+public class DataFile implements TimeRange {
 
   public static final String TIME_OFFSET_PROP = "timeOffset";
 
@@ -496,6 +497,10 @@ public class DataFile {
     return startDate;
   }
 
+  public LocalDateTime getStart() {
+    return getRawStartTime();
+  }
+
   /**
    * Get the time of the last record in the file. Time offset will not be
    * applied.
@@ -534,6 +539,10 @@ public class DataFile {
     }
 
     return endDate;
+  }
+
+  public LocalDateTime getEnd() {
+    return getRawEndTime();
   }
 
   public LocalDateTime getOffsetStartTime() {
