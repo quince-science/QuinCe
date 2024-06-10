@@ -3,8 +3,10 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeSet;
@@ -42,6 +44,8 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.TimeRange;
+import uk.ac.exeter.QuinCe.utils.TimeRangeBuilder;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -124,10 +128,17 @@ public class ExtractDataSetJob extends DataSetJob {
       CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
         .getMostRecentCalibrations(conn, instrument, dataSet.getStart());
 
-      // Collect the true start and end times of the dataset based on the
-      // actual data
-      LocalDateTime realStartTime = null;
-      LocalDateTime realEndTime = dataSet.getEnd();
+      // Adjust the DataSet bounds to the latest start date and earliest end
+      // date of each file definition
+      Map<FileDefinition, TimeRangeBuilder> fileDefinitionRanges = new HashMap<FileDefinition, TimeRangeBuilder>();
+      instrument.getFileDefinitions()
+        .forEach(fd -> fileDefinitionRanges.put(fd, new TimeRangeBuilder()));
+
+      files
+        .forEach(f -> fileDefinitionRanges.get(f.getFileDefinition()).add(f));
+
+      dataSet.setStart(TimeRange.getLatestStart(fileDefinitionRanges.values()));
+      dataSet.setEnd(TimeRange.getEarliestEnd(fileDefinitionRanges.values()));
 
       // Collect the data bounds
       double minLon = Double.MAX_VALUE;
@@ -176,12 +187,6 @@ public class ExtractDataSetJob extends DataSetJob {
               || time.isAfter(dataSet.getStart()))
               && (time.isBefore(dataSet.getEnd())
                 || time.isEqual(dataSet.getEnd()))) {
-
-              if (null == realStartTime && null != time) {
-                realStartTime = time;
-              }
-
-              realEndTime = time;
 
               if (!dataSet.fixedPosition() && fileDefinition.hasPosition()) {
 
@@ -358,15 +363,6 @@ public class ExtractDataSetJob extends DataSetJob {
       // Store the remaining values
       if (sensorValues.size() > 0) {
         DataSetDataDB.storeSensorValues(conn, sensorValues);
-      }
-
-      // Adjust the Dataset limits to the actual extracted data
-      if (null != realStartTime) {
-        dataSet.setStart(realStartTime);
-      }
-
-      if (null != realEndTime) {
-        dataSet.setEnd(realEndTime);
       }
 
       dataSet.setBounds(minLon, minLat, maxLon, maxLat);
