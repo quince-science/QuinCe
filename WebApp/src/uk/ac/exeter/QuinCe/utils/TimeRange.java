@@ -10,14 +10,14 @@ public interface TimeRange {
 
   /**
    * Get the start date of the period.
-   * 
+   *
    * @return The start date.
    */
   public LocalDateTime getStart();
 
   /**
    * Get the end date of the period.
-   * 
+   *
    * @return The end date.
    */
   public LocalDateTime getEnd();
