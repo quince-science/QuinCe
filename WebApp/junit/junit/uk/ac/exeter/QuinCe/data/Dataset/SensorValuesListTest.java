@@ -227,9 +227,10 @@ public class SensorValuesListTest extends BaseTest {
       Arguments.of(4, SensorValuesList.MODE_CONTINUOUS),
       Arguments.of(5, SensorValuesList.MODE_CONTINUOUS),
       Arguments.of(6, SensorValuesList.MODE_PERIODIC),
-      Arguments.of(7, SensorValuesList.MODE_CONTINUOUS),
+      Arguments.of(7, SensorValuesList.MODE_PERIODIC),
       Arguments.of(8, SensorValuesList.MODE_PERIODIC),
-      Arguments.of(9, SensorValuesList.MODE_CONTINUOUS));
+      Arguments.of(9, SensorValuesList.MODE_CONTINUOUS),
+      Arguments.of(10, SensorValuesList.MODE_PERIODIC));
   }
 
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
