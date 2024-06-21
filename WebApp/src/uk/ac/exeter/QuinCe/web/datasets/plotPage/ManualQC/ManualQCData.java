@@ -49,6 +49,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
+import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataLatLng;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataReductionRecordPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.NullPlotPageTableValue;
@@ -176,7 +177,7 @@ public class ManualQCData extends PlotPageData {
    *           If the data cannot be loaded.
    */
   @Override
-  public void loadDataAction() throws Exception {
+  public void loadDataAction(Progress progress) throws Exception {
 
     try (Connection conn = dataSource.getConnection()) {
       sensorValues = DataSetDataDB.getSensorValues(conn, instrument,
