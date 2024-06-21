@@ -32,6 +32,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public abstract class PlotPageData {
@@ -183,9 +184,9 @@ public abstract class PlotPageData {
    *          A data source.
    * @see #loadDataAction(DataSource)
    */
-  public void loadData() {
+  public void loadData(Progress progress) {
     try {
-      loadDataAction();
+      loadDataAction(progress);
 
       if (instrument.hasRunTypes()) {
         DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
@@ -225,7 +226,7 @@ public abstract class PlotPageData {
    * @param dataSource
    *          A data source.
    */
-  protected abstract void loadDataAction() throws Exception;
+  protected abstract void loadDataAction(Progress progress) throws Exception;
 
   /**
    * Get the complete set of {@link SensorValue}s for the dataset.

@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -139,7 +140,8 @@ public class ExportDataset {
       if (dataset.getStatus() != DataSet.STATUS_READY_FOR_EXPORT) {
         responseCode = Status.FORBIDDEN;
       } else {
-        zip = ExportBean.buildExportZip(conn, instrument, dataset, null);
+        zip = ExportBean.buildExportZip(conn, instrument, dataset, null,
+          new Progress());
         DataSetDB.setDatasetStatus(conn, id, DataSet.STATUS_EXPORTING);
       }
     } catch (RecordNotFoundException e) {

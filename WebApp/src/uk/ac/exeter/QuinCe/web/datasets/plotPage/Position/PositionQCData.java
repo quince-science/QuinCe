@@ -22,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataLatLng;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableRecord;
@@ -44,7 +45,7 @@ public class PositionQCData extends ManualQCData {
   }
 
   @Override
-  public void loadDataAction() throws Exception {
+  public void loadDataAction(Progress progress) throws Exception {
     try (Connection conn = dataSource.getConnection()) {
       sensorValues = DataSetDataDB.getPositionSensorValues(conn, instrument,
         dataset.getId());

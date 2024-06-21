@@ -31,6 +31,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.ValueCounter;
+import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.DataLatLng;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
@@ -84,7 +85,7 @@ public class InternalCalibrationData extends PlotPageData {
   }
 
   @Override
-  protected void loadDataAction() throws Exception {
+  protected void loadDataAction(Progress progress) throws Exception {
 
     try (Connection conn = dataSource.getConnection()) {
 

@@ -48,6 +48,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.NullPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
@@ -174,7 +175,8 @@ public class ExportBean extends BaseManagedBean {
       conn = getDataSource().getConnection();
 
       byte[] outBytes = buildExportZip(conn, getCurrentInstrument(), dataset,
-        ExportConfig.getInstance().getOptions(chosenExportOptions));
+        ExportConfig.getInstance().getOptions(chosenExportOptions),
+        getProgress());
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -225,13 +227,14 @@ public class ExportBean extends BaseManagedBean {
    * @throws Exception
    */
   private static DatasetExport getDatasetExport(Instrument instrument,
-    DataSet dataset, ExportOption exportOption) throws Exception {
+    DataSet dataset, ExportOption exportOption, Progress progress)
+    throws Exception {
 
     DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
     ExportData data = exportOption.makeExportData(dataSource, instrument,
       dataset);
-    data.loadData();
+    data.loadData(progress);
 
     // Run the post-processor before generating the final output
     data.postProcess();
@@ -728,7 +731,8 @@ public class ExportBean extends BaseManagedBean {
    *           All exceptions are propagated upwards
    */
   public static byte[] buildExportZip(Connection conn, Instrument instrument,
-    DataSet dataset, Collection<ExportOption> exportOptions) throws Exception {
+    DataSet dataset, Collection<ExportOption> exportOptions, Progress progress)
+    throws Exception {
 
     // Get the list of raw files
     List<Long> rawIds = dataset.getSourceFiles(conn);
@@ -756,7 +760,8 @@ public class ExportBean extends BaseManagedBean {
       String datasetPath = dirRoot + "/dataset/" + option.getName() + "/"
         + dataset.getName() + option.getFileExtension();
 
-      DatasetExport export = getDatasetExport(instrument, dataset, option);
+      DatasetExport export = getDatasetExport(instrument, dataset, option,
+        progress);
 
       ZipEntry datasetEntry = new ZipEntry(datasetPath);
       zip.putNextEntry(datasetEntry);

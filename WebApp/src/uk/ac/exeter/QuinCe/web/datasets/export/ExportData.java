@@ -29,6 +29,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
@@ -71,9 +72,9 @@ public class ExportData extends ManualQCData {
   }
 
   @Override
-  public void loadData() {
+  public void loadData(Progress progress) {
     try {
-      loadDataAction();
+      loadDataAction(progress);
       loaded = true;
     } catch (Exception e) {
       error("Error while loading dataset data", e);
@@ -84,10 +85,10 @@ public class ExportData extends ManualQCData {
    * Different data can be loaded depending on the export options.
    */
   @Override
-  public void loadDataAction() throws Exception {
+  public void loadDataAction(Progress progress) throws Exception {
 
     // Load all data
-    super.loadDataAction();
+    super.loadDataAction(progress);
 
     /*
      * Filter measurements to only contain those with Good QC flags if required

@@ -297,7 +297,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * </p>
    */
   public void loadData() {
-    getData().loadData();
+    getData().loadData(getProgress());
   }
 
   /**
