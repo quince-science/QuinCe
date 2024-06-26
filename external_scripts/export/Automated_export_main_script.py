@@ -66,6 +66,9 @@ def main():
                 platform_name = get_platform_name(manifest, True)
                 export_destination = get_export_destination(platform_name, is_NRT(manifest))
 
+                if len(export_destination) == 0:
+                    logging.info('Platform has no export destinations configured')
+
                 successful_upload_cp = 0
                 successful_upload_cmems = 0
 
@@ -103,7 +106,7 @@ def main():
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         except_msg = (f'Failed to run. Encountered: {e} \n \
-      type: {exc_type} \n file name: {fname} \n line number: {exc_tb.tb_lineno}')
+          type: {exc_type} \n file name: {fname} \n line number: {exc_tb.tb_lineno}')
 
         post_msg(except_msg, ERROR_MSG)
         logging.exception('')
