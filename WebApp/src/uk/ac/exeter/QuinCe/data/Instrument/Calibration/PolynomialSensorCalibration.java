@@ -51,9 +51,9 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    * @param instrumentId
    *          The instrument to which the calibration target belongs
    */
-  public PolynomialSensorCalibration(Instrument instrument,
+  public PolynomialSensorCalibration(Instrument instrument, long id,
     LocalDateTime date) {
-    super(instrument, date);
+    super(instrument, id, date);
   }
 
   /**
@@ -78,8 +78,19 @@ public class PolynomialSensorCalibration extends SensorCalibration {
     super(id, instrument, target, deploymentDate, coefficients);
   }
 
+  /**
+   * Copy constructor.
+   *
+   * @param source
+   *          The copy source.
+   */
+  protected PolynomialSensorCalibration(PolynomialSensorCalibration source) {
+    super(source.getId(), source.getInstrument(), source.getTarget(),
+      source.getDeploymentDate(), duplicateCoefficients(source));
+  }
+
   @Override
-  public List<String> getCoefficientNames() {
+  public List<String> getCoefficientNames(boolean includeHidden) {
     return valueNames;
   }
 
@@ -153,5 +164,10 @@ public class PolynomialSensorCalibration extends SensorCalibration {
     }
 
     return calibratedValue;
+  }
+
+  @Override
+  public Calibration makeCopy() {
+    return new PolynomialSensorCalibration(this);
   }
 }

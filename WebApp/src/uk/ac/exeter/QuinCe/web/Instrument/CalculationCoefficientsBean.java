@@ -57,8 +57,8 @@ public class CalculationCoefficientsBean extends CalibrationBean {
   }
 
   @Override
-  protected Calibration initNewCalibration(LocalDateTime date) {
-    return new CalculationCoefficient(instrument, date);
+  protected Calibration initNewCalibration(long id, LocalDateTime date) {
+    return new CalculationCoefficient(getCurrentInstrument(), id, date);
   }
 
   @Override
@@ -69,5 +69,15 @@ public class CalculationCoefficientsBean extends CalibrationBean {
   @Override
   public String getCalibrationName() {
     return "Coefficient";
+  }
+
+  @Override
+  protected boolean allowCalibrationChangeInDataset() {
+    return false;
+  }
+
+  @Override
+  protected boolean changeAffectsDatasetsAfterOnly() {
+    return false;
   }
 }

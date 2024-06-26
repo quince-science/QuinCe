@@ -45,3 +45,15 @@
   margin: auto;
   display: none;
 }
+
+.vis-item.recalculationNotRequired {
+  background: #ddd;
+}
+
+.vis-item.recalculationRequired {
+  background: #ffff88;
+}
+
+.vis-item.cannotRecalculate {
+  background: #ff8888;
+}

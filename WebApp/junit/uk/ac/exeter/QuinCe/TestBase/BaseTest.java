@@ -12,6 +12,7 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 import org.flywaydb.test.FlywayTestExecutionListener;
@@ -28,7 +29,9 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
+import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -136,6 +139,11 @@ public class BaseTest {
         getDataSource());
       resourceManager.contextInitialized(servletContextEvent);
     }
+  }
+
+  public void loginUser(long userId) throws Exception {
+    ((HttpSession) externalContext.getSession(false)).setAttribute(
+      LoginBean.USER_SESSION_ATTR, UserDB.getUser(getConnection(), userId));
   }
 
   /**

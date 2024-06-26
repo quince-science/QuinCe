@@ -1,0 +1,6 @@
+Action,ID,Month,Target,Affected_Datasets,Can_Reprocess
+ADD,,1,std1,,
+ADD,,2,std2,,
+EDIT,1,2,std1,1;2;3,true;true;true
+EDIT,2,2,std2,1,T
+DELETE,1,,,1;2;3,false;false;false

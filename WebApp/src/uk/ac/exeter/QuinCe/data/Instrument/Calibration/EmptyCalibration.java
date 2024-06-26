@@ -26,8 +26,18 @@ public class EmptyCalibration extends Calibration {
     super(instrument, type, target);
   }
 
+  /**
+   * Copy constructor.
+   *
+   * @param source
+   *          The source of the copy.
+   */
+  protected EmptyCalibration(EmptyCalibration source) {
+    super(source.getInstrument(), source.getType(), source.getTarget());
+  }
+
   @Override
-  public List<String> getCoefficientNames() {
+  public List<String> getCoefficientNames(boolean includeHidden) {
     return null;
   }
 
@@ -56,5 +66,10 @@ public class EmptyCalibration extends Calibration {
     }
 
     return result;
+  }
+
+  @Override
+  public Calibration makeCopy() {
+    return new EmptyCalibration(this);
   }
 }

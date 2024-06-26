@@ -39,9 +39,25 @@ public class CalculationCoefficient extends Calibration {
    * @param instrumentId
    *          The instrument to which the calibration target belongs
    */
-  public CalculationCoefficient(Instrument instrument, LocalDateTime date) {
+  public CalculationCoefficient(Instrument instrument, long id,
+    LocalDateTime date) {
     super(instrument,
-      CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE, date);
+      CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE, id,
+      date);
+  }
+
+  /**
+   * Copy constructor.
+   *
+   * @param source
+   *          The copy source.
+   */
+  protected CalculationCoefficient(CalculationCoefficient source) {
+    super(source.getInstrument(),
+      CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE,
+      source.getId(), source.getDeploymentDate());
+    setCoefficients(duplicateCoefficients(source));
+
   }
 
   /**
@@ -71,7 +87,7 @@ public class CalculationCoefficient extends Calibration {
   }
 
   @Override
-  public List<String> getCoefficientNames() {
+  public List<String> getCoefficientNames(boolean includeHidden) {
     return valueNames;
   }
 
@@ -143,5 +159,10 @@ public class CalculationCoefficient extends Calibration {
     BigDecimal y1Value = null == y1 ? null : y1.getBigDecimalValue();
 
     return Calculators.interpolate(x0Value, y0Value, x1Value, y1Value, x);
+  }
+
+  @Override
+  public Calibration makeCopy() {
+    return new CalculationCoefficient(this);
   }
 }

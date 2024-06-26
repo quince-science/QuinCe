@@ -12,15 +12,15 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class ExternalStandardFactory {
 
   public static ExternalStandard getExternalStandard(Instrument instrument,
-    LocalDateTime date) throws Exception {
+    long id, LocalDateTime date) throws Exception {
 
     Class<? extends ExternalStandard> clazz = getExternalStandardClass(
       instrument);
 
     Constructor<? extends ExternalStandard> con = clazz
-      .getConstructor(Instrument.class, LocalDateTime.class);
+      .getConstructor(Instrument.class, Long.TYPE, LocalDateTime.class);
 
-    return con.newInstance(instrument, date);
+    return con.newInstance(instrument, id, date);
   }
 
   public static ExternalStandard getExternalStandard(long id,

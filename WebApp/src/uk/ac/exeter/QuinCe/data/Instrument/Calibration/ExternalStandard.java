@@ -21,8 +21,9 @@ public abstract class ExternalStandard extends Calibration {
    * @param instrumentId
    *          The instrument ID
    */
-  protected ExternalStandard(Instrument instrument, LocalDateTime date) {
-    super(instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
+  protected ExternalStandard(Instrument instrument, long id,
+    LocalDateTime date) {
+    super(instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE, id,
       date);
   }
 
@@ -56,15 +57,29 @@ public abstract class ExternalStandard extends Calibration {
     }
   }
 
+  protected ExternalStandard(long id, Instrument instrument, String target,
+    LocalDateTime deploymentDate, List<CalibrationCoefficient> coefficients) {
+    super(id, instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
+      target);
+    setDeploymentDate(deploymentDate);
+    setCoefficients(coefficients);
+  }
+
   /**
    * The coefficient names are the names of the {@link SensorType}s that have
    * internal calibrations.
    */
   @Override
-  public List<String> getCoefficientNames() {
-    return instrument.getSensorAssignments().getAssignedSensorTypes().stream()
-      .filter(s -> s.hasInternalCalibration()).map(s -> s.getShortName())
-      .collect(Collectors.toList());
+  public List<String> getCoefficientNames(boolean includeHidden) {
+    List<String> result = instrument.getSensorAssignments()
+      .getAssignedSensorTypes().stream().filter(s -> s.hasInternalCalibration())
+      .map(s -> s.getShortName()).collect(Collectors.toList());
+
+    if (includeHidden) {
+      result.addAll(getHiddenSensorTypes());
+    }
+
+    return result;
   }
 
   /**

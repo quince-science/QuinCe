@@ -7,10 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -375,13 +374,13 @@ public abstract class CalibrationDB {
    * @throws MissingParamException
    * @throws DatabaseException
    */
-  public TreeMap<String, List<Calibration>> getCalibrations(
+  public TreeMap<String, TreeSet<Calibration>> getCalibrations(
     DataSource dataSource, Instrument instrument)
     throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(instrument, "instrument");
 
-    TreeMap<String, List<Calibration>> calibrations = new TreeMap<String, List<Calibration>>();
+    TreeMap<String, TreeSet<Calibration>> calibrations = new TreeMap<String, TreeSet<Calibration>>();
 
     Connection conn = null;
     PreparedStatement stmt = null;
@@ -397,8 +396,7 @@ public abstract class CalibrationDB {
       while (records.next()) {
         Calibration calibration = calibrationFromResultSet(records, instrument);
         if (!calibrations.containsKey(calibration.getTarget())) {
-          calibrations.put(calibration.getTarget(),
-            new ArrayList<Calibration>());
+          calibrations.put(calibration.getTarget(), new TreeSet<Calibration>());
         }
 
         calibrations.get(calibration.getTarget()).add(calibration);

@@ -57,8 +57,8 @@ public class SensorCalibrationsBean extends CalibrationBean {
   }
 
   @Override
-  protected Calibration initNewCalibration(LocalDateTime date) {
-    return new PolynomialSensorCalibration(instrument, date);
+  protected Calibration initNewCalibration(long id, LocalDateTime date) {
+    return new PolynomialSensorCalibration(getCurrentInstrument(), id, date);
   }
 
   @Override

@@ -51,9 +51,10 @@ public class ExternalStandardsBean extends CalibrationBean {
   }
 
   @Override
-  protected Calibration initNewCalibration(LocalDateTime date)
+  protected Calibration initNewCalibration(long id, LocalDateTime date)
     throws Exception {
-    return ExternalStandardFactory.getExternalStandard(instrument, date);
+    return ExternalStandardFactory.getExternalStandard(getCurrentInstrument(),
+      id, date);
   }
 
   @Override

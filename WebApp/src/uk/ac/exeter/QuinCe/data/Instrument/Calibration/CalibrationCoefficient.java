@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 /**
  * Simple object for a single calibration coefficient
  */
-public class CalibrationCoefficient {
+public class CalibrationCoefficient implements Cloneable {
 
   /**
    * The coefficient's name
@@ -73,5 +73,10 @@ public class CalibrationCoefficient {
   @Override
   public String toString() {
     return name + ": " + value;
+  }
+
+  @Override
+  public Object clone() {
+    return new CalibrationCoefficient(name, value);
   }
 }
