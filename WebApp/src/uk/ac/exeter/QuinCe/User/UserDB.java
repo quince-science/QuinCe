@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import javax.sql.DataSource;
@@ -116,6 +117,14 @@ public class UserDB {
    */
   private static final String GET_PREFERENCES_QUERY = "SELECT "
     + "preferences FROM user WHERE id = ?";
+
+  /**
+   * SQL statement to update a user's last login time.
+   *
+   * @see #recordLogin(Connection, String)
+   */
+  private static final String RECORD_LOGIN_STATEMENT = "UPDATE "
+    + "user SET last_login = ? WHERE email = ?";
 
   /**
    * The length of the string to be used for email verification and password
@@ -735,6 +744,9 @@ public class UserDB {
             // a nefarious person. The user can continue to log in with their
             // valid credentials, and it will nullify the reset request.
             clearPasswordResetCode(conn, email);
+
+            // Record the login
+            recordLogin(conn, email);
           }
         }
       }
@@ -801,6 +813,32 @@ public class UserDB {
     } finally {
       DatabaseUtils.closeStatements(stmt);
     }
+  }
+
+  /**
+   * Record a login for the user with the specified email address.
+   *
+   * @param conn
+   *          A database connection.
+   * @param email
+   *          The user's email address.
+   * @throws DatabaseException
+   *           If the update fails.
+   */
+  private static void recordLogin(Connection conn, String email)
+    throws DatabaseException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(email, "email");
+
+    try (
+      PreparedStatement stmt = conn.prepareStatement(RECORD_LOGIN_STATEMENT)) {
+      stmt.setLong(1, DateTimeUtils.dateToLong(LocalDateTime.now()));
+      stmt.setString(2, email);
+      stmt.execute();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error recording login", e);
+    }
+
   }
 
   /**

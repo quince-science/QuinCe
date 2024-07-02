@@ -1,0 +1,1 @@
+ALTER TABLE user ADD COLUMN last_login BIGINT NULL DEFAULT NULL AFTER preferences;
