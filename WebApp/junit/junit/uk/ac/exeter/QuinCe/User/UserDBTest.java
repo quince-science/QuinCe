@@ -27,9 +27,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * <b>do not</b> make use of the dummy user defined in
  * {@code WebApp/junit/resources/sql/testbase/user}.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class UserDBTest extends BaseTest {
 
