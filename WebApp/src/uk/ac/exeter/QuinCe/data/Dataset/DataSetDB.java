@@ -113,6 +113,9 @@ public class DataSetDB {
   private static final String DATASET_EXPORTED_STATEMENT = "UPDATE dataset "
     + "SET exported = 1 WHERE id = ?";
 
+  private static final String LAST_NRT_STATEMENT = "UPDATE instrument SET "
+    + "last_nrt_export = ? WHERE id = ?";
+
   private static final String SENSOR_OFFSETS_PROPERTY = "__SENSOR_OFFSETS";
 
   /**
@@ -1261,18 +1264,62 @@ public class DataSetDB {
     return result;
   }
 
-  public static void setDatasetExported(Connection conn, long datasetId)
-    throws DatabaseException {
+  /**
+   * Mark a {@link DataSet} as having been exported.
+   *
+   * @param conn
+   *          A database connection.
+   * @param datasetId
+   *          The {@link DataSet}'s ID
+   * @param recordNrt
+   *          If this is an NRT dataset, record the last NRT export time for the
+   *          instrument.
+   * @throws DatabaseException
+   * @throws RecordNotFoundException
+   * @throws MissingParamException
+   */
+  public static void setDatasetExported(Connection conn, long datasetId,
+    boolean recordNrt)
+    throws DatabaseException, MissingParamException, RecordNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(datasetId, "datasetId");
 
-    try (PreparedStatement stmt = conn
-      .prepareStatement(DATASET_EXPORTED_STATEMENT)) {
-      stmt.setLong(1, datasetId);
-      stmt.execute();
+    PreparedStatement setExportedStmt = null;
+    PreparedStatement setLastNrtStmt = null;
+
+    try {
+      conn.setAutoCommit(false);
+
+      setExportedStmt = conn.prepareStatement(DATASET_EXPORTED_STATEMENT);
+      setExportedStmt.setLong(1, datasetId);
+      setExportedStmt.execute();
+
+      if (recordNrt) {
+        DataSet dataset = getDataSet(conn, datasetId);
+        if (dataset.isNrt()) {
+          setLastNrtStmt = conn.prepareStatement(LAST_NRT_STATEMENT);
+          setLastNrtStmt.setLong(1,
+            DateTimeUtils.dateToLong(LocalDateTime.now()));
+          setLastNrtStmt.setLong(2, dataset.getInstrumentId());
+
+          setLastNrtStmt.execute();
+        }
+      }
+
+      conn.commit();
     } catch (SQLException e) {
       throw new DatabaseException("Error setting dataset export status", e);
+    } finally {
+      DatabaseUtils.closeStatements(setExportedStmt, setLastNrtStmt);
+
+      try {
+        conn.setAutoCommit(true);
+      } catch (SQLException e) {
+        // Close the connection so it can't be reused
+        DatabaseUtils.closeConnection(conn);
+        throw new DatabaseException("Error setting dataset export status", e);
+      }
     }
   }
 }

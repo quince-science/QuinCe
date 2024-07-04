@@ -21,6 +21,6 @@ public class CompleteExport extends SetExportStatus {
 
   @Override
   protected void additionalAction(Connection conn, long id) throws Exception {
-    DataSetDB.setDatasetExported(conn, id);
+    DataSetDB.setDatasetExported(conn, id, true);
   }
 }

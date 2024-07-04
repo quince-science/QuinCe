@@ -26,7 +26,7 @@ INSERT INTO variable_sensors
 
   
 -- Now an instrument using the variable
-INSERT INTO instrument VALUES (1,1,'Test Instrument','Test Instrument','TEST',0,'','2019-01-28 13:31:21','2019-01-28 14:31:21');
+INSERT INTO instrument VALUES (1,1,'Test Instrument','Test Instrument','TEST',0,NULL,'','2019-01-28 13:31:21','2019-01-28 14:31:21');
 
 INSERT INTO instrument_variables (instrument_id, variable_id)
   VALUES (1, (SELECT id FROM variables WHERE name = 'testVar'));

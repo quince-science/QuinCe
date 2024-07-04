@@ -199,7 +199,11 @@ public class ExportBean extends BaseManagedBean {
       fc.responseComplete();
 
       dataset.markExported();
-      DataSetDB.setDatasetExported(conn, dataset.getId());
+
+      // Note that manual exports will not trigger the NRT Export recording,
+      // otherwise the automatic NRT export would be prevented from doing its
+      // job.
+      DataSetDB.setDatasetExported(conn, dataset.getId(), false);
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
     } finally {
