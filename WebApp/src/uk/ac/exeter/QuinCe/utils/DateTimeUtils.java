@@ -97,9 +97,10 @@ public class DateTimeUtils {
    *          The milliseconds value
    * @return The {@code LocalDateTime} object
    */
-  public static LocalDateTime longToDate(long milliseconds) {
-    return LocalDateTime.ofInstant(Instant.ofEpochMilli(milliseconds),
-      ZoneOffset.UTC);
+  public static LocalDateTime longToDate(Long milliseconds) {
+    return null == milliseconds ? null
+      : LocalDateTime.ofInstant(Instant.ofEpochMilli(milliseconds),
+        ZoneOffset.UTC);
   }
 
   /**

@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -137,6 +138,12 @@ public class Instrument {
   private boolean nrt = false;
 
   /**
+   * The time at which the most recent automatic export of an NRT dataset was
+   * performed for this Instrument.
+   */
+  private LocalDateTime lastNrtExport = null;
+
+  /**
    * The configuration for the behaviour of diagnostic sensors QC.
    */
   private DiagnosticQCConfig diagnosticQC;
@@ -169,8 +176,8 @@ public class Instrument {
     InstrumentFileSet fileDefinitions, List<Variable> variables,
     Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformName,
-    String platformCode, boolean nrt, String propertiesJson)
-    throws SensorGroupsException {
+    String platformCode, boolean nrt, LocalDateTime lastNrtExport,
+    String propertiesJson) throws SensorGroupsException {
 
     this.owner = owner;
     this.id = databaseId;
@@ -182,6 +189,7 @@ public class Instrument {
     this.platformName = platformName;
     this.platformCode = platformCode;
     this.nrt = nrt;
+    this.lastNrtExport = lastNrtExport;
     parsePropertiesJson(propertiesJson);
   }
 
@@ -210,8 +218,8 @@ public class Instrument {
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
     List<Variable> variables, Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformName,
-    String platformCode, boolean nrt, String propertiesJson)
-    throws SensorGroupsException {
+    String platformCode, boolean nrt, LocalDateTime lastNrtExport,
+    String propertiesJson) throws SensorGroupsException {
 
     this.owner = owner;
     this.name = name;
@@ -222,6 +230,7 @@ public class Instrument {
     this.platformName = platformName;
     this.platformCode = platformCode;
     this.nrt = nrt;
+    this.lastNrtExport = lastNrtExport;
     parsePropertiesJson(propertiesJson);
   }
 
@@ -247,7 +256,8 @@ public class Instrument {
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
     List<Variable> variables, Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, SensorGroups sensorGroups,
-    String platformName, String platformCode, boolean nrt) {
+    String platformName, String platformCode, boolean nrt,
+    LocalDateTime lastNrtExport) {
 
     this.owner = owner;
     this.name = name;
@@ -259,6 +269,7 @@ public class Instrument {
     this.platformName = platformName;
     this.platformCode = platformCode;
     this.nrt = nrt;
+    this.lastNrtExport = lastNrtExport;
     this.properties = new Properties();
   }
 
@@ -1060,5 +1071,9 @@ public class Instrument {
     }
 
     return result;
+  }
+
+  public LocalDateTime getLastNrtExport() {
+    return lastNrtExport;
   }
 }

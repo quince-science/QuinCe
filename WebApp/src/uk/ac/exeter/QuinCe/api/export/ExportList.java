@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.api.export;
 
 import java.sql.Connection;
+import java.time.LocalDateTime;
 import java.util.Collection;
 
 import javax.ws.rs.GET;
@@ -16,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -44,6 +46,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 @Path("/export/exportList")
 public class ExportList {
 
+  private static final long MIN_NRT_EXPORT_INTERVAL = 86400L;
+
   /**
    * The main processing method for the API call.
    *
@@ -71,22 +75,40 @@ public class ExportList {
       JsonArray json = new JsonArray();
 
       for (DataSet dataset : datasets) {
-        JsonObject datasetJson = new JsonObject();
-
-        datasetJson.addProperty("id", dataset.getId());
-        datasetJson.addProperty("name", dataset.getName());
-
         Instrument instrument = InstrumentDB.getInstrument(conn,
           dataset.getInstrumentId());
-        JsonObject instrumentJson = new JsonObject();
-        instrumentJson.addProperty("name", instrument.getName());
-        instrumentJson.addProperty("user", instrument.getOwner().getFullName());
-        datasetJson.add("instrument", instrumentJson);
 
-        json.add(datasetJson);
+        boolean canExport = true;
+
+        if (dataset.isNrt()) {
+          if (null != instrument.getLastNrtExport()) {
+            long timeSinceLastNrtExport = DateTimeUtils.secondsBetween(
+              instrument.getLastNrtExport(), LocalDateTime.now());
+            if (timeSinceLastNrtExport < MIN_NRT_EXPORT_INTERVAL) {
+              canExport = false;
+            }
+          }
+        }
+
+        if (canExport) {
+          JsonObject datasetJson = new JsonObject();
+
+          datasetJson.addProperty("id", dataset.getId());
+          datasetJson.addProperty("name", dataset.getName());
+
+          JsonObject instrumentJson = new JsonObject();
+          instrumentJson.addProperty("name", instrument.getName());
+          instrumentJson.addProperty("user",
+            instrument.getOwner().getFullName());
+          datasetJson.add("instrument", instrumentJson);
+
+          json.add(datasetJson);
+        }
       }
       result = json.toString();
-    } catch (Exception e) {
+    } catch (
+
+    Exception e) {
       ExceptionUtils.printStackTrace(e);
       throw e;
     } finally {

@@ -3,7 +3,7 @@
 -- There is no post-zerp
 
 -- Instrument
-INSERT INTO `instrument` VALUES (124,1,'Contros','IT-FOS-PALOMA','48MB',0,'{"depth":"0","latitude":"0.0","postFlushingTime":"0","preFlushingTime":"0","longitude":"0.0","sensorGroups":[{"name":"Default","members":["p_NDIR","p_in","Zero","Flush","Runtime","Signal_raw","Signal_ref","T_gas","TEMP","SAL"]}],"diagnosticQC":{}}','2024-02-01 15:01:57','2024-02-01 16:01:57');
+INSERT INTO `instrument` VALUES (124,1,'Contros','IT-FOS-PALOMA','48MB',0,NULL,'{"depth":"0","latitude":"0.0","postFlushingTime":"0","preFlushingTime":"0","longitude":"0.0","sensorGroups":[{"name":"Default","members":["p_NDIR","p_in","Zero","Flush","Runtime","Signal_raw","Signal_ref","T_gas","TEMP","SAL"]}],"diagnosticQC":{}}','2024-02-01 15:01:57','2024-02-01 16:01:57');
 
 -- Instrument Variables
 INSERT INTO `instrument_variables` VALUES (124,6,'{"zero_flush":"0.00","zero_mode":"Continuous"}','2024-02-01 15:01:57','2024-02-01 16:01:57');

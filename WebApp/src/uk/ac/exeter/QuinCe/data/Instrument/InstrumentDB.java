@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -113,7 +115,7 @@ public class InstrumentDB {
    * SQL query to get an instrument's base record
    */
   private static final String GET_INSTRUMENT_QUERY = "SELECT name, owner, " // 2
-    + "platform_name, platform_code, nrt, properties " // 5
+    + "platform_name, platform_code, nrt, last_nrt_export, properties " // 5
     + "FROM instrument WHERE id = ?";
 
   /**
@@ -198,9 +200,9 @@ public class InstrumentDB {
 
   private static final String INSTRUMENT_LIST_QUERY = "SELECT "
     + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, " // 6
-    + "i.properties, " // 7
-    + "iv.variable_id, iv.properties, " // 9
-    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 10
+    + "i.last_nrt_export, i.properties, " // 8
+    + "iv.variable_id, iv.properties, " // 10
+    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 11
     + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
     + "INNER JOIN user u on i.owner = u.id " + "WHERE i.id IN ("
     + "SELECT id FROM instrument WHERE OWNER = ? " + "UNION "
@@ -209,9 +211,9 @@ public class InstrumentDB {
 
   private static final String ALL_INSTRUMENT_LIST_QUERY = "SELECT "
     + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, " // 6
-    + "i.properties, " // 7
-    + "iv.variable_id, iv.properties, " // 9
-    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 10
+    + "i.last_nrt_export, i.properties, " // 7
+    + "iv.variable_id, iv.properties, " // 10
+    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 11
     + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
     + "INNER JOIN user u on i.owner = u.id "
     + "ORDER BY owner_name, i.owner, i.platform_name, i.name";
@@ -581,6 +583,7 @@ public class InstrumentDB {
       String platformName = null;
       String platformCode = null;
       boolean nrt = false;
+      LocalDateTime lastNrtExport = null;
       String propertiesJson = null;
       List<Long> variables = null;
       Map<Long, String> variableProperties = null;
@@ -593,7 +596,7 @@ public class InstrumentDB {
           if (currentInstrument != -1) {
             result.add(createInstrument(conn, owner, currentInstrument, name,
               variables, variableProperties, platformName, platformCode, nrt,
-              propertiesJson));
+              lastNrtExport, propertiesJson));
           }
 
           currentInstrument = instrumentId;
@@ -602,20 +605,21 @@ public class InstrumentDB {
           platformName = records.getString(4);
           platformCode = records.getString(5);
           nrt = records.getBoolean(6);
-          propertiesJson = records.getString(7);
+          lastNrtExport = DateTimeUtils.longToDate(records.getLong(7));
+          propertiesJson = records.getString(8);
           variables = new ArrayList<Long>();
           variableProperties = new HashMap<Long, String>();
         }
 
-        variables.add(records.getLong(8));
-        variableProperties.put(records.getLong(8), records.getString(9));
+        variables.add(records.getLong(9));
+        variableProperties.put(records.getLong(9), records.getString(10));
       }
 
       // Create the last instrument, if there is one
       if (currentInstrument != -1) {
         result.add(createInstrument(conn, owner, currentInstrument, name,
           variables, variableProperties, platformName, platformCode, nrt,
-          propertiesJson));
+          lastNrtExport, propertiesJson));
       }
 
     } catch (SQLException e) {
@@ -631,7 +635,8 @@ public class InstrumentDB {
   private static Instrument createInstrument(Connection conn, long ownerId,
     long id, String name, List<Long> variableIds,
     Map<Long, String> variableProperties, String platformName,
-    String platformCode, boolean nrt, String propertiesJson)
+    String platformCode, boolean nrt, LocalDateTime lastNrtExport,
+    String propertiesJson)
     throws MissingParamException, DatabaseException, RecordNotFoundException,
     InstrumentException, VariableNotFoundException, SensorGroupsException {
 
@@ -661,7 +666,7 @@ public class InstrumentDB {
 
     return new Instrument(UserDB.getUser(conn, ownerId), id, name, files,
       variables, processedVariableProperties, sensorAssignments, platformName,
-      platformCode, nrt, propertiesJson);
+      platformCode, nrt, lastNrtExport, propertiesJson);
   }
 
   /**
@@ -800,7 +805,11 @@ public class InstrumentDB {
         String platformName = instrumentRecord.getString(3);
         String platformCode = instrumentRecord.getString(4);
         boolean nrt = instrumentRecord.getBoolean(5);
-        String propertiesJson = instrumentRecord.getString(6);
+
+        LocalDateTime lastNrtExport = DateTimeUtils
+          .longToDate(instrumentRecord.getLong(6));
+
+        String propertiesJson = instrumentRecord.getString(7);
 
         // Now get the file definitions
         InstrumentFileSet files = getFileDefinitions(conn, instrumentId);
@@ -817,7 +826,7 @@ public class InstrumentDB {
 
         instrument = new Instrument(UserDB.getUser(conn, owner), instrumentId,
           name, files, variables, variableProperties, sensorAssignments,
-          platformName, platformCode, nrt, propertiesJson);
+          platformName, platformCode, nrt, lastNrtExport, propertiesJson);
       }
 
     } catch (SQLException e) {
