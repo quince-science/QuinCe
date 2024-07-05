@@ -30,7 +30,7 @@ public abstract class SensorValuesRoutineTest extends BaseTest {
 
   /**
    * Check the Auto QC flags for a set of {@link SensorValue}s.
-   * 
+   *
    * @param sensorValues
    *          The {@link SensorValue}s to check.
    * @param expectedFlag
