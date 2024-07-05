@@ -18,7 +18,7 @@ public class GradientTestRoutine extends AutoQCRoutine {
   @Override
   protected void validateParameters() throws RoutineException {
     // copied from HighDeltaRoutine
-    if (parameters.size() != 1) {
+    if (null == parameters || parameters.size() != 1) {
       throw new RoutineException(
         "Incorrect number of parameters. Must be <maxDelta>");
     }
@@ -49,49 +49,51 @@ public class GradientTestRoutine extends AutoQCRoutine {
     double minimumChange = SensorValue.getMinimumChange(values);
 
     int i = 1;
-    while (i < filteredValues.size() - 1) {
+    while (i < filteredValues.size()) {
       currValue = filteredValues.get(i);
 
       prevValue = filteredValues.get(i - 1);
-      nextValue = filteredValues.get(i + 1);
+      nextValue = (i + 1) < filteredValues.size() ? filteredValues.get(i + 1)
+        : null;
 
       // If the change is equal to the smallest possible change
       // we can't do the gradient check
-      double valueDelta = Math
-        .abs(currValue.getDoubleValue() - prevValue.getDoubleValue());
-      if (valueDelta > minimumChange) {
+      double valueDelta = currValue.getDoubleValue()
+        - prevValue.getDoubleValue();
+      if (Math.abs(valueDelta) > minimumChange) {
 
         // time-increment
         double tDiff = ChronoUnit.NANOS.between(prevValue.getTime(),
           currValue.getTime()) / (60.0 * 1000000000);
 
-        double deltaPerMin = valueDelta / tDiff;
+        double deltaPerMin = Math.abs(valueDelta / tDiff);
 
         if (deltaPerMin > maxDeltaPerMinute) { // spike or gradient
-          double deltaNext = Math.abs(
-            nextValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
-          if (deltaNext < maxDeltaPerMinute) { // Spike
-            addFlag(currValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
-            i++;
 
-          } else { // Gradient
-            addFlag(prevValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
+          boolean spike = false;
 
-            while ((deltaPerMin > maxDeltaPerMinute)
-              && (i < filteredValues.size() - 1)) {
-              addFlag(currValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
-
-              i++;
-              currValue = filteredValues.get(i);
-              prevValue = filteredValues.get(i - 1);
-
-              tDiff = ChronoUnit.NANOS.between(prevValue.getTime(),
-                currValue.getTime()) / (60.0 * 1000000000);
-
-              deltaPerMin = Math
-                .abs(currValue.getDoubleValue() - prevValue.getDoubleValue())
-                / tDiff;
+          if (null != nextValue) {
+            double deltaPerMinPrevToNext = Math.abs(
+              nextValue.getDoubleValue() - prevValue.getDoubleValue()) / tDiff;
+            if (deltaPerMinPrevToNext < maxDeltaPerMinute) {
+              spike = true;
             }
+          }
+
+          if (spike) {
+            // This is a single point spike, so flag the current value (which is
+            // the spike)
+            addFlag(currValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
+
+            // We know that this is a single spike, so we can skip checking the
+            // next value.
+            i++;
+          } else {
+            // This is a gradient, so mark the previous and current points as
+            // the starting point of the gradient. We can't be certain which
+            // "side" of the change is wrong.
+            addFlag(prevValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
+            addFlag(currValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
           }
         }
       }
