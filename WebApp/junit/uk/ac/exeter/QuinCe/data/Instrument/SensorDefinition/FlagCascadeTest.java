@@ -29,7 +29,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 @TestInstance(Lifecycle.PER_CLASS)
 @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
-  "resources/sql/data/Instrument/SensorDefinition/VariableTest/flagCascade " })
+  "resources/sql/data/Instrument/SensorDefinition/VariableTest/flagCascade" })
 public class FlagCascadeTest extends BaseTest {
 
   SensorAssignments sensorAssignments;
