@@ -1,4 +1,4 @@
-package junit.uk.ac.exeter.QuinCe.web.Instrument;
+package uk.ac.exeter.QuinCe.web.Instrument;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -14,10 +14,8 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
-import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
-import uk.ac.exeter.QuinCe.web.Instrument.CalibrationEdit;
-import uk.ac.exeter.QuinCe.web.Instrument.ExternalStandardsBean;
+import uk.ac.exeter.QuinCe.TestBase.TestSetLine;
+import uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 
 /**
  * Tests of calibration edits for the {@link ExternalStandardsBean}.
