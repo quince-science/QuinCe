@@ -2,13 +2,16 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.flywaydb.test.annotation.FlywayTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,6 +46,22 @@ public class ExternalStandardsBeanTest extends TestSetTest {
 
   private static final long INSTRUMENT_ID = 1L;
 
+  private ExternalStandardsBean init() throws Exception {
+    initResourceManager();
+    loginUser(USER_ID);
+    ExternalStandardsBean bean = new ExternalStandardsBean();
+    bean.setInstrumentId(INSTRUMENT_ID);
+    bean.start();
+    return bean;
+  }
+
+  private Map<String, String> makeCoefficients(double value) {
+    Map<String, String> result = new HashMap<String, String>();
+    result.put("xH₂O (with standards)", "0");
+    result.put("xCO₂ (with standards)", String.valueOf(value));
+    return result;
+  }
+
   /**
    * <b>NB:</b> The expected results in the {@link TestSet} file must be in
    * ascending Dataset ID order.
@@ -59,11 +78,7 @@ public class ExternalStandardsBeanTest extends TestSetTest {
   public void singleCalibrationEditTest(TestSetLine line) throws Exception {
 
     // Initialise bean
-    initResourceManager();
-    loginUser(USER_ID);
-    ExternalStandardsBean bean = new ExternalStandardsBean();
-    bean.setInstrumentId(INSTRUMENT_ID);
-    bean.start();
+    ExternalStandardsBean bean = init();
 
     int action = getAction(line);
     long calbrationId = line.getLongField(CALIBRATION_ID_COL);
@@ -91,6 +106,7 @@ public class ExternalStandardsBeanTest extends TestSetTest {
     }
 
     bean.saveCalibration();
+    assertTrue(bean.editedCalibrationValid());
 
     TreeMap<Long, Boolean> affectedDatasets = bean.getAffectedDatasets();
 
@@ -135,32 +151,65 @@ public class ExternalStandardsBeanTest extends TestSetTest {
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/externalStandardsEdit" })
-  public void addClashTest() {
-    assertFalse(true);
+  @Test
+  public void addClashTest() throws Exception {
+    ExternalStandardsBean bean = init();
+    bean.setAction(CalibrationEdit.ADD);
+    bean.getEditedCalibration()
+      .setDeploymentDate(LocalDateTime.of(2024, 2, 1, 0, 0, 0));
+    bean.getEditedCalibration().setTarget("std1");
+    bean.getEditedCalibration().setCoefficients(makeCoefficients(400D));
+
+    bean.saveCalibration();
+    assertFalse(bean.editedCalibrationValid());
   }
 
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/externalStandardsEdit" })
-  public void editClashTimeTest() {
-    assertFalse(true);
+  @Test
+  public void editClashTimeTest() throws Exception {
+    ExternalStandardsBean bean = init();
+    bean.setSelectedCalibrationId(1L);
+    bean.loadSelectedCalibration();
+    bean.setAction(CalibrationEdit.EDIT);
+    bean.getEditedCalibration()
+      .setDeploymentDate(LocalDateTime.of(2024, 7, 1, 0, 0, 0));
+
+    bean.saveCalibration();
+    assertFalse(bean.editedCalibrationValid());
   }
 
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/externalStandardsEdit" })
-  public void editClashTargetTest() {
-    assertFalse(true);
+  @Test
+  public void editClashTargetTest() throws Exception {
+    ExternalStandardsBean bean = init();
+    bean.setSelectedCalibrationId(1L);
+    bean.loadSelectedCalibration();
+    bean.setAction(CalibrationEdit.EDIT);
+    bean.getEditedCalibration().setTarget("std2");
+
+    bean.saveCalibration();
+    assertFalse(bean.editedCalibrationValid());
   }
 
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
     "resources/sql/web/Instrument/CalibrationBeanTest/externalStandardsEdit" })
-  public void editClashTimeAndTargetTest() {
-    assertFalse(true);
+  @Test
+  public void editClashTimeAndTargetTest() throws Exception {
+    ExternalStandardsBean bean = init();
+    bean.setSelectedCalibrationId(1L);
+    bean.loadSelectedCalibration();
+    bean.setAction(CalibrationEdit.EDIT);
+    bean.getEditedCalibration()
+      .setDeploymentDate(LocalDateTime.of(2024, 5, 1, 0, 0, 0));
+    bean.getEditedCalibration().setTarget("std2");
   }
 
   @Override

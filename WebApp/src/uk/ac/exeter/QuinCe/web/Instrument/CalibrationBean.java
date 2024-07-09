@@ -74,6 +74,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
   private Calibration editedCalibration;
 
   /**
+   * Indicates whether the edited calibration is valid (i.e. is complete and
+   * does not clash with another calibration).
+   */
+  private boolean editedCalibrationValid;
+
+  /**
    * The calibration edit action
    */
   private int action = CalibrationEdit.EDIT;
@@ -444,6 +450,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
       }
     }
 
+    editedCalibrationValid = result.size() == 0;
+
     return result;
   }
 
@@ -564,8 +572,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
         switch (action) {
         case CalibrationEdit.ADD: {
           // The list of calibrations for the same target as the one that is
-          // being
-          // edited (includes the edited calibration pre-edit).
+          // being edited (includes the edited calibration pre-edit).
           TreeSet<Calibration> targetCalibrations = calibrations
             .get(editedCalibration.getTarget());
 
@@ -577,8 +584,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
         }
         case CalibrationEdit.DELETE: {
           // The list of calibrations for the same target as the one that is
-          // being
-          // edited (includes the edited calibration pre-edit).
+          // being edited (includes the edited calibration pre-edit).
           TreeSet<Calibration> targetCalibrations = calibrations
             .get(editedCalibration.getTarget());
 
@@ -754,6 +760,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
     }
 
     return result;
+  }
+
+  public boolean editedCalibrationValid() {
+    return editedCalibrationValid;
   }
 }
 
