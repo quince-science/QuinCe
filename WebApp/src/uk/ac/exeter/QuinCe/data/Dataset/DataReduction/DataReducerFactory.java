@@ -69,7 +69,7 @@ public class DataReducerFactory {
       Class<? extends DataReducer> clazz = getReducerClass(variable.getName());
 
       Constructor<? extends DataReducer> constructor = clazz
-        .getConstructor(Variable.class, Map.class);
+        .getConstructor(Variable.class, Map.class, CalibrationSet.class);
 
       return constructor.newInstance(variable, properties,
         calculationCoefficients);
