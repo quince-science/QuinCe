@@ -73,7 +73,7 @@ public class UnderwayAtmospheric12_13Pco2ReducerTest2 extends DataReducerTest {
 
     // Initialise the reducer
     UnderwayAtmospheric12_13Pco2Reducer reducer = new UnderwayAtmospheric12_13Pco2Reducer(
-      variable, props);
+      variable, props, null);
 
     List<MeasurementValue> allMeasurementValues = new ArrayList<MeasurementValue>();
     allMeasurementValues.add(makeMeasurementValue("Water Temperature", 6.061D));

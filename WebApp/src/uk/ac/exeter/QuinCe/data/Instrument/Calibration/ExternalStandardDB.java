@@ -1,23 +1,14 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
@@ -97,113 +88,13 @@ public class ExternalStandardDB extends CalibrationDB {
     return result;
   }
 
-  /**
-   * Retrieve a CalibrationSet containing the external standards deployed
-   * immediately before the specified date
-   *
-   * @param conn
-   *          A database connection
-   * @param instrumentId
-   *          The instrument for which the standards should be retrieved
-   * @param date
-   *          The date limit
-   * @return The external standards
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws RecordNotFoundException
-   *           If the instrument does not exist
-   */
-  public CalibrationSet getStandardsSet(DataSource dataSource,
-    Instrument instrument, LocalDateTime date)
-    throws DatabaseException, MissingParamException, RecordNotFoundException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-
-    CalibrationSet result = null;
-    Connection conn = null;
-
-    try {
-      conn = dataSource.getConnection();
-      result = getStandardsSet(conn, instrument, date);
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving standards set", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
-    }
-
-    return result;
-  }
-
-  /**
-   * Retrieve a CalibrationSet containing the external standards deployed
-   * immediately before the specified date
-   *
-   * @param conn
-   *          A database connection
-   * @param instrumentId
-   *          The instrument for which the standards should be retrieved
-   * @param date
-   *          The date limit
-   * @return The external standards
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws RecordNotFoundException
-   *           If the instrument does not exist
-   */
-  public CalibrationSet getStandardsSet(Connection conn, Instrument instrument,
-    LocalDateTime date)
-    throws DatabaseException, MissingParamException, RecordNotFoundException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(instrument, "instrument");
-    MissingParam.checkMissing(date, "date");
-
-    CalibrationSet result = new CalibrationSet(instrument,
-      EXTERNAL_STANDARD_CALIBRATION_TYPE, getTargets(conn, instrument));
-
-    PreparedStatement stmt = null;
-    ResultSet records = null;
-
-    try {
-
-      stmt = conn.prepareStatement(GET_STANDARD_SET_QUERY);
-      stmt.setLong(1, DateTimeUtils.dateToLong(date));
-      stmt.setLong(2, instrument.getId());
-
-      records = stmt.executeQuery();
-      while (records.next()) {
-        long id = records.getLong(1);
-        String target = records.getString(2);
-        LocalDateTime standardDate = DateTimeUtils
-          .longToDate(records.getLong(3));
-        Map<String, String> coefficients = CalibrationDB
-          .makeCoefficientsFromJson(records.getString(4));
-        String className = records.getString(5);
-        result.add(CalibrationFactory.createCalibration(
-          EXTERNAL_STANDARD_CALIBRATION_TYPE, className, id, instrument,
-          standardDate, target, coefficients));
-      }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving standards set", e);
-    } finally {
-      DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeResultSets(records);
-    }
-
-    return result;
-  }
-
   @Override
   public String getCalibrationType() {
     return EXTERNAL_STANDARD_CALIBRATION_TYPE;
   }
 
   @Override
-  public boolean priorCalibrationRequired() {
+  public boolean allowCalibrationChangeInDataset() {
     return true;
   }
 }

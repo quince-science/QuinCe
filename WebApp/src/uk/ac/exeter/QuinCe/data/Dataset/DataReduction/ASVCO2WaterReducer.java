@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 import java.util.Map;
 import java.util.Properties;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
@@ -25,8 +26,9 @@ public class ASVCO2WaterReducer extends UnderwayMarinePco2Reducer {
    *          The variable properties.
    */
   public ASVCO2WaterReducer(Variable variable,
-    Map<String, Properties> properties) {
-    super(variable, properties);
+    Map<String, Properties> properties,
+    CalibrationSet calculationCoefficients) {
+    super(variable, properties, calculationCoefficients);
   }
 
   @Override

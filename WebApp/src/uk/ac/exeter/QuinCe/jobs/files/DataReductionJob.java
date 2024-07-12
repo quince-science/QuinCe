@@ -23,6 +23,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -104,6 +106,9 @@ public class DataReductionJob extends DataSetJob {
       // Get all the measurements grouped by run type
       DatasetMeasurements allMeasurements = DataSetDataDB
         .getMeasurementsByRunType(conn, instrument, dataSet.getId());
+
+      CalibrationSet calculationCoefficients = CalculationCoefficientDB
+        .getInstance().getCalibrationSet(conn, dataSet);
 
       ArrayList<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>();
 
@@ -195,8 +200,9 @@ public class DataReductionJob extends DataSetJob {
 
       // Now run all the data reducers
       for (Variable variable : instrument.getVariables()) {
+
         DataReducer reducer = DataReducerFactory.getReducer(variable,
-          dataSet.getAllProperties());
+          dataSet.getAllProperties(), calculationCoefficients);
 
         reducer.preprocess(conn, instrument, dataSet,
           allMeasurements.getTimeOrderedMeasurements());

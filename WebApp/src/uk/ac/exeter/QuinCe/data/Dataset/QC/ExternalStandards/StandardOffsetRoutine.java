@@ -8,7 +8,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 public class StandardOffsetRoutine extends ExternalStandardsQCRoutine {
 
@@ -28,7 +27,7 @@ public class StandardOffsetRoutine extends ExternalStandardsQCRoutine {
   }
 
   @Override
-  protected void qcAction(CalibrationSet calibrationSet,
+  protected void qcAction(CalibrationSet externalStandards,
     SensorValuesList runTypeValues, SensorValuesList sensorValues)
     throws SensorValuesListException, RoutineException {
 
@@ -38,22 +37,18 @@ public class StandardOffsetRoutine extends ExternalStandardsQCRoutine {
         .getValueOnOrBefore(sensorValue.getTime());
       if (null != runTypeValue) {
         String runType = runTypeValue.getStringValue();
-        if (calibrationSet.containsTarget(runType)) {
 
-          try {
-            double standardValue = calibrationSet.getCalibrationValue(runType,
-              sensorType.getShortName());
+        if (externalStandards.getTargets().contains(runType)) {
+          double standardValue = externalStandards
+            .getCalibrations(sensorValue.getTime()).get(runType)
+            .getDoubleCoefficient(sensorType.getShortName());
 
-            double offset = Math
-              .abs(sensorValue.getDoubleValue() - standardValue);
-            if (!Double.isNaN(offset)
-              && Math.abs(offset) > Double.valueOf(parameters.get(0))) {
+          double offset = Math
+            .abs(sensorValue.getDoubleValue() - standardValue);
+          if (!Double.isNaN(offset)
+            && Math.abs(offset) > Double.valueOf(parameters.get(0))) {
 
-              addFlag(sensorValue, Flag.BAD, parameters.get(0), offset);
-            }
-
-          } catch (RecordNotFoundException e) {
-            // We don't mind
+            addFlag(sensorValue, Flag.BAD, parameters.get(0), offset);
           }
         }
       }

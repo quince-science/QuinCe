@@ -38,9 +38,11 @@ public class ExternalStandardsBeanTest extends TestSetTest {
 
   private static final int TARGET_COL = 3;
 
-  private static final int AFFECTED_DATASETS_COL = 4;
+  private static final int CHANGE_VALUE_COL = 4;
 
-  private static final int CAN_REPROCESS_COL = 5;
+  private static final int AFFECTED_DATASETS_COL = 5;
+
+  private static final int CAN_REPROCESS_COL = 6;
 
   private static final long USER_ID = 1L;
 
@@ -84,6 +86,7 @@ public class ExternalStandardsBeanTest extends TestSetTest {
     long calbrationId = line.getLongField(CALIBRATION_ID_COL);
     LocalDateTime calibrationTime = getCalibrationTime(line);
     String target = line.getStringField(TARGET_COL, true);
+    boolean changeValue = line.getBooleanField(CHANGE_VALUE_COL);
     List<Long> affectedDatasetIds = line
       .getLongListField(AFFECTED_DATASETS_COL);
     List<Boolean> canReprocessDatasets = line
@@ -103,6 +106,10 @@ public class ExternalStandardsBeanTest extends TestSetTest {
     if (action != CalibrationEdit.DELETE) {
       bean.getEditedCalibration().setDeploymentDate(calibrationTime);
       bean.getEditedCalibration().setTarget(target);
+
+      if (changeValue) {
+        bean.getEditedCalibration().setCoefficients(makeCoefficients(1000));
+      }
     }
 
     bean.saveCalibration();

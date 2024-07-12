@@ -40,10 +40,11 @@ public abstract class ExternalStandard extends Calibration {
    *          The standard concentration
    * @throws ParameterException
    *           If the calibration details are invalid
+   * @throws CalibrationException
    */
   protected ExternalStandard(long id, Instrument instrument, String target,
     LocalDateTime deploymentDate, Map<String, String> coefficients)
-    throws ParameterException {
+    throws ParameterException, CalibrationException {
     super(id, instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
       target);
 
@@ -58,7 +59,8 @@ public abstract class ExternalStandard extends Calibration {
   }
 
   protected ExternalStandard(long id, Instrument instrument, String target,
-    LocalDateTime deploymentDate, List<CalibrationCoefficient> coefficients) {
+    LocalDateTime deploymentDate, List<CalibrationCoefficient> coefficients)
+    throws CalibrationException {
     super(id, instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
       target);
     setDeploymentDate(deploymentDate);

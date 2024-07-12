@@ -44,7 +44,7 @@ public class UnderwayAtmosphericPco2ReducerTest extends DataReducerTest {
     reducerProps.put(VAR_NAME, props);
 
     UnderwayAtmosphericPco2Reducer reducer = new UnderwayAtmosphericPco2Reducer(
-      variable, reducerProps);
+      variable, reducerProps, null);
 
     MeasurementValue waterTemp = makeMeasurementValue("Water Temperature",
       15.453D);

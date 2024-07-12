@@ -8,7 +8,7 @@ import java.util.Map;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
 /**
- * Factory for creating {@link Calibration} objects
+ * Factory for creating {@link Calibration} objects.
  */
 public class CalibrationFactory {
 
@@ -34,11 +34,12 @@ public class CalibrationFactory {
    * @param coefficients
    *          The calibration coefficients
    * @return The Calibration object
+   * @throws CalibrationException
    */
   public static Calibration createCalibration(String calibrationType,
     String calibrationClass, long id, Instrument instrument,
     LocalDateTime deploymentDate, String target,
-    Map<String, String> coefficients) {
+    Map<String, String> coefficients) throws CalibrationException {
     Calibration result;
 
     switch (calibrationType) {
@@ -54,18 +55,11 @@ public class CalibrationFactory {
       break;
     }
     case CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE: {
-      try {
-        result = new CalculationCoefficient(id, instrument, target,
-          deploymentDate, coefficients);
-      } catch (CalibrationException e) {
-        throw e;
-      } catch (Exception e) {
-        throw new CalibrationException(e);
-      }
+      result = new CalculationCoefficient(id, instrument, target,
+        deploymentDate, coefficients);
       break;
     }
     case SensorCalibrationDB.SENSOR_CALIBRATION_TYPE: {
-
       try {
         String fullClass = CALIBRATION_PACKAGE + "." + calibrationClass;
         Class<?> clazz = Class.forName(fullClass);
@@ -74,8 +68,6 @@ public class CalibrationFactory {
           Instrument.class, String.class, LocalDateTime.class, Map.class);
         result = (Calibration) constructor.newInstance(id, instrument, target,
           deploymentDate, coefficients);
-      } catch (CalibrationException e) {
-        throw e;
       } catch (Exception e) {
         throw new CalibrationException(e);
       }
@@ -96,8 +88,10 @@ public class CalibrationFactory {
    * @param calibration
    *          The {@link Calibration}.
    * @return The clone.
+   * @throws CalibrationException
    */
-  public static Calibration clone(Calibration calibration) {
+  public static Calibration clone(Calibration calibration)
+    throws CalibrationException {
 
     LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
     calibration.getCoefficients()

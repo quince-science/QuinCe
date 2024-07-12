@@ -30,10 +30,12 @@ import com.google.gson.reflect.TypeToken;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.DefaultTargetNameMapper;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorIdMapper;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -882,10 +884,12 @@ public class DataSetDB {
    * @throws InstrumentException
    *           If the instrument details cannot be retrieved
    * @throws SensorGroupsException
+   * @throws CalibrationException
    */
   public static JsonObject getMetadataJson(DataSource dataSource,
-    DataSet dataset) throws DatabaseException, MissingParamException,
-    RecordNotFoundException, InstrumentException, SensorGroupsException {
+    DataSet dataset)
+    throws DatabaseException, MissingParamException, RecordNotFoundException,
+    InstrumentException, SensorGroupsException, CalibrationException {
 
     JsonObject result = null;
     Connection conn = null;
@@ -919,10 +923,11 @@ public class DataSetDB {
    * @throws InstrumentException
    *           If the instrument details cannot be retrieved
    * @throws SensorGroupsException
+   * @throws CalibrationException
    */
   public static JsonObject getMetadataJson(Connection conn, DataSet dataset)
     throws DatabaseException, MissingParamException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException {
+    InstrumentException, SensorGroupsException, CalibrationException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(dataset, "dataset");
@@ -956,59 +961,20 @@ public class DataSetDB {
 
     if (instrument.hasInternalCalibrations()) {
 
-      // External standards
-      JsonArray externalStandards = new JsonArray();
-
       CalibrationSet standards = ExternalStandardDB.getInstance()
-        .getStandardsSet(conn, instrument, dataset.getStart());
+        .getCalibrationSet(conn, dataset);
 
-      for (Calibration calibration : standards) {
-        JsonObject calibObject = new JsonObject();
-        calibObject.addProperty("name", calibration.getTarget());
-        calibObject.addProperty("concentration",
-          Double.parseDouble(calibration.getHumanReadableCoefficients()));
-        calibObject.addProperty("date",
-          DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
-
-        externalStandards.add(calibObject);
-      }
-
-      calibrationObject.add("gasStandards", externalStandards);
+      calibrationObject.add("gasStandards",
+        standards.toJson(new DefaultTargetNameMapper()));
     }
 
     // Sensors
     CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
-      .getMostRecentCalibrations(conn, instrument, dataset.getStart());
+      .getCalibrationSet(conn, dataset);
 
-    if (sensorCalibrations.size() > 0) {
-      JsonArray calibsArray = new JsonArray();
-
-      for (Calibration calibration : sensorCalibrations) {
-        if (calibration.isSet()) {
-          JsonObject calibObject = new JsonObject();
-
-          long columnId = Long.parseLong(calibration.getTarget());
-          String sensorName = instrument.getSensorAssignments()
-            .getById(columnId).getSensorName();
-
-          calibObject.addProperty("name", sensorName);
-          calibObject.addProperty("formula",
-            calibration.getHumanReadableCoefficients());
-          calibObject.addProperty("date",
-            DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
-
-          calibsArray.add(calibObject);
-        }
-
-      }
-
-      if (calibsArray.size() > 0) {
-        calibrationObject.add("sensorCalibrations", calibsArray);
-      }
-    }
-
-    if (calibrationObject.size() > 0) {
-      result.add("calibration", calibrationObject);
+    if (!sensorCalibrations.isEmpty()) {
+      calibrationObject.add("sensorCalibrations", sensorCalibrations
+        .toJson(new SensorIdMapper(instrument.getSensorAssignments())));
     }
 
     return result;

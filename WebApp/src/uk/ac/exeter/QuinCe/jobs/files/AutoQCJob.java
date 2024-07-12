@@ -263,7 +263,7 @@ public class AutoQCJob extends DataSetJob {
             .getSensorTypeForDBColumn(columnId);
 
           CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
-            .getMostRecentCalibrations(conn, instrument, dataSet.getStart());
+            .getCalibrationSet(conn, dataSet);
 
           if (sensorType.hasInternalCalibration()) {
             for (AbstractAutoQCRoutine routine : externalStandardsRoutinesConfig

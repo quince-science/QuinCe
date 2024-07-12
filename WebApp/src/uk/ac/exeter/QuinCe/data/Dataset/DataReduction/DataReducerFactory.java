@@ -10,6 +10,7 @@ import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
@@ -61,7 +62,8 @@ public class DataReducerFactory {
    *           If the reducer cannot be retrieved
    */
   public static DataReducer getReducer(Variable variable,
-    Map<String, Properties> properties) throws DataReductionException {
+    Map<String, Properties> properties, CalibrationSet calculationCoefficients)
+    throws DataReductionException {
 
     try {
       Class<? extends DataReducer> clazz = getReducerClass(variable.getName());
@@ -69,7 +71,8 @@ public class DataReducerFactory {
       Constructor<? extends DataReducer> constructor = clazz
         .getConstructor(Variable.class, Map.class);
 
-      return constructor.newInstance(variable, properties);
+      return constructor.newInstance(variable, properties,
+        calculationCoefficients);
     } catch (Exception e) {
       throw new DataReductionException(
         "Cannot get reducer for variable '" + variable.getName() + "'", e);
@@ -79,7 +82,7 @@ public class DataReducerFactory {
   private static DataReducer getSkeletonReducer(Variable variable)
     throws DataReductionException {
 
-    return getReducer(variable, null);
+    return getReducer(variable, null, null);
   }
 
   public static Class<? extends DataReducer> getReducerClass(String variable)

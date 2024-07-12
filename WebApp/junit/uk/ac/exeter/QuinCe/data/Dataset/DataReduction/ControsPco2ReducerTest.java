@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.flywaydb.test.annotation.FlywayTest;
@@ -19,6 +18,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetMeasurements;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -230,8 +231,12 @@ public class ControsPco2ReducerTest extends DataReducerTest {
    *           If the reducer cannot be created.
    */
   private ControsPco2Reducer makeReducer(
-    Map<String, Properties> datasetProperties) throws Exception {
-    return new ControsPco2Reducer(getVariable(), datasetProperties);
+
+    DataSet dataset) throws Exception {
+    CalibrationSet calculationCoefficients = CalculationCoefficientDB
+      .getInstance().getCalibrationSet(getConnection(), dataset);
+    return new ControsPco2Reducer(getVariable(), dataset.getAllProperties(),
+      calculationCoefficients);
   }
 
   /**
@@ -328,7 +333,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Continuous");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -373,7 +378,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Continuous");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -418,7 +423,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Continuous");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -462,7 +467,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Continuous");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -506,7 +511,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Continuous");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -550,7 +555,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Continuous");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -595,7 +600,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero before sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -640,7 +645,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero before sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -684,7 +689,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero before sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -728,7 +733,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero before sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -772,7 +777,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero before sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -815,7 +820,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero before sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -860,7 +865,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero after sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -905,7 +910,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero after sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -950,7 +955,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero after sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -993,7 +998,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero after sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -1037,7 +1042,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero after sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,
@@ -1081,7 +1086,7 @@ public class ControsPco2ReducerTest extends DataReducerTest {
 
     Instrument instrument = getInstrument();
     DataSet dataset = getDataset("Zero after sleep");
-    ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
+    ControsPco2Reducer reducer = makeReducer(dataset);
     DatasetMeasurements measurements = getMeasurements(instrument);
 
     reducer.preprocess(getConnection(), instrument, dataset,

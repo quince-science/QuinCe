@@ -72,11 +72,6 @@ public class CalculationCoefficientsBean extends CalibrationBean {
   }
 
   @Override
-  protected boolean allowCalibrationChangeInDataset() {
-    return false;
-  }
-
-  @Override
   protected boolean changeAffectsDatasetsAfterOnly() {
     return false;
   }

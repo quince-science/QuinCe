@@ -66,7 +66,7 @@ public class SensorCalibrationDB extends CalibrationDB {
   }
 
   @Override
-  public boolean priorCalibrationRequired() {
-    return false;
+  public boolean allowCalibrationChangeInDataset() {
+    return true;
   }
 }

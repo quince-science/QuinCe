@@ -24,7 +24,6 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
@@ -446,16 +445,18 @@ public class DataSetsBean extends BaseManagedBean {
       .getExternalContext().getRequestParameterMap();
 
     String startTime = params.get("uploadForm:startDate_input");
+    String endTime = params.get("uploadForm:endDate_input");
 
     if (startTime.length() > 0) {
       try {
 
         // Check sensor calibration equations
-        CalibrationSet calibrations = new SensorCalibrationDB()
-          .getMostRecentCalibrations(getDataSource(), getCurrentInstrument(),
-            DateTimeUtils.parseDisplayDateTime(startTime));
+        CalibrationSet calibrations = SensorCalibrationDB.getInstance()
+          .getCalibrationSet(getDataSource(), getCurrentInstrument(),
+            DateTimeUtils.parseDisplayDateTime(startTime),
+            DateTimeUtils.parseDisplayDateTime(endTime));
 
-        if (!calibrations.isValid()) {
+        if (!calibrations.hasCompletePrior()) {
           validCalibration = false;
           validCalibrationMessage = "One or more sensor calibration equations are missing";
         }
@@ -466,9 +467,11 @@ public class DataSetsBean extends BaseManagedBean {
 
             // Check internal calibration standards
             CalibrationSet standards = ExternalStandardDB.getInstance()
-              .getStandardsSet(getDataSource(), getCurrentInstrument(),
-                DateTimeUtils.parseDisplayDateTime(startTime));
-            if (!standards.isComplete()) {
+              .getCalibrationSet(getDataSource(), getCurrentInstrument(),
+                DateTimeUtils.parseDisplayDateTime(startTime),
+                DateTimeUtils.parseDisplayDateTime(endTime));
+
+            if (!standards.hasCompletePrior()) {
               validCalibration = false;
               validCalibrationMessage = "No complete set of external standards is available";
             }
@@ -487,12 +490,12 @@ public class DataSetsBean extends BaseManagedBean {
         if (validCalibration) {
           // Check calculation coefficients, if there are any
           if (getCurrentInstrument().hasCalculationCoefficients()) {
-            CalibrationSet coefficients = new CalculationCoefficientDB()
-              .getMostRecentCalibrations(getDataSource(),
-                getCurrentInstrument(),
-                DateTimeUtils.parseDisplayDateTime(startTime));
+            CalibrationSet coefficients = ExternalStandardDB.getInstance()
+              .getCalibrationSet(getDataSource(), getCurrentInstrument(),
+                DateTimeUtils.parseDisplayDateTime(startTime),
+                DateTimeUtils.parseDisplayDateTime(endTime));
 
-            if (!coefficients.isValid()) {
+            if (!coefficients.hasCompletePrior()) {
               validCalibration = false;
               validCalibrationMessage = "One or more calculation coefficents are missing";
             }

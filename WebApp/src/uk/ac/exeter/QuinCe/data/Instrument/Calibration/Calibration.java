@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.gson.JsonObject;
@@ -466,13 +467,22 @@ public abstract class Calibration implements Comparable<Calibration> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    boolean result = false;
+  public int hashCode() {
+    return Objects.hash(coefficients, deploymentDate, id, target);
+  }
 
-    if (o instanceof Calibration && ((Calibration) o).id == id)
-      result = true;
-
-    return result;
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Calibration other = (Calibration) obj;
+    return Objects.equals(coefficients, other.coefficients)
+      && Objects.equals(deploymentDate, other.deploymentDate) && id == other.id
+      && Objects.equals(target, other.target);
   }
 
   protected void setCoefficient(String name, String value) {
@@ -505,6 +515,17 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   public boolean isSet() {
     return null != coefficients;
+  }
+
+  /**
+   * Get the label to use for the set of coefficients.
+   * 
+   * @return The coefficients label.
+   */
+  public abstract String getCoefficientsLabel();
+
+  public String getJsonCoefficientsLabel() {
+    return getCoefficientsLabel().toLowerCase();
   }
 
   /**

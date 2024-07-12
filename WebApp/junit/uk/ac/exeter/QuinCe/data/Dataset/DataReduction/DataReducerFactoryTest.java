@@ -45,14 +45,15 @@ public class DataReducerFactoryTest extends BaseTest {
 
   @Test
   public void getExistingReducerTest() throws Exception {
-    DataReducer reducer = DataReducerFactory.getReducer(makeVariable(), null);
+    DataReducer reducer = DataReducerFactory.getReducer(makeVariable(), null,
+      null);
     assertNotNull(reducer);
   }
 
   @Test
   public void getNonExistantReducerTest() throws DataReductionException {
     assertThrows(DataReductionException.class, () -> {
-      DataReducerFactory.getReducer(makeInvalidVariable(), null);
+      DataReducerFactory.getReducer(makeInvalidVariable(), null, null);
     });
   }
 
@@ -64,7 +65,7 @@ public class DataReducerFactoryTest extends BaseTest {
     properties.put("Prop1", "prop1");
     props.put(var.getName(), properties);
 
-    DataReducer reducer = DataReducerFactory.getReducer(var, props);
+    DataReducer reducer = DataReducerFactory.getReducer(var, props, null);
     assertEquals("prop1", reducer.getStringProperty("Prop1"));
   }
 

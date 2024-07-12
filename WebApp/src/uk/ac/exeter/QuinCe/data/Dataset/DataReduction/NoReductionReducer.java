@@ -8,6 +8,8 @@ import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
@@ -22,9 +24,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 public class NoReductionReducer extends DataReducer {
 
   public NoReductionReducer(Variable variable,
-    Map<String, Properties> properties) {
+    Map<String, Properties> properties,
+    CalibrationSet calculationCoefficients) {
 
-    super(variable, properties);
+    super(variable, properties, calculationCoefficients);
   }
 
   @Override

@@ -126,7 +126,7 @@ public class ExtractDataSetJob extends DataSetJob {
       RunTypePeriods runTypePeriods = new RunTypePeriods();
 
       CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
-        .getMostRecentCalibrations(conn, instrument, dataSet.getStart());
+        .getCalibrationSet(conn, dataSet);
 
       // Adjust the DataSet bounds to the latest start date and earliest end
       // date of each file definition
@@ -281,8 +281,8 @@ public class ExtractDataSetJob extends DataSetJob {
 
                         // Apply calibration if required
                         Calibration sensorCalibration = sensorCalibrations
-                          .getTargetCalibration(
-                            String.valueOf(assignment.getDatabaseId()));
+                          .getCalibrations(time)
+                          .get(String.valueOf(assignment.getDatabaseId()));
 
                         if (null != sensorCalibration) {
                           value.calibrateValue(sensorCalibration);

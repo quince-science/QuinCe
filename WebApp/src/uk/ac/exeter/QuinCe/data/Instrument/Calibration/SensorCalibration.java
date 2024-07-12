@@ -63,7 +63,8 @@ public abstract class SensorCalibration extends Calibration {
   }
 
   protected SensorCalibration(long id, Instrument instrument, String target,
-    LocalDateTime deploymentDate, List<CalibrationCoefficient> coefficients) {
+    LocalDateTime deploymentDate, List<CalibrationCoefficient> coefficients)
+    throws CalibrationException {
 
     super(id, instrument, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE, target);
     setDeploymentDate(deploymentDate);

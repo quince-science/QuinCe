@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.utils.ParameterException;
 
 public class DefaultExternalStandard extends ExternalStandard {
 
@@ -15,7 +16,8 @@ public class DefaultExternalStandard extends ExternalStandard {
   }
 
   public DefaultExternalStandard(long id, Instrument instrument, String target,
-    LocalDateTime deploymentDate, Map<String, String> coefficients) {
+    LocalDateTime deploymentDate, Map<String, String> coefficients)
+    throws ParameterException, CalibrationException {
     super(id, instrument, target, deploymentDate, coefficients);
   }
 
@@ -24,8 +26,10 @@ public class DefaultExternalStandard extends ExternalStandard {
    *
    * @param source
    *          The copy source.
+   * @throws CalibrationException
    */
-  public DefaultExternalStandard(DefaultExternalStandard source) {
+  public DefaultExternalStandard(DefaultExternalStandard source)
+    throws CalibrationException {
     super(source.getId(), source.getInstrument(), source.getTarget(),
       source.getDeploymentDate(), duplicateCoefficients(source));
   }
@@ -37,7 +41,18 @@ public class DefaultExternalStandard extends ExternalStandard {
 
   @Override
   public Calibration makeCopy() {
-    return new DefaultExternalStandard(this);
+    try {
+      return new DefaultExternalStandard(this);
+    } catch (CalibrationException e) {
+      // This shouldn't happen, because it implies that we successfully created
+      // in invalid object
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public String getCoefficientsLabel() {
+    return "Concentration";
   }
 
 }

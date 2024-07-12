@@ -58,11 +58,6 @@ public class CalculationCoefficientDB extends CalibrationDB {
     return CALCULATION_COEFFICIENT_CALIBRATION_TYPE;
   }
 
-  @Override
-  public boolean priorCalibrationRequired() {
-    return true;
-  }
-
   /**
    * Retrieve the singleton instance of the class
    *
@@ -76,4 +71,8 @@ public class CalculationCoefficientDB extends CalibrationDB {
     return instance;
   }
 
+  @Override
+  public boolean allowCalibrationChangeInDataset() {
+    return false;
+  }
 }

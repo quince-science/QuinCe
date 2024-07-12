@@ -74,7 +74,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    */
   public PolynomialSensorCalibration(long id, Instrument instrument,
     String target, LocalDateTime deploymentDate,
-    Map<String, String> coefficients) {
+    Map<String, String> coefficients) throws CalibrationException {
     super(id, instrument, target, deploymentDate, coefficients);
   }
 
@@ -83,8 +83,10 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    *
    * @param source
    *          The copy source.
+   * @throws CalibrationException
    */
-  protected PolynomialSensorCalibration(PolynomialSensorCalibration source) {
+  protected PolynomialSensorCalibration(PolynomialSensorCalibration source)
+    throws CalibrationException {
     super(source.getId(), source.getInstrument(), source.getTarget(),
       source.getDeploymentDate(), duplicateCoefficients(source));
   }
@@ -168,6 +170,17 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   @Override
   public Calibration makeCopy() {
-    return new PolynomialSensorCalibration(this);
+    try {
+      return new PolynomialSensorCalibration(this);
+    } catch (CalibrationException e) {
+      // This shouldn't happen, because it implies that we successfully created
+      // in invalid object
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public String getCoefficientsLabel() {
+    return "Formula";
   }
 }

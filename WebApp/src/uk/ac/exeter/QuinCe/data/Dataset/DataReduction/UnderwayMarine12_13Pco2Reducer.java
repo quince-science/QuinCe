@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
@@ -18,8 +19,9 @@ public class UnderwayMarine12_13Pco2Reducer extends UnderwayMarinePco2Reducer {
   public static final String TOTAL_CO2_GAS_CAL_TYPE = "Total CO₂";
 
   public UnderwayMarine12_13Pco2Reducer(Variable variable,
-    Map<String, Properties> properties) {
-    super(variable, properties);
+    Map<String, Properties> properties,
+    CalibrationSet calculationCoefficients) {
+    super(variable, properties, calculationCoefficients);
   }
 
   @Override

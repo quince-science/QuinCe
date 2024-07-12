@@ -51,8 +51,10 @@ public class CalculationCoefficient extends Calibration {
    *
    * @param source
    *          The copy source.
+   * @throws CalibrationException
    */
-  protected CalculationCoefficient(CalculationCoefficient source) {
+  protected CalculationCoefficient(CalculationCoefficient source)
+    throws CalibrationException {
     super(source.getInstrument(),
       CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE,
       source.getId(), source.getDeploymentDate());
@@ -77,7 +79,8 @@ public class CalculationCoefficient extends Calibration {
    *           If the calibration details are invalid
    */
   public CalculationCoefficient(long id, Instrument instrument, String target,
-    LocalDateTime deploymentDate, Map<String, String> coefficients) {
+    LocalDateTime deploymentDate, Map<String, String> coefficients)
+    throws CalibrationException {
 
     super(id, instrument,
       CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE,
@@ -102,19 +105,23 @@ public class CalculationCoefficient extends Calibration {
   }
 
   public static CalculationCoefficient getCoefficient(
-    CalibrationSet calibrationSet, Variable variable, String coefficient) {
+    CalibrationSet calibrationSet, Variable variable, String coefficient,
+    LocalDateTime time) {
 
-    CalculationCoefficient result = null;
+    Calibration calibration = calibrationSet.getCalibrations(time)
+      .get(getCoeffecientName(variable, coefficient));
 
-    if (null != calibrationSet) {
-      Calibration retrievedCoefficient = calibrationSet
-        .getTargetCalibration(getCoeffecientName(variable, coefficient));
-      if (!(retrievedCoefficient instanceof EmptyCalibration)) {
-        result = (CalculationCoefficient) retrievedCoefficient;
-      }
-    }
+    return null == calibration ? null : (CalculationCoefficient) calibration;
+  }
 
-    return result;
+  public static CalculationCoefficient getPostCoefficient(
+    CalibrationSet calibrationSet, Variable variable, String coefficient,
+    LocalDateTime time) {
+
+    Calibration calibration = calibrationSet.getPostCalibrations(time)
+      .get(getCoeffecientName(variable, coefficient));
+
+    return null == calibration ? null : (CalculationCoefficient) calibration;
   }
 
   public static String getCoeffecientName(Variable variable,
@@ -163,6 +170,22 @@ public class CalculationCoefficient extends Calibration {
 
   @Override
   public Calibration makeCopy() {
-    return new CalculationCoefficient(this);
+    try {
+      return new CalculationCoefficient(this);
+    } catch (CalibrationException e) {
+      // This shouldn't happen, because it implies that we successfully created
+      // in invalid object
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public String getCoefficientsLabel() {
+    return "Calculation Coefficients";
+  }
+
+  @Override
+  public String getJsonCoefficientsLabel() {
+    return "calculationCoefficients";
   }
 }

@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -16,7 +15,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -42,9 +40,7 @@ public class ControsPco2Reducer extends DataReducer {
 
   private TreeMap<Double, Double> zeroS2Beams;
 
-  private CalibrationSet priorCoefficients;
-
-  private CalibrationSet postCoefficients;
+  private BigDecimal F = null;
 
   private CalculationCoefficient k1Prior = null;
 
@@ -69,8 +65,9 @@ public class ControsPco2Reducer extends DataReducer {
   private BigDecimal k3Step = null;
 
   public ControsPco2Reducer(Variable variable,
-    Map<String, Properties> properties) throws SensorTypeNotFoundException {
-    super(variable, properties);
+    Map<String, Properties> properties, CalibrationSet calculationCoefficients)
+    throws SensorTypeNotFoundException {
+    super(variable, properties, calculationCoefficients);
   }
 
   @Override
@@ -79,43 +76,37 @@ public class ControsPco2Reducer extends DataReducer {
     throws DataReductionException {
 
     try {
-      // Get prior and post coefficients
-      priorCoefficients = CalculationCoefficientDB.getInstance()
-        .getMostRecentCalibrations(conn, instrument,
-          allMeasurements.get(0).getTime());
+      F = CalculationCoefficient.getCoefficient(calculationCoefficients,
+        variable, "F", dataset.getStart()).getBigDecimalValue();
 
-      postCoefficients = CalculationCoefficientDB.getInstance()
-        .getCalibrationsAfter(conn, instrument,
-          allMeasurements.get(allMeasurements.size() - 1).getTime());
-
-      calcKSteps();
-
+      calcKSteps(dataset);
       calcZeroS2Beams(dataset, allMeasurements);
-
     } catch (Exception e) {
       throw new DataReductionException(e);
     }
   }
 
-  private void calcKSteps() {
-    k1Prior = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
-      "k1");
-    k2Prior = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
-      "k2");
-    k3Prior = CalculationCoefficient.getCoefficient(priorCoefficients, variable,
-      "k3");
-    runTimePrior = CalculationCoefficient.getCoefficient(priorCoefficients,
-      variable, "Runtime");
+  private void calcKSteps(DataSet dataset) {
+    k1Prior = CalculationCoefficient.getCoefficient(calculationCoefficients,
+      variable, "k1", dataset.getStart());
+    k2Prior = CalculationCoefficient.getCoefficient(calculationCoefficients,
+      variable, "k2", dataset.getStart());
+    k3Prior = CalculationCoefficient.getCoefficient(calculationCoefficients,
+      variable, "k3", dataset.getStart());
+    runTimePrior = CalculationCoefficient.getCoefficient(
+      calculationCoefficients, variable, "Runtime", dataset.getStart());
 
-    List<String> coefficientFullNames = CalculationCoefficient
-      .getCoeffecientNames(variable,
-        Arrays.asList("Runtime", "k1", "k2", "k3"));
+    k1Post = CalculationCoefficient.getPostCoefficient(calculationCoefficients,
+      variable, "k1", dataset.getEnd());
+    k2Post = CalculationCoefficient.getPostCoefficient(calculationCoefficients,
+      variable, "k2", dataset.getEnd());
+    k3Post = CalculationCoefficient.getPostCoefficient(calculationCoefficients,
+      variable, "k3", dataset.getEnd());
+    runTimePost = CalculationCoefficient.getPostCoefficient(
+      calculationCoefficients, variable, "Runtime", dataset.getEnd());
 
-    if (postCoefficients.containsTargets(coefficientFullNames)) {
-      k1Post = getPost("k1");
-      k2Post = getPost("k2");
-      k3Post = getPost("k3");
-      runTimePost = getPost("Runtime");
+    if (null != k1Post && null != k2Post && null != k3Post
+      && null != runTimePost) {
 
       BigDecimal runtimePeriod = runTimePost.getBigDecimalValue()
         .subtract(runTimePrior.getBigDecimalValue());
@@ -197,10 +188,6 @@ public class ControsPco2Reducer extends DataReducer {
     try {
       // We use BigDecimals to maintain the precision on the k parameters,
       // which are on the order of 1e-10
-
-      BigDecimal F = new BigDecimal(CalculationCoefficient
-        .getCoefficient(priorCoefficients, variable, "F").getValue());
-
       BigDecimal measurementRuntime = new BigDecimal(
         measurement.getMeasurementValue("Runtime").getCalculatedValue());
 
@@ -337,11 +324,6 @@ public class ControsPco2Reducer extends DataReducer {
       .getCalculatedValue()
       / measurement.getMeasurementValue("Reference Signal")
         .getCalculatedValue();
-  }
-
-  private CalculationCoefficient getPost(String coefficient) {
-    return CalculationCoefficient.getCoefficient(postCoefficients, variable,
-      coefficient);
   }
 
   private Double getInterpZeroS2Beam(Double runTime)

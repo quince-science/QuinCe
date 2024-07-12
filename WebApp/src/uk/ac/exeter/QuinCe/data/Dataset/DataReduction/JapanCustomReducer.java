@@ -11,7 +11,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -29,8 +28,9 @@ public class JapanCustomReducer extends DataReducer {
   private BigDecimal interceptAdjustment = null;
 
   public JapanCustomReducer(Variable variable,
-    Map<String, Properties> properties) throws SensorTypeNotFoundException {
-    super(variable, properties);
+    Map<String, Properties> properties, CalibrationSet calculationCoefficients)
+    throws SensorTypeNotFoundException {
+    super(variable, properties, calculationCoefficients);
   }
 
   @Override
@@ -40,24 +40,22 @@ public class JapanCustomReducer extends DataReducer {
 
     try {
       // Get the calibration slope information
-      CalibrationSet coefficients = CalculationCoefficientDB.getInstance()
-        .getMostRecentCalibrations(conn, instrument,
-          allMeasurements.get(0).getTime());
-
-      baseSlope = CalculationCoefficient
-        .getCoefficient(coefficients, variable, "Base Slope")
-        .getBigDecimalValue();
+      baseSlope = CalculationCoefficient.getCoefficient(calculationCoefficients,
+        variable, "Base Slope", dataset.getStart()).getBigDecimalValue();
 
       baseIntercept = CalculationCoefficient
-        .getCoefficient(coefficients, variable, "Base Intercept")
+        .getCoefficient(calculationCoefficients, variable, "Base Intercept",
+          dataset.getStart())
         .getBigDecimalValue();
 
       slopeAdjustment = CalculationCoefficient
-        .getCoefficient(coefficients, variable, "Slope Adjustment")
+        .getCoefficient(calculationCoefficients, variable, "Slope Adjustment",
+          dataset.getStart())
         .getBigDecimalValue();
 
       interceptAdjustment = CalculationCoefficient
-        .getCoefficient(coefficients, variable, "Intercept Adjustment")
+        .getCoefficient(calculationCoefficients, variable,
+          "Intercept Adjustment", dataset.getStart())
         .getBigDecimalValue();
     } catch (Exception e) {
       throw new DataReductionException(e);
