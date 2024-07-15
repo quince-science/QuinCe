@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -118,10 +119,21 @@ public class CalculationCoefficient extends Calibration {
     CalibrationSet calibrationSet, Variable variable, String coefficient,
     LocalDateTime time) {
 
-    Calibration calibration = calibrationSet.getPostCalibrations(time)
-      .get(getCoeffecientName(variable, coefficient));
+    CalculationCoefficient result;
 
-    return null == calibration ? null : (CalculationCoefficient) calibration;
+    TreeMap<String, Calibration> postCalibrations = calibrationSet
+      .getPostCalibrations(time);
+
+    if (null == postCalibrations) {
+      result = null;
+    } else {
+      Calibration calibration = postCalibrations
+        .get(getCoeffecientName(variable, coefficient));
+      result = null == calibration ? null
+        : (CalculationCoefficient) calibration;
+    }
+
+    return result;
   }
 
   public static String getCoeffecientName(Variable variable,
