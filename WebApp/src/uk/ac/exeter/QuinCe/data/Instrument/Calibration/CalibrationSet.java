@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -55,10 +56,22 @@ public class CalibrationSet {
   private final LocalDateTime end;
 
   /**
+   * Indicates whether or not the time of a {@link Calibration} influences the
+   * effect it has.
+   */
+  private final boolean timeAffectsCalibration;
+
+  /**
    * Indicates whether [@link Calibration}s are allowed between the
    * {@link #start} and {@link #end}.
    */
   private final boolean allowInterim;
+
+  /**
+   * Indicates whether this {@code CalibrationSet} should include
+   * post-calibrations after the end of the specified period.
+   */
+  private final boolean includePost;
 
   /**
    * The {@link Calibration}s that make up this CalibrationSet.
@@ -82,7 +95,7 @@ public class CalibrationSet {
    *           {@link #end} times.
    */
   public CalibrationSet(Map<String, String> targets, LocalDateTime start,
-    LocalDateTime end, boolean allowInterim,
+    LocalDateTime end, CalibrationDB dbInstance,
     TreeMap<String, TreeSet<Calibration>> calibrations)
     throws MissingParamException, InvalidCalibrationDateException {
     super();
@@ -93,14 +106,16 @@ public class CalibrationSet {
     this.targets = new TreeSet<String>(targets.keySet());
     this.start = start;
     this.end = end;
-    this.allowInterim = allowInterim;
+    this.timeAffectsCalibration = dbInstance.timeAffectesCalibration();
+    this.allowInterim = dbInstance.allowCalibrationChangeInDataset();
+    this.includePost = dbInstance.usePostCalibrations();
     populate(calibrations);
   }
 
   /**
    * Build the {@code CalibrationSet} from the supplied collection of
    * {@link Calibration}s.
-   * 
+   *
    * @param calibrations
    *          The {@link Calibration}s
    * @throws InvalidCalibrationDateException
@@ -153,7 +168,7 @@ public class CalibrationSet {
     LocalDateTime postDate = postCalibrations.values().stream()
       .map(c -> c.getDeploymentDate()).sorted().findFirst().orElse(null);
 
-    if (null != postDate) {
+    if (includePost && null != postDate) {
       members.put(postDate, postCalibrations);
     }
 
@@ -179,7 +194,7 @@ public class CalibrationSet {
   /**
    * Determines whether or not there is a complete set of {@link Calibration}s
    * before the {@link #start} time.
-   * 
+   *
    * @return {@code true} if there is a complete set of {@link Calibration}s
    *         before the {@link #start} time; {@code false} otherwise.
    */
@@ -202,7 +217,7 @@ public class CalibrationSet {
   /**
    * Determine whether or not there is a complete set of {@link Calibration}s
    * after the {@link #end} time.
-   * 
+   *
    * @return {@code true} if there is a complete set of {@link Calibration}s
    *         after the {@link #end} time; {@code false} otherwise.
    */
@@ -224,12 +239,12 @@ public class CalibrationSet {
 
   /**
    * Get the set of {@link Calibration}s for a given time.
-   * 
+   *
    * <p>
    * This is the complete set of {@link Calibration}s whose
    * {@link Calibration#getDeploymentDate()} is on or immediately before the
    * specified time.
-   * 
+   *
    * @param time
    *          The time.
    * @return The matching {@link Calibration}s.
@@ -243,12 +258,12 @@ public class CalibrationSet {
 
   /**
    * Get the first set of {@link Calibration}s after a given time.
-   * 
+   *
    * <p>
    * This is the complete set of {@link Calibration}s whose
    * {@link Calibration#getDeploymentDate()} is immediately after the specified
    * time.
-   * 
+   *
    * @param time
    *          The time.
    * @return The matching {@link Calibration}s.
@@ -264,7 +279,7 @@ public class CalibrationSet {
   /**
    * Determines whether or not a {@link Map} of {@link Calibration}s contains an
    * entry for each target.
-   * 
+   *
    * @param calibrations
    *          The {@link Map} to check
    * @return {@code true} if there is an entry in the {@link Map} for each
@@ -278,12 +293,12 @@ public class CalibrationSet {
 
   /**
    * Render this {@code CalibrationSet} as a GSON JSON object.
-   * 
+   *
    * <p>
    * This is for export purposes only; there is no mechanism for deserialising
    * JSON back to a {@code CalibrationSet} object.
    * </p>
-   * 
+   *
    * @return The JSON String
    */
   public JsonObject toJson(CalibrationTargetNameMapper targetMapper) {
@@ -324,5 +339,176 @@ public class CalibrationSet {
 
   public TreeSet<String> getTargets() {
     return targets;
+  }
+
+  @Override
+  public String toString() {
+
+    StringBuilder string = new StringBuilder();
+
+    for (Map.Entry<LocalDateTime, TreeMap<String, Calibration>> entry : members
+      .entrySet()) {
+
+      string.append(DateTimeUtils.formatDateTime(entry.getKey()));
+      string.append("->");
+
+      for (Map.Entry<String, Calibration> timeEntry : entry.getValue()
+        .entrySet()) {
+
+        string.append(timeEntry.getKey());
+        string.append('=');
+        string.append(timeEntry.getValue().getId());
+        string.append(':');
+        string.append(timeEntry.getValue().getCoefficientsAsDelimitedList());
+        string.append(';');
+      }
+
+      string.append(' ');
+    }
+
+    return string.toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return members.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+
+    boolean result = true;
+
+    if (!(o instanceof CalibrationSet)) {
+      result = false;
+    } else {
+      CalibrationSet other = (CalibrationSet) o;
+      TreeMap<LocalDateTime, TreeMap<String, Calibration>> otherMembers = other.members;
+
+      // Check periods
+      if (!start.equals(other.start) || !end.equals(other.end)) {
+        result = false;
+      } else {
+        // Check dates
+        if (!CollectionUtils.isEqualCollection(members.keySet(),
+          otherMembers.keySet())) {
+
+          result = false;
+        } else {
+
+          for (LocalDateTime key : members.keySet()) {
+            if (!membersEqual(members.get(key), other.members.get(key))) {
+              result = false;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Determines whether or not this {@code CalibrationSet} will have the same
+   * effect on the specified time period
+   *
+   * @param other
+   * @return
+   */
+  public boolean hasSameEffect(CalibrationSet other) {
+
+    boolean result = true;
+
+    // Make sure the sets cover the same time period
+    if (!start.equals(other.start) || !end.equals(other.end)) {
+      throw new IllegalArgumentException(
+        "CalibrationSets do not cover the same time period");
+    }
+
+    // Check the first time - this is the prior
+    LocalDateTime thisPriorTime = members.firstKey();
+    LocalDateTime otherPriorTime = other.members.firstKey();
+    if (timeAffectsCalibration && !thisPriorTime.equals(otherPriorTime)) {
+      result = false;
+    } else {
+      if (!membersEqual(members.get(thisPriorTime),
+        other.members.get(otherPriorTime))) {
+        result = false;
+      }
+    }
+
+    // If the prior was OK, check the interim times
+    if (allowInterim && result) {
+      TreeSet<LocalDateTime> thisInterimTimes = getInterimTimes();
+      TreeSet<LocalDateTime> otherInterimTimes = other.getInterimTimes();
+
+      if (!CollectionUtils.isEqualCollection(thisInterimTimes,
+        otherInterimTimes)) {
+        result = false;
+      } else {
+        for (LocalDateTime time : thisInterimTimes) {
+          if (!membersEqual(members.get(time), other.members.get(time))) {
+            result = false;
+            break;
+          }
+        }
+      }
+    }
+
+    // Finally check the post calibration if applicable
+    if (includePost && result) {
+
+      LocalDateTime thisPostTime = members.lastKey().isAfter(end)
+        ? members.lastKey()
+        : null;
+      LocalDateTime otherPostTime = other.members.lastKey().isAfter(end)
+        ? other.members.lastKey()
+        : null;
+
+      if (null != thisPostTime && null != otherPostTime) {
+        if (timeAffectsCalibration && !thisPostTime.equals(otherPostTime)) {
+          result = false;
+        } else if (!membersEqual(members.get(thisPostTime),
+          other.members.get(otherPostTime))) {
+          result = false;
+        }
+      } else if (null != thisPostTime || null != otherPostTime) {
+        result = false;
+      }
+    }
+
+    return result;
+  }
+
+  private boolean membersEqual(TreeMap<String, Calibration> m1,
+    TreeMap<String, Calibration> m2) {
+
+    boolean result = true;
+
+    // Check the targets
+    if (!CollectionUtils.isEqualCollection(m1.keySet(), m2.keySet())) {
+      result = false;
+    } else {
+
+      // Check the calibration for each target
+      for (String target : m1.keySet()) {
+        Calibration calibration1 = m1.get(target);
+        Calibration calibration2 = m2.get(target);
+
+        if (!calibration1.hasSameEffect(calibration2)) {
+          result = false;
+          break;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private TreeSet<LocalDateTime> getInterimTimes() {
+    return members.keySet().stream()
+      .filter(t -> !t.isBefore(start) && !t.isAfter(end))
+      .collect(Collectors.toCollection(TreeSet::new));
   }
 }

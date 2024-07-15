@@ -22,7 +22,7 @@ import uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 
 /**
  * Tests of calibration edits for the {@link ExternalStandardsBean}.
- * 
+ *
  * See
  * {@code WebApp/junit/resources/sql/web/Instrument/CalibrationBeanTest/initial_setup.html}
  * for the initial setup.
@@ -107,7 +107,7 @@ public class ExternalStandardsBeanTest extends TestSetTest {
       bean.getEditedCalibration().setDeploymentDate(calibrationTime);
       bean.getEditedCalibration().setTarget(target);
 
-      if (changeValue) {
+      if (changeValue || action == CalibrationEdit.ADD) {
         bean.getEditedCalibration().setCoefficients(makeCoefficients(1000));
       }
     }
@@ -163,7 +163,7 @@ public class ExternalStandardsBeanTest extends TestSetTest {
     ExternalStandardsBean bean = init();
     bean.setAction(CalibrationEdit.ADD);
     bean.getEditedCalibration()
-      .setDeploymentDate(LocalDateTime.of(2024, 2, 1, 0, 0, 0));
+      .setDeploymentDate(LocalDateTime.of(2023, 2, 1, 0, 0, 0));
     bean.getEditedCalibration().setTarget("std1");
     bean.getEditedCalibration().setCoefficients(makeCoefficients(400D));
 
@@ -182,7 +182,7 @@ public class ExternalStandardsBeanTest extends TestSetTest {
     bean.loadSelectedCalibration();
     bean.setAction(CalibrationEdit.EDIT);
     bean.getEditedCalibration()
-      .setDeploymentDate(LocalDateTime.of(2024, 7, 1, 0, 0, 0));
+      .setDeploymentDate(LocalDateTime.of(2023, 7, 1, 0, 0, 0));
 
     bean.saveCalibration();
     assertFalse(bean.editedCalibrationValid());
@@ -215,7 +215,7 @@ public class ExternalStandardsBeanTest extends TestSetTest {
     bean.loadSelectedCalibration();
     bean.setAction(CalibrationEdit.EDIT);
     bean.getEditedCalibration()
-      .setDeploymentDate(LocalDateTime.of(2024, 5, 1, 0, 0, 0));
+      .setDeploymentDate(LocalDateTime.of(2023, 5, 1, 0, 0, 0));
     bean.getEditedCalibration().setTarget("std2");
   }
 
@@ -252,6 +252,6 @@ public class ExternalStandardsBeanTest extends TestSetTest {
   private LocalDateTime getCalibrationTime(TestSetLine line) {
     int month = line.getIntField(MONTH_COL);
 
-    return month == 0 ? null : LocalDateTime.of(2024, month, 1, 0, 0, 0);
+    return month == 0 ? null : LocalDateTime.of(2023, month, 1, 0, 0, 0);
   }
 }

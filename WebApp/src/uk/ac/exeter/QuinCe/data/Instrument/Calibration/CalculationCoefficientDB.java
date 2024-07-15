@@ -75,4 +75,14 @@ public class CalculationCoefficientDB extends CalibrationDB {
   public boolean allowCalibrationChangeInDataset() {
     return false;
   }
+
+  @Override
+  public boolean usePostCalibrations() {
+    return true;
+  }
+
+  @Override
+  public boolean timeAffectesCalibration() {
+    return true;
+  }
 }

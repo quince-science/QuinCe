@@ -7,7 +7,7 @@ EDIT,1,1,std1,true,1;2;3,true;true;true
 EDIT,1,1,std2,false,1;2;3,false;false;false
 EDIT,1,1,std2,true,1;2;3,false;false;false
 EDIT,1,3,std1,false,1,false
-EDIT,1,3,std1,true,1,false
+EDIT,1,3,std1,true,1;2;3,false;true;true
 EDIT,1,3,std2,false,1;2;3,false;false;false
 EDIT,1,3,std2,true,1;2;3,false;false;false
 EDIT,1,9,std1,false,1;2;3,false;false;false
@@ -23,13 +23,13 @@ EDIT,2,1,std1,true,1,false
 EDIT,2,3,std2,false,1,false
 EDIT,2,3,std1,false,1;2;3,false;true;true
 EDIT,2,3,std2,true,1,false
-EDIT,2,3,std1,true,1:2:3,false;true;true
+EDIT,2,3,std1,true,1;2;3,false;true;true
 EDIT,2,9,std2,false,1,false
 EDIT,2,9,std1,false,1,false
 EDIT,2,9,std2,true,1,false
 EDIT,2,9,std1,true,1,false
 DELETE,2,,,,1,false
-ADD,,3,std1,,1,true
+ADD,,3,std1,,1;2;3,true;true;true
 ADD,,3,std2,,1,true
 ADD,,4,std1,,2;3,true;true
 ADD,,4,std2,,,

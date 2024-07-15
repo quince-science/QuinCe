@@ -14,26 +14,26 @@ INSERT INTO run_type
 INSERT INTO calibration
   (id, instrument_id, type, target, deployment_date, coefficients, class)
   VALUES
-  (1, 1, 'EXTERNAL_STANDARD', 'std1', 1706745600000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"102"}', 'DefaultExternalStandard');
+  (1, 1, 'EXTERNAL_STANDARD', 'std1', 1675209600000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"102"}', 'DefaultExternalStandard');
 
 INSERT INTO calibration
   (id, instrument_id, type, target, deployment_date, coefficients, class)
   VALUES
-  (2, 1, 'EXTERNAL_STANDARD', 'std2', 1706745600000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"202"}', 'DefaultExternalStandard');
+  (2, 1, 'EXTERNAL_STANDARD', 'std2', 1675209600000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"202"}', 'DefaultExternalStandard');
 
 -- 2024-05-01
 INSERT INTO calibration
   (id, instrument_id, type, target, deployment_date, coefficients, class)
   VALUES
-  (3, 1, 'EXTERNAL_STANDARD', 'std2', 1714521600000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"205"}', 'DefaultExternalStandard');
+  (3, 1, 'EXTERNAL_STANDARD', 'std2', 1682899200000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"205"}', 'DefaultExternalStandard');
 
 -- 2024-07-01
 INSERT INTO calibration
   (id, instrument_id, type, target, deployment_date, coefficients, class)
   VALUES
-  (4, 1, 'EXTERNAL_STANDARD', 'std1', 1719792000000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"107"}', 'DefaultExternalStandard');
+  (4, 1, 'EXTERNAL_STANDARD', 'std1', 1688169600000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"107"}', 'DefaultExternalStandard');
 
 INSERT INTO calibration
   (id, instrument_id, type, target, deployment_date, coefficients, class)
   VALUES
-  (5, 1, 'EXTERNAL_STANDARD', 'std2', 1719792000000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"207"}', 'DefaultExternalStandard');
+  (5, 1, 'EXTERNAL_STANDARD', 'std2', 1688169600000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"207"}', 'DefaultExternalStandard');

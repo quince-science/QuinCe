@@ -121,5 +121,10 @@ public abstract class ExternalStandard extends Calibration {
       .collect(Collectors.toList());
   }
 
+  @Override
+  protected boolean timeAffectsCalibration() {
+    return false;
+  }
+
   protected abstract List<String> getHiddenSensorTypes();
 }

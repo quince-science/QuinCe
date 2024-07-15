@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -480,7 +482,7 @@ public abstract class Calibration implements Comparable<Calibration> {
     if (getClass() != obj.getClass())
       return false;
     Calibration other = (Calibration) obj;
-    return Objects.equals(coefficients, other.coefficients)
+    return CollectionUtils.isEqualCollection(coefficients, other.coefficients)
       && Objects.equals(deploymentDate, other.deploymentDate) && id == other.id
       && Objects.equals(target, other.target);
   }
@@ -519,7 +521,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Get the label to use for the set of coefficients.
-   * 
+   *
    * @return The coefficients label.
    */
   public abstract String getCoefficientsLabel();
@@ -554,4 +556,22 @@ public abstract class Calibration implements Comparable<Calibration> {
     return calibration.coefficients.stream()
       .map(c -> new CalibrationCoefficient(c.getName(), c.getValue())).toList();
   }
+
+  public boolean hasSameEffect(Calibration other) {
+
+    if (timeAffectsCalibration()
+      && !this.deploymentDate.equals(other.deploymentDate)) {
+      return false;
+    } else if (!this.target.equals(other.target)) {
+      return false;
+    } else if (!CollectionUtils.isEqualCollection(this.coefficients,
+      other.coefficients)) {
+      return false;
+    } else {
+      return true;
+    }
+
+  }
+
+  protected abstract boolean timeAffectsCalibration();
 }

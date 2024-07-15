@@ -97,4 +97,14 @@ public class ExternalStandardDB extends CalibrationDB {
   public boolean allowCalibrationChangeInDataset() {
     return true;
   }
+
+  @Override
+  public boolean usePostCalibrations() {
+    return false;
+  }
+
+  @Override
+  public boolean timeAffectesCalibration() {
+    return false;
+  }
 }

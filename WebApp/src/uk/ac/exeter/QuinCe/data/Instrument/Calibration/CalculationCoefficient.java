@@ -200,4 +200,9 @@ public class CalculationCoefficient extends Calibration {
   public String getJsonCoefficientsLabel() {
     return "calculationCoefficients";
   }
+
+  @Override
+  protected boolean timeAffectsCalibration() {
+    return true;
+  }
 }

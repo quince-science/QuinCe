@@ -183,4 +183,9 @@ public class PolynomialSensorCalibration extends SensorCalibration {
   public String getCoefficientsLabel() {
     return "Formula";
   }
+
+  @Override
+  protected boolean timeAffectsCalibration() {
+    return false;
+  }
 }

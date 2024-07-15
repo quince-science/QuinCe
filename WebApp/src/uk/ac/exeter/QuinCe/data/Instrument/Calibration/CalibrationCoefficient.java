@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
+import java.util.Objects;
+
 /**
  * Simple object for a single calibration coefficient
  */
@@ -78,5 +80,23 @@ public class CalibrationCoefficient implements Cloneable {
   @Override
   public Object clone() {
     return new CalibrationCoefficient(name, value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, value);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    CalibrationCoefficient other = (CalibrationCoefficient) obj;
+    return Objects.equals(name, other.name)
+      && Objects.equals(value, other.value);
   }
 }

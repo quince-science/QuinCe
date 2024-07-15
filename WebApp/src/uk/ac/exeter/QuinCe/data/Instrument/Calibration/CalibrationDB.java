@@ -393,7 +393,7 @@ public abstract class CalibrationDB {
   /**
    * Build a {@link CalibrationSet} object to cover the time period of the
    * specified {@link DataSet}.
-   * 
+   *
    * @param conn
    * @param instrument
    * @param dataset
@@ -420,8 +420,8 @@ public abstract class CalibrationDB {
     TreeMap<String, TreeSet<Calibration>> allCalibrations = getCalibrations(
       conn, instrument);
 
-    return new CalibrationSet(getTargets(conn, instrument), start, end,
-      allowCalibrationChangeInDataset(), allCalibrations);
+    return new CalibrationSet(getTargets(conn, instrument), start, end, this,
+      allCalibrations);
 
   }
 
@@ -438,10 +438,34 @@ public abstract class CalibrationDB {
   }
 
   /**
-   * Indicates whether a calibration can change within a datasets.
+   * Indicates whether a calibration can change within a {@link DataSet}.
    *
    * @return {@code true} if a calibration values can change within the bounds
    *         of a dataset; {@code false} if they cannot.
    */
   public abstract boolean allowCalibrationChangeInDataset();
+
+  /**
+   * Indicates whether post-calibrations are used in the processing of a
+   * {@link DataSet}.
+   *
+   * <p>
+   * Note that if this function returns {@code true} it will not prevent a
+   * {@link DataSet} from being processed, but flags will be set on the
+   * {@link DataSet} to indicate that a post-calibration was not used.
+   * </p>
+   *
+   * @return {@code true} if post-calibrations are used; {@code false} if not.
+   */
+  public abstract boolean usePostCalibrations();
+
+  /**
+   * Indicates whether or not the time of a {@link Calibration} impacts the
+   * effect it has on the calibration of a {@link DataSet}.
+   *
+   * @return {@code true} if the time of a {@link Calibration} changes its
+   *         effect on a {@link DataSet}; {@code false} otherwise.
+   *
+   */
+  public abstract boolean timeAffectesCalibration();
 }

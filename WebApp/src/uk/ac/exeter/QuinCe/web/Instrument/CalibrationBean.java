@@ -641,14 +641,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     for (DataSet dataset : datasets.keySet()) {
       CalibrationSet originalSet = new CalibrationSet(calibrationTargets,
-        dataset.getStart(), dataset.getEnd(),
-        dbInstance.allowCalibrationChangeInDataset(), originalCalibrations);
+        dataset.getStart(), dataset.getEnd(), dbInstance, originalCalibrations);
 
       CalibrationSet editedSet = new CalibrationSet(calibrationTargets,
-        dataset.getStart(), dataset.getEnd(),
-        dbInstance.allowCalibrationChangeInDataset(), calibrations);
+        dataset.getStart(), dataset.getEnd(), dbInstance, calibrations);
 
-      if (!editedSet.equals(originalSet)) {
+      if (!editedSet.hasSameEffect(originalSet)) {
         datasets.get(dataset).set(true, editedSet.hasCompletePrior());
       } else {
         datasets.get(dataset).set(false, editedCalibrationValid);
