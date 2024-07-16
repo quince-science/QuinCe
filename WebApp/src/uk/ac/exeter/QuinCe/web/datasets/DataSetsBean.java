@@ -24,9 +24,9 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
@@ -449,48 +449,34 @@ public class DataSetsBean extends BaseManagedBean {
 
     if (startTime.length() > 0) {
       try {
+        // Check for external standards if required.
+        if (getCurrentInstrument().hasInternalCalibrations()) {
 
-        // Check sensor calibration equations
-        CalibrationSet calibrations = SensorCalibrationDB.getInstance()
-          .getCalibrationSet(getDataSource(), getCurrentInstrument(),
-            DateTimeUtils.parseDisplayDateTime(startTime),
-            DateTimeUtils.parseDisplayDateTime(endTime));
+          // Check internal calibration standards
+          CalibrationSet standards = ExternalStandardDB.getInstance()
+            .getCalibrationSet(getDataSource(), getCurrentInstrument(),
+              DateTimeUtils.parseDisplayDateTime(startTime),
+              DateTimeUtils.parseDisplayDateTime(endTime));
 
-        if (!calibrations.hasCompletePrior()) {
-          validCalibration = false;
-          validCalibrationMessage = "One or more sensor calibration equations are missing";
-        }
-
-        if (validCalibration) {
-          // Check for external standards if required.
-          if (getCurrentInstrument().hasInternalCalibrations()) {
-
-            // Check internal calibration standards
-            CalibrationSet standards = ExternalStandardDB.getInstance()
-              .getCalibrationSet(getDataSource(), getCurrentInstrument(),
-                DateTimeUtils.parseDisplayDateTime(startTime),
-                DateTimeUtils.parseDisplayDateTime(endTime));
-
-            if (!standards.hasCompletePrior()) {
-              validCalibration = false;
-              validCalibrationMessage = "No complete set of external standards is available";
-            }
-
-            // Disable zero standard check. #2037
-            // May be reinstated for different types of pCO2 system in the
-            // future.
-            /*
-             * else if (!ExternalStandardDB.hasZeroStandard(standards)) {
-             * validCalibration = false; validCalibrationMessage =
-             * "One external standard must have a zero concentration"; }
-             */
+          if (!standards.hasCompletePrior()) {
+            validCalibration = false;
+            validCalibrationMessage = "No complete set of external standards is available";
           }
+
+          // Disable zero standard check. #2037
+          // May be reinstated for different types of pCO2 system in the
+          // future.
+          /*
+           * else if (!ExternalStandardDB.hasZeroStandard(standards)) {
+           * validCalibration = false; validCalibrationMessage =
+           * "One external standard must have a zero concentration"; }
+           */
         }
 
         if (validCalibration) {
           // Check calculation coefficients, if there are any
           if (getCurrentInstrument().hasCalculationCoefficients()) {
-            CalibrationSet coefficients = ExternalStandardDB.getInstance()
+            CalibrationSet coefficients = CalculationCoefficientDB.getInstance()
               .getCalibrationSet(getDataSource(), getCurrentInstrument(),
                 DateTimeUtils.parseDisplayDateTime(startTime),
                 DateTimeUtils.parseDisplayDateTime(endTime));

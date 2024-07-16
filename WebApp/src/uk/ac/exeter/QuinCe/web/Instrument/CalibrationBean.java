@@ -289,28 +289,32 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     for (String key : calibrationTargets.keySet()) {
 
-      for (Calibration calibration : calibrations.get(key)) {
-        JSONObject calibrationJson = new JSONObject();
-        calibrationJson.put("id", calibration.getId());
-        calibrationJson.put("type", "box");
-        calibrationJson.put("target", StringUtils.tabToSpace(key));
-        calibrationJson.put("group", StringUtils.tabToSpace(key));
-        calibrationJson.put("start",
-          DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
-        calibrationJson.put("content",
-          calibration.getHumanReadableCoefficients());
-        calibrationJson.put("title",
-          calibration.getHumanReadableCoefficients());
+      TreeSet<Calibration> targetCalibrations = calibrations.get(key);
 
-        JSONArray coefficients = new JSONArray();
-        for (CalibrationCoefficient coefficient : calibration
-          .getCoefficients()) {
+      if (null != targetCalibrations) {
+        for (Calibration calibration : calibrations.get(key)) {
+          JSONObject calibrationJson = new JSONObject();
+          calibrationJson.put("id", calibration.getId());
+          calibrationJson.put("type", "box");
+          calibrationJson.put("target", StringUtils.tabToSpace(key));
+          calibrationJson.put("group", StringUtils.tabToSpace(key));
+          calibrationJson.put("start",
+            DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
+          calibrationJson.put("content",
+            calibration.getHumanReadableCoefficients());
+          calibrationJson.put("title",
+            calibration.getHumanReadableCoefficients());
 
-          coefficients.put(coefficient.getValue());
+          JSONArray coefficients = new JSONArray();
+          for (CalibrationCoefficient coefficient : calibration
+            .getCoefficients()) {
+
+            coefficients.put(coefficient.getValue());
+          }
+          calibrationJson.put("coefficients", coefficients);
+
+          items.put(calibrationJson);
         }
-        calibrationJson.put("coefficients", coefficients);
-
-        items.put(calibrationJson);
       }
     }
 

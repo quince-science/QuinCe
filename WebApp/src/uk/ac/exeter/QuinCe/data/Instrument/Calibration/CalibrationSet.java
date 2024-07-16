@@ -138,19 +138,22 @@ public class CalibrationSet {
     Set<LocalDateTime> interimTimes = new TreeSet<LocalDateTime>();
 
     for (String target : targets) {
-      for (Calibration calibration : calibrations.get(target)) {
-        if (calibration.getDeploymentDate().isBefore(start)) {
-          priorCalibrations.put(target, calibration);
-        } else if (calibration.getDeploymentDate().isAfter(end)) {
-          postCalibrations.put(target, calibration);
-          break;
-          // We don't need to check any more calibrations for this target
-        } else {
-          if (!allowInterim) {
-            throw new InvalidCalibrationDateException(
-              "Cannot set a calibration between start and end times");
+      TreeSet<Calibration> targetCalibrations = calibrations.get(target);
+      if (null != targetCalibrations) {
+        for (Calibration calibration : calibrations.get(target)) {
+          if (calibration.getDeploymentDate().isBefore(start)) {
+            priorCalibrations.put(target, calibration);
+          } else if (calibration.getDeploymentDate().isAfter(end)) {
+            postCalibrations.put(target, calibration);
+            break;
+            // We don't need to check any more calibrations for this target
+          } else {
+            if (!allowInterim) {
+              throw new InvalidCalibrationDateException(
+                "Cannot set a calibration between start and end times");
+            }
+            interimTimes.add(calibration.getDeploymentDate());
           }
-          interimTimes.add(calibration.getDeploymentDate());
         }
       }
     }
@@ -244,6 +247,11 @@ public class CalibrationSet {
    * This is the complete set of {@link Calibration}s whose
    * {@link Calibration#getDeploymentDate()} is on or immediately before the
    * specified time.
+   * </p>
+   * <p>
+   * If there are no {@link Calibration}s at the specified time, an empty map is
+   * returned.
+   * </p>
    *
    * @param time
    *          The time.
@@ -253,7 +261,8 @@ public class CalibrationSet {
     LocalDateTime targetTime) {
 
     LocalDateTime actualTime = members.lowerKey(targetTime);
-    return null != actualTime ? members.get(actualTime) : null;
+    return null != actualTime ? members.get(actualTime)
+      : new TreeMap<String, Calibration>();
   }
 
   /**
@@ -263,6 +272,11 @@ public class CalibrationSet {
    * This is the complete set of {@link Calibration}s whose
    * {@link Calibration#getDeploymentDate()} is immediately after the specified
    * time.
+   * </p>
+   * <p>
+   * If there are no calibrations after the specified time, an empty map is
+   * returned.
+   * </p>
    *
    * @param time
    *          The time.
@@ -272,7 +286,8 @@ public class CalibrationSet {
     LocalDateTime targetTime) {
 
     LocalDateTime actualTime = members.higherKey(targetTime);
-    return null != actualTime ? members.get(actualTime) : null;
+    return null != actualTime ? members.get(actualTime)
+      : new TreeMap<String, Calibration>();
 
   }
 
