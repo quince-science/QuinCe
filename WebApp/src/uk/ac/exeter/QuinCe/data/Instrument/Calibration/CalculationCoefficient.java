@@ -59,6 +59,7 @@ public class CalculationCoefficient extends Calibration {
     super(source.getInstrument(),
       CalculationCoefficientDB.CALCULATION_COEFFICIENT_CALIBRATION_TYPE,
       source.getId(), source.getDeploymentDate());
+    setTarget(source.getTarget());
     setCoefficients(duplicateCoefficients(source));
 
   }

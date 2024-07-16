@@ -464,14 +464,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
           + DateTimeUtils.toIsoDate(calibration.getDeploymentDate())
           + " already exists");
       }
+    }
 
-      // Check whether we land in the middle of a DataSet, and whether that
-      // matters. (add and edit only)
-      if (action != CalibrationEdit.DELETE
-        && !dbInstance.allowCalibrationChangeInDataset()
-        && isInDataset(calibration.getDeploymentDate())) {
-        result.add("Calibration cannot change inside a dataset");
-      }
+    // Check whether we land in the middle of a DataSet, and whether that
+    // matters. (add and edit only)
+    if (action != CalibrationEdit.DELETE
+      && !dbInstance.allowCalibrationChangeInDataset()
+      && isInDataset(calibration.getDeploymentDate())) {
+      result.add("Calibration cannot change inside a dataset");
     }
 
     editedCalibrationValid = result.size() == 0;

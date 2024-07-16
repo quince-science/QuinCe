@@ -25,7 +25,8 @@ import uk.ac.exeter.QuinCe.TestBase.TestSetTest;
  *
  * See
  * {@code WebApp/junit/resources/sql/web/Instrument/CalibrationBeanTest/initial_setup.html}
- * for the initial setup.
+ * for the initial setup ({@code TARGET_1} and {@code TARGET_1} are specified in
+ * this test file).
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public class ExternalStandardsBeanTest extends TestSetTest {
@@ -225,6 +226,9 @@ public class ExternalStandardsBeanTest extends TestSetTest {
     bean.getEditedCalibration()
       .setDeploymentDate(LocalDateTime.of(2023, 5, 1, 0, 0, 0));
     bean.getEditedCalibration().setTarget(TARGET_2);
+
+    bean.saveCalibration();
+    assertFalse(bean.editedCalibrationValid());
   }
 
   @Override

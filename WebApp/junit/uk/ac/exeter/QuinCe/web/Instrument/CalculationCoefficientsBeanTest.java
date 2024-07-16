@@ -21,15 +21,22 @@ import uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 
 /**
- * Tests of calibration edits for the {@link SensorCalibrationsBean}.
+ * Tests of calibration edits for the {@link CalculationCoefficientsBean}.
  *
+ * <p>
  * See
  * {@code WebApp/junit/resources/sql/web/Instrument/CalibrationBeanTest/initial_setup.html}
  * for the initial setup ({@code TARGET_1} and {@code TARGET_1} are specified in
- * this test file).
+ * this test file). This will use the CONTROS pCO2 system as the testing basis.
+ * Most coefficients will be set with prior and post values for the full period,
+ * and we will adjust the coefficients for two parameters ({@code F} and
+ * {@code Runtime}) to perform the tests. The {@code k1}, {@code k2} and
+ * {@code k3} coefficients will remain constant.
+ * </p>
+ *
  */
 @TestInstance(Lifecycle.PER_CLASS)
-public class SensorCalibrationsBeanTest extends TestSetTest {
+public class CalculationCoefficientsBeanTest extends TestSetTest {
 
   private static final int ACTION_COL = 0;
 
@@ -49,16 +56,16 @@ public class SensorCalibrationsBeanTest extends TestSetTest {
 
   private static final long INSTRUMENT_ID = 1L;
 
-  private static final String TARGET_1 = "1";
+  private static final String TARGET_1 = "6.F";
 
-  private static final String TARGET_2 = "3";
+  private static final String TARGET_2 = "6.Runtime";
 
-  private static final String REPLACEMENT_VALUE = "1.1";
+  private static final String REPLACEMENT_VALUE = "1000";
 
-  private SensorCalibrationsBean init() throws Exception {
+  private CalculationCoefficientsBean init() throws Exception {
     initResourceManager();
     loginUser(USER_ID);
-    SensorCalibrationsBean bean = new SensorCalibrationsBean();
+    CalculationCoefficientsBean bean = new CalculationCoefficientsBean();
     bean.setInstrumentId(INSTRUMENT_ID);
     bean.start();
     return bean;
@@ -66,12 +73,7 @@ public class SensorCalibrationsBeanTest extends TestSetTest {
 
   private Map<String, String> makeCoefficients(String value) {
     Map<String, String> result = new HashMap<String, String>();
-    result.put("x⁵", "0");
-    result.put("x⁴", "0");
-    result.put("x³", "0");
-    result.put("x²", "0");
-    result.put("x", value);
-    result.put("Intercept", "0");
+    result.put("Value", value);
     return result;
   }
 
@@ -85,13 +87,13 @@ public class SensorCalibrationsBeanTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/calculationCoefficientsEdit" })
   @ParameterizedTest
   @MethodSource("getLines")
   public void singleCalibrationEditTest(TestSetLine line) throws Exception {
 
     // Initialise bean
-    SensorCalibrationsBean bean = init();
+    CalculationCoefficientsBean bean = init();
 
     int action = getAction(line);
     long calbrationId = line.getLongField(CALIBRATION_ID_COL);
@@ -169,10 +171,10 @@ public class SensorCalibrationsBeanTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/calculationCoefficientsEdit" })
   @Test
   public void addClashTest() throws Exception {
-    SensorCalibrationsBean bean = init();
+    CalculationCoefficientsBean bean = init();
     bean.setAction(CalibrationEdit.ADD);
     bean.getEditedCalibration()
       .setDeploymentDate(LocalDateTime.of(2023, 2, 1, 0, 0, 0));
@@ -187,10 +189,10 @@ public class SensorCalibrationsBeanTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/calculationCoefficientsEdit" })
   @Test
   public void editClashTimeTest() throws Exception {
-    SensorCalibrationsBean bean = init();
+    CalculationCoefficientsBean bean = init();
     bean.setSelectedCalibrationId(1L);
     bean.loadSelectedCalibration();
     bean.setAction(CalibrationEdit.EDIT);
@@ -204,10 +206,10 @@ public class SensorCalibrationsBeanTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/calculationCoefficientsEdit" })
   @Test
   public void editClashTargetTest() throws Exception {
-    SensorCalibrationsBean bean = init();
+    CalculationCoefficientsBean bean = init();
     bean.setSelectedCalibrationId(1L);
     bean.loadSelectedCalibration();
     bean.setAction(CalibrationEdit.EDIT);
@@ -220,21 +222,59 @@ public class SensorCalibrationsBeanTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/calculationCoefficientsEdit" })
   @Test
   public void editClashTimeAndTargetTest() throws Exception {
-    SensorCalibrationsBean bean = init();
+    CalculationCoefficientsBean bean = init();
     bean.setSelectedCalibrationId(1L);
     bean.loadSelectedCalibration();
     bean.setAction(CalibrationEdit.EDIT);
     bean.getEditedCalibration()
       .setDeploymentDate(LocalDateTime.of(2023, 5, 1, 0, 0, 0));
     bean.getEditedCalibration().setTarget(TARGET_2);
+
+    bean.saveCalibration();
+    assertFalse(bean.editedCalibrationValid());
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/calculationCoefficientsEdit" })
+  @Test
+  public void addInterimTest() throws Exception {
+    CalculationCoefficientsBean bean = init();
+    bean.setAction(CalibrationEdit.ADD);
+    bean.getEditedCalibration()
+      .setDeploymentDate(LocalDateTime.of(2023, 3, 1, 0, 0, 0));
+    bean.getEditedCalibration().setTarget(TARGET_1);
+    bean.getEditedCalibration()
+      .setCoefficients(makeCoefficients(REPLACEMENT_VALUE));
+
+    bean.saveCalibration();
+    assertFalse(bean.editedCalibrationValid());
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
+    "resources/sql/web/Instrument/CalibrationBeanTest/base",
+    "resources/sql/web/Instrument/CalibrationBeanTest/calculationCoefficientsEdit" })
+  @Test
+  public void editMoveToInterimTest() throws Exception {
+    CalculationCoefficientsBean bean = init();
+    bean.setSelectedCalibrationId(3L);
+    bean.loadSelectedCalibration();
+    bean.setAction(CalibrationEdit.EDIT);
+    bean.getEditedCalibration()
+      .setDeploymentDate(LocalDateTime.of(2023, 3, 1, 0, 0, 0));
+
+    bean.saveCalibration();
+    assertFalse(bean.editedCalibrationValid());
   }
 
   @Override
   protected String getTestSetName() {
-    return "SensorCalibrationsSingleCalibrationEditTest";
+    return "CalculationCoefficientsSingleCalibrationEditTest";
   }
 
   private int getAction(TestSetLine line) {
