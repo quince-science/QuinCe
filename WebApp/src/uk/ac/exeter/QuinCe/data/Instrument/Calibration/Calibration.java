@@ -302,7 +302,8 @@ public abstract class Calibration implements Comparable<Calibration> {
     if (newCoefficients.size() != getCoefficientNames(true).size()) {
       throw new CalibrationException(
         "Incorrect number of coefficients: expected "
-          + getCoefficientNames(true).size() + ", got " + coefficients.size());
+          + getCoefficientNames(true).size() + ", got "
+          + newCoefficients.size());
     }
 
     initialiseCoefficients();

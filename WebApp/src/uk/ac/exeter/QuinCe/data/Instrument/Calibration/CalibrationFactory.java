@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,6 +50,12 @@ public class CalibrationFactory {
           target, deploymentDate, coefficients);
       } catch (CalibrationException e) {
         throw e;
+      } catch (InvocationTargetException e) {
+        Throwable source = e.getCause();
+        if (null == source) {
+          source = e.getTargetException();
+        }
+        throw new CalibrationException(source);
       } catch (Exception e) {
         throw new CalibrationException(e);
       }

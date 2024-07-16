@@ -77,8 +77,8 @@ public abstract class ExternalStandard extends Calibration {
       .getAssignedSensorTypes().stream().filter(s -> s.hasInternalCalibration())
       .map(s -> s.getShortName()).collect(Collectors.toList());
 
-    if (includeHidden) {
-      result.addAll(getHiddenSensorTypes());
+    if (!includeHidden) {
+      result.removeAll(getHiddenSensorTypes());
     }
 
     return result;
