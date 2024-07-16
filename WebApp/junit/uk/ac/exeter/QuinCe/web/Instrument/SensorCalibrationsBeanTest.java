@@ -28,7 +28,7 @@ import uk.ac.exeter.QuinCe.TestBase.TestSetTest;
  * for the initial setup.
  */
 @TestInstance(Lifecycle.PER_CLASS)
-public class ExternalStandardsBeanTest extends TestSetTest {
+public class SensorCalibrationsBeanTest extends TestSetTest {
 
   private static final int ACTION_COL = 0;
 
@@ -48,16 +48,16 @@ public class ExternalStandardsBeanTest extends TestSetTest {
 
   private static final long INSTRUMENT_ID = 1L;
 
-  private static final String TARGET_1 = "std1";
+  private static final String TARGET_1 = "1";
 
-  private static final String TARGET_2 = "std2";
+  private static final String TARGET_2 = "3";
 
-  private static final String REPLACEMENT_VALUE = "1000";
+  private static final String REPLACEMENT_VALUE = "1.1";
 
-  private ExternalStandardsBean init() throws Exception {
+  private SensorCalibrationsBean init() throws Exception {
     initResourceManager();
     loginUser(USER_ID);
-    ExternalStandardsBean bean = new ExternalStandardsBean();
+    SensorCalibrationsBean bean = new SensorCalibrationsBean();
     bean.setInstrumentId(INSTRUMENT_ID);
     bean.start();
     return bean;
@@ -65,8 +65,12 @@ public class ExternalStandardsBeanTest extends TestSetTest {
 
   private Map<String, String> makeCoefficients(String value) {
     Map<String, String> result = new HashMap<String, String>();
-    result.put("xH₂O (with standards)", "0");
-    result.put("xCO₂ (with standards)", value);
+    result.put("x⁵", "0");
+    result.put("x⁴", "0");
+    result.put("x³", "0");
+    result.put("x²", "0");
+    result.put("x", value);
+    result.put("Intercept", "0");
     return result;
   }
 
@@ -80,13 +84,13 @@ public class ExternalStandardsBeanTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/externalStandardsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
   @ParameterizedTest
   @MethodSource("getLines")
   public void singleCalibrationEditTest(TestSetLine line) throws Exception {
 
     // Initialise bean
-    ExternalStandardsBean bean = init();
+    SensorCalibrationsBean bean = init();
 
     int action = getAction(line);
     long calbrationId = line.getLongField(CALIBRATION_ID_COL);
@@ -164,10 +168,10 @@ public class ExternalStandardsBeanTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/externalStandardsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
   @Test
   public void addClashTest() throws Exception {
-    ExternalStandardsBean bean = init();
+    SensorCalibrationsBean bean = init();
     bean.setAction(CalibrationEdit.ADD);
     bean.getEditedCalibration()
       .setDeploymentDate(LocalDateTime.of(2023, 2, 1, 0, 0, 0));
@@ -182,10 +186,10 @@ public class ExternalStandardsBeanTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/externalStandardsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
   @Test
   public void editClashTimeTest() throws Exception {
-    ExternalStandardsBean bean = init();
+    SensorCalibrationsBean bean = init();
     bean.setSelectedCalibrationId(1L);
     bean.loadSelectedCalibration();
     bean.setAction(CalibrationEdit.EDIT);
@@ -199,10 +203,10 @@ public class ExternalStandardsBeanTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/externalStandardsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
   @Test
   public void editClashTargetTest() throws Exception {
-    ExternalStandardsBean bean = init();
+    SensorCalibrationsBean bean = init();
     bean.setSelectedCalibrationId(1L);
     bean.loadSelectedCalibration();
     bean.setAction(CalibrationEdit.EDIT);
@@ -215,10 +219,10 @@ public class ExternalStandardsBeanTest extends TestSetTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/externalStandardsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
   @Test
   public void editClashTimeAndTargetTest() throws Exception {
-    ExternalStandardsBean bean = init();
+    SensorCalibrationsBean bean = init();
     bean.setSelectedCalibrationId(1L);
     bean.loadSelectedCalibration();
     bean.setAction(CalibrationEdit.EDIT);
@@ -229,7 +233,7 @@ public class ExternalStandardsBeanTest extends TestSetTest {
 
   @Override
   protected String getTestSetName() {
-    return "ExternalStandardsSingleCalibrationEditTest";
+    return "SensorCalibrationsSingleCalibrationEditTest";
   }
 
   private int getAction(TestSetLine line) {

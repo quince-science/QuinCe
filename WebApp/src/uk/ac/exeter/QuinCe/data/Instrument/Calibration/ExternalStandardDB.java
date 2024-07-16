@@ -107,4 +107,9 @@ public class ExternalStandardDB extends CalibrationDB {
   public boolean timeAffectesCalibration() {
     return false;
   }
+
+  @Override
+  public boolean completeSetRequired() {
+    return true;
+  }
 }

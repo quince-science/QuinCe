@@ -468,4 +468,21 @@ public abstract class CalibrationDB {
    *
    */
   public abstract boolean timeAffectesCalibration();
+
+  /**
+   * Indicates whether or not a complete set of {@link Calibration}s is required
+   * to process a {@link DataSet}.
+   *
+   * <p>
+   * In practice, this boils down to a complete set of {@link Calibrations}
+   * being set before the beginning of the {@link DataSet}; changes to fewer
+   * than the complete set later on result in a {@link CalibrationSet} building
+   * a set based on the updated {@link Calibration}s and the ones before the
+   * {@link DataSet} that have not changed.
+   * </p>
+   *
+   * @return {@code true} if a complete set of {@link Calibration}s is required,
+   *         {@code false} if not.
+   */
+  public abstract boolean completeSetRequired();
 }

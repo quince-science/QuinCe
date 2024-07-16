@@ -10,7 +10,7 @@ INSERT INTO run_type
   
 -- External Standards
 
--- 2024-02-01
+-- 2023-02-01
 INSERT INTO calibration
   (id, instrument_id, type, target, deployment_date, coefficients, class)
   VALUES
@@ -21,13 +21,13 @@ INSERT INTO calibration
   VALUES
   (2, 1, 'EXTERNAL_STANDARD', 'std2', 1675209600000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"202"}', 'DefaultExternalStandard');
 
--- 2024-05-01
+-- 2023-05-01
 INSERT INTO calibration
   (id, instrument_id, type, target, deployment_date, coefficients, class)
   VALUES
   (3, 1, 'EXTERNAL_STANDARD', 'std2', 1682899200000, '{"xH₂O (with standards)":"0","xCO₂ (with standards)":"205"}', 'DefaultExternalStandard');
 
--- 2024-07-01
+-- 2023-07-01
 INSERT INTO calibration
   (id, instrument_id, type, target, deployment_date, coefficients, class)
   VALUES

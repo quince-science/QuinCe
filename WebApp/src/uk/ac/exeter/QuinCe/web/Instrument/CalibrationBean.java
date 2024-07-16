@@ -651,7 +651,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
         dataset.getStart(), dataset.getEnd(), dbInstance, calibrations);
 
       if (!editedSet.hasSameEffect(originalSet)) {
-        datasets.get(dataset).set(true, editedSet.hasCompletePrior());
+        datasets.get(dataset).set(true,
+          !dbInstance.completeSetRequired() || editedSet.hasCompletePrior());
       } else {
         datasets.get(dataset).set(false, editedCalibrationValid);
       }

@@ -85,4 +85,9 @@ public class CalculationCoefficientDB extends CalibrationDB {
   public boolean timeAffectesCalibration() {
     return true;
   }
+
+  @Override
+  public boolean completeSetRequired() {
+    return true;
+  }
 }

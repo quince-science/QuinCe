@@ -79,4 +79,9 @@ public class SensorCalibrationDB extends CalibrationDB {
   public boolean timeAffectesCalibration() {
     return false;
   }
+
+  @Override
+  public boolean completeSetRequired() {
+    return false;
+  }
 }
