@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -72,12 +73,15 @@ public abstract class ExternalStandard extends Calibration {
    * internal calibrations.
    */
   @Override
-  public List<String> getCoefficientNames(boolean includeHidden) {
-    List<String> result = instrument.getSensorAssignments()
+  public LinkedHashSet<String> getCoefficientNames(boolean includeHidden) {
+    LinkedHashSet<String> result = instrument.getSensorAssignments()
       .getAssignedSensorTypes().stream().filter(s -> s.hasInternalCalibration())
-      .map(s -> s.getShortName()).collect(Collectors.toList());
+      .map(s -> s.getShortName())
+      .collect(Collectors.toCollection(LinkedHashSet::new));
 
-    if (!includeHidden) {
+    if (includeHidden) {
+      result.addAll(getHiddenSensorTypes());
+    } else {
       result.removeAll(getHiddenSensorTypes());
     }
 

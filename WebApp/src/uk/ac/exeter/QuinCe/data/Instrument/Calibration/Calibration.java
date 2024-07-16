@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -126,7 +127,8 @@ public abstract class Calibration implements Comparable<Calibration> {
    *
    * @return The value names
    */
-  public abstract List<String> getCoefficientNames(boolean includeHidden);
+  public abstract LinkedHashSet<String> getCoefficientNames(
+    boolean includeHidden);
 
   /**
    * Get the type of the calibration. This is provided by each of the concrete
@@ -315,7 +317,7 @@ public abstract class Calibration implements Comparable<Calibration> {
   protected void setCoefficients(List<CalibrationCoefficient> newCoefficients)
     throws CalibrationException {
 
-    List<String> coefficientNames = getCoefficientNames(true);
+    LinkedHashSet<String> coefficientNames = getCoefficientNames(true);
 
     if (newCoefficients.size() != coefficientNames.size()) {
       throw new CalibrationException("Incorrect number of coefficients");

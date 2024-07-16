@@ -1,8 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -21,10 +20,10 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    * Contains the labels for the polynomial curve parameters (constructed in the
    * {@code static} block)
    */
-  private static List<String> valueNames;
+  private static LinkedHashSet<String> valueNames;
 
   static {
-    valueNames = new ArrayList<String>(5);
+    valueNames = new LinkedHashSet<String>();
     valueNames.add("x⁵");
     valueNames.add("x⁴");
     valueNames.add("x³");
@@ -92,7 +91,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
   }
 
   @Override
-  public List<String> getCoefficientNames(boolean includeHidden) {
+  public LinkedHashSet<String> getCoefficientNames(boolean includeHidden) {
     return valueNames;
   }
 

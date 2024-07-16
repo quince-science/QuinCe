@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -13,10 +13,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public class CalculationCoefficient extends Calibration {
 
-  private static List<String> valueNames;
+  private static LinkedHashSet<String> valueNames;
 
   static {
-    valueNames = new ArrayList<String>();
+    valueNames = new LinkedHashSet<String>();
     valueNames.add("Value");
   }
 
@@ -91,7 +91,7 @@ public class CalculationCoefficient extends Calibration {
   }
 
   @Override
-  public List<String> getCoefficientNames(boolean includeHidden) {
+  public LinkedHashSet<String> getCoefficientNames(boolean includeHidden) {
     return valueNames;
   }
 
