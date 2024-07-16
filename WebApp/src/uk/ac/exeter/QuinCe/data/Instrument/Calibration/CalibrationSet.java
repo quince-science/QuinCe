@@ -182,10 +182,13 @@ public class CalibrationSet {
       for (String target : targets) {
         TreeSet<Calibration> targetCalibrations = calibrations.get(target);
 
-        Calibration interimCalibration = targetCalibrations.stream()
-          .filter(
-            c -> DateTimeUtils.isEqualOrBefore(c.getDeploymentDate(), time))
-          .findFirst().orElse(null);
+        Calibration interimCalibration = null;
+        if (null != targetCalibrations) {
+          interimCalibration = targetCalibrations.stream()
+            .filter(
+              c -> DateTimeUtils.isEqualOrBefore(c.getDeploymentDate(), time))
+            .findFirst().orElse(null);
+        }
 
         interimCalibrations.put(target, interimCalibration);
       }
