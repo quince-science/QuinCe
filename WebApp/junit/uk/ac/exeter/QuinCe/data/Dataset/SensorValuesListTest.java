@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -356,5 +357,20 @@ public class SensorValuesListTest extends BaseTest {
 
     SensorValuesList list = allSensorValues.getColumnValues(6L);
     assertEquals(3, list.valuesSize());
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
+  @ParameterizedTest
+  @ValueSource(strings = { "stringValuesContinuous1.csv",
+    "stringValuesContinuous2.csv" })
+  public void stringValuesContinuousTest(String file) throws Exception {
+
+    // Column 6 = Run Type
+    DatasetSensorValues allSensorValues = makeDatasetSensorValues(
+      "stringValuesContinuous1.csv", 6L, Flag.GOOD);
+
+    SensorValuesList list = allSensorValues.getColumnValues(6L);
+    assertEquals(SensorValuesList.MODE_CONTINUOUS, list.getMeasurementMode());
   }
 }

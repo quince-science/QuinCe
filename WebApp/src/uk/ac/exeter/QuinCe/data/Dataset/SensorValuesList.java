@@ -110,6 +110,14 @@ public class SensorValuesList {
   private static final int MAX_PERIODIC_GROUP_SIZE = 25;
 
   /**
+   * The number of large groups (i.e. larger than
+   * {@link #MAX_PERIODIC_GROUP_SIZE}) allowed in a PERIODIC list. Some PERIODIC
+   * lists contain a couple of large groups at the start as the sensor
+   * initialises.
+   */
+  private static final int LARGE_GROUP_LIMIT = 5;
+
+  /**
    * Indicator for measurements in continuous mode.
    */
   public static final int MODE_CONTINUOUS = 0;
@@ -1205,7 +1213,7 @@ public class SensorValuesList {
     boolean stringMode = allowStringPeriodicGroups && containsStringValue();
 
     // The largest group size
-    int maxGroupSize = 0;
+    int largeGroupCount = 0;
 
     // Calculate the mean group size as we go along
     int groupsByTime = 0;
@@ -1231,8 +1239,8 @@ public class SensorValuesList {
         if (groupSize > 0) {
 
           // Update the max group size
-          if (groupSize > maxGroupSize) {
-            maxGroupSize = groupSize;
+          if (groupSize > MAX_PERIODIC_GROUP_SIZE) {
+            largeGroupCount++;
           }
 
           // Update the running mean group size
@@ -1251,8 +1259,8 @@ public class SensorValuesList {
     // Tidy up from the last value
     if (groupSize > 0) {
       // Update the max group size
-      if (groupSize > maxGroupSize) {
-        maxGroupSize = groupSize;
+      if (groupSize > MAX_PERIODIC_GROUP_SIZE) {
+        largeGroupCount++;
       }
 
       // Update the running mean group size
@@ -1262,7 +1270,7 @@ public class SensorValuesList {
     }
 
     if (groupsByTime > 1 && (meanGroupSize <= MAX_PERIODIC_GROUP_SIZE
-      || maxGroupSize <= MAX_PERIODIC_GROUP_SIZE)) {
+      && largeGroupCount <= LARGE_GROUP_LIMIT)) {
       measurementMode = MODE_PERIODIC;
     } else {
       measurementMode = MODE_CONTINUOUS;
