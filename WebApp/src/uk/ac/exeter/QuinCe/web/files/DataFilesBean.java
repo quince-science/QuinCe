@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.files;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.faces.bean.ManagedBean;
@@ -67,6 +68,8 @@ public class DataFilesBean extends FileUploadBean {
     } else {
       result = new ArrayList<DataFile>();
     }
+
+    Collections.reverse(result);
 
     return result;
   }

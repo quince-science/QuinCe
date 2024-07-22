@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -140,12 +142,25 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   /**
-   * Get the data sets for the current instrument
+   * Get the {@link DataSet}s for the current instrument.
    *
-   * @return The data sets
+   * <p>
+   * The list is presented in reverse order, i.e. with the newest
+   * {@link DataSet} first.
+   * </p>
+   *
+   * @return The {@link DataSet}s
    */
-  public Collection<DataSet> getDataSets() {
-    return null == dataSets ? null : dataSets.values();
+  public List<DataSet> getDataSets() {
+
+    List<DataSet> result = null;
+
+    if (null != dataSets) {
+      result = new ArrayList<DataSet>(dataSets.values().stream().toList());
+      Collections.reverse(result);
+    }
+
+    return result;
   }
 
   public Collection<DataSet> getDatasetsForApproval() {
