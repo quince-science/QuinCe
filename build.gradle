@@ -11,7 +11,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'org.gretty:gretty:3.0.3'
+    classpath 'org.gretty:gretty:3.1.4'
 
     // Flyway migration needs the mysql connector
     classpath 'mysql:mysql-connector-java:8.0.29'
