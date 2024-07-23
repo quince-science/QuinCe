@@ -7,10 +7,12 @@ import java.util.List;
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 
-public abstract class SensorValuesRoutineTest extends BaseTest {
+public class SVTestUtils extends BaseTest {
 
-  protected List<SensorValue> makeSensorValues(int[] minutes, Double[] values) {
+  protected static List<SensorValue> makeSensorValues(int[] minutes,
+    Double[] values) {
     if (minutes.length != values.length) {
       throw new IllegalArgumentException(
         "Minutes and Values are different lengths");
@@ -41,7 +43,7 @@ public abstract class SensorValuesRoutineTest extends BaseTest {
    *          {@link Flag#GOOD}/{@link Flag#ASSUMED_GOOD} flags.
    * @return
    */
-  protected boolean checkAutoQC(List<SensorValue> sensorValues,
+  protected static boolean checkAutoQC(List<SensorValue> sensorValues,
     Flag expectedFlag, List<Long> flaggedIds) {
 
     boolean result = true;
@@ -61,5 +63,13 @@ public abstract class SensorValuesRoutineTest extends BaseTest {
     }
 
     return result;
+  }
+
+  protected static SensorValue makeSensorValue(long id, long fileColumn,
+    int minute, String value, Flag flag) throws InvalidFlagException {
+
+    LocalDateTime valueTime = LocalDateTime.of(2024, 1, 1, 0, minute, 0);
+    return new SensorValue(id, 1L, fileColumn, valueTime, value,
+      new AutoQCResult(), flag, "");
   }
 }
