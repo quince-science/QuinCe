@@ -87,9 +87,7 @@ public class SpeedQCRoutine extends PositionQCRoutine {
           lastPos = pos;
         }
       }
-    } catch (
-
-    Exception e) {
+    } catch (Exception e) {
       throw new RoutineException(e);
     }
   }
