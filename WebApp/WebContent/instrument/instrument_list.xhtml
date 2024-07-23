@@ -89,19 +89,32 @@
         <p:commandButton value="Add New Instrument" ajax="false"
           action="#{newInstrumentBean.start}" />
       </h:panelGrid>
-      <p:dataTable id="instruments" var="instrument"
-        value="#{instrumentListBean.instrumentList}" styleClass="pageBlock">
+      <p:dataTable id="instruments" var="instrument" widgetVar="instrumentsList"
+        value="#{instrumentListBean.instrumentList}"
+        filteredValue="#{instrumentListBean.filteredInstruments}"
+        globalFilterFunction="#{instrumentListBean.filter}"
+        styleClass="pageBlock">
+
+        <f:facet name="header">
+          <div style="text-align: right !important">
+            Filter:
+              <p:inputText id="globalFilter"
+                       onkeyup="PF('instrumentsList').filter()" style="width:300px"
+                           placeholder="" />
+          </div>
+        </f:facet>
+
         <p:column rendered="#{User.adminUser}">
           <f:facet name="header">Owner</f:facet>
-          <b><h:outputText value="#{instrument.owner.surname}, #{instrument.owner.givenName}"/></b>
+          <h:outputText value="#{instrument.owner.surname}, #{instrument.owner.givenName}"/>
         </p:column>
         <p:column>
           <f:facet name="header">Platform</f:facet>
-          <b><h:outputText value="#{instrument.platformName}"/></b>
+          <h:outputText value="#{instrument.platformName}"/>
         </p:column>
         <p:column>
           <f:facet name="header">Instrument Name</f:facet>
-          <b><h:outputText value="#{instrument.name}"/></b>
+          <h:outputText value="#{instrument.name}"/>
         </p:column>
         <p:column styleClass="centeredCell">
           <f:facet name="header">Configuration</f:facet>
