@@ -266,4 +266,23 @@ public class BaseTest {
 
     return result;
   }
+
+  /**
+   * Check that the supplied {@link Throwable} is not {@code null} and that a
+   * call to {@code Throwable#getMessage()} returns the specified
+   * {@link String}.
+   *
+   * @param e
+   *          The {@link Throwable} to check.
+   * @param message
+   *          The expected message.
+   * @return {@code true} if the message is correct; {@code false} if it is not.
+   */
+  protected boolean throwableWithMessage(Throwable e, String message) {
+    if (null == e) {
+      return false;
+    } else {
+      return message.equals(e.getMessage());
+    }
+  }
 }

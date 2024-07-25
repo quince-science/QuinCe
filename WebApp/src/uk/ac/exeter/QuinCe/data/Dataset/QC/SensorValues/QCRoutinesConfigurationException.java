@@ -9,17 +9,17 @@ public class QCRoutinesConfigurationException extends Exception {
   /**
    * The name of the configuration file in which the error was encountered.
    */
-  private String configFile;
+  private final String configFile;
 
   /**
    * The name of the configuration item where the error was found
    */
-  private String itemName;
+  private final String itemName;
 
   /**
    * The line of the config file where the error occurred
    */
-  private long lineNumber;
+  private final long lineNumber;
 
   /**
    * Creates an exception that doesn't relate to a specific configuration item
@@ -32,6 +32,8 @@ public class QCRoutinesConfigurationException extends Exception {
   public QCRoutinesConfigurationException(String configFile, String message) {
     super(message);
     this.configFile = configFile;
+    this.itemName = null;
+    this.lineNumber = -1L;
   }
 
   /**
@@ -48,7 +50,8 @@ public class QCRoutinesConfigurationException extends Exception {
     String message) {
     super(message);
     this.configFile = configFile;
-    this.lineNumber = lineNumber;
+    this.lineNumber = normaliseNegativeLineNumber(lineNumber);
+    this.itemName = null;
   }
 
   /**
@@ -68,7 +71,9 @@ public class QCRoutinesConfigurationException extends Exception {
 
     super(message, cause);
     this.configFile = configFile;
-    this.lineNumber = lineNumber;
+    this.lineNumber = normaliseNegativeLineNumber(lineNumber);
+    this.itemName = null;
+
   }
 
   /**
@@ -90,7 +95,7 @@ public class QCRoutinesConfigurationException extends Exception {
     super(message);
     this.configFile = configFile;
     this.itemName = itemName;
-    this.lineNumber = lineNumber;
+    this.lineNumber = normaliseNegativeLineNumber(lineNumber);
   }
 
   /**
@@ -113,7 +118,7 @@ public class QCRoutinesConfigurationException extends Exception {
     super(message, cause);
     this.configFile = configFile;
     this.itemName = itemName;
-    this.lineNumber = lineNumber;
+    this.lineNumber = normaliseNegativeLineNumber(lineNumber);
   }
 
   /**
@@ -131,6 +136,8 @@ public class QCRoutinesConfigurationException extends Exception {
 
     super(message, cause);
     this.configFile = configFile;
+    this.itemName = null;
+    this.lineNumber = -1L;
   }
 
   /**
@@ -150,7 +157,7 @@ public class QCRoutinesConfigurationException extends Exception {
       message.append(itemName);
     }
 
-    if (-1 != lineNumber) {
+    if (lineNumber >= 0) {
       message.append(", LINE ");
       message.append(lineNumber);
     }
@@ -201,6 +208,10 @@ public class QCRoutinesConfigurationException extends Exception {
    */
   public String getMessageOnly() {
     return super.getMessage();
+  }
+
+  private long normaliseNegativeLineNumber(long lineNumber) {
+    return lineNumber < 0 ? -1L : lineNumber;
   }
 
 }
