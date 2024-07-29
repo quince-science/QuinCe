@@ -57,6 +57,7 @@ function selectDeployment(item) {
 
 function editSelection() {
   $('#deploymentForm\\:action').val(EDIT);
+  PF('deploymentDialog').show();
 }
 
 function deleteSelection() {
