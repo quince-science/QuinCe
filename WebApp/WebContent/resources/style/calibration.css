@@ -47,13 +47,14 @@
 }
 
 .vis-item.recalculationNotRequired {
-  background: #ddd;
+  background: #ddd !important;
 }
 
 .vis-item.recalculationRequired {
-  background: #ffff88;
+  background: #9ffcab !important;
 }
 
 .vis-item.cannotRecalculate {
-  background: #ff8888;
+  background: #ff8888 !important;
+  font-weight: 700;
 }

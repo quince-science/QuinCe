@@ -31,7 +31,7 @@ function drawTimeline() {
     item.start = new Date(item.start);
   });
 
-  let calibrations =  new vis.DataSet(timelineJson);
+  let calibrations = new vis.DataSet(timelineJson);
   timeline = new vis.Timeline(timelineContainer, calibrations,
     targets, TIMELINE_OPTIONS);
   timelineContainer.onclick = function (event) {
