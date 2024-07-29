@@ -370,7 +370,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     editedCalibration = null;
 
-    if (action == CalibrationEdit.ADD) {
+    if (selectedCalibrationId < 0) {
       editedCalibration = initNewCalibration(generateNewId(), getLastDate());
     } else {
 

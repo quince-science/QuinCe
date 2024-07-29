@@ -51,7 +51,7 @@ function selectDeployment(item) {
   // Ignore dataset clicks (they have a string id)
   if (null != item.item && typeof(item.item) === 'number') {
     $('#deploymentForm\\:calibrationId').val(item.item);
-    selectCalibration();
+    selectCalibration(); // PF RemoteCommand
   }
 }
 
