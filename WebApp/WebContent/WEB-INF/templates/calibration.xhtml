@@ -84,16 +84,16 @@
 
             <p:commandButton widgetVar="deleteSelection" value="Delete..."
               ajax="false" onclick="deleteSelection();return false;">
-              
+
               <p:confirm header="Confirm Delete"
               message="Are you sure you want to delete this #{sessionScope[beanName].calibrationName}?"/>
             </p:commandButton>
-              
+
             <p:confirmDialog global="true">
               <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no"/>
               <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes"/>
             </p:confirmDialog>
-            
+
           </h:panelGrid>
         </p:fieldset>
         <p:messages id="messages" styleClass="pageBlock" />
