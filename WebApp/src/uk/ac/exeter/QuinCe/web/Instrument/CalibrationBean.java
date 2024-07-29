@@ -367,22 +367,16 @@ public abstract class CalibrationBean extends BaseManagedBean {
   }
 
   public void loadSelectedCalibration() throws Exception {
+    editedCalibration = getCalibration(selectedCalibrationId);
 
-    editedCalibration = null;
-
-    if (selectedCalibrationId < 0) {
-      editedCalibration = initNewCalibration(generateNewId(), getLastDate());
-    } else {
-
-      editedCalibration = getCalibration(selectedCalibrationId);
-
-      // The calibration wasn't found
-      if (null == editedCalibration) {
-        throw new RecordNotFoundException(
-          getCurrentInstrument().getDisplayName(), "calibration",
-          selectedCalibrationId);
-      }
+    if (null == editedCalibration) {
+      throw new RecordNotFoundException(getCurrentInstrument().getDisplayName(),
+        "calibration", selectedCalibrationId);
     }
+  }
+
+  public void newCalibration() throws Exception {
+    editedCalibration = initNewCalibration(generateNewId(), getLastDate());
   }
 
   /**
@@ -424,9 +418,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     List<String> result = new ArrayList<String>();
 
-    // A zero calibration ID is invalid
+    // Negative calibration IDs are allowed - they are new calibrations.
     if (calibration.getId() == 0
-      || calibration.getId() < 0 && action != CalibrationEdit.ADD
       || calibration.getId() > 0 && action == CalibrationEdit.ADD) {
 
       throw new InvalidCalibrationEditException("Invalid calibration ID");

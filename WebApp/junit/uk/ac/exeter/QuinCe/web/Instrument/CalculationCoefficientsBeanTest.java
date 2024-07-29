@@ -111,10 +111,12 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     }
 
     bean.setAction(action);
-    if (action != CalibrationEdit.ADD) {
+    if (action == CalibrationEdit.ADD) {
+      bean.newCalibration();
+    } else {
       bean.setSelectedCalibrationId(calbrationId);
+      bean.loadSelectedCalibration();
     }
-    bean.loadSelectedCalibration();
 
     if (action != CalibrationEdit.DELETE) {
       bean.getEditedCalibration().setDeploymentDate(calibrationTime);

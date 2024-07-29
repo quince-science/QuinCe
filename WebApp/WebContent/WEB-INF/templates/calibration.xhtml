@@ -29,7 +29,7 @@
           oncomplete="showSelectionDetails()"/>
 
         <p:remoteCommand name="newCalibration"
-          action="#{sessionScope[beanName].loadSelectedCalibration}"
+          action="#{sessionScope[beanName].newCalibration}"
           process="calibrationId action" update="@(form :not(.noupdate))"
           oncomplete="PF('deploymentDialog').show();"/>
 
