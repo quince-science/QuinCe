@@ -125,7 +125,7 @@ public class Variable implements Comparable<Variable> {
     if (coreSensorTypeId < 0) {
       throw new SensorConfigurationException("Variable " + id + "does not have a core SensorType");
     }
-    
+
     coreSensorType = sensorConfig.getSensorType(coreSensorTypeId);
     if (coreSensorType.hasParent()) {
       throw new SensorConfigurationException(
