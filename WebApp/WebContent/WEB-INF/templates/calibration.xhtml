@@ -20,6 +20,7 @@
       <h:form id="timelineData" method="post" charset="utf8">
         <h:inputHidden id="targetsJson" value="#{sessionScope[beanName].targetsJson}"/>
         <h:inputHidden id="timelineJson" value="#{sessionScope[beanName].timelineJson}"/>
+        <h:inputHidden id="canSave" value="#{sessionScope[beanName].canSave()}"/>
       </h:form>
 
       <h:form id="deploymentForm" method="post" charset="utf8">
@@ -162,7 +163,7 @@
             <p:commandButton value="Save" ajax="true" widgetVar="saveCalibrationButton"
               action="#{sessionScope[beanName].saveCalibration}"
               process="@form"
-              update="timelineData:timelineJson messages"
+              update="timelineData:timelineJson timelineData:canSave messages"
               oncomplete="calibrationSaveComplete()"
               />
             <p:button value="Cancel"
@@ -170,7 +171,9 @@
           </h:panelGrid>
         </p:dialog>
 
-        <h:panelGrid columns="1" styleClass="buttonPanel">
+        <h:panelGrid columns="2" styleClass="buttonPanel">
+          <p:commandButton value="Save Changes" ajax="false" widgetVar="commitButton"
+            action="#{sessionScope[beanName].commitChanges}" />
           <p:commandButton value="Cancel Changes"
             action="/instrument/instrument_list.xhtml" />
         </h:panelGrid>

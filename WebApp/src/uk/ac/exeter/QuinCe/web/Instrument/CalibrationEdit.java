@@ -1,10 +1,9 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficient;
 
 /**
  * Represents a single edit of a calibration.
@@ -31,20 +30,45 @@ public class CalibrationEdit {
    */
   private int action;
 
-  private long calibrationId;
-
-  private LocalDateTime deploymentDate;
-
-  private String target;
-
-  private List<CalibrationCoefficient> coefficients;
+  /**
+   * The edited state of the calibration.
+   */
+  private Calibration calibration;
 
   protected CalibrationEdit(int action, Calibration editedCalibration) {
     this.action = action;
-    this.calibrationId = editedCalibration.getId();
-    this.deploymentDate = editedCalibration.getDeploymentDate();
-    this.target = editedCalibration.getTarget();
-    this.coefficients = editedCalibration.getCoefficients().stream()
-      .map(c -> (CalibrationCoefficient) c.clone()).toList();
+    this.calibration = editedCalibration.makeCopy();
+  }
+
+  public int getAction() {
+    return action;
+  }
+
+  public long getCalibrationId() {
+    return calibration.getId();
+  }
+
+  public boolean validate() {
+    return calibration.validate();
+  }
+
+  public LocalDateTime getDeploymentDate() {
+    return calibration.getDeploymentDate();
+  }
+
+  public Instrument getInstrument() {
+    return calibration.getInstrument();
+  }
+
+  public String getTarget() {
+    return calibration.getTarget();
+  }
+
+  public String getType() {
+    return calibration.getType();
+  }
+
+  public String getCoefficientsJson() {
+    return calibration.getCoefficientsJson();
   }
 }

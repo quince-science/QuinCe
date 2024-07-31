@@ -76,5 +76,11 @@ function hideSelectionDetails() {
 function calibrationSaveComplete() {
   drawTimeline();
   hideSelectionDetails();
-  PF('deploymentDialog').hide();
+  if ($('#timelineData\\:canSave').val() == 'true') {
+	PF('commitButton').enable();
+  } else {
+	PF('commitButton').disable();
+  }
+  
+  PF('deploymentDialog').hide();  
 }

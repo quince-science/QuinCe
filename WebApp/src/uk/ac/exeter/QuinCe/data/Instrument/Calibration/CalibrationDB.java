@@ -5,8 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -26,6 +26,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.ParameterException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.Instrument.CalibrationEdit;
+import uk.ac.exeter.QuinCe.web.Instrument.InvalidCalibrationEditException;
 
 /**
  * Database methods for database actions related to calibrations
@@ -87,7 +89,7 @@ public abstract class CalibrationDB {
    *
    * @param dataSource
    *          A data source
-   * @param calibration
+   * @param calibrationEdit
    *          The calibration
    * @throws DatabaseException
    *           If a database error occurs
@@ -95,75 +97,62 @@ public abstract class CalibrationDB {
    *           If any required parameters are missing or the calibration is
    *           invalid
    */
-  public void addCalibration(DataSource dataSource, Calibration calibration)
+  private void addCalibration(Connection conn, CalibrationEdit calibrationEdit)
     throws DatabaseException, ParameterException {
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(calibration, "calibration");
-    MissingParam.checkMissing(calibration.getDeploymentDate(),
-      "calibration deployment date");
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(calibrationEdit, "calibration");
 
-    if (!calibration.validate()) {
+    if (!calibrationEdit.validate()) {
       throw new ParameterException("Calibration coefficients",
         "Coefficients are invalid");
     }
 
-    Connection conn = null;
     PreparedStatement stmt = null;
     ResultSet generatedKeys = null;
 
     try {
-      conn = dataSource.getConnection();
-      stmt = conn.prepareStatement(ADD_CALIBRATION_STATEMENT,
-        Statement.RETURN_GENERATED_KEYS);
+      stmt = conn.prepareStatement(ADD_CALIBRATION_STATEMENT);
 
-      stmt.setLong(1, calibration.getInstrument().getId());
-      stmt.setString(2, calibration.getType());
-      stmt.setString(3, calibration.getTarget());
+      stmt.setLong(1, calibrationEdit.getInstrument().getId());
+      stmt.setString(2, calibrationEdit.getType());
+      stmt.setString(3, calibrationEdit.getTarget());
       stmt.setLong(4,
-        DateTimeUtils.dateToLong(calibration.getDeploymentDate()));
-      stmt.setString(5, calibration.getCoefficientsJson());
-      stmt.setString(6, calibration.getClass().getSimpleName());
+        DateTimeUtils.dateToLong(calibrationEdit.getDeploymentDate()));
+      stmt.setString(5, calibrationEdit.getCoefficientsJson());
+      stmt.setString(6, calibrationEdit.getClass().getSimpleName());
 
       stmt.execute();
-
-      generatedKeys = stmt.getGeneratedKeys();
-      if (generatedKeys.next()) {
-        calibration.setId(generatedKeys.getLong(1));
-      }
-
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing calibration", e);
     } finally {
       DatabaseUtils.closeResultSets(generatedKeys);
       DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
   }
 
-  public void updateCalibration(DataSource dataSource, Calibration calibration)
+  private void updateCalibration(Connection conn, CalibrationEdit calibrationEdit)
     throws DatabaseException, ParameterException {
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(calibration, "calibration");
-    MissingParam.checkMissing(calibration.getDeploymentDate(),
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(calibrationEdit, "calibration");
+    MissingParam.checkMissing(calibrationEdit.getDeploymentDate(),
       "calibration deployment date");
 
-    if (!calibration.validate()) {
+    if (!calibrationEdit.validate()) {
       throw new ParameterException("Calibration coefficients",
         "Coefficients are invalid");
     }
 
-    try (Connection conn = dataSource.getConnection();
-      PreparedStatement stmt = conn
-        .prepareStatement(UPDATE_CALIBRATION_STATEMENT);) {
+    try (PreparedStatement stmt = conn
+      .prepareStatement(UPDATE_CALIBRATION_STATEMENT);) {
 
-      stmt.setLong(1, calibration.getInstrument().getId());
-      stmt.setString(2, calibration.getType());
-      stmt.setString(3, calibration.getTarget());
+      stmt.setLong(1, calibrationEdit.getInstrument().getId());
+      stmt.setString(2, calibrationEdit.getType());
+      stmt.setString(3, calibrationEdit.getTarget());
       stmt.setLong(4,
-        DateTimeUtils.dateToLong(calibration.getDeploymentDate()));
-      stmt.setString(5, calibration.getCoefficientsJson());
-      stmt.setString(6, calibration.getClass().getSimpleName());
-      stmt.setLong(7, calibration.getId());
+        DateTimeUtils.dateToLong(calibrationEdit.getDeploymentDate()));
+      stmt.setString(5, calibrationEdit.getCoefficientsJson());
+      stmt.setString(6, calibrationEdit.getClass().getSimpleName());
+      stmt.setLong(7, calibrationEdit.getCalibrationId());
 
       stmt.execute();
     } catch (SQLException e) {
@@ -171,23 +160,21 @@ public abstract class CalibrationDB {
     }
   }
 
-  public void deleteCalibration(DataSource dataSource, long calibrationId)
+  private void deleteCalibration(Connection conn, CalibrationEdit calibrationEdit)
     throws MissingParamException, DatabaseException {
 
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkPositive(calibrationId, "calibrationId");
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkPositive(calibrationEdit.getCalibrationId(), "edit calibrationId");
 
-    try (Connection conn = dataSource.getConnection();
-      PreparedStatement stmt = conn
-        .prepareStatement(DELETE_CALIBRATION_STATEMENT);) {
+    try (PreparedStatement stmt = conn
+      .prepareStatement(DELETE_CALIBRATION_STATEMENT);) {
 
-      stmt.setLong(1, calibrationId);
+      stmt.setLong(1, calibrationEdit.getCalibrationId());
       stmt.execute();
 
     } catch (SQLException e) {
       throw new DatabaseException("Error while deleting calibration", e);
     }
-
   }
 
   public TreeMap<String, TreeSet<Calibration>> getCalibrations(
@@ -485,4 +472,54 @@ public abstract class CalibrationDB {
    *         {@code false} if not.
    */
   public abstract boolean completeSetRequired();
+
+  public void commitEdits(DataSource dataSource,
+    Collection<CalibrationEdit> edits)
+    throws DatabaseException, InvalidCalibrationEditException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(edits, "edits", false);
+
+    Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
+
+      for (CalibrationEdit edit : edits) {
+
+        switch (edit.getAction()) {
+        case CalibrationEdit.ADD: {
+          addCalibration(conn, edit);
+          break;
+        }
+        case CalibrationEdit.EDIT: {
+          updateCalibration(conn, edit);
+          break;
+        }
+        case CalibrationEdit.DELETE: {
+          deleteCalibration(conn, edit);
+          break;
+        }
+        default: {
+          throw new InvalidCalibrationEditException(
+            "Invalid action " + edit.getAction());
+        }
+        }
+      }
+
+      conn.commit();
+    } catch (SQLException e) {
+      DatabaseUtils.rollBack(conn);
+      throw new DatabaseException("Error storing calibration edits", e);
+    } finally {
+      try {
+        conn.setAutoCommit(true);
+      } catch (Exception e) {
+        // NOOP
+      }
+      DatabaseUtils.closeConnection(conn);
+    }
+
+  }
 }

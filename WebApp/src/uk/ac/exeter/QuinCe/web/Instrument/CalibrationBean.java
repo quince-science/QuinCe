@@ -4,9 +4,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -24,6 +26,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
 import uk.ac.exeter.QuinCe.jobs.Job;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -38,6 +42,8 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  * Bean for handling calibrations
  */
 public abstract class CalibrationBean extends BaseManagedBean {
+
+  private static final String COMMIT_NAV = "instrument_list";
 
   /**
    * The database ID of the calibration currently being edited
@@ -105,7 +111,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * The list of edits made in the current bean instance. These will be applied
    * in order once the user commits to applying them.
    */
-  private List<CalibrationEdit> edits;
+  private HashMap<Long, CalibrationEdit> edits;
 
   /**
    * Empty constructor
@@ -139,7 +145,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
       calibrationTargets = dbInstance.getTargets(getDataSource(),
         getCurrentInstrument());
       editedCalibration = initNewCalibration(generateNewId(), getLastDate());
-      edits = new ArrayList<CalibrationEdit>();
+      edits = new HashMap<Long, CalibrationEdit>();
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
       nav = internalError(e);
@@ -571,7 +577,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
         validationMessages.forEach(m -> setMessage(null, m));
       } else {
         // The edit is valid.
-        edits.add(new CalibrationEdit(action, editedCalibration));
+        edits.put(editedCalibration.getId(),
+          new CalibrationEdit(action, editedCalibration));
 
         // Update calibrations in bean and calculate which DataSets have been
         // affected
@@ -677,6 +684,59 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   public boolean editedCalibrationValid() {
     return editedCalibrationValid;
+  }
+
+  /**
+   * Determine whether or not the changes made can be saved.
+   *
+   * <p>
+   * Changes can be saved if:
+   * <ul>
+   * <li>One or more edits have been made.</li>
+   * <li>There are no required calculations that cannot be performed due to the
+   * nature of the edits made.</li>
+   * </ul>
+   * </p>
+   *
+   * @return {@code true} if the changes can be saved; {@code false} otherwise.
+   */
+  public boolean canSave() {
+    return edits.size() == 0 || datasets.values().stream()
+      .anyMatch(rs -> rs.getRequired() && !rs.getCanBeRecalculated()) ? false
+        : true;
+  }
+
+  public String commitChanges() {
+
+    try {
+      // Commit edits to database
+      // What about add then edit? Add then delete? Jut take the last entry for
+      // each unique calibration ID?
+      dbInstance.commitEdits(getDataSource(), edits.values());
+
+      // Resubmit jobs for all affected datasets
+      for (Map.Entry<DataSet, RecalculateStatus> entry : datasets.entrySet()) {
+
+        if (entry.getValue().getRequired()) {
+
+          Class<? extends Job> reprocessJobClass = getReprocessJobClass();
+
+          DataSetDB.setDatasetStatus(getDataSource(), entry.getKey().getId(),
+            getReprocessStatus());
+          Properties jobProperties = new Properties();
+
+          // See GitHub Issue #1369
+          jobProperties.setProperty(AutoQCJob.ID_PARAM,
+            String.valueOf(entry.getKey().getId()));
+          JobManager.addJob(getDataSource(), getUser(),
+            reprocessJobClass.getCanonicalName(), jobProperties);
+        }
+      }
+    } catch (Exception e) {
+      internalError(e);
+    }
+
+    return COMMIT_NAV;
   }
 }
 
