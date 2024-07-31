@@ -58,3 +58,20 @@
   background: #ff8888 !important;
   font-weight: 700;
 }
+
+.keyEntry {
+  padding: 5px;
+}
+
+.key-recalculationNotRequired {
+  background: #ddd !important;
+}
+
+.key-recalculationRequired {
+  background: #9ffcab !important;
+}
+
+.key-cannotRecalculate {
+  background: #ff8888 !important;
+  font-weight: 700;
+}

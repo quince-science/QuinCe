@@ -35,6 +35,12 @@
           oncomplete="PF('deploymentDialog').show();"/>
 
         <div id="timelineContainer" class="noupdate"></div>
+        <div id="timelineKey">
+          <span class="label">Key:</span>
+          <span class="keyEntry key-recalculationNotRequired">Not affected</span>
+          <span class="keyEntry key-recalculationRequired">Will be recalculated</span>
+          <span class="keyEntry key-cannotRecalculate">Cannot be recalculated</span>
+        </div>
         <script>
           drawTimeline();
         </script>
@@ -177,6 +183,9 @@
           <p:commandButton value="Cancel Changes"
             action="/instrument/instrument_list.xhtml" />
         </h:panelGrid>
+        <script>
+          updateSaveButton();
+        </script>
       </h:form>
     </div>
   </ui:define>
