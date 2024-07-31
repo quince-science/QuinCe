@@ -76,11 +76,14 @@ function hideSelectionDetails() {
 function calibrationSaveComplete() {
   drawTimeline();
   hideSelectionDetails();
-  if ($('#timelineData\\:canSave').val() == 'true') {
-	PF('commitButton').enable();
-  } else {
-	PF('commitButton').disable();
-  }
-  
+  updateSaveButton();  
   PF('deploymentDialog').hide();  
+}
+
+function updateSaveButton() {
+  if ($('#timelineData\\:canSave').val() == 'true') {
+    PF('commitButton').enable();
+  } else {
+    PF('commitButton').disable();
+  }
 }
