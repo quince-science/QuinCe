@@ -154,7 +154,7 @@
                   rendered="#{uploadedFile.hasMessages}"
                   icon="pi pi-exclamation-triangle"
                   onclick="renderMessages($(this).data('messages'))"
-                  title="Errors" value="Errors">
+                  process="@none" title="Errors" value="Errors">
                   <f:passThroughAttribute name="data-messages"
                     value="#{uploadedFile.messages}" />
                 </p:commandButton>
