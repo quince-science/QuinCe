@@ -19,6 +19,6 @@ QuinCe is a system for the collection, processing, quality control and publicati
 of a variety of data streams, mostly focused on marine biogeochemical data but
 designed to be able to handle almost anything.
 
-See Documentation/setup.md for installation details.
+See [Documentation/setup.md](https://github.com/quince-science/QuinCe/blob/master/Documentation/setup.md) for installation details.
 
 Contact [SquareGoldfish](https://github.com/squaregoldfish) for more information.
