@@ -976,16 +976,14 @@ function scrollToTableRow(rowId) {
     tableRow = JSON.parse($('#plotPageForm\\:rowIDs').val()).indexOf(rowId);
   }
 
-  console.log(tableRow);
   if (tableRow >= 0) {
-    jsDataTable.scroller().scrollToRow(tableRow - 2);
-
-   // Because we scroll to the row - 2, we know that the
-   // row we want to highlight is the third row
-   tableScrollRow = rowId;
+    // Because we scroll to the row - 2, we know that the
+    // row we want to highlight is the third row
+    jsDataTable.scroller.toPosition(tableRow - 2, false);
+    tableScrollRow = rowId;
 
    // The highlight is done as part of the table draw callback
- }
+  }
 }
 
 function highlightRow(rowId) {
