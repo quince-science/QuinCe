@@ -8,7 +8,6 @@ import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
@@ -32,24 +31,12 @@ public class NoReductionReducer extends DataReducer {
   public void doCalculation(Instrument instrument, Measurement measurement,
     DataReductionRecord record, Connection conn) throws DataReductionException {
 
-    SensorType coreType = variable.getCoreSensorType();
-    record.put(coreType.getShortName(),
-      measurement.getMeasurementValue(coreType).getCalculatedValue());
+    // No actions taken
   }
 
   @Override
   public List<CalculationParameter> getCalculationParameters() {
-
-    // The output parameters are the core sensor types defined for the variable
-
-    List<CalculationParameter> result = new ArrayList<CalculationParameter>(1);
-
-    SensorType coreType = variable.getCoreSensorType();
-    result.add(new CalculationParameter(makeParameterId(0),
-      coreType.getShortName(), coreType.getLongName(), coreType.getCodeName(),
-      coreType.getUnits(), true));
-
-    return result;
+    return new ArrayList<CalculationParameter>();
   }
 
 }

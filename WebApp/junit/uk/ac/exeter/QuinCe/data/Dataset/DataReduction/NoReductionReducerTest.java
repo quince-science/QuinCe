@@ -1,11 +1,8 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 
 import org.flywaydb.test.annotation.FlywayTest;
@@ -20,7 +17,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Test for the dummy {@link NoReductionReducer}.
+ * Test for the {@link NoReductionReducer}.
  */
 public class NoReductionReducerTest extends DataReducerTest {
 
@@ -55,10 +52,6 @@ public class NoReductionReducerTest extends DataReducerTest {
     reducer.doCalculation(instrument, measurement, record,
       getDataSource().getConnection());
 
-    assertEquals(9.889D, record.getCalculationValue("Water Temperature"),
-      0.0001);
-
-    List<String> paramNames = Arrays.asList("Water Temperature");
-    assertTrue(listsEqual(paramNames, reducer.getCalculationParameterNames()));
+    assertEquals(0, reducer.getCalculationParameterNames().size());
   }
 }
