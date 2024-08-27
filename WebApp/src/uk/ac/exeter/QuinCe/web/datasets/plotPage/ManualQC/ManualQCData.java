@@ -315,13 +315,15 @@ public class ManualQCData extends PlotPageData {
         List<CalculationParameter> variableHeadings = DataReducerFactory
           .getCalculationParameters(variable, true);
 
-        List<PlotPageColumnHeading> variableQCHeadings = new ArrayList<PlotPageColumnHeading>(
-          variableHeadings.size());
-        variableHeadings.stream()
-          .forEach(x -> variableQCHeadings.add(new PlotPageColumnHeading(x)));
+        if (variableHeadings.size() > 0) {
+          List<PlotPageColumnHeading> variableQCHeadings = new ArrayList<PlotPageColumnHeading>(
+            variableHeadings.size());
+          variableHeadings.stream()
+            .forEach(x -> variableQCHeadings.add(new PlotPageColumnHeading(x)));
 
-        columnHeadings.put(variable.getName(), variableQCHeadings);
-        extendedColumnHeadings.put(variable.getName(), variableQCHeadings);
+          columnHeadings.put(variable.getName(), variableQCHeadings);
+          extendedColumnHeadings.put(variable.getName(), variableQCHeadings);
+        }
       } catch (DataReductionException e) {
         error("Error getting variable headers", e);
       }
@@ -491,10 +493,13 @@ public class ManualQCData extends PlotPageData {
                 Arrays.asList(variableDataReduction.getMeasurementId()));
             }
           } else {
-            // Make blank columns
-            record.addBlankColumns(
-              columnHeadings.get(variable.getName()).size(),
-              PlotPageTableValue.DATA_REDUCTION_TYPE);
+            // Make blank columns because this measurement doesn't have data
+            // reduction for the variable.
+            if (columnHeadings.containsKey(variable.getName())) {
+              record.addBlankColumns(
+                columnHeadings.get(variable.getName()).size(),
+                PlotPageTableValue.DATA_REDUCTION_TYPE);
+            }
           }
         }
 
