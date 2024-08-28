@@ -46,14 +46,22 @@ public class PositionQCData extends ManualQCData {
 
   @Override
   public void loadDataAction(Progress progress) throws Exception {
+
+    // Fake value after "initialising" message
+    progress.setValue(5F);
+
+    progress.setName("Loading position data");
     try (Connection conn = dataSource.getConnection()) {
       sensorValues = DataSetDataDB.getPositionSensorValues(conn, instrument,
         dataset.getId());
     }
+    progress.setValue(50F);
 
     // Build the row IDs
+    progress.setName("Analysing data");
     rowIDs = sensorValues.getRawPositionTimes().stream()
       .map(t -> DateTimeUtils.dateToLong(t)).collect(Collectors.toList());
+    progress.setValue(100F);
   }
 
   @Override

@@ -89,18 +89,27 @@ public class InternalCalibrationData extends PlotPageData {
 
     try (Connection conn = dataSource.getConnection()) {
 
+      // Fake value after "initialising" message
+      progress.setValue(5F);
+
+      progress.setName("Loading sensor data");
       datasetSensorValues = DataSetDataDB.getSensorValues(conn, instrument,
         dataset.getId(), false, true);
 
+      progress.setName("Loading calibration data");
+      progress.setValue(33F);
       List<RunTypeSensorValue> sensorValues = DataSetDataDB
         .getInternalCalibrationSensorValues(conn, instrument, dataset.getId());
 
+      progress.setName("Analysing data");
+      progress.setValue(66F);
       dataStructure = new SimplePlotPageDataStructure(getColumnHeadingsList());
 
       for (RunTypeSensorValue value : sensorValues) {
         long columnId = makeColumnId(value.getRunType(), value.getColumnId());
         dataStructure.add(value.getTime(), getColumnHeading(columnId), value);
       }
+      progress.setValue(100F);
     }
   }
 

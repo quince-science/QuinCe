@@ -64,7 +64,7 @@ public class Progress {
 
   public void increment() {
     synchronized (this) {
-      this.value += 1;
+      this.value += 1F;
     }
   }
 
@@ -83,6 +83,6 @@ public class Progress {
    * @return The progress percentage.
    */
   public float getProgress() {
-    return max == 100F ? value : (value / max) * 100;
+    return (value / max) * 100;
   }
 }

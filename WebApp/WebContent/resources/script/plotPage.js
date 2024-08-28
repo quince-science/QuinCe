@@ -11,6 +11,8 @@ const TIME_COLUMN_ID = -1100;
 // Initially the table and both plots are loading
 var loadingItems = TABLE_LOADING | PLOT1_LOADING | PLOT2_LOADING;
 
+var progressBarUpdater = null;
+
 function plotLoading(index, mode) {
   let item = 0;
 
@@ -34,12 +36,23 @@ function plotLoading(index, mode) {
 function itemLoading(item) {
   loadingItems = loadingItems | item;
   PF('pleaseWait').show();
+  startProgressBarUpdater();
 }
 
 function itemNotLoading(item) {
   loadingItems = loadingItems & ~item
   if (loadingItems == 0) {
     PF('pleaseWait').hide();
+    clearInterval(progressBarUpdater);
+    progressBarUpdater = null;
+  }
+}
+
+function startProgressBarUpdater() {
+  if (null == progressBarUpdater) {
+    progressBarUpdater = setInterval(function() {
+        updateProgress(); // PF RemoteCommand
+    }, 1500);
   }
 }
 
@@ -191,6 +204,7 @@ var mapTiles2 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.{ext}', 
 function initPage() {
 
   PF('pleaseWait').show();
+  startProgressBarUpdater();
 
   // When the window is resized, scale the panels
   $(window).resize(function() {
@@ -203,6 +217,7 @@ function initPage() {
 
   // Trigger data loading on back end
   // PrimeFaces remoteCommand. Calls dataLoaded() when complete.
+  //PF('progressBar');
   loadData();
 }
 
@@ -343,13 +358,18 @@ function dataLoaded() {
   if (!errorCheck()) {
     columnHeaders = JSON.parse($('#plotPageForm\\:columnHeadings').val());
     extendedColumnHeaders = JSON.parse($('#plotPageForm\\:extendedColumnHeadings').val());
-    drawTable();
     initPlot(1);
     initPlot(2);
 
     if (typeof dataLoadedLocal === 'function') {
       dataLoadedLocal();
     }
+
+  drawTable();
+
+  // Hide the progress bar on the popup
+  $("#pleaseWaitForm\\:progressName").hide();
+  PF('progressBar').jq.hide();
   }
 }
 

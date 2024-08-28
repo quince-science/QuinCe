@@ -53,7 +53,7 @@
       process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis :plot1Form:plot1Y2Axis
         :plot1Form:map1Column :plot2Form:plot2XAxis :plot2Form:plot2YAxis :plot2Form:plot2Y2Axis
         :plot2Form:map2Column columnHeadings extendedColumnHeadings rowIDs :statusForm"
-      oncomplete="dataLoaded()" onerror="plotError()" />
+      oncomplete="dataLoaded()" onerror="plotError()" async="true"/>
 
   </h:form>
 
@@ -79,7 +79,17 @@
   <p:dialog header="Please wait" widgetVar="pleaseWait" modal="true"
     resizable="false" closable="false">
     <h:form id="pleaseWaitForm">
+    <p:remoteCommand name="updateProgress"
+      action="#{sessionScope[beanName].noop}"
+      process="@none" update="progressName progressBar"/>
       Preparing data. This can take quite a while, so please be patient...
+      <h:panelGrid columns="1" cellpadding="5" style="width: 100%">
+        <h:outputText id="progressName" value="#{sessionScope[beanName].progress.name}"/>
+        <p:progressBar id="progressBar" widgetVar="progressBar"
+          value="#{sessionScope[beanName].progress.progress}" mode="determinate"
+          ajax="false">
+        </p:progressBar>
+      </h:panelGrid>
       <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
         <p:commandButton widgetVar="finishButton" value="Abort" ajax="false"
           process="@none" action="#{sessionScope[beanName].finish}" styleClass="inlineButton" />

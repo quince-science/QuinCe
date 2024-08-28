@@ -180,18 +180,28 @@ public class ManualQCData extends PlotPageData {
   public void loadDataAction(Progress progress) throws Exception {
 
     try (Connection conn = dataSource.getConnection()) {
+
+      // Fake value after "initialising" message
+      progress.setValue(5F);
+
+      progress.setName("Loading sensor data");
       sensorValues = DataSetDataDB.getSensorValues(conn, instrument,
         dataset.getId(), false, true);
+      progress.setValue(33F);
 
+      progress.setName("Loading measurements");
       List<Measurement> measurementsList = DataSetDataDB.getMeasurements(conn,
         dataset.getId());
+      progress.setValue(66F);
 
       measurements = new TreeMap<LocalDateTime, Measurement>();
 
       measurementsList.forEach(m -> measurements.put(m.getTime(), m));
 
+      progress.setName("Loading data reduction");
       dataReduction = DataSetDataDB.getDataReductionData(conn, instrument,
         dataset);
+      progress.setValue(100F);
 
       // Build the row IDs
       rowIDs = sensorValues.getTimes().stream()
