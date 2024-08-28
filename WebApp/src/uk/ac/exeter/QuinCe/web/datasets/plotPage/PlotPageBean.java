@@ -142,11 +142,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
   public String start() {
     try {
       reset();
-
+      getProgress().setName("Initialising");
+      getProgress().setValue(0F);
+      getProgress().setMax(100F);
       dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
       setCurrentInstrumentId(dataset.getInstrumentId());
       initDataObject(getDataSource());
-
     } catch (Exception e) {
       return internalError(e);
     }
