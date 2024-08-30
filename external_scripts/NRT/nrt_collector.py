@@ -166,10 +166,12 @@ def main():
                     if not retriever.test_configuration():
                         log_instrument(logger, instrument_id, logging.ERROR,
                                        "Configuration invalid")
+                        post_msg(config, f"Error checking configuration for instrument {instrument_id}")
                     # Initialise the retriever
                     elif not retriever.startup():
                         log_instrument(logger, instrument_id, logging.ERROR,
                                        "Could not initialise retriever")
+                        post_msg(config, f"Error initialising retriever for instrument {instrument_id}")
                     else:
                         preprocessor = None if instrument["preprocessor"] is None else \
                             PreprocessorFactory.get_instance(instrument["preprocessor"],
@@ -208,6 +210,7 @@ def main():
                                     else:
                                         log_instrument(logger, instrument_id, logging.CRITICAL,
                                                        "Unrecognised upload result " + str(upload_result))
+                                        post_msg(config, f"Unrecognised result while uploading to FTP: {str(upload_result)}")
                                         exit()
                                 except Exception as e:
                                     log_instrument(logger, instrument_id, logging.ERROR,
