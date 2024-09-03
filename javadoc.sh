@@ -66,7 +66,7 @@ classPath="${classPath}:${jarsDir}/org.eclipse.persistence.asm-2.7.6.jar"
 classPath="${classPath}:${jarsDir}/org.eclipse.persistence.core-2.7.6.jar"
 classPath="${classPath}:${jarsDir}/org.eclipse.persistence.moxy-2.7.6.jar"
 classPath="${classPath}:${jarsDir}/osgi-resource-locator-1.0.3.jar"
-classPath="${classPath}:${jarsDir}/primefaces-12.0.0.jar"
+classPath="${classPath}:${jarsDir}/primefaces-13.0.0.jar"
 classPath="${classPath}:${jarsDir}/protobuf-java-3.19.4.jar"
 classPath="${classPath}:${jarsDir}/simplelatlng-1.4.0.jar"
 classPath="${classPath}:${jarsDir}/txw2-3.0.0-M4.jar"
@@ -86,14 +86,14 @@ classPath="${classPath}:${jarsDir}/spring-test-5.2.0.RELEASE.jar"
 classPath="${classPath}:${jarsDir}/spring-beans-5.2.0.RELEASE.jar"
 
 javadoc -sourcepath "$sourcePath" -d "$output" \
-        -subpackages uk.ac.exeter.QuinCe:junit.uk.ac.exeter.QuinCe \
-        -source 11 -private \
+        -subpackages uk.ac.exeter.QuinCe \
+        -source 17 -private \
         -windowtitle "QuinCe Javadoc" -doctitle "QuinCe Javadoc" \
         -classpath "$classPath" \
-        -link https://docs.oracle.com/en/java/javase/11/docs/api \
-        -link https://javadoc.io/doc/org.primefaces/primefaces/12.0.0/ \
+        -link https://docs.oracle.com/en/java/javase/17/docs/api \
+        -link https://javadoc.io/doc/org.primefaces/primefaces/13.0.0/ \
         -link https://commons.apache.org/proper/commons-email/javadocs/api-release/ \
         -link https://junit.org/junit5/docs/5.7.0/api/ \
         -link https://docs.spring.io/spring-framework/docs/current/javadoc-api/ \
-        -link https://www.javadoc.io/doc/org.mockito/mockito-core/2.15.0/package-list/ \
+        -link https://www.javadoc.io/doc/org.mockito/mockito-core/5.13.0/package-list/ \
 
