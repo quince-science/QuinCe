@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,8 +94,8 @@ public class ControsPco2MeasurementLocatorTest extends BaseTest {
     List<LocalDateTime> locatedMeasurementTimes = measurements.stream()
       .map(m -> m.getTime()).toList();
 
-    assertTrue(
-      listsEqual(getNoZeroExpectedMeasurementTimes(), locatedMeasurementTimes));
+    assertTrue(CollectionUtils.isEqualCollection(
+      getNoZeroExpectedMeasurementTimes(), locatedMeasurementTimes));
   }
 
   private List<LocalDateTime> getNoZeroExpectedMeasurementTimes() {

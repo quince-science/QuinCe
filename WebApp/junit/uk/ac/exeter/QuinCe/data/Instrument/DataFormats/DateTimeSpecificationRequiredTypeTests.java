@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -44,7 +45,8 @@ public class DateTimeSpecificationRequiredTypeTests extends TestSetTest {
     expected.add(DateTimeSpecification.SECOND);
     expected.add(DateTimeSpecification.UNIX);
 
-    assertTrue(listsEqual(expected, spec.getRequiredTypes()));
+    assertTrue(
+      CollectionUtils.isEqualCollection(expected, spec.getRequiredTypes()));
   }
 
   /**
@@ -71,7 +73,8 @@ public class DateTimeSpecificationRequiredTypeTests extends TestSetTest {
     expected.add(DateTimeSpecification.SECOND);
     expected.add(DateTimeSpecification.UNIX);
 
-    assertTrue(listsEqual(expected, spec.getRequiredTypes()));
+    assertTrue(
+      CollectionUtils.isEqualCollection(expected, spec.getRequiredTypes()));
   }
 
   @Test
@@ -97,7 +100,8 @@ public class DateTimeSpecificationRequiredTypeTests extends TestSetTest {
       spec.assign(assigned.get(i), i, "");
     }
 
-    assertTrue(listsEqual(required, spec.getRequiredTypes()));
+    assertTrue(
+      CollectionUtils.isEqualCollection(required, spec.getRequiredTypes()));
   }
 
   private List<Integer> pipesToList(String pipes) {

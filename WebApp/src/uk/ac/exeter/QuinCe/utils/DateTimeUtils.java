@@ -239,4 +239,9 @@ public class DateTimeUtils {
     LocalDateTime target) {
     return item.isBefore(target) || item.equals(target);
   }
+
+  public static boolean isEqualOrAfter(LocalDateTime item,
+    LocalDateTime target) {
+    return item.isAfter(target) || item.equals(target);
+  }
 }

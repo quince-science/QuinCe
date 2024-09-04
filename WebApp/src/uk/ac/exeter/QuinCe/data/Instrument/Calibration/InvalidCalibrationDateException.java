@@ -4,7 +4,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 public class InvalidCalibrationDateException extends CalibrationException {
 
   public InvalidCalibrationDateException(String message) {
-    super("message");
+    super(message);
   }
 
 }

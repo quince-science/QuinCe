@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.SortedMap;
 import java.util.stream.Stream;
 
 import javax.faces.context.ExternalContext;
@@ -15,6 +16,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.flywaydb.test.FlywayTestExecutionListener;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -206,17 +208,16 @@ public class BaseTest {
    * @return {@code true} if the lists contain the same values; {@code false}
    *         otherwise.
    */
-  protected boolean listsEqual(List<?> list1, List<?> list2) {
+  protected boolean mapsEqual(SortedMap<?, ?> map1, SortedMap<?, ?> map2) {
     boolean result = true;
 
-    if (list1.size() != list2.size()) {
+    if (map1.size() != map2.size()) {
       result = false;
-    } else if (list1.size() != 0) {
-      for (int i = 0; i < list1.size(); i++) {
-        if (!list1.get(i).equals(list2.get(i))) {
-          result = false;
-          break;
-        }
+    } else {
+      result = CollectionUtils.isEqualCollection(map1.keySet(), map2.keySet());
+      if (result) {
+        result = CollectionUtils.isEqualCollection(map1.values(),
+          map2.values());
       }
     }
 
