@@ -30,13 +30,21 @@ function plotLoading(index, mode) {
     }
   }
 
-  itemLoading(item);
+  itemLoading(item, false);
 }
 
-function itemLoading(item) {
+function itemLoading(item, showProgressBar) {
   loadingItems = loadingItems | item;
   PF('pleaseWait').show();
+
+  if (showProgressBar) {
   startProgressBarUpdater();
+  $("#pleaseWaitForm\\:progressName").show();
+  PF('progressBar').jq.show();
+  } else {
+  $("#pleaseWaitForm\\:progressName").hide();
+  PF('progressBar').jq.hide();
+  }
 }
 
 function itemNotLoading(item) {
