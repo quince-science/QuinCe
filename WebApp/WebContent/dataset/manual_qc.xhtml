@@ -23,7 +23,7 @@
       partialSubmit="true"
       process="selectedColumn selectedRows"
       update=":plotPageForm:error :plot1Form:plot1Data :plot1Form:plot1Flags :plot2Form:plot2Data :plot2Form:plot2Flags :statusForm"
-      onstart="itemLoading(UPDATE_DATA)"
+      onstart="itemLoading(UPDATE_DATA, true)"
       oncomplete="qcFlagsAccepted()" />
 
     <p:remoteCommand name="generateUserQCComments"
@@ -36,7 +36,7 @@
       action="#{sessionScope[beanName].applyManualFlag}"
       process="selectedColumn selectedRows manualFlag manualComment"
       update=":plotPageForm:error :plot1Form:plot1Data :plot1Form:plot1Flags :plot2Form:plot2Data :plot2Form:plot2Flags :statusForm"
-      onstart="itemLoading(UPDATE_DATA)"
+      onstart="itemLoading(UPDATE_DATA, false)"
       oncomplete="qcFlagsAccepted()" />
 
   </ui:define>
