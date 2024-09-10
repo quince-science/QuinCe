@@ -27,11 +27,12 @@ import uk.ac.exeter.QuinCe.TestBase.TestSetTest;
  * See
  * {@code WebApp/junit/resources/sql/web/Instrument/CalibrationBeanTest/initial_setup.html}
  * for the initial setup ({@code TARGET_1} and {@code TARGET_1} are specified in
- * this test file). This will use the CONTROS pCO2 system as the testing basis.
- * Most coefficients will be set with prior and post values for the full period,
- * and we will adjust the coefficients for two parameters ({@code F} and
- * {@code Runtime}) to perform the tests. The {@code k1}, {@code k2} and
- * {@code k3} coefficients will remain constant.
+ * this test file as fixed fields {@link #TARGET_1} and {@link #TARGET_2}). This
+ * will use the CONTROS pCO2 system as the testing basis. Most coefficients will
+ * be set with prior and post values for the full period, and we will adjust the
+ * coefficients for two parameters ({@code F} and {@code Runtime}) to perform
+ * the tests. The {@code k1}, {@code k2} and {@code k3} coefficients will remain
+ * constant.
  * </p>
  *
  */

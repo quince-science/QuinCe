@@ -213,7 +213,8 @@ public class CalibrationSet {
 
         interimPriorCalibrations.put(target, interimPriorCalibration);
         interimPostCalibrations.put(target,
-          interimPostCalibration.orElse(null));
+          null != interimPostCalibration ? interimPostCalibration.orElse(null)
+            : null);
       }
 
       priors.put(time, interimPriorCalibrations);
@@ -247,7 +248,7 @@ public class CalibrationSet {
   /**
    * Determine whether or not there is a complete set of {@link Calibration}s
    * after the {@link #end} time.
-   * 
+   *
    * <p>
    * Note that this method's result is only meaningful if the result of
    * {@link CalibrationDB#usePostCalibrations()} is {@code true}. Otherwise its
@@ -529,12 +530,19 @@ public class CalibrationSet {
     // Finally check the post calibration if applicable
     if (includePost && result) {
 
-      LocalDateTime thisPostTime = posts.lastKey().isAfter(end)
-        ? posts.lastKey()
-        : null;
-      LocalDateTime otherPostTime = other.posts.lastKey().isAfter(end)
-        ? other.posts.lastKey()
-        : null;
+      LocalDateTime thisPostTime = null;
+      if (null != posts && !posts.isEmpty()) {
+        thisPostTime = posts.lastKey().isAfter(end)
+          ? (LocalDateTime) posts.lastKey()
+          : null;
+      }
+
+      LocalDateTime otherPostTime = null;
+      if (null != other.posts && !other.posts.isEmpty()) {
+        otherPostTime = other.posts.lastKey().isAfter(end)
+          ? other.posts.lastKey()
+          : null;
+      }
 
       if (null != thisPostTime && null != otherPostTime) {
         if (timeAffectsCalibration && !thisPostTime.equals(otherPostTime)) {

@@ -26,29 +26,18 @@ import uk.ac.exeter.QuinCe.utils.ParameterException;
  */
 public class CalibrationSetTest extends BaseTest {
 
-  /**
-   * Generate a mock {@link Instrument}.
-   * 
-   * <p>
-   * The mocked object does not perform any actions.
-   * </p>
-   * 
-   * @return The mocked Instrument.
-   */
-  private Instrument getInstrument() {
-    return Mockito.mock(Instrument.class);
-  }
+  protected static Instrument instrument = Mockito.mock(Instrument.class);
 
   /**
    * Generate a mock {@link CalibrationDB} instance.
-   * 
+   *
    * <p>
    * This instance will only respond to the methods
    * {@link CalibrationDB#timeAffectesCalibration()},
    * {@link CalibrationDB#allowCalibrationChangeInDataset()} and
    * {@link CalibrationDB#usePostCalibrations()} methods with the values
    * supplied.
-   * 
+   *
    * @param timeAffectsCalibration
    *          The value to be returned by calls to
    *          {@link CalibrationDB#timeAffectesCalibration()}.
@@ -60,7 +49,7 @@ public class CalibrationSetTest extends BaseTest {
    *          {@link CalibrationDB#usePostCalibrations()}.
    * @return The mocked {@link CalibrationDB}.
    */
-  private CalibrationDB makeDbInstance(boolean timeAffectsCalibration,
+  protected static CalibrationDB makeDbInstance(boolean timeAffectsCalibration,
     boolean allowCalibrationChangeInDataset, boolean usePostCalibrations) {
 
     CalibrationDB db = Mockito.mock(CalibrationDB.class);
@@ -75,7 +64,7 @@ public class CalibrationSetTest extends BaseTest {
 
   /**
    * Generate the target names used in these tests.
-   * 
+   *
    * @return The target names.
    */
   private Map<String, String> getTargets() {
@@ -87,16 +76,16 @@ public class CalibrationSetTest extends BaseTest {
 
   /**
    * Generate a set of coefficient values for a calibration.
-   * 
+   *
    * <p>
    * Generates a coefficient named {@code COEF1} with the values supplied.
    * </p>
-   * 
+   *
    * @param value1
    *          The value for {@code COEF1}.
    * @return The coefficients.
    */
-  private Map<String, String> makeCoefficient(String value) {
+  protected static Map<String, String> makeCoefficient(String value) {
     TreeMap<String, String> coefficients = new TreeMap<String, String>();
     coefficients.put("COEF1", value);
     return coefficients;
@@ -105,18 +94,18 @@ public class CalibrationSetTest extends BaseTest {
   /**
    * Generate a {@link LocalDateTime} for a specified day in January 2024, with
    * the time set to midnight.
-   * 
+   *
    * @param day
    *          The day of January.
    * @return The {@link LocalDateTime} object.
    */
-  private LocalDateTime makeTime(int day) {
+  protected static LocalDateTime makeTime(int day) {
     return LocalDateTime.of(2024, 1, day, 0, 0, 0);
   }
 
   /**
    * Make a simple set of {@link Calibration}s.
-   * 
+   *
    * <p>
    * The calibrations generated are shown in the table below. The numbers for
    * each calibration are its database ID, used to verify the test results.
@@ -152,7 +141,7 @@ public class CalibrationSetTest extends BaseTest {
    * <td align="center">7</td>
    * </tr>
    * </table>
-   * 
+   *
    * @return The calibrations.
    * @throws Exception
    *           If the calibration creation fails.
@@ -160,8 +149,6 @@ public class CalibrationSetTest extends BaseTest {
    */
   private TreeMap<String, TreeSet<Calibration>> makeCalibrations()
     throws Exception {
-
-    Instrument instrument = getInstrument();
 
     TreeMap<String, TreeSet<Calibration>> calibrations = new TreeMap<String, TreeSet<Calibration>>();
 
@@ -331,7 +318,7 @@ public class CalibrationSetTest extends BaseTest {
 
 /**
  * Testing implementation of the {@link Calibration} class.
- * 
+ *
  * <p>
  * The passed in {@code coefficients} are assumed to be valid and correct.
  * </p>
