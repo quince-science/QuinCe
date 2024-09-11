@@ -658,9 +658,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @return The run type values
    */
   public List<String> getRunTypeValues() {
-    List<String> values = null;
+    List<String> values;
 
-    if (null != runTypes) {
+    if (null == runTypes) {
+      values = new ArrayList<String>(0);
+    } else {
       values = new ArrayList<String>(runTypes.size());
       values.addAll(runTypes.keySet());
     }

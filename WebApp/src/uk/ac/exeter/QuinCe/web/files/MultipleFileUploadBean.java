@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.web.files;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
@@ -29,7 +28,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
    */
   private TreeSet<UploadedDataFile> dataFiles = new TreeSet<UploadedDataFile>();
 
-  private List<MissingRunType> unrecognisedRunTypes;
+  private TreeSet<MissingRunType> unrecognisedRunTypes;
 
   @Override
   public void processUploadedFile() {
@@ -131,7 +130,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
   }
 
   private void buildUnrecognisedRunTypes() {
-    unrecognisedRunTypes = new ArrayList<MissingRunType>();
+    unrecognisedRunTypes = new TreeSet<MissingRunType>();
 
     for (UploadedDataFile file : dataFiles) {
       for (RunTypeAssignment runType : file.getMissingRunTypes()) {
@@ -144,7 +143,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
     }
   }
 
-  public List<MissingRunType> getUnrecognisedRunTypes() {
+  public TreeSet<MissingRunType> getUnrecognisedRunTypes() {
 
     if (null == unrecognisedRunTypes) {
       buildUnrecognisedRunTypes();
