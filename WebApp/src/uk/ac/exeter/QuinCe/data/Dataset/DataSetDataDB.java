@@ -332,6 +332,9 @@ public class DataSetDataDB {
       PreparedStatement updateStmt = conn
         .prepareStatement(UPDATE_SENSOR_VALUE_STATEMENT);) {
 
+      DataSet dataSet = null;
+      Instrument instrument = null;
+
       // Set of dataset IDs/columns we know to be valid
       HashSet<DatasetColumn> verifiedColumns = new HashSet<DatasetColumn>();
 
@@ -347,17 +350,21 @@ public class DataSetDataDB {
         if (!verifiedColumns.contains(dsCol)) {
 
           // Make sure the dataset exists
-          DataSet dataSet;
-          try {
-            dataSet = DataSetDB.getDataSet(conn, value.getDatasetId());
-          } catch (RecordNotFoundException e) {
-            throw new InvalidSensorValueException(
-              "Dataset specified in SensorValue does not exist", value);
+          if (null == dataSet || dataSet.getId() != value.getDatasetId()) {
+            try {
+              dataSet = DataSetDB.getDataSet(conn, value.getDatasetId());
+            } catch (RecordNotFoundException e) {
+              throw new InvalidSensorValueException(
+                "Dataset specified in SensorValue does not exist", value);
+            }
           }
 
           // Make sure the column ID is valid for the dataset's instrument
-          Instrument instrument = InstrumentDB.getInstrument(conn,
-            dataSet.getInstrumentId());
+          if (null == instrument
+            || instrument.getId() != dataSet.getInstrumentId()) {
+            instrument = InstrumentDB.getInstrument(conn,
+              dataSet.getInstrumentId());
+          }
 
           if (!instrument.columnValid(value.getColumnId())) {
             throw new InvalidSensorValueException(
