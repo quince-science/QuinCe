@@ -43,6 +43,12 @@ public class DataFile implements TimeRange {
   public static final String TIME_OFFSET_PROP = "timeOffset";
 
   /**
+   * The instance of the {@link DataFile} class that has its contents loaded
+   * into memory.
+   */
+  private static DataFile fileWithContents = null;
+
+  /**
    * The database ID of this file
    */
   private long databaseId = DatabaseUtils.NO_DATABASE_RECORD;
@@ -823,9 +829,21 @@ public class DataFile implements TimeRange {
    *           If the file contents could not be loaded
    */
   private void loadContents() throws DataFileException {
-    if (null == contents) {
+
+    boolean doLoad = false;
+
+    if (null == fileWithContents) {
+      doLoad = true;
+    } else if (fileWithContents != this) {
+      fileWithContents.contents = null;
+      fileWithContents = null;
+      doLoad = true;
+    }
+
+    if (doLoad) {
       try {
         FileStore.loadFileContents(fileStore, this);
+        fileWithContents = this;
 
         if (!extractHeaderDate()) {
           throw new Exception("Could not extract file header date");
