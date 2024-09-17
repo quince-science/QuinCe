@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 /**
@@ -36,6 +37,20 @@ import org.apache.commons.lang3.math.NumberUtils;
 public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   private static DecimalFormat threeDecimalPoints;
+
+  private static final Pattern WHITESPACE_ONLY_BOTH = Pattern
+    .compile("^[\\s]*|[\\s]*$");
+
+  private static final Pattern WHITESPACE_QUOTES_BOTH = Pattern
+    .compile("^[\\s\"]*|[\\s\"]*$");
+
+  private static final Pattern WHITESPACE_ONLY_FRONT = Pattern
+    .compile("^[\\s]*");
+
+  private static final Pattern WHITESPACE_QUOTES_FRONT = Pattern
+    .compile("^[\\s\"]*");
+
+  private static final Pattern COMMA = Pattern.compile(",");
 
   static {
     threeDecimalPoints = new DecimalFormat();
@@ -301,7 +316,7 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     if (null != source) {
       result = source.stream().map(s -> {
-        return trimString(s, "\\s");
+        return trimString(s, false);
       }).collect(Collectors.toList());
     }
 
@@ -330,20 +345,23 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     if (null != source) {
       result = source.stream().map(s -> {
-        return trimString(s, "\\s\"");
+        return trimString(s, true);
       }).collect(Collectors.toList());
     }
 
     return result;
   }
 
-  private static String trimString(String string, String regexChars) {
+  private static String trimString(String string, boolean replaceQuotes) {
 
     String trimmed = null;
 
     if (null != string) {
-      trimmed = string
-        .replaceAll("^[" + regexChars + "]*|[" + regexChars + "]*$", "");
+      if (replaceQuotes) {
+        trimmed = RegExUtils.replaceAll(string, WHITESPACE_QUOTES_BOTH, "");
+      } else {
+        trimmed = RegExUtils.replaceAll(string, WHITESPACE_ONLY_BOTH, "");
+      }
 
       boolean done = false;
       while (!done) {
@@ -352,9 +370,15 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
           trimmed = trimmed.substring(1);
           done = true;
         } else if (trimmed.startsWith("\\")) {
+
           // Trim off the single \ and trim the front again
-          trimmed = trimmed.substring(1).replaceAll("^[" + regexChars + "]*",
-            "");
+          if (replaceQuotes) {
+            trimmed = RegExUtils.replaceAll(trimmed.substring(1),
+              WHITESPACE_QUOTES_FRONT, "");
+          } else {
+            trimmed = RegExUtils.replaceAll(trimmed.substring(1),
+              WHITESPACE_ONLY_FRONT, "");
+          }
         } else {
           done = true;
         }
@@ -464,7 +488,8 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
   public static Double doubleFromString(String value) {
     Double result = Double.NaN;
     if (null != value && value.trim().length() > 0) {
-      result = Double.parseDouble(value.replaceAll(",", "").trim());
+      result = Double
+        .parseDouble(RegExUtils.replaceAll(value, COMMA, "").trim());
     }
 
     return result;

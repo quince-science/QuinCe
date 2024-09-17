@@ -17,9 +17,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
 /**
  * Tests for the StringUtils class
- *
- * @author Steve Jones
- *
  */
 public class StringUtilsTest extends BaseTest {
 
