@@ -75,7 +75,6 @@ public class AutoBatchPreparedStatement implements AutoCloseable {
     stmt.addBatch();
     batch += 1;
     if (batch >= BATCH_SIZE) {
-      System.out.println("Batch");
       stmt.executeBatch();
       batch = 0;
     }
@@ -92,7 +91,6 @@ public class AutoBatchPreparedStatement implements AutoCloseable {
    * @see PreparedStatement#close()
    */
   public void close() throws SQLException {
-    System.out.println("Batch and close");
     stmt.executeBatch();
     stmt.close();
   }

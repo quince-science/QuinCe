@@ -141,8 +141,6 @@ public class ExtractDataSetJob extends DataSetJob {
       double maxLat = -Double.MAX_VALUE;
 
       for (DataFile file : files) {
-        System.out.println(file.getFilename());
-
         FileDefinition fileDefinition = file.getFileDefinition();
         int currentLine = file.getFirstDataLine();
         while (currentLine < file.getContentLineCount()) {
@@ -300,8 +298,6 @@ public class ExtractDataSetJob extends DataSetJob {
         }
       }
 
-      System.out.println("Sort out run types");
-
       // The last run type will cover the rest of time
       runTypePeriods.finish();
 
@@ -357,8 +353,6 @@ public class ExtractDataSetJob extends DataSetJob {
         }
       }
 
-      System.out.println("Store SensorValues");
-
       // Store the remaining values
       if (sensorValues.size() > 0) {
         conn.setAutoCommit(false);
@@ -366,8 +360,6 @@ public class ExtractDataSetJob extends DataSetJob {
         conn.commit();
         conn.setAutoCommit(true);
       }
-
-      System.out.println("Next job");
 
       dataSet.setBounds(minLon, minLat, maxLon, maxLat);
 
