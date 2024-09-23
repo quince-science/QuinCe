@@ -37,6 +37,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsExceptio
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.AutoBatchPreparedStatement;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -327,10 +328,10 @@ public class DataSetDataDB {
     MissingParam.checkMissing(sensorValues, "sensorValues", true);
 
     try (
-      PreparedStatement addStmt = conn
-        .prepareStatement(STORE_NEW_SENSOR_VALUE_STATEMENT);
-      PreparedStatement updateStmt = conn
-        .prepareStatement(UPDATE_SENSOR_VALUE_STATEMENT);) {
+      AutoBatchPreparedStatement addStmt = new AutoBatchPreparedStatement(conn,
+        STORE_NEW_SENSOR_VALUE_STATEMENT);
+      AutoBatchPreparedStatement updateStmt = new AutoBatchPreparedStatement(
+        conn, UPDATE_SENSOR_VALUE_STATEMENT);) {
 
       DataSet dataSet = null;
       Instrument instrument = null;
@@ -391,7 +392,7 @@ public class DataSetDataDB {
             addStmt.setInt(6, value.getUserQCFlag().getFlagValue());
             addStmt.setString(7, value.getUserQCMessage());
 
-            addStmt.addBatch();
+            addStmt.execute();
           } else {
             updateStmt.setString(1, value.getAutoQcResult().toJson());
             updateStmt.setInt(2, value.getUserQCFlag().getFlagValue());
@@ -407,13 +408,10 @@ public class DataSetDataDB {
             updateStmt.setString(3, userQCMessage);
             updateStmt.setLong(4, value.getId());
 
-            updateStmt.addBatch();
+            updateStmt.execute();
           }
         }
       }
-
-      addStmt.executeBatch();
-      updateStmt.executeBatch();
     } catch (SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
     }

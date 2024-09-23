@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -90,16 +89,15 @@ public class ExtractDataSetJob extends DataSetJob {
     Connection conn = null;
 
     try {
-
       conn = dataSource.getConnection();
-      reset(conn);
+
+      // Clear any existing data for the DataSet
+      resetDataset(conn);
 
       // Get the new data set from the database
       DataSet dataSet = getDataset(conn);
       dataSet.setStatus(DataSet.STATUS_DATA_EXTRACTION);
       DataSetDB.updateDataSet(conn, dataSet);
-
-      conn.setAutoCommit(false);
 
       Instrument instrument = getInstrument(conn);
 
@@ -111,10 +109,6 @@ public class ExtractDataSetJob extends DataSetJob {
         DataSetDB.setNrtDatasetStatus(dataSource, instrument,
           DataSet.STATUS_REPROCESS);
       }
-
-      // Reset the data set and all associated data
-      reset(conn);
-      conn.commit();
 
       List<DataFile> files = DataFileDB.getDataFiles(conn,
         ResourceManager.getInstance().getConfig(),
@@ -147,8 +141,9 @@ public class ExtractDataSetJob extends DataSetJob {
       double maxLat = -Double.MAX_VALUE;
 
       for (DataFile file : files) {
-        FileDefinition fileDefinition = file.getFileDefinition();
+        System.out.println(file.getFilename());
 
+        FileDefinition fileDefinition = file.getFileDefinition();
         int currentLine = file.getFirstDataLine();
         while (currentLine < file.getContentLineCount()) {
 
@@ -305,6 +300,8 @@ public class ExtractDataSetJob extends DataSetJob {
         }
       }
 
+      System.out.println("Sort out run types");
+
       // The last run type will cover the rest of time
       runTypePeriods.finish();
 
@@ -360,10 +357,17 @@ public class ExtractDataSetJob extends DataSetJob {
         }
       }
 
+      System.out.println("Store SensorValues");
+
       // Store the remaining values
       if (sensorValues.size() > 0) {
+        conn.setAutoCommit(false);
         DataSetDataDB.storeSensorValues(conn, sensorValues);
+        conn.commit();
+        conn.setAutoCommit(true);
       }
+
+      System.out.println("Next job");
 
       dataSet.setBounds(minLon, minLat, maxLon, maxLat);
 
@@ -375,8 +379,6 @@ public class ExtractDataSetJob extends DataSetJob {
         String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
       JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
         AutoQCJob.class.getCanonicalName(), jobProperties);
-
-      conn.commit();
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
       DatabaseUtils.rollBack(conn);
@@ -397,13 +399,6 @@ public class ExtractDataSetJob extends DataSetJob {
       }
       throw new JobFailedException(id, e);
     } finally {
-      if (null != conn) {
-        try {
-          conn.setAutoCommit(true);
-        } catch (SQLException e) {
-          throw new JobFailedException(id, e);
-        }
-      }
       DatabaseUtils.closeConnection(conn);
     }
   }
@@ -448,14 +443,13 @@ public class ExtractDataSetJob extends DataSetJob {
    * @throws RecordNotFoundException
    *           If the record don't exist
    */
-  protected void reset(Connection conn) throws JobFailedException {
+  protected void resetDataset(Connection conn) throws JobFailedException {
 
     try {
-      DataSetDataDB.deleteDataReduction(conn, getDataset(conn).getId());
-      DataSetDataDB.deleteMeasurements(conn, getDataset(conn).getId());
-      DataSetDataDB.deleteSensorValues(conn, getDataset(conn).getId());
-      DataSetDB.setDatasetStatus(conn, getDataset(conn).getId(),
-        DataSet.STATUS_WAITING);
+      long datasetId = getDataset(conn).getId();
+      DataSetDataDB.deleteDataReduction(conn, datasetId);
+      DataSetDataDB.deleteMeasurements(conn, datasetId);
+      DataSetDataDB.deleteSensorValues(conn, datasetId);
     } catch (Exception e) {
       throw new JobFailedException(id, "Error while resetting dataset", e);
     }

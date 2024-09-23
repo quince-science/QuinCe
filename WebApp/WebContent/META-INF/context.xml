@@ -12,5 +12,5 @@
      maxAge="25000" testOnBorrow="true" testWhileIdle="true" validationInterval="0"
      removeAbandoned="true" logAbandoned="true" removeAbandonedTimeout="3600"
      username="%db_username%" password="%db_password%" driverClassName="com.mysql.jdbc.Driver"
-     url="jdbc:mysql://%db_host%:%db_port%/%db_database%?useUnicode=true&amp;characterEncoding=utf-8&amp;rewriteBatchedStatements=true" />
+     url="jdbc:mysql://%db_host%:%db_port%/%db_database%?useUnicode=true&amp;characterEncoding=utf-8&amp;useServerPrepStmts=false&amp;rewriteBatchedStatements=true" />
 </Context>
