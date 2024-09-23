@@ -32,6 +32,11 @@ public abstract class PositionSpecification {
   protected int format;
 
   /**
+   * The format parser
+   */
+  protected PositionParser parser;
+
+  /**
    * Creates an empty position specification
    */
   protected PositionSpecification() {

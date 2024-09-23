@@ -107,39 +107,39 @@ public class LongitudeSpecification extends PositionSpecification {
   @Override
   protected PositionParser getParser() throws PositionException {
 
-    PositionParser result;
+    if (null == parser) {
+      switch (format) {
+      case FORMAT_MINUS180_180: {
+        parser = new DecimalDegreesParser(true);
+        break;
+      }
+      case FORMAT_0_360: {
+        parser = new Zero360Parser();
+        break;
+      }
+      case FORMAT_0_180: {
+        parser = new DecimalDegreesParser(makeHemisphereMultiplier());
+        break;
+      }
+      case FORMAT_HDM: {
+        parser = new HDMOneFieldParser(makeHemisphereMultiplier());
+        break;
+      }
+      case FORMAT_H_DDDMMmmm: {
+        parser = new DDDMMmmmParser(makeHemisphereMultiplier());
+        break;
+      }
+      case FORMAT_DDDMMmmm: {
+        parser = new DDDMMmmmParser();
+        break;
+      }
+      default: {
+        throw new PositionException("Unknown format " + format);
+      }
+      }
+    }
 
-    switch (format) {
-    case FORMAT_MINUS180_180: {
-      result = new DecimalDegreesParser(true);
-      break;
-    }
-    case FORMAT_0_360: {
-      result = new Zero360Parser();
-      break;
-    }
-    case FORMAT_0_180: {
-      result = new DecimalDegreesParser(makeHemisphereMultiplier());
-      break;
-    }
-    case FORMAT_HDM: {
-      result = new HDMOneFieldParser(makeHemisphereMultiplier());
-      break;
-    }
-    case FORMAT_H_DDDMMmmm: {
-      result = new DDDMMmmmParser(makeHemisphereMultiplier());
-      break;
-    }
-    case FORMAT_DDDMMmmm: {
-      result = new DDDMMmmmParser();
-      break;
-    }
-    default: {
-      throw new PositionException("Unknown format " + format);
-    }
-    }
-
-    return result;
+    return parser;
   }
 
   @Override
