@@ -23,7 +23,7 @@
       partialSubmit="true"
       process="selectedColumn selectedRows"
       update=":plotPageForm:error :plot1Form:plot1Data :plot1Form:plot1Flags :plot2Form:plot2Data :plot2Form:plot2Flags :statusForm"
-      onstart="itemLoading(UPDATE_DATA, true)"
+      onstart="itemLoading(UPDATE_DATA, false)"
       oncomplete="qcFlagsAccepted()" />
 
     <p:remoteCommand name="generateUserQCComments"
