@@ -12,10 +12,6 @@ public abstract class HDMParser extends PositionParser {
     super();
   }
 
-  protected HDMParser(HemisphereMultiplier hemisphereMultiplier) {
-    super(hemisphereMultiplier);
-  }
-
   @Override
   protected double getNumericValue(String value) throws PositionParseException {
     if (!parsed) {
@@ -30,5 +26,6 @@ public abstract class HDMParser extends PositionParser {
     parsed = true;
   }
 
-  protected abstract void parseAction(String value) throws PositionParseException;
+  protected abstract void parseAction(String value)
+    throws PositionParseException;
 }

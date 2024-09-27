@@ -327,11 +327,21 @@ public class DataSetDataDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(sensorValues, "sensorValues", true);
 
-    try (
-      AutoBatchPreparedStatement addStmt = new AutoBatchPreparedStatement(conn,
+    boolean autoCommitStatus = true;
+
+    AutoBatchPreparedStatement addStmt = null;
+    AutoBatchPreparedStatement updateStmt = null;
+
+    try {
+
+      autoCommitStatus = conn.getAutoCommit();
+
+      conn.setAutoCommit(false);
+
+      addStmt = new AutoBatchPreparedStatement(conn,
         STORE_NEW_SENSOR_VALUE_STATEMENT);
-      AutoBatchPreparedStatement updateStmt = new AutoBatchPreparedStatement(
-        conn, UPDATE_SENSOR_VALUE_STATEMENT);) {
+      updateStmt = new AutoBatchPreparedStatement(conn,
+        UPDATE_SENSOR_VALUE_STATEMENT);
 
       DataSet dataSet = null;
       Instrument instrument = null;
@@ -412,8 +422,26 @@ public class DataSetDataDB {
           }
         }
       }
+
+      addStmt.close();
+      updateStmt.close();
+
+      conn.commit();
     } catch (SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
+    } catch (InvalidSensorValueException | RecordNotFoundException
+      | InstrumentException | SensorGroupsException e) {
+      try {
+        addStmt.abort();
+        updateStmt.abort();
+
+        conn.rollback();
+        conn.setAutoCommit(autoCommitStatus);
+      } catch (SQLException e2) {
+        ; // Ignore exceptions
+      }
+
+      throw e;
     }
 
     // Clear the dirty flag on all the sensor values

@@ -17,14 +17,9 @@ public class DDDMMmmmParser extends HDMParser {
 
   private boolean hasHemisphere;
 
-  protected DDDMMmmmParser() {
+  protected DDDMMmmmParser(boolean hasHemisphere) {
     super();
     hasHemisphere = false;
-  }
-
-  protected DDDMMmmmParser(HemisphereMultiplier hemisphereMultiplier) {
-    super(hemisphereMultiplier);
-    hasHemisphere = true;
   }
 
   @Override

@@ -19,10 +19,6 @@ FORMAT_0_90,0.5,N,true,0.500
 FORMAT_0_90,0.5,S,true,-0.500
 FORMAT_0_90,0.5,N,true,0.500
 FORMAT_0_90,0.5,S,true,-0.500
-FORMAT_0_90,0.5,North,true,0.500
-FORMAT_0_90,0.5,South,true,-0.500
-FORMAT_0_90,0.5,North,true,0.500
-FORMAT_0_90,0.5,South,true,-0.500
 FORMAT_0_90,60.342,N,true,60.342
 FORMAT_0_90,60.342,S,true,-60.342
 FORMAT_0_90,-1,N,false,

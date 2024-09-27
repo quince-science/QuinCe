@@ -2,12 +2,15 @@ package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Handles all formats of longitudes, and the corresponding column assignments
  * within a data file
  */
 public class LongitudeSpecification extends PositionSpecification {
+
+  private static List<String> HEMISPHERE_VALUES;
 
   /**
    * Indicates that longitudes are between 0 and 360
@@ -57,6 +60,8 @@ public class LongitudeSpecification extends PositionSpecification {
     formats.put(FORMAT_HDM, NAME_HDM);
     formats.put(FORMAT_H_DDDMMmmm, NAME_H_DDDMMmmm);
     formats.put(FORMAT_DDDMMmmm, NAME_DDDMMmmm);
+
+    HEMISPHERE_VALUES = Arrays.asList("E", "e", "W", "w");
   }
 
   /**
@@ -118,19 +123,19 @@ public class LongitudeSpecification extends PositionSpecification {
         break;
       }
       case FORMAT_0_180: {
-        parser = new DecimalDegreesParser(makeHemisphereMultiplier());
+        parser = new DecimalDegreesParser(true);
         break;
       }
       case FORMAT_HDM: {
-        parser = new HDMOneFieldParser(makeHemisphereMultiplier());
+        parser = new HDMOneFieldParser(this);
         break;
       }
       case FORMAT_H_DDDMMmmm: {
-        parser = new DDDMMmmmParser(makeHemisphereMultiplier());
+        parser = new DDDMMmmmParser(true);
         break;
       }
       case FORMAT_DDDMMmmm: {
-        parser = new DDDMMmmmParser();
+        parser = new DDDMMmmmParser(false);
         break;
       }
       default: {
@@ -147,12 +152,12 @@ public class LongitudeSpecification extends PositionSpecification {
     return value.equals("-180.000") ? "180.000" : super.fixNegatives(value);
   }
 
-  private HemisphereMultiplier makeHemisphereMultiplier() {
-    return new HemisphereMultiplier(Arrays.asList("E", "East"),
-      Arrays.asList("W", "West"));
-  }
-
   public static LinkedHashMap<Integer, String> getFormats() {
     return formats;
+  }
+
+  @Override
+  protected List<String> getValidHemisphereValues() {
+    return HEMISPHERE_VALUES;
   }
 }
