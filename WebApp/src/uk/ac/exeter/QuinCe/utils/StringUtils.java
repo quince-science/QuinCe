@@ -38,18 +38,6 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   private static DecimalFormat threeDecimalPoints;
 
-  private static final Pattern WHITESPACE_ONLY_BOTH = Pattern
-    .compile("^[\\s]*|[\\s]*$");
-
-  private static final Pattern WHITESPACE_QUOTES_BOTH = Pattern
-    .compile("^[\\s\"]*|[\\s\"]*$");
-
-  private static final Pattern WHITESPACE_ONLY_FRONT = Pattern
-    .compile("^[\\s]*");
-
-  private static final Pattern WHITESPACE_QUOTES_FRONT = Pattern
-    .compile("^[\\s\"]*");
-
   private static final Pattern COMMA = Pattern.compile(",");
 
   static {
@@ -358,9 +346,9 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     if (null != string) {
       if (replaceQuotes) {
-        trimmed = RegExUtils.replaceAll(string, WHITESPACE_QUOTES_BOTH, "");
+        trimmed = trimWhitespaceAndQuotes(string);
       } else {
-        trimmed = RegExUtils.replaceAll(string, WHITESPACE_ONLY_BOTH, "");
+        trimmed = string.trim();
       }
 
       boolean done = false;
@@ -373,11 +361,9 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
           // Trim off the single \ and trim the front again
           if (replaceQuotes) {
-            trimmed = RegExUtils.replaceAll(trimmed.substring(1),
-              WHITESPACE_QUOTES_FRONT, "");
+            trimmed = trimWhitespaceAndQuotes(trimmed.substring(1));
           } else {
-            trimmed = RegExUtils.replaceAll(trimmed.substring(1),
-              WHITESPACE_ONLY_FRONT, "");
+            trimmed = trimmed.substring(1).trim();
           }
         } else {
           done = true;
@@ -386,6 +372,37 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     return trimmed;
+  }
+
+  /**
+   * Remove leading and trailing whitespace and quotes from a {@link String}.
+   *
+   * <p>
+   * Algorithm based on {@link String#trim()}.
+   * </p>
+   *
+   * @param string
+   *          The String to be trimmed.
+   * @return The trimmed String.
+   */
+  private static String trimWhitespaceAndQuotes(String string) {
+    // This is a copy of the code from String.trim()
+    char[] chars = string.toCharArray();
+
+    int length = chars.length;
+    int len = length;
+    int st = 0;
+    while (st < len
+      && (chars[st] <= ' ' || chars[st] == '"' || chars[st] == '\'')) {
+      st++;
+    }
+    while (st < len && (chars[len - 1] <= ' ' || chars[len - 1] == '"'
+      || chars[len - 1] == '\'')) {
+      len--;
+    }
+    return ((st > 0) || (len < chars.length))
+      ? new String(Arrays.copyOfRange(chars, st, len))
+      : string;
   }
 
   /**
