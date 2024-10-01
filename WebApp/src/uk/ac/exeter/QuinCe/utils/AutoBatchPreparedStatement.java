@@ -23,7 +23,7 @@ public class AutoBatchPreparedStatement {
   /**
    * The maximum size of a batch before it will be executed.
    */
-  private static final int BATCH_SIZE = 100000;
+  private static final int BATCH_SIZE = 10000;
 
   /**
    * The wrapped {@link PreparedStatement}.
