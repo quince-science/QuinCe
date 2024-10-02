@@ -732,8 +732,8 @@ public class DataFileDB {
       Properties properties = new Gson().fromJson(record.getString(7),
         Properties.class);
 
-      result = new DataFile(fileStore, id, fileDefinition, filename, startDate,
-        endDate, recordCount, properties);
+      result = new FileStoreDataFile(fileStore, id, fileDefinition, filename,
+        startDate, endDate, recordCount, properties);
     } catch (SQLException e) {
       throw e;
     }

@@ -20,6 +20,7 @@ import com.google.gson.JsonObject;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
+import uk.ac.exeter.QuinCe.data.Files.DataFileFromUpload;
 import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -117,14 +118,6 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
    */
   public DataFile getDataFile() {
     return dataFile;
-  }
-
-  /**
-   * @param dataFile
-   *          the dataFile to set
-   */
-  public void setDataFile(DataFile dataFile) {
-    this.dataFile = dataFile;
   }
 
   /**
@@ -347,8 +340,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
           throw new NoSuchElementException();
         }
 
-        setDataFile(new DataFile(appConfig.getProperty("filestore"),
-          matchedDefinition, getName(), lines));
+        dataFile = new DataFileFromUpload(matchedDefinition, getName(), this);
         if (getDataFile().getFirstDataLine() >= getDataFile()
           .getContentLineCount()) {
           if (allowEmpty) {
@@ -431,21 +423,21 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
             if (!fileOK) {
               matchedDefinition = null;
-              setDataFile(null);
+              dataFile = null;
               putMessage(fileStatus, fileMessage, FacesMessage.SEVERITY_ERROR);
             }
           }
         }
       }
     } catch (NoSuchElementException nose) {
-      setDataFile(null);
+      dataFile = null;
       putMessage(Status.BAD_REQUEST.getStatusCode(),
         "The format of " + getName()
           + " was not recognised. Please upload a different file.",
         FacesMessage.SEVERITY_ERROR);
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
-      setDataFile(null);
+      dataFile = null;
       putMessage(Status.INTERNAL_SERVER_ERROR.getStatusCode(),
         "The file could not be processed: " + e.getMessage(),
         FacesMessage.SEVERITY_ERROR);
