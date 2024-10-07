@@ -583,6 +583,11 @@ public class DataSetsBean extends BaseManagedBean {
     return owner.getSurname() + ", " + owner.getGivenName();
   }
 
+  public String getOwnerEmail(DataSet dataSet) {
+    return getInstrument(dataSet.getInstrumentId()).getOwner()
+      .getEmailAddress();
+  }
+
   private void setCurrentView(String view) {
     getSession().setAttribute(CURRENT_VIEW_ATTR, view);
   }

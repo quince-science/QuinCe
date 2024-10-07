@@ -173,7 +173,9 @@
            <f:facet name="header">
              <h:outputText value="Owner" />
            </f:facet>
-           <h:outputText value="#{dataSetsBean.getOwnerName(dataset)}" />
+           <h:outputText value="#{dataSetsBean.getOwnerName(dataset)}"/>
+           <br/>
+           (<h:outputText value="#{dataSetsBean.getOwnerEmail(dataset)}"/>)
          </p:column>
          <p:column>
            <f:facet name="header">
@@ -218,12 +220,16 @@
                      title="Sensor Offsets" />
                  </p:commandLink>
                </ui:fragment>
-                <ui:fragment rendered="#{not dataset.instrument.fixedPosition()}">
-                  <p:commandLink onclick="goToPositionQc(#{dataset.id})">
-                    <h:graphicImage value="/resources/image/position.svg"
-                      styleClass="actionIcon" alt="Position QC" title="Position QC" />
-                  </p:commandLink>
-                </ui:fragment>
+              <ui:fragment rendered="#{not dataset.instrument.hasSensorGroups()}">
+                <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                  styleClass="actionIcon"/>
+              </ui:fragment>
+               <ui:fragment rendered="#{not dataset.instrument.fixedPosition()}">
+                 <p:commandLink onclick="goToPositionQc(#{dataset.id})">
+                   <h:graphicImage value="/resources/image/position.svg"
+                     styleClass="actionIcon" alt="Position QC" title="Position QC" />
+                 </p:commandLink>
+               </ui:fragment>
               <ui:fragment rendered="#{dataset.instrument.fixedPosition()}">
                 <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
                   styleClass="actionIcon"/>
