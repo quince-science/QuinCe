@@ -35,7 +35,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
  * </p>
  *
  * @see TestSetTest#getLines()
- * @author Steve Jones
  */
 public class TestSetLine {
 
