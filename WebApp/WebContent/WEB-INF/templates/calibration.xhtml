@@ -1,3 +1,4 @@
+
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
   xmlns:f="http://xmlns.jcp.org/jsf/core"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -178,10 +179,10 @@
         </p:dialog>
 
         <h:panelGrid columns="2" styleClass="buttonPanel">
-          <p:commandButton value="Save Changes" ajax="false" widgetVar="commitButton"
-            action="#{sessionScope[beanName].commitChanges}" />
           <p:commandButton value="Cancel Changes"
             action="/instrument/instrument_list.xhtml" />
+          <p:commandButton value="Save Changes" ajax="false" widgetVar="commitButton"
+            action="#{sessionScope[beanName].commitChanges}" />
         </h:panelGrid>
         <script>
           updateSaveButton();
