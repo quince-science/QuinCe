@@ -113,7 +113,8 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             } else {
               // If there hasn't been a FLUSHING flag since the last zero,
               // flush for the default period calculated from the response time.
-              if (lastStatus == ZERO
+              // Or add the flushing time to the point after the FLUSH mode
+              if ((lastStatus == ZERO || lastStatus == FLUSHING)
                 && DateTimeUtils.secondsBetween(currentStatusStart,
                   recordTime) <= defaultFlushingTime) {
 
