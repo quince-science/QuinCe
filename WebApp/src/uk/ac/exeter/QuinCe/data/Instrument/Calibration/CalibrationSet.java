@@ -574,7 +574,8 @@ public class CalibrationSet {
         Calibration calibration1 = m1.get(target);
         Calibration calibration2 = m2.get(target);
 
-        if (!calibration1.hasSameEffect(calibration2)) {
+        if (null == calibration1 || null == calibration2
+          || !calibration1.hasSameEffect(calibration2)) {
           result = false;
           break;
         }
