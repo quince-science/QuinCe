@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
 import org.primefaces.shaded.json.JSONArray;
 import org.primefaces.shaded.json.JSONObject;
@@ -457,6 +458,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
       // it's invalid.
       Calibration existingCalibration = findCalibration(calibration.getTarget(),
         calibration.getDeploymentDate());
+
       if (null != existingCalibration
         && existingCalibration.getId() != calibration.getId()) {
         result.add("A calibration for " + calibration.getTarget() + " at "
@@ -660,6 +662,13 @@ public abstract class CalibrationBean extends BaseManagedBean {
   }
 
   private long generateNewId() {
+
+    // Sleep for 2 ms to guarantee we get a different value
+    try {
+      TimeUnit.MILLISECONDS.sleep(2);
+    } catch (InterruptedException e) {
+      // Noop
+    }
     return DateTimeUtils.dateToLong(LocalDateTime.now()) * -1;
   }
 
