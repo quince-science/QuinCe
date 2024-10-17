@@ -498,9 +498,14 @@ public class CalibrationSet {
     }
 
     // Check the first time - this is the prior
-    LocalDateTime thisPriorTime = priors.firstKey();
-    LocalDateTime otherPriorTime = other.priors.firstKey();
-    if (timeAffectsCalibration && !thisPriorTime.equals(otherPriorTime)) {
+    LocalDateTime thisPriorTime = priors.size() == 0 ? null : priors.firstKey();
+    LocalDateTime otherPriorTime = other.priors.size() == 0 ? null
+      : other.priors.firstKey();
+
+    if (null == thisPriorTime || null == otherPriorTime) {
+      result = false;
+    } else if (timeAffectsCalibration
+      && !thisPriorTime.equals(otherPriorTime)) {
       result = false;
     } else {
       if (!membersEqual(priors.get(thisPriorTime),
