@@ -421,7 +421,9 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
               fileStatus = Status.CONFLICT.getStatusCode();
             }
 
-            if (!fileOK) {
+            if (fileOK) {
+              dataFile.validate();
+            } else {
               matchedDefinition = null;
               dataFile = null;
               putMessage(fileStatus, fileMessage, FacesMessage.SEVERITY_ERROR);
