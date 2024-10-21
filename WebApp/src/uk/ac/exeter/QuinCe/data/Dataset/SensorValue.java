@@ -368,6 +368,34 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   }
 
   /**
+   * Remove any user QC flags, so the {@link #autoQC} becomes the basis for the
+   * value's QC result.
+   *
+   * <p>
+   * {@link Flag#LOOKUP} flags will not be replaced. {@link Flag#LOOKUP} flags
+   * will only be replaced if {@code force} is {@code true}.
+   * </p>
+   *
+   * @param force
+   *          Force override of {@link Flag#FLUSHING} flags.
+   */
+  public void removeUserQC(boolean force) {
+
+    boolean remove = true;
+
+    if (userQCFlag.equals(Flag.LOOKUP)
+      || (!force && userQCFlag.equals(Flag.FLUSHING))) {
+      remove = false;
+    }
+
+    if (remove) {
+      userQCFlag = autoQC.size() > 0 ? Flag.NEEDED : Flag.ASSUMED_GOOD;
+      userQCMessage = "";
+      dirty = true;
+    }
+  }
+
+  /**
    * Copy the user QC info from the specified SensorValue.
    *
    * @param source
