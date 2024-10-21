@@ -125,14 +125,24 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             runType = Measurement.MEASUREMENT_RUN_TYPE;
           }
 
+          SensorValue rawValue = recordValues.get(rawColumn);
+          SensorValue refValue = recordValues.get(refColumn);
+
           if (flushSensors) {
-            SensorValue rawValue = recordValues.get(rawColumn);
-            SensorValue refValue = recordValues.get(refColumn);
             rawValue.setUserQC(Flag.FLUSHING, "Flushing");
             refValue.setUserQC(Flag.FLUSHING, "Flushing");
             flaggedSensorValues.add(rawValue);
             flaggedSensorValues.add(refValue);
             recordStatus = FLUSHING;
+          } else if (rawValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+            /*
+             * If the Response Time has been changed, some values that were
+             * marked FLUSHING should have that flag removed.
+             */
+            rawValue.removeUserQC(true);
+            refValue.removeUserQC(true);
+            flaggedSensorValues.add(rawValue);
+            flaggedSensorValues.add(refValue);
           }
 
           if (recordStatus != FLUSHING) {
