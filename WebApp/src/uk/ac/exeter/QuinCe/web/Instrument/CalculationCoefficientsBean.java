@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.jobs.Job;
-import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
+import uk.ac.exeter.QuinCe.jobs.files.LocateMeasurementsJob;
 
 @ManagedBean
 @SessionScoped
@@ -38,7 +38,7 @@ public class CalculationCoefficientsBean extends CalibrationBean {
 
   @Override
   protected Class<? extends Job> getReprocessJobClass() {
-    return DataReductionJob.class;
+    return LocateMeasurementsJob.class;
   }
 
   @Override
