@@ -219,68 +219,83 @@ public class ControsPco2Reducer extends DataReducer {
           measurementRuntime.doubleValue());
 
         if (null != interpZeroS2Beam) {
-          BigDecimal bdZeroS2Beam = new BigDecimal(interpZeroS2Beam);
 
-          BigDecimal sDC = bdMeasurementS2Beam.divide(bdZeroS2Beam,
-            RoundingMode.HALF_UP);
+          try {
+            BigDecimal bdZeroS2Beam = new BigDecimal(interpZeroS2Beam);
 
-          BigDecimal bdSProc = F.multiply(new BigDecimal(1D).subtract(sDC));
+            BigDecimal sDC = bdMeasurementS2Beam.divide(bdZeroS2Beam,
+              RoundingMode.HALF_UP);
 
-          BigDecimal runtimeSincePre = measurementRuntime
-            .subtract(runTimePrior.getBigDecimalValue());
+            BigDecimal bdSProc = F.multiply(new BigDecimal(1D).subtract(sDC));
 
-          BigDecimal k1Interp = k1Prior.getBigDecimalValue()
-            .add(k1Step.multiply(runtimeSincePre));
-          BigDecimal k2Interp = k2Prior.getBigDecimalValue()
-            .add(k2Step.multiply(runtimeSincePre));
-          BigDecimal k3Interp = k3Prior.getBigDecimalValue()
-            .add(k3Step.multiply(runtimeSincePre));
+            BigDecimal runtimeSincePre = measurementRuntime
+              .subtract(runTimePrior.getBigDecimalValue());
 
-          BigDecimal sProcCubed = bdSProc.pow(3);
-          BigDecimal sProcSquared = bdSProc.pow(2);
+            BigDecimal k1Interp = k1Prior.getBigDecimalValue()
+              .add(k1Step.multiply(runtimeSincePre));
+            BigDecimal k2Interp = k2Prior.getBigDecimalValue()
+              .add(k2Step.multiply(runtimeSincePre));
+            BigDecimal k3Interp = k3Prior.getBigDecimalValue()
+              .add(k3Step.multiply(runtimeSincePre));
 
-          BigDecimal k3Part = k3Interp.multiply(sProcCubed);
-          BigDecimal k2Part = k2Interp.multiply(sProcSquared);
-          BigDecimal k1Part = k1Interp.multiply(bdSProc);
+            BigDecimal sProcCubed = bdSProc.pow(3);
+            BigDecimal sProcSquared = bdSProc.pow(2);
 
-          BigDecimal xco2ProcPart = k3Part.add(k2Part).add(k1Part);
+            BigDecimal k3Part = k3Interp.multiply(sProcCubed);
+            BigDecimal k2Part = k2Interp.multiply(sProcSquared);
+            BigDecimal k1Part = k1Interp.multiply(bdSProc);
 
-          // Gas temperature in Kelvin
-          BigDecimal gasTemperature = new BigDecimal(measurement
-            .getMeasurementValue("Gas Stream Temperature").getCalculatedValue())
-            .add(T0);
+            BigDecimal xco2ProcPart = k3Part.add(k2Part).add(k1Part);
 
-          BigDecimal gasPressure = new BigDecimal(measurement
-            .getMeasurementValue("Gas Stream Pressure").getCalculatedValue());
+            // Gas temperature in Kelvin
+            BigDecimal gasTemperature = new BigDecimal(
+              measurement.getMeasurementValue("Gas Stream Temperature")
+                .getCalculatedValue())
+              .add(T0);
 
-          BigDecimal membranePressure = new BigDecimal(measurement
-            .getMeasurementValue("Membrane Pressure").getCalculatedValue());
+            BigDecimal gasPressure = new BigDecimal(measurement
+              .getMeasurementValue("Gas Stream Pressure").getCalculatedValue());
 
-          BigDecimal pressureTimesTemp = P0.multiply(gasTemperature);
+            BigDecimal membranePressure = new BigDecimal(measurement
+              .getMeasurementValue("Membrane Pressure").getCalculatedValue());
 
-          BigDecimal tempTimesPressure = T0.multiply(gasPressure);
+            BigDecimal pressureTimesTemp = P0.multiply(gasTemperature);
 
-          BigDecimal xcoPresTempPart = pressureTimesTemp
-            .divide(tempTimesPressure, 50, RoundingMode.HALF_UP);
+            BigDecimal tempTimesPressure = T0.multiply(gasPressure);
 
-          BigDecimal bdXCO2 = xco2ProcPart.multiply(xcoPresTempPart);
+            BigDecimal xcoPresTempPart = pressureTimesTemp
+              .divide(tempTimesPressure, 50, RoundingMode.HALF_UP);
 
-          BigDecimal pco2PressurePart = membranePressure.divide(P0, 50,
-            RoundingMode.HALF_UP);
+            BigDecimal bdXCO2 = xco2ProcPart.multiply(xcoPresTempPart);
 
-          BigDecimal bdPCO2SST = bdXCO2.multiply(pco2PressurePart);
+            BigDecimal pco2PressurePart = membranePressure.divide(P0, 50,
+              RoundingMode.HALF_UP);
 
-          Double waterTemp = measurement
-            .getMeasurementValue("Water Temperature").getCalculatedValue();
+            BigDecimal bdPCO2SST = bdXCO2.multiply(pco2PressurePart);
 
-          fCO2 = Calculators.calcfCO2(bdPCO2SST.doubleValue(),
-            bdXCO2.doubleValue(), membranePressure.doubleValue(), waterTemp);
+            Double waterTemp = measurement
+              .getMeasurementValue("Water Temperature").getCalculatedValue();
 
-          // Make Double values for data reduction record
-          zeroS2Beam = bdZeroS2Beam.doubleValue();
-          sProc = bdSProc.doubleValue();
-          xco2 = bdXCO2.doubleValue();
-          pCO2SST = bdPCO2SST.doubleValue();
+            fCO2 = Calculators.calcfCO2(bdPCO2SST.doubleValue(),
+              bdXCO2.doubleValue(), membranePressure.doubleValue(), waterTemp);
+
+            // Make Double values for data reduction record
+            zeroS2Beam = bdZeroS2Beam.doubleValue();
+            sProc = bdSProc.doubleValue();
+            xco2 = bdXCO2.doubleValue();
+            pCO2SST = bdPCO2SST.doubleValue();
+          } catch (NumberFormatException e) {
+            /*
+             * This will happen if any of the found measurement values are NaN.
+             * As long as the CONTROS file isn't messed with, this shouldn't
+             * happen.
+             */
+            zeroS2Beam = Double.NaN;
+            sProc = Double.NaN;
+            xco2 = Double.NaN;
+            pCO2SST = Double.NaN;
+            fCO2 = Double.NaN;
+          }
         } else {
           zeroS2Beam = Double.NaN;
           sProc = Double.NaN;
