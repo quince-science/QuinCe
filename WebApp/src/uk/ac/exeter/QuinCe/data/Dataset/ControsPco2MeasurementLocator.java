@@ -113,7 +113,8 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             } else {
               // If there hasn't been a FLUSHING flag since the last zero,
               // flush for the default period calculated from the response time.
-              if (lastStatus == ZERO
+              // Or add the flushing time to the point after the FLUSH mode
+              if ((lastStatus == ZERO || lastStatus == FLUSHING)
                 && DateTimeUtils.secondsBetween(currentStatusStart,
                   recordTime) <= defaultFlushingTime) {
 
@@ -124,14 +125,24 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             runType = Measurement.MEASUREMENT_RUN_TYPE;
           }
 
+          SensorValue rawValue = recordValues.get(rawColumn);
+          SensorValue refValue = recordValues.get(refColumn);
+
           if (flushSensors) {
-            SensorValue rawValue = recordValues.get(rawColumn);
-            SensorValue refValue = recordValues.get(refColumn);
             rawValue.setUserQC(Flag.FLUSHING, "Flushing");
             refValue.setUserQC(Flag.FLUSHING, "Flushing");
             flaggedSensorValues.add(rawValue);
             flaggedSensorValues.add(refValue);
             recordStatus = FLUSHING;
+          } else if (rawValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+            /*
+             * If the Response Time has been changed, some values that were
+             * marked FLUSHING should have that flag removed.
+             */
+            rawValue.removeUserQC(true);
+            refValue.removeUserQC(true);
+            flaggedSensorValues.add(rawValue);
+            flaggedSensorValues.add(refValue);
           }
 
           if (recordStatus != FLUSHING) {

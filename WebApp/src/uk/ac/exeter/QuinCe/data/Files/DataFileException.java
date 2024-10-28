@@ -3,12 +3,8 @@ package uk.ac.exeter.QuinCe.data.Files;
 /**
  * Exception for errors in data files
  */
+@SuppressWarnings("serial")
 public class DataFileException extends Exception {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = -4759860456383818380L;
 
   /**
    * Dummy file ID for a file that isn't in the database yet

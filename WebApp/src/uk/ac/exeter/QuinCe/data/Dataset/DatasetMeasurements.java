@@ -208,23 +208,43 @@ public class DatasetMeasurements {
   public TreeSet<Measurement> getRunBefore(long variableId, String runType,
     LocalDateTime time) {
 
-    Optional<Measurement> lastBefore = getMeasurements(variableId, runType)
-      .stream().filter(m -> m.getTime().isBefore(time))
-      .reduce((first, second) -> second);
+    TreeSet<Measurement> result;
 
-    return lastBefore.isEmpty() ? new TreeSet<Measurement>()
-      : getMeasurementsInSameRun(variableId, lastBefore.get());
+    List<Measurement> measurements = getMeasurements(variableId, runType);
 
+    if (null == measurements) {
+      result = new TreeSet<Measurement>();
+    } else {
+
+      Optional<Measurement> lastBefore = getMeasurements(variableId, runType)
+        .stream().filter(m -> m.getTime().isBefore(time))
+        .reduce((first, second) -> second);
+
+      result = lastBefore.isEmpty() ? new TreeSet<Measurement>()
+        : getMeasurementsInSameRun(variableId, lastBefore.get());
+    }
+
+    return result;
   }
 
   public TreeSet<Measurement> getRunAfter(long variableId, String runType,
     LocalDateTime time) {
 
-    Optional<Measurement> firstAfter = getMeasurements(variableId, runType)
-      .stream().filter(m -> m.getTime().isAfter(time)).findFirst();
+    TreeSet<Measurement> result;
 
-    return firstAfter.isEmpty() ? new TreeSet<Measurement>()
-      : getMeasurementsInSameRun(variableId, firstAfter.get());
+    List<Measurement> measurements = getMeasurements(variableId, runType);
+
+    if (null == measurements) {
+      result = new TreeSet<Measurement>();
+    } else {
+      Optional<Measurement> firstAfter = getMeasurements(variableId, runType)
+        .stream().filter(m -> m.getTime().isAfter(time)).findFirst();
+
+      result = firstAfter.isEmpty() ? new TreeSet<Measurement>()
+        : getMeasurementsInSameRun(variableId, firstAfter.get());
+    }
+
+    return result;
 
   }
 

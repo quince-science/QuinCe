@@ -38,7 +38,7 @@ import uk.ac.exeter.QuinCe.utils.TimeRange;
 /**
  * Class representing a data file
  */
-public class DataFile implements TimeRange {
+public abstract class DataFile implements TimeRange {
 
   public static final String TIME_OFFSET_PROP = "timeOffset";
 
@@ -81,7 +81,7 @@ public class DataFile implements TimeRange {
   /**
    * The file contents
    */
-  private List<String> contents;
+  protected List<String> contents;
 
   /**
    * Messages generated regarding the file
@@ -109,11 +109,6 @@ public class DataFile implements TimeRange {
   private LocalDateTime headerDate = null;
 
   /**
-   * The location of the file store
-   */
-  private String fileStore;
-
-  /**
    * Run types in this file not defined in the file definition
    */
   private Set<RunTypeAssignment> missingRunTypes = new HashSet<RunTypeAssignment>();
@@ -138,15 +133,13 @@ public class DataFile implements TimeRange {
    * @throws MissingParamException
    *           If any fields are null
    */
-  public DataFile(String fileStore, FileDefinition fileDefinition,
-    String filename, List<String> contents) throws MissingParamException {
+  public DataFile(FileDefinition fileDefinition, String filename)
+    throws MissingParamException, DataFileException {
     MissingParam.checkMissing(fileDefinition, "fileDefinition");
     MissingParam.checkMissing(filename, "fileName");
-    MissingParam.checkMissing(contents, "contents");
 
     this.fileDefinition = fileDefinition;
     this.filename = filename;
-    this.contents = contents;
     this.properties = defaultProperties();
 
     messages = new TreeSet<DataFileMessage>();
@@ -188,10 +181,10 @@ public class DataFile implements TimeRange {
    * @param recordCount
    *          The number of records in the file
    */
-  public DataFile(String fileStore, long id, FileDefinition fileDefinition,
-    String filename, LocalDateTime startDate, LocalDateTime endDate,
-    int recordCount, Properties properties) {
-    this.fileStore = fileStore;
+  public DataFile(long id, FileDefinition fileDefinition, String filename,
+    LocalDateTime startDate, LocalDateTime endDate, int recordCount,
+    Properties properties) {
+
     this.databaseId = id;
     this.fileDefinition = fileDefinition;
     this.filename = filename;
@@ -254,7 +247,9 @@ public class DataFile implements TimeRange {
    *           header
    */
   public int getFirstDataLine() throws DataFileException {
-    loadContents();
+    if (null == contents) {
+      loadContents();
+    }
     return fileDefinition.getHeaderLength(contents)
       + fileDefinition.getColumnHeaderRows();
   }
@@ -269,11 +264,9 @@ public class DataFile implements TimeRange {
   }
 
   /**
-   * Get the number of records in the file
+   * Get the number of records in the file.
    *
    * @return The record count
-   * @throws DataFileException
-   *           If the record count cannot be calculated
    */
   public int getRecordCount() throws DataFileException {
     if (-1 == recordCount) {
@@ -817,9 +810,7 @@ public class DataFile implements TimeRange {
    * @throws IOException
    *           If the file cannot be read
    */
-  public byte[] getBytes() throws IOException {
-    return FileStore.getBytes(fileStore, this);
-  }
+  public abstract byte[] getBytes() throws IOException;
 
   /**
    * Load the contents of the data file from disk, if they are not already
@@ -842,12 +833,14 @@ public class DataFile implements TimeRange {
 
     if (doLoad) {
       try {
-        FileStore.loadFileContents(fileStore, this);
+        loadAction();
         fileWithContents = this;
 
         if (!extractHeaderDate()) {
           throw new Exception("Could not extract file header date");
         }
+
+        recordCount = getContentLineCount() - getFirstDataLine();
       } catch (Exception e) {
         throw new DataFileException(databaseId,
           DataFileException.NO_LINE_NUMBER, "Error while loading file contents",
@@ -855,6 +848,8 @@ public class DataFile implements TimeRange {
       }
     }
   }
+
+  protected abstract void loadAction() throws DataFileException;
 
   /**
    * Get a value from a field as a Double. If the extracted value equals the
