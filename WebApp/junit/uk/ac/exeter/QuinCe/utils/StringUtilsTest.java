@@ -1600,4 +1600,19 @@ public class StringUtilsTest extends BaseTest {
   public void stripStartCharTest(String in, String out) {
     assertEquals(out, StringUtils.stripStart(in, '0'));
   }
+
+  private static Stream<Arguments> removeRepeatsValues() {
+    return Stream.of(Arguments.of(null, null), Arguments.of("", ""),
+      Arguments.of("I am here", "I am here"),
+      Arguments.of("I  am    here", "I am here"),
+      Arguments.of("I am here     ", "I am here "),
+      Arguments.of(" I am here", " I am here"),
+      Arguments.of("   I am here", " I am here"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("removeRepeatsValues")
+  public void removeRepeatsTest(String in, String out) {
+    assertEquals(out, StringUtils.removeRepeats(in, ' '));
+  }
 }

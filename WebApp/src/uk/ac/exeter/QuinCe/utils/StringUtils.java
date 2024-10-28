@@ -551,12 +551,9 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
    */
   public static String stripStart(String string, char character) {
 
-    String result;
+    String result = null;
 
-    if (null == string) {
-      result = null;
-    } else {
-
+    if (null != string) {
       int stripPos = 0;
       while (stripPos < string.length()
         && string.charAt(stripPos) == character) {
@@ -738,6 +735,48 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
         result += string2.trim();
       } else {
         result = string2.trim();
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Search a {@link String} for instances where a specified character is
+   * repeated, and keep only one instance of the character in each case.
+   *
+   * @param string
+   *          The {@link String} to be edited.
+   * @param character
+   *          The character.
+   * @return The edited String.
+   */
+  public static String removeRepeats(String string, char character) {
+
+    String result = null;
+
+    if (null != string) {
+      char[] output = new char[string.length()];
+
+      boolean inRepeat = false;
+      int output_length = -1;
+
+      for (int i = 0; i < string.length(); i++) {
+        if (string.charAt(i) != character) {
+          output_length++;
+          output[output_length] = string.charAt(i);
+          inRepeat = false;
+        } else if (!inRepeat) {
+          output_length++;
+          output[output_length] = string.charAt(i);
+          inRepeat = true;
+        }
+      }
+
+      if (output_length == -1) {
+        result = "";
+      } else {
+        result = String.valueOf(output, 0, output_length + 1);
       }
     }
 
