@@ -1587,4 +1587,17 @@ public class StringUtilsTest extends BaseTest {
   public void formatDoubleDoubleTest(Double in, String out) {
     assertEquals(out, StringUtils.formatNumber(in));
   }
+
+  private static Stream<Arguments> stripStartCharValues() {
+    return Stream.of(Arguments.of("", ""), Arguments.of("1234", "1234"),
+      Arguments.of("01234", "1234"), Arguments.of("001234", "1234"),
+      Arguments.of("010", "10"), Arguments.of("0.01", ".01"),
+      Arguments.of(null, null));
+  }
+
+  @ParameterizedTest
+  @MethodSource("stripStartCharValues")
+  public void stripStartCharTest(String in, String out) {
+    assertEquals(out, StringUtils.stripStart(in, '0'));
+  }
 }

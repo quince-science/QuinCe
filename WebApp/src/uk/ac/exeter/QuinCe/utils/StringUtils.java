@@ -509,7 +509,16 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     return result;
   }
 
-  private static String removeFromString(String string, char character) {
+  /**
+   * Remove all instances of a character from any position in a {@link String}.
+   *
+   * @param string
+   *          The {@link String} from which the character is to be removed.
+   * @param character
+   *          The character to be removed.
+   * @return The stripped {@link String}.
+   */
+  public static String removeFromString(String string, char character) {
     char[] output = new char[string.length()];
 
     int output_length = -1;
@@ -529,7 +538,39 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     return result;
+  }
 
+  /**
+   * Remove all instances of a character from the start of a {@link String}.
+   *
+   * @param string
+   *          The {@link String} to be stripped.
+   * @param character
+   *          The character to be removed.
+   * @return The stripped {@link String}.
+   */
+  public static String stripStart(String string, char character) {
+
+    String result;
+
+    if (null == string) {
+      result = null;
+    } else {
+
+      int stripPos = 0;
+      while (stripPos < string.length()
+        && string.charAt(stripPos) == character) {
+        stripPos++;
+      }
+
+      if (stripPos >= string.length()) {
+        result = "";
+      } else {
+        result = string.substring(stripPos);
+      }
+    }
+
+    return result;
   }
 
   public static String formatNumber(String value) {
