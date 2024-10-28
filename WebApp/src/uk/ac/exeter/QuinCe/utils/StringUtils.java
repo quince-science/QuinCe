@@ -23,7 +23,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 /**
@@ -37,8 +36,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   private static DecimalFormat threeDecimalPoints;
-
-  private static final Pattern COMMA = Pattern.compile(",");
 
   static {
     threeDecimalPoints = new DecimalFormat();
@@ -506,10 +503,33 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     Double result = Double.NaN;
     if (null != value && value.trim().length() > 0) {
       result = Double
-        .parseDouble(RegExUtils.replaceAll(value, COMMA, "").trim());
+        .parseDouble(trimString(removeFromString(value, ','), false));
     }
 
     return result;
+  }
+
+  private static String removeFromString(String string, char character) {
+    char[] output = new char[string.length()];
+
+    int output_length = -1;
+    for (int i = 0; i < string.length(); i++) {
+      if (string.charAt(i) != ',') {
+        output_length++;
+        output[output_length] = string.charAt(i);
+      }
+    }
+
+    String result;
+
+    if (output_length == -1) {
+      result = "";
+    } else {
+      result = String.valueOf(output, 0, output_length + 1);
+    }
+
+    return result;
+
   }
 
   public static String formatNumber(String value) {
