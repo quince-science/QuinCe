@@ -2,11 +2,13 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.util.Properties;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.jobs.NextJobInfo;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -66,9 +68,9 @@ public abstract class FileJob extends Job {
    *           If any referenced database records are missing
    */
   public FileJob(ResourceManager resourceManager, Properties config, long jobId,
-    Properties properties) throws MissingParamException,
+    User owner, Properties properties) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-    super(resourceManager, config, jobId, properties);
+    super(resourceManager, config, jobId, owner, properties);
 
     // The file ID and instrument are extracted in the validateParameters method
   }
@@ -100,9 +102,10 @@ public abstract class FileJob extends Job {
   }
 
   @Override
-  protected final void execute(JobThread thread) throws JobFailedException {
+  protected final NextJobInfo execute(JobThread thread)
+    throws JobFailedException {
     try {
-      executeFileJob(thread);
+      return executeFileJob(thread);
     } catch (JobFailedException e) {
       throw e;
     } catch (Exception e) {
@@ -119,6 +122,6 @@ public abstract class FileJob extends Job {
    * @throws JobFailedException
    *           If an error occurs during the job
    */
-  protected abstract void executeFileJob(JobThread thread)
+  protected abstract NextJobInfo executeFileJob(JobThread thread)
     throws JobFailedException;
 }

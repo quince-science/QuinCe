@@ -34,9 +34,9 @@ public class SendEmailVerificationMailJob extends SendCodeJob {
    *           If the job parameters are invalid
    */
   public SendEmailVerificationMailJob(ResourceManager resourceManager,
-    Properties config, long id, Properties properties)
+    Properties config, long id, User owner, Properties properties)
     throws MissingParamException, InvalidJobParametersException {
-    super(resourceManager, config, id, properties);
+    super(resourceManager, config, id, owner, properties);
   }
 
   @Override

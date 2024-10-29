@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.jobs.NextJobInfo;
 import uk.ac.exeter.QuinCe.utils.EmailSender;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.User.VerifyEmailBean;
@@ -42,22 +43,22 @@ public abstract class SendCodeJob extends Job {
    *           If the job parameters are invalid
    */
   public SendCodeJob(ResourceManager resourceManager, Properties config,
-    long id, Properties properties)
+    long id, User owner, Properties properties)
     throws MissingParamException, InvalidJobParametersException {
-    super(resourceManager, config, id, properties);
+    super(resourceManager, config, id, owner, properties);
   }
 
   @Override
-  protected void execute(JobThread thread) throws JobFailedException {
+  protected NextJobInfo execute(JobThread thread) throws JobFailedException {
 
     StringBuffer emailText = new StringBuffer(getEmailText());
     emailText.append("\n\n");
     emailText.append(buildLink(config));
     emailText.append("\n");
-
     try {
       EmailSender.sendEmail(config, properties.getProperty(EMAIL_KEY),
         getSubject(), emailText.toString());
+      return null;
     } catch (EmailException e) {
       throw new JobFailedException(id, e);
     }

@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.util.Properties;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -65,9 +66,9 @@ public abstract class DataSetJob extends Job {
    *           If a database error occurs.
    */
   public DataSetJob(ResourceManager resourceManager, Properties config,
-    long jobId, Properties properties) throws MissingParamException,
+    long jobId, User owner, Properties properties) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-    super(resourceManager, config, jobId, properties);
+    super(resourceManager, config, jobId, owner, properties);
     if (!properties.containsKey(ID_PARAM)) {
       throw new InvalidJobParametersException(
         "Missing dataset ID parameter from job properties");

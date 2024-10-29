@@ -118,12 +118,12 @@ public class JobManager {
   /**
    * SQL statement to retrieve a job's class and paremeters
    */
-  private static final String GET_JOB_QUERY = "SELECT id, class, properties FROM job WHERE id = ?";
+  private static final String GET_JOB_QUERY = "SELECT id, owner, class, properties FROM job WHERE id = ?";
 
   /**
    * SQL statement to retrieve the next queued job
    */
-  private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, properties FROM job WHERE status='WAITING' ORDER BY created ASC LIMIT 1";
+  private static final String GET_NEXT_JOB_QUERY = "SELECT id, owner, class, properties FROM job WHERE status='WAITING' ORDER BY created ASC LIMIT 1";
 
   /**
    * Statement to get the number of jobs of each status
@@ -569,7 +569,7 @@ public class JobManager {
       if (!result.next()) {
         throw new NoSuchJobException(jobID);
       } else {
-        job = getJobFromResultSet(result, resourceManager, config);
+        job = getJobFromResultSet(connection, result, resourceManager, config);
       }
     } catch (SQLException e) {
       // We handle all exceptions as DatabaseExceptions.
@@ -601,7 +601,7 @@ public class JobManager {
    * @throws SQLException
    *           If a database error occurs
    */
-  private static Job getJobFromResultSet(ResultSet result,
+  private static Job getJobFromResultSet(Connection conn, ResultSet result,
     ResourceManager resourceManager, Properties config)
     throws JobFailedException, SQLException {
 
@@ -609,13 +609,14 @@ public class JobManager {
 
     try {
       jobId = result.getLong(1);
-      Class<?> jobClazz = Class.forName(result.getString(2));
+      Class<?> jobClazz = Class.forName(result.getString(3));
       Constructor<?> jobConstructor = jobClazz.getConstructor(
-        ResourceManager.class, Properties.class, long.class, Properties.class);
+        ResourceManager.class, Properties.class, long.class, User.class,
+        Properties.class);
 
       return (Job) jobConstructor.newInstance(resourceManager, config,
-        result.getLong(1),
-        new Gson().fromJson(result.getString(3), Properties.class));
+        result.getLong(1), UserDB.getUser(conn, result.getLong(2)),
+        new Gson().fromJson(result.getString(4), Properties.class));
     } catch (SQLException e) {
       throw e;
     } catch (Throwable e) {
@@ -877,7 +878,7 @@ public class JobManager {
       result = stmt.executeQuery();
       if (result.next()) {
         nextJobId = result.getLong(1);
-        job = getJobFromResultSet(result, resourceManager, config);
+        job = getJobFromResultSet(connection, result, resourceManager, config);
       }
     } catch (JobFailedException e) {
       try {
@@ -925,7 +926,7 @@ public class JobManager {
       } else {
         // Is there a constructor that takes the right parameters?
         jobClazz.getConstructor(ResourceManager.class, Properties.class,
-          long.class, Properties.class);
+          long.class, User.class, Properties.class);
       }
     } catch (ClassNotFoundException e) {
       checkResult = CLASS_CHECK_NO_SUCH_CLASS;
