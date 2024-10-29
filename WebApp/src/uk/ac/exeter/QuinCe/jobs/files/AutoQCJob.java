@@ -298,18 +298,18 @@ public class AutoQCJob extends DataSetJob {
           positionValues.getAllPositionSensorValues());
       }
 
-      // Trigger the Build Measurements job
+      // Trigger the Locate Measurements job
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
-      Properties jobProperties = new Properties();
-      jobProperties.setProperty(LocateMeasurementsJob.ID_PARAM,
-        String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
-        LocateMeasurementsJob.class.getCanonicalName(), jobProperties);
 
       conn.commit();
 
-      return null;
+      Properties jobProperties = new Properties();
+      jobProperties.setProperty(LocateMeasurementsJob.ID_PARAM,
+        String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
+      NextJobInfo nextJob = new NextJobInfo(
+        LocateMeasurementsJob.class.getCanonicalName(), jobProperties);
+      return nextJob;
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
       DatabaseUtils.rollBack(conn);

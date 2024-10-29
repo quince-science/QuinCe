@@ -359,4 +359,8 @@ public abstract class Job {
    * @return The job name.
    */
   public abstract String getJobName();
+
+  protected Object getTransferData(String key) {
+    return null == transferData ? null : transferData.get(key);
+  }
 }

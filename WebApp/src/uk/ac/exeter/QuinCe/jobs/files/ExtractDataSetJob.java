@@ -36,7 +36,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
-import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.jobs.NextJobInfo;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -368,13 +367,14 @@ public class ExtractDataSetJob extends DataSetJob {
       // Trigger the Auto QC job
       dataSet.setStatus(DataSet.STATUS_SENSOR_QC);
       DataSetDB.updateDataSet(conn, dataSet);
+
       Properties jobProperties = new Properties();
       jobProperties.setProperty(AutoQCJob.ID_PARAM,
         String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
-        AutoQCJob.class.getCanonicalName(), jobProperties);
-
-      return null;
+      NextJobInfo nextJob = new NextJobInfo(AutoQCJob.class.getCanonicalName(),
+        jobProperties);
+      nextJob.putTransferData(SENSOR_VALUES, sensorValues);
+      return nextJob;
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
       DatabaseUtils.rollBack(conn);

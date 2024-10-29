@@ -221,29 +221,29 @@ public class DataReductionJob extends DataSetJob {
 
       DataSetDataDB.storeDataReduction(conn, dataReductionRecords);
 
-      // If the thread was interrupted, undo everything
-      if (thread.isInterrupted())
+      NextJobInfo nextJob = null;
 
-      {
+      // If the thread was interrupted, undo everything
+      if (thread.isInterrupted()) {
         conn.rollback();
 
         // Requeue the data reduction job
         JobManager.requeueJob(conn, id);
       } else {
-        Properties jobParams = new Properties();
-        jobParams.put(LocateMeasurementsJob.ID_PARAM,
-          String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
-        JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
-          DataReductionQCJob.class.getCanonicalName(), jobParams);
-
         // Set the dataset status
         dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION_QC);
         dataSet.setProcessingVersion();
         DataSetDB.updateDataSet(conn, dataSet);
+
+        Properties jobParams = new Properties();
+        jobParams.put(LocateMeasurementsJob.ID_PARAM,
+          String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
+        nextJob = new NextJobInfo(DataReductionQCJob.class.getCanonicalName(),
+          jobParams);
       }
 
       conn.commit();
-      return null;
+      return nextJob;
     } catch (
 
     Exception e) {

@@ -27,6 +27,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public abstract class DataSetJob extends Job {
 
+  protected static final String SENSOR_VALUES = "SENSOR_VALUES";
+
   /**
    * The parameter name for the {@link DataSet}'s database ID. All
    * {@link DataSetJob}s must contain a parameter with this ID in the properties

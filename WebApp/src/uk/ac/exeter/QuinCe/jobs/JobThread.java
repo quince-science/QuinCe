@@ -106,7 +106,8 @@ public class JobThread extends Thread implements Comparable<JobThread> {
           if (null == nextJob) {
             job = null;
           } else {
-            long nextJobId = JobManager.addJob(job.dataSource, job.owner,
+            long nextJobId = JobManager.addJob(
+              ResourceManager.getInstance().getDBDataSource(), job.owner,
               nextJob.jobClass, nextJob.properties);
             job = JobManager.getJob(ResourceManager.getInstance(),
               ResourceManager.getInstance().getConfig(), nextJobId);

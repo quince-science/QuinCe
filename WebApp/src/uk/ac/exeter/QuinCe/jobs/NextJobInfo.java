@@ -13,7 +13,7 @@ public class NextJobInfo {
 
   protected final Properties properties;
 
-  protected HashMap<String, Object> transferData;
+  protected HashMap<String, Object> transferData = new HashMap<String, Object>();
 
   public NextJobInfo(String jobClass, Properties properties)
     throws InvalidJobClassTypeException {
@@ -26,8 +26,8 @@ public class NextJobInfo {
     this.properties = properties;
   }
 
-  public void setTransferData(HashMap<String, Object> transferData) {
-    this.transferData = transferData;
+  public void putTransferData(String key, Object data) {
+    transferData.put(key, data);
   }
 
   public HashMap<String, Object> getTransferData() {

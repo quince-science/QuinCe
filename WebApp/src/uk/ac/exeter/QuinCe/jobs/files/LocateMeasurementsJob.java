@@ -110,14 +110,14 @@ public class LocateMeasurementsJob extends DataSetJob {
       // Trigger the Build Measurements job
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
+      conn.commit();
+
       Properties jobProperties = new Properties();
       jobProperties.setProperty(LocateMeasurementsJob.ID_PARAM,
         String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
+      NextJobInfo nextJob = new NextJobInfo(
         DataReductionJob.class.getCanonicalName(), jobProperties);
-
-      conn.commit();
-      return null;
+      return nextJob;
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
       DatabaseUtils.rollBack(conn);
