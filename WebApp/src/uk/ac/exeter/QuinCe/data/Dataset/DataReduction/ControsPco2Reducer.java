@@ -120,18 +120,30 @@ public class ControsPco2Reducer extends DataReducer {
       BigDecimal runtimePeriod = runTimePost.getBigDecimalValue()
         .subtract(runTimePrior.getBigDecimalValue());
 
-      BigDecimal k1Diff = k1Post.getBigDecimalValue()
-        .subtract(k1Prior.getBigDecimalValue())
-        .setScale(50, RoundingMode.HALF_UP);
-      k1Step = k1Diff.divide(runtimePeriod, 50, RoundingMode.HALF_UP);
+      if (k1Post.getBigDecimalValue().equals(k1Prior.getBigDecimalValue())) {
+        k1Step = BigDecimal.ZERO;
+      } else {
+        BigDecimal k1Diff = k1Post.getBigDecimalValue()
+          .subtract(k1Prior.getBigDecimalValue())
+          .setScale(50, RoundingMode.HALF_UP);
+        k1Step = k1Diff.divide(runtimePeriod, 50, RoundingMode.HALF_UP);
+      }
 
-      BigDecimal k2Diff = k2Post.getBigDecimalValue()
-        .subtract(k2Prior.getBigDecimalValue());
-      k2Step = k2Diff.divide(runtimePeriod, 50, RoundingMode.HALF_UP);
+      if (k2Post.getBigDecimalValue().equals(k2Prior.getBigDecimalValue())) {
+        k2Step = BigDecimal.ZERO;
+      } else {
+        BigDecimal k2Diff = k2Post.getBigDecimalValue()
+          .subtract(k2Prior.getBigDecimalValue());
+        k2Step = k2Diff.divide(runtimePeriod, 50, RoundingMode.HALF_UP);
+      }
 
-      BigDecimal k3Diff = k3Post.getBigDecimalValue()
-        .subtract(k3Prior.getBigDecimalValue());
-      k3Step = k3Diff.divide(runtimePeriod, 50, RoundingMode.HALF_UP);
+      if (k3Post.getBigDecimalValue().equals(k3Prior.getBigDecimalValue())) {
+        k3Step = BigDecimal.ZERO;
+      } else {
+        BigDecimal k3Diff = k3Post.getBigDecimalValue()
+          .subtract(k3Prior.getBigDecimalValue());
+        k3Step = k3Diff.divide(runtimePeriod, 50, RoundingMode.HALF_UP);
+      }
     } else {
       k1Step = BigDecimal.ZERO;
       k2Step = BigDecimal.ZERO;
