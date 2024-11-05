@@ -501,7 +501,7 @@ public class SensorValuesList {
                 groupStartTime, groupEndTime,
                 DateTimeUtils.midPoint(groupStartTime, groupEndTime),
                 groupMembers, sensorType, firstValue.getValue(),
-                firstValue.getDisplayFlag(),
+                firstValue.getDisplayFlag(allSensorValues),
                 firstValue.getDisplayQCMessage(allSensorValues));
               outputValues.add(outputValue);
 
@@ -527,7 +527,8 @@ public class SensorValuesList {
         SensorValuesListValue outputValue = new SensorValuesListValue(
           groupStartTime, groupEndTime,
           DateTimeUtils.midPoint(groupStartTime, groupEndTime), groupMembers,
-          sensorType, firstValue.getValue(), firstValue.getDisplayFlag(),
+          sensorType, firstValue.getValue(),
+          firstValue.getDisplayFlag(allSensorValues),
           firstValue.getDisplayQCMessage(allSensorValues));
         outputValues.add(outputValue);
       }
@@ -619,7 +620,8 @@ public class SensorValuesList {
 
     // Get the timestamps for the value
     List<LocalDateTime> timestamps = sensorValues.stream()
-      .filter(v -> !v.isNaN() && !v.getDisplayFlag().equals(Flag.FLUSHING))
+      .filter(v -> !v.isNaN()
+        && !v.getDisplayFlag(allSensorValues).equals(Flag.FLUSHING))
       .map(v -> v.getTime()).toList();
 
     LocalDateTime startTime = timestamps.get(0);
@@ -627,7 +629,7 @@ public class SensorValuesList {
 
     // Work out which flags are represented in the sensor values
     List<Flag> presentFlags = sensorValues.stream()
-      .map(SensorValue::getDisplayFlag).distinct().toList();
+      .map(sv -> sv.getDisplayFlag(allSensorValues)).distinct().toList();
 
     Flag chosenFlag;
 
@@ -648,10 +650,11 @@ public class SensorValuesList {
 
       if (chosenFlag.isGood()) {
         usedValues = sensorValues.stream()
-          .filter(v -> v.getDisplayFlag().isGood()).toList();
+          .filter(v -> v.getDisplayFlag(allSensorValues).isGood()).toList();
       } else {
         usedValues = sensorValues.stream()
-          .filter(v -> v.getDisplayFlag().equals(chosenFlag)).toList();
+          .filter(v -> v.getDisplayFlag(allSensorValues).equals(chosenFlag))
+          .toList();
       }
 
       // Use a Set so we don't get duplicate QC messages in the output value

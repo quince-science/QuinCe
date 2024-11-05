@@ -549,10 +549,10 @@ public class ExportBean extends BaseManagedBean {
         export.append(PlotPageTableValue.NAN_TYPE);
       }
     } else {
-      export.registerValue(columnId, value);
+      export.registerValue(columnId, value, allSensorValues);
 
       // Replacing FLUSHING values with empty
-      if (value.getQcFlag().equals(Flag.FLUSHING)) {
+      if (value.getQcFlag(allSensorValues).equals(Flag.FLUSHING)) {
         // Empty columns
         export.append(exportOption.getMissingValue());
 
@@ -583,7 +583,7 @@ public class ExportBean extends BaseManagedBean {
           // If the value is NULL, the QC flag is empty. So only put in the flag
           // if it's not null.
           if (null != value.getValue()) {
-            export.append(value.getQcFlag().getWoceValue());
+            export.append(value.getQcFlag(allSensorValues).getWoceValue());
           }
 
           // QC Comment

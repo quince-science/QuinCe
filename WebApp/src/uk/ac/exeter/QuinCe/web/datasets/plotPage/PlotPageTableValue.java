@@ -56,7 +56,7 @@ public interface PlotPageTableValue {
    *
    * @return The QC flag.
    */
-  public Flag getQcFlag();
+  public Flag getQcFlag(DatasetSensorValues allSensorValues);
 
   /**
    * Get the QC message.

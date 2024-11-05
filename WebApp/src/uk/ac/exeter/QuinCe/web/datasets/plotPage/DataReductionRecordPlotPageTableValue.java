@@ -66,7 +66,7 @@ public class DataReductionRecordPlotPageTableValue
   }
 
   @Override
-  public Flag getQcFlag() {
+  public Flag getQcFlag(DatasetSensorValues allSensorValues) {
     return record.getQCFlag();
   }
 

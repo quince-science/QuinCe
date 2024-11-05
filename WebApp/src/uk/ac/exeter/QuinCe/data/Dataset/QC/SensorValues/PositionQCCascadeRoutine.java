@@ -16,21 +16,21 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 public class PositionQCCascadeRoutine {
 
-  public void run(Instrument instrument, DatasetSensorValues sensorValues,
+  public void run(Instrument instrument, DatasetSensorValues allSensorValues,
     RunTypePeriods runTypePeriods) throws RoutineException {
 
     try {
       TreeSet<LocalDateTime> allTimes = new TreeSet<LocalDateTime>();
-      allTimes.addAll(sensorValues.getTimes());
+      allTimes.addAll(allSensorValues.getTimes());
 
       for (LocalDateTime time : allTimes) {
-        PlotPageTableValue position = sensorValues
+        PlotPageTableValue position = allSensorValues
           .getPositionTableValue(SensorType.LONGITUDE_ID, time);
 
         if (null != position
           && position.getType() != PlotPageTableValue.NAN_TYPE) {
           // Cascade the QC position to sensor values
-          for (SensorValue value : sensorValues.get(time).values()) {
+          for (SensorValue value : allSensorValues.get(time).values()) {
 
             SensorType sensorType = instrument.getSensorAssignments()
               .getSensorTypeForDBColumn(value.getColumnId());
@@ -45,9 +45,9 @@ public class PositionQCCascadeRoutine {
               setCascade = false;
             }
 
-            removePositionCascadeQC(value, sensorValues);
+            removePositionCascadeQC(value, allSensorValues);
 
-            if (setCascade && !position.getQcFlag().isGood()) {
+            if (setCascade && !position.getQcFlag(allSensorValues).isGood()) {
               value.setCascadingQC(position);
             }
           }

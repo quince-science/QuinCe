@@ -98,7 +98,8 @@ public class ExportData extends ManualQCData {
 
       for (Map.Entry<LocalDateTime, Measurement> entry : measurements
         .entrySet()) {
-        if (!entry.getValue().getQCFlag().equals(Flag.BAD)) {
+        if (!entry.getValue().getQCFlag(getAllSensorValues())
+          .equals(Flag.BAD)) {
           filteredMeasurements.put(entry.getKey(), entry.getValue());
         }
       }

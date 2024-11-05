@@ -717,7 +717,7 @@ public class DatasetSensorValues {
           if (null == valueRunType || affectedSensorAssignments.get(assignment)
             .contains(valueRunType)) {
 
-            if (!source.getDisplayFlag().equals(Flag.GOOD)) {
+            if (!source.getDisplayFlag(this).equals(Flag.GOOD)) {
               value.setCascadingQC(source);
             } else {
               value.removeCascadingQC(source.getId());

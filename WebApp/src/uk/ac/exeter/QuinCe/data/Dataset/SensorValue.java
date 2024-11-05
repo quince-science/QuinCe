@@ -548,13 +548,16 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
   }
 
-  public Flag getDisplayFlag() {
+  public Flag getDisplayFlag(DatasetSensorValues allSensorValues) {
 
     Flag result;
 
-    // Lookups are always BAD
-    if (userQCFlag.equals(Flag.LOOKUP) || StringUtils.isEmpty(value)) {
+    if (StringUtils.isEmpty(value)) {
       result = Flag.BAD;
+    } else if (userQCFlag.equals(Flag.LOOKUP)) {
+      Set<Long> sourceValues = StringUtils.delimitedToLongSet(userQCMessage);
+      result = SensorValue.getValueWithWorstFlag(
+        allSensorValues.getById(sourceValues), allSensorValues).getUserQCFlag();
     } else {
       result = flagNeeded() ? autoQC.getOverallFlag() : getUserQCFlag();
     }
@@ -694,14 +697,15 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   }
 
   public static Flag getCombinedDisplayFlag(
-    Collection<SensorValue> sensorValues) {
+    Collection<SensorValue> sensorValues, DatasetSensorValues allSensorValues) {
 
     Flag result = Flag.GOOD;
 
     for (SensorValue sensorValue : sensorValues) {
       if (null != sensorValue) {
-        if (sensorValue.getDisplayFlag().moreSignificantThan(result)) {
-          result = sensorValue.getDisplayFlag();
+        if (sensorValue.getDisplayFlag(allSensorValues)
+          .moreSignificantThan(result)) {
+          result = sensorValue.getDisplayFlag(allSensorValues);
         }
       }
     }
@@ -765,13 +769,13 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @return One of the values with the worst Flag.
    */
   public static SensorValue getValueWithWorstFlag(
-    Collection<SensorValue> values) {
+    Collection<SensorValue> values, DatasetSensorValues allSensorValues) {
     SensorValue result = null;
 
     for (SensorValue value : values) {
       if (null != value) {
-        if (null == result || value.getDisplayFlag()
-          .moreSignificantThan(result.getDisplayFlag())) {
+        if (null == result || value.getDisplayFlag(allSensorValues)
+          .moreSignificantThan(result.getDisplayFlag(allSensorValues))) {
           result = value;
         }
       }

@@ -949,20 +949,21 @@ public abstract class PlotPageData {
       buildMapCache(column);
     }
 
-    return mapCache.get(column).getValueRange(hideFlags);
+    return mapCache.get(column).getValueRange(getAllSensorValues(), hideFlags);
   }
 
   protected abstract List<LocalDateTime> getDataTimes();
 
   public String getMapData(PlotPageColumnHeading column, GeoBounds bounds,
-    boolean useNeededFlags, boolean hideNonGoodFlags) throws Exception {
+    boolean useNeededFlags, boolean hideNonGoodFlags,
+    DatasetSensorValues allSensorValues) throws Exception {
 
     if (!mapCache.containsKey(column)) {
       buildMapCache(column);
     }
 
     return mapCache.get(column).getDisplayJson(bounds, selectedRows,
-      useNeededFlags, hideNonGoodFlags);
+      useNeededFlags, hideNonGoodFlags, allSensorValues);
   }
 
   public GeoBounds getMapBounds(PlotPageColumnHeading column,
@@ -971,12 +972,13 @@ public abstract class PlotPageData {
       buildMapCache(column);
     }
 
-    return mapCache.get(column).getBounds(hideNonGoodFlags);
+    return mapCache.get(column).getBounds(getAllSensorValues(),
+      hideNonGoodFlags);
   }
 
   private void buildMapCache(PlotPageColumnHeading column) throws Exception {
 
-    MapRecords records = new MapRecords(size());
+    MapRecords records = new MapRecords(size(), getAllSensorValues());
 
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
       List<LocalDateTime> times = getDataTimes();
