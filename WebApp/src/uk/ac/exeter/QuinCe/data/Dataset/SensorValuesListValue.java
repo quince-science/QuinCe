@@ -133,14 +133,14 @@ public class SensorValuesListValue
 
       if (sourceSensorValue.isNumeric()) {
         doubleValue = sourceSensorValue.getDoubleValue();
-        qcFlag = sourceSensorValue.getDisplayFlag();
+        qcFlag = sourceSensorValue.getDisplayFlag(allSensorValues);
         qcMessage = sourceSensorValue.getDisplayQCMessage(allSensorValues);
         stringValue = null;
       } else if (null == sourceSensorValue.getValue()) {
         throw new NullPointerException("NULL SensorValues are not permitted");
       } else {
         stringValue = sourceSensorValue.getValue();
-        qcFlag = sourceSensorValue.getDisplayFlag();
+        qcFlag = sourceSensorValue.getDisplayFlag(allSensorValues);
         qcMessage = sourceSensorValue.getDisplayQCMessage(allSensorValues);
         doubleValue = null;
       }

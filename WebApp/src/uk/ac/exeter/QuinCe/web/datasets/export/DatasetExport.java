@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.google.gson.JsonObject;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
@@ -73,10 +74,11 @@ public class DatasetExport {
    * @param value
    *          The value being registered
    */
-  protected void registerValue(long columnId, PlotPageTableValue value) {
+  protected void registerValue(long columnId, PlotPageTableValue value,
+    DatasetSensorValues allSensorValues) {
 
     if (null != value && null != value.getValue()
-      && !value.getQcFlag().equals(Flag.FLUSHING)) {
+      && !value.getQcFlag(allSensorValues).equals(Flag.FLUSHING)) {
       if (columnId == FileDefinition.TIME_COLUMN_ID) {
 
         // The first date we receive is the start date

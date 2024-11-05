@@ -166,7 +166,8 @@ public class PositionQCData extends ManualQCData {
           sources.addAll(longitude.getSources());
           sources.addAll(latitude.getSources());
 
-          record.addColumn(positionString.toString(), longitude.getQcFlag(),
+          record.addColumn(positionString.toString(),
+            longitude.getQcFlag(getAllSensorValues()),
             longitude.getQcMessage(sensorValues, false),
             longitude.getFlagNeeded(), longitude.getType(), sources);
         } else {

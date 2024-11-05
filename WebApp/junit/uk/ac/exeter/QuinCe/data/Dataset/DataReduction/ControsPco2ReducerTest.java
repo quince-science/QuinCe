@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetMeasurements;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -330,12 +331,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Continuous");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -375,12 +379,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Continuous");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -420,12 +427,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Continuous");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -464,12 +474,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Continuous");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -508,12 +521,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Continuous");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -552,12 +568,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Continuous");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -597,12 +616,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero before sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -642,12 +664,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero before sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(Double.NaN,
       dataReductionRecord.getCalculationValue("Zero S₂beam"), 0.001D);
@@ -686,12 +711,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero before sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -730,12 +758,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero before sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -774,12 +805,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero before sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(Double.NaN,
       dataReductionRecord.getCalculationValue("Zero S₂beam"), 0.001D);
@@ -817,12 +851,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero before sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.807D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -862,12 +899,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero after sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -907,12 +947,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero after sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -952,12 +995,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero after sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(Double.NaN,
       dataReductionRecord.getCalculationValue("Zero S₂beam"), 0.001D);
@@ -995,12 +1041,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero after sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -1039,12 +1088,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero after sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(0.808D, dataReductionRecord.getCalculationValue("Zero S₂beam"),
       0.001D);
@@ -1083,12 +1135,15 @@ public class ControsPco2ReducerTest extends DataReducerTest {
     DataSet dataset = getDataset("Zero after sleep");
     ControsPco2Reducer reducer = makeReducer(dataset.getAllProperties());
     DatasetMeasurements measurements = getMeasurements(instrument);
+    DatasetSensorValues allSensorValues = DataSetDataDB
+      .getSensorValues(getConnection(), instrument, DATASET_ID, true, false);
 
     reducer.preprocess(getConnection(), instrument, dataset,
       measurements.getTimeOrderedMeasurements());
 
     DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-      instrument, getTestMeasurement(measurements), getConnection());
+      instrument, getTestMeasurement(measurements), allSensorValues,
+      getConnection());
 
     assertEquals(Double.NaN,
       dataReductionRecord.getCalculationValue("Zero S₂beam"), 0.001D);

@@ -48,46 +48,68 @@ public class SensorValueQCTest extends BaseTest {
     initResourceManager();
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
-  public void defaultQCTest() {
+  public void defaultQCTest() throws Exception {
+    DatasetSensorValues allValues = new DatasetSensorValues(InstrumentDB
+      .getInstrument(ResourceManager.getInstance().getDBDataSource(), 1L));
+
     SensorValue value = makeSensorValue(1L, 1L);
+    allValues.add(value);
+
     assertEquals(Flag.GOOD, value.getAutoQcFlag());
     assertEquals(Flag.ASSUMED_GOOD, value.getUserQCFlag());
-    assertEquals(Flag.ASSUMED_GOOD, value.getDisplayFlag());
+    assertEquals(Flag.ASSUMED_GOOD, value.getDisplayFlag(allValues));
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
-  public void autoQCBadTest() throws RecordNotFoundException, RoutineException {
+  public void autoQCBadTest() throws Exception {
+    DatasetSensorValues allValues = new DatasetSensorValues(InstrumentDB
+      .getInstrument(ResourceManager.getInstance().getDBDataSource(), 1L));
+
     SensorValue value = makeSensorValue(1L, 1L);
+    allValues.add(value);
+
     value.addAutoQCFlag(makeAutoQCFlag(Flag.BAD));
     assertEquals(Flag.BAD, value.getAutoQcFlag());
     assertEquals(Flag.NEEDED, value.getUserQCFlag());
-    assertEquals(Flag.BAD, value.getDisplayFlag());
+    assertEquals(Flag.BAD, value.getDisplayFlag(allValues));
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
-  public void autoQCQuestionableTest()
-    throws RecordNotFoundException, RoutineException {
+  public void autoQCQuestionableTest() throws Exception {
+    DatasetSensorValues allValues = new DatasetSensorValues(InstrumentDB
+      .getInstrument(ResourceManager.getInstance().getDBDataSource(), 1L));
+
     SensorValue value = makeSensorValue(1L, 1L);
+    allValues.add(value);
+
     value.addAutoQCFlag(makeAutoQCFlag(Flag.QUESTIONABLE));
     assertEquals(Flag.QUESTIONABLE, value.getAutoQcFlag());
     assertEquals(Flag.NEEDED, value.getUserQCFlag());
-    assertEquals(Flag.QUESTIONABLE, value.getDisplayFlag());
+    assertEquals(Flag.QUESTIONABLE, value.getDisplayFlag(allValues));
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
-  public void autoQCQuestionableBadTest()
-    throws RecordNotFoundException, RoutineException {
+  public void autoQCQuestionableBadTest() throws Exception {
+    DatasetSensorValues allValues = new DatasetSensorValues(InstrumentDB
+      .getInstrument(ResourceManager.getInstance().getDBDataSource(), 1L));
+
     SensorValue value = makeSensorValue(1L, 1L);
+    allValues.add(value);
+
     value.addAutoQCFlag(makeAutoQCFlag(Flag.QUESTIONABLE));
     value.addAutoQCFlag(makeAutoQCFlag(Flag.BAD));
     assertEquals(Flag.BAD, value.getAutoQcFlag());
     assertEquals(Flag.NEEDED, value.getUserQCFlag());
-    assertEquals(Flag.BAD, value.getDisplayFlag());
+    assertEquals(Flag.BAD, value.getDisplayFlag(allValues));
   }
 
   @FlywayTest
@@ -111,65 +133,98 @@ public class SensorValueQCTest extends BaseTest {
     assertEquals(Flag.QUESTIONABLE, value.getUserQCFlag());
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
-  public void userQCTest() throws InvalidFlagException {
+  public void userQCTest() throws Exception {
+    DatasetSensorValues allValues = new DatasetSensorValues(InstrumentDB
+      .getInstrument(ResourceManager.getInstance().getDBDataSource(), 1L));
+
     SensorValue value = makeSensorValue(1L, 1L);
+    allValues.add(value);
+
     value.setUserQC(Flag.BAD, "BAD");
     assertEquals(Flag.GOOD, value.getAutoQcFlag());
     assertEquals(Flag.BAD, value.getUserQCFlag());
-    assertEquals(Flag.BAD, value.getDisplayFlag());
+    assertEquals(Flag.BAD, value.getDisplayFlag(allValues));
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
-  public void userThenAutoQCTest()
-    throws InvalidFlagException, RecordNotFoundException, RoutineException {
+  public void userThenAutoQCTest() throws Exception {
+    DatasetSensorValues allValues = new DatasetSensorValues(InstrumentDB
+      .getInstrument(ResourceManager.getInstance().getDBDataSource(), 1L));
+
     SensorValue value = makeSensorValue(1L, 1L);
+    allValues.add(value);
+
     value.setUserQC(Flag.BAD, "BAD");
     value.addAutoQCFlag(makeAutoQCFlag(Flag.QUESTIONABLE));
     assertEquals(Flag.QUESTIONABLE, value.getAutoQcFlag());
     assertEquals(Flag.BAD, value.getUserQCFlag());
-    assertEquals(Flag.BAD, value.getDisplayFlag());
+    assertEquals(Flag.BAD, value.getDisplayFlag(allValues));
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
-  public void userOverrideWithLessSignificantTest()
-    throws InvalidFlagException, RecordNotFoundException, RoutineException {
+  public void userOverrideWithLessSignificantTest() throws Exception {
+    DatasetSensorValues allValues = new DatasetSensorValues(InstrumentDB
+      .getInstrument(ResourceManager.getInstance().getDBDataSource(), 1L));
+
     SensorValue value = makeSensorValue(1L, 1L);
+    allValues.add(value);
+
     value.addAutoQCFlag(makeAutoQCFlag(Flag.BAD));
     value.setUserQC(Flag.GOOD, "");
     assertEquals(Flag.BAD, value.getAutoQcFlag());
     assertEquals(Flag.GOOD, value.getUserQCFlag());
-    assertEquals(Flag.GOOD, value.getDisplayFlag());
+    assertEquals(Flag.GOOD, value.getDisplayFlag(allValues));
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
-  public void emptyValueBadTest() {
+  public void emptyValueBadTest() throws Exception {
+    DatasetSensorValues allValues = new DatasetSensorValues(InstrumentDB
+      .getInstrument(ResourceManager.getInstance().getDBDataSource(), 1L));
+
     SensorValue value = makeSensorValue(1L, 1L, "", Flag.ASSUMED_GOOD);
+    allValues.add(value);
+
     assertEquals(Flag.BAD, value.getUserQCFlag());
-    assertEquals(Flag.BAD, value.getDisplayFlag());
+    assertEquals(Flag.BAD, value.getDisplayFlag(allValues));
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
-  public void emptyValueAutoQCBadTest()
-    throws RecordNotFoundException, RoutineException {
+  public void emptyValueAutoQCBadTest() throws Exception {
+    DatasetSensorValues allValues = new DatasetSensorValues(InstrumentDB
+      .getInstrument(ResourceManager.getInstance().getDBDataSource(), 1L));
+
     SensorValue value = makeSensorValue(1L, 1L, "", Flag.ASSUMED_GOOD);
+    allValues.add(value);
+
     value.addAutoQCFlag(makeAutoQCFlag(Flag.QUESTIONABLE));
     assertEquals(Flag.BAD, value.getUserQCFlag());
-    assertEquals(Flag.BAD, value.getDisplayFlag());
+    assertEquals(Flag.BAD, value.getDisplayFlag(allValues));
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
-  public void emptyValueUserQCBadTest() throws InvalidFlagException {
+  public void emptyValueUserQCBadTest() throws Exception {
+    DatasetSensorValues allValues = new DatasetSensorValues(InstrumentDB
+      .getInstrument(ResourceManager.getInstance().getDBDataSource(), 1L));
+
     SensorValue value = makeSensorValue(1L, 1L, "", Flag.ASSUMED_GOOD);
+    allValues.add(value);
+
     value.setUserQC(Flag.GOOD, "GOOD");
     assertEquals(Flag.BAD, value.getUserQCFlag());
-    assertEquals(Flag.BAD, value.getDisplayFlag());
+    assertEquals(Flag.BAD, value.getDisplayFlag(allValues));
   }
 
   @FlywayTest
@@ -226,7 +281,7 @@ public class SensorValueQCTest extends BaseTest {
     allValues.add(source);
     allValues.add(target);
 
-    assertEquals(Flag.BAD, target.getDisplayFlag());
+    assertEquals(Flag.BAD, target.getDisplayFlag(allValues));
     assertEquals("Source Bad", target.getDisplayQCMessage(allValues));
   }
 
@@ -251,7 +306,7 @@ public class SensorValueQCTest extends BaseTest {
     allValues.add(source2);
     allValues.add(target);
 
-    assertEquals(Flag.BAD, target.getDisplayFlag());
+    assertEquals(Flag.BAD, target.getDisplayFlag(allValues));
     assertEquals("One Bad;Two Bad", target.getDisplayQCMessage(allValues));
   }
 
@@ -278,7 +333,7 @@ public class SensorValueQCTest extends BaseTest {
 
     target.removeCascadingQC(source1.getId());
 
-    assertEquals(Flag.BAD, target.getDisplayFlag());
+    assertEquals(Flag.BAD, target.getDisplayFlag(allValues));
     assertEquals("Two Bad", target.getDisplayQCMessage(allValues));
   }
 

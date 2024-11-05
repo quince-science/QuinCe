@@ -162,7 +162,7 @@ public class FlagCascadeTest extends TestSetTest {
       DataReducer reducer = new QCCascadeReducer(variable, null);
 
       DataReductionRecord record = reducer.performDataReduction(instrument,
-        locatedMeasurements.get(0), conn);
+        locatedMeasurements.get(0), allSensorValues, conn);
 
       assertEquals(line.getIntField(DATA_REDUCTION_FLAG_COL),
         record.getQCFlag().getWoceValue());

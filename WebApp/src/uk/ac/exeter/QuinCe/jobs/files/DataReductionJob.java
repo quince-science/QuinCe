@@ -210,7 +210,8 @@ public class DataReductionJob extends DataSetJob {
               measurement.getRunType(Measurement.RUN_TYPE_DEFINES_VARIABLE))) {
 
             DataReductionRecord dataReductionRecord = reducer
-              .performDataReduction(instrument, measurement, conn);
+              .performDataReduction(instrument, measurement, allSensorValues,
+                conn);
 
             dataReductionRecords.add(dataReductionRecord);
           }

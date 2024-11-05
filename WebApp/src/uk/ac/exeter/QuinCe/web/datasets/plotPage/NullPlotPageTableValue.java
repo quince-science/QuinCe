@@ -27,7 +27,7 @@ public class NullPlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
-  public Flag getQcFlag() {
+  public Flag getQcFlag(DatasetSensorValues allSensorValues) {
     return Flag.NO_QC;
   }
 

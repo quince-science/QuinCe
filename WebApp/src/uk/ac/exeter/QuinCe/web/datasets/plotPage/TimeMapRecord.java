@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.javadocmd.simplelatlng.LatLng;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
@@ -17,7 +18,7 @@ public class TimeMapRecord extends MapRecord {
   }
 
   @Override
-  public boolean isGood() {
+  public boolean isGood(DatasetSensorValues allSensorValues) {
     return true;
   }
 
@@ -32,7 +33,8 @@ public class TimeMapRecord extends MapRecord {
   }
 
   @Override
-  public Flag getFlag(boolean ignoreNeeded) {
+  public Flag getFlag(DatasetSensorValues allSensorValues,
+    boolean ignoreNeeded) {
     return Flag.GOOD;
   }
 }

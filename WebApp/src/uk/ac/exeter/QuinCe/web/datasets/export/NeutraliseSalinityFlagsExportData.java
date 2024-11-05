@@ -84,9 +84,9 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
             for (Long salinityColumn : salinityColumns) {
               PlotPageTableValue salinity = getColumnValue(rowId,
                 salinityColumn);
-              if (null != salinity
-                && salinity.getQcFlag().moreSignificantThan(salinityFlag)) {
-                salinityFlag = salinity.getQcFlag();
+              if (null != salinity && salinity.getQcFlag(getAllSensorValues())
+                .moreSignificantThan(salinityFlag)) {
+                salinityFlag = salinity.getQcFlag(getAllSensorValues());
               }
             }
 
@@ -108,7 +108,7 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
 
                 // If the flag is Bad or Questionable, record the QC comment
                 // and upgrade the flag if needed
-                Flag cascadeFlag = cascadeValue.getQcFlag();
+                Flag cascadeFlag = cascadeValue.getQcFlag(getAllSensorValues());
                 if (cascadeFlag.equals(Flag.BAD)
                   || cascadeFlag.equals(Flag.QUESTIONABLE)) {
 

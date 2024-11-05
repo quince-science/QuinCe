@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import com.javadocmd.simplelatlng.LatLng;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
@@ -15,8 +16,8 @@ public class SensorValueMapRecord extends MapRecord {
   }
 
   @Override
-  public boolean isGood() {
-    return value.getDisplayFlag().isGood();
+  public boolean isGood(DatasetSensorValues allSensorValues) {
+    return value.getDisplayFlag(allSensorValues).isGood();
   }
 
   @Override
@@ -30,14 +31,15 @@ public class SensorValueMapRecord extends MapRecord {
   }
 
   @Override
-  public Flag getFlag(boolean ignoreNeeded) {
+  public Flag getFlag(DatasetSensorValues allSensorValues,
+    boolean ignoreNeeded) {
 
     Flag result;
 
     if (!ignoreNeeded && value.flagNeeded()) {
       result = Flag.NEEDED;
     } else {
-      result = value.getDisplayFlag();
+      result = value.getDisplayFlag(allSensorValues);
     }
 
     return result;

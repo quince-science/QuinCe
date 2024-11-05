@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -25,8 +26,12 @@ public class MapRecordJsonSerializer implements JsonSerializer<MapRecord> {
 
   private int type;
 
-  public MapRecordJsonSerializer(int type) {
+  private DatasetSensorValues allSensorValues;
+
+  public MapRecordJsonSerializer(int type,
+    DatasetSensorValues allSensorValues) {
     this.type = type;
+    this.allSensorValues = allSensorValues;
   }
 
   @Override
@@ -59,12 +64,14 @@ public class MapRecordJsonSerializer implements JsonSerializer<MapRecord> {
     }
     case FLAG: {
       properties.addProperty("type", FLAG);
-      properties.addProperty("flag", src.getFlag(false).getFlagValue());
+      properties.addProperty("flag",
+        src.getFlag(allSensorValues, false).getFlagValue());
       break;
     }
     case FLAG_IGNORE_NEEDED: {
       properties.addProperty("type", FLAG);
-      properties.addProperty("flag", src.getFlag(true).getFlagValue());
+      properties.addProperty("flag",
+        src.getFlag(allSensorValues, true).getFlagValue());
       break;
     }
     case SELECTION: {

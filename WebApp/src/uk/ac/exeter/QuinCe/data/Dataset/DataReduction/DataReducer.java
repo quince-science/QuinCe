@@ -10,6 +10,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
@@ -84,7 +85,8 @@ public abstract class DataReducer {
    * @see Variable#getCascade(SensorType, Flag, SensorAssignments)
    */
   public DataReductionRecord performDataReduction(Instrument instrument,
-    Measurement measurement, Connection conn) throws DataReductionException {
+    Measurement measurement, DatasetSensorValues allSensorValues,
+    Connection conn) throws DataReductionException {
 
     try {
       DataReductionRecord record = new DataReductionRecord(measurement,
@@ -104,7 +106,8 @@ public abstract class DataReducer {
           // Collect all QC messages together. Do not record the same message
           // from multiple sources.
           Flag valueFlag = variable.getCascade(value.getSensorType(),
-            value.getQcFlag(), instrument.getSensorAssignments());
+            value.getQcFlag(allSensorValues),
+            instrument.getSensorAssignments());
 
           if (!valueFlag.isGood()) {
             if (valueFlag.moreSignificantThan(cascadeFlag)) {
