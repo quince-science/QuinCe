@@ -826,24 +826,32 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    *
    * @param source
    *          The source of the QC flag
+   * @throws InvalidFlagException
    */
-  public void setCascadingQC(SensorValue source) {
+  public void setCascadingQC(SensorValue source) throws InvalidFlagException {
     SortedSet<Long> sources = userQCFlag.equals(Flag.LOOKUP)
       ? StringUtils.delimitedToLongSet(userQCMessage)
       : new TreeSet<Long>();
 
     sources.add(source.getId());
+
     userQCFlag = Flag.LOOKUP;
     userQCMessage = StringUtils.collectionToDelimited(sources, ",");
     dirty = true;
   }
 
-  public void setCascadingQC(PlotPageTableValue source) {
+  public void setCascadingQC(PlotPageTableValue source)
+    throws InvalidFlagException {
     SortedSet<Long> sources = userQCFlag.equals(Flag.LOOKUP)
       ? StringUtils.delimitedToLongSet(userQCMessage)
       : new TreeSet<Long>();
 
     sources.addAll(source.getSources());
+
+    if (sources.size() == 0) {
+      throw new InvalidFlagException(
+        "Attempted to set LOOKUP flag with no source");
+    }
 
     userQCFlag = Flag.LOOKUP;
     userQCMessage = StringUtils.collectionToDelimited(sources, ",");
