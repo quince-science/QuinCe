@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import com.javadocmd.simplelatlng.LatLng;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -681,9 +682,11 @@ public class DatasetSensorValues {
    * @return The {@link SensorValues} that have been changed as part of this
    *         cascade.
    * @throws RecordNotFoundException
+   * @throws InvalidFlagException
    */
   public Set<SensorValue> applyQCCascade(SensorValue source,
-    RunTypePeriods runTypePeriods) throws RecordNotFoundException {
+    RunTypePeriods runTypePeriods)
+    throws RecordNotFoundException, InvalidFlagException {
 
     Set<SensorValue> changedValues = new HashSet<SensorValue>();
 

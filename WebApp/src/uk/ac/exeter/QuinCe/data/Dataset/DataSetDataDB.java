@@ -397,6 +397,14 @@ public class DataSetDataDB {
               }
             }
 
+            if (value.getUserQCFlag().commentRequired()
+              && StringUtils.isBlank(value.getUserQCMessage())) {
+              throw new InvalidSensorValueException(
+                "User QC message cannot be empty with flag "
+                  + value.getUserQCFlag().getFlagValue(),
+                value);
+            }
+
             updateStmt.setString(3, userQCMessage);
             updateStmt.setLong(4, value.getId());
 

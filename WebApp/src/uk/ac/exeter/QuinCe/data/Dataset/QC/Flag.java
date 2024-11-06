@@ -745,4 +745,8 @@ public class Flag {
 
     return result;
   }
+
+  public boolean commentRequired() {
+    return flagValue == 3 || flagValue == 4 || flagValue == -200;
+  }
 }
