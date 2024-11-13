@@ -17,7 +17,7 @@ import uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 
 /**
  * Tests of multiple calibration edits for the {@link ExternalStandardsBean}.
- * 
+ *
  * <p>
  * Much of the code for these tests is inherited from
  * {@link ExternalStandardsBeanTest}.
