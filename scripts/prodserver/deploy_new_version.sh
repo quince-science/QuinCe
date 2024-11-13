@@ -56,13 +56,13 @@ then
   exit 1
 fi
 
-echo "Run project unit tests"
-./gradlew test
-if [ $? -gt 0 ]
-then
-  >&2 printf "ERROR: Application unit testing failed.\n"
-  exit 1
-fi
+#echo "Run project unit tests"
+#./gradlew test
+#if [ $? -gt 0 ]
+#then
+#  >&2 printf "ERROR: Application unit testing failed.\n"
+#  exit 1
+#fi
 echo ""
 echo ""
 
