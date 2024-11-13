@@ -77,7 +77,7 @@ def process_station(db, name, config):
     """
     # noinspection PyBroadException
     try:
-        station_config = config[station]
+        station_config = config[name]
 
         # Get the last file processed previously
         last_processed_file, last_processed_date = get_last_processed_file(db, name)
