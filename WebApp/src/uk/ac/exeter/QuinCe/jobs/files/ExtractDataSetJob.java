@@ -161,9 +161,17 @@ public class ExtractDataSetJob extends DataSetJob {
 
             if (fileDefinition.hasRunTypes()) {
               try {
-                RunTypeCategory runType = fileDefinition.getRunType(line, true)
-                  .getCategory();
-                if (runType.equals(RunTypeCategory.IGNORED)) {
+                RunTypeCategory runType = null;
+
+                RunTypeAssignment runTypeAssignment = fileDefinition
+                  .getRunType(line, true);
+
+                if (null != runTypeAssignment) {
+                  runType = runTypeAssignment.getCategory();
+                }
+
+                if (null != runType
+                  && runType.equals(RunTypeCategory.IGNORED)) {
                   checkColumnCount = false;
                 }
               } catch (FileDefinitionException e) {
