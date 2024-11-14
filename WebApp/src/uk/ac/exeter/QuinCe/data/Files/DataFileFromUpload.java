@@ -18,6 +18,7 @@ public class DataFileFromUpload extends DataFile {
 
     super(fileDefinition, filename);
     this.source = source;
+    validate();
   }
 
   @Override

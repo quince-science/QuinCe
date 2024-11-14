@@ -143,23 +143,6 @@ public abstract class DataFile implements TimeRange {
     this.properties = defaultProperties();
 
     messages = new TreeSet<DataFileMessage>();
-    boolean fileOK = false;
-
-    try {
-      fileOK = extractHeaderDate();
-    } catch (Exception e) {
-      // Since we were provided with the file contents,
-      // we won't be loading them so we can't get an exception here.
-    }
-
-    if (fileOK) {
-      try {
-        validate();
-      } catch (Exception e) {
-        // Since we were provided with the file contents,
-        // we won't be loading them so we can't get an exception here.
-      }
-    }
   }
 
   /**
