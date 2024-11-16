@@ -14,15 +14,14 @@ public class HDMOneFieldParser extends HDMParser {
   @Override
   protected String getHemisphere(String value, String dummy)
     throws PositionParseException {
-    if (!parsed) {
-      parse(value);
-    }
+
+    parse(value);
 
     return hemisphere;
   }
 
   @Override
-  protected void parseAction(String value) throws PositionParseException {
+  protected void parse(String value) throws PositionParseException {
 
     // Split on whitespace
     String[] split = value.split("\\s+");

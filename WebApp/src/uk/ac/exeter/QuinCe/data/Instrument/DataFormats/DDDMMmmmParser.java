@@ -23,7 +23,7 @@ public class DDDMMmmmParser extends HDMParser {
   }
 
   @Override
-  protected void parseAction(String value) throws PositionParseException {
+  protected void parse(String value) throws PositionParseException {
 
     Pattern p = hasHemisphere ? HAS_HEMISPHERE_PATTERN : NO_HEMISPHERE_PATTERN;
     Matcher matcher = p.matcher(value);
