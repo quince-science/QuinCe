@@ -84,6 +84,11 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   private String value;
 
   /**
+   * Cache of the value as a {@link Double}.
+   */
+  private Double doubleValue = null;
+
+  /**
    * Indicates whether the value needs to be saved to the database
    */
   private boolean dirty;
@@ -216,7 +221,11 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @return The value as a Double
    */
   public Double getDoubleValue() {
-    return StringUtils.doubleFromString(value);
+    if (null == doubleValue) {
+      doubleValue = StringUtils.doubleFromString(value);
+    }
+
+    return doubleValue;
   }
 
   /**
@@ -552,7 +561,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   public void calibrateValue(Calibration calibration) {
     if (!isNaN()) {
-      value = String.valueOf(calibration.calibrateValue(getDoubleValue()));
+      setValue(calibration.calibrateValue(getDoubleValue()));
     }
   }
 
@@ -607,6 +616,12 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   public void setValue(String value) {
     this.value = value;
+    doubleValue = null;
+  }
+
+  public void setValue(Double value) {
+    this.doubleValue = value;
+    this.value = String.valueOf(value);
   }
 
   public boolean noValue() {
