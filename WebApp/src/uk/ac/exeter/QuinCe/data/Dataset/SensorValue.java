@@ -45,7 +45,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   /**
    * The database ID of this value
    */
-  private final long id;
+  private long id;
 
   /**
    * The ID of the dataset that the sensor value is in
@@ -451,6 +451,14 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    */
   public long getId() {
     return id;
+  }
+
+  public void setId(long id) throws IllegalAccessException {
+    if (isInDatabase()) {
+      throw new IllegalAccessException("Cannot reassign SensorValue ID");
+    }
+
+    this.id = id;
   }
 
   @Override

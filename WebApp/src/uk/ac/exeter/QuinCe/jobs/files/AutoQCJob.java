@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,8 +147,16 @@ public class AutoQCJob extends DataSetJob {
 
       SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 
-      DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataSet.getId(), true, true);
+      @SuppressWarnings("unchecked")
+      Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
+        SENSOR_VALUES);
+      if (null == rawSensorValues) {
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
+          dataSet.getId());
+      }
+
+      DatasetSensorValues sensorValues = new DatasetSensorValues(conn,
+        instrument, dataSet.getId(), true, true, rawSensorValues);
 
       RunTypePeriods runTypePeriods = null;
       SensorValuesList runTypeValues = null;
@@ -309,6 +318,7 @@ public class AutoQCJob extends DataSetJob {
         String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
       NextJobInfo nextJob = new NextJobInfo(
         LocateMeasurementsJob.class.getCanonicalName(), jobProperties);
+      nextJob.putTransferData(SENSOR_VALUES, rawSensorValues);
       return nextJob;
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);

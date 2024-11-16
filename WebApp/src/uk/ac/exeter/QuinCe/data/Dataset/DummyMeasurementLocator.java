@@ -19,7 +19,8 @@ public class DummyMeasurementLocator extends MeasurementLocator {
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
-    Instrument instrument, DataSet dataset) throws MeasurementLocatorException {
+    Instrument instrument, DataSet dataset, DatasetSensorValues sensorValues)
+    throws MeasurementLocatorException {
 
     return new ArrayList<Measurement>();
   }

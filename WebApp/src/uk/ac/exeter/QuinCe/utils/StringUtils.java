@@ -723,14 +723,14 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   public static String combine(String string1, String string2,
     String combiner) {
-    String result = null;
+    String result = "";
 
-    if (!isEmpty(string1.trim())) {
+    if (null != string1 && !isEmpty(string1.trim())) {
       result = string1.trim();
     }
 
-    if (!isEmpty(string2.trim())) {
-      if (!isEmpty(result)) {
+    if (null != string2 && !isEmpty(string2.trim())) {
+      if (null != result && !isEmpty(result)) {
         result += combiner;
         result += string2.trim();
       } else {

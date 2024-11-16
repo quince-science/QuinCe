@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +20,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.SensorValuePlotPageTableValue;
@@ -100,6 +102,61 @@ public class DatasetSensorValues {
      * The longitudes and latitudes cannot be instatiated in the constructor.
      * They will be initiated on demand.
      */
+  }
+
+  /**
+   * Construct a {@code DatasetSensorValues} object from an existing
+   * {@link Collection} of {@link SensorValue}s.
+   *
+   * <p>
+   * This uses exactly the same logic as
+   * {@link DataSetDataDB#getSensorValues(Connection, Instrument, long, boolean, boolean)},
+   * but allows us to create the object without loading everything from the
+   * database. It relies on having a <i>complete</i> set of all the
+   * {@link SensorValue}s for a {@link DataSet}, since it performs filtering
+   * based on that assumption. Using an already filtered set of
+   * {@link SensorValues} may result in unexpected behaviour.
+   * </p>
+   *
+   * @param conn
+   *          A database connection
+   * @param instrument
+   *          The instrument to which the dataset belongs.
+   * @param datasetId
+   *          The database ID of the dataset whose values are to be retrieved
+   * @param ignoreFlushing
+   *          Indicates whether or not values in the instrument's flushing
+   *          period should be left out of the result.
+   * @param rawSensorValues
+   *          The source {@link SensorValue} objects.
+   * @return The values.
+   * @throws DatabaseException
+   * @throws RecordNotFoundException
+   */
+  public DatasetSensorValues(Connection conn, Instrument instrument,
+    long datasetId, boolean ignoreFlushing, boolean ignoreInternalCalibrations,
+    Collection<SensorValue> rawSensorValues)
+    throws DatabaseException, RecordNotFoundException {
+
+    valuesById = new HashMap<Long, SensorValue>();
+    valuesByColumn = new HashMap<Long, SensorValuesList>();
+    this.instrument = instrument;
+
+    TreeSet<Long> ignoredSensorValues = new TreeSet<Long>();
+
+    if (instrument.hasInternalCalibrations() && ignoreInternalCalibrations) {
+      ignoredSensorValues = DataSetDataDB
+        .getInternalCalibrationSensorValueIDs(conn, instrument, datasetId);
+    }
+
+    for (SensorValue sensorValue : rawSensorValues) {
+      if (!ignoredSensorValues.contains(sensorValue.getId())) {
+        if (!ignoreFlushing
+          || !sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+          add(sensorValue);
+        }
+      }
+    }
   }
 
   /**

@@ -92,7 +92,7 @@ public class DataSetDataDB {
   private static final String GET_SENSOR_VALUES_FOR_DATASET_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 7
-    + "FROM sensor_values WHERE dataset_id = ?";
+    + "FROM sensor_values WHERE dataset_id = ? ORDER BY id";
 
   private static final String GET_SENSOR_VALUES_FOR_DATASET_NO_FLUSHING_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
@@ -322,15 +322,16 @@ public class DataSetDataDB {
   public static void storeSensorValues(Connection conn,
     Collection<SensorValue> sensorValues) throws MissingParamException,
     DatabaseException, InvalidSensorValueException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException {
+    InstrumentException, SensorGroupsException, IllegalAccessException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(sensorValues, "sensorValues", true);
 
     boolean autoCommitStatus = true;
 
-    AutoBatchPreparedStatement addStmt = null;
+    PreparedStatement addStmt = null;
     AutoBatchPreparedStatement updateStmt = null;
+    ResultSet generatedKeys;
 
     try {
 
@@ -338,8 +339,8 @@ public class DataSetDataDB {
 
       conn.setAutoCommit(false);
 
-      addStmt = new AutoBatchPreparedStatement(conn,
-        STORE_NEW_SENSOR_VALUE_STATEMENT);
+      addStmt = conn.prepareStatement(STORE_NEW_SENSOR_VALUE_STATEMENT,
+        Statement.RETURN_GENERATED_KEYS);
       updateStmt = new AutoBatchPreparedStatement(conn,
         UPDATE_SENSOR_VALUE_STATEMENT);
 
@@ -403,6 +404,11 @@ public class DataSetDataDB {
             addStmt.setString(7, value.getUserQCMessage());
 
             addStmt.execute();
+
+            generatedKeys = addStmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+              value.setId(generatedKeys.getLong(1));
+            }
           } else {
             updateStmt.setString(1, value.getAutoQcResult().toJson());
             updateStmt.setInt(2, value.getUserQCFlag().getFlagValue());
@@ -427,12 +433,13 @@ public class DataSetDataDB {
       updateStmt.close();
 
       conn.commit();
-    } catch (SQLException e) {
+    } catch (
+
+    SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
-    } catch (InvalidSensorValueException | RecordNotFoundException
-      | InstrumentException | SensorGroupsException e) {
+    } catch (Exception e) {
       try {
-        addStmt.abort();
+        addStmt.close();
         updateStmt.abort();
 
         conn.rollback();
@@ -481,8 +488,8 @@ public class DataSetDataDB {
   }
 
   /**
-   * Get all the sensor values for a dataset grouped by their column in the
-   * source data file(s)
+   * Get all the sensor values for a {@link DataSet} grouped by their column in
+   * the source data file(s)
    *
    * @param conn
    *          A database connection
@@ -541,6 +548,42 @@ public class DataSetDataDB {
     }
 
     return values;
+  }
+
+  /**
+   * Get all the sensor values for a {@link DataSet} as a simple collection.
+   *
+   * @param conn
+   *          A database connection.
+   * @param datasetId
+   *          The {@link DataSet} id.
+   * @return The sensor values.
+   * @throws DatabaseException
+   * @throws InvalidFlagException
+   */
+  public static TreeSet<SensorValue> getRawSensorValues(Connection conn,
+    long datasetId) throws DatabaseException, InvalidFlagException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
+    TreeSet<SensorValue> sensorValues = new TreeSet<SensorValue>();
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(GET_SENSOR_VALUES_FOR_DATASET_QUERY)) {
+
+      stmt.setLong(1, datasetId);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          sensorValues.add(sensorValueFromResultSet(records, datasetId));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving sensor values", e);
+    }
+
+    return sensorValues;
   }
 
   public static DatasetSensorValues getPositionSensorValues(Connection conn,

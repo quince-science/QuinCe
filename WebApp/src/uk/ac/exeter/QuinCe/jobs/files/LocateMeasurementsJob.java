@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,9 +16,11 @@ import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementLocator;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -85,6 +88,17 @@ public class LocateMeasurementsJob extends DataSetJob {
       reset(conn);
       conn.setAutoCommit(false);
 
+      @SuppressWarnings("unchecked")
+      Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
+        SENSOR_VALUES);
+      if (null == rawSensorValues) {
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
+          dataSet.getId());
+      }
+
+      DatasetSensorValues sensorValues = new DatasetSensorValues(conn,
+        instrument, dataSet.getId(), false, true, rawSensorValues);
+
       // Work out which measurement locators we need to use
       Set<MeasurementLocator> measurementLocators = new HashSet<MeasurementLocator>();
 
@@ -102,7 +116,7 @@ public class LocateMeasurementsJob extends DataSetJob {
 
       for (MeasurementLocator locator : measurementLocators) {
         addMeasurements(measurements,
-          locator.locateMeasurements(conn, instrument, dataSet));
+          locator.locateMeasurements(conn, instrument, dataSet, sensorValues));
       }
 
       DataSetDataDB.storeMeasurements(conn, measurements.values());
