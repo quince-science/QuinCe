@@ -161,9 +161,6 @@ public class AutoQCJob extends DataSetJob {
       RunTypePeriods runTypePeriods = null;
       SensorValuesList runTypeValues = null;
 
-      // This will be populated if the instrument has position data
-      DatasetSensorValues positionValues = null;
-
       if (instrument.hasRunTypes()) {
         measurementRunTypes = instrument.getMeasurementRunTypes();
 
@@ -197,15 +194,12 @@ public class AutoQCJob extends DataSetJob {
       // call.
       if (!dataSet.fixedPosition()) {
 
-        positionValues = DataSetDataDB.getPositionSensorValues(conn, instrument,
-          dataSet.getId());
+        SensorValue.clearAutoQC(sensorValues.getAllPositionSensorValues());
 
-        SensorValue.clearAutoQC(positionValues.getAllPositionSensorValues());
-
-        PositionQCRoutine positionQC = new PositionQCRoutine(positionValues);
+        PositionQCRoutine positionQC = new PositionQCRoutine(sensorValues);
         positionQC.qc(null, null);
 
-        SpeedQCRoutine speedQC = new SpeedQCRoutine(positionValues);
+        SpeedQCRoutine speedQC = new SpeedQCRoutine(sensorValues);
         speedQC.qc(null, null);
       }
 
@@ -301,11 +295,6 @@ public class AutoQCJob extends DataSetJob {
       // Send all sensor values to be stored. The storeSensorValues method only
       // writes those values whose 'dirty' flag is set.
       DataSetDataDB.storeSensorValues(conn, sensorValues.getAll());
-
-      if (null != positionValues) {
-        DataSetDataDB.storeSensorValues(conn,
-          positionValues.getAllPositionSensorValues());
-      }
 
       // Trigger the Locate Measurements job
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
