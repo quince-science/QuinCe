@@ -17,15 +17,13 @@ public class RunTypeMeasurementLocator extends MeasurementLocator {
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
-    Instrument instrument, DataSet dataset) throws MeasurementLocatorException {
+    Instrument instrument, DataSet dataset, DatasetSensorValues allSensorValues)
+    throws MeasurementLocatorException {
 
     try {
       // Get the run types for the dataset, along with the times that they are
       // set
       TreeMap<LocalDateTime, String> runTypes = new TreeMap<LocalDateTime, String>();
-
-      DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataset.getId(), false, true);
 
       SensorValuesList runTypeSensorValues = allSensorValues.getRunTypes();
 

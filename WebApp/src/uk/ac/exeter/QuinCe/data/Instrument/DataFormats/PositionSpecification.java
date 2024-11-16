@@ -32,6 +32,11 @@ public abstract class PositionSpecification {
   protected int format;
 
   /**
+   * The format parser
+   */
+  protected PositionParser parser;
+
+  /**
    * Creates an empty position specification
    */
   protected PositionSpecification() {
@@ -201,6 +206,10 @@ public abstract class PositionSpecification {
       String hemisphereValue = null;
       if (getHemisphereColumn() > -1) {
         hemisphereValue = line.get(getHemisphereColumn()).trim();
+        if (!isHemisphereValid(hemisphereValue)) {
+          throw new PositionParseException(
+            "Invalid hemisphere value " + hemisphereValue);
+        }
       }
 
       PositionParser parser = getParser();
@@ -237,4 +246,10 @@ public abstract class PositionSpecification {
   protected abstract double getMin();
 
   protected abstract double getMax();
+
+  protected abstract List<String> getValidHemisphereValues();
+
+  protected boolean isHemisphereValid(String hemisphereValue) {
+    return getValidHemisphereValues().contains(hemisphereValue);
+  }
 }

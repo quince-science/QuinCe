@@ -44,7 +44,8 @@ public abstract class MeasurementLocator {
    *           If an error occurs during the location process.
    */
   public abstract List<Measurement> locateMeasurements(Connection conn,
-    Instrument instrument, DataSet dataset) throws MeasurementLocatorException;
+    Instrument instrument, DataSet dataset, DatasetSensorValues allSensorValues)
+    throws MeasurementLocatorException;
 
   /**
    * Get the {@link MeasurementLocator} instance for the specified variable.

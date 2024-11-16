@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -19,6 +20,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCollector;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCollectorFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -31,6 +33,7 @@ import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.jobs.NextJobInfo;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
@@ -71,14 +74,14 @@ public class DataReductionJob extends DataSetJob {
    *           If the job cannot be found in the database
    */
   public DataReductionJob(ResourceManager resourceManager, Properties config,
-    long jobId, Properties properties) throws MissingParamException,
+    long jobId, User owner, Properties properties) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 
-    super(resourceManager, config, jobId, properties);
+    super(resourceManager, config, jobId, owner, properties);
   }
 
   @Override
-  protected void execute(JobThread thread) throws JobFailedException {
+  protected NextJobInfo execute(JobThread thread) throws JobFailedException {
 
     Connection conn = null;
 
@@ -97,9 +100,16 @@ public class DataReductionJob extends DataSetJob {
 
       conn.setAutoCommit(false);
 
-      // Load all the sensor values for this dataset
-      DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataSet.getId(), false, false);
+      @SuppressWarnings("unchecked")
+      Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
+        SENSOR_VALUES);
+      if (null == rawSensorValues) {
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
+          dataSet.getId());
+      }
+
+      DatasetSensorValues allSensorValues = new DatasetSensorValues(conn,
+        instrument, dataSet.getId(), false, false, rawSensorValues);
 
       // Get all the measurements grouped by run type
       DatasetMeasurements allMeasurements = DataSetDataDB
@@ -220,28 +230,30 @@ public class DataReductionJob extends DataSetJob {
 
       DataSetDataDB.storeDataReduction(conn, dataReductionRecords);
 
-      // If the thread was interrupted, undo everything
-      if (thread.isInterrupted())
+      NextJobInfo nextJob = null;
 
-      {
+      // If the thread was interrupted, undo everything
+      if (thread.isInterrupted()) {
         conn.rollback();
 
         // Requeue the data reduction job
         JobManager.requeueJob(conn, id);
       } else {
-        Properties jobParams = new Properties();
-        jobParams.put(LocateMeasurementsJob.ID_PARAM,
-          String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
-        JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
-          DataReductionQCJob.class.getCanonicalName(), jobParams);
-
         // Set the dataset status
         dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION_QC);
         dataSet.setProcessingVersion();
         DataSetDB.updateDataSet(conn, dataSet);
+
+        Properties jobParams = new Properties();
+        jobParams.put(LocateMeasurementsJob.ID_PARAM,
+          String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
+        nextJob = new NextJobInfo(DataReductionQCJob.class.getCanonicalName(),
+          jobParams);
+        nextJob.putTransferData(SENSOR_VALUES, rawSensorValues);
       }
 
       conn.commit();
+      return nextJob;
     } catch (
 
     Exception e) {

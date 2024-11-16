@@ -45,7 +45,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   /**
    * The database ID of this value
    */
-  private final long id;
+  private long id;
 
   /**
    * The ID of the dataset that the sensor value is in
@@ -82,6 +82,11 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * The value (can be null)
    */
   private String value;
+
+  /**
+   * Cache of the value as a {@link Double}.
+   */
+  private Double doubleValue = null;
 
   /**
    * Indicates whether the value needs to be saved to the database
@@ -216,7 +221,11 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @return The value as a Double
    */
   public Double getDoubleValue() {
-    return StringUtils.doubleFromString(value);
+    if (null == doubleValue) {
+      doubleValue = StringUtils.doubleFromString(value);
+    }
+
+    return doubleValue;
   }
 
   /**
@@ -453,6 +462,14 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     return id;
   }
 
+  public void setId(long id) throws IllegalAccessException {
+    if (isInDatabase()) {
+      throw new IllegalAccessException("Cannot reassign SensorValue ID");
+    }
+
+    this.id = id;
+  }
+
   @Override
   public int compareTo(SensorValue o) {
     // Compare on time, dataset ID, column ID
@@ -544,7 +561,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   public void calibrateValue(Calibration calibration) {
     if (!isNaN()) {
-      value = String.valueOf(calibration.calibrateValue(getDoubleValue()));
+      setValue(calibration.calibrateValue(getDoubleValue()));
     }
   }
 
@@ -602,6 +619,12 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   public void setValue(String value) {
     this.value = value;
+    doubleValue = null;
+  }
+
+  public void setValue(Double value) {
+    this.doubleValue = value;
+    this.value = String.valueOf(value);
   }
 
   public boolean noValue() {

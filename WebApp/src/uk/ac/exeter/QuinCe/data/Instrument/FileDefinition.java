@@ -537,7 +537,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
     List<String> values = new ArrayList<String>();
 
     if (separator.equals(" ")) {
-      dataLine = dataLine.trim().replaceAll("  *", " ");
+      dataLine = StringUtils.removeRepeats(dataLine.trim(), ' ');
     }
 
     values = StringUtils.trimListAndQuotes(

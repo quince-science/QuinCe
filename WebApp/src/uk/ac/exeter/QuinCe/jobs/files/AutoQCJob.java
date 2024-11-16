@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Properties;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -39,6 +41,7 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.jobs.NextJobInfo;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
@@ -107,9 +110,9 @@ public class AutoQCJob extends DataSetJob {
    * @see JobManager#getNextJob(ResourceManager, Properties)
    */
   public AutoQCJob(ResourceManager resourceManager, Properties config,
-    long jobId, Properties properties) throws MissingParamException,
+    long jobId, User owner, Properties properties) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-    super(resourceManager, config, jobId, properties);
+    super(resourceManager, config, jobId, owner, properties);
   }
 
   /**
@@ -121,7 +124,7 @@ public class AutoQCJob extends DataSetJob {
    * @see FileJob#FILE_ID_KEY
    */
   @Override
-  protected void execute(JobThread thread) throws JobFailedException {
+  protected NextJobInfo execute(JobThread thread) throws JobFailedException {
 
     Connection conn = null;
 
@@ -144,14 +147,19 @@ public class AutoQCJob extends DataSetJob {
 
       SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 
-      DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataSet.getId(), true, true);
+      @SuppressWarnings("unchecked")
+      Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
+        SENSOR_VALUES);
+      if (null == rawSensorValues) {
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
+          dataSet.getId());
+      }
+
+      DatasetSensorValues sensorValues = new DatasetSensorValues(conn,
+        instrument, dataSet.getId(), true, true, rawSensorValues);
 
       RunTypePeriods runTypePeriods = null;
       SensorValuesList runTypeValues = null;
-
-      // This will be populated if the instrument has position data
-      DatasetSensorValues positionValues = null;
 
       if (instrument.hasRunTypes()) {
         measurementRunTypes = instrument.getMeasurementRunTypes();
@@ -186,15 +194,12 @@ public class AutoQCJob extends DataSetJob {
       // call.
       if (!dataSet.fixedPosition()) {
 
-        positionValues = DataSetDataDB.getPositionSensorValues(conn, instrument,
-          dataSet.getId());
+        SensorValue.clearAutoQC(sensorValues.getAllPositionSensorValues());
 
-        SensorValue.clearAutoQC(positionValues.getAllPositionSensorValues());
-
-        PositionQCRoutine positionQC = new PositionQCRoutine(positionValues);
+        PositionQCRoutine positionQC = new PositionQCRoutine(sensorValues);
         positionQC.qc(null, null);
 
-        SpeedQCRoutine speedQC = new SpeedQCRoutine(positionValues);
+        SpeedQCRoutine speedQC = new SpeedQCRoutine(sensorValues);
         speedQC.qc(null, null);
       }
 
@@ -291,22 +296,19 @@ public class AutoQCJob extends DataSetJob {
       // writes those values whose 'dirty' flag is set.
       DataSetDataDB.storeSensorValues(conn, sensorValues.getAll());
 
-      if (null != positionValues) {
-        DataSetDataDB.storeSensorValues(conn,
-          positionValues.getAllPositionSensorValues());
-      }
-
-      // Trigger the Build Measurements job
+      // Trigger the Locate Measurements job
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
-      Properties jobProperties = new Properties();
-      jobProperties.setProperty(LocateMeasurementsJob.ID_PARAM,
-        String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
-        LocateMeasurementsJob.class.getCanonicalName(), jobProperties);
 
       conn.commit();
 
+      Properties jobProperties = new Properties();
+      jobProperties.setProperty(LocateMeasurementsJob.ID_PARAM,
+        String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
+      NextJobInfo nextJob = new NextJobInfo(
+        LocateMeasurementsJob.class.getCanonicalName(), jobProperties);
+      nextJob.putTransferData(SENSOR_VALUES, rawSensorValues);
+      return nextJob;
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
       DatabaseUtils.rollBack(conn);

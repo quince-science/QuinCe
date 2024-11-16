@@ -5,34 +5,27 @@ import java.util.regex.Pattern;
 
 public class DDDMMmmmParser extends HDMParser {
 
+  private static final Pattern HAS_HEMISPHERE_PATTERN = Pattern
+    .compile("([\\d]*)(\\d\\d\\.[\\d]*)");
+
+  private static final Pattern NO_HEMISPHERE_PATTERN = Pattern
+    .compile("([-\\d]*)(\\d\\d\\.[\\d]*)");
+
   private static final int DEGREES = 1;
 
   private static final int MINUTES = 2;
 
   private boolean hasHemisphere;
 
-  protected DDDMMmmmParser() {
+  protected DDDMMmmmParser(boolean hasHemisphere) {
     super();
     hasHemisphere = false;
   }
 
-  protected DDDMMmmmParser(HemisphereMultiplier hemisphereMultiplier) {
-    super(hemisphereMultiplier);
-    hasHemisphere = true;
-  }
-
   @Override
-  protected void parseAction(String value) throws PositionParseException {
+  protected void parse(String value) throws PositionParseException {
 
-    String pattern;
-
-    if (hasHemisphere) {
-      pattern = "([\\d]*)(\\d\\d\\.[\\d]*)";
-    } else {
-      pattern = "([-\\d]*)(\\d\\d\\.[\\d]*)";
-    }
-
-    Pattern p = Pattern.compile(pattern);
+    Pattern p = hasHemisphere ? HAS_HEMISPHERE_PATTERN : NO_HEMISPHERE_PATTERN;
     Matcher matcher = p.matcher(value);
 
     if (!matcher.matches()) {

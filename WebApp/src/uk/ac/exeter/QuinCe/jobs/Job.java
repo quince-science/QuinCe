@@ -2,10 +2,12 @@ package uk.ac.exeter.QuinCe.jobs;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
@@ -51,6 +53,11 @@ public abstract class Job {
   protected long id = 0;
 
   /**
+   * The User ID of the job's owner.
+   */
+  protected User owner;
+
+  /**
    * Flag to indicate whether or not the job has been destroyed.
    */
   private boolean destroyed = false;
@@ -74,6 +81,11 @@ public abstract class Job {
    * The set of parameters passed to the job
    */
   protected Properties properties;
+
+  /**
+   * Data store that can be passed between jobs.
+   */
+  protected HashMap<String, Object> transferData;
 
   /**
    * Indicates the state that caused the thread to complete.
@@ -108,7 +120,7 @@ public abstract class Job {
    *           If any of the supplied job parameters are invalid.
    */
   public Job(ResourceManager resourceManager, Properties config, long id,
-    Properties properties)
+    User owner, Properties properties)
     throws MissingParamException, InvalidJobParametersException {
 
     MissingParam.checkMissing(resourceManager, "resourceManager");
@@ -116,6 +128,7 @@ public abstract class Job {
     this.resourceManager = resourceManager;
     this.config = config;
     this.id = id;
+    this.owner = owner;
     this.properties = properties;
 
     // Extract the data source into its own variable, since it's what we use
@@ -144,7 +157,8 @@ public abstract class Job {
    * @throws JobFailedException
    *           If an error occurs during the job.
    */
-  protected abstract void execute(JobThread thread) throws JobFailedException;
+  protected abstract NextJobInfo execute(JobThread thread)
+    throws JobFailedException;
 
   /**
    * Validate the parameters passed in to this job.
@@ -345,4 +359,8 @@ public abstract class Job {
    * @return The job name.
    */
   public abstract String getJobName();
+
+  protected Object getTransferData(String key) {
+    return null == transferData ? null : transferData.get(key);
+  }
 }

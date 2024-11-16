@@ -1,12 +1,15 @@
 package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.TreeMap;
 
 /**
  * Specifies the latitude format for a data file
  */
 public class LatitudeSpecification extends PositionSpecification {
+
+  private static List<String> HEMISPHERE_VALUES;
 
   /**
    * Indicates that latitudes are between -90 and 90
@@ -48,6 +51,8 @@ public class LatitudeSpecification extends PositionSpecification {
     formats.put(FORMAT_HDM, NAME_HDM);
     formats.put(FORMAT_H_DDDMMmmm, NAME_H_DDDMMmmm);
     formats.put(FORMAT_DDDMMmmm, NAME_DDDMMmmm);
+
+    HEMISPHERE_VALUES = Arrays.asList("N", "n", "S", "s");
   }
 
   /**
@@ -86,35 +91,34 @@ public class LatitudeSpecification extends PositionSpecification {
 
   @Override
   protected PositionParser getParser() throws PositionException {
-    PositionParser result;
-
-    switch (format) {
-    case FORMAT_MINUS90_90: {
-      result = new DecimalDegreesParser(true);
-      break;
+    if (null == parser) {
+      switch (format) {
+      case FORMAT_MINUS90_90: {
+        parser = new DecimalDegreesParser(true);
+        break;
+      }
+      case FORMAT_0_90: {
+        parser = new DecimalDegreesParser(false);
+        break;
+      }
+      case FORMAT_HDM: {
+        parser = new HDMOneFieldParser(this);
+        break;
+      }
+      case FORMAT_H_DDDMMmmm: {
+        parser = new DDDMMmmmParser(true);
+        break;
+      }
+      case FORMAT_DDDMMmmm: {
+        parser = new DDDMMmmmParser(false);
+        break;
+      }
+      default: {
+        throw new PositionException("Unknown format " + format);
+      }
+      }
     }
-    case FORMAT_0_90: {
-      result = new DecimalDegreesParser(makeHemisphereMultiplier());
-      break;
-    }
-    case FORMAT_HDM: {
-      result = new HDMOneFieldParser(makeHemisphereMultiplier());
-      break;
-    }
-    case FORMAT_H_DDDMMmmm: {
-      result = new DDDMMmmmParser(makeHemisphereMultiplier());
-      break;
-    }
-    case FORMAT_DDDMMmmm: {
-      result = new DDDMMmmmParser();
-      break;
-    }
-    default: {
-      throw new PositionException("Unknown format " + format);
-    }
-    }
-
-    return result;
+    return parser;
   }
 
   @Override
@@ -127,12 +131,12 @@ public class LatitudeSpecification extends PositionSpecification {
     return 90D;
   }
 
-  private HemisphereMultiplier makeHemisphereMultiplier() {
-    return new HemisphereMultiplier(Arrays.asList("N", "North"),
-      Arrays.asList("S", "South"));
-  }
-
   public static TreeMap<Integer, String> getFormats() {
     return formats;
+  }
+
+  @Override
+  protected List<String> getValidHemisphereValues() {
+    return HEMISPHERE_VALUES;
   }
 }

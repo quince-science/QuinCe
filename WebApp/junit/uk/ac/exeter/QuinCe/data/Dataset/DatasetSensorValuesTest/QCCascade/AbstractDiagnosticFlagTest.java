@@ -133,7 +133,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
     MeasurementLocator measurementLocator = new SimpleMeasurementLocator(
       variable);
     List<Measurement> locatedMeasurements = measurementLocator
-      .locateMeasurements(conn, instrument, dataset);
+      .locateMeasurements(conn, instrument, dataset, allSensorValues);
 
     DataSetDataDB.storeMeasurements(conn, locatedMeasurements);
 

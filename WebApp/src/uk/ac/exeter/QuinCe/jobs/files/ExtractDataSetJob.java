@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -36,8 +36,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
-import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.jobs.NextJobInfo;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -79,27 +79,26 @@ public class ExtractDataSetJob extends DataSetJob {
    *           If a database error occurs
    */
   public ExtractDataSetJob(ResourceManager resourceManager, Properties config,
-    long jobId, Properties properties) throws MissingParamException,
+    long jobId, User owner, Properties properties) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-    super(resourceManager, config, jobId, properties);
+    super(resourceManager, config, jobId, owner, properties);
   }
 
   @Override
-  protected void execute(JobThread thread) throws JobFailedException {
+  protected NextJobInfo execute(JobThread thread) throws JobFailedException {
 
     Connection conn = null;
 
     try {
-
       conn = dataSource.getConnection();
-      reset(conn);
+
+      // Clear any existing data for the DataSet
+      resetDataset(conn);
 
       // Get the new data set from the database
       DataSet dataSet = getDataset(conn);
       dataSet.setStatus(DataSet.STATUS_DATA_EXTRACTION);
       DataSetDB.updateDataSet(conn, dataSet);
-
-      conn.setAutoCommit(false);
 
       Instrument instrument = getInstrument(conn);
 
@@ -111,10 +110,6 @@ public class ExtractDataSetJob extends DataSetJob {
         DataSetDB.setNrtDatasetStatus(dataSource, instrument,
           DataSet.STATUS_REPROCESS);
       }
-
-      // Reset the data set and all associated data
-      reset(conn);
-      conn.commit();
 
       List<DataFile> files = DataFileDB.getDataFiles(conn,
         ResourceManager.getInstance().getConfig(),
@@ -148,7 +143,6 @@ public class ExtractDataSetJob extends DataSetJob {
 
       for (DataFile file : files) {
         FileDefinition fileDefinition = file.getFileDefinition();
-
         int currentLine = file.getFirstDataLine();
         while (currentLine < file.getContentLineCount()) {
 
@@ -370,7 +364,10 @@ public class ExtractDataSetJob extends DataSetJob {
 
       // Store the remaining values
       if (sensorValues.size() > 0) {
+        conn.setAutoCommit(false);
         DataSetDataDB.storeSensorValues(conn, sensorValues);
+        conn.commit();
+        conn.setAutoCommit(true);
       }
 
       dataSet.setBounds(minLon, minLat, maxLon, maxLat);
@@ -378,13 +375,14 @@ public class ExtractDataSetJob extends DataSetJob {
       // Trigger the Auto QC job
       dataSet.setStatus(DataSet.STATUS_SENSOR_QC);
       DataSetDB.updateDataSet(conn, dataSet);
+
       Properties jobProperties = new Properties();
       jobProperties.setProperty(AutoQCJob.ID_PARAM,
         String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
-        AutoQCJob.class.getCanonicalName(), jobProperties);
-
-      conn.commit();
+      NextJobInfo nextJob = new NextJobInfo(AutoQCJob.class.getCanonicalName(),
+        jobProperties);
+      nextJob.putTransferData(SENSOR_VALUES, sensorValues);
+      return nextJob;
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
       DatabaseUtils.rollBack(conn);
@@ -405,13 +403,6 @@ public class ExtractDataSetJob extends DataSetJob {
       }
       throw new JobFailedException(id, e);
     } finally {
-      if (null != conn) {
-        try {
-          conn.setAutoCommit(true);
-        } catch (SQLException e) {
-          throw new JobFailedException(id, e);
-        }
-      }
       DatabaseUtils.closeConnection(conn);
     }
   }
@@ -456,14 +447,13 @@ public class ExtractDataSetJob extends DataSetJob {
    * @throws RecordNotFoundException
    *           If the record don't exist
    */
-  protected void reset(Connection conn) throws JobFailedException {
+  protected void resetDataset(Connection conn) throws JobFailedException {
 
     try {
-      DataSetDataDB.deleteDataReduction(conn, getDataset(conn).getId());
-      DataSetDataDB.deleteMeasurements(conn, getDataset(conn).getId());
-      DataSetDataDB.deleteSensorValues(conn, getDataset(conn).getId());
-      DataSetDB.setDatasetStatus(conn, getDataset(conn).getId(),
-        DataSet.STATUS_WAITING);
+      long datasetId = getDataset(conn).getId();
+      DataSetDataDB.deleteDataReduction(conn, datasetId);
+      DataSetDataDB.deleteMeasurements(conn, datasetId);
+      DataSetDataDB.deleteSensorValues(conn, datasetId);
     } catch (Exception e) {
       throw new JobFailedException(id, "Error while resetting dataset", e);
     }
