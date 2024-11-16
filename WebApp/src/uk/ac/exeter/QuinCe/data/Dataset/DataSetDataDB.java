@@ -37,7 +37,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsExceptio
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
-import uk.ac.exeter.QuinCe.utils.AutoBatchPreparedStatement;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -330,7 +329,7 @@ public class DataSetDataDB {
     boolean autoCommitStatus = true;
 
     PreparedStatement addStmt = null;
-    AutoBatchPreparedStatement updateStmt = null;
+    PreparedStatement updateStmt = null;
     ResultSet generatedKeys;
 
     try {
@@ -341,8 +340,7 @@ public class DataSetDataDB {
 
       addStmt = conn.prepareStatement(STORE_NEW_SENSOR_VALUE_STATEMENT,
         Statement.RETURN_GENERATED_KEYS);
-      updateStmt = new AutoBatchPreparedStatement(conn,
-        UPDATE_SENSOR_VALUE_STATEMENT);
+      updateStmt = conn.prepareStatement(UPDATE_SENSOR_VALUE_STATEMENT);
 
       DataSet dataSet = null;
       Instrument instrument = null;
@@ -448,7 +446,7 @@ public class DataSetDataDB {
     } catch (Exception e) {
       try {
         addStmt.close();
-        updateStmt.abort();
+        updateStmt.close();
 
         conn.rollback();
         conn.setAutoCommit(autoCommitStatus);
