@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -13,6 +14,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
@@ -84,9 +86,16 @@ public class DataReductionQCJob extends DataSetJob {
       DataReductionQCRoutinesConfiguration config = resourceManager
         .getDataReductionQCRoutinesConfiguration();
 
-      // Load all the sensor values for this dataset
-      DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataSet.getId(), false, false);
+      @SuppressWarnings("unchecked")
+      Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
+        SENSOR_VALUES);
+      if (null == rawSensorValues) {
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
+          dataSet.getId());
+      }
+
+      DatasetSensorValues allSensorValues = new DatasetSensorValues(conn,
+        instrument, dataSet.getId(), false, false, rawSensorValues);
 
       List<Measurement> measurements = DataSetDataDB.getMeasurements(conn,
         dataSet.getId());

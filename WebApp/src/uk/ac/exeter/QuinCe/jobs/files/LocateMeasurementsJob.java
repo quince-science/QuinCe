@@ -131,6 +131,7 @@ public class LocateMeasurementsJob extends DataSetJob {
         String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
       NextJobInfo nextJob = new NextJobInfo(
         DataReductionJob.class.getCanonicalName(), jobProperties);
+      nextJob.putTransferData(SENSOR_VALUES, rawSensorValues);
       return nextJob;
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);

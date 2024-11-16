@@ -20,6 +20,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCollector;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCollectorFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -99,9 +100,16 @@ public class DataReductionJob extends DataSetJob {
 
       conn.setAutoCommit(false);
 
-      // Load all the sensor values for this dataset
-      DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataSet.getId(), false, false);
+      @SuppressWarnings("unchecked")
+      Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
+        SENSOR_VALUES);
+      if (null == rawSensorValues) {
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
+          dataSet.getId());
+      }
+
+      DatasetSensorValues allSensorValues = new DatasetSensorValues(conn,
+        instrument, dataSet.getId(), false, false, rawSensorValues);
 
       // Get all the measurements grouped by run type
       DatasetMeasurements allMeasurements = DataSetDataDB
@@ -240,6 +248,7 @@ public class DataReductionJob extends DataSetJob {
           String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
         nextJob = new NextJobInfo(DataReductionQCJob.class.getCanonicalName(),
           jobParams);
+        nextJob.putTransferData(SENSOR_VALUES, rawSensorValues);
       }
 
       conn.commit();
