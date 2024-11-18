@@ -64,7 +64,7 @@ public class SensorCalibrationsBeanTest extends TestSetTest {
     return bean;
   }
 
-  private Map<String, String> makeCoefficients(String value) {
+  protected static Map<String, String> makeCoefficients(String value) {
     Map<String, String> result = new HashMap<String, String>();
     result.put("x⁵", "0");
     result.put("x⁴", "0");
