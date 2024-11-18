@@ -23,7 +23,8 @@ public class ASVCO2MeasurementLocator extends MeasurementLocator {
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
-    Instrument instrument, DataSet dataset) throws MeasurementLocatorException {
+    Instrument instrument, DataSet dataset, DatasetSensorValues allSensorValues)
+    throws MeasurementLocatorException {
 
     throw new MeasurementLocatorException("Needs reviewing");
 

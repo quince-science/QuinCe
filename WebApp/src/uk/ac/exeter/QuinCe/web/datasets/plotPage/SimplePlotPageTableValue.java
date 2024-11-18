@@ -112,7 +112,7 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    * @return The QC flag.
    */
   @Override
-  public Flag getQcFlag() {
+  public Flag getQcFlag(DatasetSensorValues allSensorValues) {
     return qcFlag;
   }
 

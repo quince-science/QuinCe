@@ -56,7 +56,9 @@ public class JobThread extends Thread implements Comparable<JobThread> {
    */
   protected void reset() {
     setName(WAITING_THREAD_NAME);
-    job.destroy();
+    if (null != job) {
+      job.destroy();
+    }
     job = null;
   }
 
@@ -79,25 +81,45 @@ public class JobThread extends Thread implements Comparable<JobThread> {
     try {
       setName(String.valueOf(job.getID()) + '_' + System.currentTimeMillis());
 
-      // Run the job
-      job.setFinishState(Job.FINISHED_STATUS);
-      job.setProgress(0);
-      job.logStarted(getName());
-      job.execute(this);
+      while (null != job) {
 
-      switch (job.getFinishState()) {
-      case (Job.KILLED_STATUS): {
-        job.logKilled();
-        break;
-      }
-      case (Job.FINISHED_STATUS): {
-        job.logFinished();
-        break;
-      }
-      default: {
-        throw new JobException(
-          "Invalid finished state (" + job.getFinishState() + ") set on job");
-      }
+        // Run the job
+        job.setFinishState(Job.FINISHED_STATUS);
+        job.setProgress(0);
+        job.logStarted(getName());
+        NextJobInfo nextJob = job.execute(this);
+
+        switch (job.getFinishState()) {
+        case (Job.KILLED_STATUS): {
+          job.logKilled();
+          job.destroy();
+
+          // Clear the job so we drop out of the loop
+          job = null;
+
+          break;
+        }
+        case (Job.FINISHED_STATUS): {
+          job.logFinished();
+          job.destroy();
+
+          if (null == nextJob) {
+            job = null;
+          } else {
+            long nextJobId = JobManager.addJob(
+              ResourceManager.getInstance().getDBDataSource(), job.owner,
+              nextJob.jobClass, nextJob.properties);
+            job = JobManager.getJob(ResourceManager.getInstance(),
+              ResourceManager.getInstance().getConfig(), nextJobId);
+            job.transferData = nextJob.transferData;
+          }
+          break;
+        }
+        default: {
+          throw new JobException(
+            "Invalid finished state (" + job.getFinishState() + ") set on job");
+        }
+        }
       }
     } catch (Throwable e) {
       try {
@@ -124,7 +146,6 @@ public class JobThread extends Thread implements Comparable<JobThread> {
         ExceptionUtils.printStackTrace(e2);
       }
     } finally {
-      job.destroy();
       setName(WAITING_THREAD_NAME);
       try {
         // Return ourselves to the thread pool

@@ -31,7 +31,8 @@ public class WaterVapourMixingRatioMeasurementLocator
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
-    Instrument instrument, DataSet dataset) throws MeasurementLocatorException {
+    Instrument instrument, DataSet dataset, DatasetSensorValues allSensorValues)
+    throws MeasurementLocatorException {
 
     List<Measurement> measurements = new ArrayList<Measurement>();
 
@@ -43,12 +44,9 @@ public class WaterVapourMixingRatioMeasurementLocator
       Variable var = sensorConfig
         .getInstrumentVariable("Water Vapour Mixing Ratio");
 
-      DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataset.getId(), false, true);
+      SensorValuesList runTypes = allSensorValues.getRunTypes();
 
-      SensorValuesList runTypes = sensorValues.getRunTypes();
-
-      for (LocalDateTime recordTime : sensorValues.getTimes()) {
+      for (LocalDateTime recordTime : allSensorValues.getTimes()) {
         SensorValuesListValue runType = runTypes.getValueOnOrBefore(recordTime);
 
         RunTypeCategory category = instrument

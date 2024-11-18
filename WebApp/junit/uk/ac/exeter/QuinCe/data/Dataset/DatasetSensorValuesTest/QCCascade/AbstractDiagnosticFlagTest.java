@@ -51,8 +51,9 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
     int expectedFlag, Collection<String> expectedComment,
     DatasetSensorValues allSensorValues) throws Exception {
 
-    checkQC(valueName, sensorValue.getDisplayFlag(), expectedFlag,
-      sensorValue.getDisplayQCMessage(allSensorValues), expectedComment);
+    checkQC(valueName, sensorValue.getDisplayFlag(allSensorValues),
+      expectedFlag, sensorValue.getDisplayQCMessage(allSensorValues),
+      expectedComment);
   }
 
   protected void checkQC(DataReductionRecord record, int expectedFlag,
@@ -132,7 +133,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
     MeasurementLocator measurementLocator = new SimpleMeasurementLocator(
       variable);
     List<Measurement> locatedMeasurements = measurementLocator
-      .locateMeasurements(conn, instrument, dataset);
+      .locateMeasurements(conn, instrument, dataset, allSensorValues);
 
     DataSetDataDB.storeMeasurements(conn, locatedMeasurements);
 
@@ -162,7 +163,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
     DataReducer reducer = new QCCascadeReducer(variable, null);
 
     return reducer.performDataReduction(instrument, locatedMeasurements.get(0),
-      conn);
+      allSensorValues, conn);
   }
 
   protected void checkQC(String valueName, SensorValue sensorValue,

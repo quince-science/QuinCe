@@ -23,8 +23,8 @@ public class DataLatLng extends LatLng {
     this.latitude = latitude;
   }
 
-  public Flag getFlag() {
-    return longitude.getQcFlag();
+  public Flag getFlag(DatasetSensorValues allSensorValues) {
+    return longitude.getQcFlag(allSensorValues);
   }
 
   public String getQcMessage(DatasetSensorValues allSensorValues)

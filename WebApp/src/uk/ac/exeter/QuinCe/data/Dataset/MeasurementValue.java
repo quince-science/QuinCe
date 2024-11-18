@@ -292,7 +292,7 @@ public class MeasurementValue implements PlotPageTableValue {
       if (!sensorValueIds.contains(value.getId())) {
         sensorValueIds.add(value.getId());
 
-        Flag valueFlag = value.getDisplayFlag().getSimpleFlag();
+        Flag valueFlag = value.getDisplayFlag(allSensorValues).getSimpleFlag();
 
         if (valueFlag.equals(flag)) {
           if (value.getUserQCMessage().trim().length() > 0) {
@@ -373,7 +373,7 @@ public class MeasurementValue implements PlotPageTableValue {
    *
    * @return The QC flag.
    */
-  public Flag getQcFlag() {
+  public Flag getQcFlag(DatasetSensorValues allSensorValues) {
     return calculatedValue.isNaN() ? Flag.BAD : flag;
   }
 

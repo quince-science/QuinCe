@@ -14,11 +14,11 @@ DB_TABLE = 'station'
 
 
 def post_msg(config, message):
-    message_destination = config['messages']['destination']
+    message_destination = config['_messages']['destination']
     if message_destination == 'slack':
-        _post_slack_msg(config['slack'], message)
+        _post_slack_msg(config['_slack'], message)
     elif message_destination == 'telegram':
-        _post_telegram_msg(config['telegram'], message)
+        _post_telegram_msg(config['_telegram'], message)
     else:
         raise ValueError('Unrecognised message destination')
 
@@ -57,10 +57,6 @@ def main():
     with open("config.toml", "r") as config_file:
         config = toml.loads(config_file.read())
 
-    if '_slack' not in config:
-        print('Missing Slack config')
-        exit()
-
     with sqlite3.connect(DB_FILE) as db:
         # Make sure the database is set up
         init_db(db)
@@ -68,7 +64,7 @@ def main():
         for station in config.keys():
             if not station.startswith('_'):
                 print(f'Processing station {station}')
-                process_station(db, station, config[station])
+                process_station(db, station, config)
 
 
 def process_station(db, name, config):
@@ -76,37 +72,39 @@ def process_station(db, name, config):
     Process a station
     :param db: Database connection
     :param name: Station name
-    :param config: Station configuration
+    :param config: Script configuration
     :return: Nothing
     """
     # noinspection PyBroadException
     try:
+        station_config = config[name]
+
         # Get the last file processed previously
         last_processed_file, last_processed_date = get_last_processed_file(db, name)
 
         # Retrieve all the new files from the source
-        retriever = FileRetrieverFactory.get_retriever(name, config['source'])
+        retriever = FileRetrieverFactory.get_retriever(name, station_config['source'])
         file_list = retriever.get_files(last_processed_file, last_processed_date)
 
         for file_id, filename in file_list:
             try:
                 # Initialise the splitter
-                splitter = Splitter(config['splitter'])
+                splitter = Splitter(station_config['splitter'])
 
                 file_content = retriever.get_file(file_id)
                 splitter.set_data(filename, file_content)
 
                 # Write the output files
-                splitter.write_output(config['output_location'])
+                splitter.write_output(station_config['output_location'])
 
                 # Store the file details to the database
                 filename, modification_date = retriever.get_file_details(file_id)
                 record_last_file(db, name, filename, modification_date)
             except Exception:
-                post_msg(f'Error processing {filename}:\n{traceback.format_exc()}')
+                post_msg(config, f'Error processing {filename}:\n{traceback.format_exc()}')
 
     except Exception:
-        post_msg(f'Error processing station {name}:\n{traceback.format_exc()}')
+        post_msg(config, f'Error processing station {name}:\n{traceback.format_exc()}')
 
 
 def record_last_file(db, station, file, file_date):

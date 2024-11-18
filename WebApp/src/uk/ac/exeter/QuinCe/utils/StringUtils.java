@@ -301,7 +301,7 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     if (null != source) {
       result = source.stream().map(s -> {
-        return trimString(s, "\\s");
+        return trimString(s, false);
       }).collect(Collectors.toList());
     }
 
@@ -330,20 +330,23 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     if (null != source) {
       result = source.stream().map(s -> {
-        return trimString(s, "\\s\"");
+        return trimString(s, true);
       }).collect(Collectors.toList());
     }
 
     return result;
   }
 
-  private static String trimString(String string, String regexChars) {
+  private static String trimString(String string, boolean replaceQuotes) {
 
     String trimmed = null;
 
     if (null != string) {
-      trimmed = string
-        .replaceAll("^[" + regexChars + "]*|[" + regexChars + "]*$", "");
+      if (replaceQuotes) {
+        trimmed = trimWhitespaceAndQuotes(string);
+      } else {
+        trimmed = string.trim();
+      }
 
       boolean done = false;
       while (!done) {
@@ -352,9 +355,13 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
           trimmed = trimmed.substring(1);
           done = true;
         } else if (trimmed.startsWith("\\")) {
+
           // Trim off the single \ and trim the front again
-          trimmed = trimmed.substring(1).replaceAll("^[" + regexChars + "]*",
-            "");
+          if (replaceQuotes) {
+            trimmed = trimWhitespaceAndQuotes(trimmed.substring(1));
+          } else {
+            trimmed = trimmed.substring(1).trim();
+          }
         } else {
           done = true;
         }
@@ -362,6 +369,37 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     return trimmed;
+  }
+
+  /**
+   * Remove leading and trailing whitespace and quotes from a {@link String}.
+   *
+   * <p>
+   * Algorithm based on {@link String#trim()}.
+   * </p>
+   *
+   * @param string
+   *          The String to be trimmed.
+   * @return The trimmed String.
+   */
+  private static String trimWhitespaceAndQuotes(String string) {
+    // This is a copy of the code from String.trim()
+    char[] chars = string.toCharArray();
+
+    int length = chars.length;
+    int len = length;
+    int st = 0;
+    while (st < len
+      && (chars[st] <= ' ' || chars[st] == '"' || chars[st] == '\'')) {
+      st++;
+    }
+    while (st < len && (chars[len - 1] <= ' ' || chars[len - 1] == '"'
+      || chars[len - 1] == '\'')) {
+      len--;
+    }
+    return ((st > 0) || (len < chars.length))
+      ? new String(Arrays.copyOfRange(chars, st, len))
+      : string;
   }
 
   /**
@@ -464,7 +502,69 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
   public static Double doubleFromString(String value) {
     Double result = Double.NaN;
     if (null != value && value.trim().length() > 0) {
-      result = Double.parseDouble(value.replaceAll(",", "").trim());
+      result = Double
+        .parseDouble(trimString(removeFromString(value, ','), false));
+    }
+
+    return result;
+  }
+
+  /**
+   * Remove all instances of a character from any position in a {@link String}.
+   *
+   * @param string
+   *          The {@link String} from which the character is to be removed.
+   * @param character
+   *          The character to be removed.
+   * @return The stripped {@link String}.
+   */
+  public static String removeFromString(String string, char character) {
+    char[] output = new char[string.length()];
+
+    int output_length = -1;
+    for (int i = 0; i < string.length(); i++) {
+      if (string.charAt(i) != ',') {
+        output_length++;
+        output[output_length] = string.charAt(i);
+      }
+    }
+
+    String result;
+
+    if (output_length == -1) {
+      result = "";
+    } else {
+      result = String.valueOf(output, 0, output_length + 1);
+    }
+
+    return result;
+  }
+
+  /**
+   * Remove all instances of a character from the start of a {@link String}.
+   *
+   * @param string
+   *          The {@link String} to be stripped.
+   * @param character
+   *          The character to be removed.
+   * @return The stripped {@link String}.
+   */
+  public static String stripStart(String string, char character) {
+
+    String result = null;
+
+    if (null != string) {
+      int stripPos = 0;
+      while (stripPos < string.length()
+        && string.charAt(stripPos) == character) {
+        stripPos++;
+      }
+
+      if (stripPos >= string.length()) {
+        result = "";
+      } else {
+        result = string.substring(stripPos);
+      }
     }
 
     return result;
@@ -623,18 +723,60 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   public static String combine(String string1, String string2,
     String combiner) {
-    String result = null;
+    String result = "";
 
-    if (!isEmpty(string1.trim())) {
+    if (null != string1 && !isEmpty(string1.trim())) {
       result = string1.trim();
     }
 
-    if (!isEmpty(string2.trim())) {
-      if (!isEmpty(result)) {
+    if (null != string2 && !isEmpty(string2.trim())) {
+      if (null != result && !isEmpty(result)) {
         result += combiner;
         result += string2.trim();
       } else {
         result = string2.trim();
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Search a {@link String} for instances where a specified character is
+   * repeated, and keep only one instance of the character in each case.
+   *
+   * @param string
+   *          The {@link String} to be edited.
+   * @param character
+   *          The character.
+   * @return The edited String.
+   */
+  public static String removeRepeats(String string, char character) {
+
+    String result = null;
+
+    if (null != string) {
+      char[] output = new char[string.length()];
+
+      boolean inRepeat = false;
+      int output_length = -1;
+
+      for (int i = 0; i < string.length(); i++) {
+        if (string.charAt(i) != character) {
+          output_length++;
+          output[output_length] = string.charAt(i);
+          inRepeat = false;
+        } else if (!inRepeat) {
+          output_length++;
+          output[output_length] = string.charAt(i);
+          inRepeat = true;
+        }
+      }
+
+      if (output_length == -1) {
+        result = "";
+      } else {
+        result = String.valueOf(output, 0, output_length + 1);
       }
     }
 

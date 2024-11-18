@@ -84,9 +84,9 @@ public class DataSetDataDBTest extends BaseTest {
       Arrays.asList(sensorValue));
     SensorValue storedValue = retrieveSingleStoredValue(valueTime);
 
-    // Show that the SensorValue's ID has not been updated
-    assertEquals(DatabaseUtils.NO_DATABASE_RECORD, sensorValue.getId(),
-      "Sensor Value ID was updated unexpectedly");
+    // Show that the SensorValue's ID has been updated
+    assertNotEquals(DatabaseUtils.NO_DATABASE_RECORD, sensorValue.getId(),
+      "Sensor Value ID was not updated");
 
     // Check the dirty flag
     assertFalse(sensorValue.isDirty(), "Dirty flag not cleared");

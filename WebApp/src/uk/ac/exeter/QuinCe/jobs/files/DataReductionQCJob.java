@@ -2,16 +2,19 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
@@ -23,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.jobs.NextJobInfo;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
@@ -60,14 +64,14 @@ public class DataReductionQCJob extends DataSetJob {
    *           If the job cannot be found in the database
    */
   public DataReductionQCJob(ResourceManager resourceManager, Properties config,
-    long jobId, Properties parameters) throws MissingParamException,
+    long jobId, User owner, Properties parameters) throws MissingParamException,
     InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 
-    super(resourceManager, config, jobId, parameters);
+    super(resourceManager, config, jobId, owner, parameters);
   }
 
   @Override
-  protected void execute(JobThread thread) throws JobFailedException {
+  protected NextJobInfo execute(JobThread thread) throws JobFailedException {
 
     Connection conn = null;
 
@@ -82,9 +86,16 @@ public class DataReductionQCJob extends DataSetJob {
       DataReductionQCRoutinesConfiguration config = resourceManager
         .getDataReductionQCRoutinesConfiguration();
 
-      // Load all the sensor values for this dataset
-      DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataSet.getId(), false, false);
+      @SuppressWarnings("unchecked")
+      Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
+        SENSOR_VALUES);
+      if (null == rawSensorValues) {
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
+          dataSet.getId());
+      }
+
+      DatasetSensorValues allSensorValues = new DatasetSensorValues(conn,
+        instrument, dataSet.getId(), false, false, rawSensorValues);
 
       List<Measurement> measurements = DataSetDataDB.getMeasurements(conn,
         dataSet.getId());
@@ -142,6 +153,8 @@ public class DataReductionQCJob extends DataSetJob {
 
       // Set the dataset status
       DataSetDB.updateDataSet(conn, dataSet);
+
+      return null;
     } catch (Exception e) {
       DatabaseUtils.rollBack(conn);
       ExceptionUtils.printStackTrace(e);

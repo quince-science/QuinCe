@@ -221,8 +221,9 @@ public class Plot {
           Flag yFlag = null;
           if (null != y) {
             yValue = MathUtils.nullableParseDouble(y.getValue());
-            yGhost = y.getQcFlag().equals(Flag.FLUSHING);
-            yFlag = y.getQcFlag();
+            yGhost = y.getQcFlag(data.getAllSensorValues())
+              .equals(Flag.FLUSHING);
+            yFlag = y.getQcFlag(data.getAllSensorValues());
             if (useNeededFlags && y.getFlagNeeded()) {
               yFlag = Flag.NEEDED;
             }
@@ -233,8 +234,9 @@ public class Plot {
           Flag y2Flag = null;
           if (null != y2) {
             y2Value = MathUtils.nullableParseDouble(y2.getValue());
-            y2Ghost = y2.getQcFlag().equals(Flag.FLUSHING);
-            y2Flag = y2.getQcFlag();
+            y2Ghost = y2.getQcFlag(data.getAllSensorValues())
+              .equals(Flag.FLUSHING);
+            y2Flag = y2.getQcFlag(data.getAllSensorValues());
             // We never show NEEDED flags for Y2 axis
           }
 

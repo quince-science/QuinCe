@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import com.javadocmd.simplelatlng.LatLng;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
 public abstract class MapRecord implements Comparable<MapRecord> {
@@ -28,13 +29,14 @@ public abstract class MapRecord implements Comparable<MapRecord> {
     return id;
   }
 
-  public abstract boolean isGood();
+  public abstract boolean isGood(DatasetSensorValues allSensorValues);
 
   public abstract boolean flagNeeded();
 
   public abstract Double getValue();
 
-  public abstract Flag getFlag(boolean ignoreNeeded);
+  public abstract Flag getFlag(DatasetSensorValues allSensorValues,
+    boolean ignoreNeeded);
 
   public boolean isNaN() {
     return (null == getValue() || getValue().isNaN());

@@ -62,8 +62,9 @@ public class SpeedQCRoutine extends PositionQCRoutine {
           .getRawSensorValue(SensorType.LATITUDE_ID, time);
 
         if (null != longitude && null != latitude && !longitude.isNaN()
-          && !latitude.isNaN() && longitude.getDisplayFlag().isGood()
-          && latitude.getDisplayFlag().isGood()) {
+          && !latitude.isNaN()
+          && longitude.getDisplayFlag(allSensorValues).isGood()
+          && latitude.getDisplayFlag(allSensorValues).isGood()) {
 
           LatLng pos = new LatLng(latitude.getDoubleValue(),
             longitude.getDoubleValue());

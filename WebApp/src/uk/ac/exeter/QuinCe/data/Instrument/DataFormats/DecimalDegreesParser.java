@@ -9,11 +9,6 @@ public class DecimalDegreesParser extends PositionParser {
     this.negativeAllowed = negativeAllowed;
   }
 
-  protected DecimalDegreesParser(HemisphereMultiplier hemisphereMultiplierGenerator) {
-    super(hemisphereMultiplierGenerator);
-    negativeAllowed = false;
-  }
-
   @Override
   public double getNumericValue(String value) throws PositionParseException {
 

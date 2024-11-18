@@ -22,15 +22,13 @@ public class SimpleMeasurementLocator extends MeasurementLocator {
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
-    Instrument instrument, DataSet dataset) throws MeasurementLocatorException {
+    Instrument instrument, DataSet dataset, DatasetSensorValues allSensorValues)
+    throws MeasurementLocatorException {
 
     try {
       Set<Long> measurementColumnIds = new HashSet<Long>();
       measurementColumnIds.addAll(instrument.getSensorAssignments()
         .getColumnIds(variable.getCoreSensorType()));
-
-      DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataset.getId(), false, true);
 
       // Get all the sensor values for the identified columns
       SensorValuesList sensorValues = allSensorValues

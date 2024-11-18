@@ -32,7 +32,8 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
-    Instrument instrument, DataSet dataset) throws MeasurementLocatorException {
+    Instrument instrument, DataSet dataset, DatasetSensorValues sensorValues)
+    throws MeasurementLocatorException {
 
     try {
       SensorsConfiguration sensorConfig = ResourceManager.getInstance()
@@ -58,9 +59,6 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
         .getColumnIds(rawSensorType).get(0);
       long refColumn = instrument.getSensorAssignments()
         .getColumnIds(refSensorType).get(0);
-
-      DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataset.getId(), false, true);
 
       CalibrationSet calibrationSet = CalculationCoefficientDB.getInstance()
         .getCalibrationSet(conn, dataset);

@@ -365,7 +365,7 @@ public class Measurement implements Comparable<Measurement> {
    *
    * @return The QC flag for the measurement.
    */
-  public Flag getQCFlag() {
+  public Flag getQCFlag(DatasetSensorValues allSensorValues) {
 
     Flag result;
 
@@ -375,8 +375,9 @@ public class Measurement implements Comparable<Measurement> {
       result = Flag.ASSUMED_GOOD;
 
       for (MeasurementValue measurementValue : measurementValues.values()) {
-        if (measurementValue.getQcFlag().moreSignificantThan(result)) {
-          result = measurementValue.getQcFlag();
+        if (measurementValue.getQcFlag(allSensorValues)
+          .moreSignificantThan(result)) {
+          result = measurementValue.getQcFlag(allSensorValues);
         }
       }
     }

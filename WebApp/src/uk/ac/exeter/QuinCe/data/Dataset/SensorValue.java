@@ -45,7 +45,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   /**
    * The database ID of this value
    */
-  private final long id;
+  private long id;
 
   /**
    * The ID of the dataset that the sensor value is in
@@ -82,6 +82,11 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * The value (can be null)
    */
   private String value;
+
+  /**
+   * Cache of the value as a {@link Double}.
+   */
+  private Double doubleValue = null;
 
   /**
    * Indicates whether the value needs to be saved to the database
@@ -216,7 +221,11 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @return The value as a Double
    */
   public Double getDoubleValue() {
-    return StringUtils.doubleFromString(value);
+    if (null == doubleValue) {
+      doubleValue = StringUtils.doubleFromString(value);
+    }
+
+    return doubleValue;
   }
 
   /**
@@ -453,6 +462,14 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     return id;
   }
 
+  public void setId(long id) throws IllegalAccessException {
+    if (isInDatabase()) {
+      throw new IllegalAccessException("Cannot reassign SensorValue ID");
+    }
+
+    this.id = id;
+  }
+
   @Override
   public int compareTo(SensorValue o) {
     // Compare on time, dataset ID, column ID
@@ -544,17 +561,20 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   public void calibrateValue(Calibration calibration) {
     if (!isNaN()) {
-      value = String.valueOf(calibration.calibrateValue(getDoubleValue()));
+      setValue(calibration.calibrateValue(getDoubleValue()));
     }
   }
 
-  public Flag getDisplayFlag() {
+  public Flag getDisplayFlag(DatasetSensorValues allSensorValues) {
 
     Flag result;
 
-    // Lookups are always BAD
-    if (userQCFlag.equals(Flag.LOOKUP) || StringUtils.isEmpty(value)) {
+    if (StringUtils.isEmpty(value)) {
       result = Flag.BAD;
+    } else if (userQCFlag.equals(Flag.LOOKUP)) {
+      Set<Long> sourceValues = StringUtils.delimitedToLongSet(userQCMessage);
+      result = SensorValue.getValueWithWorstFlag(
+        allSensorValues.getById(sourceValues), allSensorValues).getUserQCFlag();
     } else {
       result = flagNeeded() ? autoQC.getOverallFlag() : getUserQCFlag();
     }
@@ -599,6 +619,12 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   public void setValue(String value) {
     this.value = value;
+    doubleValue = null;
+  }
+
+  public void setValue(Double value) {
+    this.doubleValue = value;
+    this.value = String.valueOf(value);
   }
 
   public boolean noValue() {
@@ -694,14 +720,15 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   }
 
   public static Flag getCombinedDisplayFlag(
-    Collection<SensorValue> sensorValues) {
+    Collection<SensorValue> sensorValues, DatasetSensorValues allSensorValues) {
 
     Flag result = Flag.GOOD;
 
     for (SensorValue sensorValue : sensorValues) {
       if (null != sensorValue) {
-        if (sensorValue.getDisplayFlag().moreSignificantThan(result)) {
-          result = sensorValue.getDisplayFlag();
+        if (sensorValue.getDisplayFlag(allSensorValues)
+          .moreSignificantThan(result)) {
+          result = sensorValue.getDisplayFlag(allSensorValues);
         }
       }
     }
@@ -765,13 +792,13 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    * @return One of the values with the worst Flag.
    */
   public static SensorValue getValueWithWorstFlag(
-    Collection<SensorValue> values) {
+    Collection<SensorValue> values, DatasetSensorValues allSensorValues) {
     SensorValue result = null;
 
     for (SensorValue value : values) {
       if (null != value) {
-        if (null == result || value.getDisplayFlag()
-          .moreSignificantThan(result.getDisplayFlag())) {
+        if (null == result || value.getDisplayFlag(allSensorValues)
+          .moreSignificantThan(result.getDisplayFlag(allSensorValues))) {
           result = value;
         }
       }
@@ -822,24 +849,32 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
    *
    * @param source
    *          The source of the QC flag
+   * @throws InvalidFlagException
    */
-  public void setCascadingQC(SensorValue source) {
+  public void setCascadingQC(SensorValue source) throws InvalidFlagException {
     SortedSet<Long> sources = userQCFlag.equals(Flag.LOOKUP)
       ? StringUtils.delimitedToLongSet(userQCMessage)
       : new TreeSet<Long>();
 
     sources.add(source.getId());
+
     userQCFlag = Flag.LOOKUP;
     userQCMessage = StringUtils.collectionToDelimited(sources, ",");
     dirty = true;
   }
 
-  public void setCascadingQC(PlotPageTableValue source) {
+  public void setCascadingQC(PlotPageTableValue source)
+    throws InvalidFlagException {
     SortedSet<Long> sources = userQCFlag.equals(Flag.LOOKUP)
       ? StringUtils.delimitedToLongSet(userQCMessage)
       : new TreeSet<Long>();
 
     sources.addAll(source.getSources());
+
+    if (sources.size() == 0) {
+      throw new InvalidFlagException(
+        "Attempted to set LOOKUP flag with no source");
+    }
 
     userQCFlag = Flag.LOOKUP;
     userQCMessage = StringUtils.collectionToDelimited(sources, ",");

@@ -2,10 +2,12 @@ package uk.ac.exeter.QuinCe.jobs.test;
 
 import java.util.Properties;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.jobs.NextJobInfo;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -47,14 +49,14 @@ public class TenSecondJob extends Job {
    *           If any required parameters are missing
    */
   public TenSecondJob(ResourceManager resourceManager, Properties config,
-    long id, Properties properties)
+    long id, User owner, Properties properties)
     throws MissingParamException, InvalidJobParametersException {
-    super(resourceManager, config, id, properties);
+    super(resourceManager, config, id, owner, properties);
     chunkCount = Integer.parseInt(properties.getProperty(CHUNK_KEY));
   }
 
   @Override
-  protected void execute(JobThread thread) throws JobFailedException {
+  protected NextJobInfo execute(JobThread thread) throws JobFailedException {
     for (int i = 0; i < chunkCount && !thread.isInterrupted(); i++) {
       System.out.println("Job " + id + ": Chunk " + i + " of " + chunkCount);
       try {
@@ -66,6 +68,8 @@ public class TenSecondJob extends Job {
         throw new JobFailedException(id, e);
       }
     }
+
+    return null;
   }
 
   @Override

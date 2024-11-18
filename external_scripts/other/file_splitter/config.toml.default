@@ -1,11 +1,11 @@
-[messages]
+[_messages]
 destination = 'telegram'
 
-[slack]
+[_slack]
 api_token = ''
 workspace = ''
 
-[telegram]
+[_telegram]
 api_token = ''
 workspace = ''
 

@@ -1,31 +1,27 @@
 package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
-import java.util.Collection;
-
-import uk.ac.exeter.QuinCe.utils.MissingParam;
+import java.util.Arrays;
+import java.util.List;
 
 public class HemisphereMultiplier {
 
-  private Collection<String> oneValues;
+  private static List<String> ONE_VALUES;
 
-  private Collection<String> minusOneValues;
+  private static List<String> MINUS_ONE_VALUES;
 
-  public HemisphereMultiplier(Collection<String> oneValues, Collection<String> minusOneValues) {
-
-    MissingParam.checkMissing(oneValues, "oneValues", false);
-    MissingParam.checkMissing(minusOneValues, "minusOneValues", false);
-
-    this.oneValues = oneValues.stream().map(v -> v.toLowerCase()).toList();
-    this.minusOneValues = minusOneValues.stream().map(v -> v.toLowerCase()).toList();
+  static {
+    ONE_VALUES = Arrays.asList("N", "n", "E", "e");
+    MINUS_ONE_VALUES = Arrays.asList("S", "s", "W", "w");
   }
 
-  public double apply(double value, String hemisphere) throws InvalidHemisphereException {
+  public static double apply(double value, String hemisphere)
+    throws InvalidHemisphereException {
 
     double multiplier;
 
-    if (oneValues.contains(hemisphere.toLowerCase())) {
+    if (ONE_VALUES.contains(hemisphere)) {
       multiplier = 1D;
-    } else if (minusOneValues.contains(hemisphere.toLowerCase())) {
+    } else if (MINUS_ONE_VALUES.contains(hemisphere)) {
       multiplier = -1D;
     } else {
       throw new InvalidHemisphereException(hemisphere);

@@ -399,7 +399,8 @@ public class ManualQCData extends PlotPageData {
             positionString
               .append(StringUtils.formatNumber(position.getLatitude()));
 
-            record.addColumn(positionString.toString(), position.getFlag(),
+            record.addColumn(positionString.toString(),
+              position.getFlag(getAllSensorValues()),
               position.getQcMessage(sensorValues), position.getFlagNeeded(),
               position.getType(), position.getSourceIds());
           } else {
@@ -637,8 +638,9 @@ public class ManualQCData extends PlotPageData {
     userFlag = Flag.GOOD;
 
     for (SensorValue sensorValue : getSelectedSensorValues()) {
-      if (sensorValue.getDisplayFlag().moreSignificantThan(userFlag)) {
-        userFlag = sensorValue.getDisplayFlag();
+      if (sensorValue.getDisplayFlag(getAllSensorValues())
+        .moreSignificantThan(userFlag)) {
+        userFlag = sensorValue.getDisplayFlag(getAllSensorValues());
       }
 
       if (!sensorValue.flagNeeded()

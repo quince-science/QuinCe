@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,17 +12,21 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementLocator;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.jobs.NextJobInfo;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
@@ -64,14 +69,14 @@ public class LocateMeasurementsJob extends DataSetJob {
    * @see JobManager#getNextJob(ResourceManager, Properties)
    */
   public LocateMeasurementsJob(ResourceManager resourceManager,
-    Properties config, long jobId, Properties properties)
+    Properties config, long jobId, User owner, Properties properties)
     throws MissingParamException, InvalidJobParametersException,
     DatabaseException, RecordNotFoundException {
-    super(resourceManager, config, jobId, properties);
+    super(resourceManager, config, jobId, owner, properties);
   }
 
   @Override
-  protected void execute(JobThread thread) throws JobFailedException {
+  protected NextJobInfo execute(JobThread thread) throws JobFailedException {
     Connection conn = null;
 
     try {
@@ -82,6 +87,17 @@ public class LocateMeasurementsJob extends DataSetJob {
 
       reset(conn);
       conn.setAutoCommit(false);
+
+      @SuppressWarnings("unchecked")
+      Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
+        SENSOR_VALUES);
+      if (null == rawSensorValues) {
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
+          dataSet.getId());
+      }
+
+      DatasetSensorValues sensorValues = new DatasetSensorValues(conn,
+        instrument, dataSet.getId(), false, true, rawSensorValues);
 
       // Work out which measurement locators we need to use
       Set<MeasurementLocator> measurementLocators = new HashSet<MeasurementLocator>();
@@ -100,7 +116,7 @@ public class LocateMeasurementsJob extends DataSetJob {
 
       for (MeasurementLocator locator : measurementLocators) {
         addMeasurements(measurements,
-          locator.locateMeasurements(conn, instrument, dataSet));
+          locator.locateMeasurements(conn, instrument, dataSet, sensorValues));
       }
 
       DataSetDataDB.storeMeasurements(conn, measurements.values());
@@ -108,13 +124,15 @@ public class LocateMeasurementsJob extends DataSetJob {
       // Trigger the Build Measurements job
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
+      conn.commit();
+
       Properties jobProperties = new Properties();
       jobProperties.setProperty(LocateMeasurementsJob.ID_PARAM,
         String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
+      NextJobInfo nextJob = new NextJobInfo(
         DataReductionJob.class.getCanonicalName(), jobProperties);
-
-      conn.commit();
+      nextJob.putTransferData(SENSOR_VALUES, rawSensorValues);
+      return nextJob;
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
       DatabaseUtils.rollBack(conn);

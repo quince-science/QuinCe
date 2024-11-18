@@ -537,7 +537,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
     List<String> values = new ArrayList<String>();
 
     if (separator.equals(" ")) {
-      dataLine = dataLine.trim().replaceAll("  *", " ");
+      dataLine = StringUtils.removeRepeats(dataLine.trim(), ' ');
     }
 
     values = StringUtils.trimListAndQuotes(
@@ -977,7 +977,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
    */
   public RunTypeCategory getRunTypeCategory(String line)
     throws FileDefinitionException {
-    return getRunType(line, true).getCategory();
+
+    RunTypeAssignment assignment = getRunType(line, true);
+    return null == assignment ? null : assignment.getCategory();
   }
 
   /**

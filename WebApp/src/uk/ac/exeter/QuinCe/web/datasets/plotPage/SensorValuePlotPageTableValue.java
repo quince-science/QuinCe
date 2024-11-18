@@ -45,8 +45,8 @@ public class SensorValuePlotPageTableValue implements PlotPageTableValue {
   }
 
   @Override
-  public Flag getQcFlag() {
-    return sensorValue.getDisplayFlag();
+  public Flag getQcFlag(DatasetSensorValues allSensorValues) {
+    return sensorValue.getDisplayFlag(allSensorValues);
   }
 
   @Override

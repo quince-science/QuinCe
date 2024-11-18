@@ -6,10 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
@@ -17,9 +20,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
 /**
  * Tests for the StringUtils class
- *
- * @author Steve Jones
- *
  */
 public class StringUtilsTest extends BaseTest {
 
@@ -1144,249 +1144,182 @@ public class StringUtilsTest extends BaseTest {
     assertTrue(stringOK);
   }
 
-  /**
-   * Generate a list of various strings to be used for testing
-   * {@link StringUtils#trimList(List)} and
-   * {@link StringUtils#trimListAndQuotes(List)}.
-   *
-   * @return The test list
-   * @see #trimListTest()
-   * @see #trimListAndQuotesTest()
-   */
-  private static final List<String> makeTrimListInput() {
-    List<String> list = new ArrayList<String>();
+  private static Stream<Arguments> trimListTestData() {
+    return Stream.of(Arguments.of("plain", "plain"),
+      Arguments.of(" space front", "space front"),
+      Arguments.of("space end ", "space end"),
+      Arguments.of("\\leading backslash", "leading backslash"),
+      Arguments.of("\\\\two leading backslashes", "\\two leading backslashes"),
+      Arguments.of("any \\ other backslash\\", "any \\ other backslash\\"),
+      Arguments.of("\\leading backslash trailing space ",
+        "leading backslash trailing space"),
+      Arguments.of("\\leading backslash trailing tab\t",
+        "leading backslash trailing tab"),
+      Arguments.of("\\ leading backlash and space",
+        "leading backlash and space"),
+      Arguments.of("\\\tleading backlash and tab", "leading backlash and tab"),
+      Arguments.of(" \\leading space and backslash",
+        "leading space and backslash"),
+      Arguments.of("\t\\leading tab and backslash",
+        "leading tab and backslash"),
+      Arguments.of("\\\\ two leading backslashes and space",
+        "\\ two leading backslashes and space"),
+      Arguments.of(" \\\\space and two leading backslashes",
+        "\\space and two leading backslashes"),
+      Arguments.of("   \n\r\tall the whitespace and a backlash",
+        "all the whitespace and a backlash"),
+      Arguments.of("all the trailing whitespace  \r\n\t  ",
+        "all the trailing whitespace"),
+      Arguments.of("\\ \\spaced backslashes", "spaced backslashes"),
+      Arguments.of("\\ \\\\spaced two backslashes", "\\spaced two backslashes"),
+      Arguments.of("\"plain\"", "\"plain\""),
+      Arguments.of("\" space front\"", "\" space front\""),
+      Arguments.of("\"space end \"", "\"space end \""),
+      Arguments.of("\"\\leading backslash\"", "\"\\leading backslash\""),
+      Arguments.of("\"\\\\two leading backslashes\"",
+        "\"\\\\two leading backslashes\""),
+      Arguments.of("\"any \\ other backslash\\\"",
+        "\"any \\ other backslash\\\""),
+      Arguments.of("\"\\leading backslash trailing space \"",
+        "\"\\leading backslash trailing space \""),
+      Arguments.of("\"\\leading backslash trailing tab\t\"",
+        "\"\\leading backslash trailing tab\t\""),
+      Arguments.of("\"\\ leading backlash and space\"",
+        "\"\\ leading backlash and space\""),
+      Arguments.of("\"\\\tleading backlash and tab\"",
+        "\"\\\tleading backlash and tab\""),
+      Arguments.of("\" \\leading space and backslash\"",
+        "\" \\leading space and backslash\""),
+      Arguments.of("\"\t\\leading tab and backslash\"",
+        "\"\t\\leading tab and backslash\""),
+      Arguments.of("\"\\\\ two leading backslashes and space\"",
+        "\"\\\\ two leading backslashes and space\""),
+      Arguments.of("\" \\\\space and two leading backslashes\"",
+        "\" \\\\space and two leading backslashes\""),
+      Arguments.of("\"   \n\r\t\\all the whitespace and a backlash\"",
+        "\"   \n\r\t\\all the whitespace and a backlash\""),
+      Arguments.of("\"all the trailing whitespace  \r\n\t  \"",
+        "\"all the trailing whitespace  \r\n\t  \""),
+      Arguments.of("\"\\ \\spaced backslashes\"",
+        "\"\\ \\spaced backslashes\""),
+      Arguments.of("\"\\ \\\\spaced two backslashes\"",
+        "\"\\ \\\\spaced two backslashes\""),
+      Arguments.of("\"front quote only", "\"front quote only"),
+      Arguments.of(" \"space and front quote", "\"space and front quote"),
+      Arguments.of("\" quote and space", "\" quote and space"),
+      Arguments.of("trailing quote only\"", "trailing quote only\""),
+      Arguments.of("trailing quote and space\" ", "trailing quote and space\""),
+      Arguments.of("trailing space and quote \"",
+        "trailing space and quote \""),
+      Arguments.of(" \"space and quote at both ends \"",
+        "\"space and quote at both ends \""),
+      Arguments.of("\" quote and space at both ends\" ",
+        "\" quote and space at both ends\""),
+      Arguments.of("\"\"two lots of quotes\"\"", "\"\"two lots of quotes\"\""),
+      Arguments.of("\" \"two quotes with space\" \"",
+        "\" \"two quotes with space\" \""),
+      Arguments.of("", ""), Arguments.of("\"", "\""),
+      Arguments.of("\"\"", "\"\""), Arguments.of("\" \"", "\" \""),
+      Arguments.of("\"\"\"", "\"\"\""), Arguments.of("\\\"", "\""),
+      Arguments.of("\\\\\"", "\\\""), Arguments.of("\"  \t\r\"", "\"  \t\r\""));
+  }
 
-    list.add("plain");
-    list.add(" space front");
-    list.add("space end ");
-    list.add("\\leading backslash");
-    list.add("\\\\two leading backslashes");
-    list.add("any \\ other backslash\\");
-    list.add("\\leading backslash trailing space ");
-    list.add("\\leading backslash trailing tab\t");
-    list.add("\\ leading backlash and space");
-    list.add("\\\tleading backlash and tab");
-    list.add(" \\leading space and backslash");
-    list.add("\t\\leading tab and backslash");
-    list.add("\\\\ two leading backslashes and space");
-    list.add(" \\\\space and two leading backslashes");
-    list.add("   \n\r\tall the whitespace and a backlash");
-    list.add("all the trailing whitespace  \r\n\t  ");
-    list.add("\\ \\spaced backslashes");
-    list.add("\\ \\\\spaced two backslashes");
-
-    // And now all the same things but quoted
-    list.add("\"plain\"");
-    list.add("\" space front\"");
-    list.add("\"space end \"");
-    list.add("\"\\leading backslash\"");
-    list.add("\"\\\\two leading backslashes\"");
-    list.add("\"any \\ other backslash\\\"");
-    list.add("\"\\leading backslash trailing space \"");
-    list.add("\"\\leading backslash trailing tab\t\"");
-    list.add("\"\\ leading backlash and space\"");
-    list.add("\"\\\tleading backlash and tab\"");
-    list.add("\" \\leading space and backslash\"");
-    list.add("\"\t\\leading tab and backslash\"");
-    list.add("\"\\\\ two leading backslashes and space\"");
-    list.add("\" \\\\space and two leading backslashes\"");
-    list.add("\"   \n\r\t\\all the whitespace and a backlash\"");
-    list.add("\"all the trailing whitespace  \r\n\t  \"");
-    list.add("\"\\ \\spaced backslashes\"");
-    list.add("\"\\ \\\\spaced two backslashes\"");
-
-    // Other quote nonsense
-    list.add("\"front quote only");
-    list.add(" \"space and front quote");
-    list.add("\" quote and space");
-    list.add("trailing quote only\"");
-    list.add("trailing quote and space\" ");
-    list.add("trailing space and quote \"");
-    list.add(" \"space and quote at both ends \"");
-    list.add("\" quote and space at both ends\" ");
-    list.add("\"\"two lots of quotes\"\"");
-    list.add("\" \"two quotes with space\" \"");
-
-    // Other general nonsense
-    list.add(""); // ''
-    list.add("\""); // '"'
-    list.add("\"\""); // '""'
-    list.add("\" \""); // '" "'
-    list.add("\"\"\""); // '"""'
-    list.add("\\\""); // '\"'
-    list.add("\\\\\""); // '\\"'
-    list.add("\"  \t\r\""); // ' \t\r"'
-
-    return list;
+  private static Stream<Arguments> trimListQuotesTestData() {
+    return Stream.of(Arguments.of("plain", "plain"),
+      Arguments.of(" space front", "space front"),
+      Arguments.of("space end ", "space end"),
+      Arguments.of("\\leading backslash", "leading backslash"),
+      Arguments.of("\\\\two leading backslashes", "\\two leading backslashes"),
+      Arguments.of("any \\ other backslash\\", "any \\ other backslash\\"),
+      Arguments.of("\\leading backslash trailing space ",
+        "leading backslash trailing space"),
+      Arguments.of("\\leading backslash trailing tab\t",
+        "leading backslash trailing tab"),
+      Arguments.of("\\ leading backlash and space",
+        "leading backlash and space"),
+      Arguments.of("\\\tleading backlash and tab", "leading backlash and tab"),
+      Arguments.of(" \\leading space and backslash",
+        "leading space and backslash"),
+      Arguments.of("\t\\leading tab and backslash",
+        "leading tab and backslash"),
+      Arguments.of("\\\\ two leading backslashes and space",
+        "\\ two leading backslashes and space"),
+      Arguments.of(" \\\\space and two leading backslashes",
+        "\\space and two leading backslashes"),
+      Arguments.of("   \n\r\tall the whitespace and a backlash",
+        "all the whitespace and a backlash"),
+      Arguments.of("all the trailing whitespace  \r\n\t  ",
+        "all the trailing whitespace"),
+      Arguments.of("\\ \\spaced backslashes", "spaced backslashes"),
+      Arguments.of("\\ \\\\spaced two backslashes", "\\spaced two backslashes"),
+      Arguments.of("\"plain\"", "plain"),
+      Arguments.of("\" space front\"", "space front"),
+      Arguments.of("\"space end \"", "space end"),
+      Arguments.of("\"\\leading backslash\"", "leading backslash"),
+      Arguments.of("\"\\\\two leading backslashes\"",
+        "\\two leading backslashes"),
+      Arguments.of("\"any \\ other backslash\\\"", "any \\ other backslash\\"),
+      Arguments.of("\"\\leading backslash trailing space \"",
+        "leading backslash trailing space"),
+      Arguments.of("\"\\leading backslash trailing tab\t\"",
+        "leading backslash trailing tab"),
+      Arguments.of("\"\\ leading backlash and space\"",
+        "leading backlash and space"),
+      Arguments.of("\"\\\tleading backlash and tab\"",
+        "leading backlash and tab"),
+      Arguments.of("\" \\leading space and backslash\"",
+        "leading space and backslash"),
+      Arguments.of("\"\t\\leading tab and backslash\"",
+        "leading tab and backslash"),
+      Arguments.of("\"\\\\ two leading backslashes and space\"",
+        "\\ two leading backslashes and space"),
+      Arguments.of("\" \\\\space and two leading backslashes\"",
+        "\\space and two leading backslashes"),
+      Arguments.of("\"   \n\r\t\\all the whitespace and a backlash\"",
+        "all the whitespace and a backlash"),
+      Arguments.of("\"all the trailing whitespace  \r\n\t  \"",
+        "all the trailing whitespace"),
+      Arguments.of("\"\\ \\spaced backslashes\"", "spaced backslashes"),
+      Arguments.of("\"\\ \\\\spaced two backslashes\"",
+        "\\spaced two backslashes"),
+      Arguments.of("\"front quote only", "front quote only"),
+      Arguments.of(" \"space and front quote", "space and front quote"),
+      Arguments.of("\" quote and space", "quote and space"),
+      Arguments.of("trailing quote only\"", "trailing quote only"),
+      Arguments.of("trailing quote and space\" ", "trailing quote and space"),
+      Arguments.of("trailing space and quote \"", "trailing space and quote"),
+      Arguments.of(" \"space and quote at both ends \"",
+        "space and quote at both ends"),
+      Arguments.of("\" quote and space at both ends\" ",
+        "quote and space at both ends"),
+      Arguments.of("\"\"two lots of quotes\"\"", "two lots of quotes"),
+      Arguments.of("\" \"two quotes with space\" \"", "two quotes with space"),
+      Arguments.of("", ""), Arguments.of("\"", ""), Arguments.of("\"\"", ""),
+      Arguments.of("\" \"", ""), Arguments.of("\"\"\"", ""),
+      Arguments.of("\\\"", ""), Arguments.of("\\\\\"", "\\"),
+      Arguments.of("\"  \t\r\"", ""));
   }
 
   /**
    * Test the basic {@link StringUtils#trimList(List)} method with a variety of
    * input strings.
-   *
-   * @see #makeTrimListInput()
    */
-  @Test
-  public void trimListTest() {
-    List<String> expectedOutput = new ArrayList<String>();
-
-    expectedOutput.add("plain");
-    expectedOutput.add("space front");
-    expectedOutput.add("space end");
-    expectedOutput.add("leading backslash");
-    expectedOutput.add("\\two leading backslashes");
-    expectedOutput.add("any \\ other backslash\\");
-    expectedOutput.add("leading backslash trailing space");
-    expectedOutput.add("leading backslash trailing tab");
-    expectedOutput.add("leading backlash and space");
-    expectedOutput.add("leading backlash and tab");
-    expectedOutput.add("leading space and backslash");
-    expectedOutput.add("leading tab and backslash");
-    expectedOutput.add("\\ two leading backslashes and space");
-    expectedOutput.add("\\space and two leading backslashes");
-    expectedOutput.add("all the whitespace and a backlash");
-    expectedOutput.add("all the trailing whitespace");
-    expectedOutput.add("spaced backslashes");
-    expectedOutput.add("\\spaced two backslashes");
-
-    // And now all the same things but quoted
-    expectedOutput.add("\"plain\"");
-    expectedOutput.add("\" space front\"");
-    expectedOutput.add("\"space end \"");
-    expectedOutput.add("\"\\leading backslash\"");
-    expectedOutput.add("\"\\\\two leading backslashes\"");
-    expectedOutput.add("\"any \\ other backslash\\\"");
-    expectedOutput.add("\"\\leading backslash trailing space \"");
-    expectedOutput.add("\"\\leading backslash trailing tab\t\"");
-    expectedOutput.add("\"\\ leading backlash and space\"");
-    expectedOutput.add("\"\\\tleading backlash and tab\"");
-    expectedOutput.add("\" \\leading space and backslash\"");
-    expectedOutput.add("\"\t\\leading tab and backslash\"");
-    expectedOutput.add("\"\\\\ two leading backslashes and space\"");
-    expectedOutput.add("\" \\\\space and two leading backslashes\"");
-    expectedOutput.add("\"   \n\r\t\\all the whitespace and a backlash\"");
-    expectedOutput.add("\"all the trailing whitespace  \r\n\t  \"");
-    expectedOutput.add("\"\\ \\spaced backslashes\"");
-    expectedOutput.add("\"\\ \\\\spaced two backslashes\"");
-
-    // Other quote nonsense
-    expectedOutput.add("\"front quote only");
-    expectedOutput.add("\"space and front quote");
-    expectedOutput.add("\" quote and space");
-    expectedOutput.add("trailing quote only\"");
-    expectedOutput.add("trailing quote and space\"");
-    expectedOutput.add("trailing space and quote \"");
-    expectedOutput.add("\"space and quote at both ends \"");
-    expectedOutput.add("\" quote and space at both ends\"");
-    expectedOutput.add("\"\"two lots of quotes\"\"");
-    expectedOutput.add("\" \"two quotes with space\" \"");
-
-    // Other general nonsense
-    expectedOutput.add(""); // '' -> ''
-    expectedOutput.add("\""); // '"' -> '"'
-    expectedOutput.add("\"\""); // '""' -> '""'
-    expectedOutput.add("\" \""); // '" "' -> '" "'
-    expectedOutput.add("\"\"\""); // '"""' -> '"""'
-    expectedOutput.add("\""); // '\"' -> '"'
-    expectedOutput.add("\\\""); // '\\"' -> '\"'
-    expectedOutput.add("\"  \t\r\""); // '" \t\r"' -> '" \t\r"'
-
-    List<String> trimmedList = StringUtils.trimList(makeTrimListInput());
-
-    // You can use the below to identify individual failing strings
-    /*
-     * for (int i = 0; i < trimmedList.size(); i++) { System.out.println("Got '"
-     * + trimmedList.get(i) + "' Expected '" + expectedOutput.get(i) + "'");
-     *
-     * assertTrue(trimmedList.get(i).equals(expectedOutput.get(i))); }
-     */
-
-    assertEquals(trimmedList, expectedOutput);
+  @ParameterizedTest
+  @MethodSource("trimListTestData")
+  public void trimListTest(String input, String output) {
+    List<String> trimmed = StringUtils.trimList(Arrays.asList(input));
+    assertTrue(listsEqual(trimmed, Arrays.asList(output)));
   }
 
   /**
    * Test the basic {@link StringUtils#trimListAndQuotes(List)} method with a
    * variety of input strings
-   *
-   * @see #makeTrimListInput()
    */
-  @Test
-  public void trimListAndQuotesTest() {
-    List<String> expectedOutput = new ArrayList<String>();
-
-    expectedOutput.add("plain");
-    expectedOutput.add("space front");
-    expectedOutput.add("space end");
-    expectedOutput.add("leading backslash");
-    expectedOutput.add("\\two leading backslashes");
-    expectedOutput.add("any \\ other backslash\\");
-    expectedOutput.add("leading backslash trailing space");
-    expectedOutput.add("leading backslash trailing tab");
-    expectedOutput.add("leading backlash and space");
-    expectedOutput.add("leading backlash and tab");
-    expectedOutput.add("leading space and backslash");
-    expectedOutput.add("leading tab and backslash");
-    expectedOutput.add("\\ two leading backslashes and space");
-    expectedOutput.add("\\space and two leading backslashes");
-    expectedOutput.add("all the whitespace and a backlash");
-    expectedOutput.add("all the trailing whitespace");
-    expectedOutput.add("spaced backslashes");
-    expectedOutput.add("\\spaced two backslashes");
-
-    // And now all the same things but quoted
-    expectedOutput.add("plain");
-    expectedOutput.add("space front");
-    expectedOutput.add("space end");
-    expectedOutput.add("leading backslash");
-    expectedOutput.add("\\two leading backslashes");
-    expectedOutput.add("any \\ other backslash\\");
-    expectedOutput.add("leading backslash trailing space");
-    expectedOutput.add("leading backslash trailing tab");
-    expectedOutput.add("leading backlash and space");
-    expectedOutput.add("leading backlash and tab");
-    expectedOutput.add("leading space and backslash");
-    expectedOutput.add("leading tab and backslash");
-    expectedOutput.add("\\ two leading backslashes and space");
-    expectedOutput.add("\\space and two leading backslashes");
-    expectedOutput.add("all the whitespace and a backlash");
-    expectedOutput.add("all the trailing whitespace");
-    expectedOutput.add("spaced backslashes");
-    expectedOutput.add("\\spaced two backslashes");
-
-    // Other quote nonsense
-    expectedOutput.add("front quote only");
-    expectedOutput.add("space and front quote");
-    expectedOutput.add("quote and space");
-    expectedOutput.add("trailing quote only");
-    expectedOutput.add("trailing quote and space");
-    expectedOutput.add("trailing space and quote");
-    expectedOutput.add("space and quote at both ends");
-    expectedOutput.add("quote and space at both ends");
-    expectedOutput.add("two lots of quotes");
-    expectedOutput.add("two quotes with space");
-
-    // Other general nonsense
-    expectedOutput.add(""); // '' -> ''
-    expectedOutput.add(""); // '"' -> ''
-    expectedOutput.add(""); // '""' -> ''
-    expectedOutput.add(""); // '" "' -> ''
-    expectedOutput.add(""); // '"""' -> ''
-    expectedOutput.add(""); // '\"' -> ''
-    expectedOutput.add("\\"); // '\\"' -> '\'
-    expectedOutput.add(""); // '" \t\r"' -> ''
-
-    List<String> trimmedList = StringUtils
-      .trimListAndQuotes(makeTrimListInput());
-
-    // You can use the below to identify individual failing strings
-    /*
-     * for (int i = 0; i < trimmedList.size(); i++) { System.out.println("Got '"
-     * + trimmedList.get(i) + "' Expected '" + expectedOutput.get(i) + "'");
-     *
-     * assertTrue(trimmedList.get(i).equals(expectedOutput.get(i))); }
-     */
-
-    assertEquals(trimmedList, expectedOutput);
+  @ParameterizedTest
+  @MethodSource("trimListQuotesTestData")
+  public void trimListAndQuotesTest(String input, String output) {
+    List<String> trimmed = StringUtils.trimListAndQuotes(Arrays.asList(input));
+    assertTrue(listsEqual(trimmed, Arrays.asList(output)));
   }
 
   /**
@@ -1653,5 +1586,33 @@ public class StringUtilsTest extends BaseTest {
   @MethodSource("getFormatDoubleDoubleValues")
   public void formatDoubleDoubleTest(Double in, String out) {
     assertEquals(out, StringUtils.formatNumber(in));
+  }
+
+  private static Stream<Arguments> stripStartCharValues() {
+    return Stream.of(Arguments.of("", ""), Arguments.of("1234", "1234"),
+      Arguments.of("01234", "1234"), Arguments.of("001234", "1234"),
+      Arguments.of("010", "10"), Arguments.of("0.01", ".01"),
+      Arguments.of(null, null));
+  }
+
+  @ParameterizedTest
+  @MethodSource("stripStartCharValues")
+  public void stripStartCharTest(String in, String out) {
+    assertEquals(out, StringUtils.stripStart(in, '0'));
+  }
+
+  private static Stream<Arguments> removeRepeatsValues() {
+    return Stream.of(Arguments.of(null, null), Arguments.of("", ""),
+      Arguments.of("I am here", "I am here"),
+      Arguments.of("I  am    here", "I am here"),
+      Arguments.of("I am here     ", "I am here "),
+      Arguments.of(" I am here", " I am here"),
+      Arguments.of("   I am here", " I am here"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("removeRepeatsValues")
+  public void removeRepeatsTest(String in, String out) {
+    assertEquals(out, StringUtils.removeRepeats(in, ' '));
   }
 }

@@ -92,7 +92,9 @@ public class MeasurementValuesSerializer
       valueJson.add(VALUE_KEY, valuePrimitive);
 
       // Flag
-      valueJson.add(FLAG_KEY, gson.toJsonTree(value.getQcFlag()));
+      // We know that this implementation doesn't utilise the
+      // DatasetSensorValues parameter
+      valueJson.add(FLAG_KEY, gson.toJsonTree(value.getQcFlag(null)));
 
       // QC Comments
       JsonArray qcComments = new JsonArray(value.getQcMessages().size());

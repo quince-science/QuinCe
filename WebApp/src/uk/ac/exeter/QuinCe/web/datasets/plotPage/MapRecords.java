@@ -15,6 +15,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
 
 @SuppressWarnings("serial")
@@ -22,28 +23,13 @@ public class MapRecords extends ArrayList<MapRecord> {
 
   private static final int DECIMATION_LIMIT = 1000;
 
-  private static Gson valueGson;
+  private Gson valueGson;
 
-  private static Gson flagGson;
+  private Gson flagGson;
 
-  private static Gson flagNrtGson;
+  private Gson flagNrtGson;
 
-  private static Gson selectionGson;
-
-  static {
-    valueGson = new GsonBuilder().registerTypeHierarchyAdapter(MapRecord.class,
-      new MapRecordJsonSerializer(MapRecordJsonSerializer.VALUE)).create();
-    flagGson = new GsonBuilder().registerTypeHierarchyAdapter(MapRecord.class,
-      new MapRecordJsonSerializer(MapRecordJsonSerializer.FLAG)).create();
-    flagNrtGson = new GsonBuilder()
-      .registerTypeHierarchyAdapter(MapRecord.class,
-        new MapRecordJsonSerializer(MapRecordJsonSerializer.FLAG_IGNORE_NEEDED))
-      .create();
-    selectionGson = new GsonBuilder()
-      .registerTypeHierarchyAdapter(MapRecord.class,
-        new MapRecordJsonSerializer(MapRecordJsonSerializer.SELECTION))
-      .create();
-  }
+  private Gson selectionGson;
 
   private boolean valueRangeCalculated = false;
 
@@ -55,12 +41,32 @@ public class MapRecords extends ArrayList<MapRecord> {
 
   private Double maxNoFlags = Double.NaN;
 
-  public MapRecords(int size) {
+  public MapRecords(int size, DatasetSensorValues allSensorValues) {
     super(size);
+
+    valueGson = new GsonBuilder().registerTypeHierarchyAdapter(MapRecord.class,
+      new MapRecordJsonSerializer(MapRecordJsonSerializer.VALUE,
+        allSensorValues))
+      .create();
+    flagGson = new GsonBuilder().registerTypeHierarchyAdapter(MapRecord.class,
+      new MapRecordJsonSerializer(MapRecordJsonSerializer.FLAG,
+        allSensorValues))
+      .create();
+    flagNrtGson = new GsonBuilder()
+      .registerTypeHierarchyAdapter(MapRecord.class,
+        new MapRecordJsonSerializer(MapRecordJsonSerializer.FLAG_IGNORE_NEEDED,
+          allSensorValues))
+      .create();
+    selectionGson = new GsonBuilder()
+      .registerTypeHierarchyAdapter(MapRecord.class,
+        new MapRecordJsonSerializer(MapRecordJsonSerializer.SELECTION,
+          allSensorValues))
+      .create();
   }
 
   public String getDisplayJson(GeoBounds bounds, List<Long> selectedRows,
-    boolean useNeededFlags, boolean hideNonGoodFlags) {
+    boolean useNeededFlags, boolean hideNonGoodFlags,
+    DatasetSensorValues allSensorValues) {
 
     Set<MapRecord> boundedRecords = new TreeSet<MapRecord>();
     List<MapRecord> data = new ArrayList<MapRecord>();
@@ -78,7 +84,8 @@ public class MapRecords extends ArrayList<MapRecord> {
       // closest to the bound limits.
       for (MapRecord record : this) {
 
-        if (!hideNonGoodFlags || record.isGood() || record.flagNeeded()) {
+        if (!hideNonGoodFlags || record.isGood(allSensorValues)
+          || record.flagNeeded()) {
           if (bounds.inBounds(record.position)) {
             if (record.position.getLongitude() < minLon.position
               .getLongitude()) {
@@ -112,7 +119,7 @@ public class MapRecords extends ArrayList<MapRecord> {
         for (MapRecord record : boundedRecords) {
           count++;
 
-          if (count % nth == 0 || !record.isGood()) {
+          if (count % nth == 0 || !record.isGood(allSensorValues)) {
             decimated.add(record);
           }
 
@@ -129,14 +136,14 @@ public class MapRecords extends ArrayList<MapRecord> {
 
       for (MapRecord record : decimated) {
         data.add(record);
-        if (showAsFlag(record, useNeededFlags)) {
+        if (showAsFlag(record, useNeededFlags, allSensorValues)) {
           flags.add(record);
         }
       }
 
       for (MapRecord record : selected) {
         selection.add(record);
-        if (showAsFlag(record, useNeededFlags)) {
+        if (showAsFlag(record, useNeededFlags, allSensorValues)) {
           flags.add(record);
         }
       }
@@ -159,8 +166,10 @@ public class MapRecords extends ArrayList<MapRecord> {
     return json.toString();
   }
 
-  private boolean showAsFlag(MapRecord record, boolean useNeededFlag) {
-    return (useNeededFlag && record.flagNeeded()) || !record.isGood();
+  private boolean showAsFlag(MapRecord record, boolean useNeededFlag,
+    DatasetSensorValues allSensorValues) {
+    return (useNeededFlag && record.flagNeeded())
+      || !record.isGood(allSensorValues);
   }
 
   private JsonObject makeFeatureCollection(Gson gson,
@@ -175,7 +184,7 @@ public class MapRecords extends ArrayList<MapRecord> {
     valueRangeCalculated = false;
   }
 
-  private void calculateValueRange() {
+  private void calculateValueRange(DatasetSensorValues allSensorValues) {
     min = Double.NaN;
     max = Double.NaN;
     minNoFlags = Double.NaN;
@@ -199,7 +208,7 @@ public class MapRecords extends ArrayList<MapRecord> {
           max = value;
         }
 
-        if (r.isGood()) {
+        if (r.isGood(allSensorValues)) {
           if (minNoFlags.isNaN()) {
             minNoFlags = value;
             maxNoFlags = value;
@@ -242,9 +251,10 @@ public class MapRecords extends ArrayList<MapRecord> {
    *
    * @return The minimum and maximum value.
    */
-  public Double[] getValueRange(boolean hideFlags) {
+  public Double[] getValueRange(DatasetSensorValues allSensorValues,
+    boolean hideFlags) {
     if (!valueRangeCalculated) {
-      calculateValueRange();
+      calculateValueRange(allSensorValues);
     }
 
     Double outMin;
@@ -266,14 +276,16 @@ public class MapRecords extends ArrayList<MapRecord> {
     return new Double[] { outMin, outMax };
   }
 
-  public GeoBounds getBounds(boolean hideNonGoodFlags) {
+  public GeoBounds getBounds(DatasetSensorValues allSensorValues,
+    boolean hideNonGoodFlags) {
     double minLon = Double.MAX_VALUE;
     double maxLon = Double.MIN_VALUE;
     double minLat = Double.MAX_VALUE;
     double maxLat = Double.MIN_VALUE;
 
     for (MapRecord record : this) {
-      if (!hideNonGoodFlags || record.isGood() || record.flagNeeded()) {
+      if (!hideNonGoodFlags || record.isGood(allSensorValues)
+        || record.flagNeeded()) {
         double lat = record.position.getLatitude();
         double lon = record.position.getLongitude();
 

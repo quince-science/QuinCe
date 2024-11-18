@@ -91,7 +91,7 @@ public class DataSetDataDB {
   private static final String GET_SENSOR_VALUES_FOR_DATASET_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 7
-    + "FROM sensor_values WHERE dataset_id = ?";
+    + "FROM sensor_values WHERE dataset_id = ? ORDER BY id";
 
   private static final String GET_SENSOR_VALUES_FOR_DATASET_NO_FLUSHING_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
@@ -321,16 +321,29 @@ public class DataSetDataDB {
   public static void storeSensorValues(Connection conn,
     Collection<SensorValue> sensorValues) throws MissingParamException,
     DatabaseException, InvalidSensorValueException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException {
+    InstrumentException, SensorGroupsException, IllegalAccessException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(sensorValues, "sensorValues", true);
 
-    try (
-      PreparedStatement addStmt = conn
-        .prepareStatement(STORE_NEW_SENSOR_VALUE_STATEMENT);
-      PreparedStatement updateStmt = conn
-        .prepareStatement(UPDATE_SENSOR_VALUE_STATEMENT);) {
+    boolean autoCommitStatus = true;
+
+    PreparedStatement addStmt = null;
+    PreparedStatement updateStmt = null;
+    ResultSet generatedKeys;
+
+    try {
+
+      autoCommitStatus = conn.getAutoCommit();
+
+      conn.setAutoCommit(false);
+
+      addStmt = conn.prepareStatement(STORE_NEW_SENSOR_VALUE_STATEMENT,
+        Statement.RETURN_GENERATED_KEYS);
+      updateStmt = conn.prepareStatement(UPDATE_SENSOR_VALUE_STATEMENT);
+
+      DataSet dataSet = null;
+      Instrument instrument = null;
 
       // Set of dataset IDs/columns we know to be valid
       HashSet<DatasetColumn> verifiedColumns = new HashSet<DatasetColumn>();
@@ -347,17 +360,21 @@ public class DataSetDataDB {
         if (!verifiedColumns.contains(dsCol)) {
 
           // Make sure the dataset exists
-          DataSet dataSet;
-          try {
-            dataSet = DataSetDB.getDataSet(conn, value.getDatasetId());
-          } catch (RecordNotFoundException e) {
-            throw new InvalidSensorValueException(
-              "Dataset specified in SensorValue does not exist", value);
+          if (null == dataSet || dataSet.getId() != value.getDatasetId()) {
+            try {
+              dataSet = DataSetDB.getDataSet(conn, value.getDatasetId());
+            } catch (RecordNotFoundException e) {
+              throw new InvalidSensorValueException(
+                "Dataset specified in SensorValue does not exist", value);
+            }
           }
 
           // Make sure the column ID is valid for the dataset's instrument
-          Instrument instrument = InstrumentDB.getInstrument(conn,
-            dataSet.getInstrumentId());
+          if (null == instrument
+            || instrument.getId() != dataSet.getInstrumentId()) {
+            instrument = InstrumentDB.getInstrument(conn,
+              dataSet.getInstrumentId());
+          }
 
           if (!instrument.columnValid(value.getColumnId())) {
             throw new InvalidSensorValueException(
@@ -384,7 +401,12 @@ public class DataSetDataDB {
             addStmt.setInt(6, value.getUserQCFlag().getFlagValue());
             addStmt.setString(7, value.getUserQCMessage());
 
-            addStmt.addBatch();
+            addStmt.execute();
+
+            generatedKeys = addStmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+              value.setId(generatedKeys.getLong(1));
+            }
           } else {
             updateStmt.setString(1, value.getAutoQcResult().toJson());
             updateStmt.setInt(2, value.getUserQCFlag().getFlagValue());
@@ -397,18 +419,42 @@ public class DataSetDataDB {
               }
             }
 
+            if (value.getUserQCFlag().commentRequired()
+              && StringUtils.isBlank(value.getUserQCMessage())) {
+              throw new InvalidSensorValueException(
+                "User QC message cannot be empty with flag "
+                  + value.getUserQCFlag().getFlagValue(),
+                value);
+            }
+
             updateStmt.setString(3, userQCMessage);
             updateStmt.setLong(4, value.getId());
 
-            updateStmt.addBatch();
+            updateStmt.execute();
           }
         }
       }
 
-      addStmt.executeBatch();
-      updateStmt.executeBatch();
-    } catch (SQLException e) {
+      addStmt.close();
+      updateStmt.close();
+
+      conn.commit();
+    } catch (
+
+    SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
+    } catch (Exception e) {
+      try {
+        addStmt.close();
+        updateStmt.close();
+
+        conn.rollback();
+        conn.setAutoCommit(autoCommitStatus);
+      } catch (SQLException e2) {
+        ; // Ignore exceptions
+      }
+
+      throw e;
     }
 
     // Clear the dirty flag on all the sensor values
@@ -448,8 +494,8 @@ public class DataSetDataDB {
   }
 
   /**
-   * Get all the sensor values for a dataset grouped by their column in the
-   * source data file(s)
+   * Get all the sensor values for a {@link DataSet} grouped by their column in
+   * the source data file(s)
    *
    * @param conn
    *          A database connection
@@ -508,6 +554,42 @@ public class DataSetDataDB {
     }
 
     return values;
+  }
+
+  /**
+   * Get all the sensor values for a {@link DataSet} as a simple collection.
+   *
+   * @param conn
+   *          A database connection.
+   * @param datasetId
+   *          The {@link DataSet} id.
+   * @return The sensor values.
+   * @throws DatabaseException
+   * @throws InvalidFlagException
+   */
+  public static TreeSet<SensorValue> getRawSensorValues(Connection conn,
+    long datasetId) throws DatabaseException, InvalidFlagException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
+    TreeSet<SensorValue> sensorValues = new TreeSet<SensorValue>();
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(GET_SENSOR_VALUES_FOR_DATASET_QUERY)) {
+
+      stmt.setLong(1, datasetId);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          sensorValues.add(sensorValueFromResultSet(records, datasetId));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving sensor values", e);
+    }
+
+    return sensorValues;
   }
 
   public static DatasetSensorValues getPositionSensorValues(Connection conn,

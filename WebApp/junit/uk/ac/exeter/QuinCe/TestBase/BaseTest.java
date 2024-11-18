@@ -208,6 +208,33 @@ public class BaseTest {
    * @return {@code true} if the lists contain the same values; {@code false}
    *         otherwise.
    */
+  protected boolean listsEqual(List<?> list1, List<?> list2) {
+    boolean result = true;
+
+    if (list1.size() != list2.size()) {
+      result = false;
+    } else if (list1.size() != 0) {
+      for (int i = 0; i < list1.size(); i++) {
+        if (!list1.get(i).equals(list2.get(i))) {
+          result = false;
+          break;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Check that two lists contain the same values in the same order.
+   *
+   * @param list1
+   *          The first list.
+   * @param list2
+   *          The second list.
+   * @return {@code true} if the lists contain the same values; {@code false}
+   *         otherwise.
+   */
   protected boolean mapsEqual(SortedMap<?, ?> map1, SortedMap<?, ?> map2) {
     boolean result = true;
 

@@ -346,8 +346,9 @@ public class InternalCalibrationData extends PlotPageData {
     userFlag = Flag.GOOD;
 
     for (SensorValue sensorValue : getSelectedSensorValues()) {
-      if (sensorValue.getDisplayFlag().moreSignificantThan(userFlag)) {
-        userFlag = sensorValue.getDisplayFlag();
+      if (sensorValue.getDisplayFlag(getAllSensorValues())
+        .moreSignificantThan(userFlag)) {
+        userFlag = sensorValue.getDisplayFlag(getAllSensorValues());
       }
 
       if (!sensorValue.flagNeeded()) {

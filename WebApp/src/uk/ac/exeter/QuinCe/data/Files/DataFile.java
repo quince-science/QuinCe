@@ -143,23 +143,6 @@ public abstract class DataFile implements TimeRange {
     this.properties = defaultProperties();
 
     messages = new TreeSet<DataFileMessage>();
-    boolean fileOK = false;
-
-    try {
-      fileOK = extractHeaderDate();
-    } catch (Exception e) {
-      // Since we were provided with the file contents,
-      // we won't be loading them so we can't get an exception here.
-    }
-
-    if (fileOK) {
-      try {
-        validate();
-      } catch (Exception e) {
-        // Since we were provided with the file contents,
-        // we won't be loading them so we can't get an exception here.
-      }
-    }
   }
 
   /**
@@ -902,7 +885,7 @@ public abstract class DataFile implements TimeRange {
     String result = null;
 
     if (field < line.size()) {
-      result = line.get(field).trim().replaceAll(",", "");
+      result = StringUtils.removeFromString(line.get(field).trim(), ',');
       if (result.length() == 0 || result.equals(missingValue)
         || result.equalsIgnoreCase("NaN") || result.equalsIgnoreCase("NA")) {
         result = null;
@@ -910,10 +893,9 @@ public abstract class DataFile implements TimeRange {
 
         // Strip leading zeros from integers - otherwise we get octal number
         // nonsense. (Unless it's a zero to begin with.)
-        if (!result.equals("0")
-          && !org.apache.commons.lang3.StringUtils.contains(result, '.')) {
+        if (!result.equals("0") && !StringUtils.contains(result, '.')) {
 
-          result = org.apache.commons.lang3.StringUtils.stripStart(result, "0");
+          result = StringUtils.stripStart(result, '0');
         }
 
         if (!NumberUtils.isCreatable(result)) {
