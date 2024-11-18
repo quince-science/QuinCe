@@ -592,6 +592,13 @@ public abstract class CalibrationBean extends BaseManagedBean {
           TreeSet<Calibration> targetCalibrations = calibrations
             .get(editedCalibration.getTarget());
 
+          // Handle the case where we were missing one of the targets in the
+          // original data.
+          if (null == targetCalibrations) {
+            targetCalibrations = new TreeSet<Calibration>();
+            calibrations.put(editedCalibration.getTarget(), targetCalibrations);
+          }
+
           targetCalibrations.add(editedCalibration);
           break;
         }
