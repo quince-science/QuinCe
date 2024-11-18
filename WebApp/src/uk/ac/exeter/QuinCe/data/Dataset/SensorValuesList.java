@@ -661,7 +661,11 @@ public class SensorValuesList {
       TreeSet<String> qcMessages = new TreeSet<String>();
 
       for (SensorValue v : usedValues) {
-        qcMessages.add(v.getDisplayQCMessage(allSensorValues));
+        String message = v.getDisplayQCMessage(allSensorValues);
+
+        if (null != message) {
+          qcMessages.add(message);
+        }
       }
 
       MeanCalculator mean = new MeanCalculator(
