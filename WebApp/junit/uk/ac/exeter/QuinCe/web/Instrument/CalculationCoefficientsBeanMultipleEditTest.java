@@ -25,8 +25,8 @@ import uk.ac.exeter.QuinCe.TestBase.TestSetLine;
  * </p>
  */
 @TestInstance(Lifecycle.PER_CLASS)
-public class SensorCalibrationsBeanMultipleEditTest
-  extends SensorCalibrationsBeanEditTest {
+public class CalculationCoefficientsBeanMultipleEditTest
+  extends CalculationCoefficientsBeanEditTest {
 
   private static final int ACTION_1_COL = 0;
 
@@ -66,13 +66,13 @@ public class SensorCalibrationsBeanMultipleEditTest
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
-    "resources/sql/web/Instrument/CalibrationBeanTest/sensorCalibrationsEdit" })
+    "resources/sql/web/Instrument/CalibrationBeanTest/calculationCoefficientsEdit" })
   @ParameterizedTest
   @MethodSource("getLines")
   public void multipleCalibrationEditTest(TestSetLine line) throws Exception {
 
     // Initialise bean
-    SensorCalibrationsBean bean = init();
+    CalculationCoefficientsBean bean = init();
 
     int action1 = getAction(line, ACTION_1_COL);
     long calibrationId1 = line.getLongField(CALIBRATION_ID_1_COL);
@@ -124,7 +124,7 @@ public class SensorCalibrationsBeanMultipleEditTest
     }
   }
 
-  private void doAction(SensorCalibrationsBean bean, int action,
+  private void doAction(CalculationCoefficientsBean bean, int action,
     long calibrationId, LocalDateTime calibrationTime, String target,
     boolean changeValue, String replacementValue) throws Exception {
 
@@ -142,7 +142,7 @@ public class SensorCalibrationsBeanMultipleEditTest
 
       if (changeValue || action == CalibrationEdit.ADD) {
         bean.getEditedCalibration().setCoefficients(
-          SensorCalibrationsBeanTest.makeCoefficients(replacementValue));
+          CalculationCoefficientsBeanTest.makeCoefficients(replacementValue));
       }
     }
 
@@ -151,7 +151,7 @@ public class SensorCalibrationsBeanMultipleEditTest
 
   @Override
   protected String getTestSetName() {
-    return "SensorCalibrationsBeanMultipleEditTest";
+    return "CalculationCoefficientsBeanMultipleEditTest";
   }
 
 }
