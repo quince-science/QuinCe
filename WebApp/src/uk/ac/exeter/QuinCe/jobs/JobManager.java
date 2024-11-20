@@ -22,7 +22,11 @@ import com.google.gson.Gson;
 import uk.ac.exeter.QuinCe.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
 import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -194,11 +198,13 @@ public class JobManager {
    *           If the specified job class does not have the correct constructor
    * @throws JobException
    *           If an unknown problem is found with the specified job class
+   * @throws InvalidDataSetStatusException
    */
   public static long addJob(DataSource dataSource, User owner, String jobClass,
     Properties properties) throws DatabaseException, MissingParamException,
-    NoSuchUserException, JobClassNotFoundException,
-    InvalidJobClassTypeException, InvalidJobConstructorException, JobException {
+    RecordNotFoundException, NoSuchUserException, JobClassNotFoundException,
+    InvalidJobClassTypeException, InvalidJobConstructorException, JobException,
+    InvalidDataSetStatusException {
 
     long result = -1;
     Connection conn = null;
@@ -206,6 +212,11 @@ public class JobManager {
     try {
       conn = dataSource.getConnection();
       result = addJob(conn, owner, jobClass, properties);
+
+      if (properties.contains(DataSetJob.ID_PARAM)) {
+        DataSetDB.setDatasetStatus(conn,
+          (long) properties.get(DataSetJob.ID_PARAM), DataSet.STATUS_WAITING);
+      }
     } catch (SQLException e) {
       throw new DatabaseException("An error occurred while adding the job", e);
     } catch (DatabaseException | MissingParamException | NoSuchUserException
