@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -25,6 +27,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -84,6 +87,11 @@ public class DataSetsBean extends BaseManagedBean {
   private String timelineEntriesJson;
 
   /**
+   * Details of the configurations on the instrument.
+   */
+  private String calibrationsJson;
+
+  /**
    * The data set being created
    */
   private DataSet newDataSet;
@@ -124,6 +132,7 @@ public class DataSetsBean extends BaseManagedBean {
     newDataSet = new DataSet(getCurrentInstrument());
     fileDefinitionsJson = null;
     timelineEntriesJson = null;
+    calibrationsJson = null;
     validCalibration = true;
     validCalibrationMessage = null;
 
@@ -308,6 +317,40 @@ public class DataSetsBean extends BaseManagedBean {
 
       timelineEntriesJson = entriesJson.toString();
     } catch (Exception e) {
+      ExceptionUtils.printStackTrace(e);
+    }
+  }
+
+  /**
+   * Get the calibrations information for the timeline as a JSON string.
+   *
+   * @return The calibration info.
+   */
+  public String getCalibrationsJson() {
+    if (null == calibrationsJson) {
+      buildCalibrationsJson();
+    }
+
+    return calibrationsJson;
+  }
+
+  private void buildCalibrationsJson() {
+    try {
+      TreeMap<LocalDateTime, List<String>> calibrations = CalibrationDB
+        .getCalibrationTimes(getDataSource(), getCurrentInstrument());
+
+      JsonObject json = new JsonObject();
+
+      for (Map.Entry<LocalDateTime, List<String>> entry : calibrations
+        .entrySet()) {
+
+        JsonArray types = new JsonArray();
+        entry.getValue().forEach(t -> types.add(t));
+        json.add(DateTimeUtils.toIsoDate(entry.getKey()), types);
+      }
+
+      calibrationsJson = json.toString();
+    } catch (DatabaseException e) {
       ExceptionUtils.printStackTrace(e);
     }
   }

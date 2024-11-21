@@ -6,7 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -66,6 +68,14 @@ public abstract class CalibrationDB {
     + "id, instrument_id, target, deployment_date, coefficients, class "
     + "FROM calibration WHERE " + "instrument_id = ? AND type = ? ORDER BY "
     + "target, deployment_date ASC";
+
+  /**
+   * Query to get all the calibration times
+   */
+  private static final String CALIBRATION_TIMES_QUERY = "SELECT "
+    + "deployment_date, type " // 2
+    + "FROM calibration WHERE instrument_id = ? "
+    + "GROUP BY deployment_date, type ORDER BY deployment_date ASC, type ASC";
 
   /**
    * JSON -> Coefficient map conversion type.
@@ -130,7 +140,8 @@ public abstract class CalibrationDB {
     }
   }
 
-  private void updateCalibration(Connection conn, CalibrationEdit calibrationEdit)
+  private void updateCalibration(Connection conn,
+    CalibrationEdit calibrationEdit)
     throws DatabaseException, ParameterException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(calibrationEdit, "calibration");
@@ -160,11 +171,13 @@ public abstract class CalibrationDB {
     }
   }
 
-  private void deleteCalibration(Connection conn, CalibrationEdit calibrationEdit)
+  private void deleteCalibration(Connection conn,
+    CalibrationEdit calibrationEdit)
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkPositive(calibrationEdit.getCalibrationId(), "edit calibrationId");
+    MissingParam.checkPositive(calibrationEdit.getCalibrationId(),
+      "edit calibrationId");
 
     try (PreparedStatement stmt = conn
       .prepareStatement(DELETE_CALIBRATION_STATEMENT);) {
@@ -520,6 +533,58 @@ public abstract class CalibrationDB {
       }
       DatabaseUtils.closeConnection(conn);
     }
+  }
 
+  /**
+   * Retrieve the times of all {@link Calibration}s defined for an
+   * {@link Instrument}.
+   *
+   * <p>
+   * Returns a {@link Map} of {@code Calibration Type -> Times}, so for each
+   * calibration type there is a {@link List} of the times for which
+   * {@link Calibration}s have been defined (in ascending time order). There is
+   * only one entry per combination of calibration type/time, so multiple
+   * calibrations defined for the same type and time will appear only once.
+   * </p>
+   *
+   * @param conn
+   *          A database connection.
+   * @param instrument
+   *          The Instrument.
+   * @return The calibration times.
+   * @throws DatabaseException
+   */
+  public static TreeMap<LocalDateTime, List<String>> getCalibrationTimes(
+    DataSource dataSource, Instrument instrument) throws DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(instrument, "instrument");
+
+    TreeMap<LocalDateTime, List<String>> result = new TreeMap<LocalDateTime, List<String>>();
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(CALIBRATION_TIMES_QUERY);) {
+
+      stmt.setLong(1, instrument.getId());
+
+      try (ResultSet records = stmt.executeQuery()) {
+
+        while (records.next()) {
+          LocalDateTime time = DateTimeUtils.longToDate(records.getLong(1));
+          String type = records.getString(2);
+
+          if (!result.containsKey(time)) {
+            result.put(time, new ArrayList<String>());
+          }
+
+          result.get(time).add(type);
+        }
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting calibration info", e);
+    }
+
+    return result;
   }
 }

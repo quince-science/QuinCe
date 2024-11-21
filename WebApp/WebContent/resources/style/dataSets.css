@@ -36,3 +36,14 @@
   font-weight: 700;
   background-color: #F0D9D9 !important;
 }
+
+/* Disable events on calibration lines */
+.vis-custom-time {
+  pointer-events: none;
+}
+
+/* Colors for the calibration lines */
+.calibration-time {
+  background-color: #d95f02 !important;
+}
+

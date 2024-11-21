@@ -15,6 +15,14 @@
   </ui:define>
   <ui:define name="pageTitle">#{dataSetsBean.currentInstrument.name} - New Data Set</ui:define>
   <ui:define name="content">
+    <p:dialog header="Invalid dataset" widgetVar="invalidDatasetDlg" modal="true">
+      You selected an area that already has a data set defined.
+      <h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
+        <p:button
+          value="OK"
+          onclick="PF('invalidDatasetDlg').hide();return false;" />
+      </h:panelGrid>
+    </p:dialog>
     <h:form id="uploadForm" method="post" charset="utf8">
       <f:passThroughAttribute name="data-valid-calibration"
         value="#{dataSetsBean.validCalibration}" />
@@ -23,25 +31,64 @@
       <div class="fullPage">
         <div id="timelineContainer"></div>
         <script>
-          var groups = JSON.parse('#{dataSetsBean.fileDefinitionsJson}');
-          var dataSetJSON = JSON.parse('#{dataSetsBean.timelineEntriesJson}');
-          // Treat dates as dates in the dataset
+          let groups = JSON.parse('#{dataSetsBean.fileDefinitionsJson}');
+          let dataSetJSON = JSON.parse('#{dataSetsBean.timelineEntriesJson}');
+          let calibrationsJSON = JSON.parse('#{dataSetsBean.calibrationsJson}');
+
+          // Convert dates to date objects
           dataSetJSON.map(function (row) {
             row.start = new Date(row.start);
             row.end = new Date(row.end);
           });
 
-          var filesAndDataSets =  new vis.DataSet(dataSetJSON);
-          var dataSetNames = JSON.parse('#{dataSetsBean.dataSetNamesJson}');
-          var timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, TIMELINE_OPTIONS);
+          let filesAndDataSets =  new vis.DataSet(dataSetJSON);
+          let dataSetNames = JSON.parse('#{dataSetsBean.dataSetNamesJson}');
+          let timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, TIMELINE_OPTIONS);
           timeline.on('click', function (event) {
             if (event.item) {
               setRangeFromClick(event.time, filesAndDataSets)
             }
-          })
-          $( document ).ready(function() {
-            // Make sure DOM is loaded befor calling this
+          });
+
+          // Add calibrations to timeline
+          let calibCount = 0;
+          for (let [time, types] of Object.entries(calibrationsJSON)) {
+            let typeString = '';
+
+            for (type of types) {
+              if (typeString.length > 0) {
+                typeString += '/';
+              }
+
+              typeString += calibration_names[type];
+            }
+
+            calibCount++;
+            let time_id = timeline.addCustomTime(new Date(time), 'c' + calibCount);
+            timeline.setCustomTimeMarker(typeString, time_id, false);
+            setCustomTimeClass(timeline, time_id, 'calibration-time');
+          }
+
+          // Set up timeline limits
+          let timelineMin = dataSetJSON[0].start;
+          let timelineMax = dataSetJSON[dataSetJSON.length - 1].end;
+
+          if (Object.keys(calibrationsJSON).length &gt; 0) {
+            let firstCalibrationTime = new Date(Object.keys(calibrationsJSON)[0]);
+            if (firstCalibrationTime &lt; timelineMin) {
+              timelineMin = firstCalibrationTime;
+            }
+
+            let lastCalibrationTime = new Date(Object.keys(calibrationsJSON)[Object.keys(calibrationsJSON).length - 1]);
+            if (lastCalibrationTime &gt; timelineMax) {
+              timelineMax = lastCalibrationTime;
+            }
+          }
+
+          $(document).ready(function() {
+            // Make sure DOM is loaded before calling this
             PF('pAddButton').disable();
+            timeline.setWindow(timelineMin, timelineMax, {animation: false});
           });
         </script>
         <h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
