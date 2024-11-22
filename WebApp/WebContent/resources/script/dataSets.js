@@ -69,6 +69,7 @@ function drawTimeline() {
   window['timeline'] = timeline;
 
   window.setTimeout(function() {
+  processNewDataSet(null);
     timeline.setWindow(timelineMin, timelineMax, {animation: false})
   }, 500);
 }
@@ -77,10 +78,10 @@ var newDataSetItem = {
   id: NEW_DATA_SET_ID,
   type: 'background',
   className: 'goodNewDataSet',
-  start: new Date(),
-  end: new Date(),
-  content: 'New Data Set',
-  title: 'New Date Set'
+  start: null,
+  end: null,
+  content: '_blank',
+  title: '_blank'
 }
 
 function processNewDataSet(eventType) {
@@ -98,9 +99,12 @@ function processNewDataSet(eventType) {
   } else {
     newDataSetItem['end'] = getDateField('endDate');
   }
+
   let validData = validateNewDataSet();
-  if (validData) {
+  if (eventType == 'start' || validData) {
     newDataSetItem['className'] = 'goodNewDataSet';
+    $('#errorList').hide();
+    PF('pAddButton').enable();
   } else {
     newDataSetItem['className'] = 'badNewDataSet';
   }
