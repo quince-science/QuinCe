@@ -31,64 +31,15 @@
       <div class="fullPage">
         <div id="timelineContainer"></div>
         <script>
-          let groups = JSON.parse('#{dataSetsBean.fileDefinitionsJson}');
-          let dataSetJSON = JSON.parse('#{dataSetsBean.timelineEntriesJson}');
-          let calibrationsJSON = JSON.parse('#{dataSetsBean.calibrationsJson}');
-
-          // Convert dates to date objects
-          dataSetJSON.map(function (row) {
-            row.start = new Date(row.start);
-            row.end = new Date(row.end);
-          });
-
-          let filesAndDataSets =  new vis.DataSet(dataSetJSON);
-          let dataSetNames = JSON.parse('#{dataSetsBean.dataSetNamesJson}');
-          let timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, TIMELINE_OPTIONS);
-          timeline.on('click', function (event) {
-            if (event.item) {
-              setRangeFromClick(event.time, filesAndDataSets)
-            }
-          });
-
-          // Add calibrations to timeline
-          let calibCount = 0;
-          for (let [time, types] of Object.entries(calibrationsJSON)) {
-            let typeString = '';
-
-            for (type of types) {
-              if (typeString.length > 0) {
-                typeString += '/';
-              }
-
-              typeString += calibration_names[type];
-            }
-
-            calibCount++;
-            let time_id = timeline.addCustomTime(new Date(time), 'c' + calibCount);
-            timeline.setCustomTimeMarker(typeString, time_id, false);
-            setCustomTimeClass(timeline, time_id, 'calibration-time');
-          }
-
-          // Set up timeline limits
-          let timelineMin = dataSetJSON[0].start;
-          let timelineMax = dataSetJSON[dataSetJSON.length - 1].end;
-
-          if (Object.keys(calibrationsJSON).length &gt; 0) {
-            let firstCalibrationTime = new Date(Object.keys(calibrationsJSON)[0]);
-            if (firstCalibrationTime &lt; timelineMin) {
-              timelineMin = firstCalibrationTime;
-            }
-
-            let lastCalibrationTime = new Date(Object.keys(calibrationsJSON)[Object.keys(calibrationsJSON).length - 1]);
-            if (lastCalibrationTime &gt; timelineMax) {
-              timelineMax = lastCalibrationTime;
-            }
-          }
+          var groups = JSON.parse('#{dataSetsBean.fileDefinitionsJson}');
+          var dataSetJSON = JSON.parse('#{dataSetsBean.timelineEntriesJson}');
+          var calibrationsJSON = JSON.parse('#{dataSetsBean.calibrationsJson}');
+          var dataSetNames = JSON.parse('#{dataSetsBean.dataSetNamesJson}');
 
           $(document).ready(function() {
             // Make sure DOM is loaded before calling this
             PF('pAddButton').disable();
-            timeline.setWindow(timelineMin, timelineMax, {animation: false});
+            drawTimeline();
           });
         </script>
         <h:panelGrid columns="2" cellpadding="5" class="buttonPanel">

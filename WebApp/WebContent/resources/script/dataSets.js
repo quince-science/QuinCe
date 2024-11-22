@@ -16,6 +16,63 @@ TIMELINE_OPTIONS = {
   }
 };
 
+function drawTimeline() {
+  // Convert dates to date objects
+  dataSetJSON.map(function (row) {
+    row.start = new Date(row.start);
+    row.end = new Date(row.end);
+  });
+
+  var filesAndDataSets =  new vis.DataSet(dataSetJSON);
+  var timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, TIMELINE_OPTIONS);
+  timeline.on('click', function (event) {
+    if (event.item) {
+      setRangeFromClick(event.time, filesAndDataSets)
+    }
+  });
+
+  // Add calibrations to timeline
+  let calibCount = 0;
+  for (let [time, types] of Object.entries(calibrationsJSON)) {
+    let typeString = '';
+
+    for (type of types) {
+      if (typeString.length > 0) {
+        typeString += '/';
+      }
+
+      typeString += calibration_names[type];
+    }
+
+    calibCount++;
+    let time_id = timeline.addCustomTime(new Date(time), 'c' + calibCount);
+    timeline.setCustomTimeMarker(typeString, time_id, false);
+    setCustomTimeClass(timeline, time_id, 'calibration-time');
+  }
+
+  // Set up timeline limits
+  let timelineMin = dataSetJSON[0].start;
+  let timelineMax = dataSetJSON[dataSetJSON.length - 1].end;
+
+  if (Object.keys(calibrationsJSON).length > 0) {
+    let firstCalibrationTime = new Date(Object.keys(calibrationsJSON)[0]);
+    if (firstCalibrationTime < timelineMin) {
+      timelineMin = firstCalibrationTime;
+    }
+
+    let lastCalibrationTime = new Date(Object.keys(calibrationsJSON)[Object.keys(calibrationsJSON).length - 1]);
+    if (lastCalibrationTime > timelineMax) {
+      timelineMax = lastCalibrationTime;
+    }
+  }
+
+  window['timeline'] = timeline;
+
+  window.setTimeout(function() {
+    timeline.setWindow(timelineMin, timelineMax, {animation: false})
+  }, 500);
+}
+
 var newDataSetItem = {
   id: NEW_DATA_SET_ID,
   type: 'background',
@@ -287,7 +344,6 @@ function setRangeFromClick(date, datasets) {
 
 // Set a custom CSS class on a timeline Custom Time
 function setCustomTimeClass(tl, id, className) {
-  console.log(tl);
   for (t in tl.customTimes) {
     if (tl.customTimes[t].options['id'] == id) {
       tl.customTimes[t].bar.classList.add(className);
