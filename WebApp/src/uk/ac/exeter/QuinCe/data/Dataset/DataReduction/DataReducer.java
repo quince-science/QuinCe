@@ -72,11 +72,14 @@ public abstract class DataReducer {
    * flags on its source {@link SensorValue}s by applying the {@link Variable}'s
    * flag cascade rules.
    * </p>
-   *
+   * 
    * @param instrument
    *          The {@link Instrument} that took the measurement.
    * @param measurement
    *          The {@link Measurement} being processed.
+   * @param allSensorValues
+   *          The complete set of {@link SensorValue}s for the {@link DataSet}
+   *          being processed.
    * @param conn
    *          A database connection.
    * @return The data reduction result.

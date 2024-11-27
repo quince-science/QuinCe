@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -52,8 +53,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * </table>
  *
  * <p>
- * The tests will create a Dataset with no QC flags set. Then the following
- * actions are taken:
+ * The tests will create a {@link DataSet} with no QC flags set. Then the
+ * following actions are taken:
  * </p>
  * <ol>
  * <li>Set sensor value flags</li>
@@ -73,80 +74,241 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 @TestInstance(Lifecycle.PER_CLASS)
 public class AutoDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
 
+  /**
+   * ID of the {@link SensorValue} containing the run type for the
+   * {@link Measurement} that will be created for the test.
+   */
   private static final long RUNTYPE_VAL_ID = 1L;
 
+  /**
+   * ID of the {@link SensorValue} containing the sea surface temperature.
+   */
   private static final long SST_VAL_ID = 2L;
 
+  /**
+   * ID of the {@link SensorValue} containing the salinity.
+   */
   private static final long SALINITY_VAL_ID = 3L;
 
+  /**
+   * ID of the {@link SensorValue} containing the CO₂.
+   */
   private static final long CO2_VAL_ID = 4L;
 
+  /**
+   * ID of the {@link SensorValue} containing the diagnostic water flow.
+   */
   private static final long DIAGNOSTIC_WATER_VAL_ID = 5L;
 
+  /**
+   * ID of the {@link SensorValue} containing the diagnostic gas flow.
+   */
   private static final long DIAGNOSTIC_GAS_VAL_ID = 6L;
 
+  /**
+   * {@link TestSetLine} column containing the manual QC flag to set on the SST
+   * value prior to processing.
+   */
   private static final int SST_MANUAL_QC_COL = 0;
 
+  /**
+   * {@link TestSetLine} column containing the manual QC flag to set on the
+   * salinity value prior to processing.
+   */
   private static final int SALINITY_MANUAL_QC_COL = 1;
 
+  /**
+   * {@link TestSetLine} column containing the manual QC flag to set on the CO₂
+   * value prior to processing.
+   */
   private static final int CO2_MANUAL_QC_COL = 2;
 
+  /**
+   * {@link TestSetLine} column containing the run type for the
+   * {@link Measurement} to be created for the test.
+   */
   private static final int RUN_TYPE_COL = 3;
 
+  /**
+   * {@link TestSetLine} column containing the minimum limit for the water flow
+   * diagnostic.
+   */
   private static final int DIAGNOSTIC_WATER_MIN_COL = 4;
 
+  /**
+   * {@link TestSetLine} column containing the maximum limit for the water flow
+   * diagnostic.
+   */
   private static final int DIAGNOSTIC_WATER_MAX_COL = 5;
 
+  /**
+   * {@link TestSetLine} column containing the minimum limit for the gas flow
+   * diagnostic.
+   */
   private static final int DIAGNOSTIC_GAS_MIN_COL = 6;
 
+  /**
+   * {@link TestSetLine} column containing the maximum limit for the gas flow
+   * diagnostic.
+   */
   private static final int DIAGNOSTIC_GAS_MAX_COL = 7;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the SST
+   * {@link SensorValue} after the first processing.
+   */
   private static final int EXPECTED_SST_FLAG_1_COL = 8;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC comment for the SST
+   * {@link SensorValue} after the first processing.
+   */
   private static final int EXPECTED_SST_COMMENT_1_COL = 9;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the salinity
+   * {@link SensorValue} after the first processing.
+   */
   private static final int EXPECTED_SALINITY_FLAG_1_COL = 10;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC comment for the
+   * salinity {@link SensorValue} after the first processing.
+   */
   private static final int EXPECTED_SALINITY_COMMENT_1_COL = 11;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the CO₂
+   * {@link SensorValue} after the first processing.
+   */
   private static final int EXPECTED_CO2_FLAG_1_COL = 12;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC comment for the CO₂
+   * {@link SensorValue} after the first processing.
+   */
   private static final int EXPECTED_CO2_COMMENT_1_COL = 13;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the
+   * diagnostic water flow {@link SensorValue} after the first processing.
+   */
   private static final int EXPECTED_DIAG_WATER_FLAG_1_COL = 14;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the
+   * diagnostic gas flow {@link SensorValue} after the first processing.
+   */
   private static final int EXPECTED_DIAG_GAS_FLAG_1_COL = 15;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the
+   * {@link DataReductionRecord} related to the first {@link Measurement} in the
+   * {@link DataSet} after the first processing.
+   */
   private static final int EXPECTED_DATA_REDUCTION_FLAG_1_COL = 16;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC comment for the
+   * {@link DataReductionRecord} related to the first {@link Measurement} in the
+   * {@link DataSet} after the first processing.
+   */
   private static final int EXPECTED_DATA_REDUCTION_COMMENT_1_COL = 17;
 
+  /**
+   * {@link TestSetLine} column containing the updated minimum limit for the
+   * water flow diagnostic.
+   */
   private static final int UPDATED_DIAG_WATER_MIN_COL = 18;
 
+  /**
+   * {@link TestSetLine} column containing the updated maximum limit for the
+   * water flow diagnostic.
+   */
   private static final int UPDATED_DIAG_WATER_MAX_COL = 19;
 
+  /**
+   * {@link TestSetLine} column containing the updated minimum limit for the gas
+   * flow diagnostic.
+   */
   private static final int UPDATED_DIAG_GAS_MIN_COL = 20;
 
+  /**
+   * {@link TestSetLine} column containing the updated maximum limit for the gas
+   * flow diagnostic.
+   */
   private static final int UPDATED_DIAG_GAS_MAX_COL = 21;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the SST
+   * {@link SensorValue} after the second processing following the update of the
+   * diagnostic limits.
+   */
   private static final int EXPECTED_SST_FLAG_2_COL = 22;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC comment for the SST
+   * {@link SensorValue} after the second processing following the update of the
+   * diagnostic limits.
+   */
   private static final int EXPECTED_SST_COMMENT_2_COL = 23;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the salinity
+   * {@link SensorValue} after the second processing following the update of the
+   * diagnostic limits.
+   */
   private static final int EXPECTED_SALINITY_FLAG_2_COL = 24;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC comment for the
+   * salinity {@link SensorValue} after the second processing following the
+   * update of the diagnostic limits.
+   */
   private static final int EXPECTED_SALINITY_COMMENT_2_COL = 25;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the CO₂
+   * {@link SensorValue} after the second processing following the update of the
+   * diagnostic limits.
+   */
   private static final int EXPECTED_CO2_FLAG_2_COL = 26;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC comment for the CO₂
+   * {@link SensorValue} after the second processing following the update of the
+   * diagnostic limits.
+   */
   private static final int EXPECTED_CO2_COMMENT_2_COL = 27;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the
+   * diagnostic water flow {@link SensorValue} after the second processing
+   * following the update of the diagnostic limits.
+   */
   private static final int EXPECTED_DIAG_WATER_FLAG_2_COL = 28;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the
+   * diagnostic gas flow {@link SensorValue} after the second processing
+   * following the update of the diagnostic limits.
+   */
   private static final int EXPECTED_DIAG_GAS_FLAG_2_COL = 29;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC flag for the
+   * {@link DataReductionRecord} related to the first {@link Measurement} in the
+   * {@link DataSet} after the second processing following the update of the
+   * diagnostic limits.
+   */
   private static final int EXPECTED_DATA_REDUCTION_FLAG_2_COL = 30;
 
+  /**
+   * {@link TestSetLine} column containing the expected QC comment for the
+   * {@link DataReductionRecord} related to the first {@link Measurement} in the
+   * {@link DataSet} after the second processing following the update of the
+   * diagnostic limits.
+   */
   private static final int EXPECTED_DATA_REDUCTION_COMMENT_2_COL = 31;
 
   @Override
