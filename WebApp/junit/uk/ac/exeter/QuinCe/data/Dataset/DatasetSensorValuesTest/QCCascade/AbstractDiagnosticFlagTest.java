@@ -41,6 +41,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
    * <li>The User QC flag should match the specified flag</li>
    * <li>The User QC comment should contain the specified comments. If the
    * specified comment is empty, the User QC comment should also be empty.</li>
+   * </ul>
    *
    * @param sensorValue
    * @param expectedFlag
