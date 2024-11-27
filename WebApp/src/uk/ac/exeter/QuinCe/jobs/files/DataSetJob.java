@@ -57,6 +57,8 @@ public abstract class DataSetJob extends Job {
    *          The application configuration.
    * @param jobId
    *          The id of the job in the database.
+   * @param owner
+   *          The job's owner.
    * @param properties
    *          The job properties (must contain at least the {@link DataSet}'s
    *          database ID).
