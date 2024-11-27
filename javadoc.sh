@@ -58,6 +58,7 @@ classPath="${classPath}:${jarsDir}/jersey-media-moxy-2.34.jar"
 classPath="${classPath}:${jarsDir}/jersey-media-multipart-2.34.jar"
 classPath="${classPath}:${jarsDir}/jersey-server-2.34.jar"
 classPath="${classPath}:${jarsDir}/mimepull-1.9.13.jar"
+classPath="${classPath}:${jarsDir}/mockito-core-5.8.0.jar"
 classPath="${classPath}:${jarsDir}/myfaces-api-2.2.8.jar"
 classPath="${classPath}:${jarsDir}/myfaces-bundle-2.2.8.jar"
 classPath="${classPath}:${jarsDir}/myfaces-impl-2.2.8.jar"
@@ -66,7 +67,7 @@ classPath="${classPath}:${jarsDir}/org.eclipse.persistence.asm-2.7.6.jar"
 classPath="${classPath}:${jarsDir}/org.eclipse.persistence.core-2.7.6.jar"
 classPath="${classPath}:${jarsDir}/org.eclipse.persistence.moxy-2.7.6.jar"
 classPath="${classPath}:${jarsDir}/osgi-resource-locator-1.0.3.jar"
-classPath="${classPath}:${jarsDir}/primefaces-12.0.0.jar"
+classPath="${classPath}:${jarsDir}/primefaces-13.0.0.jar"
 classPath="${classPath}:${jarsDir}/protobuf-java-3.19.4.jar"
 classPath="${classPath}:${jarsDir}/simplelatlng-1.4.0.jar"
 classPath="${classPath}:${jarsDir}/txw2-3.0.0-M4.jar"
@@ -86,8 +87,8 @@ classPath="${classPath}:${jarsDir}/spring-test-5.2.0.RELEASE.jar"
 classPath="${classPath}:${jarsDir}/spring-beans-5.2.0.RELEASE.jar"
 
 javadoc -sourcepath "$sourcePath" -d "$output" \
-        -subpackages uk.ac.exeter.QuinCe:junit.uk.ac.exeter.QuinCe \
-        -source 11 -private \
+        -subpackages uk.ac.exeter.QuinCe \
+        -source 17 -private \
         -windowtitle "QuinCe Javadoc" -doctitle "QuinCe Javadoc" \
         -classpath "$classPath" \
         -link https://docs.oracle.com/en/java/javase/11/docs/api \
