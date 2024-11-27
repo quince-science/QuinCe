@@ -56,6 +56,10 @@ public class CalibrationEdit {
     return calibration.getDeploymentDate();
   }
 
+  public Class<? extends Calibration> getCalibrationClass() {
+    return calibration.getClass();
+  }
+
   public Instrument getInstrument() {
     return calibration.getInstrument();
   }

@@ -129,7 +129,7 @@ public abstract class CalibrationDB {
       stmt.setLong(4,
         DateTimeUtils.dateToLong(calibrationEdit.getDeploymentDate()));
       stmt.setString(5, calibrationEdit.getCoefficientsJson());
-      stmt.setString(6, calibrationEdit.getClass().getSimpleName());
+      stmt.setString(6, calibrationEdit.getCalibrationClass().getSimpleName());
 
       stmt.execute();
     } catch (SQLException e) {
@@ -162,7 +162,7 @@ public abstract class CalibrationDB {
       stmt.setLong(4,
         DateTimeUtils.dateToLong(calibrationEdit.getDeploymentDate()));
       stmt.setString(5, calibrationEdit.getCoefficientsJson());
-      stmt.setString(6, calibrationEdit.getClass().getSimpleName());
+      stmt.setString(6, calibrationEdit.getCalibrationClass().getSimpleName());
       stmt.setLong(7, calibrationEdit.getCalibrationId());
 
       stmt.execute();
