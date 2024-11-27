@@ -79,7 +79,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class AutoQCJob extends DataSetJob {
 
   /**
-   * Name of the job, used for reporting
+   * Name of the job, used for reporting.
    */
   private final String jobName = "Sensor Quality Control";
 
@@ -94,19 +94,21 @@ public class AutoQCJob extends DataSetJob {
    * this job.
    *
    * @param resourceManager
-   *          The application's resource manager
+   *          The application's resource manager.
    * @param config
-   *          The application configuration
+   *          The application configuration.
    * @param jobId
-   *          The database ID of the job
+   *          The database ID of the job.
+   * @param owner
+   *          The job's owner.
    * @param properties
-   *          The job parameters
+   *          The job parameters.
    * @throws InvalidJobParametersException
-   *           If any of the job properties are invalid
+   *           If any of the job properties are invalid.
    * @throws DatabaseException
-   *           If a database error occurs
+   *           If a database error occurs.
    * @throws RecordNotFoundException
-   *           If any required database records are missing
+   *           If any required database records are missing.
    * @see JobManager#getNextJob(ResourceManager, Properties)
    */
   public AutoQCJob(ResourceManager resourceManager, Properties config,
