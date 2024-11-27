@@ -39,6 +39,8 @@ public abstract class MeasurementLocator {
    *          processed.
    * @param dataset
    *          The {@link DataSet} being processed.
+   * @param allSensorValues
+   *          The complete set of {@link SensorValue}s in the {@link DataSet}.
    * @return The located measurements.
    * @throws MeasurementLocatorException
    *           If an error occurs during the location process.
