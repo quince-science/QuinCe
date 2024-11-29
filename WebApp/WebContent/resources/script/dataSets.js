@@ -51,8 +51,18 @@ function drawTimeline() {
   }
 
   // Set up timeline limits
-  let timelineMin = dataSetJSON[0].start;
-  let timelineMax = dataSetJSON[dataSetJSON.length - 1].end;
+  let timelineMin = null;
+  let timelineMax = null;
+
+  for (entry of dataSetJSON) {
+  if (null == timelineMin || entry.start < timelineMin) {
+    timelineMin = entry.start;
+  }
+
+  if (null == timelineMax || entry.end > timelineMax) {
+    timelineMax = entry.end;
+  }
+  }
 
   if (Object.keys(calibrationsJSON).length > 0) {
     let firstCalibrationTime = new Date(Object.keys(calibrationsJSON)[0]);
