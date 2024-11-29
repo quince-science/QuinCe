@@ -96,22 +96,22 @@ public abstract class AutoQCRoutine extends AbstractAutoQCRoutine {
   /**
    * Convert the specified {@link List} of {@link SensorValue}s into a
    * {@link Map} indexed by Run Type.
-   * 
+   *
    * <p>
    * Each {@link SensorValue}'s timestamp is looked up in the specified
    * {@link RunTypePeriods} object, which tells us which Run Type is in effect
    * for that {@link SensorValue}.
    * </p>
-   * 
+   *
    * <p>
    * The return value is a {@link Map} of {@code Run Type -> SensorValues}
    * </p>
-   * 
+   *
    * <p>
    * The {@link SensorValue}s in both the input and output are assumed to be
    * ordered by ascending time, but this is not enforced.
    * </p>
-   * 
+   *
    * @param values
    *          The {@link SensorValue}s to be organised.
    * @param runTypePeriods

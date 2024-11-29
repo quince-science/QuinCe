@@ -175,14 +175,14 @@ public class JobManager {
 
   /**
    * Adds a job to the database.
-   * 
+   *
    * <p>
    * If the job is linked to a {@link DataSet} (implied by the presence of
    * {@link DataSetJob#ID_PARAM} in the job's properties), its status is
    * automatically set to {@link DataSet#STATUS_WAITING}. It is the job's
    * responsibility to set the appropriate status when processing starts.
    * </p>
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param owner

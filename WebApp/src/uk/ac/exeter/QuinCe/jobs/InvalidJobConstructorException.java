@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.jobs;
 /**
  * Exception to indicate that the specified job class does not require a
  * constructor of the correct type.
- * 
+ *
  * @see Job#Job(uk.ac.exeter.QuinCe.web.system.ResourceManager,
  *      java.util.Properties, long, uk.ac.exeter.QuinCe.User.User,
  *      java.util.Properties)
