@@ -269,9 +269,10 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Get a data source from which database connections can be obtained.
+   * Get a {@link DataSource} from which database {@link java.sql.Connection}s
+   * can be obtained.
    *
-   * @return The data source.
+   * @return A {@link DataSource}.
    */
   public DataSource getDataSource() {
     return ResourceManager.getInstance().getDBDataSource();
