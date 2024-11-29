@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
@@ -31,7 +32,14 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Several Managed Beans are used in the QuinCe application. This abstract class
- * provides a set of useful methods for inheriting concrete bean classes to use.
+ * provides a set of useful methods for use by inheriting concrete bean classes.
+ * 
+ * <p>
+ * <b>WARNING: Performing a "Find Usages" search for some of these methods will
+ * not return any results. This <i>DOES NOT</i> mean that the methods are not
+ * being used; they can be called directly from JSP pages, which your IDE may
+ * not be capable of detecting.</b>
+ * </p>
  */
 public abstract class BaseManagedBean {
 
@@ -59,7 +67,7 @@ public abstract class BaseManagedBean {
   public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
 
   /**
-   * The session attribute where the current full instrument is stored
+   * The session attribute where the current full {@link Instrument} is stored.
    */
   private static final String CURRENT_FULL_INSTRUMENT_ATTR = "currentFullInstrument";
 
@@ -72,17 +80,18 @@ public abstract class BaseManagedBean {
   private static final String LAST_DATE_ATTR = "lastDate";
 
   /**
-   * The instruments owned by the user
+   * The {@link Instrument}s owned by the user.
    */
   private List<Instrument> instruments;
 
   /**
-   * Long date format for displaying dates
+   * Long date format for displaying timestamps.
    */
   private final String longDateFormat = "yyyy-MM-dd HH:mm:ss";
 
   /**
-   * Set this to force reloading the instrument even though it is already set
+   * Set this to force reloading the {@link Instrument} even though it is
+   * already set.
    */
   private boolean forceInstrumentReload = false;
 
@@ -92,12 +101,13 @@ public abstract class BaseManagedBean {
   protected Progress progress = new Progress();
 
   /**
-   * Set a message that can be displayed to the user on a form
+   * Set a message that can be displayed to the user on a form.
    *
    * @param componentID
-   *          The component ID to which the message relates (can be null)
+   *          The component ID to which the message relates. Can be {@code null}
+   *          if the message is not related to a specific component.
    * @param messageString
-   *          The message string
+   *          The message.
    * @see #getComponentID(String)
    */
   protected void setMessage(String componentID, String messageString) {
@@ -114,8 +124,8 @@ public abstract class BaseManagedBean {
    * with the bean's form name.
    *
    * @param componentName
-   *          The form input name
-   * @return The JSF component ID
+   *          The form input name.
+   * @return The JSF component ID.
    * @see #getFormName()
    */
   protected String getComponentID(String componentName) {
@@ -127,11 +137,15 @@ public abstract class BaseManagedBean {
    * messages, and sends back a result that will redirect the application to the
    * internal error page.
    *
+   * <p>
    * This should only be used for errors that can't be handled properly, e.g.
-   * database failures and the like.
+   * database failures and the like. The user will be directed to a general
+   * error page, from which their only option will be to return to the login
+   * page to start a new session.
+   * </p>
    *
    * @param error
-   *          The error
+   *          The error.
    * @return A result string that will direct to the internal error page.
    * @see #INTERNAL_ERROR_RESULT
    */
@@ -146,11 +160,16 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Retrieve a parameter from the request
+   * Retrieve a parameter from the current request.
+   * 
+   * <p>
+   * This is a shortcut to looking up values in
+   * {@link ExternalContext#getRequestParameterMap}.
+   * </p>
    *
    * @param paramName
-   *          The name of the parameter to retrieve
-   * @return The parameter value
+   *          The name of the parameter to retrieve.
+   * @return The parameter value.
    */
   public String getRequestParameter(String paramName) {
     return FacesContext.getCurrentInstance().getExternalContext()
@@ -158,9 +177,9 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Retrieves the current HTTP Session object
+   * Retrieves the current HTTP Session object.
    *
-   * @return The HTTP Session object
+   * @return The HTTP Session object.
    */
   public HttpSession getSession() {
     return (HttpSession) FacesContext.getCurrentInstance().getExternalContext()
@@ -168,10 +187,11 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Directly navigate to a given result
+   * Directly navigate to a given result without going through the normal
+   * routing process.
    *
    * @param navigation
-   *          The navigation result
+   *          The navigation result.
    */
   public void directNavigate(String navigation) {
     ConfigurableNavigationHandler nav = (ConfigurableNavigationHandler) FacesContext
@@ -180,11 +200,11 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Evaluate and EL expression and return its value
+   * Evaluate a JSF Expression Language expression and return its value.
    *
    * @param expression
-   *          The EL expression
-   * @return The result of evaluating the expression
+   *          The EL expression.
+   * @return The result of evaluating the expression.
    */
   public String getELValue(String expression) {
     FacesContext context = FacesContext.getCurrentInstance();
@@ -193,14 +213,19 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Returns the User object for the current session
+   * Returns the {@link User} object for the current session.
    *
-   * @return The User object
+   * @return The {@link User} object.
    */
   public User getUser() {
     return (User) getSession().getAttribute(LoginBean.USER_SESSION_ATTR);
   }
 
+  /**
+   * Get the user's preferences for the currently logged in {@link User}.
+   * 
+   * @return The user's preferences.
+   */
   public UserPreferences getUserPrefs() {
     UserPreferences result = (UserPreferences) getSession()
       .getAttribute(LoginBean.USER_PREFS_ATTR);
@@ -213,24 +238,29 @@ public abstract class BaseManagedBean {
 
   /**
    * Accessing components requires the name of the form that they are in as well
-   * as their own name. Most beans will only have one form, so this method will
-   * provide the name of that form.
+   * as their own name.
+   * 
+   * <p>
+   * Most beans will only have one form, so this method will provide the name of
+   * that form. Beans with multiple forms will need to employ a different
+   * methodology.
+   * </p>
    *
    * <p>
    * This class provides a default form name. Override the method to provide a
    * name specific to the bean.
    * </p>
    *
-   * @return The form name for the bean
+   * @return The form name for the bean.
    */
   protected String getFormName() {
     return "DEFAULT_FORM";
   }
 
   /**
-   * Get the URL stub for the application
+   * Get the URL stub for the application.
    *
-   * @return The application URL stub
+   * @return The application URL stub.
    */
   public String getUrlStub() {
     // TODO This can probably be replaced with something like
@@ -239,25 +269,26 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Get a data source
+   * Get a data source from which database connections can be obtained.
    *
-   * @return The data source
+   * @return The data source.
    */
   public DataSource getDataSource() {
     return ResourceManager.getInstance().getDBDataSource();
   }
 
   /**
-   * Get the application configuration
+   * Get the application configuration.
    *
-   * @return The application configuration
+   * @return The application configuration.
+   * @see ResourceManager#getConfig()
    */
   protected Properties getAppConfig() {
     return ResourceManager.getInstance().getConfig();
   }
 
   /**
-   * Initialise/reset the bean
+   * Initialise/reset this bean.
    */
   public void initialiseInstruments() {
     // Load the instruments list. Set the current instrument if it isn't already
@@ -288,7 +319,7 @@ public abstract class BaseManagedBean {
         .getAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
       if (
       // if forceInstrumentReload is set, always reload
-      isForceInstrumentReload() ||
+      forceInstrumentReload ||
 
       // If the current instrument is now different to the one held in the
       // session, remove it so it will get reloaded on next access
@@ -303,9 +334,15 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Get the list of instruments owned by the user
+   * Get the {@link Instrument}s owned by the current {@link User}.
+   * 
+   * <p>
+   * If the current user has administration permissions, the returned list will
+   * contain all the {@link Instrument}s registered for all users.
+   * </p>
    *
-   * @return The list of instruments
+   * @return The list of {@link Instrument}s.
+   * @see User#isAdminUser()
    */
   public List<Instrument> getInstruments() {
     if (null == instruments) {
@@ -315,11 +352,43 @@ public abstract class BaseManagedBean {
     return instruments;
   }
 
+  /**
+   * Get the {@link Instrument} object with the specified database ID.
+   * 
+   * <p>
+   * The {@link Instrument} must be present in the list produced by
+   * {@link #getInstruments()}; otherwise {@code null} will be returned.
+   * </p>
+   * 
+   * @param instrumentId
+   *          The {@link Instrument}'s database ID.
+   * @return The {@link Instrument} object.
+   */
   public Instrument getInstrument(long instrumentId) {
     return getInstruments().stream().filter(i -> i.getId() == instrumentId)
-      .findFirst().get();
+      .findFirst().orElse(null);
   }
 
+  /**
+   * Retrieve the {@link Instrument} object for the instrument that is currently
+   * being manipulated by the user.
+   * 
+   * <p>
+   * The "current instrument" is set whenever the user selects an instrument on
+   * the DataSets or Data Files page, or calibrations are edited for an
+   * instrument. When the user creates a new instrument, it is automatically set
+   * as the current instrument.
+   * </p>
+   * 
+   * <p>
+   * The current instrument persists until an action is taken that causes a new
+   * instrument to be set as the current instrument. This will also persist
+   * across user sessions.
+   * </p>
+   * 
+   * @return The current {@link Instrument}.
+   * @see #setCurrentInstrumentId(long)
+   */
   public Instrument getCurrentInstrument() {
     // Get the current instrument from the session
     Instrument currentFullInstrument = (Instrument) getSession()
@@ -365,6 +434,7 @@ public abstract class BaseManagedBean {
    * user.
    *
    * @return The current instrument ID.
+   * @see #getCurrentInstrument()
    */
   public long getCurrentInstrumentId() {
 
@@ -381,7 +451,8 @@ public abstract class BaseManagedBean {
    * Set the instrument that is currently selected by the user.
    *
    * @param currentInstrumentId
-   *          The instrument's database ID
+   *          The instrument's database ID.
+   * @see #getCurrentInstrument()
    */
   public void setCurrentInstrumentId(long currentInstrumentId) {
 
@@ -408,28 +479,22 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * @return the longDateFormat
+   * Get the long form format for displaying timestamps.
+   * 
+   * @return The long date format.
    */
   public String getLongDateFormat() {
     return longDateFormat;
   }
 
   /**
-   * Determine whether or not there are instruments available for this user
+   * Determine whether or not there are instruments available for this user.
    *
    * @return {@code true} if the user has any instruments; {@code false} if not.
    */
   public boolean getHasInstruments() {
     List<Instrument> instruments = getInstruments();
     return (null != instruments && instruments.size() > 0);
-  }
-
-  /**
-   * @return true if instrument should always be reloaded on
-   *         initialiseInstrument
-   */
-  public boolean isForceInstrumentReload() {
-    return forceInstrumentReload;
   }
 
   /**
@@ -462,6 +527,14 @@ public abstract class BaseManagedBean {
     return removeUnusedVariables(allCategories);
   }
 
+  /**
+   * Remove from a list of Run Type Categories any category that is not related
+   * to the {@link Variable}s assigned to the current {@link Instrument}.
+   * 
+   * @param categories
+   *          The Run Type Categories to be filtered.
+   * @return The filtered Run Type Categories.
+   */
   protected List<RunTypeCategory> removeUnusedVariables(
     List<RunTypeCategory> categories) {
     List<Long> instrumentVariables = getInstrumentVariableIDs();
@@ -480,9 +553,10 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Get the IDs of the variables assigned to the current instrument
+   * Get the IDs of the variables assigned to the current {@link Instrument}.
    *
-   * @return The variable IDs
+   * @return The variable IDs.
+   * @see #getCurrentInstrument()
    */
   protected List<Long> getInstrumentVariableIDs() {
     return getCurrentInstrument().getVariables().stream().map(Variable::getId)
@@ -552,6 +626,17 @@ public abstract class BaseManagedBean {
     // Do nothing
   }
 
+  /**
+   * Get the navigation result to take the user to the DataSets list page.
+   * 
+   * <p>
+   * The exact navigation string required depends on the current state of the
+   * application, so this method calculates what it should be in any given
+   * situation.
+   * </p>
+   * 
+   * @return The navigation string.
+   */
   public String getDatasetListNavigation() {
     String result = (String) getSession()
       .getAttribute(DataSetsBean.CURRENT_VIEW_ATTR);
@@ -564,9 +649,16 @@ public abstract class BaseManagedBean {
 
   /**
    * Set the last used date session attribute for later use.
+   * 
+   * <p>
+   * This is used when the user is performing actions that require a timestamp
+   * to be entered (e.g. editing calibrations). The timestamp is stored so that
+   * the next action can be pre-populated with it, since many such actions are
+   * often repeated for different parameters but will use the same tiemstamp.
+   * </p>
    *
    * @param date
-   *          The date.
+   *          The timestamp.
    */
   public void setLastDate(LocalDateTime date) {
     getSession().setAttribute(LAST_DATE_ATTR, date);
@@ -578,6 +670,7 @@ public abstract class BaseManagedBean {
    * If the date has not been set, returns the current date.
    *
    * @return The last date used date.
+   * @see #setLastDate(LocalDateTime)
    */
   public LocalDateTime getLastDate() {
     LocalDateTime result = (LocalDateTime) getSession()
