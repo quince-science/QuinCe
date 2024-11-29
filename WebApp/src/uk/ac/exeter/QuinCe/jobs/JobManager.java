@@ -65,7 +65,8 @@ public class JobManager {
   protected static final int CLASS_CHECK_INVALID_CONSTRUCTOR = 3;
 
   /**
-   * Indicates that a job has no owner
+   * Indicates that a job has no owner. This should not be used in normal
+   * circumstances.
    */
   private static final int NO_OWNER = -999;
 
@@ -173,8 +174,15 @@ public class JobManager {
   private static final String GET_EXISTING_JOBS_QUERY = "SELECT id FROM job WHERE class = ? AND status IN ('WAITING', 'RUNNING')";
 
   /**
-   * Adds a job to the database
-   *
+   * Adds a job to the database.
+   * 
+   * <p>
+   * If the job is linked to a {@link DataSet} (implied by the presence of
+   * {@link DataSetJob#ID_PARAM} in the job's properties), its status is
+   * automatically set to {@link DataSet#STATUS_WAITING}. It is the job's
+   * responsibility to set the appropriate status when processing starts.
+   * </p>
+   * 
    * @param dataSource
    *          A data source
    * @param owner
@@ -199,6 +207,11 @@ public class JobManager {
    * @throws JobException
    *           If an unknown problem is found with the specified job class
    * @throws InvalidDataSetStatusException
+   *           If an invalid {@link DataSet} status is set. In theory this
+   *           should never be thrown.
+   * @throws RecordNotFoundException
+   *           If the underlying database records for the specified job
+   *           parameters (DataSet, owner etc.) cannot be found.
    */
   public static long addJob(DataSource dataSource, User owner, String jobClass,
     Properties properties) throws DatabaseException, MissingParamException,
@@ -598,8 +611,10 @@ public class JobManager {
   }
 
   /**
-   * Create a {@link Job} object from a database query result set
+   * Create a {@link Job} object from a {@link ResultSet}.
    *
+   * @param conn
+   *          A database connection.
    * @param result
    *          The query result
    * @param resourceManager
