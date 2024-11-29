@@ -33,7 +33,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 /**
  * Several Managed Beans are used in the QuinCe application. This abstract class
  * provides a set of useful methods for use by inheriting concrete bean classes.
- * 
+ *
  * <p>
  * <b>WARNING: Performing a "Find Usages" search for some of these methods will
  * not return any results. This <i>DOES NOT</i> mean that the methods are not
@@ -161,7 +161,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Retrieve a parameter from the current request.
-   * 
+   *
    * <p>
    * This is a shortcut to looking up values in
    * {@link ExternalContext#getRequestParameterMap}.
@@ -223,7 +223,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the user's preferences for the currently logged in {@link User}.
-   * 
+   *
    * @return The user's preferences.
    */
   public UserPreferences getUserPrefs() {
@@ -239,7 +239,7 @@ public abstract class BaseManagedBean {
   /**
    * Accessing components requires the name of the form that they are in as well
    * as their own name.
-   * 
+   *
    * <p>
    * Most beans will only have one form, so this method will provide the name of
    * that form. Beans with multiple forms will need to employ a different
@@ -335,7 +335,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the {@link Instrument}s owned by the current {@link User}.
-   * 
+   *
    * <p>
    * If the current user has administration permissions, the returned list will
    * contain all the {@link Instrument}s registered for all users.
@@ -354,12 +354,12 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the {@link Instrument} object with the specified database ID.
-   * 
+   *
    * <p>
    * The {@link Instrument} must be present in the list produced by
    * {@link #getInstruments()}; otherwise {@code null} will be returned.
    * </p>
-   * 
+   *
    * @param instrumentId
    *          The {@link Instrument}'s database ID.
    * @return The {@link Instrument} object.
@@ -372,20 +372,20 @@ public abstract class BaseManagedBean {
   /**
    * Retrieve the {@link Instrument} object for the instrument that is currently
    * being manipulated by the user.
-   * 
+   *
    * <p>
    * The "current instrument" is set whenever the user selects an instrument on
    * the DataSets or Data Files page, or calibrations are edited for an
    * instrument. When the user creates a new instrument, it is automatically set
    * as the current instrument.
    * </p>
-   * 
+   *
    * <p>
    * The current instrument persists until an action is taken that causes a new
    * instrument to be set as the current instrument. This will also persist
    * across user sessions.
    * </p>
-   * 
+   *
    * @return The current {@link Instrument}.
    * @see #setCurrentInstrumentId(long)
    */
@@ -480,7 +480,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the long form format for displaying timestamps.
-   * 
+   *
    * @return The long date format.
    */
   public String getLongDateFormat() {
@@ -530,7 +530,7 @@ public abstract class BaseManagedBean {
   /**
    * Remove from a list of Run Type Categories any category that is not related
    * to the {@link Variable}s assigned to the current {@link Instrument}.
-   * 
+   *
    * @param categories
    *          The Run Type Categories to be filtered.
    * @return The filtered Run Type Categories.
@@ -628,13 +628,13 @@ public abstract class BaseManagedBean {
 
   /**
    * Get the navigation result to take the user to the DataSets list page.
-   * 
+   *
    * <p>
    * The exact navigation string required depends on the current state of the
    * application, so this method calculates what it should be in any given
    * situation.
    * </p>
-   * 
+   *
    * @return The navigation string.
    */
   public String getDatasetListNavigation() {
@@ -649,7 +649,7 @@ public abstract class BaseManagedBean {
 
   /**
    * Set the last used date session attribute for later use.
-   * 
+   *
    * <p>
    * This is used when the user is performing actions that require a timestamp
    * to be entered (e.g. editing calibrations). The timestamp is stored so that

@@ -72,7 +72,7 @@ public abstract class DataReducer {
    * flags on its source {@link SensorValue}s by applying the {@link Variable}'s
    * flag cascade rules.
    * </p>
-   * 
+   *
    * @param instrument
    *          The {@link Instrument} that took the measurement.
    * @param measurement

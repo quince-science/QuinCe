@@ -74,7 +74,7 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
 
   /**
    * Return the overall flag that results from a set of flags from QC routines.
-   * 
+   *
    * <p>
    * This is the most significant flag of the set, according to the order used
    * by {@link Flag#moreSignificantThan(Flag)}.

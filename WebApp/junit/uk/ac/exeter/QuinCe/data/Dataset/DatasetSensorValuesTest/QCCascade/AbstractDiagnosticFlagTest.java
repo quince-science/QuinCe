@@ -39,7 +39,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
   /**
    * Extract multiple QC comments (separated by {@code ;}) specified in a
    * {@link TestSetLine} into a {@link List} of comments.
-   * 
+   *
    * @param line
    *          The {@link TestSetLine}.
    * @param col
@@ -58,7 +58,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
    * <li>The Display QC comment should contain the specified comments. If the
    * specified comment is empty, the User QC comment should also be empty.</li>
    * </ul>
-   * 
+   *
    * <p>
    * This method does not return a result; it performs a JUnit assertion.
    * </p>
@@ -75,7 +75,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
    *          The complete set of Sensor Values for the DataSet being processed.
    * @throws Exception
    *           If any errors are thrown during checking.
-   * 
+   *
    * @see #checkQC(String, Flag, int, String, Collection)
    */
   protected void checkQC(String valueName, SensorValue sensorValue,
@@ -89,13 +89,13 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
 
   /**
    * Check that the QC for a {@link DataReductionRecord} is as expected.
-   * 
+   *
    * <ul>
    * <li>The QC flag should match the specified flag</li>
    * <li>The QC comment should contain the specified comments. If the specified
    * comment is empty, the User QC comment should also be empty.</li>
    * </ul>
-   * 
+   *
    * <p>
    * This method does not return a result; it performs a JUnit assertion.
    * </p>
@@ -106,7 +106,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
    *          The expected QC flag.
    * @param expectedComment
    *          The expected QC comments.
-   * 
+   *
    * @see #checkQC(String, Flag, int, String, Collection)
    */
   protected void checkQC(DataReductionRecord record, int expectedFlag,
@@ -120,11 +120,11 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
 
   /**
    * Check that a set of QC information matches the expected information.
-   * 
+   *
    * <p>
    * This method does not return a result: it performs a JUnit assertion.
    * </p>
-   * 
+   *
    * @param name
    *          A recognisable name for the value being checked.
    * @param valueFlag
@@ -173,7 +173,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
 
   /**
    * Set the QC flag on a {@link SensorValue} using a numeric value.
-   * 
+   *
    * @param sensorValue
    *          The {@link SensorValue} whose QC flag is to be set.
    * @param flagValue
@@ -208,19 +208,19 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
 
   /**
    * Run the data reduction for a {@link DataSet}.
-   * 
+   *
    * <p>
    * This performs all the standard tasks of the {@link LocateMeasurementsJob}
    * and {@link DataReductionJob}, storing the results in the test database.
    * </p>
-   * 
+   *
    * <p>
    * Although the data reduction is run for the complete {@link DataSet}, only
    * the first {@link DataReductionRecord} is returned. We assume that the
    * calling test is set up such that the values of interest will be in the
    * first {@link Measurement}.
    * </p>
-   * 
+   *
    * @param conn
    *          A database connection.
    * @param instrument
@@ -281,11 +281,11 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
   /**
    * Check that a {@link SensorValue} has the expected numeric Display QC Flag
    * value.
-   * 
+   *
    * <p>
    * This method does not return a result; it performs a JUnit assertion.
    * </p>
-   * 
+   *
    * @param valueName
    *          A recognisable name for the value being checked.
    * @param sensorValue
