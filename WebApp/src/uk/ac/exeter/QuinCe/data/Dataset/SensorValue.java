@@ -594,7 +594,10 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
       for (SensorValue value : allSensorValues.getById(sourceValues)) {
         if (!(isPosition() && value.isPosition())) {
-          messages.add(value.getDisplayQCMessage(allSensorValues));
+          String qcMessage = value.getDisplayQCMessage(allSensorValues);
+          if (null != qcMessage) {
+            messages.add(qcMessage);
+          }
         }
       }
 
