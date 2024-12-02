@@ -41,6 +41,9 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorIdMapper;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -697,8 +700,8 @@ public class ExportBean extends BaseManagedBean {
    *
    * @return The manifest JSON
    */
-  private static JsonObject makeManifest(Connection conn, DataSet dataset)
-    throws Exception {
+  private static JsonObject makeManifest(Connection conn, Instrument instrument,
+    DataSet dataset) throws Exception {
 
     JsonObject result = new JsonObject();
     JsonObject manifest = new JsonObject();
@@ -707,6 +710,16 @@ public class ExportBean extends BaseManagedBean {
     metadata.addProperty("quince_information",
       "Data processed using QuinCe " + dataset.getProcessingVersion());
     manifest.add("metadata", metadata);
+
+    JsonObject calibrations = new JsonObject();
+    CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
+      .getCalibrationSet(conn, dataset);
+    if (!sensorCalibrations.isEmpty()) {
+      calibrations.add("sensorCalibrations", sensorCalibrations
+        .toJson(new SensorIdMapper(instrument.getSensorAssignments()), true));
+    }
+
+    manifest.add("calibrations", calibrations);
 
     result.add("manifest", manifest);
     return result;
@@ -740,7 +753,7 @@ public class ExportBean extends BaseManagedBean {
       ResourceManager.getInstance().getConfig(), rawIds);
 
     // Get the base manifest. We will add to it as we go.
-    JsonObject manifest = makeManifest(conn, dataset);
+    JsonObject manifest = makeManifest(conn, instrument, dataset);
 
     /*
      * Create the dataset array, which contains details of each export format.

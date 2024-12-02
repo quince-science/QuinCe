@@ -372,7 +372,8 @@ public class CalibrationSet {
    *
    * @return The JSON String
    */
-  public JsonObject toJson(CalibrationTargetNameMapper targetMapper) {
+  public JsonObject toJson(CalibrationTargetNameMapper targetMapper,
+    boolean skipEmpty) {
 
     JsonObject result = new JsonObject();
 
@@ -398,7 +399,9 @@ public class CalibrationSet {
         }
       }
 
-      result.add(targetMapper.map(target), targetEntries);
+      if (!targetEntries.isEmpty() || !skipEmpty) {
+        result.add(targetMapper.map(target), targetEntries);
+      }
     }
 
     return result;

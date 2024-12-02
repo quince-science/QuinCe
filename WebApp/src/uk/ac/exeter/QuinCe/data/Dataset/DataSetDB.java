@@ -965,7 +965,7 @@ public class DataSetDB {
         .getCalibrationSet(conn, dataset);
 
       calibrationObject.add("gasStandards",
-        standards.toJson(new DefaultTargetNameMapper()));
+        standards.toJson(new DefaultTargetNameMapper(), false));
     }
 
     // Sensors
@@ -974,7 +974,7 @@ public class DataSetDB {
 
     if (!sensorCalibrations.isEmpty()) {
       calibrationObject.add("sensorCalibrations", sensorCalibrations
-        .toJson(new SensorIdMapper(instrument.getSensorAssignments())));
+        .toJson(new SensorIdMapper(instrument.getSensorAssignments()), false));
     }
 
     return result;
