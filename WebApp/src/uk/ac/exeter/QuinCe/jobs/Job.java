@@ -112,6 +112,8 @@ public abstract class Job {
    *          The application global properties.
    * @param id
    *          The job's database ID.
+   * @param owner
+   *          The job's owner.
    * @param properties
    *          The parameters for the job.
    * @throws MissingParamException
@@ -156,6 +158,8 @@ public abstract class Job {
    *          The thread that will be running the job.
    * @throws JobFailedException
    *           If an error occurs during the job.
+   * @return Information regarding the next Job to be created and run as soon as
+   *         this Job is finished.
    */
   protected abstract NextJobInfo execute(JobThread thread)
     throws JobFailedException;

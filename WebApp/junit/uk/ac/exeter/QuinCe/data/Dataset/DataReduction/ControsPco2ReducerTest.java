@@ -57,129 +57,129 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </tr>
  * <tr>
  * <td>Continuous</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Continuous</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
  * </tr>
  * <tr>
  * <td>Continuous</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Continuous</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Continuous</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
  * </tr>
  * <tr>
  * <td>Continuous</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Zero after sleep</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Zero after sleep</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
  * </tr>
  * <tr>
  * <td>Zero after sleep</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Zero after sleep</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Zero after sleep</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
  * </tr>
  * <tr>
  * <td>Zero after sleep</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Zero before sleep</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Zero before sleep</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
  * </tr>
  * <tr>
  * <td>Zero before sleep</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Zero before sleep</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * <tr>
  * <td>Zero before sleep</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
  * </tr>
  * <tr>
  * <td>Zero before sleep</td>
- * <td align="center">Y</td>
- * <td align="center">N</td>
- * <td align="center">N</td>
- * <td align="center">Y</td>
+ * <td style="text-align: center">Y</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">N</td>
+ * <td style="text-align: center">Y</td>
  * </tr>
  * </table>
  *

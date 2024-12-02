@@ -86,6 +86,9 @@ public abstract class DataReducer {
    *          The {@link Instrument} that took the measurement.
    * @param measurement
    *          The {@link Measurement} being processed.
+   * @param allSensorValues
+   *          The complete set of {@link SensorValue}s for the {@link DataSet}
+   *          being processed.
    * @param conn
    *          A database connection.
    * @return The data reduction result.

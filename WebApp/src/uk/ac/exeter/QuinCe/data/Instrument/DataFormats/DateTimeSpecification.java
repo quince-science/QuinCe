@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -832,7 +833,7 @@ public class DateTimeSpecification {
       result = LocalDateTime.of(date, time);
     }
 
-    return result;
+    return result.truncatedTo(ChronoUnit.MILLIS);
   }
 
   /**

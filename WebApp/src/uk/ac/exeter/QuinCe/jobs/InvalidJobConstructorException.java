@@ -5,7 +5,8 @@ package uk.ac.exeter.QuinCe.jobs;
  * constructor of the correct type.
  *
  * @see Job#Job(uk.ac.exeter.QuinCe.web.system.ResourceManager,
- *      java.util.Properties, long, java.util.Properties)
+ *      java.util.Properties, long, uk.ac.exeter.QuinCe.User.User,
+ *      java.util.Properties)
  */
 public class InvalidJobConstructorException extends Exception {
 

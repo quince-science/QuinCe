@@ -56,9 +56,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * Additional custom migrations for specific tests can be defined using
  * {@code @FlywayTest locationsForMigrate = {"resources/sql/..."}}.
  * </p>
- *
- * @author Steve Jones
- *
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = { "/resources/context/testContext.xml" })
@@ -67,25 +64,31 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class BaseTest {
 
   /**
-   * A global application context
+   * A global application context.
    */
   @Autowired
   protected ApplicationContext context;
 
   /**
-   * A mock Servlet Context
+   * A mock Servlet Context.
    */
   @Mock
   protected static ServletContext servletContext;
 
+  /**
+   * A mock Java Server Faces context.
+   */
   @Mock
   protected static FacesContext facesContext;
 
+  /**
+   * A mock External Context.
+   */
   @Mock
   protected static ExternalContext externalContext;
 
   /**
-   * A mock Servlet Context Event
+   * A mock Servlet Context Event.
    */
   @Mock
   protected static ServletContextEvent servletContextEvent;
@@ -149,10 +152,10 @@ public class BaseTest {
   }
 
   /**
-   * Get a data source linked to the H2 test database defined in the
-   * {@link #context}.
+   * Get a {@link DataSource} linked to the H2 test database defined in the
+   * {@link #context}, that can be used to obtain database {@link Connection}s.
    *
-   * @return A data source
+   * @return A {@link DataSource}.
    */
   protected DataSource getDataSource() {
     return (DataSource) context.getBean("dataSourceRef");
@@ -170,12 +173,13 @@ public class BaseTest {
   }
 
   /**
-   * Create a {@link Stream} of {@code null} and empty String values
+   * Create a {@link Stream} of {@code null} and empty String values.
    *
    * <p>
    * Some tests need to check behaviours with empty {@link String} values. This
    * method provides a {@link Stream} of empty {@link String}s that can be used
-   * as input to a {@link ParameterizedTest}.
+   * as input to a {@link ParameterizedTest}, including whitespace and
+   * {@code null} values.
    * </p>
    *
    * @return A {@link Stream} of various empty {@link String} values.
@@ -184,6 +188,12 @@ public class BaseTest {
     return Stream.of(null, "", " ", "  ", "\t", "\n");
   }
 
+  /**
+   * Creates a simple {@link Stream} containing the two possible {@code boolean}
+   * values.
+   *
+   * @return A {@link Stream} of boolean values.
+   */
   protected static Stream<Boolean> booleans() {
     return Stream.of(true, false);
   }
