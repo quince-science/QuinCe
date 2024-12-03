@@ -382,11 +382,31 @@ public class CalibrationSet {
     for (String target : targets) {
 
       // Ensure that entries are not repeated in the JSON
-      List<Long> usedIds = new ArrayList<Long>(priors.size());
+      List<Long> usedIds = new ArrayList<Long>(priors.size() + posts.size());
 
       JsonArray targetEntries = new JsonArray();
 
       for (Map.Entry<LocalDateTime, TreeMap<String, Calibration>> entry : priors
+        .entrySet()) {
+
+        Calibration entryCalibration = entry.getValue().get(target);
+        if (null != entryCalibration
+          && !usedIds.contains(entryCalibration.getId())) {
+          JsonObject calibrationJson = new JsonObject();
+
+          calibrationJson.addProperty("date",
+            DateTimeUtils.toIsoDate(entry.getKey()));
+
+          calibrationJson.addProperty(
+            entryCalibration.getCoefficientsLabel().toLowerCase(),
+            entryCalibration.getHumanReadableCoefficients());
+
+          targetEntries.add(calibrationJson);
+          usedIds.add(entryCalibration.getId());
+        }
+      }
+
+      for (Map.Entry<LocalDateTime, TreeMap<String, Calibration>> entry : posts
         .entrySet()) {
 
         Calibration entryCalibration = entry.getValue().get(target);

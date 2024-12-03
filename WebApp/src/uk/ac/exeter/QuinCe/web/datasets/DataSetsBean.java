@@ -30,6 +30,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
@@ -519,14 +520,21 @@ public class DataSetsBean extends BaseManagedBean {
         if (validCalibration) {
           // Check calculation coefficients, if there are any
           if (getCurrentInstrument().hasCalculationCoefficients()) {
-            CalibrationSet coefficients = CalculationCoefficientDB.getInstance()
-              .getCalibrationSet(getDataSource(), getCurrentInstrument(),
-                DateTimeUtils.parseDisplayDateTime(startTime),
-                DateTimeUtils.parseDisplayDateTime(endTime));
+            try {
 
-            if (!coefficients.hasCompletePrior()) {
+              CalibrationSet coefficients = CalculationCoefficientDB
+                .getInstance().getCalibrationSet(getDataSource(),
+                  getCurrentInstrument(),
+                  DateTimeUtils.parseDisplayDateTime(startTime),
+                  DateTimeUtils.parseDisplayDateTime(endTime));
+
+              if (!coefficients.hasCompletePrior()) {
+                validCalibration = false;
+                validCalibrationMessage = "One or more calculation coefficents are missing";
+              }
+            } catch (InvalidCalibrationDateException e) {
               validCalibration = false;
-              validCalibrationMessage = "One or more calculation coefficents are missing";
+              validCalibrationMessage = "Cannot change calculation coefficients within a dataset";
             }
           }
         }

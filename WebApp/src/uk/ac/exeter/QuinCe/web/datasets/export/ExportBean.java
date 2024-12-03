@@ -41,6 +41,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.DefaultTargetNameMapper;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -721,11 +722,22 @@ public class ExportBean extends BaseManagedBean {
         .toJson(new SensorIdMapper(instrument.getSensorAssignments()), true));
     }
 
-    CalibrationSet externalStandards = ExternalStandardDB.getInstance()
-      .getCalibrationSet(conn, dataset);
-    if (!sensorCalibrations.isEmpty()) {
-      calibrations.add("externalStandards",
-        externalStandards.toJson(new DefaultTargetNameMapper(), false));
+    if (instrument.hasInternalCalibrations()) {
+      CalibrationSet externalStandards = ExternalStandardDB.getInstance()
+        .getCalibrationSet(conn, dataset);
+      if (!sensorCalibrations.isEmpty()) {
+        calibrations.add("externalStandards",
+          externalStandards.toJson(new DefaultTargetNameMapper(), false));
+      }
+    }
+
+    if (instrument.hasCalculationCoefficients()) {
+      CalibrationSet calculationCoefficients = CalculationCoefficientDB
+        .getInstance().getCalibrationSet(conn, dataset);
+      if (!calculationCoefficients.isEmpty()) {
+        calibrations.add("calculationCoefficients",
+          calculationCoefficients.toJson(new DefaultTargetNameMapper(), true));
+      }
     }
 
     manifest.add("calibrations", calibrations);
