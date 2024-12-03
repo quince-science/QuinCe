@@ -420,10 +420,8 @@ public abstract class CalibrationDB {
     TreeMap<String, TreeSet<Calibration>> allCalibrations = getCalibrations(
       conn, instrument);
 
-    return allCalibrations.size() == 0 ? null
-      : new CalibrationSet(getTargets(conn, instrument), start, end, this,
-        allCalibrations);
-
+    return new CalibrationSet(getTargets(conn, instrument), start, end, this,
+      allCalibrations);
   }
 
   public CalibrationSet getCalibrationSet(DataSource dataSource,
