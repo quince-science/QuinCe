@@ -497,15 +497,15 @@ function getColumnIdsWork(headers) {
 
 }
 
-function getReferenceValue(index) {
-  return getColumnById($('#plot' + index + 'Form\\:plot' + index + 'YAxis').val()).referenceValue;
+function getReferenceValues(index) {
+  return getColumnById($('#plot' + index + 'Form\\:plot' + index + 'YAxis').val()).referenceValues;
 }
 
 function getYRange(index) {
   let result = null;
 
-  let referenceValue = getReferenceValue(index);
-  if (null != referenceValue) {
+  let referenceValues = getReferenceValues(index);
+  if (null != referenceValues) {
     let min = Number.MAX_VALUE;
     let max = Number.MIN_VALUE;
 
@@ -528,12 +528,15 @@ function getYRange(index) {
       }
     });
 
-    if (null != referenceValue) {
-      if (referenceValue > max) {
-        max = referenceValue;
-      }
-      if (referenceValue < min) {
-        min = referenceValue;
+    if (null != referenceValues) {
+      for (refEntry in referenceValues) {
+        if (refEntry.value > max) {
+          max = refEntry.value;
+        }
+
+        if (refEntry.value < min) {
+          min = refEntry.value;
+        }
       }
     }
 
@@ -1326,19 +1329,31 @@ function drawDataPlot1Y(index, keepZoom) {
   }
 
   // Reference value for gas standards and similar
-  let referenceValue = getColumnById($('#plot' + index + 'Form\\:plot' + index + 'YAxis').val()).referenceValue;
-  if (null != referenceValue) {
+  let referenceValues = getReferenceValues(index);
+  if (null != referenceValues) {
     data_options.underlayCallback = function(canvas, area, g) {
-      let xmin = g.toDomXCoord(g.xAxisExtremes()[0]);
-      let xmax = g.toDomXCoord(g.xAxisExtremes()[1]);
-      let ycoord = g.toDomYCoord(referenceValue);
-
       canvas.setLineDash([10, 5]);
       canvas.strokeStyle = '#FF0000';
       canvas.lineWidth = 3;
       canvas.beginPath();
-      canvas.moveTo(xmin, ycoord);
-      canvas.lineTo(xmax, ycoord);
+
+      canvas.moveTo(g.toDomXCoord(referenceValues[0].date), g.toDomYCoord(referenceValues[0].value));
+
+      let currentIndex = 0;
+
+      while (currentIndex < referenceValues.length - 1) {
+        canvas.lineTo(g.toDomXCoord(referenceValues[currentIndex + 1].date),
+                      g.toDomYCoord(referenceValues[currentIndex].value));
+
+        canvas.lineTo(g.toDomXCoord(referenceValues[currentIndex + 1].date),
+                      g.toDomYCoord(referenceValues[currentIndex + 1].value));
+
+        currentIndex++;
+      }
+
+      canvas.lineTo(g.toDomXCoord(g.xAxisExtremes()[1]),
+                    g.toDomYCoord(referenceValues[currentIndex].value));
+
       canvas.stroke();
       canvas.setLineDash([]);
     }

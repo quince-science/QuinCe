@@ -42,6 +42,8 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.DefaultTargetNameMapper;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorIdMapper;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -717,6 +719,13 @@ public class ExportBean extends BaseManagedBean {
     if (!sensorCalibrations.isEmpty()) {
       calibrations.add("sensorCalibrations", sensorCalibrations
         .toJson(new SensorIdMapper(instrument.getSensorAssignments()), true));
+    }
+
+    CalibrationSet externalStandards = ExternalStandardDB.getInstance()
+      .getCalibrationSet(conn, dataset);
+    if (!sensorCalibrations.isEmpty()) {
+      calibrations.add("externalStandards",
+        externalStandards.toJson(new DefaultTargetNameMapper(), false));
     }
 
     manifest.add("calibrations", calibrations);

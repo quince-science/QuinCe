@@ -159,11 +159,8 @@ public class InternalCalibrationData extends PlotPageData {
           for (SensorAssignment assignment : assignments) {
             for (String runType : runTypes) {
 
-              // TODO We're only displaying the prior standard at the minute.
-              // Display all.
-              Double calibrationValue = calibrations
-                .getCalibrations(dataset.getStart()).get(runType)
-                .getDoubleCoefficient(sensorType.getShortName());
+              TreeMap<LocalDateTime, Double> calibrationValues = calibrations
+                .getTargetCalibrations(runType, sensorType);
 
               long columnId = makeColumnId(runType, assignment);
               String columnName = runType + ":" + assignment.getSensorName();
@@ -171,7 +168,7 @@ public class InternalCalibrationData extends PlotPageData {
               PlotPageColumnHeading heading = new PlotPageColumnHeading(
                 columnId, columnName, sensorType.getLongName(),
                 sensorType.getCodeName(), sensorType.getUnits(), false, true,
-                true, calibrationValue, sensorType.questionableFlagAllowed());
+                true, calibrationValues, sensorType.questionableFlagAllowed());
               sensorTypeColumns.add(heading);
               columnCount++;
               if (columnCount == 1) {

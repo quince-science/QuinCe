@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -379,13 +381,17 @@ public class CalibrationSet {
 
     for (String target : targets) {
 
+      // Ensure that entries are not repeated in the JSON
+      List<Long> usedIds = new ArrayList<Long>(priors.size());
+
       JsonArray targetEntries = new JsonArray();
 
       for (Map.Entry<LocalDateTime, TreeMap<String, Calibration>> entry : priors
         .entrySet()) {
 
         Calibration entryCalibration = entry.getValue().get(target);
-        if (null != entryCalibration) {
+        if (null != entryCalibration
+          && !usedIds.contains(entryCalibration.getId())) {
           JsonObject calibrationJson = new JsonObject();
 
           calibrationJson.addProperty("date",
@@ -396,6 +402,7 @@ public class CalibrationSet {
             entryCalibration.getHumanReadableCoefficients());
 
           targetEntries.add(calibrationJson);
+          usedIds.add(entryCalibration.getId());
         }
       }
 
@@ -597,5 +604,35 @@ public class CalibrationSet {
     return priors.keySet().stream()
       .filter(t -> !t.isBefore(start) && !t.isAfter(end))
       .collect(Collectors.toCollection(TreeSet::new));
+  }
+
+  /**
+   * Get all the calibrations for a specified target and sensor.
+   *
+   * <p>
+   * Only includes priors at the time of writing.
+   * </p>
+   *
+   * @param target
+   *          The target whose calibrations are required
+   * @param sensorType
+   *          The {@link SensorType} whose value we are interested in.
+   * @return The calibrations
+   */
+  public TreeMap<LocalDateTime, Double> getTargetCalibrations(String target,
+    SensorType sensorType) {
+    TreeMap<LocalDateTime, Double> result = new TreeMap<LocalDateTime, Double>();
+
+    for (Map.Entry<LocalDateTime, TreeMap<String, Calibration>> entry : priors
+      .entrySet()) {
+
+      Calibration calib = entry.getValue().get(target);
+      if (null != calib) {
+        result.put(entry.getKey(),
+          calib.getDoubleCoefficient(sensorType.getShortName()));
+      }
+    }
+
+    return result;
   }
 }
