@@ -12,7 +12,7 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
   /**
    * Simple constructor to create an empty set
    */
-  protected InstrumentFileSet() {
+  public InstrumentFileSet() {
     super();
   }
 
