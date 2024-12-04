@@ -24,7 +24,42 @@ import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * API Method to create NRT datasets
+ * API Method to create an NRT {@link DataSet}.
+ *
+ * *
+ * <table>
+ * <caption>Possible response codes</caption>
+ * <tr>
+ * <th>Response Code</th>
+ * <th>Meaning</th>
+ * </tr>
+ * <tr>
+ * <td>200</td>
+ * <td>If the state of the {@link Instrument}'s {@link DataSet}s is such that an
+ * NRT {@link DataSet} can be created. This does not necessarily mean that an
+ * NRT {@link DataSet} will definitely be created: just that the
+ * {@link Instrument}'s state does not prevent one from being created if
+ * appropriate data exists.</td>
+ * </tr>
+ * <tr>
+ * <td>204</td>
+ * <td>The {@link Instrument} is not currently in a state where an NRT
+ * {@link DataSet} can be created.</td>
+ * </tr>
+ * <tr>
+ * <td>403</td>
+ * <td>Authentication failed, or the requested {@link Instrument} is not
+ * configured for NRT data.</td>
+ * </tr>
+ * <tr>
+ * <td>404</td>
+ * <td>The specified {@link Instrument} does not exist.</td>
+ * </tr>
+ * <tr>
+ * <td>500</td>
+ * <td>An error occurred while trying to create the NRT {@link DataSet}.</td>
+ * </tr>
+ * </table>
  */
 @Path("/nrt/MakeNrtDataset")
 public class MakeNrtDataset {

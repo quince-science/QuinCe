@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -17,6 +18,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
@@ -981,8 +983,124 @@ public abstract class DataFile implements TimeRange {
     return mean.mean();
   }
 
+  /**
+   * Determines whether or not this file overlaps the specified time period.
+   *
+   * <p>
+   * The file's time offset is applied before the check.
+   * </p>
+   *
+   * @param start
+   *          The start of the period to check.
+   * @param end
+   *          The end of the period to check.
+   * @return {@code true} if this file overlaps the time period; {@code false}
+   *         if it does not.
+   */
+  public boolean overlaps(LocalDateTime start, LocalDateTime end) {
+    return DateTimeUtils.overlap(getOffsetStartTime(), getOffsetEndTime(),
+      start, end);
+  }
+
+  /**
+   * Determines whether or not this file overlaps another file.
+   *
+   * <p>
+   * The file's time offset is applied before the check.
+   * </p>
+   *
+   * @param other
+   *          The file to check against this file.
+   * @return {@code true} if both files overlap; {@code false} if they do not.
+   */
+  public boolean overlaps(DataFile other) {
+    return DateTimeUtils.overlap(getOffsetStartTime(), getOffsetEndTime(),
+      other.getOffsetStartTime(), other.getOffsetEndTime());
+  }
+
   @Override
   public String toString() {
     return filename;
+  }
+
+  /**
+   * Determine whether the supplied {@link Collection} of {@link DataFile}s
+   * contains at least one period where there is an overlapping file for all the
+   * {@link Instrument}'s {@link FileDefinitions} within the specified time
+   * period.
+   *
+   * <p>
+   * This method can tell us whether the set of {@link DataFile}s can be used to
+   * create a {@link DataSet} covering the specified period.
+   * </p>
+   *
+   * @param instrument
+   *          The {@link Instrument} whose files are being examined.
+   * @param files
+   *          The files.
+   * @param start
+   *          The start time of the required period.
+   * @param end
+   *          The end time of the required period.
+   * @return
+   */
+  public static boolean hasConcurrentFiles(Instrument instrument,
+    Collection<DataFile> files, LocalDateTime start, LocalDateTime end) {
+
+    /*
+     * TODO This could be a little more efficient if we ensure that all the
+     * incoming files are in time order. Then we could break out as soon as we
+     * run off the end time before establishing the final result.
+     *
+     * In practice the files will almost certainly be in time order anyway, so
+     * unless I explicitly see this being a performance problem I won't bother.
+     */
+
+    boolean result = false;
+
+    // If there's only one FileDefinition, we can just find any file with data
+    // between the start and end.
+    if (instrument.getFileDefinitions().size() == 1) {
+      result = files.stream().anyMatch(f -> f.overlaps(start, end));
+    } else {
+      // Build a Map of the files that encompass the required period
+      // grouped by FileDefinition
+      HashMap<FileDefinition, List<DataFile>> map = new HashMap<FileDefinition, List<DataFile>>();
+
+      List<FileDefinition> fileDefinitions = instrument.getFileDefinitions();
+
+      fileDefinitions.forEach(fd -> map.put(fd, new ArrayList<DataFile>()));
+
+      files.stream().filter(f -> f.overlaps(start, end))
+        .forEach(f -> map.get(f.getFileDefinition()).add(f));
+
+      for (DataFile checkFile : map.get(fileDefinitions.get(0))) {
+
+        boolean setComplete = true;
+
+        for (int i = 1; i < instrument.getFileDefinitions().size(); i++) {
+          boolean overlapFound = false;
+
+          for (DataFile defFile : map.get(fileDefinitions.get(i))) {
+            if (checkFile.overlaps(defFile)) {
+              overlapFound = true;
+              break;
+            }
+          }
+
+          if (!overlapFound) {
+            setComplete = false;
+            break;
+          }
+        }
+
+        if (setComplete) {
+          result = true;
+          break;
+        }
+      }
+    }
+
+    return result;
   }
 }
