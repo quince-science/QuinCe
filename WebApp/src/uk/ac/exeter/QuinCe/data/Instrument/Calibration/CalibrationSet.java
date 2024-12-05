@@ -110,7 +110,7 @@ public class CalibrationSet {
     TreeMap<String, TreeSet<Calibration>> calibrations)
     throws MissingParamException, InvalidCalibrationDateException {
 
-    MissingParam.checkMissing(targets, "targets", false);
+    MissingParam.checkMissing(targets, "targets", true);
     MissingParam.checkMissing(start, "start");
     MissingParam.checkMissing(end, "end");
 
