@@ -33,6 +33,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
+import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -405,7 +406,7 @@ public class DataSetsBean extends BaseManagedBean {
       DataSetDB.addDataSet(getDataSource(), newDataSet);
 
       Properties jobProperties = new Properties();
-      jobProperties.setProperty(ExtractDataSetJob.ID_PARAM,
+      jobProperties.setProperty(DataSetJob.ID_PARAM,
         String.valueOf(newDataSet.getId()));
 
       JobManager.addJob(getDataSource(), getUser(),
@@ -470,7 +471,7 @@ public class DataSetsBean extends BaseManagedBean {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId,
         DataSet.STATUS_SENSOR_QC);
       Properties properties = new Properties();
-      properties.setProperty(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
+      properties.setProperty(DataSetJob.ID_PARAM, String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(),
         AutoQCJob.class.getCanonicalName(), properties);
     } catch (Exception e) {

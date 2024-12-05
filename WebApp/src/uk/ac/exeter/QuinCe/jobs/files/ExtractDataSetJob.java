@@ -377,8 +377,8 @@ public class ExtractDataSetJob extends DataSetJob {
       DataSetDB.updateDataSet(conn, dataSet);
 
       Properties jobProperties = new Properties();
-      jobProperties.setProperty(AutoQCJob.ID_PARAM,
-        String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
+      jobProperties.setProperty(DataSetJob.ID_PARAM, String
+        .valueOf(Long.parseLong(properties.getProperty(DataSetJob.ID_PARAM))));
       NextJobInfo nextJob = new NextJobInfo(AutoQCJob.class.getCanonicalName(),
         jobProperties);
       nextJob.putTransferData(SENSOR_VALUES, sensorValues);

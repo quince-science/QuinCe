@@ -251,8 +251,8 @@ public class DataReductionJob extends DataSetJob {
         DataSetDB.updateDataSet(conn, dataSet);
 
         Properties jobParams = new Properties();
-        jobParams.put(LocateMeasurementsJob.ID_PARAM,
-          String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
+        jobParams.put(DataSetJob.ID_PARAM, String.valueOf(
+          Long.parseLong(properties.getProperty(DataSetJob.ID_PARAM))));
         nextJob = new NextJobInfo(DataReductionQCJob.class.getCanonicalName(),
           jobParams);
         nextJob.putTransferData(SENSOR_VALUES, rawSensorValues);

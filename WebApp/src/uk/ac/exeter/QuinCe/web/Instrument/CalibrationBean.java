@@ -28,7 +28,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
-import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
+import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -211,13 +211,6 @@ public abstract class CalibrationBean extends BaseManagedBean {
   protected Class<? extends Job> getReprocessJobClass() {
     return ExtractDataSetJob.class;
   }
-
-  /**
-   * Get the status to set on a {@link DataSet} that is being reprocessed.
-   *
-   * @return The new status.
-   */
-  protected abstract int getReprocessStatus();
 
   /**
    * Get an instance of the database interaction class for the calibrations
@@ -737,12 +730,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
           Class<? extends Job> reprocessJobClass = getReprocessJobClass();
 
-          DataSetDB.setDatasetStatus(getDataSource(), entry.getKey().getId(),
-            getReprocessStatus());
           Properties jobProperties = new Properties();
 
           // See GitHub Issue #1369
-          jobProperties.setProperty(AutoQCJob.ID_PARAM,
+          jobProperties.setProperty(DataSetJob.ID_PARAM,
             String.valueOf(entry.getKey().getId()));
           JobManager.addJob(getDataSource(), getUser(),
             reprocessJobClass.getCanonicalName(), jobProperties);

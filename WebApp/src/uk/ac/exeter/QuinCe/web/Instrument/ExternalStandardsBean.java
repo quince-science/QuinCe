@@ -5,11 +5,12 @@ import java.time.LocalDateTime;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardFactory;
+import uk.ac.exeter.QuinCe.jobs.Job;
+import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 
 /**
  * Bean for external standards
@@ -68,8 +69,8 @@ public class ExternalStandardsBean extends CalibrationBean {
   }
 
   @Override
-  protected int getReprocessStatus() {
-    return DataSet.STATUS_SENSOR_QC;
+  protected Class<? extends Job> getReprocessJobClass() {
+    return AutoQCJob.class;
   }
 
   @Override

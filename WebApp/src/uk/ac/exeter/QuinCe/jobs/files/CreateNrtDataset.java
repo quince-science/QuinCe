@@ -110,7 +110,7 @@ public class CreateNrtDataset extends Job {
           // TODO This is a copy of the code in DataSetsBean.addDataSet. Does
           // it need collapsing?
           Properties jobProperties = new Properties();
-          jobProperties.setProperty(ExtractDataSetJob.ID_PARAM,
+          jobProperties.setProperty(DataSetJob.ID_PARAM,
             String.valueOf(newDataset.getId()));
 
           JobManager.addJob(conn, instrument.getOwner(),

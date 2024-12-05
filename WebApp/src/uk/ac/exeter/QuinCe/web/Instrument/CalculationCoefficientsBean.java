@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
@@ -29,11 +28,6 @@ public class CalculationCoefficientsBean extends CalibrationBean {
   @Override
   protected String getPageNavigation() {
     return NAV_LIST;
-  }
-
-  @Override
-  protected int getReprocessStatus() {
-    return DataSet.STATUS_DATA_REDUCTION;
   }
 
   @Override
