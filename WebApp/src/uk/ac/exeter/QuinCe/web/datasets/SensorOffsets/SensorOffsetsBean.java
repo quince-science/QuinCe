@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupPair;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
 import uk.ac.exeter.QuinCe.jobs.files.LocateMeasurementsJob;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -119,8 +120,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
       DataSetDB.updateDataSet(getDataSource(), dataset);
 
       Properties jobProperties = new Properties();
-      jobProperties.setProperty(LocateMeasurementsJob.ID_PARAM,
-        String.valueOf(datasetId));
+      jobProperties.setProperty(DataSetJob.ID_PARAM, String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(),
         LocateMeasurementsJob.class.getCanonicalName(), jobProperties);
 

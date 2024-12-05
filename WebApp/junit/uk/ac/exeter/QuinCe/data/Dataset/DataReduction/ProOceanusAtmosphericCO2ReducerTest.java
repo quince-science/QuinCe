@@ -29,7 +29,7 @@ public class ProOceanusAtmosphericCO2ReducerTest extends DataReducerTest {
 
     // Initialise the reducer
     ProOceanusAtmosphericCO2Reducer reducer = new ProOceanusAtmosphericCO2Reducer(
-      variable, new HashMap<String, Properties>());
+      variable, new HashMap<String, Properties>(), null);
 
     MeasurementValue airTemp = makeMeasurementValue("Air Temperature", 14.755D);
 

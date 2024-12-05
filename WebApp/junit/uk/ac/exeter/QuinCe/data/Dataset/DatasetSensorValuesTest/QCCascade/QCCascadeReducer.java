@@ -20,7 +20,7 @@ public class QCCascadeReducer extends DataReducer {
 
   public QCCascadeReducer(Variable variable,
     Map<String, Properties> properties) {
-    super(variable, properties);
+    super(variable, properties, null);
   }
 
   @Override

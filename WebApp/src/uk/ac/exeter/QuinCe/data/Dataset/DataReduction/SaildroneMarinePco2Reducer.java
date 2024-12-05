@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
@@ -22,9 +23,10 @@ public class SaildroneMarinePco2Reducer extends DataReducer {
   private static List<CalculationParameter> calculationParameters = null;
 
   public SaildroneMarinePco2Reducer(Variable variable,
-    Map<String, Properties> properties) {
+    Map<String, Properties> properties,
+    CalibrationSet calculationCoefficients) {
 
-    super(variable, properties);
+    super(variable, properties, calculationCoefficients);
   }
 
   @Override

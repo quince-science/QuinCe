@@ -1,0 +1,13 @@
+Time Affects Calibration,Use Post Calibration,Move,Result
+false,false,START,true
+false,false,MIDDLE,false
+false,false,END,true
+false,true,START,true
+false,true,MIDDLE,false
+false,true,END,true
+true,false,START,false
+true,false,MIDDLE,false
+true,false,END,true
+true,true,START,false
+true,true,MIDDLE,false
+true,true,END,false

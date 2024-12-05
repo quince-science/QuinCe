@@ -15,6 +15,14 @@
   </ui:define>
   <ui:define name="pageTitle">#{dataSetsBean.currentInstrument.name} - New Data Set</ui:define>
   <ui:define name="content">
+    <p:dialog header="Invalid dataset" widgetVar="invalidDatasetDlg" modal="true">
+      You selected an area that already has a data set defined.
+      <h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
+        <p:button
+          value="OK"
+          onclick="PF('invalidDatasetDlg').hide();return false;" />
+      </h:panelGrid>
+    </p:dialog>
     <h:form id="uploadForm" method="post" charset="utf8">
       <f:passThroughAttribute name="data-valid-calibration"
         value="#{dataSetsBean.validCalibration}" />
@@ -25,30 +33,20 @@
         <script>
           var groups = JSON.parse('#{dataSetsBean.fileDefinitionsJson}');
           var dataSetJSON = JSON.parse('#{dataSetsBean.timelineEntriesJson}');
-          // Treat dates as dates in the dataset
-          dataSetJSON.map(function (row) {
-            row.start = new Date(row.start);
-            row.end = new Date(row.end);
-          });
-
-          var filesAndDataSets =  new vis.DataSet(dataSetJSON);
+          var calibrationsJSON = JSON.parse('#{dataSetsBean.calibrationsJson}');
           var dataSetNames = JSON.parse('#{dataSetsBean.dataSetNamesJson}');
-          var timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, TIMELINE_OPTIONS);
-          timeline.on('click', function (event) {
-            if (event.item) {
-              setRangeFromClick(event.time, filesAndDataSets)
-            }
-          })
-          $( document ).ready(function() {
-            // Make sure DOM is loaded befor calling this
+
+          $(document).ready(function() {
+            // Make sure DOM is loaded before calling this
             PF('pAddButton').disable();
+            drawTimeline();
           });
         </script>
         <h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
           <p:outputLabel for="dataSetName" value="Data Set Name:" />
           <p:inputText id="dataSetName" widgetVar="pDataSetName"
             value="#{dataSetsBean.newDataSet.name}"
-            onkeyup="processNewDataSet();"
+            onkeyup="processNewDataSet('start');"
             pt:data-platform-code="#{dataSetsBean.currentInstrument.platformCode}" />
           <p:outputLabel for="startDate" value="Start Date" />
           <p:outputLabel for="endDate" value="End Date" />
@@ -66,7 +64,7 @@
             monthNavigator="true" yearNavigator="true"
             onMonthChange="autoSelectDay"
             onYearChange="autoSelectDay"
-            onchange="processNewDataSet();">
+            onchange="processNewDataSet('start');">
           </p:datePicker>
         </h:panelGrid>
         <div id="errorList" class="errors hidden"></div>

@@ -16,19 +16,87 @@ TIMELINE_OPTIONS = {
   }
 };
 
+function drawTimeline() {
+  // Convert dates to date objects
+  dataSetJSON.map(function (row) {
+    row.start = new Date(row.start);
+    row.end = new Date(row.end);
+  });
+
+  var filesAndDataSets =  new vis.DataSet(dataSetJSON);
+  var timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, TIMELINE_OPTIONS);
+  timeline.on('click', function (event) {
+    if (event.item) {
+      setRangeFromClick(event.time, filesAndDataSets)
+    }
+  });
+
+  // Add calibrations to timeline
+  let calibCount = 0;
+  for (let [time, types] of Object.entries(calibrationsJSON)) {
+    let typeString = '';
+
+    for (type of types) {
+      if (typeString.length > 0) {
+        typeString += '/';
+      }
+
+      typeString += calibration_names[type];
+    }
+
+    calibCount++;
+    let time_id = timeline.addCustomTime(new Date(time), 'c' + calibCount);
+    timeline.setCustomTimeMarker(typeString, time_id, false);
+    setCustomTimeClass(timeline, time_id, 'calibration-time');
+  }
+
+  // Set up timeline limits
+  let timelineMin = null;
+  let timelineMax = null;
+
+  for (entry of dataSetJSON) {
+  if (null == timelineMin || entry.start < timelineMin) {
+    timelineMin = entry.start;
+  }
+
+  if (null == timelineMax || entry.end > timelineMax) {
+    timelineMax = entry.end;
+  }
+  }
+
+  if (Object.keys(calibrationsJSON).length > 0) {
+    let firstCalibrationTime = new Date(Object.keys(calibrationsJSON)[0]);
+    if (firstCalibrationTime < timelineMin) {
+      timelineMin = firstCalibrationTime;
+    }
+
+    let lastCalibrationTime = new Date(Object.keys(calibrationsJSON)[Object.keys(calibrationsJSON).length - 1]);
+    if (lastCalibrationTime > timelineMax) {
+      timelineMax = lastCalibrationTime;
+    }
+  }
+
+  window['timeline'] = timeline;
+
+  window.setTimeout(function() {
+  processNewDataSet(null);
+    timeline.setWindow(timelineMin, timelineMax, {animation: false})
+  }, 500);
+}
+
 var newDataSetItem = {
   id: NEW_DATA_SET_ID,
   type: 'background',
   className: 'goodNewDataSet',
-  start: new Date(),
-  end: new Date(),
-  content: 'New Data Set',
-  title: 'New Date Set'
+  start: null,
+  end: null,
+  content: '_blank',
+  title: '_blank'
 }
 
 function processNewDataSet(eventType) {
   // Remove the existing entry
-  timeline.itemsData.getDataSet().remove(newDataSetItem);
+  timeline.itemsData.remove(newDataSetItem);
 
   if (null == PF('startDate').getDate()) {
     newDataSetItem['start'] = null;
@@ -41,9 +109,12 @@ function processNewDataSet(eventType) {
   } else {
     newDataSetItem['end'] = getDateField('endDate');
   }
+
   let validData = validateNewDataSet();
-  if (validData) {
+  if (eventType == 'start' || validData) {
     newDataSetItem['className'] = 'goodNewDataSet';
+    $('#errorList').hide();
+    PF('pAddButton').enable();
   } else {
     newDataSetItem['className'] = 'badNewDataSet';
   }
@@ -56,7 +127,7 @@ function processNewDataSet(eventType) {
   newDataSetItem['title'] = PF('pDataSetName').jq.val().trim();
   if (newDataSetItem['start'] && newDataSetItem['end']
       && newDataSetItem['end'] > newDataSetItem['start']) {
-    timeline.itemsData.getDataSet().add(newDataSetItem);
+    timeline.itemsData.add(newDataSetItem);
   }
   if (eventType == 'submit' && validData) {
     addDataSet();
@@ -144,7 +215,7 @@ function dataSetNameExists(newName) {
 function dataSetOverlaps(newStart, newEnd) {
 
   var result = false;
-  var ids = timeline.itemsData.getDataSet().getIds();
+  var ids = timeline.itemsData.getIds();
 
   // Data sets are at the end of the list, so go through it backwards
   for (var i = ids.length - 1; i > 0; i--) {
@@ -152,7 +223,7 @@ function dataSetOverlaps(newStart, newEnd) {
     // Ignore the new data set
     if (ids[i] != NEW_DATA_SET_ID) {
 
-      var item = timeline.itemsData.getDataSet().get(ids[i]);
+      var item = timeline.itemsData.get(ids[i]);
       if (item['type'] != 'background') {
         // We have finished the data sets, so stop
         break;
@@ -181,7 +252,7 @@ function hasAllFiles(newStart, newEnd) {
 
   var result = false;
 
-  var group0Ids = timeline.itemsData.getDataSet().getIds({
+  var group0Ids = timeline.itemsData.getIds({
     filter: function(item) {
       var accept = true;
 
@@ -202,14 +273,14 @@ function hasAllFiles(newStart, newEnd) {
 
     for (var i = 0; !result && i < group0Ids.length; i++) {
 
-      var group0Item = timeline.itemsData.getDataSet().get(group0Ids[i]);
+      var group0Item = timeline.itemsData.get(group0Ids[i]);
       var g0Start = new Date(group0Item['start']).getTime();
       var g0End = new Date(group0Item['end']).getTime();
 
       var allGroupsOK = true;
       for (var j = 2; allGroupsOK && j < groups.length; j++) {
 
-        var groupIds = timeline.itemsData.getDataSet().getIds({
+        var groupIds = timeline.itemsData.getIds({
           filter: function(item) {
             var accept = true;
 
@@ -281,9 +352,27 @@ function setRangeFromClick(date, datasets) {
     setDateField('endDate', max);
   }
   else {
-    alert('You clicked on an area that already has a data set defined');
+  PF('invalidDatasetDlg').show();
   }
 }
+
+// Set a custom CSS class on a timeline Custom Time
+function setCustomTimeClass(tl, id, className) {
+  for (t in tl.customTimes) {
+    if (tl.customTimes[t].options['id'] == id) {
+      tl.customTimes[t].bar.classList.add(className);
+      break;
+    }
+  }
+}
+
+// Lookup of calibration names
+calibration_names = {
+  'EXTERNAL_STANDARD': 'Standard',
+  'SENSOR_CALIBRATION': 'Calibration',
+  'CALC_COEFFICIENT': 'Coefficient'
+}
+
 
 // UGLY HACK ALERT!
 

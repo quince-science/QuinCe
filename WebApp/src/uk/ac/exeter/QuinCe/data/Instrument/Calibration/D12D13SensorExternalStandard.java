@@ -10,21 +10,23 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.UnderwayMarine12_13Pco2Red
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
+import uk.ac.exeter.QuinCe.utils.ParameterException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class D12D13SensorExternalStandard extends DefaultExternalStandard {
 
   boolean useTotal = false;
 
-  public D12D13SensorExternalStandard(Instrument instrument,
-    LocalDateTime date) {
-    super(instrument, date);
+  public D12D13SensorExternalStandard(Instrument instrument, long id,
+    LocalDateTime date) throws CalibrationException {
+    super(instrument, id, date);
     calculateUseTotal(instrument);
   }
 
   public D12D13SensorExternalStandard(long id, Instrument instrument,
     String target, LocalDateTime deploymentDate,
-    Map<String, String> coefficients) {
+    Map<String, String> coefficients)
+    throws ParameterException, CalibrationException {
     super(id, instrument, target, deploymentDate, coefficients);
     calculateUseTotal(instrument);
   }

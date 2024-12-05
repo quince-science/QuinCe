@@ -79,6 +79,11 @@ public abstract class PlotPageData {
   private Gson tableDataGson;
 
   /**
+   * Gson instance for serializing column headings
+   */
+  private Gson columnHeadingsGson;
+
+  /**
    * An error string to display to the user if something goes wrong.
    */
   private String errorMessage = null;
@@ -205,6 +210,11 @@ public abstract class PlotPageData {
         .registerTypeAdapter(PlotPageTableRecord.class,
           new PlotPageTableRecordSerializer(getAllSensorValues()))
         .create();
+
+      columnHeadingsGson = new GsonBuilder()
+        .registerTypeAdapter(new TreeMap<LocalDateTime, Double>().getClass(),
+          new ReferenceValueSerializer())
+        .serializeNulls().create();
 
       // Initialise the plots
       plot1 = new Plot(this, getDefaultXAxis1(), getDefaultYAxis1(),
@@ -382,7 +392,7 @@ public abstract class PlotPageData {
       }
 
       // Convert the reorganised data to JSON
-      result = new GsonBuilder().serializeNulls().create().toJson(jsonGroups);
+      result = columnHeadingsGson.toJson(jsonGroups);
     }
 
     return result;

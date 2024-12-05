@@ -6,14 +6,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.SortedMap;
 import java.util.stream.Stream;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.flywaydb.test.FlywayTestExecutionListener;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,7 +31,9 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
+import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -141,6 +146,11 @@ public class BaseTest {
     }
   }
 
+  public void loginUser(long userId) throws Exception {
+    ((HttpSession) externalContext.getSession(false)).setAttribute(
+      LoginBean.USER_SESSION_ATTR, UserDB.getUser(getConnection(), userId));
+  }
+
   /**
    * Get a {@link DataSource} linked to the H2 test database defined in the
    * {@link #context}, that can be used to obtain database {@link Connection}s.
@@ -219,6 +229,32 @@ public class BaseTest {
           result = false;
           break;
         }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Check that two lists contain the same values in the same order.
+   *
+   * @param list1
+   *          The first list.
+   * @param list2
+   *          The second list.
+   * @return {@code true} if the lists contain the same values; {@code false}
+   *         otherwise.
+   */
+  protected boolean mapsEqual(SortedMap<?, ?> map1, SortedMap<?, ?> map2) {
+    boolean result = true;
+
+    if (map1.size() != map2.size()) {
+      result = false;
+    } else {
+      result = CollectionUtils.isEqualCollection(map1.keySet(), map2.keySet());
+      if (result) {
+        result = CollectionUtils.isEqualCollection(map1.values(),
+          map2.values());
       }
     }
 

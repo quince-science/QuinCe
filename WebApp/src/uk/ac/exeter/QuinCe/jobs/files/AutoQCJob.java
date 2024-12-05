@@ -270,7 +270,7 @@ public class AutoQCJob extends DataSetJob {
             .getSensorTypeForDBColumn(columnId);
 
           CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
-            .getMostRecentCalibrations(conn, instrument, dataSet.getStart());
+            .getCalibrationSet(conn, dataSet);
 
           if (sensorType.hasInternalCalibration()) {
             for (AbstractAutoQCRoutine routine : externalStandardsRoutinesConfig
@@ -305,8 +305,8 @@ public class AutoQCJob extends DataSetJob {
       conn.commit();
 
       Properties jobProperties = new Properties();
-      jobProperties.setProperty(LocateMeasurementsJob.ID_PARAM,
-        String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
+      jobProperties.setProperty(DataSetJob.ID_PARAM, String
+        .valueOf(Long.parseLong(properties.getProperty(DataSetJob.ID_PARAM))));
       NextJobInfo nextJob = new NextJobInfo(
         LocateMeasurementsJob.class.getCanonicalName(), jobProperties);
       nextJob.putTransferData(SENSOR_VALUES, rawSensorValues);

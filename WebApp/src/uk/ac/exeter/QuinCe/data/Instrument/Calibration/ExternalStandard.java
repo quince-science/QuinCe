@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,8 +22,9 @@ public abstract class ExternalStandard extends Calibration {
    * @param instrumentId
    *          The instrument ID
    */
-  protected ExternalStandard(Instrument instrument, LocalDateTime date) {
-    super(instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
+  protected ExternalStandard(Instrument instrument, long id,
+    LocalDateTime date) {
+    super(instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE, id,
       date);
   }
 
@@ -39,10 +41,11 @@ public abstract class ExternalStandard extends Calibration {
    *          The standard concentration
    * @throws ParameterException
    *           If the calibration details are invalid
+   * @throws CalibrationException
    */
   protected ExternalStandard(long id, Instrument instrument, String target,
     LocalDateTime deploymentDate, Map<String, String> coefficients)
-    throws ParameterException {
+    throws ParameterException, CalibrationException {
     super(id, instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
       target);
 
@@ -56,15 +59,33 @@ public abstract class ExternalStandard extends Calibration {
     }
   }
 
+  protected ExternalStandard(long id, Instrument instrument, String target,
+    LocalDateTime deploymentDate, List<CalibrationCoefficient> coefficients)
+    throws CalibrationException {
+    super(id, instrument, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
+      target);
+    setDeploymentDate(deploymentDate);
+    setCoefficients(coefficients);
+  }
+
   /**
    * The coefficient names are the names of the {@link SensorType}s that have
    * internal calibrations.
    */
   @Override
-  public List<String> getCoefficientNames() {
-    return instrument.getSensorAssignments().getAssignedSensorTypes().stream()
-      .filter(s -> s.hasInternalCalibration()).map(s -> s.getShortName())
-      .collect(Collectors.toList());
+  public LinkedHashSet<String> getCoefficientNames(boolean includeHidden) {
+    LinkedHashSet<String> result = instrument.getSensorAssignments()
+      .getAssignedSensorTypes().stream().filter(s -> s.hasInternalCalibration())
+      .map(s -> s.getShortName())
+      .collect(Collectors.toCollection(LinkedHashSet::new));
+
+    if (includeHidden) {
+      result.addAll(getHiddenSensorTypes());
+    } else {
+      result.removeAll(getHiddenSensorTypes());
+    }
+
+    return result;
   }
 
   /**
@@ -102,6 +123,11 @@ public abstract class ExternalStandard extends Calibration {
     return getCoefficients().stream()
       .filter(c -> !getHiddenSensorTypes().contains(c.getName()))
       .collect(Collectors.toList());
+  }
+
+  @Override
+  protected boolean timeAffectsCalibration() {
+    return false;
   }
 
   protected abstract List<String> getHiddenSensorTypes();

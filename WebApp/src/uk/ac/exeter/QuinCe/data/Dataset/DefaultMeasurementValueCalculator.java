@@ -117,8 +117,8 @@ public class DefaultMeasurementValueCalculator
       // (b) the instrument has calibration Run Types defined.
       if (allowCalibration && requiredSensorType.hasInternalCalibration()
         && instrument.hasInternalCalibrations()) {
-        calibrate(instrument, timeReference, requiredSensorType, result,
-          allMeasurements, sensorValues, conn);
+        calibrate(instrument, dataSet, timeReference, requiredSensorType,
+          result, allMeasurements, sensorValues, conn);
       }
     }
 
@@ -209,7 +209,7 @@ public class DefaultMeasurementValueCalculator
    * @throws MeasurementValueCalculatorException
    *           If the calibration cannot be performed.
    */
-  protected void calibrate(Instrument instrument,
+  protected void calibrate(Instrument instrument, DataSet dataset,
     SensorValuesListValue timeReference, SensorType sensorType,
     MeasurementValue value, DatasetMeasurements allMeasurements,
     SensorValuesList sensorValues, Connection conn)
@@ -218,18 +218,19 @@ public class DefaultMeasurementValueCalculator
     if (!value.getCalculatedValue().isNaN()) {
 
       try {
-        CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
-          .getMostRecentCalibrations(conn, instrument,
-            timeReference.getNominalTime());
+        // TODO This reads the calibrations from the database every time. Load
+        // it up front.
+        CalibrationSet externalStandards = ExternalStandardDB.getInstance()
+          .getCalibrationSet(conn, dataset);
 
         // Get the calibration offset for the standard run prior to the
         // measurement
-        CalibrationOffset prior = getCalibrationOffset(PRIOR, calibrationSet,
+        CalibrationOffset prior = getCalibrationOffset(PRIOR, externalStandards,
           allMeasurements, sensorValues, sensorType,
           timeReference.getNominalTime(), value);
 
         // Get the calibration offset for the standard run after the measurement
-        CalibrationOffset post = getCalibrationOffset(POST, calibrationSet,
+        CalibrationOffset post = getCalibrationOffset(POST, externalStandards,
           allMeasurements, sensorValues, sensorType,
           timeReference.getNominalTime(), value);
 
@@ -270,7 +271,7 @@ public class DefaultMeasurementValueCalculator
   }
 
   private CalibrationOffset getCalibrationOffset(int direction,
-    CalibrationSet calibrationSet, DatasetMeasurements allMeasurements,
+    CalibrationSet externalStandards, DatasetMeasurements allMeasurements,
     SensorValuesList sensorValues, SensorType sensorType,
     LocalDateTime measurementTime, MeasurementValue value)
     throws RecordNotFoundException {
@@ -280,10 +281,11 @@ public class DefaultMeasurementValueCalculator
     SimpleRegression regression = new SimpleRegression();
 
     // Loop through each calibration target
-    for (String runType : calibrationSet.getTargets().keySet()) {
+    for (String runType : externalStandards.getTargets()) {
 
-      double standardConcentration = calibrationSet.getCalibrationValue(runType,
-        sensorType.getShortName());
+      double standardConcentration = externalStandards
+        .getCalibrations(measurementTime).get(runType)
+        .getDoubleCoefficient(sensorType.getShortName());
 
       if (sensorType.includeZeroInCalibration()
         || standardConcentration > 0.0D) {

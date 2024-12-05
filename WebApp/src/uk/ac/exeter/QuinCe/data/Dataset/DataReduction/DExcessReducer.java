@@ -8,14 +8,16 @@ import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public class DExcessReducer extends DataReducer {
 
   private static List<CalculationParameter> calculationParameters = null;
 
-  public DExcessReducer(Variable variable, Map<String, Properties> properties) {
-    super(variable, properties);
+  public DExcessReducer(Variable variable, Map<String, Properties> properties,
+    CalibrationSet calculationCoefficients) {
+    super(variable, properties, calculationCoefficients);
   }
 
   @Override

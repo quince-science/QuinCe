@@ -3,12 +3,8 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 /**
  * Exceptions thrown when handling calibrations
  */
-public class CalibrationException extends RuntimeException {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = 4181728012550073515L;
+@SuppressWarnings("serial")
+public class CalibrationException extends Exception {
 
   /**
    * Constructor for a simple error message

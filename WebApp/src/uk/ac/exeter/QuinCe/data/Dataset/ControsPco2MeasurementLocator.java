@@ -60,13 +60,15 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
       long refColumn = instrument.getSensorAssignments()
         .getColumnIds(refSensorType).get(0);
 
-      CalibrationSet priorCoefficients = CalculationCoefficientDB.getInstance()
-        .getMostRecentCalibrations(conn, instrument,
-          sensorValues.getTimes().get(0));
+      CalibrationSet calibrationSet = CalculationCoefficientDB.getInstance()
+        .getCalibrationSet(conn, dataset);
 
-      long defaultFlushingTime = Math.round(CalculationCoefficient
-        .getCoefficient(priorCoefficients, variable, "Response Time")
-        .getValue()) * RESPONSE_TIME_MULTIPLIER;
+      CalculationCoefficient defaultRunTimeCoefficient = CalculationCoefficient
+        .getCoefficient(calibrationSet, variable, "Response Time",
+          dataset.getStart());
+
+      long defaultFlushingTime = Math
+        .round(defaultRunTimeCoefficient.getValue()) * RESPONSE_TIME_MULTIPLIER;
 
       // Loop through all the rows, examining the zero/flush columns to decide
       // what to do

@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction;
 
 import java.sql.Connection;
-import java.util.List;
 import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
@@ -15,7 +14,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -42,17 +40,9 @@ public class PostDataSetCalculationCoefficientCheckRoutine
 
     try {
       // See if we have a post-calibration for the dataset
-      List<String> calibrationCoefficientNames = CalculationCoefficient
-        .getCoeffecientNames(variable, settings.getListOption("coefficients"));
-
-      CalibrationSet postCoefficients = CalculationCoefficientDB.getInstance()
-        .getCalibrationsAfter(conn, instrument,
-          dataReductionRecords.lastKey().getTime());
-
-      boolean hasPostCalibration = postCoefficients
-        .containsTargets(calibrationCoefficientNames);
-
-      if (!hasPostCalibration) {
+      CalibrationSet calculationCoefficients = CalculationCoefficientDB
+        .getInstance().getCalibrationSet(conn, dataSet);
+      if (!calculationCoefficients.hasCompletePost()) {
         for (DataReductionRecord record : dataReductionRecords.values()) {
           record.setQc(Flag.NOT_CALIBRATED, getShortMessage());
         }

@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.faces.bean.ManagedBean;
@@ -42,6 +43,8 @@ public class InstrumentListBean extends BaseManagedBean {
 
   private Map<Long, Integer> datasetCounts;
 
+  private List<Instrument> filteredInstruments;
+
   /**
    * The ID of the instrument chosen from the instrument list
    */
@@ -65,6 +68,14 @@ public class InstrumentListBean extends BaseManagedBean {
    */
   public List<Instrument> getInstrumentList() {
     return getInstruments();
+  }
+
+  public List<Instrument> getFilteredInstruments() {
+    return filteredInstruments;
+  }
+
+  public void setFilteredInstruments(List<Instrument> filteredInstruments) {
+    this.filteredInstruments = filteredInstruments;
   }
 
   /**
@@ -142,5 +153,28 @@ public class InstrumentListBean extends BaseManagedBean {
     }
 
     // We return to the instrument list page
+  }
+
+  /**
+   * Filter method for the DataTable.
+   *
+   * @param value
+   * @param filter
+   * @param locale
+   * @return
+   */
+  public boolean filter(Object value, Object filter, Locale locale) {
+    String filterText = (filter == null) ? ""
+      : filter.toString().trim().toLowerCase();
+
+    if (filterText.length() == 0) {
+      return true;
+    }
+
+    Instrument instrument = (Instrument) value;
+    return instrument.getOwner().getSurname().toLowerCase().contains(filterText)
+      || instrument.getOwner().getGivenName().toLowerCase().contains(filterText)
+      || instrument.getPlatformName().toLowerCase().contains(filterText)
+      || instrument.getName().toLowerCase().contains(filterText);
   }
 }

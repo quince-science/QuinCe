@@ -226,9 +226,10 @@ public class JobManager {
       conn = dataSource.getConnection();
       result = addJob(conn, owner, jobClass, properties);
 
-      if (properties.contains(DataSetJob.ID_PARAM)) {
+      if (properties.containsKey(DataSetJob.ID_PARAM)) {
         DataSetDB.setDatasetStatus(conn,
-          (long) properties.get(DataSetJob.ID_PARAM), DataSet.STATUS_WAITING);
+          Long.parseLong((String) properties.get(DataSetJob.ID_PARAM)),
+          DataSet.STATUS_WAITING);
       }
     } catch (SQLException e) {
       throw new DatabaseException("An error occurred while adding the job", e);

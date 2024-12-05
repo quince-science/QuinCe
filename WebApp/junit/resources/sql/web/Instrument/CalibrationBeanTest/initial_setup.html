@@ -1,0 +1,106 @@
+<html>
+<head>
+	<title>Initial Setup for CalibrationBeanTest</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.js" integrity="sha512-Qf8QaMU6tjILOhQdWoXk3guYmm4dTOEgYbtYoGmQpdd4c4BEl/TzHgFJW5UtXWwo9VJYDnig38DVhl09JNVfLg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.css" integrity="sha512-x+B2ONGKkcWCTxOtB5zFVHSeNL9PnZPcjTB6KbJzjTNyfBuJBjpDwQR5lQYf66bAjhBnB5fJOk0wKX6d51js1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+	This is the initial setup of the tests for adding, editing and deleting calibrations in the CalibrationBean.
+	<br/>
+	The actual datasets and standards are defined as a Flyway migration. The values of each point are their respective database IDs. The stadards' type (ExternalStandard, SensorCalibration etc.) will be changed for different tests, but will always have this initial setup.
+	<br/>
+	The list of edits to be made as part of the test will be defined in TestSets.
+	<br/>
+	<br/>
+	<div id="timeline"></div>
+	<script>
+		// DOM element where the Timeline will be attached
+		var container = document.getElementById("timeline");
+
+		var usedTargets = [
+			{ id: 1, content: "TARGET_1", order: 1 },
+			{ id: 2, content: "TARGET_2", order: 2 },
+			{ id: "Datasets", content: "Datasets", order: 3 }
+		];
+
+		var calibrationsJson = [
+			{
+				start: "2023-02-01T00:00:00Z",
+				type: "box",
+				content: "1",
+				group: 1
+			},
+			{
+				start: "2023-02-01T00:00:00Z",
+				type: "box",
+				content: "2",
+				group: 2
+			},
+			{
+				start: "2023-05-01T00:00:00Z",
+				type: "box",
+				content: "3",
+				group: 2
+			},
+			{
+				start: "2023-07-01T00:00:00Z",
+				type: "box",
+				content: "4",
+				group: 1
+			},
+			{
+				start: "2023-07-01T00:00:00Z",
+				type: "box",
+				content: "5",
+				group: 2
+			},
+			{
+				start: "2023-02-20T00:00:00Z",
+				end: "2023-03-10T00:00:00Z",
+				type: "range",
+				content: "D1",
+				group: "Datasets"
+			},
+			{
+				start: "2023-05-10T00:00:00Z",
+				end: "2023-05-20T00:00:00Z",
+				type: "range",
+				content: "D2",
+				group: "Datasets"
+			},
+			{
+				start: "2023-06-10T00:00:00Z",
+				end: "2023-06-20T00:00:00Z",
+				type: "range",
+				content: "D3",
+				group: "Datasets"
+			},
+			{
+				start: "2023-07-10T00:00:00Z",
+				end: "2023-07-20T00:00:00Z",
+				type: "range",
+				content: "D4",
+				group: "Datasets"
+			},
+		];
+
+		var calibrations = new vis.DataSet(calibrationsJson);
+
+		// Configuration for the Timeline
+		var options = {
+			showCurrentTime: false,
+			selectable: false,
+			editable: false,
+			zoomMin: 3600000,
+			moment: function(date) {
+				return vis.moment(date).utc();
+			}
+		};
+
+		// Create a Timeline
+		var timeline = new vis.Timeline(container, calibrations, usedTargets, options);
+		setTimeout(function() {
+			timeline.setWindow(new Date(1671580800000), new Date(1694304000000), animantion=false); 
+		}, 1000);
+	</script>
+</body>

@@ -10,7 +10,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
-import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
+import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageData;
@@ -45,8 +45,7 @@ public class InternalCalibrationBean extends PlotPageBean {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId,
         DataSet.STATUS_WAITING);
       Properties jobProperties = new Properties();
-      jobProperties.setProperty(DataReductionJob.ID_PARAM,
-        String.valueOf(datasetId));
+      jobProperties.setProperty(DataSetJob.ID_PARAM, String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(),
         AutoQCJob.class.getCanonicalName(), jobProperties);
     } catch (Exception e) {

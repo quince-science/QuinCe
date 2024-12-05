@@ -321,9 +321,9 @@
                 </ui:fragment>
                 <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
                   <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
-                    <h:graphicImage value="/resources/image/calibration.svg"
-                      styleClass="actionIcon" alt="Calibration"
-                      title="Calibration" />
+                    <h:graphicImage value="/resources/image/standards.svg"
+                      styleClass="actionIcon" alt="External Calibrations"
+                      title="External Calibrations" />
                   </p:commandLink>
                 </ui:fragment>
                 <p:commandLink onclick="goToQc(#{dataset.id})">
@@ -348,8 +348,8 @@
                 </ui:fragment>
                 <ui:fragment rendered="#{dataSetsBean.getCurrentInstrument().hasInternalCalibrations()}">
                   <h:graphicImage
-                    value="/resources/image/calibration_disabled.svg"
-                    styleClass="actionIcon" alt="Calibration" title="Calibration" />
+                    value="/resources/image/standards_disabled.svg"
+                    styleClass="actionIcon" alt="Externals Standards" title="External Standards" />
                 </ui:fragment>
                 <h:graphicImage value="/resources/image/qc_disabled.svg"
                   styleClass="actionIcon" alt="Quality Control"

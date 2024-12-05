@@ -34,4 +34,3 @@ INSERT INTO file_column VALUES (5,1,40,1,9,'LCO2D',0,'','2019-01-28 13:31:21','2
 
 -- Run Type
 INSERT INTO file_column VALUES (6,1,2,1,-1,'Run Type',0,NULL,'2019-01-28 13:31:21','2019-01-28 14:31:21');
-

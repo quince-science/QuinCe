@@ -121,7 +121,7 @@ public class ExtractDataSetJob extends DataSetJob {
       RunTypePeriods runTypePeriods = new RunTypePeriods();
 
       CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
-        .getMostRecentCalibrations(conn, instrument, dataSet.getStart());
+        .getCalibrationSet(conn, dataSet);
 
       // Adjust the DataSet bounds to the latest start date and earliest end
       // date of each file definition
@@ -283,8 +283,8 @@ public class ExtractDataSetJob extends DataSetJob {
 
                         // Apply calibration if required
                         Calibration sensorCalibration = sensorCalibrations
-                          .getTargetCalibration(
-                            String.valueOf(assignment.getDatabaseId()));
+                          .getCalibrations(time)
+                          .get(String.valueOf(assignment.getDatabaseId()));
 
                         if (null != sensorCalibration) {
                           value.calibrateValue(sensorCalibration);
@@ -377,8 +377,8 @@ public class ExtractDataSetJob extends DataSetJob {
       DataSetDB.updateDataSet(conn, dataSet);
 
       Properties jobProperties = new Properties();
-      jobProperties.setProperty(AutoQCJob.ID_PARAM,
-        String.valueOf(Long.parseLong(properties.getProperty(ID_PARAM))));
+      jobProperties.setProperty(DataSetJob.ID_PARAM, String
+        .valueOf(Long.parseLong(properties.getProperty(DataSetJob.ID_PARAM))));
       NextJobInfo nextJob = new NextJobInfo(AutoQCJob.class.getCanonicalName(),
         jobProperties);
       nextJob.putTransferData(SENSOR_VALUES, sensorValues);

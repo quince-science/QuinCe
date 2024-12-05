@@ -1,5 +1,8 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.time.LocalDateTime;
+import java.util.TreeMap;
+
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -18,7 +21,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
    * The reference value for this column - used primarily in gas standards page
    * to show reference gas concentration.
    */
-  private final Double referenceValue;
+  private final TreeMap<LocalDateTime, Double> referenceValues;
 
   /**
    * Indicates whether or not values in this column can be edited.
@@ -63,7 +66,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
-    this.referenceValue = null;
+    this.referenceValues = null;
     this.questionableAllowed = questionableAllowed;
   }
 
@@ -83,7 +86,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
-    this.referenceValue = null;
+    this.referenceValues = null;
     this.questionableAllowed = questionableAllowed;
   }
 
@@ -97,13 +100,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
    */
   public PlotPageColumnHeading(long id, String shortName, String longName,
     String codeName, String units, boolean includeType, boolean numeric,
-    boolean editable, Double referenceValue, boolean questionableAllowed) {
+    boolean editable, TreeMap<LocalDateTime, Double> referenceValue,
+    boolean questionableAllowed) {
 
     super(id, shortName, longName, codeName, units, true, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
-    this.referenceValue = referenceValue;
+    this.referenceValues = referenceValue;
     this.questionableAllowed = questionableAllowed;
   }
 
@@ -123,7 +127,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = selectionColumn;
-    this.referenceValue = null;
+    this.referenceValues = null;
     this.questionableAllowed = questionableAllowed;
   }
 
@@ -139,7 +143,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.numeric = true;
     this.editable = false;
     this.selectionColumn = calculationParameter.getId();
-    this.referenceValue = null;
+    this.referenceValues = null;
     this.questionableAllowed = false;
   }
 
@@ -149,7 +153,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.numeric = true;
     this.editable = false;
     this.selectionColumn = sensorType.getId();
-    this.referenceValue = null;
+    this.referenceValues = null;
     this.questionableAllowed = sensorType.questionableFlagAllowed();
   }
 
@@ -166,7 +170,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = heading.getId();
-    this.referenceValue = null;
+    this.referenceValues = null;
     this.questionableAllowed = questionableAllowed;
   }
 
@@ -183,7 +187,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = selectionColumn;
-    this.referenceValue = null;
+    this.referenceValues = null;
     this.questionableAllowed = questionableAllowed;
   }
 
@@ -205,8 +209,8 @@ public class PlotPageColumnHeading extends ColumnHeading {
     return selectionColumn;
   }
 
-  public Double getReferenceValue() {
-    return referenceValue;
+  public TreeMap<LocalDateTime, Double> getReferenceValues() {
+    return referenceValues;
   }
 
   public boolean questionableAllowed() {

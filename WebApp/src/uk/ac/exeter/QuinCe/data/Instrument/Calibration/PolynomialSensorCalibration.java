@@ -1,8 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -21,10 +20,10 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    * Contains the labels for the polynomial curve parameters (constructed in the
    * {@code static} block)
    */
-  private static List<String> valueNames;
+  private static LinkedHashSet<String> valueNames;
 
   static {
-    valueNames = new ArrayList<String>(5);
+    valueNames = new LinkedHashSet<String>();
     valueNames.add("x⁵");
     valueNames.add("x⁴");
     valueNames.add("x³");
@@ -51,9 +50,9 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    * @param instrumentId
    *          The instrument to which the calibration target belongs
    */
-  public PolynomialSensorCalibration(Instrument instrument,
+  public PolynomialSensorCalibration(Instrument instrument, long id,
     LocalDateTime date) {
-    super(instrument, date);
+    super(instrument, id, date);
   }
 
   /**
@@ -74,12 +73,25 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    */
   public PolynomialSensorCalibration(long id, Instrument instrument,
     String target, LocalDateTime deploymentDate,
-    Map<String, String> coefficients) {
+    Map<String, String> coefficients) throws CalibrationException {
     super(id, instrument, target, deploymentDate, coefficients);
   }
 
+  /**
+   * Copy constructor.
+   *
+   * @param source
+   *          The copy source.
+   * @throws CalibrationException
+   */
+  protected PolynomialSensorCalibration(PolynomialSensorCalibration source)
+    throws CalibrationException {
+    super(source.getId(), source.getInstrument(), source.getTarget(),
+      source.getDeploymentDate(), duplicateCoefficients(source));
+  }
+
   @Override
-  public List<String> getCoefficientNames() {
+  public LinkedHashSet<String> getCoefficientNames(boolean includeHidden) {
     return valueNames;
   }
 
@@ -153,5 +165,26 @@ public class PolynomialSensorCalibration extends SensorCalibration {
     }
 
     return calibratedValue;
+  }
+
+  @Override
+  public Calibration makeCopy() {
+    try {
+      return new PolynomialSensorCalibration(this);
+    } catch (CalibrationException e) {
+      // This shouldn't happen, because it implies that we successfully created
+      // in invalid object
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public String getCoefficientsLabel() {
+    return "Formula";
+  }
+
+  @Override
+  protected boolean timeAffectsCalibration() {
+    return false;
   }
 }

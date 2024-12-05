@@ -38,7 +38,7 @@ public class UnderwayMarinePco2ReducerTest extends DataReducerTest {
 
     // Initialise the reducer
     UnderwayMarinePco2Reducer reducer = new UnderwayMarinePco2Reducer(variable,
-      new HashMap<String, Properties>());
+      new HashMap<String, Properties>(), null);
 
     MeasurementValue waterTemp = makeMeasurementValue("Water Temperature",
       11.912D);

@@ -18,7 +18,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.CreateNrtDataset;
-import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
+import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -154,7 +154,7 @@ public class MakeNrtDataset {
 
     if (createDataset) {
       Properties jobProperties = new Properties();
-      jobProperties.setProperty(ExtractDataSetJob.ID_PARAM,
+      jobProperties.setProperty(DataSetJob.ID_PARAM,
         String.valueOf(instrument.getId()));
 
       JobManager.addJob(conn, instrument.getOwner(),

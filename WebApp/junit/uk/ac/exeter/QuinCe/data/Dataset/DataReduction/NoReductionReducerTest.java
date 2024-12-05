@@ -39,7 +39,7 @@ public class NoReductionReducerTest extends DataReducerTest {
     Mockito.when(variable.getCoreSensorType()).thenReturn(coreSensorType);
 
     NoReductionReducer reducer = new NoReductionReducer(variable,
-      new HashMap<String, Properties>());
+      new HashMap<String, Properties>(), null);
 
     MeasurementValue waterTemp = makeMeasurementValue("Water Temperature",
       9.889D);

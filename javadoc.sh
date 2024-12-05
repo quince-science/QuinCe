@@ -81,7 +81,7 @@ classPath="${classPath}:${jarsDir}/flyway-spring5-test-5.2.4.jar"
 classPath="${classPath}:${jarsDir}/junit-jupiter-api-5.7.0.jar"
 classPath="${classPath}:${jarsDir}/junit-jupiter-params-5.7.0-all.jar"
 classPath="${classPath}:${jarsDir}/apiguardian-api-1.1.0.jar"
-classPath="${classPath}:${jarsDir}/mockito-core-3.5.10.jar"
+classPath="${classPath}:${jarsDir}/mockito-core-5.13.0.jar"
 classPath="${classPath}:${jarsDir}/spring-context-5.2.0.RELEASE.jar"
 classPath="${classPath}:${jarsDir}/spring-test-5.2.0.RELEASE.jar"
 classPath="${classPath}:${jarsDir}/spring-beans-5.2.0.RELEASE.jar"
@@ -91,10 +91,10 @@ javadoc -sourcepath "$sourcePath" -d "$output" \
         -source 17 -private \
         -windowtitle "QuinCe Javadoc" -doctitle "QuinCe Javadoc" \
         -classpath "$classPath" \
-        -link https://docs.oracle.com/en/java/javase/11/docs/api \
-        -link https://javadoc.io/doc/org.primefaces/primefaces/12.0.0/ \
+        -link https://docs.oracle.com/en/java/javase/17/docs/api \
+        -link https://javadoc.io/doc/org.primefaces/primefaces/13.0.0/ \
         -link https://commons.apache.org/proper/commons-email/javadocs/api-release/ \
         -link https://junit.org/junit5/docs/5.7.0/api/ \
         -link https://docs.spring.io/spring-framework/docs/current/javadoc-api/ \
-        -link https://www.javadoc.io/doc/org.mockito/mockito-core/2.15.0/package-list/ \
+        -link https://www.javadoc.io/doc/org.mockito/mockito-core/5.13.0/package-list/ \
 

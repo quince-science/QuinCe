@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -25,11 +27,13 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.InvalidCalibrationDateException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
+import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -85,6 +89,11 @@ public class DataSetsBean extends BaseManagedBean {
   private String timelineEntriesJson;
 
   /**
+   * Details of the configurations on the instrument.
+   */
+  private String calibrationsJson;
+
+  /**
    * The data set being created
    */
   private DataSet newDataSet;
@@ -125,6 +134,7 @@ public class DataSetsBean extends BaseManagedBean {
     newDataSet = new DataSet(getCurrentInstrument());
     fileDefinitionsJson = null;
     timelineEntriesJson = null;
+    calibrationsJson = null;
     validCalibration = true;
     validCalibrationMessage = null;
 
@@ -314,6 +324,40 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   /**
+   * Get the calibrations information for the timeline as a JSON string.
+   *
+   * @return The calibration info.
+   */
+  public String getCalibrationsJson() {
+    if (null == calibrationsJson) {
+      buildCalibrationsJson();
+    }
+
+    return calibrationsJson;
+  }
+
+  private void buildCalibrationsJson() {
+    try {
+      TreeMap<LocalDateTime, List<String>> calibrations = CalibrationDB
+        .getCalibrationTimes(getDataSource(), getCurrentInstrument());
+
+      JsonObject json = new JsonObject();
+
+      for (Map.Entry<LocalDateTime, List<String>> entry : calibrations
+        .entrySet()) {
+
+        JsonArray types = new JsonArray();
+        entry.getValue().forEach(t -> types.add(t));
+        json.add(DateTimeUtils.toIsoDate(entry.getKey()), types);
+      }
+
+      calibrationsJson = json.toString();
+    } catch (DatabaseException e) {
+      ExceptionUtils.printStackTrace(e);
+    }
+  }
+
+  /**
    * Get the new data set
    *
    * @return The new data set
@@ -362,7 +406,7 @@ public class DataSetsBean extends BaseManagedBean {
       DataSetDB.addDataSet(getDataSource(), newDataSet);
 
       Properties jobProperties = new Properties();
-      jobProperties.setProperty(ExtractDataSetJob.ID_PARAM,
+      jobProperties.setProperty(DataSetJob.ID_PARAM,
         String.valueOf(newDataSet.getId()));
 
       JobManager.addJob(getDataSource(), getUser(),
@@ -427,7 +471,7 @@ public class DataSetsBean extends BaseManagedBean {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId,
         DataSet.STATUS_SENSOR_QC);
       Properties properties = new Properties();
-      properties.setProperty(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
+      properties.setProperty(DataSetJob.ID_PARAM, String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(),
         AutoQCJob.class.getCanonicalName(), properties);
     } catch (Exception e) {
@@ -446,55 +490,52 @@ public class DataSetsBean extends BaseManagedBean {
       .getExternalContext().getRequestParameterMap();
 
     String startTime = params.get("uploadForm:startDate_input");
+    String endTime = params.get("uploadForm:endDate_input");
 
     if (startTime.length() > 0) {
       try {
+        // Check for external standards if required.
+        if (getCurrentInstrument().hasInternalCalibrations()) {
 
-        // Check sensor calibration equations
-        CalibrationSet calibrations = new SensorCalibrationDB()
-          .getMostRecentCalibrations(getDataSource(), getCurrentInstrument(),
-            DateTimeUtils.parseDisplayDateTime(startTime));
+          // Check internal calibration standards
+          CalibrationSet standards = ExternalStandardDB.getInstance()
+            .getCalibrationSet(getDataSource(), getCurrentInstrument(),
+              DateTimeUtils.parseDisplayDateTime(startTime),
+              DateTimeUtils.parseDisplayDateTime(endTime));
 
-        if (!calibrations.isValid()) {
-          validCalibration = false;
-          validCalibrationMessage = "One or more sensor calibration equations are missing";
-        }
-
-        if (validCalibration) {
-          // Check for external standards if required.
-          if (getCurrentInstrument().hasInternalCalibrations()) {
-
-            // Check internal calibration standards
-            CalibrationSet standards = ExternalStandardDB.getInstance()
-              .getStandardsSet(getDataSource(), getCurrentInstrument(),
-                DateTimeUtils.parseDisplayDateTime(startTime));
-            if (!standards.isComplete()) {
-              validCalibration = false;
-              validCalibrationMessage = "No complete set of external standards is available";
-            }
-
-            // Disable zero standard check. #2037
-            // May be reinstated for different types of pCO2 system in the
-            // future.
-            /*
-             * else if (!ExternalStandardDB.hasZeroStandard(standards)) {
-             * validCalibration = false; validCalibrationMessage =
-             * "One external standard must have a zero concentration"; }
-             */
+          if (!standards.hasCompletePrior()) {
+            validCalibration = false;
+            validCalibrationMessage = "No complete set of external standards is available";
           }
+
+          // Disable zero standard check. #2037
+          // May be reinstated for different types of pCO2 system in the
+          // future.
+          /*
+           * else if (!ExternalStandardDB.hasZeroStandard(standards)) {
+           * validCalibration = false; validCalibrationMessage =
+           * "One external standard must have a zero concentration"; }
+           */
         }
 
         if (validCalibration) {
           // Check calculation coefficients, if there are any
           if (getCurrentInstrument().hasCalculationCoefficients()) {
-            CalibrationSet coefficients = new CalculationCoefficientDB()
-              .getMostRecentCalibrations(getDataSource(),
-                getCurrentInstrument(),
-                DateTimeUtils.parseDisplayDateTime(startTime));
+            try {
 
-            if (!coefficients.isValid()) {
+              CalibrationSet coefficients = CalculationCoefficientDB
+                .getInstance().getCalibrationSet(getDataSource(),
+                  getCurrentInstrument(),
+                  DateTimeUtils.parseDisplayDateTime(startTime),
+                  DateTimeUtils.parseDisplayDateTime(endTime));
+
+              if (!coefficients.hasCompletePrior()) {
+                validCalibration = false;
+                validCalibrationMessage = "One or more calculation coefficents are missing";
+              }
+            } catch (InvalidCalibrationDateException e) {
               validCalibration = false;
-              validCalibrationMessage = "One or more calculation coefficents are missing";
+              validCalibrationMessage = "Cannot change calculation coefficients within a dataset";
             }
           }
         }

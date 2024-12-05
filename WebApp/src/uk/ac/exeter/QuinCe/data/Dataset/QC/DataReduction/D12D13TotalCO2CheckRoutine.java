@@ -22,7 +22,6 @@ public class D12D13TotalCO2CheckRoutine extends DataReductionQCRoutine {
 
   @Override
   public String getShortMessage() {
-    // TODO Auto-generated method stub
     return "Total CO₂ value incorrect";
   }
 

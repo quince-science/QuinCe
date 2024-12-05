@@ -35,7 +35,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
  * </p>
  *
  * @see TestSetTest#getLines()
- * @author Steve Jones
  */
 public class TestSetLine {
 
@@ -163,7 +162,7 @@ public class TestSetLine {
    * @return The field value
    */
   public long getLongField(int fieldNumber) {
-    long result = 0;
+    long result = -1L;
 
     if (!isFieldEmpty(fieldNumber)) {
       result = Long.parseLong(fields[fieldNumber]);
@@ -221,11 +220,9 @@ public class TestSetLine {
    * @return
    */
   public List<String> getCharListField(int fieldNumber) {
-    String field = getStringField(fieldNumber, true);
-
     List<String> result;
 
-    if (null == field) {
+    if (null == getStringField(fieldNumber, true)) {
       result = new ArrayList<String>(0);
     } else {
       result = Arrays
@@ -243,6 +240,52 @@ public class TestSetLine {
    */
   public TreeSet<String> getOrderedCharListField(int fieldNumber) {
     return new TreeSet<String>(getCharListField(fieldNumber));
+  }
+
+  /**
+   * Get a field as a list of {@link Long} values.
+   *
+   * The field must contain a string of semi-colon separated numeric values.
+   *
+   * @param fieldNumber
+   *          The field number.
+   * @return The parsed list.
+   */
+  public List<Long> getLongListField(int fieldNumber) {
+    List<Long> result;
+
+    if (null == getStringField(fieldNumber, true)) {
+      result = new ArrayList<Long>(0);
+    } else {
+      result = Arrays
+        .asList(getStringField(fieldNumber, false).trim().split(";")).stream()
+        .map(s -> Long.valueOf(s)).toList();
+    }
+
+    return result;
+  }
+
+  /**
+   * Get a field as a list of {@link Long} values.
+   *
+   * The field must contain a string of semi-colon separated numeric values.
+   *
+   * @param fieldNumber
+   *          The field number.
+   * @return The parsed list.
+   */
+  public List<Boolean> getBooleanListField(int fieldNumber) {
+    List<Boolean> result;
+
+    if (null == getStringField(fieldNumber, true)) {
+      result = new ArrayList<Boolean>(0);
+    } else {
+      result = Arrays
+        .asList(getStringField(fieldNumber, false).trim().split(";")).stream()
+        .map(s -> Boolean.parseBoolean(s)).toList();
+    }
+
+    return result;
   }
 
   /**

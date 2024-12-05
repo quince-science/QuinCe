@@ -5,9 +5,13 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.google.gson.JsonObject;
 
@@ -84,9 +88,10 @@ public abstract class Calibration implements Comparable<Calibration> {
    * @param type
    *          The calibration type.
    */
-  protected Calibration(Instrument instrument, String type,
+  protected Calibration(Instrument instrument, String type, long id,
     LocalDateTime deploymentDate) {
-    this.id = DatabaseUtils.NO_DATABASE_RECORD;
+
+    this.id = id;
     this.instrument = instrument;
     this.type = type;
     this.deploymentDate = deploymentDate;
@@ -122,7 +127,8 @@ public abstract class Calibration implements Comparable<Calibration> {
    *
    * @return The value names
    */
-  public abstract List<String> getCoefficientNames();
+  public abstract LinkedHashSet<String> getCoefficientNames(
+    boolean includeHidden);
 
   /**
    * Get the type of the calibration. This is provided by each of the concrete
@@ -258,7 +264,7 @@ public abstract class Calibration implements Comparable<Calibration> {
    * Initialise the coefficients for this calibration with zero values
    */
   protected void initialiseCoefficients() {
-    coefficients = getCoefficientNames().stream()
+    coefficients = getCoefficientNames(true).stream()
       .map(n -> new CalibrationCoefficient(n)).collect(Collectors.toList());
   }
 
@@ -295,16 +301,36 @@ public abstract class Calibration implements Comparable<Calibration> {
   public void setCoefficients(Map<String, String> newCoefficients)
     throws CalibrationException {
 
-    if (coefficients.size() != getCoefficientNames().size()) {
+    if (newCoefficients.size() != getCoefficientNames(true).size()) {
       throw new CalibrationException(
         "Incorrect number of coefficients: expected "
-          + getCoefficientNames().size() + ", got " + coefficients.size());
+          + getCoefficientNames(true).size() + ", got "
+          + newCoefficients.size());
     }
 
     initialiseCoefficients();
 
     newCoefficients.entrySet()
       .forEach(e -> setCoefficient(e.getKey(), e.getValue()));
+  }
+
+  protected void setCoefficients(List<CalibrationCoefficient> newCoefficients)
+    throws CalibrationException {
+
+    LinkedHashSet<String> coefficientNames = getCoefficientNames(true);
+
+    if (newCoefficients.size() != coefficientNames.size()) {
+      throw new CalibrationException("Incorrect number of coefficients");
+    }
+
+    List<String> newNames = newCoefficients.stream().map(c -> c.getName())
+      .toList();
+    if (!newNames.containsAll(coefficientNames)) {
+      throw new CalibrationException(
+        "Invalid coefficient names for this Calibration");
+    }
+
+    this.coefficients = newCoefficients;
   }
 
   /**
@@ -446,13 +472,22 @@ public abstract class Calibration implements Comparable<Calibration> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    boolean result = false;
+  public int hashCode() {
+    return Objects.hash(coefficients, deploymentDate, id, target);
+  }
 
-    if (o instanceof Calibration && ((Calibration) o).id == id)
-      result = true;
-
-    return result;
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Calibration other = (Calibration) obj;
+    return CollectionUtils.isEqualCollection(coefficients, other.coefficients)
+      && Objects.equals(deploymentDate, other.deploymentDate) && id == other.id
+      && Objects.equals(target, other.target);
   }
 
   protected void setCoefficient(String name, String value) {
@@ -486,4 +521,60 @@ public abstract class Calibration implements Comparable<Calibration> {
   public boolean isSet() {
     return null != coefficients;
   }
+
+  /**
+   * Get the label to use for the set of coefficients.
+   *
+   * @return The coefficients label.
+   */
+  public abstract String getCoefficientsLabel();
+
+  public String getJsonCoefficientsLabel() {
+    return getCoefficientsLabel().toLowerCase();
+  }
+
+  /**
+   * Create a copy of this {@code Calibration} object.
+   *
+   * <p>
+   * This performs much the same operation as {@link Object#clone} but works
+   * around the {@code abstract} nature of this class.
+   * </p>
+   *
+   * @return A copy of this Calibration.
+   */
+  public abstract Calibration makeCopy();
+
+  /**
+   * Create a deep copy of the {@code coefficients} from the specified
+   * {@link Calibration}.
+   *
+   * @param calibration
+   *          The {@link Calibration} whose coefficients are to be duplicated.
+   * @return
+   */
+  protected static List<CalibrationCoefficient> duplicateCoefficients(
+    Calibration calibration) {
+
+    return calibration.coefficients.stream()
+      .map(c -> new CalibrationCoefficient(c.getName(), c.getValue())).toList();
+  }
+
+  public boolean hasSameEffect(Calibration other) {
+
+    if (timeAffectsCalibration()
+      && !this.deploymentDate.equals(other.deploymentDate)) {
+      return false;
+    } else if (!this.target.equals(other.target)) {
+      return false;
+    } else if (!CollectionUtils.isEqualCollection(this.coefficients,
+      other.coefficients)) {
+      return false;
+    } else {
+      return true;
+    }
+
+  }
+
+  protected abstract boolean timeAffectsCalibration();
 }

@@ -21,6 +21,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -120,13 +122,14 @@ public class InternalCalibrationData extends PlotPageData {
 
   @Override
   protected void buildColumnHeadings()
-    throws MissingParamException, DatabaseException, RecordNotFoundException {
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException, CalibrationException {
 
     columnHeadings = new LinkedHashMap<String, List<PlotPageColumnHeading>>();
 
     try (Connection conn = dataSource.getConnection()) {
       CalibrationSet calibrations = ExternalStandardDB.getInstance()
-        .getStandardsSet(conn, instrument, dataset.getStart());
+        .getCalibrationSet(conn, dataset);
 
       // Time
       List<PlotPageColumnHeading> rootColumns = new ArrayList<PlotPageColumnHeading>(
@@ -156,8 +159,8 @@ public class InternalCalibrationData extends PlotPageData {
           for (SensorAssignment assignment : assignments) {
             for (String runType : runTypes) {
 
-              Double calibrationValue = calibrations
-                .getCalibrationValue(runType, sensorType.getShortName());
+              TreeMap<LocalDateTime, Double> calibrationValues = calibrations
+                .getTargetCalibrations(runType, sensorType);
 
               long columnId = makeColumnId(runType, assignment);
               String columnName = runType + ":" + assignment.getSensorName();
@@ -165,7 +168,7 @@ public class InternalCalibrationData extends PlotPageData {
               PlotPageColumnHeading heading = new PlotPageColumnHeading(
                 columnId, columnName, sensorType.getLongName(),
                 sensorType.getCodeName(), sensorType.getUnits(), false, true,
-                true, calibrationValue, sensorType.questionableFlagAllowed());
+                true, calibrationValues, sensorType.questionableFlagAllowed());
               sensorTypeColumns.add(heading);
               columnCount++;
               if (columnCount == 1) {

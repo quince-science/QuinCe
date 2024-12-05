@@ -2,10 +2,48 @@ const ADD = 1;
 const EDIT = 0;
 const DELETE = -1;
 
+var TIMELINE_OPTIONS = {
+  showCurrentTime: false,
+  selectable: false,
+  editable: false,
+   zoomMin: 3600000,
+  moment: function(date) {
+   return vis.moment(date).utc();
+  },
+  format: {
+    minorLabels: {
+      week: 'D',
+    }
+  }
+};
+
+var timeline = null;
+
+function drawTimeline() {
+  if (null != timeline) {
+    timeline.destroy();
+  }
+	
+  let targets = JSON.parse($('#timelineData\\:targetsJson').val());
+  let timelineJson = JSON.parse($('#timelineData\\:timelineJson').val());
+  // Treat dates as dates in the dataset
+  timelineJson.map(function (item) {
+    item.start = new Date(item.start);
+  });
+
+  let calibrations = new vis.DataSet(timelineJson);
+  timeline = new vis.Timeline(timelineContainer, calibrations,
+    targets, TIMELINE_OPTIONS);
+  timelineContainer.onclick = function (event) {
+    selectDeployment(timeline.getEventProperties(event));
+  }
+}
+
+
 function addDeployment() {
   hideSelectionDetails();
-  $('#deploymentForm\\:calibrationId').val(-1);
-  $('#deploymentForm\\:editAction').val(ADD);
+  $('#deploymentForm\\:calibrationId').val(new Date().getTime() * -1);
+  $('#deploymentForm\\:action').val(ADD);
   newCalibration(); // PF remoteCommand in calibration.xhtml
 }
 
@@ -13,18 +51,18 @@ function selectDeployment(item) {
   // Ignore dataset clicks (they have a string id)
   if (null != item.item && typeof(item.item) === 'number') {
     $('#deploymentForm\\:calibrationId').val(item.item);
-    selectCalibration();
+    selectCalibration(); // PF RemoteCommand
   }
 }
 
 function editSelection() {
-  $('#deploymentForm\\:editAction').val(EDIT);
+  $('#deploymentForm\\:action').val(EDIT);
   PF('deploymentDialog').show();
 }
 
 function deleteSelection() {
-  $('#deploymentForm\\:editAction').val(DELETE);
-  PF('checkDatasetsButton').jq.click();
+  $('#deploymentForm\\:action').val(DELETE);
+  PF('saveCalibrationButton').jq.click();
 }
 
 function showSelectionDetails() {
@@ -35,16 +73,17 @@ function hideSelectionDetails() {
   PF('selectionDetails').jq.hide();
 }
 
-function showAffectedDatasets() {
-  
-  PF('deploymentDialog').hide();
-  let affectedDatasetsStatus = parseInt(PF('affectedDatasetsStatus').jq.val());
-    
-  PF('affectedDatasetsDialog').show();
-    
-  if (affectedDatasetsStatus < 0) {
-    PF('saveEditButton').disable();
+function calibrationSaveComplete() {
+  drawTimeline();
+  hideSelectionDetails();
+  updateSaveButton();  
+  PF('deploymentDialog').hide();  
+}
+
+function updateSaveButton() {
+  if ($('#timelineData\\:canSave').val() == 'true') {
+    PF('commitButton').enable();
   } else {
-    PF('saveEditButton').enable();
+    PF('commitButton').disable();
   }
 }

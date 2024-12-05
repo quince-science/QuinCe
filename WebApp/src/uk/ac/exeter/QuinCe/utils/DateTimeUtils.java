@@ -234,4 +234,14 @@ public class DateTimeUtils {
   public static DateTimeFormatter makeDateTimeFormatter(String format) {
     return DateTimeFormatter.ofPattern(format).withZone(ZoneOffset.UTC);
   }
+
+  public static boolean isEqualOrBefore(LocalDateTime item,
+    LocalDateTime target) {
+    return item.isBefore(target) || item.equals(target);
+  }
+
+  public static boolean isEqualOrAfter(LocalDateTime item,
+    LocalDateTime target) {
+    return item.isAfter(target) || item.equals(target);
+  }
 }

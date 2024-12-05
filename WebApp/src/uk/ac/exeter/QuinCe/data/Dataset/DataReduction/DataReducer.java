@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -45,6 +46,11 @@ public abstract class DataReducer {
   protected Map<String, Properties> properties;
 
   /**
+   * The Calculation Coefficients for the {@link DataSet} being processed.
+   */
+  protected CalibrationSet calculationCoefficients;
+
+  /**
    * Simple constructor to initialise the reducer with the {@link Variable}
    * details.
    *
@@ -53,7 +59,8 @@ public abstract class DataReducer {
    * @param properties
    *          The {@link Variable}'s attributes.
    */
-  public DataReducer(Variable variable, Map<String, Properties> properties) {
+  public DataReducer(Variable variable, Map<String, Properties> properties,
+    CalibrationSet calculationCoefficients) {
     this.variable = variable;
 
     if (null == properties) {
@@ -61,6 +68,8 @@ public abstract class DataReducer {
     } else {
       this.properties = properties;
     }
+
+    this.calculationCoefficients = calculationCoefficients;
   }
 
   /**

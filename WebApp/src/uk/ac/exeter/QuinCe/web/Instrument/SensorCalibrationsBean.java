@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.PolynomialSensorCalibration;
@@ -57,17 +56,12 @@ public class SensorCalibrationsBean extends CalibrationBean {
   }
 
   @Override
-  protected Calibration initNewCalibration(LocalDateTime date) {
-    return new PolynomialSensorCalibration(instrument, date);
+  protected Calibration initNewCalibration(long id, LocalDateTime date) {
+    return new PolynomialSensorCalibration(getCurrentInstrument(), id, date);
   }
 
   @Override
   public String getTargetLabel() {
     return "Sensor";
-  }
-
-  @Override
-  protected int getReprocessStatus() {
-    return DataSet.STATUS_DATA_EXTRACTION;
   }
 }

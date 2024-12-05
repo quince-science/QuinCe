@@ -1,3 +1,4 @@
+
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
   xmlns:f="http://xmlns.jcp.org/jsf/core"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -17,48 +18,32 @@
   </ui:define>
   <ui:define name="content">
     <div class="fullPage">
+      <h:form id="timelineData" method="post" charset="utf8">
+        <h:inputHidden id="targetsJson" value="#{sessionScope[beanName].targetsJson}"/>
+        <h:inputHidden id="timelineJson" value="#{sessionScope[beanName].timelineJson}"/>
+        <h:inputHidden id="canSave" value="#{sessionScope[beanName].canSave()}"/>
+      </h:form>
+
       <h:form id="deploymentForm" method="post" charset="utf8">
         <p:remoteCommand name="selectCalibration"
           action="#{sessionScope[beanName].loadSelectedCalibration}"
-          process="calibrationId editAction" update="@(form :not(.noupdate))"
+          process="calibrationId action" update="@(form :not(.noupdate))"
           oncomplete="showSelectionDetails()"/>
 
         <p:remoteCommand name="newCalibration"
-          action="#{sessionScope[beanName].loadSelectedCalibration}"
-          process="calibrationId editAction" update="@(form :not(.noupdate))"
+          action="#{sessionScope[beanName].newCalibration}"
+          process="calibrationId action" update="@(form :not(.noupdate))"
           oncomplete="PF('deploymentDialog').show();"/>
 
         <div id="timelineContainer" class="noupdate"></div>
+        <div id="timelineKey">
+          <span class="label">Key:</span>
+          <span class="keyEntry key-recalculationNotRequired">Not affected</span>
+          <span class="keyEntry key-recalculationRequired">Will be recalculated</span>
+          <span class="keyEntry key-cannotRecalculate">Cannot be recalculated</span>
+        </div>
         <script>
-          var TIMELINE_OPTIONS = {
-            showCurrentTime: false,
-            selectable: false,
-            editable: false,
-            zoomMin: 3600000,
-            moment: function(date) {
-              return vis.moment(date).utc();
-            },
-            format: {
-              minorLabels: {
-                week: 'D',
-              }
-            }
-          };
-
-          var usedTargets = JSON.parse('#{sessionScope[beanName].usedTargetsJson}');
-          var calibrationsJson = JSON.parse('#{sessionScope[beanName].calibrationsJson}');
-          // Treat dates as dates in the dataset
-          calibrationsJson.map(function (item) {
-            item.start = new Date(item.start);
-          });
-
-          var calibrations =  new vis.DataSet(calibrationsJson);
-          var timeline = new vis.Timeline(timelineContainer, calibrations,
-            usedTargets, TIMELINE_OPTIONS);
-
-          timelineContainer.onclick = function (event) {
-            selectDeployment(timeline.getEventProperties(event));
-          }
+          drawTimeline();
         </script>
 
         <!-- Selected item details -->
@@ -67,8 +52,8 @@
 
           <h:inputHidden id="calibrationId"
             value="#{sessionScope[beanName].selectedCalibrationId}"/>
-          <h:inputHidden id="editAction"
-            value="#{sessionScope[beanName].editAction}"/>
+          <h:inputHidden id="action"
+            value="#{sessionScope[beanName].action}"/>
 
           <table>
             <tr>
@@ -77,7 +62,7 @@
               </td>
               <td>
                 <h:outputText id="selectedDate"
-                  value="#{sessionScope[beanName].calibration.deploymentDate}"/>
+                  value="#{sessionScope[beanName].editedCalibration.deploymentDate}"/>
               </td>
             </tr>
             <tr>
@@ -86,7 +71,7 @@
               </td>
               <td>
                 <h:outputText id="selectedTarget"
-                  value="#{sessionScope[beanName].calibrationTargetName}"/>
+                  value="#{sessionScope[beanName].editedCalibrationTargetName}"/>
               </td>
             </tr>
             <tr>
@@ -96,7 +81,7 @@
               </td>
               <td>
                 <h:outputText id="selectedCoefficients"
-                  value="#{sessionScope[beanName].calibration.humanReadableCoefficients}"/>
+                  value="#{sessionScope[beanName].editedCalibration.humanReadableCoefficients}"/>
               </td>
             </tr>
           </table>
@@ -106,10 +91,20 @@
               ajax="false" onclick="editSelection();return false;"/>
 
             <p:commandButton widgetVar="deleteSelection" value="Delete..."
-              ajax="false" onclick="deleteSelection();return false;"/>
+              ajax="false" onclick="deleteSelection();return false;">
+
+              <p:confirm header="Confirm Delete"
+              message="Are you sure you want to delete this #{sessionScope[beanName].calibrationName}?"/>
+            </p:commandButton>
+
+            <p:confirmDialog global="true">
+              <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no"/>
+              <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes"/>
+            </p:confirmDialog>
+
           </h:panelGrid>
         </p:fieldset>
-        <p:messages styleClass="pageBlock" />
+        <p:messages id="messages" styleClass="pageBlock" />
         <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
             <p:button widgetVar="showAddDialog"
               value="Add New #{sessionScope[beanName].calibrationName}"
@@ -124,7 +119,7 @@
                 inline="true" monthNavigator="true" yearNavigator="true"
                 onMonthChange="autoSelectDay"
                 onYearChange="autoSelectDay"
-                value="#{sessionScope[beanName].calibration.deploymentDate}"
+                value="#{sessionScope[beanName].editedCalibration.deploymentDate}"
                 pattern="yyyy-MM-dd HH:mm:ss" navigator="true">
                 <f:converter converterId="localDateTimeConverter" />
               </p:datePicker>
@@ -138,7 +133,7 @@
                   </td>
                   <td>
                     <p:selectOneMenu id="target" widgetVar="target" autoWidth="false"
-                      value="#{sessionScope[beanName].calibration.target}">
+                      value="#{sessionScope[beanName].editedCalibration.target}">
                       <f:selectItems
                         value="#{sessionScope[beanName].targets.entrySet()}"
                         var="entry" itemValue="#{entry.key}"
@@ -154,7 +149,7 @@
                 <div id="coefficientFields">
                   <table>
                     <ui:repeat
-                      value="#{sessionScope[beanName].calibration.editableCoefficients}"
+                      value="#{sessionScope[beanName].editedCalibration.editableCoefficients}"
                       var="coefficient" varStatus="varStatus">
                       <tr>
                         <td>
@@ -172,61 +167,26 @@
             </div>
           </div>
           <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-            <p:commandButton value="Check" ajax="true" widgetVar="checkDatasetsButton"
-              action="#{sessionScope[beanName].calcAffectedDataSets}"
+            <p:commandButton value="Save" ajax="true" widgetVar="saveCalibrationButton"
+              action="#{sessionScope[beanName].saveCalibration}"
               process="@form"
-              update="affectedDatasetsStatus affectedDatasets affectedDatasetsMessage"
-              oncomplete="showAffectedDatasets();"/>
+              update="timelineData:timelineJson timelineData:canSave messages"
+              oncomplete="calibrationSaveComplete()"
+              />
             <p:button value="Cancel"
               onclick="PF('deploymentDialog').hide();return false"/>
           </h:panelGrid>
         </p:dialog>
-        <p:dialog id="affectedDatasetsDialog" widgetVar="affectedDatasetsDialog"
-          header="Affected Datasets" modal="true">
 
-          <p:inputText id="affectedDatasetsStatus" type="hidden"
-            widgetVar="affectedDatasetsStatus"
-            value="#{sessionScope[beanName].affectedDatasetsStatus}"
-            emptyMessage="No datasets affected"/>
-
-          <div class="instructions">
-            The following datasets are affected by this change and will be
-            reprocessed:
-          </div>
-
-          <p:dataTable id="affectedDatasets" var="entry" scrollable="true"
-            scrollHeight="350" style="width: 600px"
-            value="#{sessionScope[beanName].affectedDatasets}"
-            emptyMessage="No datasets affected">
-
-            <p:column headerText="Dataset">
-              <h:outputText value="#{entry.key.name}"/>
-            </p:column>
-            <p:column style="width: 150px" styleClass="centeredCell" headerText="Can Reprocess?">
-              <ui:fragment rendered="#{entry.value}">
-                <h:graphicImage value="/resources/image/tick.svg" class="actionIcon"
-                  alt="Can be reprocessed" title="Can be reprocessed" />
-              </ui:fragment>
-              <ui:fragment rendered="#{!entry.value}">
-                <h:graphicImage value="/resources/image/x-red.svg" class="actionIcon"
-                  alt="Cannot be reprocessed" title="Cannot be reprocessed" />
-              </ui:fragment>
-            </p:column>
-          </p:dataTable>
-          <p:message id="affectedDatasetsMessage" for="affectedDatasets"/>
-          <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-            <p:commandButton value="Continue" widgetVar="saveEditButton"
-              ajax="false"
-              action="#{sessionScope[beanName].saveCalibration}"/>
-            <p:button value="Cancel"
-              onclick="PF('affectedDatasetsDialog').hide();return false"/>
-          </h:panelGrid>
-        </p:dialog>
-
-        <h:panelGrid columns="1" styleClass="buttonPanel">
-          <p:commandButton value="Back to Instruments List"
+        <h:panelGrid columns="2" styleClass="buttonPanel">
+          <p:commandButton value="Cancel Changes"
             action="/instrument/instrument_list.xhtml" />
+          <p:commandButton value="Save Changes" ajax="false" widgetVar="commitButton"
+            action="#{sessionScope[beanName].commitChanges}" />
         </h:panelGrid>
+        <script>
+          updateSaveButton();
+        </script>
       </h:form>
     </div>
   </ui:define>
