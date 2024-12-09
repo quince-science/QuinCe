@@ -10,7 +10,7 @@
           "Diagnostic Water Flow"
         ],
         "options": {
-          "questionable_limit": 1.5,
+          "questionable_limit": 1,
           "bad_limit": 3
         }
       },
