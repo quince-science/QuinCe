@@ -9,6 +9,7 @@ import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
@@ -99,6 +100,11 @@ public abstract class BaseManagedBean {
    * Information for a progress bar.
    */
   protected Progress progress = new Progress();
+
+  /**
+   * Flag to indicate the successful completion of an Ajax call.
+   */
+  protected boolean ajaxOK = false;
 
   /**
    * Set a message that can be displayed to the user on a form.
@@ -689,5 +695,29 @@ public abstract class BaseManagedBean {
    */
   public Progress getProgress() {
     return progress;
+  }
+
+  /**
+   * Get the HTTP Response object for the current request.
+   *
+   * @return The response object.
+   */
+  protected HttpServletResponse getResponse() {
+    return (HttpServletResponse) FacesContext.getCurrentInstance()
+      .getExternalContext().getResponse();
+  }
+
+  /**
+   * Set the HTTP response code for the current request.
+   *
+   * @param code
+   *          The response code.
+   */
+  protected void setResponseCode(int code) {
+    getResponse().setStatus(code);
+  }
+
+  public boolean getAjaxOK() {
+    return ajaxOK;
   }
 }

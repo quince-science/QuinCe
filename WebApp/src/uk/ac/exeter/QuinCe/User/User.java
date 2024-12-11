@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.User;
 
 import java.sql.Timestamp;
+import java.util.Objects;
 
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -269,7 +270,18 @@ public class User {
    * @return {@code true} if this user can access the API; {@code false} if not
    */
   public boolean isApiUser() {
-    return (permissions & BIT_API_USER) > 0;
+    return hasApiPermission(this.permissions);
+  }
+
+  /**
+   * Determine whether or not the specified permissions entry represents an API
+   * user.
+   *
+   * @return {@code true} if this permissions give access to the API;
+   *         {@code false} if not
+   */
+  public static boolean hasApiPermission(int permissionsEntry) {
+    return (permissionsEntry & BIT_API_USER) > 0;
   }
 
   /**
@@ -280,5 +292,22 @@ public class User {
    */
   public boolean isApprovalUser() {
     return (permissions & BIT_APPROVAL_USER) > 0;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(databaseId);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    User other = (User) obj;
+    return databaseId == other.databaseId;
   }
 }

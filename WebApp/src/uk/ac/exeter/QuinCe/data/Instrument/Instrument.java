@@ -79,9 +79,15 @@ public class Instrument {
   private long id = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
-   * The ID of the owner of the instrument
+   * The owner of the instrument
    */
   private User owner;
+
+  /**
+   * The database IDs of the users with which the owner has shared this
+   * instrument.
+   */
+  private List<Long> sharedWith;
 
   /**
    * The name of the instrument
@@ -173,8 +179,8 @@ public class Instrument {
    * @throws SensorGroupsException
    */
   public Instrument(User owner, long databaseId, String name,
-    InstrumentFileSet fileDefinitions, List<Variable> variables,
-    Map<Variable, Properties> variableProperties,
+    List<Long> sharedWith, InstrumentFileSet fileDefinitions,
+    List<Variable> variables, Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformName,
     String platformCode, boolean nrt, LocalDateTime lastNrtExport,
     String propertiesJson) throws SensorGroupsException {
@@ -182,6 +188,7 @@ public class Instrument {
     this.owner = owner;
     this.id = databaseId;
     this.name = name;
+    this.sharedWith = null != sharedWith ? sharedWith : new ArrayList<Long>();
     this.fileDefinitions = fileDefinitions;
     this.variables = variables;
     this.variableProperties = variableProperties;
@@ -215,14 +222,16 @@ public class Instrument {
    *          The instrument's properties.
    * @throws SensorGroupsException
    */
-  public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
-    List<Variable> variables, Map<Variable, Properties> variableProperties,
+  public Instrument(User owner, String name, List<Long> sharedWith,
+    InstrumentFileSet fileDefinitions, List<Variable> variables,
+    Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformName,
     String platformCode, boolean nrt, LocalDateTime lastNrtExport,
     String propertiesJson) throws SensorGroupsException {
 
     this.owner = owner;
     this.name = name;
+    this.sharedWith = null != sharedWith ? sharedWith : new ArrayList<Long>();
     this.fileDefinitions = fileDefinitions;
     this.variables = variables;
     this.variableProperties = variableProperties;
@@ -253,14 +262,16 @@ public class Instrument {
    *          Indicates whether or not the instrument provides data in near real
    *          time.
    */
-  public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
-    List<Variable> variables, Map<Variable, Properties> variableProperties,
+  public Instrument(User owner, String name, List<Long> sharedWith,
+    InstrumentFileSet fileDefinitions, List<Variable> variables,
+    Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, SensorGroups sensorGroups,
     String platformName, String platformCode, boolean nrt,
     LocalDateTime lastNrtExport) {
 
     this.owner = owner;
     this.name = name;
+    this.sharedWith = null != sharedWith ? sharedWith : new ArrayList<Long>();
     this.fileDefinitions = fileDefinitions;
     this.variables = variables;
     this.variableProperties = variableProperties;
@@ -1075,5 +1086,19 @@ public class Instrument {
 
   public LocalDateTime getLastNrtExport() {
     return lastNrtExport;
+  }
+
+  public List<Long> getSharedWith() {
+    return sharedWith;
+  }
+
+  public boolean isSharedWith(User user) {
+    return sharedWith.contains(user.getDatabaseID());
+  }
+
+  public void addShare(User user) {
+    if (!isSharedWith(user)) {
+      sharedWith.add(user.getDatabaseID());
+    }
   }
 }

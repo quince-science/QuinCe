@@ -250,6 +250,20 @@ public class InstrumentDB {
   private static final String DELETE_INSTRUMENT_STATEMENT = "DELETE FROM "
     + "instrument WHERE id = ?";
 
+  private static final String SHARED_USERS_QUERY = "SELECT "
+    + " shared_with FROM shared_instruments si"
+    + " INNER JOIN user u ON si.shared_with = u.id"
+    + " WHERE si.instrument_id = ? ORDER BY u.surname, u.firstname";
+
+  private static final String SHARED_INSTRUMENTS_QUERY = "SELECT "
+    + " instrument_id, shared_with FROM shared_instruments si"
+    + " INNER JOIN user u ON si.shared_with = u.id"
+    + " ORDER BY u.surname, u.firstname";
+
+  private static final String ADD_SHARE_STATEMENT = "INSERT INTO"
+    + " shared_instruments (instrument_id, shared_with)"
+    + " VALUES (?, ?)";
+
   /**
    * Store a new instrument in the database
    *
@@ -556,6 +570,8 @@ public class InstrumentDB {
 
     MissingParam.checkMissing(conn, "conn");
 
+    Map<Long, List<Long>> sharedInstruments = getSharedInstruments(conn);
+
     List<Instrument> result = new ArrayList<Instrument>();
 
     PreparedStatement stmt = null;
@@ -595,7 +611,8 @@ public class InstrumentDB {
 
           if (currentInstrument != -1) {
             result.add(createInstrument(conn, owner, currentInstrument, name,
-              variables, variableProperties, platformName, platformCode, nrt,
+              sharedInstruments.get(instrumentId), variables,
+              variableProperties, platformName, platformCode, nrt,
               lastNrtExport, propertiesJson));
           }
 
@@ -618,8 +635,9 @@ public class InstrumentDB {
       // Create the last instrument, if there is one
       if (currentInstrument != -1) {
         result.add(createInstrument(conn, owner, currentInstrument, name,
-          variables, variableProperties, platformName, platformCode, nrt,
-          lastNrtExport, propertiesJson));
+          sharedInstruments.get(currentInstrument), variables,
+          variableProperties, platformName, platformCode, nrt, lastNrtExport,
+          propertiesJson));
       }
 
     } catch (SQLException e) {
@@ -632,8 +650,46 @@ public class InstrumentDB {
     return result;
   }
 
+  /**
+   * Get the information of {@link Instrument}s between users.
+   *
+   * <p>
+   * Returns a {@link Map} of {@code Instrument ID -> User IDs}, where the user
+   * IDs are the users with which the owner has shared the {@link Instrument}.
+   * The owner is not included in the {@link Map}.
+   * </p>
+   *
+   * @param conn
+   *          A database connection.
+   * @return The sharing info.
+   * @throws DatabaseException
+   */
+  private static Map<Long, List<Long>> getSharedInstruments(Connection conn)
+    throws DatabaseException {
+    Map<Long, List<Long>> sharedInstruments = new HashMap<Long, List<Long>>();
+
+    try (
+      PreparedStatement stmt = conn.prepareStatement(SHARED_INSTRUMENTS_QUERY);
+      ResultSet records = stmt.executeQuery()) {
+
+      while (records.next()) {
+        Long instrumentID = records.getLong(1);
+        if (!sharedInstruments.containsKey(instrumentID)) {
+          sharedInstruments.put(instrumentID, new ArrayList<Long>());
+        }
+
+        sharedInstruments.get(instrumentID).add(records.getLong(2));
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting instrument sharing info", e);
+    }
+
+    return sharedInstruments;
+  }
+
   private static Instrument createInstrument(Connection conn, long ownerId,
-    long id, String name, List<Long> variableIds,
+    long id, String name, List<Long> sharedWith, List<Long> variableIds,
     Map<Long, String> variableProperties, String platformName,
     String platformCode, boolean nrt, LocalDateTime lastNrtExport,
     String propertiesJson)
@@ -664,9 +720,9 @@ public class InstrumentDB {
       processedVariableProperties.put(var, props);
     }
 
-    return new Instrument(UserDB.getUser(conn, ownerId), id, name, files,
-      variables, processedVariableProperties, sensorAssignments, platformName,
-      platformCode, nrt, lastNrtExport, propertiesJson);
+    return new Instrument(UserDB.getUser(conn, ownerId), id, name, sharedWith,
+      files, variables, processedVariableProperties, sensorAssignments,
+      platformName, platformCode, nrt, lastNrtExport, propertiesJson);
   }
 
   /**
@@ -787,10 +843,22 @@ public class InstrumentDB {
     List<ResultSet> resultSets = new ArrayList<ResultSet>();
 
     try {
+      // Get the shared users
+      List<Long> sharedUsers = new ArrayList<Long>();
+
+      PreparedStatement sharedStmt = conn.prepareStatement(SHARED_USERS_QUERY);
+      sharedStmt.setLong(1, instrumentId);
+      stmts.add(sharedStmt);
+
       // Get the raw instrument data
       PreparedStatement instrStmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
       instrStmt.setLong(1, instrumentId);
       stmts.add(instrStmt);
+
+      ResultSet shareRecords = instrStmt.executeQuery();
+      while (shareRecords.next()) {
+        sharedUsers.add(shareRecords.getLong(1));
+      }
 
       ResultSet instrumentRecord = instrStmt.executeQuery();
       resultSets.add(instrumentRecord);
@@ -825,8 +893,9 @@ public class InstrumentDB {
           instrumentId, files, sensorConfig, runTypeConfig);
 
         instrument = new Instrument(UserDB.getUser(conn, owner), instrumentId,
-          name, files, variables, variableProperties, sensorAssignments,
-          platformName, platformCode, nrt, lastNrtExport, propertiesJson);
+          name, sharedUsers, files, variables, variableProperties,
+          sensorAssignments, platformName, platformCode, nrt, lastNrtExport,
+          propertiesJson);
       }
 
     } catch (SQLException e) {
@@ -1792,6 +1861,62 @@ public class InstrumentDB {
     try (PreparedStatement stmt = conn.prepareStatement(query)) {
       stmt.setLong(1, instrumentId);
       stmt.execute();
+    }
+  }
+
+  /**
+   * Share the specified {@link Instrument} with the specified {@link User}.
+   *
+   * <p>
+   * The new share is stored in the database and the {@link Instrument} object
+   * is updated.
+   * </p>
+   *
+   * <p>
+   * The method does not throw any errors. The following situations are ignored
+   * silently:
+   * </p>
+   * <ul>
+   * <li>The {@link User} is the {@link Instrument} owner.</li>
+   * <li>The {@link Instrument} is already shared with the {@link User}.</li>
+   * </ul>
+   *
+   * @param dataSource
+   *          A data source.
+   * @param instrument
+   *          The {@link Instrument} to be shared.
+   * @param user
+   *          The {@link User} that the {@link Instrument} is to be shared with.
+   * @throws RecordNotFoundException
+   *           If the {@link User} does not exist in the database.
+   * @throws DatabaseException
+   *           If a database error occurs.
+   */
+  public static void addUserShare(DataSource dataSource, Instrument instrument,
+    User user) throws RecordNotFoundException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(instrument, "Instrument");
+    MissingParam.checkMissing(user, "user");
+
+    if (!UserDB.userExists(dataSource, user.getDatabaseID())) {
+      throw new RecordNotFoundException("User does not exist");
+    }
+
+    if (!instrument.getOwner().equals(user) && !instrument.isSharedWith(user)) {
+
+      try (Connection conn = dataSource.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(ADD_SHARE_STATEMENT);) {
+
+        stmt.setLong(1, instrument.getId());
+        stmt.setLong(2, user.getDatabaseID());
+
+        stmt.execute();
+
+        instrument.addShare(user);
+      } catch (SQLException e) {
+        throw new DatabaseException("Error adding share", e);
+      }
     }
   }
 }

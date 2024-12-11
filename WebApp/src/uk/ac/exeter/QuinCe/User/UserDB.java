@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 import javax.sql.DataSource;
 
@@ -126,6 +127,10 @@ public class UserDB {
   private static final String RECORD_LOGIN_STATEMENT = "UPDATE "
     + "user SET last_login = ? WHERE email = ?";
 
+  private static final String USER_NAMES_STATEMENT = "SELECT "
+    + "id, firstname, surname, permissions FROM user "
+    + "ORDER BY surname, firstname";
+
   /**
    * The length of the string to be used for email verification and password
    * reset codes.
@@ -205,13 +210,11 @@ public class UserDB {
    * @return The {@link User} object.
    * @throws DatabaseException
    *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
    *
    * @see getUser(Connection, String)
    */
   public static User getUser(DataSource dataSource, String email)
-    throws DatabaseException, MissingParamException {
+    throws DatabaseException {
 
     Connection conn = null;
     User user = null;
@@ -245,13 +248,11 @@ public class UserDB {
    * @return The {@link User} object.
    * @throws DatabaseException
    *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
    *
    * @see #USER_SEARCH_BY_EMAIL_STATEMENT
    */
   public static User getUser(Connection conn, String email)
-    throws DatabaseException, MissingParamException {
+    throws DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(email, "email");
@@ -283,6 +284,42 @@ public class UserDB {
     }
 
     return foundUser;
+  }
+
+  /**
+   * Determine whether or not a {@link User} exists with the specified email
+   * address.
+   *
+   * @param dataSource
+   *          A data source.
+   * @param email
+   *          The email address.
+   * @return {@code true} if a {@link User} with the specified email exists;
+   *         {@code false} if it does not.
+   * @throws DatabaseException
+   *           If an error occurs while searching the database.
+   */
+  public static boolean userExists(DataSource dataSource, String email)
+    throws DatabaseException {
+    return null != getUser(dataSource, email);
+  }
+
+  /**
+   * Determine whether or not a {@link User} exists with the specified database
+   * ID.
+   *
+   * @param dataSource
+   *          A data source.
+   * @param id
+   *          The ID.
+   * @return {@code true} if a {@link User} with the specified email exists;
+   *         {@code false} if it does not.
+   * @throws DatabaseException
+   *           If an error occurs while searching the database.
+   */
+  public static boolean userExists(DataSource dataSource, long id)
+    throws DatabaseException {
+    return null != getUser(dataSource, id);
   }
 
   /**
@@ -1063,6 +1100,46 @@ public class UserDB {
       PasswordHash.PBKDF2_ITERATIONS, PasswordHash.HASH_BYTE_SIZE);
 
     return result;
+  }
+
+  /**
+   * Returns a list of all users in the system, ordered by surname/firstname.
+   *
+   * <p>
+   * API users are excluded from the list.
+   * </p>
+   *
+   * @return The list of users.
+   * @throws DatabaseException
+   *           If an error occurs while retrieving the users.
+   */
+  public static LinkedHashMap<Long, String> getUserNames(DataSource dataSource)
+    throws DatabaseException {
+    LinkedHashMap<Long, String> users = new LinkedHashMap<Long, String>();
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn.prepareStatement(USER_NAMES_STATEMENT);
+      ResultSet records = stmt.executeQuery();) {
+
+      while (records.next()) {
+
+        int permissions = records.getInt(4);
+
+        if (!User.hasApiPermission(permissions)) {
+          long id = records.getLong(1);
+          String firstName = records.getString(2);
+          String surname = records.getString(3);
+
+          users.put(id, surname + ", " + firstName);
+        }
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting user names", e);
+    }
+
+    return users;
   }
 
   /**

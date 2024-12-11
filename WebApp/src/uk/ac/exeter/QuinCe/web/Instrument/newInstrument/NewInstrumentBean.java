@@ -1859,7 +1859,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
       // Create the new Instrument object
       // TODO groups in here.
-      Instrument instrument = new Instrument(getUser(), instrumentName,
+      Instrument instrument = new Instrument(getUser(), instrumentName, null,
         instrumentFiles, instrumentVariables, storedVariableProperties,
         sensorAssignments, sensorGroups, platformName, platformCode, false,
         null);
