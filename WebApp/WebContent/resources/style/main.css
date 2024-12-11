@@ -593,6 +593,12 @@ table.fileDates {
   height: 25px;
 }
 
+.actionIconSmall {
+  margin-top: 7px;
+  width: 20px;
+  height: 20px;
+}
+
 .actionIconLarge {
   margin-right: 7px;
   width: 30px;
@@ -833,6 +839,18 @@ table.dataTable > tbody > tr > .selected {
  */
 .ui-datatable-scrollable-theadclone {
   display: none;
+}
+
+/* Use this class on a p:dataTable to hide the column headers */
+.tableNoHeader thead th {
+  border: none !important;
+  background: none !important;
+  padding: 0px !important;
+}
+
+/* Make table not default to 100% width */
+.tableNarrow table {
+  width: auto !important;
 }
 
 @keyframes rowFlash {

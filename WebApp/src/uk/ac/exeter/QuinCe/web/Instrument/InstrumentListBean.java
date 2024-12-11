@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -7,6 +9,10 @@ import java.util.Map;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import org.apache.commons.lang3.StringUtils;
+
+import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -19,6 +25,10 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 @ManagedBean
 @SessionScoped
 public class InstrumentListBean extends BaseManagedBean {
+
+  private static final int SHARE_REMOVE = -1;
+
+  private static final int SHARE_ADD = 1;
 
   /**
    * The name of the session attribute that holds the ID of the currently
@@ -45,13 +55,29 @@ public class InstrumentListBean extends BaseManagedBean {
 
   private List<Instrument> filteredInstruments;
 
+  private LinkedHashMap<Long, String> userNames;
+
+  /**
+   * The ID of the instrument whose ownership is being edited.
+   *
+   * <p>
+   * Note that this is <i>not</i> the ID of the owner.
+   * </p>
+   */
+  private long ownershipInstrId = -1L;
+
   /**
    * The ID of the instrument chosen from the instrument list
    */
   private Instrument chosenInstrument = null;
 
+  private int shareAction = Integer.MIN_VALUE;
+
+  private String shareEmail = null;
+
   public String start() {
     try {
+      userNames = UserDB.getUserNames(getDataSource());
       datasetCounts = DataSetDB.getDataSetCounts(getDataSource(),
         getInstruments().stream().map(i -> i.getId()).toList());
     } catch (Exception e) {
@@ -176,5 +202,102 @@ public class InstrumentListBean extends BaseManagedBean {
       || instrument.getOwner().getGivenName().toLowerCase().contains(filterText)
       || instrument.getPlatformName().toLowerCase().contains(filterText)
       || instrument.getName().toLowerCase().contains(filterText);
+  }
+
+  public String getOwnerName() {
+    return ownershipInstrId == -1L ? ""
+      : userNames
+        .get(getInstrument(ownershipInstrId).getOwner().getDatabaseID());
+  }
+
+  public long getOwnershipInstrId() {
+    return ownershipInstrId;
+  }
+
+  public void setOwnershipInstrId(long id) {
+    ownershipInstrId = id;
+  }
+
+  public String getOwnerInstrumentName() {
+    return ownershipInstrId == -1L ? ""
+      : getInstrument(ownershipInstrId).getDisplayName();
+  }
+
+  public List<UserTableEntry> getSharedUsers() {
+    return ownershipInstrId == -1L ? new ArrayList<UserTableEntry>()
+      : getInstrument(ownershipInstrId).getSharedWith().stream()
+        .map(id -> new UserTableEntry(id, userNames.get(id))).toList();
+  }
+
+  public void setShareAction(int action) {
+    this.shareAction = action;
+  }
+
+  public int getShareAction() {
+    return shareAction;
+  }
+
+  public String getShareEmail() {
+    return shareEmail;
+  }
+
+  public void setShareEmail(String email) {
+    this.shareEmail = email;
+  }
+
+  public void saveShare() {
+
+    ajaxOK = true;
+
+    try {
+      if (StringUtils.isEmpty(shareEmail)) {
+        setMessage("shareForm:shareEmail", "An email address is required");
+        ajaxOK = false;
+      } else {
+
+        User shareUser = UserDB.getUser(getDataSource(), shareEmail);
+
+        if (null == shareUser) {
+          setMessage("shareForm:shareEmail",
+            "There is no user with the specified email address");
+          ajaxOK = false;
+        } else {
+          switch (shareAction) {
+          case SHARE_ADD: {
+            InstrumentDB.addUserShare(getDataSource(),
+              getInstrument(ownershipInstrId), shareUser);
+            break;
+          }
+          case SHARE_REMOVE: {
+            System.out.println("Remove share");
+            break;
+          }
+          default: {
+            throw new IllegalArgumentException("Invalid share action");
+          }
+          }
+        }
+      }
+    } catch (Exception e) {
+      ExceptionUtils.printStackTrace(e);
+      setMessage("shareForm:shareEmail", "Error adding share");
+      ajaxOK = false;
+    }
+  }
+
+  @Override
+  public String getFormName() {
+    return "instrumentListForm";
+  }
+
+  public record UserTableEntry(long id, String name) {
+
+    public long getId() {
+      return id();
+    }
+
+    public String getName() {
+      return name();
+    }
   }
 }

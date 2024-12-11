@@ -7,46 +7,104 @@
   <ui:define name="title">Instruments</ui:define>
   <ui:define name="localHead">
     <c:set var="mainMenuActiveIndex" value="2" scope="request" />
-    <script>
-    function goToStandards(id) {
-        $('#instrumentListForm\\:standardsInstrumentId').val(id);
-        $('#instrumentListForm\\:showStandardsLink').click();
-        return false;
-      }
-
-    function goToDiagnosticsQC(id) {
-      $('#instrumentListForm\\:diagnosticQCInstrumentId').val(id);
-      $('#instrumentListForm\\:diagnostQCLink').click();
-      return false;
-    }
-
-    function goToCalibrations(id) {
-      $('#instrumentListForm\\:calibrationsInstrumentId').val(id);
-      $('#instrumentListForm\\:showCalibrationsLink').click();
-      return false;
-    }
-
-    function goToCalculationCoefficients(id) {
-      $('#instrumentListForm\\:calculationCoefficientsInstrumentId').val(id);
-      $('#instrumentListForm\\:showCalculationCoefficientsLink').click();
-      return false;
-    }
-
-    function confirmInstrumentDelete(id, name) {
-      $('#instrumentListForm\\:deleteInstrumentId').val(id);
-      $('#deleteInstrumentName')[0].innerHTML = name;
-      PF('confirmDelete').show();
-    }
-
-    function deleteInstrument() {
-      $('#instrumentListForm\\:deleteInstrumentLink').click();
-      return false;
-    }
-    </script>
+    <h:outputScript name="script/instruments.js" />
   </ui:define>
   <ui:define name="content">
-    <h:form id="instrumentListForm" method="post" accept-charset="utf8">
+    <h:form id="shareForm" method="post" accept-charset="utf8">
+      <h:inputHidden id="ajaxOK" value="#{instrumentListBean.ajaxOK}"/>
 
+      <p:dialog widgetVar="ownershipDialog" modal="true" resizable="false"
+        header="Ownership and Sharing" style="max-width: 80%">
+
+        <h4><h:outputText id="ownerInstrumentName"
+          value="#{instrumentListBean.ownerInstrumentName}"/></h4>
+
+        <table>
+          <tr>
+            <td class="label">Owner:</td>
+            <td><h:outputText id="ownerName" value="#{instrumentListBean.ownerName}"/></td>
+          </tr>
+          <tr>
+            <td class="label" style="white-space: nowrap; vertical-align: top; padding-top: 13px">
+              Shared with:
+            </td>
+            <td>
+              <p:dataTable id="sharedList" var="user" widgetVar="sharedList"
+                styleClass="tableNoHeader tableNarrow" emptyMessage=""
+                value="#{instrumentListBean.sharedUsers}">
+
+                <p:column width="200px" style="white-space: nowrap">
+                  <h:outputText value="#{user.name}"/>
+                </p:column>
+
+                <p:column>
+                  <p:commandLink onclick="removeShare(#{user.id})">
+                    <h:graphicImage value="/resources/image/x-red.svg"
+                      styleClass="actionIconSmall" alt="Remove Share"
+                      title="Remove Share" />
+                  </p:commandLink>
+                </p:column>
+                <p:column>
+                  <p:commandLink onclick="removeShare(#{user.id})">
+                    xfer
+                    <h:graphicImage value="/resources/image/x-red.svg"
+                      styleClass="actionIconSmall" alt="Remove Share"
+                      title="Remove Share" />
+                  </p:commandLink>
+                </p:column>
+              </p:dataTable>
+            </td>
+          </tr>
+        </table>
+
+        <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+          <p:button value="Add Share..." styleClass="tightTextButton"
+            onclick="return startAddShare()"/>
+        </h:panelGrid>
+        <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+          <p:button value="Close" onclick="PF('ownershipDialog').hide(); return false;"/>
+        </h:panelGrid>
+      </p:dialog>
+
+      <p:dialog widgetVar="addShareDialog" modal="true" resizable="false"
+        header="Add Share">
+
+        <div class="instructions">
+          Enter the email address of the user that you want to share this instrument with.
+        </div>
+        <div style="text-align: center">
+          <p:inputText id="shareEmail" widgetVar="shareEmail" style="width: 325px"
+            value="#{instrumentListBean.shareEmail}"/>
+          <br/>
+          <p:message for="shareEmail" id="shareEmailMessage" widgetVar="shareEmailMessage"
+            style="margin-top: 5px"/>
+        </div>
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:button value="Cancel"
+            onclick="PF('addShareDialog').hide(); return false;"/>
+          <p:button value="Add"
+            onclick="saveShare(); return false;"/>
+        </h:panelGrid>
+      </p:dialog>
+
+      <h:inputHidden id="ownershipInstrId" value="#{instrumentListBean.ownershipInstrId}"/>
+
+      <p:remoteCommand name="loadOwnership"
+        update="ownerInstrumentName ownerName sharedList"
+        process="ownershipInstrId" ajax="true"
+        action="#{instrumentListBean.noop}"
+        onsuccess="PF('ownershipDialog').show()"/>
+
+      <h:inputHidden id="shareAction" value="#{instrumentListBean.shareAction}"/>
+
+      <p:remoteCommand name="saveShare"
+        process="shareAction shareEmail"
+        update="ownerName sharedList shareEmailMessage ajaxOK"
+        ajax="true" action="#{instrumentListBean.saveShare}"
+        oncomplete="shareSaveComplete()"/>
+    </h:form>
+
+    <h:form id="instrumentListForm" method="post" accept-charset="utf8">
       <p:dialog widgetVar="confirmDelete" modal="true" resizable="false"
         closeable="false" header="Delete Instrument?">
         Are you sure you want to delete the instrument
@@ -156,6 +214,10 @@
               <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
                 styleClass="actionIconLarge"/>
             </ui:fragment>
+            <p:commandLink onclick="showOwnershipDialog(#{instrument.id})">
+              <h:graphicImage value="/resources/image/share.svg" alt="Ownership and Sharing"
+                title="Ownership and Sharing" styleClass="actionIconLarge"/>
+            </p:commandLink>
             <ui:fragment rendered="#{not instrumentListBean.hasDatasets(instrument.id)}">
               <p:commandLink onclick="confirmInstrumentDelete(#{instrument.id}, '#{instrument.displayName}')">
                 <h:graphicImage value="/resources/image/trash.svg" alt="Delete instrument"
