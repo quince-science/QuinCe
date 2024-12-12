@@ -39,6 +39,9 @@
 
                 <p:column>
                   <p:commandLink onclick="removeShare(#{user.id})">
+                    <p:confirm header="Remove Share"
+                      message="Are you sure you want to remove share access for #{user.name}?"
+                      icon="pi pi-exclamation-triangle"/>
                     <h:graphicImage value="/resources/image/x-red.svg"
                       styleClass="actionIconSmall" alt="Remove Share"
                       title="Remove Share" />
@@ -46,7 +49,6 @@
                 </p:column>
                 <p:column>
                   <p:commandLink onclick="removeShare(#{user.id})">
-                    xfer
                     <h:graphicImage value="/resources/image/x-red.svg"
                       styleClass="actionIconSmall" alt="Remove Share"
                       title="Remove Share" />
@@ -65,6 +67,11 @@
           <p:button value="Close" onclick="PF('ownershipDialog').hide(); return false;"/>
         </h:panelGrid>
       </p:dialog>
+
+      <p:confirmDialog global="true" responsive="true">
+        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" />
+      </p:confirmDialog>
 
       <p:dialog widgetVar="addShareDialog" modal="true" resizable="false"
         header="Add Share">
@@ -88,6 +95,7 @@
       </p:dialog>
 
       <h:inputHidden id="ownershipInstrId" value="#{instrumentListBean.ownershipInstrId}"/>
+      <h:inputHidden id="shareId" value="#{instrumentListBean.shareId}"/>
 
       <p:remoteCommand name="loadOwnership"
         update="ownerInstrumentName ownerName sharedList"
@@ -98,7 +106,7 @@
       <h:inputHidden id="shareAction" value="#{instrumentListBean.shareAction}"/>
 
       <p:remoteCommand name="saveShare"
-        process="shareAction shareEmail"
+        process="shareAction shareEmail shareId"
         update="ownerName sharedList shareEmailMessage ajaxOK"
         ajax="true" action="#{instrumentListBean.saveShare}"
         oncomplete="shareSaveComplete()"/>

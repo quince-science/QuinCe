@@ -250,7 +250,7 @@ public class InstrumentDB {
   private static final String DELETE_INSTRUMENT_STATEMENT = "DELETE FROM "
     + "instrument WHERE id = ?";
 
-  private static final String SHARED_USERS_QUERY = "SELECT "
+  private static final String SHARED_USERS_QUERY = "SELECT"
     + " shared_with FROM shared_instruments si"
     + " INNER JOIN user u ON si.shared_with = u.id"
     + " WHERE si.instrument_id = ? ORDER BY u.surname, u.firstname";
@@ -262,6 +262,9 @@ public class InstrumentDB {
 
   private static final String ADD_SHARE_STATEMENT = "INSERT INTO"
     + " shared_instruments (instrument_id, shared_with)" + " VALUES (?, ?)";
+
+  private static final String REMOVE_SHARE_STATEMENT = "DELETE FROM"
+    + " shared_instruments WHERE instrument_id = ? AND shared_with = ?";
 
   /**
    * Store a new instrument in the database
@@ -610,7 +613,7 @@ public class InstrumentDB {
 
           if (currentInstrument != -1) {
             result.add(createInstrument(conn, owner, currentInstrument, name,
-              sharedInstruments.get(instrumentId), variables,
+              sharedInstruments.get(currentInstrument), variables,
               variableProperties, platformName, platformCode, nrt,
               lastNrtExport, propertiesJson));
           }
@@ -1872,8 +1875,8 @@ public class InstrumentDB {
    * </p>
    *
    * <p>
-   * The method does not throw any errors. The following situations are ignored
-   * silently:
+   * The method does not throw any errors unless the parameters are
+   * {@code null}. The following situations are ignored silently:
    * </p>
    * <ul>
    * <li>The {@link User} is the {@link Instrument} owner.</li>
@@ -1917,5 +1920,50 @@ public class InstrumentDB {
         throw new DatabaseException("Error adding share", e);
       }
     }
+  }
+
+  /**
+   * Remove share access to an {@link Instrument} for a specified {@link User}.
+   *
+   * <p>
+   * The share is removed from the database and the {@link Instrument} object is
+   * updated.
+   * </p>
+   *
+   * <p>
+   * The method does not throw any errors unless the parameters are
+   * {@code null}. If the {@link Instrument} is not shared with the
+   * {@link User}, the method has no effect.
+   * </p>
+   *
+   * @param dataSource
+   *          A data source.
+   * @param instrument
+   *          The {@link Instrument} to be shared.
+   * @param user
+   *          The {@link User} that the {@link Instrument} is to be shared with.
+   * @throws DatabaseException
+   *           If a database error occurs.
+   */
+  public static void removeUserShare(DataSource dataSource,
+    Instrument instrument, User user) throws DatabaseException {
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(instrument, "Instrument");
+    MissingParam.checkMissing(user, "user");
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn.prepareStatement(REMOVE_SHARE_STATEMENT);) {
+
+      stmt.setLong(1, instrument.getId());
+      stmt.setLong(2, user.getDatabaseID());
+
+      stmt.execute();
+
+      instrument.removeShare(user);
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error removing share", e);
+    }
+
   }
 }
