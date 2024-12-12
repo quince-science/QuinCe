@@ -323,6 +323,24 @@ public class UserDB {
   }
 
   /**
+   * Determine whether or not a {@link User} exists with the specified database
+   * ID.
+   *
+   * @param conn
+   *          A database connection.
+   * @param id
+   *          The ID.
+   * @return {@code true} if a {@link User} with the specified email exists;
+   *         {@code false} if it does not.
+   * @throws DatabaseException
+   *           If an error occurs while searching the database.
+   */
+  public static boolean userExists(Connection conn, long id)
+    throws MissingParamException, DatabaseException {
+    return null != getUser(conn, id);
+  }
+
+  /**
    * Get a user's details using their database ID.
    *
    * <p>

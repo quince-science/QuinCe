@@ -328,6 +328,10 @@ public class Instrument {
     return owner;
   }
 
+  public void setOwner(User owner) {
+    this.owner = owner;
+  }
+
   /**
    * Get the instrument's name
    *

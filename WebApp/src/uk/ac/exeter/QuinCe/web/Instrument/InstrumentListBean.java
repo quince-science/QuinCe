@@ -297,6 +297,21 @@ public class InstrumentListBean extends BaseManagedBean {
     return shareId;
   }
 
+  public String transferOwnership() {
+
+    try {
+      User newOwner = UserDB.getUser(getDataSource(), shareId);
+      if (null != newOwner) {
+        InstrumentDB.setOwner(getDataSource(), getInstrument(ownershipInstrId),
+          newOwner);
+      }
+    } catch (Exception e) {
+      ExceptionUtils.printStackTrace(e);
+    }
+
+    return PAGE_INSTRUMENT_LIST;
+  }
+
   @Override
   public String getFormName() {
     return "instrumentListForm";
