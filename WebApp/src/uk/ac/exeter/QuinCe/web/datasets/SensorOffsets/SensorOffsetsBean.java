@@ -111,6 +111,7 @@ public class SensorOffsetsBean extends BaseManagedBean {
     instrument = null;
     dataset = null;
     dirty = false;
+    plotData = null;
   }
 
   public String finish() throws Exception {
