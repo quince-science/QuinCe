@@ -48,10 +48,13 @@
                   </p:commandLink>
                 </p:column>
                 <p:column>
-                  <p:commandLink onclick="removeShare(#{user.id})">
-                    <h:graphicImage value="/resources/image/x-red.svg"
-                      styleClass="actionIconSmall" alt="Remove Share"
-                      title="Remove Share" />
+                  <p:commandLink onclick="initTransferOwnership(#{user.id})">
+                    <p:confirm header="Transfer Ownership"
+                      message="Are you sure you want to transfer ownership to #{user.name}? The instrument will still be shared with you."
+                      icon="pi pi-exclamation-triangle"/>
+                    <h:graphicImage value="/resources/image/transfer.svg"
+                      styleClass="actionIconSmall" alt="Transfer Ownership"
+                      title="Transfer Ownership" />
                   </p:commandLink>
                 </p:column>
               </p:dataTable>
@@ -110,6 +113,11 @@
         update="ownerName sharedList shareEmailMessage ajaxOK"
         ajax="true" action="#{instrumentListBean.saveShare}"
         oncomplete="shareSaveComplete()"/>
+
+      <p:remoteCommand name="transferOwnership"
+        process="shareId"
+        update="ownerName sharedList"
+        ajax="false" action="#{instrumentListBean.transferOwnership}"/>
     </h:form>
 
     <h:form id="instrumentListForm" method="post" accept-charset="utf8">

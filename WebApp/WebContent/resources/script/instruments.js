@@ -60,13 +60,18 @@ function startAddShare() {
 }
 
 function removeShare(id) {
-	$('#shareForm\\:shareAction').val(SHARE_REMOVE);
-	$('#shareForm\\:shareId').val(id);
-	saveShare(); // PF remoteCommand
+  $('#shareForm\\:shareAction').val(SHARE_REMOVE);
+  $('#shareForm\\:shareId').val(id);
+  saveShare(); // PF remoteCommand
 }
 
 function shareSaveComplete() {
   if ($('#shareForm\\:ajaxOK').val() == 'true') {
     PF('addShareDialog').hide();
   }
+}
+
+function initTransferOwnership(id) {
+	$('#shareForm\\:shareId').val(id);
+	transferOwnership(); // PF remoteCommand
 }

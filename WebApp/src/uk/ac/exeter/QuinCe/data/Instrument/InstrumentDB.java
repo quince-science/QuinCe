@@ -266,6 +266,9 @@ public class InstrumentDB {
   private static final String REMOVE_SHARE_STATEMENT = "DELETE FROM"
     + " shared_instruments WHERE instrument_id = ? AND shared_with = ?";
 
+  private static final String SET_OWNER_STATEMENT = "UPDATE INSTRUMENT"
+    + " set owner = ? WHERE id = ?";
+
   /**
    * Store a new instrument in the database
    *
@@ -1963,6 +1966,75 @@ public class InstrumentDB {
 
     } catch (SQLException e) {
       throw new DatabaseException("Error removing share", e);
+    }
+
+  }
+
+  /**
+   * Give the specified {@link Instrument} a new owner.
+   *
+   * <p>
+   * The original owner will retain access to the {@link Instrument} through the
+   * sharing mechanism.
+   * </p>
+   *
+   * @param dataSource
+   *          A data source.
+   * @param instrument
+   *          The {@link Instrument} whose ownership is to be changed.
+   * @param newOwner
+   *          The {@link Instrument}'s new owner.
+   * @throws DatabaseException
+   * @throws RecordNotFoundException
+   */
+  public static void setOwner(DataSource dataSource, Instrument instrument,
+    User newOwner) throws DatabaseException, RecordNotFoundException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(instrument, "instrument");
+    MissingParam.checkMissing(newOwner, "newOwner");
+
+    User existingOwner = instrument.getOwner();
+    if (!existingOwner.equals(newOwner)) {
+      try (Connection conn = dataSource.getConnection()) {
+        conn.setAutoCommit(false);
+
+        if (!UserDB.userExists(conn, newOwner.getDatabaseID())) {
+          throw new RecordNotFoundException("New Owner does not exist");
+        } else {
+          try (
+            PreparedStatement ownerStmt = conn
+              .prepareStatement(SET_OWNER_STATEMENT);
+            PreparedStatement removeShareStmt = conn
+              .prepareStatement(REMOVE_SHARE_STATEMENT);
+            PreparedStatement addShareStmt = conn
+              .prepareStatement(ADD_SHARE_STATEMENT);) {
+
+            removeShareStmt.setLong(1, instrument.getId());
+            removeShareStmt.setLong(2, newOwner.getDatabaseID());
+
+            ownerStmt.setLong(1, newOwner.getDatabaseID());
+            ownerStmt.setLong(2, instrument.getId());
+
+            addShareStmt.setLong(1, instrument.getId());
+            addShareStmt.setLong(2, existingOwner.getDatabaseID());
+
+            ownerStmt.execute();
+            removeShareStmt.execute();
+            addShareStmt.execute();
+
+            conn.commit();
+
+            instrument.removeShare(newOwner);
+            instrument.setOwner(newOwner);
+            instrument.addShare(existingOwner);
+          }
+        }
+
+      } catch (SQLException e) {
+        throw new DatabaseException("Error while setting instrument ownership",
+          e);
+      }
     }
 
   }
