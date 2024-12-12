@@ -1101,4 +1101,8 @@ public class Instrument {
       sharedWith.add(user.getDatabaseID());
     }
   }
+
+  public void removeShare(User user) {
+    sharedWith.remove(user.getDatabaseID());
+  }
 }

@@ -1,4 +1,5 @@
 const SHARE_ADD = 1;
+const SHARE_REMOVE = -1;
 
 $(document).ready(function() {
   $(window).keydown(function(event){
@@ -56,6 +57,12 @@ function startAddShare() {
   PF('shareEmailMessage').jq.hide();
   PF('addShareDialog').show();
   return false;
+}
+
+function removeShare(id) {
+	$('#shareForm\\:shareAction').val(SHARE_REMOVE);
+	$('#shareForm\\:shareId').val(id);
+	saveShare(); // PF remoteCommand
 }
 
 function shareSaveComplete() {

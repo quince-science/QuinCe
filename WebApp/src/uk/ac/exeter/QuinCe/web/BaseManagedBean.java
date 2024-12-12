@@ -720,4 +720,8 @@ public abstract class BaseManagedBean {
   public boolean getAjaxOK() {
     return ajaxOK;
   }
+
+  public void setAjaxOK(boolean ok) {
+    // Ignore all attempts to set this value
+  }
 }

@@ -326,7 +326,7 @@ public class UserDB {
    * Get a user's details using their database ID.
    *
    * <p>
-   * Returns {@code null} if the email address is not found in the database.
+   * Returns {@code null} if the ID is not found in the database.
    * </p>
    *
    * @param dataSource

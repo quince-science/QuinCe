@@ -75,6 +75,8 @@ public class InstrumentListBean extends BaseManagedBean {
 
   private String shareEmail = null;
 
+  private long shareId = Long.MIN_VALUE;
+
   public String start() {
     try {
       userNames = UserDB.getUserNames(getDataSource());
@@ -250,39 +252,49 @@ public class InstrumentListBean extends BaseManagedBean {
     ajaxOK = true;
 
     try {
-      if (StringUtils.isEmpty(shareEmail)) {
-        setMessage("shareForm:shareEmail", "An email address is required");
-        ajaxOK = false;
-      } else {
-
-        User shareUser = UserDB.getUser(getDataSource(), shareEmail);
-
-        if (null == shareUser) {
-          setMessage("shareForm:shareEmail",
-            "There is no user with the specified email address");
+      switch (shareAction) {
+      case SHARE_ADD: {
+        if (StringUtils.isEmpty(shareEmail)) {
+          setMessage("shareForm:shareEmail", "An email address is required");
           ajaxOK = false;
         } else {
-          switch (shareAction) {
-          case SHARE_ADD: {
+
+          User shareUser = UserDB.getUser(getDataSource(), shareEmail);
+
+          if (null == shareUser) {
+            setMessage("shareForm:shareEmail",
+              "There is no user with the specified email address");
+            ajaxOK = false;
+          } else {
             InstrumentDB.addUserShare(getDataSource(),
               getInstrument(ownershipInstrId), shareUser);
             break;
           }
-          case SHARE_REMOVE: {
-            System.out.println("Remove share");
-            break;
-          }
-          default: {
-            throw new IllegalArgumentException("Invalid share action");
-          }
-          }
         }
+      }
+      case SHARE_REMOVE: {
+        User shareUser = UserDB.getUser(getDataSource(), shareId);
+        InstrumentDB.removeUserShare(getDataSource(),
+          getInstrument(ownershipInstrId), shareUser);
+        break;
+      }
+      default: {
+        throw new IllegalArgumentException("Invalid share action");
+      }
       }
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
       setMessage("shareForm:shareEmail", "Error adding share");
       ajaxOK = false;
     }
+  }
+
+  public void setShareId(long id) {
+    this.shareId = id;
+  }
+
+  public long getShareId() {
+    return shareId;
   }
 
   @Override
