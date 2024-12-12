@@ -261,8 +261,7 @@ public class InstrumentDB {
     + " ORDER BY u.surname, u.firstname";
 
   private static final String ADD_SHARE_STATEMENT = "INSERT INTO"
-    + " shared_instruments (instrument_id, shared_with)"
-    + " VALUES (?, ?)";
+    + " shared_instruments (instrument_id, shared_with)" + " VALUES (?, ?)";
 
   /**
    * Store a new instrument in the database
@@ -855,7 +854,7 @@ public class InstrumentDB {
       instrStmt.setLong(1, instrumentId);
       stmts.add(instrStmt);
 
-      ResultSet shareRecords = instrStmt.executeQuery();
+      ResultSet shareRecords = sharedStmt.executeQuery();
       while (shareRecords.next()) {
         sharedUsers.add(shareRecords.getLong(1));
       }
