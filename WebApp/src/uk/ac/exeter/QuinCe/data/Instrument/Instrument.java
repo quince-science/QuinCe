@@ -201,6 +201,28 @@ public class Instrument {
   }
 
   /**
+   * Copy constructor. Performs a shallow copy on members.
+   *
+   * @param source
+   *          The source object.
+   */
+  public Instrument(Instrument source) {
+    this.owner = source.owner;
+    this.id = source.id;
+    this.name = source.name;
+    this.sharedWith = source.sharedWith;
+    this.fileDefinitions = source.fileDefinitions;
+    this.variables = source.variables;
+    this.variableProperties = source.variableProperties;
+    this.sensorAssignments = source.sensorAssignments;
+    this.platformName = source.platformName;
+    this.platformCode = source.platformCode;
+    this.nrt = source.nrt;
+    this.lastNrtExport = source.lastNrtExport;
+    this.properties = source.properties;
+  }
+
+  /**
    * Create a new instrument with defined properties.
    *
    * @param owner

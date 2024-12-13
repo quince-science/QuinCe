@@ -230,10 +230,16 @@
               <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
                 styleClass="actionIconLarge"/>
             </ui:fragment>
-            <p:commandLink onclick="showOwnershipDialog(#{instrument.id})">
-              <h:graphicImage value="/resources/image/share.svg" alt="Ownership and Sharing"
-                title="Ownership and Sharing" styleClass="actionIconLarge"/>
-            </p:commandLink>
+            <ui:fragment rendered="#{instrument.canShare}">
+              <p:commandLink onclick="showOwnershipDialog(#{instrument.id})">
+                <h:graphicImage value="/resources/image/share.svg" alt="Ownership and Sharing"
+                  title="Ownership and Sharing" styleClass="actionIconLarge"/>
+              </p:commandLink>
+            </ui:fragment>
+            <ui:fragment rendered="#{not instrument.canShare}">
+              <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                styleClass="actionIconLarge"/>
+            </ui:fragment>
             <ui:fragment rendered="#{not instrumentListBean.hasDatasets(instrument.id)}">
               <p:commandLink onclick="confirmInstrumentDelete(#{instrument.id}, '#{instrument.displayName}')">
                 <h:graphicImage value="/resources/image/trash.svg" alt="Delete instrument"

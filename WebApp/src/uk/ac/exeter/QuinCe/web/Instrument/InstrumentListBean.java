@@ -53,7 +53,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   private Map<Long, Integer> datasetCounts;
 
-  private List<Instrument> filteredInstruments;
+  private List<BeanInstrument> filteredInstruments;
 
   private LinkedHashMap<Long, String> userNames;
 
@@ -69,7 +69,7 @@ public class InstrumentListBean extends BaseManagedBean {
   /**
    * The ID of the instrument chosen from the instrument list
    */
-  private Instrument chosenInstrument = null;
+  private BeanInstrument chosenInstrument = null;
 
   private int shareAction = Integer.MIN_VALUE;
 
@@ -94,15 +94,16 @@ public class InstrumentListBean extends BaseManagedBean {
    *
    * @return The instruments owned by the current user
    */
-  public List<Instrument> getInstrumentList() {
-    return getInstruments();
+  public List<BeanInstrument> getInstrumentList() {
+    return getInstruments().stream().map(i -> new BeanInstrument(i, getUser()))
+      .toList();
   }
 
-  public List<Instrument> getFilteredInstruments() {
+  public List<BeanInstrument> getFilteredInstruments() {
     return filteredInstruments;
   }
 
-  public void setFilteredInstruments(List<Instrument> filteredInstruments) {
+  public void setFilteredInstruments(List<BeanInstrument> filteredInstruments) {
     this.filteredInstruments = filteredInstruments;
   }
 
@@ -157,7 +158,7 @@ public class InstrumentListBean extends BaseManagedBean {
    *          The instrument ID
    */
   public void setChosenInstrument(long chosenInstrument) {
-    for (Instrument instrument : getInstruments()) {
+    for (BeanInstrument instrument : getInstrumentList()) {
       if (instrument.getId() == chosenInstrument) {
         this.chosenInstrument = instrument;
         setCurrentInstrumentId(instrument.getId());
