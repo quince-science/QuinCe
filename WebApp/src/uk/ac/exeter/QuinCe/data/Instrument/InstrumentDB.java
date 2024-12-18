@@ -266,7 +266,7 @@ public class InstrumentDB {
   private static final String REMOVE_SHARE_STATEMENT = "DELETE FROM"
     + " shared_instruments WHERE instrument_id = ? AND shared_with = ?";
 
-  private static final String SET_OWNER_STATEMENT = "UPDATE INSTRUMENT"
+  private static final String SET_OWNER_STATEMENT = "UPDATE instrument"
     + " set owner = ? WHERE id = ?";
 
   /**
