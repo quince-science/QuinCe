@@ -1131,7 +1131,7 @@ public class JobManager {
         // Wait until the job's status is updated in the database
         boolean jobRunning = false;
         while (!jobRunning) {
-          if (!getJobStatus(resourceManager.getDBDataSource(), nextJob.getID())
+          if (!getJobStatus(resourceManager.getDBDataSource(), nextJob.getId())
             .equals(Job.WAITING_STATUS)) {
             jobRunning = true;
           } else {
