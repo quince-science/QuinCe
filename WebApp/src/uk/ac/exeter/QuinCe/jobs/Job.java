@@ -313,7 +313,7 @@ public abstract class Job {
    *
    * @return The job ID.
    */
-  public long getID() {
+  public long getId() {
     return id;
   }
 

@@ -79,7 +79,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
    */
   public void run() {
     try {
-      setName(String.valueOf(job.getID()) + '_' + System.currentTimeMillis());
+      setName(String.valueOf(job.getId()) + '_' + System.currentTimeMillis());
 
       while (null != job) {
 
@@ -132,7 +132,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
           if (null != cause) {
             if (StringUtils.stackTraceToString(cause).contains("Deadlock")) {
               JobManager.setStatus(
-                ResourceManager.getInstance().getDBDataSource(), job.getID(),
+                ResourceManager.getInstance().getDBDataSource(), job.getId(),
                 Job.WAITING_STATUS);
             }
           }
