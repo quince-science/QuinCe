@@ -302,7 +302,7 @@ public class MeasurementValue implements PlotPageTableValue {
           flag = valueFlag;
           qcMessage.clear();
 
-          if (value.getUserQCMessage().trim().length() > 0) {
+          if (value.getDisplayQCMessage(allSensorValues).trim().length() > 0) {
             qcMessage.add(value.getDisplayQCMessage(allSensorValues));
           }
         }
