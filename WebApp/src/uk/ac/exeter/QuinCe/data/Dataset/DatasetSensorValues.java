@@ -905,8 +905,12 @@ public class DatasetSensorValues {
       ? SensorType.LONGITUDE_SENSOR_TYPE
       : SensorType.LATITUDE_SENSOR_TYPE;
 
-    return new MeasurementValue(sensorType,
-      getPositionValuesList(columnId).getValue(time, true));
+    SensorValuesList sensorValues = getPositionValuesList(columnId);
+    SensorValuesListValue positionValue = null == sensorValues ? null
+      : sensorValues.getValue(time, true);
+
+    return null == positionValue ? null
+      : new MeasurementValue(sensorType, positionValue);
   }
 
   /**
@@ -920,8 +924,14 @@ public class DatasetSensorValues {
    */
   public Collection<SensorValue> getAllPositionSensorValues() {
     Collection<SensorValue> result = new HashSet<SensorValue>();
-    result.addAll(longitudes.getRawValues());
-    result.addAll(latitudes.getRawValues());
+    if (null != longitudes) {
+      result.addAll(longitudes.getRawValues());
+    }
+
+    if (null != latitudes) {
+      result.addAll(latitudes.getRawValues());
+    }
+
     return result;
   }
 
