@@ -176,8 +176,13 @@ public class DefaultMeasurementValueCalculator
         .equals(SensorType.LONGITUDE_SENSOR_TYPE) ? SensorType.LONGITUDE_ID
           : SensorType.LATITUDE_ID;
 
-      result = new MeasurementValue(requiredSensorType,
-        allSensorValues.getColumnValues(columnId).getValue(positionTime, true));
+      SensorValuesList sensorValues = allSensorValues.getColumnValues(columnId);
+
+      SensorValuesListValue sensorValue = null == sensorValues ? null
+        : sensorValues.getValue(positionTime, true);
+
+      result = null == sensorValue ? null
+        : new MeasurementValue(requiredSensorType, sensorValue);
     } catch (SensorGroupsException e) {
       throw new MeasurementValueCalculatorException(
         "Unable to apply sensor offsets", e);

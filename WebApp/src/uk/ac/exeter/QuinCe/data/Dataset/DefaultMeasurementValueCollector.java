@@ -41,9 +41,13 @@ public class DefaultMeasurementValueCollector
       for (SensorType sensorType : variable
         .getAllSensorTypes(!dataSet.fixedPosition())) {
 
-        result.add(MeasurementValueCalculatorFactory.calculateMeasurementValue(
-          instrument, dataSet, referenceValue, variable, sensorType,
-          allMeasurements, allSensorValues, conn));
+        MeasurementValue measurementValue = MeasurementValueCalculatorFactory
+          .calculateMeasurementValue(instrument, dataSet, referenceValue,
+            variable, sensorType, allMeasurements, allSensorValues, conn);
+
+        if (null != measurementValue) {
+          result.add(measurementValue);
+        }
       }
 
       return result;
