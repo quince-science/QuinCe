@@ -157,13 +157,13 @@ cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_TCarrier'
 category_code = '31'
 call_sign = '9HA3034'
 creation_date = '2023-12-20T15:58:18'
-author_list = 'Omar, Abdirahman; Skjelvan, Ingunn; de Lange, Tor'
+author_list = 'Omar, Abdirahman; de Lange, Tor'
 affiliation = 'NORCE Norwegian Research Centre AS'
 NRT = 'True'
 
   [NO-SOOP-Sea-Cargo__Express.export]
-  NRT = []
-  L2 = []
+  NRT = ['ICOS']
+  L2 = ['ICOS']
 
 [UK-FOS-PAP]
 name = 'Porcupine Abyssal Plain'
@@ -177,7 +177,7 @@ affiliation = 'National Oceanography Centre, UK'
 NRT = 'True'
 
   [UK-FOS-PAP.export]
-  NRT = ['ICOS']
+  NRT = []
   L2 = ['ICOS']
 
 [DE-SOOP-Finnmaid]
@@ -253,9 +253,10 @@ category_code = '41'
 call_sign = ''
 creation_date = '2024-02-20T16:04:00Z'
 author_list = 'Cantoni, Carolina;Castelli, Giuliano;Luchetta,Anna'
-affiliation = ' 	Istituto di Scienze Marine Trieste'
+affiliation = 'Istituto di Scienze Marine Trieste'
 NRT = 'False'
 
   [IT-FOS-PALOMA.export]
   NRT = []
   L2 = ['ICOS']
+
