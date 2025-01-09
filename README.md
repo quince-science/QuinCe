@@ -2,6 +2,10 @@
 ![Uptime](https://img.shields.io/uptimerobot/ratio/m778932366-17f73ee77c432e68e22f5195)
 
 [![Version](https://img.shields.io/github/v/release/quince-science/QuinCe)](https://quince.science)
+![GitHub Release Date](https://img.shields.io/github/release-date/quince-science/QUinCe?display_date=published_at)
+
+![GitHub last commit](https://img.shields.io/github/last-commit/quince-science/QuinCe)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/quince-science/QuinCe/latest)
 ![Activity](https://img.shields.io/github/commit-activity/m/quince-science/QuinCe)
 
 [![build](https://github.com/quince-science/QuinCe/workflows/build/badge.svg)](https://github.com/quince-science/QuinCe/actions)
