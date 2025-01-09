@@ -725,7 +725,7 @@ public class ExportBean extends BaseManagedBean {
     if (instrument.hasInternalCalibrations()) {
       CalibrationSet externalStandards = ExternalStandardDB.getInstance()
         .getCalibrationSet(conn, dataset);
-      if (!sensorCalibrations.isEmpty()) {
+      if (!externalStandards.isEmpty()) {
         calibrations.add("externalStandards",
           externalStandards.toJson(new DefaultTargetNameMapper(), false));
       }
