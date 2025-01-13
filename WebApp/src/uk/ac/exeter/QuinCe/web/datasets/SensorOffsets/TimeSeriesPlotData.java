@@ -122,11 +122,13 @@ public class TimeSeriesPlotData {
   }
 
   protected Double getFirstSeriesValue(LocalDateTime time) {
-    return data.get(time).getFirst();
+    Tuple tuple = data.get(time);
+    return null == tuple ? Double.NaN : tuple.getFirst();
   }
 
   protected Double getSecondSeriesValue(LocalDateTime time) {
-    return data.get(time).getSecond();
+    Tuple tuple = data.get(time);
+    return null == tuple ? Double.NaN : tuple.getSecond();
   }
 
   /**
