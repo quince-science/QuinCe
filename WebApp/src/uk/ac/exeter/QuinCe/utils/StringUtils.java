@@ -721,8 +721,8 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     return result;
   }
 
-  public static String combine(String string1, String string2,
-    String combiner) {
+  public static String combine(String string1, String string2, String combiner,
+    boolean unique) {
     String result = "";
 
     if (null != string1 && !isEmpty(string1.trim())) {
@@ -730,11 +730,13 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     if (null != string2 && !isEmpty(string2.trim())) {
-      if (null != result && !isEmpty(result)) {
-        result += combiner;
-        result += string2.trim();
-      } else {
-        result = string2.trim();
+      if (!unique || !string2.equals(string1)) {
+        if (null != result && !isEmpty(result)) {
+          result += combiner;
+          result += string2.trim();
+        } else {
+          result = string2.trim();
+        }
       }
     }
 
