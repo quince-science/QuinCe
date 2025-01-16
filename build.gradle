@@ -159,8 +159,12 @@ tasks.withType(JavaCompile) {
 
 test {
   useJUnitPlatform()
+}
+
+task testSmall(type: Test) {
+  useJUnitPlatform()
   filter {
-    includeTestsMatching "uk.ac.exeter.QuinCe.web.Instrument.*BeanMultipleEditTest"
+    excludeTestsMatching "uk.ac.exeter.QuinCe.web.Instrument.*BeanMultipleEditTest"
   }
 }
 

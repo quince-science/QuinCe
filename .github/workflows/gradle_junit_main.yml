@@ -13,8 +13,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 17
-    - name: Run JUnit tests
-      run: ./gradlew test jacocoTestReport 
+    - name: Run small JUnit tests
+      run: ./gradlew testSmall jacocoTestReport 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
