@@ -132,6 +132,21 @@ sourceSets {
       srcDirs = ['WebApp/junit']
     }
   }
+  sensorCalibrationsBeanEditTest {
+    java {
+      srcDirs = ['WebApp/junit']
+    }
+  }
+  calculationCoefficientsBeanEditTest {
+    java {
+      srcDirs = ['WebApp/junit']
+    }
+  }
+  externalStandardsBeanEditTest {
+    java {
+      srcDirs = ['WebApp/junit']
+    }
+  }
 }
 
 compileJava {
@@ -144,6 +159,30 @@ tasks.withType(JavaCompile) {
 
 test {
   useJUnitPlatform()
+  filter {
+    includeTestsMatching "uk.ac.exeter.QuinCe.web.Instrument.*BeanMultipleEditTest"
+  }
+}
+
+task sensorCalibrationsBeanEditTest(type: Test) {
+  useJUnitPlatform()
+  filter {
+    includeTestsMatching "uk.ac.exeter.QuinCe.web.Instrument.SensorCalibrationsBeanMultipleEditTest"
+  }
+}
+
+task calculationCoefficientsBeanEditTest(type: Test) {
+  useJUnitPlatform()
+  filter {
+    includeTestsMatching "uk.ac.exeter.QuinCe.web.Instrument.CalculationCoefficientsBeanMultipleEditTest"
+  }
+}
+
+task externalStandardsBeanEditTest(type: Test) {
+  useJUnitPlatform()
+  filter {
+    includeTestsMatching "uk.ac.exeter.QuinCe.web.Instrument.ExternalStandardsBeanMultipleEditTest"
+  }
 }
 
 eclipse {
