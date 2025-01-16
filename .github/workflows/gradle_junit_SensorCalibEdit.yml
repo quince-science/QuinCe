@@ -13,7 +13,7 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 17
-    - name: Run JUnit tests
+    - name: Run SensorCalibrationsBean multiple edit tests
       run: ./gradlew sensorCalibrationsBeanEditTest jacocoTestReport
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
