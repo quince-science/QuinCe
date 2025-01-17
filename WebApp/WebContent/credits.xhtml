@@ -10,127 +10,183 @@
     <c:set var="mainMenuActiveIndex" value="6" scope="request"/>
   </ui:define>
   <ui:define name="content">
-    <div class="pageTitle">Credits</div>
-    <div style="float: left; width: 50%">
-      <div class="sectionTitle">People</div>
-      <b>Developers</b>
-      <ul>
-        <li>Steve Jones, ICOS OTC/University of Bergen, Norway</li>
-        <li>Maren Kjos Karlsen, Univerisity of Bergen, Norway</li>
-        <li>Jonas Henriksen, Univerisity of Bergen, Norway</li>
-        <li>Jean Negrel, NORCE, Norway</li>
-        <li>Giuliano Castelli, CNR, Italy</li>
-      </ul>
-      <b>Scientific Advice</b>
-      <ul>
-        <li>Meike Becker, University of Bergen, Norway</li>
-        <li>Thanos Gkritzalis, Flanders Marine Institute, Belgium</li>
-        <li>Siv Lauvset, NORCE, Bergen, Norway</li>
-        <li>Craig Neill, CSIRO, Australia</li>
-        <li>Sara Pensieri, CNR, Italy</li>
-        <li>Denis Pierrot, University of Miami, Florida, US</li>
-        <li>Tobias Steinhoff, GEOMAR, Germany</li>
-        <li>Adrienne Sutton, NOAA Pacific Marine Environmental Laboratory, Washington, US</li>
-      </ul>
-      <b>Sensors</b>
-      <ul>
-        <li>Mark Barry, Pro-Oceanus</li>
-        <li>Nadja Kinsky, 4H-JENA</li>
-      </ul>
-      <b>Beta Testers</b>
-      <ul>
-        <li>Meike Becker, University of Bergen, Norway</li>
-        <li>Thanos Gkritzalis, Flanders Marine Institute, Belgium</li>
-        <li>Michael Glockzin, Leibniz Institute for Baltic Sea Research, Germany</li>
-        <li>Camilla Landa, ICOS OTC/University of Bergen, Norway</li>
-        <li>Denis Pierrot, University of Miami, Florida</li>
-        <li>Tobias Steinhoff, GEOMAR, Germany</li>
-      </ul>
-      <b>DevOps</b>
-      <ul>
-        <li>Steve Jones, ICOS OTC/University of Bergen, Norway</li>
-        <li>André Bjärby, ICOS Carbon Portal/Lund University, Sweden</li>
-      </ul>
-    </div>
-    <div style="float: right; width: 50%">
-      <div class="sectionTitle">Supporting Projects and Institutions</div>
-        <br/>
-        <table>
+    <div class="pageTitle" style="text-align: left; padding-bottom: 15px">Credits</div>
+    <p:tabView>
+      <p:tab title="People">
+        <table style="width: 100%">
           <tr>
-            <td align="center">
-              <p:graphicImage alt="ICOS OTC Logo" value="/resources/image/icos_otc.png" height="60" style="margin-right: 20px;"/>
+            <td class="top">
+              <b>Developers</b>
+              <ul style="white-space: nowrap">
+                <li>Steve Jones, VLIZ, Belgium (formerly ICOS OTC/University of Bergen, Norway)</li>
+                <li>Maren Kjos Karlsen, Univerisity of Bergen, Norway</li>
+                <li>Jonas Henriksen, Univerisity of Bergen, Norway</li>
+                <li>Jean Negrel, NORCE, Norway</li>
+                <li>Giuliano Castelli, CNR, Italy</li>
+              </ul>
             </td>
-            <td>
-              <a href="https://otc.icos-cp.eu/">ICOS Ocean Thematic Center</a>
+            <td class="top">
+	          <b>Scientific Advice</b>
+	            <ul style="white-space: nowrap">
+	              <li>Meike Becker, University of Bergen, Norway</li>
+	              <li>Thanos Gkritzalis, Flanders Marine Institute, Belgium</li>
+	              <li>Siv Lauvset, NORCE, Bergen, Norway</li>
+	              <li>Craig Neill, CSIRO, Australia</li>
+	              <li>Sara Pensieri, CNR, Italy</li>
+	              <li>Denis Pierrot, University of Miami, Florida, US</li>
+	              <li>Tobias Steinhoff, GEOMAR, Germany</li>
+	              <li>Adrienne Sutton, NOAA Pacific Marine Environmental Laboratory, Washington, US</li>
+	            </ul>
             </td>
           </tr>
           <tr>
-            <td align="center">
-            <h:graphicImage alt="University of Bergen Logo" value="/resources/image/uib.png" height="60" style="margin-right: 20px;"/>
+            <td class="top">
+              <b>Beta Testers</b>
+              <ul style="white-space: nowrap">
+                <li>Meike Becker, University of Bergen, Norway</li>
+                <li>Thanos Gkritzalis, Flanders Marine Institute, Belgium</li>
+                <li>Michael Glockzin, Leibniz Institute for Baltic Sea Research, Germany</li>
+                <li>Camilla Landa, ICOS OTC/University of Bergen, Norway</li>
+                <li>Denis Pierrot, University of Miami, Florida</li>
+                <li>Tobias Steinhoff, GEOMAR, Germany</li>
+              </ul>
             </td>
-            <td>
-              <a href="https://www.uib.no/">University of Bergen</a>
-            </td>
-          </tr>
-          <tr>
-            <td align="center">
-              <h:graphicImage alt="ICOS Carbon Portal Logo" value="/resources/image/icos_cp.png" height="60" style="margin-right: 20px;"/>
-            </td>
-            <td>
-              <a href="https://www.icos-cp.eu/">ICOS Carbon Portal</a> (site host)
-            </td>
-          </tr>
-          <tr>
-            <td align="center">
-              <h:graphicImage alt="University of Exeter Logo" value="/resources/image/exeter.jpg" height="60" style="margin-right: 20px;"/>
-            </td>
-            <td>
-              <a href="https://www.exeter.ac.uk">University of Exeter</a>
+            <td class="top">
+              <b>Sensors</b>
+	          <ul style="white-space: nowrap">
+	            <li>Mark Barry, Pro-Oceanus</li>
+	            <li>Nadja Kinsky, 4H-JENA</li>
+	        </ul>
             </td>
           </tr>
         </table>
-      <div class="sectionTitle">Software</div>
+      </p:tab>
+      <p:tab title="Software">
+        <table style="width: 100%">
+          <tr>
+            <td class="top">
+              <b>Libraries and Tools</b>
+              <ul>
+                <li>
+                  Running on <a href="https://tomcat.apache.org/">Apache Tomcat</a>
+                </li>
+                <li>
+                  Plots made using a fork of <a href="http://dygraphs.com/">dygraphs</a>
+                </li>
+                <li>
+                  Timelines made using <a href="http://visjs.org/">vis.js</a>
+                </li>
+                <li>
+                  QC data table made using <a href="https://datatables.net/">DataTables</a>
+                </li>
+                <li>
+                  Maps created using <a href="https://leafletjs.com/">Leaflet</a> with
+                  <a href="https://www.openstreetmap.org">OpenStreetMap</a> tiles.
+                </li>
+                <li>
+                  Page layouts use <a href="https://plugins.jquery.com/splitter/">jQuery Splitter</a>
+                </li>
+              </ul>
+            </td>
+            <td class="top">
+              <b>QuinCe Logo</b>
+              <ul>
+                <li><a href="https://openclipart.org/user-detail/johnny_automatic">johnny_automatic</a> via <a href="https://openclipart.org/detail/26153/quince">openclipart.org</a></li>
+              </ul>
+              <b>Icons via <a href="https://thenounproject.com">The Noun Project</a> from the following creators:</b>
+              <ul>
+                <li><a href="https://thenounproject.com/AlfredoCreates/">AlfredoCreates</a></li>
+                <li><a href="https://thenounproject.com/emmaihall/">Dairy Free Design</a></li>
+                <li><a href="https://thenounproject.com/daniil61/">Daniil Churakov</a></li>
+                <li><a href="https://thenounproject.com/ghufronagustian/">ghufronagustian</a></li>
+                <li><a href="https://thenounproject.com/Icons8/">Icons8</a></li>
+                <li><a href="https://thenounproject.com/icon/cylinder-1514147/">Manish</a></li>
+                <li>miza bin</li>
+                <li><a href="https://thenounproject.com/papergarden1/">papergarden</a></li>
+                <li><a href="https://thenounproject.com/cfpb_minicons/">US Consumer Financial Protection Bureau</a></li>
+                <li><a href="https://thenounproject.com/vectorsmarket/">Vectors Market</a></li>
+              </ul>
+            </td>
+          </tr>
+        </table>
         <ul>
-          <li>
-            QuinCe logo by <a href="https://openclipart.org/user-detail/johnny_automatic">johnny_automatic</a>
-            via <a href="https://openclipart.org/detail/26153/quince">openclipart.org</a>
-          </li>
-          <li>
-            Icons via <a href="https://thenounproject.com">The Noun Project</a> from the following creators:
-
-            <ul>
-              <li><a href="https://thenounproject.com/AlfredoCreates/">AlfredoCreates</a></li>
-              <li><a href="https://thenounproject.com/emmaihall/">Dairy Free Design</a></li>
-              <li><a href="https://thenounproject.com/daniil61/">Daniil Churakov</a></li>
-              <li><a href="https://thenounproject.com/ghufronagustian/">ghufronagustian</a></li>
-              <li><a href="https://thenounproject.com/Icons8/">Icons8</a></li>
-              <li><a href="https://thenounproject.com/icon/cylinder-1514147/">Manish</a></li>
-              <li>miza bin</li>
-              <li><a href="https://thenounproject.com/papergarden1/">papergarden</a></li>
-              <li><a href="https://thenounproject.com/cfpb_minicons/">US Consumer Financial Protection Bureau</a></li>
-              <li><a href="https://thenounproject.com/vectorsmarket/">Vectors Market</a></li>
-            </ul>
-          </li>
-          <li>
-            Running on <a href="https://tomcat.apache.org/">Apache Tomcat</a>
-          </li>
-          <li>
-            Plots made using a fork of <a href="http://dygraphs.com/">dygraphs</a>
-          </li>
-          <li>
-            Timelines made using <a href="http://visjs.org/">vis.js</a>
-          </li>
-          <li>
-            QC data table made using <a href="https://datatables.net/">DataTables</a>
-          </li>
-          <li>
-            Maps created using <a href="https://leafletjs.com/">Leaflet</a> with
-            <a href="https://www.openstreetmap.org">OpenStreetMap</a> tiles.
-          </li>
-          <li>
-            Page layouts use <a href="https://plugins.jquery.com/splitter/">jQuery Splitter</a>
-          </li>
         </ul>
-    </div>
+      </p:tab>
+      <p:tab title="Supporting Instituitions and Projects">
+        <table style="width: 100%">
+          <tr>
+            <td class="top">
+              <b>Institutions</b>
+                <table>
+                  <tr>
+                    <td align="center">
+                      <h:graphicImage alt="University of Exeter Logo" value="/resources/image/exeter.jpg" height="60" style="margin-right: 20px;"/>
+                    </td>
+                    <td>
+                      <a href="https://www.exeter.ac.uk">University of Exeter</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center">
+                      <h:graphicImage alt="University of Bergen Logo" value="/resources/image/uib.png" height="60" style="margin-right: 20px;"/>
+                    </td>
+                    <td>
+                       <a href="https://www.uib.no/">University of Bergen</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center">
+                      <h:graphicImage alt="NORCE Logo" value="/resources/image/norce.png" height="60" style="margin-right: 20px;"/>
+                    </td>
+                    <td>
+                       <a href="https://www.norceresearch.no/">NORCE</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center">
+                      <h:graphicImage alt="VLIZ Logo" value="/resources/image/vliz.png" height="60" style="margin-right: 20px;"/>
+                    </td>
+                    <td>
+                       <a href="https://www.vliz.be/">VLIZ</a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            <td class="top">
+            <td class="top">
+              <b>Projects</b>
+                <table>
+                  <tr>
+                    <td align="center">
+                      <p:graphicImage alt="ICOS OTC Logo" value="/resources/image/icos_otc.png" height="60" style="margin-right: 20px;"/>
+                    </td>
+                    <td>
+                      <a href="https://otc.icos-cp.eu/">ICOS Ocean Thematic Center</a>
+                    </td>
+                  </tr>
+<!--
+                  <tr>
+                    <td align="center">
+                       <h:graphicImage alt="ICOS Carbon Portal Logo" value="/resources/image/icos_cp.png" height="60" style="margin-right: 20px;"/>
+                    </td>
+                    <td>
+                      <a href="https://www.icos-cp.eu/">ICOS Carbon Portal</a> (site host)
+                    </td>
+                  </tr> 
+-->
+                </table>
+              </td>
+            </td>
+          </tr>
+        </table>
+      </p:tab>
+      <p:tab title="This Instance">
+        <b>DevOps</b>
+        <ul>
+          <li>Steve Jones, ICOS OTC/University of Bergen, Norway</li>
+          <li>André Bjärby, ICOS Carbon Portal/Lund University, Sweden</li>
+        </ul>
+      </p:tab>      
+    </p:tabView>
   </ui:define>
 </ui:composition>

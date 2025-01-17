@@ -832,6 +832,10 @@ table.dataTable > tbody > tr > .selected {
   padding: 0px !important;
 }
 
+td.top {
+  vertical-align: top;
+}
+
 /*
   Fix for columns in scrollable dataTables
   For some reason the table header is repeated, so we
