@@ -260,3 +260,18 @@ NRT = 'False'
   NRT = []
   L2 = ['ICOS']
 
+[DE-SOOP-Polarstern]
+platform_code = "06AQ"
+name = 'Polarstern'
+submitter_id = 'OTC'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_PS-VOS'
+category_code = '31'
+call_sign = 'DBLK'
+creation_date = '2025-01-17T00:00:00Z'
+author_list = 'Hoppema, Mario; van Huevan, Steven'
+affiliation = 'Alfred-Wegener-Institut Helmholtz-Zentrum für Polar- und Meeresforschung, Bremerhaven'
+NRT = 'False'
+
+  [DE-SOOP-Polarstern.export]
+  NRT = ['ICOS']
+  L2 = ['ICOS']
