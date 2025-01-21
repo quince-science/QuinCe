@@ -168,11 +168,39 @@ task testSmall(type: Test) {
   }
 }
 
+task testSmallReport(type: JacocoReport) {
+  dependsOn testSmall
+
+  reports {
+    xml.required = true
+    xml.destination = file("${buildDir}/reports/jacoco/report.xml")
+    csv.required = false
+    html.required = false
+  }
+
+  sourceSets sourceSets.main
+  executionData testSmall
+}
+
 task sensorCalibrationsBeanEditTest(type: Test) {
   useJUnitPlatform()
   filter {
     includeTestsMatching "uk.ac.exeter.QuinCe.web.Instrument.SensorCalibrationsBeanMultipleEditTest"
   }
+}
+
+task sensorCalibrationsBeanEditTestReport(type: JacocoReport) {
+  dependsOn sensorCalibrationsBeanEditTest
+
+  reports {
+    xml.required = true
+    xml.destination = file("${buildDir}/reports/jacoco/report.xml")
+    csv.required = false
+    html.required = false
+  }
+
+  sourceSets sourceSets.main
+  executionData sensorCalibrationsBeanEditTest
 }
 
 task calculationCoefficientsBeanEditTest(type: Test) {
@@ -182,12 +210,41 @@ task calculationCoefficientsBeanEditTest(type: Test) {
   }
 }
 
+task calculationCoefficientsBeanEditTestReport(type: JacocoReport) {
+  dependsOn calculationCoefficientsBeanEditTest
+
+  reports {
+    xml.required = true
+    xml.destination = file("${buildDir}/reports/jacoco/report.xml")
+    csv.required = false
+    html.required = false
+  }
+
+  sourceSets sourceSets.main
+  executionData calculationCoefficientsBeanEditTest
+}
+
 task externalStandardsBeanEditTest(type: Test) {
   useJUnitPlatform()
   filter {
     includeTestsMatching "uk.ac.exeter.QuinCe.web.Instrument.ExternalStandardsBeanMultipleEditTest"
   }
 }
+
+task externalStandardsBeanEditTestReport(type: JacocoReport) {
+  dependsOn externalStandardsBeanEditTest
+
+  reports {
+    xml.required = true
+    xml.destination = file("${buildDir}/reports/jacoco/report.xml")
+    csv.required = false
+    html.required = false
+  }
+
+  sourceSets sourceSets.main
+  executionData externalStandardsBeanEditTest
+}
+
 
 eclipse {
   wtp {
