@@ -33,6 +33,17 @@ apply plugin: 'org.gretty'
 apply plugin: 'eclipse-wtp'
 apply plugin: 'jacoco'
 
+eclipse {
+  wtp {
+    facet {
+      facet name: "jst.web", version: "2.5"       // Dynamic Web Application
+      facet name: "java", version: "17"          // Java version
+      facet name: "wst.jsdt.web", version: "1.0"  // JavaScript
+      facet name: "jst.jsf", version: "2.2"       // Java Server Faces
+    }
+  }
+}
+
 war {
   webAppDirName = 'WebApp/WebContent'
 }
@@ -95,24 +106,22 @@ dependencies {
   gretty 'org.apache.tomcat:tomcat:8.0.1'
 
   // Use JUnit test framework
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-  testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0'
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
-  testImplementation 'com.h2database:h2:1.4.197'
-  testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:7.0.0'
-  testImplementation 'org.mockito:mockito-core:5.13.0'
+  implementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+  implementation 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+  implementation 'org.junit.jupiter:junit-jupiter-params:5.9.3'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  implementation 'com.h2database:h2:1.4.197'
+  implementation 'org.flywaydb.flyway-test-extensions:flyway-test:7.0.0'
+  implementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:7.0.0'
+  implementation 'org.mockito:mockito-core:5.13.0'
 
   // Flyway library for Java-based migrations
-  testImplementation 'org.flywaydb:flyway-core:7.15.0'
+  implementation 'org.flywaydb:flyway-core:7.15.0'
 
   // JUnit resources
   testImplementation files('WebApp/junit')
 
-  // Fix for Eclipse 2023-09
-  // Use JUnit Jupiter for testing.
-  testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-  
   // JavaMelody monitoring
   // Can't use v2 until we use Tomcat 10
   implementation 'net.bull.javamelody:javamelody-core:1.95.0'
@@ -243,18 +252,6 @@ task externalStandardsBeanEditTestReport(type: JacocoReport) {
 
   sourceSets sourceSets.main
   executionData externalStandardsBeanEditTest
-}
-
-
-eclipse {
-  wtp {
-    facet {
-      facet name: "jst.web", version: "2.5"       // Dynamic Web Application
-      facet name: "java", version: "17"          // Java version
-      facet name: "wst.jsdt.web", version: "1.0"  // JavaScript
-      facet name: "jst.jsf", version: "2.2"       // Java Server Faces
-    }
-  }
 }
 
 def rootPath = file('.').absolutePath
