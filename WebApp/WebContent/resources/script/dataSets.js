@@ -16,6 +16,8 @@ TIMELINE_OPTIONS = {
   }
 };
 
+window['runValidation'] = true;
+
 function drawTimeline() {
   // Convert dates to date objects
   dataSetJSON.map(function (row) {
@@ -98,39 +100,46 @@ function processNewDataSet(eventType) {
   // Remove the existing entry
   timeline.itemsData.remove(newDataSetItem);
 
-  if (null == PF('startDate').getDate()) {
-    newDataSetItem['start'] = null;
-  } else {
-    newDataSetItem['start'] = getDateField('startDate');
+  if (eventType == 'start') {
+    if (null == PF('startDate').getDate()) {
+      newDataSetItem['start'] = null;
+    } else {
+      newDataSetItem['start'] = getDateField('startDate');
+      var s = PF('pDataSetName').jq;
+      s.val(s.data('platform-code') + makeUTCyyyymmdd(newDataSetItem['start']));
+      newDataSetItem['content'] = s.val();
+      s.css('animationName', 'rowFlash').css('animationDuration', '1s');
+    }
   }
 
+  // Always process the end date
+  // A timeline click triggers a Start event, but the End should also be processed
   if (null == PF('endDate').getDate()) {
     newDataSetItem['end'] = null;
   } else {
     newDataSetItem['end'] = getDateField('endDate');
   }
 
-  let validData = validateNewDataSet();
-  if (eventType == 'start' || validData) {
-    newDataSetItem['className'] = 'goodNewDataSet';
-    $('#errorList').hide();
-    PF('pAddButton').enable();
-  } else {
-    newDataSetItem['className'] = 'badNewDataSet';
-  }
-  if (eventType == 'start') {
-    var s = PF('pDataSetName').jq;
-    s.val(s.data('platform-code') + makeUTCyyyymmdd(newDataSetItem['start']));
-    s.css('animationName', 'rowFlash').css('animationDuration', '1s');
-  }
-  newDataSetItem['content'] = PF('pDataSetName').jq.val().trim();
-  newDataSetItem['title'] = PF('pDataSetName').jq.val().trim();
-  if (newDataSetItem['start'] && newDataSetItem['end']
-      && newDataSetItem['end'] > newDataSetItem['start']) {
-    timeline.itemsData.add(newDataSetItem);
-  }
-  if (eventType == 'submit' && validData) {
-    addDataSet();
+
+  if (window['runValidation']) {
+    let validData = validateNewDataSet();
+    if (validData) {
+      newDataSetItem['className'] = 'goodNewDataSet';
+      $('#errorList').hide();
+      PF('pAddButton').enable();
+    } else {
+      newDataSetItem['className'] = 'badNewDataSet';
+    }
+
+    newDataSetItem['content'] = PF('pDataSetName').jq.val().trim();
+    newDataSetItem['title'] = PF('pDataSetName').jq.val().trim();
+    if (newDataSetItem['start'] && newDataSetItem['end']
+        && newDataSetItem['end'] > newDataSetItem['start']) {
+      timeline.itemsData.add(newDataSetItem);
+    }
+    if (eventType == 'submit' && validData) {
+      addDataSet();
+    }
   }
 }
 
@@ -348,11 +357,14 @@ function setRangeFromClick(date, datasets) {
     max = max_file_date
   }
   if (!inside_existing) {
+  window['runValidation'] = false;
     setDateField('startDate', min);
     setDateField('endDate', max);
+  window['runValidation'] = true;
+  processNewDataSet('start');
   }
   else {
-  PF('invalidDatasetDlg').show();
+    PF('invalidDatasetDlg').show();
   }
 }
 
