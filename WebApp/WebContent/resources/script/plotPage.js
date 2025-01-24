@@ -529,7 +529,7 @@ function getYRange(index) {
     });
 
     if (null != referenceValues) {
-      for (refEntry in referenceValues) {
+      for (const refEntry of referenceValues) {
         if (refEntry.value > max) {
           max = refEntry.value;
         }
