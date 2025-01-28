@@ -84,3 +84,7 @@ external_scripts/other/file_combiner/config.toml
 external_scripts/other/file_combiner/*json
 external_scripts/other/file_splitter/config.toml
 external_scripts/other/file_splitter/*json
+
+# Rendered documentation
+Documentation/Design/**/*.html
+
