@@ -1,0 +1,33 @@
+erDiagram
+  instrument ||..|{ instrument_variables : ""
+  instrument_variables }|..|| variables : ""
+  instrument ||..|{ file_definition : ""
+
+  variables ||..|{ variable_sensors : ""
+  variable_sensors }|..|| sensor_types : ""
+
+  user ||..|{ instrument : ""
+  user }|..|{ shared_instruments : ""
+  shared_instruments }|..|{ instrument : ""
+
+  instrument ||..|{ calibration : ""
+
+  file_definition }|..|| data_file : ""
+  file_definition ||..|{ run_type : ""
+  file_definition ||..|{ file_column : ""
+
+  file_column }|..|| sensor_types : ""
+
+  dataset }|..|| instrument : ""
+  dataset ||..|{ measurements : ""
+  dataset ||..|{ sensor_values : ""
+
+  sensor_values ||..|| file_column : ""
+
+  measurements }|..|{ sensor_values : "measurements.measurement_values"
+  measurements ||..|{ measurement_run_types : ""
+
+  measurements ||..|{ data_reduction : ""
+
+  user ||..|{ job : ""
+  job ||..|| dataset : "job.properties"
