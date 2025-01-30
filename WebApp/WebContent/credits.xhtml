@@ -154,8 +154,7 @@
                   </tr>
                 </table>
               </td>
-            <td class="top">
-            <td class="top">
+              <td class="top">
                 <b>Projects</b>
                 <br/>
                 <br/>
@@ -176,24 +175,18 @@
                       <a href="https://otc.icos-cp.eu/">ICOS Ocean Thematic Center</a>
                     </td>
                   </tr>
-<!--
-                  <tr>
-                    <td align="center">
-                       <h:graphicImage alt="ICOS Carbon Portal Logo" value="/resources/image/icos_cp.png" height="60" style="margin-right: 20px;"/>
-                    </td>
-                    <td>
-                      <a href="https://www.icos-cp.eu/">ICOS Carbon Portal</a> (site host)
-                    </td>
-                  </tr> 
--->
                 </table>
               </td>
-            </td>
           </tr>
         </table>
       </p:tab>
       <p:tab title="This Instance">
-        <b>DevOps</b>
+        <b>Instance Host</b>
+        <br/>
+        <h:outputText value="#{creditsBean.instanceHost}"/>
+        <br/>
+        <br/>
+		<b>Instance Credits</b>
         <ul>
           <ui:repeat value="#{creditsBean.instanceCredits}" var="credit">
             <li>
