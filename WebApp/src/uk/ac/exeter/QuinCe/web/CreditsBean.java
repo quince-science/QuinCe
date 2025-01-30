@@ -21,4 +21,9 @@ public class CreditsBean extends BaseManagedBean {
       ";");
   }
 
+  public String getInstanceHost() {
+    return ResourceManager.getInstance().getConfig()
+      .getProperty("instance_host");
+  }
+
 }
