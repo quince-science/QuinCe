@@ -40,6 +40,9 @@
 %email_fromname%=QuinCe
 %email_fromaddress%=quince@uib.no
 
+# Credits information
+%instance_credits%=
+
 ###########################
 # Prod server properties  #
 ###########################
