@@ -195,8 +195,11 @@
       <p:tab title="This Instance">
         <b>DevOps</b>
         <ul>
-          <li>Steve Jones, ICOS OTC/University of Bergen, Norway</li>
-          <li>André Bjärby, ICOS Carbon Portal/Lund University, Sweden</li>
+          <ui:repeat value="#{creditsBean.instanceCredits}" var="credit">
+            <li>
+              <h:outputText value="#{credit}" />
+            </li>
+          </ui:repeat>
         </ul>
       </p:tab>      
     </p:tabView>
