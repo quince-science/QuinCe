@@ -1,9 +1,10 @@
 package uk.ac.exeter.QuinCe.web.system;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -215,7 +216,8 @@ public class ResourceManager implements ServletContextListener {
   protected Properties loadConfiguration(String filePath)
     throws FileNotFoundException, IOException {
     Properties result = new Properties();
-    result.load(new FileInputStream(new File(filePath)));
+    result.load(new InputStreamReader(new FileInputStream(filePath),
+      StandardCharsets.UTF_8));
     return result;
   }
 
