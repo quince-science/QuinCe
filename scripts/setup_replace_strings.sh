@@ -70,7 +70,7 @@ WebApp/WebContent/META-INF/context.xml"
 while read -r l;
 do
   key=$(echo "$l" | sed -e 's/^ *\([^ ]*\) *\=.*$/\1/')
-  value=$(echo "$l" | sed -e 's/^.*\= *\([^ ]*\) *$/\1/' -e 's/[\/&]/\\&/g')
+  value=$(echo "$l" | sed -e 's/^.*\= *\(.*\)$/\1/' -e 's/[\/&]/\\&/g')
 
   if [ $verbose -eq 1 ]
   then
