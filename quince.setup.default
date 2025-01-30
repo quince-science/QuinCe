@@ -42,6 +42,7 @@
 
 # Credits information
 %instance_credits%=
+%instance_host%=
 
 ###########################
 # Prod server properties  #
