@@ -115,7 +115,7 @@ public class InstrumentDB {
    * SQL query to get an instrument's base record
    */
   private static final String GET_INSTRUMENT_QUERY = "SELECT name, owner, " // 2
-    + "platform_name, platform_code, nrt, last_nrt_export, properties " // 5
+    + "platform_name, platform_code, nrt, last_nrt_export, properties, created " // 5
     + "FROM instrument WHERE id = ?";
 
   /**
@@ -199,10 +199,10 @@ public class InstrumentDB {
     + "id FROM instrument WHERE owner = ? AND platform_name = ? AND name = ?";
 
   private static final String INSTRUMENT_LIST_QUERY = "SELECT "
-    + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, " // 6
-    + "i.last_nrt_export, i.properties, " // 8
-    + "iv.variable_id, iv.properties, " // 10
-    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 11
+    + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, "
+    + "i.last_nrt_export, i.properties, i.created, "
+    + "iv.variable_id, iv.properties, "
+    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name "
     + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
     + "INNER JOIN user u on i.owner = u.id " + "WHERE i.id IN ("
     + "SELECT id FROM instrument WHERE OWNER = ? " + "UNION "
@@ -210,10 +210,10 @@ public class InstrumentDB {
     + ") ORDER BY owner_name, i.owner, i.platform_name, i.name";
 
   private static final String ALL_INSTRUMENT_LIST_QUERY = "SELECT "
-    + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, " // 6
-    + "i.last_nrt_export, i.properties, " // 7
-    + "iv.variable_id, iv.properties, " // 10
-    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name " // 11
+    + "i.id, i.name, i.owner, i.platform_name, i.platform_code, i.nrt, "
+    + "i.last_nrt_export, i.properties, i.created, "
+    + "iv.variable_id, iv.properties, "
+    + "CONCAT(u.surname, ', ', u.firstname) AS owner_name "
     + "FROM instrument i LEFT JOIN instrument_variables iv ON i.id = iv.instrument_id "
     + "INNER JOIN user u on i.owner = u.id "
     + "ORDER BY owner_name, i.owner, i.platform_name, i.name";
@@ -608,6 +608,7 @@ public class InstrumentDB {
       String propertiesJson = null;
       List<Long> variables = null;
       Map<Long, String> variableProperties = null;
+      LocalDateTime created = null;
 
       while (records.next()) {
 
@@ -618,7 +619,7 @@ public class InstrumentDB {
             result.add(createInstrument(conn, owner, currentInstrument, name,
               sharedInstruments.get(currentInstrument), variables,
               variableProperties, platformName, platformCode, nrt,
-              lastNrtExport, propertiesJson));
+              lastNrtExport, propertiesJson, created));
           }
 
           currentInstrument = instrumentId;
@@ -631,10 +632,11 @@ public class InstrumentDB {
           propertiesJson = records.getString(8);
           variables = new ArrayList<Long>();
           variableProperties = new HashMap<Long, String>();
+          created = records.getTimestamp(9).toLocalDateTime();
         }
 
-        variables.add(records.getLong(9));
-        variableProperties.put(records.getLong(9), records.getString(10));
+        variables.add(records.getLong(10));
+        variableProperties.put(records.getLong(10), records.getString(11));
       }
 
       // Create the last instrument, if there is one
@@ -642,7 +644,7 @@ public class InstrumentDB {
         result.add(createInstrument(conn, owner, currentInstrument, name,
           sharedInstruments.get(currentInstrument), variables,
           variableProperties, platformName, platformCode, nrt, lastNrtExport,
-          propertiesJson));
+          propertiesJson, created));
       }
 
     } catch (SQLException e) {
@@ -697,7 +699,7 @@ public class InstrumentDB {
     long id, String name, List<Long> sharedWith, List<Long> variableIds,
     Map<Long, String> variableProperties, String platformName,
     String platformCode, boolean nrt, LocalDateTime lastNrtExport,
-    String propertiesJson)
+    String propertiesJson, LocalDateTime created)
     throws MissingParamException, DatabaseException, RecordNotFoundException,
     InstrumentException, VariableNotFoundException, SensorGroupsException {
 
@@ -727,7 +729,7 @@ public class InstrumentDB {
 
     return new Instrument(UserDB.getUser(conn, ownerId), id, name, sharedWith,
       files, variables, processedVariableProperties, sensorAssignments,
-      platformName, platformCode, nrt, lastNrtExport, propertiesJson);
+      platformName, platformCode, nrt, lastNrtExport, propertiesJson, created);
   }
 
   /**
@@ -884,6 +886,9 @@ public class InstrumentDB {
 
         String propertiesJson = instrumentRecord.getString(7);
 
+        LocalDateTime created = instrumentRecord.getTimestamp(8)
+          .toLocalDateTime();
+
         // Now get the file definitions
         InstrumentFileSet files = getFileDefinitions(conn, instrumentId);
 
@@ -900,7 +905,7 @@ public class InstrumentDB {
         instrument = new Instrument(UserDB.getUser(conn, owner), instrumentId,
           name, sharedUsers, files, variables, variableProperties,
           sensorAssignments, platformName, platformCode, nrt, lastNrtExport,
-          propertiesJson);
+          propertiesJson, created);
       }
 
     } catch (SQLException e) {

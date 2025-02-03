@@ -30,6 +30,7 @@ import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentCreatedComparator;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
@@ -776,22 +777,36 @@ public class NewInstrumentBean extends FileUploadBean {
     throws SensorAssignmentException, SensorTypeNotFoundException,
     SensorConfigurationException, SensorGroupsException {
 
-    // TODO Retrieve previous instruments of same platform name and code,
-    // ordered by most recent first. Owned or shared only. (No admin)
-
-    List<Instrument> previousInstruments = new ArrayList<Instrument>();
+    /*
+     * Get the previously defined instruments with the same platform name and
+     * code, ordered by the most recently created first.
+     */
+    List<Instrument> previousInstruments = getInstruments().stream()
+      .filter(i -> i.getPlatformName().equals(platformName)
+        && i.getPlatformCode().equals(platformCode))
+      .sorted(new InstrumentCreatedComparator(true)).toList();
 
     for (FileColumn column : file.getFileColumns()) {
 
       boolean assignmentMade = false;
 
-      // TODO Check the previous instruments
+      for (Instrument instrument : previousInstruments) {
+        SensorAssignment existingAssignment = instrument.getSensorAssignments()
+          .getSingleAssignment(column.getName());
+
+        if (null != existingAssignment) {
+          autoAssignColumn(file, column, existingAssignment.getSensorType());
+          assignmentMade = true;
+          break;
+        }
+      }
 
       if (!assignmentMade) {
         for (SensorType sensorType : assignmentsTree.getSensorTypes()) {
           if (sensorType.getSourceColumns()
             .contains(column.getName().toLowerCase())) {
             autoAssignColumn(file, column, sensorType);
+            assignmentMade = true;
             break;
           }
         }
@@ -1981,7 +1996,7 @@ public class NewInstrumentBean extends FileUploadBean {
       Instrument instrument = new Instrument(getUser(), instrumentName, null,
         instrumentFiles, instrumentVariables, storedVariableProperties,
         sensorAssignments, sensorGroups, platformName, platformCode, false,
-        null);
+        null, LocalDateTime.now());
 
       instrument.setProperty(Instrument.PROP_PRE_FLUSHING_TIME,
         preFlushingTime);

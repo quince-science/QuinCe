@@ -155,6 +155,11 @@ public class Instrument {
   private DiagnosticQCConfig diagnosticQC;
 
   /**
+   * The time when this instrument was created.
+   */
+  private final LocalDateTime created;
+
+  /**
    * Create an instrument from an existing database record.
    *
    * @param owner
@@ -183,7 +188,7 @@ public class Instrument {
     List<Variable> variables, Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformName,
     String platformCode, boolean nrt, LocalDateTime lastNrtExport,
-    String propertiesJson) throws SensorGroupsException {
+    String propertiesJson, LocalDateTime created) throws SensorGroupsException {
 
     this.owner = owner;
     this.id = databaseId;
@@ -198,6 +203,7 @@ public class Instrument {
     this.nrt = nrt;
     this.lastNrtExport = lastNrtExport;
     parsePropertiesJson(propertiesJson);
+    this.created = created;
   }
 
   /**
@@ -220,6 +226,7 @@ public class Instrument {
     this.nrt = source.nrt;
     this.lastNrtExport = source.lastNrtExport;
     this.properties = source.properties;
+    this.created = source.created;
   }
 
   /**
@@ -249,7 +256,7 @@ public class Instrument {
     Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformName,
     String platformCode, boolean nrt, LocalDateTime lastNrtExport,
-    String propertiesJson) throws SensorGroupsException {
+    String propertiesJson, LocalDateTime created) throws SensorGroupsException {
 
     this.owner = owner;
     this.name = name;
@@ -263,6 +270,7 @@ public class Instrument {
     this.nrt = nrt;
     this.lastNrtExport = lastNrtExport;
     parsePropertiesJson(propertiesJson);
+    this.created = created;
   }
 
   /**
@@ -289,7 +297,7 @@ public class Instrument {
     Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, SensorGroups sensorGroups,
     String platformName, String platformCode, boolean nrt,
-    LocalDateTime lastNrtExport) {
+    LocalDateTime lastNrtExport, LocalDateTime created) {
 
     this.owner = owner;
     this.name = name;
@@ -304,6 +312,7 @@ public class Instrument {
     this.nrt = nrt;
     this.lastNrtExport = lastNrtExport;
     this.properties = new Properties();
+    this.created = created;
   }
 
   /**
@@ -1130,5 +1139,9 @@ public class Instrument {
 
   public void removeShare(User user) {
     sharedWith.remove(user.getDatabaseID());
+  }
+
+  public LocalDateTime getCreated() {
+    return created;
   }
 }
