@@ -1159,6 +1159,47 @@ public class SensorAssignments
   }
 
   /**
+   * Search for a {@link SensorAssignment} from the specified sensor (column)
+   * name.
+   *
+   * <p>
+   * All {@link SensorAssignment}s are searched to see if the assigned sensor
+   * name matches the passed in name. If one, and only one, matching assignment
+   * is found, it is returned.
+   * </p>
+   * <p>
+   * If zero or multiple matching {@link SensorAssignments} are found,
+   * {@code null} is returned.
+   * </p>
+   *
+   * @param sensorName
+   *          The sensor name to search for.
+   * @return The matching {@link SensorAssignment} if exactly one match is
+   *         found; {@code null} otherwise.
+   */
+  public SensorAssignment getSingleAssignment(String sensorName) {
+
+    SensorAssignment foundAssignment = null;
+
+    mainloop: for (TreeSet<SensorAssignment> assignmentsSet : values()) {
+      for (SensorAssignment assignment : assignmentsSet) {
+        if (assignment.getSensorName().equalsIgnoreCase(sensorName)) {
+
+          // If we already found an assignment, clear it and abort
+          if (null != foundAssignment) {
+            foundAssignment = null;
+            break mainloop;
+          } else {
+            foundAssignment = assignment;
+          }
+        }
+      }
+    }
+
+    return foundAssignment;
+  }
+
+  /**
    * Get the database column IDs from a collection of {@link SensorAssignment}s.
    *
    * @param assignments
