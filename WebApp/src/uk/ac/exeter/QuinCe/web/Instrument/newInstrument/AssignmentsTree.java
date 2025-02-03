@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -417,7 +418,7 @@ public class AssignmentsTree {
 
           SensorAssignmentNodeData nodeData = (SensorAssignmentNodeData) node
             .getData();
-          if (nodeData.getAssignment().getDataFile().equals(fileDescription)) {
+          if (!nodeData.getAssignment().getDataFile().equals(fileDescription)) {
             keptChildren.add(node);
           }
         }
@@ -765,5 +766,9 @@ public class AssignmentsTree {
     }
 
     return varAttributes;
+  }
+
+  protected Set<SensorType> getSensorTypes() {
+    return sensorTypeNodes.keySet();
   }
 }

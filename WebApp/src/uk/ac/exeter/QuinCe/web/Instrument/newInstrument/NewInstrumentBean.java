@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -487,6 +488,11 @@ public class NewInstrumentBean extends FileUploadBean {
   private String updatedFile = null;
 
   /**
+   * Indicates whether QuinCe has guessed any column assignments.
+   */
+  private Set<String> sensorAssignmentsGuessed = new HashSet<String>();
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
@@ -563,10 +569,10 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Add a new file to the instrument
+   * Begin the process of adding a new file to the instrument.
    *
-   * @return The navigation to the file upload
-   * @throws DateTimeSpecificationException
+   * @return The navigation to the file upload.
+   * @throws DateTimeSpecificationException.
    */
   public String addFile() throws DateTimeSpecificationException {
     currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles);
@@ -720,13 +726,118 @@ public class NewInstrumentBean extends FileUploadBean {
    *
    * @return The navigation to the variable assignment page
    * @throws DateTimeSpecificationException
+   * @throws SensorGroupsException
+   * @throws SensorConfigurationException
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
    */
-  public String useFile() throws DateTimeSpecificationException {
+  public String useFile() throws DateTimeSpecificationException,
+    SensorAssignmentException, SensorTypeNotFoundException,
+    SensorConfigurationException, SensorGroupsException {
     instrumentFiles.add(currentInstrumentFile);
     assignmentsTree.addFile(currentInstrumentFile);
     updatedFile = currentInstrumentFile.getFileDescription();
+
+    autoAssignColumns(currentInstrumentFile);
+
     clearFile();
     return NAV_ASSIGN_VARIABLES;
+  }
+
+  /**
+   * Try to automatically add {@link SensorAssignments} from the specified file.
+   *
+   * <p>
+   * The column headings for the file (if it has any) are examined in turn, and
+   * one of the following actions taken, starting at the first and continuing
+   * until a {@link SensorAssignment} is created.
+   * </p>
+   * <ol>
+   * <li>If there is an existing {@link Instrument} owned by the current
+   * {@link User} that has the same platform name and code, check its
+   * {@link SensorAssignments} to see if the column name is used. If so, create
+   * the same {@link SensorAssignment}.</li>
+   * <li>Check {@link SensorType#getSourceColumns()} for each {@link SensorType}
+   * in the {@link #assignmentsTree} and see if the heading matches any. If so,
+   * create a {@link SensorAssignment}.</li>
+   * </ol>
+   * <p>
+   * If the supplied file does not have column headings, no action is taken.
+   * </p>
+   *
+   * @param file
+   *          The file whose columns are to be examined.
+   * @throws SensorConfigurationException
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorGroupsException
+   */
+  private void autoAssignColumns(FileDefinitionBuilder file)
+    throws SensorAssignmentException, SensorTypeNotFoundException,
+    SensorConfigurationException, SensorGroupsException {
+
+    // TODO Retrieve previous instruments of same platform name and code,
+    // ordered by most recent first. Owned or shared only. (No admin)
+
+    List<Instrument> previousInstruments = new ArrayList<Instrument>();
+
+    for (FileColumn column : file.getFileColumns()) {
+
+      boolean assignmentMade = false;
+
+      // TODO Check the previous instruments
+
+      if (!assignmentMade) {
+        for (SensorType sensorType : assignmentsTree.getSensorTypes()) {
+          if (sensorType.getSourceColumns()
+            .contains(column.getName().toLowerCase())) {
+            autoAssignColumn(file, column, sensorType);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Action method for {@link #autoAssignColumns(FileDefinitionBuilder)}.
+   *
+   * @param file
+   * @param column
+   * @param sensorType
+   * @throws SensorAssignmentException
+   * @throws SensorTypeNotFoundException
+   * @throws SensorConfigurationException
+   * @throws SensorGroupsException
+   */
+  private void autoAssignColumn(FileDefinitionBuilder file, FileColumn column,
+    SensorType sensorType)
+    throws SensorAssignmentException, SensorTypeNotFoundException,
+    SensorConfigurationException, SensorGroupsException {
+
+    if (!sensorAssignments.isAssigned(sensorType)) {
+      if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
+        runTypeFile = file.getFileDescription();
+        runTypeColumn = column.getIndex();
+        assignRunType();
+      } else {
+
+        sensorAssignmentFile = file.getFileDescription();
+        sensorAssignmentColumn = column.getIndex();
+        sensorAssignmentSensorType = sensorType.getId();
+        sensorAssignmentName = column.getName();
+        sensorAssignmentPrimary = true;
+        sensorAssignmentDependsQuestionAnswer = false;
+        sensorAssignmentMissingValue = null;
+        storeSensorAssignment();
+      }
+
+      sensorAssignmentsGuessed.add(file.getFileDescription());
+    }
+  }
+
+  public boolean getSensorAssignmentGuessed() {
+    return sensorAssignmentsGuessed.size() > 0;
   }
 
   /**
@@ -882,10 +993,17 @@ public class NewInstrumentBean extends FileUploadBean {
   /**
    * Add a new assignment to the sensor assignments
    *
+   * @throws SensorTypeNotFoundException
+   * @throws SensorAssignmentException
+   * @throws SensorGroupsException
+   * @throws SensorConfigurationException
+   *
    * @throws Exception
    *           If any errors occur
    */
-  public void storeSensorAssignment() throws Exception {
+  public void storeSensorAssignment()
+    throws SensorTypeNotFoundException, SensorAssignmentException,
+    SensorGroupsException, SensorConfigurationException {
 
     SensorType sensorType = ResourceManager.getInstance()
       .getSensorsConfiguration().getSensorType(sensorAssignmentSensorType);
@@ -1498,6 +1616,7 @@ public class NewInstrumentBean extends FileUploadBean {
           .remove(sensorAssignments.getFileAssignments(removeFileName));
         sensorAssignments.removeFileAssignments(removeFileName);
         assignmentsTree.removeFile(removeFileName);
+        sensorAssignmentsGuessed.remove(removeFileName);
       }
 
       if (instrumentFiles.size() == 0) {
