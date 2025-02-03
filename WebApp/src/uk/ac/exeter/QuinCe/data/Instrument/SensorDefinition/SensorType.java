@@ -2,10 +2,15 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.MeasurementValueSensorType;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -140,13 +145,19 @@ public class SensorType extends ColumnHeading
    */
   private boolean runTypeAware = false;
 
+  /**
+   * The list of column names known to relate to this SensorType.
+   */
+  private List<String> sourceColumns = Collections
+    .unmodifiableList(new ArrayList<String>());
+
   static {
     RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_ID, "Run Type", "Run Type",
-      RUN_TYPE_ORDER, null, "RUNTYPE");
+      RUN_TYPE_ORDER, null, "RUNTYPE", new String[] { "Type" });
     LONGITUDE_SENSOR_TYPE = new SensorType(LONGITUDE_ID, "Longitude",
-      "Longitude", LONGITUDE_ORDER, "degrees_east", "ALONGP01");
+      "Longitude", LONGITUDE_ORDER, "degrees_east", "ALONGP01", null);
     LATITUDE_SENSOR_TYPE = new SensorType(LATITUDE_ID, "Latitude", "Latitude",
-      LATITUDE_ORDER, "degrees_north", "ALATGP01");
+      LATITUDE_ORDER, "degrees_north", "ALATGP01", null);
   }
 
   /**
@@ -166,7 +177,7 @@ public class SensorType extends ColumnHeading
    *          The vocabulary code for this Sensor Type.
    */
   private SensorType(long id, String name, String group, int displayOrder,
-    String units, String columnCode) {
+    String units, String columnCode, String[] sourceColumns) {
 
     super(id, name, name, columnCode, units, false, true);
 
@@ -180,6 +191,11 @@ public class SensorType extends ColumnHeading
     this.systemType = true;
     this.displayOrder = displayOrder;
     this.runTypeAware = false;
+
+    if (null != sourceColumns) {
+      this.sourceColumns = Collections.unmodifiableList(Arrays
+        .asList(sourceColumns).stream().map(sc -> sc.toLowerCase()).toList());
+    }
   }
 
   /**
@@ -202,6 +218,7 @@ public class SensorType extends ColumnHeading
     this.parent = source.parent;
     this.runTypeAware = source.runTypeAware;
     this.systemType = source.systemType;
+    this.sourceColumns = source.sourceColumns;
   }
 
   /**
@@ -257,6 +274,12 @@ public class SensorType extends ColumnHeading
     this.runTypeAware = record.getBoolean(9);
     this.diagnostic = record.getBoolean(10);
     this.displayOrder = record.getInt(11);
+
+    String sourceColumnString = record.getString(15);
+    if (null != sourceColumnString) {
+      this.sourceColumns = Collections.unmodifiableList(
+        StringUtils.delimitedToList(sourceColumnString.toLowerCase(), ";"));
+    }
   }
 
   /**
@@ -510,5 +533,9 @@ public class SensorType extends ColumnHeading
 
   public boolean questionableFlagAllowed() {
     return !isDiagnostic() && !isPosition();
+  }
+
+  public List<String> getSourceColumns() {
+    return sourceColumns;
   }
 }

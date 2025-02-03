@@ -595,6 +595,12 @@
         update="assignmentsTree referenceDataForm:filesAssigned"
         oncomplete="positionAssigned();"/>
 
+      <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+        <p:staticMessage severity="warn" summary="Guessed Column Assignments"
+                 detail="QuinCe has tried to guess some column assignments. Please check them carefully."
+                 closable="false" rendered="#{newInstrumentBean.sensorAssignmentGuessed}"/>
+      </h:panelGrid>
+
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
