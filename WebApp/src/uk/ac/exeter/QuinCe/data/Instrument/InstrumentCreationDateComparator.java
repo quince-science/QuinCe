@@ -5,11 +5,11 @@ import java.util.Comparator;
 /**
  * Comparator to compare {@link Instrument}s by their creation date.
  */
-public class InstrumentCreatedComparator implements Comparator<Instrument> {
+public class InstrumentCreationDateComparator implements Comparator<Instrument> {
 
   private boolean reverse;
 
-  public InstrumentCreatedComparator(boolean reverse) {
+  public InstrumentCreationDateComparator(boolean reverse) {
     super();
     this.reverse = reverse;
   }
