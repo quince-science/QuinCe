@@ -30,7 +30,7 @@ import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentCreatedComparator;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentCreationDateComparator;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
@@ -784,7 +784,7 @@ public class NewInstrumentBean extends FileUploadBean {
     List<Instrument> previousInstruments = getInstruments().stream()
       .filter(i -> i.getPlatformName().equals(platformName)
         && i.getPlatformCode().equals(platformCode))
-      .sorted(new InstrumentCreatedComparator(true)).toList();
+      .sorted(new InstrumentCreationDateComparator(true)).toList();
 
     for (FileColumn column : file.getFileColumns()) {
 
