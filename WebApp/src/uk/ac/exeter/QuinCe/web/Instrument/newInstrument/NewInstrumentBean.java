@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.faces.bean.ManagedBean;
@@ -777,15 +778,7 @@ public class NewInstrumentBean extends FileUploadBean {
     throws SensorAssignmentException, SensorTypeNotFoundException,
     SensorConfigurationException, SensorGroupsException {
 
-    /*
-     * Get the previously defined instruments with the same platform name and
-     * code, ordered by the most recently created first.
-     */
-    List<Instrument> previousInstruments = getInstruments().stream()
-      .filter(i -> i.getPlatformName().equals(platformName)
-        && i.getPlatformCode().equals(platformCode))
-      .sorted(new InstrumentCreationDateComparator(true)).toList();
-
+    List<Instrument> previousInstruments = getPreviousInstruments();
     for (FileColumn column : file.getFileColumns()) {
 
       boolean assignmentMade = false;
@@ -795,8 +788,20 @@ public class NewInstrumentBean extends FileUploadBean {
           .getSingleAssignment(column.getName());
 
         if (null != existingAssignment) {
-          autoAssignColumn(file, column, existingAssignment.getSensorType());
-          assignmentMade = true;
+          SensorType existingAssignmentType = existingAssignment
+            .getSensorType();
+          if (null != instrument.getSensorAssignments()
+            .get(existingAssignmentType)) {
+
+            try {
+              autoAssignColumn(file, column,
+                existingAssignment.getSensorType());
+              assignmentMade = true;
+            } catch (SensorAssignmentException e) {
+              // If an assignment fails, we just carry on.
+              // The user will have to specify it.
+            }
+          }
           break;
         }
       }
@@ -812,6 +817,20 @@ public class NewInstrumentBean extends FileUploadBean {
         }
       }
     }
+  }
+
+  /**
+   * Get the previously defined instruments with the same platform name and code
+   * as the instrument being created, ordered by the most recently created
+   * first.
+   *
+   * @return The previous instruments from the same platform.
+   */
+  private List<Instrument> getPreviousInstruments() {
+    return getInstruments().stream()
+      .filter(i -> i.getPlatformName().equals(platformName)
+        && i.getPlatformCode().equals(platformCode))
+      .sorted(new InstrumentCreationDateComparator(true)).toList();
   }
 
   /**
@@ -1679,10 +1698,70 @@ public class NewInstrumentBean extends FileUploadBean {
   public String goToRunTypes() throws MissingParamException,
     InstrumentException, DatabaseException, IOException {
 
-    String result = NAV_RUN_TYPES;
+    String result;
 
-    if (!sensorAssignments.hasInternalCalibrations()) {
+    if (sensorAssignments.hasInternalCalibrations()) {
+
+      for (FileDefinition file : instrumentFiles) {
+        // TODO Get run types from previous instrument if possible
+        file.setRunTypes(autoAssignRunTypes(file));
+      }
+
+      result = NAV_RUN_TYPES;
+    } else {
       result = NAV_SENSOR_GROUPS;
+    }
+
+    return result;
+  }
+
+  private RunTypeAssignments autoAssignRunTypes(FileDefinition file) {
+
+    RunTypeAssignments result;
+
+    List<Instrument> previousInstruments = getPreviousInstruments();
+
+    if (previousInstruments.size() == 0) {
+      result = RunTypeAssignments.buildRunTypes(
+        file.getRunTypeColumns().first(), file.getRunTypeValues());
+    } else {
+      result = new RunTypeAssignments(file.getRunTypeColumns().first());
+
+      for (String runType : file.getRunTypeValues().stream()
+        .map(rt -> rt.toLowerCase()).toList()) {
+
+        instrumentLoop: for (Instrument previousInstrument : previousInstruments) {
+
+          Map<RunTypeCategory, TreeSet<RunTypeAssignment>> previousAssignments = previousInstrument
+            .getAllRunTypes();
+
+          for (Map.Entry<RunTypeCategory, TreeSet<RunTypeAssignment>> entry : previousAssignments
+            .entrySet()) {
+
+            RunTypeAssignment foundAssignment = entry.getValue().stream()
+              .filter(a -> a.getRunName().equals(runType)).findAny()
+              .orElse(null);
+
+            if (null != foundAssignment) {
+              if (foundAssignment.isAlias()) {
+                result.put(runType, new RunTypeAssignment(
+                  foundAssignment.getRunName(), foundAssignment.getAliasTo()));
+              } else {
+                result.put(runType, new RunTypeAssignment(
+                  foundAssignment.getRunName(), foundAssignment.getCategory()));
+              }
+              break instrumentLoop;
+            }
+
+          }
+        }
+      }
+
+      // If we haven't found any previous assignments, revert to the base guess.
+      if (result.size() == 0) {
+        result = RunTypeAssignments.buildRunTypes(
+          file.getRunTypeColumns().first(), file.getRunTypeValues());
+      }
     }
 
     return result;
