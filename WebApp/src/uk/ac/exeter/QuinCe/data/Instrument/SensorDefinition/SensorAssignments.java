@@ -854,6 +854,16 @@ public class SensorAssignments
   }
 
   /**
+   * Determine whether a Run Type column has been assigned.
+   *
+   * @return {@code true} if a Run Type column has been assigned; {@code false}
+   *         otherwise.
+   */
+  public boolean hasRunType() {
+    return isAssigned(SensorType.RUN_TYPE_SENSOR_TYPE);
+  }
+
+  /**
    * Get the IDs of the columns that will be internally calibrated during data
    * reduction.
    *

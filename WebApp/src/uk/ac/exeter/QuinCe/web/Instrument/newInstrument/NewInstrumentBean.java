@@ -1700,7 +1700,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
     String result;
 
-    if (sensorAssignments.hasInternalCalibrations()) {
+    if (sensorAssignments.hasRunType()) {
 
       for (FileDefinition file : instrumentFiles) {
         // TODO Get run types from previous instrument if possible
