@@ -956,14 +956,25 @@ public class FileDefinition implements Comparable<FileDefinition> {
     if (!hasRunTypes()) {
       throw new FileDefinitionException("File does not contain run types");
     } else {
-      String runTypeValue = StringUtils.listToDelimited(line,
-        runTypes.getColumns(), "|");
+      String runTypeValue = getRunTypeValue(line);
       if (null != runTypeValue && runTypeValue.length() > 0) {
         result = runTypes.get(runTypeValue, followAlias);
       }
     }
 
     return result;
+  }
+
+  public String getRunTypeValue(String line) {
+    return getRunTypeValue(extractFields(line));
+  }
+
+  public String getRunTypeValue(List<String> line) {
+    return StringUtils.listToDelimited(line, runTypes.getColumns(), "|");
+  }
+
+  public boolean runTypeAssigned(String runType) {
+    return runTypes.containsKey(runType);
   }
 
   /**

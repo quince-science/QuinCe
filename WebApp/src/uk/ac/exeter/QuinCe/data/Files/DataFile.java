@@ -19,7 +19,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
@@ -335,13 +334,11 @@ public abstract class DataFile implements TimeRange {
 
         // Check the run type
         if (fileDefinition.hasRunTypes()) {
-          try {
-            fileDefinition.getRunTypeCategory(line);
-          } catch (FileDefinitionException e) {
-            addMessage(lineNumber, e.getMessage());
-            if (e instanceof MissingRunTypeException) {
-              missingRunTypes.add(((MissingRunTypeException) e).getRunType());
-            }
+          String runType = fileDefinition.getRunTypeValue(line);
+
+          if (!fileDefinition.runTypeAssigned(runType)) {
+            missingRunTypes
+              .add(new RunTypeAssignment(runType, RunTypeCategory.IGNORED));
           }
         }
       }
