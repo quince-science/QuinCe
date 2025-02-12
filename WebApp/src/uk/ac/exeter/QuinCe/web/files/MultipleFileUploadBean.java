@@ -91,7 +91,8 @@ public class MultipleFileUploadBean extends FileUploadBean {
     for (UploadedDataFile file : dataFiles) {
       if (file.isStore() && null != file.getDataFile()) {
         DataFileDB.storeFile(getDataSource(), getAppConfig(),
-          file.getDataFile(), file.getReplacementFile());
+          getCurrentInstrument(), file.getDataFile(),
+          file.getReplacementFile());
       }
     }
   }

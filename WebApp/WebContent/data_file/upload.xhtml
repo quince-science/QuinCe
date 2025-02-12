@@ -63,14 +63,14 @@
                   <p:column>
                     <f:facet name="header">Category</f:facet>
                     <p:selectOneMenu
-                    widgetVar="runType_#{rowIndex}"
-                    value="#{runType.runType().categoryCode}"
-                    onchange="runTypeChanged(#{rowIndex})">
-                    <f:selectItems
-                      value="#{fileUpload.runTypeCategories}"
-                      var="category" itemValue="#{category.type}"
-                      itemLabel="#{category.description}" />
-                  </p:selectOneMenu>
+                      widgetVar="runType_#{rowIndex}"
+                      value="#{runType.runType().categoryCode}"
+                      onchange="runTypeChanged(#{rowIndex})">
+                      <f:selectItems
+                        value="#{fileUpload.runTypeCategories}"
+                        var="category" itemValue="#{category.type}"
+                        itemLabel="#{category.description}" />
+                    </p:selectOneMenu>
                   </p:column>
                   <p:column>
                     <p:selectOneMenu
@@ -80,6 +80,8 @@
                         value="#{fileUpload.getRunTypeValuesWithExclusion(runType.runType().runName)}"
                         var="runTypeAlias" />
                     </p:selectOneMenu>
+                    <!-- We trigger the runTypeChanged script immediately to set up any aliases -->
+                    <script>runTypeChanged(<h:outputText value="#{rowIndex}"/>)</script>
                   </p:column>
                 </p:dataTable>
                 <h:panelGrid columns="1" styleClass="buttonPanel">

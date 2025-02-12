@@ -85,7 +85,7 @@ public class CreateNrtDataset extends Job {
         false);
 
       List<DataFile> instrumentFiles = DataFileDB.getFiles(conn,
-        ResourceManager.getInstance().getConfig(), instrument.getId());
+        ResourceManager.getInstance().getConfig(), instrument);
 
       if (null != lastDataset) {
         nrtStartDate = lastDataset.getEnd().plusSeconds(1);

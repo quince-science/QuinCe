@@ -19,13 +19,19 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.MissingDateTimeException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
@@ -33,8 +39,10 @@ import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.utils.TimeRange;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class representing a data file
@@ -114,11 +122,20 @@ public abstract class DataFile implements TimeRange {
    */
   private Set<RunTypeAssignment> missingRunTypes = new HashSet<RunTypeAssignment>();
 
-  public List<RunTypeAssignment> getMissingRunTypes() {
-    List<RunTypeAssignment> list = new ArrayList<>(missingRunTypes);
-    Collections.sort(list);
-    return list;
-  }
+  /**
+   * The {@link Instrument} that this file belongs to.
+   */
+  private final Instrument instrument;
+
+  /**
+   * The previously defined {@link Instrument}s that have the same platform name
+   * and code as the {@link Instrument} that this file belongs to.
+   *
+   * <p>
+   * Loaded on demand by {@link #getPreviousInstruments}.
+   * </p>
+   */
+  List<Instrument> previousInstruments = null;
 
   /**
    * Create a DataFile with the specified definition and contents
@@ -134,11 +151,12 @@ public abstract class DataFile implements TimeRange {
    * @throws MissingParamException
    *           If any fields are null
    */
-  public DataFile(FileDefinition fileDefinition, String filename)
-    throws MissingParamException, DataFileException {
+  public DataFile(Instrument instrument, FileDefinition fileDefinition,
+    String filename) throws MissingParamException, DataFileException {
     MissingParam.checkMissing(fileDefinition, "fileDefinition");
     MissingParam.checkMissing(filename, "fileName");
 
+    this.instrument = instrument;
     this.fileDefinition = fileDefinition;
     this.filename = filename;
     this.properties = defaultProperties();
@@ -165,11 +183,12 @@ public abstract class DataFile implements TimeRange {
    * @param recordCount
    *          The number of records in the file
    */
-  public DataFile(long id, FileDefinition fileDefinition, String filename,
-    LocalDateTime startDate, LocalDateTime endDate, int recordCount,
-    Properties properties) {
+  public DataFile(long id, Instrument instrument, FileDefinition fileDefinition,
+    String filename, LocalDateTime startDate, LocalDateTime endDate,
+    int recordCount, Properties properties) {
 
     this.databaseId = id;
+    this.instrument = instrument;
     this.fileDefinition = fileDefinition;
     this.filename = filename;
     this.startDate = startDate;
@@ -200,6 +219,12 @@ public abstract class DataFile implements TimeRange {
    */
   public String getFilename() {
     return filename;
+  }
+
+  public List<RunTypeAssignment> getMissingRunTypes() {
+    List<RunTypeAssignment> list = new ArrayList<>(missingRunTypes);
+    Collections.sort(list);
+    return list;
   }
 
   /**
@@ -299,6 +324,9 @@ public abstract class DataFile implements TimeRange {
 
     loadContents();
 
+    // We will load this if we need it below
+    List<Instrument> previousInstruments = null;
+
     // Check that there is actually data in the file
     int firstDataLine = -1;
     try {
@@ -337,8 +365,45 @@ public abstract class DataFile implements TimeRange {
           String runType = fileDefinition.getRunTypeValue(line);
 
           if (!fileDefinition.runTypeAssigned(runType)) {
-            missingRunTypes
-              .add(new RunTypeAssignment(runType, RunTypeCategory.IGNORED));
+
+            boolean alreadyProcessed = missingRunTypes.stream()
+              .filter(mrt -> mrt.getRunName().equals(runType.toLowerCase()))
+              .findAny().isPresent();
+
+            if (!alreadyProcessed) {
+
+              RunTypeAssignment guessedAssignment;
+
+              if (null == previousInstruments) {
+                try {
+                  previousInstruments = getPreviousInstruments();
+                } catch (Exception e) {
+                  // Log the error, but continue.
+                  // It's not important enough to break the workflow.
+                  ExceptionUtils.printStackTrace(e);
+                  previousInstruments = new ArrayList<Instrument>();
+                }
+              }
+
+              RunTypeAssignment previousAssignment = RunTypeAssignments
+                .getPreviousRunTypeAssignment(runType, previousInstruments);
+
+              if (null != previousAssignment) {
+                guessedAssignment = previousAssignment;
+              } else {
+                // Guess from presets
+                RunTypeAssignment presetAssignment = RunTypeAssignments
+                  .getPresetAssignment(runType, fileDefinition.getRunTypes());
+                if (null != presetAssignment) {
+                  guessedAssignment = presetAssignment;
+                } else {
+                  guessedAssignment = new RunTypeAssignment(runType,
+                    RunTypeCategory.IGNORED);
+                }
+              }
+
+              missingRunTypes.add(guessedAssignment);
+            }
           }
         }
       }
@@ -1096,6 +1161,31 @@ public abstract class DataFile implements TimeRange {
           break;
         }
       }
+    }
+
+    return result;
+  }
+
+  private List<Instrument> getPreviousInstruments()
+    throws MissingParamException, VariableNotFoundException, DatabaseException,
+    RecordNotFoundException, InstrumentException, SensorGroupsException {
+
+    List<Instrument> result = null;
+
+    if (null == previousInstruments) {
+      if (null == instrument) {
+        result = new ArrayList<Instrument>();
+      } else {
+        List<Instrument> instruments = InstrumentDB.getInstrumentList(
+          ResourceManager.getInstance().getDBDataSource(),
+          instrument.getOwner());
+
+        result = Instrument.filterByPlatform(instruments,
+          instrument.getPlatformName(), instrument.getPlatformCode(),
+          instrument.getId());
+      }
+    } else {
+      result = previousInstruments;
     }
 
     return result;

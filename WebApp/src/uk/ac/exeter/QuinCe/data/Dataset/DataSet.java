@@ -745,8 +745,7 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
    */
   public List<Long> getSourceFiles(Connection conn)
     throws MissingParamException, DatabaseException {
-    return DataFileDB.getFilesWithinDates(conn, instrument.getId(), start, end,
-      true);
+    return DataFileDB.getFilesWithinDates(conn, instrument, start, end, true);
   }
 
   /**

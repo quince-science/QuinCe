@@ -72,7 +72,7 @@ public class UploadFile {
           resultBody = upload.getMessages();
         } else {
           DataFileDB.storeFile(dataSource, resourceManager.getConfig(),
-            upload.getDataFile(), upload.getReplacementFile());
+            instrument, upload.getDataFile(), upload.getReplacementFile());
         }
       }
     } catch (Exception e) {

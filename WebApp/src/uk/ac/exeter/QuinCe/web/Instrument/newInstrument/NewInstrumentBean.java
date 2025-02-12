@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.faces.bean.ManagedBean;
@@ -31,7 +30,6 @@ import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentCreationDateComparator;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
@@ -827,10 +825,8 @@ public class NewInstrumentBean extends FileUploadBean {
    * @return The previous instruments from the same platform.
    */
   private List<Instrument> getPreviousInstruments() {
-    return getInstruments().stream()
-      .filter(i -> i.getPlatformName().equals(platformName)
-        && i.getPlatformCode().equals(platformCode))
-      .sorted(new InstrumentCreationDateComparator(true)).toList();
+    return Instrument.filterByPlatform(getInstruments(), platformName,
+      platformCode, -1L);
   }
 
   /**
@@ -1730,30 +1726,11 @@ public class NewInstrumentBean extends FileUploadBean {
       for (String runType : file.getRunTypeValues().stream()
         .map(rt -> rt.toLowerCase()).toList()) {
 
-        instrumentLoop: for (Instrument previousInstrument : previousInstruments) {
+        RunTypeAssignment previousAssignment = RunTypeAssignments
+          .getPreviousRunTypeAssignment(runType, previousInstruments);
 
-          Map<RunTypeCategory, TreeSet<RunTypeAssignment>> previousAssignments = previousInstrument
-            .getAllRunTypes();
-
-          for (Map.Entry<RunTypeCategory, TreeSet<RunTypeAssignment>> entry : previousAssignments
-            .entrySet()) {
-
-            RunTypeAssignment foundAssignment = entry.getValue().stream()
-              .filter(a -> a.getRunName().equals(runType)).findAny()
-              .orElse(null);
-
-            if (null != foundAssignment) {
-              if (foundAssignment.isAlias()) {
-                result.put(runType, new RunTypeAssignment(
-                  foundAssignment.getRunName(), foundAssignment.getAliasTo()));
-              } else {
-                result.put(runType, new RunTypeAssignment(
-                  foundAssignment.getRunName(), foundAssignment.getCategory()));
-              }
-              break instrumentLoop;
-            }
-
-          }
+        if (null != previousAssignment) {
+          result.put(runType, previousAssignment);
         }
       }
 
