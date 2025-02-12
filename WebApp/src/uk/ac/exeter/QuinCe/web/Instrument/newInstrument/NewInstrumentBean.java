@@ -493,6 +493,11 @@ public class NewInstrumentBean extends FileUploadBean {
   private Set<String> sensorAssignmentsGuessed = new HashSet<String>();
 
   /**
+   * Indicates whether QuinCe has attempted to guess any run types.
+   */
+  private boolean runTypesGuessed = false;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
@@ -1741,6 +1746,10 @@ public class NewInstrumentBean extends FileUploadBean {
       }
     }
 
+    if (!result.allIgnored()) {
+      runTypesGuessed = true;
+    }
+
     return result;
   }
 
@@ -1921,8 +1930,8 @@ public class NewInstrumentBean extends FileUploadBean {
           jsonAssignment.addProperty("runType", assignment.getRunName());
 
           RunTypeCategory category = assignment.getCategory();
-          if (null == category) {
-            jsonAssignment.add("category", JsonNull.INSTANCE);
+          if (category.equals(RunTypeCategory.ALIAS)) {
+            jsonAssignment.addProperty("category", RunTypeCategory.ALIAS_TYPE);
             jsonAssignment.addProperty("aliasTo", assignment.getAliasTo());
           } else {
             jsonAssignment.addProperty("category",
@@ -2442,6 +2451,10 @@ public class NewInstrumentBean extends FileUploadBean {
     }
 
     return result;
+  }
+
+  public boolean getRunTypesGuessed() {
+    return runTypesGuessed;
   }
 
   public String getAssignedSensorNames() {

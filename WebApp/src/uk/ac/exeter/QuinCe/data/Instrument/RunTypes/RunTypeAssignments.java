@@ -370,6 +370,11 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
 
     return result;
   }
+
+  public boolean allIgnored() {
+    return values().stream()
+      .allMatch(v -> v.getCategory().equals(RunTypeCategory.IGNORED));
+  }
 }
 
 /**

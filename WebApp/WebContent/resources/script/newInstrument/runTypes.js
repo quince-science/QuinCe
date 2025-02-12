@@ -32,9 +32,9 @@ function populateRunTypeMenus() {
 
     for (let j = 0; j < file['assignments'].length; j++) {
       let category = file["assignments"][j]["category"];
-      if (null == category) {
+      if (category == -2) {
         // Alias
-          PF(file["index"] + "-" + file["assignments"][j]["runType"] + "-menu").selectValue('ALIAS');
+        PF(file["index"] + "-" + file["assignments"][j]["runType"] + "-menu").selectValue('ALIAS');
         $('#' + file["index"] + '-' + file["assignments"][j]["runType"] + '-aliasMenu').show();
         PF(file["index"] + "-" + file["assignments"][j]["runType"] + "-alias").selectValue(file["assignments"][j]["aliasTo"]);
       } else {
