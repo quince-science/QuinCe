@@ -25,7 +25,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -190,8 +189,9 @@ public class DataFileDB {
    * @see FileStore#storeFile(String, DataFile)
    */
   public static void storeFile(DataSource dataSource, Properties appConfig,
-    DataFile dataFile, long replacementId) throws MissingParamException,
-    FileExistsException, DatabaseException, RecordNotFoundException {
+    Instrument instrument, DataFile dataFile, long replacementId)
+    throws MissingParamException, FileExistsException, DatabaseException,
+    RecordNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(appConfig, "appConfig");
@@ -211,7 +211,7 @@ public class DataFileDB {
 
         replaceFile(conn, appConfig, dataFile, replacementId);
       } else {
-        storeNewFile(conn, appConfig, dataFile);
+        storeNewFile(conn, appConfig, instrument, dataFile);
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing file", e);
@@ -237,13 +237,14 @@ public class DataFileDB {
    * @see FileStore#storeFile(String, DataFile)
    */
   private static void storeNewFile(Connection conn, Properties appConfig,
-    DataFile dataFile) throws DatabaseException, FileExistsException {
+    Instrument instrument, DataFile dataFile)
+    throws DatabaseException, FileExistsException {
 
     PreparedStatement stmt = null;
     ResultSet generatedKeys = null;
 
     try {
-      if (getFilesWithinDates(conn, dataFile.getFileDefinition(),
+      if (getFilesWithinDates(conn, instrument, dataFile.getFileDefinition(),
         dataFile.getRawStartTime(), dataFile.getRawEndTime(), false)
         .size() > 0) {
         throw new FileExistsException(dataFile.getFileDescription(),
@@ -443,10 +444,10 @@ public class DataFileDB {
    * @see #makeDataFile(ResultSet, String, Connection)
    */
   public static List<DataFile> getFiles(DataSource dataSource,
-    Properties appConfig, Long instrumentId) throws DatabaseException {
+    Properties appConfig, Instrument instrument) throws DatabaseException {
 
     try (Connection conn = dataSource.getConnection()) {
-      return getFiles(conn, appConfig, instrumentId);
+      return getFiles(conn, appConfig, instrument);
     } catch (SQLException e) {
       throw new DatabaseException("An error occurred while searching for files",
         e);
@@ -473,30 +474,27 @@ public class DataFileDB {
    * @see #makeDataFile(ResultSet, String, Connection)
    */
   public static List<DataFile> getFiles(Connection conn, Properties appConfig,
-    Long instrumentId) throws DatabaseException {
+    Instrument instrument) throws DatabaseException {
 
     PreparedStatement stmt = null;
     ResultSet records = null;
     List<DataFile> fileInfo = new ArrayList<DataFile>();
 
     try {
-      InstrumentFileSet fileDefinitions = InstrumentDB.getFileDefinitions(conn,
-        instrumentId);
-
-      if (null != instrumentId) {
+      if (null != instrument) {
         stmt = conn.prepareStatement(GET_FILES_BY_INSTRUMENT_QUERY);
       } else {
         stmt = conn.prepareStatement(GET_FILES_QUERY);
       }
 
-      if (null != instrumentId) {
-        stmt.setLong(1, instrumentId);
+      if (null != instrument) {
+        stmt.setLong(1, instrument.getId());
       }
 
       records = stmt.executeQuery();
       while (records.next()) {
         fileInfo.add(makeDataFile(records, appConfig.getProperty("filestore"),
-          fileDefinitions));
+          instrument));
       }
 
     } catch (Exception e) {
@@ -528,11 +526,11 @@ public class DataFileDB {
    * @see #makeDataFile(ResultSet, String, Connection)
    */
   public static List<DataFile> getFiles(DataSource dataSource,
-    Properties appConfig, FileDefinition fileDefinition)
+    Properties appConfig, Instrument instrument, FileDefinition fileDefinition)
     throws DatabaseException {
 
     try (Connection conn = dataSource.getConnection()) {
-      return getFiles(conn, appConfig, fileDefinition);
+      return getFiles(conn, appConfig, instrument, fileDefinition);
     } catch (SQLException e) {
       throw new DatabaseException("An error occurred while searching for files",
         e);
@@ -554,7 +552,8 @@ public class DataFileDB {
    * @see #makeDataFile(ResultSet, String, Connection)
    */
   public static List<DataFile> getFiles(Connection conn, Properties appConfig,
-    FileDefinition fileDefinition) throws DatabaseException {
+    Instrument instrument, FileDefinition fileDefinition)
+    throws DatabaseException {
 
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -567,7 +566,7 @@ public class DataFileDB {
       records = stmt.executeQuery();
       while (records.next()) {
         fileInfo.add(makeDataFile(records, appConfig.getProperty("filestore"),
-          fileDefinition));
+          instrument, fileDefinition));
       }
 
     } catch (Exception e) {
@@ -660,9 +659,8 @@ public class DataFileDB {
 
     try {
       long instrumentId = record.getLong(8);
-      InstrumentFileSet files = InstrumentDB.getFileDefinitions(conn,
-        instrumentId);
-      result = makeDataFile(record, fileStore, files);
+      Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId);
+      result = makeDataFile(record, fileStore, instrument);
     } catch (SQLException e) {
       throw e;
     } catch (Exception e) {
@@ -689,13 +687,13 @@ public class DataFileDB {
    *           If any sub-queries fail
    */
   private static DataFile makeDataFile(ResultSet record, String fileStore,
-    InstrumentFileSet fileDefinitions) throws SQLException, DatabaseException {
+    Instrument instrument) throws SQLException, DatabaseException {
     DataFile result = null;
 
     try {
       long fileDefinitionId = record.getLong(2);
-      result = makeDataFile(record, fileStore,
-        fileDefinitions.get(fileDefinitionId));
+      result = makeDataFile(record, fileStore, instrument,
+        instrument.getFileDefinitions().get(fileDefinitionId));
     } catch (SQLException e) {
       throw e;
     } catch (Exception e) {
@@ -720,7 +718,7 @@ public class DataFileDB {
    *           If the data cannot be extracted from the record
    */
   private static DataFile makeDataFile(ResultSet record, String fileStore,
-    FileDefinition fileDefinition) throws SQLException {
+    Instrument instrument, FileDefinition fileDefinition) throws SQLException {
     DataFile result = null;
 
     try {
@@ -732,8 +730,8 @@ public class DataFileDB {
       Properties properties = new Gson().fromJson(record.getString(7),
         Properties.class);
 
-      result = new FileStoreDataFile(fileStore, id, fileDefinition, filename,
-        startDate, endDate, recordCount, properties);
+      result = new FileStoreDataFile(fileStore, id, instrument, fileDefinition,
+        filename, startDate, endDate, recordCount, properties);
     } catch (SQLException e) {
       throw e;
     }
@@ -824,11 +822,13 @@ public class DataFileDB {
    *           If a database error occurs
    */
   public static List<DataFile> getFilesWithinDates(DataSource dataSource,
-    FileDefinition fileDefinition, LocalDateTime start, LocalDateTime end,
-    boolean applyOffset) throws MissingParamException, DatabaseException {
+    Instrument instrument, FileDefinition fileDefinition, LocalDateTime start,
+    LocalDateTime end, boolean applyOffset)
+    throws MissingParamException, DatabaseException {
 
     try (Connection conn = dataSource.getConnection()) {
-      return getFilesWithinDates(conn, fileDefinition, start, end, applyOffset);
+      return getFilesWithinDates(conn, instrument, fileDefinition, start, end,
+        applyOffset);
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting files", e);
     }
@@ -853,8 +853,9 @@ public class DataFileDB {
    *           If a database error occurs
    */
   public static List<DataFile> getFilesWithinDates(Connection conn,
-    FileDefinition fileDefinition, LocalDateTime start, LocalDateTime end,
-    boolean applyOffset) throws MissingParamException, DatabaseException {
+    Instrument instrument, FileDefinition fileDefinition, LocalDateTime start,
+    LocalDateTime end, boolean applyOffset)
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(fileDefinition, "fileDefinition");
@@ -862,7 +863,7 @@ public class DataFileDB {
     MissingParam.checkMissing(end, "end");
 
     List<DataFile> allInstrumentFiles = getFiles(conn,
-      ResourceManager.getInstance().getConfig(), fileDefinition);
+      ResourceManager.getInstance().getConfig(), instrument, fileDefinition);
 
     return filterFilesByDates(allInstrumentFiles, start, end, applyOffset);
   }
@@ -916,16 +917,16 @@ public class DataFileDB {
    *           If a database error occurs
    */
   public static List<Long> getFilesWithinDates(Connection conn,
-    long instrumentId, LocalDateTime start, LocalDateTime end,
+    Instrument instrument, LocalDateTime start, LocalDateTime end,
     boolean applyOffset) throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkMissing(instrument, "instrument");
     MissingParam.checkMissing(start, "start");
     MissingParam.checkMissing(end, "end");
 
     List<DataFile> allInstrumentFiles = getFiles(conn,
-      ResourceManager.getInstance().getConfig(), instrumentId);
+      ResourceManager.getInstance().getConfig(), instrument);
 
     List<DataFile> dateFiles = filterFilesByDates(allInstrumentFiles, start,
       end, applyOffset);
@@ -952,7 +953,7 @@ public class DataFileDB {
    * @throws InstrumentException
    */
   public static boolean completeFilesAfter(Connection conn,
-    Properties appConfig, long instrumentId, LocalDateTime time)
+    Properties appConfig, Instrument instrument, LocalDateTime time)
     throws MissingParamException, DatabaseException, RecordNotFoundException,
     InstrumentException {
 
@@ -966,12 +967,10 @@ public class DataFileDB {
     List<PreparedStatement> statements = new ArrayList<PreparedStatement>();
     List<ResultSet> resultSets = new ArrayList<ResultSet>();
     try {
-      InstrumentFileSet fileDefinitions = InstrumentDB.getFileDefinitions(conn,
-        instrumentId);
       Map<FileDefinition, List<DataFile>> filesAfterDate = new HashMap<FileDefinition, List<DataFile>>();
 
       // Get all the files after the specified date, grouped by file definition
-      for (FileDefinition fileDefinition : fileDefinitions) {
+      for (FileDefinition fileDefinition : instrument.getFileDefinitions()) {
         List<DataFile> foundFiles = new ArrayList<DataFile>();
 
         PreparedStatement stmt = conn
@@ -982,7 +981,7 @@ public class DataFileDB {
         ResultSet records = stmt.executeQuery();
         while (records.next()) {
           foundFiles.add(makeDataFile(records,
-            appConfig.getProperty("filestore"), fileDefinitions));
+            appConfig.getProperty("filestore"), instrument));
         }
 
         statements.add(stmt);
@@ -1000,16 +999,18 @@ public class DataFileDB {
       // If any file defs had no files, the result will be false
       // and we don't go any further. Also if there's only one file
       // definition we can skip this check
-      if (result && fileDefinitions.size() > 1) {
+      if (result && instrument.getFileDefinitions().size() > 1) {
 
         result = false;
 
-        List<DataFile> rootFiles = filesAfterDate.get(fileDefinitions.get(0));
+        List<DataFile> rootFiles = filesAfterDate
+          .get(instrument.getFileDefinitions().get(0));
 
         for (DataFile rootFile : rootFiles) {
-          for (int i = 1; i < fileDefinitions.size() && !result; i++) {
+          for (int i = 1; i < instrument.getFileDefinitions().size()
+            && !result; i++) {
             List<DataFile> compareFiles = filesAfterDate
-              .get(fileDefinitions.get(i));
+              .get(instrument.getFileDefinitions().get(i));
 
             for (int j = 0; j < compareFiles.size() && !result; j++) {
               DataFile compareFile = compareFiles.get(j);
@@ -1163,7 +1164,7 @@ public class DataFileDB {
     Instrument instrument, boolean deleteFolders)
     throws DatabaseException, FileStoreException, IOException {
 
-    List<DataFile> files = getFiles(conn, appConfig, instrument.getId());
+    List<DataFile> files = getFiles(conn, appConfig, instrument);
     for (DataFile file : files) {
       deleteFile(conn, appConfig, file);
     }

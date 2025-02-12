@@ -5,17 +5,18 @@ import java.time.LocalDateTime;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
 public class FileStoreDataFile extends DataFile {
 
   private String fileStore;
 
-  public FileStoreDataFile(String fileStore, long id,
+  public FileStoreDataFile(String fileStore, long id, Instrument instrument,
     FileDefinition fileDefinition, String filename, LocalDateTime startDate,
     LocalDateTime endDate, int recordCount, Properties properties) {
 
-    super(id, fileDefinition, filename, startDate, endDate, recordCount,
-      properties);
+    super(id, instrument, fileDefinition, filename, startDate, endDate,
+      recordCount, properties);
     this.fileStore = fileStore;
   }
 

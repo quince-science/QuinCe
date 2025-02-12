@@ -7,7 +7,6 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.TestBase.TestResourceManager;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * This class mimics a {@link ResourceManager} with various types of invalid

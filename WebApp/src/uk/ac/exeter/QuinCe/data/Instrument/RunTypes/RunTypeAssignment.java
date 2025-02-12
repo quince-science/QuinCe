@@ -107,7 +107,11 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
    * @return The assigned category
    */
   public RunTypeCategory getCategory() {
-    return category;
+    if (isAlias()) {
+      return RunTypeCategory.ALIAS;
+    } else {
+      return category;
+    }
   }
 
   /**
@@ -215,12 +219,10 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   public long getCategoryCode() {
     long result = RunTypeCategory.NOT_ASSIGNED;
 
-    if (null != category) {
-      if (isAlias()) {
-        result = RunTypeCategory.ALIAS.getType();
-      } else {
-        result = category.getType();
-      }
+    if (isAlias()) {
+      result = RunTypeCategory.ALIAS.getType();
+    } else {
+      result = category.getType();
     }
 
     return result;

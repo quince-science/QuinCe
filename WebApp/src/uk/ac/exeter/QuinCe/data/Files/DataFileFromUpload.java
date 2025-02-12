@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.apache.commons.lang3.NotImplementedException;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.files.UploadedDataFile;
 
@@ -13,10 +14,11 @@ public class DataFileFromUpload extends DataFile {
 
   private UploadedDataFile source;
 
-  public DataFileFromUpload(FileDefinition fileDefinition, String filename,
-    UploadedDataFile source) throws MissingParamException, DataFileException {
+  public DataFileFromUpload(Instrument instrument,
+    FileDefinition fileDefinition, String filename, UploadedDataFile source)
+    throws MissingParamException, DataFileException {
 
-    super(fileDefinition, filename);
+    super(instrument, fileDefinition, filename);
     this.source = source;
     validate();
   }

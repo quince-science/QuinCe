@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.utils.AscendingLengthComparator;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -302,10 +303,73 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
   }
 
   private static PresetRunType getRunTypePreset(String runType) {
-    return PRESET_RUN_TYPES.stream().filter(p -> p.containsRunType(runType))
-      .findFirst().orElse(null);
+    return PRESET_RUN_TYPES.stream()
+      .filter(p -> p.containsRunType(runType.toLowerCase())).findFirst()
+      .orElse(null);
   }
 
+  public static RunTypeAssignment getPreviousRunTypeAssignment(String runType,
+    List<Instrument> previousInstruments) {
+
+    RunTypeAssignment result = null;
+
+    for (Instrument previousInstrument : previousInstruments) {
+
+      Map<RunTypeCategory, TreeSet<RunTypeAssignment>> previousAssignments = previousInstrument
+        .getAllRunTypes();
+
+      for (Map.Entry<RunTypeCategory, TreeSet<RunTypeAssignment>> entry : previousAssignments
+        .entrySet()) {
+
+        RunTypeAssignment foundAssignment = entry.getValue().stream()
+          .filter(a -> a.getRunName().equals(runType.toLowerCase())).findAny()
+          .orElse(null);
+
+        if (null != foundAssignment) {
+          if (foundAssignment.isAlias()) {
+            result = new RunTypeAssignment(foundAssignment.getRunName(),
+              foundAssignment.getAliasTo());
+          } else {
+            result = new RunTypeAssignment(foundAssignment.getRunName(),
+              foundAssignment.getCategory());
+          }
+          break;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  public static RunTypeAssignment getPresetAssignment(String runType,
+    RunTypeAssignments existingAssignments) {
+
+    RunTypeAssignment result = null;
+
+    PresetRunType preset = getRunTypePreset(runType);
+
+    if (null != preset) {
+      for (String baseRunType : existingAssignments.keySet()) {
+        if (preset.containsRunType(baseRunType)
+          && !existingAssignments.get(baseRunType).isAlias()) {
+          result = new RunTypeAssignment(runType, baseRunType);
+          break;
+        }
+      }
+
+      /*
+       * String baseRunType = existingAssignments.keySet().stream() .filter(rt
+       * -> preset.containsRunType(runType) &&
+       * !existingAssignments.get(rt).isAlias()) .findAny().orElse(null);
+       */
+      /*
+       * if (null != baseRunType) { result = new RunTypeAssignment(runType,
+       * baseRunType); }
+       */
+    }
+
+    return result;
+  }
 }
 
 /**
@@ -337,7 +401,7 @@ class PresetRunType implements Comparable<PresetRunType> {
   }
 
   protected boolean containsRunType(String runType) {
-    return runTypes.contains(runType);
+    return runTypes.contains(runType.toLowerCase());
   }
 
   protected RunTypeCategory getCategory() {

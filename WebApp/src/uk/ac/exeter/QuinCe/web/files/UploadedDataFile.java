@@ -340,7 +340,8 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
           throw new NoSuchElementException();
         }
 
-        dataFile = new DataFileFromUpload(matchedDefinition, getName(), this);
+        dataFile = new DataFileFromUpload(instrument, matchedDefinition,
+          getName(), this);
         if (getDataFile().getFirstDataLine() >= getDataFile()
           .getContentLineCount()) {
           if (allowEmpty) {
@@ -368,8 +369,9 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
               FacesMessage.SEVERITY_ERROR);
           } else {
             List<DataFile> overlappingFiles = DataFileDB.getFilesWithinDates(
-              dataSource, matchedDefinition, getDataFile().getRawStartTime(),
-              getDataFile().getRawEndTime(), false);
+              dataSource, instrument, matchedDefinition,
+              getDataFile().getRawStartTime(), getDataFile().getRawEndTime(),
+              false);
 
             boolean fileOK = true;
             String fileMessage = null;

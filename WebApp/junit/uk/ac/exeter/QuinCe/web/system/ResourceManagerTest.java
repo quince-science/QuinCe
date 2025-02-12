@@ -11,7 +11,6 @@ import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.TestBase.TestResourceManager;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPoolNotInitialisedException;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Tests for building the resource manager

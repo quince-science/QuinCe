@@ -1144,4 +1144,37 @@ public class Instrument {
   public LocalDateTime getCreated() {
     return created;
   }
+
+  /**
+   * Filter a {@link Collection} of {@link Instrument}s to those matching the
+   * specified {@link #platformName} and {@link #platformCode}, and sort them
+   * with the most recently created first.
+   * 
+   * <p>
+   * Since this method is often used to find instruments that match a given
+   * instrument, an exclusion ID can be provided to ensure that instrument is
+   * not included in the output. Setting this to a negative value will ensure
+   * that all matching instruments are returned.
+   * </p>
+   * 
+   * @param instruments
+   *          The instruments to be filtered
+   * @param platformName
+   *          The desired platform name
+   * @param platformCode
+   *          The desired platform code
+   * @param exclude
+   *          The ID of an instrument to be excluded from the final list
+   * @return The filtered instruments.
+   */
+  public static List<Instrument> filterByPlatform(
+    Collection<Instrument> instruments, String platformName,
+    String platformCode, long exclude) {
+
+    return instruments.stream()
+      .filter(
+        i -> i.getId() != exclude && i.getPlatformName().equals(platformName)
+          && i.getPlatformCode().equals(platformCode))
+      .sorted(new InstrumentCreationDateComparator(true)).toList();
+  }
 }
