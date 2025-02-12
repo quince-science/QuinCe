@@ -1149,14 +1149,14 @@ public class Instrument {
    * Filter a {@link Collection} of {@link Instrument}s to those matching the
    * specified {@link #platformName} and {@link #platformCode}, and sort them
    * with the most recently created first.
-   * 
+   *
    * <p>
    * Since this method is often used to find instruments that match a given
    * instrument, an exclusion ID can be provided to ensure that instrument is
    * not included in the output. Setting this to a negative value will ensure
    * that all matching instruments are returned.
    * </p>
-   * 
+   *
    * @param instruments
    *          The instruments to be filtered
    * @param platformName

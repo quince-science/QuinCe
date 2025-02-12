@@ -45,22 +45,25 @@
                   <ui:repeat value="#{file.runTypeValues}" var="runType">
                     <tr>
                       <td class="labelsNoPad">#{runType}</td>
-                      <td><p:selectOneMenu
+                      <td>
+                        <p:selectOneMenu
                           widgetVar="#{fileStatus.index}-#{runType}-menu"
                           onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
                           <f:selectItems
                             value="#{newInstrumentBean.runTypeCategories}"
                             var="category" itemValue="#{category.type}"
                             itemLabel="#{category.description}" />
-                        </p:selectOneMenu></td>
-                      <td id="#{fileStatus.index}-#{runType}-aliasMenu"
-                        class="hidden"><p:selectOneMenu
+                        </p:selectOneMenu>
+                      </td>
+                      <td id="#{fileStatus.index}-#{runType}-aliasMenu" class="hidden">
+                        <p:selectOneMenu
                           widgetVar="#{fileStatus.index}-#{runType}-alias"
                           onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
                           <f:selectItems
                             value="#{file.getRunTypeValuesWithExclusion(runType)}"
                             var="runTypeAlias" />
-                        </p:selectOneMenu></td>
+                        </p:selectOneMenu>
+                      </td>
                     </tr>
                   </ui:repeat>
                 </table>
@@ -69,6 +72,12 @@
           </ui:repeat>
         </div>
       </p:fieldset>
+      <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+        <p:staticMessage severity="warn" summary="Guessed Column Assignments"
+                 detail="QuinCe has tried to guess the run types. Please check them carefully."
+                 closable="false" rendered="#{newInstrumentBean.runTypesGuessed}"/>
+      </h:panelGrid>
+
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
