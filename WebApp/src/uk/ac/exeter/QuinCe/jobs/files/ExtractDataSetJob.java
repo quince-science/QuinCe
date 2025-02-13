@@ -124,7 +124,7 @@ public class ExtractDataSetJob extends DataSetJob {
         .getCalibrationSet(conn, dataSet);
 
       // Adjust the DataSet bounds to the latest start date and earliest end
-      // date of each file definition
+      // date of each file definition, if the dataset range is beyond them
       Map<FileDefinition, TimeRangeBuilder> fileDefinitionRanges = new HashMap<FileDefinition, TimeRangeBuilder>();
       instrument.getFileDefinitions()
         .forEach(fd -> fileDefinitionRanges.put(fd, new TimeRangeBuilder()));
@@ -132,8 +132,17 @@ public class ExtractDataSetJob extends DataSetJob {
       files
         .forEach(f -> fileDefinitionRanges.get(f.getFileDefinition()).add(f));
 
-      dataSet.setStart(TimeRange.getLatestStart(fileDefinitionRanges.values()));
-      dataSet.setEnd(TimeRange.getEarliestEnd(fileDefinitionRanges.values()));
+      LocalDateTime filesLatestStart = TimeRange
+        .getLatestStart(fileDefinitionRanges.values());
+      if (filesLatestStart.isAfter(dataSet.getStart())) {
+        dataSet.setStart(filesLatestStart);
+      }
+
+      LocalDateTime filesEarliestEnd = TimeRange
+        .getEarliestEnd(fileDefinitionRanges.values());
+      if (filesEarliestEnd.isBefore(dataSet.getEnd())) {
+        dataSet.setEnd(filesEarliestEnd);
+      }
 
       // Collect the data bounds
       double minLon = Double.MAX_VALUE;
