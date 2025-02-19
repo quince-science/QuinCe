@@ -160,10 +160,10 @@ function handleHemisphereColumnDrop(e) {
 
 function getDragColumn(e) {
   let colElementId = e.originalEvent.dataTransfer.getData("text/plain");
-  let colExtractor = /.*---(.*)---(.*)---(.*)/;
+  let colExtractor = /.*---(.*)---(.*)---(.*)---(.*)/;
   let match = colExtractor.exec(colElementId);
 
-  return {'dataFile': match[1], 'colIndex': match[2], 'colName': match[3]};
+  return {'dataFile': match[1], 'colIndex': match[2], 'colName': match[3], 'exampleValue': match[4]};
 }
 
 function assignRunType(file, column) {
