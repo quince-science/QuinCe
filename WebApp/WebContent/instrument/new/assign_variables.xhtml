@@ -435,7 +435,7 @@
               <p:dataTable value="#{iFile.fileColumns}" var="column" scrollable="true"
                 scrollHeight="300" tableStyleClass="fileColumnsTable">
                 <p:column headerText="Column">
-                  <div id="col---#{iFile.fileDescription}---#{column.index}---#{column.name}" class="draggable" draggable="true">
+                  <div id="col---#{iFile.fileDescription}---#{column.index}---#{column.name}---#{column.exampleValue}" class="draggable" draggable="true">
                     <h:outputText value="#{column.name}"/>
                   </div>
                 </p:column>
