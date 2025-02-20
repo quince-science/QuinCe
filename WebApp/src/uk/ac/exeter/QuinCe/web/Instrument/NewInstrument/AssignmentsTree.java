@@ -768,6 +768,12 @@ public class AssignmentsTree {
     return varAttributes;
   }
 
+  /**
+   * Get all the {@link SensorType}s that need to be assigned. Includes both
+   * assigned and unassigned types.
+   *
+   * @return The {@link SensorType}s in the tree.
+   */
   protected Set<SensorType> getSensorTypes() {
     return sensorTypeNodes.keySet();
   }

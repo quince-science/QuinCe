@@ -146,6 +146,14 @@ public class BaseTest {
     }
   }
 
+  /**
+   * Set the specified user as the logged in user in the session.
+   *
+   * @param userId
+   *          The user's ID.
+   * @throws Exception
+   *           If the user cannot be retrieved from the database.
+   */
   public void loginUser(long userId) throws Exception {
     ((HttpSession) externalContext.getSession(false)).setAttribute(
       LoginBean.USER_SESSION_ATTR, UserDB.getUser(getConnection(), userId));
@@ -236,13 +244,13 @@ public class BaseTest {
   }
 
   /**
-   * Check that two lists contain the same values in the same order.
+   * Check that two maps contain the same values in the same order.
    *
-   * @param list1
-   *          The first list.
-   * @param list2
-   *          The second list.
-   * @return {@code true} if the lists contain the same values; {@code false}
+   * @param map1
+   *          The first map.
+   * @param map2
+   *          The second map.
+   * @return {@code true} if the maps contain the same values; {@code false}
    *         otherwise.
    */
   protected boolean mapsEqual(SortedMap<?, ?> map1, SortedMap<?, ?> map2) {

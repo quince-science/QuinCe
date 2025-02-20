@@ -24,6 +24,8 @@ public class ASVCO2WaterReducer extends UnderwayMarinePco2Reducer {
    *          The {@link Variable} being processed.
    * @param properties
    *          The variable properties.
+   * @param calculationCoefficients
+   *          The calculation coefficients specified for the instrument.
    */
   public ASVCO2WaterReducer(Variable variable,
     Map<String, Properties> properties,

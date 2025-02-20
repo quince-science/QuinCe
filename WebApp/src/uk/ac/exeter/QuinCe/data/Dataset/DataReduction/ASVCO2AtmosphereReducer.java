@@ -24,6 +24,8 @@ public class ASVCO2AtmosphereReducer extends UnderwayAtmosphericPco2Reducer {
    *          The {@link Variable} being processed.
    * @param properties
    *          The variable properties.
+   * @param calculationCoefficients
+   *          The calculation coefficients specified for the instrument.
    */
   public ASVCO2AtmosphereReducer(Variable variable,
     Map<String, Properties> properties,
