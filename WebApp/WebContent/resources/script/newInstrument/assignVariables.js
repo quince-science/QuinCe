@@ -211,6 +211,9 @@ function openDateTimeAssignDialog(dateTimeType, column) {
   $('#newInstrumentForm\\:dateTimeType').val(getDateTimeTypeIndex(dateTimeType));
 
   window.suspendEvents = true;
+  window.DATE_TIME_COLUMN = column;
+  window.DATE_TIME_TYPE = dateTimeType;
+
   let showDialog = false;
 
   $('#dateTimeFormatContainer').hide();
@@ -220,24 +223,18 @@ function openDateTimeAssignDialog(dateTimeType, column) {
 
   switch ($('#newInstrumentForm\\:dateTimeType').val()) {
   case DATE_TIME: {
-    PF('dateTimeFormat').selectValue('yyyy-MM-dd HH:mm:ss');
-    $('#dateTimeFormatContainer').show();
-    PF('dateTimeAssignButton').enable();
-    showDialog = true;
+	$('#newInstrumentForm\\:dateTimeValue').val(column.exampleValue);
+	prepareDateTimeFormatDialog(); // PF RemoteCommand
     break;
   }
   case DATE: {
-    PF('dateFormat').selectValue('yyyy-MM-dd');
-    $('#dateFormatContainer').show();
-    PF('dateTimeAssignButton').enable();
-    showDialog = true;
+    $('#newInstrumentForm\\:dateValue').val(column.exampleValue);
+	prepareDateFormatDialog(); // PF RemoteCommand
     break;
   }
   case TIME: {
-    PF('timeFormat').selectValue('HH:mm:ss');
-    $('#timeFormatContainer').show();
-    PF('dateTimeAssignButton').enable();
-    showDialog = true;
+	$('#newInstrumentForm\\:timeValue').val(column.exampleValue);
+	prepareTimeFormatDialog(); // PF RemoteCommand
     break;
   }
   case HOURS_FROM_START:
@@ -268,7 +265,57 @@ function openDateTimeAssignDialog(dateTimeType, column) {
     PF('dateTimeAssignmentDialog').initPosition();
     PF('dateTimeAssignmentDialog').show();
   } else {
+    //PF('dateTimeAssignButton').jq.click();
+  }
+}
+
+function showDateTimeFormatDialog() {
+  let options = $('#newInstrumentForm\\:dateTimeFormat_input').children();
+  if (options.length == 1) {
+	PF('dateTimeAssignButton').jq.click();
+  } else {
+    let column = window.DATE_TIME_COLUMN;
+    $('#dateTimeFormatContainer').show();
+    PF('dateTimeAssignButton').enable();
+    $('#dateTimeFileLabel').html(column.dataFile);
+    $('#dateTimeColumnLabel').html(column.colName);
+    $('#dateTimeTypeText').html(window.DATE_TIME_TYPE);
+    PF('dateTimeAssignmentDialog').initPosition();
+    PF('dateTimeAssignmentDialog').show();
+  }
+
+  return false;
+}
+
+function showDateFormatDialog() {
+  let options = $('#newInstrumentForm\\:dateFormat_input').children();
+  if (options.length == 1) {
     PF('dateTimeAssignButton').jq.click();
+  } else {
+    let column = window.DATE_TIME_COLUMN;
+	$('#dateFormatContainer').show();
+	PF('dateTimeAssignButton').enable();
+	$('#dateTimeFileLabel').html(column.dataFile);
+	$('#dateTimeColumnLabel').html(column.colName);
+	$('#dateTimeTypeText').html(window.DATE_TIME_TYPE);
+	PF('dateTimeAssignmentDialog').initPosition();
+	PF('dateTimeAssignmentDialog').show();
+  }
+}
+
+function showTimeFormatDialog() {
+  let options = $('#newInstrumentForm\\:timeFormat_input').children();
+  if (options.length == 1) {
+    PF('dateTimeAssignButton').jq.click();
+  } else {
+    let column = window.DATE_TIME_COLUMN;
+	$('#timeFormatContainer').show();
+	PF('dateTimeAssignButton').enable();
+	$('#dateTimeFileLabel').html(column.dataFile);
+	$('#dateTimeColumnLabel').html(column.colName);
+	$('#dateTimeTypeText').html(window.DATE_TIME_TYPE);
+	PF('dateTimeAssignmentDialog').initPosition();
+	PF('dateTimeAssignmentDialog').show();
   }
 }
 
@@ -487,8 +534,6 @@ function renameFileInputMonitor() {
     PF('renameFileButton').enable();
   }
 }
-
-
 
 function getSensorTypeID(typeName) {
   let result = null;

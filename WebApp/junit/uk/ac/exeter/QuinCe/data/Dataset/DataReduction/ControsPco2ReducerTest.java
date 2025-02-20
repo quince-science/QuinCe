@@ -22,7 +22,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.web.Instrument.NewInstrument.DateTimeFormatsBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -205,8 +205,8 @@ public class ControsPco2ReducerTest extends DataReducerTest {
   /**
    * Date of the {@link Measurement} whose data reduction will be tested.
    */
-  private static final LocalDateTime MEASUREMENT_TIME = DateTimeUtils
-    .parseISODateTime("2023-06-08T23:50:13.000Z");
+  private static final LocalDateTime MEASUREMENT_TIME = LocalDateTime
+    .parse("2023-06-08T23:50:13.000Z", DateTimeFormatsBean.DT_ISO_MS_F);
 
   /**
    * Initialise the Resource Manager.

@@ -1,16 +1,12 @@
-package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
+package uk.ac.exeter.QuinCe.web.Instrument.NewInstrument;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.validator.ValidatorException;
 
-/**
- * Validator for instrument names. Ensures that the name contains at least one
- * character, and is unique for the current user
- */
-public class InstrumentFileDescriptionValidator extends NewInstrumentValidator {
+public class FileDescriptionValidator extends NewInstrumentValidator {
 
   @Override
-  public void doValidation(NewInstrumentBean bean, Object value)
+  protected void doValidation(NewInstrumentBean bean, Object value)
     throws ValidatorException {
 
     String description = ((String) value).trim();
@@ -21,4 +17,5 @@ public class InstrumentFileDescriptionValidator extends NewInstrumentValidator {
         "This description is already being used by another file"));
     }
   }
+
 }
