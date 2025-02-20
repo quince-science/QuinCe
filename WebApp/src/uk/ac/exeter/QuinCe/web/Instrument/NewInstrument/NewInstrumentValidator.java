@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
+package uk.ac.exeter.QuinCe.web.Instrument.NewInstrument;
 
 import javax.el.ValueExpression;
 import javax.faces.application.FacesMessage;

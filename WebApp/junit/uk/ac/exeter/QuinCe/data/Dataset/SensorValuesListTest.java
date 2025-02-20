@@ -25,7 +25,7 @@ import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.web.Instrument.NewInstrument.DateTimeFormatsBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class SensorValuesListTest extends BaseTest {
@@ -249,7 +249,8 @@ public class SensorValuesListTest extends BaseTest {
     BufferedReader in = new BufferedReader(new FileReader(timesFile));
     String line;
     while ((line = in.readLine()) != null) {
-      LocalDateTime timestamp = DateTimeUtils.parseISODateTime(line);
+      LocalDateTime timestamp = LocalDateTime.parse(line,
+        DateTimeFormatsBean.DT_ISO_MS_F);
       list.add(new SensorValue(1L, 1L, timestamp, "1"));
     }
     in.close();
@@ -271,7 +272,8 @@ public class SensorValuesListTest extends BaseTest {
     String line;
     while ((line = in.readLine()) != null) {
       String[] fields = line.split(",");
-      LocalDateTime timestamp = DateTimeUtils.parseISODateTime(fields[0]);
+      LocalDateTime timestamp = LocalDateTime.parse(fields[0],
+        DateTimeFormatsBean.DT_ISO_MS_F);
       SensorValue sensorValue = new SensorValue(getSensorValueId(), 1L,
         columnId, timestamp, fields[1], new AutoQCResult(), flag, "");
       result.add(sensorValue);

@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
+package uk.ac.exeter.QuinCe.web.Instrument.NewInstrument;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 

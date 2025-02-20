@@ -1,0 +1,7 @@
+Example String,Expected Formats
+,ALL
+dummy,ALL
+13:12:13,hh:mm:ss
+26:00:00,ALL
+13:12:12.435,hh:mm:ss.SSS
+010001,hhmmss

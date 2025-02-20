@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
+package uk.ac.exeter.QuinCe.web.Instrument.NewInstrument;
 
 import java.io.IOException;
 import java.sql.Connection;

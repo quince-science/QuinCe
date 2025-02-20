@@ -1,8 +1,8 @@
-package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
+package uk.ac.exeter.QuinCe.web.Instrument.NewInstrument;
 
 /**
  * Base class for node data types in the
- * {@link uk.ac.exeter.QuinCe.web.Instrument.newInstrument.AssignmentsTree}.
+ * {@link uk.ac.exeter.QuinCe.web.Instrument.NewInstrument.AssignmentsTree}.
  */
 public abstract class AssignmentsTreeNodeData {
 

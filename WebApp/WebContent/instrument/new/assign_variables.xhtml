@@ -260,40 +260,20 @@
               <td><p:outputLabel value="Format:" /></td>
               <td><p:selectOneMenu widgetVar="dateTimeFormat" id="dateTimeFormat"
                   value="#{newInstrumentBean.dateTimeFormat}">
-                  <f:selectItem itemLabel="ISO Format"
-                    itemValue="ISO" />
-                  <f:selectItem itemLabel="ISO Format (UTC, no separators)"
-                    itemValue="yyyyMMdd'T'HHmmss'Z'" />
-                  <f:selectItem itemLabel="YYYY-MM-DD hh:mm:ss"
-                    itemValue="yyyy-MM-dd HH:mm:ss" />
-                  <f:selectItem itemLabel="YYYY-MM-DD hh:mm:ss.SSS"
-                    itemValue="yyyy-MM-dd HH:mm:ss.SSS" />
-                  <f:selectItem itemLabel="YYYY/MM/DD hh:mm:ss"
-                    itemValue="yyyy/MM/dd HH:mm:ss" />
-                  <f:selectItem itemLabel="YYYY/MM/DD hh:mm:ss.SSS"
-                    itemValue="yyyy/MM/dd HH:mm:ss.SSS" />
-                  <f:selectItem itemLabel="MM/DD/YYYY hh:mm:ss"
-                    itemValue="MM/dd/yyyy HH:mm:ss" />
-                  <f:selectItem itemLabel="MM/DD/YY hh:mm:ss"
-                    itemValue="MM/dd/yy HH:mm:ss" />
-                  <f:selectItem itemLabel="DD/MM/YYYY hh:mm:ss"
-                    itemValue="dd/MM/yyyy HH:mm:ss" />
-                  <f:selectItem itemLabel="DD/MM/YY hh:mm:ss"
-                    itemValue="dd/MM/yy HH:mm:ss" />
-                  <f:selectItem itemLabel="DD-MMM-YYYY hh:mm:ss"
-                    itemValue="dd-MMM-yyyy HH:mm:ss" />
-                  <f:selectItem itemLabel="MM.DD.YYYY hh:mm:ss"
-                    itemValue="MM.dd.yyyy HH:mm:ss" />
-                  <f:selectItem itemLabel="MM.DD.YY hh:mm:ss"
-                    itemValue="MM.dd.yy HH:mm:ss" />
-                  <f:selectItem itemLabel="DD.MM.YYYY hh:mm:ss"
-                    itemValue="dd.MM.yyyy HH:mm:ss" />
-                  <f:selectItem itemLabel="DD.MM.YY hh:mm:ss"
-                    itemValue="dd.MM.yy HH:mm:ss" />
+
+                  <f:selectItems value="#{dateTimeFormatsBean.dateTimeFormats}"/>
                 </p:selectOneMenu></td>
             </tr>
           </table>
         </div>
+
+        <h:inputHidden id="dateTimeValue" value="#{dateTimeFormatsBean.dateTimeValue}"/>
+
+        <p:remoteCommand name="prepareDateTimeFormatDialog" action="#{newInstrumentBean.noop}"
+          process="dateTimeValue"
+          update="dateTimeFormat"
+          oncomplete="showDateTimeFormatDialog();" />
+
 
         <div id="dateFormatContainer" class="dialogSection">
           <table>
@@ -301,30 +281,19 @@
               <td><p:outputLabel value="Format:" /></td>
               <td><p:selectOneMenu widgetVar="dateFormat" id="dateFormat"
                   value="#{newInstrumentBean.dateFormat}">
-                  <f:selectItem itemLabel="YYYY-MM-DD" itemValue="yyyy-MM-dd" />
-                  <f:selectItem itemLabel="DD-MM-YYYY" itemValue="dd-MM-yyyy" />
-                  <f:selectItem itemLabel="MM-DD-YYYY" itemValue="MM-dd-yyyy" />
-                  <f:selectItem itemLabel="DD-MM-YY" itemValue="dd-MM-yy" />
-                  <f:selectItem itemLabel="MM-DD-YY" itemValue="MM-dd-yy" />
-                  <f:selectItem itemLabel="DD-MMM-YYYY" itemValue="dd-MMM-yyyy" />
-                  <f:selectItem itemLabel="YYYYMMDD" itemValue="yyyyMMdd" />
-                  <f:selectItem itemLabel="YYYY/MM/DD" itemValue="yyyy/MM/dd" />
-                  <f:selectItem itemLabel="MM/DD/YYYY" itemValue="MM/dd/yyyy" />
-                  <f:selectItem itemLabel="DD/MM/YYYY" itemValue="dd/MM/yyyy" />
-                  <f:selectItem itemLabel="MM/DD/YY" itemValue="MM/dd/yy" />
-                  <f:selectItem itemLabel="DD/MM/YY" itemValue="dd/MM/yy" />
-                  <f:selectItem itemLabel="D/M/YYYY" itemValue="d/M/yyyy" />
-                  <f:selectItem itemLabel="M/D/YYYY" itemValue="M/d/yyyy" />
-                  <f:selectItem itemLabel="D/M/YY" itemValue="d/M/yy" />
-                  <f:selectItem itemLabel="M/D/YY" itemValue="M/d/yy" />
-                  <f:selectItem itemLabel="MM.DD.YYYY" itemValue="MM.dd.yyyy" />
-                  <f:selectItem itemLabel="DD.MM.YYYY" itemValue="dd.MM.yyyy" />
-                  <f:selectItem itemLabel="MM.DD.YY" itemValue="MM.dd.yy" />
-                  <f:selectItem itemLabel="DD.MM.YY" itemValue="dd.MM.yy" />
+
+                  <f:selectItems value="#{dateTimeFormatsBean.dateFormats}"/>
                 </p:selectOneMenu></td>
             </tr>
           </table>
         </div>
+
+        <h:inputHidden id="dateValue" value="#{dateTimeFormatsBean.dateValue}"/>
+
+        <p:remoteCommand name="prepareDateFormatDialog" action="#{newInstrumentBean.noop}"
+          process="dateValue"
+          update="dateFormat"
+          oncomplete="showDateFormatDialog();" />
 
         <div id="timeFormatContainer" class="dialogSection">
           <table>
@@ -332,14 +301,19 @@
               <td><p:outputLabel value="Format:" /></td>
               <td><p:selectOneMenu widgetVar="timeFormat" id="timeFormat"
                   value="#{newInstrumentBean.timeFormat}">
-                  <f:selectItem itemLabel="HH:mm:ss" itemValue="HH:mm:ss" />
-                  <f:selectItem itemLabel="HH:mm:ss.SSS" itemValue="HH:mm:ss.SSS" />
-                  <f:selectItem itemLabel="HHmmss" itemValue="HHmmss" />
-                  <f:selectItem itemLabel="H:mm:ss" itemValue="H:mm:ss" />
+
+                  <f:selectItems value="#{dateTimeFormatsBean.timeFormats}"/>
                 </p:selectOneMenu></td>
             </tr>
           </table>
         </div>
+
+        <h:inputHidden id="timeValue" value="#{dateTimeFormatsBean.timeValue}"/>
+
+        <p:remoteCommand name="prepareTimeFormatDialog" action="#{newInstrumentBean.noop}"
+          process="timeValue"
+          update="timeFormat"
+          oncomplete="showTimeFormatDialog();" />
 
         <div id="hoursFromStartContainer" class="dialogSection">
           <h:inputHidden id="startTimeLine"
