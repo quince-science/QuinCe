@@ -30,6 +30,8 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
    *          The {@link Variable} being processed.
    * @param properties
    *          The variable properties.
+   * @param calculationCoefficients
+   *          The calculation coefficients specified for the instrument.
    */
   public UnderwayAtmosphericPco2Reducer(Variable variable,
     Map<String, Properties> properties,

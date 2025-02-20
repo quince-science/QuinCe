@@ -277,6 +277,8 @@ public class User {
    * Determine whether or not the specified permissions entry represents an API
    * user.
    *
+   * @param permissionsEntry
+   *          The permissions for the user.
    * @return {@code true} if this permissions give access to the API;
    *         {@code false} if not
    */

@@ -717,10 +717,31 @@ public abstract class BaseManagedBean {
     getResponse().setStatus(code);
   }
 
+  /**
+   * Retrieve the state of the current AJAX activity.
+   *
+   * <p>
+   * Some front end methods using AJAX calls need to know if those calls
+   * completed successfully. Server side code can set this flag, which the front
+   * end can examine to get the state of the call.
+   * </p>
+   *
+   * @return The state of the {@link #ajaxOK} flag.
+   */
   public boolean getAjaxOK() {
     return ajaxOK;
   }
 
+  /**
+   * Capture and swallow front-end attempts to set the {@link #ajaxOK} flag.
+   *
+   * <p>
+   * No action is performed, since the front end should not set this flag.
+   * </p>
+   *
+   * @param ok
+   *          The flag value (ignored).
+   */
   public void setAjaxOK(boolean ok) {
     // Ignore all attempts to set this value
   }

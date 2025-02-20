@@ -58,6 +58,8 @@ public abstract class DataReducer {
    *          The {@link Variable}.
    * @param properties
    *          The {@link Variable}'s attributes.
+   * @param calculationCoefficients
+   *          The calculation coefficients specified for the instrument.
    */
   public DataReducer(Variable variable, Map<String, Properties> properties,
     CalibrationSet calculationCoefficients) {
