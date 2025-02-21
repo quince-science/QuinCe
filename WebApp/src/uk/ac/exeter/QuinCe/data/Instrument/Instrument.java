@@ -23,6 +23,7 @@ import com.google.gson.JsonParser;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -40,46 +41,56 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Object to hold all the details of an instrument
+ * Holds all the details of an instrument.
  */
 public class Instrument {
 
+  /**
+   * Name for the Sensor Groups entry in the JSON representation of the
+   * instrument's properties.
+   */
   private static final String SENSOR_GROUPS_JSON_NAME = "sensorGroups";
 
+  /**
+   * Name for the Diagnostic QC Configuration entry in the JSON representation
+   * of the instrument's properties.
+   */
   private static final String DIAGNOSTIC_QC_JSON_NAME = "diagnosticQC";
 
   /**
-   * Property name for the pre-flushing time
+   * Property name for the pre-flushing time.
    */
   public static final String PROP_PRE_FLUSHING_TIME = "preFlushingTime";
 
   /**
-   * Property name for the post-flushing time
+   * Property name for the post-flushing time.
    */
   public static final String PROP_POST_FLUSHING_TIME = "postFlushingTime";
 
   /**
-   * Property name for the depth
+   * Property name for the depth.
    */
   public static final String PROP_DEPTH = "depth";
 
   /**
-   * Property name for the fixed longitude
+   * Property name for a fixed longitude. Used if the instrument's data does not
+   * contain position information from a GPS.
    */
   public static final String PROP_LONGITUDE = "longitude";
 
   /**
-   * Property name for the fixed latitude
+   * Property name for the fixed latitude. Used if the instrument's data does
+   * not contain position information from a GPS.
    */
   public static final String PROP_LATITUDE = "latitude";
 
   /**
-   * The instrument's ID in the database
+   * The instrument's database ID.
    */
   private long id = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
-   * The owner of the instrument
+   * The owner of the instrument.
    */
   private User owner;
 
@@ -90,22 +101,22 @@ public class Instrument {
   private List<Long> sharedWith;
 
   /**
-   * The name of the instrument
+   * The name of the instrument.
    */
   private final String name;
 
   /**
-   * The instrument properties
+   * The instrument properties.
    */
   private Properties properties = null;
 
   /**
-   * The instrument's file format definitions
+   * The instrument's file format definitions.
    */
   private InstrumentFileSet fileDefinitions = null;
 
   /**
-   * The variables measured by this instrument
+   * The variables measured by this instrument.
    */
   private List<Variable> variables = null;
 
@@ -115,7 +126,7 @@ public class Instrument {
   private Map<Variable, Properties> variableProperties = null;
 
   /**
-   * The assignment of columns in data files to sensors
+   * The assignment of columns in data files to sensors.
    */
   private SensorAssignments sensorAssignments = null;
 
@@ -125,17 +136,18 @@ public class Instrument {
   private SensorGroups sensorGroups = null;
 
   /**
-   * Platform name
+   * The name of the platform on which the instrument is deployed.
    */
   private final String platformName;
 
   /**
-   * Platform code
+   * The code (usually an ICES code) for the platform on which the instrument is
+   * deployed.
    */
   private final String platformCode;
 
   /**
-   * Indicates whether or not this instrument supplies near-real-time data
+   * Indicates whether or not this instrument supplies near-real-time data.
    *
    * At the time of writing, the NRT flag can only be set manually on the
    * database after the instrument is created. All calls within QuinCe set this
@@ -160,28 +172,39 @@ public class Instrument {
   private final LocalDateTime created;
 
   /**
-   * Create an instrument from an existing database record.
+   * Create an Instrument object with an existing database record.
    *
    * @param owner
-   *          The the instrument owner.
+   *          The instrument's owner.
    * @param databaseId
    *          The instrument's database ID.
    * @param name
-   *          The instrument's name.
+   *          The name of the instrument.
+   * @param sharedWith
+   *          The database IDs of the users with which the instrument is shared.
    * @param fileDefinitions
    *          The data file definitions for the instrument.
    * @param variables
-   *          The variables that the instrument measures.
+   *          The variables measured by the instrument.
+   * @param variableProperties
+   *          The configuration properties for the measured variables.
    * @param sensorAssignments
-   *          The sensors assigned to the instrument.
+   *          The assignments of input data columns to specific sensors.
+   * @param platformName
+   *          The name of the platform on which the instrument is deployed.
    * @param platformCode
-   *          The instrument's identifier code.
+   *          The code for the platform on which the instrument is deployed.
    * @param nrt
    *          Indicates whether or not the instrument provides data in near real
    *          time.
-   * @param properties
-   *          The instrument's properties.
+   * @param lastNrtExport
+   *          The time at which an NRT dataset was last exported.
+   * @param propertiesJson
+   *          The main instrument properties as a JSON string.
+   * @param created
+   *          The time when the instrument was created.
    * @throws SensorGroupsException
+   *           If the sensor groupings configuration is invalid.
    */
   public Instrument(User owner, long databaseId, String name,
     List<Long> sharedWith, InstrumentFileSet fileDefinitions,
@@ -230,67 +253,36 @@ public class Instrument {
   }
 
   /**
-   * Create a new instrument with defined properties.
+   * Create a new instrument that is not yet fully configured and not stored in
+   * the database.
    *
    * @param owner
-   *          The instrument owner.
+   *          The instrument's owner.
    * @param name
-   *          The instrument's name.
+   *          The name of the instrument.
+   * @param sharedWith
+   *          The database IDs of the users with which the instrument is shared.
    * @param fileDefinitions
    *          The data file definitions for the instrument.
    * @param variables
-   *          The variables that the instrument measures.
+   *          The variables measured by the instrument.
+   * @param variableProperties
+   *          The configuration properties for the measured variables.
    * @param sensorAssignments
-   *          The sensors assigned to the instrument.
+   *          The assignments of input data columns to specific sensors.
+   * @param sensorGroups
+   *          The logical groupings of the defined sensors.
+   * @param platformName
+   *          The name of the platform on which the instrument is deployed.
    * @param platformCode
-   *          The instrument's identifier code.
+   *          The code for the platform on which the instrument is deployed.
    * @param nrt
    *          Indicates whether or not the instrument provides data in near real
    *          time.
-   * @param properties
-   *          The instrument's properties.
-   * @throws SensorGroupsException
-   */
-  public Instrument(User owner, String name, List<Long> sharedWith,
-    InstrumentFileSet fileDefinitions, List<Variable> variables,
-    Map<Variable, Properties> variableProperties,
-    SensorAssignments sensorAssignments, String platformName,
-    String platformCode, boolean nrt, LocalDateTime lastNrtExport,
-    String propertiesJson, LocalDateTime created) throws SensorGroupsException {
-
-    this.owner = owner;
-    this.name = name;
-    this.sharedWith = null != sharedWith ? sharedWith : new ArrayList<Long>();
-    this.fileDefinitions = fileDefinitions;
-    this.variables = variables;
-    this.variableProperties = variableProperties;
-    this.sensorAssignments = sensorAssignments;
-    this.platformName = platformName;
-    this.platformCode = platformCode;
-    this.nrt = nrt;
-    this.lastNrtExport = lastNrtExport;
-    parsePropertiesJson(propertiesJson);
-    this.created = created;
-  }
-
-  /**
-   * Create a new instrument with no properties defined.
-   *
-   * @param owner
-   *          The instrument owner.
-   * @param name
-   *          The instrument's name.
-   * @param fileDefinitions
-   *          The data file definitions for the instrument.
-   * @param variables
-   *          The variables that the instrument measures.
-   * @param sensorAssignments
-   *          The sensors assigned to the instrument.
-   * @param platformCode
-   *          The instrument's identifier code.
-   * @param nrt
-   *          Indicates whether or not the instrument provides data in near real
-   *          time.
+   * @param lastNrtExport
+   *          The time at which an NRT dataset was last exported.
+   * @param created
+   *          The time when the instrument was created.
    */
   public Instrument(User owner, String name, List<Long> sharedWith,
     InstrumentFileSet fileDefinitions, List<Variable> variables,
@@ -317,13 +309,13 @@ public class Instrument {
 
   /**
    * Validate that all required information for the Instrument is present and
-   * consistent
+   * consistent.
    *
    * @param checkDatabaseColumns
    *          Specifies whether or not database columns have been assigned and
-   *          should be checked
+   *          should be checked.
    * @throws InstrumentException
-   *           If the instrument is not valid
+   *           If the instrument is not valid.
    */
   public void validate(boolean checkDatabaseColumns)
     throws InstrumentException {
@@ -332,84 +324,90 @@ public class Instrument {
   }
 
   /**
-   * Returns the ID of the instrument in the database
+   * Get the instrument's database ID.
    *
-   * @return The ID of the instrument in the database
+   * @return The database ID.
    */
   public long getId() {
     return id;
   }
 
   /**
-   * Sets the ID of the instrument in the database
+   * Set the instrument's database ID
    *
    * @param databaseID
-   *          The database ID
+   *          The database ID.
    */
   public void setDatabaseId(long databaseID) {
     this.id = databaseID;
   }
 
   /**
-   * Returns the database ID of the owner of the instrument
+   * Get the {@link User} object representing the owner of the instrument.
    *
-   * @return The ID of the owner of the instrument
+   * @return The instrument's owner.
    */
   public User getOwner() {
     return owner;
   }
 
+  /**
+   * Set the instrument's owner.
+   *
+   * @param owner
+   *          The new owner.
+   */
   public void setOwner(User owner) {
     this.owner = owner;
   }
 
   /**
-   * Get the instrument's name
+   * Get the instrument's name.
    *
-   * @return The name
+   * @return The instrument name.
    */
   public String getName() {
     return name;
   }
 
   /**
-   * Get the instrument's file definitions
+   * Get the instrument's file format definitions.
    *
-   * @return The file definitions
+   * @return The file definitions.
    */
   public InstrumentFileSet getFileDefinitions() {
     return fileDefinitions;
   }
 
   /**
-   * Get the sensor assignments
+   * Get the specification of assignments of data columns to sensors.
    *
-   * @return The sensor assignments
+   * @return The sensor assignments.
    */
   public SensorAssignments getSensorAssignments() {
     return sensorAssignments;
   }
 
   /**
-   * Get the platform code.
+   * Get the code of the platform on which the instrument is deployed.
    *
-   * @return the platformCode
+   * @return The platform code.
    */
   public String getPlatformCode() {
     return platformCode;
   }
 
   /**
-   * Get the platform name.
+   * Get the name of the platform on which the instrument is deployed.
    *
-   * @return the platformCode
+   * @return The platform name.
    */
   public String getPlatformName() {
     return platformName;
   }
 
   /**
-   * Determine whether or not this instrument provides near-real-time data
+   * Determine whether or not this instrument provides near-real-time data.
    *
    * @return {@code true} if NRT data is provided; {@code false} if it is not
    */
@@ -418,36 +416,50 @@ public class Instrument {
   }
 
   /**
-   * Set the NRT flag
+   * Set the NRT flag for the instrument.
    *
    * @param nrt
-   *          NRT flag
+   *          The NRT flag.
    */
   public void setNrt(boolean nrt) {
     this.nrt = nrt;
   }
 
   /**
-   * Get the variables measured by this instrument
+   * Get the {@link Variable}s measured by this instrument.
    *
-   * @return
+   * @return The measured variables.
    */
   public List<Variable> getVariables() {
     return variables;
   }
 
+  /**
+   * Wrapper method to {@link #getRunTypeCategory(long, String)} that takes a
+   * {@link Map.Entry}.
+   *
+   * @param runTypeEntry
+   *          The map entry.
+   * @return The Run Type category
+   * @throws RunTypeCategoryException
+   *           If the category cannot be determined.
+   */
   public RunTypeCategory getRunTypeCategory(
     Map.Entry<Long, String> runTypeEntry) throws RunTypeCategoryException {
     return getRunTypeCategory(runTypeEntry.getKey(), runTypeEntry.getValue());
   }
 
   /**
-   * Get the Run Type category for a given Run Type value
+   * Get the {@link RunTypeCategory} to which a specified Run Type value is
+   * assigned in the context of a specified {@link Variable}'s requirements.
    *
+   * @param variableId
+   *          The {@link Variable}'s database ID.
    * @param runTypeValue
    *          The Run Type value
    * @return The Run Type category
    * @throws RunTypeCategoryException
+   *           If the category cannot be determined.
    */
   public RunTypeCategory getRunTypeCategory(long variableId,
     String runTypeValue) throws RunTypeCategoryException {
@@ -502,6 +514,18 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Determine whether a given Run Type values corresponds to a state where the
+   * instrument is taking measurements (as opposed to calibration, flushing
+   * etc.).
+   *
+   * @param runType
+   *          The Run Type value.
+   * @return {@code true} if the Run Type corresponds to the instrument's
+   *         measuring mode; {@code false} if it does not.
+   * @throws RunTypeCategoryException
+   *           If the Run Type category cannot be determined.
+   */
   public boolean isMeasurementRunType(String runType)
     throws RunTypeCategoryException {
 
@@ -518,23 +542,25 @@ public class Instrument {
   }
 
   /**
-   * Get an InstrumentVaraible based on its ID
+   * Get the {@link Variable} object for a variable using its database ID.
+   *
+   * <p>
+   * Only {@link Variable}s measured by this instrument will be located and
+   * returned. A request for a {@link Variable} not measured by the instrument
+   * will result in an exception, even if it exists in the database.
+   * </p>
    *
    * @param variableId
    *          The variable ID
-   * @return The InstrumentVariable
+   * @return The {@link Variable} object.
    * @throws InstrumentException
-   *           If the variable is not found
+   *           If the variable is not measured by this instrument.
    */
   public Variable getVariable(long variableId) throws InstrumentException {
     Variable result = null;
 
-    for (Variable variable : variables) {
-      if (variable.getId() == variableId) {
-        result = variable;
-        break;
-      }
-    }
+    result = variables.stream().filter(v -> v.getId() == variableId).findAny()
+      .orElse(null);
 
     if (null == result) {
       throw new InstrumentException(
@@ -544,32 +570,50 @@ public class Instrument {
   }
 
   /**
-   * Get an InstrumentVaraible based on its name
+   * Get a {@link Variable} based on its name.
    *
-   * @param variableId
+   * <p>
+   * This method will only return a result if the {@link Variable} exists,
+   * <i>and</i> it is measured by this instrument.
+   * </p>
+   *
+   * @param name
    *          The variable name
    * @return The InstrumentVariable, or null if the instrument does not have the
    *         variable defined.
+   * @throws InstrumentException
+   *           If the {@link Variable} does not exist, or this instrument does
+   *           not measure it.
    */
-  public Variable getVariable(String name) {
+  public Variable getVariable(String name) throws InstrumentException {
     Variable result = null;
 
-    for (Variable variable : variables) {
-      if (variable.getName().equals(name)) {
-        result = variable;
-        break;
-      }
+    result = variables.stream().filter(v -> v.getName().equals(name)).findAny()
+      .orElse(null);
+
+    if (null == result) {
+      throw new InstrumentException(
+        "Variable with name '" + name + "' is not part of this instrument");
     }
 
     return result;
   }
 
   /**
-   * Get the run types that correspond to measurements for a given variable
-   * Returns a map of Column ID to the run types, including all aliases
+   * Get the Run Types types that correspond to measurements for a given
+   * {@link Variable}.
+   *
+   * <p>
+   * The output of this method is a {@link Map} of {@link RunTypeCategory}
+   * numeric codes (including variable measurements, calibration modes, etc.) to
+   * the Run Type values that correspond to them. This includes all aliased Run
+   * Type values.
+   * </p>
    *
    * @param variable
-   * @return
+   *          The {@link Variable} whose Run Type values are required.
+   * @return The Run Type values, grouped by category.
+   * @see RunTypeCategory
    */
   public Map<Long, List<String>> getVariableRunTypes(Variable variable) {
     Map<Long, List<String>> result = new HashMap<Long, List<String>>();
@@ -599,11 +643,17 @@ public class Instrument {
   }
 
   /**
-   * Get the list of variables that require the specified sensor type. If no
-   * variables require it, the list is empty.
+   * Get the list of {@link Variable}s that require the specified
+   * {@link SensorType} for its data reduction.
+   *
+   * <p>
+   * If the {@link SensorType} is not required by any {@link Variable}s, the
+   * returned list will be empty.
+   * </p>
    *
    * @param sensorType
-   * @return
+   *          The {@link SensorType}.
+   * @return The {@link Variable}s that require the {@link SensorType}.
    */
   public List<Variable> getSensorVariables(SensorType sensorType) {
     List<Variable> result = new ArrayList<Variable>(variables.size());
@@ -624,15 +674,23 @@ public class Instrument {
     return result;
   }
 
-  public List<String> getRunTypes(long assignmentType) {
-
+  /**
+   * Get the Run Type values associated with a given {@link RunTypeCategory}
+   * using its numeric code. Aliases are not included.
+   *
+   * @param categoryCode
+   *          The numeric {@link RunTypeCategory} code.
+   * @return The Run Type values associated with the category.
+   * @see RunTypeCategory
+   */
+  public List<String> getRunTypes(long categoryCode) {
     List<String> result = new ArrayList<String>();
 
     for (FileDefinition fileDef : fileDefinitions) {
       if (null != fileDef.getRunTypes()) {
         for (Map.Entry<String, RunTypeAssignment> entry : fileDef.getRunTypes()
           .entrySet()) {
-          if (entry.getValue().getCategoryCode() == assignmentType) {
+          if (entry.getValue().getCategoryCode() == categoryCode) {
             result.add(entry.getKey());
           }
         }
@@ -643,6 +701,12 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Get the Run Type values associated with measurements for any
+   * {@link Variable} measured by the instrument.
+   *
+   * @return The Run Types associated with measurements.
+   */
   public List<String> getMeasurementRunTypes() {
     List<String> result = new ArrayList<String>();
 
@@ -657,6 +721,11 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Get the Run Type values associated with internal calibrations.
+   *
+   * @return The Run Types associated with internal calibrations.
+   */
   public List<String> getInternalCalibrationRunTypes() {
     // Get the list of run type values that indicate measurements
     List<String> result = new ArrayList<String>(0);
@@ -686,6 +755,19 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Get all the Run Type values associated with this instrument.
+   *
+   * <p>
+   * The output of this method is a {@link Map} of {@link RunTypeCategory}
+   * objects (corresponding to measurements, calibration modes, etc.) to the Run
+   * Type values that correspond to them. This includes all aliased Run Type
+   * values.
+   * </p>
+   *
+   * @return The Run Types for the instrument.
+   * @see RunTypeCategory
+   */
   public Map<RunTypeCategory, TreeSet<RunTypeAssignment>> getAllRunTypes() {
     Map<RunTypeCategory, TreeSet<RunTypeAssignment>> runTypes = new TreeMap<RunTypeCategory, TreeSet<RunTypeAssignment>>();
 
@@ -708,6 +790,11 @@ public class Instrument {
     return runTypes;
   }
 
+  /**
+   * Get all the Run Type values defined for the instrument, including aliases.
+   *
+   * @return The instrument's Run Type values.
+   */
   public List<String> getAllRunTypeNames() {
     return getAllRunTypes().values().stream().flatMap(v -> v.stream())
       .map(r -> r.getRunName()).toList();
@@ -731,6 +818,14 @@ public class Instrument {
     return getRunTypes(RunTypeCategory.INTERNAL_CALIBRATION_TYPE).size() > 0;
   }
 
+  /**
+   * Determines whether or not any {@link CalculationCoefficient}s have been
+   * defined for any of the {@link Variable}s that are measured by the
+   * instrument.
+   *
+   * @return {@code true} if any {@link CalculationCoefficient}s are defined;
+   *         {@code false}.
+   */
   public boolean hasCalculationCoefficients() {
     boolean result = false;
 
@@ -744,18 +839,30 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Determines whether or not any Run Type values have been assigned for the
+   * instrument.
+   *
+   * @return {@code true} if at least one Run Type value is assigned;
+   *         {@code false} otherwise.
+   */
   public boolean hasRunTypes() {
     return sensorAssignments.getRunTypeColumnIDs().size() > 0;
   }
 
   /**
-   * Determine whether a Measurement object has the correct run type for data
-   * reduction to be performed
+   * Determine whether a Run Type indicates that the instrument is taking a
+   * measurement for the specified {@link Variable} in the instrument.
    *
+   * @param variable
+   *          The variable.
    * @param runType
-   *          The run type
-   * @return
+   *          The Run Type value.
+   * @return {@code true} if the Run Type value indicates the {@link Variable}
+   *         is being measured.
+   *
    * @throws RunTypeCategoryException
+   *           If the Run Type's category cannot be established.
    */
   public boolean isRunTypeForVariable(Variable variable, String runType)
     throws RunTypeCategoryException {
@@ -776,7 +883,7 @@ public class Instrument {
   }
 
   /**
-   * Set an property on the instrument.
+   * Set a property on the instrument.
    *
    * @param name
    *          The property name.
@@ -821,7 +928,7 @@ public class Instrument {
   }
 
   /**
-   * Get an instrument property.
+   * Get a named instrument property.
    *
    * <p>
    * Returns {@code null} if the property does not exist.
@@ -887,14 +994,47 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Get the specific properties of the instrument for a specified
+   * {@link Variable}.
+   *
+   * @param variable
+   *          The {@link Variable}
+   * @return The properties for the {@link Variable}.
+   */
   public Properties getVariableProperties(Variable variable) {
     return variableProperties.get(variable);
   }
 
+  /**
+   * Get the {@link Variable}-specific properties for all {@link Variable}s
+   * measured by the instrument.
+   *
+   * @return The {@link Variable}-specific properties.
+   */
   public Map<Variable, Properties> getAllVariableProperties() {
     return variableProperties;
   }
 
+  /**
+   * Get the column headings that are associated with the specified Run Type
+   * value.
+   *
+   * <p>
+   * This method determines whether or not the Run Type value indicates that a
+   * measurement is being taken for any of the {@link Variable}s measured by
+   * this instrument. If they are, all the {@link ColumnHeading}s associated
+   * with that {@link Variable} are added to the result.
+   * </p>
+   *
+   * @param runType
+   *          The Run Type value.
+   * @return The column headings associated with the Run Type value.
+   * @throws RunTypeCategoryException
+   *           If the Run Type value's category cannot be determined.
+   * @see #isRunTypeForVariable(Variable, String)
+   * @see ColumnHeading
+   */
   public Set<ColumnHeading> getAllVariableColumnHeadings(String runType)
     throws RunTypeCategoryException {
     Set<ColumnHeading> result = new HashSet<ColumnHeading>();
@@ -908,6 +1048,15 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Determine whether or not this instrument measures the specified
+   * {@link Variable}.
+   *
+   * @param variable
+   *          The {@link Variable}
+   * @return {@code true} if this instrument measures the {@link Variable};
+   *         {@code false} if it does not.
+   */
   public boolean hasVariable(Variable variable) {
     return variables.contains(variable);
   }
@@ -923,6 +1072,22 @@ public class Instrument {
     return null != getProperty("longitude");
   }
 
+  /**
+   * Determines whether or not the specified column ID value is valid for this
+   * instrument.
+   *
+   * <p>
+   * The specified column ID corresponds to a {@link FileColumn} object. The
+   * method determines whether a column with the ID has been assigned as part of
+   * the instrument's configuration.
+   * </p>
+   *
+   * @param columnId
+   *          The column ID
+   * @return {@code true} if the column is part of this instrument's
+   *         configuration; {@code false} if it is not.
+   * @see FileColumn
+   */
   public boolean columnValid(long columnId) {
 
     boolean result = true;
@@ -951,12 +1116,17 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Get the {@link SensorGroups} defined for the instrument.
+   *
+   * @return The {@link SensorGroups}.
+   */
   public SensorGroups getSensorGroups() {
     return sensorGroups;
   }
 
   /**
-   * Get the JSON string to be stored as the instrument's properties.
+   * Get the instrument's properties as a JSON string.
    *
    * <p>
    * The JSON represents both {@link #properties} and {@link #sensorGroups}.
@@ -973,7 +1143,7 @@ public class Instrument {
         new DiagnosticQCConfigSerializer())
       .create();
 
-    // Get the basic properties Json
+    // Get the basic properties JSON
     JsonObject result = gson.toJsonTree(properties, Properties.class)
       .getAsJsonObject();
 
@@ -988,7 +1158,7 @@ public class Instrument {
   }
 
   /**
-   * Parse a Json string from the {@code properties} field in the database and
+   * Parse a JSON string from the {@code properties} field in the database and
    * add its contents to this object.
    *
    * @param jsonString
@@ -1044,6 +1214,16 @@ public class Instrument {
     return null != sensorGroups && sensorGroups.size() > 1;
   }
 
+  /**
+   * Get the display name of this instrument.
+   *
+   * <p>
+   * The display name is {@code <platformName>;<name>}.
+   *
+   * @return The instrument's display name.
+   * @see #platformName
+   * @see #name
+   */
   public String getDisplayName() {
     return platformName + ";" + name;
   }
@@ -1053,9 +1233,9 @@ public class Instrument {
    * instrument.
    *
    * <p>
-   * This is just a passthrough to the {@link SensorAssignments} class, because
-   * PrimeFaces can't interact with it directly. It's confused by the fact that
-   * it's a {@link Map} and tries to do its own thing.
+   * This is just a pass-through to the {@link SensorAssignments} class, because
+   * PrimeFaces can't interact with it directly. (It's confused by the fact that
+   * it's a {@link Map} and tries to do its own thing.)
    * </p>
    *
    * @return {@code true} if at least one diagnostic sensor is assigned;
@@ -1119,28 +1299,72 @@ public class Instrument {
     return result;
   }
 
+  /**
+   * Get the last time at which an NRT dataset was exported for this instrument.
+   *
+   * <p>
+   * Returns {@code null} if the instrument does not provide NRT data or NRT
+   * data has never been exported.
+   *
+   * @return The time of the last NRT export.
+   */
   public LocalDateTime getLastNrtExport() {
     return lastNrtExport;
   }
 
+  /**
+   * Get the users with which this instrument has been shared.
+   *
+   * <p>
+   * Only the database IDs of the users are returned.
+   * </p>
+   *
+   * @return The users that the instrument is shared with.
+   */
   public List<Long> getSharedWith() {
     return sharedWith;
   }
 
+  /**
+   * Determine whether or not this instrument has been shared with the specified
+   * {@link User}.
+   *
+   * @param user
+   *          The {@link User} to be checked.
+   * @return {@code true} if this instrument is shared with the {@link User};
+   *         {@code false} if it is not.
+   */
   public boolean isSharedWith(User user) {
     return sharedWith.contains(user.getDatabaseID());
   }
 
+  /**
+   * Share this instrument with the specified {@link User}.
+   *
+   * @param user
+   *          The user.
+   */
   public void addShare(User user) {
     if (!isSharedWith(user)) {
       sharedWith.add(user.getDatabaseID());
     }
   }
 
+  /**
+   * Remove the specified {@link User}'s shared access to this instrument.
+   *
+   * @param user
+   *          The user to be removed.
+   */
   public void removeShare(User user) {
     sharedWith.remove(user.getDatabaseID());
   }
 
+  /**
+   * Get the time when this instrument was created in QuinCe.
+   *
+   * @return The instrument's creation time.
+   */
   public LocalDateTime getCreated() {
     return created;
   }
