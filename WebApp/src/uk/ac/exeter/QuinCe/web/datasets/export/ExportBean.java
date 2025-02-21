@@ -333,9 +333,8 @@ public class ExportBean extends BaseManagedBean {
                   .getRunType(Measurement.RUN_TYPE_DEFINES_VARIABLE);
 
                 // Look through all the column headings defined for the run type
-                // to
-                // see if it contains our current column. If it does, we add the
-                // value. If not, it'll be blank.
+                // to see if it contains our current column. If it does, we add
+                // the value. If not, it'll be blank.
                 Set<ColumnHeading> runTypeColumns = instrument
                   .getAllVariableColumnHeadings(runType);
 
