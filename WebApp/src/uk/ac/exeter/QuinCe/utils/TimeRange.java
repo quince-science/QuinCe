@@ -22,6 +22,14 @@ public interface TimeRange {
    */
   public LocalDateTime getEnd();
 
+  /**
+   * Examine a {@link Collection} of {@link TimeRange} objects and return the
+   * start time of the object with the latest start time.
+   *
+   * @param ranges
+   *          The ranges to be examined.
+   * @return The latest start time.
+   */
   public static LocalDateTime getLatestStart(
     Collection<? extends TimeRange> ranges) {
     LocalDateTime result = LocalDateTime.MIN;
@@ -35,6 +43,14 @@ public interface TimeRange {
     return result;
   }
 
+  /**
+   * Examine a {@link Collection} of {@link TimeRange} objects and return the
+   * end time of the object with the earliest end time.
+   *
+   * @param ranges
+   *          The ranges to be examined.
+   * @return The earliest end date.
+   */
   public static LocalDateTime getEarliestEnd(
     Collection<? extends TimeRange> ranges) {
     LocalDateTime result = LocalDateTime.MAX;
