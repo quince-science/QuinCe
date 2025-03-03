@@ -32,28 +32,40 @@ import uk.ac.exeter.QuinCe.web.Instrument.CalibrationEdit;
 import uk.ac.exeter.QuinCe.web.Instrument.InvalidCalibrationEditException;
 
 /**
- * Database methods for database actions related to calibrations
+ * Database methods for database actions related to {@link Calibration}s.
  */
 public abstract class CalibrationDB {
 
   /**
-   * Statement to add a new calibration to the database
+   * Statement to add a new {@link Calibration} to the database.
    *
-   * @see #addCalibration(DataSource, Calibration)
+   * @see #addCalibration(Connection, CalibrationEdit)
    */
   private static final String ADD_CALIBRATION_STATEMENT = "INSERT INTO calibration "
     + "(instrument_id, type, target, deployment_date, coefficients, class) "
     + "VALUES (?, ?, ?, ?, ?, ?)";
 
+  /**
+   * Statement to update the details of a pre-existing {@link Calibration} in
+   * the database.
+   *
+   * @see #updateCalibration(Connection, CalibrationEdit)
+   */
   private static final String UPDATE_CALIBRATION_STATEMENT = "UPDATE calibration "
     + "SET instrument_id = ?, type = ?, target = ?, deployment_date = ?, "
     + "coefficients = ?, class = ? WHERE id = ?";
 
+  /**
+   * Statement to remove a {@link Calibration} from the database.
+   *
+   * @see #deleteCalibration(Connection, CalibrationEdit)
+   */
   private static final String DELETE_CALIBRATION_STATEMENT = "DELETE FROM "
     + "calibration WHERE id = ?";
 
   /**
-   * Query to determine whether a calibration already exists
+   * Query to determine whether a {@link Calibration} with a specified
+   * {@link Instrument}, type and target already exists in the database.
    *
    * @see #calibrationExists(DataSource, Calibration)
    */
@@ -62,7 +74,9 @@ public abstract class CalibrationDB {
     + "type = ? AND deployment_date = ? AND target = ?";
 
   /**
-   * Query to get all calibrations of a given type for an instrument
+   * Query to get all calibrations of a given type for an {@link Instrument}.
+   *
+   * @see #getCalibrations(Connection, Instrument)
    */
   private static final String GET_CALIBRATIONS_QUERY = "SELECT "
     + "id, instrument_id, target, deployment_date, coefficients, class "
@@ -70,7 +84,10 @@ public abstract class CalibrationDB {
     + "target, deployment_date ASC";
 
   /**
-   * Query to get all the calibration times
+   * Query to get all the calibrations for an {@link Instrument} grouped by
+   * deployment date.
+   *
+   * @see #getCalibrationTimes(DataSource, Instrument)
    */
   private static final String CALIBRATION_TIMES_QUERY = "SELECT "
     + "deployment_date, type " // 2
@@ -78,7 +95,8 @@ public abstract class CalibrationDB {
     + "GROUP BY deployment_date, type ORDER BY deployment_date ASC, type ASC";
 
   /**
-   * JSON -> Coefficient map conversion type.
+   * Gson conversion type used to convert the {@link Calibration#coefficients}
+   * from their JSON format in the database to a {@link Map}.
    *
    * @see #makeCoefficientsFromJson(String)
    */
@@ -86,29 +104,33 @@ public abstract class CalibrationDB {
   }.getType();
 
   /**
-   * Empty constructor. These classes must be singletons so the abstract methods
-   * can be declared. Individual instances can be retrieved from the concrete
-   * classes
+   * Empty constructor.
+   *
+   * <p>
+   * While most of the classes in QuinCe used to make database calls use
+   * {@code static} methods exclusively, {@link Calibration}-related database
+   * methods rely on {@code abstract} methods so that activities specific to the
+   * sub-classes can vary as needed. These classes need to be instantiated as
+   * singletons, and thus require a constructor to exist in this parent class.
+   * </p>
    */
   protected CalibrationDB() {
     // Do nothing
   }
 
   /**
-   * Add a new calibration to the database
+   * Add a new {@link Calibration} to the database.
    *
-   * @param dataSource
-   *          A data source
+   * @param conn
+   *          A database connection.
    * @param calibrationEdit
-   *          The calibration
+   *          The calibration details.
    * @throws DatabaseException
-   *           If a database error occurs
-   * @throws ParameterException
-   *           If any required parameters are missing or the calibration is
-   *           invalid
+   *           If a database error occurs.
+   * @see #ADD_CALIBRATION_STATEMENT
    */
   private void addCalibration(Connection conn, CalibrationEdit calibrationEdit)
-    throws DatabaseException, ParameterException {
+    throws DatabaseException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(calibrationEdit, "calibration");
 
@@ -140,9 +162,19 @@ public abstract class CalibrationDB {
     }
   }
 
+  /**
+   * Update an existing {@link Calibration}.
+   *
+   * @param conn
+   *          A database connection.
+   * @param calibrationEdit
+   *          The {@link Calibration} details.
+   * @throws DatabaseException
+   *           If a database error occurs.
+   * @see #UPDATE_CALIBRATION_STATEMENT
+   */
   private void updateCalibration(Connection conn,
-    CalibrationEdit calibrationEdit)
-    throws DatabaseException, ParameterException {
+    CalibrationEdit calibrationEdit) throws DatabaseException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(calibrationEdit, "calibration");
     MissingParam.checkMissing(calibrationEdit.getDeploymentDate(),
@@ -171,9 +203,18 @@ public abstract class CalibrationDB {
     }
   }
 
+  /**
+   * Remove a {@link Calibration} from the database.
+   *
+   * @param conn
+   *          A database connection.
+   * @param calibrationEdit
+   *          The {@link Calibration} details.
+   * @throws DatabaseException
+   * @see #DELETE_CALIBRATION_STATEMENT
+   */
   private void deleteCalibration(Connection conn,
-    CalibrationEdit calibrationEdit)
-    throws MissingParamException, DatabaseException {
+    CalibrationEdit calibrationEdit) throws DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(calibrationEdit.getCalibrationId(),
@@ -190,9 +231,24 @@ public abstract class CalibrationDB {
     }
   }
 
+  /**
+   * Retrieve all calibrations for an {@link Instrument} of a given type,
+   * grouped by target and ordered by deployment date.
+   *
+   * @param dataSource
+   *          A data source.
+   * @param instrument
+   *          The instrument.
+   * @return The calibrations.
+   * @throws DatabaseException
+   *           If a database error occurs.
+   * @throws CalibrationException
+   *           If any of the retrieve calibration details are invalid.
+   * @see #getCalibrations(Connection, Instrument)
+   */
   public TreeMap<String, TreeSet<Calibration>> getCalibrations(
     DataSource dataSource, Instrument instrument)
-    throws DatabaseException, MissingParamException, CalibrationException {
+    throws DatabaseException, CalibrationException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(instrument, "instrument");
 
@@ -204,23 +260,21 @@ public abstract class CalibrationDB {
   }
 
   /**
-   * Retrieve all calibrations from the database of a given type, grouped by
-   * target and ordered by date
+   * Retrieve all calibrations for an {@link Instrument} of a given type,
+   * grouped by target and ordered by deployment date.
    *
-   * @param dataSource
-   *          A data source
-   * @param instrumentId
-   *          The instrument
-   * @param class
-   *          The calibration type
-   * @return The calibrations
-   * @throws MissingParamException
+   * @param conn
+   *          A database connection.
+   * @param instrument
+   *          The instrument.
+   * @return The calibrations.
    * @throws DatabaseException
+   *           If a database error occurs.
    * @throws CalibrationException
+   *           If any of the retrieve calibration details are invalid.
    */
   public TreeMap<String, TreeSet<Calibration>> getCalibrations(Connection conn,
-    Instrument instrument)
-    throws MissingParamException, DatabaseException, CalibrationException {
+    Instrument instrument) throws DatabaseException, CalibrationException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(instrument, "instrument");
 
@@ -254,6 +308,21 @@ public abstract class CalibrationDB {
     return calibrations;
   }
 
+  /**
+   * Build a {@link Calibration} from the current record in a {@link ResultSet}.
+   *
+   * @param record
+   *          The {@link ResultSet}.
+   * @param instrument
+   *          The {@link Instrument} that the {@link Calibration} belongs to.
+   * @return The {@link Calibration} object.
+   * @throws SQLException
+   *           If an error occurs while reading the record.
+   * @throws CalibrationException
+   *           If any of the read calibration details are invalid.
+   * @see CalibrationFactory#createCalibration(String, String, long, Instrument,
+   *      LocalDateTime, String, Map)
+   */
   private Calibration calibrationFromResultSet(ResultSet record,
     Instrument instrument) throws SQLException, CalibrationException {
     long id = record.getLong(1);
@@ -269,6 +338,15 @@ public abstract class CalibrationDB {
       calibrationClass, id, instrument, deploymentDate, target, coefficients);
   }
 
+  /**
+   * Convert a {@link Calibration}'s coefficients JSON string (as they are
+   * stored in the database) to a {@link Map}.
+   *
+   * @param json
+   *          The coefficients JSON string.
+   * @return The coefficients {@link Map}.
+   * @see #coefficientsType
+   */
   protected static Map<String, String> makeCoefficientsFromJson(String json) {
     return new Gson().fromJson(json, coefficientsType);
   }
@@ -278,23 +356,23 @@ public abstract class CalibrationDB {
    * specified calibration.
    *
    * <p>
-   * This checks instrument, type, target and deployment date. If a match is
-   * found with the same ID as the supplied calibration, this is not reported
-   * since it's obvious that a calibration will clash with itself.
+   * This checks the instrument, type, target and deployment date. If a match is
+   * found with the same database ID as the supplied calibration, this is not
+   * reported since it's obvious that a calibration will clash with itself.
    * </p>
    *
    * @param dataSource
-   *          A data source
+   *          A data source.
    * @param calibration
-   *          The calibration to be compared
-   * @return {@code true} if a calibration exists; {@code false} otherwise
+   *          The calibration to be compared.
+   * @return {@code true} if a matching calibration exists; {@code false}
+   *         otherwise.
    * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
+   *           If a database error occurs.
+   * @see #CALIBRATION_EXISTS_QUERY
    */
   public boolean calibrationExists(DataSource dataSource,
-    Calibration calibration) throws DatabaseException, MissingParamException {
+    Calibration calibration) throws DatabaseException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(calibration, "calibration");
 
@@ -331,19 +409,26 @@ public abstract class CalibrationDB {
   }
 
   /**
-   * Get the list of possible calibration targets for a given instrument
+   * Get the list of possible calibration targets for a given
+   * {@link Instrument}.
+   *
+   * <p>
+   * This is a wrapper function to {@link #getTargets(Connection, Instrument)},
+   * which is an {@code abstract} method to be implemented by sub-classes for
+   * each {@link Calibration} type. The method will therefore only return
+   * targets for the relevant {@link Calibration} type.
+   * </p>
    *
    * @param dataSource
-   *          A data source
-   * @param instrumentId
-   *          The instrument's database ID
+   *          A data source.
+   * @param instrument
+   *          The instrument.
    * @return The targets
-   * @throws MissingParamException
-   *           If any required parameters are missing
    * @throws DatabaseException
-   *           If a database error occurs
+   *           If a database error occurs.
    * @throws RecordNotFoundException
-   *           If no external standard run types are found
+   *           If no targets are found.
+   * @see #getTargets(Connection, Instrument)
    */
   public Map<String, String> getTargets(DataSource dataSource,
     Instrument instrument) throws MissingParamException, DatabaseException,
