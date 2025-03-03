@@ -31,6 +31,10 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * All calibrations will be held in the same table in the database,
  * distinguished by a {@code type} field.
  * </p>
+ *
+ * <p>
+ * The coefficients for a Calibration are maintained in a fixed order.
+ * </p>
  */
 public abstract class Calibration implements Comparable<Calibration> {
 
@@ -300,6 +304,11 @@ public abstract class Calibration implements Comparable<Calibration> {
 
   /**
    * Initialise the coefficients for this calibration with zero values.
+   *
+   * <p>
+   * In normal use this method should not be used directly; methods to set
+   * aspects of the Calibration will call this automatically.
+   * </p>
    */
   protected void initialiseCoefficients() {
     coefficients = getCoefficientNames(true).stream()
@@ -504,10 +513,21 @@ public abstract class Calibration implements Comparable<Calibration> {
     return true;
   }
 
+  /**
+   * Get this Calibration's database ID.
+   *
+   * @return The database ID.
+   */
   public long getId() {
     return id;
   }
 
+  /**
+   * Set the database ID for this Calibration
+   *
+   * @param id
+   *          The database ID.
+   */
   public void setId(long id) {
     this.id = id;
   }
@@ -552,14 +572,51 @@ public abstract class Calibration implements Comparable<Calibration> {
       && Objects.equals(target, other.target);
   }
 
+  /**
+   * Set the value of named coefficient.
+   *
+   * <p>
+   * This can only be used to adjust an existing coefficient; the coefficients
+   * must have set <i>en masse</i> through {@link #setCoefficients(List)} or
+   * {@link #setCoefficients(Map)} first.
+   * </p>
+   *
+   * <p>
+   * Using this method prior to initialisation of the coefficients will likely
+   * result in a {@link NullPointerException}.
+   * </p>
+   *
+   * @param name
+   *          The coefficient name.
+   * @param value
+   *          The coefficient value.
+   *
+   */
   protected void setCoefficient(String name, String value) {
     getCoefficients().get(getCoefficientIndex(name)).setValue(value);
   }
 
+  /**
+   * Returns the number of coefficients for this Calibration.
+   *
+   * @return The coefficient count.
+   */
   protected int size() {
     return getCoefficients().size();
   }
 
+  /**
+   * Get the index of the named calibration coefficient in the list of its
+   * {@link CalibrationCoefficient}.
+   *
+   * <p>
+   * Returns {@code -1} if there is no coefficient with the supplied name.
+   * </p>
+   *
+   * @param name
+   *          The coefficient name.
+   * @return The coefficient index.
+   */
   private int getCoefficientIndex(String name) {
     int result = -1;
 
@@ -574,23 +631,46 @@ public abstract class Calibration implements Comparable<Calibration> {
     return result;
   }
 
+  /**
+   * Get the coefficients for this Calibration as a JSON string.
+   *
+   * @return The coefficients JSON.
+   */
   public String getCoefficientsJson() {
     JsonObject json = new JsonObject();
     coefficients.forEach(c -> json.addProperty(c.getName(), c.getValue()));
     return json.toString();
   }
 
+  /**
+   * Determines whether or not at least one coefficient has been set for this
+   * Calibration.
+   *
+   * @return {@code true} if at least one coefficient has been set:
+   *         {@code false} no coefficients are set.
+   */
   public boolean isSet() {
     return null != coefficients;
   }
 
   /**
-   * Get the label to use for the set of coefficients.
+   * Get the label to use for the set of coefficients in this Calibration.
    *
    * @return The coefficients label.
    */
   public abstract String getCoefficientsLabel();
 
+  /**
+   * Get the label to use for the set of coefficients in this Calibration
+   * formatted for use in JSON.
+   *
+   * <p>
+   * This converts the label to lower case.
+   * </p>
+   *
+   * @return The coefficients label formatted for JSON.
+   * @see #getCoefficientsLabel()
+   */
   public String getJsonCoefficientsLabel() {
     return getCoefficientsLabel().toLowerCase();
   }
@@ -651,8 +731,8 @@ public abstract class Calibration implements Comparable<Calibration> {
    * of time since it was deployed.
    *
    * @return {@code true} if the time since the Calibration must be taken into
-   *         account; {@code false} if the time since the calibration does not
-   *         matter.
+   *         account when applying it; {@code false} if the time since the
+   *         calibration does not matter.
    */
   protected abstract boolean timeAffectsCalibration();
 }
