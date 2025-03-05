@@ -211,6 +211,7 @@ public abstract class CalibrationDB {
    * @param calibrationEdit
    *          The {@link Calibration} details.
    * @throws DatabaseException
+   *           If a database error occurs.
    * @see #DELETE_CALIBRATION_STATEMENT
    */
   private void deleteCalibration(Connection conn,
@@ -428,11 +429,13 @@ public abstract class CalibrationDB {
    *           If a database error occurs.
    * @throws RecordNotFoundException
    *           If no targets are found.
+   * @throws InstrumentException
+   *           If the instrument's configuration is invalid.
    * @see #getTargets(Connection, Instrument)
    */
   public Map<String, String> getTargets(DataSource dataSource,
-    Instrument instrument) throws MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException {
+    Instrument instrument)
+    throws DatabaseException, RecordNotFoundException, InstrumentException {
 
     Connection conn = null;
     Map<String, String> result = null;
@@ -450,57 +453,99 @@ public abstract class CalibrationDB {
   }
 
   /**
-   * Get the list of possible calibration targets for a given instrument
+   * Get the list of possible calibration targets for a given
+   * {@link Instrument}.
+   *
+   * <p>
+   * The targets are returned as a {@link Map} of
+   * {@code <machine-readable target> -> <human-readable target>}. In many cases
+   * these are the same thing, which makes the {@link Map} seem redundant, but
+   * it's not always the case. (See
+   * {@link CalculationCoefficientDB#getTargets(Connection, Instrument)}).
+   * </p>
    *
    * @param conn
-   *          A database connection
-   * @param instrumentId
-   *          The instrument's database ID
-   * @return The targets
-   * @throws MissingParamException
-   *           If any required parameters are missing
+   *          A database connection.
+   * @param instrument
+   *          The instrument.
+   * @return The targets.
    * @throws DatabaseException
-   *           If a database error occurs
+   *           If a database error occurs.
    * @throws RecordNotFoundException
-   *           If no external standard run types are found
+   *           If no targets are found.
+   * @throws InstrumentException
+   *           If the instrument's configuration is invalid.
    */
   public abstract Map<String, String> getTargets(Connection conn,
-    Instrument instrument) throws MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException;
+    Instrument instrument)
+    throws DatabaseException, RecordNotFoundException, InstrumentException;
 
   /**
-   * Get the calibration type for database actions
+   * Get the calibration type for database actions.
    *
-   * @return The calibration type
+   * @return The calibration type.
    */
   public abstract String getCalibrationType();
 
   /**
-   * Build a {@link CalibrationSet} object to cover the time period of the
+   * Build a {@link CalibrationSet} object that covers the time period of the
    * specified {@link DataSet}.
    *
+   * <p>
+   * This is a convenience wrapper around
+   * {@link #getCalibrationSet(Connection, Instrument, LocalDateTime, LocalDateTime)}.
+   * </p>
+   *
    * @param conn
-   * @param instrument
+   *          A database connection.
    * @param dataset
-   * @return
-   * @throws MissingParamException
+   *          The dataset.
+   * @return The {@link CalibrationSet} covering the {@link DataSet}.
    * @throws DatabaseException
+   *           If a database error occurs.
    * @throws RecordNotFoundException
+   *           If no calibration targets are found.
    * @throws InstrumentException
+   *           If the instrument's configuration is invalid.
    * @throws CalibrationException
+   *           If any of the calibrations are invalid.
+   * @see #getCalibrationSet(Connection, Instrument, LocalDateTime,
+   *      LocalDateTime)
    */
   public CalibrationSet getCalibrationSet(Connection conn, DataSet dataset)
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException, CalibrationException {
+    throws DatabaseException, RecordNotFoundException, InstrumentException,
+    CalibrationException {
 
     return getCalibrationSet(conn, dataset.getInstrument(), dataset.getStart(),
       dataset.getEnd());
   }
 
+  /**
+   * Build a {@link CalibrationSet} object for an {@link Instrument} that covers
+   * the specified time period.
+   *
+   * @param conn
+   *          A database connection.
+   * @param instrument
+   *          The instrument.
+   * @param start
+   *          The start of the desired period.
+   * @param end
+   *          The end of the desired period.
+   * @return The {@link CalibrationSet}.
+   * @throws DatabaseException
+   *           If a database error occurs.
+   * @throws RecordNotFoundException
+   *           If no calibration targets are found.
+   * @throws InstrumentException
+   *           If the instrument's configuration is invalid.
+   * @throws CalibrationException
+   *           If any of the calibrations are invalid.
+   */
   public CalibrationSet getCalibrationSet(Connection conn,
     Instrument instrument, LocalDateTime start, LocalDateTime end)
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException, CalibrationException {
+    throws DatabaseException, RecordNotFoundException, InstrumentException,
+    CalibrationException {
 
     TreeMap<String, TreeSet<Calibration>> allCalibrations = getCalibrations(
       conn, instrument);
@@ -509,6 +554,36 @@ public abstract class CalibrationDB {
       allCalibrations);
   }
 
+  /**
+   * Build a {@link CalibrationSet} object for an {@link Instrument} that covers
+   * the specified time period.
+   *
+   * <p>
+   * This is a simple wrapper that retrieves a database {@link Connection} and
+   * calls
+   * {@link #getCalibrationSet(Connection, Instrument, LocalDateTime, LocalDateTime)}.
+   * </p>
+   *
+   * @param dataSource
+   *          A data source.
+   * @param instrument
+   *          The instrument.
+   * @param start
+   *          The start of the desired period.
+   * @param end
+   *          The end of the desired period.
+   * @return The {@link CalibrationSet}.
+   * @throws DatabaseException
+   *           If a database error occurs.
+   * @throws RecordNotFoundException
+   *           If no calibration targets are found.
+   * @throws InstrumentException
+   *           If the instrument's configuration is invalid.
+   * @throws CalibrationException
+   *           If any of the calibrations are invalid.
+   * @see #getCalibrationSet(Connection, Instrument, LocalDateTime,
+   *      LocalDateTime)
+   */
   public CalibrationSet getCalibrationSet(DataSource dataSource,
     Instrument instrument, LocalDateTime start, LocalDateTime end)
     throws MissingParamException, DatabaseException, RecordNotFoundException,
@@ -522,10 +597,12 @@ public abstract class CalibrationDB {
   }
 
   /**
-   * Indicates whether a calibration can change within a {@link DataSet}.
+   * Indicates whether or not a {@link Calibration} can have a deployment date
+   * with the bounds of a {@link DataSet}.
+   *
    *
    * @return {@code true} if a calibration values can change within the bounds
-   *         of a dataset; {@code false} if they cannot.
+   *         of a {@link DataSet}; {@code false} if they cannot.
    */
   public abstract boolean allowCalibrationChangeInDataset();
 
@@ -558,7 +635,7 @@ public abstract class CalibrationDB {
    * to process a {@link DataSet}.
    *
    * <p>
-   * In practice, this boils down to a complete set of {@link Calibrations}
+   * In practice, this boils down to a complete set of {@link Calibration}s
    * being set before the beginning of the {@link DataSet}; changes to fewer
    * than the complete set later on result in a {@link CalibrationSet} building
    * a set based on the updated {@link Calibration}s and the ones before the
@@ -570,6 +647,27 @@ public abstract class CalibrationDB {
    */
   public abstract boolean completeSetRequired();
 
+  /**
+   * Apply the supplied set of {@link CalibrationEdit}s to the database.
+   *
+   * <p>
+   * The edits are applied within a single transaction; if any edit fails, none
+   * of the edits will be applied.
+   * </p>
+   *
+   * @param dataSource
+   *          A data source.
+   * @param edits
+   *          The edits to be applied.
+   * @throws DatabaseException
+   *           If a database error occurs.
+   * @throws InvalidCalibrationEditException
+   *           If any of the edits break the rules of the specific
+   *           implementation of {@link CalibrationDB}.
+   * @see #addCalibration(Connection, CalibrationEdit)
+   * @see #updateCalibration(Connection, CalibrationEdit)
+   * @see #deleteCalibration(Connection, CalibrationEdit)
+   */
   public void commitEdits(DataSource dataSource,
     Collection<CalibrationEdit> edits)
     throws DatabaseException, InvalidCalibrationEditException {
@@ -624,19 +722,20 @@ public abstract class CalibrationDB {
    * {@link Instrument}.
    *
    * <p>
-   * Returns a {@link Map} of {@code Calibration Type -> Times}, so for each
-   * calibration type there is a {@link List} of the times for which
-   * {@link Calibration}s have been defined (in ascending time order). There is
-   * only one entry per combination of calibration type/time, so multiple
-   * calibrations defined for the same type and time will appear only once.
+   * Returns a {@link Map} of {@code Time -> Calibration Types}, so for each
+   * time there is a {@link List} of the calibration types that have been
+   * deployed at that time. There is only one entry per combination of
+   * calibration type/time, so multiple calibrations defined for the same type
+   * and time will appear only once.
    * </p>
    *
-   * @param conn
-   *          A database connection.
+   * @param dataSource
+   *          A data source.
    * @param instrument
    *          The Instrument.
    * @return The calibration times.
    * @throws DatabaseException
+   *           If a database error occurs.
    */
   public static TreeMap<LocalDateTime, List<String>> getCalibrationTimes(
     DataSource dataSource, Instrument instrument) throws DatabaseException {

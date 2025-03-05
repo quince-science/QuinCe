@@ -40,14 +40,36 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 /**
- * Bean for handling calibrations
+ * Bean for handling {@link Calibration} editing.
+ *
+ * <p>
+ * This class contains the central methods for handling edits of
+ * {@link Calibration}s (stored in {@link CalibrationEdit} objects. The user can
+ * make multiple edits which are collected together to be committed in a single
+ * operation. The bean also tracks which {@link DataSet}s will be affected by
+ * the edits made, and queue those for recalculation after the edits have been
+ * saved to the database.
+ * </p>
+ *
+ * <p>
+ * Concrete implementations of this class provide the necessary configuration
+ * for how the editing process differs for the different types of
+ * {@link Calibration} supported by QuinCe.
+ * <p>
  */
 public abstract class CalibrationBean extends BaseManagedBean {
 
+  /**
+   * The navigation destination after the edits have been committed.
+   *
+   * <p>
+   * The user is returned to the Instruments List page.
+   * </p>
+   */
   private static final String COMMIT_NAV = "instrument_list";
 
   /**
-   * The database ID of the calibration currently being edited
+   * The database ID of the calibration currently being edited.
    *
    * <p>
    * For new calibrations, this will be
@@ -57,73 +79,115 @@ public abstract class CalibrationBean extends BaseManagedBean {
   private long selectedCalibrationId = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
-   * The datasets defined for the instrument.
-   *
-   * <p>
-   * These are shown in the timeline and used to determine which datasets are
-   * affected by an edit.
-   * </p>
+   * The {@link DataSet}s defined for the instrument, with an indication of
+   * whether they are affected by the edits that have been made.
    */
   private TreeMap<DataSet, RecalculateStatus> datasets;
 
   /**
-   * The calibration database handler
+   * The calibration database handler.
    */
   private CalibrationDB dbInstance = null;
 
   /**
-   * The calibration target names lookup
+   * The calibration target names lookup.
+   *
+   * @see CalibrationDB#getTargets(java.sql.Connection,
+   *      uk.ac.exeter.QuinCe.data.Instrument.Instrument)
    */
   private Map<String, String> calibrationTargets = null;
 
   /**
-   * The newly entered calibration
+   * The {@link Calibration} that is currently being edited.
    */
   private Calibration editedCalibration;
 
   /**
-   * Indicates whether the edited calibration is valid (i.e. is complete and
-   * does not clash with another calibration).
+   * Indicates whether the edited {@link Calibration} is valid.
+   *
+   * <p>
+   * A {@link Calibration} is valid if all required information has been entered
+   * and it does not clash with another calibration).
+   * </p>
    */
   private boolean editedCalibrationValid;
 
   /**
-   * The calibration edit action
+   * The calibration edit action.
    */
   private int action = CalibrationEdit.EDIT;
 
   /**
-   * The original set of calibrations before any edits were performed.
+   * The original set of {@link Calibration}s before any edits were performed.
+   *
+   * <p>
+   * This is used to calculate which {@link DataSet}s are affected by the edits
+   * that have been made.
+   * </p>
+   *
+   * <p>
+   * The {@link Calibration}s are stored as a {@link Map} of
+   * {@code <target> -> <Calibrations>}, with each target holding the
+   * {@link Calibration}s in time order.
+   * </p>
    */
   private TreeMap<String, TreeSet<Calibration>> originalCalibrations;
 
   /**
    * The edited set of calibrations. This will be changed as edits are made.
+   *
+   * @see #originalCalibrations
    */
   private TreeMap<String, TreeSet<Calibration>> calibrations;
 
   /**
-   * The database ID of the {@link Instrument} whose calibrations are being
-   * edited.
+   * The database ID of the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} whose calibrations
+   * are being edited.
+   *
+   * <p>
+   * This is only used as a temporary store when the bean is initialised. During
+   * {@link #start()} this is used to set the current
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} for the session via
+   * {@link #setCurrentInstrumentId(long)}.
+   * </p>
    */
   private long instrumentId;
 
   /**
-   * The list of edits made in the current bean instance. These will be applied
-   * in order once the user commits to applying them.
+   * The list of edits made in the current bean instance (i.e. editing session).
+   *
+   * <p>
+   * The edits are stored as a {@link Map} of
+   * {@code <Calibration ID> -> <edit action>}. This prevents automatically
+   * prevents multiple edits being applied for the same {@link Calibration}; a
+   * new edit on a {@link Calibration} that has already been edited simply
+   * replaces the previous edit. New {@link Calibration}s are given a temporary
+   * ID by {@link #generateNewId()}.
+   * </p>
    */
   private HashMap<Long, CalibrationEdit> edits;
 
   /**
-   * Empty constructor
+   * Empty constructor.
+   *
+   * <p>
+   * Required for JUnit tests.
+   * </p>
    */
   public CalibrationBean() {
   }
 
   /**
-   * Initialise the bean
+   * Initialise the bean.
    *
-   * @return The navigation string
+   * <p>
+   * Loads details of the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}'s {@link DataSet}s
+   * and existing {@link Calibration}s, and prepares the data structures.
+   * </p>
+   *
+   * @return The navigation string to the calibration edit page.
    */
   public String start() {
     String nav = getPageNavigation();
@@ -155,17 +219,27 @@ public abstract class CalibrationBean extends BaseManagedBean {
     return nav;
   }
 
+  /**
+   * Get the database ID of the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} whose
+   * {@link Calibration}s are being edited.
+   *
+   * @return The instrument ID.
+   */
   public long getInstrumentId() {
     return getCurrentInstrumentId();
   }
 
   /**
-   * Set the database ID of the instrument
+   * Set the database ID of the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} whose
+   * {@link Calibration}s are being edited.
    *
    * @param instrumentId
-   *          The instrument ID
+   *          The instrument ID.
    * @throws Exception
-   *           If the instrument cannot be retrieved
+   *           If the instrument ID is invalid.
+   * @see #instrumentId
    */
   public void setInstrumentId(long instrumentId) throws Exception {
     if (instrumentId > 0) {
@@ -179,32 +253,44 @@ public abstract class CalibrationBean extends BaseManagedBean {
   }
 
   /**
-   * Get the instrument name
+   * Get the display name of the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} whose
+   * {@link Calibration}s are being edited.
    *
-   * @return The instrument name
+   * @return The instrument name.
    */
   public String getInstrumentName() {
     return getCurrentInstrument().getDisplayName();
   }
 
   /**
-   * Get the navigation string that will navigate to the list of calibrations
+   * Get the navigation string that will navigate to the relevant instance of
+   * the calibration editing screen.
    *
-   * @return The list navigation string
+   * @return The list navigation string.
    */
   protected abstract String getPageNavigation();
 
   /**
-   * Get a list of all possible targets for the calibration type
+   * Get a list of all possible targets for calibration editing.
    *
-   * @return The targets
+   * @return The targets.
+   * @see CalibrationDB#getTargets(java.sql.Connection,
+   *      uk.ac.exeter.QuinCe.data.Instrument.Instrument)
    */
   public Map<String, String> getTargets() {
     return calibrationTargets;
   };
 
   /**
-   * Get the job class for reprocessing a {@link DataSet}.
+   * Get the job class for reprocessing a {@link DataSet} after editing is
+   * complete.
+   *
+   * <p>
+   * This defaults to {@link ExtractDataSetJob} (meaning that the
+   * {@link DataSet} will be reset and processed from the start, but will be
+   * overridden if the edits only affect a part of the processing sequence.
+   * </p>
    *
    * @return The reprocessing job class.
    */
@@ -213,23 +299,23 @@ public abstract class CalibrationBean extends BaseManagedBean {
   }
 
   /**
-   * Get an instance of the database interaction class for the calibrations
+   * Get an instance of the database interaction class for the calibrations.
    *
-   * @return The database interaction instance
+   * @return The database interaction instance.
    */
   protected abstract CalibrationDB getDbInstance();
 
   /**
-   * Get the calibration type for the calibrations being edited
+   * Get the calibration type for the calibrations being edited.
    *
-   * @return The calibration type
+   * @return The calibration type.
    */
   protected abstract String getCalibrationType();
 
   /**
-   * Get the human-readable calibration type for the calibrations being edited
+   * Get the human-readable calibration type for the calibrations being edited.
    *
-   * @return The human-readable calibration type
+   * @return The human-readable calibration type.
    */
   public abstract String getHumanReadableCalibrationType();
 
