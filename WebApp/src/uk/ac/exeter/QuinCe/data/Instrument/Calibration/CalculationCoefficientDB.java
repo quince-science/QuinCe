@@ -10,22 +10,40 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
+/**
+ * Implementation of the {@link CalibrationDB} class for handling
+ * {@link CalculationCoefficient}s.
+ */
 public class CalculationCoefficientDB extends CalibrationDB {
 
+  /**
+   * The calibration type string stored in the database for
+   * {@link CalculationCoefficient}s.
+   */
   public static final String CALCULATION_COEFFICIENT_CALIBRATION_TYPE = "CALC_COEFFICIENT";
 
   /**
-   * The singleton instance of the class
+   * The singleton instance of this class.
    */
   private static CalculationCoefficientDB instance = null;
 
+  /**
+   * Get the {@link CalculationCoefficient} targets for the specified
+   * {@link Instrument}.
+   *
+   * <p>
+   * Unlike most concrete implementations of the {@link CalibrationDB} class,
+   * the machine-readable and human-readable representations of each target are
+   * not the same. The calculation coefficients are defined by the
+   * {@link Variable} to which they apply along with the name of the
+   * coefficient. The entries in the returned {@link Map} therefore take the
+   * form {@code "<var_id>.<coefficient>" -> "<variable_name>: <coefficient>"}.
+   */
   @Override
   public Map<String, String> getTargets(Connection conn, Instrument instrument)
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+    throws DatabaseException, RecordNotFoundException, InstrumentException {
 
     // Return a map of '<v_id>.<coefficient>' -> '<varname>: <coefficient>'
     // If there's only one variable, leave the variable name off the
@@ -59,9 +77,9 @@ public class CalculationCoefficientDB extends CalibrationDB {
   }
 
   /**
-   * Retrieve the singleton instance of the class
+   * Retrieve the singleton instance of this class.
    *
-   * @return The singleton
+   * @return The singleton.
    */
   public static CalculationCoefficientDB getInstance() {
     if (null == instance) {
