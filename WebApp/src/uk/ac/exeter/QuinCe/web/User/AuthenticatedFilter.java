@@ -58,7 +58,10 @@ public class AuthenticatedFilter implements Filter {
   /**
    * Checks all requests for application pages to ensure that the user is logged
    * in. If the user is not logged in, they will be redirected to the login page
-   * with a 'session expired' message.
+   * with a 'session expired' message, unless they are visiting a link that does
+   * not require a user session.
+   *
+   * @see #isAllowedPath(HttpServletRequest)
    */
   @Override
   public void doFilter(ServletRequest req, ServletResponse res,
@@ -73,7 +76,8 @@ public class AuthenticatedFilter implements Filter {
     }
 
     if (null == session) {
-      if (requestURL.equals(request.getContextPath())) {
+      if (isAllowedPath(request)
+        || requestURL.equals(request.getContextPath())) {
         filterChain.doFilter(request, response);
       } else {
         response.sendRedirect(request.getContextPath());
