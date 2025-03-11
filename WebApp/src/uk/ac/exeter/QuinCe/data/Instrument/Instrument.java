@@ -579,24 +579,12 @@ public class Instrument {
    *
    * @param name
    *          The variable name
-   * @return The InstrumentVariable, or null if the instrument does not have the
-   *         variable defined.
-   * @throws InstrumentException
-   *           If the {@link Variable} does not exist, or this instrument does
-   *           not measure it.
+   * @return The InstrumentVariable, or {@code null} if the instrument does not
+   *         have the variable defined.
    */
-  public Variable getVariable(String name) throws InstrumentException {
-    Variable result = null;
-
-    result = variables.stream().filter(v -> v.getName().equals(name)).findAny()
+  public Variable getVariable(String name) {
+    return variables.stream().filter(v -> v.getName().equals(name)).findAny()
       .orElse(null);
-
-    if (null == result) {
-      throw new InstrumentException(
-        "Variable with name '" + name + "' is not part of this instrument");
-    }
-
-    return result;
   }
 
   /**

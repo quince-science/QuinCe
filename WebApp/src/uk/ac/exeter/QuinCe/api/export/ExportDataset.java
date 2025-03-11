@@ -30,7 +30,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </p>
  * <ul>
  * <li>The dataset in all available export formats</li>
- * <li>The raw data files used to build the datases</li>
+ * <li>The raw data files used to build the datasets</li>
  * <li>A manifest containing file lists and metadata, in JSON format</li>
  * </ul>
  *
