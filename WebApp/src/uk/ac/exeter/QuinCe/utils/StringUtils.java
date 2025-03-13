@@ -29,8 +29,10 @@ import org.apache.commons.lang3.math.NumberUtils;
  * Miscellaneous string utilities.
  *
  * <p>
- * This class extends {@link org.apache.commons.lang3.StringUtils}, so methods
- * from that class can be called directly through this one.
+ * This class extends {@link org.apache.commons.lang3.StringUtils} so methods
+ * from that class can be called directly through this one, thereby reducing
+ * issues with {@code import} statements if a class needs to use methods from
+ * both classes.
  * </p>
  */
 public final class StringUtils extends org.apache.commons.lang3.StringUtils {
@@ -80,6 +82,22 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     return result;
   }
 
+  /**
+   * Extract the specified entries from a {@link List} and combine them into a
+   * single {@link String} separated by the specified delimiter.
+   *
+   * <p>
+   * The entries are specified by their list indices.
+   * </p>
+   *
+   * @param list
+   *          The {@link List} from which the entries must be extracted.
+   * @param entries
+   *          The indices of the entries to extract.
+   * @param delimiter
+   *          The delimiter to use between entries.
+   * @return The extracted entries.
+   */
   public static String listToDelimited(List<String> list,
     TreeSet<Integer> entries, String delimiter) {
 
@@ -90,11 +108,6 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     });
 
     return collectionToDelimited(selection, delimiter);
-  }
-
-  public static String listToDelimited(Collection<String> list,
-    String delimiter) {
-    return list.stream().collect(Collectors.joining(";"));
   }
 
   /**
@@ -253,7 +266,7 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   /**
    * Convert a comma-separated list of numbers to a {@link Set} of longs. The
-   * Set will be ordered.
+   * Set will be ordered by value.
    *
    * @param values
    *          The numbers.
@@ -383,7 +396,6 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @return The trimmed String.
    */
   private static String trimWhitespaceAndQuotes(String string) {
-    // This is a copy of the code from String.trim()
     char[] chars = string.toCharArray();
 
     int length = chars.length;
@@ -403,42 +415,6 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * Convert a Properties object into a JSON string
-   *
-   * @param properties
-   *          The properties
-   * @return The JSON string
-   */
-  public static String getPropertiesAsJson(Properties properties) {
-
-    StringBuilder result = new StringBuilder();
-    if (null == properties) {
-      result.append("null");
-    } else {
-
-      result.append('{');
-
-      int propCount = 0;
-      for (String prop : properties.stringPropertyNames()) {
-        propCount++;
-        result.append('"');
-        result.append(prop);
-        result.append("\":\"");
-        result.append(properties.getProperty(prop));
-        result.append('"');
-
-        if (propCount < properties.size()) {
-          result.append(',');
-        }
-      }
-
-      result.append('}');
-    }
-
-    return result.toString();
-  }
-
-  /**
    * Create a {@link Properties} object from a string
    *
    * @param propsString
@@ -447,6 +423,7 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @throws IOException
    *           If the string cannot be parsed
    */
+  @Deprecated
   public static Properties propertiesFromString(String propsString)
     throws IOException {
     Properties result = null;
@@ -523,7 +500,7 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     int output_length = -1;
     for (int i = 0; i < string.length(); i++) {
-      if (string.charAt(i) != ',') {
+      if (string.charAt(i) != character) {
         output_length++;
         output[output_length] = string.charAt(i);
       }
@@ -690,15 +667,29 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     return string.replaceAll("'", Matcher.quoteReplacement("\\'"));
   }
 
+  /**
+   * Replace all newlines in a {@link String} with semicolons.
+   *
+   * @param str
+   *          The {@link String} to be processed.
+   * @return The processed {@link String}.
+   */
   public static String replaceNewlines(String str) {
     return null == str ? null : str.replaceAll("\\r?\\n", ";");
   }
 
+  /**
+   * Take a {@link List} of {@link String}s and remove from the end any blank
+   * lines (including those with just whitespace characters).
+   *
+   * @param list
+   *          The {@link List}.
+   */
   public static void removeBlankTailLines(List<String> list) {
     boolean blankLine = true;
     while (blankLine) {
       String lastLine = list.get(list.size() - 1);
-      if (lastLine.trim().length() == 0) {
+      if (null == lastLine || lastLine.trim().length() == 0) {
         list.remove(list.size() - 1);
       } else {
         blankLine = false;
@@ -721,6 +712,32 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     return result;
   }
 
+  /**
+   * Combine two {@link String}s into a single {@link String} with the specified
+   * combining {@link String} between them.
+   *
+   * <p>
+   * The strings are only combined if both are non-empty (by the criteria of
+   * {@link #isEmpty(CharSequence)}). Otherwise only the non-empty string is
+   * returned, or an empty string if both are empty.
+   * </p>
+   *
+   * <p>
+   * If {@code unique} is {@code true}, only one of the strings will be returned
+   * if they are both equal.
+   * </p>
+   *
+   * @param string1
+   *          The first {@link String}.
+   * @param string2
+   *          The second {@link String}.
+   * @param combiner
+   *          The combining {@link String}.
+   * @param unique
+   *          Indicates whether duplicate strings should be combined.
+   * @return The combined {@link String}.
+   * @see #isEmpty(CharSequence)
+   */
   public static String combine(String string1, String string2, String combiner,
     boolean unique) {
     String result = "";
@@ -731,7 +748,7 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     if (null != string2 && !isEmpty(string2.trim())) {
       if (!unique || !string2.equals(string1)) {
-        if (null != result && !isEmpty(result)) {
+        if (!isEmpty(result)) {
           result += combiner;
           result += string2.trim();
         } else {

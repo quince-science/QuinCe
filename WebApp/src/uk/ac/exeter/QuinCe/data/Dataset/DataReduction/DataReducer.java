@@ -146,7 +146,7 @@ public abstract class DataReducer {
         StringBuilder builder = new StringBuilder();
         builder.append(entry.getKey().getShortName());
         builder.append(' ');
-        builder.append(StringUtils.listToDelimited(entry.getValue(), ";"));
+        builder.append(StringUtils.collectionToDelimited(entry.getValue(), ";"));
         qcMessages.add(builder.toString());
       }
 

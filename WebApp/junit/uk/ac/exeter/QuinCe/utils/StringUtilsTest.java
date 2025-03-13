@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,18 +9,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
 /**
- * Tests for the StringUtils class
+ * Tests for the StringUtils class.
  */
 public class StringUtilsTest extends BaseTest {
 
@@ -75,34 +79,6 @@ public class StringUtilsTest extends BaseTest {
     delimiters.add("-");
 
     return delimiters;
-  }
-
-  /**
-   * Check that a list of {@link Double}s contains the specified set of values.
-   *
-   * @param list
-   *          The list to check.
-   * @param strings
-   *          The values that the list should contain.
-   * @return {@code true} if the list contains the specified values;
-   *         {@code false} otherwise.
-   */
-  private static final boolean checkStringList(List<String> list,
-    String... strings) {
-    boolean ok = true;
-
-    if (list.size() != strings.length) {
-      ok = false;
-    } else {
-      for (int i = 0; i < list.size(); i++) {
-        if (!list.get(i).equals(strings[i])) {
-          ok = false;
-          break;
-        }
-      }
-    }
-
-    return ok;
   }
 
   /**
@@ -311,8 +287,8 @@ public class StringUtilsTest extends BaseTest {
    */
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
-  public void doubleFromStringEmptyStringTest() {
-    assertEquals((Double) Double.NaN, StringUtils.doubleFromString(null));
+  public void doubleFromStringEmptyStringTest(String string) {
+    assertEquals((Double) Double.NaN, StringUtils.doubleFromString(string));
   }
 
   /**
@@ -974,8 +950,7 @@ public class StringUtilsTest extends BaseTest {
     if (null == empty || empty.length() == 0) {
       assertEquals(0, StringUtils.delimitedToList(empty, ",").size());
     } else {
-      assertTrue(
-        checkStringList(StringUtils.delimitedToList(empty, ","), empty));
+      assertTrue(listsEqual(StringUtils.delimitedToList(empty, ","), empty));
     }
   }
 
@@ -986,7 +961,7 @@ public class StringUtilsTest extends BaseTest {
   @Test
   public void delimitedToListOneTest() {
     assertTrue(
-      checkStringList(StringUtils.delimitedToList("flurble", ","), "flurble"));
+      listsEqual(StringUtils.delimitedToList("flurble", ","), "flurble"));
   }
 
   /**
@@ -996,7 +971,7 @@ public class StringUtilsTest extends BaseTest {
   @Test
   public void delimitedToListMultipleTest() {
     assertTrue(
-      checkStringList(StringUtils.delimitedToList("flurble,hurble,nurble", ","),
+      listsEqual(StringUtils.delimitedToList("flurble,hurble,nurble", ","),
         "flurble", "hurble", "nurble"));
   }
 
@@ -1006,9 +981,8 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void delimitedToListNumbersTest() {
-    assertTrue(
-      checkStringList(StringUtils.delimitedToList("-3,0,4.345,5.400", ","),
-        "-3", "0", "4.345", "5.400"));
+    assertTrue(listsEqual(StringUtils.delimitedToList("-3,0,4.345,5.400", ","),
+      "-3", "0", "4.345", "5.400"));
   }
 
   /**
@@ -1017,9 +991,9 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void delimitedToListSpaceBetweenValuesTest() {
-    assertTrue(checkStringList(
-      StringUtils.delimitedToList("flurble, hurble, nurble", ","), "flurble",
-      " hurble", " nurble"));
+    assertTrue(
+      listsEqual(StringUtils.delimitedToList("flurble, hurble, nurble", ","),
+        "flurble", " hurble", " nurble"));
   }
 
   /**
@@ -1028,9 +1002,8 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void delimitedToListEmptyValueTest() {
-    assertTrue(
-      checkStringList(StringUtils.delimitedToList("flurble,,hurble", ","),
-        "flurble", "", "hurble"));
+    assertTrue(listsEqual(StringUtils.delimitedToList("flurble,,hurble", ","),
+      "flurble", "", "hurble"));
   }
 
   /**
@@ -1052,7 +1025,7 @@ public class StringUtilsTest extends BaseTest {
     input.append("nurble");
 
     assertTrue(
-      checkStringList(StringUtils.delimitedToList(input.toString(), delimiter),
+      listsEqual(StringUtils.delimitedToList(input.toString(), delimiter),
         "flurble", "hurble", "nurble"));
   }
 
@@ -1091,7 +1064,7 @@ public class StringUtilsTest extends BaseTest {
     input.append("nurble");
 
     assertTrue(
-      checkStringList(StringUtils.delimitedToList(input.toString(), delimiter),
+      listsEqual(StringUtils.delimitedToList(input.toString(), delimiter),
         "flurble", "hurble", "nurble"));
   }
 
@@ -1102,7 +1075,7 @@ public class StringUtilsTest extends BaseTest {
   @Test
   public void delimitedToListSpaceDelimiterTest() {
     assertTrue(
-      checkStringList(StringUtils.delimitedToList("flurble hurble nurble", " "),
+      listsEqual(StringUtils.delimitedToList("flurble hurble nurble", " "),
         "flurble", "hurble", "nurble"));
   }
 
@@ -1112,9 +1085,9 @@ public class StringUtilsTest extends BaseTest {
    */
   @Test
   public void delimitedToListPaddedListTest() {
-    assertTrue(checkStringList(
-      StringUtils.delimitedToList("flurble,hurble,nurble ", ","), "flurble",
-      "hurble", "nurble "));
+    assertTrue(
+      listsEqual(StringUtils.delimitedToList("flurble,hurble,nurble ", ","),
+        "flurble", "hurble", "nurble "));
   }
 
   /**
@@ -1173,6 +1146,7 @@ public class StringUtilsTest extends BaseTest {
       Arguments.of("\\ \\spaced backslashes", "spaced backslashes"),
       Arguments.of("\\ \\\\spaced two backslashes", "\\spaced two backslashes"),
       Arguments.of("\"plain\"", "\"plain\""),
+      Arguments.of("'plain'", "'plain'"),
       Arguments.of("\" space front\"", "\" space front\""),
       Arguments.of("\"space end \"", "\"space end \""),
       Arguments.of("\"\\leading backslash\"", "\"\\leading backslash\""),
@@ -1204,24 +1178,41 @@ public class StringUtilsTest extends BaseTest {
         "\"\\ \\spaced backslashes\""),
       Arguments.of("\"\\ \\\\spaced two backslashes\"",
         "\"\\ \\\\spaced two backslashes\""),
-      Arguments.of("\"front quote only", "\"front quote only"),
-      Arguments.of(" \"space and front quote", "\"space and front quote"),
-      Arguments.of("\" quote and space", "\" quote and space"),
-      Arguments.of("trailing quote only\"", "trailing quote only\""),
-      Arguments.of("trailing quote and space\" ", "trailing quote and space\""),
-      Arguments.of("trailing space and quote \"",
-        "trailing space and quote \""),
-      Arguments.of(" \"space and quote at both ends \"",
-        "\"space and quote at both ends \""),
-      Arguments.of("\" quote and space at both ends\" ",
-        "\" quote and space at both ends\""),
-      Arguments.of("\"\"two lots of quotes\"\"", "\"\"two lots of quotes\"\""),
-      Arguments.of("\" \"two quotes with space\" \"",
-        "\" \"two quotes with space\" \""),
-      Arguments.of("", ""), Arguments.of("\"", "\""),
-      Arguments.of("\"\"", "\"\""), Arguments.of("\" \"", "\" \""),
-      Arguments.of("\"\"\"", "\"\"\""), Arguments.of("\\\"", "\""),
-      Arguments.of("\\\\\"", "\\\""), Arguments.of("\"  \t\r\"", "\"  \t\r\""));
+      Arguments.of("\"front quotes only", "\"front quotes only"),
+      Arguments.of("'front quote only", "'front quote only"),
+      Arguments.of(" \"space and front quotes", "\"space and front quotes"),
+      Arguments.of(" 'space and front quote", "'space and front quote"),
+      Arguments.of("\" quotes and space", "\" quotes and space"),
+      Arguments.of("' quote and space", "' quote and space"),
+      Arguments.of("trailing quotes only\"", "trailing quotes only\""),
+      Arguments.of("trailing quote only'", "trailing quote only'"),
+      Arguments.of("trailing quotes and space\" ",
+        "trailing quotes and space\""),
+      Arguments.of("trailing quote and space' ", "trailing quote and space'"),
+      Arguments.of("trailing space and quotes \"",
+        "trailing space and quotes \""),
+      Arguments.of("trailing space and quote '", "trailing space and quote '"),
+      Arguments.of(" \"space and quotes at both ends \"",
+        "\"space and quotes at both ends \""),
+      Arguments.of(" 'space and quote at both ends '",
+        "'space and quote at both ends '"),
+      Arguments.of("\" quotes and space at both ends\" ",
+        "\" quotes and space at both ends\""),
+      Arguments.of("' quote and space at both ends' ",
+        "' quote and space at both ends'"),
+      Arguments.of("\"\"two lots of quoteses\"\"",
+        "\"\"two lots of quoteses\"\""),
+      Arguments.of("''two lots of quotes''", "''two lots of quotes''"),
+      Arguments.of("'\"both types of quote'\"", "'\"both types of quote'\""),
+      Arguments.of("\" \"two quoteses with space\" \"",
+        "\" \"two quoteses with space\" \""),
+      Arguments.of("' 'two quotes with space' '",
+        "' 'two quotes with space' '"),
+      Arguments.of("", ""), Arguments.of("\"", "\""), Arguments.of("'", "'"),
+      Arguments.of("''", "''"), Arguments.of("\"\"", "\"\""),
+      Arguments.of("\" \"", "\" \""), Arguments.of("\"\"\"", "\"\"\""),
+      Arguments.of("\\\"", "\""), Arguments.of("\\\\\"", "\\\""),
+      Arguments.of("\"  \t\r\"", "\"  \t\r\""));
   }
 
   private static Stream<Arguments> trimListQuotesTestData() {
@@ -1282,22 +1273,35 @@ public class StringUtilsTest extends BaseTest {
       Arguments.of("\"\\ \\spaced backslashes\"", "spaced backslashes"),
       Arguments.of("\"\\ \\\\spaced two backslashes\"",
         "\\spaced two backslashes"),
-      Arguments.of("\"front quote only", "front quote only"),
-      Arguments.of(" \"space and front quote", "space and front quote"),
-      Arguments.of("\" quote and space", "quote and space"),
-      Arguments.of("trailing quote only\"", "trailing quote only"),
-      Arguments.of("trailing quote and space\" ", "trailing quote and space"),
-      Arguments.of("trailing space and quote \"", "trailing space and quote"),
-      Arguments.of(" \"space and quote at both ends \"",
+      Arguments.of("\"front quotes only", "front quotes only"),
+      Arguments.of("'front quote only", "front quote only"),
+      Arguments.of(" \"space and front quotes", "space and front quotes"),
+      Arguments.of(" 'space and front quote", "space and front quote"),
+      Arguments.of("\" quotes and space", "quotes and space"),
+      Arguments.of("' quote and space", "quote and space"),
+      Arguments.of("trailing quotes only\"", "trailing quotes only"),
+      Arguments.of("trailing quote only'", "trailing quote only"),
+      Arguments.of("trailing quotes and space\" ", "trailing quotes and space"),
+      Arguments.of("trailing quote and space' ", "trailing quote and space"),
+      Arguments.of("trailing space and quotes \"", "trailing space and quotes"),
+      Arguments.of("trailing space and quote '", "trailing space and quote"),
+      Arguments.of(" \"space and quotes at both ends \"",
+        "space and quotes at both ends"),
+      Arguments.of(" 'space and quote at both ends '",
         "space and quote at both ends"),
-      Arguments.of("\" quote and space at both ends\" ",
+      Arguments.of("\" quotes and space at both ends\" ",
+        "quotes and space at both ends"),
+      Arguments.of("' quote and space at both ends' ",
         "quote and space at both ends"),
-      Arguments.of("\"\"two lots of quotes\"\"", "two lots of quotes"),
-      Arguments.of("\" \"two quotes with space\" \"", "two quotes with space"),
+      Arguments.of("\"\"two lots of quoteses\"\"", "two lots of quoteses"),
+      Arguments.of("''two lots of quotes''", "two lots of quotes"),
+      Arguments.of("\" \"two quoteses with space\" \"",
+        "two quoteses with space"),
+      Arguments.of("' 'two quotes with space' '", "two quotes with space"),
       Arguments.of("", ""), Arguments.of("\"", ""), Arguments.of("\"\"", ""),
-      Arguments.of("\" \"", ""), Arguments.of("\"\"\"", ""),
-      Arguments.of("\\\"", ""), Arguments.of("\\\\\"", "\\"),
-      Arguments.of("\"  \t\r\"", ""));
+      Arguments.of("'", ""), Arguments.of("\" \"", ""), Arguments.of("' '", ""),
+      Arguments.of("\"\"\"", ""), Arguments.of("\\\"", ""),
+      Arguments.of("\\\\\"", "\\"), Arguments.of("\"  \t\r\"", ""));
   }
 
   /**
@@ -1614,5 +1618,164 @@ public class StringUtilsTest extends BaseTest {
   @MethodSource("removeRepeatsValues")
   public void removeRepeatsTest(String in, String out) {
     assertEquals(out, StringUtils.removeRepeats(in, ' '));
+  }
+
+  @Test
+  public void listToDelimitedEntriesTest() {
+    List<String> values = Arrays
+      .asList(new String[] { "One", "Two", "Three", "Four" });
+
+    TreeSet<Integer> entries = new TreeSet<Integer>();
+    entries.add(1);
+    entries.add(3);
+
+    assertEquals("Two,Four", StringUtils.listToDelimited(values, entries, ","));
+  }
+
+  @ParameterizedTest
+  @MethodSource("makeDelimiters")
+  public void listToDelimitedEntriesDelimitersTest(String delimiter) {
+    List<String> values = Arrays
+      .asList(new String[] { "One", "Two", "Three", "Four" });
+
+    TreeSet<Integer> entries = new TreeSet<Integer>();
+    entries.add(1);
+    entries.add(3);
+
+    assertEquals("Two" + delimiter + "Four",
+      StringUtils.listToDelimited(values, entries, delimiter));
+  }
+
+  @Test
+  public void listToDelimitedEntriesNoEntriesTest() {
+    List<String> values = Arrays
+      .asList(new String[] { "One", "Two", "Three", "Four" });
+
+    TreeSet<Integer> entries = new TreeSet<Integer>();
+
+    assertEquals("", StringUtils.listToDelimited(values, entries, ","));
+  }
+
+  @Test
+  public void listToDelimitedEntriesOneEntryTest() {
+    List<String> values = Arrays
+      .asList(new String[] { "One", "Two", "Three", "Four" });
+
+    TreeSet<Integer> entries = new TreeSet<Integer>();
+    entries.add(2);
+
+    assertEquals("Three", StringUtils.listToDelimited(values, entries, ","));
+  }
+
+  @ParameterizedTest
+  @MethodSource("makeDelimiters")
+  public void collectionToDelimitedTest(String delimiter) {
+    List<String> values = Arrays
+      .asList(new String[] { "One", "Two", "Three", "Four" });
+
+    assertEquals(
+      "One" + delimiter + "Two" + delimiter + "Three" + delimiter + "Four",
+      StringUtils.collectionToDelimited(values, delimiter));
+  }
+
+  @Test
+  public void collectionToDelimitedNullSepTest() {
+    List<String> values = Arrays
+      .asList(new String[] { "One", "Two", "Three", "Four" });
+
+    assertEquals("OneTwoThreeFour",
+      StringUtils.collectionToDelimited(values, null));
+  }
+
+  @Test
+  @MethodSource("makeDelimiters")
+  public void collectionToDelimitedNullTest() {
+    assertEquals("", StringUtils.collectionToDelimited(null, ","));
+  }
+
+  @Test
+  public void delimitedToLongSetTest() {
+    String values = "9386930485,134134,213423,2452435,5764655345";
+
+    Set<Long> expected = new TreeSet<Long>();
+    expected.add(134134L);
+    expected.add(213423L);
+    expected.add(2452435L);
+    expected.add(5764655345L);
+    expected.add(9386930485L);
+
+    Set<Long> result = StringUtils.delimitedToLongSet(values);
+
+    assertTrue(setsEqual(expected, result));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void delimitedToLongSetEmptyTest(String string) {
+    assertTrue(StringUtils.delimitedToLongSet(string).isEmpty());
+  }
+
+  private static Stream<Arguments> removeFromStringTestData() {
+    return Stream.of(Arguments.of("banana", 'n', "baaa"),
+      Arguments.of("banana", 'x', "banana"), Arguments.of("ab", 'a', "b"),
+      Arguments.of("ab", 'b', "a"), Arguments.of("bbb", 'b', ""));
+  }
+
+  @ParameterizedTest
+  @MethodSource("removeFromStringTestData")
+  public void removeFromStringTest(String source, char remove, String result) {
+    assertEquals(result, StringUtils.removeFromString(source, remove));
+  }
+
+  @Test
+  public void removeBlankTailLinesTest() {
+    List<String> input = new ArrayList<String>();
+    input.add("One");
+    input.add("Two");
+    input.add("");
+    input.add("Three");
+    input.add("");
+    input.addAll(createNullEmptyStrings().toList());
+
+    List<String> output = new ArrayList<String>();
+    output.add("One");
+    output.add("Two");
+    output.add("");
+    output.add("Three");
+
+    StringUtils.removeBlankTailLines(input);
+
+    assertTrue(listsEqual(output, input));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void isNumericBlanksTest(String value) {
+    assertFalse(StringUtils.isNumeric(value));
+  }
+
+  @ParameterizedTest
+  @CsvSource("0, 13.4324, -34234, 34e10")
+  public void isNumericTest(String value) {
+    assertTrue(StringUtils.isNumeric(value));
+  }
+
+  private static Stream<Arguments> combineTestData() {
+    return Stream.of(Arguments.of("One", "Two", ":", false, "One:Two"),
+      Arguments.of("One", "Two", ":", true, "One:Two"),
+      Arguments.of("One", "One", ":", false, "One:One"),
+      Arguments.of("One", "One", ":", true, "One"),
+      Arguments.of("One", "", ":", true, "One"),
+      Arguments.of("", "Two", ":", true, "Two"),
+      Arguments.of("One", null, ":", true, "One"),
+      Arguments.of(null, "Two", ":", true, "Two"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("combineTestData")
+  public void combineTest(String first, String second, String combiner,
+    boolean unique, String result) {
+
+    assertEquals(result, StringUtils.combine(first, second, combiner, unique));
   }
 }

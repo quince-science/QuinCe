@@ -113,7 +113,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
     Collection<String> expectedComment) {
 
     Flag flag = record.getQCFlag();
-    String qcComment = StringUtils.listToDelimited(record.getQCMessages(), ";");
+    String qcComment = StringUtils.collectionToDelimited(record.getQCMessages(), ";");
 
     checkQC("Data Reduction", flag, expectedFlag, qcComment, expectedComment);
   }
