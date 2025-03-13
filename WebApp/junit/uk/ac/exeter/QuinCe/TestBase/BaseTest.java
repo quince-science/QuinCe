@@ -266,7 +266,7 @@ public class BaseTest {
    * same order.
    *
    * @param set1
-   *          The first {@link Set).
+   *          The first {@link Set}.
    * @param set2
    *          The second {@link Set}.
    * @return {@code true} if the two sets are equal; {@code false} otherwise.
