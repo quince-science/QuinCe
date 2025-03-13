@@ -325,6 +325,7 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
    * Trims all items in a list of strings, and remotes any leading and/or
    * trailing double quotes.
    *
+   * <p>
    * <ul>
    * <li>All whitespace and quotes are removed from the beginning and end of the
    * string.</li>
@@ -332,6 +333,7 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
    * removed also.</li>
    * <li>The process is repeated until the string is no longer modified.</li>
    * </ul>
+   * </p>
    *
    * @param source
    *          The source list
@@ -350,6 +352,30 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     return result;
   }
 
+  /**
+   * Remove leading and trailing whitespace from a {@link String}, with extra
+   * features over the standard {@link String#trim()}.
+   *
+   * <p>
+   * If the string starts with a single {@code \}, it is treated as if it were a
+   * whitespace character and trimmed. If the string starts with multiple
+   * {@code \} characters, the first is removed and the rest are kept.
+   * </p>
+   *
+   * <p>
+   * If {@code replaceQuotes} is {@code true}, quote characters ({@code "} and
+   * {@code '}) are treated as if they were whitespace characters and trimmed
+   * accordingly.
+   * </p>
+   *
+   * @param string
+   *          The {@link String} to be trimmed.
+   * @param replaceQuotes
+   *          Indicates whether quote characters should be treated as
+   *          whitespace.
+   * @return The trimmed {@link String}.
+   * @see #trimWhitespaceAndQuotes(String)
+   */
   private static String trimString(String string, boolean replaceQuotes) {
 
     String trimmed = null;
@@ -415,7 +441,12 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * Create a {@link Properties} object from a string
+   * Create a {@link Properties} object from a string.
+   *
+   * <p>
+   * This method is deprecated and should not be used; it is only kept because
+   * it is used by a database migration.
+   * </p>
    *
    * @param propsString
    *          The properties String
@@ -441,15 +472,19 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
   /**
    * Make a valid CSV String from the given text.
    *
+   * <p>
    * This always performs three steps:
+   * </p>
    * <ul>
    * <li>Surround the value in quotes</li>
    * <li>Any " are replaced with "", per the CSV spec</li>
    * <li>Newlines are replaced with semi-colons</li>
    * </ul>
    *
+   * <p>
    * While these are not strictly necessary for all values, they are appropriate
    * for this application and the target audiences of exported CSV files.
+   * </p>
    *
    * @param text
    *          The value
@@ -547,6 +582,19 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     return result;
   }
 
+  /**
+   * Format a {@link String} containing a numeric value to three decimal places.
+   *
+   * <p>
+   * If the {@link String} does not contain a numeric value, the passed in value
+   * is returned unchanged.
+   * </p>
+   *
+   * @param value
+   *          The number.
+   * @return The formatted number.
+   * @see #threeDecimalPoints
+   */
   public static String formatNumber(String value) {
     String result = value;
 
@@ -557,6 +605,14 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     return result;
   }
 
+  /**
+   * Format a number to three decimal places.
+   *
+   * @param value
+   *          The number.
+   * @return The formatted number.
+   * @see #threeDecimalPoints
+   */
   public static String formatNumber(Double value) {
     String result = null;
 
@@ -567,6 +623,14 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     return result;
   }
 
+  /**
+   * Replace all instances of a tab character in a {@link String} with a single
+   * space.
+   *
+   * @param in
+   *          The {@link String} to be processed.
+   * @return The {@link String} with all tabs replaced.
+   */
   public static String tabToSpace(String in) {
 
     String result = null;
@@ -697,6 +761,20 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
   }
 
+  /**
+   * Determine whether or not a {@link String} contains a numeric value.
+   *
+   * <p>
+   * This simply calls {@link Double#parseDouble(String)} and determines whether
+   * or not it succeeds. If a {@code null} value is passed, {@code false} is
+   * returned so it is treated as a non-numeric value.
+   * </p>
+   *
+   * @param value
+   *          The value to be checked.
+   * @return {@code true} if the value is numeric; {@code false} if it is not.
+   * @see Double#parseDouble(String)
+   */
   public static boolean isNumeric(String value) {
     boolean result = true;
     if (null == value) {

@@ -55,7 +55,7 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  * Concrete implementations of this class provide the necessary configuration
  * for how the editing process differs for the different types of
  * {@link Calibration} supported by QuinCe.
- * <p>
+ * </p>
  */
 public abstract class CalibrationBean extends BaseManagedBean {
 
@@ -320,16 +320,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
   public abstract String getHumanReadableCalibrationType();
 
   /**
-   * Individual targets are represented as groups on the page. Get the JSON for
-   * these groups.
+   * Individual targets are represented as groups on the page timeline. Get the
+   * JSON for these groups.
    *
    * @return The targets JSON.
-   * @throws DatabaseException
-   * @throws JSONException
-   * @throws MissingParamException
    */
-  public String getTargetsJson()
-    throws MissingParamException, DatabaseException {
+  public String getTargetsJson() {
     JsonArray groups = new JsonArray();
 
     int counter = 0;
@@ -355,9 +351,16 @@ public abstract class CalibrationBean extends BaseManagedBean {
   }
 
   /**
-   * Generate a new, empty {@link Calibration} object.
+   * Generate a new, empty {@link Calibration} object with the specified ID and
+   * deployment date.
    *
-   * @return The new object.
+   * @param id
+   *          The {@link Calibration}'s ID.
+   * @param date
+   *          The deployment date.
+   * @return The new {@link Calibration}.
+   * @throws Exception
+   *           If the {@link Calibration} cannot be created.
    */
   protected abstract Calibration initNewCalibration(long id, LocalDateTime date)
     throws Exception;
