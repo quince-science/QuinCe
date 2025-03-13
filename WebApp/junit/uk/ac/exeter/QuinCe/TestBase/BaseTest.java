@@ -5,7 +5,10 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 
@@ -234,6 +237,51 @@ public class BaseTest {
     } else if (list1.size() != 0) {
       for (int i = 0; i < list1.size(); i++) {
         if (!list1.get(i).equals(list2.get(i))) {
+          result = false;
+          break;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Check that the supplied {@link List} of {@link String}s matches the
+   * specified {@link String} values.
+   *
+   * @param list
+   *          The {@link List}.
+   * @param strings
+   *          The {@link String} values.
+   * @return {@code true} if the two sets of values match; {@code false} if they
+   *         do not.
+   */
+  protected boolean listsEqual(List<String> list, String... strings) {
+    return listsEqual(list, Arrays.asList(strings));
+  }
+
+  /**
+   * Determine whether or not two {@link Set}s contain the same elements in the
+   * same order.
+   *
+   * @param set1
+   *          The first {@link Set).
+   * @param set2
+   *          The second {@link Set}.
+   * @return {@code true} if the two sets are equal; {@code false} otherwise.
+   */
+  protected boolean setsEqual(Set<?> set1, Set<?> set2) {
+    boolean result = true;
+
+    if (set1.size() != set2.size()) {
+      result = false;
+    } else {
+      Iterator<?> iter1 = set1.iterator();
+      Iterator<?> iter2 = set2.iterator();
+
+      while (iter1.hasNext()) {
+        if (!iter1.next().equals(iter2.next())) {
           result = false;
           break;
         }
