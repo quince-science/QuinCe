@@ -1,6 +1,17 @@
 package uk.ac.exeter.QuinCe.utils;
 
-public class ExceptionUtils {
+/**
+ * Miscellaneous utilities for handling exceptions.
+ *
+ * <p>
+ * This class extends {@link org.apache.commons.lang3.exception.ExceptionUtils}
+ * so methods from that class can be called directly through this one, thereby
+ * reducing issues with {@code import} statements if a class needs to use
+ * methods from both classes.
+ * </p>
+ */
+public class ExceptionUtils
+  extends org.apache.commons.lang3.exception.ExceptionUtils {
 
   /**
    * A cut-down stack trace printer that stops the stack trace after the last
@@ -56,22 +67,5 @@ public class ExceptionUtils {
 
   private static boolean isQuinceElement(StackTraceElement element) {
     return element.getClassName().contains("QuinCe");
-  }
-
-  /**
-   * Get an exception's stack trace as a string.
-   *
-   * <p>
-   * This is a simple passthrough to
-   * {@link org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace} for
-   * code simplicity.
-   * </p>
-   *
-   * @param e
-   *          The exception
-   * @return The stack trace
-   */
-  public static String getStackTrace(Exception e) {
-    return org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
   }
 }
