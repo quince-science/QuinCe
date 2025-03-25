@@ -59,7 +59,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
         equilibratorTemperature, equilibratorPressure, xCO2);
 
       // Store the calculated values
-      record.put("ΔT", Math.abs(waterTemperature - equilibratorTemperature));
+      record.put("ΔT", equilibratorTemperature - waterTemperature);
       record.put("pH₂O", calculator.pH2O);
       record.put("pCO₂ TE Wet", calculator.pCo2TEWet);
       record.put("fCO₂ TE Wet", calculator.fCo2TEWet);
