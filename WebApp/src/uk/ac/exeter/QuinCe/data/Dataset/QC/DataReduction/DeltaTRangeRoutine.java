@@ -34,13 +34,14 @@ public class DeltaTRangeRoutine extends DataReductionQCRoutine {
       if (null != value) {
         RoutineFlag flag = null;
 
-        if (Math.abs(value) > settings.getDoubleOption("bad_limit")) {
+        if (value < 0) {
+          flag = new RoutineFlag(this, Flag.BAD, "0", String.valueOf(value));
+        } else if (value > settings.getDoubleOption("bad_limit")) {
           flag = new RoutineFlag(this, Flag.BAD,
             settings.getOption("bad_limit"), String.valueOf(value));
 
           // flag = Flag.BAD;
-        } else if (Math.abs(value) > settings
-          .getDoubleOption("questionable_limit")) {
+        } else if (value > settings.getDoubleOption("questionable_limit")) {
           flag = new RoutineFlag(this, Flag.QUESTIONABLE,
             settings.getOption("questionable_limit"), String.valueOf(value));
         }

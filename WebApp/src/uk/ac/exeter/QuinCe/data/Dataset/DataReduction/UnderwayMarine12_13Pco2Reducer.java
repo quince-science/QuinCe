@@ -39,7 +39,7 @@ public class UnderwayMarine12_13Pco2Reducer extends UnderwayMarinePco2Reducer {
         .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
 
       // Store the calculated values
-      record.put("ΔT", Math.abs(waterTemperature - equilibratorTemperature));
+      record.put("ΔT", equilibratorTemperature - waterTemperature);
 
       if (getStringProperty(CAL_GAS_TYPE_ATTR).equals(SPLIT_CO2_GAS_CAL_TYPE)) {
 
