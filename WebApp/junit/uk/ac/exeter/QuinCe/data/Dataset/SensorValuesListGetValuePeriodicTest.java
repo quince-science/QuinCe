@@ -63,4 +63,9 @@ public class SensorValuesListGetValuePeriodicTest
   protected int getRequestedMinuteCol() {
     return 3;
   }
+
+  @Override
+  protected int getInterpolatesAroundFlagCol() {
+    return 10;
+  }
 }

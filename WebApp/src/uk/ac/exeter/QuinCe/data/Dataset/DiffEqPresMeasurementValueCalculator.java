@@ -44,6 +44,7 @@ public class DiffEqPresMeasurementValueCalculator
         .addAll(getSensorValues(allSensorValues, pressAtInstrument));
 
       return new MeasurementValue(requiredSensorType, usedSensorValues, null,
+        MeasurementValue.interpolatesAroundFlag(diffEqPress, pressAtInstrument),
         allSensorValues, finalPressure, diffEqPress.getMemberCount(),
         diffEqPress.getType());
 

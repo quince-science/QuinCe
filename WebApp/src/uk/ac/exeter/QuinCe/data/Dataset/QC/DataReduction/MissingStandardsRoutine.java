@@ -88,7 +88,7 @@ public class MissingStandardsRoutine extends DataReductionQCRoutine {
 
             if (!calibrationsOK) {
               flagSensors(instrument, measurement, entry.getValue(),
-                allSensorValues, flag, flaggedItems);
+                allSensorValues, flag, flaggedItems, false);
             }
           }
         }

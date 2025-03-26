@@ -59,7 +59,8 @@ public class ZeroCurrentComparisonRoutine extends DataReductionQCRoutine {
         if (currentValue.getCalculatedValue() >= zeroCount
           .getCalculatedValue()) {
           flagSensors(instrument, measurement, entry.getValue(),
-            allSensorValues, flag, flaggedItems);
+            allSensorValues, flag, flaggedItems,
+            MeasurementValue.interpolatesAroundFlag(zeroCount, currentValue));
         }
       }
 

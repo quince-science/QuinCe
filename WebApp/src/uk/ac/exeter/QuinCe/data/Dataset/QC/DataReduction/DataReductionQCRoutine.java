@@ -47,7 +47,8 @@ public abstract class DataReductionQCRoutine implements Routine {
   protected void flagSensors(Instrument instrument, Measurement measurement,
     ReadOnlyDataReductionRecord dataReductionRecord,
     DatasetSensorValues allSensorValues, RoutineFlag flag,
-    FlaggedItems flaggedItems) throws RoutineException {
+    FlaggedItems flaggedItems, boolean includeInterpolationsAroundFlags)
+    throws RoutineException {
 
     try {
 
@@ -67,22 +68,23 @@ public abstract class DataReductionQCRoutine implements Routine {
           flaggedItems.add(measurement);
 
           // Get the sensor values from the MeasurmentValue that need flagging
-          valuesToFlag.addAll(measurementValue.getSensorValueIds().stream()
-            .map(allSensorValues::getById).collect(Collectors.toList()));
+          if (includeInterpolationsAroundFlags
+            || !measurementValue.interpolatesAroundFlag()) {
+            valuesToFlag.addAll(measurementValue.getSensorValueIds().stream()
+              .map(allSensorValues::getById).collect(Collectors.toList()));
+          }
         }
       }
 
       if (SensorValue.allUserQCNeeded(valuesToFlag)) {
-
         for (SensorValue value : valuesToFlag) {
           value.addAutoQCFlag(flag);
           flaggedItems.add(value);
         }
-
-        dataReductionRecord.setQc(flag, getShortMessage());
-        flaggedItems.add(dataReductionRecord);
       }
 
+      dataReductionRecord.setQc(flag, getShortMessage());
+      flaggedItems.add(dataReductionRecord);
     } catch (Exception e) {
       throw new RoutineException("Error while setting QC flags", e);
     }

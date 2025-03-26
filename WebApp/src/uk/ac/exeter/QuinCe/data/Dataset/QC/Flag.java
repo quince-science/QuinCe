@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -748,5 +749,11 @@ public class Flag {
 
   public boolean commentRequired() {
     return flagValue == 3 || flagValue == 4 || flagValue == -200;
+  }
+
+  public static boolean containsWorseFlag(Collection<Flag> flags,
+    Flag reference) {
+
+    return flags.stream().anyMatch(f -> f.moreSignificantThan(reference));
   }
 }

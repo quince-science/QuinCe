@@ -36,6 +36,8 @@ public class MeasurementValuesSerializer
 
   private static final String MEMBER_COUNT_KEY = "memberCount";
 
+  private static final String INTERPOLATES_OVER_FLAG_KEY = "interpolatesOverFlag";
+
   private static final String VALUE_KEY = "value";
 
   private static final String FLAG_KEY = "flag";
@@ -80,6 +82,9 @@ public class MeasurementValuesSerializer
 
       valueJson.add(MEMBER_COUNT_KEY,
         new JsonPrimitive(value.getMemberCount()));
+
+      valueJson.add(INTERPOLATES_OVER_FLAG_KEY,
+        new JsonPrimitive(value.interpolatesAroundFlag()));
 
       // Calculated value
       JsonPrimitive valuePrimitive;
@@ -155,6 +160,16 @@ public class MeasurementValuesSerializer
 
       int memberCount = json.get(MEMBER_COUNT_KEY).getAsInt();
 
+      /*
+       * This default is to handle old MeasurementValues that were created
+       * before the flag was introduced.
+       */
+      boolean interpolatesOverFlag = false;
+      if (json.has(INTERPOLATES_OVER_FLAG_KEY)) {
+        interpolatesOverFlag = json.get(INTERPOLATES_OVER_FLAG_KEY)
+          .getAsBoolean();
+      }
+
       Double value = json.get(VALUE_KEY).getAsDouble();
       if (Math.abs(value - NAN_VALUE) < 1) {
         value = Double.NaN;
@@ -174,8 +189,8 @@ public class MeasurementValuesSerializer
         Properties.class);
 
       return new MeasurementValue(sensorTypeId, sensorValueIds,
-        supportingValueIds, memberCount, value, flag, qcComments, type,
-        properties);
+        supportingValueIds, memberCount, interpolatesOverFlag, value, flag,
+        qcComments, type, properties);
     } catch (SensorTypeNotFoundException e) {
       throw new JsonParseException(e);
     }

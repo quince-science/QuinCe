@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
@@ -56,19 +57,21 @@ public class D12D13TotalCO2CheckRoutine extends DataReductionQCRoutine {
           Measurement measurement = entry.getKey();
           ReadOnlyDataReductionRecord record = entry.getValue();
 
-          Double d12CO2 = measurement.getMeasurementValue(d12CO2SensorType)
-            .getCalculatedValue();
-          Double d13CO2 = measurement.getMeasurementValue(d13CO2SensorType)
-            .getCalculatedValue();
+          MeasurementValue d12CO2 = measurement
+            .getMeasurementValue(d12CO2SensorType);
+          MeasurementValue d13CO2 = measurement
+            .getMeasurementValue(d13CO2SensorType);
 
           Double totalCO2 = measurement.getMeasurementValue(totalCO2SensorType)
             .getCalculatedValue();
 
-          Double difference = totalCO2 - (d12CO2 + d13CO2);
+          Double difference = totalCO2
+            - (d12CO2.getCalculatedValue() + d13CO2.getCalculatedValue());
 
           if (Math.abs(difference) > 0.001D) {
             flagSensors(instrument, measurement, record, allSensorValues,
-              new RoutineFlag(this, Flag.BAD, "", ""), flaggedItems);
+              new RoutineFlag(this, Flag.BAD, "", ""), flaggedItems,
+              MeasurementValue.interpolatesAroundFlag(d12CO2, d13CO2));
           }
         }
       }
