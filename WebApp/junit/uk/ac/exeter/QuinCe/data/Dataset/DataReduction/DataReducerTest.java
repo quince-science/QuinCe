@@ -47,7 +47,7 @@ public class DataReducerTest extends BaseTest {
       .getSensorsConfiguration().getSensorType(sensorTypeName);
 
     return new MeasurementValue(sensorType.getId(), singleSensorValueList,
-      emptySensorValueList, 1, value, Flag.GOOD, emptyCommentList,
+      emptySensorValueList, 1, false, value, Flag.GOOD, emptyCommentList,
       PlotPageTableValue.MEASURED_TYPE, new Properties());
   }
 

@@ -109,6 +109,12 @@ public class SensorValuesListValue
   private final String qcMessage;
 
   /**
+   * Indicates whether or not this value is constructed by
+   * interpolating around already-flagged {@link SensorValue}s.
+   */
+  private boolean interpolatesAroundFlag = false;
+
+  /**
    * Constructor for a value based on a single {@link SensorValue}. The type and
    * QC flag are determined automatically.
    *
@@ -128,6 +134,7 @@ public class SensorValuesListValue
     sourceSensorValues = Collections
       .unmodifiableCollection(Arrays.asList(sourceSensorValue));
     this.sensorType = sensorType;
+    this.interpolatesAroundFlag = false;
 
     try {
 
@@ -166,7 +173,8 @@ public class SensorValuesListValue
   protected SensorValuesListValue(LocalDateTime startTime,
     LocalDateTime endTime, LocalDateTime nominalTime,
     Collection<SensorValue> sourceSensorValues, SensorType sensorType,
-    String value, Flag qcFlag, String qcMessage) {
+    String value, Flag qcFlag, String qcMessage,
+    boolean interpolatesAroundFlag) {
     this.startTime = startTime;
     this.endTime = endTime;
     this.nominalTime = nominalTime;
@@ -184,6 +192,7 @@ public class SensorValuesListValue
         "All SensorValues must equal the passed value");
     }
 
+    this.interpolatesAroundFlag = interpolatesAroundFlag;
     this.doubleValue = null;
     this.qcFlag = qcFlag;
     this.qcMessage = qcMessage;
@@ -211,6 +220,7 @@ public class SensorValuesListValue
     this.qcMessage = original.qcMessage;
     this.sourceSensorValues = new ArrayList<SensorValue>(
       original.sourceSensorValues);
+    this.interpolatesAroundFlag = original.interpolatesAroundFlag;
   }
 
   /**
@@ -230,7 +240,8 @@ public class SensorValuesListValue
   protected SensorValuesListValue(LocalDateTime startTime,
     LocalDateTime endTime, LocalDateTime nominalTime,
     Collection<SensorValue> sourceSensorValues, SensorType sensorType,
-    Double value, Flag qcFlag, String qcMessage) {
+    Double value, Flag qcFlag, String qcMessage,
+    boolean interpolatesAroundFlag) {
     this.startTime = startTime;
     this.endTime = endTime;
     this.nominalTime = nominalTime;
@@ -241,6 +252,7 @@ public class SensorValuesListValue
     this.stringValue = null;
     this.qcFlag = qcFlag;
     this.qcMessage = qcMessage;
+    this.interpolatesAroundFlag = interpolatesAroundFlag;
   }
 
   /**
@@ -388,5 +400,35 @@ public class SensorValuesListValue
   @Override
   public int compareTo(SensorValuesListValue o) {
     return getTime().compareTo(o.getTime());
+  }
+
+  /**
+   * Determine whether or not this SensorValuesListValue has been constructed by
+   * interpolating around already flagged {@link SensorValue}s.
+   * 
+   * @return {@code true} if the value interpolates around flagged values;
+   *         {@code false} if it does not.
+   */
+  public boolean interpolatesAroundFlag() {
+    return interpolatesAroundFlag;
+  }
+
+  protected void setInterpolatesAroundFlag() {
+    interpolatesAroundFlag = true;
+  }
+
+  public static boolean interpolatesAroundFlag(
+    SensorValuesListValue... values) {
+
+    boolean result = false;
+
+    for (SensorValuesListValue value : values) {
+      if (null != value && value.interpolatesAroundFlag) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
   }
 }

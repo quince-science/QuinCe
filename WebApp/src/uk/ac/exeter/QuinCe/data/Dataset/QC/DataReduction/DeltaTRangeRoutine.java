@@ -48,7 +48,7 @@ public class DeltaTRangeRoutine extends DataReductionQCRoutine {
 
         if (null != flag) {
           flagSensors(instrument, measurement, record, allSensorValues, flag,
-            flaggedItems);
+            flaggedItems, false);
         }
       }
     }

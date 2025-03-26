@@ -49,10 +49,13 @@ public class ParentSensorTypeMeasurementValueCalculator
       valueType = PlotPageTableValue.INTERPOLATED_TYPE;
     }
 
+    boolean interpolatesOverFlags = childMeasurementValues.stream()
+      .anyMatch(cmv -> cmv.interpolatesAroundFlag());
+
     try {
       return new MeasurementValue(requiredSensorType,
         getSensorValues(childMeasurementValues, allSensorValues), null,
-        allSensorValues, mean.getWeightedMean(),
+        interpolatesOverFlags, allSensorValues, mean.getWeightedMean(),
         (int) Math.floor(mean.getSumOfWeights()), valueType);
     } catch (RoutineException e) {
       throw new MeasurementValueCalculatorException(

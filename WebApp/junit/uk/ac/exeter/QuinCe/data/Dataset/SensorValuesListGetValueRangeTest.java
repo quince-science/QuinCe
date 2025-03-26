@@ -80,4 +80,8 @@ public class SensorValuesListGetValueRangeTest
     return 10;
   }
 
+  @Override
+  protected int getInterpolatesAroundFlagCol() {
+    return 11;
+  }
 }
