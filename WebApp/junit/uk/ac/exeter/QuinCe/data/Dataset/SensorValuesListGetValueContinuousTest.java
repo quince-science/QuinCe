@@ -83,7 +83,7 @@ public class SensorValuesListGetValueContinuousTest extends TestSetTest {
 
     SensorValuesList list = allSensorValues.getColumnValues(1L);
 
-    SensorValuesListValue value = getValue(list, line);
+    SensorValuesListOutput value = getValue(list, line);
 
     String expectedValueString = line.getStringField(getExpectedValueCol(),
       true);
@@ -128,11 +128,11 @@ public class SensorValuesListGetValueContinuousTest extends TestSetTest {
         .getBooleanField(getInterpolatesAroundFlagCol());
 
       assertEquals(expectedInterpolatesAroundFlags,
-        value.interpolatesAroundFlag(), "Interpolates Around Flags incorrect");
+        value.interpolatesAroundFlags(), "Interpolates Around Flags incorrect");
     }
   }
 
-  protected SensorValuesListValue getValue(SensorValuesList list,
+  protected SensorValuesListOutput getValue(SensorValuesList list,
     TestSetLine line) throws SensorValuesListException {
     return list.getValue(makeTime(line.getIntField(getRequestedMinuteCol())),
       true);

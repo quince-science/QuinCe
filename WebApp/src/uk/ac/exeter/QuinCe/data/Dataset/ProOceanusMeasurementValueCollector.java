@@ -73,7 +73,7 @@ public class ProOceanusMeasurementValueCollector
             SensorValuesList sensorValuesList = allSensorValues
               .getColumnValues(columnId);
 
-            SensorValuesListValue value = sensorValuesList
+            SensorValuesListOutput value = sensorValuesList
               .getValue(referenceValue, true);
 
             result.add(new MeasurementValue(sensorType, value));

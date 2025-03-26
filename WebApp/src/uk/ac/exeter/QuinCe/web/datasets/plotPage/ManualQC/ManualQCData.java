@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListOutput;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
@@ -801,8 +802,9 @@ public class ManualQCData extends PlotPageData {
     } else if (SensorType.isPosition(column.getId())) {
       List<SensorValuesListValue> values = sensorValues
         .getColumnValues(column.getId()).getValues();
-      values.forEach(v -> result.put(v.getTime(),
-        new MeasurementValue(v.getSensorType(), v)));
+      values.forEach(
+        v -> result.put(v.getTime(), new MeasurementValue(v.getSensorType(),
+          new SensorValuesListOutput(v, false))));
     } else if (sensorColumnIds.contains(column.getId())
       || diagnosticColumnIds.contains(column.getId())) {
 
