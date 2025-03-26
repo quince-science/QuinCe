@@ -906,7 +906,7 @@ public class DatasetSensorValues {
       : SensorType.LATITUDE_SENSOR_TYPE;
 
     SensorValuesList sensorValues = getPositionValuesList(columnId);
-    SensorValuesListValue positionValue = null == sensorValues ? null
+    SensorValuesListOutput positionValue = null == sensorValues ? null
       : sensorValues.getValue(time, true);
 
     return null == positionValue ? null

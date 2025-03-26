@@ -97,7 +97,7 @@ public class MeasurementValue implements PlotPageTableValue {
    * Indicates whether or not this MeasurmentValue is constructed by
    * interpolating around already-flagged {@link SensorValue}s.
    */
-  private boolean interpolatesAroundFlag = false;
+  private boolean interpolatesAroundFlags = false;
 
   /**
    * Creates a stub value with no assigned {@link SensorValue}s.
@@ -136,7 +136,7 @@ public class MeasurementValue implements PlotPageTableValue {
     this.sensorValueIds = sensorValueIds;
     this.supportingSensorValueIds = supportingSensorValueIds;
     this.memberCount = memberCount;
-    this.interpolatesAroundFlag = interpolatesAroundFlag;
+    this.interpolatesAroundFlags = interpolatesAroundFlag;
     this.calculatedValue = calculatedValue;
     this.flag = flag;
     this.qcMessage = qcComments;
@@ -165,7 +165,7 @@ public class MeasurementValue implements PlotPageTableValue {
     this.supportingSensorValueIds = new ArrayList<Long>();
     this.calculatedValue = calculatedValue;
     this.memberCount = memberCount;
-    this.interpolatesAroundFlag = interpolatesAroundFlag;
+    this.interpolatesAroundFlags = interpolatesAroundFlag;
     this.qcMessage = new HashSet<String>();
     this.properties = new Properties();
     addSensorValues(sensorValues, allSensorValues, false);
@@ -173,7 +173,7 @@ public class MeasurementValue implements PlotPageTableValue {
     this.type = type;
   }
 
-  public MeasurementValue(SensorType sensorType, SensorValuesListValue value) {
+  public MeasurementValue(SensorType sensorType, SensorValuesListOutput value) {
     if (null == value) {
       this.sensorType = sensorType;
       this.calculatedValue = Double.NaN;
@@ -181,7 +181,7 @@ public class MeasurementValue implements PlotPageTableValue {
       this.sensorValueIds = new ArrayList<Long>();
       this.supportingSensorValueIds = new ArrayList<Long>();
       this.memberCount = 0;
-      this.interpolatesAroundFlag = false;
+      this.interpolatesAroundFlags = false;
       this.flag = Flag.BAD;
       this.qcMessage = new HashSet<String>();
       this.properties = new Properties();
@@ -190,7 +190,7 @@ public class MeasurementValue implements PlotPageTableValue {
       this.sensorValueIds = value.getSourceSensorValues().stream()
         .map(SensorValue::getId).toList();
       this.memberCount = value.getSourceSensorValues().size();
-      this.interpolatesAroundFlag = value.interpolatesAroundFlag();
+      this.interpolatesAroundFlags = value.interpolatesAroundFlags();
       this.supportingSensorValueIds = new ArrayList<Long>();
       this.calculatedValue = value.getDoubleValue();
       this.flag = value.getQCFlag();
@@ -239,7 +239,7 @@ public class MeasurementValue implements PlotPageTableValue {
     }
 
     if (interpolatesAroundFlag) {
-      this.interpolatesAroundFlag = true;
+      this.interpolatesAroundFlags = true;
     }
   }
 
@@ -258,8 +258,8 @@ public class MeasurementValue implements PlotPageTableValue {
       addSensorValues(measurementValue, allSensorValues);
     }
 
-    if (sourceValues.stream().anyMatch(v -> v.interpolatesAroundFlag)) {
-      this.interpolatesAroundFlag = true;
+    if (sourceValues.stream().anyMatch(v -> v.interpolatesAroundFlags)) {
+      this.interpolatesAroundFlags = true;
     }
   }
 
@@ -274,11 +274,11 @@ public class MeasurementValue implements PlotPageTableValue {
     DatasetSensorValues allSensorValues) throws RoutineException {
     for (Long sensorValueId : sourceValue.getSensorValueIds()) {
       addSensorValue(allSensorValues.getById(sensorValueId), allSensorValues,
-        sourceValue.interpolatesAroundFlag);
+        sourceValue.interpolatesAroundFlags);
     }
 
-    if (sourceValue.interpolatesAroundFlag) {
-      this.interpolatesAroundFlag = true;
+    if (sourceValue.interpolatesAroundFlags) {
+      this.interpolatesAroundFlags = true;
     }
   }
 
@@ -337,7 +337,7 @@ public class MeasurementValue implements PlotPageTableValue {
         }
 
         if (interpolatesAroundFlag) {
-          this.interpolatesAroundFlag = true;
+          this.interpolatesAroundFlags = true;
         }
       }
     }
@@ -374,7 +374,7 @@ public class MeasurementValue implements PlotPageTableValue {
     addSensorValue(value, allSensorValues, incrMemberCount);
     type = INTERPOLATED_TYPE;
     if (interpolatesAroundFlag) {
-      this.interpolatesAroundFlag = true;
+      this.interpolatesAroundFlags = true;
     }
   }
 
@@ -638,12 +638,12 @@ public class MeasurementValue implements PlotPageTableValue {
   /**
    * Determine whether or not this MeasurementValue has been constructed by
    * interpolating around already flagged {@link SensorValue}s.
-   * 
+   *
    * @return {@code true} if the value interpolates around flagged values;
    *         {@code false} if it does not.
    */
   public boolean interpolatesAroundFlag() {
-    return interpolatesAroundFlag;
+    return interpolatesAroundFlags;
   }
 
   public static boolean interpolatesAroundFlag(MeasurementValue... values) {
@@ -651,7 +651,7 @@ public class MeasurementValue implements PlotPageTableValue {
     boolean result = false;
 
     for (MeasurementValue value : values) {
-      if (null != value && value.interpolatesAroundFlag) {
+      if (null != value && value.interpolatesAroundFlags) {
         result = true;
         break;
       }
