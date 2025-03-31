@@ -38,7 +38,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * Measurements are located after the flushing flags have been applied. If the
  * sensor is not measuring continuously, the CO₂ values should be detected in
  * PERIODIC mode (see {@link SensorValuesList}), so there will be one
- * measurement per period of W M and A M readings.
+ * measurement per period of {@code W M} and {@code A M} readings.
  * </p>
  */
 public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
@@ -48,12 +48,12 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
   /**
    * Indicates that the sensor is taking water measurements.
    */
-  private static final String WATER_MODE = "w m";
+  public static final String WATER_MODE = "w m";
 
   /**
    * Indicates that the sensor is taking atmospheric measurements.
    */
-  private static final String ATM_MODE = "a m";
+  public static final String ATM_MODE = "a m";
 
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
