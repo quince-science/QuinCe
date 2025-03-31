@@ -31,7 +31,7 @@
             <td>
               <p:dataTable id="sharedList" var="user" widgetVar="sharedList"
                 styleClass="tableNoHeader tableNarrow" emptyMessage=""
-                value="#{instrumentListBean.sharedUsers}">
+                stripedRows="true" value="#{instrumentListBean.sharedUsers}">
 
                 <p:column width="200px" style="white-space: nowrap">
                   <h:outputText value="#{user.name}"/>
@@ -164,7 +164,7 @@
           action="#{newInstrumentBean.start}" />
       </h:panelGrid>
       <p:dataTable id="instruments" var="instrument" widgetVar="instrumentsList"
-        value="#{instrumentListBean.instrumentList}"
+        value="#{instrumentListBean.instrumentList}" stripedRows="true"
         filteredValue="#{instrumentListBean.filteredInstruments}"
         globalFilterFunction="#{instrumentListBean.filter}"
         styleClass="pageBlock">
