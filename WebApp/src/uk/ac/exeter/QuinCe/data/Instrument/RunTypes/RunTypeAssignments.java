@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.data.Dataset.ProOceanusCO2MeasurementLocator;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.utils.AscendingLengthComparator;
@@ -48,6 +49,7 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
     // Set up preset run types
     PRESET_RUN_TYPES = new ArrayList<PresetRunType>();
 
+    // General Oceanics
     PRESET_RUN_TYPES
       .add(new PresetRunType(Arrays.asList(new String[] { "equ", "equ-drain" }),
         new RunTypeCategory(1L, "Underway Marine pCO₂")));
@@ -100,6 +102,16 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
 
     PRESET_RUN_TYPES.add(new PresetRunType(
       Arrays.asList(new String[] { "wake up" }), RunTypeCategory.IGNORED));
+
+    // Pro Oceanus
+    PRESET_RUN_TYPES.add(new PresetRunType(
+      Arrays
+        .asList(new String[] { ProOceanusCO2MeasurementLocator.WATER_MODE }),
+      new RunTypeCategory(8L, "Pro Oceanus CO₂ Water")));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(
+      Arrays.asList(new String[] { ProOceanusCO2MeasurementLocator.ATM_MODE }),
+      new RunTypeCategory(9L, "Pro Oceanus CO₂ Atmosphere")));
   }
 
   public RunTypeAssignments(int column) {
