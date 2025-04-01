@@ -30,11 +30,9 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -44,11 +42,11 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  *
  * <p>
  * This class contains the central methods for handling edits of
- * {@link Calibration}s (stored in {@link CalibrationEdit} objects. The user can
- * make multiple edits which are collected together to be committed in a single
- * operation. The bean also tracks which {@link DataSet}s will be affected by
- * the edits made, and queue those for recalculation after the edits have been
- * saved to the database.
+ * {@link Calibration}s (stored in {@link CalibrationEdit} objects). The user
+ * can make multiple edits which are collected together to be committed in a
+ * single operation. The bean also tracks which {@link DataSet}s will be
+ * affected by the edits made, and queue those for recalculation after the edits
+ * have been saved to the database.
  * </p>
  *
  * <p>
@@ -366,14 +364,11 @@ public abstract class CalibrationBean extends BaseManagedBean {
     throws Exception;
 
   /**
-   * Get the JSON for the individual calibrations.
+   * Get the JSON for the individual calibrations for use on the front end.
    *
    * @return The calibrations JSON.
-   * @throws DatabaseException
-   * @throws MissingParamException
    */
-  public String getTimelineJson()
-    throws MissingParamException, DatabaseException {
+  public String getTimelineJson() {
     JSONArray items = new JSONArray();
 
     for (String key : calibrationTargets.keySet()) {
@@ -495,9 +490,15 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *
    * <p>
    * Errors caused by bad coding (e.g. invalid IDs, invalid targets etc.) will
-   * be thrown as exceptions.
+   * be thrown as Exceptions.
    * </p>
    *
+   * @param action
+   *          The edit action. Must be one of {@link CalibrationEdit#ADD},
+   *          {@link CalibrationEdit#EDIT} or {@link CalibrationEdit#DELETE}
+   * @param calibration
+   *          The edited calibration.
+   * @return Any error messages generated during the validation.
    * @throws InvalidCalibrationEditException
    *           If the edited calibration is invalid due to a coding error (as
    *           opposed to a user error).
@@ -607,6 +608,11 @@ public abstract class CalibrationBean extends BaseManagedBean {
     return "deploymentForm";
   }
 
+  /**
+   * Get the short name for the type of {@link Calibration} being edited.
+   *
+   * @return The calibration type.
+   */
   public String getCalibrationName() {
     return "Calibration";
   }
@@ -789,12 +795,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *
    * <p>
    * Changes can be saved if:
+   * </p>
    * <ul>
    * <li>One or more edits have been made.</li>
-   * <li>There are no required calculations that cannot be performed due to the
-   * nature of the edits made.</li>
+   * <li>There are no required {@link DataSet} recalculations that cannot be
+   * performed due to the nature of the edits made.</li>
    * </ul>
-   * </p>
    *
    * @return {@code true} if the changes can be saved; {@code false} otherwise.
    */
@@ -804,8 +810,13 @@ public abstract class CalibrationBean extends BaseManagedBean {
         : true;
   }
 
+  /**
+   * Write the edited {@link Calibration}s to the database and trigger
+   * recalculation of the affected {@link DataSet}s.
+   *
+   * @return The navigation to the next page in the web app.
+   */
   public String commitChanges() {
-
     try {
       // Commit edits to database
       // What about add then edit? Add then delete? Jut take the last entry for

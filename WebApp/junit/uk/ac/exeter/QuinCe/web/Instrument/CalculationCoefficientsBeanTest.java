@@ -39,30 +39,94 @@ import uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 @TestInstance(Lifecycle.PER_CLASS)
 public class CalculationCoefficientsBeanTest extends TestSetTest {
 
+  /**
+   * TestSet column number of the edit action.
+   *
+   * @see CalculationCoefficientsBeanTest#singleCalibrationEditTest(TestSetLine)
+   */
   private static final int ACTION_COL = 0;
 
+  /**
+   * TestSet column number of the DataSet ID for the calibration to edit.
+   *
+   * <p>
+   * Will be ignored for ADD actions.
+   * </p>
+   *
+   * @see CalculationCoefficientsBeanTest#singleCalibrationEditTest(TestSetLine)
+   */
   private static final int CALIBRATION_ID_COL = 1;
 
+  /**
+   * TestSet column number for the month to set on the edit.
+   *
+   * @see #getCalibrationTime(int)
+   * @see CalculationCoefficientsBeanTest#singleCalibrationEditTest(TestSetLine)
+   */
   private static final int MONTH_COL = 2;
 
+  /**
+   * TestSet column number for the calibration target of the edit.
+   *
+   * @see CalculationCoefficientsBeanTest#singleCalibrationEditTest(TestSetLine)
+   */
   private static final int TARGET_COL = 3;
 
+  /**
+   * TestSet column number for the flag indicating whether or not the
+   * calibration's value should be changed in the edit.
+   *
+   * @see CalculationCoefficientsBeanTest#singleCalibrationEditTest(TestSetLine)
+   */
   private static final int CHANGE_VALUE_COL = 4;
 
+  /**
+   * TestSet column number for the list of DataSets affected by the edit.
+   *
+   * @see CalculationCoefficientsBeanTest#singleCalibrationEditTest(TestSetLine)
+   */
   private static final int AFFECTED_DATASETS_COL = 5;
 
+  /**
+   * TestSet column number for the list of flags specifying whether the affected
+   * DataSets can be recalculated.
+   *
+   * @see CalculationCoefficientsBeanTest#singleCalibrationEditTest(TestSetLine)
+   */
   private static final int CAN_REPROCESS_COL = 6;
 
+  /**
+   * Dummy User ID.
+   */
   private static final long USER_ID = 1L;
 
+  /**
+   * Dummy Instrument ID.
+   */
   private static final long INSTRUMENT_ID = 1L;
 
+  /**
+   * Name of the first target in a pair of created calibrations.
+   */
   private static final String TARGET_1 = "6.F";
 
+  /**
+   * Name of the second target in a pair of created calibrations.
+   */
   private static final String TARGET_2 = "6.Runtime";
 
+  /**
+   * Value to use when editing the value of an existing coefficient.
+   */
   private static final String REPLACEMENT_VALUE = "1000";
 
+  /**
+   * Initialise the bean.
+   *
+   * @return The bean.
+   * @throws Exception
+   *           If the bean cannot be initialised.
+   */
   private CalculationCoefficientsBean init() throws Exception {
     initResourceManager();
     loginUser(USER_ID);
@@ -79,8 +143,18 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
   }
 
   /**
-   * <b>NB:</b> The expected results in the {@link TestSet} file must be in
-   * ascending Dataset ID order.
+   * Basic tests of calibration edits.
+   *
+   * <p>
+   * <b>NB:</b> The expected results in the TestSet file must be in ascending
+   * Dataset ID order.
+   * </p>
+   *
+   * <p>
+   * More complex tests are performed in
+   * {@link CalculationCoefficientsBeanSingleEditTest} and
+   * {@link CalculationCoefficientsBeanMultipleEditTest}.
+   * </p>
    *
    * @param line
    * @throws Exception
