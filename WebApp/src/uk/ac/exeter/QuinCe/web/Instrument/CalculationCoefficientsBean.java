@@ -12,15 +12,26 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.files.LocateMeasurementsJob;
 
+/**
+ * Instance of the {@link CalibrationBean} for editing
+ * {@link CalculationCoefficient}s.
+ */
 @ManagedBean
 @SessionScoped
 public class CalculationCoefficientsBean extends CalibrationBean {
 
   /**
-   * The navigation string for the external standards list
+   * The navigation string for the external standards list.
    */
   private static final String NAV_LIST = "calculation_coefficients";
 
+  /**
+   * Empty constructor.
+   *
+   * <p>
+   * Required for JUnit tests.
+   * </p>
+   */
   public CalculationCoefficientsBean() {
     super();
   }

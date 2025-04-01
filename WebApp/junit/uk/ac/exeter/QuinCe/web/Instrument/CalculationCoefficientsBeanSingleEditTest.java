@@ -15,30 +15,80 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 
+/**
+ * Tests of single calibration edits for the
+ * {@link CalculationCoefficientsBean}.
+ *
+ * <p>
+ * Each test consists of an edit action followed by a check of which DataSets
+ * have been marked for reprocessing along with flags indicating whether
+ * reprocessing is possible.
+ * </p>
+ *
+ * <p>
+ * Much of the code for these tests is inherited from
+ * {@link CalculationCoefficientsBeanTest}.
+ * </p>
+ */
 @TestInstance(Lifecycle.PER_CLASS)
 public class CalculationCoefficientsBeanSingleEditTest
   extends CalculationCoefficientsBeanEditTest {
 
+  /**
+   * TestSet column number of the edit action.
+   */
   private static final int ACTION_COL = 0;
 
+  /**
+   * TestSet column number of the DataSet ID for the calibration to edit.
+   *
+   * <p>
+   * Will be ignored for ADD actions.
+   * </p>
+   */
   private static final int CALIBRATION_ID_COL = 1;
 
+  /**
+   * TestSet column number for the month to set on the edit.
+   *
+   * @see #getCalibrationTime(int)
+   */
   private static final int MONTH_COL = 2;
 
+  /**
+   * TestSet column number for the calibration target of the edit.
+   */
   private static final int TARGET_COL = 3;
 
+  /**
+   * TestSet column number for the flag indicating whether or not the
+   * calibration's value should be changed in the edit.
+   */
   private static final int CHANGE_VALUE_COL = 4;
 
+  /**
+   * TestSet column number for the list of DataSets affected by the edit.
+   */
   private static final int AFFECTED_DATASETS_COL = 5;
 
+  /**
+   * TestSet column number for the list of flags specifying whether the affected
+   * DataSets can be recalculated.
+   */
   private static final int CAN_REPROCESS_COL = 6;
 
   /**
-   * <b>NB:</b> The expected results in the {@link TestSet} file must be in
-   * ascending Dataset ID order.
+   * Perform the tests from the TestSet.
+   *
+   * <p>
+   * <b>NB:</b> The expected results in the TestSet file must be in ascending
+   * Dataset ID order.
+   * </p>
    *
    * @param line
+   *          A TestSet line.
    * @throws Exception
+   *           If any edit fails unexpectedly.
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
