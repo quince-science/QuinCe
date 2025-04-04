@@ -60,7 +60,7 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
   /**
    * TestSet column number for the month to set on the edit.
    *
-   * @see #getCalibrationTime(int)
+   * @see #getCalibrationTime(TestSetLine)
    * @see CalculationCoefficientsBeanTest#singleCalibrationEditTest(TestSetLine)
    */
   private static final int MONTH_COL = 2;
@@ -136,6 +136,18 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     return bean;
   }
 
+  /**
+   * Generate a calibration coefficients map containing the specified value.
+   *
+   * <p>
+   * `CalculationCoefficient`s only contain one value, which is called `Value`
+   * in the map.
+   * </p>
+   *
+   * @param value
+   *          The coefficient value.
+   * @return The coefficients map.
+   */
   protected static Map<String, String> makeCoefficients(String value) {
     Map<String, String> result = new HashMap<String, String>();
     result.put("Value", value);
@@ -157,7 +169,9 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
    * </p>
    *
    * @param line
+   *          The test line.
    * @throws Exception
+   *           If any test action throws an Exception.
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
@@ -219,6 +233,22 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     assertEquals(expectedDatasetsTestString, affectedDatasetsTestString);
   }
 
+  /**
+   * Get the expected calibrations as a {@link String} for comparison with the
+   * {@link TestSetLine}.
+   *
+   * <p>
+   * The {@link CalculationCoefficientsBean} returns the datasets affected by
+   * edits as a {@link Map} of {@code Long -> Boolean}. The {@link TestSetLine}s
+   * contain the expected outcome as a String of {@code long:boolean;...}. This
+   * method converts the {@link Map} to the {@link String} format for
+   * comparison.
+   * </p>
+   *
+   * @param input
+   *          The map from the bean.
+   * @return The string representation.
+   */
   private String makeTestString(TreeMap<Long, Boolean> input) {
     StringBuilder result = new StringBuilder();
 
@@ -232,6 +262,25 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     return result.toString();
   }
 
+  /**
+   * Get the expected calibrations as a {@link String} for comparison with the
+   * {@link TestSetLine}.
+   *
+   * <p>
+   * The {@link TestSetLine}s contain the expected set of datasets affected by
+   * calibration edits as a String of {@code long:boolean;...} (dataset ID and
+   * whether or not recalculation is possible). This method takes two lists of
+   * {@code Long} and {@code Boolean} and converts them to a String of that
+   * format.
+   * </p>
+   *
+   * @param ids
+   *          The dataset IDs.
+   * @param canReprocess
+   *          The flags indicating whether or not the datasets can be
+   *          reprocessed.
+   * @return The string representation.
+   */
   private String makeTestString(List<Long> ids, List<Boolean> canReprocess) {
     StringBuilder result = new StringBuilder();
 
@@ -245,6 +294,12 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     return result.toString();
   }
 
+  /**
+   * Test adding a calibration that clashes with an existing calibration.
+   *
+   * @throws Exception
+   *           If any test action throws an Exception.
+   */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
@@ -263,6 +318,12 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     assertFalse(bean.editedCalibrationValid());
   }
 
+  /**
+   * Test editing a calibration to clash with another calibration's time.
+   *
+   * @throws Exception
+   *           If any test action throws an Exception.
+   */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
@@ -280,6 +341,12 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     assertFalse(bean.editedCalibrationValid());
   }
 
+  /**
+   * Test editing a calibration to clash with another calibration's target.
+   *
+   * @throws Exception
+   *           If any test action throws an Exception.
+   */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
@@ -296,6 +363,13 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     assertFalse(bean.editedCalibrationValid());
   }
 
+  /**
+   * Test editing a calibration to clash with another calibration's time and
+   * target.
+   *
+   * @throws Exception
+   *           If any test action throws an Exception.
+   */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
@@ -314,6 +388,12 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     assertFalse(bean.editedCalibrationValid());
   }
 
+  /**
+   * Test adding a new calibration in the middle of a dataset.
+   *
+   * @throws Exception
+   *           If any test action throws an Exception.
+   */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
@@ -332,6 +412,12 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     assertFalse(bean.editedCalibrationValid());
   }
 
+  /**
+   * Test moving a calibration to the middle of an existing dataset.
+   *
+   * @throws Exception
+   *           If any test action throws an Exception.
+   */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
     "resources/sql/web/Instrument/CalibrationBeanTest/base",
@@ -354,6 +440,13 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     return "CalculationCoefficientsSingleCalibrationEditTest";
   }
 
+  /**
+   * Extract the edit action from a test line.
+   *
+   * @param line
+   *          The test line.
+   * @return The edit action.
+   */
   private int getAction(TestSetLine line) {
     int result;
 
@@ -379,6 +472,13 @@ public class CalculationCoefficientsBeanTest extends TestSetTest {
     return result;
   }
 
+  /**
+   * Extract the calibration time from a test line.
+   *
+   * @param line
+   *          The test line.
+   * @return The calibration time.
+   */
   private LocalDateTime getCalibrationTime(TestSetLine line) {
     int month = line.getIntField(MONTH_COL);
 
