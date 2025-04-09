@@ -18,7 +18,7 @@ public class ConstantValueRoutine extends AutoQCRoutine {
 
   @Override
   protected void validateParameters() throws RoutineException {
-    if (parameters.size() != 1) {
+    if (null == parameters || parameters.size() != 1) {
       throw new RoutineException(
         "Incorrect number of parameters. Must be <maxDuration>");
     }
