@@ -14,6 +14,8 @@
     <h:form id="referenceDataForm" method="post" charset="utf8">
       <h:inputHidden id="sensorTypes"
         value="#{newInstrumentBean.sensorTypesJson}" />
+      <h:inputHidden id="fixedDependsQuestionAnswers"
+        value="#{newInstrumentBean.sensorTypesWithFixedDependsQuestionAnswer}" />
       <h:inputHidden id="filesAssigned"
         value="#{newInstrumentBean.assignedFiles}" />
       <h:inputHidden id="updatedFile"

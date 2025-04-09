@@ -1043,9 +1043,16 @@ public class NewInstrumentBean extends FileUploadBean {
     SensorType sensorType = ResourceManager.getInstance()
       .getSensorsConfiguration().getSensorType(sensorAssignmentSensorType);
 
+    boolean dependsQuestionAnswer = this.sensorAssignmentDependsQuestionAnswer;
+
+    Boolean fixedAnswer = getFixedDependsQuestionAnswer(sensorType.getId());
+    if (null != fixedAnswer) {
+      dependsQuestionAnswer = fixedAnswer.booleanValue();
+    }
+
     SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile,
       sensorAssignmentColumn, sensorType, sensorAssignmentName,
-      sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer,
+      sensorAssignmentPrimary, dependsQuestionAnswer,
       sensorAssignmentMissingValue);
 
     sensorAssignments.addAssignment(assignment);
@@ -2333,6 +2340,31 @@ public class NewInstrumentBean extends FileUploadBean {
     sensorTypes.addAll(sensorConfig.getDiagnosticSensorTypes());
 
     return new Gson().toJson(sensorTypes);
+  }
+
+  public String getSensorTypesWithFixedDependsQuestionAnswer() {
+    JsonArray json = new JsonArray();
+
+    for (Variable var : instrumentVariables) {
+      var.getDependsQuestionAnswers().entrySet()
+        .forEach(e -> json.add(e.getKey()));
+    }
+
+    return new Gson().toJson(json);
+  }
+
+  private Boolean getFixedDependsQuestionAnswer(long sensorTypeId) {
+
+    Boolean result = null;
+
+    for (Variable var : instrumentVariables) {
+      result = var.getDependsQuestionAnswers().get(sensorTypeId);
+      if (null != result) {
+        break;
+      }
+    }
+
+    return result;
   }
 
   public long getRemoveAssignmentSensorType() {

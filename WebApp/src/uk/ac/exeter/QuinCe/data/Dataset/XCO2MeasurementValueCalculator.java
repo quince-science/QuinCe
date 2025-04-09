@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
@@ -17,6 +19,16 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
   private final SensorType xco2SensorType;
 
   private final SensorType xh2oSensorType;
+
+  private static List<String> ALWAYS_DRY;
+
+  static {
+    ALWAYS_DRY = new ArrayList<String>();
+    ALWAYS_DRY.add("Underway Marine pCO₂ from ¹²CO₂/¹³CO₂");
+    ALWAYS_DRY.add("Underway Atmospheric pCO₂ from ¹²CO₂/¹³CO₂");
+    ALWAYS_DRY.add("SubCTech CO₂ (self calibrating)");
+    ALWAYS_DRY.add("SubCTech CO₂ (post calibration)");
+  }
 
   public XCO2MeasurementValueCalculator() throws SensorTypeNotFoundException {
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
@@ -66,12 +78,9 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
 
     boolean result;
 
-    if (variable.getName().equals("Underway Marine pCO₂ from ¹²CO₂/¹³CO₂")
-      || variable.getName()
-        .equals("Underway Atmospheric pCO₂ from ¹²CO₂/¹³CO₂")) {
+    if (ALWAYS_DRY.contains(variable.getName())) {
       result = true;
     } else {
-
       TreeSet<SensorAssignment> co2Assignments = instrument
         .getSensorAssignments().get(xco2SensorType);
 

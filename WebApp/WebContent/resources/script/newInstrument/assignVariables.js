@@ -20,6 +20,7 @@ const SECONDS_FROM_START = '13';
 
 function assignVariablesInit() {
   window.sensorTypes = JSON.parse($('#referenceDataForm\\:sensorTypes').val());
+  window.sensorTypesWithFixedDependsQuestionAnswer = JSON.parse($('#referenceDataForm\\:fixedDependsQuestionAnswers').val());
   window.suspendEvents = false;
   selectUpdatedFile();
   setupDragDropEvents();
@@ -190,7 +191,8 @@ function openAssignSensorDialog(sensorType, column) {
 
   $('#newInstrumentForm\\:sensorAssignmentName').val(column.colName);
 
-  if (null == sensorType.dependsQuestion) {
+  if (null == sensorType.dependsQuestion ||
+    window.sensorTypesWithFixedDependsQuestionAnswer.includes(sensorType.id)) {
     $('#sensorAssignmentDependsQuestionContainer').hide();
   } else {
     $('#sensorAssignmentDependsQuestion').text(sensorType.dependsQuestion);
