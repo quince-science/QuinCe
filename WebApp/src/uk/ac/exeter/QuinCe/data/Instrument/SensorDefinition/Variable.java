@@ -123,7 +123,8 @@ public class Variable implements Comparable<Variable> {
     }
 
     if (coreSensorTypeId < 0) {
-      throw new SensorConfigurationException("Variable " + id + "does not have a core SensorType");
+      throw new SensorConfigurationException(
+        "Variable " + id + "does not have a core SensorType");
     }
 
     coreSensorType = sensorConfig.getSensorType(coreSensorTypeId);
@@ -383,5 +384,9 @@ public class Variable implements Comparable<Variable> {
   protected AttributeCondition getAttributeCondition(SensorType sensorType) {
     return null == attributeConditions ? null
       : attributeConditions.get(sensorType.getId());
+  }
+
+  public Map<Long, Boolean> getDependsQuestionAnswers() {
+    return properties.getDependsQuestionAnswers();
   }
 }
