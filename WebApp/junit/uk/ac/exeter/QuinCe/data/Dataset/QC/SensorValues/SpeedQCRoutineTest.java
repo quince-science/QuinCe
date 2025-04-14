@@ -155,31 +155,31 @@ public class SpeedQCRoutineTest extends TestSetTest {
 
     if (has1) {
       assertTrue(SVTestUtils.checkAutoQC(
-        allSensorValues.getSensorValues(LON_COLUMN_IDS).getRawValues(),
+        allSensorValues.getSensorValues(LON_COLUMN_IDS, false).getRawValues(),
         expectedFlag1, Arrays.asList(new Long[] { 1L })), "Lon1 Flag Wrong");
 
       assertTrue(SVTestUtils.checkAutoQC(
-        allSensorValues.getSensorValues(LAT_COLUMN_IDS).getRawValues(),
+        allSensorValues.getSensorValues(LAT_COLUMN_IDS, false).getRawValues(),
         expectedFlag1, Arrays.asList(new Long[] { 2L })), "Lat1 Flag Wrong");
     }
 
     if (has2) {
       assertTrue(SVTestUtils.checkAutoQC(
-        allSensorValues.getSensorValues(LON_COLUMN_IDS).getRawValues(),
+        allSensorValues.getSensorValues(LON_COLUMN_IDS, false).getRawValues(),
         expectedFlag2, Arrays.asList(new Long[] { 3L })), "Lon2 Flag Wrong");
 
       assertTrue(SVTestUtils.checkAutoQC(
-        allSensorValues.getSensorValues(LAT_COLUMN_IDS).getRawValues(),
+        allSensorValues.getSensorValues(LAT_COLUMN_IDS, false).getRawValues(),
         expectedFlag2, Arrays.asList(new Long[] { 4L })), "Lat2 Flag Wrong");
     }
 
     if (has3) {
       assertTrue(SVTestUtils.checkAutoQC(
-        allSensorValues.getSensorValues(LON_COLUMN_IDS).getRawValues(),
+        allSensorValues.getSensorValues(LON_COLUMN_IDS, false).getRawValues(),
         expectedFlag3, Arrays.asList(new Long[] { 5L })), "Lon3 Flag Wrong");
 
       assertTrue(SVTestUtils.checkAutoQC(
-        allSensorValues.getSensorValues(LAT_COLUMN_IDS).getRawValues(),
+        allSensorValues.getSensorValues(LAT_COLUMN_IDS, false).getRawValues(),
         expectedFlag3, Arrays.asList(new Long[] { 6L })), "Lat3 Flag Wrong");
     }
   }

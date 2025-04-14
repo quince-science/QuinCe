@@ -32,7 +32,7 @@ public class SimpleMeasurementLocator extends MeasurementLocator {
 
       // Get all the sensor values for the identified columns
       SensorValuesList sensorValues = allSensorValues
-        .getSensorValues(measurementColumnIds);
+        .getSensorValues(measurementColumnIds, false);
 
       // Since we're only dealing with one variable, we don't want multiple
       // measurements for the same time. Get all the unique times and make
