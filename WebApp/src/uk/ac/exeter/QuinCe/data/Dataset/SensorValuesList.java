@@ -184,6 +184,15 @@ public class SensorValuesList {
   private boolean allowStringPeriodicGroups = false;
 
   /**
+   * Indicate whether or not all values in the list should be forced as String
+   * values.
+   *
+   * If this is set to {@code false}, the list will automatically decide whether
+   * to use String or Double values.
+   */
+  private boolean forceString = false;
+
+  /**
    * Create a list for a single file column.
    *
    * @param sensorAssignments
@@ -194,13 +203,14 @@ public class SensorValuesList {
    * @throws RecordNotFoundException
    *           If the {@link SensorType} for the column cannot be established.
    */
-  public SensorValuesList(long columnId, DatasetSensorValues allSensorValues)
-    throws RecordNotFoundException {
+  public SensorValuesList(long columnId, DatasetSensorValues allSensorValues,
+    boolean forceString) throws RecordNotFoundException {
     columnIds = new TreeSet<Long>();
     columnIds.add(columnId);
     this.allSensorValues = allSensorValues;
     this.sensorType = allSensorValues.getInstrument().getSensorAssignments()
       .getSensorTypeForDBColumn(columnId);
+    this.forceString = forceString;
   }
 
   /**
@@ -220,7 +230,8 @@ public class SensorValuesList {
    *           If the {@link SensorType} for any column cannot be established.
    */
   public SensorValuesList(Collection<Long> columnIds,
-    DatasetSensorValues allSensorValues) throws RecordNotFoundException {
+    DatasetSensorValues allSensorValues, boolean forceString)
+    throws RecordNotFoundException {
 
     SensorType testingSensorType = null;
     SensorAssignments sensorAssignments = allSensorValues.getInstrument()
@@ -242,6 +253,7 @@ public class SensorValuesList {
     this.columnIds = new TreeSet<Long>(columnIds);
     this.sensorType = testingSensorType;
     this.allSensorValues = allSensorValues;
+    this.forceString = forceString;
   }
 
   /**
@@ -262,13 +274,14 @@ public class SensorValuesList {
    *           established.
    */
   public static SensorValuesList newFromSensorValueCollection(
-    Collection<SensorValue> values, DatasetSensorValues allSensorValues)
-    throws RecordNotFoundException {
+    Collection<SensorValue> values, DatasetSensorValues allSensorValues,
+    boolean forceString) throws RecordNotFoundException {
 
     TreeSet<Long> columnIds = values.stream().map(SensorValue::getColumnId)
       .collect(Collectors.toCollection(TreeSet::new));
 
-    SensorValuesList list = new SensorValuesList(columnIds, allSensorValues);
+    SensorValuesList list = new SensorValuesList(columnIds, allSensorValues,
+      forceString);
     list.addAll(values);
 
     return list;
@@ -723,8 +736,8 @@ public class SensorValuesList {
       // We skip null values
       if (null != sensorValue.getValue()
         && !sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
-        outputValues.add(
-          new SensorValuesListValue(sensorValue, sensorType, allSensorValues));
+        outputValues.add(new SensorValuesListValue(sensorValue, sensorType,
+          allSensorValues, forceString));
       }
     }
   }

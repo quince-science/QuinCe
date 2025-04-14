@@ -172,13 +172,13 @@ public class DatasetSensorValues {
 
     if (sensorValue.getColumnId() == SensorType.LONGITUDE_ID) {
       if (null == longitudes) {
-        longitudes = new SensorValuesList(SensorType.LONGITUDE_ID, this);
+        longitudes = new SensorValuesList(SensorType.LONGITUDE_ID, this, false);
       }
       longitudes.add(sensorValue);
       addById(sensorValue);
     } else if (sensorValue.getColumnId() == SensorType.LATITUDE_ID) {
       if (null == latitudes) {
-        latitudes = new SensorValuesList(SensorType.LATITUDE_ID, this);
+        latitudes = new SensorValuesList(SensorType.LATITUDE_ID, this, false);
       }
       latitudes.add(sensorValue);
       addById(sensorValue);
@@ -410,7 +410,7 @@ public class DatasetSensorValues {
     optionalColumns.remove(columnId);
 
     if (!valuesByColumn.containsKey(columnId)) {
-      valuesByColumn.put(columnId, new SensorValuesList(columnId, this));
+      valuesByColumn.put(columnId, new SensorValuesList(columnId, this, false));
     }
 
     valuesByColumn.get(columnId).add(sensorValue);
@@ -997,10 +997,11 @@ public class DatasetSensorValues {
     return result;
   }
 
-  public SensorValuesList getSensorValues(Collection<Long> columnIds)
-    throws RecordNotFoundException {
+  public SensorValuesList getSensorValues(Collection<Long> columnIds,
+    boolean forceString) throws RecordNotFoundException {
 
-    SensorValuesList result = new SensorValuesList(columnIds, this);
+    SensorValuesList result = new SensorValuesList(columnIds, this,
+      forceString);
 
     for (long id : columnIds) {
       result.addAll(valuesByColumn.get(id));
@@ -1015,6 +1016,6 @@ public class DatasetSensorValues {
 
   public SensorValuesList getRunTypes() throws RecordNotFoundException {
     return getSensorValues(
-      getInstrument().getSensorAssignments().getRunTypeColumnIDs());
+      getInstrument().getSensorAssignments().getRunTypeColumnIDs(), true);
   }
 }

@@ -119,8 +119,8 @@ public class SensorValuesListValue
    * @throws RoutineException
    */
   protected SensorValuesListValue(SensorValue sourceSensorValue,
-    SensorType sensorType, DatasetSensorValues allSensorValues)
-    throws SensorValuesListException {
+    SensorType sensorType, DatasetSensorValues allSensorValues,
+    boolean forceString) throws SensorValuesListException {
 
     this.startTime = sourceSensorValue.getTime();
     this.endTime = sourceSensorValue.getTime();
@@ -131,7 +131,7 @@ public class SensorValuesListValue
 
     try {
 
-      if (sourceSensorValue.isNumeric()) {
+      if (!forceString && sourceSensorValue.isNumeric()) {
         doubleValue = sourceSensorValue.getDoubleValue();
         qcFlag = sourceSensorValue.getDisplayFlag(allSensorValues);
         qcMessage = sourceSensorValue.getDisplayQCMessage(allSensorValues);
