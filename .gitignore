@@ -68,6 +68,7 @@ DataPreparation/MapCO2/*csv
 **/.idea
 **/.vscode
 **/.venv
+**/venv
 
 # Jupyter Notebooks
 **/.ipynb_checkpoints

@@ -52,6 +52,10 @@ public class VariableAttribute {
       value = enumEntries.get(0);
       break;
     }
+    case VariableAttributes.BOOL_TYPE: {
+      value = "false";
+      break;
+    }
     }
   }
 
