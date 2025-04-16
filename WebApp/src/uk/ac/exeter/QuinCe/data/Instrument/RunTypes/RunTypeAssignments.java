@@ -46,7 +46,12 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
   private TreeSet<Integer> columns;
 
   static {
-    // Set up preset run types
+
+    /*
+     * Set up preset run types.
+     *
+     * Groups of run type names indicate aliases.
+     */
     PRESET_RUN_TYPES = new ArrayList<PresetRunType>();
 
     // General Oceanics
@@ -112,6 +117,43 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
     PRESET_RUN_TYPES.add(new PresetRunType(
       Arrays.asList(new String[] { ProOceanusCO2MeasurementLocator.ATM_MODE }),
       new RunTypeCategory(9L, "Pro Oceanus CO₂ Atmosphere")));
+
+    // SubCTech CO2
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "1" }),
+      RunTypeCategory.INTERNAL_CALIBRATION));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "2" }),
+      RunTypeCategory.INTERNAL_CALIBRATION));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "4" }),
+      RunTypeCategory.IGNORED));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "5" }),
+      new RunTypeCategory(22L, "SubCTech CO₂")));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "7" }),
+      RunTypeCategory.IGNORED));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "13" }),
+      RunTypeCategory.IGNORED));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "15" }),
+      RunTypeCategory.INTERNAL_CALIBRATION));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "18" }),
+      RunTypeCategory.IGNORED));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "18" }),
+      RunTypeCategory.IGNORED));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "20" }),
+      RunTypeCategory.IGNORED));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "21" }),
+      RunTypeCategory.IGNORED));
+
+    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "22" }),
+      RunTypeCategory.IGNORED));
   }
 
   public RunTypeAssignments(int column) {
