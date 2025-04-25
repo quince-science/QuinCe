@@ -61,6 +61,16 @@ def get_used_sensor_values(conn):
     cursor.close()
     return sorted(set(used_sensor_values))
 
+def get_datasets(conn, unused_nans):
+    datasets = []
+
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT DISTINCT dataset_id FROM sensor_values WHERE id IN ({','.join([str(x) for x in unused_nans])}) ORDER BY dataset_id")
+    for (ds_id) in cursor:
+        datasets.append(ds_id[0])
+
+    cursor.close()
+    return datasets
 
 def delete_sensor_values(conn, ids):
     print('Deleting sensor values')
@@ -83,6 +93,9 @@ def main(conn):
 
     print(f'Total NaN values: {len(nans)}')
     print(f'Unused NaN values: {len(unused_nans)}')
+
+    print('Identifying affected datasets...')
+    print(get_datasets(conn, unused_nans))
 
     do_delete = input('Delete unused NaN values? ')
     if do_delete.lower() == 'y':
