@@ -17,8 +17,8 @@ filestore_folder="$(scripts/get_setup_property.sh filestore_folder)"
 filename=$1
 
 mysql -u $db_user -p"$db_password" $db_name <<EOF
-	SELECT i.id, i.platform_name, i.name FROM instrument i
-	  INNER JOIN file_definition fd ON fd.instrument_id = i.id
-	  INNER JOIN data_file df ON df.file_definition_id = fd.id
-	  WHERE df.filename = '${filename}';
+  SELECT i.id, i.platform_name, i.name FROM instrument i
+    INNER JOIN file_definition fd ON fd.instrument_id = i.id
+    INNER JOIN data_file df ON df.file_definition_id = fd.id
+    WHERE df.filename = '${filename}';
 EOF
