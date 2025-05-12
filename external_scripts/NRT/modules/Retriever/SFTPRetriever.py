@@ -84,7 +84,14 @@ class SFTPRetriever(FileListRetriever.FileListRetriever):
 
     def _get_all_files(self):
         all_files = self._conn.listdir()
-        return self.filter_file_list(all_files, self._configuration["File Specification"].split(";"))
+        file_spec = None
+        if "File Specification" in self._configuration and self._configuration["File Specification"] is not None:
+            file_spec = self._configuration["File Specification"].split(";")
+
+        if file_spec is None:
+            return self.filter_file_list(all_files, ["*"])
+        else:
+            return self.filter_file_list(all_files, file_spec)
 
     def _load_file(self, filename):
         data = BytesIO()
