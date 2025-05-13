@@ -265,7 +265,7 @@ function openDateTimeAssignDialog(dateTimeType, column) {
     PF('dateTimeAssignmentDialog').initPosition();
     PF('dateTimeAssignmentDialog').show();
   } else {
-    //PF('dateTimeAssignButton').jq.click();
+    PF('dateTimeAssignButton').jq.click();
   }
 }
 
