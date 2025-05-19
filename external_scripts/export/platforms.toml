@@ -132,7 +132,7 @@ affiliation = 'Flanders Marine Institute (VLIZ), Wandelaarkaai 7, 8400, Ostend, 
 NRT = 'True'
 
 	[BE-FOS-Thornton__Buoy.export]
-	NRT = []
+	NRT = ['ICOS']
 	L2 = ['ICOS']
 
 [58US]
@@ -257,7 +257,7 @@ affiliation = 'Istituto di Scienze Marine Trieste'
 NRT = 'False'
 
   [IT-FOS-PALOMA.export]
-  NRT = []
+  NRT = ['ICOS']
   L2 = ['ICOS']
 
 [DE-SOOP-Polarstern]
@@ -268,7 +268,7 @@ cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_PS-VOS'
 category_code = '31'
 call_sign = 'DBLK'
 creation_date = '2025-01-17T00:00:00Z'
-author_list = 'Hoppema, Mario; van Huevan, Steven'
+author_list = 'Hoppema, Mario; van Huevan, Steven;Roden, Nicholas P'
 affiliation = 'Alfred-Wegener-Institut Helmholtz-Zentrum für Polar- und Meeresforschung, Bremerhaven'
 NRT = 'False'
 
