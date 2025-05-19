@@ -30,6 +30,9 @@
                   <ui:fragment rendered="#{attr.type eq 'NUMBER'}">
                     <p:inputNumber value="#{attr.value}"/>
                   </ui:fragment>
+                  <ui:fragment rendered="#{attr.type eq 'BOOL'}">
+                    <p:selectBooleanCheckbox value="#{attr.value}"/>
+                  </ui:fragment>
                 </td>
               </tr>
             </ui:repeat>
