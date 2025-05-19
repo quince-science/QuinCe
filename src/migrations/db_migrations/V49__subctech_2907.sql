@@ -53,3 +53,7 @@ INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_casca
   VALUES ((SELECT id FROM variables WHERE name = 'SubCTech CO₂'),
           (SELECT id FROM sensor_types WHERE name = 'Salinity'),
           0, 3, 4);
+
+-- Mark variable as experimental
+UPDATE variables SET name = 'SubCTech CO₂ (EXPERIMENTAL)' WHERE name = 'SubCTech CO₂';
+
