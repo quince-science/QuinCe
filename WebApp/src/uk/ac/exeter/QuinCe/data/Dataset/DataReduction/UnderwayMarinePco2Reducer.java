@@ -59,12 +59,24 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
         equilibratorTemperature, equilibratorPressure, xCO2);
 
       // Store the calculated values
-      record.put("ΔT", equilibratorTemperature - waterTemperature);
-      record.put("pH₂O", calculator.pH2O);
-      record.put("pCO₂ TE Wet", calculator.pCo2TEWet);
-      record.put("fCO₂ TE Wet", calculator.fCo2TEWet);
-      record.put("pCO₂ SST", calculator.pCO2SST);
-      record.put("fCO₂", calculator.fCO2);
+      double deltaT = equilibratorTemperature - waterTemperature;
+      record.put("ΔT", deltaT);
+
+      // If the ΔT is really large, we don't store any other values.
+      if (Math.abs(deltaT) < 100D) {
+        record.put("pH₂O", calculator.pH2O);
+        record.put("pCO₂ TE Wet", calculator.pCo2TEWet);
+        record.put("fCO₂ TE Wet", calculator.fCo2TEWet);
+        record.put("pCO₂ SST", calculator.pCO2SST);
+        record.put("fCO₂", calculator.fCO2);
+      } else {
+        record.put("pH₂O", Double.NaN);
+        record.put("pCO₂ TE Wet", Double.NaN);
+        record.put("fCO₂ TE Wet", Double.NaN);
+        record.put("pCO₂ SST", Double.NaN);
+        record.put("fCO₂", Double.NaN);
+      }
+
     } catch (Exception e) {
       throw new DataReductionException(e);
     }
