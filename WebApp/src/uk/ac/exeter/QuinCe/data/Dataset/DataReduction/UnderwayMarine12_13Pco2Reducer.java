@@ -39,15 +39,26 @@ public class UnderwayMarine12_13Pco2Reducer extends UnderwayMarinePco2Reducer {
         .getMeasurementValue("Equilibrator Pressure").getCalculatedValue();
 
       // Store the calculated values
+      double deltaT = equilibratorTemperature - waterTemperature;
       record.put("ΔT", equilibratorTemperature - waterTemperature);
 
-      if (getStringProperty(CAL_GAS_TYPE_ATTR).equals(SPLIT_CO2_GAS_CAL_TYPE)) {
-
-        doSplitCalculation(record, measurement, waterTemperature, salinity,
-          equilibratorTemperature, equilibratorPressure);
+      if (Math.abs(deltaT) >= 100D) {
+        record.put("pH₂O", Double.NaN);
+        record.put("pCO₂ TE Wet", Double.NaN);
+        record.put("fCO₂ TE Wet", Double.NaN);
+        record.put("pCO₂ SST", Double.NaN);
+        record.put("fCO₂", Double.NaN);
       } else {
-        doTotalCalculation(record, measurement, waterTemperature, salinity,
-          equilibratorTemperature, equilibratorPressure);
+
+        if (getStringProperty(CAL_GAS_TYPE_ATTR)
+          .equals(SPLIT_CO2_GAS_CAL_TYPE)) {
+
+          doSplitCalculation(record, measurement, waterTemperature, salinity,
+            equilibratorTemperature, equilibratorPressure);
+        } else {
+          doTotalCalculation(record, measurement, waterTemperature, salinity,
+            equilibratorTemperature, equilibratorPressure);
+        }
       }
     } catch (Exception e) {
       throw new DataReductionException(e);
