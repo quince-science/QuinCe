@@ -50,7 +50,7 @@ public class SVTestUtils extends BaseTest {
 
     for (SensorValue sv : sensorValues) {
       if (flaggedIds.contains(sv.getId())) {
-        if (!(sv.getAutoQcFlag().equals(expectedFlag))) {
+        if (!(sv.getAutoQcFlag().equalSignificance(expectedFlag))) {
           result = false;
           // We could break early, but it's good for debugging to see the whole
           // set

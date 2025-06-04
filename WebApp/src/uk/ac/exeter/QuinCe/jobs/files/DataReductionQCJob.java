@@ -22,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -124,6 +125,22 @@ public class DataReductionQCJob extends DataSetJob {
         List<DataReductionQCRoutine> routines = config.getRoutines(reducer);
         if (null != routines) {
           for (DataReductionQCRoutine routine : routines) {
+
+            // Clear all existing flags from this routine
+            for (SensorType sensorType : routine.getFlaggedSensorTypes()) {
+              List<Long> columns = instrument.getSensorAssignments()
+                .getColumnIds(sensorType);
+
+              for (Long column : columns) {
+                for (SensorValue value : allSensorValues.getColumnValues(column)
+                  .getRawValues()) {
+                  if (value.removeAutoQCFlag(routine)) {
+                    flaggedItems.add(value);
+                  }
+                }
+              }
+            }
+
             routine.qc(conn, instrument, dataSet, var, variableRecords,
               allSensorValues, flaggedItems);
           }

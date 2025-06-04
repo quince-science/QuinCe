@@ -256,7 +256,7 @@ public class Flag {
    * @see #moreSignificantThan(Flag)
    * @see #lessSignificantThan(Flag)
    */
-  private static HashMap<Flag, Integer> FLAG_SIGNIFICANCE;
+  private static HashMap<Integer, Integer> FLAG_SIGNIFICANCE;
 
   /**
    * The numeric value for this flag.
@@ -264,17 +264,17 @@ public class Flag {
   private int flagValue;
 
   static {
-    FLAG_SIGNIFICANCE = new HashMap<Flag, Integer>();
+    FLAG_SIGNIFICANCE = new HashMap<Integer, Integer>();
 
-    FLAG_SIGNIFICANCE.put(Flag.FLUSHING, 70);
-    FLAG_SIGNIFICANCE.put(Flag.LOOKUP, 60);
-    FLAG_SIGNIFICANCE.put(Flag.NEEDED, 50);
-    FLAG_SIGNIFICANCE.put(Flag.NO_QC, 40);
-    FLAG_SIGNIFICANCE.put(Flag.BAD, 30);
-    FLAG_SIGNIFICANCE.put(Flag.QUESTIONABLE, 20);
-    FLAG_SIGNIFICANCE.put(Flag.NOT_CALIBRATED, 10);
-    FLAG_SIGNIFICANCE.put(Flag.GOOD, 00);
-    FLAG_SIGNIFICANCE.put(Flag.ASSUMED_GOOD, 00);
+    FLAG_SIGNIFICANCE.put(Flag.VALUE_FLUSHING, 70);
+    FLAG_SIGNIFICANCE.put(Flag.VALUE_LOOKUP, 60);
+    FLAG_SIGNIFICANCE.put(Flag.VALUE_NEEDED, 50);
+    FLAG_SIGNIFICANCE.put(Flag.VALUE_NO_QC, 40);
+    FLAG_SIGNIFICANCE.put(Flag.VALUE_BAD, 30);
+    FLAG_SIGNIFICANCE.put(Flag.VALUE_QUESTIONABLE, 20);
+    FLAG_SIGNIFICANCE.put(Flag.VALUE_NOT_CALIBRATED, 10);
+    FLAG_SIGNIFICANCE.put(Flag.VALUE_GOOD, 00);
+    FLAG_SIGNIFICANCE.put(Flag.VALUE_ASSUMED_GOOD, 00);
   }
 
   /**
@@ -620,7 +620,8 @@ public class Flag {
    * @see #FLAG_SIGNIFICANCE
    */
   public boolean moreSignificantThan(Flag otherFlag) {
-    return FLAG_SIGNIFICANCE.get(this) > FLAG_SIGNIFICANCE.get(otherFlag);
+    return FLAG_SIGNIFICANCE.get(flagValue) > FLAG_SIGNIFICANCE
+      .get(otherFlag.flagValue);
   }
 
   /**
@@ -633,7 +634,8 @@ public class Flag {
    *         flag; {@code false} if it is not.
    */
   public boolean lessSignificantThan(Flag otherFlag) {
-    return FLAG_SIGNIFICANCE.get(this) < FLAG_SIGNIFICANCE.get(otherFlag);
+    return FLAG_SIGNIFICANCE.get(flagValue) < FLAG_SIGNIFICANCE
+      .get(otherFlag.flagValue);
   }
 
   /**
@@ -708,7 +710,8 @@ public class Flag {
    *         flag; {@code false} otherwise.
    */
   public boolean equalSignificance(Flag otherFlag) {
-    return FLAG_SIGNIFICANCE.get(this) == FLAG_SIGNIFICANCE.get(otherFlag);
+    return FLAG_SIGNIFICANCE.get(flagValue) == FLAG_SIGNIFICANCE
+      .get(otherFlag.flagValue);
   }
 
   /**

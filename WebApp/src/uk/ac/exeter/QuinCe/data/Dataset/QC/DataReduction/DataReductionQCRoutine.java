@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -42,6 +43,10 @@ public abstract class DataReductionQCRoutine implements Routine {
 
   protected void applySettings(DataReductionQCRoutineSettings settings) {
     this.settings = settings;
+  }
+
+  public DataReductionQCRoutineSettings getSettings() {
+    return settings;
   }
 
   protected void flagSensors(Instrument instrument, Measurement measurement,
@@ -109,6 +114,10 @@ public abstract class DataReductionQCRoutine implements Routine {
     TreeMap<Measurement, ReadOnlyDataReductionRecord> dataReductionRecords,
     DatasetSensorValues allSensorValues, FlaggedItems flaggedItems)
     throws RoutineException;
+
+  public Collection<SensorType> getFlaggedSensorTypes() {
+    return settings.getFlaggedSensors();
+  }
 
   @Override
   public String toString() {
