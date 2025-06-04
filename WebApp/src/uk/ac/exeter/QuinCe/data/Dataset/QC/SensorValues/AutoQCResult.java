@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
@@ -32,7 +33,7 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
   /**
    * GSON (de)serializer.
    */
-  private static Gson GSON = null;
+  private static Gson GSON = new Gson();
 
   /**
    * Create an empty AutoQCResult.
@@ -53,23 +54,10 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
     if (null == json || json.trim().length() == 0) {
       result = new AutoQCResult();
     } else {
-      result = getGson().fromJson(json, AutoQCResult.class);
+      result = GSON.fromJson(json, AutoQCResult.class);
     }
 
     return result;
-  }
-
-  /**
-   * Returns the {@link #GSON} instance, creating it if required.
-   *
-   * @return The GSON instance.
-   */
-  private static Gson getGson() {
-    if (null == GSON) {
-      GSON = new Gson();
-    }
-
-    return GSON;
   }
 
   /**
@@ -103,7 +91,7 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
     String json = null;
 
     if (size() > 0) {
-      json = getGson().toJson(this);
+      json = GSON.toJson(this);
     }
 
     return json;
@@ -152,5 +140,16 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
   public boolean add(RoutineFlag flag) {
     removeIf(i -> i.getRoutineName().equals(flag.getRoutineName()));
     return super.add(flag);
+  }
+
+  /**
+   * Remove any {@link RoutineFlag}s that correspond to the specified routine.
+   *
+   * @param routine
+   *          The routine whose flags are to be removed.
+   * @return {@code true} if a flag was removed; {@code false} otherwise.
+   */
+  public boolean remove(Routine routine) {
+    return removeIf(i -> i.getRoutineName().equals(routine.getName()));
   }
 }

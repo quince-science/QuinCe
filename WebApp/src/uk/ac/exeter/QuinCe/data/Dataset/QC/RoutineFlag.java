@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
+import java.util.Objects;
+
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -156,4 +158,26 @@ public class RoutineFlag extends Flag {
   public String getActualValue() {
     return actualValue;
   }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + Objects.hash(getFlagValue(), routineName);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    RoutineFlag other = (RoutineFlag) obj;
+    return Objects.equals(getFlagValue(), other.getFlagValue())
+      && Objects.equals(routineName, other.routineName);
+  }
+
 }
