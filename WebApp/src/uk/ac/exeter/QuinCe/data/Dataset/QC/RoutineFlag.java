@@ -179,5 +179,4 @@ public class RoutineFlag extends Flag {
     return Objects.equals(getFlagValue(), other.getFlagValue())
       && Objects.equals(routineName, other.routineName);
   }
-
 }
