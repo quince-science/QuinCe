@@ -154,7 +154,7 @@ public class FlagTest extends BaseTest {
 
   private static Stream<Arguments> isGoodTestParams() {
     return Stream.of(Arguments.of(Flag.NO_QC, false),
-      Arguments.of(Flag.NOT_CALIBRATED, false),
+      Arguments.of(Flag.NOT_CALIBRATED, true),
       Arguments.of(Flag.ASSUMED_GOOD, true), Arguments.of(Flag.GOOD, true),
       Arguments.of(Flag.QUESTIONABLE, false), Arguments.of(Flag.BAD, false),
       Arguments.of(Flag.NEEDED, false), Arguments.of(Flag.FLUSHING, false),
