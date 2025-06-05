@@ -380,7 +380,10 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
     boolean setQC = true;
 
-    if (flag.equals(Flag.LOOKUP)) {
+    // We always simplify user QC flags to the basic flag.
+    Flag simpleFlag = flag.getSimpleFlag();
+
+    if (simpleFlag.equals(Flag.LOOKUP)) {
       throw new InvalidFlagException(
         "Cannot manually set " + flag.toString() + " flag");
     }
@@ -393,7 +396,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
     }
 
     if (setQC && isNumeric() && !isNaN()) {
-      setUserQCAction(flag, message);
+      setUserQCAction(simpleFlag, message);
     }
   }
 
@@ -434,6 +437,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   public void setUserQC(SensorValue source) {
     userQCFlag = source.userQCFlag;
     userQCMessage = source.userQCMessage;
+    dirty = true;
   }
 
   private void setUserQCAction(Flag flag, String message) {
