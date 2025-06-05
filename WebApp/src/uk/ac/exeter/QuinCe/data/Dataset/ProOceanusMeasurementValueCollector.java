@@ -9,6 +9,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * {@link MeasurementValueCollector} for Pro Oceanus CO₂ sensors.
@@ -96,7 +97,7 @@ public class ProOceanusMeasurementValueCollector
 
   private SensorValuesListValue getReferenceValue(Instrument instrument,
     Measurement measurement, DatasetSensorValues allSensorValues)
-    throws SensorValuesListException {
+    throws SensorValuesListException, RecordNotFoundException {
 
     long runTypeColumn = instrument.getSensorAssignments()
       .getColumnIds(SensorType.RUN_TYPE_SENSOR_TYPE).get(0);

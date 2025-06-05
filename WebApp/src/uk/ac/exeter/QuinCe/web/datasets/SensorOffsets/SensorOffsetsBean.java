@@ -24,6 +24,7 @@ import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
 import uk.ac.exeter.QuinCe.jobs.files.LocateMeasurementsJob;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 @ManagedBean
@@ -167,7 +168,8 @@ public class SensorOffsetsBean extends BaseManagedBean {
     return currentPair;
   }
 
-  public void setCurrentPair(int currentPair) throws SensorGroupsException {
+  public void setCurrentPair(int currentPair)
+    throws SensorGroupsException, RecordNotFoundException {
     this.currentPair = currentPair;
     preparePlotData();
   }
@@ -187,7 +189,8 @@ public class SensorOffsetsBean extends BaseManagedBean {
     return result;
   }
 
-  private void preparePlotData() throws SensorGroupsException {
+  private void preparePlotData()
+    throws SensorGroupsException, RecordNotFoundException {
     if (null != sensorValues) {
       SensorGroupPair pair = getCurrentPairObject();
 
@@ -197,7 +200,8 @@ public class SensorOffsetsBean extends BaseManagedBean {
     }
   }
 
-  public void preparePageData() throws SensorGroupsException {
+  public void preparePageData()
+    throws SensorGroupsException, RecordNotFoundException {
     preparePlotData();
   }
 
