@@ -645,7 +645,8 @@ public class Flag {
    * @return {@code true} if this flag is Good; {@code false} if it is not.
    */
   public boolean isGood() {
-    return Math.abs(flagValue) == VALUE_GOOD;
+    return Math.abs(flagValue) == VALUE_GOOD
+      || flagValue == VALUE_NOT_CALIBRATED;
   }
 
   /**
