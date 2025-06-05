@@ -296,8 +296,10 @@ public class DatasetSensorValues {
    * @param columnId
    *          The {@link FileColumn} ID.
    * @return The {@link SensorValue}s in the column.
+   * @throws RecordNotFoundException
    */
-  public SensorValuesList getColumnValues(long columnId) {
+  public SensorValuesList getColumnValues(long columnId)
+    throws RecordNotFoundException {
 
     SensorValuesList values;
 
@@ -307,6 +309,9 @@ public class DatasetSensorValues {
       values = latitudes;
     } else {
       values = valuesByColumn.get(columnId);
+      if (null == values) {
+        values = new SensorValuesList(columnId, this, false);
+      }
     }
 
     return values;
@@ -1010,7 +1015,8 @@ public class DatasetSensorValues {
     return result;
   }
 
-  public SensorValuesList getColumnValues(SensorAssignment assignment) {
+  public SensorValuesList getColumnValues(SensorAssignment assignment)
+    throws RecordNotFoundException {
     return getColumnValues(assignment.getDatabaseId());
   }
 

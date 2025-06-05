@@ -9,6 +9,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * The default implementation of the {@link MeasurementValueCollector}.
@@ -93,11 +94,12 @@ public class DefaultMeasurementValueCollector
    *           If an error occurs while accessing the {@link SensorValue}s.
    * @throws RunTypeCategoryException
    *           If the run type for the measurement cannot be established.
+   * @throws RecordNotFoundException
    */
   private SensorValuesListValue getReferenceValue(Instrument instrument,
     Variable variable, Measurement measurement,
-    DatasetSensorValues allSensorValues)
-    throws SensorValuesListException, RunTypeCategoryException {
+    DatasetSensorValues allSensorValues) throws SensorValuesListException,
+    RunTypeCategoryException, RecordNotFoundException {
 
     /*
      * Get the Run Type for this variable if it has one
