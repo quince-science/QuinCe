@@ -20,6 +20,7 @@ import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.CreateNrtDataset;
 import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -133,21 +134,25 @@ public class MakeNrtDataset {
     if (null == existingDataset) {
       createDataset = true;
     } else {
-
       if (existingDataset.getStatus() == DataSet.STATUS_REPROCESS) {
         createDataset = true;
       } else if (existingDataset.getStatus() == DataSet.STATUS_READY_FOR_EXPORT
         || existingDataset.getStatus() == DataSet.STATUS_EXPORT_COMPLETE) {
 
-        // See if any data files have been uploaded/updated since the NRT
-        // dataset was created. If so, recreate it.
-        LocalDateTime lastFileModification = DataFileDB
-          .getLastFileModification(conn, instrument.getId());
+        // If the NRT was created less than 24 hours ago, don't create a new one
+        if (DateTimeUtils.secondsBetween(existingDataset.getCreatedDate(),
+          LocalDateTime.now()) > 86400) {
 
-        if (null != lastFileModification
-          && lastFileModification.isAfter(existingDataset.getCreatedDate())) {
+          // See if any data files have been uploaded/updated since the NRT
+          // dataset was created. If so, recreate it.
+          LocalDateTime lastFileModification = DataFileDB
+            .getLastFileModification(conn, instrument.getId());
 
-          createDataset = true;
+          if (null != lastFileModification
+            && lastFileModification.isAfter(existingDataset.getCreatedDate())) {
+
+            createDataset = true;
+          }
         }
       }
     }
