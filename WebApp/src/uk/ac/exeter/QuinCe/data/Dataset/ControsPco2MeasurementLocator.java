@@ -67,8 +67,8 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
         .getCoefficient(calibrationSet, variable, "Response Time",
           dataset.getStart());
 
-      long defaultFlushingTime = Math
-        .round(defaultRunTimeCoefficient.getValue()) * RESPONSE_TIME_MULTIPLIER;
+      long totalFlushingTime = Math.round(defaultRunTimeCoefficient.getValue())
+        * RESPONSE_TIME_MULTIPLIER;
 
       // Loop through all the rows, examining the zero/flush columns to decide
       // what to do
@@ -76,32 +76,48 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
       List<Measurement> measurements = new ArrayList<Measurement>(
         sensorValues.getTimes().size());
 
-      int currentStatus = NO_STATUS;
-      int lastStatus = NO_STATUS;
-      LocalDateTime currentStatusStart = null;
+      /*
+       * These values store the status of the record in the source data file
+       * (based on the ZERO and FLUSH columns).
+       *
+       * If the status of any record is changed by the code, it will have no
+       * effect here.
+       */
+      int currentRecordStatus = NO_STATUS;
+      int lastRecordStatus = NO_STATUS;
+      LocalDateTime currentRecordStatusStart = null;
+
+      // The time at which the last FLUSHING status started
+      LocalDateTime lastFlushingStatusStart = null;
 
       for (LocalDateTime recordTime : sensorValues.getTimes()) {
+
         Map<Long, SensorValue> recordValues = sensorValues.get(recordTime);
 
-        // If this record contains the zero status, then it's a main Contros
-        // record. Otherwise it's not so we skip it
+        /*
+         * If there is no ZERO value in the record, then this is not from the
+         * CONTROS sensor and we ignore it.
+         */
         if (recordValues.containsKey(zeroColumn)) {
-
           int recordStatus = getRecordStatus(recordValues, zeroColumn,
             flushingColumn);
 
-          if (recordStatus != currentStatus) {
-            lastStatus = currentStatus;
-            currentStatus = recordStatus;
-            currentStatusStart = recordTime;
+          if (recordStatus != currentRecordStatus) {
+            lastRecordStatus = currentRecordStatus;
+            currentRecordStatus = recordStatus;
+            currentRecordStatusStart = recordTime;
+
+            if (recordStatus == FLUSHING) {
+              lastFlushingStatusStart = recordTime;
+            }
           }
 
           boolean flushSensors = false;
           String runType;
 
-          if (currentStatus == ZERO) {
+          if (recordStatus == ZERO) {
             if (zeroFlushTime > 0
-              && DateTimeUtils.secondsBetween(currentStatusStart,
+              && DateTimeUtils.secondsBetween(currentRecordStatusStart,
                 recordTime) <= zeroFlushTime) {
               flushSensors = true;
             }
@@ -111,14 +127,35 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             if (recordStatus == FLUSHING) {
               flushSensors = true;
             } else {
-              // If there hasn't been a FLUSHING flag since the last zero,
-              // flush for the default period calculated from the response time.
-              // Or add the flushing time to the point after the FLUSH mode
-              if ((lastStatus == ZERO || lastStatus == FLUSHING)
-                && DateTimeUtils.secondsBetween(currentStatusStart,
-                  recordTime) <= defaultFlushingTime) {
 
-                flushSensors = true;
+              /*
+               * This is a measurement. However, if it's just after a ZERO or
+               * FLUSHING then the instrument may still need flushing.
+               */
+
+              /*
+               * If the last status was FLUSHING, then see if we are within the
+               * total flushing time since the start of that period.
+               */
+              if (lastRecordStatus == FLUSHING) {
+                if (DateTimeUtils.secondsBetween(lastFlushingStatusStart,
+                  recordTime) <= totalFlushingTime) {
+
+                  flushSensors = true;
+                }
+              }
+
+              /*
+               * If the last status was ZERO (or we are at the start of the
+               * dataset), then see how much time has passed since the first
+               * measurement in this sequence. If it is less than the total
+               * flushing time then we are still flushing.
+               */
+              if (lastRecordStatus == NO_STATUS || lastRecordStatus == ZERO) {
+                if (DateTimeUtils.secondsBetween(currentRecordStatusStart,
+                  recordTime) <= totalFlushingTime) {
+                  flushSensors = true;
+                }
               }
             }
 
