@@ -1727,34 +1727,39 @@ public class NewInstrumentBean extends FileUploadBean {
 
     RunTypeAssignments result;
 
-    List<Instrument> previousInstruments = getPreviousInstruments();
-
-    if (previousInstruments.size() == 0) {
-      result = RunTypeAssignments.buildRunTypes(
-        file.getRunTypeColumns().first(), file.getRunTypeValues());
+    if (!file.hasRunTypes()) {
+      result = null;
     } else {
-      result = new RunTypeAssignments(file.getRunTypeColumns().first());
+      List<Instrument> previousInstruments = getPreviousInstruments();
 
-      for (String runType : file.getRunTypeValues().stream()
-        .map(rt -> rt.toLowerCase()).toList()) {
+      if (previousInstruments.size() == 0) {
+        result = RunTypeAssignments.buildRunTypes(
+          file.getRunTypeColumns().first(), file.getRunTypeValues());
+      } else {
+        result = new RunTypeAssignments(file.getRunTypeColumns().first());
 
-        RunTypeAssignment previousAssignment = RunTypeAssignments
-          .getPreviousRunTypeAssignment(runType, previousInstruments);
+        for (String runType : file.getRunTypeValues().stream()
+          .map(rt -> rt.toLowerCase()).toList()) {
 
-        if (null != previousAssignment) {
-          result.put(runType, previousAssignment);
+          RunTypeAssignment previousAssignment = RunTypeAssignments
+            .getPreviousRunTypeAssignment(runType, previousInstruments);
+
+          if (null != previousAssignment) {
+            result.put(runType, previousAssignment);
+          }
+        }
+
+        // If we haven't found any previous assignments, revert to the base
+        // guess.
+        if (result.size() == 0) {
+          result = RunTypeAssignments.buildRunTypes(
+            file.getRunTypeColumns().first(), file.getRunTypeValues());
         }
       }
 
-      // If we haven't found any previous assignments, revert to the base guess.
-      if (result.size() == 0) {
-        result = RunTypeAssignments.buildRunTypes(
-          file.getRunTypeColumns().first(), file.getRunTypeValues());
+      if (!result.allIgnored()) {
+        runTypesGuessed = true;
       }
-    }
-
-    if (!result.allIgnored()) {
-      runTypesGuessed = true;
     }
 
     return result;
