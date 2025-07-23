@@ -353,13 +353,15 @@ public class AssignmentsTree {
     throws SensorConfigurationException, SensorTypeNotFoundException,
     SensorAssignmentException {
 
-    for (DefaultTreeNode<AssignmentsTreeNodeData> sensorTypeNode : sensorTypeNodes
-      .get(assignment.getSensorType())) {
+    if (sensorTypeNodes.containsKey(assignment.getSensorType())) {
+      for (DefaultTreeNode<AssignmentsTreeNodeData> sensorTypeNode : sensorTypeNodes
+        .get(assignment.getSensorType())) {
 
-      new DefaultTreeNode<AssignmentsTreeNodeData>(ASSIGNMENT,
-        new SensorAssignmentNodeData(assignment), sensorTypeNode);
+        new DefaultTreeNode<AssignmentsTreeNodeData>(ASSIGNMENT,
+          new SensorAssignmentNodeData(assignment), sensorTypeNode);
 
-      sensorTypeNode.setExpanded(true);
+        sensorTypeNode.setExpanded(true);
+      }
     }
 
     updateVariableNodes();
