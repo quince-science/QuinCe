@@ -217,6 +217,7 @@ function openDateTimeAssignDialog(dateTimeType, column) {
   window.DATE_TIME_TYPE = dateTimeType;
 
   let showDialog = false;
+  let autoSubmit = false;
 
   $('#dateTimeFormatContainer').hide();
   $('#dateFormatContainer').hide();
@@ -255,6 +256,7 @@ function openDateTimeAssignDialog(dateTimeType, column) {
   }
   default: {
     showDialog = false;
+	autoSubmit = true;
   }
   }
 
@@ -266,7 +268,7 @@ function openDateTimeAssignDialog(dateTimeType, column) {
     $('#dateTimeTypeText').html(dateTimeType);
     PF('dateTimeAssignmentDialog').initPosition();
     PF('dateTimeAssignmentDialog').show();
-  } else {
+  } else if (autoSubmit) {
     PF('dateTimeAssignButton').jq.click();
   }
 }
