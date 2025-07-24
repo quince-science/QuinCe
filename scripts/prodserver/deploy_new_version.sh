@@ -67,6 +67,7 @@ echo ""
 echo ""
 
 # Make a database backup
+echo "Backing up database..."
 scripts/db_backup.sh -v
 if [ $? -gt 0 ]
 then
