@@ -18,4 +18,4 @@ INSERT INTO calibration (instrument_id, type, target, deployment_date, coefficie
   VALUES (124, 'CALC_COEFFICIENT', '6.k3', 1626393600000, '{"Value":"2.965241e-10"}', 'CalculationCoefficient');
 
   INSERT INTO calibration (instrument_id, type, target, deployment_date, coefficients, class)
-  VALUES (124, 'CALC_COEFFICIENT', '6.Response Time', 1626393600000, '{"Value":"25"}', 'CalculationCoefficient');
+  VALUES (124, 'CALC_COEFFICIENT', '6.Response Time', 1626393600000, '{"Value":"175"}', 'CalculationCoefficient');
