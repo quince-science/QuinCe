@@ -28,8 +28,6 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
 
   private static final int MEASUREMENT = 2;
 
-  private static final int RESPONSE_TIME_MULTIPLIER = 7;
-
   @Override
   public List<Measurement> locateMeasurements(Connection conn,
     Instrument instrument, DataSet dataset, DatasetSensorValues sensorValues)
@@ -67,8 +65,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
         .getCoefficient(calibrationSet, variable, "Response Time",
           dataset.getStart());
 
-      long totalFlushingTime = Math.round(defaultRunTimeCoefficient.getValue())
-        * RESPONSE_TIME_MULTIPLIER;
+      long totalFlushingTime = Math.round(defaultRunTimeCoefficient.getValue());
 
       // Loop through all the rows, examining the zero/flush columns to decide
       // what to do
