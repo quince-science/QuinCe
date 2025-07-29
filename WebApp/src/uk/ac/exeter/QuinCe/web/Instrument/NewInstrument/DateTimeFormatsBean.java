@@ -19,6 +19,10 @@ import javax.faces.bean.ViewScoped;
 @ViewScoped
 public class DateTimeFormatsBean {
 
+  /*
+   * _S = Java format _D = Human format
+   */
+
   protected static final String DT_ISO_S = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
   public static final DateTimeFormatter DT_ISO_F = DateTimeFormatter
@@ -44,6 +48,13 @@ public class DateTimeFormatsBean {
 
   public static final DateTimeFormatter DT_ISO_SPACE_OFFSET_F = DateTimeFormatter
     .ofPattern(DT_ISO_SPACE_OFFSET_S);
+
+  public static final String DT_NO_SEPARATORS_D = "YYYYMMDDhhmmss";
+
+  public static final String DT_NO_SEPARATORS_S = "yyyyMMddHHmmss";
+
+  public static final DateTimeFormatter DT_NO_SEPARATORS_F = DateTimeFormatter
+    .ofPattern(DT_NO_SEPARATORS_S);
 
   public static final String DT_ISO_SPACE_OFFSET_D = "YYYY-MM-DD hh:mm:ss+00:00";
 
@@ -315,6 +326,13 @@ public class DateTimeFormatsBean {
       }
 
       try {
+        LocalDateTime.parse(dateTimeValue, DT_NO_SEPARATORS_F);
+        formats.put(DT_NO_SEPARATORS_D, DT_NO_SEPARATORS_S);
+      } catch (DateTimeParseException e) {
+        // noop
+      }
+
+      try {
         LocalDateTime.parse(dateTimeValue, DT_ISO_SPACE_OFFSET_F);
         formats.put(DT_ISO_SPACE_OFFSET_D, DT_ISO_SPACE_OFFSET_S);
       } catch (DateTimeParseException e) {
@@ -418,6 +436,7 @@ public class DateTimeFormatsBean {
       formats.put(DT_ISO_D, DT_ISO_S);
       formats.put(DT_ISO_MS_D, DT_ISO_MS_S);
       formats.put(DT_ISO_UTC_NO_SEPARATORS_D, DT_ISO_UTC_NO_SEPARATORS_S);
+      formats.put(DT_NO_SEPARATORS_D, DT_NO_SEPARATORS_S);
       formats.put(DT_ISO_SPACE_OFFSET_D, DT_ISO_SPACE_OFFSET_S);
       formats.put(DT_YYYYMMDD_HYPHEN_D, DT_YYYYMMDD_HYPHEN_S);
       formats.put(DT_YYYYMMDD_HYPHEN_MS_D, DT_YYYYMMDD_HYPHEN_MS_S);
