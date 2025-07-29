@@ -27,6 +27,7 @@ public class DateTimeFormatsBeanDateTimeTest extends TestSetTest {
   private static final List<String> ALL_FORMATS = Arrays.asList(new String[] {
     DateTimeFormatsBean.DT_ISO_D, DateTimeFormatsBean.DT_ISO_MS_D,
     DateTimeFormatsBean.DT_ISO_UTC_NO_SEPARATORS_D,
+    DateTimeFormatsBean.DT_NO_SEPARATORS_D,
     DateTimeFormatsBean.DT_ISO_SPACE_OFFSET_D,
     DateTimeFormatsBean.DT_YYYYMMDD_HYPHEN_D,
     DateTimeFormatsBean.DT_YYYYMMDD_HYPHEN_MS_D,
