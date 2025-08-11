@@ -166,12 +166,12 @@ def main():
                     if not retriever.test_configuration():
                         log_instrument(logger, instrument_id, logging.ERROR,
                                        "Configuration invalid")
-                        post_msg(config, f"Error checking configuration for instrument {instrument_id}")
+                        post_msg(config, f"Error checking configuration for instrument {instrument_id} ({instrument['name']})")
                     # Initialise the retriever
                     elif not retriever.startup():
                         log_instrument(logger, instrument_id, logging.ERROR,
                                        "Could not initialise retriever")
-                        post_msg(config, f"Error initialising retriever for instrument {instrument_id}")
+                        post_msg(config, f"Error initialising retriever for instrument {instrument_id} ({instrument['name']})")
                     else:
                         preprocessor = None if instrument["preprocessor"] is None else \
                             PreprocessorFactory.get_instance(instrument["preprocessor"],
@@ -216,7 +216,7 @@ def main():
                                     log_instrument(logger, instrument_id, logging.ERROR,
                                                    f"Error processing file {file['filename']}  for instrument {instrument_id}:\n{traceback.format_exc()}")
                                     post_msg(config,
-                                             f"Error processing NRT for instrument {instrument_id}")
+                                             f"Error processing NRT for instrument {instrument_id} ({instrument['name']})")
                                     retriever.file_failed()
 
                         retriever.shutdown()
@@ -225,7 +225,7 @@ def main():
         except Exception as e:
             log_instrument(logger, instrument_id, logging.ERROR,
                            f"Error processing instrument {instrument_id}: {traceback.format_exc()}")
-            post_msg(config, f"Error processing NRT for instrument {instrument_id}")
+            post_msg(config, f"Error processing NRT for instrument {instrument_id} ({instrument['name']})")
 
     if ftp_conn is not None:
         ftp_conn.close()
