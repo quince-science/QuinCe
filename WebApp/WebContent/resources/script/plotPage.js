@@ -307,10 +307,10 @@ function resizeAllContent() {
   $('#plotPageContent').split().position($('#plotPageContent').height() * tableSplitProportion);
   resizePlots();
 
-  if (null != jsDataTable) {
-  let tableHeight = calcTableScrollY();
-  $('.dataTables_scrollBody').css('max-height',tableHeight);
-  $('.dataTables_scrollBody').css('height', tableHeight);
+  if (typeof variable !== 'undefined' && null != jsDataTable) {
+    let tableHeight = calcTableScrollY();
+    $('.dataTables_scrollBody').css('max-height',tableHeight);
+    $('.dataTables_scrollBody').css('height', tableHeight);
     jsDataTable.draw();
   }
 
@@ -381,10 +381,10 @@ function dataLoaded() {
   }
 }
 
-function plotError(e) {
+function plotError(xhr) {
   // Log the info we have to the console
   console.log('***plotError info dump');
-  console.log(e);
+  console.log(xhr);
 
   // We can't use the window object here because consts don't get put there.
   itemNotLoading(PLOT1_LOADING);
