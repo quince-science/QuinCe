@@ -381,12 +381,16 @@ function dataLoaded() {
   }
 }
 
-function plotError() {
+function plotError(e) {
+  // Log the info we have to the console
+  console.log('***plotError info dump');
+  console.log(e);
+
   // We can't use the window object here because consts don't get put there.
   itemNotLoading(PLOT1_LOADING);
   itemNotLoading(PLOT2_LOADING);
 
-  alert('Unhandled error in plot/map. If you see this, please report it with details of what you were trying to do');
+  alert('Unhandled error in plot/map. If you see this, please report it with details of what you were trying to do.');
 }
 
 // Get the index of the group that the specified column is in

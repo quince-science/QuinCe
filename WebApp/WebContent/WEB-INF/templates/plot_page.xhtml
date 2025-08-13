@@ -53,7 +53,7 @@
       process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis :plot1Form:plot1Y2Axis
         :plot1Form:map1Column :plot2Form:plot2XAxis :plot2Form:plot2YAxis :plot2Form:plot2Y2Axis
         :plot2Form:map2Column columnHeadings extendedColumnHeadings rowIDs :statusForm"
-      oncomplete="dataLoaded()" onerror="plotError()" async="true"/>
+      oncomplete="dataLoaded()" onerror="plotError(e)" async="true"/>
 
   </h:form>
 
@@ -251,13 +251,13 @@
             process="@this plot1XAxis plot1YAxis plot1Y2Axis plot1HideFlags"
             update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels
               plot1FlagLabels plot1Y2Data plot1Y2Labels"
-            oncomplete="drawPlot(1, true, false)" onerror="plotError()"/>
+            oncomplete="drawPlot(1, true, false)" onerror="plotError(e)"/>
 
           <p:remoteCommand name="map1GetData"
             action="#{sessionScope[beanName].data.map1.generateMapData}"
             process="map1Column map1Bounds map1UpdateScale plot1HideFlags"
             update="map1DataBounds map1Data map1ScaleLimits"
-            oncomplete="drawMap(1)" onerror="plotError()"/>
+            oncomplete="drawMap(1)" onerror="plotError(e)"/>
 
           <div id="plot1Container">
             <div id="plot1Y2Plot" class="plot y2Plot"></div>
@@ -341,13 +341,13 @@
             process="@this plot2XAxis plot2YAxis plot2Y2Axis plot2HideFlags"
             update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels
               plot2FlagLabels plot2Y2Data plot2Y2Labels"
-            oncomplete="drawPlot(2, true, false)" onerror="plotError()"/>
+            oncomplete="drawPlot(2, true, false)" onerror="plotError(e)"/>
 
           <p:remoteCommand name="map2GetData"
             action="#{sessionScope[beanName].data.map2.generateMapData}"
             process="map2Column map2Bounds map2UpdateScale plot2HideFlags"
             update="map2DataBounds map2Data map2ScaleLimits"
-            oncomplete="drawMap(2)" onerror="plotError()"/>
+            oncomplete="drawMap(2)" onerror="plotError(e)"/>
 
           <div id="plot2Container">
             <div id="plot2Y2Plot" class="plot y2Plot"></div>
