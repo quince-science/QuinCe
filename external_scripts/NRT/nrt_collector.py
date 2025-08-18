@@ -150,6 +150,9 @@ def main():
             if instrument["type"] is None:
                 log_instrument(logger, instrument_id, logging.ERROR,
                                "Configuration type not set")
+            elif instrument["paused"]:
+                log_instrument(logger, instrument_id, logging.DEBUG,
+                               "Instrument is paused")
             elif not time_for_check(instrument):
                 log_instrument(logger, instrument_id, logging.DEBUG,
                                "Not time for check yet")
