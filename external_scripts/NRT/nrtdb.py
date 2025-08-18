@@ -30,10 +30,10 @@ def get_instruments(conn):
     result = []
 
     c = conn.cursor()
-    c.execute("SELECT id, name, owner, type, preprocessor, check_hours FROM instrument ORDER BY name")
+    c.execute("SELECT id, name, owner, type, preprocessor, check_hours, paused FROM instrument ORDER BY name")
     for row in c:
         record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4],
-                  "check_hours": row[5]}
+                  "check_hours": row[5], "paused": row[6]}
 
         if record["check_hours"] is None:
             record["check_hours"] = [0]
@@ -59,12 +59,14 @@ def get_instrument_ids(conn):
 def get_instrument(conn, instrument_id):
     c = conn.cursor()
     c.execute("SELECT id, name, owner, type, preprocessor, config, preprocessor_config, "
-              "check_hours, last_check FROM instrument WHERE id = ?",
+              "check_hours, last_check, paused FROM instrument WHERE id = ?",
               (instrument_id,))
 
     row = c.fetchone()
+    print(row[9])
     record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4],
-              "config": row[5], "preprocessor_config": row[6], "check_hours": row[7], "last_check": row[8]}
+              "config": row[5], "preprocessor_config": row[6], "check_hours": row[7], "last_check": row[8],
+              "paused": True if row[9] == 1 else False}
 
     if record["check_hours"] is None:
         record["check_hours"] = [0]
@@ -150,9 +152,25 @@ def __init_db(conn):
                       "config TEXT, "
                       "preprocessor_config TEXT, "
                       "check_hours TEXT, "
-                      "last_check INTEGER"
+                      "last_check INTEGER",
+                      "paused INTEGER DEFAULT 0"
                       ")"
                       )
 
     c = conn.cursor()
     c.execute(instrument_sql)
+
+def toggle_pause(conn, instrument):
+    try:
+        c = conn.cursor()
+        c.execute("SELECT paused FROM instrument WHERE id=?", (instrument, ))
+        record = c.fetchone()
+
+        if record is not None:
+            paused = record[0]
+            paused = 1 if paused == 0 else 0
+
+            c.execute("UPDATE instrument SET paused=? WHERE id=?", (paused, instrument))
+            conn.commit()
+    finally:
+        c.close()

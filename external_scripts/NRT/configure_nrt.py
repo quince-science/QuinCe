@@ -29,7 +29,7 @@ def make_instrument_table(instruments, ids, show_type):
     Draw the table of instruments
     """
     if show_type:
-        table_data = [["ID", "Name", "Owner", "Type", "Preprocessor", "Check Hours"]]
+        table_data = [["ID", "Name", "Owner", "Type", "Preprocessor", "Check Hours", "Paused"]]
     else:
         table_data = [["ID", "Name", "Owner"]]
 
@@ -45,7 +45,8 @@ def make_instrument_table(instruments, ids, show_type):
                                    instrument["owner"],
                                    "None" if instrument["type"] is None else instrument["type"],
                                    instrument["preprocessor"],
-                                   instrument["check_hours"]])
+                                   instrument["check_hours"],
+                                   instrument["paused"]])
             else:
                 table_data.append([instrument["id"],
                                    instrument["name"],
@@ -95,6 +96,18 @@ def parse_check_hours(hours):
         # Sort/unique
         list(dict.fromkeys(hour_list)).sort()
         return hour_list
+
+def pause_instrument(db_conn):
+    id = input("\nEnter instrument ID to toggle pause status: ")
+
+    instrument_id = None
+    try:
+        instrument_id = int(id)
+    except ValueError:
+        pass
+
+    if instrument_id is not None:
+        nrtdb.toggle_pause(db_conn, instrument_id)
 
 
 #######################################################
@@ -167,10 +180,12 @@ def main():
             instruments = nrtdb.get_instruments(db_conn)
             make_instrument_table(instruments, None, True)
 
-            command = input("\nEnter instrument ID to configure, or Q to quit: ").lower()
+            command = input("\nEnter instrument ID to configure, P to pause/unpause and instrument, or Q to quit: ").lower()
 
             if command == "q":
                 finish = True
+            elif command == "p":
+                pause_instrument(db_conn)
             else:
                 instrument_id = None
                 try:
