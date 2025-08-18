@@ -99,7 +99,6 @@ def parse_check_hours(hours):
 
 #######################################################
 
-
 def main():
     ftp_conn = None
     db_conn = None
