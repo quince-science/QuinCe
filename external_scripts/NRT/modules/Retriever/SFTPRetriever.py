@@ -67,11 +67,17 @@ class SFTPRetriever(FileListRetriever.FileListRetriever):
         result = True
 
         try:
-            self._conn = pysftp.Connection(host=self._configuration["Server"],
-                                           port=int(self._configuration["Port"]),
-                                           username=self._configuration["User"],
-                                           private_key=self._configuration["Private Key File"],
-                                           private_key_pass=self._configuration["Private Key Password"])
+            key = self._load_ssh_key(
+                self._configuration["Private Key File"],
+                self._configuration["Private Key Password"])
+            
+            ssh = paramiko.SSHClient()
+            ssh.load_system_host_keys()
+
+            ssh.connect(self._configuration["Server"], port=int(self._configuration["Port"]),
+                username=self._configuration["User"], pkey=key)
+
+            self._conn = ssh.open_sftp()
             self._conn.chdir(self._configuration['Source Folder'])
         except Exception:
             self.log(logging.CRITICAL, "Cannot log in to FTP server: "
