@@ -32,9 +32,11 @@ class SFTPRetriever(FileListRetriever.FileListRetriever):
         conn = None
 
         try:
-            key = self._load_ssh_key(
-                self._configuration["Private Key File"],
-                self._configuration["Private Key Password"])
+            key = None
+            if self._configuration["Private Key File"]:
+                key = self._load_ssh_key(
+                    self._configuration["Private Key File"],
+                    self._configuration["Private Key Password"])
             
             ssh = paramiko.SSHClient()
             ssh.load_system_host_keys()
@@ -67,9 +69,11 @@ class SFTPRetriever(FileListRetriever.FileListRetriever):
         result = True
 
         try:
-            key = self._load_ssh_key(
-                self._configuration["Private Key File"],
-                self._configuration["Private Key Password"])
+            key = None
+            if self._configuration["Private Key File"]:
+                key = self._load_ssh_key(
+                    self._configuration["Private Key File"],
+                    self._configuration["Private Key Password"])
             
             ssh = paramiko.SSHClient()
             ssh.load_system_host_keys()
