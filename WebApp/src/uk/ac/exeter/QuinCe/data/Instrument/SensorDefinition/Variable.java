@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -118,8 +119,12 @@ public class Variable implements Comparable<Variable> {
     if (null == propertiesJson || propertiesJson.length() == 0) {
       this.properties = new VariableProperties();
     } else {
-      this.properties = new Gson().fromJson(propertiesJson,
-        VariableProperties.class);
+      Gson gson = new GsonBuilder()
+        .registerTypeAdapter(VariableProperties.class,
+          new VariablePropertiesDeserializer(id, name))
+        .create();
+
+      this.properties = gson.fromJson(propertiesJson, VariableProperties.class);
     }
 
     if (coreSensorTypeId < 0) {
@@ -368,11 +373,11 @@ public class Variable implements Comparable<Variable> {
   }
 
   public boolean requiresRunType() {
-    return null != properties.getRunType();
+    return properties.hasPresetRunTypes();
   }
 
   public String getRunType() {
-    return properties.getRunType();
+    return properties.getRunType(id);
   }
 
   @Override
@@ -388,5 +393,9 @@ public class Variable implements Comparable<Variable> {
 
   public Map<Long, Boolean> getDependsQuestionAnswers() {
     return properties.getDependsQuestionAnswers();
+  }
+
+  public List<PresetRunType> getPresetRunTypes() {
+    return properties.getPresetRunTypes();
   }
 }

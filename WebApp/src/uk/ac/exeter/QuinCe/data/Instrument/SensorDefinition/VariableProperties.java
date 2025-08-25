@@ -18,37 +18,59 @@ public class VariableProperties {
 
   private final List<String> coefficients;
 
-  private final String runType;
-
   private Map<Long, Boolean> dependsQuestionAnswers;
+
+  private List<PresetRunType> presetRunTypes;
 
   protected VariableProperties() {
     this.coefficients = new ArrayList<String>();
-    this.runType = null;
+    this.presetRunTypes = new ArrayList<PresetRunType>();
     this.dependsQuestionAnswers = new HashMap<Long, Boolean>();
   }
 
-  protected VariableProperties(String runType, List<String> coefficients,
-    Map<Long, Boolean> dependsQuestionAnswers) {
-    this.runType = runType;
-    this.coefficients = coefficients;
+  protected VariableProperties(List<String> coefficients,
+    Map<Long, Boolean> dependsQuestionAnswers,
+    List<PresetRunType> presetRunTypes) {
 
-    if (null == dependsQuestionAnswers) {
-      this.dependsQuestionAnswers = new HashMap<Long, Boolean>();
-    } else {
-      this.dependsQuestionAnswers = dependsQuestionAnswers;
-    }
+    this.coefficients = null != coefficients ? coefficients
+      : new ArrayList<String>();
+
+    this.dependsQuestionAnswers = null != dependsQuestionAnswers
+      ? dependsQuestionAnswers
+      : new HashMap<Long, Boolean>();
+
+    this.presetRunTypes = null != presetRunTypes ? presetRunTypes
+      : new ArrayList<PresetRunType>();
   }
 
   public List<String> getCoefficients() {
     return coefficients;
   }
 
-  public String getRunType() {
+  public String getRunType(long variableId) {
+
+    String runType = null;
+
+    PresetRunType variableRunType = presetRunTypes.stream()
+      .filter(prt -> prt.getCategory().getType() == variableId).findFirst()
+      .orElse(null);
+
+    if (null != variableRunType) {
+      runType = variableRunType.getDefaultRunType();
+    }
+
     return runType;
   }
 
   public Map<Long, Boolean> getDependsQuestionAnswers() {
     return dependsQuestionAnswers;
+  }
+
+  public boolean hasPresetRunTypes() {
+    return presetRunTypes.size() > 0;
+  }
+
+  protected List<PresetRunType> getPresetRunTypes() {
+    return presetRunTypes;
   }
 }

@@ -14,19 +14,25 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+
 public class VariablePropertiesDeserializer
   implements JsonDeserializer<VariableProperties> {
+
+  private final long variableId;
+
+  private final String variableName;
+
+  public VariablePropertiesDeserializer(long variableId, String variableName) {
+    this.variableId = variableId;
+    this.variableName = variableName;
+  }
 
   @Override
   public VariableProperties deserialize(JsonElement json, Type typeOfT,
     JsonDeserializationContext context) throws JsonParseException {
 
     JsonObject jsonObj = json.getAsJsonObject();
-
-    String runType = null;
-    if (jsonObj.has("runType")) {
-      runType = jsonObj.get("runType").getAsString();
-    }
 
     List<String> coefficients = null;
     if (jsonObj.has("coefficients")) {
@@ -55,8 +61,43 @@ public class VariablePropertiesDeserializer
       }
     }
 
-    return new VariableProperties(runType, coefficients,
-      dependsQuestionAnswers);
+    List<PresetRunType> presetRunTypes = new ArrayList<PresetRunType>();
+
+    if (jsonObj.has("presetRunTypes")) {
+      jsonObj.getAsJsonArray("presetRunTypes").forEach(a -> {
+        JsonObject entry = a.getAsJsonObject();
+
+        JsonArray runTypeArray = entry.getAsJsonArray("runType");
+
+        List<String> runTypes = new ArrayList<String>(runTypeArray.size());
+        for (JsonElement runType : runTypeArray) {
+          runTypes.add(runType.getAsString());
+        }
+
+        RunTypeCategory runTypeCategory = null;
+
+        long categoryCode = entry.get("category").getAsLong();
+
+        if (categoryCode == -1L) {
+          runTypeCategory = RunTypeCategory.IGNORED;
+        } else if (categoryCode == -3L) {
+          runTypeCategory = RunTypeCategory.INTERNAL_CALIBRATION;
+        } else if (categoryCode == -2L) {
+          throw new JsonParseException(
+            "ALIAS run type category (-2) is not allowed");
+        } else if (categoryCode == variableId) {
+          runTypeCategory = new RunTypeCategory(variableId, variableName);
+        } else {
+          throw new JsonParseException("Invalid category code " + categoryCode);
+        }
+
+        presetRunTypes.add(new PresetRunType(runTypes, runTypeCategory));
+      });
+
+    }
+
+    return new VariableProperties(coefficients, dependsQuestionAnswers,
+      presetRunTypes);
   }
 
 }

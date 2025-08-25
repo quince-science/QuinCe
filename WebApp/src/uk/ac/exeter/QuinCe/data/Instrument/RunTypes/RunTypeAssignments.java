@@ -1,18 +1,16 @@
 package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import uk.ac.exeter.QuinCe.data.Dataset.ProOceanusCO2MeasurementLocator;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.PresetRunType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.AscendingLengthComparator;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
@@ -33,128 +31,12 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 @SuppressWarnings("serial")
 public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
 
-  /**
-   * The preset run type assignments already known by QuinCe.
-   */
-  private static List<PresetRunType> PRESET_RUN_TYPES;
-
   public static final String RUN_TYPE_SEPARATOR = "|";
 
   /**
    * The Run Type column in the parent file definition
    */
   private TreeSet<Integer> columns;
-
-  static {
-
-    /*
-     * Set up preset run types.
-     *
-     * Groups of run type names indicate aliases.
-     */
-    PRESET_RUN_TYPES = new ArrayList<PresetRunType>();
-
-    // General Oceanics
-    PRESET_RUN_TYPES
-      .add(new PresetRunType(Arrays.asList(new String[] { "equ", "equ-drain" }),
-        new RunTypeCategory(1L, "Underway Marine pCO₂")));
-
-    PRESET_RUN_TYPES
-      .add(new PresetRunType(Arrays.asList(new String[] { "atm", "atm-drain" }),
-        new RunTypeCategory(2L, "Underway Atmospheric pCO₂")));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays
-        .asList(new String[] { "std1", "std1-drain", "std1z", "std1z-drain" }),
-      RunTypeCategory.INTERNAL_CALIBRATION));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays
-        .asList(new String[] { "std2", "std2-drain", "std2s", "std2s-drain" }),
-      RunTypeCategory.INTERNAL_CALIBRATION));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays
-        .asList(new String[] { "std3", "std3-drain", "std3s", "std3s-drain" }),
-      RunTypeCategory.INTERNAL_CALIBRATION));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays
-        .asList(new String[] { "std4", "std4-drain", "std4s", "std4s-drain" }),
-      RunTypeCategory.INTERNAL_CALIBRATION));
-
-    PRESET_RUN_TYPES
-      .add(new PresetRunType(
-        Arrays.asList(new String[] { "std5", "std5-drain", "std5s",
-          "std5s-drain", "std5z", "std5z-drain" }),
-        RunTypeCategory.INTERNAL_CALIBRATION));
-
-    PRESET_RUN_TYPES
-      .add(new PresetRunType(Arrays.asList(new String[] { "emergency stop" }),
-        RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays.asList(new String[] { "filter" }), RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays.asList(new String[] { "go to sleep" }), RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays.asList(new String[] { "ign" }), RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays.asList(new String[] { "shut down" }), RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays.asList(new String[] { "wake up" }), RunTypeCategory.IGNORED));
-
-    // Pro Oceanus
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays
-        .asList(new String[] { ProOceanusCO2MeasurementLocator.WATER_MODE }),
-      new RunTypeCategory(8L, "Pro Oceanus CO₂ Water")));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(
-      Arrays.asList(new String[] { ProOceanusCO2MeasurementLocator.ATM_MODE }),
-      new RunTypeCategory(9L, "Pro Oceanus CO₂ Atmosphere")));
-
-    // SubCTech CO2
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "1" }),
-      RunTypeCategory.INTERNAL_CALIBRATION));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "2" }),
-      RunTypeCategory.INTERNAL_CALIBRATION));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "4" }),
-      RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "5" }),
-      new RunTypeCategory(22L, "SubCTech CO₂")));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "7" }),
-      RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "13" }),
-      RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "15" }),
-      RunTypeCategory.INTERNAL_CALIBRATION));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "18" }),
-      RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "18" }),
-      RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "20" }),
-      RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "21" }),
-      RunTypeCategory.IGNORED));
-
-    PRESET_RUN_TYPES.add(new PresetRunType(Arrays.asList(new String[] { "22" }),
-      RunTypeCategory.IGNORED));
-  }
 
   public RunTypeAssignments(int column) {
     super();
@@ -305,29 +187,37 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
    * set to {@link RunTypeCategory#IGNORED}.
    * </p>
    */
-  public static RunTypeAssignments buildRunTypes(int column,
-    Collection<String> runTypes) {
+  public static RunTypeAssignments buildRunTypes(Collection<Variable> variables,
+    int column, Collection<String> runTypes) {
 
     RunTypeAssignments result = new RunTypeAssignments(column);
+
+    /*
+     * Find each run type in the PresetRunTypes from each Variable.
+     *
+     * Since a PresetRunType contains multiple aliases, map each runType string
+     * against its matching PresetRunType. Once we have all of those, we can set
+     * up the RunTypeAssignments for all the runType strings.
+     */
 
     Map<PresetRunType, TreeSet<String>> runTypeGroups = new TreeMap<PresetRunType, TreeSet<String>>();
 
     for (String runType : runTypes) {
 
-      PresetRunType preset = getRunTypePreset(runType);
+      // Search the preset run types for each variable
+      for (Variable variable : variables) {
+        for (PresetRunType presetRunType : variable.getPresetRunTypes()) {
+          if (presetRunType.containsRunType(runType)) {
 
-      // If no preset is found, add the run type as Ignored. Otherwise save it
-      // in the relevant group for later.
-      if (null == preset) {
-        result.put(runType,
-          new RunTypeAssignment(runType, RunTypeCategory.IGNORED));
-      } else {
-        if (!runTypeGroups.containsKey(preset)) {
-          runTypeGroups.put(preset,
-            new TreeSet<String>(new AscendingLengthComparator()));
+            if (!runTypeGroups.containsKey(presetRunType)) {
+              runTypeGroups.put(presetRunType,
+                new TreeSet<String>(new AscendingLengthComparator()));
+            }
+
+            runTypeGroups.get(presetRunType).add(runType);
+            break;
+          }
         }
-
-        runTypeGroups.get(preset).add(runType);
       }
     }
 
@@ -354,12 +244,6 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
     }
 
     return result;
-  }
-
-  private static PresetRunType getRunTypePreset(String runType) {
-    return PRESET_RUN_TYPES.stream()
-      .filter(p -> p.containsRunType(runType.toLowerCase())).findFirst()
-      .orElse(null);
   }
 
   public static RunTypeAssignment getPreviousRunTypeAssignment(String runType,
@@ -395,12 +279,22 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
     return result;
   }
 
-  public static RunTypeAssignment getPresetAssignment(String runType,
+  public static RunTypeAssignment getPresetAssignment(
+    Collection<Variable> variables, String runType,
     RunTypeAssignments existingAssignments) {
 
     RunTypeAssignment result = null;
 
-    PresetRunType preset = getRunTypePreset(runType);
+    PresetRunType preset = null;
+
+    for (Variable variable : variables) {
+      for (PresetRunType presetRunType : variable.getPresetRunTypes()) {
+        if (presetRunType.containsRunType(runType)) {
+          preset = presetRunType;
+          break;
+        }
+      }
+    }
 
     if (null != preset) {
       for (String baseRunType : existingAssignments.keySet()) {
@@ -410,16 +304,6 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
           break;
         }
       }
-
-      /*
-       * String baseRunType = existingAssignments.keySet().stream() .filter(rt
-       * -> preset.containsRunType(runType) &&
-       * !existingAssignments.get(rt).isAlias()) .findAny().orElse(null);
-       */
-      /*
-       * if (null != baseRunType) { result = new RunTypeAssignment(runType,
-       * baseRunType); }
-       */
     }
 
     return result;
@@ -428,69 +312,5 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
   public boolean allIgnored() {
     return values().stream()
       .allMatch(v -> v.getCategory().equals(RunTypeCategory.IGNORED));
-  }
-}
-
-/**
- * Holds a set of preset run types and the {@link RunTypeCategory} that should
- * be assigned to them.
- *
- * <p>
- * A single run type String must be unique across all instances of this class.
- * If this is not the case then the behaviour of code using this class is
- * undefined.
- * </p>
- *
- * <p>
- * <b>Developer's note:</b> The {@link #equals(Object)} and
- * {@link #compareTo(PresetRunType)} methods compare the first entry in
- * {@link #runTypes} only, relying on the assumption that a given run type will
- * appear only once across all instances of the class.
- * </p>
- */
-class PresetRunType implements Comparable<PresetRunType> {
-  private TreeSet<String> runTypes;
-  private RunTypeCategory category;
-
-  protected PresetRunType(Collection<String> runTypes,
-    RunTypeCategory category) {
-    this.runTypes = new TreeSet<String>();
-    this.runTypes.addAll(runTypes);
-    this.category = category;
-  }
-
-  protected boolean containsRunType(String runType) {
-    return runTypes.contains(runType.toLowerCase());
-  }
-
-  protected RunTypeCategory getCategory() {
-    return category;
-  }
-
-  @Override
-  public String toString() {
-    return runTypes.toString() + " -> " + category.toString();
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(runTypes);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    PresetRunType other = (PresetRunType) obj;
-    return runTypes.first().equals(other.runTypes.first());
-  }
-
-  @Override
-  public int compareTo(PresetRunType o) {
-    return runTypes.first().compareTo(o.runTypes.first());
   }
 }
