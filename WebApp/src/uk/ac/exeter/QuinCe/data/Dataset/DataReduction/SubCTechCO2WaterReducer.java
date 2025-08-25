@@ -12,18 +12,18 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
- * Data Reducer for SubCTech CO₂ sensor running in self-calibration mode.
+ * Data Reducer for water measurements from a SubCTech CO₂ sensor.
  *
  * Algorithm provided by SubCTech via email.
  */
-public class SubCTechCO2Reducer extends UnderwayMarinePco2Reducer {
+public class SubCTechCO2WaterReducer extends UnderwayMarinePco2Reducer {
 
   /**
    * The reducer's calculation parameters.
    */
   private static List<CalculationParameter> calculationParameters = null;
 
-  public SubCTechCO2Reducer(Variable variable,
+  public SubCTechCO2WaterReducer(Variable variable,
     Map<String, Properties> properties,
     CalibrationSet calculationCoefficients) {
     super(variable, properties, calculationCoefficients);

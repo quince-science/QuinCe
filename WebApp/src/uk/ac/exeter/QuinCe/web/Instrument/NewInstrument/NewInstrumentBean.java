@@ -1733,7 +1733,7 @@ public class NewInstrumentBean extends FileUploadBean {
       List<Instrument> previousInstruments = getPreviousInstruments();
 
       if (previousInstruments.size() == 0) {
-        result = RunTypeAssignments.buildRunTypes(
+        result = RunTypeAssignments.buildRunTypes(instrumentVariables,
           file.getRunTypeColumns().first(), file.getRunTypeValues());
       } else {
         result = new RunTypeAssignments(file.getRunTypeColumns().first());
@@ -1752,7 +1752,7 @@ public class NewInstrumentBean extends FileUploadBean {
         // If we haven't found any previous assignments, revert to the base
         // guess.
         if (result.size() == 0) {
-          result = RunTypeAssignments.buildRunTypes(
+          result = RunTypeAssignments.buildRunTypes(instrumentVariables,
             file.getRunTypeColumns().first(), file.getRunTypeValues());
         }
       }
