@@ -1712,7 +1712,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
       for (FileDefinition file : instrumentFiles) {
         // TODO Get run types from previous instrument if possible
-        file.setRunTypes(autoAssignRunTypes(file));
+        file.setRunTypes(autoAssignRunTypes((FileDefinitionBuilder) file));
       }
 
       result = NAV_RUN_TYPES;
@@ -1723,13 +1723,15 @@ public class NewInstrumentBean extends FileUploadBean {
     return result;
   }
 
-  private RunTypeAssignments autoAssignRunTypes(FileDefinition file) {
+  private RunTypeAssignments autoAssignRunTypes(FileDefinitionBuilder file) {
 
     RunTypeAssignments result;
 
     if (!file.hasRunTypes()) {
       result = null;
     } else {
+      file.buildRunTypeCategories();
+
       List<Instrument> previousInstruments = getPreviousInstruments();
 
       if (previousInstruments.size() == 0) {
