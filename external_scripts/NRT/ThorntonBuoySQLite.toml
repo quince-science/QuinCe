@@ -29,10 +29,7 @@
     "Atmospheric Pressure",
     "Air Humidity",
     "Latitude",
-    "Longitude",
-    "TDGP Temp 1",
-    "TDGP Temp 2",
-    "TDGP Pressure",
+    "Longitude"
   ]
 
   # Timestamp column.
@@ -128,14 +125,3 @@
 
     timestamp_format = "%Y-%m-%d %H:%M:%S"
 
-  [[input.tables]]
-    name = "tdgp"
-
-    mapping = [
-      ["Timestamp", "TimeStamp"],
-      ["TDGP Temp 1", "temperature_1"],
-      ["TDGP Pressure", "pressure"],
-      ["TDGP Temp 2", "temperature_2"]
-    ]
-
-    timestamp_format = "%Y-%m-%d %H:%M:%S"
