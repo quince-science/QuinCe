@@ -135,31 +135,35 @@ public class SensorValuesListGetValueContinuousTest extends TestSetTest {
   protected SensorValuesListOutput getValue(SensorValuesList list,
     TestSetLine line) throws SensorValuesListException {
     return list.getValue(makeTime(line.getIntField(getRequestedMinuteCol())),
-      true);
+      getInterpolationAllowed(line));
+  }
+
+  protected boolean getInterpolationAllowed(TestSetLine line) {
+    return line.getBooleanField(getAllowInterpolationCol());
   }
 
   protected int getExpectedUsedValuesCol() {
-    return 7;
+    return 8;
   }
 
   protected int getExpectedFlagCol() {
-    return 6;
+    return 7;
   }
 
   protected int getExpectedNominalTimeCol() {
-    return 4;
+    return 5;
   }
 
   protected int getExpectedEndTimeCol() {
-    return 3;
+    return 4;
   }
 
   protected int getExpectedStartTimeCol() {
-    return 2;
+    return 3;
   }
 
   protected int getExpectedValueCol() {
-    return 5;
+    return 6;
   }
 
   protected int getRequestedMinuteCol() {
@@ -167,7 +171,11 @@ public class SensorValuesListGetValueContinuousTest extends TestSetTest {
   }
 
   protected int getInterpolatesAroundFlagCol() {
-    return 8;
+    return 9;
+  }
+
+  protected int getAllowInterpolationCol() {
+    return 2;
   }
 
   protected void buildSensorValues(DatasetSensorValues allSensorValues,

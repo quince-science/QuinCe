@@ -870,10 +870,26 @@ public class SensorValuesList {
       exactMatch = outputValues.get(searchIndex);
     }
 
-    if (!allowInterpolation
-      || (null != exactMatch && exactMatch.getQCFlag().isGood())) {
-      // If the exact match is GOOD, use it
+    /*
+     * If we get an exact match and it's good, then we use it.
+     *
+     * If we get an exact match but it's not good, and interpolation isn't
+     * allowed, then we use it.
+     *
+     * If don't get an exact match, and interpolation isn't allowed, then return
+     * null.
+     *
+     * Otherwise we interpolate to find a value.
+     *
+     */
+    if (null != exactMatch && exactMatch.getQCFlag().isGood()) {
       result = new SensorValuesListOutput(exactMatch, false);
+    } else if (!allowInterpolation) {
+      if (null != exactMatch) {
+        result = new SensorValuesListOutput(exactMatch, false);
+      } else {
+        result = null;
+      }
     } else {
       // Get the best possible interpolated value
       int priorIndex = searchIndex >= 0 ? searchIndex - 1
