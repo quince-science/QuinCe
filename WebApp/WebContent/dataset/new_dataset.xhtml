@@ -46,7 +46,7 @@
           <p:outputLabel for="dataSetName" value="Data Set Name:" />
           <p:inputText id="dataSetName" widgetVar="pDataSetName"
             value="#{dataSetsBean.newDataSet.name}"
-            onkeyup="processNewDataSet('start');"
+            onkeyup="processNewDataSet();"
             pt:data-platform-code="#{dataSetsBean.currentInstrument.platformCode}" />
           <p:outputLabel for="startDate" value="Start Date" />
           <p:outputLabel for="endDate" value="End Date" />
