@@ -533,9 +533,9 @@ public class DatasetSensorValues {
     SensorValue result = null;
 
     if (columnID == SensorType.LONGITUDE_ID) {
-      result = longitudes.getRawSensorValue(time);
+      result = null == longitudes ? null : longitudes.getRawSensorValue(time);
     } else if (columnID == SensorType.LATITUDE_ID) {
-      result = latitudes.getRawSensorValue(time);
+      result = null == latitudes ? null : latitudes.getRawSensorValue(time);
     } else if (valuesByColumn.containsKey(columnID)) {
       result = valuesByColumn.get(columnID).getRawSensorValue(time);
     }
