@@ -214,4 +214,4 @@ class SQLiteExtractor(Preprocessor.Preprocessor):
 
     @staticmethod
     def parse_date(value, ts_format):
-        return pd.to_datetime(value, format=ts_format, utc=True).round(freq='S')
+        return pd.to_datetime(value, format=ts_format, utc=True).round(freq='s')
