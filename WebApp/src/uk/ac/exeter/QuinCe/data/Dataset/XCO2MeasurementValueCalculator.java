@@ -16,9 +16,9 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
 
-  private final SensorType xco2SensorType;
+  protected final SensorType xco2SensorType;
 
-  private final SensorType xh2oSensorType;
+  protected final SensorType xh2oSensorType;
 
   private static List<String> ALWAYS_DRY;
 
@@ -26,8 +26,6 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
     ALWAYS_DRY = new ArrayList<String>();
     ALWAYS_DRY.add("Underway Marine pCO₂ from ¹²CO₂/¹³CO₂");
     ALWAYS_DRY.add("Underway Atmospheric pCO₂ from ¹²CO₂/¹³CO₂");
-    ALWAYS_DRY.add("SubCTech CO₂ (self calibrating)");
-    ALWAYS_DRY.add("SubCTech CO₂ (post calibration)");
   }
 
   public XCO2MeasurementValueCalculator() throws SensorTypeNotFoundException {
@@ -36,6 +34,16 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
 
     this.xco2SensorType = sensorConfig.getSensorType("xCO₂ (with standards)");
     this.xh2oSensorType = sensorConfig.getSensorType("xH₂O (with standards)");
+  }
+
+  protected XCO2MeasurementValueCalculator(String xco2SensorType,
+    String xh2oSensorType) throws SensorTypeNotFoundException {
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+
+    this.xco2SensorType = sensorConfig.getSensorType(xco2SensorType);
+    this.xh2oSensorType = sensorConfig.getSensorType(xh2oSensorType);
   }
 
   @Override
@@ -47,16 +55,16 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
 
     // Get the xCO2 as a simple value. Because it's a core sensor it will only
     // contain one
-    MeasurementValue xCO2 = new DefaultMeasurementValueCalculator().calculate(
+    MeasurementValue xCO2 = getCO2MeasurementValueCalculator().calculate(
       instrument, dataSet, timeReference, variable, xco2SensorType,
       allMeasurements, allSensorValues, conn);
 
     try {
       if (xCO2.getMemberCount() > 0 && dryingRequired(instrument, variable)) {
 
-        MeasurementValue xH2O = new DefaultMeasurementValueCalculator()
-          .calculate(instrument, dataSet, timeReference, variable,
-            xh2oSensorType, allMeasurements, allSensorValues, conn);
+        MeasurementValue xH2O = getXH2OMeasurementValueCalculator().calculate(
+          instrument, dataSet, timeReference, variable, xh2oSensorType,
+          allMeasurements, allSensorValues, conn);
 
         // result = new MeasurementValue(xco2SensorType);
         xCO2.addSensorValues(xCO2, allSensorValues);
@@ -73,7 +81,15 @@ public class XCO2MeasurementValueCalculator extends MeasurementValueCalculator {
     return xCO2;
   }
 
-  private boolean dryingRequired(Instrument instrument, Variable variable)
+  protected MeasurementValueCalculator getCO2MeasurementValueCalculator() {
+    return new DefaultMeasurementValueCalculator();
+  }
+
+  protected MeasurementValueCalculator getXH2OMeasurementValueCalculator() {
+    return new DefaultMeasurementValueCalculator();
+  }
+
+  protected boolean dryingRequired(Instrument instrument, Variable variable)
     throws MeasurementValueCalculatorException {
 
     boolean result;

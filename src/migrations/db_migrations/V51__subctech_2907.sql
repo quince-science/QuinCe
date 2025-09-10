@@ -8,10 +8,10 @@ UPDATE variables SET properties = '{"dependsQuestionAnswers":{"9":true}, "fixedR
 
 -- Add a special xCO2 sensor type for SubCTech
 -- It has its own calibration routine
-INSERT INTO sensor_types (name, vargroup, display_order, column_code, column_heading, units, source_columns, run_type_aware)
-  VALUES ('SubCTech xCO₂', 'CO₂', 1150, 'XCO2WTUM', 'CO₂ Mole Fraction', 'μmol mol-1', 'CO2', 1);
-INSERT INTO sensor_types (name, vargroup, display_order, column_code, column_heading, units, source_columns, run_type_aware)
-  VALUES ('SubCTech xH₂O', 'Moisture', 610, 'WMXRZZ01', 'H₂O Mole Fraction', 'μmol mol-1', 'H2O', 1);
+INSERT INTO sensor_types (name, vargroup, display_order, column_code, column_heading, units, source_columns, internal_calibration, run_type_aware)
+  VALUES ('SubCTech xCO₂', 'CO₂', 1150, 'XCO2WTUM', 'CO₂ Mole Fraction', 'μmol mol-1', 'CO2', 1, 1);
+INSERT INTO sensor_types (name, vargroup, display_order, column_code, column_heading, units, source_columns, internal_calibration, run_type_aware)
+  VALUES ('SubCTech xH₂O', 'Moisture', 610, 'WMXRZZ01', 'H₂O Mole Fraction', 'μmol mol-1', 'H2O', 1, 1);
 
 -- Rename the variable for water
 UPDATE variables SET name = 'SubCTech CO₂ Water' WHERE id=22;

@@ -2,8 +2,6 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -102,9 +100,8 @@ public class MeasurementValueCalculatorFactory {
         break;
       }
       case "SubCTech xCO₂": {
-        throw new NotImplementedException();
-        // result = new SubCTechXCO2MeasurementValueCalculator();
-        // break;
+        result = new SubCTechXCO2MeasurementValueCalculator();
+        break;
       }
       default: {
         if (sensorConfig.isParent(sensorType)) {
