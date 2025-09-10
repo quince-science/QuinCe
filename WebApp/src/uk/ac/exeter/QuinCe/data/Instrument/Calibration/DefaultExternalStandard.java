@@ -21,6 +21,12 @@ public class DefaultExternalStandard extends ExternalStandard {
     super(id, instrument, target, deploymentDate, coefficients);
   }
 
+  public DefaultExternalStandard(long id, Instrument instrument, String target,
+    LocalDateTime deploymentDate, List<CalibrationCoefficient> coefficients)
+    throws ParameterException, CalibrationException {
+    super(id, instrument, target, deploymentDate, coefficients);
+  }
+
   /**
    * Copy constructor.
    *

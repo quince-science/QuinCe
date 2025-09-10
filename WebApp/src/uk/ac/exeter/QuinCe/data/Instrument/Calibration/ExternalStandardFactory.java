@@ -52,9 +52,18 @@ public class ExternalStandardFactory {
       .getSensorsConfiguration()
       .getInstrumentVariable("Underway Atmospheric pCO₂ from ¹²CO₂/¹³CO₂");
 
+    Variable subCTechWaterVar = ResourceManager.getInstance()
+      .getSensorsConfiguration().getInstrumentVariable("SubCTech CO₂ Water");
+
+    Variable subCTechAirVar = ResourceManager.getInstance()
+      .getSensorsConfiguration().getInstrumentVariable("SubCTech CO₂ Air");
+
     if (instrument.hasVariable(d12D13MarineVar)
       || instrument.hasVariable(d12D13AtmosVar)) {
       result = D12D13SensorExternalStandard.class;
+    } else if (instrument.hasVariable(subCTechWaterVar)
+      || instrument.hasVariable(subCTechAirVar)) {
+      result = SubCTechExternalStandard.class;
     } else {
       result = DefaultExternalStandard.class;
     }
