@@ -1437,7 +1437,7 @@ public class InstrumentDB {
 
       for (MissingRunType runType : runTypes) {
         stmts.add(storeFileRunType(conn,
-          runType.fileDefinition().getDatabaseId(), runType.runType()));
+          runType.getFileDefinition().getDatabaseId(), runType.getRunType()));
       }
 
       conn.commit();

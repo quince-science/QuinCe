@@ -1,7 +1,9 @@
 package uk.ac.exeter.QuinCe.web.files;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -12,8 +14,11 @@ import org.primefaces.model.file.UploadedFile;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -29,6 +34,8 @@ public class MultipleFileUploadBean extends FileUploadBean {
   private TreeSet<UploadedDataFile> dataFiles = new TreeSet<UploadedDataFile>();
 
   private TreeSet<MissingRunType> unrecognisedRunTypes;
+
+  private boolean runTypesGuessed = false;
 
   @Override
   public void processUploadedFile() {
@@ -115,6 +122,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
     }
+
     unsetDataFiles();
   }
 
@@ -142,6 +150,60 @@ public class MultipleFileUploadBean extends FileUploadBean {
         }
       }
     }
+
+    if (unrecognisedRunTypes.size() > 0) {
+
+      // Group the missing runt types by file definition
+      Map<FileDefinition, TreeSet<MissingRunType>> groupedRunTypes = new HashMap<FileDefinition, TreeSet<MissingRunType>>();
+      unrecognisedRunTypes.forEach(r -> {
+        if (!groupedRunTypes.containsKey(r.getFileDefinition())) {
+          groupedRunTypes.put(r.getFileDefinition(),
+            new TreeSet<MissingRunType>());
+        }
+
+        groupedRunTypes.get(r.getFileDefinition()).add(r);
+      });
+
+      // Load lookup data
+      Instrument instrument = getCurrentInstrument();
+
+      List<Instrument> previousInstruments = Instrument.filterByPlatform(
+        getInstruments(), instrument.getPlatformName(),
+        instrument.getPlatformCode(), -1L);
+
+      // Process the missing run types in turn
+      for (FileDefinition fileDefinition : groupedRunTypes.keySet()) {
+
+        // Load the default assignments
+        List<String> runNamesToFind = groupedRunTypes.get(fileDefinition)
+          .stream().map(rt -> rt.getRunType().getRunName()).toList();
+
+        // We assume that there's only on Run Type column
+        RunTypeAssignments assignmentsFromDatabase = RunTypeAssignments
+          .buildRunTypes(getCurrentInstrument().getVariables(),
+            fileDefinition.getRunTypeColumns().first(), runNamesToFind);
+
+        // Process each runType for this file definition
+        for (MissingRunType runType : groupedRunTypes.get(fileDefinition)) {
+
+          RunTypeAssignment foundAssignment = null;
+
+          if (previousInstruments.size() > 0) {
+            foundAssignment = RunTypeAssignments.getPreviousRunTypeAssignment(
+              runType.getRunType().getRunName(), previousInstruments);
+          }
+
+          // If there's nothing from a previous instrument, try the defaults.
+          foundAssignment = assignmentsFromDatabase
+            .get(runType.getRunType().getRunName());
+
+          if (null != foundAssignment) {
+            runType.setRunType(foundAssignment);
+            runTypesGuessed = true;
+          }
+        }
+      }
+    }
   }
 
   public TreeSet<MissingRunType> getUnrecognisedRunTypes() {
@@ -161,5 +223,9 @@ public class MultipleFileUploadBean extends FileUploadBean {
     return getCurrentInstrument().getFileDefinitions().stream()
       .map(fd -> fd.getRunTypeValues()).flatMap(Collection::stream).distinct()
       .filter(r -> !r.equals(exclusion)).toList();
+  }
+
+  public boolean getRunTypesGuessed() {
+    return runTypesGuessed;
   }
 }

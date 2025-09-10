@@ -295,7 +295,7 @@ public abstract class BaseManagedBean {
   }
 
   /**
-   * Initialise/reset this bean.
+   * Initialise/reset the cached instrument details.
    */
   public void initialiseInstruments() {
     // Load the instruments list. Set the current instrument if it isn't already

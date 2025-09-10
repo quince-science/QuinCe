@@ -49,8 +49,9 @@
             <div id="runTypesDialogContent">
               <p:fieldset legend="New Run Types">
                 <div class="instructions">
-                  Found unrecognised run types.
-                  Please assign them using the menu options.
+                  Found unrecognised run types. Please assign them using the menu options.
+                  <br/>
+                  <b>NB:</b> QuinCe may have tried to guess what the run types should be - please check them carefully.
                 </div>
 
                 <p:dataTable id="missingRunTypes" var="runType"
@@ -58,13 +59,13 @@
                   rowIndexVar="rowIndex" tableStyle="table-layout: auto;">
                   <p:column styleClass="label">
                     <f:facet name="header">Run Type</f:facet>
-                    #{runType.runType().runName}
+                    #{runType.runType.runName}
                   </p:column>
                   <p:column>
                     <f:facet name="header">Category</f:facet>
                     <p:selectOneMenu
                       widgetVar="runType_#{rowIndex}"
-                      value="#{runType.runType().categoryCode}"
+                      value="#{runType.runType.categoryCode}"
                       onchange="runTypeChanged(#{rowIndex})">
                       <f:selectItems
                         value="#{fileUpload.runTypeCategories}"
@@ -75,9 +76,9 @@
                   <p:column>
                     <p:selectOneMenu
                       widgetVar="alias_#{rowIndex}"
-                      value="#{runType.runType().aliasTo}" styleClass="hidden">
+                      value="#{runType.runType.aliasTo}" styleClass="hidden">
                       <f:selectItems
-                        value="#{fileUpload.getRunTypeValuesWithExclusion(runType.runType().runName)}"
+                        value="#{fileUpload.getRunTypeValuesWithExclusion(runType.runType.runName)}"
                         var="runTypeAlias" />
                     </p:selectOneMenu>
                     <!-- We trigger the runTypeChanged script immediately to set up any aliases -->
