@@ -18,6 +18,10 @@ public class MeasurementValueCollectorFactory {
       result = new ProOceanusMeasurementValueCollector();
       break;
     }
+    case "CONTROS pCO₂": {
+      result = new ControsPco2MeasurementValueCollector();
+      break;
+    }
     default: {
       result = new DefaultMeasurementValueCollector();
     }

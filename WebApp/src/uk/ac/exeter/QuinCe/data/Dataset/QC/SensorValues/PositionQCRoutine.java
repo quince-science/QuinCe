@@ -34,7 +34,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * {@link ExtractDataSetJob} will have converted positions of any format to
  * these ranges. Any position values that fail these checks will be marked BAD.
  * Additionally, all sensors will also have a BAD flag applied, since a sensor
- * value without a valid position cannot be used.
+ * value without a valid position cannot be used (see
+ * {@link PositionQCCascadeRoutine}).
  * </p>
  *
  * <p>
