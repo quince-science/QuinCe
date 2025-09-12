@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.NaturalOrderComparator;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
@@ -80,7 +81,8 @@ public class ExternalStandardDB extends CalibrationDB {
           + instrument.getId());
     }
 
-    Map<String, String> result = new TreeMap<String, String>();
+    Map<String, String> result = new TreeMap<String, String>(
+      new NaturalOrderComparator());
     for (String name : standardNames) {
       result.put(name, name);
     }
