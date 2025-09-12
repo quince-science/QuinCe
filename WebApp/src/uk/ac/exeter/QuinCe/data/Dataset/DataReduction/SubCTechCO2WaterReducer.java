@@ -91,7 +91,7 @@ public class SubCTechCO2WaterReducer extends UnderwayMarinePco2Reducer {
 
   @Override
   protected String getXCO2Parameter() {
-    return "xCO₂ (with standards)";
+    return "SubCTech xCO₂";
   }
 
 }
