@@ -58,9 +58,11 @@ function renderSampleFile() {
   }
 
   let lastColHeadRow = currentRow + PF('colHeadRows').value;
+  let firstColHeadRow = true;
   while (currentRow < lastColHeadRow && currentRow < fileData.length) {
-    fileHtml += getLineHtml(currentRow, fileData[currentRow], 'columnHeading');
+    fileHtml += getLineHtml(currentRow, fileData[currentRow], firstColHeadRow ? 'firstColumnHeading' : 'columnHeading');
     currentRow++;
+	firstColHeadRow = false;
     if (currentRow >= fileData.length) {
       sampleFileError("Too many column headers");
       messageTriggered = true;

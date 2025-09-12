@@ -98,6 +98,11 @@ table.ui-selectmanycheckbox > tbody > tr > td > label {
   color: #00AAFF;
 }
 
+.firstColumnHeading {
+  color: #0044BB;
+  font-weight: 700;
+}
+
 /*********************************
  *
  * SENSOR ASSIGNMENT
