@@ -40,7 +40,6 @@ public class SubCTechMeasurementValueCalculator
     throws MeasurementValueCalculatorException {
 
     // SubCTech has a custom calibration algorithm
-    System.out.println("AND I MUST CALIBRATE");
 
   }
 }
