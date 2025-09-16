@@ -14,7 +14,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
  * This may contain an unaltered value or an interpolated value, depending on
  * what's requested, how the list is constructed, and the setup of the
  * underlying instrument.
- * <p>
+ * </p>
  *
  * <p>
  * This class provides all the same methods as a {@link SensorValuesListValue},

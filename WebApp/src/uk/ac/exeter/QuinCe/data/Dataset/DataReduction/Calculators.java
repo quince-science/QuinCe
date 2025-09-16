@@ -13,57 +13,60 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 public class Calculators {
 
   /**
-   * The conversion factor from Pascals to Atmospheres
+   * The conversion factor from Pascals to Atmospheres.
    */
   private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
 
+  /**
+   * The molar mass of air.
+   */
   private static final double MOLAR_MASS_AIR = 28.97e-3;
 
   /**
-   * Convert a temperature in °C to °K
+   * Convert a temperature in °C to °K.
    *
    * @param celsius
-   *          Celsius temperature
-   * @return Kelvin temperature
+   *          Celsius temperature.
+   * @return Kelvin temperature.
    */
   public static Double kelvin(Double celsius) {
     return celsius + 273.15;
   }
 
   /**
-   * Convert a temperature in °K to °C
+   * Convert a temperature in °K to °C.
    *
    * @param kelvin
-   *          Kelvin temperature
-   * @return Celsius temperature
+   *          Kelvin temperature.
+   * @return Celsius temperature.
    */
   public static Double celsius(Double kelvin) {
     return kelvin - 273.15;
   }
 
   /**
-   * Convert a pressure in hPa it atmospheres
+   * Convert a pressure in hPa it atmospheres.
    *
    * @param hPa
-   *          Pressure in hPa
-   * @return Pressure in atmospheres
+   *          Pressure in hPa.
+   * @return Pressure in atmospheres.
    */
   public static Double hPaToAtmospheres(Double hPa) {
     return hPa * 100 * PASCALS_TO_ATMOSPHERES;
   }
 
   /**
-   * Converts pCO<sub>2</sub> to fCO<sub>2</sub>
+   * Converts pCO<sub>2</sub> to fCO<sub>2</sub>.
    *
    * @param pco2
-   *          pCO<sub>2</sub> at target temperature
+   *          pCO<sub>2</sub> at target temperature.
    * @param xCO2InGas
-   *          The calibrated, dried xCO<sub>2</sub> value
+   *          The calibrated, dried xCO<sub>2</sub> value.
    * @param pressure
-   *          The pressure in hPa
+   *          The pressure in hPa.
    * @param temperature
    *          The temperature in °C
-   * @return The fCO<sub>2</sub> value
+   * @return The fCO<sub>2</sub> value.
    */
   public static Double calcfCO2(Double pco2, Double xCO2InGas, Double pressure,
     Double temperature) {
@@ -78,15 +81,16 @@ public class Calculators {
   }
 
   /**
-   * Calculates pCO<sub>2</sub> in water
+   * Calculates pCO<sub>2</sub> in water from xCO<sub>2</sub> measured in a gas
+   * analyser.
    *
    * @param xCO2
-   *          The dry, calibrated xCO<sub>2</sub> value
+   *          The dry, calibrated xCO<sub>2</sub> value.
    * @param pressure
-   *          The pressure
+   *          The pressure of equilibration.
    * @param pH2O
-   *          The water vapour pressure
-   * @return pCO<sub>2</sub> in water
+   *          The water vapour pressure.
+   * @return pCO<sub>2</sub> in water.
    */
   public static Double calcpCO2TEWet(Double xCO2, Double pressure,
     Double pH2O) {
@@ -95,13 +99,15 @@ public class Calculators {
 
   /**
    * Calculates the water vapour pressure (pH<sub>2</sub>O). From Weiss and
-   * Price (1980)
+   * Price (1980),
+   * <a href="https://doi.org/10.1016/0304-4203(80)90024-9" target=
+   * "_blank">doi: 10.1016/0304-4203(80)90024-9</a>.
    *
    * @param salinity
-   *          Salinity
+   *          Salinity.
    * @param temperature
-   *          Temperature (in celsius)
-   * @return The calculated pH2O value
+   *          Temperature in °C.
+   * @return The calculated pH<sub>2</sub>O value.
    */
   public static Double calcPH2O(Double salinity, Double temperature) {
     double kelvin = Calculators.kelvin(temperature);
@@ -112,8 +118,10 @@ public class Calculators {
   /**
    * Adjust a measured pressure to sea level.
    *
-   * If the supplied {@code sensorHeight} is {@code null}, assume that no
-   * correction is required.
+   * <p>
+   * If the supplied {@code sensorHeight} is {@code null}, no correction is made
+   * and the original value is returned.
+   * </p>
    *
    * @param measuredPressure
    *          The measured pressure.
@@ -137,6 +145,32 @@ public class Calculators {
     return result;
   }
 
+  /**
+   * Perform a linear interpolation between two values taken at different times,
+   * giving a value at the specified time.
+   *
+   * <p>
+   * If either of the {@code y} values is {@code null}, the other is returned.
+   * If both are {@code null}, {@code null} is returned.
+   * </p>
+   *
+   * <p>
+   * The method will extrapolate the target timestamp is beyond the reference
+   * timestamps.
+   * </p>
+   *
+   * @param time0
+   *          The first reference timestamp.
+   * @param y0
+   *          The first reference y value.
+   * @param time1
+   *          The second reference timestamp.
+   * @param y1
+   *          The second reference y value.
+   * @param measurementTime
+   *          The target timestamp for which a value must be calculated.
+   * @return The interpolated y value at the target timestamp.
+   */
   public static Double interpolate(LocalDateTime time0, Double y0,
     LocalDateTime time1, Double y1, LocalDateTime measurementTime) {
     Double result = null;
@@ -155,12 +189,44 @@ public class Calculators {
     return result;
   }
 
+  /**
+   * Perform a linear interpolation between two points to produce a value at a
+   * third target point.
+   *
+   * @param x0
+   *          The first reference x value.
+   * @param y0
+   *          The first reference y value.
+   * @param x1
+   *          The second reference x value.
+   * @param y1
+   *          The second reference y value.
+   * @param x
+   *          The target x value for which a value must be calculated.
+   * @return The interpolated y value at the target x value.
+   */
   public static double interpolate(double x0, double y0, double x1, double y1,
     double x) {
 
     return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
   }
 
+  /**
+   * Perform a linear interpolation between two points to produce a value at a
+   * third target point.
+   *
+   * @param x0
+   *          The first reference x value.
+   * @param y0
+   *          The first reference y value.
+   * @param x1
+   *          The second reference x value.
+   * @param y1
+   *          The second reference y value.
+   * @param x
+   *          The target x value for which a value must be calculated.
+   * @return The interpolated y value at the target x value.
+   */
   public static BigDecimal interpolate(BigDecimal x0, BigDecimal y0,
     BigDecimal x1, BigDecimal y1, BigDecimal x) {
 
@@ -189,6 +255,18 @@ public class Calculators {
     return result;
   }
 
+  /**
+   * Perform a linear interpolation between two points to produce a value at a
+   * third target point.
+   *
+   * @param prior
+   *          The first reference x/y value.
+   * @param post
+   *          The second reference x/y value.
+   * @param x
+   *          The target x value for which a value must be calculated.
+   * @return The interpolated y value at the target x value.
+   */
   public static Double interpolate(Map.Entry<Double, Double> prior,
     Map.Entry<Double, Double> post, Double x) {
 
@@ -209,6 +287,15 @@ public class Calculators {
     return result;
   }
 
+  /**
+   * Determine whether a {@link Map.Entry} of {@link Double} objects is
+   * {@code null}, or if either the key or value is {@code null} or {@code NaN}.
+   *
+   * @param mapEntry
+   *          The entry to check.
+   * @return {@code true} if any aspect of the entry is {@code null};
+   *         {@code false} otherwise.
+   */
   private static boolean isNull(Map.Entry<Double, Double> mapEntry) {
 
     boolean result = false;
@@ -226,15 +313,17 @@ public class Calculators {
 
   /**
    * Calculates pCO<sub>2</sub> at the water (sea surface) temperature. From
-   * Takahashi et al. (2009)
+   * Takahashi et al. (2009),
+   * <a href="https://doi.org/10.1016/j.dsr2.2008.12.009" target="_blank">doi:
+   * 10.1016/j.dsr2.2008.12.009</a>.
    *
-   * @param pco2TEWet
-   *          The pCO<sub>2</sub> at equilibrator temperature
+   * @param co2AtEquilibrator
+   *          The pCO<sub>2</sub> at equilibrator temperature.
    * @param eqt
-   *          The equilibrator temperature
+   *          The equilibrator temperature.
    * @param sst
-   *          The water temperature
-   * @return The pCO<sub>2</sub> at water temperature
+   *          The water temperature.
+   * @return The pCO<sub>2</sub> at water temperature.
    */
   public static Double calcCO2AtSST(Double co2AtEquilibrator, Double eqt,
     Double sst) {

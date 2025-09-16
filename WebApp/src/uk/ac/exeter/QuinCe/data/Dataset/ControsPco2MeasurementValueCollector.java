@@ -19,7 +19,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  * {@link SensorValuesList}) cannot be used. Every record from the sensor must
  * be treated as an individual measurement, and thus PERIODIC mode does not
  * work. Therefore, for the sensor's own {@link SensorType}s we always get each
- * value directly and do not rely on the {@link SensorValueList}'s internal
+ * value directly and do not rely on the {@link SensorValuesList}'s internal
  * algorithms. This approach also precludes interpolating around values with QC
  * flags applied.
  * </p>
