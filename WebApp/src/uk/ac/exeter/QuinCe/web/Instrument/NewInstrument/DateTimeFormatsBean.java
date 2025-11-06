@@ -86,6 +86,13 @@ public class DateTimeFormatsBean {
 
   public static final String DT_YYYYMMDD_SLASH_MS_D = "YYYY/MM/DD hh:mm:ss.SSS";
 
+  protected static final String DT_YYYYMMDD_DOT_S = "yyyy.MM.dd HH:mm:ss";
+
+  public static final DateTimeFormatter DT_YYYYMMDD_DOT_F = DateTimeFormatter
+    .ofPattern(DT_YYYYMMDD_DOT_S);
+
+  public static final String DT_YYYYMMDD_DOT_D = "YYYY.MM.DD hh:mm:ss";
+
   protected static final String DT_MMDDYYYY_SLASH_S = "MM/dd/yyyy HH:mm:ss";
 
   public static final DateTimeFormatter DT_MMDDYYYY_SLASH_F = DateTimeFormatter
@@ -361,6 +368,13 @@ public class DateTimeFormatsBean {
       }
 
       try {
+        LocalDateTime.parse(dateTimeValue, DT_YYYYMMDD_DOT_F);
+        formats.put(DT_YYYYMMDD_DOT_D, DT_YYYYMMDD_DOT_S);
+      } catch (DateTimeParseException e) {
+        // noop
+      }
+
+      try {
         LocalDateTime.parse(dateTimeValue, DT_YYYYMMDD_SLASH_MS_F);
         formats.put(DT_YYYYMMDD_SLASH_MS_D, DT_YYYYMMDD_SLASH_MS_S);
       } catch (DateTimeParseException e) {
@@ -441,6 +455,7 @@ public class DateTimeFormatsBean {
       formats.put(DT_YYYYMMDD_HYPHEN_D, DT_YYYYMMDD_HYPHEN_S);
       formats.put(DT_YYYYMMDD_HYPHEN_MS_D, DT_YYYYMMDD_HYPHEN_MS_S);
       formats.put(DT_YYYYMMDD_SLASH_D, DT_YYYYMMDD_SLASH_S);
+      formats.put(DT_YYYYMMDD_DOT_D, DT_YYYYMMDD_DOT_S);
       formats.put(DT_YYYYMMDD_SLASH_MS_D, DT_YYYYMMDD_SLASH_MS_S);
       formats.put(DT_MMDDYYYY_SLASH_D, DT_MMDDYYYY_SLASH_S);
       formats.put(DT_MMDDYY_SLASH_D, DT_MMDDYY_SLASH_S);
