@@ -33,6 +33,7 @@ public class DateTimeFormatsBeanDateTimeTest extends TestSetTest {
     DateTimeFormatsBean.DT_YYYYMMDD_HYPHEN_MS_D,
     DateTimeFormatsBean.DT_YYYYMMDD_SLASH_D,
     DateTimeFormatsBean.DT_YYYYMMDD_SLASH_MS_D,
+    DateTimeFormatsBean.DT_YYYYMMDD_DOT_D,
     DateTimeFormatsBean.DT_MMDDYYYY_SLASH_D,
     DateTimeFormatsBean.DT_MMDDYY_SLASH_D,
     DateTimeFormatsBean.DT_DDMMYYYY_SLASH_D,
