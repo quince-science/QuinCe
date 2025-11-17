@@ -414,11 +414,12 @@ public class ExportOption {
    *
    * <p>
    * Newlines are replaced with semicolons. Instances of the separator are
-   * replaced with spaces.
+   * replaced with spaces. Double quotes are escaped.
    * </p>
    *
    * @param fieldValue
-   * @return
+   *          The value to be formatted.
+   * @return The formatted value.
    */
   public String format(String fieldValue) {
     String result = null;
@@ -430,7 +431,8 @@ public class ExportOption {
     } else {
       String newlinesRemoved = fieldValue.replaceAll("[\\r\\n]", " ");
       String separatorsRemoved = newlinesRemoved.replaceAll(separator, " ");
-      return separatorsRemoved;
+      String quotesEscaped = separatorsRemoved.replaceAll("\"", "'");
+      return quotesEscaped;
     }
 
     return result;
