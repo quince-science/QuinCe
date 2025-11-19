@@ -133,13 +133,13 @@ public class ExtractDataSetJob extends DataSetJob {
         .forEach(f -> fileDefinitionRanges.get(f.getFileDefinition()).add(f));
 
       LocalDateTime filesLatestStart = TimeRange
-        .getLatestStart(fileDefinitionRanges.values());
+        .getLatestStart(fileDefinitionRanges.values(), 3600);
       if (filesLatestStart.isAfter(dataSet.getStart())) {
         dataSet.setStart(filesLatestStart);
       }
 
       LocalDateTime filesEarliestEnd = TimeRange
-        .getEarliestEnd(fileDefinitionRanges.values());
+        .getEarliestEnd(fileDefinitionRanges.values(), 3600);
       if (filesEarliestEnd.isBefore(dataSet.getEnd())) {
         dataSet.setEnd(filesEarliestEnd);
       }
