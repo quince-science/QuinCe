@@ -177,7 +177,7 @@ affiliation = 'National Oceanography Centre, UK'
 NRT = 'True'
 
   [UK-FOS-PAP.export]
-  NRT = []
+  NRT = ['ICOS']
   L2 = ['ICOS']
 
 [DE-SOOP-Finnmaid]
@@ -275,3 +275,20 @@ NRT = 'False'
   [DE-SOOP-Polarstern.export]
   NRT = ['ICOS']
   L2 = ['ICOS']
+
+["SE-FOS-Östergarnsholm"]
+platform_code = "77FS"
+name = "Östergarnsholm"
+submitter_id = 'OTC'
+cp_url = "http://meta.icos-cp.eu/resources/stations/OS_SE-FOS-%C3%96stergarnsholm"
+category_code = "41"
+call_sign = ""
+creation_date = "2025-11-21T09:17:40Z"
+author_list = "Rutgersson, Anna;Nilsson, Erik;Prytherch, John"
+affiliation = "University of Uppsala, Sweden"
+NRT = "False"
+
+  ["SE-FOS-Östergarnsholm".export]
+  NRT = ['ICOS']
+  L2 = ['ICOS']
+
