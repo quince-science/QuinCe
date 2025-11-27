@@ -745,4 +745,14 @@ public abstract class BaseManagedBean {
   public void setAjaxOK(boolean ok) {
     // Ignore all attempts to set this value
   }
+
+  /**
+   * Determine whether or not the submission system is enabled.
+   *
+   * @return {@code true} if submissions are enabled; {@code false} if not.
+   */
+  public boolean submissionEnabled() {
+    return Boolean
+      .valueOf(getAppConfig().getProperty("submission_enabled", "true"));
+  }
 }
