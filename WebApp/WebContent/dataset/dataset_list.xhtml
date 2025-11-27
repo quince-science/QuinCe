@@ -366,31 +366,33 @@
                   styleClass="actionIcon" alt="Export" title="Export" />
               </ui:fragment>
               <ui:fragment rendered="#{!dataset.nrt}">
-                <ui:fragment
-                  rendered="#{dataset.status eq DataSet.STATUS_READY_FOR_SUBMISSION}">
-                  <p:commandLink onclick="submitForApproval(#{dataset.id})">
-                    <h:graphicImage value="/resources/image/submit.svg"
-                      styleClass="actionIcon" alt="Submit" title="Submit" />
-                  </p:commandLink>
-                </ui:fragment>
-                <ui:fragment
-                  rendered="#{dataset.status ne DataSet.STATUS_READY_FOR_SUBMISSION}">
-                  <h:graphicImage value="/resources/image/submit_disabled.svg"
-                    styleClass="actionIcon" alt="Submit" title="Submit" />
-                </ui:fragment>
-                <ui:fragment rendered="#{dataSetsBean.approvalUser}">
+                <ui:fragment rendered="#{dataSetsBean.submissionEnabled()}">
                   <ui:fragment
-                    rendered="#{dataset.status eq DataSet.STATUS_WAITING_FOR_APPROVAL}">
-                    <p:commandLink onclick="approve(#{dataset.id})">
-                      <h:graphicImage value="/resources/image/approve.svg"
-                        styleClass="actionIcon" alt="Approve" title="Approve" />
+                    rendered="#{dataset.status eq DataSet.STATUS_READY_FOR_SUBMISSION}">
+                    <p:commandLink onclick="submitForApproval(#{dataset.id})">
+                      <h:graphicImage value="/resources/image/submit.svg"
+                        styleClass="actionIcon" alt="Submit" title="Submit" />
                     </p:commandLink>
                   </ui:fragment>
                   <ui:fragment
-                    rendered="#{dataset.status ne DataSet.STATUS_WAITING_FOR_APPROVAL}">
-                    <h:graphicImage
-                      value="/resources/image/approve_disabled.svg"
-                      styleClass="actionIcon" alt="Approve" title="Approve" />
+                    rendered="#{dataset.status ne DataSet.STATUS_READY_FOR_SUBMISSION}">
+                    <h:graphicImage value="/resources/image/submit_disabled.svg"
+                      styleClass="actionIcon" alt="Submit" title="Submit" />
+                  </ui:fragment>
+                  <ui:fragment rendered="#{dataSetsBean.approvalUser}">
+                    <ui:fragment
+                      rendered="#{dataset.status eq DataSet.STATUS_WAITING_FOR_APPROVAL}">
+                      <p:commandLink onclick="approve(#{dataset.id})">
+                        <h:graphicImage value="/resources/image/approve.svg"
+                          styleClass="actionIcon" alt="Approve" title="Approve" />
+                      </p:commandLink>
+                    </ui:fragment>
+                    <ui:fragment
+                      rendered="#{dataset.status ne DataSet.STATUS_WAITING_FOR_APPROVAL}">
+                      <h:graphicImage
+                        value="/resources/image/approve_disabled.svg"
+                        styleClass="actionIcon" alt="Approve" title="Approve" />
+                    </ui:fragment>
                   </ui:fragment>
                 </ui:fragment>
                 <ui:fragment rendered="#{dataset.status ge DataSet.STATUS_USER_QC}">

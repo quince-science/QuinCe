@@ -22,7 +22,7 @@
       <p:menuitem value="Jobs" outcome="/job/job_list.xhtml"
         rendered="#{User.jobManager}"></p:menuitem>
       <p:menuitem value="Waiting for Approval" outcome="/dataset/for_approval_list.xhtml"
-        rendered="#{User.adminUser}"></p:menuitem>
+        rendered="#{User.adminUser and dataSetsBean.submissionEnabled()}"></p:menuitem>
       <p:menuitem value="NRT Status" outcome="/job/nrt_status.xhtml"
         rendered="#{User.adminUser}"></p:menuitem>
       <p:menuitem value="Credits" outcome="/credits.xhtml"></p:menuitem>
