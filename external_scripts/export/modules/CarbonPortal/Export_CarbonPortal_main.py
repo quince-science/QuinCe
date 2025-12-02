@@ -84,7 +84,7 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
     bypass_upload = False
 
     if len(existing_datasets) > 1:
-        raise CarbonPortalException(f'Dataset would deprecate multiple datasets {existing_datasets["dobj"]}')
+        raise CarbonPortalException(f'Dataset would deprecate multiple datasets: {list(existing_datasets["dobj"])}')
     elif existing_datasets.empty:
         # Just to be explicit: We will upload the dataset and don't need to deprecate anything
         pass
@@ -139,6 +139,7 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
 
             upload_l0 = True
             previous_l0 = []
+            
             existing_hashsums = existing_l0.loc[existing_l0['fileName'] == basename]['hashSum'].values
             if hashsum in existing_hashsums:
                 upload_l0 = False
