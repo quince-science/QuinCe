@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -194,8 +195,12 @@ public class MultipleFileUploadBean extends FileUploadBean {
           }
 
           // If there's nothing from a previous instrument, try the defaults.
-          foundAssignment = assignmentsFromDatabase
-            .get(runType.getRunType().getRunName());
+          try {
+            foundAssignment = assignmentsFromDatabase
+              .get(runType.getRunType().getRunName(), false);
+          } catch (MissingRunTypeException e) {
+            // Do nothing - the found assignment will remain null
+          }
 
           if (null != foundAssignment) {
             runType.setRunType(foundAssignment);
