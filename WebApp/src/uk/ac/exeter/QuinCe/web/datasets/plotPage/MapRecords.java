@@ -279,9 +279,9 @@ public class MapRecords extends ArrayList<MapRecord> {
   public GeoBounds getBounds(DatasetSensorValues allSensorValues,
     boolean hideNonGoodFlags) {
     double minLon = Double.MAX_VALUE;
-    double maxLon = Double.MIN_VALUE;
+    double maxLon = -Double.MAX_VALUE;
     double minLat = Double.MAX_VALUE;
-    double maxLat = Double.MIN_VALUE;
+    double maxLat = -Double.MAX_VALUE;
 
     for (MapRecord record : this) {
       if (!hideNonGoodFlags || record.isGood(allSensorValues)
