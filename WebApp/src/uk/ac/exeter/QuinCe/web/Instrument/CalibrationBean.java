@@ -191,6 +191,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
     String nav = getPageNavigation();
 
     try {
+      setForceInstrumentReload(true);
+      initialiseInstruments();
       setCurrentInstrumentId(instrumentId);
       datasets = new TreeMap<DataSet, RecalculateStatus>();
       DataSetDB.getDataSets(getDataSource(), getCurrentInstrumentId(), true)
