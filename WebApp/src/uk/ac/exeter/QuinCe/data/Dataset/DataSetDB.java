@@ -532,6 +532,49 @@ public class DataSetDB {
 
     return result;
   }
+  
+  /**
+   * Get a data set using its database name
+   *
+   * @param conn
+   *          A database connection
+   * @param name
+   *          The data set's name
+   * @return The data set
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the data set does not exist
+   */
+  public static DataSet getDataSet(Connection conn, String name)
+    throws DatabaseException, MissingParamException, RecordNotFoundException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(name, "name");
+
+    DataSet result = null;
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(makeGetDatasetsQuery("name"))) {
+      stmt.setString(1, name);
+
+      try (ResultSet record = stmt.executeQuery()) {
+        if (!record.next()) {
+          throw new RecordNotFoundException("Data set " + name + "does not exist");
+        } else {
+          result = dataSetFromRecord(conn, record);
+        }
+      }
+    } catch (RecordNotFoundException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new DatabaseException("Error while retrieving data sets", e);
+    }
+
+    return result;
+  }
 
   public static void setNrtDatasetStatus(DataSource dataSource,
     Instrument instrument, int status)
