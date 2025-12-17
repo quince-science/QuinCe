@@ -16,21 +16,88 @@ import org.mockito.Mockito;
 import uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 
+/**
+ * Tests for interpolation of values presented as either {@link BigDecimal} or
+ * {@link Map.Entry} objects.
+ *
+ * <p>
+ * For {@link Map.Entry} objects the {@code X} and {@code Y} values are set as
+ * the key and value respectively.
+ * </p>
+ */
 @TestInstance(Lifecycle.PER_CLASS)
 public class CalculatorsInterpolateMapEntryBigDecimalTest extends TestSetTest {
 
+  /**
+   * First X value.
+   */
   private static final Double X0 = 26.533D;
+
+  /**
+   * First Y value.
+   */
   private static final Double Y0 = 8.328D;
+
+  /**
+   * Second X value.
+   */
   private static final Double X1 = 60.952D;
+
+  /**
+   * Second Y value.
+   */
   private static final Double Y1 = 15.685D;
+
+  /**
+   * The target X value for the interpolation.
+   */
   private static final Double TARGET_X = 37.765D;
 
+  /**
+   * Column index from the {@link TestSetTest} file that indicates whether or
+   * not the first X value is set as {@link #X0} or as an alternative value.
+   *
+   * @see #doMapEntryInterpolation(TestSetLine, Double)
+   */
   private static final int X0_PRESENT_COL = 0;
+
+  /**
+   * Column index from the {@link TestSetTest} file that indicates whether or
+   * not the first Y value is set as {@link #Y0} or as an alternative value.
+   *
+   * @see #doMapEntryInterpolation(TestSetLine, Double)
+   */
   private static final int Y0_PRESENT_COL = 1;
+
+  /**
+   * Column index from the {@link TestSetTest} file that indicates whether or
+   * not the second X value is set as {@link #X1} or as an alternative value.
+   *
+   * @see #doMapEntryInterpolation(TestSetLine, Double)
+   */
   private static final int X1_PRESENT_COL = 2;
+
+  /**
+   * Column index from the {@link TestSetTest} file that indicates whether or
+   * not the second Y value is set as {@link #Y1} or as an alternative value.
+   *
+   * @see #doMapEntryInterpolation(TestSetLine, Double)
+   */
   private static final int Y1_PRESENT_COL = 3;
+
+  /**
+   * Column index from the {@link TestSetTest} file that contains the expected
+   * result of the interpolation.
+   */
   private static final int EXPECTED_RESULT_COL = 4;
 
+  /**
+   * Interpolate {@link Map.Entry} values where the 'not present' values
+   * specified in the {@link TestSetLine} are set to {@code null}.
+   *
+   * @param line
+   *          The {@link TestSetLine}.
+   */
   @ParameterizedTest
   @MethodSource("getLines")
   public void mapEntryNullTest(TestSetLine line) {
@@ -46,6 +113,13 @@ public class CalculatorsInterpolateMapEntryBigDecimalTest extends TestSetTest {
 
   }
 
+  /**
+   * Interpolate {@link Map.Entry} values where the 'not present' values
+   * specified in the {@link TestSetLine} are set to {@link Double#NaN}.
+   *
+   * @param line
+   *          The {@link TestSetLine}.
+   */
   @ParameterizedTest
   @MethodSource("getLines")
   public void mapEntryNaNTest(TestSetLine line) {
@@ -60,6 +134,10 @@ public class CalculatorsInterpolateMapEntryBigDecimalTest extends TestSetTest {
     }
   }
 
+  /**
+   * Test an interpolation where the first {@link Map.Entry} object is
+   * {@code null}.
+   */
   @Test
   public void mapEntryPriorNullTest() {
     @SuppressWarnings("unchecked")
@@ -70,6 +148,10 @@ public class CalculatorsInterpolateMapEntryBigDecimalTest extends TestSetTest {
     assertEquals(Y1, Calculators.interpolate(null, post, TARGET_X), 0.0001D);
   }
 
+  /**
+   * Test an interpolation where the second {@link Map.Entry} object is
+   * {@code null}.
+   */
   @Test
   public void mapEntryPostNullTest() {
     @SuppressWarnings("unchecked")
@@ -80,11 +162,26 @@ public class CalculatorsInterpolateMapEntryBigDecimalTest extends TestSetTest {
     assertEquals(Y0, Calculators.interpolate(prior, null, TARGET_X), 0.0001D);
   }
 
+  /**
+   * Test an interpolation where both {@link Map.Entry} objects are
+   * {@code null}.
+   */
   @Test
   public void mapEntryBothNullTest() {
     assertNull(Calculators.interpolate(null, null, TARGET_X));
   }
 
+  /**
+   * Test interpolation of values presented as {@link BigDecimal} objects.
+   *
+   * <p>
+   * The contents of the supplied {@link TestSetLine} dictate whether the
+   * various {@link BigDecimal}s are supplied as numeric values or {@code null}.
+   * </p>
+   *
+   * @param line
+   *          The test line.
+   */
   @ParameterizedTest
   @MethodSource("getLines")
   public void BigDecimalNullTest(TestSetLine line) {
@@ -111,6 +208,23 @@ public class CalculatorsInterpolateMapEntryBigDecimalTest extends TestSetTest {
 
   }
 
+  /**
+   * Perform an interpolation of two {@link Map.Entry} objects by calling
+   * {@link Calculators#interpolate(java.util.Map.Entry, java.util.Map.Entry, Double)}.
+   *
+   * <p>
+   * The contents of the supplied {@link TestSetLine} dictate whether parts of
+   * the {@link Map.Entry} objects are populated with normal values, or with the
+   * specified {@code notPresentValue}.
+   * </p>
+   *
+   * @param line
+   *          The test line.
+   * @param notPresentValue
+   *          The value to use if the test line indicates that a part of an
+   *          object is not to be populated as a normal value.
+   * @return The result of the interpolation call.
+   */
   private Double doMapEntryInterpolation(TestSetLine line,
     Double notPresentValue) {
 
@@ -132,6 +246,26 @@ public class CalculatorsInterpolateMapEntryBigDecimalTest extends TestSetTest {
     return Calculators.interpolate(prior, post, TARGET_X);
   }
 
+  /**
+   * Get the value for part of a test {@link Map.Entry} object based on the
+   * requested column from the supplied {@link TestSetLine}.
+   *
+   * <p>
+   * The value from the specified {@code column} indicates whether the returned
+   * value is the {@code presentValue} or the {@code notPresentValue}.
+   * </p>
+   *
+   * @param line
+   *          The {@link TestSetLine}.
+   * @param column
+   *          The column from the line that indicates whether the value is
+   *          present or not.
+   * @param presentValue
+   *          The 'present' value.
+   * @param notPresentValue
+   *          The 'not present' value.
+   * @return The computed value.
+   */
   private Double getInputValue(TestSetLine line, int column,
     Double presentValue, Double notPresentValue) {
 

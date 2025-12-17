@@ -3,37 +3,37 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 import java.util.Objects;
 
 /**
- * Simple object for a single calibration coefficient
+ * Simple object for a single calibration coefficient.
  */
 public class CalibrationCoefficient implements Cloneable {
 
   /**
-   * The coefficient's name
+   * The coefficient's name.
    */
   private String name;
 
   /**
-   * The coefficient value
+   * The coefficient value.
    */
   private String value = "0";
 
   /**
-   * Creates an empty (zero) coefficient
+   * Creates an empty (zero) coefficient.
    *
    * @param name
-   *          The coefficient name
+   *          The coefficient name.
    */
   protected CalibrationCoefficient(String name) {
     this.name = name;
   }
 
   /**
-   * Create a coefficient with a value
+   * Create a coefficient with the specified value.
    *
    * @param name
-   *          The coefficient name
+   *          The coefficient name.
    * @param value
-   *          The value
+   *          The value.
    */
   protected CalibrationCoefficient(String name, String value) {
     this.name = name;
@@ -41,32 +41,37 @@ public class CalibrationCoefficient implements Cloneable {
   }
 
   /**
-   * Get the coefficient name
+   * Get the coefficient's name.
    *
-   * @return The coefficient's name
+   * @return The coefficient name.
    */
   public String getName() {
     return name;
   }
 
   /**
-   * Get the coefficient value
+   * Get the coefficient value as a {@link String}.
    *
-   * @return The value
+   * @return The value.
    */
   public String getValue() {
     return value;
   }
 
+  /**
+   * Get the coefficient value as a {@link Double} object.
+   *
+   * @return The value.
+   */
   public Double getDoubleValue() {
     return Double.parseDouble(value);
   }
 
   /**
-   * Set the coefficient value
+   * Set the coefficient value.
    *
    * @param value
-   *          The value
+   *          The value.
    */
   public void setValue(String value) {
     this.value = value;
