@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Test;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 
+/**
+ * Tests for the {@link Calculators} class.
+ */
 public class CalculatorsTest extends BaseTest {
 
   /**
@@ -24,7 +27,8 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Test {@link Calculators#calcPH2O(Double, Double)} with NaN salinity.
+   * Test {@link Calculators#calcPH2O(Double, Double)} with {@code NaN}
+   * salinity.
    */
   @Test
   public void calcPH2ONanSalinityTest() {
@@ -32,7 +36,8 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Test {@link Calculators#calcPH2O(Double, Double)} with NaN salinity.
+   * Test {@link Calculators#calcPH2O(Double, Double)} with {@code NaN}
+   * salinity.
    */
   @Test
   public void calcPH2ONanTempTest() {
@@ -53,8 +58,8 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Test {@link Calculators#calcpCO2TEWet(Double, Double, Double)} with a NaN
-   * xCO2 value.
+   * Test {@link Calculators#calcpCO2TEWet(Double, Double, Double)} with a
+   * {@code NaN} xCO₂ value.
    */
   @Test
   public void calcPco2WetNanXCO2Test() {
@@ -67,8 +72,8 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Test {@link Calculators#calcpCO2TEWet(Double, Double, Double)} with a NaN
-   * pressure value.
+   * Test {@link Calculators#calcpCO2TEWet(Double, Double, Double)} with a
+   * {@code NaN} pressure value.
    */
   @Test
   public void calcPco2WetNanPressureTest() {
@@ -81,8 +86,8 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Test {@link Calculators#calcpCO2TEWet(Double, Double, Double)} with a NaN
-   * pH2O value.
+   * Test {@link Calculators#calcpCO2TEWet(Double, Double, Double)} with a
+   * {@code NaN} pH₂O value.
    */
   @Test
   public void calcPco2WetNanPH2OTest() {
@@ -110,7 +115,7 @@ public class CalculatorsTest extends BaseTest {
 
   /**
    * Test {@link Calculators#calcfCO2(Double, Double, Double, Double)} with a
-   * NaN pCO2 value.
+   * {@code NaN} pCO₂ value.
    */
   @Test
   public void calcFCO2NaNpCO2Test() {
@@ -125,7 +130,7 @@ public class CalculatorsTest extends BaseTest {
 
   /**
    * Test {@link Calculators#calcfCO2(Double, Double, Double, Double)} with a
-   * NaN xCO2 value.
+   * {@code NaN} xCO₂ value.
    */
   @Test
   public void calcFCO2NaNXCO2Test() {
@@ -140,7 +145,7 @@ public class CalculatorsTest extends BaseTest {
 
   /**
    * Test {@link Calculators#calcfCO2(Double, Double, Double, Double)} with a
-   * NaN pressure value.
+   * {@code NaN} pressure value.
    */
   @Test
   public void calcFCO2NaNPressureTest() {
@@ -155,7 +160,7 @@ public class CalculatorsTest extends BaseTest {
 
   /**
    * Test {@link Calculators#calcfCO2(Double, Double, Double, Double)} with a
-   * NaN temperature value.
+   * {@code NaN} temperature value.
    */
   @Test
   public void calcFCO2NaNTempTest() {
@@ -169,7 +174,7 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Celsius to Kelvin, positive
+   * Test {@link Calculators#kelvin(Double)} with a positive value.
    */
   @Test
   public void kelvinPositiveTest() {
@@ -177,7 +182,7 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Celsius to Kelvin, zero
+   * Test {@link Calculators#kelvin(Double)} with a zero value.
    */
   @Test
   public void kelvinZeroTest() {
@@ -185,7 +190,7 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Celsius to Kelvin, negative
+   * Test {@link Calculators#kelvin(Double)} with a negative value.
    */
   @Test
   public void kelvinNegativeTest() {
@@ -193,7 +198,7 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Kelvin to Celsius, positive
+   * Test {@link Calculators#celsius(Double)} with a positive result.
    */
   @Test
   public void celsiusPositiveTest() {
@@ -201,7 +206,7 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Kelvin to Celsius, zero
+   * Test {@link Calculators#celsius(Double)} with a zero result.
    */
   @Test
   public void celsiusZeroTest() {
@@ -209,31 +214,45 @@ public class CalculatorsTest extends BaseTest {
   }
 
   /**
-   * Kelvin to Celsius, negative
+   * Test {@link Calculators#celsius(Double)} with a negative result.
    */
   @Test
   public void celsiusNegativeTest() {
     assertEquals(-9.48D, Calculators.celsius(263.67D), 0.01);
   }
 
+  /**
+   * Test {@link Calculators#calcCO2AtSST(Double, Double, Double)}.
+   */
   @Test
   public void calcCO2AtSSTTest() {
     assertEquals(385.9254D, Calculators.calcCO2AtSST(402.43D, 6.34D, 5.35D),
       0.0001D);
   }
 
+  /**
+   * Test {@link Calculators#calcSeaLevelPressure(Double, Double, Float)}.
+   */
   @Test
   public void calcSeaLevelPressureTest() {
     assertEquals(1024.5142D,
       Calculators.calcSeaLevelPressure(1023.244D, 7.44D, 10.2F), 0.0001D);
   }
 
+  /**
+   * Test {@link Calculators#calcSeaLevelPressure(Double, Double, Float)} with a
+   * {@code null} height value.
+   */
   @Test
   public void calcSeaLevelPressureNoHeightTest() {
     assertEquals(1023.244D,
       Calculators.calcSeaLevelPressure(1023.244D, 7.44D, null), 0.0001D);
   }
 
+  /**
+   * Test
+   * {@link Calculators#interpolate(double, double, double, double, double)}.
+   */
   @Test
   public void interpolateDoublesTest() {
 
@@ -247,6 +266,11 @@ public class CalculatorsTest extends BaseTest {
       0.0001D);
   }
 
+  /**
+   * Test
+   * {@link Calculators#interpolate(LocalDateTime, Double, LocalDateTime, Double, LocalDateTime)}
+   * with {@code null} y values.
+   */
   @Test
   public void interpolateTimesNullYsTest() {
     LocalDateTime time0 = LocalDateTime.of(2020, 1, 1, 12, 10, 00);
@@ -258,6 +282,11 @@ public class CalculatorsTest extends BaseTest {
     assertNull(Calculators.interpolate(time0, y0, time1, y1, targetTime));
   }
 
+  /**
+   * Test
+   * {@link Calculators#interpolate(LocalDateTime, Double, LocalDateTime, Double, LocalDateTime)}
+   * with a {@code null} first y value.
+   */
   @Test
   public void interpolateTimesNullY0Test() {
     LocalDateTime time0 = LocalDateTime.of(2020, 1, 1, 12, 10, 00);
@@ -270,6 +299,11 @@ public class CalculatorsTest extends BaseTest {
       Calculators.interpolate(time0, y0, time1, y1, targetTime), 0.0001D);
   }
 
+  /**
+   * Test
+   * {@link Calculators#interpolate(LocalDateTime, Double, LocalDateTime, Double, LocalDateTime)}
+   * with a {@code null} second y value.
+   */
   @Test
   public void interpolateTimesNullY1Test() {
     LocalDateTime time0 = LocalDateTime.of(2020, 1, 1, 12, 10, 00);
@@ -282,6 +316,11 @@ public class CalculatorsTest extends BaseTest {
       Calculators.interpolate(time0, y0, time1, y1, targetTime), 0.0001D);
   }
 
+  /**
+   * Test
+   * {@link Calculators#interpolate(LocalDateTime, Double, LocalDateTime, Double, LocalDateTime)}
+   * with all values.
+   */
   @Test
   public void interpolateTimesTest() {
     LocalDateTime time0 = LocalDateTime.of(2020, 1, 1, 12, 10, 00);
