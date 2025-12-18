@@ -112,6 +112,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
    * The calibration edit action.
+   *
+   * @see CalibrationEdit
    */
   private int action = CalibrationEdit.EDIT;
 
@@ -153,15 +155,16 @@ public abstract class CalibrationBean extends BaseManagedBean {
   private long instrumentId;
 
   /**
-   * The list of edits made in the current bean instance (i.e. editing session).
+   * The list of edits made in the current bean instance (equating to an editing
+   * session).
    *
    * <p>
    * The edits are stored as a {@link Map} of
-   * {@code <Calibration ID> -> <edit action>}. This prevents automatically
-   * prevents multiple edits being applied for the same {@link Calibration}; a
-   * new edit on a {@link Calibration} that has already been edited simply
-   * replaces the previous edit. New {@link Calibration}s are given a temporary
-   * ID by {@link #generateNewId()}.
+   * {@code <Calibration ID> -> <edit action>}. This automatically prevents
+   * multiple edits being applied for the same {@link Calibration}; a new edit
+   * on a {@link Calibration} that has already been edited simply replaces the
+   * previous edit. New {@link Calibration}s are given a temporary ID by
+   * {@link #generateNewId()}.
    * </p>
    */
   private HashMap<Long, CalibrationEdit> edits;
@@ -288,7 +291,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *
    * <p>
    * This defaults to {@link ExtractDataSetJob} (meaning that the
-   * {@link DataSet} will be reset and processed from the start, but will be
+   * {@link DataSet} will be reset and processed from the start), but will be
    * overridden if the edits only affect a part of the processing sequence.
    * </p>
    *
@@ -320,8 +323,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
   public abstract String getHumanReadableCalibrationType();
 
   /**
-   * Individual targets are represented as groups on the page timeline. Get the
-   * JSON for these groups.
+   * Individual calibration targets are represented as separate groups on the
+   * page timeline. Get the JSON for these groups.
    *
    * @return The targets JSON.
    */
@@ -425,34 +428,60 @@ public abstract class CalibrationBean extends BaseManagedBean {
   }
 
   /**
-   * Get the label to use for the calibration target
+   * Get the label to use for the calibration target.
    *
-   * @return The target label
+   * @return The target label.
    */
   public abstract String getTargetLabel();
 
   /**
-   * Get the label used to describe the coefficients
+   * Get the label used to describe the coefficients for the calibrations being
+   * edited.
    *
-   * @return The coefficients label
+   * @return The coefficients label.
    */
   public String getCoefficientsLabel() {
     return "Coefficients";
   }
 
+  /**
+   * Get the {@link Calibration} object that is currently being edited.
+   *
+   * @return The current {@link Calibration}.
+   */
   public Calibration getEditedCalibration() {
     return editedCalibration;
   }
 
+  /**
+   * Get the database ID of the {@link Calibration} that the user has selected.
+   *
+   * @return The selected {@link Calibration}'s ID.
+   */
   public long getSelectedCalibrationId() {
     return selectedCalibrationId;
   }
 
+  /**
+   * Set the database ID of the {@link Calibration} that the user has selected.
+   *
+   * @param selectedCalibrationId
+   *          The selected {@link Calibration}'s ID.
+   */
   public void setSelectedCalibrationId(long selectedCalibrationId) {
     this.selectedCalibrationId = selectedCalibrationId;
   }
 
-  public void loadSelectedCalibration() throws Exception {
+  /**
+   * Load the details of the {@link Calibration} selected by the user ready for
+   * editing.
+   *
+   * @throws RecordNotFoundException
+   *           If the selected {@link Calibration} details cannot be found.
+   * @see selectedCalibrationId
+   * @see #editedCalibration
+   */
+  public void loadSelectedCalibration() throws RecordNotFoundException {
     editedCalibration = getCalibration(selectedCalibrationId);
 
     if (null == editedCalibration) {
@@ -463,6 +492,13 @@ public abstract class CalibrationBean extends BaseManagedBean {
     setLastDate(editedCalibration.getDeploymentDate());
   }
 
+  /**
+   * Initialise a new {@link Calibration} object.
+   *
+   * @throws Exception
+   *           If the new object cannot be created.
+   * @see #editedCalibration
+   */
   public void newCalibration() throws Exception {
     editedCalibration = initNewCalibration(generateNewId(), getLastDate());
   }
@@ -476,8 +512,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * </p>
    *
    * @param dataset
-   *          The dataset whose ID is to be generated
-   * @return The dataset's timeline ID
+   *          The dataset for which an ID is required.
+   * @return The dataset's timeline ID.
    */
   private String getTimelineId(DataSet dataset) {
     return "DS-" + dataset.getId();
@@ -567,8 +603,21 @@ public abstract class CalibrationBean extends BaseManagedBean {
     return result;
   }
 
+  /**
+   * Locate an existing {@link Calibration} for the specified target and time.
+   *
+   * <p>
+   * Returns {@code null} if there is no matching calibration.
+   * </p>
+   *
+   * @param target
+   *          The calibration target.
+   * @param timestamp
+   *          The calibration time.
+   * @return The matching {@link Calibration}, or {@code null} if a matching
+   *         calibration cannot be found.
+   */
   private Calibration findCalibration(String target, LocalDateTime timestamp) {
-
     Calibration result = null;
 
     TreeSet<Calibration> search = calibrations.get(target);
@@ -585,12 +634,16 @@ public abstract class CalibrationBean extends BaseManagedBean {
   }
 
   /**
-   * Find a calibration using its database ID. Returns {@code null} if the
-   * calibration is not found.
+   * Find a {@link Calibration} using its database ID.
+   *
+   * <p>
+   * Returns {@code null} if the calibration is not found.
+   * </p>
    *
    * @param calibrationId
-   *          The calbration's ID
-   * @return The calibration
+   *          The calbration's ID.
+   * @return The {@link Calibration}, or {@code null} if there is no matching
+   *         calibration.
    */
   private Calibration getCalibration(long calibrationId) {
     Calibration result = null;
@@ -621,14 +674,32 @@ public abstract class CalibrationBean extends BaseManagedBean {
     return "Calibration";
   }
 
+  /**
+   * Get the current edit action.
+   *
+   * @return The edit action
+   * @see CalibrationEdit
+   */
   public int getAction() {
     return action;
   }
 
+  /**
+   * Set the current edit action.
+   *
+   * @param action
+   *          The edit action
+   * @see CalibrationEdit
+   */
   public void setAction(int action) {
     this.action = action;
   }
 
+  /**
+   * Get the target of the {@link Calibration} that is currently being edited.
+   *
+   * @return The calibration target.
+   */
   public String getEditedCalibrationTargetName() {
     String result = null;
 
@@ -644,20 +715,44 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * after that calibration, or also the ones before it (up to the next
    * calibration before or after it).
    *
+   * <p>
+   * This functionality exists to support calibrations whose effect on data
+   * reduction are interpolated between calibrations.
+   * </p>
+   *
+   * <p>
    * This applies only for added or edited calibrations. Deleting a calibration
    * will always affect datasets before and after it.
+   * </p>
    *
+   * <p>
    * The default implementation states that only datasets after the changed
    * calibration should be affected.
+   * </p>
    *
    * @return {@code true} if only datasets after the changed calibration should
-   *         be affected; {@code false} if datasets before and after should be
-   *         affected.
+   *         be affected; {@code false} if datasets both before and after should
+   *         be affected.
    */
   protected boolean changeAffectsDatasetsAfterOnly() {
     return true;
   }
 
+  /**
+   * Store the current calibration edit ready to be saved.
+   *
+   * <p>
+   * This method validates the edit, and then adds it to {@link #edits}.
+   * </p>
+   *
+   * <p>
+   * If an error occurs in this method, the user will be directed to the
+   * Internal Error page. Otherwise the navigation will be {@code null} so the
+   * user is returned to the editing page.
+   * </p>
+   *
+   * @return The navigation result. {@code null} if no errors are encountered.
+   */
   public String saveCalibration() {
 
     String nav = null;
@@ -742,6 +837,22 @@ public abstract class CalibrationBean extends BaseManagedBean {
     return nav;
   }
 
+  /**
+   * Determine which {@link DataSet}s are affected by the edits that have been
+   * made.
+   *
+   * <p>
+   * The method compares effect of the unedited {@link Calibration}s and the
+   * edited {@link Calibration}s on each {@link DataSet} in turn. If the effects
+   * are different, then the {@link DataSet} is marked as being affected by the
+   * edits.
+   * </p>
+   *
+   * @throws InvalidCalibrationDateException
+   *           If any {@link Calibration}s cannot be analysed.
+   * @see #originalCalibrations
+   * @see #calibrations
+   */
   private void calculateAffectedDatasets()
     throws InvalidCalibrationDateException {
 
@@ -761,6 +872,16 @@ public abstract class CalibrationBean extends BaseManagedBean {
     }
   }
 
+  /**
+   * Generate a unique ID for a new {@link Calibration}.
+   *
+   * <p>
+   * These IDs are temporary, and will be replaced by a database ID when the new
+   * {@link Calibration} is saved to the database.
+   * </p>
+   *
+   * @return The temporary ID.
+   */
   private long generateNewId() {
 
     // Sleep for 2 ms to guarantee we get a different value
@@ -772,13 +893,28 @@ public abstract class CalibrationBean extends BaseManagedBean {
     return DateTimeUtils.dateToLong(LocalDateTime.now()) * -1;
   }
 
+  /**
+   * Determine whether or not the specified time is within any {@link DataSet}.
+   *
+   * @param time
+   *          The time.
+   * @return {@code true} if any {@link DataSet} encompasses the specified time;
+   *         {@code false} if not.
+   */
   private boolean isInDataset(LocalDateTime time) {
     return datasets.keySet().stream()
       .anyMatch(d -> !d.getEnd().isBefore(time) && !d.getStart().isAfter(time));
   }
 
+  /**
+   * Retrieve the {@link DataSet}s that are affected by the current edits, along
+   * with a {@code boolean} indicating whether or not the {@link DataSet} can be
+   * successfully reprocessed.
+   *
+   * @return The affected {@link DataSet}s.
+   * @see RecalculateStatus
+   */
   public TreeMap<Long, Boolean> getAffectedDatasets() {
-
     TreeMap<Long, Boolean> result = new TreeMap<Long, Boolean>();
 
     for (Map.Entry<DataSet, RecalculateStatus> entry : datasets.entrySet()) {
@@ -791,6 +927,17 @@ public abstract class CalibrationBean extends BaseManagedBean {
     return result;
   }
 
+  /**
+   * Get the flag indicating whether or not the current calibration edit is
+   * valid.
+   *
+   * <p>
+   * The flag will be set by {@link #validateCalibration(int, Calibration)}.
+   * </p>
+   *
+   * @return {@code true} if the current edit is valid; {@code false} if it is
+   *         not.
+   */
   public boolean editedCalibrationValid() {
     return editedCalibrationValid;
   }
@@ -850,42 +997,106 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     return COMMIT_NAV;
   }
-}
 
-class RecalculateStatus {
-  private boolean required;
+  /**
+   * Holds details of whether a {@link DataSet} must be recalculated as a result
+   * of the current set of edits in a {@link Calibration}, and whether
+   * recalculation is possible.
+   *
+   * <p>
+   * This class does not hold any details of the {@link DataSet} or
+   * {@link Calibration}s; it holds only status information and is linked to the
+   * relevant items by the {@link CalibrationBean}.
+   * </p>
+   *
+   * <p>
+   * Recalculation of a {@link DataSet} may not be possible for a variety of
+   * reasons. The most common reasons are:
+   * </p>
+   * <ul>
+   * <li>Recalculation requires a full set of {@link Calibration}s to be
+   * available, but one or more have been deleted.</li>
+   * <li>A {@link Calibration} has been created or edited such that it is within
+   * the time period of the {@link DataSet}, and this is not permitted for the
+   * type of the {@link Calibration}s being edited.</li>
+   * </ul>
+   */
+  class RecalculateStatus {
 
-  private boolean canBeRecalculated;
+    /**
+     * Indicates whether or not the {@link DataSet} needs to be recalculated.
+     */
+    private boolean required;
 
-  protected RecalculateStatus() {
-    this.required = false;
-    this.canBeRecalculated = false;
-  }
+    /**
+     * Indicates whether or not the {@link DataSet} can be recalculated.
+     */
+    private boolean canBeRecalculated;
 
-  protected boolean getRequired() {
-    return required;
-  }
-
-  protected boolean getCanBeRecalculated() {
-    return canBeRecalculated;
-  }
-
-  protected void set(boolean required, boolean canBeRecalculated) {
-    this.required = required;
-    this.canBeRecalculated = !required ? true : canBeRecalculated;
-  }
-
-  protected String getDisplayClass() {
-    String result;
-
-    if (!required) {
-      result = "recalculationNotRequired";
-    } else if (canBeRecalculated) {
-      result = "recalculationRequired";
-    } else {
-      result = "cannotRecalculate";
+    /**
+     * Basic constructor.
+     *
+     * <p>
+     * The default status is that the {@link DataSet} does not need to be
+     * recalculated.
+     * </p>
+     */
+    protected RecalculateStatus() {
+      this.required = false;
+      this.canBeRecalculated = false;
     }
 
-    return result;
+    /**
+     * Indicates whether or not recalculation is required.
+     *
+     * @return {@code true} if the {@link DataSet} needs to be recalculated;
+     *         {@code false} if it does not.
+     */
+    protected boolean getRequired() {
+      return required;
+    }
+
+    /**
+     * Indicates whether or not recalculation is possible.
+     *
+     * @return {@code true} if the {@link DataSet} can be recalculated;
+     *         {@code false} if it does not.
+     */
+    protected boolean getCanBeRecalculated() {
+      return canBeRecalculated;
+    }
+
+    /**
+     * Set the values of the object.
+     *
+     * @param required
+     *          Whether recalculation is required.
+     * @param canBeRecalculated
+     *          Whether recalculation is possible.
+     */
+    protected void set(boolean required, boolean canBeRecalculated) {
+      this.required = required;
+      this.canBeRecalculated = !required ? true : canBeRecalculated;
+    }
+
+    /**
+     * Get the name of the CSS class to be used for displaying the dataset's
+     * status to the user.
+     *
+     * @return The CSS display class.
+     */
+    protected String getDisplayClass() {
+      String result;
+
+      if (!required) {
+        result = "recalculationNotRequired";
+      } else if (canBeRecalculated) {
+        result = "recalculationRequired";
+      } else {
+        result = "cannotRecalculate";
+      }
+
+      return result;
+    }
   }
 }
