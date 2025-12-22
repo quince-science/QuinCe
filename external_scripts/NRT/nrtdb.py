@@ -63,7 +63,6 @@ def get_instrument(conn, instrument_id):
               (instrument_id,))
 
     row = c.fetchone()
-    print(row[9])
     record = {"id": row[0], "name": row[1], "owner": row[2], "type": row[3], "preprocessor": row[4],
               "config": row[5], "preprocessor_config": row[6], "check_hours": row[7], "last_check": row[8],
               "paused": True if row[9] == 1 else False}
