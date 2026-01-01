@@ -647,7 +647,6 @@ public class SensorValuesList {
     LocalDateTime startTime = timestamps.get(0);
     LocalDateTime endTime = timestamps.get(timestamps.size() - 1);
 
-    // Work out which flags are represented in the sensor values
     List<Flag> presentFlags = sensorValues.stream()
       .map(sv -> sv.getDisplayFlag(allSensorValues)).distinct().toList();
 
@@ -660,6 +659,13 @@ public class SensorValuesList {
       chosenFlag = Flag.QUESTIONABLE;
     } else if (presentFlags.contains(Flag.BAD)) {
       chosenFlag = Flag.BAD;
+    } else if (presentFlags.stream().allMatch(f -> f.equals(Flag.NEEDED))) {
+      /*
+       * If all we have are NEEDED flags, get the flag from the underlying auto
+       * QC
+       */
+      chosenFlag = Flag.getMostSignificantFlag(
+        sensorValues.stream().map(sv -> sv.getAutoQcFlag()).toList());
     } else {
       throw new IllegalStateException("No valid flags in sensor values");
     }

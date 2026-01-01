@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -730,7 +731,7 @@ public class Flag {
   }
 
   /**
-   * Get the flag with the highest significance from a the supplied {@link Flag}
+   * Get the flag with the highest significance from the supplied {@link Flag}
    * objects.
    *
    * @param flags
@@ -738,6 +739,18 @@ public class Flag {
    * @return The most significant flag.
    */
   public static Flag getMostSignificantFlag(Flag... flags) {
+    return getMostSignificantFlag(Arrays.asList(flags));
+  }
+
+  /**
+   * Get the flag with the highest significance from a {@link Collection} of
+   * {@link Flag} objects.
+   *
+   * @param flags
+   *          The flags to check.
+   * @return The most significant flag.
+   */
+  public static Flag getMostSignificantFlag(Collection<Flag> flags) {
     Flag result = null;
 
     for (Flag flag : flags) {
