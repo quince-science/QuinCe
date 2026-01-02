@@ -67,11 +67,12 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
 
       long totalFlushingTime = Math.round(defaultRunTimeCoefficient.getValue());
 
+      List<LocalDateTime> times = sensorValues.getTimes();
+
       // Loop through all the rows, examining the zero/flush columns to decide
       // what to do
       List<SensorValue> flaggedSensorValues = new ArrayList<SensorValue>();
-      List<Measurement> measurements = new ArrayList<Measurement>(
-        sensorValues.getTimes().size());
+      List<Measurement> measurements = new ArrayList<Measurement>(times.size());
 
       /*
        * These values store the status of the record in the source data file
@@ -87,7 +88,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
       // The time at which the last FLUSHING status started
       LocalDateTime lastFlushingStatusStart = null;
 
-      for (LocalDateTime recordTime : sensorValues.getTimes()) {
+      for (LocalDateTime recordTime : times) {
 
         Map<Long, SensorValue> recordValues = sensorValues.get(recordTime);
 
