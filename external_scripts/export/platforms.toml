@@ -292,3 +292,19 @@ NRT = "False"
   NRT = ['ICOS']
   L2 = ['ICOS']
 
+[NO-SOOP-Kronprins__Haakon]
+platform_code = "58US"
+name = "Kronprins Haakon"
+submitter_id = 'OTC'
+cp_url = "http://meta.icos-cp.eu/resources/stations/OS_58US"
+category_code = "31"
+call_sign = ""
+creation_date = "2026-01-07:13:13Z"
+author_list = "Fransson, Agneta;Granskog, Mats;Åberg, Petter"
+affiliation = "Norwegian Polar Institute"
+NRT = "False"
+
+  [NO-SOOP-Kronprins__Haakon.export]
+  NRT = ['ICOS']
+  L2 = ['ICOS']
+
