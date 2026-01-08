@@ -142,7 +142,7 @@ public class DownloadDataset {
         dataset.getInstrumentId());
 //      List<ExportOption> option = ExportOption.format("SOCAT");
       if ((dataset.getStatus() != DataSet.STATUS_READY_FOR_EXPORT)
-    		  && (dataset.getStatus() != DataSet.STATUS_EXPORT_COMPLETE)){
+          && (dataset.getStatus() != DataSet.STATUS_EXPORT_COMPLETE)){
         responseCode = Status.FORBIDDEN;
       } else {
         zip = ExportBean.buildExportZip(conn, instrument, dataset, null,

@@ -532,7 +532,7 @@ public class DataSetDB {
 
     return result;
   }
-  
+
   /**
    * Get a data set using its database name
    *
