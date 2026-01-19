@@ -178,7 +178,7 @@ public class CalibrationSetTest extends BaseTest {
   }
 
   @ParameterizedTest
-  @CsvSource({ "5,6,true", "6,7,false", "9,12,true", "13,14,false",
+  @CsvSource({ "5,6,false", "6,7,false", "9,12,true", "13,14,false",
     "11,15,true", "11,16,true", "18,20,false" })
   public void setupWithInterimTimesTest(int start, int end,
     boolean expectException) throws Exception {
@@ -198,7 +198,7 @@ public class CalibrationSetTest extends BaseTest {
   }
 
   @ParameterizedTest
-  @CsvSource({ "3,false", "4,false", "5,false", "9,true", "11,true", "13,true",
+  @CsvSource({ "3,false", "4,false", "5,true", "9,true", "11,true", "13,true",
     "16,true", "18,true" })
   public void completePriorTest(int start, boolean shouldBeComplete)
     throws Exception {
@@ -226,19 +226,19 @@ public class CalibrationSetTest extends BaseTest {
   private static Stream<Arguments> getCalibrationsTestParams() {
     return Stream.of(
       Arguments.of(4, 7, 4, new String[] { "TARGET1", "TARGET2" },
-        new Long[] { null, null }),
-      Arguments.of(4, 7, 5, new String[] { "TARGET1", "TARGET2" },
         new Long[] { 1L, null }),
+      Arguments.of(4, 7, 5, new String[] { "TARGET1", "TARGET2" },
+        new Long[] { 1L, 5L }),
       Arguments.of(4, 7, 6, new String[] { "TARGET1", "TARGET2" },
         new Long[] { 1L, 5L }),
       Arguments.of(3, 18, 7, new String[] { "TARGET1", "TARGET2" },
         new Long[] { 1L, 5L }),
       Arguments.of(3, 18, 10, new String[] { "TARGET1", "TARGET2" },
-        new Long[] { 1L, 5L }),
+        new Long[] { 2L, 6L }),
       Arguments.of(3, 18, 13, new String[] { "TARGET1", "TARGET2" },
         new Long[] { 3L, 6L }),
       Arguments.of(3, 18, 15, new String[] { "TARGET1", "TARGET2" },
-        new Long[] { 3L, 6L }),
+        new Long[] { 4L, 6L }),
       Arguments.of(3, 18, 18, new String[] { "TARGET1", "TARGET2" },
         new Long[] { 4L, 7L }));
   }

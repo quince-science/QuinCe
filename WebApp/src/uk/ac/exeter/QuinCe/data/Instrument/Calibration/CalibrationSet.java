@@ -152,9 +152,11 @@ public class CalibrationSet {
       TreeSet<Calibration> targetCalibrations = calibrations.get(target);
       if (null != targetCalibrations) {
         for (Calibration calibration : calibrations.get(target)) {
-          if (calibration.getDeploymentDate().isBefore(start)) {
+          if (DateTimeUtils.isEqualOrBefore(calibration.getDeploymentDate(),
+            start)) {
             priorCalibrations.put(target, calibration);
-          } else if (calibration.getDeploymentDate().isAfter(end)) {
+          } else if (DateTimeUtils
+            .isEqualOrAfter(calibration.getDeploymentDate(), end)) {
             postCalibrations.put(target, calibration);
             break;
             // We don't need to check any more calibrations for this target
@@ -226,17 +228,18 @@ public class CalibrationSet {
 
   /**
    * Determines whether or not there is a complete set of {@link Calibration}s
-   * before the {@link #start} time.
+   * before (or exactly at) the {@link #start} time.
    *
    * @return {@code true} if there is a complete set of {@link Calibration}s
-   *         before the {@link #start} time; {@code false} otherwise.
+   *         before (or exactly at) the {@link #start} time; {@code false}
+   *         otherwise.
    */
   public boolean hasCompletePrior() {
     boolean result = false;
 
     if (priors.size() > 0) {
       LocalDateTime firstTime = priors.firstKey();
-      if (firstTime.isBefore(start)) {
+      if (DateTimeUtils.isEqualOrBefore(firstTime, start)) {
         TreeMap<String, Calibration> priorSet = priors.get(firstTime);
         if (isComplete(priorSet)) {
           result = true;
@@ -249,7 +252,7 @@ public class CalibrationSet {
 
   /**
    * Determine whether or not there is a complete set of {@link Calibration}s
-   * after the {@link #end} time.
+   * after (or exactly at) the {@link #end} time.
    *
    * <p>
    * Note that this method's result is only meaningful if the result of
@@ -258,14 +261,15 @@ public class CalibrationSet {
    * </p>
    *
    * @return {@code true} if there is a complete set of {@link Calibration}s
-   *         after the {@link #end} time; {@code false} otherwise.
+   *         after (or exactly at) the {@link #end} time; {@code false}
+   *         otherwise.
    */
   public boolean hasCompletePost() {
     boolean result = false;
 
     if (posts.size() > 0) {
       LocalDateTime lastTime = posts.lastKey();
-      if (lastTime.isAfter(end)) {
+      if (DateTimeUtils.isEqualOrAfter(lastTime, end)) {
         TreeMap<String, Calibration> postSet = posts.get(lastTime);
         if (isComplete(postSet)) {
           result = true;
@@ -298,7 +302,7 @@ public class CalibrationSet {
 
     TreeMap<String, Calibration> result;
 
-    LocalDateTime actualTime = priors.lowerKey(targetTime);
+    LocalDateTime actualTime = priors.floorKey(targetTime);
     if (null != actualTime) {
       result = priors.get(actualTime);
     } else {
