@@ -595,7 +595,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
     if (action != CalibrationEdit.DELETE
       && !dbInstance.allowCalibrationChangeInDataset()
       && isInDataset(calibration.getDeploymentDate())) {
-      result.add("Calibration cannot change inside a dataset");
+      result.add(getCoefficientsLabel() + " cannot change inside a dataset");
     }
 
     editedCalibrationValid = result.size() == 0;
@@ -896,6 +896,11 @@ public abstract class CalibrationBean extends BaseManagedBean {
   /**
    * Determine whether or not the specified time is within any {@link DataSet}.
    *
+   * <p>
+   * A time exactly on the start or end of the {@link DataSet} qualifies as
+   * being outside the DataSet.
+   * </p>
+   *
    * @param time
    *          The time.
    * @return {@code true} if any {@link DataSet} encompasses the specified time;
@@ -903,7 +908,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
    */
   private boolean isInDataset(LocalDateTime time) {
     return datasets.keySet().stream()
-      .anyMatch(d -> !d.getEnd().isBefore(time) && !d.getStart().isAfter(time));
+      .anyMatch(d -> !DateTimeUtils.isEqualOrBefore(d.getEnd(), time)
+        && !DateTimeUtils.isEqualOrAfter(d.getStart(), time));
   }
 
   /**
