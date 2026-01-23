@@ -23,19 +23,22 @@ public class CalibrationFactory {
    * dependent on the parameters passed in.
    *
    * @param calibrationType
-   *          The high-level calibration type
+   *          The high-level calibration type.
    * @param calibrationClass
-   *          The class of the desired calibration object
-   * @param instrumentId
-   *          The instrument to which the calibration applies
+   *          The class of the desired calibration object.
+   * @param id
+   *          The calibration's database ID.
+   * @param instrument
+   *          The instrument to which the calibration applies.
    * @param deploymentDate
-   *          The deployment date (may be null)
+   *          The deployment date (may be {@code null}).
    * @param target
-   *          The target (sensor, external standard etc) of the calibration
+   *          The target (sensor, external standard etc.) of the calibration.
    * @param coefficients
-   *          The calibration coefficients
-   * @return The Calibration object
+   *          The calibration coefficients.
+   * @return The Calibration object.
    * @throws CalibrationException
+   *           If the calibration type is not recognised.
    */
   public static Calibration createCalibration(String calibrationType,
     String calibrationClass, long id, Instrument instrument,
@@ -96,6 +99,7 @@ public class CalibrationFactory {
    *          The {@link Calibration}.
    * @return The clone.
    * @throws CalibrationException
+   *           If the source calibration is invalid.
    */
   public static Calibration clone(Calibration calibration)
     throws CalibrationException {
