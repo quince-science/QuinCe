@@ -109,7 +109,7 @@ def cp_upload(manifest, dataset, dataset_zip, raw_filenames):
             else:
                 if deprecated_dataset['fileName'] != os.path.basename(data_filename):
                     raise CarbonPortalException(
-                        f'Cannot deprecate L2 dataset with different filename ({os.path.basename(data_filename)} -> {deprecated_dataset["fileName"]})')
+                        f'Cannot deprecate L2 dataset with different filename ({os.path.basename(data_filename)} -> {deprecated_dataset["fileName"]}; {deprecated_dataset["dobj"]} )')
                 elif 'nextVersion' in deprecated_dataset:
                     raise CarbonPortalException(
                         f'Cannot deprecate L2 dataset because it already has a next version ({deprecated_dataset["dobj"]})')

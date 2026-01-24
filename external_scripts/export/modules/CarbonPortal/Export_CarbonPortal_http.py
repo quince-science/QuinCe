@@ -166,6 +166,7 @@ where {{
   FILTER(?timeEnd >= "{start_date.strftime('%Y-%m-%dT%H:%M:%SZ')}"^^xsd:dateTime && ?timeStart <= "{end_date.strftime('%Y-%m-%dT%H:%M:%SZ')}"^^xsd:dateTime)
   ?spec cpmeta:hasDataLevel ?dataLevel ; cpmeta:hasAssociatedProject <http://meta.icos-cp.eu/resources/projects/icos> .
   FILTER(?dataLevel in ("1"^^xsd:integer, "2"^^xsd:integer))
+  FILTER NOT EXISTS {{[] cpmeta:isNextVersionOf ?dobj}}
   OPTIONAL{{?next_version cpmeta:isNextVersionOf ?dobj}}
 }}
 order by DESC(?submTime)
