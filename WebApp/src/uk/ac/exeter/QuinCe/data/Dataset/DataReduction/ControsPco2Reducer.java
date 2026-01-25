@@ -30,7 +30,7 @@ public class ControsPco2Reducer extends DataReducer {
 
   private static final String MODE_ZERO_AFTER_SLEEP = "Zero after sleep";
 
-  private static final String ZEROS_PROP = "contros.zeros";
+  protected static final String ZEROS_PROP = "contros.zeros";
 
   private static final BigDecimal T0 = new BigDecimal("273.15");
 
@@ -38,7 +38,7 @@ public class ControsPco2Reducer extends DataReducer {
 
   private static List<CalculationParameter> calculationParameters = null;
 
-  private TreeMap<Double, Double> zeroS2Beams;
+  protected TreeMap<Double, Double> zeroS2Beams;
 
   private BigDecimal F = null;
 
@@ -147,7 +147,7 @@ public class ControsPco2Reducer extends DataReducer {
    *
    * @throws SensorTypeNotFoundException
    */
-  private void calcZeroS2Beams(DataSet dataset,
+  protected void calcZeroS2Beams(DataSet dataset,
     List<Measurement> allMeasurements) throws SensorTypeNotFoundException {
     zeroS2Beams = new TreeMap<Double, Double>();
 

@@ -58,14 +58,17 @@ public class CalculationCoefficientDB extends CalibrationDB {
 
       boolean oneVariable = variablesWithCoefficients.size() == 1;
 
-      variablesWithCoefficients.forEach(v -> {
-        v.getCoefficients().forEach(c -> {
+      //variablesWithCoefficients.forEach(v -> {
+      //v.getCoefficients().forEach(c -> {
+      
+      for (Variable v : variablesWithCoefficients) {
+        for (String c : v.getCoefficients()) {
 
           String key = v.getId() + "." + c;
           String value = oneVariable ? c : v.getName() + ": " + c;
           targets.put(key, value);
-        });
-      });
+        }
+      }
     }
 
     return targets;
