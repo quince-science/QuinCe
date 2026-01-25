@@ -69,6 +69,10 @@ public abstract class MeasurementLocator {
         result = new ControsPco2MeasurementLocator();
         break;
       }
+      case "CONTROS pCO₂ via FerryBox": {
+        result = new ControsPco2XFerryBoxMeasurementLocator();
+        break;
+      }
       case "Pro Oceanus CO₂ Water": {
         result = new ProOceanusCO2MeasurementLocator();
         break;

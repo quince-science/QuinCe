@@ -673,7 +673,7 @@ public abstract class CalibrationDB {
     throws DatabaseException, InvalidCalibrationEditException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(edits, "edits", false);
+    MissingParam.checkMissing(edits, "edits", true);
 
     Connection conn = null;
 
