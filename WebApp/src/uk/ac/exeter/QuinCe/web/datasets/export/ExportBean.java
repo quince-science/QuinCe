@@ -363,6 +363,18 @@ public class ExportBean extends BaseManagedBean {
 
                 PlotPageTableValue value = data.getColumnValue(rowId,
                   param.getId());
+
+                /*
+                 * If the data reduction is bad, store an empty value instead.
+                 *
+                 * Note that it's possible for a Measurement to be Good but the
+                 * data reduction for an individual Variable to be Bad.
+                 */
+                if (null != value && exportOption.skipBad() && value
+                  .getQcFlag(data.getAllSensorValues()).equals(Flag.BAD)) {
+                  value = null;
+                }
+
                 addValueToOutput(result, exportOption, param.getId(), value,
                   param.isResult(), false, data.getAllSensorValues());
               }
