@@ -60,7 +60,7 @@ public class CalculationCoefficientDB extends CalibrationDB {
 
       //variablesWithCoefficients.forEach(v -> {
       //v.getCoefficients().forEach(c -> {
-      
+
       for (Variable v : variablesWithCoefficients) {
         for (String c : v.getCoefficients()) {
 

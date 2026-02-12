@@ -25,7 +25,7 @@ public class ControsPco2XFerryBoxReducer extends ControsPco2Reducer {
   @Override
   protected void calcZeroS2Beams(DataSet dataset,
     List<Measurement> allMeasurements) throws SensorTypeNotFoundException {
-    
+
     zeroS2Beams = new TreeMap<Double, Double>();
 
     CalculationCoefficient prior_beam = CalculationCoefficient.getCoefficient(calculationCoefficients,
@@ -40,10 +40,10 @@ public class ControsPco2XFerryBoxReducer extends ControsPco2Reducer {
         variable, "S'2beam,Z", dataset.getStart());
       CalculationCoefficient post_runtime = CalculationCoefficient.getCoefficient(calculationCoefficients,
         variable, "Runtime", dataset.getStart());
-      
+
       zeroS2Beams.put(post_beam.getValue(), post_runtime.getValue());
     }
-    
+
     dataset.setProperty(variable, ZEROS_PROP, new Gson().toJson(zeroS2Beams));
   }
 }

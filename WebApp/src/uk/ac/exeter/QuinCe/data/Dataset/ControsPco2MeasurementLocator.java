@@ -194,7 +194,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
       throw new MeasurementLocatorException(e);
     }
   }
-  
+
   protected String getVariableName() {
     return "CONTROS pCO₂";
   }
