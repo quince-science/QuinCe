@@ -71,6 +71,24 @@ public class DataReductionQCJob extends DataSetJob {
     super(resourceManager, config, jobId, owner, parameters);
   }
 
+  public static TreeMap<Measurement, ReadOnlyDataReductionRecord> makeVariableRecords(
+    List<Measurement> measurements, Variable variable,
+    Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> dataReductionRecords) {
+
+    TreeMap<Measurement, ReadOnlyDataReductionRecord> result = new TreeMap<Measurement, ReadOnlyDataReductionRecord>();
+    for (Measurement measurement : measurements) {
+      Map<Variable, ReadOnlyDataReductionRecord> measurementRecords = dataReductionRecords
+        .get(measurement.getId());
+
+      if (null != measurementRecords
+        && measurementRecords.containsKey(variable)) {
+        result.put(measurement, measurementRecords.get(variable));
+      }
+    }
+
+    return result;
+  }
+
   @Override
   protected NextJobInfo execute(JobThread thread) throws JobFailedException {
 
@@ -108,16 +126,8 @@ public class DataReductionQCJob extends DataSetJob {
 
       for (Variable var : instrument.getVariables()) {
 
-        TreeMap<Measurement, ReadOnlyDataReductionRecord> variableRecords = new TreeMap<Measurement, ReadOnlyDataReductionRecord>();
-        for (Measurement measurement : measurements) {
-          Map<Variable, ReadOnlyDataReductionRecord> measurementRecords = records
-            .get(measurement.getId());
-
-          if (null != measurementRecords
-            && measurementRecords.containsKey(var)) {
-            variableRecords.put(measurement, measurementRecords.get(var));
-          }
-        }
+        TreeMap<Measurement, ReadOnlyDataReductionRecord> variableRecords = makeVariableRecords(
+          measurements, var, records);
 
         Class<? extends DataReducer> reducer = DataReducerFactory
           .getReducerClass(var.getName());
