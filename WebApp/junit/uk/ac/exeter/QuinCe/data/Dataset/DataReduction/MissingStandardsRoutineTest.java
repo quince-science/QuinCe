@@ -2,6 +2,8 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -47,12 +49,7 @@ public class MissingStandardsRoutineTest extends DataReductionQCRoutineTest {
       dataSet);
   }
 
-  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
-    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
-    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest" })
-  @Test
-  public void noMissingStandardsTest() throws Exception {
-
+  private FlaggedItems runTest() throws Exception {
     Instrument instrument = getInstrument();
     DataSet dataset = getDataSet();
     DatasetSensorValues sensorValues = getSensorValues(instrument);
@@ -74,6 +71,122 @@ public class MissingStandardsRoutineTest extends DataReductionQCRoutineTest {
       DataSetDB.getDataSet(getConnection(), 1L), instrument.getVariable(1L),
       variableRecords, sensorValues, flaggedItems);
 
-    assertTrue(flaggedItemsEmpty(flaggedItems));
+    return flaggedItems;
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
+    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest/noMissingStandardsTest" })
+  @Test
+  public void noMissingStandardsTest() throws Exception {
+    assertTrue(flaggedItemsEmpty(runTest()));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
+    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest/noneAfterTest" })
+  @Test
+  public void noneAfterTest() throws Exception {
+
+    List<Long> expectedFlaggedSensorValueIDs = new ArrayList<Long>();
+    List<Long> expectedFlaggedMeasurementIDs = Arrays.asList(4L);
+    List<Long> expectedFlaggedDataReductionIDs = Arrays.asList(4L);
+
+    assertTrue(flaggedItemsCheck(runTest(), expectedFlaggedSensorValueIDs,
+      expectedFlaggedMeasurementIDs, expectedFlaggedDataReductionIDs));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
+    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest/noneBeforeAfterTest" })
+  @Test
+  public void noneBeforeAfterTest() throws Exception {
+
+    List<Long> expectedFlaggedSensorValueIDs = new ArrayList<Long>();
+    List<Long> expectedFlaggedMeasurementIDs = Arrays.asList(4L);
+    List<Long> expectedFlaggedDataReductionIDs = Arrays.asList(4L);
+
+    assertTrue(flaggedItemsCheck(runTest(), expectedFlaggedSensorValueIDs,
+      expectedFlaggedMeasurementIDs, expectedFlaggedDataReductionIDs));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
+    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest/noneBeforeTest" })
+  @Test
+  public void noneBeforeTest() throws Exception {
+
+    List<Long> expectedFlaggedSensorValueIDs = new ArrayList<Long>();
+    List<Long> expectedFlaggedMeasurementIDs = Arrays.asList(4L);
+    List<Long> expectedFlaggedDataReductionIDs = Arrays.asList(4L);
+
+    assertTrue(flaggedItemsCheck(runTest(), expectedFlaggedSensorValueIDs,
+      expectedFlaggedMeasurementIDs, expectedFlaggedDataReductionIDs));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
+    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest/oneAfterTest" })
+  @Test
+  public void oneAfterTest() throws Exception {
+
+    List<Long> expectedFlaggedSensorValueIDs = new ArrayList<Long>();
+    List<Long> expectedFlaggedMeasurementIDs = Arrays.asList(4L);
+    List<Long> expectedFlaggedDataReductionIDs = Arrays.asList(4L);
+
+    assertTrue(flaggedItemsCheck(runTest(), expectedFlaggedSensorValueIDs,
+      expectedFlaggedMeasurementIDs, expectedFlaggedDataReductionIDs));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
+    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest/oneBeforeAfterTest" })
+  @Test
+  public void oneBeforeAfterTest() throws Exception {
+
+    List<Long> expectedFlaggedSensorValueIDs = new ArrayList<Long>();
+    List<Long> expectedFlaggedMeasurementIDs = Arrays.asList(4L);
+    List<Long> expectedFlaggedDataReductionIDs = Arrays.asList(4L);
+
+    assertTrue(flaggedItemsCheck(runTest(), expectedFlaggedSensorValueIDs,
+      expectedFlaggedMeasurementIDs, expectedFlaggedDataReductionIDs));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
+    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest/oneBeforeTest" })
+  @Test
+  public void oneBeforeTest() throws Exception {
+
+    List<Long> expectedFlaggedSensorValueIDs = new ArrayList<Long>();
+    List<Long> expectedFlaggedMeasurementIDs = Arrays.asList(4L);
+    List<Long> expectedFlaggedDataReductionIDs = Arrays.asList(4L);
+
+    assertTrue(flaggedItemsCheck(runTest(), expectedFlaggedSensorValueIDs,
+      expectedFlaggedMeasurementIDs, expectedFlaggedDataReductionIDs));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
+    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest/twoAfterTest" })
+  @Test
+  public void twoAfterTest() throws Exception {
+    assertTrue(flaggedItemsEmpty(runTest()));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
+    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest/twoBeforeAfterTest" })
+  @Test
+  public void twoBeforeAfterTest() throws Exception {
+    assertTrue(flaggedItemsEmpty(runTest()));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument", "resources/sql/testbase/dataset",
+    "resources/sql/data/DataSet/DataReduction/MissingStandardsRoutineTest/twoBeforeTest" })
+  @Test
+  public void twoBeforeTest() throws Exception {
+    assertTrue(flaggedItemsEmpty(runTest()));
   }
 }
