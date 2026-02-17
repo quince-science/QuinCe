@@ -5,7 +5,9 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -244,6 +246,32 @@ public class BaseTest {
     }
 
     return result;
+  }
+
+  /**
+   * Check that two lists contain the same values. The order is unimportant.
+   *
+   * <p>
+   * The method takes duplicates of the lists before sorting them for
+   * comparison, so the original lists are unaffected.
+   * </p>
+   *
+   * @param list1
+   *          The first list.
+   * @param list2
+   *          The second list.
+   * @return {@code true} if the lists contain the same values; {@code false}
+   *         otherwise.
+   */
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  protected boolean listsEqualUnsorted(List<?> list1, List<?> list2) {
+    ArrayList list1Sorted = new ArrayList(list1);
+    Collections.sort(list1Sorted);
+
+    ArrayList list2Sorted = new ArrayList(list2);
+    Collections.sort(list2Sorted);
+
+    return listsEqual(list1Sorted, list2Sorted);
   }
 
   /**
