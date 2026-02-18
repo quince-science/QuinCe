@@ -100,89 +100,92 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
           int recordStatus = getRecordStatus(recordValues, zeroColumn,
             flushingColumn);
 
-          if (recordStatus != currentRecordStatus) {
-            lastRecordStatus = currentRecordStatus;
-            currentRecordStatus = recordStatus;
-            currentRecordStatusStart = recordTime;
+          if (recordStatus != NO_STATUS) {
 
-            if (recordStatus == FLUSHING) {
-              lastFlushingStatusStart = recordTime;
-            }
-          }
+            if (recordStatus != currentRecordStatus) {
+              lastRecordStatus = currentRecordStatus;
+              currentRecordStatus = recordStatus;
+              currentRecordStatusStart = recordTime;
 
-          boolean flushSensors = false;
-          String runType;
-
-          if (recordStatus == ZERO) {
-            if (zeroFlushTime > 0
-              && DateTimeUtils.secondsBetween(currentRecordStatusStart,
-                recordTime) <= zeroFlushTime) {
-              flushSensors = true;
+              if (recordStatus == FLUSHING) {
+                lastFlushingStatusStart = recordTime;
+              }
             }
 
-            runType = Measurement.INTERNAL_CALIBRATION_RUN_TYPE;
-          } else {
-            if (recordStatus == FLUSHING) {
-              flushSensors = true;
+            boolean flushSensors = false;
+            String runType;
+
+            if (recordStatus == ZERO) {
+              if (zeroFlushTime > 0
+                && DateTimeUtils.secondsBetween(currentRecordStatusStart,
+                  recordTime) <= zeroFlushTime) {
+                flushSensors = true;
+              }
+
+              runType = Measurement.INTERNAL_CALIBRATION_RUN_TYPE;
             } else {
+              if (recordStatus == FLUSHING) {
+                flushSensors = true;
+              } else {
 
-              /*
-               * This is a measurement. However, if it's just after a ZERO or
-               * FLUSHING then the instrument may still need flushing.
-               */
+                /*
+                 * This is a measurement. However, if it's just after a ZERO or
+                 * FLUSHING then the instrument may still need flushing.
+                 */
 
-              /*
-               * If the last status was FLUSHING, then see if we are within the
-               * total flushing time since the start of that period.
-               */
-              if (lastRecordStatus == FLUSHING) {
-                if (DateTimeUtils.secondsBetween(lastFlushingStatusStart,
-                  recordTime) <= totalFlushingTime) {
+                /*
+                 * If the last status was FLUSHING, then see if we are within
+                 * the total flushing time since the start of that period.
+                 */
+                if (lastRecordStatus == FLUSHING) {
+                  if (DateTimeUtils.secondsBetween(lastFlushingStatusStart,
+                    recordTime) <= totalFlushingTime) {
 
-                  flushSensors = true;
+                    flushSensors = true;
+                  }
+                }
+
+                /*
+                 * If the last status was ZERO (or we are at the start of the
+                 * dataset), then see how much time has passed since the first
+                 * measurement in this sequence. If it is less than the total
+                 * flushing time then we are still flushing.
+                 */
+                if (lastRecordStatus == NO_STATUS || lastRecordStatus == ZERO) {
+                  if (DateTimeUtils.secondsBetween(currentRecordStatusStart,
+                    recordTime) <= totalFlushingTime) {
+                    flushSensors = true;
+                  }
                 }
               }
 
-              /*
-               * If the last status was ZERO (or we are at the start of the
-               * dataset), then see how much time has passed since the first
-               * measurement in this sequence. If it is less than the total
-               * flushing time then we are still flushing.
-               */
-              if (lastRecordStatus == NO_STATUS || lastRecordStatus == ZERO) {
-                if (DateTimeUtils.secondsBetween(currentRecordStatusStart,
-                  recordTime) <= totalFlushingTime) {
-                  flushSensors = true;
-                }
-              }
+              runType = Measurement.MEASUREMENT_RUN_TYPE;
             }
 
-            runType = Measurement.MEASUREMENT_RUN_TYPE;
-          }
+            SensorValue rawValue = recordValues.get(rawColumn);
+            SensorValue refValue = recordValues.get(refColumn);
 
-          SensorValue rawValue = recordValues.get(rawColumn);
-          SensorValue refValue = recordValues.get(refColumn);
+            if (flushSensors) {
+              rawValue.setUserQC(Flag.FLUSHING, "Flushing");
+              refValue.setUserQC(Flag.FLUSHING, "Flushing");
+              flaggedSensorValues.add(rawValue);
+              flaggedSensorValues.add(refValue);
+              recordStatus = FLUSHING;
+            } else if (rawValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+              /*
+               * If the Response Time has been changed, some values that were
+               * marked FLUSHING should have that flag removed.
+               */
+              rawValue.removeUserQC(true);
+              refValue.removeUserQC(true);
+              flaggedSensorValues.add(rawValue);
+              flaggedSensorValues.add(refValue);
+            }
 
-          if (flushSensors) {
-            rawValue.setUserQC(Flag.FLUSHING, "Flushing");
-            refValue.setUserQC(Flag.FLUSHING, "Flushing");
-            flaggedSensorValues.add(rawValue);
-            flaggedSensorValues.add(refValue);
-            recordStatus = FLUSHING;
-          } else if (rawValue.getUserQCFlag().equals(Flag.FLUSHING)) {
-            /*
-             * If the Response Time has been changed, some values that were
-             * marked FLUSHING should have that flag removed.
-             */
-            rawValue.removeUserQC(true);
-            refValue.removeUserQC(true);
-            flaggedSensorValues.add(rawValue);
-            flaggedSensorValues.add(refValue);
-          }
-
-          if (recordStatus != FLUSHING) {
-            measurements
-              .add(makeMeasurement(dataset, recordTime, variable, runType));
+            if (recordStatus != FLUSHING) {
+              measurements
+                .add(makeMeasurement(dataset, recordTime, variable, runType));
+            }
           }
         }
       }
@@ -203,7 +206,16 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
     long flushingColumn) {
     int result;
 
-    if (record.get(zeroColumn).getDoubleValue() == 1D) {
+    /*
+     * If either Flush or Zero methods are not exactly one or zero, the record
+     * has no status.
+     */
+    boolean zeroExact = exactFlag(record.get(zeroColumn).getDoubleValue());
+    boolean flushExact = exactFlag(record.get(flushingColumn).getDoubleValue());
+
+    if (!zeroExact || !flushExact) {
+      result = NO_STATUS;
+    } else if (record.get(zeroColumn).getDoubleValue() == 1D) {
       result = ZERO;
     } else if (record.get(flushingColumn).getDoubleValue() == 1D) {
       result = FLUSHING;
@@ -212,6 +224,10 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
     }
 
     return result;
+  }
+
+  private boolean exactFlag(Double flag) {
+    return flag == 0D || flag == 1D;
   }
 
   private Measurement makeMeasurement(DataSet dataset, LocalDateTime time,

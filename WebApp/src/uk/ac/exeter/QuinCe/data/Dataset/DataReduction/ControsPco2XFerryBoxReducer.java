@@ -1,11 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
-
-import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
@@ -16,6 +12,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public class ControsPco2XFerryBoxReducer extends ControsPco2Reducer {
 
+  Double priorBeam = null;
+  Double priorRuntime = null;
+  Double postBeam = null;
+  Double postRuntime = null;
+
   public ControsPco2XFerryBoxReducer(Variable variable,
     Map<String, Properties> properties, CalibrationSet calculationCoefficients)
     throws SensorTypeNotFoundException {
@@ -23,29 +24,31 @@ public class ControsPco2XFerryBoxReducer extends ControsPco2Reducer {
   }
 
   @Override
-  protected void calcZeroS2Beams(DataSet dataset,
-    List<Measurement> allMeasurements) throws SensorTypeNotFoundException {
+  protected Double getZeroS2BeamRawSignal(DataSet dataset,
+    Measurement measurement) throws SensorTypeNotFoundException {
 
-    zeroS2Beams = new TreeMap<Double, Double>();
-
-    CalculationCoefficient prior_beam = CalculationCoefficient.getCoefficient(
-      calculationCoefficients, variable, "S'2beam,Z", dataset.getStart());
-    CalculationCoefficient prior_runtime = CalculationCoefficient
-      .getCoefficient(calculationCoefficients, variable, "Runtime",
-        dataset.getStart());
-
-    zeroS2Beams.put(prior_runtime.getValue(), prior_beam.getValue());
-
-    if (!calculationCoefficients.hasCompletePost()) {
-      CalculationCoefficient post_beam = CalculationCoefficient.getCoefficient(
-        calculationCoefficients, variable, "S'2beam,Z", dataset.getStart());
-      CalculationCoefficient post_runtime = CalculationCoefficient
+    if (null == priorBeam) {
+      priorBeam = CalculationCoefficient.getCoefficient(calculationCoefficients,
+        variable, "S'2beam,Z", dataset.getStart()).getValue();
+      priorRuntime = CalculationCoefficient
         .getCoefficient(calculationCoefficients, variable, "Runtime",
-          dataset.getStart());
+          dataset.getStart())
+        .getValue();
 
-      zeroS2Beams.put(post_runtime.getValue(), post_beam.getValue());
+      if (calculationCoefficients.hasCompletePost()) {
+        postBeam = CalculationCoefficient
+          .getCoefficient(calculationCoefficients, variable, "S'2beam,Z",
+            dataset.getStart())
+          .getValue();
+        postRuntime = CalculationCoefficient
+          .getCoefficient(calculationCoefficients, variable, "Runtime",
+            dataset.getStart())
+          .getValue();
+      }
     }
 
-    dataset.setProperty(variable, ZEROS_PROP, new Gson().toJson(zeroS2Beams));
+    return Calculators.interpolate(priorRuntime, priorBeam, postRuntime,
+      postBeam,
+      measurement.getMeasurementValue("Runtime").getCalculatedValue());
   }
 }

@@ -155,8 +155,8 @@ public class Calculators {
    * </p>
    *
    * <p>
-   * The method will extrapolate the target timestamp is beyond the reference
-   * timestamps.
+   * The method will extrapolate the target timestamp if it is beyond the
+   * reference timestamps.
    * </p>
    *
    * @param time0
@@ -180,6 +180,48 @@ public class Calculators {
       double x1 = DateTimeUtils.dateToLong(time1);
       result = interpolate(x0, y0, x1, y1,
         DateTimeUtils.dateToLong(measurementTime));
+    } else if (null != y0) {
+      result = y0;
+    } else if (null != y1) {
+      result = y1;
+    }
+
+    return result;
+  }
+
+  /**
+   * Perform a linear interpolation between two pairs of {@code x}/{@code y}
+   * values taken at different times, giving a value at the specified target
+   * {@code x} value.
+   *
+   * <p>
+   * If either of the {@code y} values is {@code null}, the other is returned.
+   * If both are {@code null}, {@code null} is returned.
+   * </p>
+   *
+   * <p>
+   * The method will extrapolate the target {@code x} if it is beyond the
+   * reference values.
+   * </p>
+   *
+   * @param time0
+   *          The first reference x value.
+   * @param y0
+   *          The first reference y value.
+   * @param time1
+   *          The second reference x value.
+   * @param y1
+   *          The second reference y value.
+   * @param measurementTime
+   *          The target x value for which a value must be calculated.
+   * @return The interpolated y value at the target x value.
+   */
+  public static Double interpolate(Double x0, Double y0, Double x1, Double y1,
+    Double target) {
+    Double result = null;
+
+    if (null != y0 && null != y1) {
+      result = interpolate(x0, y0, x1, y1, target);
     } else if (null != y0) {
       result = y0;
     } else if (null != y1) {
@@ -277,7 +319,7 @@ public class Calculators {
       double y0 = prior.getValue();
       double x1 = post.getKey();
       double y1 = post.getValue();
-      result = Calculators.interpolate(x0, y0, x1, y1, x);
+      result = Calculators.interpolate(x0, y0, x1, y1, x.doubleValue());
     } else if (!isNull(prior)) {
       result = prior.getValue();
     } else if (!isNull(post)) {
