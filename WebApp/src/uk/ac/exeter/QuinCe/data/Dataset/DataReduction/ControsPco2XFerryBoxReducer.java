@@ -28,20 +28,22 @@ public class ControsPco2XFerryBoxReducer extends ControsPco2Reducer {
 
     zeroS2Beams = new TreeMap<Double, Double>();
 
-    CalculationCoefficient prior_beam = CalculationCoefficient.getCoefficient(calculationCoefficients,
-      variable, "S'2beam,Z", dataset.getStart());
-    CalculationCoefficient prior_runtime = CalculationCoefficient.getCoefficient(calculationCoefficients,
-      variable, "Runtime", dataset.getStart());
+    CalculationCoefficient prior_beam = CalculationCoefficient.getCoefficient(
+      calculationCoefficients, variable, "S'2beam,Z", dataset.getStart());
+    CalculationCoefficient prior_runtime = CalculationCoefficient
+      .getCoefficient(calculationCoefficients, variable, "Runtime",
+        dataset.getStart());
 
     zeroS2Beams.put(prior_runtime.getValue(), prior_beam.getValue());
 
     if (!calculationCoefficients.hasCompletePost()) {
-      CalculationCoefficient post_beam = CalculationCoefficient.getCoefficient(calculationCoefficients,
-        variable, "S'2beam,Z", dataset.getStart());
-      CalculationCoefficient post_runtime = CalculationCoefficient.getCoefficient(calculationCoefficients,
-        variable, "Runtime", dataset.getStart());
+      CalculationCoefficient post_beam = CalculationCoefficient.getCoefficient(
+        calculationCoefficients, variable, "S'2beam,Z", dataset.getStart());
+      CalculationCoefficient post_runtime = CalculationCoefficient
+        .getCoefficient(calculationCoefficients, variable, "Runtime",
+          dataset.getStart());
 
-      zeroS2Beams.put(post_beam.getValue(), post_runtime.getValue());
+      zeroS2Beams.put(post_runtime.getValue(), post_beam.getValue());
     }
 
     dataset.setProperty(variable, ZEROS_PROP, new Gson().toJson(zeroS2Beams));
