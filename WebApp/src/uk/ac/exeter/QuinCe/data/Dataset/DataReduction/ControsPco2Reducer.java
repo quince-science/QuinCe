@@ -173,8 +173,7 @@ public class ControsPco2Reducer extends DataReducer {
 
       if (runType.equals(Measurement.INTERNAL_CALIBRATION_RUN_TYPE)) {
 
-        Double rawSignal = measurement
-          .getMeasurementValue("Raw Detector Signal").getCalculatedValue();
+        Double rawSignal = getZeroS2BeamRawSignal(dataset, measurement);
 
         if (!rawSignal.isNaN()) {
           runTimes.add(
@@ -191,6 +190,12 @@ public class ControsPco2Reducer extends DataReducer {
     }
 
     dataset.setProperty(variable, ZEROS_PROP, new Gson().toJson(zeroS2Beams));
+  }
+
+  protected Double getZeroS2BeamRawSignal(DataSet dataset,
+    Measurement measurement) throws SensorTypeNotFoundException {
+    return measurement.getMeasurementValue("Raw Detector Signal")
+      .getCalculatedValue();
   }
 
   @Override
@@ -355,10 +360,15 @@ public class ControsPco2Reducer extends DataReducer {
 
   private Double calcS2Beam(Measurement measurement)
     throws SensorTypeNotFoundException {
-    return measurement.getMeasurementValue("Raw Detector Signal")
-      .getCalculatedValue()
-      / measurement.getMeasurementValue("Reference Signal")
-        .getCalculatedValue();
+
+    return calcS2Beam(
+      measurement.getMeasurementValue("Raw Detector Signal")
+        .getCalculatedValue(),
+      measurement.getMeasurementValue("Reference Signal").getCalculatedValue());
+  }
+
+  protected Double calcS2Beam(Double rawSignal, Double refSignal) {
+    return rawSignal / refSignal;
   }
 
   private Double getInterpZeroS2Beam(Double runTime)
