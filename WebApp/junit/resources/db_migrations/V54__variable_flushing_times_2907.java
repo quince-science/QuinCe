@@ -1,4 +1,4 @@
-package db_migrations;
+package resources.db_migrations;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

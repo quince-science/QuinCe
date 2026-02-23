@@ -58,3 +58,11 @@
   display: flex;
   flex-wrap: nowrap;
 }
+
+.flushingTime input {
+  width: 125px;
+}
+
+.runTypeName{
+  width: 100% !important;
+}
