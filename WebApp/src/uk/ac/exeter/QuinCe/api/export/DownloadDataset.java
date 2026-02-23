@@ -114,7 +114,7 @@ public class DownloadDataset {
   /**
    * The main processing method for the API call.
    *
-   * @param id
+   * @param datasetName
    *          The dataset ID.
    * @return The export ZIP file.
    * @throws Exception
@@ -125,7 +125,7 @@ public class DownloadDataset {
    */
   @POST
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response getDatasetZip(@FormParam("filename") String fileName) throws Exception {
+  public Response getDatasetZip(@FormParam("datasetName") String datasetName) throws Exception {
 
     Connection conn = null;
     Response response;
@@ -137,7 +137,7 @@ public class DownloadDataset {
       DataSource dataSource = resourceManager.getDBDataSource();
 
       conn = dataSource.getConnection();
-      DataSet dataset = DataSetDB.getDataSet(conn, fileName);
+      DataSet dataset = DataSetDB.getDataSet(conn, datasetName);
       Instrument instrument = InstrumentDB.getInstrument(conn,
         dataset.getInstrumentId());
 //      List<ExportOption> option = ExportOption.format("SOCAT");
@@ -151,8 +151,12 @@ public class DownloadDataset {
     } catch (RecordNotFoundException e) {
       responseCode = Status.NOT_FOUND;
     } catch (Exception e) {
-      ExceptionUtils.printStackTrace(e);
-      responseCode = Status.INTERNAL_SERVER_ERROR;
+    	if (e instanceof RuntimeException) {
+    		responseCode = Status.CONFLICT;
+    	} else {
+    		ExceptionUtils.printStackTrace(e);
+    		responseCode = Status.INTERNAL_SERVER_ERROR;
+    	}
     } finally {
       DatabaseUtils.closeConnection(conn);
     }

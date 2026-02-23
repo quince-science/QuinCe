@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.sql.DataSource;
+import javax.ws.rs.core.Response.Status;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -547,6 +548,8 @@ public class DataSetDB {
    *           If any required parameters are missing
    * @throws RecordNotFoundException
    *           If the data set does not exist
+   * @throws RuntimeException
+   *           If the datasetName returns several datasetIds
    */
   public static DataSet getDataSet(Connection conn, String name)
     throws DatabaseException, MissingParamException, RecordNotFoundException {
@@ -564,13 +567,21 @@ public class DataSetDB {
         if (!record.next()) {
           throw new RecordNotFoundException("Data set " + name + "does not exist");
         } else {
-          result = dataSetFromRecord(conn, record);
-        }
+        	if (record.getRow() > 1) {
+        		throw new RuntimeException("Data set " + name + " has several entries");
+        	} else {
+        		result = dataSetFromRecord(conn, record);
+        		}
+        	}
       }
     } catch (RecordNotFoundException e) {
       throw e;
     } catch (Exception e) {
-      throw new DatabaseException("Error while retrieving data sets", e);
+    	if (e instanceof RuntimeException) {
+    		ExceptionUtils.printStackTrace(e);
+    	} else {
+    		throw new DatabaseException("Error while retrieving data sets", e);
+    		}
     }
 
     return result;
