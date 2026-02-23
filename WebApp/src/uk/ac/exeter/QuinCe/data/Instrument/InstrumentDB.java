@@ -101,15 +101,15 @@ public class InstrumentDB {
    * Query to get all the run types used in a given file definition
    */
   private static final String GET_FILE_RUN_TYPES_QUERY = "SELECT "
-    + "run_name, category_code, alias_to "
+    + "run_name, category_code, alias_to, flushing_time "
     + "FROM run_type WHERE file_definition_id = ?";
 
   /**
    * Statement for inserting run types
    */
   private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_type ("
-    + "file_definition_id, run_name, category_code, alias_to" // 4
-    + ") VALUES (?, ?, ?, ?)";
+    + "file_definition_id, run_name, category_code, alias_to, flushing_time" // 5
+    + ") VALUES (?, ?, ?, ?, ?)";
 
   /**
    * SQL query to get an instrument's base record
@@ -1341,14 +1341,15 @@ public class InstrumentDB {
         String runName = records.getString(1);
         long categoryCode = records.getLong(2);
         String aliasTo = records.getString(3);
+        int flushingTime = records.getInt(4);
 
         RunTypeAssignment assignment = null;
 
         if (categoryCode == RunTypeCategory.ALIAS.getType()) {
-          assignment = new RunTypeAssignment(runName, aliasTo);
+          assignment = new RunTypeAssignment(runName, aliasTo, flushingTime);
         } else {
           assignment = new RunTypeAssignment(runName,
-            runTypeConfig.getCategory(categoryCode));
+            runTypeConfig.getCategory(categoryCode), flushingTime);
         }
 
         runTypes.put(runName, assignment);
@@ -1401,6 +1402,8 @@ public class InstrumentDB {
       runTypeStatement.setLong(3, runType.getCategory().getType());
       runTypeStatement.setNull(4, Types.VARCHAR);
     }
+
+    runTypeStatement.setInt(5, runType.getFlushingTime());
 
     runTypeStatement.execute();
     return runTypeStatement;

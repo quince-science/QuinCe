@@ -74,6 +74,7 @@
                     </p:selectOneMenu>
                   </p:column>
                   <p:column>
+                    <f:facet name="header">Alias To</f:facet>
                     <p:selectOneMenu
                       widgetVar="alias_#{rowIndex}"
                       value="#{runType.runType.aliasTo}" styleClass="hidden">
@@ -83,6 +84,12 @@
                     </p:selectOneMenu>
                     <!-- We trigger the runTypeChanged script immediately to set up any aliases -->
                     <script>runTypeChanged(<h:outputText value="#{rowIndex}"/>)</script>
+                  </p:column>
+                  <p:column>
+                    <f:facet name="header">Flushing Time</f:facet>
+                    <p:inputNumber widgetVar="flushingTime_${rowIndex}"
+                      width="4" decimalPlaces="0" styleClass="numeric flushingTime"
+                      value="#{runType.runType.flushingTime}"/>
                   </p:column>
                 </p:dataTable>
                 <h:panelGrid columns="1" styleClass="buttonPanel">
