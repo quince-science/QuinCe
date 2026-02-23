@@ -23,6 +23,7 @@ import com.google.gson.JsonParser;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementLocator;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
@@ -499,6 +500,50 @@ public class Instrument {
         }
       }
     }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the flushing time for a given run type.
+   *
+   * <p>
+   * This will only return a non-zero value if the instrument has user-defined
+   * run types. Aliases are followed to get the correct flushing time. And other
+   * run type will return zero.
+   * </p>
+   *
+   * <p>
+   * The internally-fixed {@link Measurement#MEASUREMENT_RUN_TYPE} should be
+   * handled by the appropriate {@link MeasurementLocator}.
+   * </p>
+   *
+   * @param runTypeValue
+   *          The run type.
+   * @return The flushing value for the run type.
+   * @throws MissingRunTypeException
+   *           The the run type does not exist.
+   * @throws RunTypeCategoryException
+   *           If the run type information cannot be retrieved.
+   */
+  public int getFlushingTime(String runTypeValue)
+    throws MissingRunTypeException, RunTypeCategoryException {
+
+    int result = 0;
+
+    if (!runTypeValue.equals(Measurement.MEASUREMENT_RUN_TYPE)
+      && !runTypeValue.equals(Measurement.IGNORED_RUN_TYPE)) {
+      TreeSet<SensorAssignment> runTypeAssignments = getSensorAssignments()
+        .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+      if (null == runTypeAssignments || runTypeAssignments.size() == 0) {
+        throw new RunTypeCategoryException("No custom run types defined");
+      } else {
+        FileDefinition fileDef = getFileDefinitions()
+          .get(runTypeAssignments.first().getDataFile());
+        result = fileDef.getRunTypes().get(runTypeValue, true)
+          .getFlushingTime();
+      }
     }
 
     return result;
