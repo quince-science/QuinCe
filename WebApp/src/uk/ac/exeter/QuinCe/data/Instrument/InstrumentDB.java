@@ -1346,7 +1346,7 @@ public class InstrumentDB {
         RunTypeAssignment assignment = null;
 
         if (categoryCode == RunTypeCategory.ALIAS.getType()) {
-          assignment = new RunTypeAssignment(runName, aliasTo, flushingTime);
+          assignment = new RunTypeAssignment(runName, aliasTo);
         } else {
           assignment = new RunTypeAssignment(runName,
             runTypeConfig.getCategory(categoryCode), flushingTime);

@@ -100,22 +100,6 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
    * @param aliasTo
    *          The run type to which is it aliased
    */
-  public RunTypeAssignment(String runName, String aliasTo, int flushingTime) {
-    this.runName = runName.toLowerCase();
-    this.category = null;
-    this.alias = true;
-    this.aliasTo = aliasTo;
-    this.flushingTime = flushingTime;
-  }
-
-  /**
-   * Create an alias from one run type to another
-   *
-   * @param runType
-   *          The run type
-   * @param aliasTo
-   *          The run type to which is it aliased
-   */
   public RunTypeAssignment(String runName, String aliasTo) {
     this.runName = runName.toLowerCase();
     this.category = null;
