@@ -812,6 +812,10 @@ table.dialogTable td.dialogTableCell {
   padding-bottom: 12px !important;
 }
 
+.ui-inputnumber input {
+  text-align: right;
+}
+
 /*
  * Override the default highlight text colour for
  * selected cells in QC tables

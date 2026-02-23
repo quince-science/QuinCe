@@ -39,6 +39,11 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   private String aliasTo = null;
 
   /**
+   * The flushing time to apply when the instrument switched to this run type.
+   */
+  private int flushingTime = 0;
+
+  /**
    * Create an empty assignment for a run type
    *
    * @param runType
@@ -50,16 +55,41 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   }
 
   /**
-   * Construct a standard run type assignment to a category
+   * Construct a standard run type assignment to a category with a specified
+   * flushing time.
    *
    * @param runType
-   *          The run type
+   *          The run type.
    * @param category
-   *          The category
+   *          The category.
+   * @param flushingTime
+   *          The flushing time.
+   */
+  public RunTypeAssignment(String runName, RunTypeCategory category,
+    int flushingTime) {
+    this.runName = runName.toLowerCase();
+    this.category = category;
+
+    if (!category.equals(RunTypeCategory.ALIAS)) {
+      this.flushingTime = flushingTime;
+    } else {
+      this.flushingTime = 0;
+    }
+  }
+
+  /**
+   * Construct a standard run type assignment to a category with a default
+   * ({@code 0}) flushing time.
+   *
+   * @param runType
+   *          The run type.
+   * @param category
+   *          The category.
    */
   public RunTypeAssignment(String runName, RunTypeCategory category) {
     this.runName = runName.toLowerCase();
     this.category = category;
+    this.flushingTime = 0;
   }
 
   /**
@@ -265,5 +295,24 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
       ExceptionUtils.printStackTrace(e);
       throw e;
     }
+  }
+
+  /**
+   * Get the flushing time for the run type.
+   * 
+   * @return The flushing time.
+   */
+  public int getFlushingTime() {
+    return flushingTime;
+  }
+
+  /**
+   * Set the flushing time for the run type.
+   * 
+   * @param flushingTime
+   *          The flushing time.
+   */
+  public void setFlushingTime(int flushingTime) {
+    this.flushingTime = flushingTime;
   }
 }

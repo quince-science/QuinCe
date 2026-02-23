@@ -97,15 +97,16 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
       SensorValuesList zeroValues = sensorValues
         .getColumnValues(zeroCountColumn);
 
-      if (instrument.getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME) > 0) {
+      int flushingTime = 0;
+
+      if (flushingTime > 0) {
 
         String lastZero = "";
         for (SensorValue zero : zeroValues.getRawValues()) {
           String newZero = zero.getValue();
           if (!newZero.equals(lastZero)) {
             LocalDateTime flushingStart = zero.getTime();
-            LocalDateTime flushingEnd = flushingStart.plusSeconds(
-              instrument.getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME));
+            LocalDateTime flushingEnd = flushingStart.plusSeconds(flushingTime);
 
             for (SensorValue flushingCO2 : co2Values.getRawValues(flushingStart,
               flushingEnd)) {
@@ -123,8 +124,7 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
           String newRunType = runType.getValue();
           if (!newRunType.equals(lastRunType)) {
             LocalDateTime flushingStart = runType.getTime();
-            LocalDateTime flushingEnd = flushingStart.plusSeconds(
-              instrument.getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME));
+            LocalDateTime flushingEnd = flushingStart.plusSeconds(flushingTime);
 
             for (SensorValue flushingCO2 : co2Values.getRawValues(flushingStart,
               flushingEnd)) {

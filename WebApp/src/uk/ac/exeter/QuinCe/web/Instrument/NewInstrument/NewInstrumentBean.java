@@ -341,14 +341,9 @@ public class NewInstrumentBean extends FileUploadBean {
   private String runTypeAssignAliasTo = null;
 
   /**
-   * The pre-flushing time
+   * The flushing time for the run type.
    */
-  private int preFlushingTime = 0;
-
-  /**
-   * The post-flushing time
-   */
-  private int postFlushingTime = 0;
+  private int runTypeFlushingTime = 0;
 
   /**
    * Indicates whether or not intake depth is specified for the instrument
@@ -615,8 +610,6 @@ public class NewInstrumentBean extends FileUploadBean {
       assignmentsTree = null;
       sensorGroups = null;
       instrumentVariables = null;
-      preFlushingTime = 0;
-      postFlushingTime = 0;
       depth = 0;
       platformName = "";
       platformCode = "";
@@ -1901,6 +1894,25 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
+   * Get the flushing time for the run type.
+   * 
+   * @return The flushing time.
+   */
+  public int getRunTypeFlushingTime() {
+    return runTypeFlushingTime;
+  }
+
+  /**
+   * Set the flushing time for the run type.
+   * 
+   * @param runTypeFlushingTime
+   *          The flushing time.
+   */
+  public void setRunTypeFlushingTime(int runTypeFlushingTime) {
+    this.runTypeFlushingTime = runTypeFlushingTime;
+  }
+
+  /**
    * Assign a run type to a Run Type Category
    *
    * @throws NoSuchCategoryException
@@ -1916,7 +1928,7 @@ public class NewInstrumentBean extends FileUploadBean {
     if (category.equals(RunTypeCategory.ALIAS)) {
       file.setRunTypeCategory(runTypeAssignName, runTypeAssignAliasTo);
     } else {
-      file.setRunTypeCategory(runTypeAssignName, category);
+      file.setRunTypeCategory(runTypeAssignName, category, runTypeFlushingTime);
     }
   }
 
@@ -1953,6 +1965,9 @@ public class NewInstrumentBean extends FileUploadBean {
             jsonAssignment.add("aliasTo", JsonNull.INSTANCE);
           }
 
+          jsonAssignment.addProperty("flushingTime",
+            assignment.getFlushingTime());
+
           jsonAssignments.add(jsonAssignment);
         }
 
@@ -1981,44 +1996,6 @@ public class NewInstrumentBean extends FileUploadBean {
     runTypeFile = null;
     runTypeAssignName = null;
     runTypeAssignCode = RunTypeCategory.IGNORED_TYPE;
-  }
-
-  /**
-   * Get the pre-flushing time
-   *
-   * @return The pre-flushing time
-   */
-  public int getPreFlushingTime() {
-    return preFlushingTime;
-  }
-
-  /**
-   * Get the pre-flushing time
-   *
-   * @param preFlushingTime
-   *          The pre-flushing time
-   */
-  public void setPreFlushingTime(int preFlushingTime) {
-    this.preFlushingTime = preFlushingTime;
-  }
-
-  /**
-   * Get the post-flushing time
-   *
-   * @return The post-flushing time
-   */
-  public int getPostFlushingTime() {
-    return postFlushingTime;
-  }
-
-  /**
-   * Get the post-flushing time
-   *
-   * @param postFlushingTime
-   *          The post-flushing time
-   */
-  public void setPostFlushingTime(int postFlushingTime) {
-    this.postFlushingTime = postFlushingTime;
   }
 
   /**
@@ -2076,11 +2053,6 @@ public class NewInstrumentBean extends FileUploadBean {
         instrumentFiles, instrumentVariables, storedVariableProperties,
         sensorAssignments, sensorGroups, platformName, platformCode, false,
         null, LocalDateTime.now());
-
-      instrument.setProperty(Instrument.PROP_PRE_FLUSHING_TIME,
-        preFlushingTime);
-      instrument.setProperty(Instrument.PROP_POST_FLUSHING_TIME,
-        postFlushingTime);
 
       if (hasDepth) {
         instrument.setProperty(Instrument.PROP_DEPTH, depth);
