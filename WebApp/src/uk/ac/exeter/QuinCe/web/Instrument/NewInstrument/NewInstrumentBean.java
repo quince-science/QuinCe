@@ -1895,7 +1895,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the flushing time for the run type.
-   * 
+   *
    * @return The flushing time.
    */
   public int getRunTypeFlushingTime() {
@@ -1904,7 +1904,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the flushing time for the run type.
-   * 
+   *
    * @param runTypeFlushingTime
    *          The flushing time.
    */
