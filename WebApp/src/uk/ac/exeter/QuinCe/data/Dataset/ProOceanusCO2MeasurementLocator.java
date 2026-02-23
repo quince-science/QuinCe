@@ -97,7 +97,11 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
       SensorValuesList zeroValues = sensorValues
         .getColumnValues(zeroCountColumn);
 
-      int flushingTime = 0;
+      Variable variable = sensorConfig.getInstrumentVariable(getVariableName());
+
+      int flushingTime = (int) Math
+        .round(Double.parseDouble(dataset.getAllProperties()
+          .get(variable.getName()).getProperty("flushing_time")));
 
       if (flushingTime > 0) {
 
@@ -187,5 +191,9 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
         throw new MeasurementLocatorException(e);
       }
     }
+  }
+
+  protected String getVariableName() {
+    return "Pro Oceanus CO₂ Water";
   }
 }
