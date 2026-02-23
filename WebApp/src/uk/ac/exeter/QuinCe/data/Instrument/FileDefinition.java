@@ -722,15 +722,31 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Set the run type category for a given run type
+   * Set the run type category and flushing time for a given run type.
    *
    * @param runType
-   *          The run type
+   *          The run type.
    * @param category
-   *          The run type category
+   *          The run type category.
+   * @param flushingTime
+   *          The flushing time.
+   */
+  public void setRunTypeCategory(String runType, RunTypeCategory category,
+    int flushingTime) {
+    runTypes.put(runType,
+      new RunTypeAssignment(runType, category, flushingTime));
+  }
+
+  /**
+   * Set the run type category for a given run type.
+   *
+   * @param runType
+   *          The run type.
+   * @param category
+   *          The run type category.
    */
   public void setRunTypeCategory(String runType, RunTypeCategory category) {
-    runTypes.put(runType, new RunTypeAssignment(runType, category));
+    setRunTypeCategory(runType, category, 0);
   }
 
   /**

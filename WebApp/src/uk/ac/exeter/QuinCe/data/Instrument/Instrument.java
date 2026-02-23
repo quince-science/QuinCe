@@ -58,16 +58,6 @@ public class Instrument {
   private static final String DIAGNOSTIC_QC_JSON_NAME = "diagnosticQC";
 
   /**
-   * Property name for the pre-flushing time.
-   */
-  public static final String PROP_PRE_FLUSHING_TIME = "preFlushingTime";
-
-  /**
-   * Property name for the post-flushing time.
-   */
-  public static final String PROP_POST_FLUSHING_TIME = "postFlushingTime";
-
-  /**
    * Property name for the depth.
    */
   public static final String PROP_DEPTH = "depth";

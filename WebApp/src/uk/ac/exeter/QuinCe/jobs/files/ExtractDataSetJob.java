@@ -421,19 +421,20 @@ public class ExtractDataSetJob extends DataSetJob {
 
     boolean result = false;
 
-    Integer preFlushingTime = instrument
-      .getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME);
-    Integer postFlushingTime = instrument
-      .getIntProperty(Instrument.PROP_POST_FLUSHING_TIME);
-
-    if (null != preFlushingTime && preFlushingTime > 0 && DateTimeUtils
-      .secondsBetween(runTypePeriod.getStart(), time) <= preFlushingTime) {
-      result = true;
-    } else if (null != postFlushingTime && postFlushingTime > 0 && DateTimeUtils
-      .secondsBetween(time, runTypePeriod.getEnd()) <= postFlushingTime) {
-      result = true;
-    }
-
+    /*
+     * 
+     * Integer preFlushingTime = instrument
+     * .getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME); Integer
+     * postFlushingTime = instrument
+     * .getIntProperty(Instrument.PROP_POST_FLUSHING_TIME);
+     * 
+     * if (null != preFlushingTime && preFlushingTime > 0 && DateTimeUtils
+     * .secondsBetween(runTypePeriod.getStart(), time) <= preFlushingTime) {
+     * result = true; } else if (null != postFlushingTime && postFlushingTime >
+     * 0 && DateTimeUtils .secondsBetween(time, runTypePeriod.getEnd()) <=
+     * postFlushingTime) { result = true; }
+     * 
+     */
     return result;
   }
 

@@ -246,6 +246,23 @@ table.ui-selectmanycheckbox > tbody > tr > td > label {
   flex-wrap: wrap;
 }
 
+table.runTypes td {
+  padding-right: 10px;
+}
+
+table.runTypes thead {
+  background-color: #f8f9fa;
+}
+
+.flushingTime input {
+  width: 125px;
+}
+
+.runTypeName{
+  width: 100% !important;
+}
+
+
 .unassignedFile {
   background-color: #FFbbbb !important;
 }
