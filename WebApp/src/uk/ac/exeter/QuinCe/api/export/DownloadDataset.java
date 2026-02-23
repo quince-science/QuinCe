@@ -151,12 +151,12 @@ public class DownloadDataset {
     } catch (RecordNotFoundException e) {
       responseCode = Status.NOT_FOUND;
     } catch (Exception e) {
-    	if (e instanceof RuntimeException) {
-    		responseCode = Status.CONFLICT;
-    	} else {
-    		ExceptionUtils.printStackTrace(e);
-    		responseCode = Status.INTERNAL_SERVER_ERROR;
-    	}
+      if (e instanceof RuntimeException) {
+        responseCode = Status.CONFLICT;
+      } else {
+        ExceptionUtils.printStackTrace(e);
+        responseCode = Status.INTERNAL_SERVER_ERROR;
+      }
     } finally {
       DatabaseUtils.closeConnection(conn);
     }

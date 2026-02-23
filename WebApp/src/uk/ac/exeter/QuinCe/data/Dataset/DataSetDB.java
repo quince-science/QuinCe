@@ -567,21 +567,21 @@ public class DataSetDB {
         if (!record.next()) {
           throw new RecordNotFoundException("Data set " + name + "does not exist");
         } else {
-        	if (record.getRow() > 1) {
-        		throw new RuntimeException("Data set " + name + " has several entries");
-        	} else {
-        		result = dataSetFromRecord(conn, record);
-        		}
-        	}
+          if (record.getRow() > 1) {
+            throw new RuntimeException("Data set " + name + " has several entries");
+          } else {
+            result = dataSetFromRecord(conn, record);
+            }
+          }
       }
     } catch (RecordNotFoundException e) {
       throw e;
     } catch (Exception e) {
-    	if (e instanceof RuntimeException) {
-    		ExceptionUtils.printStackTrace(e);
-    	} else {
-    		throw new DatabaseException("Error while retrieving data sets", e);
-    		}
+      if (e instanceof RuntimeException) {
+        ExceptionUtils.printStackTrace(e);
+      } else {
+        throw new DatabaseException("Error while retrieving data sets", e);
+        }
     }
 
     return result;
