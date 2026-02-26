@@ -147,7 +147,7 @@ public class Calculators {
 
   /**
    * Perform a linear interpolation between two values taken at different times,
-   * giving a value at the specified time.
+   * giving a value at the specified target time.
    *
    * <p>
    * If either of the {@code y} values is {@code null}, the other is returned.
@@ -167,19 +167,19 @@ public class Calculators {
    *          The second reference timestamp.
    * @param y1
    *          The second reference y value.
-   * @param measurementTime
+   * @param targetTime
    *          The target timestamp for which a value must be calculated.
    * @return The interpolated y value at the target timestamp.
    */
   public static Double interpolate(LocalDateTime time0, Double y0,
-    LocalDateTime time1, Double y1, LocalDateTime measurementTime) {
+    LocalDateTime time1, Double y1, LocalDateTime targetTime) {
     Double result = null;
 
     if (null != y0 && null != y1) {
       double x0 = DateTimeUtils.dateToLong(time0);
       double x1 = DateTimeUtils.dateToLong(time1);
       result = interpolate(x0, y0, x1, y1,
-        DateTimeUtils.dateToLong(measurementTime));
+        DateTimeUtils.dateToLong(targetTime));
     } else if (null != y0) {
       result = y0;
     } else if (null != y1) {
@@ -191,8 +191,7 @@ public class Calculators {
 
   /**
    * Perform a linear interpolation between two pairs of {@code x}/{@code y}
-   * values taken at different times, giving a value at the specified target
-   * {@code x} value.
+   * values, giving a value at the specified target {@code x} value.
    *
    * <p>
    * If either of the {@code y} values is {@code null}, the other is returned.
@@ -204,15 +203,15 @@ public class Calculators {
    * reference values.
    * </p>
    *
-   * @param time0
+   * @param x0
    *          The first reference x value.
    * @param y0
    *          The first reference y value.
-   * @param time1
+   * @param x1
    *          The second reference x value.
    * @param y1
    *          The second reference y value.
-   * @param measurementTime
+   * @param target
    *          The target x value for which a value must be calculated.
    * @return The interpolated y value at the target x value.
    */
@@ -243,14 +242,14 @@ public class Calculators {
    *          The second reference x value.
    * @param y1
    *          The second reference y value.
-   * @param x
+   * @param target
    *          The target x value for which a value must be calculated.
    * @return The interpolated y value at the target x value.
    */
   public static double interpolate(double x0, double y0, double x1, double y1,
-    double x) {
+    double target) {
 
-    return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+    return (y0 * (x1 - target) + y1 * (target - x0)) / (x1 - x0);
   }
 
   /**
@@ -265,12 +264,12 @@ public class Calculators {
    *          The second reference x value.
    * @param y1
    *          The second reference y value.
-   * @param x
+   * @param target
    *          The target x value for which a value must be calculated.
    * @return The interpolated y value at the target x value.
    */
   public static BigDecimal interpolate(BigDecimal x0, BigDecimal y0,
-    BigDecimal x1, BigDecimal y1, BigDecimal x) {
+    BigDecimal x1, BigDecimal y1, BigDecimal target) {
 
     BigDecimal result = null;
 
@@ -278,8 +277,8 @@ public class Calculators {
     boolean postNull = null == x1 || null == y1;
 
     if (!priorNull && !postNull) {
-      BigDecimal X1minusX = x1.subtract(x);
-      BigDecimal XminusX0 = x.subtract(x0);
+      BigDecimal X1minusX = x1.subtract(target);
+      BigDecimal XminusX0 = target.subtract(x0);
       BigDecimal X1minusX0 = x1.subtract(x0);
 
       BigDecimal Y0timesX1minusX = y0.multiply(X1minusX);
