@@ -31,11 +31,13 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * required, the object contains complete sets of {@link Calibration}s for one
  * or more times.
  * </p>
+ *
  * <p>
  * The {@code CalibrationSet} will always contain a set of {@link Calibration}s
  * immediately after the {@link #end} time, if it is available. Whether or not
  * this is required should be determined by the code using this class.
  * </p>
+ *
  * <p>
  * <b>NB:</b> This class assumes that any {@link Calibration}s provided to it
  * are all for the desired instrument and type; they are not checked at any
@@ -50,12 +52,14 @@ public class CalibrationSet {
   private final TreeSet<String> targets;
 
   /**
-   * The start time of the period to be covered by this CalibrationSet.
+   * The start time of the period to be covered by this CalibrationSet. This is
+   * typically the start of the {@link DataSet} being processed.
    */
   private final LocalDateTime start;
 
   /**
-   * The end time of the period to be covered by this CalibrationSet.
+   * The end time of the period to be covered by this CalibrationSet. This is
+   * typically the end of the {@link DataSet} being processed.
    */
   private final LocalDateTime end;
 
@@ -92,12 +96,20 @@ public class CalibrationSet {
   /**
    * Initialise an empty calibration set
    *
-   * @param instrumentId
-   *          The ID of the instrument to which the calibrations will belong
-   * @param type
-   *          The calibration type
    * @param targets
-   *          The set of targets for the calibration set
+   *          The set of targets for the calibration set.
+   * @param start
+   *          The start time of the the period to be covered by this
+   *          CalibrationSet.
+   * @param end
+   *          The end time of the the period to be covered by this
+   *          CalibrationSet.
+   * @param dbInstance
+   *          The {@link CalibrationDB} instance corresponding to the type of
+   *          {@link Calibration}s in the calibration set.
+   * @param calibrations
+   *          The {@link Calibration}s grouped by the calibration target in time
+   *          order.
    * @throws MissingParamException
    *           If any required parameters are missing
    * @throws InvalidCalibrationDateException
@@ -293,7 +305,7 @@ public class CalibrationSet {
    * returned.
    * </p>
    *
-   * @param time
+   * @param targetTime
    *          The time.
    * @return The matching {@link Calibration}s.
    */
@@ -325,7 +337,7 @@ public class CalibrationSet {
    * returned.
    * </p>
    *
-   * @param time
+   * @param targetTime
    *          The time.
    * @return The matching {@link Calibration}s.
    */
@@ -376,6 +388,12 @@ public class CalibrationSet {
    * JSON back to a {@code CalibrationSet} object.
    * </p>
    *
+   * @param targetMapper
+   *          The mapper to use to convert target names to their human-readable
+   *          form.
+   * @param skipEmpty
+   *          Indicates whether targets without any calibrations should be
+   *          omitted.
    * @return The JSON String
    */
   public JsonObject toJson(CalibrationTargetNameMapper targetMapper,
@@ -516,10 +534,13 @@ public class CalibrationSet {
 
   /**
    * Determines whether or not this {@code CalibrationSet} will have the same
-   * effect on the specified time period
+   * effect on the specified time period as the specified
+   * {@link CalibrationSet}.
    *
    * @param other
-   * @return
+   *          The {@link CalibrationSet} to be compared.
+   * @return {@code true} if the effects of the two {@link CalibrationSet}s are
+   *         identical; {@code false} if they are not.
    */
   public boolean hasSameEffect(CalibrationSet other) {
 
