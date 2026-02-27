@@ -2063,12 +2063,12 @@ function setPlotSelectMode(index) {
 }
 
 function selectModeMouseDown(event, g, context) {
-  
+
   // On Windows Chrome, if there's any kind of selection made
   // then it overrides our drag operation to drag the selection.
   // We clear the selection and we're back in control.
   window.getSelection().empty();
-  
+
   context.isZooming = true;
   context.dragStartX = dragGetX(g, event);
   context.dragStartY = dragGetY(g, event);
