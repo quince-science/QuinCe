@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.sql.DataSource;
+import javax.ws.rs.core.Response.Status;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -528,6 +529,59 @@ public class DataSetDB {
       throw e;
     } catch (Exception e) {
       throw new DatabaseException("Error while retrieving data sets", e);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get a data set using its database name
+   *
+   * @param conn
+   *          A database connection
+   * @param name
+   *          The data set's name
+   * @return The data set
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the data set does not exist
+   * @throws RuntimeException
+   *           If the datasetName returns several datasetIds
+   */
+  public static DataSet getDataSet(Connection conn, String name)
+    throws DatabaseException, MissingParamException, RecordNotFoundException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(name, "name");
+
+    DataSet result = null;
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(makeGetDatasetsQuery("name"))) {
+      stmt.setString(1, name);
+
+      try (ResultSet record = stmt.executeQuery()) {
+        if (!record.next()) {
+          throw new RecordNotFoundException("Data set " + name + "does not exist");
+        } else {
+          if (record.getRow() > 1) {
+            throw new RuntimeException("Data set " + name + " has several entries");
+          } else {
+            result = dataSetFromRecord(conn, record);
+            }
+          }
+      }
+    } catch (RecordNotFoundException e) {
+      throw e;
+    } catch (Exception e) {
+      if (e instanceof RuntimeException) {
+        ExceptionUtils.printStackTrace(e);
+      } else {
+        throw new DatabaseException("Error while retrieving data sets", e);
+        }
     }
 
     return result;
