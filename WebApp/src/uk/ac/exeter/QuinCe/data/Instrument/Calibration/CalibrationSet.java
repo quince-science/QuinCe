@@ -26,10 +26,25 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * Represents the set of {@link Calibration}s to be used for a {@link DataSet}.
  *
  * <p>
- * Since it is sometimes possible for the {@link Calibration}s to change in the
- * middle of a {@link DataSet}, or pre- and post-{@link Calibration}s to be
- * required, the object contains complete sets of {@link Calibration}s for one
- * or more times.
+ * {@link Calibration}s can be set at any time, and may be different for each
+ * calibration target (a target is the name of a gas standard, a sensor, a
+ * calculation coefficient etc. to which the {@link Calibration} applies). The
+ * {@link CalibrationSet} will contain the following:
+ * </p>
+ * <ul>
+ * <li>The latest {@link Calibration} for each target that occurs before or on
+ * the start of the {@link DataSet}.</li>
+ * <li>The earliest {@link Calibration} for each target that occurs on or after
+ * the end of the {@link DataSet}.</li>
+ * <li>Any {@link Calibration}s which are set during the time encompassed by the
+ * {@link DataSet} (if this is allowed, depending on the type of
+ * Calibration).</li>
+ * </ul>
+ *
+ * <p>
+ * Within each of the above categories, the timestamps may not be identical for
+ * all targets. Similarly, depending on the type of calibration, there may not
+ * be a {@link Calibration} for every target.
  * </p>
  *
  * <p>
@@ -356,6 +371,12 @@ public class CalibrationSet {
     return result;
   }
 
+  /**
+   * Create a new map of {@link Calibration}s for all targets where the
+   * {@link Calibration} is not set.
+   *
+   * @return An empty map of calibrations.
+   */
   private TreeMap<String, Calibration> makeEmptyCalibrations() {
     TreeMap<String, Calibration> result = new TreeMap<String, Calibration>();
     for (String target : getTargets()) {
@@ -456,10 +477,21 @@ public class CalibrationSet {
     return result;
   }
 
+  /**
+   * Indicates whether or not this CalibrationSet is empty (i.e. has no
+   * calibrations in it).
+   *
+   * @return {@code true} if the set is empty; {@code false} if it is not.
+   */
   public boolean isEmpty() {
     return priors.size() == 0;
   }
 
+  /**
+   * Get the calibration targets in this calibration set.
+   *
+   * @return The calibration targets.
+   */
   public TreeSet<String> getTargets() {
     return targets;
   }
@@ -619,6 +651,19 @@ public class CalibrationSet {
     return result;
   }
 
+  /**
+   * Compare two maps of {@link Calibration}s to see if they all have an
+   * identical effect on the time period of this CalibrationSet.
+   *
+   * @param m1
+   *          The first map.
+   * @param m2
+   *          The second map.
+   * @return {@code true} if all the {@link Calibration}s have the same effect
+   *         in both maps; {@code false} if there are any differences.
+   *
+   * @see Calibration#hasSameEffect(Calibration)
+   */
   private boolean membersEqual(TreeMap<String, Calibration> m1,
     TreeMap<String, Calibration> m2) {
 
@@ -645,6 +690,12 @@ public class CalibrationSet {
     return result;
   }
 
+  /**
+   * Obtain the calibration timestamps that are between the {@code start} and
+   * {@code end} of the period covered by this CalibrationSet.
+   *
+   * @return The interim times.
+   */
   private TreeSet<LocalDateTime> getInterimTimes() {
     return priors.keySet().stream()
       .filter(t -> !t.isBefore(start) && !t.isAfter(end))
