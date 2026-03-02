@@ -32,14 +32,25 @@ with open(args.in_file) as input:
 
         in_line = input.readline()
         stripped = in_line.strip()
+
+        year = args.year
+        last_date = -1
+
         while len(in_line) > 0:
             if len(stripped) > 0:
+                
+                if lines_copied > 0:
+                    date = float(stripped.split('\t')[0])
+                    if date < last_date:
+                        year += 1
+
+                    last_date = date
+
                 if lines_copied == 0:
                     output.write(f'Year\t{stripped}\n')
                 else:
-                    output.write(f'{args.year}\t{stripped}\n')
+                    output.write(f'{year}\t{stripped}\n')
 
             lines_copied += 1
             in_line = input.readline()
             stripped = in_line.strip()
-            print(in_line)
