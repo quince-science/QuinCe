@@ -548,11 +548,13 @@ public class DataSetDB {
    *           If any required parameters are missing
    * @throws RecordNotFoundException
    *           If the data set does not exist
+   * @throws MultipleDatasetsException
+   * 			If multiple dataset entries are found for a given datasetName
    * @throws RuntimeException
    *           If the datasetName returns several datasetIds
    */
   public static DataSet getDataSet(Connection conn, String name)
-    throws DatabaseException, MissingParamException, RecordNotFoundException {
+    throws DatabaseException, MissingParamException, RecordNotFoundException, MultipleDatasetsException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(name, "name");
@@ -567,21 +569,17 @@ public class DataSetDB {
         if (!record.next()) {
           throw new RecordNotFoundException("Data set " + name + "does not exist");
         } else {
-          if (record.getRow() > 1) {
-            throw new RuntimeException("Data set " + name + " has several entries");
+          if (!record.isLast()) {
+            throw new MultipleDatasetsException(name);
           } else {
             result = dataSetFromRecord(conn, record);
             }
           }
       }
-    } catch (RecordNotFoundException e) {
-      throw e;
+    } catch (RecordNotFoundException | MultipleDatasetsException e) {
+        throw e;
     } catch (Exception e) {
-      if (e instanceof RuntimeException) {
-        ExceptionUtils.printStackTrace(e);
-      } else {
-        throw new DatabaseException("Error while retrieving data sets", e);
-        }
+      throw new DatabaseException("Error while retrieving data sets", e);
     }
 
     return result;

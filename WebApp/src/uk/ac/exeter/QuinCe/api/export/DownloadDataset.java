@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response.Status;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.MultipleDatasetsException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -149,14 +150,12 @@ public class DownloadDataset {
           new Progress());
       }
     } catch (RecordNotFoundException e) {
-      responseCode = Status.NOT_FOUND;
+        responseCode = Status.NOT_FOUND;
+    } catch (MultipleDatasetsException e) {
+      responseCode = Status.CONFLICT;
     } catch (Exception e) {
-      if (e instanceof RuntimeException) {
-        responseCode = Status.CONFLICT;
-      } else {
         ExceptionUtils.printStackTrace(e);
         responseCode = Status.INTERNAL_SERVER_ERROR;
-      }
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
