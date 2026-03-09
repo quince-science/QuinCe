@@ -48,10 +48,6 @@ public class PositionQCCascadeRoutine implements Routine {
         } else if (position.getType() != PlotPageTableValue.NAN_TYPE) {
           // Cascade the Position QC to sensor values
           for (SensorValue value : allSensorValues.get(time).values()) {
-
-            SensorType sensorType = instrument.getSensorAssignments()
-              .getSensorTypeForDBColumn(value.getColumnId());
-
             boolean setCascade = shouldApplyFlag(instrument, runTypePeriods,
               time, value);
 
@@ -103,8 +99,9 @@ public class PositionQCCascadeRoutine implements Routine {
     SensorType sensorType = instrument.getSensorAssignments()
       .getSensorTypeForDBColumn(value.getColumnId());
 
-    if (sensorType.hasInternalCalibration()
-      && !instrument.isMeasurementRunType(runTypePeriods.getRunType(time))) {
+    if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)
+      || (sensorType.hasInternalCalibration()
+        && !instrument.isMeasurementRunType(runTypePeriods.getRunType(time)))) {
       result = false;
     }
 
