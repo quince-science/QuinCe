@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.api.export;
 
 import java.sql.Connection;
-import java.util.List;
 
 import javax.sql.DataSource;
 import javax.ws.rs.FormParam;
@@ -19,12 +18,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
-
-import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 
 /**
  * API call to download a dataset, given its ID, as a ZIP file.
@@ -133,7 +132,9 @@ public class DownloadDataset {
     Status responseCode = Status.OK;
     byte[] zip = null;
 
+
     try {
+    MissingParam.checkMissing(datasetName, "datasetName");
       ResourceManager resourceManager = ResourceManager.getInstance();
       DataSource dataSource = resourceManager.getDBDataSource();
 
@@ -149,6 +150,8 @@ public class DownloadDataset {
         zip = ExportBean.buildExportZip(conn, instrument, dataset, null,
           new Progress());
       }
+    } catch (MissingParamException e) {
+        responseCode = Status.BAD_REQUEST;
     } catch (RecordNotFoundException e) {
         responseCode = Status.NOT_FOUND;
     } catch (MultipleDatasetsException e) {
