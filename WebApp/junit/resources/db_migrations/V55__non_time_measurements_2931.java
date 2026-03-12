@@ -20,7 +20,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 /**
  * Migration for support for non-time-based data
  */
-public class V54__non_time_measurements_2931 extends BaseJavaMigration {
+public class V55__non_time_measurements_2931 extends BaseJavaMigration {
 
   @Override
   public void migrate(Context context) throws Exception {

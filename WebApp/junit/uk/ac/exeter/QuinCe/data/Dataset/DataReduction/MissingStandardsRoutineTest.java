@@ -37,9 +37,9 @@ public class MissingStandardsRoutineTest extends DataReductionQCRoutineTest {
     return DataSetDB.getDataSet(getConnection(), 1L);
   }
 
-  private DatasetSensorValues getSensorValues(Instrument instrument)
+  private DatasetSensorValues getSensorValues(DataSet dataset)
     throws Exception {
-    return DataSetDataDB.getSensorValues(getConnection(), instrument, 1L, false,
+    return DataSetDataDB.getSensorValues(getConnection(), dataset, false,
       false);
   }
 
@@ -52,9 +52,9 @@ public class MissingStandardsRoutineTest extends DataReductionQCRoutineTest {
   private FlaggedItems runTest() throws Exception {
     Instrument instrument = getInstrument();
     DataSet dataset = getDataSet();
-    DatasetSensorValues sensorValues = getSensorValues(instrument);
+    DatasetSensorValues sensorValues = getSensorValues(dataset);
     List<Measurement> measurements = DataSetDataDB
-      .getMeasurements(getConnection(), 1L);
+      .getMeasurements(getConnection(), dataset);
     Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> dataReduction = getDataReduction(
       instrument, dataset);
 
