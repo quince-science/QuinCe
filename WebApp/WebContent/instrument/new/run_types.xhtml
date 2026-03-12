@@ -28,9 +28,11 @@
         value="#{newInstrumentBean.runTypeAssignCode}" />
       <h:inputHidden id="assignAliasTo"
         value="#{newInstrumentBean.runTypeAssignAliasTo}" />
+      <h:inputHidden id="assignFlushingTime"
+        value="#{newInstrumentBean.runTypeFlushingTime}" />
       <p:commandLink id="assignCategoryLink" style="invisible" ajax="true"
         action="#{newInstrumentBean.assignRunTypeCategory}"
-        process="assignCategoryFile assignCategoryRunType assignCategoryCode assignAliasTo"/>
+        process="assignCategoryFile assignCategoryRunType assignCategoryCode assignAliasTo assignFlushingTime"/>
       <p:fieldset id="runTypesPanel" legend="Assign Run Types"
         style="margin-bottom: 20px">
         <div class="instructions">Below is a list of values from the Run
@@ -41,32 +43,43 @@
             varStatus="fileStatus">
             <div class="runTypeFile">
               <p:fieldset legend="#{file.fileDescription}">
-                <table class="form">
-                  <ui:repeat value="#{file.runTypeValues}" var="runType">
-                    <tr>
-                      <td class="labelsNoPad">#{runType}</td>
-                      <td>
-                        <p:selectOneMenu
-                          widgetVar="#{fileStatus.index}-#{runType}-menu"
-                          onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
-                          <f:selectItems
-                            value="#{newInstrumentBean.runTypeCategories}"
-                            var="category" itemValue="#{category.type}"
-                            itemLabel="#{category.description}" />
-                        </p:selectOneMenu>
-                      </td>
-                      <td id="#{fileStatus.index}-#{runType}-aliasMenu" class="hidden">
-                        <p:selectOneMenu
-                          widgetVar="#{fileStatus.index}-#{runType}-alias"
-                          onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
-                          <f:selectItems
-                            value="#{file.getRunTypeValuesWithExclusion(runType)}"
-                            var="runTypeAlias" />
-                        </p:selectOneMenu>
-                      </td>
-                    </tr>
-                  </ui:repeat>
-                </table>
+                <p:dataTable id="#{file.fileDescription}_runTypes" var="runType"
+                  value="#{file.runTypeValues}"
+                  rowIndexVar="rowIndex" tableStyle="table-layout: auto;">
+
+                  <p:column styleClass="labelsNoPad">
+                    <f:facet name="header">Run Type</f:facet>
+                    #{runType}
+                  </p:column>
+                  <p:column>
+                    <f:facet name="header">Category</f:facet>
+                    <p:selectOneMenu
+                      widgetVar="#{fileStatus.index}-#{runType}-menu"
+                      onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')"
+                      styleClass="runTypeName">
+                      <f:selectItems
+                        value="#{newInstrumentBean.runTypeCategories}"
+                        var="category" itemValue="#{category.type}"
+                        itemLabel="#{category.description}" />
+                    </p:selectOneMenu>
+                  </p:column>
+                  <p:column>
+                    <f:facet name="header">Alias To</f:facet>
+                    <p:selectOneMenu
+                      widgetVar="#{fileStatus.index}-#{runType}-alias"
+                      onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
+                      <f:selectItems
+                        value="#{file.getRunTypeValuesWithExclusion(runType)}"
+                        var="runTypeAlias" />
+                    </p:selectOneMenu>
+                  </p:column>
+                  <p:column>
+                    <f:facet name="header">Flushing Time</f:facet>
+                    <p:inputNumber widgetVar="#{fileStatus.index}-#{runType}-flushingTime"
+                      width="4" decimalPlaces="0" styleClass="numeric flushingTime"
+                      onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')"/>
+                  </p:column>
+                </p:dataTable>
               </p:fieldset>
             </div>
           </ui:repeat>

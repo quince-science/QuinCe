@@ -25,7 +25,7 @@
     ]
   },
   {
-    "variable": "Underway Marine pCO₂",
+    "variable": "Underway Atmospheric pCO₂",
     "routines": [
       {
         "name": "MissingStandards",

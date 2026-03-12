@@ -546,6 +546,59 @@ public class DataSetDB {
     return result;
   }
 
+  /**
+   * Get a data set using its database name
+   *
+   * @param conn
+   *          A database connection
+   * @param name
+   *          The data set's name
+   * @return The data set
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the data set does not exist
+   * @throws MultipleDatasetsException
+   *           If multiple dataset entries are found for a given datasetName
+   * @throws RuntimeException
+   *           If the datasetName returns several datasetIds
+   */
+  public static DataSet getDataSet(Connection conn, String name)
+    throws DatabaseException, MissingParamException, RecordNotFoundException,
+    MultipleDatasetsException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(name, "name");
+
+    DataSet result = null;
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(makeGetDatasetsQuery("name"))) {
+      stmt.setString(1, name);
+
+      try (ResultSet record = stmt.executeQuery()) {
+        if (!record.next()) {
+          throw new RecordNotFoundException(
+            "Data set " + name + "does not exist");
+        } else {
+          if (!record.isLast()) {
+            throw new MultipleDatasetsException(name);
+          } else {
+            result = dataSetFromRecord(conn, record);
+          }
+        }
+      }
+    } catch (RecordNotFoundException | MultipleDatasetsException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new DatabaseException("Error while retrieving data sets", e);
+    }
+
+    return result;
+  }
+
   public static boolean datasetExists(Connection conn, long id)
     throws DatabaseException {
     MissingParam.checkMissing(conn, "conn");

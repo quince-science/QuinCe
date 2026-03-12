@@ -41,7 +41,7 @@ public abstract class DataReductionQCRoutine implements Routine {
     super();
   }
 
-  protected void applySettings(DataReductionQCRoutineSettings settings) {
+  public void applySettings(DataReductionQCRoutineSettings settings) {
     this.settings = settings;
   }
 

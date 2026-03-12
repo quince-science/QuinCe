@@ -66,6 +66,7 @@
                     <p:selectOneMenu
                       widgetVar="runType_#{rowIndex}"
                       value="#{runType.runType.categoryCode}"
+                      styleClass="runTypeName"
                       onchange="runTypeChanged(#{rowIndex})">
                       <f:selectItems
                         value="#{fileUpload.runTypeCategories}"
@@ -74,6 +75,7 @@
                     </p:selectOneMenu>
                   </p:column>
                   <p:column>
+                    <f:facet name="header">Alias To</f:facet>
                     <p:selectOneMenu
                       widgetVar="alias_#{rowIndex}"
                       value="#{runType.runType.aliasTo}" styleClass="hidden">
@@ -82,6 +84,12 @@
                         var="runTypeAlias" />
                     </p:selectOneMenu>
                     <!-- We trigger the runTypeChanged script immediately to set up any aliases -->
+                  </p:column>
+                  <p:column>
+                    <f:facet name="header">Flushing Time</f:facet>
+                    <p:inputNumber widgetVar="flushingTime_${rowIndex}"
+                      width="4" decimalPlaces="0" styleClass="numeric flushingTime"
+                      value="#{runType.runType.flushingTime}"/>
                     <script>runTypeChanged(<h:outputText value="#{rowIndex}"/>)</script>
                   </p:column>
                 </p:dataTable>

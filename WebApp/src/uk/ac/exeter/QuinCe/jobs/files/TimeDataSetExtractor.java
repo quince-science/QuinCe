@@ -35,6 +35,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -282,26 +283,13 @@ public class TimeDataSetExtractor extends DataSetExtractor {
   }
 
   private boolean inFlushingPeriod(Coordinate coordinate,
-    RunTypePeriod runTypePeriod, Instrument instrument) {
+    RunTypePeriod runTypePeriod, Instrument instrument)
+    throws MissingRunTypeException, RunTypeCategoryException {
 
-    boolean result = false;
-
-    Integer preFlushingTime = instrument
-      .getIntProperty(Instrument.PROP_PRE_FLUSHING_TIME);
-    Integer postFlushingTime = instrument
-      .getIntProperty(Instrument.PROP_POST_FLUSHING_TIME);
-
-    if (null != preFlushingTime && preFlushingTime > 0
+    int flushingTime = instrument.getFlushingTime(runTypePeriod.getRunType());
+    return (flushingTime > 0
       && DateTimeUtils.secondsBetween(runTypePeriod.getStart(),
-        coordinate.getTime()) <= preFlushingTime) {
-      result = true;
-    } else if (null != postFlushingTime && postFlushingTime > 0
-      && DateTimeUtils.secondsBetween(coordinate.getTime(),
-        runTypePeriod.getEnd()) <= postFlushingTime) {
-      result = true;
-    }
-
-    return result;
+        coordinate.getTime()) <= flushingTime);
   }
 
   @Override

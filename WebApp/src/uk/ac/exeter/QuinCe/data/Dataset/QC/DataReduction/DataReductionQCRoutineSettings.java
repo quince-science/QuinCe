@@ -54,19 +54,19 @@ public class DataReductionQCRoutineSettings {
     listOptions.put(key, value);
   }
 
-  protected String getOption(String key) {
+  public String getOption(String key) {
     return singleOptions.get(key);
   }
 
-  protected Double getDoubleOption(String key) {
+  public Double getDoubleOption(String key) {
     return Double.valueOf(singleOptions.get(key));
   }
 
-  protected List<String> getListOption(String key) {
+  public List<String> getListOption(String key) {
     return listOptions.get(key);
   }
 
-  protected List<SensorType> getFlaggedSensors() {
+  public List<SensorType> getFlaggedSensors() {
     return flaggedSensors;
   }
 }
