@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -32,11 +31,6 @@ public class NewSensorValues {
   private DataSet dataset;
 
   /**
-   * A cache of previously generated {@link Coordinate} objects.
-   */
-  private HashMap<Coordinate, Coordinate> coordinates = new HashMap<Coordinate, Coordinate>();
-
-  /**
    * The {@link SensorValue} objects.
    */
   private TreeSet<SensorValue> sensorValues = new TreeSet<SensorValue>();
@@ -57,17 +51,6 @@ public class NewSensorValues {
 
   public SensorValue create(long columnId, Coordinate coordinate,
     String value) {
-
-    /*
-     * Generate the Coordinate object for the {@link SensorValue}.
-     *
-     * If a Coordinate already exists, use that instance.
-     */
-    if (coordinates.containsKey(coordinate)) {
-      coordinate = coordinates.get(coordinate);
-    } else {
-      coordinates.put(coordinate, coordinate);
-    }
 
     SensorValue sensorValue = new SensorValue(dataset.getId(), columnId,
       coordinate, value);
@@ -102,8 +85,18 @@ public class NewSensorValues {
     SensorValue.clearDirtyFlag(sensorValues);
   }
 
+  /**
+   * Get the unique {@link Coordinate}s used by these {@link SensorValue}s.
+   *
+   * <p>
+   * The {@link Coordinate}s are unordered.
+   * </p>
+   *
+   * @return The {@link Coordinate}s.
+   */
   public Collection<Coordinate> getCoordinates() {
-    return coordinates.values();
+    return sensorValues.stream().map(sv -> sv.getCoordinate()).distinct()
+      .toList();
   }
 
   public Collection<SensorValue> getSensorValues() {
