@@ -491,9 +491,12 @@ public class DatasetSensorValues {
         coordinates.addAll(longitudes.getRawCoordinates());
       }
 
-      if (null != latitudes) {
-        coordinates.addAll(latitudes.getRawCoordinates());
-      }
+      // I think we can get away with only getting coordinates from one part of
+      // the position
+      /*
+       * if (null != latitudes) {
+       * coordinates.addAll(latitudes.getRawCoordinates()); }
+       */
 
       coordinatesCache = new ArrayList<Coordinate>(coordinates);
     }
