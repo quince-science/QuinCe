@@ -4,9 +4,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.naming.InitialContext;
@@ -16,9 +21,14 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfigurationDeserializer;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -53,7 +63,7 @@ public class ResourceManager implements ServletContextListener {
 
   private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
 
-  private QCRoutinesConfiguration qcRoutinesConfiguration;
+  private Map<Integer, QCRoutinesConfiguration> qcRoutinesConfiguration;
 
   private ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfiguration;
 
@@ -115,18 +125,46 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise the QC Routines configuration
     try {
-      qcRoutinesConfiguration = new QCRoutinesConfiguration(
-        sensorsConfiguration,
-        configuration.getProperty("qc_routines.configfile"));
+
+      String fileContent = new String(
+        Files.readAllBytes(
+          Paths.get(configuration.getProperty("qc_routines.configfile"))),
+        StandardCharsets.UTF_8);
+
+      Type mapType = new TypeToken<Map<String, QCRoutinesConfiguration>>() {
+      }.getType();
+
+      Gson gson = new GsonBuilder()
+        .registerTypeAdapter(
+          new HashMap<Integer, QCRoutinesConfiguration>().getClass(),
+          new QCRoutinesConfigurationDeserializer(sensorsConfiguration))
+        .create();
+
+      qcRoutinesConfiguration = gson.fromJson(fileContent, mapType);
     } catch (Exception e) {
       throw new RuntimeException("Could not initialise QC Routines", e);
     }
 
     // Initialise the External Standards Routines configuration
     try {
-      externalStandardsRoutinesConfiguration = new ExternalStandardsRoutinesConfiguration(
-        sensorsConfiguration,
-        configuration.getProperty("externalstandards_routines.configfile"));
+      externalStandardsRoutinesConfiguration = new ExternalStandardsRoutinesConfiguration();
+
+      Type mapType = new TypeToken<Map<String, QCRoutinesConfiguration>>() {
+      }.getType();
+
+      Gson gson = new GsonBuilder()
+        .registerTypeAdapter(
+          new HashMap<Integer, QCRoutinesConfiguration>().getClass(),
+          new QCRoutinesConfigurationDeserializer(sensorsConfiguration))
+        .create();
+
+      String fileContent = new String(
+        Files.readAllBytes(Paths.get(
+          configuration.getProperty("externalstandards_routines.configfile"))),
+        StandardCharsets.UTF_8);
+
+      qcRoutinesConfiguration = gson.fromJson(fileContent, mapType);
+
     } catch (Exception e) {
       throw new RuntimeException(
         "Could not initialise External Standards Routines", e);
@@ -190,8 +228,8 @@ public class ResourceManager implements ServletContextListener {
     return runTypeCategoryConfiguration;
   }
 
-  public QCRoutinesConfiguration getQCRoutinesConfiguration() {
-    return qcRoutinesConfiguration;
+  public QCRoutinesConfiguration getQCRoutinesConfiguration(int basis) {
+    return qcRoutinesConfiguration.get(basis);
   }
 
   public ExternalStandardsRoutinesConfiguration getExternalStandardsRoutinesConfiguration() {

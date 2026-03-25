@@ -97,8 +97,9 @@ public class ExportData extends ManualQCData {
       TreeMap<Coordinate, Measurement> filteredMeasurements = new TreeMap<Coordinate, Measurement>();
 
       for (Map.Entry<Coordinate, Measurement> entry : measurements.entrySet()) {
-        if (!entry.getValue().getQCFlag(getAllSensorValues())
-          .equals(Flag.BAD)) {
+        if (!sensorValues.getFlagScheme()
+          .isBad(entry.getValue().getQCFlag(getAllSensorValues()))) {
+
           filteredMeasurements.put(entry.getKey(), entry.getValue());
         }
       }
@@ -109,7 +110,9 @@ public class ExportData extends ManualQCData {
     /*
      * Now filter the SensorValues if required.
      */
-    if (exportOption.filterSensorValues()) {
+    if (exportOption.filterSensorValues())
+
+    {
       /*
        * If filtering is required, we always need SensorValues related to the
        * selected Measurements (which may have been filtered above).
@@ -137,8 +140,8 @@ public class ExportData extends ManualQCData {
        */
       if (!exportOption.measurementsOnly() && exportOption.skipBad()) {
         List<Long> goodIds = sensorValues.getAll().stream()
-          .filter(v -> !v.getUserQCFlag().equals(Flag.BAD)).map(v -> v.getId())
-          .toList();
+          .filter(v -> !sensorValues.getFlagScheme().isBad(v.getUserQCFlag()))
+          .map(v -> v.getId()).toList();
 
         filteredIds.addAll(goodIds);
       }
@@ -239,7 +242,8 @@ public class ExportData extends ManualQCData {
     if (columnId == FileDefinition.TIME_COLUMN_ID) {
       TimeCoordinate coordinate = (TimeCoordinate) coordinates.get(rowId);
       coordinate.setFormatter(exportOption.getTimestampFormatter());
-      value = new SimplePlotPageTableValue(coordinate);
+      value = new SimplePlotPageTableValue(coordinate,
+        sensorValues.getFlagScheme());
     } else if (columnId == FIXED_LON_ID) {
       value = lonValue;
     } else if (columnId == FIXED_LAT_ID) {

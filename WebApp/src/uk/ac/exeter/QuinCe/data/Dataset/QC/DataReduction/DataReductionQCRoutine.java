@@ -4,8 +4,11 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.Range;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
@@ -13,6 +16,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
@@ -24,7 +29,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 /**
  * Base class for QC routines to be run during data reduction
  */
-public abstract class DataReductionQCRoutine implements Routine {
+public abstract class DataReductionQCRoutine extends Routine {
 
   /**
    * The routine settings
@@ -36,9 +41,11 @@ public abstract class DataReductionQCRoutine implements Routine {
    *
    * @param settings
    *          The routine settings
+   * @throws RoutineException
    */
-  protected DataReductionQCRoutine() {
-    super();
+  protected DataReductionQCRoutine(FlagScheme flagScheme,
+    Map<Flag, Range<Double>> limits) {
+    super(flagScheme, limits);
   }
 
   public void applySettings(DataReductionQCRoutineSettings settings) {
@@ -81,7 +88,7 @@ public abstract class DataReductionQCRoutine implements Routine {
         }
       }
 
-      if (SensorValue.allUserQCNeeded(valuesToFlag)) {
+      if (SensorValue.allUserQCNeeded(valuesToFlag, flagScheme)) {
         for (SensorValue value : valuesToFlag) {
           value.addAutoQCFlag(flag);
           flaggedItems.add(value);

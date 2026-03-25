@@ -17,14 +17,23 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class SensorsConfiguration {
 
@@ -50,8 +59,7 @@ public class SensorsConfiguration {
   private static final String GET_VARIABLES_SENSOR_TYPES_QUERY = "SELECT "
     + "v.id, v.name, v.allowed_basis, v.attributes, v.properties, "
     + "s.sensor_type, s.core, s.attribute_name, s.attribute_value, "
-    + "s.questionable_cascade, s.bad_cascade, "
-    + "COALESCE(s.export_column_short, t.name), "
+    + "s.cascades, COALESCE(s.export_column_short, t.name), "
     + "COALESCE(s.export_column_long, t.column_heading), "
     + "COALESCE(s.export_column_code, t.column_code), t.units "
     + "FROM variables v INNER JOIN variable_sensors s ON v.id = s.variable_id "
@@ -134,14 +142,15 @@ public class SensorsConfiguration {
    *           If a database error occurs
    * @throws InvalidFlagException
    *           If any of the flag cascade values are invalid.
-   * @throws SensorConfigurationException
-   *           If the sensor configuration is invalid.
-   * @throws SensorTypeNotFoundException
-   *           If any specified {@link SensorType}s cannot be found.
+   * @throws VariableCascadeException
+   * @throws InstrumentException
    */
   private void loadInstrumentVariables(Connection conn)
-    throws DatabaseException, SensorTypeNotFoundException,
-    SensorConfigurationException, InvalidFlagException {
+    throws DatabaseException, InvalidFlagException, InstrumentException,
+    VariableCascadeException {
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
 
     instrumentVariables = new HashMap<Long, Variable>();
 
@@ -160,8 +169,7 @@ public class SensorsConfiguration {
       long coreSensorType = -1L;
       Map<Long, AttributeCondition> attributeConditions = new HashMap<Long, AttributeCondition>();
       List<Long> requiredSensorTypes = new ArrayList<Long>();
-      List<Integer> questionableCascades = new ArrayList<Integer>();
-      List<Integer> badCascades = new ArrayList<Integer>();
+      VariableCascades cascades = new VariableCascades();
       Map<SensorType, ColumnHeading> columnHeadings = new HashMap<SensorType, ColumnHeading>();
 
       while (records.next()) {
@@ -173,8 +181,7 @@ public class SensorsConfiguration {
             instrumentVariables.put(currentVariableId,
               new Variable(this, currentVariableId, name, allowedBasis,
                 attributes, propertiesJson, coreSensorType, requiredSensorTypes,
-                attributeConditions, questionableCascades, badCascades,
-                columnHeadings));
+                attributeConditions, cascades, columnHeadings));
           }
 
           // Set up the new variable
@@ -186,8 +193,7 @@ public class SensorsConfiguration {
           coreSensorType = -1L;
           attributeConditions = new HashMap<Long, AttributeCondition>();
           requiredSensorTypes = new ArrayList<Long>();
-          questionableCascades = new ArrayList<Integer>();
-          badCascades = new ArrayList<Integer>();
+          cascades = new VariableCascades();
           columnHeadings = new HashMap<SensorType, ColumnHeading>();
         }
 
@@ -205,14 +211,14 @@ public class SensorsConfiguration {
               new AttributeCondition(attributeName, attributeValue));
           }
 
-          questionableCascades.add(records.getInt(10));
-          badCascades.add(records.getInt(11));
+          parseCascadeJson(cascades, sensorConfig.getSensorType(sensorTypeId),
+            records.getString(10));
         }
 
-        String shortName = records.getString(12);
-        String longName = records.getString(13);
-        String code = records.getString(14);
-        String units = records.getString(15);
+        String shortName = records.getString(11);
+        String longName = records.getString(12);
+        String code = records.getString(13);
+        String units = records.getString(14);
 
         SensorType sensorType = this.getSensorType(sensorTypeId);
         columnHeadings.put(sensorType, new ColumnHeading(sensorTypeId,
@@ -223,8 +229,7 @@ public class SensorsConfiguration {
       instrumentVariables.put(currentVariableId,
         new Variable(this, currentVariableId, name, allowedBasis, attributes,
           propertiesJson, coreSensorType, requiredSensorTypes,
-          attributeConditions, questionableCascades, badCascades,
-          columnHeadings));
+          attributeConditions, cascades, columnHeadings));
     } catch (SQLException e) {
       throw new DatabaseException("Error while loading instrument variables",
         e);
@@ -240,6 +245,33 @@ public class SensorsConfiguration {
         .registerTypeAdapter(VariableAttributes.class,
           new VariableAttributesDeserializer())
         .create().fromJson(attributesJson, VariableAttributes.class);
+  }
+
+  private void parseCascadeJson(VariableCascades cascades,
+    SensorType sensorType, String cascadeJson)
+    throws InstrumentException, VariableCascadeException {
+
+    JsonObject jsonObj = JsonParser.parseString(cascadeJson).getAsJsonObject();
+
+    for (String schemeName : jsonObj.keySet()) {
+
+      FlagScheme flagScheme = Instrument.getFlagScheme(schemeName);
+
+      JsonArray cascadesArray = jsonObj.get(schemeName).getAsJsonArray();
+
+      for (JsonElement cascadeElem : cascadesArray) {
+        JsonArray cascade = cascadeElem.getAsJsonArray();
+
+        if (cascade.size() != 2) {
+          throw new JsonParseException("Invalid cascade definition");
+        }
+
+        int trigger = cascade.get(0).getAsInt();
+        int outcome = cascade.get(1).getAsInt();
+
+        cascades.add(flagScheme, sensorType, trigger, outcome);
+      }
+    }
   }
 
   /**

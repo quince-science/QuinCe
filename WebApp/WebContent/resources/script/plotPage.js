@@ -1562,7 +1562,7 @@ function drawFlagPlot1Y(index) {
     flag_options.highlightCircleSize = 0;
     flag_options.selectMode = 'euclidian';
     flag_options.strokeWidth = 0;
-  flag_options.drawAxesAtZero = axesAtZero();
+    flag_options.drawAxesAtZero = axesAtZero();
     flag_options.xRangePad = 10;
     flag_options.yRangePad = 10;
     flag_options.axes = {
@@ -1612,7 +1612,7 @@ function drawFlagPlot2Y(index) {
     flag_options.pointSize = FLAG_POINT_SIZE;
     flag_options.highlightCircleSize = 0;
     flag_options.strokeWidth = 0;
-  flag_options.drawAxesAtZero = axesAtZero();
+    flag_options.drawAxesAtZero = axesAtZero();
     flag_options.selectMode = 'euclidian';
     flag_options.xRangePad = 10;
     flag_options.yRangePad = 10;

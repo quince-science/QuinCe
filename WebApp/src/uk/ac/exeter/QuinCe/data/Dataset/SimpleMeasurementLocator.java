@@ -50,8 +50,8 @@ public class SimpleMeasurementLocator extends MeasurementLocator {
           seenTimes.add(v.getCoordinate());
 
           // Make the measurement
-          measurements.add(new Measurement(dataset.getId(), v.getCoordinate(),
-            makeRunTypeMap()));
+          measurements.add(new Measurement(dataset.getId(),
+            dataset.getFlagScheme(), v.getCoordinate(), makeRunTypeMap()));
         });
 
       return measurements;

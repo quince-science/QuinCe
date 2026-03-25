@@ -599,7 +599,7 @@ public class InstrumentDB {
       long owner = -1;
       String platformName = null;
       String platformCode = null;
-      int basis = 0;
+      int basis = Instrument.BASIS_TIME;
       boolean nrt = false;
       LocalDateTime lastNrtExport = null;
       String propertiesJson = null;

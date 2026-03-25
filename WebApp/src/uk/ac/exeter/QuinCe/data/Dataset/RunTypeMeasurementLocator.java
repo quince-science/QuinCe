@@ -84,8 +84,8 @@ public class RunTypeMeasurementLocator extends MeasurementLocator {
         Map<Long, String> runTypeMap = new HashMap<Long, String>();
         runTypeMap.put(Measurement.RUN_TYPE_DEFINES_VARIABLE, runType);
 
-        measurements.add(
-          new Measurement(dataset.getId(), measurementCoordinate, runTypeMap));
+        measurements.add(new Measurement(dataset.getId(),
+          dataset.getFlagScheme(), measurementCoordinate, runTypeMap));
       }
 
       return measurements;

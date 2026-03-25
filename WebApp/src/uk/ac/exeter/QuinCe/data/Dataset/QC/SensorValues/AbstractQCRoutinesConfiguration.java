@@ -1,20 +1,16 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.Range;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 
@@ -69,7 +65,10 @@ public abstract class AbstractQCRoutinesConfiguration {
   /**
    * The configured QC routines grouped by their target {@link SensorType}s.
    */
-  private Map<SensorType, List<AbstractAutoQCRoutine>> routines;
+  private Map<SensorType, List<AbstractAutoQCRoutine>> routines = new HashMap<SensorType, List<AbstractAutoQCRoutine>>();
+
+  public AbstractQCRoutinesConfiguration() {
+  }
 
   /**
    * Build the configuration from a configuration file.
@@ -83,12 +82,13 @@ public abstract class AbstractQCRoutinesConfiguration {
    * @throws QCRoutinesConfigurationException
    *           If the configuration is invalid.
    */
+  @Deprecated
   public AbstractQCRoutinesConfiguration(SensorsConfiguration sensorsConfig,
     String configFile) throws QCRoutinesConfigurationException {
 
     MissingParam.checkMissing(configFile, "configFile");
     routines = new HashMap<SensorType, List<AbstractAutoQCRoutine>>();
-    init(sensorsConfig, configFile);
+    // init(sensorsConfig, configFile);
   }
 
   /**
@@ -107,19 +107,21 @@ public abstract class AbstractQCRoutinesConfiguration {
    *           cannot be instantiated.
    * @see #makeInstance(Class, List)
    */
-  private void addRoutine(SensorType sensorType, Class<?> routineClass,
-    List<String> parameters) throws Exception {
+  protected void addRoutine(SensorType sensorType, String className,
+    Map<Flag, Range<Double>> limits) throws Exception {
 
     if (!routines.containsKey(sensorType)) {
       routines.put(sensorType, new ArrayList<AbstractAutoQCRoutine>());
     }
+
+    Class<?> routineClass = Class.forName(getFullClassName(className));
 
     if (routineClass.isAssignableFrom(getRoutineSuperClass())) {
       throw new RoutineException("Routine class does not extend "
         + getRoutineSuperClass().getCanonicalName());
     }
 
-    routines.get(sensorType).add(makeInstance(routineClass, parameters));
+    routines.get(sensorType).add(makeInstance(routineClass, limits));
   }
 
   /**
@@ -138,13 +140,11 @@ public abstract class AbstractQCRoutinesConfiguration {
    * @see AbstractAutoQCRoutine#validateParameters()
    */
   private AbstractAutoQCRoutine makeInstance(Class<?> routineClass,
-    List<String> parameters) throws Exception {
+    Map<Flag, Range<Double>> limits) throws Exception {
 
     AbstractAutoQCRoutine instance = (AbstractAutoQCRoutine) routineClass
       .getDeclaredConstructor().newInstance();
-    instance.setParameters(parameters);
     return instance;
-
   }
 
   /**
@@ -161,66 +161,6 @@ public abstract class AbstractQCRoutinesConfiguration {
    * @return The super-class for an Auto QC Routine.
    */
   protected abstract Class<? extends AbstractAutoQCRoutine> getRoutineSuperClass();
-
-  /**
-   * Initialise the QC routines from a supplied configuration file.
-   *
-   * @param sensorsConfig
-   *          The sensor configuration for the
-   *          {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} whose
-   *          values are being processed.
-   * @param configFilename
-   *          The path to the confiugration file.
-   * @throws QCRoutinesConfigurationException
-   *           If the configuration is invalid.
-   */
-  private void init(SensorsConfiguration sensorsConfig, String configFilename)
-    throws QCRoutinesConfigurationException {
-
-    try (Reader in = new FileReader(configFilename)) {
-      Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(in);
-
-      for (CSVRecord record : records) {
-        String routineName = record.get("Class");
-        String sensorTypeName = record.get("Sensor Type");
-        List<String> parameters = new ArrayList<String>(record.size() - 2);
-        for (int i = 2; i < record.size(); i++) {
-          parameters.add(record.get(i));
-        }
-
-        String fullClassName = getFullClassName(routineName);
-
-        if (routineName.equalsIgnoreCase("")) {
-          throw new QCRoutinesConfigurationException(configFilename,
-            record.getRecordNumber(), "Routine class name cannot be empty");
-        } else if (sensorTypeName.equalsIgnoreCase("")) {
-          throw new QCRoutinesConfigurationException(configFilename,
-            record.getRecordNumber(), "Sensor Type name cannot be empty");
-        } else {
-          try {
-            SensorType sensorType = sensorsConfig.getSensorType(sensorTypeName);
-            addRoutine(sensorType, Class.forName(fullClassName), parameters);
-
-          } catch (SensorTypeNotFoundException e) {
-            throw new QCRoutinesConfigurationException(configFilename,
-              record.getRecordNumber(),
-              "Sensor Type '" + sensorTypeName + "' does not exist");
-          } catch (ClassNotFoundException e) {
-            throw new QCRoutinesConfigurationException(configFilename,
-              record.getRecordNumber(),
-              "Routine check class '" + fullClassName + "' does not exist");
-          } catch (Exception e) {
-            throw new QCRoutinesConfigurationException(configFilename,
-              record.getRecordNumber(), "Error creating Routine check class",
-              e);
-          }
-        }
-      }
-    } catch (IOException e) {
-      throw new QCRoutinesConfigurationException(configFilename,
-        "I/O Error while reading file", e);
-    }
-  }
 
   /**
    * Get the full class name from a routine name.

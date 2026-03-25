@@ -81,7 +81,8 @@ public class ProOceanusMeasurementValueCollector
             SensorValuesListOutput value = sensorValuesList
               .getValue(referenceValue.getCoordinate(), true);
 
-            result.add(new MeasurementValue(sensorType, value));
+            result.add(new MeasurementValue(instrument.getFlagScheme(),
+              sensorType, value));
           } catch (SensorValuesListException e) {
             throw new MeasurementValueCalculatorException(
               "Error getting Pro Oceanus value");

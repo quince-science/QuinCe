@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import com.google.gson.JsonArray;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InvalidInstrumentBasisException;
@@ -1153,5 +1154,14 @@ public class DataSet implements Comparable<DataSet> {
         setEndTime(time);
       }
     }
+  }
+
+  /**
+   * Get the {@link FlagScheme} being used for this dataset.
+   * 
+   * @return The {@link FlagScheme}.
+   */
+  public FlagScheme getFlagScheme() {
+    return instrument.getFlagScheme();
   }
 }

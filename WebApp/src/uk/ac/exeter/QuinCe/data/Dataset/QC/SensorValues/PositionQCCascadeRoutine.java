@@ -8,7 +8,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
@@ -19,9 +19,13 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
-public class PositionQCCascadeRoutine implements Routine {
+public class PositionQCCascadeRoutine extends Routine {
 
   public static final String ROUTINE_NAME = "Position QC Cascade";
+
+  public PositionQCCascadeRoutine(FlagScheme flagScheme) {
+    super(flagScheme, null);
+  }
 
   public void run(Instrument instrument, DatasetSensorValues allSensorValues,
     RunTypePeriods runTypePeriods) throws RoutineException {
@@ -36,14 +40,14 @@ public class PositionQCCascadeRoutine implements Routine {
 
         // If the position is empty, all SensorValues are Bad.
         if (null == position) {
-          RoutineFlag missingPositionFlag = new RoutineFlag(this, Flag.BAD,
-            "Any Position", "null");
+          RoutineFlag missingPositionFlag = new RoutineFlag(flagScheme, this,
+            flagScheme.getBadFlag(), "Any Position", "null");
 
           for (SensorValue value : allSensorValues.get(coordinate).values()) {
             if (shouldApplyFlag(instrument, runTypePeriods,
               coordinate.getTime(), value)) {
               value.addAutoQCFlag(missingPositionFlag);
-              value.setUserQC(Flag.BAD, getShortMessage());
+              value.setUserQC(flagScheme.getBadFlag(), getShortMessage());
             }
           }
         } else if (position.getType() != PlotPageTableValue.NAN_TYPE) {
@@ -54,7 +58,8 @@ public class PositionQCCascadeRoutine implements Routine {
 
             removePositionCascadeQC(value, allSensorValues);
 
-            if (setCascade && !position.getQcFlag(allSensorValues).isGood()) {
+            if (setCascade && !flagScheme
+              .isGood(position.getQcFlag(allSensorValues), true)) {
               value.setCascadingQC(position);
             }
           }
@@ -111,7 +116,7 @@ public class PositionQCCascadeRoutine implements Routine {
 
   private void removePositionCascadeQC(SensorValue value,
     DatasetSensorValues allSensorValues) {
-    if (value.getUserQCFlag().equals(Flag.LOOKUP)) {
+    if (value.getUserQCFlag().equals(FlagScheme.LOOKUP_FLAG)) {
       SortedSet<Long> sources = StringUtils
         .delimitedToLongSet(value.getUserQCMessage());
 

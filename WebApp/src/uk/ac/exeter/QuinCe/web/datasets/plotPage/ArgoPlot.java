@@ -11,6 +11,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.ArgoProfile;
 import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ArgoManualQCData;
@@ -127,10 +128,11 @@ public class ArgoPlot extends Plot {
       Flag yFlag = null;
       if (null != y) {
         yValue = scaleYValue(MathUtils.nullableParseDouble(y.getValue()));
-        yGhost = y.getQcFlag(data.getAllSensorValues()).equals(Flag.FLUSHING);
+        yGhost = y.getQcFlag(data.getAllSensorValues())
+          .equals(FlagScheme.FLUSHING_FLAG);
         yFlag = y.getQcFlag(data.getAllSensorValues());
         if (useNeededFlags && y.getFlagNeeded()) {
-          yFlag = Flag.NEEDED;
+          yFlag = FlagScheme.NEEDED_FLAG;
         }
       }
 
@@ -139,7 +141,8 @@ public class ArgoPlot extends Plot {
       Flag y2Flag = null;
       if (null != y2) {
         y2Value = scaleYValue(MathUtils.nullableParseDouble(y2.getValue()));
-        y2Ghost = y2.getQcFlag(data.getAllSensorValues()).equals(Flag.FLUSHING);
+        y2Ghost = y2.getQcFlag(data.getAllSensorValues())
+          .equals(FlagScheme.FLUSHING_FLAG);
         y2Flag = y2.getQcFlag(data.getAllSensorValues());
         // We never show NEEDED flags for Y2 axis
       }

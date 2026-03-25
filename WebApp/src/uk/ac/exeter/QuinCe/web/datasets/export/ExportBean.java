@@ -35,7 +35,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.TimeDataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -373,8 +373,9 @@ public class ExportBean extends BaseManagedBean {
                  * Note that it's possible for a Measurement to be Good but the
                  * data reduction for an individual Variable to be Bad.
                  */
-                if (null != value && exportOption.skipBad() && value
-                  .getQcFlag(data.getAllSensorValues()).equals(Flag.BAD)) {
+                if (null != value && exportOption.skipBad()
+                  && dataset.getFlagScheme()
+                    .isBad(value.getQcFlag(data.getAllSensorValues()))) {
                   value = null;
                 }
 
@@ -572,7 +573,7 @@ public class ExportBean extends BaseManagedBean {
       export.registerValue(columnId, value, allSensorValues);
 
       // Replacing FLUSHING values with empty
-      if (value.getQcFlag(allSensorValues).equals(Flag.FLUSHING)) {
+      if (value.getQcFlag(allSensorValues).equals(FlagScheme.FLUSHING_FLAG)) {
         // Empty columns
         export.append(exportOption.getMissingValue());
 
@@ -603,7 +604,7 @@ public class ExportBean extends BaseManagedBean {
           // If the value is NULL, the QC flag is empty. So only put in the flag
           // if it's not null.
           if (null != value.getValue()) {
-            export.append(value.getQcFlag(allSensorValues).getWoceValue());
+            export.append(value.getQcFlag(allSensorValues).getExportValue());
           }
 
           // QC Comment

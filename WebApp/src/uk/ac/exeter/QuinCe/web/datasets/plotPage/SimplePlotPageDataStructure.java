@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 
@@ -54,11 +55,15 @@ public class SimplePlotPageDataStructure {
    */
   private TreeMap<Long, Coordinate> coordinates;
 
-  public SimplePlotPageDataStructure(List<PlotPageColumnHeading> list) {
+  private final FlagScheme flagScheme;
+
+  public SimplePlotPageDataStructure(List<PlotPageColumnHeading> list,
+    FlagScheme flagScheme) {
     pageData = new TreeMap<Coordinate, LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue>>();
     coordinates = new TreeMap<Long, Coordinate>();
     this.columnHeadings = Collections.unmodifiableList(list);
     timeHeading = getTimeHeading();
+    this.flagScheme = flagScheme;
   }
 
   private void addCoordinate(Coordinate coordinate) {
@@ -68,7 +73,8 @@ public class SimplePlotPageDataStructure {
     columnHeadings.forEach(x -> columns.put(x, null));
 
     if (null != timeHeading) {
-      columns.put(timeHeading, new SimplePlotPageTableValue(coordinate));
+      columns.put(timeHeading,
+        new SimplePlotPageTableValue(coordinate, flagScheme));
     }
 
     pageData.put(coordinate, columns);
@@ -101,7 +107,8 @@ public class SimplePlotPageDataStructure {
     }
 
     for (int i = start; i <= end; i++) {
-      PlotPageTableRecord record = new PlotPageTableRecord(ids.get(i));
+      PlotPageTableRecord record = new PlotPageTableRecord(ids.get(i),
+        flagScheme);
       record.addAll(pageData.get(coordinates.get(ids.get(i))).values());
       result.add(record);
     }

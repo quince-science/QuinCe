@@ -5,6 +5,7 @@ import com.javadocmd.simplelatlng.LatLng;
 import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 
 public class PlotPageValueMapRecord extends MapRecord {
 
@@ -24,7 +25,8 @@ public class PlotPageValueMapRecord extends MapRecord {
 
   @Override
   public boolean isGood(DatasetSensorValues allSensorValues) {
-    return value.getQcFlag(allSensorValues).isGood();
+    return allSensorValues.getFlagScheme()
+      .isGood(value.getQcFlag(allSensorValues), true);
   }
 
   @Override
@@ -49,7 +51,7 @@ public class PlotPageValueMapRecord extends MapRecord {
     Flag result;
 
     if (!ignoreNeeded && flagNeeded()) {
-      result = Flag.NEEDED;
+      result = FlagScheme.NEEDED_FLAG;
     } else {
       result = value.getQcFlag(allSensorValues);
     }

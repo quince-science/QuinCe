@@ -10,6 +10,7 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.utils.NoEmptyStringSet;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
@@ -70,14 +71,15 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    * @return A record object.
    */
   public static ReadOnlyDataReductionRecord makeRecord(long measurementId,
-    long variableId, Map<String, Double> calculationValues, Flag qcFlag,
-    String qcMessage) {
+    long variableId, FlagScheme flagScheme,
+    Map<String, Double> calculationValues, Flag qcFlag, String qcMessage) {
 
     List<String> parameterNames = new ArrayList<String>();
     calculationValues.keySet().forEach(parameterNames::add);
 
     ReadOnlyDataReductionRecord record = new ReadOnlyDataReductionRecord(
-      measurementId, variableId, parameterNames, calculationValues, qcFlag,
+      measurementId, variableId, flagScheme, parameterNames, calculationValues,
+      qcFlag,
       new NoEmptyStringSet(StringUtils.delimitedToList(qcMessage, ";")));
 
     return record;
@@ -102,10 +104,11 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
    *          separate messages.
    */
   private ReadOnlyDataReductionRecord(long measurementId, long variableId,
-    List<String> parameterNames, Map<String, Double> calculationValues,
-    Flag qcFlag, NoEmptyStringSet qcMessages) {
-    super(measurementId, variableId, parameterNames, calculationValues, qcFlag,
-      qcMessages);
+    FlagScheme flagScheme, List<String> parameterNames,
+    Map<String, Double> calculationValues, Flag qcFlag,
+    NoEmptyStringSet qcMessages) {
+    super(measurementId, variableId, flagScheme, parameterNames,
+      calculationValues, qcFlag, qcMessages);
   }
 
   @Override
@@ -130,7 +133,7 @@ public class ReadOnlyDataReductionRecord extends DataReductionRecord {
     throws DataReductionException {
 
     NoEmptyStringSet filteredMessages = new NoEmptyStringSet(messages);
-    if (!flag.isGood() && filteredMessages.size() == 0) {
+    if (!flagScheme.isGood(flag, true) && filteredMessages.size() == 0) {
       throw new DataReductionException("Empty QC message not allowed");
     }
 

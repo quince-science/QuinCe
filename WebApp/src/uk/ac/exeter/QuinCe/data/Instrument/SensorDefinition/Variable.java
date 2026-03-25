@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -13,8 +12,8 @@ import com.google.gson.GsonBuilder;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class to hold the sensors required for a given variable.
@@ -40,10 +39,9 @@ public class Variable implements Comparable<Variable> {
   private String name;
 
   /**
-   * Bit mask indicating which measurement bases that are allowed for this
-   * variable.
+   * Bit mask indicating which measurement bases are allowed for this Variable.
    */
-  private int allowedBasis;
+  private int allowedBasisMask;
 
   /**
    * IDs and Labels for this variable's attributes, which must be defined by the
@@ -77,13 +75,7 @@ public class Variable implements Comparable<Variable> {
    * The cascades from Questionable flags for each required SensorType to the
    * Core SensorType flag
    */
-  private Map<SensorType, Flag> questionableCascades;
-
-  /**
-   * The cascades from Bad flags for each required SensorType to the Core
-   * SensorType flag
-   */
-  private Map<SensorType, Flag> badCascades;
+  private VariableCascades cascades;
 
   /**
    * Column headings to use in export files. These override the settings in the
@@ -112,15 +104,14 @@ public class Variable implements Comparable<Variable> {
   protected Variable(SensorsConfiguration sensorConfig, long id, String name,
     int allowedBasis, VariableAttributes attributes, String propertiesJson,
     long coreSensorTypeId, List<Long> requiredSensorTypeIds,
-    Map<Long, AttributeCondition> attrConditions,
-    List<Integer> questionableCascades, List<Integer> badCascades,
+    Map<Long, AttributeCondition> attrConditions, VariableCascades cascades,
     Map<SensorType, ColumnHeading> columnHeadings)
     throws SensorTypeNotFoundException, SensorConfigurationException,
     InvalidFlagException {
 
     this.id = id;
     this.name = name;
-    this.allowedBasis = allowedBasis;
+    this.allowedBasisMask = allowedBasis;
     this.attributes = attributes;
 
     if (null == propertiesJson || propertiesJson.length() == 0) {
@@ -146,21 +137,11 @@ public class Variable implements Comparable<Variable> {
           + ")");
     }
 
-    if (questionableCascades.size() != requiredSensorTypeIds.size()) {
-      throw new SensorConfigurationException(
-        "Questionable cascades do not match required sensors");
-    }
-
-    if (badCascades.size() != requiredSensorTypeIds.size()) {
-      throw new SensorConfigurationException(
-        "Bad cascades do not match required sensors");
-    }
-
     this.requiredSensorTypes = new ArrayList<SensorType>(
       requiredSensorTypeIds.size());
     this.attributeConditions = attrConditions;
-    this.questionableCascades = new HashMap<SensorType, Flag>();
-    this.badCascades = new HashMap<SensorType, Flag>();
+
+    this.cascades = cascades;
 
     for (int i = 0; i < requiredSensorTypeIds.size(); i++) {
       SensorType sensorType = sensorConfig
@@ -171,9 +152,6 @@ public class Variable implements Comparable<Variable> {
             + ")");
       }
       requiredSensorTypes.add(sensorType);
-      this.questionableCascades.put(sensorType,
-        new Flag(questionableCascades.get(i)));
-      this.badCascades.put(sensorType, new Flag(badCascades.get(i)));
     }
 
     this.columnHeadings = columnHeadings;
@@ -241,11 +219,9 @@ public class Variable implements Comparable<Variable> {
    * @throws SensorConfigurationException
    *           If the internal configuration is invalid
    */
-  public Flag getCascade(SensorType sensorType, Flag flag,
-    SensorAssignments sensorAssignments) throws SensorConfigurationException {
-
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-      .getSensorsConfiguration();
+  public Flag getCascade(SensorType sensorType, FlagScheme flagScheme,
+    Flag flag, SensorAssignments sensorAssignments)
+    throws SensorConfigurationException {
 
     Flag result = null;
 
@@ -254,39 +230,7 @@ public class Variable implements Comparable<Variable> {
       || sensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
       result = flag;
     } else {
-      switch (flag.getFlagValue()) {
-      case Flag.VALUE_GOOD:
-      case Flag.VALUE_ASSUMED_GOOD: {
-        result = Flag.ASSUMED_GOOD;
-        break;
-      }
-      case Flag.VALUE_QUESTIONABLE: {
-        if (questionableCascades.containsKey(sensorType)) {
-          result = questionableCascades.get(sensorType);
-        } else {
-          SensorType parent = sensorConfig.getParent(sensorType);
-          if (null != parent) {
-            result = questionableCascades.get(parent);
-          }
-        }
-        break;
-      }
-      case Flag.VALUE_BAD: {
-        if (badCascades.containsKey(sensorType)) {
-          result = badCascades.get(sensorType);
-        } else {
-          SensorType parent = sensorConfig.getParent(sensorType);
-          if (null != parent) {
-            result = badCascades.get(parent);
-          }
-        }
-        break;
-      }
-      default: {
-        result = flag;
-        break;
-      }
-      }
+      result = cascades.getCascadeFlag(flagScheme, sensorType, flag);
 
       /*
        * If result is null here, this means that the supplied SensorType is not
@@ -301,8 +245,8 @@ public class Variable implements Comparable<Variable> {
         Set<SensorType> dependingTypes = sensorAssignments
           .getDependents(sensorType);
         for (SensorType dependingType : dependingTypes) {
-          Flag dependingCascadeFlag = getCascade(dependingType, flag,
-            sensorAssignments);
+          Flag dependingCascadeFlag = getCascade(dependingType, flagScheme,
+            flag, sensorAssignments);
           if (null == result
             || dependingCascadeFlag.moreSignificantThan(result)) {
             result = dependingCascadeFlag;
@@ -399,7 +343,7 @@ public class Variable implements Comparable<Variable> {
   }
 
   public boolean basisAllowed(int basis) {
-    return (basis & allowedBasis) > 0;
+    return (basis & allowedBasisMask) > 0;
   }
 
   public Map<Long, Boolean> getDependsQuestionAnswers() {

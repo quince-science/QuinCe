@@ -9,7 +9,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
@@ -19,6 +19,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class ZeroCurrentComparisonRoutine extends DataReductionQCRoutine {
+
+  protected ZeroCurrentComparisonRoutine(FlagScheme flagScheme) {
+    super(flagScheme, null);
+  }
 
   @Override
   public String getShortMessage() {
@@ -39,7 +43,8 @@ public class ZeroCurrentComparisonRoutine extends DataReductionQCRoutine {
 
     try {
       // All values detected by this routine get the same flag
-      RoutineFlag flag = new RoutineFlag(this, Flag.BAD, null, null);
+      RoutineFlag flag = new RoutineFlag(flagScheme, this,
+        flagScheme.getBadFlag(), null, null);
 
       SensorType zeroCountType = ResourceManager.getInstance()
         .getSensorsConfiguration().getSensorType("ProOceanus Zero Count");

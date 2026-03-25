@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import com.javadocmd.simplelatlng.LatLng;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
@@ -41,7 +42,7 @@ public class DatasetSensorValues {
   /**
    * The database ID of the {@link DataSet} that these values belong to.
    */
-  private DataSet dataset;
+  private final DataSet dataset;
 
   /**
    * The {@link SensorValue}s mapped by their database ID.
@@ -168,7 +169,7 @@ public class DatasetSensorValues {
     for (SensorValue sensorValue : rawSensorValues) {
       if (!ignoredSensorValues.contains(sensorValue.getId())) {
         if (!ignoreFlushing
-          || !sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+          || !sensorValue.getUserQCFlag().equals(FlagScheme.FLUSHING_FLAG)) {
           add(sensorValue);
         }
       }
@@ -637,7 +638,7 @@ public class DatasetSensorValues {
       int columnFlags = 0;
 
       for (SensorValue value : entry.getValue().getRawValues()) {
-        if (value.getUserQCFlag().equals(Flag.NEEDED)) {
+        if (value.getUserQCFlag().equals(FlagScheme.NEEDED_FLAG)) {
           columnFlags++;
           total++;
         }
@@ -668,7 +669,7 @@ public class DatasetSensorValues {
 
     int lonCount = 0;
     for (SensorValue longitude : longitudes.getRawValues()) {
-      if (longitude.getUserQCFlag().equals(Flag.NEEDED)) {
+      if (longitude.getUserQCFlag().equals(FlagScheme.NEEDED_FLAG)) {
         needsFlagTimes.add(longitude.getCoordinate());
         lonCount++;
       }
@@ -676,7 +677,7 @@ public class DatasetSensorValues {
 
     int latCount = 0;
     for (SensorValue latitude : latitudes.getRawValues()) {
-      if (latitude.getUserQCFlag().equals(Flag.NEEDED)) {
+      if (latitude.getUserQCFlag().equals(FlagScheme.NEEDED_FLAG)) {
         needsFlagTimes.add(latitude.getCoordinate());
         latCount++;
       }
@@ -840,7 +841,8 @@ public class DatasetSensorValues {
           if (null == valueRunType || affectedSensorAssignments.get(assignment)
             .contains(valueRunType)) {
 
-            if (!source.getDisplayFlag(this).equals(Flag.GOOD)) {
+            if (!dataset.getFlagScheme().isGood(source.getDisplayFlag(this),
+              false)) {
               value.setCascadingQC(source);
             } else {
               value.removeCascadingQC(source.getId());
@@ -974,7 +976,8 @@ public class DatasetSensorValues {
       : sensorValues.getValue(coordinate, true);
 
     return null == positionValue ? null
-      : new MeasurementValue(sensorType, positionValue);
+      : new MeasurementValue(dataset.getFlagScheme(), sensorType,
+        positionValue);
   }
 
   /**
@@ -1087,5 +1090,14 @@ public class DatasetSensorValues {
 
   public long getDatasetId() {
     return dataset.getId();
+  }
+
+  /**
+   * Get the {@link FlagScheme} for the {@link Flag}s attached to these values.
+   * 
+   * @return The flag scheme.
+   */
+  public FlagScheme getFlagScheme() {
+    return dataset.getFlagScheme();
   }
 }

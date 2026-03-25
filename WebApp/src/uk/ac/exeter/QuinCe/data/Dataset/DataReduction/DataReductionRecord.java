@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 import uk.ac.exeter.QuinCe.utils.NoEmptyStringSet;
@@ -38,6 +39,11 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
   private Map<String, Double> calculationValues;
 
   /**
+   * The {@link FlagScheme} used for this record.
+   */
+  protected FlagScheme flagScheme;
+
+  /**
    * The record's QC Flag.
    */
   private Flag qcFlag;
@@ -54,22 +60,25 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
    *          The measurement
    */
   public DataReductionRecord(Measurement measurement, Variable variable,
-    List<String> parameterNames) {
+    FlagScheme flagScheme, List<String> parameterNames) {
     this.measurementId = measurement.getId();
     this.variableId = variable.getId();
+    this.flagScheme = flagScheme;
     this.parameterNames = Collections.unmodifiableList(parameterNames);
 
     this.calculationValues = new HashMap<String, Double>();
-    this.qcFlag = Flag.ASSUMED_GOOD;
+    this.qcFlag = flagScheme.getAssumedGoodFlag();
     this.qcMessages = new NoEmptyStringSet();
   }
 
   protected DataReductionRecord(long measurementId, long variableId,
-    List<String> parameterNames, Map<String, Double> calculationValues,
-    Flag qcFlag, NoEmptyStringSet qcMessages) {
+    FlagScheme flagScheme, List<String> parameterNames,
+    Map<String, Double> calculationValues, Flag qcFlag,
+    NoEmptyStringSet qcMessages) {
 
     this.measurementId = measurementId;
     this.variableId = variableId;
+    this.flagScheme = flagScheme;
     this.parameterNames = Collections.unmodifiableList(parameterNames);
 
     this.calculationValues = calculationValues;
@@ -109,7 +118,7 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
       qcFlag = flag;
 
       NoEmptyStringSet messageList = new NoEmptyStringSet(messages);
-      if (!flag.equals(Flag.NO_QC) && messageList.size() == 0) {
+      if (!flag.equals(FlagScheme.NO_QC_FLAG) && messageList.size() == 0) {
         throw new DataReductionException("Empty QC message not allowed");
       }
 

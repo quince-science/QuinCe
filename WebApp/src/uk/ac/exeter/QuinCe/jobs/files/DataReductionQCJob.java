@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.CalibrationFlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
@@ -170,7 +171,7 @@ public class DataReductionQCJob extends DataSetJob {
         if (DataSetDataDB.getFlagsRequired(dataSource, dataSet.getId()) > 0) {
           dataSet.setStatus(DataSet.STATUS_USER_QC);
         } else if (DataSetDataDB.hasCalibrationRequiredFlags(dataSource,
-          dataSet.getId())) {
+          (CalibrationFlagScheme) dataSet.getFlagScheme(), dataSet.getId())) {
           dataSet.setStatus(DataSet.STATUS_CALIBRATION_REQUIRED);
         } else {
           dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);

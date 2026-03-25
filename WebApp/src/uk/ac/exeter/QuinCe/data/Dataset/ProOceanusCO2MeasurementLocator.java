@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -128,7 +128,7 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
 
             for (SensorValue flushingCO2 : co2Values.getRawValues(flushingStart,
               flushingEnd)) {
-              flushingCO2.setUserQC(Flag.FLUSHING, "Flushing");
+              flushingCO2.setUserQC(FlagScheme.FLUSHING_FLAG, "Flushing");
               flaggedSensorValues.add(flushingCO2);
             }
           }
@@ -146,7 +146,7 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
 
             for (SensorValue flushingCO2 : co2Values.getRawValues(flushingStart,
               flushingEnd)) {
-              flushingCO2.setUserQC(Flag.FLUSHING, "Flushing");
+              flushingCO2.setUserQC(FlagScheme.FLUSHING_FLAG, "Flushing");
               flaggedSensorValues.add(flushingCO2);
             }
           }
@@ -180,13 +180,15 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
           if (null != co2Value) {
             if (runType.getStringValue().equals(WATER_MODE)) {
               if (instrument.hasVariable(waterVar)) {
-                measurements.add(new Measurement(dataset.getId(),
-                  runType.getCoordinate(), waterRunTypes));
+                measurements
+                  .add(new Measurement(dataset.getId(), dataset.getFlagScheme(),
+                    runType.getCoordinate(), waterRunTypes));
               }
             } else if (runType.getStringValue().equals(ATM_MODE)) {
               if (instrument.hasVariable(atmVar)) {
-                measurements.add(new Measurement(dataset.getId(),
-                  runType.getCoordinate(), atmRunTypes));
+                measurements
+                  .add(new Measurement(dataset.getId(), dataset.getFlagScheme(),
+                    runType.getCoordinate(), atmRunTypes));
               }
             } else {
               throw new MeasurementLocatorException(

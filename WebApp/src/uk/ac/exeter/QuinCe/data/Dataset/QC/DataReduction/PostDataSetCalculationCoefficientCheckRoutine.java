@@ -11,6 +11,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
@@ -22,6 +23,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 public class PostDataSetCalculationCoefficientCheckRoutine
   extends DataReductionQCRoutine {
 
+  private Flag flag = null;
+
+  public PostDataSetCalculationCoefficientCheckRoutine(FlagScheme flagScheme) {
+    super(flagScheme, null);
+  }
+
   @Override
   public String getShortMessage() {
     return "Missing post-calibration";
@@ -30,6 +37,11 @@ public class PostDataSetCalculationCoefficientCheckRoutine
   @Override
   public String getLongMessage(RoutineFlag flag) {
     return "Missing post-calibration";
+  }
+
+  public void applySettings(DataReductionQCRoutineSettings settings) {
+    super.applySettings(settings);
+    flag = flagScheme.getFlag(settings.getOption("flagChar").charAt(0));
   }
 
   @Override
@@ -48,7 +60,7 @@ public class PostDataSetCalculationCoefficientCheckRoutine
           .getInstance().getCalibrationSet(conn, castDataset);
         if (!calculationCoefficients.hasCompletePost()) {
           for (DataReductionRecord record : dataReductionRecords.values()) {
-            record.setQc(Flag.NOT_CALIBRATED, getShortMessage());
+            record.setQc(flag, getShortMessage());
           }
         }
 

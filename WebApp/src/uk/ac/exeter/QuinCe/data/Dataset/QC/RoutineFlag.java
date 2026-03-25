@@ -46,6 +46,8 @@ public class RoutineFlag extends Flag {
    */
   private final String actualValue;
 
+  private final FlagScheme flagScheme;
+
   /**
    * Create a Flag related to a specific automatic QC routine.
    *
@@ -58,10 +60,32 @@ public class RoutineFlag extends Flag {
    * @param actualValue
    *          The actual (invalid) value encountered.
    */
-  public RoutineFlag(Routine routine, Flag flag, String requiredValue,
-    String actualValue) {
+  public RoutineFlag(FlagScheme flagScheme, Routine routine, Flag flag,
+    String requiredValue, String actualValue) {
     super(flag);
+    this.flagScheme = flagScheme;
     this.routineName = routine.getName();
+    this.requiredValue = requiredValue;
+    this.actualValue = actualValue;
+  }
+
+  /**
+   * Create a Flag related to a specific automatic QC routine.
+   *
+   * @param routineName
+   *          The name of the {@link Routine} that generated the flag.
+   * @param flag
+   *          The flag value.
+   * @param requiredValue
+   *          The value required by the routine.
+   * @param actualValue
+   *          The actual (invalid) value encountered.
+   */
+  public RoutineFlag(FlagScheme flagScheme, String routineName, Flag flag,
+    String requiredValue, String actualValue) {
+    super(flag);
+    this.flagScheme = flagScheme;
+    this.routineName = routineName;
     this.requiredValue = requiredValue;
     this.actualValue = actualValue;
   }
@@ -78,21 +102,22 @@ public class RoutineFlag extends Flag {
    *           If the method cannot determine how to identify the originating
    *           routine.
    */
-  protected Routine getRoutineInstance() throws RoutineException {
+  private Routine getRoutineInstance() throws RoutineException {
 
     Routine result;
 
     if (routineName.equals(PositionQCCascadeRoutine.ROUTINE_NAME)) {
       // This is a special routine that lives outside the routines
       // configuration.
-      return new PositionQCCascadeRoutine();
+      return new PositionQCCascadeRoutine(flagScheme);
     } else {
 
       String[] routineNameParts = routineName.split("\\.");
 
       switch (routineNameParts[0]) {
       case "SensorValues": {
-        result = ResourceManager.getInstance().getQCRoutinesConfiguration()
+        result = ResourceManager.getInstance()
+          .getQCRoutinesConfiguration(flagScheme.getBasis())
           .getRoutine(routineName);
         break;
       }
@@ -171,7 +196,7 @@ public class RoutineFlag extends Flag {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(getFlagValue(), routineName);
+    result = prime * result + Objects.hash(getValue(), routineName);
     return result;
   }
 
@@ -184,7 +209,7 @@ public class RoutineFlag extends Flag {
     if (getClass() != obj.getClass())
       return false;
     RoutineFlag other = (RoutineFlag) obj;
-    return Objects.equals(getFlagValue(), other.getFlagValue())
+    return Objects.equals(getValue(), other.getValue())
       && Objects.equals(routineName, other.routineName);
   }
 }

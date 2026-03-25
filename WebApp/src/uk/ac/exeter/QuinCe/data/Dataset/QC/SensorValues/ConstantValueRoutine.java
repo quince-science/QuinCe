@@ -3,35 +3,22 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.Range;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class ConstantValueRoutine extends AutoQCRoutine {
 
-  /**
-   * The maximum time that a value can remain constant (in minutes)
-   */
-  private double maxDuration;
-
-  @Override
-  protected void validateParameters() throws RoutineException {
-    if (null == parameters || parameters.size() != 1) {
-      throw new RoutineException(
-        "Incorrect number of parameters. Must be <maxDuration>");
-    }
-
-    try {
-      maxDuration = Double.parseDouble(parameters.get(0));
-    } catch (NumberFormatException e) {
-      throw new RoutineException("Max duration parameter must be numeric");
-    }
-
-    if (maxDuration <= 0) {
-      throw new RoutineException("Max duration must be greater than zero");
-    }
+  public ConstantValueRoutine(FlagScheme flagScheme, SensorType sensorType,
+    Map<Flag, Range<Double>> limits) {
+    super(flagScheme, sensorType, limits);
   }
 
   @Override
@@ -125,10 +112,9 @@ public class ConstantValueRoutine extends AutoQCRoutine {
         .between(constantValues.get(0).getCoordinate().getTime(), constantValues
           .get(constantValues.size() - 1).getCoordinate().getTime());
 
-      if (minutesDifference > maxDuration) {
-        for (SensorValue value : constantValues) {
-          addFlag(value, Flag.BAD, maxDuration, minutesDifference);
-        }
+      RoutineFlag flag = getRangeFlag(minutesDifference, true);
+      for (SensorValue value : constantValues) {
+        addFlag(value, flag);
       }
     }
   }

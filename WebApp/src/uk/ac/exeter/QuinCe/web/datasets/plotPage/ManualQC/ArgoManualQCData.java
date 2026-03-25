@@ -233,7 +233,8 @@ public class ArgoManualQCData extends ManualQCData {
       for (Coordinate baseCoordinate : cycleCoordinates) {
         ArgoCoordinate coordinate = (ArgoCoordinate) baseCoordinate;
 
-        PlotPageTableRecord record = new ArgoPlotPageTableRecord(coordinate);
+        PlotPageTableRecord record = new ArgoPlotPageTableRecord(coordinate,
+          sensorValues.getFlagScheme());
         record.addCoordinate(coordinate);
 
         Map<Long, SensorValue> recordSensorValues = sensorValues
@@ -295,7 +296,8 @@ public class ArgoManualQCData extends ManualQCData {
         if (null != profile.getPosition()) {
           records.add(new PlotPageValueMapRecord(profile.getPosition(), i,
             new SimplePlotPageTableValue(
-              String.valueOf(profile.getCycleNumber()))));
+              String.valueOf(profile.getCycleNumber()),
+              sensorValues.getFlagScheme())));
           usedCycleNumbers.add(profile.getCycleNumber());
         }
       }

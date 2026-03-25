@@ -20,11 +20,14 @@ import java.util.TreeSet;
 import javax.sql.DataSource;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.CalibrationFlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -100,7 +103,7 @@ public class DataSetDataDB {
     + "sv.id, sv.coordinate_id, sv.file_column, sv.value, sv.auto_qc, "
     + "sv.user_qc_flag, sv.user_qc_message "
     + "FROM sensor_values sv INNER JOIN coordinates c ON sv.coordinate_id = c.id "
-    + "WHERE c.dataset_id = ? AND user_qc_flag != " + Flag.VALUE_FLUSHING;
+    + "WHERE c.dataset_id = ? AND user_qc_flag != " + FlagScheme.FLUSHING_FLAG;
 
   private static final String GET_POSITION_SENSOR_VALUES_QUERY = "SELECT "
     + "sv.id, sv.coordinate_id, sv.file_column, sv.value, sv.auto_qc, sv.user_qc_flag, sv.user_qc_message "
@@ -157,7 +160,7 @@ public class DataSetDataDB {
 
   private static final String GET_REQUIRED_FLAGS_QUERY = "SELECT "
     + "COUNT(*) FROM sensor_values sv INNER JOIN coordinates c ON sv.coordinate_id = c.id "
-    + "WHERE c.dataset_id = ? AND sv.user_qc_flag = " + Flag.VALUE_NEEDED;
+    + "WHERE c.dataset_id = ? AND sv.user_qc_flag = " + FlagScheme.NEEDED_FLAG;
 
   private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
     + "dr.measurement_id, dr.variable_id, dr.calculation_values, "
@@ -199,7 +202,7 @@ public class DataSetDataDB {
     + "COUNT(*) FROM data_reduction dr "
     + "INNER JOIN measurements m ON dr.measurement_id = m.id "
     + "INNER JOIN coordinates c ON m.coordinate_id = c.id "
-    + "WHERE c.dataset_id = ? AND dr.qc_flag = " + Flag.VALUE_NOT_CALIBRATED;
+    + "WHERE c.dataset_id = ? AND dr.qc_flag = ?";
 
   private static final String UPDATE_MEASUREMENT_COORDINATE_STATEMENT = "UPDATE "
     + "measurements SET coordinate_id = ? WHERE id = ?";
@@ -410,7 +413,7 @@ public class DataSetDataDB {
           }
 
           addStmt.setString(4, value.getAutoQcResult().toJson());
-          addStmt.setInt(5, value.getUserQCFlag().getFlagValue());
+          addStmt.setInt(5, value.getUserQCFlag().getValue());
           addStmt.setString(6, value.getUserQCMessage());
 
           addStmt.execute();
@@ -519,21 +522,21 @@ public class DataSetDataDB {
 
         if (value.isDirty()) {
           updateStmt.setString(1, value.getAutoQcResult().toJson());
-          updateStmt.setInt(2, value.getUserQCFlag().getFlagValue());
+          updateStmt.setInt(2, value.getUserQCFlag().getValue());
 
           // Truncate user QC message (except for LOOKUP flags)
           String userQCMessage = value.getUserQCMessage();
-          if (!value.getUserQCFlag().equals(Flag.LOOKUP)) {
+          if (!value.getUserQCFlag().equals(FlagScheme.LOOKUP_FLAG)) {
             if (userQCMessage.length() > 255) {
               userQCMessage = userQCMessage.substring(0, 255);
             }
           }
 
-          if (value.getUserQCFlag().commentRequired()
+          if (value.getUserQCFlag().isCommentRequired()
             && StringUtils.isBlank(value.getUserQCMessage())) {
             throw new InvalidSensorValueException(
               "User QC message cannot be empty with flag "
-                + value.getUserQCFlag().getFlagValue(),
+                + value.getUserQCFlag().getValue(),
               value);
           }
 
@@ -646,7 +649,7 @@ public class DataSetDataDB {
 
           while (records.next()) {
             SensorValue value = sensorValueFromResultSet(records,
-              dataset.getId(), coordinates);
+              dataset.getId(), dataset.getFlagScheme(), coordinates);
             if (!ignoredSensorValues.contains(value.getId())) {
               values.add(value);
             }
@@ -691,8 +694,8 @@ public class DataSetDataDB {
 
         try (ResultSet records = stmt.executeQuery()) {
           while (records.next()) {
-            sensorValues.add(
-              sensorValueFromResultSet(records, dataset.getId(), coordinates));
+            sensorValues.add(sensorValueFromResultSet(records, dataset.getId(),
+              dataset.getFlagScheme(), coordinates));
           }
         }
       }
@@ -721,8 +724,8 @@ public class DataSetDataDB {
         stmt.setLong(1, dataset.getId());
         try (ResultSet records = stmt.executeQuery()) {
           while (records.next()) {
-            values.add(
-              sensorValueFromResultSet(records, dataset.getId(), coordinates));
+            values.add(sensorValueFromResultSet(records, dataset.getId(),
+              dataset.getFlagScheme(), coordinates));
           }
         }
       }
@@ -750,22 +753,23 @@ public class DataSetDataDB {
    * @throws RecordNotFoundException
    */
   private static SensorValue sensorValueFromResultSet(ResultSet record,
-    long datasetId, Map<Long, Coordinate> coordinates)
+    long datasetId, FlagScheme flagScheme, Map<Long, Coordinate> coordinates)
     throws SQLException, InvalidFlagException, RecordNotFoundException {
 
     long valueId = record.getLong(1);
     long coordinateId = record.getLong(2);
     long fileColumnId = record.getLong(3);
     String value = record.getString(4);
-    AutoQCResult autoQC = AutoQCResult.buildFromJson(record.getString(5));
-    Flag userQCFlag = new Flag(record.getInt(6));
+    AutoQCResult autoQC = AutoQCResult.buildFromJson(record.getString(5),
+      flagScheme);
+    Flag userQCFlag = flagScheme.getFlag(record.getInt(6));
     String userQCMessage = record.getString(7);
 
     if (null == coordinates.get(coordinateId)) {
       throw new RecordNotFoundException("Coordinate not loaded");
     }
 
-    return new SensorValue(valueId, datasetId, fileColumnId,
+    return new SensorValue(valueId, datasetId, flagScheme, fileColumnId,
       coordinates.get(coordinateId), value, autoQC, userQCFlag, userQCMessage);
   }
 
@@ -864,8 +868,8 @@ public class DataSetDataDB {
       // See measurementFromResultSet.
       records.next();
       while (!records.isAfterLast()) {
-        measurements.addMeasurement(
-          measurementFromResultSet(records, dataset.getId(), coordinates));
+        measurements.addMeasurement(measurementFromResultSet(records,
+          dataset.getId(), coordinates, dataset.getFlagScheme()));
       }
 
     } catch (Exception e) {
@@ -915,8 +919,8 @@ public class DataSetDataDB {
       // See measurementFromResultSet.
       records.next();
       while (!records.isAfterLast()) {
-        measurements
-          .add(measurementFromResultSet(records, dataset.getId(), coordinates));
+        measurements.add(measurementFromResultSet(records, dataset.getId(),
+          coordinates, dataset.getFlagScheme()));
       }
 
     } catch (Exception e) {
@@ -930,7 +934,7 @@ public class DataSetDataDB {
   }
 
   private static Measurement measurementFromResultSet(ResultSet record,
-    long datasetId, Map<Long, Coordinate> coordinates)
+    long datasetId, Map<Long, Coordinate> coordinates, FlagScheme flagScheme)
     throws SQLException, RecordNotFoundException {
 
     // Get the main measurement details
@@ -938,9 +942,14 @@ public class DataSetDataDB {
     Coordinate coordinate = coordinates.get(record.getLong(2));
     String measurementValuesJson = record.getString(3);
 
+    Gson gson = new GsonBuilder()
+      .registerTypeAdapter(new HashMap<Long, MeasurementValue>().getClass(),
+        new MeasurementValuesSerializer(flagScheme))
+      .create();
+
     HashMap<Long, MeasurementValue> measurementValues = null == measurementValuesJson
       ? null
-      : Measurement.gson.fromJson(measurementValuesJson,
+      : gson.fromJson(measurementValuesJson,
         Measurement.MEASUREMENT_VALUES_TYPE);
 
     // Now extract run types
@@ -970,7 +979,7 @@ public class DataSetDataDB {
     }
 
     return new Measurement(id, datasetId, coordinate, runTypes,
-      measurementValues);
+      measurementValues, flagScheme);
   }
 
   /**
@@ -999,7 +1008,7 @@ public class DataSetDataDB {
         dataReductionStmt.setLong(1, dataReduction.getMeasurementId());
         dataReductionStmt.setLong(2, dataReduction.getVariableId());
         dataReductionStmt.setString(3, dataReduction.getCalculationJson());
-        dataReductionStmt.setInt(4, dataReduction.getQCFlag().getFlagValue());
+        dataReductionStmt.setInt(4, dataReduction.getQCFlag().getValue());
         dataReductionStmt.setString(5, StringUtils
           .collectionToDelimited(dataReduction.getQCMessages(), ";"));
 
@@ -1035,7 +1044,7 @@ public class DataSetDataDB {
       for (ReadOnlyDataReductionRecord dataReduction : dataReductionRecords) {
 
         if (dataReduction.isDirty()) {
-          dataReductionStmt.setInt(1, dataReduction.getQCFlag().getFlagValue());
+          dataReductionStmt.setInt(1, dataReduction.getQCFlag().getValue());
           dataReductionStmt.setString(2, StringUtils
             .collectionToDelimited(dataReduction.getQCMessages(), ";"));
           dataReductionStmt.setLong(3, dataReduction.getMeasurementId());
@@ -1172,7 +1181,7 @@ public class DataSetDataDB {
    *           If the check fails.
    */
   public static boolean hasCalibrationRequiredFlags(DataSource dataSource,
-    long datasetId) throws DatabaseException {
+    CalibrationFlagScheme flagScheme, long datasetId) throws DatabaseException {
 
     boolean result = false;
 
@@ -1184,6 +1193,7 @@ public class DataSetDataDB {
         .prepareStatement(HAS_CALIBRATION_NEEDED_FLAGS_QUERY);) {
 
       stmt.setLong(1, datasetId);
+      stmt.setInt(2, flagScheme.getNotCalibratedFlag().getValue());
 
       try (ResultSet records = stmt.executeQuery()) {
         records.next();
@@ -1245,12 +1255,12 @@ public class DataSetDataDB {
           Map<String, Double> calculationValues = new Gson()
             .fromJson(calculationValuesJson, mapType);
 
-          Flag qcFlag = new Flag(records.getInt(4));
+          Flag qcFlag = instrument.getFlagScheme().getFlag(records.getInt(4));
           String qcMessage = records.getString(5);
 
           ReadOnlyDataReductionRecord record = ReadOnlyDataReductionRecord
-            .makeRecord(measurementId, variableId, calculationValues, qcFlag,
-              qcMessage);
+            .makeRecord(measurementId, variableId, instrument.getFlagScheme(),
+              calculationValues, qcFlag, qcMessage);
 
           if (measurementId != currentMeasurement) {
             result.put(measurementId,
@@ -1455,7 +1465,7 @@ public class DataSetDataDB {
         try (ResultSet records = stmt.executeQuery()) {
           while (records.next()) {
             SensorValue sensorValue = sensorValueFromResultSet(records,
-              dataset.getId(), coordinates);
+              dataset.getId(), dataset.getFlagScheme(), coordinates);
             result
               .add(new RunTypeSensorValue(sensorValue, records.getString(8)));
           }

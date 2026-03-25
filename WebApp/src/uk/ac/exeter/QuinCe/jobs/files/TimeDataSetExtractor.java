@@ -22,7 +22,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.TimeDataSet;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.TimeDataFile;
@@ -275,7 +275,7 @@ public class TimeDataSetExtractor extends DataSetExtractor {
             instrument)) {
 
             // Flag flushing values
-            value.setUserQC(Flag.FLUSHING, "");
+            value.setUserQC(FlagScheme.FLUSHING_FLAG, "");
           }
         }
       }

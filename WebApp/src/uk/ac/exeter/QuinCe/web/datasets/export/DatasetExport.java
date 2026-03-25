@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
@@ -79,7 +79,7 @@ public class DatasetExport {
     DatasetSensorValues allSensorValues) {
 
     if (null != value && null != value.getValue()
-      && !value.getQcFlag(allSensorValues).equals(Flag.FLUSHING)) {
+      && !value.getQcFlag(allSensorValues).equals(FlagScheme.FLUSHING_FLAG)) {
       if (columnId == FileDefinition.TIME_COLUMN_ID) {
 
         // The first date we receive is the start date

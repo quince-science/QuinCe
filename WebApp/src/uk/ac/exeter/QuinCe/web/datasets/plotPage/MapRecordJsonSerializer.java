@@ -76,13 +76,13 @@ public class MapRecordJsonSerializer implements JsonSerializer<MapRecord> {
     case FLAG: {
       properties.addProperty("type", FLAG);
       properties.addProperty("flag",
-        src.getFlag(allSensorValues, false).getFlagValue());
+        src.getFlag(allSensorValues, false).getValue());
       break;
     }
     case FLAG_IGNORE_NEEDED: {
       properties.addProperty("type", FLAG);
       properties.addProperty("flag",
-        src.getFlag(allSensorValues, true).getFlagValue());
+        src.getFlag(allSensorValues, true).getValue());
       break;
     }
     case SELECTION: {

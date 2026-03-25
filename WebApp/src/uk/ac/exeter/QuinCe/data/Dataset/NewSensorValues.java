@@ -52,8 +52,8 @@ public class NewSensorValues {
   public SensorValue create(long columnId, Coordinate coordinate,
     String value) {
 
-    SensorValue sensorValue = new SensorValue(dataset.getId(), columnId,
-      coordinate, value);
+    SensorValue sensorValue = new SensorValue(dataset.getId(),
+      dataset.getFlagScheme(), columnId, coordinate, value);
 
     sensorValues.add(sensorValue);
 

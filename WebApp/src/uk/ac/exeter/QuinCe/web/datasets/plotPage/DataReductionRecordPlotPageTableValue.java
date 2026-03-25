@@ -6,6 +6,7 @@ import java.util.Collection;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class DataReductionRecordPlotPageTableValue
@@ -62,7 +63,7 @@ public class DataReductionRecordPlotPageTableValue
 
   @Override
   public boolean getFlagNeeded() {
-    return record.getQCFlag().equals(Flag.NEEDED);
+    return record.getQCFlag().equals(FlagScheme.NEEDED_FLAG);
   }
 
   @Override

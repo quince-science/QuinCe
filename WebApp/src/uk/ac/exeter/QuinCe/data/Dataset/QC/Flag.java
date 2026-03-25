@@ -2,718 +2,173 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Objects;
 
 /**
- * Represents a Flag placed on a data record.
- *
+ * Represents a quality control flag placed on a value.
+ * 
  * <p>
- * Flags are based on the <a href=
- * "https://exchange-format.readthedocs.io/en/latest/quality.html#woce-ctd-quality-codes">WOCE
- * CTD Quality Codes</a>, with primary values for Good (2), Questionable (3) and
- * Bad (4). This convention is used in the global
- * <a href="https://www.socat.info">SOCAT</a> database. All records exported
- * from a system should ultimately have one of these three flags assigned to it.
- * However, during processing a number of other flag values can be useful. The
- * complete list of flag values used in QuinCe is in the table below.
- * </p>
- *
- * <table>
- * <caption>All flag values used in QuinCe.</caption>
- * <tr>
- * <th>Flag</th>
- * <th>Value</th>
- * <th>Meaning</th>
- * </tr>
- * <tr>
- * <td>Not Calibrated</td>
- * <td style="text-align: right">{@code 1}</td>
- * <td>The value has not been calibrated.</td>
- * </tr>
- * <tr>
- * <td>Good</td>
- * <td style="text-align: right">{@code 2}</td>
- * <td>The value is good and can be used.</td>
- * </tr>
- * <tr>
- * <td>Questionable</td>
- * <td style="text-align: right">{@code 3}</td>
- * <td>The value is of questionable quality.</td>
- * </tr>
- * <tr>
- * <td>Bad</td>
- * <td style="text-align: right">{@code 4}</td>
- * <td>The value is bad and should not be used.</td>
- * </tr>
- * <tr>
- * <td>No QC</td>
- * <td style="text-align: right">{@code 0}</td>
- * <td>The value has not yet been quality controlled.</td>
- * </tr>
- * <tr>
- * <td>Assumed Good</td>
- * <td style="text-align: right">{@code -2}</td>
- * <td>The value is assumed to be good. This is set by automatic QC routines
- * that do not find anything wrong with the checked values.</td>
- * </tr>
- * <tr>
- * <td>Flushing</td>
- * <td style="text-align: right">{@code -100}</td>
- * <td>The instrument is in Flushing mode, so values should be ignored.</td>
- * </tr>
- * <tr>
- * <td>Needed</td>
- * <td style="text-align: right">{@code -10}</td>
- * <td>A flag must be assigned manually by a human.</td>
- * </tr>
- * <tr>
- * <td>Lookup</td>
- * <td style="text-align: right">{@code -200}</td>
- * <td>The flag for this value is inherited from another value. The value ID(s)
- * are stored in the QC comment. These flags cannot be overridden by the
- * user.</td>
- * </tr>
- * </table>
- *
- * <p>
- * Each flag value has a corresponding text value for display to users.
- * </p>
- *
- * <p>
- * In many cases a single value could have multiple possible Flags, e.g. a
- * calculated value will have its Flag set according to the Flags of the values
- * used in that calculation. Flags are therefore given relative significance
- * values so the correct final Flag for those values is set. The significance
- * order of Flags is as follows:
- * </p>
- *
- * *
+ * A flag has multiple representations: </p?
+ * 
  * <ul>
- * <li>{@link #FLUSHING}</li>
- * <li>{@link #LOOKUP}</li>
- * <li>{@link #NEEDED}</li>
- * <li>{@link #NO_QC}</li>
- * <li>{@link #BAD}</li>
- * <li>{@link #QUESTIONABLE}</li>
- * <li>{@link #NOT_CALIBRATED}</li>
- * <li>{@link #GOOD}/{@link #ASSUMED_GOOD}</li>
+ * <li>Numeric (used in exported data)</li>
+ * <li>Name (Human-readable representation)</li>
+ * <li>Character (single-character representation, mostly used internally by
+ * QuinCe)</li>
  * </ul>
- *
+ * 
  * <p>
- * This class provides instances of each type of flag to remove the need to
- * repeatedly construct them. These instances can be used repeatedly without
- * issues in most cases.
+ * Each Flag is also assigned a numeric significance, which allows resolution of
+ * conflicts when a value has multiple possible flags. For example, if a value
+ * may be assigned flags representing Good and Bad, it is likely that the Bad
+ * flag would take precedence and thus will have a higher significance value.
  * </p>
  */
-public class Flag {
+public class Flag implements Comparable<Flag> {
 
   /**
-   * Numeric value for a {@link #NO_QC} flag.
+   * The Flag's numeric value.
    */
-  public static final int VALUE_NO_QC = 0;
+  private final int value;
 
   /**
-   * Text value for a {@link #NO_QC} flag.
+   * The value to use when exporting flag values.
    */
-  protected static final String TEXT_NO_QC = "No QC";
+  private final int exportValue;
 
   /**
-   * Numeric value for a {@link #NOT_CALIBRATED} flag.
+   * The human-readable name.
    */
-  public static final int VALUE_NOT_CALIBRATED = 1;
+  private final String name;
 
   /**
-   * Text value for a {@link #NOT_CALIBRATED} flag.
+   * The character representation.
    */
-  protected static final String TEXT_NOT_CALIBRATED = "Not calibrated";
+  private final char character;
 
   /**
-   * Numeric value for a {@link #GOOD} flag.
+   * The Flag's significance.
    */
-  public static final int VALUE_GOOD = 2;
+  private final int significance;
 
   /**
-   * Text value for a {@link #GOOD} flag.
+   * Indicates whether or not a user can assign this flag to a value.
    */
-  protected static final String TEXT_GOOD = "Good";
+  private final boolean userAssignable;
 
   /**
-   * Numeric value for an {@link #ASSUMED_GOOD} flag.
+   * Indicates whether or not setting this QC flag must be accompanied by an
+   * explanatory comment.
    */
-  public static final int VALUE_ASSUMED_GOOD = -2;
+  private final boolean commentRequired;
 
   /**
-   * Text value for an {@link #ASSUMED_GOOD} flag.
-   */
-  protected static final String TEXT_ASSUMED_GOOD = "Assumed Good";
-
-  /**
-   * Numeric value for a {@link #QUESTIONABLE} flag.
-   */
-  public static final int VALUE_QUESTIONABLE = 3;
-
-  /**
-   * Text value for a {@link #QUESTIONABLE} flag.
-   */
-  protected static final String TEXT_QUESTIONABLE = "Questionable";
-
-  /**
-   * Numeric value for a {@link #BAD} flag.
-   */
-  public static final int VALUE_BAD = 4;
-
-  /**
-   * Text value for a {@link #BAD} flag.
-   */
-  protected static final String TEXT_BAD = "Bad";
-
-  /**
-   * Numeric value for a {@link #NEEDED} flag.
-   */
-  public static final int VALUE_NEEDED = -10;
-
-  /**
-   * Text value for a {@link #NEEDED} flag.
-   */
-  protected static final String TEXT_NEEDED = "Needed";
-
-  /**
-   * Numeric value for a {@link #FLUSHING} flag.
-   */
-  public static final int VALUE_FLUSHING = -100;
-
-  /**
-   * Text value for a {@link #FLUSHING} flag.
-   */
-  protected static final String TEXT_FLUSHING = "In flushing time";
-
-  /**
-   * Numeric value for a {@link #LOOKUP} flag.
-   */
-  public static final int VALUE_LOOKUP = -200;
-
-  /**
-   * Text value for a {@link #LOOKUP} flag.
-   */
-  protected static final String TEXT_LOOKUP = "Lookup";
-
-  /**
-   * Reusable instance of a flag indicating that no QC has been performed.
-   */
-  public static final Flag NO_QC = makeNoQCFlag();
-
-  /**
-   * Reusable instance of a flag indicating that a value has not been
-   * calibrated.
-   */
-  public static final Flag NOT_CALIBRATED = makeNotCalibratedFlag();
-
-  /**
-   * Reusable instance of a flag indicating that a value is good and can be
-   * used.
-   */
-  public static final Flag GOOD = makeGoodFlag();
-
-  /**
-   * Reusable instance of a flag indicating that automatic QC has not found any
-   * fault with a value.
-   */
-  public static final Flag ASSUMED_GOOD = makeAssumedGoodFlag();
-
-  /**
-   * Reusable instance of a flag indicating that a value's quality is
-   * questionable.
-   */
-  public static final Flag QUESTIONABLE = makeQuestionableFlag();
-
-  /**
-   * Reusable instance of a flag indicating that a value is bad and should not
-   * be used.
-   */
-  public static final Flag BAD = makeBadFlag();
-
-  /**
-   * Reusable instance of a flag indicating that a human must provide a QC flag.
-   */
-  public static final Flag NEEDED = makeNeededFlag();
-
-  /**
-   * Reusable instance of a flag indicating that the instrument is in flushing
-   * mode and values should be ignored.
-   */
-  public static final Flag FLUSHING = makeFlushingFlag();
-
-  /**
-   * Reusable instance of a flag indicating that a value's QC flag is linked to
-   * the QC flag of another value.
-   */
-  public static final Flag LOOKUP = makeLookupQCFlag();
-
-  /**
-   * Stores the relative significance of all Flag types.
-   *
-   * Larger numbers in the Map indicate more significant Flags.
-   *
-   * @see #moreSignificantThan(Flag)
-   * @see #lessSignificantThan(Flag)
-   */
-  private static HashMap<Integer, Integer> FLAG_SIGNIFICANCE;
-
-  /**
-   * The numeric value for this flag.
-   */
-  private int flagValue;
-
-  static {
-    FLAG_SIGNIFICANCE = new HashMap<Integer, Integer>();
-
-    FLAG_SIGNIFICANCE.put(Flag.VALUE_FLUSHING, 70);
-    FLAG_SIGNIFICANCE.put(Flag.VALUE_LOOKUP, 60);
-    FLAG_SIGNIFICANCE.put(Flag.VALUE_NEEDED, 50);
-    FLAG_SIGNIFICANCE.put(Flag.VALUE_NO_QC, 40);
-    FLAG_SIGNIFICANCE.put(Flag.VALUE_BAD, 30);
-    FLAG_SIGNIFICANCE.put(Flag.VALUE_QUESTIONABLE, 20);
-    FLAG_SIGNIFICANCE.put(Flag.VALUE_NOT_CALIBRATED, 10);
-    FLAG_SIGNIFICANCE.put(Flag.VALUE_GOOD, 00);
-    FLAG_SIGNIFICANCE.put(Flag.VALUE_ASSUMED_GOOD, 00);
-  }
-
-  /**
-   * Creates a flag instance with the specified numeric value.
-   *
-   * @param flagValue
-   *          The flag's numeric value.
-   * @throws InvalidFlagException
-   *           If the flag value is invalid
-   */
-  public Flag(int flagValue) throws InvalidFlagException {
-    if (!isValidFlagValue(flagValue)) {
-      throw new InvalidFlagException(flagValue);
-    }
-
-    this.flagValue = flagValue;
-  }
-
-  /**
-   * <b>Use only for unit testing.</b>
-   *
-   * Create a flag instance from either a numeric value or a single character
-   * indicating the flag type.
-   *
-   * @param flagLetter
-   *          The flag character
-   * @throws InvalidFlagException
-   *           If the character is not recognised.
-   */
-  public Flag(char flagLetter) throws InvalidFlagException {
-    switch (Character.toUpperCase(flagLetter)) {
-    case 'C':
-    case '1': {
-      this.flagValue = VALUE_NOT_CALIBRATED;
-      break;
-    }
-    case 'G':
-    case '2': {
-      this.flagValue = VALUE_GOOD;
-      break;
-    }
-    case 'A': {
-      this.flagValue = VALUE_ASSUMED_GOOD;
-      break;
-    }
-    case 'Q':
-    case '3': {
-      this.flagValue = VALUE_QUESTIONABLE;
-      break;
-    }
-    case 'B':
-    case '4': {
-      this.flagValue = VALUE_BAD;
-      break;
-    }
-    case 'N': {
-      this.flagValue = VALUE_NEEDED;
-      break;
-    }
-    case 'F': {
-      this.flagValue = VALUE_FLUSHING;
-      break;
-    }
-    case 'X': {
-      this.flagValue = VALUE_NO_QC;
-      break;
-    }
-    case 'L': {
-      this.flagValue = VALUE_LOOKUP;
-      break;
-    }
-    default: {
-      throw new InvalidFlagException(flagLetter);
-    }
-    }
-  }
-
-  /**
-   * Create a new basic flag based on an existing flag (usually an extending
-   * class). Used by internal classes only.
-   *
-   * @param sourceFlag
-   *          The source flag
-   */
-  protected Flag(Flag sourceFlag) {
-    this.flagValue = sourceFlag.flagValue;
-  }
-
-  /**
-   * Get the flag's numeric value
-   *
-   * @return The flag's numeric value
-   */
-  public int getFlagValue() {
-    return flagValue;
-  }
-
-  /**
-   * Get the flag's text value.
-   */
-  @Override
-  public String toString() {
-    String result;
-
-    switch (flagValue) {
-    case VALUE_NO_QC: {
-      result = TEXT_NO_QC;
-      break;
-    }
-    case VALUE_NOT_CALIBRATED: {
-      result = TEXT_NOT_CALIBRATED;
-      break;
-    }
-    case VALUE_GOOD: {
-      result = TEXT_GOOD;
-      break;
-    }
-    case VALUE_ASSUMED_GOOD: {
-      result = TEXT_ASSUMED_GOOD;
-      break;
-    }
-    case VALUE_QUESTIONABLE: {
-      result = TEXT_QUESTIONABLE;
-      break;
-    }
-    case VALUE_BAD: {
-      result = TEXT_BAD;
-      break;
-    }
-    case VALUE_NEEDED: {
-      result = TEXT_NEEDED;
-      break;
-    }
-    case VALUE_FLUSHING: {
-      result = TEXT_FLUSHING;
-      break;
-    }
-    case VALUE_LOOKUP: {
-      result = TEXT_LOOKUP;
-      break;
-    }
-    default: {
-      // This should never happen!
-      result = "***INVALID FLAG VALUE***";
-    }
-    }
-
-    return result;
-  }
-
-  /**
-   * Checks to ensure that a numeric flag value is valid.
-   *
+   * Base constructor.
+   * 
    * @param value
-   *          The flag value
-   * @return {@code true} if the flag value is valid; {@code false} if it is not
+   *          The Flag's numeric value.
+   * @param name
+   *          The human-readable Flag name.
+   * @param character
+   *          The Flag's character representation.
+   * @param significance
+   *          The Flag's significance order.
+   * @param userAssignable
+   *          Whether or not a user can assign the Flag to a value.
+   * @param commentRequired
+   *          Whether or not this Flag requires an explanatory comment.
    */
-  public static boolean isValidFlagValue(int value) {
-    return (value == VALUE_NO_QC || value == VALUE_NOT_CALIBRATED
-      || value == VALUE_GOOD || value == VALUE_ASSUMED_GOOD
-      || value == VALUE_QUESTIONABLE || value == VALUE_BAD
-      || value == VALUE_NEEDED || value == VALUE_FLUSHING
-      || value == VALUE_LOOKUP);
+  protected Flag(int value, String name, char character, int significance,
+    boolean userAssignable, boolean commentRequired, int exportValue) {
+    this.value = value;
+    this.name = name;
+    this.character = character;
+    this.significance = significance;
+    this.userAssignable = userAssignable;
+    this.commentRequired = commentRequired;
+    this.exportValue = exportValue;
   }
 
   /**
-   * Create an instance of a No QC flag.
-   *
-   * @return A No QC flag.
+   * Copy constructor.
+   * 
+   * @source The source Flag object.
    */
-  private static Flag makeNoQCFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_NO_QC);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
+  protected Flag(Flag source) {
+    this.value = source.value;
+    this.name = source.name;
+    this.character = source.character;
+    this.significance = source.significance;
+    this.userAssignable = source.userAssignable;
+    this.commentRequired = source.commentRequired;
+    this.exportValue = source.exportValue;
   }
 
   /**
-   * Create an instance of a Not Calibrated flag.
-   *
-   * @return A Good flag.
+   * Get the Flag`s numeric value.
+   * 
+   * @return The numeric value.
    */
-  private static Flag makeNotCalibratedFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_NOT_CALIBRATED);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
+  public int getValue() {
+    return value;
   }
 
   /**
-   * Create an instance of a Good flag.
-   *
-   * @return A Good flag.
+   * Get the human-readable name for the Flag.
+   * 
+   * @return The name.
    */
-  private static Flag makeGoodFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_GOOD);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
+  public String getName() {
+    return name;
   }
 
   /**
-   * Create an instance of an Assumed Good flag.
-   *
-   * @return An Assumed Good flag.
+   * Get the Flag's character representation.
+   * 
+   * @return The character representation.
    */
-  private static Flag makeAssumedGoodFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_ASSUMED_GOOD);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
+  public char getCharacter() {
+    return character;
   }
 
   /**
-   * Create an instance of a Questionable flag.
-   *
-   * @return A Questionable flag.
+   * Get the Flag's significance score.
+   * 
+   * @return The significance.
    */
-  private static Flag makeQuestionableFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_QUESTIONABLE);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
+  protected int getSignificance() {
+    return significance;
   }
 
   /**
-   * Create an instance of a Bad flag.
-   *
-   * @return A Bad flag.
+   * Determine whether a user is allowed to assign this Flag to a value.
+   * 
+   * @return {@code true} if the Flag is user-assignable; {@code false} if it is
+   *         not.
    */
-  private static Flag makeBadFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_BAD);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
+  public boolean isUserAssignable() {
+    return userAssignable;
   }
 
   /**
-   * Create an instance of a Needed flag.
-   *
-   * @return A Needed flag.
+   * Determine whether setting this Flag on a value requires an accompanying
+   * explanatory comment.
+   * 
+   * @return {@code true} if a comment is required; {@code false} if not.
    */
-  private static Flag makeNeededFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_NEEDED);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
-  }
-
-  /**
-   * Create an instance of a Flushing flag.
-   *
-   * @return A Flushing flag.
-   */
-  private static Flag makeFlushingFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_FLUSHING);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
-  }
-
-  /**
-   * Create an instance of a Lookup flag.
-   *
-   * @return A Lookup flag.
-   */
-  private static Flag makeLookupQCFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_LOOKUP);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
+  public boolean isCommentRequired() {
+    return commentRequired;
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + flagValue;
+  public int compareTo(Flag arg0) {
+
+    // Flags are sorted by descending significance, then by name.
+    int result = arg0.significance - this.significance;
+    if (result == 0) {
+      result = name.compareTo(arg0.name);
+    }
     return result;
-  }
-
-  /**
-   * Establishes equality using the numeric flag value.
-   */
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (!(obj instanceof Flag))
-      return false;
-    Flag other = (Flag) obj;
-    if (flagValue != other.flagValue)
-      return false;
-    return true;
-  }
-
-  /**
-   * Determines whether or not this Flag is more significant than the specified
-   * Flag.
-   *
-   * @param otherFlag
-   *          The flag to be compared
-   * @return {@code true} if this flag is more significant than the supplied
-   *         flag; {@code false} if it is not.
-   * @see #FLAG_SIGNIFICANCE
-   */
-  public boolean moreSignificantThan(Flag otherFlag) {
-    return FLAG_SIGNIFICANCE.get(flagValue) > FLAG_SIGNIFICANCE
-      .get(otherFlag.flagValue);
-  }
-
-  /**
-   * Determines whether or not this Flag is less significant than the specified
-   * Flag.
-   *
-   * @param otherFlag
-   *          The flag to be compared.
-   * @return {@code true} if this flag is less significant than the supplied
-   *         flag; {@code false} if it is not.
-   */
-  public boolean lessSignificantThan(Flag otherFlag) {
-    return FLAG_SIGNIFICANCE.get(flagValue) < FLAG_SIGNIFICANCE
-      .get(otherFlag.flagValue);
-  }
-
-  /**
-   * Determines whether or not this flag represents a Good value. Both Good and
-   * Assumed Good flags pass the check.
-   *
-   * @return {@code true} if this flag is Good; {@code false} if it is not.
-   */
-  public boolean isGood() {
-    return Math.abs(flagValue) == VALUE_GOOD
-      || flagValue == VALUE_NOT_CALIBRATED;
-  }
-
-  /**
-   * Return the WOCE value for a flag.
-   *
-   * @return The WOCE value for the flag
-   * @see #getWoceValue(int)
-   */
-  public int getWoceValue() {
-    return getWoceValue(flagValue);
-  }
-
-  /**
-   * Return the WOCE value for a given flag value
-   * <ul>
-   * <li>Good and Assumed Good will return 2</li>
-   * <li>Questionable will return 3</li>
-   * <li>Bad and Fatal will return 4</li>
-   * <li>All other flag types will return -1, because there is no corresponding
-   * WOCE value.</li>
-   * </ul>
-   *
-   * @param flagValue
-   *          The numeric flag value
-   * @return The WOCE value for the flag
-   */
-  public static int getWoceValue(int flagValue) {
-    int result;
-
-    switch (flagValue) {
-    case VALUE_NOT_CALIBRATED: {
-      result = 1;
-      break;
-    }
-    case VALUE_GOOD:
-    case VALUE_ASSUMED_GOOD: {
-      result = 2;
-      break;
-    }
-    case VALUE_QUESTIONABLE: {
-      result = 3;
-      break;
-    }
-    case VALUE_BAD: {
-      result = 4;
-      break;
-    }
-    default: {
-      result = -1;
-    }
-    }
-
-    return result;
-  }
-
-  /**
-   * Check whether the supplied flag is of equal significance to this flag.
-   *
-   * @param otherFlag
-   *          The flag to be compared.
-   * @return {@code true} if the supplied flag is of equal significance to this
-   *         flag; {@code false} otherwise.
-   */
-  public boolean equalSignificance(Flag otherFlag) {
-    return FLAG_SIGNIFICANCE.get(flagValue) == FLAG_SIGNIFICANCE
-      .get(otherFlag.flagValue);
   }
 
   /**
@@ -731,46 +186,95 @@ public class Flag {
   }
 
   /**
-   * Get the flag with the highest significance from the supplied {@link Flag}
-   * objects.
-   *
-   * @param flags
-   *          The flags to check.
-   * @return The most significant flag.
+   * Determine whether or not this {@link Flag} has a greater significance than
+   * another {@link Flag}.
+   * 
+   * @param other
+   *          The {@link Flag} whose significance is to be compared.
+   * @return {@code true} if this {@link Flag} is more significant than the
+   *         passed in {@link Flag}; {@code false} if not.
    */
-  public static Flag getMostSignificantFlag(Flag... flags) {
-    return getMostSignificantFlag(Arrays.asList(flags));
+  public boolean moreSignificantThan(Flag other) {
+    return significance > other.significance;
   }
 
   /**
-   * Get the flag with the highest significance from a {@link Collection} of
-   * {@link Flag} objects.
-   *
-   * @param flags
-   *          The flags to check.
-   * @return The most significant flag.
+   * Determine whether or not this {@link Flag} has a lesser significance than
+   * another {@link Flag}.
+   * 
+   * @param other
+   *          The {@link Flag} whose significance is to be compared.
+   * @return {@code true} if this {@link Flag} is less significant than the
+   *         passed in {@link Flag}; {@code false} if not.
    */
-  public static Flag getMostSignificantFlag(Collection<Flag> flags) {
-    Flag result = null;
-
-    for (Flag flag : flags) {
-      if (null != flag) {
-        if (null == result || flag.moreSignificantThan(result)) {
-          result = flag;
-        }
-      }
-    }
-
-    return result;
+  public boolean lessSignificantThan(Flag other) {
+    return significance < other.significance;
   }
 
-  public boolean commentRequired() {
-    return flagValue == 3 || flagValue == 4 || flagValue == -200;
+  /**
+   * Determine whether or not this {@link Flag} has equal significance to
+   * another {@link Flag}.
+   * 
+   * @param other
+   *          The {@link Flag} whose significance is to be compared.
+   * @return {@code true} if this {@link Flag} has the same significance than
+   *         the passed in {@link Flag}; {@code false} if not.
+   */
+  public boolean equalSignificance(Flag other) {
+    return significance == other.significance;
   }
 
-  public static boolean containsWorseFlag(Collection<Flag> flags,
-    Flag reference) {
+  public int getExportValue() {
+    return exportValue;
+  }
 
-    return flags.stream().anyMatch(f -> f.moreSignificantThan(reference));
+  /**
+   * Examine a {@link Collection} of {@link Flag}s and return the {@link Flag}
+   * with the lowest significance score.
+   */
+  public static Flag leastSignificant(Collection<Flag> flags) {
+    return flags.stream().sorted().findFirst().orElse(null);
+  }
+
+  /**
+   * Examine a number of {@link Flag}s and return the {@link Flag} with the
+   * lowest significance score.
+   */
+  public static Flag leastSignificant(Flag... flags) {
+    return leastSignificant(Arrays.asList(flags));
+  }
+
+  /**
+   * Examine a {@link Collection} of {@link Flag}s and return the {@link Flag}
+   * with the lowest significance score.
+   */
+  public static Flag mostSignificant(Collection<Flag> flags) {
+    return flags.size() == 0 ? null
+      : flags.stream().sorted().toList().getLast();
+  }
+
+  /**
+   * Examine a number of {@link Flag}s and return the {@link Flag} with the
+   * lowest significance score.
+   */
+  public static Flag mostSignificant(Flag... flags) {
+    return mostSignificant(Arrays.asList(flags));
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(value);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Flag other = (Flag) obj;
+    return value == other.value;
   }
 }

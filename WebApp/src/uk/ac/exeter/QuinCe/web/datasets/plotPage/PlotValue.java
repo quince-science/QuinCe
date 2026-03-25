@@ -204,11 +204,11 @@ class PlotValue implements Comparable<PlotValue> {
    */
   public boolean inFlagPlot() {
     return !MathUtils.isEmpty(xDouble)
-      && (!MathUtils.isEmpty(y) && isPlotFlag(flag)
-        || (!MathUtils.isEmpty(y2) && isPlotFlag(flag2)));
+      && (!MathUtils.isEmpty(y) && isPlotHighlightFlag(flag)
+        || (!MathUtils.isEmpty(y2) && isPlotHighlightFlag(flag2)));
   }
 
-  private boolean isPlotFlag(Flag flag) {
+  private boolean isPlotHighlightFlag(Flag flag) {
     return flag.equals(Flag.BAD) || flag.equals(Flag.QUESTIONABLE)
       || flag.equals(Flag.NOT_CALIBRATED) || flag.equals(Flag.NEEDED);
   }

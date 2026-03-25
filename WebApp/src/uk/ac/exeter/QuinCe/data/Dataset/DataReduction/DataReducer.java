@@ -104,11 +104,11 @@ public abstract class DataReducer {
 
     try {
       DataReductionRecord record = new DataReductionRecord(measurement,
-        variable, getCalculationParameterNames());
+        variable, instrument.getFlagScheme(), getCalculationParameterNames());
 
       doCalculation(instrument, measurement, record, conn);
 
-      Flag cascadeFlag = Flag.GOOD;
+      Flag cascadeFlag = instrument.getFlagScheme().getGoodFlag();
       LinkedHashMap<SensorType, List<String>> messages = new LinkedHashMap<SensorType, List<String>>();
 
       // Apply QC flags to the data reduction records
@@ -120,10 +120,10 @@ public abstract class DataReducer {
           // Collect all QC messages together. Do not record the same message
           // from multiple sources.
           Flag valueFlag = variable.getCascade(value.getSensorType(),
-            value.getQcFlag(allSensorValues),
+            instrument.getFlagScheme(), value.getQcFlag(allSensorValues),
             instrument.getSensorAssignments());
 
-          if (!valueFlag.isGood()) {
+          if (!instrument.getFlagScheme().isGood(valueFlag, true)) {
             if (valueFlag.moreSignificantThan(cascadeFlag)) {
               cascadeFlag = valueFlag;
             }
@@ -146,7 +146,8 @@ public abstract class DataReducer {
         StringBuilder builder = new StringBuilder();
         builder.append(entry.getKey().getShortName());
         builder.append(' ');
-        builder.append(StringUtils.collectionToDelimited(entry.getValue(), ";"));
+        builder
+          .append(StringUtils.collectionToDelimited(entry.getValue(), ";"));
         qcMessages.add(builder.toString());
       }
 

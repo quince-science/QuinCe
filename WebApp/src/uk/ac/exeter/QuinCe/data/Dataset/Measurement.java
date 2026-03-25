@@ -16,6 +16,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -29,8 +30,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class Measurement implements Comparable<Measurement> {
 
   public static final MeasurementCoordinateComparator COORDINATE_COMPARATOR = new MeasurementCoordinateComparator();
-
-  protected static Gson gson;
 
   protected static Type MEASUREMENT_VALUES_TYPE;
 
@@ -91,12 +90,12 @@ public class Measurement implements Comparable<Measurement> {
    */
   private HashMap<Long, MeasurementValue> measurementValues;
 
-  static {
-    gson = new GsonBuilder()
-      .registerTypeAdapter(new HashMap<Long, MeasurementValue>().getClass(),
-        new MeasurementValuesSerializer())
-      .create();
+  /**
+   * The Gson serializer for this measurement.
+   */
+  private Gson gson;
 
+  static {
     MEASUREMENT_VALUES_TYPE = new TypeToken<HashMap<Long, MeasurementValue>>() {
     }.getType();
   }
@@ -115,14 +114,15 @@ public class Measurement implements Comparable<Measurement> {
    * @param runType
    *          The run type of the measurement
    */
-  public Measurement(long datasetId, Coordinate coordinate,
-    Map<Long, String> runTypes) {
+  public Measurement(long datasetId, FlagScheme flagScheme,
+    Coordinate coordinate, Map<Long, String> runTypes) {
 
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.datasetId = datasetId;
     this.coordinate = coordinate;
     this.runTypes = runTypes;
     this.measurementValues = new HashMap<Long, MeasurementValue>();
+    buildGson(flagScheme);
   }
 
   /**
@@ -142,18 +142,19 @@ public class Measurement implements Comparable<Measurement> {
    *          The run type of the measurement
    */
   public Measurement(long id, long datasetId, Coordinate coordinate,
-    String runType) {
+    String runType, FlagScheme flagScheme) {
 
     this.id = id;
     this.datasetId = datasetId;
     this.coordinate = coordinate;
     this.runTypes = new HashMap<Long, String>();
     this.measurementValues = new HashMap<Long, MeasurementValue>();
+    buildGson(flagScheme);
   }
 
   public Measurement(long id, long datasetId, Coordinate coordinate,
     Map<Long, String> runTypes,
-    HashMap<Long, MeasurementValue> measurementValues) {
+    HashMap<Long, MeasurementValue> measurementValues, FlagScheme flagScheme) {
 
     this.id = id;
     this.datasetId = datasetId;
@@ -165,6 +166,8 @@ public class Measurement implements Comparable<Measurement> {
     } else {
       this.measurementValues = measurementValues;
     }
+
+    buildGson(flagScheme);
   }
 
   /**
@@ -178,12 +181,19 @@ public class Measurement implements Comparable<Measurement> {
    * @param time
    *          The measurement time.
    */
-  private Measurement(Coordinate coordinate) {
+  private Measurement(Coordinate coordinate, FlagScheme flagScheme) {
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.datasetId = DatabaseUtils.NO_DATABASE_RECORD;
     this.coordinate = coordinate;
     this.runTypes = new HashMap<Long, String>();
     this.measurementValues = null;
+  }
+
+  private void buildGson(FlagScheme flagScheme) {
+    gson = new GsonBuilder()
+      .registerTypeAdapter(new HashMap<Long, MeasurementValue>().getClass(),
+        new MeasurementValuesSerializer(flagScheme))
+      .create();
   }
 
   /**
@@ -330,8 +340,9 @@ public class Measurement implements Comparable<Measurement> {
     return "#" + id;
   }
 
-  public static Measurement dummyTimeMeasurement(Coordinate coordinate) {
-    return new Measurement(coordinate);
+  public static Measurement dummyTimeMeasurement(Coordinate coordinate,
+    FlagScheme flagScheme) {
+    return new Measurement(coordinate, flagScheme);
   }
 
   /**
@@ -371,9 +382,9 @@ public class Measurement implements Comparable<Measurement> {
     Flag result;
 
     if (measurementValues.size() == 0) {
-      result = Flag.BAD;
+      result = allSensorValues.getFlagScheme().getBadFlag();
     } else {
-      result = Flag.ASSUMED_GOOD;
+      result = allSensorValues.getFlagScheme().getAssumedGoodFlag();
 
       for (MeasurementValue measurementValue : measurementValues.values()) {
         if (measurementValue.getQcFlag(allSensorValues)
@@ -384,6 +395,7 @@ public class Measurement implements Comparable<Measurement> {
     }
 
     return result;
+
   }
 
   /**

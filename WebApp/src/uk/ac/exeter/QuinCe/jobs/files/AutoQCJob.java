@@ -22,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.TimeDataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
@@ -148,6 +149,7 @@ public class AutoQCJob extends DataSetJob {
       // Get the data set from the database
       DataSet dataSet = getDataset(conn);
       Instrument instrument = getInstrument(conn);
+      FlagScheme flagScheme = dataSet.getFlagScheme();
 
       @SuppressWarnings("unchecked")
       Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
@@ -192,7 +194,7 @@ public class AutoQCJob extends DataSetJob {
         }
 
         QCRoutinesConfiguration qcRoutinesConfig = ResourceManager.getInstance()
-          .getQCRoutinesConfiguration();
+          .getQCRoutinesConfiguration(instrument.getBasis());
 
         // First run the position QC, unless the instrument has a fixed
         // position.
@@ -251,10 +253,13 @@ public class AutoQCJob extends DataSetJob {
 
             SensorValue.clearAutoQC(values.getValue());
 
+            /*
+             * We don't auto-QC values that the user has already flagged.
+             */
             List<SensorValue> filteredValues = values.getValue().getRawValues()
               .stream()
-              .filter(x -> !(x.getUserQCFlag().equals(Flag.BAD)
-                | x.getUserQCFlag().equals(Flag.QUESTIONABLE)))
+              .filter(x -> !(flagScheme.isGood(x.getUserQCFlag(), false)
+                || x.getUserQCFlag().isUserAssignable()))
               .collect(Collectors.toList());
 
             if (values.getKey().equals("")
@@ -263,7 +268,6 @@ public class AutoQCJob extends DataSetJob {
               for (AbstractAutoQCRoutine routine : qcRoutinesConfig
                 .getRoutines(sensorType)) {
 
-                routine.setSensorType(sensorType);
                 ((AutoQCRoutine) routine).qc(filteredValues, runTypePeriods);
               }
             }
@@ -290,7 +294,6 @@ public class AutoQCJob extends DataSetJob {
               for (AbstractAutoQCRoutine routine : externalStandardsRoutinesConfig
                 .getRoutines(sensorType)) {
 
-                routine.setSensorType(sensorType);
                 ((ExternalStandardsQCRoutine) routine).qc(calibrationSet,
                   runTypeValues, sensorValues.getColumnValues(columnId));
               }
@@ -304,7 +307,8 @@ public class AutoQCJob extends DataSetJob {
 
         // Cascade position QC to SensorValues
         if (!instrument.fixedPosition()) {
-          PositionQCCascadeRoutine positionQCCascade = new PositionQCCascadeRoutine();
+          PositionQCCascadeRoutine positionQCCascade = new PositionQCCascadeRoutine(
+            flagScheme);
           positionQCCascade.run(instrument, sensorValues, runTypePeriods);
         }
 

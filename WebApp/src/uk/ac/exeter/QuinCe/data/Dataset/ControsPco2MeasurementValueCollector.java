@@ -73,8 +73,8 @@ public class ControsPco2MeasurementValueCollector
             TimestampSensorValuesList sensorValuesList = (TimestampSensorValuesList) allSensorValues
               .getColumnValues(columnId);
 
-            result.add(new MeasurementValue(sensorType,
-              sensorValuesList.getValue(time, time, time, false)));
+            result.add(new MeasurementValue(instrument.getFlagScheme(),
+              sensorType, sensorValuesList.getValue(time, time, time, false)));
           } catch (SensorValuesListException e) {
             throw new MeasurementValueCalculatorException(
               "Error getting Pro Oceanus value");

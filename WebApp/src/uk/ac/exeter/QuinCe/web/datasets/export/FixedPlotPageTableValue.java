@@ -31,7 +31,7 @@ public class FixedPlotPageTableValue implements PlotPageTableValue {
 
   @Override
   public Flag getQcFlag(DatasetSensorValues allSensorValues) {
-    return Flag.GOOD;
+    return allSensorValues.getFlagScheme().getGoodFlag();
   }
 
   @Override

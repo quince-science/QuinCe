@@ -11,6 +11,7 @@ import java.util.function.IntPredicate;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -251,7 +252,7 @@ public class TimestampSensorValuesList extends SensorValuesList {
     for (SensorValue sensorValue : list) {
       // We skip null values
       if (null != sensorValue.getValue()
-        && !sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+        && !sensorValue.getUserQCFlag().equals(FlagScheme.FLUSHING_FLAG)) {
         try {
           if (sensorValue.isNumeric()) {
             outputValues.add(new TimestampSensorValuesListValue(sensorValue,
@@ -331,7 +332,7 @@ public class TimestampSensorValuesList extends SensorValuesList {
 
     for (SensorValue sensorValue : list) {
       if (!sensorValue.isNaN()
-        && !sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+        && !sensorValue.getUserQCFlag().equals(FlagScheme.FLUSHING_FLAG)) {
 
         if (groupMembers.size() == 0) {
           groupMembers.add(sensorValue);
@@ -402,7 +403,7 @@ public class TimestampSensorValuesList extends SensorValuesList {
 
         // Ignore empty and flushing values
         if (null != sensorValue.getValue() && !sensorValue.getValue().equals("")
-          && !sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+          && !sensorValue.getUserQCFlag().equals(FlagScheme.FLUSHING_FLAG)) {
 
           // If this is the first value...
           if (null == groupStartTime) {
@@ -602,7 +603,8 @@ public class TimestampSensorValuesList extends SensorValuesList {
      * Otherwise we interpolate to find a value.
      *
      */
-    if (null != exactMatch && exactMatch.getQCFlag().isGood()) {
+    if (null != exactMatch
+      && allSensorValues.getFlagScheme().isGood(exactMatch.getQCFlag(), true)) {
       result = new TimestampSensorValuesListOutput(exactMatch, false);
     } else if (!allowInterpolation) {
       if (null != exactMatch) {
@@ -694,10 +696,12 @@ public class TimestampSensorValuesList extends SensorValuesList {
         testValue.getCoordinate().getTime())) > CONTINUOUS_MEASUREMENT_LIMIT) {
         stopSearch = true;
       } else {
-        if (testValue.getQCFlag().equals(Flag.GOOD)) {
+        if (allSensorValues.getFlagScheme().isGood(testValue.getQCFlag(),
+          true)) {
           // We want the first GOOD value we find
           boolean interpolatesAroundFlags = false;
-          if (null != result && !result.getQCFlag().isGood()) {
+          if (null != result && !allSensorValues.getFlagScheme()
+            .isGood(result.getQCFlag(), true)) {
             interpolatesAroundFlags = true;
           }
           result = new TimestampSensorValuesListOutput(testValue,
@@ -1114,6 +1118,12 @@ public class TimestampSensorValuesList extends SensorValuesList {
    * from the values that are not missing or flushing: even if the first value
    * is {@link Flag#BAD}, its timestamp will count.
    * </p>
+   * 
+   * <p>
+   * Only those values with the least significant (aka best quality) flags when
+   * calculating the mean. For example, if there are 2 GOOD values amongst 3 BAD
+   * values, we will use only the GOOD values in the calculated mean.
+   * </p>
    *
    * @param sensorValues
    *          The input {@link SensorValue}s.
@@ -1127,7 +1137,7 @@ public class TimestampSensorValuesList extends SensorValuesList {
     // Get the timestamps for the value
     List<TimeCoordinate> timestamps = sensorValues.stream()
       .filter(v -> !v.isNaN()
-        && !v.getDisplayFlag(allSensorValues).equals(Flag.FLUSHING))
+        && !v.getDisplayFlag(allSensorValues).equals(FlagScheme.FLUSHING_FLAG))
       .map(v -> (TimeCoordinate) v.getCoordinate()).toList();
 
     TimeCoordinate startTime = timestamps.get(0);
@@ -1136,21 +1146,21 @@ public class TimestampSensorValuesList extends SensorValuesList {
     List<Flag> presentFlags = sensorValues.stream()
       .map(sv -> sv.getDisplayFlag(allSensorValues)).distinct().toList();
 
+    FlagScheme flagScheme = sensorValues.getFirst().getFlagScheme();
     Flag chosenFlag;
 
-    if (presentFlags.contains(Flag.GOOD)
-      || presentFlags.contains(Flag.ASSUMED_GOOD)) {
-      chosenFlag = Flag.GOOD;
-    } else if (presentFlags.contains(Flag.QUESTIONABLE)) {
-      chosenFlag = Flag.QUESTIONABLE;
-    } else if (presentFlags.contains(Flag.BAD)) {
-      chosenFlag = Flag.BAD;
-    } else if (presentFlags.stream().allMatch(f -> f.equals(Flag.NEEDED))) {
+    Collection<Flag> userAssignedFlags = presentFlags.stream()
+      .filter(f -> f.isUserAssignable()).toList();
+
+    if (userAssignedFlags.size() > 0) {
+      chosenFlag = Flag.leastSignificant(userAssignedFlags);
+    } else if (presentFlags.stream()
+      .allMatch(f -> f.equals(FlagScheme.NEEDED_FLAG))) {
       /*
        * If all we have are NEEDED flags, get the flag from the underlying auto
        * QC
        */
-      chosenFlag = Flag.getMostSignificantFlag(
+      chosenFlag = Flag.leastSignificant(
         sensorValues.stream().map(sv -> sv.getAutoQcFlag()).toList());
     } else {
       throw new IllegalStateException("No valid flags in sensor values");
@@ -1162,10 +1172,13 @@ public class TimestampSensorValuesList extends SensorValuesList {
 
       List<SensorValue> usedValues;
 
-      if (chosenFlag.isGood()) {
+      if (flagScheme.isGood(chosenFlag, true)) {
         usedValues = sensorValues.stream()
-          .filter(v -> v.getDisplayFlag(allSensorValues).isGood()).toList();
-        if (Flag.containsWorseFlag(presentFlags, Flag.GOOD)) {
+          .filter(
+            v -> flagScheme.isGood(v.getDisplayFlag(allSensorValues), true))
+          .toList();
+        if (FlagScheme.containsMoreSignificantFlag(presentFlags,
+          flagScheme.getGoodFlag())) {
           if (allowInterpolatesAroundFlags) {
             interpolatesAroundFlags = true;
           }
@@ -1174,7 +1187,7 @@ public class TimestampSensorValuesList extends SensorValuesList {
         usedValues = sensorValues.stream()
           .filter(v -> v.getDisplayFlag(allSensorValues).equals(chosenFlag))
           .toList();
-        if (Flag.containsWorseFlag(presentFlags, chosenFlag)) {
+        if (FlagScheme.containsMoreSignificantFlag(presentFlags, chosenFlag)) {
           if (allowInterpolatesAroundFlags) {
             interpolatesAroundFlags = true;
           }
@@ -1271,7 +1284,8 @@ public class TimestampSensorValuesList extends SensorValuesList {
       // Only 'interpolate' if we have values both before and after
       result = null;
     } else {
-      if (!first.getQCFlag().isGood() || !second.getQCFlag().isGood()) {
+      if (!allSensorValues.getFlagScheme().isGood(first.getQCFlag(), true)
+        || !allSensorValues.getFlagScheme().isGood(second.getQCFlag(), true)) {
         // We only interpolate good values
         result = null;
       } else {
@@ -1287,7 +1301,7 @@ public class TimestampSensorValuesList extends SensorValuesList {
         result = new TimestampSensorValuesListOutput(first.getStartTime(),
           second.getEndTime(), targetTime, combinedSourceValues,
           first.getSensorType(), interpValue,
-          Flag.getMostSignificantFlag(first.getQCFlag(), second.getQCFlag()),
+          Flag.mostSignificant(first.getQCFlag(), second.getQCFlag()),
           StringUtils.combine(first.getQCMessage(), second.getQCMessage(), ";",
             true),
           interpolatingAroundFlags);

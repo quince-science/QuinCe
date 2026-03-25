@@ -6,6 +6,7 @@ import java.util.Collections;
 import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class SimplePlotPageTableValue implements PlotPageTableValue {
@@ -41,14 +42,16 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
 
   /**
    * Constructor for a straightforward nominal value.
-   *
+   * 
    * @param value
    *          The value.
+   * @param flagScheme
+   *          The current flag scheme.
    */
-  public SimplePlotPageTableValue(String value) {
+  public SimplePlotPageTableValue(String value, FlagScheme flagScheme) {
     this.value = value;
     this.rawValue = value;
-    this.qcFlag = Flag.GOOD;
+    this.qcFlag = flagScheme.getGoodFlag();
     this.qcMessage = null;
     this.flagNeeded = false;
     this.type = NOMINAL_TYPE;
@@ -111,10 +114,11 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
    * @param coordinate
    *          The coordinate.
    */
-  public SimplePlotPageTableValue(Coordinate coordinate) {
+  public SimplePlotPageTableValue(Coordinate coordinate,
+    FlagScheme flagScheme) {
     this.rawValue = coordinate;
     this.value = coordinate.toString();
-    this.qcFlag = Flag.GOOD;
+    this.qcFlag = flagScheme.getGoodFlag();
     this.qcMessage = "";
     this.flagNeeded = false;
     this.type = PlotPageTableValue.MEASURED_TYPE;

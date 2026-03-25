@@ -16,7 +16,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -139,8 +138,8 @@ public class PositionQCData extends ManualQCData {
       }
 
       for (int i = start; i < lastRecord; i++) {
-        PlotPageTableRecord record = new PlotPageTableRecord(
-          coordinates.get(i));
+        PlotPageTableRecord record = new PlotPageTableRecord(coordinates.get(i),
+          dataset.getFlagScheme());
 
         // Timestamp
         record.addCoordinate(coordinates.get(i));
@@ -173,8 +172,8 @@ public class PositionQCData extends ManualQCData {
             longitude.getFlagNeeded(), longitude.getType(), sources);
         } else {
           // Empty position column
-          record.addColumn("", Flag.GOOD, null, false,
-            PlotPageTableValue.NAN_TYPE, null);
+          record.addColumn("", sensorValues.getFlagScheme().getGoodFlag(), null,
+            false, PlotPageTableValue.NAN_TYPE, null);
         }
 
         records.add(record);
@@ -232,7 +231,8 @@ public class PositionQCData extends ManualQCData {
 
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
       for (Coordinate coordinate : getCoordinates()) {
-        result.put(coordinate, new SimplePlotPageTableValue(coordinate));
+        result.put(coordinate,
+          new SimplePlotPageTableValue(coordinate, dataset.getFlagScheme()));
       }
     } else if (SensorType.isPosition(column.getId())) {
       List<SensorValue> values = sensorValues.getColumnValues(column.getId())

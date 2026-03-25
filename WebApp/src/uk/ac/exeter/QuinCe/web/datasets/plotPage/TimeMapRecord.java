@@ -36,6 +36,6 @@ public class TimeMapRecord extends MapRecord {
   @Override
   public Flag getFlag(DatasetSensorValues allSensorValues,
     boolean ignoreNeeded) {
-    return Flag.GOOD;
+    return allSensorValues.getFlagScheme().getGoodFlag();
   }
 }

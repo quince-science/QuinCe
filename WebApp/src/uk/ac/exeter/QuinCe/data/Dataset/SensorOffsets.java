@@ -82,7 +82,8 @@ public class SensorOffsets {
 
     try {
       for (SensorValue sensorValue : sensorValues) {
-        if (sensorValue.getUserQCFlag().isGood()) {
+        if (allSensorValues.getFlagScheme().isGood(sensorValue.getUserQCFlag(),
+          true)) {
           long offset = getOffset(groupPair,
             sensorValue.getCoordinate().getTime());
           LocalDateTime newTime = sensorValue.getCoordinate().getTime()

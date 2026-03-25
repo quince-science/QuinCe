@@ -5,9 +5,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
@@ -30,16 +32,14 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 @SuppressWarnings("serial")
 public class AutoQCResult extends HashSet<RoutineFlag> {
 
-  /**
-   * GSON (de)serializer.
-   */
-  private static Gson GSON = new Gson();
+  private final FlagScheme flagScheme;
 
   /**
    * Create an empty AutoQCResult.
    */
-  public AutoQCResult() {
+  public AutoQCResult(FlagScheme flagScheme) {
     super();
+    this.flagScheme = flagScheme;
   }
 
   /**
@@ -49,12 +49,12 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
    *          The JSON string.
    * @return The AutoQCResult.
    */
-  public static AutoQCResult buildFromJson(String json) {
+  public static AutoQCResult buildFromJson(String json, FlagScheme flagScheme) {
     AutoQCResult result = null;
     if (null == json || json.trim().length() == 0) {
-      result = new AutoQCResult();
+      result = new AutoQCResult(flagScheme);
     } else {
-      result = GSON.fromJson(json, AutoQCResult.class);
+      result = makeGson(flagScheme).fromJson(json, AutoQCResult.class);
     }
 
     return result;
@@ -71,7 +71,7 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
    * @return The most significant flag.
    */
   public Flag getOverallFlag() {
-    Flag result = Flag.GOOD;
+    Flag result = FlagScheme.NO_QC_FLAG;
 
     for (RoutineFlag flag : this) {
       if (flag.moreSignificantThan(result)) {
@@ -91,7 +91,7 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
     String json = null;
 
     if (size() > 0) {
-      json = GSON.toJson(this);
+      json = makeGson(flagScheme).toJson(this);
     }
 
     return json;
@@ -151,5 +151,11 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
    */
   public boolean remove(Routine routine) {
     return removeIf(i -> i.getRoutineName().equals(routine.getName()));
+  }
+
+  private static Gson makeGson(FlagScheme flagScheme) {
+    return new GsonBuilder().registerTypeAdapter(AutoQCResult.class,
+      new AutoQCResultSerializer(flagScheme)).create();
+
   }
 }

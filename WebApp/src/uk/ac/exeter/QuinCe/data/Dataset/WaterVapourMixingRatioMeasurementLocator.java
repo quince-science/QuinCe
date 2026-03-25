@@ -54,8 +54,8 @@ public class WaterVapourMixingRatioMeasurementLocator
           HashMap<Long, String> runTypesMap = new HashMap<Long, String>();
           runTypesMap.put(var.getId(), Measurement.MEASUREMENT_RUN_TYPE);
 
-          measurements
-            .add(new Measurement(dataset.getId(), recordTime, runTypesMap));
+          measurements.add(new Measurement(dataset.getId(),
+            dataset.getFlagScheme(), recordTime, runTypesMap));
         }
       }
     } catch (Exception e) {

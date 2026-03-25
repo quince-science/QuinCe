@@ -1,42 +1,28 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.Range;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class OutlierRoutine extends AutoQCRoutine {
 
-  /**
-   * The maximum number of standard deviations away from the mean a value can be
-   * before it is considered an outlier.
-   */
-  private double stdevLimit;
-
-  @Override
-  protected void validateParameters() throws RoutineException {
-    if (parameters.size() != 1) {
-      throw new RoutineException(
-        "Incorrect number of parameters. Must be <stdevLimit>");
-    }
-
-    try {
-      stdevLimit = Double.parseDouble(parameters.get(0));
-    } catch (NumberFormatException e) {
-      throw new RoutineException(
-        "Standard deviation limit parameter must be numeric");
-    }
-
-    if (stdevLimit <= 0) {
-      throw new RoutineException(
-        "Standard deviation limit must be greater than zero");
-    }
+  public OutlierRoutine(FlagScheme flagScheme, SensorType sensorType,
+    Map<Flag, Range<Double>> limits) {
+    super(flagScheme, sensorType, limits);
   }
 
   @Override
   protected void qcAction(List<SensorValue> values) throws RoutineException {
+
+    double stdevLimit = limits.get(flagScheme.getBadFlag()).getMaximum();
 
     int valueCount = 0;
     double mean = 0.0;
@@ -67,7 +53,7 @@ public class OutlierRoutine extends AutoQCRoutine {
           double diffFromMean = Math.abs(sensorValue.getDoubleValue() - mean);
 
           if (diffFromMean > (stdev * stdevLimit)) {
-            addFlag(sensorValue, Flag.BAD, stdevLimit, stdev);
+            addFlag(sensorValue, flagScheme.getBadFlag(), stdevLimit, stdev);
           }
         }
       }

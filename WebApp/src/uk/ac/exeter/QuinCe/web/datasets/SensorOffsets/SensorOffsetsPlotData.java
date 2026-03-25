@@ -47,7 +47,9 @@ public class SensorOffsetsPlotData {
   }
 
   private void processSeries1(SensorValuesList points) {
-    points.getRawValues().stream().filter(p -> p.getUserQCFlag().isGood())
+    points.getRawValues().stream()
+      .filter(
+        p -> allSensorValues.getFlagScheme().isGood(p.getUserQCFlag(), true))
       .forEach(p -> {
         if (!p.getDoubleValue().isNaN()) {
           Tuple tuple = new Tuple();
@@ -58,7 +60,9 @@ public class SensorOffsetsPlotData {
   }
 
   private void processSeries2(SensorValuesList points) {
-    points.getRawValues().stream().filter(p -> p.getUserQCFlag().isGood())
+    points.getRawValues().stream()
+      .filter(
+        p -> allSensorValues.getFlagScheme().isGood(p.getUserQCFlag(), true))
       .forEach(p -> {
         if (!p.getDoubleValue().isNaN()) {
           if (data.containsKey(p.getCoordinate().getTime())) {

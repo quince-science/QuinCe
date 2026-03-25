@@ -19,6 +19,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.RunTypeSensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.TimeDataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
@@ -59,7 +60,7 @@ public class InternalCalibrationData extends PlotPageData {
   /**
    * The flag set during user QC
    */
-  private Flag userFlag = Flag.GOOD;
+  private Flag userFlag;
 
   /**
    * The user QC comment
@@ -86,6 +87,7 @@ public class InternalCalibrationData extends PlotPageData {
   protected InternalCalibrationData(DataSource dataSource,
     Instrument instrument, DataSet dataset) throws SQLException {
     super(dataSource, instrument, dataset);
+    this.userFlag = instrument.getFlagScheme().getGoodFlag();
   }
 
   @Override
@@ -107,7 +109,8 @@ public class InternalCalibrationData extends PlotPageData {
 
       progress.setName("Analysing data");
       progress.setValue(66F);
-      dataStructure = new SimplePlotPageDataStructure(getColumnHeadingsList());
+      dataStructure = new SimplePlotPageDataStructure(getColumnHeadingsList(),
+        datasetSensorValues.getFlagScheme());
 
       for (RunTypeSensorValue value : sensorValues) {
         long columnId = makeColumnId(value.getRunType(), value.getColumnId());
@@ -318,8 +321,9 @@ public class InternalCalibrationData extends PlotPageData {
 
         // Only override the existing user QC if it has Needs Flag or Assumed
         // Good
-        if (sensorValue.getUserQCFlag().equals(Flag.NEEDED)
-          || sensorValue.getUserQCFlag().equals(Flag.ASSUMED_GOOD)) {
+        if (sensorValue.getUserQCFlag().equals(FlagScheme.NEEDED_FLAG)
+          || sensorValue.getUserQCFlag()
+            .equals(datasetSensorValues.getFlagScheme().getAssumedGoodFlag())) {
           sensorValue.setUserQC(sensorValue.getAutoQcFlag(),
             sensorValue.getAutoQcResult().getAllMessages());
         }
@@ -356,7 +360,7 @@ public class InternalCalibrationData extends PlotPageData {
   public void generateUserCommentsList() {
 
     ValueCounter comments = new ValueCounter();
-    userFlag = Flag.GOOD;
+    userFlag = datasetSensorValues.getFlagScheme().getGoodFlag();
 
     for (SensorValue sensorValue : getSelectedSensorValues()) {
       if (sensorValue.getDisplayFlag(getAllSensorValues())
@@ -379,15 +383,11 @@ public class InternalCalibrationData extends PlotPageData {
   }
 
   public int getUserFlag() {
-    return userFlag.getFlagValue();
+    return userFlag.getValue();
   }
 
   public void setUserFlag(int userFlag) {
-    try {
-      this.userFlag = new Flag(userFlag);
-    } catch (InvalidFlagException e) {
-      error("Error setting QC flag", e);
-    }
+    this.userFlag = datasetSensorValues.getFlagScheme().getFlag(userFlag);
   }
 
   public String getUserComment() {

@@ -4,11 +4,14 @@ import java.sql.Connection;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.lang3.Range;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
@@ -16,6 +19,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public class DeltaTRangeRoutine extends DataReductionQCRoutine {
+
+  protected DeltaTRangeRoutine(FlagScheme flagScheme,
+    Map<Flag, Range<Double>> limits) {
+    super(flagScheme, limits);
+  }
 
   @Override
   protected void qcAction(Connection conn, Instrument instrument,
@@ -35,16 +43,14 @@ public class DeltaTRangeRoutine extends DataReductionQCRoutine {
         RoutineFlag flag = null;
 
         if (value < -0.1) {
-          flag = new RoutineFlag(this, Flag.BAD, "-0.1", String.valueOf(value));
-        } else if (value > settings.getDoubleOption("bad_limit")) {
-          flag = new RoutineFlag(this, Flag.BAD,
-            settings.getOption("bad_limit"), String.valueOf(value));
-        } else if (value > settings.getDoubleOption("questionable_limit")) {
-          flag = new RoutineFlag(this, Flag.QUESTIONABLE,
-            settings.getOption("questionable_limit"), String.valueOf(value));
+          flag = new RoutineFlag(instrument.getFlagScheme(), this,
+            instrument.getFlagScheme().getBadFlag(), "-0.1",
+            String.valueOf(value));
+        } else {
+          flag = getRangeFlag(value);
         }
 
-        if (null != flag) {
+        if (null != flag && !flagScheme.isGood(flag, true)) {
           flagSensors(instrument, measurement, record, allSensorValues, flag,
             flaggedItems, false);
         }

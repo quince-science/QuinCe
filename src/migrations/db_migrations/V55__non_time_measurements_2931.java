@@ -32,6 +32,7 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
     Connection conn = context.getConnection();
     createCoordinates(conn);
     makeDatasetFiles(conn);
+    migrateVariableCascades(conn);
   }
 
   private void createCoordinates(Connection conn) throws SQLException {
@@ -190,6 +191,52 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
     addDatasetFileStmt.close();
     getFilesQuery.close();
     conn.commit();
+  }
+
+  private void migrateVariableCascades(Connection conn) throws SQLException {
+
+    // Create the new cascades field
+    PreparedStatement createCascadesFieldStmt = conn.prepareStatement(
+      "ALTER TABLE variable_sensors ADD COLUMN cascades MEDIUMTEXT AFTER attribute_value");
+    createCascadesFieldStmt.execute();
+    createCascadesFieldStmt.close();
+
+    // Transfer the cascade data
+    PreparedStatement addCascadeStmt = conn.prepareStatement(
+      "UPDATE variable_sensors SET cascades = ? WHERE variable_id = ? AND sensor_type = ?");
+
+    PreparedStatement getCascadesQuery = conn.prepareStatement(
+      "SELECT variable_id, sensor_type, questionable_cascade, bad_cascade FROM variable_sensors");
+
+    ResultSet cascadeRecords = getCascadesQuery.executeQuery();
+    while (cascadeRecords.next()) {
+
+      addCascadeStmt.setLong(1, cascadeRecords.getLong(1));
+      addCascadeStmt.setLong(2, cascadeRecords.getLong(2));
+
+      int questionableCascade = cascadeRecords.getInt(3);
+      int badCascade = cascadeRecords.getInt(4);
+
+      addCascadeStmt.setString(3, "{\"Time\":[[3," + questionableCascade
+        + "]],[[4, " + badCascade + "]]}");
+
+      addCascadeStmt.execute();
+    }
+
+    cascadeRecords.close();
+    getCascadesQuery.close();
+    addCascadeStmt.close();
+
+    // Drop the old cascade columns
+    PreparedStatement dropQuestionableCascadeStmt = conn.prepareStatement(
+      "ALTER TABLE variable_sensors DROP COLUMN questionable_cascade");
+    dropQuestionableCascadeStmt.execute();
+    dropQuestionableCascadeStmt.close();
+
+    PreparedStatement dropBadCascadeStmt = conn
+      .prepareStatement("ALTER TABLE variable_sensors DROP COLUMN bad_cascade");
+    dropBadCascadeStmt.execute();
+    dropBadCascadeStmt.close();
   }
 
   class DatasetInfo {

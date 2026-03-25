@@ -13,6 +13,7 @@ import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -89,7 +90,8 @@ public class DefaultMeasurementValueCalculator
 
     // This can be happen if a sensor has no values at all.
     if (null == sensorValues) {
-      result = new MeasurementValue(requiredSensorType);
+      result = new MeasurementValue(requiredSensorType,
+        instrument.getFlagScheme().getAssumedGoodFlag());
     } else {
       // TODO #1128 This currently assumes only one sensor for each
       // SensorType.
@@ -115,8 +117,8 @@ public class DefaultMeasurementValueCalculator
        * Values from the core SensorType do not get interpolated, because they
        * are the basis for measurements. Other SensorTypes can be interpolated.
        */
-      result = new MeasurementValue(requiredSensorType,
-        sensorValues.getValue(valueCoordinate,
+      result = new MeasurementValue(instrument.getFlagScheme(),
+        requiredSensorType, sensorValues.getValue(valueCoordinate,
           !requiredSensorType.equals(variable.getCoreSensorType())));
 
       // Calibrate the value if (a) the SensorType can have calibrations, and
@@ -198,7 +200,8 @@ public class DefaultMeasurementValueCalculator
       : sensorValues.getValue(positionCoordinate, true);
 
     result = null == sensorValue ? null
-      : new MeasurementValue(requiredSensorType, sensorValue);
+      : new MeasurementValue(instrument.getFlagScheme(), requiredSensorType,
+        sensorValue);
 
     return result;
   }
@@ -251,13 +254,13 @@ public class DefaultMeasurementValueCalculator
         // Get the calibration offset for the standard run prior to the
         // measurement
         CalibrationOffset prior = getCalibrationOffset(PRIOR, externalStandards,
-          allMeasurements, sensorValues, columnId, sensorType, coordinate,
-          value);
+          instrument.getFlagScheme(), allMeasurements, sensorValues, columnId,
+          sensorType, coordinate, value);
 
         // Get the calibration offset for the standard run after the measurement
         CalibrationOffset post = getCalibrationOffset(POST, externalStandards,
-          allMeasurements, sensorValues, columnId, sensorType, coordinate,
-          value);
+          instrument.getFlagScheme(), allMeasurements, sensorValues, columnId,
+          sensorType, coordinate, value);
 
         /*
          * Note that even though we know QC messages are required here, we can't
@@ -296,10 +299,10 @@ public class DefaultMeasurementValueCalculator
   }
 
   private CalibrationOffset getCalibrationOffset(int direction,
-    CalibrationSet externalStandards, DatasetMeasurements allMeasurements,
-    SensorValuesList sensorValues, long columnId, SensorType sensorType,
-    TimeCoordinate measurementTime, MeasurementValue value)
-    throws RecordNotFoundException {
+    CalibrationSet externalStandards, FlagScheme flagScheme,
+    DatasetMeasurements allMeasurements, SensorValuesList sensorValues,
+    long columnId, SensorType sensorType, TimeCoordinate measurementTime,
+    MeasurementValue value) throws RecordNotFoundException {
 
     CalibrationOffset result = new CalibrationOffset();
 
@@ -333,7 +336,8 @@ public class DefaultMeasurementValueCalculator
         List<SensorValue> runSensorValues = runTypeMeasurements.stream()
           .map(m -> sensorValues.getRawSensorValue(m.getCoordinate(), columnId))
           .filter(v -> null != v).filter(v -> !v.getDoubleValue().isNaN())
-          .filter(v -> v.getUserQCFlag().isGood()).collect(Collectors.toList());
+          .filter(v -> flagScheme.isGood(v.getUserQCFlag(), true))
+          .collect(Collectors.toList());
 
         Mean mean = new Mean();
 

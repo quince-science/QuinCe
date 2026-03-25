@@ -34,7 +34,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -146,7 +146,7 @@ public class ManualQCData extends PlotPageData {
   /**
    * The flag set during user QC
    */
-  private Flag userFlag = Flag.GOOD;
+  private Flag userFlag;
 
   /**
    * The user QC comment
@@ -174,6 +174,7 @@ public class ManualQCData extends PlotPageData {
   protected ManualQCData(DataSource dataSource, Instrument instrument,
     DataSet dataset) throws SQLException {
     super(dataSource, instrument, dataset);
+    this.userFlag = instrument.getFlagScheme().getGoodFlag();
   }
 
   /**
@@ -424,8 +425,8 @@ public class ManualQCData extends PlotPageData {
       }
 
       for (int i = start; i < lastRecord; i++) {
-        PlotPageTableRecord record = new PlotPageTableRecord(
-          coordinates.get(i));
+        PlotPageTableRecord record = new PlotPageTableRecord(coordinates.get(i),
+          sensorValues.getFlagScheme());
 
         // Get the closest measurement
         Measurement concurrentMeasurement = getConcurrentMeasurement(
@@ -454,8 +455,8 @@ public class ManualQCData extends PlotPageData {
               position.getType(), position.getSourceIds());
           } else {
             // Empty position column
-            record.addColumn("", Flag.GOOD, null, false,
-              PlotPageTableValue.NAN_TYPE, null);
+            record.addColumn("", sensorValues.getFlagScheme().getGoodFlag(),
+              null, false, PlotPageTableValue.NAN_TYPE, null);
           }
         }
 
@@ -704,7 +705,7 @@ public class ManualQCData extends PlotPageData {
   public void generateUserComment() {
 
     ValueCounter comments = new ValueCounter();
-    userFlag = Flag.GOOD;
+    userFlag = sensorValues.getFlagScheme().getGoodFlag();
 
     for (SensorValue sensorValue : getSelectedSensorValues()) {
       if (sensorValue.getDisplayFlag(getAllSensorValues())
@@ -713,7 +714,7 @@ public class ManualQCData extends PlotPageData {
       }
 
       if (!sensorValue.flagNeeded()
-        && !sensorValue.getUserQCFlag().equals(Flag.LOOKUP)) {
+        && !sensorValue.getUserQCFlag().equals(FlagScheme.LOOKUP_FLAG)) {
         comments.add(sensorValue.getUserQCMessage());
       } else {
         try {
@@ -728,15 +729,11 @@ public class ManualQCData extends PlotPageData {
   }
 
   public int getUserFlag() {
-    return userFlag.getFlagValue();
+    return userFlag.getValue();
   }
 
   public void setUserFlag(int userFlag) {
-    try {
-      this.userFlag = new Flag(userFlag);
-    } catch (InvalidFlagException e) {
-      error("Error setting QC flag", e);
-    }
+    this.userFlag = sensorValues.getFlagScheme().getFlag(userFlag);
   }
 
   public String getUserComment() {
@@ -845,7 +842,7 @@ public class ManualQCData extends PlotPageData {
    *
    * <p>
    * For Manual QC, a value is a ghost if it has its QC flag set to
-   * {@link Flag#FLUSHING}.
+   * {@link FlagScheme#FLUSHING_FLAG}.
    * </p>
    *
    * @param sensorValue
@@ -853,7 +850,7 @@ public class ManualQCData extends PlotPageData {
    * @return {@code true} if the value is a ghost; {@code false} otherwise.
    */
   private boolean isGhost(SensorValue sensorValue) {
-    return sensorValue.getUserQCFlag().equals(Flag.FLUSHING);
+    return sensorValue.getUserQCFlag().equals(FlagScheme.FLUSHING_FLAG);
   }
 
   @Override
@@ -876,14 +873,15 @@ public class ManualQCData extends PlotPageData {
       // TimeCoordinates.
       // Because times are weird.
       for (Coordinate coordinate : getCoordinates()) {
-        result.put(coordinate, new SimplePlotPageTableValue(coordinate));
+        result.put(coordinate, new SimplePlotPageTableValue(coordinate,
+          sensorValues.getFlagScheme()));
       }
     } else if (SensorType.isPosition(column.getId())) {
       List<SensorValuesListValue> values = sensorValues
         .getColumnValues(column.getId()).getValues();
 
       values.forEach(v -> result.put(v.getCoordinate(),
-        new MeasurementValue(v.getSensorType(),
+        new MeasurementValue(sensorValues.getFlagScheme(), v.getSensorType(),
           new TimestampSensorValuesListOutput(
             (TimestampSensorValuesListOutput) v, false))));
     } else if (coordinateColumnIds.contains(column.getId())) {
@@ -893,7 +891,8 @@ public class ManualQCData extends PlotPageData {
       for (Coordinate coordinate : getCoordinates()) {
         result.put(coordinate,
           new SimplePlotPageTableValue(coordinate.getValue(sensorType),
-            Flag.GOOD, null, false, 'C', coordinate.getId()));
+            sensorValues.getFlagScheme().getGoodFlag(), null, false, 'C',
+            coordinate.getId()));
       }
 
     } else if (sensorColumnIds.contains(column.getId())
@@ -1037,7 +1036,8 @@ public class ManualQCData extends PlotPageData {
 
       // The time is just the time
       if (columnId == FileDefinition.TIME_COLUMN_ID) {
-        result = new SimplePlotPageTableValue(coordinate);
+        result = new SimplePlotPageTableValue(coordinate,
+          sensorValues.getFlagScheme());
 
       } else if (columnId == FileDefinition.LONGITUDE_COLUMN_ID) {
         result = getInterpolatedPositionValue(SensorType.LONGITUDE_SENSOR_TYPE,

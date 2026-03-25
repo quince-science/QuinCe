@@ -1,10 +1,14 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.Range;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
@@ -53,58 +57,20 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  * acceptable values.</td>
  * </table>
  */
-public abstract class AbstractAutoQCRoutine implements Routine {
+public abstract class AbstractAutoQCRoutine extends Routine {
 
   /**
    * The {@link SensorType} whose values are to be checked by this routine
    * instance. Specified in {@code configuration/qc_routines_config.csv}.
    */
-  protected SensorType sensorType;
+  protected final SensorType sensorType;
 
-  /**
-   * The parameters for the routine. Specified in
-   * {@code configuration/qc_routines_config.csv}.
-   */
-  protected List<String> parameters = null;
+  public AbstractAutoQCRoutine(FlagScheme flagScheme, SensorType sensorType,
+    Map<Flag, Range<Double>> limits) {
 
-  /**
-   * Base constructor. Does nothing.
-   */
-  public AbstractAutoQCRoutine() {
-  }
-
-  /**
-   * Sets the routine's parameters as specified in the configuration file. Also
-   * triggers {@link #validateParameters()} to check them.
-   *
-   * @param parameters
-   *          The parameters.
-   * @throws RoutineException
-   *           If the parameters are invalid.
-   */
-  protected void setParameters(List<String> parameters)
-    throws RoutineException {
-    this.parameters = parameters;
-    validateParameters();
-  }
-
-  /**
-   * Set the {@link SensorType} whose values are to be checked by this routine.
-   *
-   * @param sensorType
-   *          The {@link SensorType}.
-   */
-  public void setSensorType(SensorType sensorType) {
+    super(flagScheme, limits);
     this.sensorType = sensorType;
   }
-
-  /**
-   * Validate the parameters set by the {@link #setParameters(List)} method.
-   *
-   * @throws RoutineException
-   *           If the parameters are invalid
-   */
-  protected abstract void validateParameters() throws RoutineException;
 
   /**
    * Filter a list of {@link SensorValue} objects to remove any {@code NaN}
@@ -150,8 +116,19 @@ public abstract class AbstractAutoQCRoutine implements Routine {
     String actualValue) throws RoutineException {
 
     try {
-      value
-        .addAutoQCFlag(new RoutineFlag(this, flag, requiredValue, actualValue));
+      value.addAutoQCFlag(new RoutineFlag(value.getFlagScheme(), this, flag,
+        requiredValue, actualValue));
+    } catch (RecordNotFoundException e) {
+      throw new RoutineException("Sensor Value ID is not stored in database");
+    }
+  }
+
+  protected void addFlag(SensorValue value, RoutineFlag flag)
+    throws RoutineException {
+    try {
+      if (null != flag && !flagScheme.isGood(flag, true)) {
+        value.addAutoQCFlag(flag);
+      }
     } catch (RecordNotFoundException e) {
       throw new RoutineException("Sensor Value ID is not stored in database");
     }
@@ -253,8 +230,8 @@ public abstract class AbstractAutoQCRoutine implements Routine {
       throw new RoutineException("SensorType not set");
     }
 
-    if (null == parameters) {
-      throw new RoutineException("Routine parameters not set");
+    if (null == limits) {
+      throw new RoutineException("Routine limits not set");
     }
   }
 }

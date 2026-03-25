@@ -16,11 +16,27 @@ import com.google.gson.JsonSerializer;
 public class FlagSerializer
   implements JsonSerializer<Flag>, JsonDeserializer<Flag> {
 
+  /**
+   * The {@link FlagScheme} to use for parsing and translating {@link Flag}s.
+   */
+  private FlagScheme flagScheme;
+
+  /**
+   * Constructor.
+   * 
+   * @param flagScheme
+   *          The {@link FlagScheme} to use for parsing and translating
+   *          {@link Flag}s.
+   */
+  public FlagSerializer(FlagScheme flagScheme) {
+    this.flagScheme = flagScheme;
+  }
+
   @Override
   public JsonElement serialize(Flag src, Type typeOfSrc,
     JsonSerializationContext context) {
 
-    return new JsonPrimitive(src.getFlagValue());
+    return new JsonPrimitive(src.getValue());
   }
 
   @Override
@@ -35,11 +51,11 @@ public class FlagSerializer
 
       if (json.isJsonObject()) {
         JsonElement flagValueElement = json.getAsJsonObject().get("flagValue");
-        result = new Flag(flagValueElement.getAsInt());
+        result = flagScheme.getFlag(flagValueElement.getAsInt());
       } else {
-        result = new Flag(json.getAsInt());
+        result = flagScheme.getFlag(json.getAsInt());
       }
-    } catch (InvalidFlagException e) {
+    } catch (FlagException e) {
       throw new JsonParseException("Invalid flag value");
     }
 

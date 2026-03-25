@@ -24,6 +24,9 @@ import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementLocator;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
@@ -52,9 +55,24 @@ public class Instrument {
   public static final int BASIS_TIME = 1;
 
   /**
+   * String representation of the TIME basis.
+   * 
+   * @see #BASIS_TIME
+   * 
+   */
+  public static final String BASIS_NAME_TIME = "time";
+
+  /**
    * Flag that indicates an instrument takes Argo measurements.
    */
   public static final int BASIS_ARGO = 2;
+
+  /**
+   * String representation of the ARGO basis.
+   * 
+   * @see #BASIS_ARGO
+   */
+  public static final String BASIS_NAME_ARGO = "argo";
 
   /**
    * Name for the Sensor Groups entry in the JSON representation of the
@@ -1548,8 +1566,43 @@ public class Instrument {
       .sorted(new InstrumentCreationDateComparator(true)).toList();
   }
 
+  public FlagScheme getFlagScheme() {
+    return getFlagScheme(basis);
+  }
+
+  public static FlagScheme getFlagScheme(int basis) {
+    switch (basis) {
+    case BASIS_TIME: {
+      return IcosFlagScheme.getInstance();
+    }
+    default: {
+      throw new FlagException("Cannot get flag scheme for basis " + basis);
+    }
+    }
+  }
+
+  public static FlagScheme getFlagScheme(String basisName)
+    throws InstrumentException {
+    return getFlagScheme(basisFromString(basisName));
+  }
+
   @Override
   public String toString() {
     return platformName + ":" + name;
+  }
+
+  public static int basisFromString(String basisName)
+    throws InstrumentException {
+    switch (basisName.toLowerCase()) {
+    case BASIS_NAME_TIME: {
+      return BASIS_TIME;
+    }
+    case BASIS_NAME_ARGO: {
+      return BASIS_ARGO;
+    }
+    default: {
+      throw new InstrumentException("Unrecognised basis " + basisName);
+    }
+    }
   }
 }

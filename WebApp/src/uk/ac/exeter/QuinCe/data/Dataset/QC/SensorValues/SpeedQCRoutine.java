@@ -9,7 +9,6 @@ import com.javadocmd.simplelatlng.util.LengthUnit;
 import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -35,13 +34,6 @@ public class SpeedQCRoutine extends PositionQCRoutine {
     super(positionSensorValues);
   }
 
-  /**
-   * Empty instance constructor used to get messages
-   */
-  public SpeedQCRoutine() {
-
-  }
-
   @Override
   protected void qcAction(List<SensorValue> values) throws RoutineException {
 
@@ -64,8 +56,9 @@ public class SpeedQCRoutine extends PositionQCRoutine {
 
         if (null != longitude && null != latitude && !longitude.isNaN()
           && !latitude.isNaN()
-          && longitude.getDisplayFlag(allSensorValues).isGood()
-          && latitude.getDisplayFlag(allSensorValues).isGood()) {
+          && flagScheme.isGood(longitude.getDisplayFlag(allSensorValues), true)
+          && flagScheme.isGood(latitude.getDisplayFlag(allSensorValues),
+            true)) {
 
           LatLng pos = new LatLng(latitude.getDoubleValue(),
             longitude.getDoubleValue());
@@ -108,7 +101,7 @@ public class SpeedQCRoutine extends PositionQCRoutine {
     throws RoutineException {
 
     for (SensorValue value : values) {
-      addFlag(value, Flag.BAD, MAX_SPEED, speed);
+      addFlag(value, flagScheme.getBadFlag(), MAX_SPEED, speed);
     }
   }
 }

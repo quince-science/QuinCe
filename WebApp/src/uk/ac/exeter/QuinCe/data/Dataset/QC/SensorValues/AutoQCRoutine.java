@@ -6,12 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Range;
+
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriod;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -21,24 +25,20 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public abstract class AutoQCRoutine extends AbstractAutoQCRoutine {
 
-  /**
-   * Basic constructor (does nothing).
-   */
-  protected AutoQCRoutine() {
-  }
-
-  protected void setParameters(List<String> parameters)
-    throws RoutineException {
-    this.parameters = parameters;
-    validateParameters();
+  public AutoQCRoutine(FlagScheme flagScheme, SensorType sensorType,
+    Map<Flag, Range<Double>> limits) {
+    super(flagScheme, sensorType, limits);
   }
 
   protected void addFlag(SensorValue value, Flag flag, String requiredValue,
     String actualValue) throws RoutineException {
 
     try {
-      value
-        .addAutoQCFlag(new RoutineFlag(this, flag, requiredValue, actualValue));
+      // Ignore a Good flag
+      if (!flagScheme.isGood(flag, true)) {
+        value.addAutoQCFlag(
+          new RoutineFlag(flagScheme, this, flag, requiredValue, actualValue));
+      }
     } catch (RecordNotFoundException e) {
       throw new RoutineException("Sensor Value ID is not stored in database");
     }
@@ -165,7 +165,7 @@ public abstract class AutoQCRoutine extends AbstractAutoQCRoutine {
 
   @Override
   public String getName() {
-    return ResourceManager.getInstance().getQCRoutinesConfiguration()
-      .getRoutineName(this);
+    return ResourceManager.getInstance()
+      .getQCRoutinesConfiguration(flagScheme.getBasis()).getRoutineName(this);
   }
 }

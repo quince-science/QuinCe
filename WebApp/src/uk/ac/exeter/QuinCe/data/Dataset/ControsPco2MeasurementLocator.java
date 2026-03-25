@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
@@ -169,12 +169,13 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             SensorValue refValue = recordValues.get(refColumn);
 
             if (flushSensors) {
-              rawValue.setUserQC(Flag.FLUSHING, "Flushing");
-              refValue.setUserQC(Flag.FLUSHING, "Flushing");
+              rawValue.setUserQC(FlagScheme.FLUSHING_FLAG, "Flushing");
+              refValue.setUserQC(FlagScheme.FLUSHING_FLAG, "Flushing");
               flaggedSensorValues.add(rawValue);
               flaggedSensorValues.add(refValue);
               recordStatus = FLUSHING;
-            } else if (rawValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+            } else if (rawValue.getUserQCFlag()
+              .equals(FlagScheme.FLUSHING_FLAG)) {
               /*
                * If the Response Time has been changed, some values that were
                * marked FLUSHING should have that flag removed.
@@ -239,6 +240,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
 
     HashMap<Long, String> runTypes = new HashMap<Long, String>();
     runTypes.put(variable.getId(), runType);
-    return new Measurement(dataset.getId(), coordinate, runTypes);
+    return new Measurement(dataset.getId(), dataset.getFlagScheme(), coordinate,
+      runTypes);
   }
 }

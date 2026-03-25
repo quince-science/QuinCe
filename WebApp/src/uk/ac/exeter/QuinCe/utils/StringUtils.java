@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.math.NumberUtils;
 
 /**
@@ -895,5 +896,9 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     return result;
+  }
+
+  public static String formatRange(Range<?> range) {
+    return range.getMinimum() + ":" + range.getMaximum();
   }
 }

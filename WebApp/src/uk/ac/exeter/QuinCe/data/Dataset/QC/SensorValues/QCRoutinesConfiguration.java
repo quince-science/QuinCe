@@ -1,9 +1,14 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class QCRoutinesConfiguration extends AbstractQCRoutinesConfiguration {
+
+  public QCRoutinesConfiguration(FlagScheme flagScheme) {
+    super();
+  }
 
   /**
    * Main constructor - parses supplied config file and builds all Routine
@@ -16,6 +21,7 @@ public class QCRoutinesConfiguration extends AbstractQCRoutinesConfiguration {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
+  @Deprecated
   public QCRoutinesConfiguration(SensorsConfiguration sensorsConfig,
     String configFile)
     throws QCRoutinesConfigurationException, MissingParamException {
