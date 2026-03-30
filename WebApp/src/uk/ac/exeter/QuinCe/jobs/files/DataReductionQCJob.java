@@ -19,8 +19,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.CalibrationFlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutine;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -103,7 +103,7 @@ public class DataReductionQCJob extends DataSetJob {
 
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION_QC);
 
-      DataReductionQCRoutinesConfiguration config = resourceManager
+      DataReductionQCConfiguration config = resourceManager
         .getDataReductionQCRoutinesConfiguration();
 
       @SuppressWarnings("unchecked")
@@ -132,7 +132,8 @@ public class DataReductionQCJob extends DataSetJob {
         Class<? extends DataReducer> reducer = DataReducerFactory
           .getReducerClass(var.getName());
 
-        List<DataReductionQCRoutine> routines = config.getRoutines(reducer);
+        List<DataReductionQCRoutine> routines = config
+          .get(dataSet.getFlagScheme()).getRoutines(reducer);
         if (null != routines) {
           for (DataReductionQCRoutine routine : routines) {
 

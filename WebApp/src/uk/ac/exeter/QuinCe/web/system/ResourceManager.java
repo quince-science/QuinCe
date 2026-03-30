@@ -4,14 +4,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.naming.InitialContext;
@@ -23,12 +20,13 @@ import javax.sql.DataSource;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractQCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCConfigurationDeserializer;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfigurationDeserializer;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -63,11 +61,11 @@ public class ResourceManager implements ServletContextListener {
 
   private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
 
-  private Map<Integer, QCRoutinesConfiguration> qcRoutinesConfiguration;
+  private QCConfiguration qcRoutinesConfiguration;
 
-  private ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfiguration;
+  private QCConfiguration externalStandardsRoutinesConfiguration;
 
-  private DataReductionQCRoutinesConfiguration dataReductionQCRoutinesConfiguration;
+  private DataReductionQCConfiguration dataReductionQCRoutinesConfiguration;
 
   /**
    * The singleton instance of the resource manage
@@ -131,31 +129,24 @@ public class ResourceManager implements ServletContextListener {
           Paths.get(configuration.getProperty("qc_routines.configfile"))),
         StandardCharsets.UTF_8);
 
-      Type mapType = new TypeToken<Map<String, QCRoutinesConfiguration>>() {
-      }.getType();
-
-      Gson gson = new GsonBuilder()
-        .registerTypeAdapter(
-          new HashMap<Integer, QCRoutinesConfiguration>().getClass(),
-          new QCRoutinesConfigurationDeserializer(sensorsConfiguration))
+      Gson gson = new GsonBuilder().registerTypeAdapter(QCConfiguration.class,
+        new QCConfigurationDeserializer(sensorsConfiguration,
+          QCRoutinesConfiguration.class))
         .create();
 
-      qcRoutinesConfiguration = gson.fromJson(fileContent, mapType);
+      qcRoutinesConfiguration = gson.fromJson(fileContent,
+        QCConfiguration.class);
     } catch (Exception e) {
       throw new RuntimeException("Could not initialise QC Routines", e);
     }
 
     // Initialise the External Standards Routines configuration
     try {
-      externalStandardsRoutinesConfiguration = new ExternalStandardsRoutinesConfiguration();
+      externalStandardsRoutinesConfiguration = new QCConfiguration();
 
-      Type mapType = new TypeToken<Map<String, QCRoutinesConfiguration>>() {
-      }.getType();
-
-      Gson gson = new GsonBuilder()
-        .registerTypeAdapter(
-          new HashMap<Integer, QCRoutinesConfiguration>().getClass(),
-          new QCRoutinesConfigurationDeserializer(sensorsConfiguration))
+      Gson gson = new GsonBuilder().registerTypeAdapter(QCConfiguration.class,
+        new QCConfigurationDeserializer(sensorsConfiguration,
+          ExternalStandardsRoutinesConfiguration.class))
         .create();
 
       String fileContent = new String(
@@ -163,7 +154,8 @@ public class ResourceManager implements ServletContextListener {
           configuration.getProperty("externalstandards_routines.configfile"))),
         StandardCharsets.UTF_8);
 
-      qcRoutinesConfiguration = gson.fromJson(fileContent, mapType);
+      externalStandardsRoutinesConfiguration = gson.fromJson(fileContent,
+        QCConfiguration.class);
 
     } catch (Exception e) {
       throw new RuntimeException(
@@ -172,7 +164,7 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise the Data Reduction QC Routines configuration
     try {
-      dataReductionQCRoutinesConfiguration = new DataReductionQCRoutinesConfiguration(
+      dataReductionQCRoutinesConfiguration = new DataReductionQCConfiguration(
         sensorsConfiguration,
         configuration.getProperty("data_reduction_qc_routines.configfile"));
     } catch (Exception e) {
@@ -228,15 +220,16 @@ public class ResourceManager implements ServletContextListener {
     return runTypeCategoryConfiguration;
   }
 
-  public QCRoutinesConfiguration getQCRoutinesConfiguration(int basis) {
+  public AbstractQCRoutinesConfiguration getQCRoutinesConfiguration(int basis) {
     return qcRoutinesConfiguration.get(basis);
   }
 
-  public ExternalStandardsRoutinesConfiguration getExternalStandardsRoutinesConfiguration() {
-    return externalStandardsRoutinesConfiguration;
+  public AbstractQCRoutinesConfiguration getExternalStandardsRoutinesConfiguration(
+    int basis) {
+    return externalStandardsRoutinesConfiguration.get(basis);
   }
 
-  public DataReductionQCRoutinesConfiguration getDataReductionQCRoutinesConfiguration() {
+  public DataReductionQCConfiguration getDataReductionQCRoutinesConfiguration() {
     return dataReductionQCRoutinesConfiguration;
   }
 

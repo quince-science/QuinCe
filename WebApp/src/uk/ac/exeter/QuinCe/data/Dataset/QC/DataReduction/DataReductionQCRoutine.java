@@ -4,11 +4,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.Range;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
@@ -16,7 +13,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
@@ -43,9 +39,8 @@ public abstract class DataReductionQCRoutine extends Routine {
    *          The routine settings
    * @throws RoutineException
    */
-  protected DataReductionQCRoutine(FlagScheme flagScheme,
-    Map<Flag, Range<Double>> limits) {
-    super(flagScheme, limits);
+  protected DataReductionQCRoutine(FlagScheme flagScheme) {
+    super(flagScheme, null);
   }
 
   public void applySettings(DataReductionQCRoutineSettings settings) {
@@ -134,5 +129,10 @@ public abstract class DataReductionQCRoutine extends Routine {
   @Override
   public String getName() {
     return DataReductionQCRoutinesConfiguration.getRoutineName(this);
+  }
+
+  @Override
+  protected RoutineFlag getRangeFlag(double value, boolean reportMaxOnly) {
+    return getRangeFlag(value, reportMaxOnly, settings.getLimits());
   }
 }

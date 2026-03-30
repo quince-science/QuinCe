@@ -4,13 +4,10 @@ import java.sql.Connection;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.lang3.Range;
-
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
@@ -20,9 +17,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 public class DeltaTRangeRoutine extends DataReductionQCRoutine {
 
-  protected DeltaTRangeRoutine(FlagScheme flagScheme,
-    Map<Flag, Range<Double>> limits) {
-    super(flagScheme, limits);
+  protected DeltaTRangeRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
   }
 
   @Override

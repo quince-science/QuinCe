@@ -25,7 +25,8 @@ public abstract class ExternalStandardsQCRoutine extends AbstractAutoQCRoutine {
   @Override
   public String getName() {
     return ResourceManager.getInstance()
-      .getExternalStandardsRoutinesConfiguration().getRoutineName(this);
+      .getExternalStandardsRoutinesConfiguration(flagScheme.getBasis())
+      .getRoutineName(this);
   }
 
   /**

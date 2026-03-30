@@ -24,6 +24,7 @@ import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementLocator;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.ArgoFlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
@@ -1574,6 +1575,9 @@ public class Instrument {
     switch (basis) {
     case BASIS_TIME: {
       return IcosFlagScheme.getInstance();
+    }
+    case BASIS_ARGO: {
+      return ArgoFlagScheme.getInstance();
     }
     default: {
       throw new FlagException("Cannot get flag scheme for basis " + basis);

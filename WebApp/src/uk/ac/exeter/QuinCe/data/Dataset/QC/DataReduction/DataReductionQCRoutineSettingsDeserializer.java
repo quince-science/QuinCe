@@ -11,6 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 
@@ -19,9 +20,12 @@ public class DataReductionQCRoutineSettingsDeserializer
 
   private final SensorsConfiguration sensorConfig;
 
+  private final FlagScheme flagScheme;
+
   protected DataReductionQCRoutineSettingsDeserializer(
-    SensorsConfiguration sensorConfig) {
+    SensorsConfiguration sensorConfig, FlagScheme flagScheme) {
     this.sensorConfig = sensorConfig;
+    this.flagScheme = flagScheme;
   }
 
   @Override
@@ -29,7 +33,8 @@ public class DataReductionQCRoutineSettingsDeserializer
     Type typeOfT, JsonDeserializationContext context)
     throws JsonParseException {
 
-    DataReductionQCRoutineSettings result = new DataReductionQCRoutineSettings();
+    DataReductionQCRoutineSettings result = new DataReductionQCRoutineSettings(
+      flagScheme);
 
     JsonObject jsonObject = json.getAsJsonObject();
 

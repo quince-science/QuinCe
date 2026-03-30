@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.commons.lang3.Range;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -107,8 +108,8 @@ public abstract class AbstractQCRoutinesConfiguration {
    *           cannot be instantiated.
    * @see #makeInstance(Class, List)
    */
-  protected void addRoutine(SensorType sensorType, String className,
-    Map<Flag, Range<Double>> limits) throws Exception {
+  protected void addRoutine(FlagScheme flagScheme, SensorType sensorType,
+    String className, Map<Flag, Range<Double>> limits) throws Exception {
 
     if (!routines.containsKey(sensorType)) {
       routines.put(sensorType, new ArrayList<AbstractAutoQCRoutine>());
@@ -121,7 +122,8 @@ public abstract class AbstractQCRoutinesConfiguration {
         + getRoutineSuperClass().getCanonicalName());
     }
 
-    routines.get(sensorType).add(makeInstance(routineClass, limits));
+    routines.get(sensorType)
+      .add(makeInstance(routineClass, flagScheme, sensorType, limits));
   }
 
   /**
@@ -140,10 +142,12 @@ public abstract class AbstractQCRoutinesConfiguration {
    * @see AbstractAutoQCRoutine#validateParameters()
    */
   private AbstractAutoQCRoutine makeInstance(Class<?> routineClass,
+    FlagScheme flagScheme, SensorType sensorType,
     Map<Flag, Range<Double>> limits) throws Exception {
 
     AbstractAutoQCRoutine instance = (AbstractAutoQCRoutine) routineClass
-      .getDeclaredConstructor().newInstance();
+      .getDeclaredConstructor(FlagScheme.class, SensorType.class, Map.class)
+      .newInstance(flagScheme, sensorType, limits);
     return instance;
   }
 

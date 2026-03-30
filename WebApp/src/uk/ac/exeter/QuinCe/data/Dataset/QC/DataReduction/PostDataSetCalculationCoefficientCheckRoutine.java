@@ -26,7 +26,7 @@ public class PostDataSetCalculationCoefficientCheckRoutine
   private Flag flag = null;
 
   public PostDataSetCalculationCoefficientCheckRoutine(FlagScheme flagScheme) {
-    super(flagScheme, null);
+    super(flagScheme);
   }
 
   @Override

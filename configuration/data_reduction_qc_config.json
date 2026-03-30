@@ -1,4 +1,5 @@
-[
+{
+"Time": [
   {
     "variable": "Underway Marine pCO₂",
     "routines": [
@@ -10,9 +11,9 @@
           "Diagnostic Water Flow"
         ],
         "options": {
-          "questionable_limit": 1,
-          "bad_limit": 3
-        }
+          "limits.B": 3,
+		  "limits.Q": 1
+		}
       },
       {
         "name": "MissingStandards",
@@ -99,3 +100,4 @@
     ]
   }
 ]
+}

@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,23 +21,25 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 
-public class QCRoutinesConfigurationDeserializer
-  implements JsonDeserializer<HashMap<Integer, QCRoutinesConfiguration>> {
+public class QCConfigurationDeserializer
+  implements JsonDeserializer<QCConfiguration> {
 
   private final SensorsConfiguration sensorsConfig;
 
-  public QCRoutinesConfigurationDeserializer(
-    SensorsConfiguration sensorsConfig) {
+  private final Class<? extends AbstractQCRoutinesConfiguration> routinesConfigClass;
+
+  public QCConfigurationDeserializer(SensorsConfiguration sensorsConfig,
+    Class<? extends AbstractQCRoutinesConfiguration> routinesConfigClass) {
 
     this.sensorsConfig = sensorsConfig;
+    this.routinesConfigClass = routinesConfigClass;
   }
 
   @Override
-  public HashMap<Integer, QCRoutinesConfiguration> deserialize(JsonElement json,
-    Type typeOfT, JsonDeserializationContext context)
-    throws JsonParseException {
+  public QCConfiguration deserialize(JsonElement json, Type typeOfT,
+    JsonDeserializationContext context) throws JsonParseException {
 
-    HashMap<Integer, QCRoutinesConfiguration> result = new HashMap<Integer, QCRoutinesConfiguration>();
+    QCConfiguration result = new QCConfiguration();
 
     try {
       JsonObject jsonObj = (JsonObject) json;
@@ -46,8 +49,12 @@ public class QCRoutinesConfigurationDeserializer
         Integer basis = Instrument.basisFromString(basisName);
         FlagScheme flagScheme = Instrument.getFlagScheme(basis);
 
-        QCRoutinesConfiguration basisRoutinesConfig = new QCRoutinesConfiguration(
-          flagScheme);
+        Constructor<? extends AbstractQCRoutinesConfiguration> configConstructor = routinesConfigClass
+          .getDeclaredConstructor();
+
+        AbstractQCRoutinesConfiguration basisRoutinesConfig = (AbstractQCRoutinesConfiguration) configConstructor
+          .newInstance();
+
         result.put(basis, basisRoutinesConfig);
 
         JsonArray sensorTypesArray = jsonObj.get(basisName).getAsJsonArray();
@@ -93,7 +100,8 @@ public class QCRoutinesConfigurationDeserializer
               }
             }
 
-            basisRoutinesConfig.addRoutine(sensorType, className, limits);
+            basisRoutinesConfig.addRoutine(flagScheme, sensorType, className,
+              limits);
           }
         }
 

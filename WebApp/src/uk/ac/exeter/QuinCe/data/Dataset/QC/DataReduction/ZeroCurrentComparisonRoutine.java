@@ -21,7 +21,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class ZeroCurrentComparisonRoutine extends DataReductionQCRoutine {
 
   protected ZeroCurrentComparisonRoutine(FlagScheme flagScheme) {
-    super(flagScheme, null);
+    super(flagScheme);
   }
 
   @Override

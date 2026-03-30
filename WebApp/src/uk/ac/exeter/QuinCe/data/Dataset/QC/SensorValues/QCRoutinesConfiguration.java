@@ -1,12 +1,11 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class QCRoutinesConfiguration extends AbstractQCRoutinesConfiguration {
 
-  public QCRoutinesConfiguration(FlagScheme flagScheme) {
+  public QCRoutinesConfiguration() {
     super();
   }
 

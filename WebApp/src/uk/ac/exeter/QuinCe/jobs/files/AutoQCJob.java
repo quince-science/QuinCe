@@ -24,14 +24,13 @@ import uk.ac.exeter.QuinCe.data.Dataset.TimeDataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsQCRoutine;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.DiagnosticsQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCCascadeRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.SpeedQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
@@ -193,8 +192,8 @@ public class AutoQCJob extends DataSetJob {
           runTypePeriods = DataSetDataDB.getRunTypePeriods(conn, dataSet);
         }
 
-        QCRoutinesConfiguration qcRoutinesConfig = ResourceManager.getInstance()
-          .getQCRoutinesConfiguration(instrument.getBasis());
+        AbstractQCRoutinesConfiguration qcRoutinesConfig = ResourceManager
+          .getInstance().getQCRoutinesConfiguration(instrument.getBasis());
 
         // First run the position QC, unless the instrument has a fixed
         // position.
@@ -279,8 +278,9 @@ public class AutoQCJob extends DataSetJob {
 
           TimeDataSet castDataset = (TimeDataSet) dataSet;
 
-          ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfig = ResourceManager
-            .getInstance().getExternalStandardsRoutinesConfiguration();
+          AbstractQCRoutinesConfiguration externalStandardsRoutinesConfig = ResourceManager
+            .getInstance()
+            .getExternalStandardsRoutinesConfiguration(flagScheme.getBasis());
 
           for (long columnId : sensorValues.getColumnIds()) {
 

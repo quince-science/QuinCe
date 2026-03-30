@@ -103,7 +103,8 @@ public abstract class Routine {
    * 
    * @see FlagScheme
    */
-  protected RoutineFlag getRangeFlag(double value, boolean reportMaxOnly) {
+  protected RoutineFlag getRangeFlag(double value, boolean reportMaxOnly,
+    Map<Flag, Range<Double>> limits) {
 
     RoutineFlag result = null;
 
@@ -121,6 +122,10 @@ public abstract class Routine {
     }
 
     return result;
+  }
+
+  protected RoutineFlag getRangeFlag(double value, boolean reportMaxOnly) {
+    return getRangeFlag(value, reportMaxOnly, limits);
   }
 
   protected RoutineFlag getRangeFlag(double value) {

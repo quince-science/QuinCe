@@ -5,12 +5,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.Range;
+
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
  * Holds the settings for a {@link DataReductionQCRoutine}.
  */
 public class DataReductionQCRoutineSettings {
+
+  private FlagScheme flagScheme;
 
   /**
    * The sensors that should be flagged by the routine.
@@ -28,12 +34,18 @@ public class DataReductionQCRoutineSettings {
   private Map<String, List<String>> listOptions;
 
   /**
+   * Range limits parsed from the options
+   */
+  private Map<Flag, Range<Double>> limits;
+
+  /**
    * Initialise a new, empty settings object.
    */
-  protected DataReductionQCRoutineSettings() {
+  protected DataReductionQCRoutineSettings(FlagScheme flagScheme) {
     this.flaggedSensors = new ArrayList<SensorType>();
     this.singleOptions = new HashMap<String, String>();
     this.listOptions = new HashMap<String, List<String>>();
+    this.limits = new HashMap<Flag, Range<Double>>();
   }
 
   /**
@@ -47,7 +59,14 @@ public class DataReductionQCRoutineSettings {
   }
 
   protected void addSingleOption(String key, String value) {
-    singleOptions.put(key, value);
+    if (!key.startsWith("limit.")) {
+      singleOptions.put(key, value);
+    } else {
+      char flagChar = key.charAt(6);
+      Flag flag = flagScheme.getFlag(flagChar);
+      Range<Double> range = Range.between(0D, Double.parseDouble(value));
+      limits.put(flag, range);
+    }
   }
 
   protected void addListOption(String key, List<String> value) {
@@ -68,5 +87,9 @@ public class DataReductionQCRoutineSettings {
 
   public List<SensorType> getFlaggedSensors() {
     return flaggedSensors;
+  }
+
+  protected Map<Flag, Range<Double>> getLimits() {
+    return limits;
   }
 }

@@ -30,7 +30,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 public class MissingStandardsRoutine extends DataReductionQCRoutine {
 
   protected MissingStandardsRoutine(FlagScheme flagScheme) {
-    super(flagScheme, null);
+    super(flagScheme);
   }
 
   @Override

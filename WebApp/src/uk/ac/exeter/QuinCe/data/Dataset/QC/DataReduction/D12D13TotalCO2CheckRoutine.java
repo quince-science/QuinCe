@@ -22,7 +22,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class D12D13TotalCO2CheckRoutine extends DataReductionQCRoutine {
 
   public D12D13TotalCO2CheckRoutine(FlagScheme flagScheme) {
-    super(flagScheme, null);
+    super(flagScheme);
   }
 
   @Override
