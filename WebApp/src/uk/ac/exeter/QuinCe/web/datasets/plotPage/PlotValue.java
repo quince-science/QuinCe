@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 
 class PlotValue implements Comparable<PlotValue> {
@@ -55,6 +56,11 @@ class PlotValue implements Comparable<PlotValue> {
   private Flag flag2;
 
   /**
+   * The flag scheme being used.
+   */
+  private final FlagScheme flagScheme;
+
+  /**
    * Constructor for all fields.
    *
    * @param id
@@ -69,7 +75,7 @@ class PlotValue implements Comparable<PlotValue> {
    *          The y value's QC flag.
    */
   protected PlotValue(long id, Double x, Double y, boolean ghost, Flag flag,
-    Double y2, boolean ghost2, Flag flag2) {
+    Double y2, boolean ghost2, Flag flag2, FlagScheme flagScheme) {
     this.id = id;
     this.xDouble = x;
     this.xTime = null;
@@ -79,6 +85,7 @@ class PlotValue implements Comparable<PlotValue> {
     this.y2 = y2;
     this.ghost2 = ghost2;
     this.flag2 = flag2;
+    this.flagScheme = flagScheme;
   }
 
   /**
@@ -96,7 +103,7 @@ class PlotValue implements Comparable<PlotValue> {
    *          The y value's QC flag.
    */
   protected PlotValue(long id, TimeCoordinate x, Double y, boolean ghost,
-    Flag flag, Double y2, boolean ghost2, Flag flag2) {
+    Flag flag, Double y2, boolean ghost2, Flag flag2, FlagScheme flagScheme) {
     this.id = id;
     this.xDouble = 0D;
     this.xTime = x;
@@ -106,6 +113,7 @@ class PlotValue implements Comparable<PlotValue> {
     this.y2 = y2;
     this.ghost2 = ghost2;
     this.flag2 = flag2;
+    this.flagScheme = flagScheme;
   }
 
   @Override
@@ -209,8 +217,8 @@ class PlotValue implements Comparable<PlotValue> {
   }
 
   private boolean isPlotHighlightFlag(Flag flag) {
-    return flag.equals(Flag.BAD) || flag.equals(Flag.QUESTIONABLE)
-      || flag.equals(Flag.NOT_CALIBRATED) || flag.equals(Flag.NEEDED);
+    return flag.equals(FlagScheme.NEEDED_FLAG)
+      || flagScheme.getPlotHighlightFlags().contains(flag);
   }
 
   /**
@@ -240,5 +248,9 @@ class PlotValue implements Comparable<PlotValue> {
 
   public boolean hasY2() {
     return !MathUtils.isEmpty(y2);
+  }
+
+  public FlagScheme getFlagScheme() {
+    return flagScheme;
   }
 }

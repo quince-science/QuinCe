@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -249,8 +250,17 @@ public class Flag implements Comparable<Flag> {
    * with the lowest significance score.
    */
   public static Flag mostSignificant(Collection<Flag> flags) {
-    return flags.size() == 0 ? null
-      : flags.stream().sorted().toList().getLast();
+
+    Flag result = null;
+
+    List<Flag> outList = flags.size() == 0 ? null
+      : flags.stream().sorted().toList();
+
+    if (null != outList) {
+      result = outList.get(outList.size() - 1);
+    }
+
+    return result;
   }
 
   /**

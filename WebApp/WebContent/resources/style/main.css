@@ -339,38 +339,6 @@ li.menuitem:hover, li.smallMenuitem:hover {
   background: #ddd;
 }
 
-.bad {
-  color: #FF0000;
-}
-
-.notCalibrated {
-  color: #AC9326;
-}
-
-.questionable {
-  color: #FFA42B;
-}
-
-.good {
-  color: #00C800;
-}
-
-.ignore {
-  color: #D0D0D0;
-}
-
-.assumedGood {
-  color: #76D376;
-}
-
-.notSet {
-  color: #999999;
-}
-
-.needsFlag {
-  background: #D7D6FF !important;
-}
-
 div.fullPage {
   margin-left: 30px;
   margin-right: 30px;

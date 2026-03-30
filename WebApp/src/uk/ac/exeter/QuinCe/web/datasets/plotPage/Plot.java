@@ -12,6 +12,7 @@ import com.google.gson.GsonBuilder;
 import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 
@@ -151,12 +152,12 @@ public class Plot {
       Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
         new MainPlotValueSerializer(null != y2Axis)).create();
 
-      result = gson
-        .toJson(plotValues.stream()
-          .filter(f -> !f.xNull() && !hideFlags ? true
-            : (null == f.getFlag() || f.getFlag().isGood()
-              || f.getFlag().equals(Flag.NEEDED)))
-          .collect(Collectors.toList()));
+      result = gson.toJson(plotValues.stream()
+        .filter(f -> !f.xNull() && !hideFlags ? true
+          : (null == f.getFlag()
+            || data.getFlagScheme().isGood(f.getFlag(), true)
+            || f.getFlag().equals(FlagScheme.NEEDED_FLAG)))
+        .collect(Collectors.toList()));
     }
 
     return result;
@@ -168,8 +169,9 @@ public class Plot {
     if (null != y2Axis) {
       result = Y2_GSON.toJson(plotValues.stream()
         .filter(f -> !f.xNull() && !hideFlags ? true
-          : (null != f && (null == f.getFlag2() || f.getFlag2().isGood()
-            || f.getFlag2().equals(Flag.NEEDED))))
+          : (null != f && (null == f.getFlag2()
+            || data.getFlagScheme().isGood(f.getFlag2(), true)
+            || f.getFlag2().equals(FlagScheme.NEEDED_FLAG))))
         .collect(Collectors.toList()));
     }
 
@@ -189,7 +191,7 @@ public class Plot {
     if (null != plotValues) {
       List<PlotValue> flagValues = plotValues.stream()
         .filter(x -> !hideFlags ? x.inFlagPlot()
-          : null != x.getFlag() && x.getFlag().equals(Flag.NEEDED))
+          : null != x.getFlag() && x.getFlag().equals(FlagScheme.NEEDED_FLAG))
         .collect(Collectors.toList());
 
       Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
@@ -229,10 +231,10 @@ public class Plot {
           if (null != y) {
             yValue = scaleYValue(MathUtils.nullableParseDouble(y.getValue()));
             yGhost = y.getQcFlag(data.getAllSensorValues())
-              .equals(Flag.FLUSHING);
+              .equals(FlagScheme.FLUSHING_FLAG);
             yFlag = y.getQcFlag(data.getAllSensorValues());
             if (useNeededFlags && y.getFlagNeeded()) {
-              yFlag = Flag.NEEDED;
+              yFlag = FlagScheme.NEEDED_FLAG;
             }
           }
 
@@ -242,7 +244,7 @@ public class Plot {
           if (null != y2) {
             y2Value = scaleYValue(MathUtils.nullableParseDouble(y2.getValue()));
             y2Ghost = y2.getQcFlag(data.getAllSensorValues())
-              .equals(Flag.FLUSHING);
+              .equals(FlagScheme.FLUSHING_FLAG);
             y2Flag = y2.getQcFlag(data.getAllSensorValues());
             // We never show NEEDED flags for Y2 axis
           }
@@ -250,11 +252,11 @@ public class Plot {
           if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
             plotValue = new PlotValue(coordinate.getId(),
               (TimeCoordinate) coordinate, yValue, yGhost, yFlag, y2Value,
-              y2Ghost, y2Flag);
+              y2Ghost, y2Flag, data.getFlagScheme());
           } else if (null != x && null != x.getValue() && null != y) {
             plotValue = new PlotValue(coordinate.getId(),
               MathUtils.nullableParseDouble(x.getValue()), yValue, yGhost,
-              yFlag, y2Value, y2Ghost, y2Flag);
+              yFlag, y2Value, y2Ghost, y2Flag, data.getFlagScheme());
           }
         }
 

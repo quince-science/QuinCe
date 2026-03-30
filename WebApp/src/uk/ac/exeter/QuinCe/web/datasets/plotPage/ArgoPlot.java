@@ -150,11 +150,11 @@ public class ArgoPlot extends Plot {
       if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
         plotValue = new PlotValue(coordinate.getId(),
           (TimeCoordinate) coordinate, yValue, yGhost, yFlag, y2Value, y2Ghost,
-          y2Flag);
+          y2Flag, data.getFlagScheme());
       } else if (null != x && null != x.getValue() && null != y) {
         plotValue = new PlotValue(coordinate.getId(),
           MathUtils.nullableParseDouble(x.getValue()), yValue, yGhost, yFlag,
-          y2Value, y2Ghost, y2Flag);
+          y2Value, y2Ghost, y2Flag, data.getFlagScheme());
 
       }
 

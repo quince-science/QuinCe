@@ -197,6 +197,15 @@ public interface FlagScheme {
   }
 
   /**
+   * Get the {@link Flag}s that should be shown as highlights on QC plots.
+   * 
+   * @return The highlight {@link Flag}s.
+   */
+  default List<Flag> getPlotHighlightFlags() {
+    return getUserAssignableFlags();
+  }
+
+  /**
    * Determine whether a {@link Collection} of {@link Flag}s contains a
    * {@link Flag} with greater significance than the specified reference
    * {@link Flag}.

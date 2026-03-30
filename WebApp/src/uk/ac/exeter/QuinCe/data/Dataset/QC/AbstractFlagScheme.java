@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -123,8 +124,10 @@ public abstract class AbstractFlagScheme implements FlagScheme {
 
   @Override
   public List<Flag> getUserAssignableFlags() {
-    return orderedFlags.stream().filter(f -> f.isUserAssignable()).toList()
-      .reversed();
+    List<Flag> list = orderedFlags.stream().filter(f -> f.isUserAssignable())
+      .toList();
+    Collections.reverse(list);
+    return list;
   }
 
   @Override

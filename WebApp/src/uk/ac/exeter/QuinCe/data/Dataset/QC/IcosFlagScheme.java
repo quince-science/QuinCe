@@ -1,5 +1,9 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeSet;
+
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
 /**
@@ -84,5 +88,12 @@ public class IcosFlagScheme extends AbstractFlagScheme
   @Override
   public String getName() {
     return "ICOS";
+  }
+
+  @Override
+  public List<Flag> getPlotHighlightFlags() {
+    TreeSet<Flag> flags = new TreeSet<Flag>(getUserAssignableFlags());
+    flags.add(NO_CALIBRATION_FLAG);
+    return new ArrayList<Flag>(flags);
   }
 }

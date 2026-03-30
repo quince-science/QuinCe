@@ -1146,7 +1146,7 @@ public class TimestampSensorValuesList extends SensorValuesList {
     List<Flag> presentFlags = sensorValues.stream()
       .map(sv -> sv.getDisplayFlag(allSensorValues)).distinct().toList();
 
-    FlagScheme flagScheme = sensorValues.getFirst().getFlagScheme();
+    FlagScheme flagScheme = sensorValues.get(0).getFlagScheme();
     Flag chosenFlag;
 
     Collection<Flag> userAssignedFlags = presentFlags.stream()

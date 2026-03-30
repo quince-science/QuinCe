@@ -211,14 +211,14 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
     ResultSet cascadeRecords = getCascadesQuery.executeQuery();
     while (cascadeRecords.next()) {
 
-      addCascadeStmt.setLong(1, cascadeRecords.getLong(1));
-      addCascadeStmt.setLong(2, cascadeRecords.getLong(2));
-
       int questionableCascade = cascadeRecords.getInt(3);
       int badCascade = cascadeRecords.getInt(4);
 
-      addCascadeStmt.setString(3, "{\"Time\":[[3," + questionableCascade
-        + "]],[[4, " + badCascade + "]]}");
+      addCascadeStmt.setString(1,
+        "{\"Time\":[[3," + questionableCascade + "],[4," + badCascade + "]]}");
+
+      addCascadeStmt.setLong(2, cascadeRecords.getLong(1));
+      addCascadeStmt.setLong(3, cascadeRecords.getLong(2));
 
       addCascadeStmt.execute();
     }
@@ -226,17 +226,20 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
     cascadeRecords.close();
     getCascadesQuery.close();
     addCascadeStmt.close();
+    conn.commit();
 
     // Drop the old cascade columns
     PreparedStatement dropQuestionableCascadeStmt = conn.prepareStatement(
       "ALTER TABLE variable_sensors DROP COLUMN questionable_cascade");
     dropQuestionableCascadeStmt.execute();
     dropQuestionableCascadeStmt.close();
+    conn.commit();
 
     PreparedStatement dropBadCascadeStmt = conn
       .prepareStatement("ALTER TABLE variable_sensors DROP COLUMN bad_cascade");
     dropBadCascadeStmt.execute();
     dropBadCascadeStmt.close();
+    conn.commit();
   }
 
   class DatasetInfo {

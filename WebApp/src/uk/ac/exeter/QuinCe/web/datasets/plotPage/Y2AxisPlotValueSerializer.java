@@ -34,46 +34,33 @@ public class Y2AxisPlotValueSerializer implements JsonSerializer<PlotValue> {
     // Data point ID
     json.add(src.getId());
 
-    // Y1 axis, if we haven't put in a value already
+    // Placeholder for the Y1 value. It seems to be needed but I don't remember
+    // why.
     json.add(JsonNull.INSTANCE);
 
     // Y2 axis value
     if (!src.hasY2()) {
+
+      // Highlight flags - we don't include NEEDED
+      for (int i = 0; i < src.getFlagScheme().getPlotHighlightFlags()
+        .size(); i++) {
+        json.add(JsonNull.INSTANCE);
+      }
+
+      // Ghost
       json.add(JsonNull.INSTANCE);
-      json.add(JsonNull.INSTANCE);
-      json.add(JsonNull.INSTANCE);
-      json.add(JsonNull.INSTANCE);
+
+      // Non-ghost
       json.add(JsonNull.INSTANCE);
     } else {
 
-      // BAD value
-      if (src.getFlag2().equals(Flag.BAD)) {
-        json.add(src.getY2());
-      } else {
-        json.add(JsonNull.INSTANCE);
-      }
-
-      // QUESTIONABLE value
-      if (src.getFlag2().equals(Flag.QUESTIONABLE)) {
-        json.add(src.getY2());
-      } else {
-        json.add(JsonNull.INSTANCE);
-      }
-
-      // NOT_CALIBRATED value
-      if (src.getFlag2().equals(Flag.NOT_CALIBRATED)) {
-        json.add(src.getY2());
-      } else {
-        json.add(JsonNull.INSTANCE);
-      }
-
-      // The value
-      if (src.isGhost2()) {
-        json.add(src.getY2());
-        json.add(JsonNull.INSTANCE);
-      } else {
-        json.add(JsonNull.INSTANCE);
-        json.add(src.getY2());
+      // Flags
+      for (Flag highlightFlag : src.getFlagScheme().getPlotHighlightFlags()) {
+        if (src.getFlag().equals(highlightFlag)) {
+          json.add(src.getY());
+        } else {
+          json.add(JsonNull.INSTANCE);
+        }
       }
     }
 

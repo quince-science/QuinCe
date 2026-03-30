@@ -66,7 +66,6 @@ function startProgressBarUpdater() {
 // PAGE CONSTANTS
 const SELECT_ACTION = 1;
 const DESELECT_ACTION = -1;
-const FLAG_FLUSHING = -100;
 
 const MAP_MEASUREMENT_ID_INDEX = 2;
 const MAP_MANUAL_FLAG_INDEX = 3;
@@ -75,15 +74,26 @@ const FLAG_LAYER = 'flags';
 const SELECTION_LAYER = 'selection';
 const PATH_LAYER = 'path';
 
-const FLAG_NOT_CALIBRATED = 1;
-const FLAG_GOOD = 2;
-const FLAG_ASSUMED_GOOD = -2;
-const FLAG_QUESTIONABLE = 3;
-const FLAG_BAD = 4;
-const FLAG_LOOKUP = -200;
-const FLAG_FATAL = 44;
-const FLAG_NEEDS_FLAG = -10;
-const FLAG_IGNORED = -1002;
+Y1_SERIES = '#01752D';
+Y2_SERIES = '#A9DBF9';
+GHOST = '#C0C0C0';
+
+const FLAG_COLORS = {
+  'time': {
+    'y1': {
+      'Needed': '#D7D6FF',
+      'Not calibrated': '#AC9326',
+      'Questionable': '#FFA42B',
+	  'Bad': '#FF0000'
+	},
+	'y2': {
+      'Not calibrated': '#CCCBAF',
+      'Bad': '#E6B6A6',
+	  'Questionable': '#EFDCBF'
+	}
+  }
+}
+
 
 // VARIABLES FOR THE PLOT/TABLE LAYOUT
 function plotStrokeWidth() {

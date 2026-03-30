@@ -18,7 +18,12 @@ import uk.ac.exeter.QuinCe.data.Files.TimeDataFile;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
- * Migration for support for non-time-based data
+ * Migration for support for non-time-based data.
+ * 
+ * <p>
+ * This assumes that the data integrity is sound, and doesn't check anything. An
+ * error will be thrown if anything is amiss.
+ * </p>
  */
 public class V55__non_time_measurements_2931 extends BaseJavaMigration {
 
@@ -27,6 +32,7 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
     Connection conn = context.getConnection();
     createCoordinates(conn);
     makeDatasetFiles(conn);
+    migrateVariableCascades(conn);
   }
 
   private void createCoordinates(Connection conn) throws SQLException {
@@ -38,7 +44,7 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
         + "depth MEDIUMINT NULL, station VARCHAR(10) NULL, "
         + "cast VARCHAR(10) NULL, bottle VARCHAR(10) NULL, "
         + "replicate VARCHAR(10) NULL, cycle VARCHAR(10) NULL, "
-        + "PRIMARY KEY(id), "
+        + "PRIMARY KEY(id), INDEX coord_datasetid (dataset_id), "
         + "CONSTRAINT coord_dataset FOREIGN KEY (dataset_id) REFERENCES dataset(id))"
         + "ENGINE = InnoDB");
 
@@ -125,7 +131,8 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
     PreparedStatement createDatasetFilesTableStatement = conn.prepareStatement(
       "CREATE TABLE dataset_files (dataset_id INT(11) NOT NULL, "
         + "datafile_id INT(11) NOT NULL, "
-        + "CONSTRAINT datasetfiles_datasetid_c FOREIGN KEY (dataset_id) REFERENCES dataset(id), "
+        + "INDEX datasetfiles_datasetid (dataset_id), "
+        + "CONSTRAINT datasetfiles_datasetid FOREIGN KEY (dataset_id) REFERENCES dataset(id), "
         + "CONSTRAINT datasetfiles_datafileid FOREIGN KEY (datafile_id) REFERENCES data_file(id)) "
         + "ENGINE = InnoDB");
 
@@ -186,6 +193,55 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
     conn.commit();
   }
 
+  private void migrateVariableCascades(Connection conn) throws SQLException {
+
+    // Create the new cascades field
+    PreparedStatement createCascadesFieldStmt = conn.prepareStatement(
+      "ALTER TABLE variable_sensors ADD COLUMN cascades MEDIUMTEXT AFTER attribute_value");
+    createCascadesFieldStmt.execute();
+    createCascadesFieldStmt.close();
+
+    // Transfer the cascade data
+    PreparedStatement addCascadeStmt = conn.prepareStatement(
+      "UPDATE variable_sensors SET cascades = ? WHERE variable_id = ? AND sensor_type = ?");
+
+    PreparedStatement getCascadesQuery = conn.prepareStatement(
+      "SELECT variable_id, sensor_type, questionable_cascade, bad_cascade FROM variable_sensors");
+
+    ResultSet cascadeRecords = getCascadesQuery.executeQuery();
+    while (cascadeRecords.next()) {
+
+      int questionableCascade = cascadeRecords.getInt(3);
+      int badCascade = cascadeRecords.getInt(4);
+
+      addCascadeStmt.setString(1,
+        "{\"Time\":[[3," + questionableCascade + "],[4," + badCascade + "]]}");
+
+      addCascadeStmt.setLong(2, cascadeRecords.getLong(1));
+      addCascadeStmt.setLong(3, cascadeRecords.getLong(2));
+
+      addCascadeStmt.execute();
+    }
+
+    cascadeRecords.close();
+    getCascadesQuery.close();
+    addCascadeStmt.close();
+    conn.commit();
+
+    // Drop the old cascade columns
+    PreparedStatement dropQuestionableCascadeStmt = conn.prepareStatement(
+      "ALTER TABLE variable_sensors DROP COLUMN questionable_cascade");
+    dropQuestionableCascadeStmt.execute();
+    dropQuestionableCascadeStmt.close();
+    conn.commit();
+
+    PreparedStatement dropBadCascadeStmt = conn
+      .prepareStatement("ALTER TABLE variable_sensors DROP COLUMN bad_cascade");
+    dropBadCascadeStmt.execute();
+    dropBadCascadeStmt.close();
+    conn.commit();
+  }
+
   class DatasetInfo {
     protected long id;
     protected long instrumentId;
@@ -221,5 +277,4 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
         && rawStart.plusSeconds(offset).isBefore(end);
     }
   }
-
 }

@@ -33,7 +33,6 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class SensorsConfiguration {
 
@@ -149,9 +148,6 @@ public class SensorsConfiguration {
     throws DatabaseException, InvalidFlagException, InstrumentException,
     VariableCascadeException {
 
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-      .getSensorsConfiguration();
-
     instrumentVariables = new HashMap<Long, Variable>();
 
     PreparedStatement stmt = null;
@@ -211,7 +207,7 @@ public class SensorsConfiguration {
               new AttributeCondition(attributeName, attributeValue));
           }
 
-          parseCascadeJson(cascades, sensorConfig.getSensorType(sensorTypeId),
+          parseCascadeJson(cascades, getSensorType(sensorTypeId),
             records.getString(10));
         }
 

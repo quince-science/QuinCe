@@ -28,6 +28,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -1163,5 +1164,9 @@ public abstract class PlotPageData {
     if (null != getPlot2()) {
       getPlot2().setXaxis(xAxis);
     }
+  }
+
+  public FlagScheme getFlagScheme() {
+    return dataset.getFlagScheme();
   }
 }
