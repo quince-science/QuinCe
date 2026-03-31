@@ -231,10 +231,11 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Examine a {@link Collection} of {@link Flag}s and return the {@link Flag}
-   * with the lowest significance score.
+   * with the highest significance score.
    */
-  public static Flag leastSignificant(Collection<Flag> flags) {
-    return flags.stream().sorted().findFirst().orElse(null);
+  public static Flag mostSignificant(Collection<Flag> flags) {
+    return flags.stream().filter(f -> null != f).sorted().findFirst()
+      .orElse(null);
   }
 
   /**
@@ -249,12 +250,12 @@ public class Flag implements Comparable<Flag> {
    * Examine a {@link Collection} of {@link Flag}s and return the {@link Flag}
    * with the lowest significance score.
    */
-  public static Flag mostSignificant(Collection<Flag> flags) {
+  public static Flag leastSignificant(Collection<Flag> flags) {
 
     Flag result = null;
 
     List<Flag> outList = flags.size() == 0 ? null
-      : flags.stream().sorted().toList();
+      : flags.stream().filter(f -> null != f).sorted().toList();
 
     if (null != outList) {
       result = outList.get(outList.size() - 1);
@@ -265,7 +266,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Examine a number of {@link Flag}s and return the {@link Flag} with the
-   * lowest significance score.
+   * highest significance score.
    */
   public static Flag mostSignificant(Flag... flags) {
     return mostSignificant(Arrays.asList(flags));

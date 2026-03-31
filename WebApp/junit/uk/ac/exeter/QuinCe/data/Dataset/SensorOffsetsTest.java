@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -336,11 +337,11 @@ public class SensorOffsetsTest extends BaseTest {
       360000L);
 
     List<SensorValue> sensorValues = new ArrayList<SensorValue>();
-    sensorValues.add(makeSensorValue(10, Flag.GOOD));
-    sensorValues.add(makeSensorValue(20, Flag.GOOD));
-    sensorValues.add(makeSensorValue(30, Flag.GOOD));
-    sensorValues.add(makeSensorValue(40, Flag.GOOD));
-    sensorValues.add(makeSensorValue(50, Flag.GOOD));
+    sensorValues.add(makeSensorValue(10, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(20, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(30, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(40, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(50, flagScheme.getGoodFlag()));
 
     Instrument instrument = InstrumentDB.getInstrument(getConnection(), 1L);
     DatasetSensorValues allSensorValues = new DatasetSensorValues(
@@ -397,11 +398,11 @@ public class SensorOffsetsTest extends BaseTest {
       360000L);
 
     List<SensorValue> sensorValues = new ArrayList<SensorValue>();
-    sensorValues.add(makeSensorValue(10, Flag.GOOD));
-    sensorValues.add(makeSensorValue(20, Flag.GOOD));
-    sensorValues.add(makeSensorValue(30, Flag.BAD));
-    sensorValues.add(makeSensorValue(40, Flag.GOOD));
-    sensorValues.add(makeSensorValue(50, Flag.QUESTIONABLE));
+    sensorValues.add(makeSensorValue(10, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(20, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(30, flagScheme.getBadFlag()));
+    sensorValues.add(makeSensorValue(40, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(50, IcosFlagScheme.QUESTIONABLE_FLAG));
 
     Instrument instrument = InstrumentDB.getInstrument(getConnection(), 1L);
     DatasetSensorValues allSensorValues = new DatasetSensorValues(

@@ -376,8 +376,8 @@ public class StringUtilsTest extends BaseTest {
   @Test
   public void listToDelimitedNonStringListTest() {
     ArrayList<Flag> list = new ArrayList<Flag>(2);
-    list.add(Flag.BAD);
-    list.add(Flag.GOOD);
+    list.add(flagScheme.getBadFlag());
+    list.add(flagScheme.getGoodFlag());
 
     assertTrue("Bad,Good".equals(StringUtils.collectionToDelimited(list, ",")));
   }

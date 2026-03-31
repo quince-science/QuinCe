@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.TestBase.TestResourceManager;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPoolNotInitialisedException;
 
@@ -58,7 +59,9 @@ public class ResourceManagerTest extends BaseTest {
     assertNotNull(
       ResourceManager.getInstance().getRunTypeCategoryConfiguration(),
       "RunTypeCategoryConfiguration not available from ResourceManager");
-    assertNotNull(ResourceManager.getInstance().getQCRoutinesConfiguration(),
+    assertNotNull(
+      ResourceManager.getInstance()
+        .getQCRoutinesConfiguration(Instrument.BASIS_TIME),
       "QCRoutinesConfiguration not available from ResourceManager");
   }
 

@@ -31,7 +31,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SimpleMeasurementLocator;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -122,8 +121,10 @@ public class FlagCascadeTest extends TestSetTest {
       SensorValue sstVal = allSensorValues.getById(2L);
       SensorValue salVal = allSensorValues.getById(3L);
 
-      sstVal.setUserQC(new Flag(line.getIntField(SST_FLAG_COL)), "Comment");
-      salVal.setUserQC(new Flag(line.getIntField(SAL_FLAG_COL)), "Comment");
+      sstVal.setUserQC(flagScheme.getFlag(line.getIntField(SST_FLAG_COL)),
+        "Comment");
+      salVal.setUserQC(flagScheme.getFlag(line.getIntField(SAL_FLAG_COL)),
+        "Comment");
 
       DataSetDataDB.updateSensorValues(conn, Arrays.asList(sstVal, salVal));
       conn.commit();
@@ -166,7 +167,7 @@ public class FlagCascadeTest extends TestSetTest {
         locatedMeasurements.get(0), allSensorValues, conn);
 
       assertEquals(line.getIntField(DATA_REDUCTION_FLAG_COL),
-        record.getQCFlag().getWoceValue());
+        record.getQCFlag().getExportValue());
     }
   }
 

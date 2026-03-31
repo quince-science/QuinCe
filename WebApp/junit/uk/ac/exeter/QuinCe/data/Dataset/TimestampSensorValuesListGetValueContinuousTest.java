@@ -58,9 +58,10 @@ public class TimestampSensorValuesListGetValueContinuousTest
 
   protected SensorValue makeSensorValue(int minute, char flagChar)
     throws InvalidFlagException, CoordinateException {
-    return new SensorValue((long) minute, DATASET_ID, 1L,
-      makeCoordinate(minute), String.valueOf(minute), new AutoQCResult(),
-      new Flag(flagChar), String.valueOf(flagChar));
+    return new SensorValue((long) minute, DATASET_ID, flagScheme, 1L,
+      makeCoordinate(minute), String.valueOf(minute),
+      new AutoQCResult(flagScheme), flagScheme.getFlag(flagChar),
+      String.valueOf(flagChar));
   }
 
   protected void makeSensorValues(DatasetSensorValues allSensorValues,
@@ -123,7 +124,8 @@ public class TimestampSensorValuesListGetValueContinuousTest
       assertEquals(expectedValue, value.getDoubleValue(), 0.004,
         "Value incorrect");
 
-      Flag expectedFlag = new Flag(line.getCharField(getExpectedFlagCol()));
+      Flag expectedFlag = flagScheme
+        .getFlag((line.getCharField(getExpectedFlagCol())));
       assertEquals(expectedFlag, value.getQCFlag());
 
       String expectedUsedValueIds = line

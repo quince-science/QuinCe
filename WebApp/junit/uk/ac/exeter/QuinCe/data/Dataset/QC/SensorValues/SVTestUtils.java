@@ -23,10 +23,10 @@ public class SVTestUtils extends BaseTest {
     List<SensorValue> result = new ArrayList<SensorValue>(minutes.length);
 
     for (int i = 0; i < minutes.length; i++) {
-      result.add(new SensorValue(minutes[i], 1L, 1L,
+      result.add(new SensorValue(minutes[i], 1L, flagScheme, 1L,
         new TimeCoordinate(1L, LocalDateTime.of(2024, 1, 1, 0, minutes[i], 0)),
-        String.valueOf(values[i]), new AutoQCResult(), Flag.ASSUMED_GOOD,
-        null));
+        String.valueOf(values[i]), new AutoQCResult(flagScheme),
+        flagScheme.getGoodFlag(), null));
     }
 
     return result;
@@ -57,7 +57,7 @@ public class SVTestUtils extends BaseTest {
           // We could break early, but it's good for debugging to see the whole
           // set
         }
-      } else if (!(sv.getAutoQcFlag().isGood())) {
+      } else if (!(flagScheme.isGood(sv.getAutoQcFlag(), true))) {
         result = false;
         // We could break early, but it's good for debugging to see the whole
         // set
@@ -73,7 +73,7 @@ public class SVTestUtils extends BaseTest {
 
     TimeCoordinate coordinate = new TimeCoordinate(id,
       LocalDateTime.of(2024, 1, 1, 0, minute, 0));
-    return new SensorValue(id, 1L, fileColumn, coordinate, value,
-      new AutoQCResult(), flag, "");
+    return new SensorValue(id, 1L, flagScheme, fileColumn, coordinate, value,
+      new AutoQCResult(flagScheme), flag, "");
   }
 }

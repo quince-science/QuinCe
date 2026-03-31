@@ -64,15 +64,15 @@ public class PositionQCRoutineTest extends BaseTest {
    */
   private static LinkedHashMap<Double, Flag> generateLongitudes() {
     LinkedHashMap<Double, Flag> longitudes = new LinkedHashMap<Double, Flag>();
-    longitudes.put(null, Flag.BAD);
-    longitudes.put(Double.NaN, Flag.BAD);
-    longitudes.put(-185D, Flag.BAD);
-    longitudes.put(-180D, Flag.GOOD);
-    longitudes.put(-1D, Flag.GOOD);
-    longitudes.put(0D, Flag.GOOD);
-    longitudes.put(1D, Flag.GOOD);
-    longitudes.put(180D, Flag.GOOD);
-    longitudes.put(185D, Flag.BAD);
+    longitudes.put(null, flagScheme.getBadFlag());
+    longitudes.put(Double.NaN, flagScheme.getBadFlag());
+    longitudes.put(-185D, flagScheme.getBadFlag());
+    longitudes.put(-180D, flagScheme.getGoodFlag());
+    longitudes.put(-1D, flagScheme.getGoodFlag());
+    longitudes.put(0D, flagScheme.getGoodFlag());
+    longitudes.put(1D, flagScheme.getGoodFlag());
+    longitudes.put(180D, flagScheme.getGoodFlag());
+    longitudes.put(185D, flagScheme.getBadFlag());
 
     return longitudes;
   }
@@ -84,15 +84,15 @@ public class PositionQCRoutineTest extends BaseTest {
    */
   private static LinkedHashMap<Double, Flag> generateLatitudes() {
     LinkedHashMap<Double, Flag> latitudes = new LinkedHashMap<Double, Flag>();
-    latitudes.put(null, Flag.BAD);
-    latitudes.put(Double.NaN, Flag.BAD);
-    latitudes.put(-95D, Flag.BAD);
-    latitudes.put(-90D, Flag.GOOD);
-    latitudes.put(-1D, Flag.GOOD);
-    latitudes.put(0D, Flag.GOOD);
-    latitudes.put(1D, Flag.GOOD);
-    latitudes.put(90D, Flag.GOOD);
-    latitudes.put(95D, Flag.BAD);
+    latitudes.put(null, flagScheme.getBadFlag());
+    latitudes.put(Double.NaN, flagScheme.getBadFlag());
+    latitudes.put(-95D, flagScheme.getBadFlag());
+    latitudes.put(-90D, flagScheme.getGoodFlag());
+    latitudes.put(-1D, flagScheme.getGoodFlag());
+    latitudes.put(0D, flagScheme.getGoodFlag());
+    latitudes.put(1D, flagScheme.getGoodFlag());
+    latitudes.put(90D, flagScheme.getGoodFlag());
+    latitudes.put(95D, flagScheme.getBadFlag());
 
     return latitudes;
   }
@@ -108,8 +108,8 @@ public class PositionQCRoutineTest extends BaseTest {
 
     for (Map.Entry<Double, Flag> longitude : generateLongitudes().entrySet()) {
       for (Map.Entry<Double, Flag> latitude : generateLatitudes().entrySet()) {
-        arguments.add(Arguments.of(longitude.getKey(), latitude.getKey(), Flag
-          .getMostSignificantFlag(longitude.getValue(), latitude.getValue())));
+        arguments.add(Arguments.of(longitude.getKey(), latitude.getKey(),
+          Flag.mostSignificant(longitude.getValue(), latitude.getValue())));
       }
     }
 
@@ -140,17 +140,17 @@ public class PositionQCRoutineTest extends BaseTest {
     TimeCoordinate time = new TimeCoordinate(
       LocalDateTime.of(2025, 1, 1, 0, 0, 0));
 
-    SensorValue longitudeSensorValue = new SensorValue(1L, 1L,
+    SensorValue longitudeSensorValue = new SensorValue(1L, 1L, flagScheme,
       SensorType.LONGITUDE_ID, time,
-      null == longitude ? null : String.valueOf(longitude), new AutoQCResult(),
-      Flag.ASSUMED_GOOD, null);
+      null == longitude ? null : String.valueOf(longitude),
+      new AutoQCResult(flagScheme), flagScheme.getAssumedGoodFlag(), null);
 
     sensorValues.add(longitudeSensorValue);
 
-    SensorValue latitudeSensorValue = new SensorValue(2L, 1L,
+    SensorValue latitudeSensorValue = new SensorValue(2L, 1L, flagScheme,
       SensorType.LATITUDE_ID, time,
-      null == latitude ? null : String.valueOf(latitude), new AutoQCResult(),
-      Flag.ASSUMED_GOOD, null);
+      null == latitude ? null : String.valueOf(latitude),
+      new AutoQCResult(flagScheme), flagScheme.getAssumedGoodFlag(), null);
 
     sensorValues.add(latitudeSensorValue);
 
@@ -177,9 +177,9 @@ public class PositionQCRoutineTest extends BaseTest {
     TimeCoordinate time = new TimeCoordinate(
       LocalDateTime.of(2025, 1, 1, 0, 0, 0));
 
-    SensorValue latitudeSensorValue = new SensorValue(2L, 1L,
-      SensorType.LATITUDE_ID, time, "0", new AutoQCResult(), Flag.ASSUMED_GOOD,
-      null);
+    SensorValue latitudeSensorValue = new SensorValue(2L, 1L, flagScheme,
+      SensorType.LATITUDE_ID, time, "0", new AutoQCResult(flagScheme),
+      flagScheme.getAssumedGoodFlag(), null);
 
     sensorValues.add(latitudeSensorValue);
 
@@ -187,7 +187,7 @@ public class PositionQCRoutineTest extends BaseTest {
     routine.qc(null, null);
 
     for (SensorValue sv : sensorValues.getAllPositionSensorValues()) {
-      assertEquals(Flag.BAD, sv.getAutoQcFlag());
+      assertEquals(flagScheme.getBadFlag(), sv.getAutoQcFlag());
     }
   }
 
@@ -206,9 +206,9 @@ public class PositionQCRoutineTest extends BaseTest {
     TimeCoordinate time = new TimeCoordinate(
       LocalDateTime.of(2025, 1, 1, 0, 0, 0));
 
-    SensorValue longitudeSensorValue = new SensorValue(2L, 1L,
-      SensorType.LONGITUDE_ID, time, "0", new AutoQCResult(), Flag.ASSUMED_GOOD,
-      null);
+    SensorValue longitudeSensorValue = new SensorValue(2L, 1L, flagScheme,
+      SensorType.LONGITUDE_ID, time, "0", new AutoQCResult(flagScheme),
+      flagScheme.getAssumedGoodFlag(), null);
 
     sensorValues.add(longitudeSensorValue);
 
@@ -216,7 +216,7 @@ public class PositionQCRoutineTest extends BaseTest {
     routine.qc(null, null);
 
     for (SensorValue sv : sensorValues.getAllPositionSensorValues()) {
-      assertEquals(Flag.BAD, sv.getAutoQcFlag());
+      assertEquals(flagScheme.getBadFlag(), sv.getAutoQcFlag());
     }
   }
 
@@ -238,17 +238,17 @@ public class PositionQCRoutineTest extends BaseTest {
 
     DatasetSensorValues sensorValues = mockDatasetSensorValues();
 
-    SensorValue longitudeSensorValue = new SensorValue(2L, 1L,
+    SensorValue longitudeSensorValue = new SensorValue(2L, 1L, flagScheme,
       SensorType.LONGITUDE_ID,
       new TimeCoordinate(LocalDateTime.of(2025, 1, 1, 0, 0, 0)), "0",
-      new AutoQCResult(), Flag.ASSUMED_GOOD, null);
+      new AutoQCResult(flagScheme), flagScheme.getAssumedGoodFlag(), null);
 
     sensorValues.add(longitudeSensorValue);
 
-    SensorValue latitudeSensorValue = new SensorValue(2L, 1L,
+    SensorValue latitudeSensorValue = new SensorValue(2L, 1L, flagScheme,
       SensorType.LATITUDE_ID,
       new TimeCoordinate(LocalDateTime.of(2025, 1, 1, 0, 1, 0)), "0",
-      new AutoQCResult(), Flag.ASSUMED_GOOD, null);
+      new AutoQCResult(flagScheme), flagScheme.getAssumedGoodFlag(), null);
 
     sensorValues.add(latitudeSensorValue);
 
@@ -256,7 +256,7 @@ public class PositionQCRoutineTest extends BaseTest {
     routine.qc(null, null);
 
     for (SensorValue sv : sensorValues.getAllPositionSensorValues()) {
-      assertEquals(Flag.BAD, sv.getAutoQcFlag());
+      assertEquals(flagScheme.getBadFlag(), sv.getAutoQcFlag());
     }
 
   }

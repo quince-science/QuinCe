@@ -19,7 +19,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -313,14 +312,15 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
       RunTypePeriods runTypePeriods = makeRunTypePeriods(runType);
 
       SensorValue waterFlow = allSensorValues.getById(DIAGNOSTIC_WATER_VAL_ID);
-      waterFlow.setUserQC(new Flag(line.getIntField(DIAGNOSTIC_WATER_FLAG_COL)),
+      waterFlow.setUserQC(
+        flagScheme.getFlag(line.getIntField(DIAGNOSTIC_WATER_FLAG_COL)),
         "Liquid");
 
       allSensorValues.applyQCCascade(waterFlow, runTypePeriods);
 
       SensorValue gasFlow = allSensorValues.getById(DIAGNOSTIC_GAS_VAL_ID);
-      gasFlow.setUserQC(new Flag(line.getIntField(DIAGNOSTIC_GAS_FLAG_COL)),
-        "Air");
+      gasFlow.setUserQC(
+        flagScheme.getFlag(line.getIntField(DIAGNOSTIC_GAS_FLAG_COL)), "Air");
 
       allSensorValues.applyQCCascade(gasFlow, runTypePeriods);
 
@@ -370,11 +370,13 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
 
         // Update diagnostic flags
         waterFlow.setUserQC(
-          new Flag(line.getIntField(UPDATED_DIAG_WATER_FLAG_COL)), "Liquid");
+          flagScheme.getFlag(line.getIntField(UPDATED_DIAG_WATER_FLAG_COL)),
+          "Liquid");
 
         allSensorValues.applyQCCascade(waterFlow, runTypePeriods);
 
-        gasFlow.setUserQC(new Flag(line.getIntField(UPDATED_DIAG_GAS_FLAG_COL)),
+        gasFlow.setUserQC(
+          flagScheme.getFlag(line.getIntField(UPDATED_DIAG_GAS_FLAG_COL)),
           "Air");
 
         allSensorValues.applyQCCascade(gasFlow, runTypePeriods);

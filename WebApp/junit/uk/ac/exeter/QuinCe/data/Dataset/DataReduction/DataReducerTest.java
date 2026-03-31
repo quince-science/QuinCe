@@ -14,7 +14,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.CoordinateException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
@@ -49,8 +48,8 @@ public class DataReducerTest extends BaseTest {
       .getSensorsConfiguration().getSensorType(sensorTypeName);
 
     return new MeasurementValue(sensorType.getId(), singleSensorValueList,
-      emptySensorValueList, 1, false, value, Flag.GOOD, emptyCommentList,
-      PlotPageTableValue.MEASURED_TYPE, new Properties());
+      emptySensorValueList, 1, false, value, flagScheme.getGoodFlag(),
+      emptyCommentList, PlotPageTableValue.MEASURED_TYPE, new Properties());
   }
 
   protected Measurement makeMeasurement(MeasurementValue... measurementValues)
@@ -66,6 +65,6 @@ public class DataReducerTest extends BaseTest {
     runTypes.put(Measurement.RUN_TYPE_DEFINES_VARIABLE, "runtype");
 
     return new Measurement(1L, 1L, new TimeCoordinate(1L, LocalDateTime.now()),
-      runTypes, measurementValuesMap);
+      runTypes, measurementValuesMap, flagScheme);
   }
 }

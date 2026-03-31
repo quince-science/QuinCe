@@ -99,7 +99,7 @@ public class UnderwayMarine12_13Pco2ReducerTest extends DataReducerTest {
       allMeasurementValues.toArray(MeasurementValue[]::new));
 
     DataReductionRecord record = new DataReductionRecord(measurement, variable,
-      reducer.getCalculationParameterNames());
+      flagScheme, reducer.getCalculationParameterNames());
 
     reducer.doCalculation(instrument, measurement, record,
       getDataSource().getConnection());

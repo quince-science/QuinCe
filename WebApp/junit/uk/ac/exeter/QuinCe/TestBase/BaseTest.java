@@ -38,6 +38,8 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 
 import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -98,6 +100,13 @@ public class BaseTest {
    */
   @Mock
   protected static ServletContextEvent servletContextEvent;
+
+  /**
+   * Most tests with QC flags use the Time-based (ICOS) flag scheme. Declare it
+   * here for convenience.
+   */
+  protected static FlagScheme flagScheme = Instrument
+    .getFlagScheme(Instrument.BASIS_TIME);
 
   /**
    * Initialises the mock {@link ServletContext} and

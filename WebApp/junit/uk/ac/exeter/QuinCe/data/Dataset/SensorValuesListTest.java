@@ -51,8 +51,8 @@ public class SensorValuesListTest extends BaseTest {
    */
   protected SensorValue makeSensorValue(long column, int hour, int minute)
     throws CoordinateException {
-    return new SensorValue(1L, column, new TimeCoordinate(DATASET_ID,
-      LocalDateTime.of(2023, 1, 1, hour, minute, 0)), "12");
+    return new SensorValue(1L, flagScheme, column, new TimeCoordinate(
+      DATASET_ID, LocalDateTime.of(2023, 1, 1, hour, minute, 0)), "12");
   }
 
   /**

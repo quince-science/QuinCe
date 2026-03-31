@@ -12,11 +12,11 @@ public abstract class FlagSignificanceTest extends TestSetTest {
   protected static final int RESULT_COL = 2;
 
   protected Flag getThisFlag(TestSetLine line) throws InvalidFlagException {
-    return new Flag(line.getCharField(THIS_COL));
+    return flagScheme.getFlag(line.getCharField(THIS_COL));
   }
 
   protected Flag getOtherFlag(TestSetLine line) throws InvalidFlagException {
-    return new Flag(line.getCharField(OTHER_COL));
+    return flagScheme.getFlag(line.getCharField(OTHER_COL));
   }
 
   protected boolean getExpectedResult(TestSetLine line) {

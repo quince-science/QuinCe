@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
 
 import java.util.Objects;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCCascadeRoutine;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -127,9 +128,9 @@ public class RoutineFlag extends Flag {
         break;
       }
       case "DataReduction": {
-        result = ResourceManager.getInstance()
-          .getDataReductionQCRoutinesConfiguration().get(flagScheme.getBasis())
-          .getRoutine(routineName);
+        ResourceManager.getInstance().getDataReductionQCRoutinesConfiguration()
+          .get(flagScheme);
+        result = DataReductionQCRoutinesConfiguration.getRoutine(routineName);
         break;
       }
       default: {

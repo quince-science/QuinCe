@@ -186,7 +186,7 @@ public class TimestampSensorValuesListTest extends SensorValuesListTest {
     while ((line = in.readLine()) != null) {
       LocalDateTime timestamp = LocalDateTime.parse(line,
         DateTimeFormatsBean.DT_ISO_MS_F);
-      list.add(new SensorValue(1L, 1L,
+      list.add(new SensorValue(1L, flagScheme, 1L,
         new TimeCoordinate(DATASET_ID, timestamp), "1"));
     }
     in.close();
@@ -215,8 +215,8 @@ public class TimestampSensorValuesListTest extends SensorValuesListTest {
       LocalDateTime timestamp = LocalDateTime.parse(fields[0],
         DateTimeFormatsBean.DT_ISO_MS_F);
       SensorValue sensorValue = new SensorValue(getSensorValueId(), 1L,
-        columnId, new TimeCoordinate(DATASET_ID, timestamp), fields[1],
-        new AutoQCResult(), flag, "");
+        flagScheme, columnId, new TimeCoordinate(DATASET_ID, timestamp),
+        fields[1], new AutoQCResult(flagScheme), flag, "");
       result.add(sensorValue);
     }
     in.close();
@@ -231,7 +231,7 @@ public class TimestampSensorValuesListTest extends SensorValuesListTest {
 
     // Column 6 = Run Type
     DatasetSensorValues allSensorValues = makeDatasetSensorValues(
-      "numericValuesContinuous.csv", 6L, Flag.GOOD);
+      "numericValuesContinuous.csv", 6L, flagScheme.getGoodFlag());
 
     SensorValuesList list = allSensorValues.getColumnValues(6L);
     assertEquals(30, list.rawSize());
@@ -244,7 +244,7 @@ public class TimestampSensorValuesListTest extends SensorValuesListTest {
 
     // Column 6 = Run Type
     DatasetSensorValues allSensorValues = makeDatasetSensorValues(
-      "numericValuesContinuous.csv", 6L, Flag.GOOD);
+      "numericValuesContinuous.csv", 6L, flagScheme.getGoodFlag());
 
     SensorValuesList list = allSensorValues.getColumnValues(6L);
     assertEquals(30, list.valuesSize());
@@ -257,7 +257,7 @@ public class TimestampSensorValuesListTest extends SensorValuesListTest {
 
     // Column 6 = Run Type
     DatasetSensorValues allSensorValues = makeDatasetSensorValues(
-      "stringValuesPeriodic.csv", 6L, Flag.GOOD);
+      "stringValuesPeriodic.csv", 6L, flagScheme.getGoodFlag());
 
     SensorValuesList list = allSensorValues.getColumnValues(6L);
     assertEquals(50, list.rawSize());
@@ -270,7 +270,7 @@ public class TimestampSensorValuesListTest extends SensorValuesListTest {
 
     // Column 6 = Run Type
     DatasetSensorValues allSensorValues = makeDatasetSensorValues(
-      "stringValuesPeriodic.csv", 6L, Flag.GOOD);
+      "stringValuesPeriodic.csv", 6L, flagScheme.getGoodFlag());
 
     SensorValuesList list = allSensorValues.getColumnValues(6L);
     assertEquals(5, list.valuesSize());
@@ -283,7 +283,7 @@ public class TimestampSensorValuesListTest extends SensorValuesListTest {
 
     // Column 6 = Run Type
     DatasetSensorValues allSensorValues = makeDatasetSensorValues(
-      "numericValuesPeriodic.csv", 6L, Flag.GOOD);
+      "numericValuesPeriodic.csv", 6L, flagScheme.getGoodFlag());
 
     SensorValuesList list = allSensorValues.getColumnValues(6L);
     assertEquals(50, list.rawSize());
@@ -296,7 +296,7 @@ public class TimestampSensorValuesListTest extends SensorValuesListTest {
 
     // Column 6 = Run Type
     DatasetSensorValues allSensorValues = makeDatasetSensorValues(
-      "numericValuesPeriodic.csv", 6L, Flag.GOOD);
+      "numericValuesPeriodic.csv", 6L, flagScheme.getGoodFlag());
 
     SensorValuesList list = allSensorValues.getColumnValues(6L);
     assertEquals(3, list.valuesSize());
@@ -311,7 +311,7 @@ public class TimestampSensorValuesListTest extends SensorValuesListTest {
 
     // Column 6 = Run Type
     DatasetSensorValues allSensorValues = makeDatasetSensorValues(
-      "stringValuesContinuous1.csv", 6L, Flag.GOOD);
+      "stringValuesContinuous1.csv", 6L, flagScheme.getGoodFlag());
 
     TimestampSensorValuesList list = (TimestampSensorValuesList) allSensorValues
       .getColumnValues(6L);

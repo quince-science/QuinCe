@@ -1,22 +1,26 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang3.Range;
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.mockito.Mockito;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -33,58 +37,11 @@ public class GradientTestRoutineTest extends BaseTest {
     ResourceManager.destroy();
   }
 
-  @Test
-  public void nullParametersTest() {
-    GradientTestRoutine routine = new GradientTestRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.validateParameters();
-    });
-  }
-
-  @Test
-  public void emptyParametersTest() throws Exception {
-    GradientTestRoutine routine = new GradientTestRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.setParameters(Arrays.asList(new String[] {}));
-    });
-  }
-
-  @Test
-  public void tooManyParametersTest() throws Exception {
-    GradientTestRoutine routine = new GradientTestRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.setParameters(Arrays.asList(new String[] { "5", "7" }));
-    });
-  }
-
-  @Test
-  public void nonNumericParameterTest() throws Exception {
-    GradientTestRoutine routine = new GradientTestRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.setParameters(Arrays.asList(new String[] { "Not a number" }));
-    });
-  }
-
-  @Test
-  public void zeroParameterTest() throws Exception {
-    GradientTestRoutine routine = new GradientTestRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.setParameters(Arrays.asList(new String[] { "0" }));
-    });
-  }
-
-  @Test
-  public void negativeParameterTest() throws Exception {
-    GradientTestRoutine routine = new GradientTestRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.setParameters(Arrays.asList(new String[] { "-5" }));
-    });
-  }
-
   private GradientTestRoutine getRoutine() throws RoutineException {
-    GradientTestRoutine routine = new GradientTestRoutine();
-    routine.setParameters(Arrays.asList(new String[] { "5" }));
-    return routine;
+    Map<Flag, Range<Double>> limits = new HashMap<Flag, Range<Double>>();
+    limits.put(flagScheme.getBadFlag(), Range.between(0D, 5D));
+    return new GradientTestRoutine(flagScheme, Mockito.mock(SensorType.class),
+      limits);
   }
 
   @Test
@@ -94,7 +51,7 @@ public class GradientTestRoutineTest extends BaseTest {
 
     GradientTestRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] {})));
   }
 
@@ -105,7 +62,7 @@ public class GradientTestRoutineTest extends BaseTest {
 
     GradientTestRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] {})));
   }
 
@@ -116,7 +73,7 @@ public class GradientTestRoutineTest extends BaseTest {
 
     GradientTestRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] {})));
   }
 
@@ -127,7 +84,7 @@ public class GradientTestRoutineTest extends BaseTest {
 
     GradientTestRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] {})));
   }
 
@@ -139,7 +96,7 @@ public class GradientTestRoutineTest extends BaseTest {
 
     GradientTestRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] {})));
   }
 
@@ -151,7 +108,7 @@ public class GradientTestRoutineTest extends BaseTest {
 
     GradientTestRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] { 3L, 4L })));
   }
 
@@ -163,7 +120,7 @@ public class GradientTestRoutineTest extends BaseTest {
 
     GradientTestRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] { 4L })));
   }
 
@@ -175,7 +132,7 @@ public class GradientTestRoutineTest extends BaseTest {
 
     GradientTestRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] { 3L, 4L, 5L, 6L })));
   }
 
@@ -187,7 +144,7 @@ public class GradientTestRoutineTest extends BaseTest {
 
     GradientTestRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] { 2L, 3L, 5L, 6L })));
   }
 }

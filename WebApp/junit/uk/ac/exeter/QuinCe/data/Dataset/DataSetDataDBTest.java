@@ -21,6 +21,8 @@ import org.mockito.Mockito;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.RangeCheckRoutine;
@@ -125,9 +127,9 @@ public class DataSetDataDBTest extends BaseTest {
       "Incorrect time");
     assertEquals(sensorValue.getValue(), storedValue.getValue(),
       "Incorrect value");
-    assertEquals(new AutoQCResult(), storedValue.getAutoQcResult(),
+    assertEquals(new AutoQCResult(flagScheme), storedValue.getAutoQcResult(),
       "Auto QC result not stored correctly");
-    assertEquals(Flag.ASSUMED_GOOD, storedValue.getUserQCFlag(),
+    assertEquals(flagScheme.getAssumedGoodFlag(), storedValue.getUserQCFlag(),
       "Incorrect user QC flag");
     assertEquals("", storedValue.getUserQCMessage(),
       "Incorrect user QC message");
@@ -167,7 +169,7 @@ public class DataSetDataDBTest extends BaseTest {
     SensorValue sensorValue = sensorValues.getSensorValues().stream().findAny()
       .get();
 
-    Flag qcFlag = Flag.QUESTIONABLE;
+    Flag qcFlag = IcosFlagScheme.QUESTIONABLE_FLAG;
     String qcMessage = "I question this value";
     sensorValue.setUserQC(qcFlag, qcMessage);
 
@@ -198,11 +200,12 @@ public class DataSetDataDBTest extends BaseTest {
     SensorValue originalStoredValue = retrieveSingleStoredValue(
       sensorValue.getCoordinate());
 
-    Flag userQCFlag = Flag.QUESTIONABLE;
+    Flag userQCFlag = IcosFlagScheme.QUESTIONABLE_FLAG;
     String userQCMessage = "Updated User QC";
 
     originalStoredValue.addAutoQCFlag(
-      new RoutineFlag(new RangeCheckRoutine(), Flag.BAD, "77", "88"));
+      new RoutineFlag(flagScheme, Mockito.mock(RangeCheckRoutine.class),
+        flagScheme.getBadFlag(), "77", "88"));
     originalStoredValue.setUserQC(userQCFlag, userQCMessage);
     AutoQCResult autoQC = originalStoredValue.getAutoQcResult();
 
@@ -351,7 +354,7 @@ public class DataSetDataDBTest extends BaseTest {
 
     for (SensorValue value : sensorValues.getSensorValues()) {
       if (value.getCoordinate().getTime().getSecond() == 1) {
-        value.setUserQC(Flag.FLUSHING, "Flushing");
+        value.setUserQC(FlagScheme.FLUSHING_FLAG, "Flushing");
       }
     }
 
@@ -378,7 +381,7 @@ public class DataSetDataDBTest extends BaseTest {
 
     for (SensorValue value : sensorValues.getSensorValues()) {
       if (value.getCoordinate().getTime().getSecond() == 1) {
-        value.setUserQC(Flag.FLUSHING, "Flushing");
+        value.setUserQC(FlagScheme.FLUSHING_FLAG, "Flushing");
       }
     }
 

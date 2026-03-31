@@ -20,7 +20,7 @@ public class IcosFlagScheme extends AbstractFlagScheme
   /**
    * {@link Flag} indicating that a value has not been calibrated.
    */
-  private static final Flag NO_CALIBRATION_FLAG = new Flag(1, "Not calibrated",
+  public static final Flag NO_CALIBRATION_FLAG = new Flag(1, "Not calibrated",
     'C', 1, false, false, 1);
 
   /**

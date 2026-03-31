@@ -142,14 +142,14 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
 
     boolean flagOK = true;
 
-    if (expectedFlag == 2) {
-      flagOK = valueFlag.isGood();
+    if (expectedFlag == flagScheme.getGoodFlag().getValue()) {
+      flagOK = flagScheme.isGood(valueFlag, false);
     } else {
-      flagOK = valueFlag.getFlagValue() == expectedFlag;
+      flagOK = valueFlag.getValue() == expectedFlag;
     }
 
     assertTrue(flagOK, name + " flag incorrect (expected " + expectedFlag
-      + ", was " + valueFlag.getFlagValue() + ")");
+      + ", was " + valueFlag.getValue() + ")");
 
     boolean commentOK = true;
     String invalidCommentPart = null;
@@ -185,8 +185,8 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
   protected void setUserQC(SensorValue sensorValue, int flagValue)
     throws InvalidFlagException {
 
-    Flag flag = new Flag(flagValue);
-    String comment = flag.isGood() ? "" : "User QC";
+    Flag flag = flagScheme.getFlag(flagValue);
+    String comment = flagScheme.isGood(flag, false) ? "" : "User QC";
     sensorValue.setUserQC(flag, comment);
   }
 
