@@ -16,6 +16,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class ConstantValueRoutine extends AutoQCRoutine {
 
+  public ConstantValueRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
+
   public ConstantValueRoutine(FlagScheme flagScheme, SensorType sensorType,
     Map<Flag, Range<Double>> limits) {
     super(flagScheme, sensorType, limits);

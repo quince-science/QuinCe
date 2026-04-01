@@ -53,6 +53,7 @@ public class PositionQCRoutineTest extends BaseTest {
       .thenReturn(Mockito.mock(SensorAssignments.class));
 
     Mockito.when(datasetSensorValues.getInstrument()).thenReturn(instrument);
+    Mockito.when(datasetSensorValues.getFlagScheme()).thenReturn(flagScheme);
 
     return datasetSensorValues;
   }

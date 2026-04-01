@@ -103,7 +103,8 @@ public class DataSetDataDB {
     + "sv.id, sv.coordinate_id, sv.file_column, sv.value, sv.auto_qc, "
     + "sv.user_qc_flag, sv.user_qc_message "
     + "FROM sensor_values sv INNER JOIN coordinates c ON sv.coordinate_id = c.id "
-    + "WHERE c.dataset_id = ? AND user_qc_flag != " + FlagScheme.FLUSHING_FLAG;
+    + "WHERE c.dataset_id = ? AND user_qc_flag != "
+    + FlagScheme.FLUSHING_FLAG.getValue();
 
   private static final String GET_POSITION_SENSOR_VALUES_QUERY = "SELECT "
     + "sv.id, sv.coordinate_id, sv.file_column, sv.value, sv.auto_qc, sv.user_qc_flag, sv.user_qc_message "

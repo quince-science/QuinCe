@@ -10,6 +10,7 @@ import org.apache.commons.lang3.Range;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -223,8 +224,9 @@ public abstract class AbstractQCRoutinesConfiguration {
   }
 
   /**
-   * Get a concrete instance of a Routine given its short name (as recorded in
-   * the configuration file).
+   * Get a stub instance of a {@link Routine} given its short name (as recorded
+   * in the configuration file). This is only to be used to obtain messages from
+   * the {@link Routine} - it will not work for actual QC tasks.
    *
    * @param routineName
    *          The routine's short name.
@@ -232,13 +234,13 @@ public abstract class AbstractQCRoutinesConfiguration {
    * @throws RoutineException
    *           If the routine cannot be instantiated.
    */
-  public AbstractAutoQCRoutine getRoutine(String routineName)
-    throws RoutineException {
+  public AbstractAutoQCRoutine getStubRoutine(String routineName,
+    FlagScheme flagScheme) throws RoutineException {
 
     try {
       return (AbstractAutoQCRoutine) Class
-        .forName(getFullClassName(routineName)).getDeclaredConstructor()
-        .newInstance();
+        .forName(getFullClassName(routineName))
+        .getDeclaredConstructor(FlagScheme.class).newInstance(flagScheme);
     } catch (Exception e) {
       throw new RoutineException(
         "Cannot get routine instance for '" + routineName + "'", e);
@@ -254,7 +256,7 @@ public abstract class AbstractQCRoutinesConfiguration {
    *
    * @return The QC routines root package.
    */
-  protected String getRoutineClassRoot() {
+  protected static String getRoutineClassRoot() {
     return "uk.ac.exeter.QuinCe.data.Dataset.QC";
   }
 
@@ -282,7 +284,7 @@ public abstract class AbstractQCRoutinesConfiguration {
    *
    * @return The standard routine class name tail.
    */
-  protected String getRoutineClassTail() {
+  protected static String getRoutineClassTail() {
     return "Routine";
   }
 

@@ -114,6 +114,12 @@ public class DataReductionRecord implements Comparable<DataReductionRecord> {
     throws DataReductionException {
     if (flag.equalSignificance(qcFlag)) {
       qcMessages.addAll(messages);
+    } else if (flag.equals(FlagScheme.NO_QC_FLAG)
+      && flagScheme.isGood(qcFlag, true)) {
+
+      // Explicitly setting the NO_QC flag overrides a GOOD flag
+      qcFlag = flag;
+      qcMessages.clear();
     } else if (flag.moreSignificantThan(qcFlag)) {
       qcFlag = flag;
 

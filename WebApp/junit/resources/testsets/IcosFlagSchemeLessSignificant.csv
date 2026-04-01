@@ -7,7 +7,7 @@ F,B,false
 F,Q,false
 F,C,false
 F,G,false
-F,A,false
+F,g,false
 L,F,true
 L,L,false
 L,N,false
@@ -16,7 +16,7 @@ L,B,false
 L,Q,false
 L,C,false
 L,G,false
-L,A,false
+L,g,false
 N,F,true
 N,L,true
 N,N,false
@@ -25,7 +25,7 @@ N,B,false
 N,Q,false
 N,C,false
 N,G,false
-N,A,false
+N,g,false
 X,F,true
 X,L,true
 X,N,true
@@ -34,7 +34,7 @@ X,B,false
 X,Q,false
 X,C,false
 X,G,false
-X,A,false
+X,g,false
 B,F,true
 B,L,true
 B,N,true
@@ -43,7 +43,7 @@ B,B,false
 B,Q,false
 B,C,false
 B,G,false
-B,A,false
+B,g,false
 Q,F,true
 Q,L,true
 Q,N,true
@@ -52,7 +52,7 @@ Q,B,true
 Q,Q,false
 Q,C,false
 Q,G,false
-Q,A,false
+Q,g,false
 C,F,true
 C,L,true
 C,N,true
@@ -61,7 +61,7 @@ C,B,true
 C,Q,true
 C,C,false
 C,G,false
-C,A,false
+C,g,false
 G,F,true
 G,L,true
 G,N,true
@@ -70,13 +70,13 @@ G,B,true
 G,Q,true
 G,C,true
 G,G,false
-G,A,false
-A,F,true
-A,L,true
-A,N,true
-A,X,true
-A,B,true
-A,Q,true
-A,C,true
-A,G,false
-A,A,false
+G,g,false
+g,F,true
+g,L,true
+g,N,true
+g,X,true
+g,B,true
+g,Q,true
+g,C,true
+g,G,false
+g,g,false

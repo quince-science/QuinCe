@@ -67,18 +67,19 @@ public interface FlagScheme {
    * A fixed {@link Flag} to indicate that the instrument is in a flushing
    * period after switching measurement modes.
    */
-  static final Flag FLUSHING_FLAG = new Flag(-100, "Flushing", 'F', -100, false,
+  static final Flag FLUSHING_FLAG = new Flag(-100, "Flushing", 'F', 130, false,
     false, -1);
 
   /**
    * A fixed {@link Flag} to indicate no QC has been performed on a value.
    */
-  static final Flag NO_QC_FLAG = new Flag(0, "No QC", 'X', 0, false, false, 0);
+  static final Flag NO_QC_FLAG = new Flag(0, "No QC", 'X', 100, false, false,
+    0);
 
   /**
    * A fixed {@link Flag} to indicate a user must confirm an automatic QC flag.
    */
-  static final Flag NEEDED_FLAG = new Flag(-10, "Needed", 'N', -10, false,
+  static final Flag NEEDED_FLAG = new Flag(-10, "Needed", 'N', 110, false,
     false, -1);
 
   /**
@@ -91,7 +92,7 @@ public interface FlagScheme {
    * on the situation.
    * </p>
    */
-  static final Flag LOOKUP_FLAG = new Flag(-200, "Lookup", 'L', -200, false,
+  static final Flag LOOKUP_FLAG = new Flag(-200, "Lookup", 'L', 120, false,
     false, -1);
 
   /**
@@ -133,6 +134,10 @@ public interface FlagScheme {
   /**
    * Determine whether the specified {@link Flag} is a <i>Good</i> flag.
    * 
+   * <p>
+   * A {@link #NO_QC_FLAG} is assumed to be <i>Good</i>.
+   * </p>
+   * 
    * @param flag
    *          The {@link Flag} to test.
    * @param includeAssumedGood
@@ -142,7 +147,10 @@ public interface FlagScheme {
    *         {@code false} otherwise.
    */
   default boolean isGood(Flag flag, boolean includeAssumedGood) {
-    if (includeAssumedGood) {
+
+    if (flag.equals(NO_QC_FLAG)) {
+      return true; // No QC is assumed to be Good.
+    } else if (includeAssumedGood) {
       return flag.equals(getGoodFlag()) || flag.equals(getAssumedGoodFlag());
     } else {
       return flag.equals(getGoodFlag());

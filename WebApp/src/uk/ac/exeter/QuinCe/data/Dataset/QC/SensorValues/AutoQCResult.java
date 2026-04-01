@@ -71,12 +71,13 @@ public class AutoQCResult extends HashSet<RoutineFlag> {
    * @return The most significant flag.
    */
   public Flag getOverallFlag() {
-    Flag result = FlagScheme.NO_QC_FLAG;
 
-    for (RoutineFlag flag : this) {
-      if (flag.moreSignificantThan(result)) {
-        result = flag;
-      }
+    Flag result;
+
+    if (size() == 0) {
+      result = flagScheme.getGoodFlag();
+    } else {
+      result = Flag.mostSignificant(this);
     }
 
     return result;

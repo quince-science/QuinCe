@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.StubRoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -132,7 +133,8 @@ public abstract class DataReductionQCRoutine extends Routine {
   }
 
   @Override
-  protected RoutineFlag getRangeFlag(double value, boolean reportMaxOnly) {
+  protected RoutineFlag getRangeFlag(double value, boolean reportMaxOnly)
+    throws StubRoutineException {
     return getRangeFlag(value, reportMaxOnly, settings.getLimits());
   }
 }

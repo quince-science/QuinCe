@@ -30,6 +30,8 @@ public class PositionQCCascadeRoutine extends Routine {
   public void run(Instrument instrument, DatasetSensorValues allSensorValues,
     RunTypePeriods runTypePeriods) throws RoutineException {
 
+    stubCheck();
+
     try {
       TreeSet<Coordinate> allCoordiantes = new TreeSet<Coordinate>();
       allCoordiantes.addAll(allSensorValues.getCoordinates());

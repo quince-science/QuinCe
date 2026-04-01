@@ -65,6 +65,11 @@ public abstract class AbstractAutoQCRoutine extends Routine {
    */
   protected final SensorType sensorType;
 
+  public AbstractAutoQCRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+    this.sensorType = null;
+  }
+
   public AbstractAutoQCRoutine(FlagScheme flagScheme, SensorType sensorType,
     Map<Flag, Range<Double>> limits) {
 
@@ -114,6 +119,8 @@ public abstract class AbstractAutoQCRoutine extends Routine {
    */
   protected void addFlag(SensorValue value, Flag flag, String requiredValue,
     String actualValue) throws RoutineException {
+
+    stubCheck();
 
     try {
       value.addAutoQCFlag(new RoutineFlag(value.getFlagScheme(), this, flag,
@@ -226,6 +233,8 @@ public abstract class AbstractAutoQCRoutine extends Routine {
    *           If the routine has not been set up.
    */
   protected void checkSetup() throws RoutineException {
+    stubCheck();
+
     if (null == sensorType) {
       throw new RoutineException("SensorType not set");
     }

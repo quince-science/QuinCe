@@ -15,6 +15,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class GradientTestRoutine extends AutoQCRoutine {
 
+  public GradientTestRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
+
   public GradientTestRoutine(FlagScheme flagScheme, SensorType sensorType,
     Map<Flag, Range<Double>> limits) {
     super(flagScheme, sensorType, limits);

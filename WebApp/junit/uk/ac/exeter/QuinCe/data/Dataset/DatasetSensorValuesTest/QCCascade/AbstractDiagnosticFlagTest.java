@@ -143,7 +143,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
     boolean flagOK = true;
 
     if (expectedFlag == flagScheme.getGoodFlag().getValue()) {
-      flagOK = flagScheme.isGood(valueFlag, false);
+      flagOK = flagScheme.isGood(valueFlag, true);
     } else {
       flagOK = valueFlag.getValue() == expectedFlag;
     }

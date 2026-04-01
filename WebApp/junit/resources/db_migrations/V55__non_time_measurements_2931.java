@@ -44,12 +44,17 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
         + "depth MEDIUMINT NULL, station VARCHAR(10) NULL, "
         + "cast VARCHAR(10) NULL, bottle VARCHAR(10) NULL, "
         + "replicate VARCHAR(10) NULL, cycle VARCHAR(10) NULL, "
-        + "PRIMARY KEY(id), INDEX coord_datasetid (dataset_id), "
+        + "PRIMARY KEY(id), "
         + "CONSTRAINT coord_dataset FOREIGN KEY (dataset_id) REFERENCES dataset(id))"
         + "ENGINE = InnoDB");
 
     createCoordsTableStatement.execute();
     createCoordsTableStatement.close();
+
+    PreparedStatement coordDatasetIdIndexStmt = conn.prepareStatement(
+      "CREATE INDEX coord_datasetid ON coordinates(dataset_id)");
+    coordDatasetIdIndexStmt.execute();
+    coordDatasetIdIndexStmt.close();
 
     // Create the coordinates records by copying distinct dataset_id/date from
     // the sensor_values table
@@ -131,13 +136,17 @@ public class V55__non_time_measurements_2931 extends BaseJavaMigration {
     PreparedStatement createDatasetFilesTableStatement = conn.prepareStatement(
       "CREATE TABLE dataset_files (dataset_id INT(11) NOT NULL, "
         + "datafile_id INT(11) NOT NULL, "
-        + "INDEX datasetfiles_datasetid (dataset_id), "
         + "CONSTRAINT datasetfiles_datasetid FOREIGN KEY (dataset_id) REFERENCES dataset(id), "
         + "CONSTRAINT datasetfiles_datafileid FOREIGN KEY (datafile_id) REFERENCES data_file(id)) "
         + "ENGINE = InnoDB");
 
     createDatasetFilesTableStatement.execute();
     createDatasetFilesTableStatement.close();
+
+    PreparedStatement datasetFilesDatasetIdIndexStmt = conn.prepareStatement(
+      "CREATE INDEX datasetfiles_datasetid ON dataset_files(dataset_id)");
+    datasetFilesDatasetIdIndexStmt.execute();
+    datasetFilesDatasetIdIndexStmt.close();
 
     // Get all existing DataSets
     List<DatasetInfo> datasets = new ArrayList<DatasetInfo>();

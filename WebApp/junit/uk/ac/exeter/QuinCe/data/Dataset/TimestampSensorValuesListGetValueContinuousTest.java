@@ -90,6 +90,7 @@ public class TimestampSensorValuesListGetValueContinuousTest
     Mockito.when(dataSet.getId()).thenReturn(DATASET_ID);
     DatasetSensorValues allSensorValues = new DatasetSensorValues(dataSet);
     Mockito.when(allSensorValues.getInstrument()).thenReturn(instrument);
+    Mockito.when(allSensorValues.getFlagScheme()).thenReturn(flagScheme);
 
     buildSensorValues(allSensorValues, line);
 

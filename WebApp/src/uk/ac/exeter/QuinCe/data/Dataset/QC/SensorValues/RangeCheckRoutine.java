@@ -14,6 +14,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class RangeCheckRoutine extends AutoQCRoutine {
 
+  public RangeCheckRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
+
   public RangeCheckRoutine(FlagScheme flagScheme, SensorType sensorType,
     Map<Flag, Range<Double>> limits) {
     super(flagScheme, sensorType, limits);

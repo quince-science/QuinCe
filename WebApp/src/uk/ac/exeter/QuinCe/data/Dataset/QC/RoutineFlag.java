@@ -46,6 +46,9 @@ public class RoutineFlag extends Flag {
    */
   private final String actualValue;
 
+  /**
+   * The flag scheme being used.
+   */
   private final FlagScheme flagScheme;
 
   /**
@@ -118,13 +121,13 @@ public class RoutineFlag extends Flag {
       case "SensorValues": {
         result = ResourceManager.getInstance()
           .getQCRoutinesConfiguration(flagScheme.getBasis())
-          .getRoutine(routineName);
+          .getStubRoutine(routineName, flagScheme);
         break;
       }
       case "ExternalStandards": {
         result = ResourceManager.getInstance()
           .getExternalStandardsRoutinesConfiguration(flagScheme.getBasis())
-          .getRoutine(routineName);
+          .getStubRoutine(routineName, flagScheme);
         break;
       }
       case "DataReduction": {

@@ -229,6 +229,10 @@ public class Variable implements Comparable<Variable> {
       || sensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)
       || sensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
       result = flag;
+    } else if (flagScheme.isGood(flag, true)) {
+      result = flagScheme.getAssumedGoodFlag();
+    } else if (flag.equals(FlagScheme.NEEDED_FLAG)) {
+      result = FlagScheme.NEEDED_FLAG;
     } else {
       result = cascades.getCascadeFlag(flagScheme, sensorType, flag);
 
@@ -262,6 +266,7 @@ public class Variable implements Comparable<Variable> {
     }
 
     return result;
+
   }
 
   public boolean hasAttributes() {

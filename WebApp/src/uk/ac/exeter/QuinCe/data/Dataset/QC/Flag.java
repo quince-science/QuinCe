@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
+
 /**
  * Represents a quality control flag placed on a value.
  * 
@@ -240,6 +242,25 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Examine a number of {@link Flag}s and return the {@link Flag} with the
+   * highest significance score.
+   */
+  public static Flag mostSignificant(Flag... flags) {
+    return mostSignificant(Arrays.asList(flags));
+  }
+
+  /**
+   * Get the most significant {@link Flag} from an {@link AutoQCResult}.
+   * 
+   * @param autoQC
+   *          The Auto QC result.
+   */
+  public static Flag mostSignificant(AutoQCResult autoQC) {
+    return mostSignificant(
+      autoQC.stream().map(f -> f.getSimpleFlag()).toList());
+  }
+
+  /**
+   * Examine a number of {@link Flag}s and return the {@link Flag} with the
    * lowest significance score.
    */
   public static Flag leastSignificant(Flag... flags) {
@@ -264,14 +285,6 @@ public class Flag implements Comparable<Flag> {
     return result;
   }
 
-  /**
-   * Examine a number of {@link Flag}s and return the {@link Flag} with the
-   * highest significance score.
-   */
-  public static Flag mostSignificant(Flag... flags) {
-    return mostSignificant(Arrays.asList(flags));
-  }
-
   @Override
   public int hashCode() {
     return Objects.hash(value);
@@ -287,5 +300,10 @@ public class Flag implements Comparable<Flag> {
       return false;
     Flag other = (Flag) obj;
     return value == other.value;
+  }
+
+  @Override
+  public String toString() {
+    return getName();
   }
 }

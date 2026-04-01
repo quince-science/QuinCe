@@ -123,17 +123,25 @@ public abstract class DataReducer {
             instrument.getFlagScheme(), value.getQcFlag(allSensorValues),
             instrument.getSensorAssignments());
 
-          if (!instrument.getFlagScheme().isGood(valueFlag, true)) {
-            if (valueFlag.moreSignificantThan(cascadeFlag)) {
-              cascadeFlag = valueFlag;
-            }
-
-            for (String qcMessage : value.getQcMessages()) {
-              if (!messages.containsKey(sensorType)) {
-                messages.put(sensorType, new ArrayList<String>());
+          /*
+           * If we got a NULL back, then the value's flag has no effect on the
+           * data reduction result. Otherwise, if the flag is not Good, we
+           * cascade it to the data reduction result (assuming it has more
+           * significance than any flag that's already been set).
+           */
+          if (null != valueFlag) {
+            if (!instrument.getFlagScheme().isGood(valueFlag, true)) {
+              if (valueFlag.moreSignificantThan(cascadeFlag)) {
+                cascadeFlag = valueFlag;
               }
-              if (!messages.get(sensorType).contains(qcMessage)) {
-                messages.get(sensorType).add(qcMessage);
+
+              for (String qcMessage : value.getQcMessages()) {
+                if (!messages.containsKey(sensorType)) {
+                  messages.put(sensorType, new ArrayList<String>());
+                }
+                if (!messages.get(sensorType).contains(qcMessage)) {
+                  messages.get(sensorType).add(qcMessage);
+                }
               }
             }
           }

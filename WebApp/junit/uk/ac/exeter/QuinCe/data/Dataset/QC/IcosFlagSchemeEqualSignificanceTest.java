@@ -10,19 +10,19 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 
 @TestInstance(Lifecycle.PER_CLASS)
-public class FlagMoreSignificantTest extends FlagSignificanceTest {
+public class IcosFlagSchemeEqualSignificanceTest extends FlagSignificanceTest {
 
   @ParameterizedTest
   @MethodSource("getLines")
-  public void moreSignificantTest(TestSetLine line) throws Exception {
+  public void equalSignificanceTest(TestSetLine line) throws Exception {
     Flag thisFlag = getThisFlag(line);
     Flag otherFlag = getOtherFlag(line);
     assertEquals(getExpectedResult(line),
-      thisFlag.moreSignificantThan(otherFlag));
+      thisFlag.equalSignificance(otherFlag));
   }
 
   @Override
   protected String getTestSetName() {
-    return "FlagMoreSignificant";
+    return "IcosFlagSchemeEqualSignificance";
   }
 }

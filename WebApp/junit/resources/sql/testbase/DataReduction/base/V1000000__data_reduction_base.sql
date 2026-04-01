@@ -21,27 +21,27 @@ INSERT INTO variables (id, name, allowed_basis) VALUES (1000000, 'testVar', 1);
 
 -- Sensors for the variable. No flags cascade
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'Water Temperature'),
-    0, 2, 2
+    0, '{"Time":[[3,2],[4,2]]}'
   );
 
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'Salinity'),
-    0, 2, 2
+    0, '{"Time":[[3,2],[4,2]]}'
   );
 
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'xCO₂ (wet, no standards)'),
-    1, 3, 4
+    1, '{"Time":[[3,3],[4,4]]}'
   );
 
   

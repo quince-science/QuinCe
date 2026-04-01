@@ -37,6 +37,18 @@ public class SensorValueTest extends BaseTest {
     return sensorValue;
   }
 
+  private ConstantValueRoutine makeRoutine() {
+    return new ConstantValueRoutine(flagScheme);
+  }
+//    ConstantValueRoutine routine = Mockito.mock(ConstantValueRoutine.class);
+//    Mockito.when(routine.getName()).thenReturn("SensorValues.ConstantValue");
+//    return routine;
+//  }
+
+  private RangeCheckRoutine makeRoutine2() {
+    return new RangeCheckRoutine(flagScheme);
+  }
+
   /**
    * Test that the Automatic QC cannot be updated if the value has not yet been
    * stored in the database.
@@ -59,7 +71,7 @@ public class SensorValueTest extends BaseTest {
   public void singleAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
 
-    AutoQCRoutine routine = Mockito.mock(ConstantValueRoutine.class);
+    ConstantValueRoutine routine = makeRoutine();
     RoutineFlag flag = new RoutineFlag(flagScheme, routine,
       flagScheme.getBadFlag(), "1", "2");
 
@@ -79,12 +91,11 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void twoBadAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
-    ConstantValueRoutine constantRoutine = Mockito
-      .mock(ConstantValueRoutine.class);
+    ConstantValueRoutine constantRoutine = makeRoutine();
     RoutineFlag constantFlag = new RoutineFlag(flagScheme, constantRoutine,
       flagScheme.getBadFlag(), "1", "2");
 
-    RangeCheckRoutine rangeRoutine = Mockito.mock(RangeCheckRoutine.class);
+    RangeCheckRoutine rangeRoutine = makeRoutine2();
     RoutineFlag rangeFlag = new RoutineFlag(flagScheme, rangeRoutine,
       flagScheme.getBadFlag(), "1", "2");
 
@@ -108,12 +119,11 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void oneBadOneQuestionableAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
-    ConstantValueRoutine constantRoutine = Mockito
-      .mock(ConstantValueRoutine.class);
+    ConstantValueRoutine constantRoutine = makeRoutine();
     RoutineFlag constantFlag = new RoutineFlag(flagScheme, constantRoutine,
       IcosFlagScheme.QUESTIONABLE_FLAG, "1", "2");
 
-    RangeCheckRoutine rangeRoutine = Mockito.mock(RangeCheckRoutine.class);
+    RangeCheckRoutine rangeRoutine = makeRoutine2();
     RoutineFlag rangeFlag = new RoutineFlag(flagScheme, rangeRoutine,
       flagScheme.getBadFlag(), "1", "2");
 
@@ -137,8 +147,7 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void userQCOverridesAutoQCTest()
     throws RecordNotFoundException, RoutineException, InvalidFlagException {
-    ConstantValueRoutine constantRoutine = Mockito
-      .mock(ConstantValueRoutine.class);
+    ConstantValueRoutine constantRoutine = makeRoutine();
     RoutineFlag constantFlag = new RoutineFlag(flagScheme, constantRoutine,
       IcosFlagScheme.QUESTIONABLE_FLAG, "1", "2");
 
@@ -159,12 +168,11 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void removeOneAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
-    ConstantValueRoutine constantRoutine = Mockito
-      .mock(ConstantValueRoutine.class);
+    ConstantValueRoutine constantRoutine = makeRoutine();
     RoutineFlag constantFlag = new RoutineFlag(flagScheme, constantRoutine,
       flagScheme.getBadFlag(), "1", "2");
 
-    RangeCheckRoutine rangeRoutine = Mockito.mock(RangeCheckRoutine.class);
+    RangeCheckRoutine rangeRoutine = makeRoutine2();
     RoutineFlag rangeFlag = new RoutineFlag(flagScheme, rangeRoutine,
       flagScheme.getBadFlag(), "1", "2");
 
@@ -191,8 +199,8 @@ public class SensorValueTest extends BaseTest {
   public void removeUnusedAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
 
-    ConstantValueRoutine constantRoutine = Mockito
-      .mock(ConstantValueRoutine.class);
+    ConstantValueRoutine constantRoutine = makeRoutine();
+
     RoutineFlag constantFlag = new RoutineFlag(flagScheme, constantRoutine,
       flagScheme.getBadFlag(), "1", "2");
 
@@ -208,7 +216,7 @@ public class SensorValueTest extends BaseTest {
   public void removeSingleAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
 
-    AutoQCRoutine routine = Mockito.mock(ConstantValueRoutine.class);
+    ConstantValueRoutine routine = makeRoutine();
     RoutineFlag flag = new RoutineFlag(flagScheme, routine,
       flagScheme.getBadFlag(), "1", "2");
 
@@ -230,7 +238,7 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void voidremoveSingleAutoQCWithUserQCTest()
     throws RecordNotFoundException, RoutineException, InvalidFlagException {
-    AutoQCRoutine routine = Mockito.mock(ConstantValueRoutine.class);
+    ConstantValueRoutine routine = makeRoutine();
     RoutineFlag flag = new RoutineFlag(flagScheme, routine,
       flagScheme.getBadFlag(), "1", "2");
 

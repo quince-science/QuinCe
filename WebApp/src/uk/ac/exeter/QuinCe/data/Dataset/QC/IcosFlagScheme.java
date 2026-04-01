@@ -21,19 +21,19 @@ public class IcosFlagScheme extends AbstractFlagScheme
    * {@link Flag} indicating that a value has not been calibrated.
    */
   public static final Flag NO_CALIBRATION_FLAG = new Flag(1, "Not calibrated",
-    'C', 1, false, false, 1);
+    'C', 10, false, false, 1);
 
   /**
    * {@link Flag} indicating that a value is <i>Bad</i>.
    */
-  private static final Flag BAD_FLAG = new Flag(4, "Bad", 'B', 4, true, true,
+  private static final Flag BAD_FLAG = new Flag(4, "Bad", 'B', 40, true, true,
     4);
 
   /**
    * {@link Flag} indicating that a value is <i>Bad</i>.
    */
   public static final Flag QUESTIONABLE_FLAG = new Flag(3, "Questionable", 'Q',
-    3, true, true, 3);
+    30, true, true, 3);
 
   /**
    * Base constructor.

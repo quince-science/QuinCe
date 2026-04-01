@@ -18,52 +18,52 @@ INSERT INTO sensor_types (id, name, vargroup, display_order) VALUES (1000010, 'O
 
 -- Core sensor type
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'coreSensor'),
-    1, 3, 4
+    1, '{"Time":[[3,3],[4,4]]}'
   );
 
 -- Required senor types with cascade combo
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'requiredSensor1'),
-    0, 3, 3
+    0, '{"Time":[[3,3],[4,3]]}'
   );
 
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'requiredSensor2'),
-    0, 3, 4
+    0, '{"Time":[[3,3],[4,4]]}'
   );
 
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'requiredSensor3'),
-    0, 4, 3
+    0, '{"Time":[[3,4],[4,3]]}'
   );
 
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'requiredSensor4'),
-    0, 4, 4
+    0, '{"Time":[[3,4],[4,4]]}'
   );
 
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'parentSensor'),
-    0, 3, 4
+    0, '{"Time":[[3,3],[4,4]]}'
   );
 
   

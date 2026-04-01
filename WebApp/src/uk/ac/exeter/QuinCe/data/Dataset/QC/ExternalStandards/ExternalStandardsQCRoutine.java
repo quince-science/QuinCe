@@ -17,6 +17,10 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public abstract class ExternalStandardsQCRoutine extends AbstractAutoQCRoutine {
 
+  public ExternalStandardsQCRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
+
   public ExternalStandardsQCRoutine(FlagScheme flagScheme,
     SensorType sensorType, Map<Flag, Range<Double>> limits) {
     super(flagScheme, sensorType, limits);

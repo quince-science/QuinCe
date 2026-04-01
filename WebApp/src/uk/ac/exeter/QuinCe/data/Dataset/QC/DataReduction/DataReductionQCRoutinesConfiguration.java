@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
@@ -32,11 +31,6 @@ public class DataReductionQCRoutinesConfiguration
   private static final String ROUTINE_CLASS_TAIL = "Routine";
 
   /**
-   * The set of routines configured for each data reducer.
-   */
-  private Map<Class<? extends DataReducer>, List<DataReductionQCRoutine>> routines;
-
-  /**
    * Initialise the configuration from the specific configuration file.
    *
    * @param sensorsConfig
@@ -60,7 +54,7 @@ public class DataReductionQCRoutinesConfiguration
    */
   public List<DataReductionQCRoutine> getRoutines(
     Class<? extends DataReducer> reducerClass) {
-    return routines.get(reducerClass);
+    return get(reducerClass);
   }
 
   /**

@@ -14,6 +14,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class OutlierRoutine extends AutoQCRoutine {
 
+  public OutlierRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
+
   public OutlierRoutine(FlagScheme flagScheme, SensorType sensorType,
     Map<Flag, Range<Double>> limits) {
     super(flagScheme, sensorType, limits);

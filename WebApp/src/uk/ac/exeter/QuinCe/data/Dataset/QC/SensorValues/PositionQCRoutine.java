@@ -6,6 +6,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -47,6 +48,10 @@ public class PositionQCRoutine extends AutoQCRoutine {
    * The complete set of sensor values for the current dataset
    */
   protected DatasetSensorValues allSensorValues;
+
+  public PositionQCRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
 
   /**
    * Initialise the routine with the position and sensor values.

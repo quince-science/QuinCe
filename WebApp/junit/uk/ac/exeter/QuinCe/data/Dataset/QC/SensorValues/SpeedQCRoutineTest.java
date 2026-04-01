@@ -90,6 +90,7 @@ public class SpeedQCRoutineTest extends TestSetTest {
     DatasetSensorValues allSensorValues = new DatasetSensorValues(
       Mockito.mock(DataSet.class));
     Mockito.when(allSensorValues.getInstrument()).thenReturn(instrument);
+    Mockito.when(allSensorValues.getFlagScheme()).thenReturn(flagScheme);
 
     boolean has1 = true;
     boolean has2 = false;

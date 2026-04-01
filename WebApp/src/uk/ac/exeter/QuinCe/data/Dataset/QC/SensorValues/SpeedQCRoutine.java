@@ -9,6 +9,7 @@ import com.javadocmd.simplelatlng.util.LengthUnit;
 import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -28,6 +29,10 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class SpeedQCRoutine extends PositionQCRoutine {
 
   private static final double MAX_SPEED = 160;
+
+  public SpeedQCRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
 
   public SpeedQCRoutine(DatasetSensorValues positionSensorValues)
     throws RoutineException, MissingParamException {

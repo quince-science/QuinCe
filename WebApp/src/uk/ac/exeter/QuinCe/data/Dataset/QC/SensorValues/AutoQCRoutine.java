@@ -25,6 +25,10 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public abstract class AutoQCRoutine extends AbstractAutoQCRoutine {
 
+  public AutoQCRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
+
   public AutoQCRoutine(FlagScheme flagScheme, SensorType sensorType,
     Map<Flag, Range<Double>> limits) {
     super(flagScheme, sensorType, limits);
@@ -32,6 +36,8 @@ public abstract class AutoQCRoutine extends AbstractAutoQCRoutine {
 
   protected void addFlag(SensorValue value, Flag flag, String requiredValue,
     String actualValue) throws RoutineException {
+
+    stubCheck();
 
     try {
       // Ignore a Good flag

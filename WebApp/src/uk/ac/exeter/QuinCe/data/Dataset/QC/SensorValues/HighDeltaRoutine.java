@@ -15,6 +15,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class HighDeltaRoutine extends AutoQCRoutine {
 
+  public HighDeltaRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
+
   public HighDeltaRoutine(FlagScheme flagScheme, SensorType sensorType,
     Map<Flag, Range<Double>> limits) {
     super(flagScheme, sensorType, limits);

@@ -59,13 +59,14 @@ public class FlagCascadeTest extends TestSetTest {
     int questionableCascade, int badCascade) throws SQLException {
 
     PreparedStatement stmt = conn.prepareStatement("UPDATE "
-      + "variable_sensors SET questionable_cascade = ?, bad_cascade = ? "
-      + "WHERE variable_id = " + VAR_ID + " AND sensor_type = "
-      + "(SELECT id FROM sensor_types WHERE name = ?)");
+      + "variable_sensors SET cascades = ? " + "WHERE variable_id = " + VAR_ID
+      + " AND sensor_type = " + "(SELECT id FROM sensor_types WHERE name = ?)");
 
-    stmt.setInt(1, questionableCascade);
-    stmt.setInt(2, badCascade);
-    stmt.setString(3, sensorType);
+    String cascades = "{\"Time\":[[3," + questionableCascade + "],[4,"
+      + badCascade + "]]}";
+
+    stmt.setString(1, cascades);
+    stmt.setString(2, sensorType);
 
     int updateCount = stmt.executeUpdate();
     stmt.close();

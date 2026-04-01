@@ -47,8 +47,10 @@ public class SensorValueQCTest extends BaseTest {
   }
 
   private RoutineFlag makeAutoQCFlag(Flag flag) {
-    return new RoutineFlag(flagScheme, Mockito.mock(RangeCheckRoutine.class),
-      flag, "0", "1");
+    RangeCheckRoutine routine = Mockito.mock(RangeCheckRoutine.class);
+    Mockito.when(routine.getName()).thenReturn("SensorValues.RangeCheck");
+
+    return new RoutineFlag(flagScheme, routine, flag, "0", "1");
   }
 
   @BeforeEach

@@ -25,7 +25,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.RangeCheckRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.ConstantValueRoutine;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -53,12 +53,20 @@ public class DataSetDataDBTest extends BaseTest {
   private NewSensorValues newSensorValue(long datasetId, long columnId,
     LocalDateTime time, String value)
     throws DatabaseException, RecordNotFoundException, CoordinateException {
+    return newSensorValue(datasetId, columnId,
+      new TimeCoordinate(datasetId, time), value);
+  }
+
+  private NewSensorValues newSensorValue(long datasetId, long columnId,
+    TimeCoordinate time, String value)
+    throws DatabaseException, RecordNotFoundException, CoordinateException {
 
     DataSet dataset = Mockito.mock(DataSet.class);
     Mockito.when(dataset.getId()).thenReturn(datasetId);
+    Mockito.when(dataset.getFlagScheme()).thenReturn(flagScheme);
 
     NewSensorValues sv = new NewSensorValues(dataset);
-    sv.create(columnId, new TimeCoordinate(datasetId, time), value);
+    sv.create(columnId, time, value);
     return sv;
   }
 
@@ -204,7 +212,7 @@ public class DataSetDataDBTest extends BaseTest {
     String userQCMessage = "Updated User QC";
 
     originalStoredValue.addAutoQCFlag(
-      new RoutineFlag(flagScheme, Mockito.mock(RangeCheckRoutine.class),
+      new RoutineFlag(flagScheme, new ConstantValueRoutine(flagScheme),
         flagScheme.getBadFlag(), "77", "88"));
     originalStoredValue.setUserQC(userQCFlag, userQCMessage);
     AutoQCResult autoQC = originalStoredValue.getAutoQcResult();
@@ -399,12 +407,13 @@ public class DataSetDataDBTest extends BaseTest {
     "resources/sql/testbase/dataset" })
   @Test
   public void deleteSensorValuesTest() throws Exception {
-    NewSensorValues sensorValues = newSensorValue(DATASET_ID, COLUMN_ID,
-      LocalDateTime.of(2021, 1, 1, 0, 0, 0), "20");
+    TimeCoordinate coordinate = new TimeCoordinate(DATASET_ID,
+      LocalDateTime.of(2021, 1, 1, 0, 0, 0));
 
-    sensorValues.create(2L,
-      new TimeCoordinate(DATASET_ID, LocalDateTime.of(2021, 1, 1, 0, 0, 0)),
-      "21");
+    NewSensorValues sensorValues = newSensorValue(DATASET_ID, COLUMN_ID,
+      coordinate, "20");
+
+    sensorValues.create(2L, coordinate, "21");
 
     DataSetDataDB.storeNewSensorValues(conn, sensorValues);
     conn.commit();
