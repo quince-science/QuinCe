@@ -42,7 +42,12 @@ public class DatasetMeasurements {
   /**
    * The list of all measurement times.
    */
-  private List<LocalDateTime> measurementTimes = null;;
+  private List<LocalDateTime> measurementTimes = null;
+
+  /**
+   * Lookup table for the measurements in {@link #timeOrderedMeasurements}.
+   */
+  private HashMap<Measurement, Integer> measurementIndices = null;
 
   /**
    * Basic constructor.
@@ -141,6 +146,11 @@ public class DatasetMeasurements {
 
     timeOrderedMeasurements = new ArrayList<Measurement>(orderedMeasurements);
 
+    measurementIndices = new HashMap<Measurement, Integer>();
+    for (int i = 0; i < timeOrderedMeasurements.size(); i++) {
+      measurementIndices.put(timeOrderedMeasurements.get(i), i);
+    }
+
     List<LocalDateTime> times = new ArrayList<LocalDateTime>(
       timeOrderedMeasurements.size());
     timeOrderedMeasurements.forEach(m -> times.add(m.getTime()));
@@ -159,7 +169,11 @@ public class DatasetMeasurements {
       Measurement.TIME_COMPARATOR);
     result.add(start);
 
-    int startPos = getTimeOrderedMeasurements().indexOf(start);
+    if (null == timeOrderedMeasurements) {
+      makeTimeOrderedMeasurements();
+    }
+
+    int startPos = measurementIndices.get(start);
 
     // Search backwards until will find a measurement that has a different run
     // type
