@@ -40,7 +40,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * flag as Questionable for all records, since the climatological value is
  * probably reasonable but shouldn't be relied on.
  * </p>
- * 
+ *
  * <p>
  * This exporter is written for ICOS stations, and so uses the
  * {@link IcosFlagScheme} directly.

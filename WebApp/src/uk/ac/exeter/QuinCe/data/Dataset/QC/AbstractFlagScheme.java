@@ -8,7 +8,7 @@ import java.util.TreeSet;
 /**
  * Base implementation of the {@link FlagScheme} interface.
  *
- * 
+ *
  */
 public abstract class AbstractFlagScheme implements FlagScheme {
 
@@ -29,21 +29,21 @@ public abstract class AbstractFlagScheme implements FlagScheme {
 
   /**
    * The <i>Good</i> {@link Flag}.
-   * 
+   *
    * @see #registerGoodFlag(Flag)
    */
   private Flag goodFlag = null;
 
   /**
    * The <i>Assumed Good</i> {@link Flag}.
-   * 
+   *
    * @see #registerGoodFlag(Flag)
    */
   private Flag assumedGoodFlag = null;
 
   /**
    * Base constructor.
-   * 
+   *
    * @throws FlagException
    *           If the default {@link Flag}s cannot be created.
    */
@@ -56,7 +56,7 @@ public abstract class AbstractFlagScheme implements FlagScheme {
 
   /**
    * Register a {@link Flag} with this scheme.
-   * 
+   *
    * @param flag
    *          The Flag.
    * @throws FlagException
@@ -80,11 +80,11 @@ public abstract class AbstractFlagScheme implements FlagScheme {
 
   /**
    * Register the <i>Good</i> flag for this scheme.
-   * 
+   *
    * <p>
    * The corresponding <i>Assumed Good</i> flag is automatically created.
    * </p>
-   * 
+   *
    * @param goodFlag
    * @throws FlagException
    */

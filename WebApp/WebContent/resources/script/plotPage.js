@@ -84,13 +84,13 @@ const FLAG_COLORS = {
       'Needed': '#D7D6FF',
       'Not calibrated': '#AC9326',
       'Questionable': '#FFA42B',
-	  'Bad': '#FF0000'
-	},
-	'y2': {
+    'Bad': '#FF0000'
+  },
+  'y2': {
       'Not calibrated': '#CCCBAF',
       'Bad': '#E6B6A6',
-	  'Questionable': '#EFDCBF'
-	}
+    'Questionable': '#EFDCBF'
+  }
   }
 }
 

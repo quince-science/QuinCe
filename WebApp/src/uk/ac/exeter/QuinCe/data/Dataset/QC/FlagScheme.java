@@ -5,25 +5,25 @@ import java.util.List;
 
 /**
  * Defines a flagging scheme for a particular type of data.
- * 
+ *
  * <p>
  * Different types of data use different flagging schemes with different numbers
  * of flags and different meanings. For example, ICOS flags are based on SOCAT
  * flags (which are in turn based on WOCE flags). Argo data has its own set of
  * flags.
  * </p>
- * 
+ *
  * <p>
  * Each {@link Instrument} will be assigned a single flagging scheme. At the
  * time of writing, this is anticipated to be linked to the {@link Instrument}'s
  * measurement basis (see {@link Instrument#getBasis}.
  * </p>
- * 
+ *
  * <p>
  * A {@code FlagScheme} defines the available QC flags and their hierarchy of
  * significance (e.g. for ICOS flags, BAD &gt; QUESTIONABLE &gt; GOOD).
  * </p>
- * 
+ *
  * <p>
  * There is the special concept of a <i>Good</i> flag, which is a flag
  * indicating that the data is fully accepted with no questions over its
@@ -35,12 +35,12 @@ import java.util.List;
  * {@link #registerGoodFlag(Flag)} instead of {@link #registerFlag(Flag)}. There
  * must be one and only one <i>Good</i> flag registered for each scheme.
  * </p>
- * 
+ *
  * <p>
  * There is also the concept of a <i>Bad</i> flag, indicating a value that
  * should not be used because it is invalid in some way.
  * </p>
- * 
+ *
  * <p>
  * All implementations of this interface <b>must</b> contain a set of universal
  * {@link Flag}s that correspond to processing actions within QuinCe. These will
@@ -56,7 +56,7 @@ import java.util.List;
  * <li>{@link #FLUSHING_FLAG}: The instrument is flushing after a change in
  * operation mode.</li>
  * </ul>
- * 
+ *
  * <p>
  * Each concrete implementation of this class is expected to be a singleton.
  * </p>
@@ -85,7 +85,7 @@ public interface FlagScheme {
   /**
    * A fixed {@link Flag} to indicate that the flag for a value is defined as
    * the QC Flag from another value.
-   * 
+   *
    * <p>
    * The QC message should be used to determine the other {@link Flag}, but the
    * details are not defined here as there may be multiple approaches depending
@@ -97,7 +97,7 @@ public interface FlagScheme {
 
   /**
    * Get the {@link Flag} object for a specified numeric flag value.
-   * 
+   *
    * @param value
    *          The flag value.
    * @return The Flag object.
@@ -108,7 +108,7 @@ public interface FlagScheme {
 
   /**
    * Get the {@link Flag} object for a specified numeric flag value.
-   * 
+   *
    * @param value
    *          The flag value.
    * @return The Flag object.
@@ -119,13 +119,13 @@ public interface FlagScheme {
 
   /**
    * Get the user-assignable {@link Flag}s for this flag scheme.
-   * 
+   *
    * <p>
    * Flags are listed in ascending significance order, since the most desirable
    * flags (i.e. Good data) are generally those with lowest significance but
    * should should be displayed first.
    * </p>
-   * 
+   *
    * @return The user-assignable {@link Flag}s.
    * @throws FlagException
    */
@@ -133,11 +133,11 @@ public interface FlagScheme {
 
   /**
    * Determine whether the specified {@link Flag} is a <i>Good</i> flag.
-   * 
+   *
    * <p>
    * A {@link #NO_QC_FLAG} is assumed to be <i>Good</i>.
    * </p>
-   * 
+   *
    * @param flag
    *          The {@link Flag} to test.
    * @param includeAssumedGood
@@ -159,42 +159,42 @@ public interface FlagScheme {
 
   /**
    * Get the instrument basis for this scheme.
-   * 
+   *
    * @return
    */
   int getBasis();
 
   /**
    * Get the name of this Flag Scheme.
-   * 
+   *
    * @return The scheme name.
    */
   String getName();
 
   /**
    * Get the <i>Good</i> {@link Flag} for this flag scheme.
-   * 
+   *
    * @return The <i>Good</i> {@link Flag}.
    */
   Flag getGoodFlag();
 
   /**
    * Get the <i>Assumed Good</i> {@link Flag} for this flag scheme.
-   * 
+   *
    * @return The <i>Assumed Good</i> {@link Flag}.
    */
   Flag getAssumedGoodFlag();
 
   /**
    * Get the <i>Bad</i> {@link Flag} for this flag scheme.
-   * 
+   *
    * @return
    */
   Flag getBadFlag();
 
   /**
    * Determine whether the specified {@link Flag} is a <i>Bad</i< flag.
-   * 
+   *
    * @param flag
    *          The {@link Flag} to test.
    * @return {@code true} if the {@link Flag} is a <i>Bad</i> flag;
@@ -206,7 +206,7 @@ public interface FlagScheme {
 
   /**
    * Get the {@link Flag}s that should be shown as highlights on QC plots.
-   * 
+   *
    * @return The highlight {@link Flag}s.
    */
   default List<Flag> getPlotHighlightFlags() {
@@ -217,7 +217,7 @@ public interface FlagScheme {
    * Determine whether a {@link Collection} of {@link Flag}s contains a
    * {@link Flag} with greater significance than the specified reference
    * {@link Flag}.
-   * 
+   *
    * @param flags
    *          The {@link Flag}s to check.
    * @param referenceFlag

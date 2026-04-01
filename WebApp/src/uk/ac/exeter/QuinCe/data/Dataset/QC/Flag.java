@@ -9,17 +9,17 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 
 /**
  * Represents a quality control flag placed on a value.
- * 
+ *
  * <p>
  * A flag has multiple representations: </p?
- * 
+ *
  * <ul>
  * <li>Numeric (used in exported data)</li>
  * <li>Name (Human-readable representation)</li>
  * <li>Character (single-character representation, mostly used internally by
  * QuinCe)</li>
  * </ul>
- * 
+ *
  * <p>
  * Each Flag is also assigned a numeric significance, which allows resolution of
  * conflicts when a value has multiple possible flags. For example, if a value
@@ -67,7 +67,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Base constructor.
-   * 
+   *
    * @param value
    *          The Flag's numeric value.
    * @param name
@@ -94,7 +94,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Copy constructor.
-   * 
+   *
    * @source The source Flag object.
    */
   protected Flag(Flag source) {
@@ -109,7 +109,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Get the Flag`s numeric value.
-   * 
+   *
    * @return The numeric value.
    */
   public int getValue() {
@@ -118,7 +118,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Get the human-readable name for the Flag.
-   * 
+   *
    * @return The name.
    */
   public String getName() {
@@ -127,7 +127,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Get the Flag's character representation.
-   * 
+   *
    * @return The character representation.
    */
   public char getCharacter() {
@@ -136,7 +136,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Get the Flag's significance score.
-   * 
+   *
    * @return The significance.
    */
   protected int getSignificance() {
@@ -145,7 +145,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Determine whether a user is allowed to assign this Flag to a value.
-   * 
+   *
    * @return {@code true} if the Flag is user-assignable; {@code false} if it is
    *         not.
    */
@@ -156,7 +156,7 @@ public class Flag implements Comparable<Flag> {
   /**
    * Determine whether setting this Flag on a value requires an accompanying
    * explanatory comment.
-   * 
+   *
    * @return {@code true} if a comment is required; {@code false} if not.
    */
   public boolean isCommentRequired() {
@@ -191,7 +191,7 @@ public class Flag implements Comparable<Flag> {
   /**
    * Determine whether or not this {@link Flag} has a greater significance than
    * another {@link Flag}.
-   * 
+   *
    * @param other
    *          The {@link Flag} whose significance is to be compared.
    * @return {@code true} if this {@link Flag} is more significant than the
@@ -204,7 +204,7 @@ public class Flag implements Comparable<Flag> {
   /**
    * Determine whether or not this {@link Flag} has a lesser significance than
    * another {@link Flag}.
-   * 
+   *
    * @param other
    *          The {@link Flag} whose significance is to be compared.
    * @return {@code true} if this {@link Flag} is less significant than the
@@ -217,7 +217,7 @@ public class Flag implements Comparable<Flag> {
   /**
    * Determine whether or not this {@link Flag} has equal significance to
    * another {@link Flag}.
-   * 
+   *
    * @param other
    *          The {@link Flag} whose significance is to be compared.
    * @return {@code true} if this {@link Flag} has the same significance than
@@ -250,7 +250,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Get the most significant {@link Flag} from an {@link AutoQCResult}.
-   * 
+   *
    * @param autoQC
    *          The Auto QC result.
    */

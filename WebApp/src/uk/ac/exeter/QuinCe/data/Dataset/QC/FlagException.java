@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
 /**
  * Exception class for any errors encountered while dealing with QC flags or
  * flag schemes.
- * 
+ *
  * <p>
  * This is a {@link RunTimeException} because we anticipate that errors raised
  * from a {@link FlagScheme} will be coding errors that shouldn't occur, and

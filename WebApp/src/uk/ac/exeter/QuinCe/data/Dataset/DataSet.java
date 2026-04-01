@@ -1158,7 +1158,7 @@ public class DataSet implements Comparable<DataSet> {
 
   /**
    * Get the {@link FlagScheme} being used for this dataset.
-   * 
+   *
    * @return The {@link FlagScheme}.
    */
   public FlagScheme getFlagScheme() {

@@ -19,7 +19,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * Migration for support for non-time-based data.
- * 
+ *
  * <p>
  * This assumes that the data integrity is sound, and doesn't check anything. An
  * error will be thrown if anything is amiss.

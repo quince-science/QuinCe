@@ -8,7 +8,7 @@ public interface CalibrationFlagScheme extends FlagScheme {
 
   /**
    * Get a {@link Flag} that indicates a value has not been calibrated.
-   * 
+   *
    * @return A flag indicating that a value has not been calibrated.
    */
   public Flag getNotCalibratedFlag();

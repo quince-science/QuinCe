@@ -8,7 +8,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
 /**
  * ICOS QC Flag scheme.
- * 
+ *
  * <p>
  * This is based on SOCAT's QC flagging scheme, with some extra flags for
  * QuinCe-specific functions.
@@ -37,7 +37,7 @@ public class IcosFlagScheme extends AbstractFlagScheme
 
   /**
    * Base constructor.
-   * 
+   *
    * @throws FlagException
    *           If the scheme cannot be created.
    */
@@ -56,7 +56,7 @@ public class IcosFlagScheme extends AbstractFlagScheme
 
   /**
    * Get the singleton instance of this scheme.
-   * 
+   *
    * @return The singleton instance of this scheme.
    * @throws FlagException
    *           If the instance cannot be constructed.

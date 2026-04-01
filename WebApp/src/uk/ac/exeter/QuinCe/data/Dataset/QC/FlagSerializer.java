@@ -23,7 +23,7 @@ public class FlagSerializer
 
   /**
    * Constructor.
-   * 
+   *
    * @param flagScheme
    *          The {@link FlagScheme} to use for parsing and translating
    *          {@link Flag}s.

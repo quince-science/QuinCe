@@ -57,9 +57,9 @@ public class Instrument {
 
   /**
    * String representation of the TIME basis.
-   * 
+   *
    * @see #BASIS_TIME
-   * 
+   *
    */
   public static final String BASIS_NAME_TIME = "time";
 
@@ -70,7 +70,7 @@ public class Instrument {
 
   /**
    * String representation of the ARGO basis.
-   * 
+   *
    * @see #BASIS_ARGO
    */
   public static final String BASIS_NAME_ARGO = "argo";

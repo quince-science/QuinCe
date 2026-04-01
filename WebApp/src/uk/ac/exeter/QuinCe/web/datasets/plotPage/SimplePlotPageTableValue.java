@@ -42,7 +42,7 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
 
   /**
    * Constructor for a straightforward nominal value.
-   * 
+   *
    * @param value
    *          The value.
    * @param flagScheme

@@ -1094,7 +1094,7 @@ public class DatasetSensorValues {
 
   /**
    * Get the {@link FlagScheme} for the {@link Flag}s attached to these values.
-   * 
+   *
    * @return The flag scheme.
    */
   public FlagScheme getFlagScheme() {

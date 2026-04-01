@@ -1118,7 +1118,7 @@ public class TimestampSensorValuesList extends SensorValuesList {
    * from the values that are not missing or flushing: even if the first value
    * is {@link Flag#BAD}, its timestamp will count.
    * </p>
-   * 
+   *
    * <p>
    * Only those values with the least significant (aka best quality) flags when
    * calculating the mean. For example, if there are 2 GOOD values amongst 3 BAD
