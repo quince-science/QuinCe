@@ -1150,7 +1150,9 @@ public class TimestampSensorValuesList extends SensorValuesList {
     Flag chosenFlag;
 
     Collection<Flag> userAssignedFlags = presentFlags.stream()
-      .filter(f -> f.isUserAssignable()).toList();
+      .filter(
+        f -> f.isUserAssignable() || f.equals(flagScheme.getAssumedGoodFlag()))
+      .toList();
 
     if (userAssignedFlags.size() > 0) {
       chosenFlag = Flag.leastSignificant(userAssignedFlags);
