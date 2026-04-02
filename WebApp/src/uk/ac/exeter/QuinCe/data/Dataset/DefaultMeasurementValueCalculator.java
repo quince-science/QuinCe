@@ -16,7 +16,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -246,10 +245,7 @@ public class DefaultMeasurementValueCalculator
       TimeCoordinate coordinate = (TimeCoordinate) baseValue.getCoordinate();
 
       try {
-        // TODO This reads the calibrations from the database every time. Load
-        // it up front.
-        CalibrationSet externalStandards = ExternalStandardDB.getInstance()
-          .getCalibrationSet(conn, dataset);
+        CalibrationSet externalStandards = dataset.getExternalStandards(conn);
 
         // Get the calibration offset for the standard run prior to the
         // measurement

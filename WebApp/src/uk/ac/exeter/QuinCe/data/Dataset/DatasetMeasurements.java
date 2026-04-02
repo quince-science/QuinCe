@@ -44,6 +44,11 @@ public class DatasetMeasurements {
   private List<Coordinate> measurementCoordinates = null;;
 
   /**
+   * Lookup table for the measurements in {@link #timeOrderedMeasurements}.
+   */
+  private HashMap<Measurement, Integer> measurementIndices = null;
+
+  /**
    * Basic constructor.
    */
   public DatasetMeasurements() {
@@ -140,6 +145,11 @@ public class DatasetMeasurements {
 
     orderedMeasurements = new ArrayList<Measurement>(construction);
 
+    measurementIndices = new HashMap<Measurement, Integer>();
+    for (int i = 0; i < orderedMeasurements.size(); i++) {
+      measurementIndices.put(orderedMeasurements.get(i), i);
+    }
+
     List<Coordinate> coordinates = new ArrayList<Coordinate>(
       construction.size());
     orderedMeasurements.forEach(m -> coordinates.add(m.getCoordinate()));
@@ -158,7 +168,11 @@ public class DatasetMeasurements {
       Measurement.COORDINATE_COMPARATOR);
     result.add(start);
 
-    int startPos = getOrderedMeasurements().indexOf(start);
+    if (null == orderedMeasurements) {
+      makeOrderedMeasurements();
+    }
+
+    int startPos = measurementIndices.get(start);
 
     // Search backwards until will find a measurement that has a different run
     // type
