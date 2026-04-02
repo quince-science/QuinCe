@@ -133,7 +133,8 @@ public class RoutineFlag extends Flag {
       case "DataReduction": {
         ResourceManager.getInstance().getDataReductionQCRoutinesConfiguration()
           .get(flagScheme);
-        result = DataReductionQCRoutinesConfiguration.getRoutine(routineName);
+        result = DataReductionQCRoutinesConfiguration.getRoutine(routineName,
+          flagScheme);
         break;
       }
       default: {

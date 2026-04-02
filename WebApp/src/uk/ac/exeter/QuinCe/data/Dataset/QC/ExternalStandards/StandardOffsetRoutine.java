@@ -59,7 +59,7 @@ public class StandardOffsetRoutine extends ExternalStandardsQCRoutine {
 
           if (!Double.isNaN(offset)) {
             RoutineFlag flag = getRangeFlag(offset, true);
-            if (!flagScheme.isGood(flag, true)) {
+            if (null != flag && !flagScheme.isGood(flag, true)) {
               addFlag(sensorValue, flag);
             }
           }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -73,13 +74,13 @@ public class DataReductionQCRoutinesConfiguration
       + routine.getClass().getSimpleName().replaceAll("Routine$", "");
   }
 
-  public static DataReductionQCRoutine getRoutine(String routineName)
-    throws RoutineException {
+  public static DataReductionQCRoutine getRoutine(String routineName,
+    FlagScheme flagScheme) throws RoutineException {
 
     try {
       return (DataReductionQCRoutine) Class
-        .forName(getFullClassName(routineName)).getDeclaredConstructor()
-        .newInstance();
+        .forName(getFullClassName(routineName))
+        .getDeclaredConstructor(FlagScheme.class).newInstance(flagScheme);
     } catch (Exception e) {
       throw new RoutineException(
         "Cannot get routine instance for '" + routineName + "'", e);

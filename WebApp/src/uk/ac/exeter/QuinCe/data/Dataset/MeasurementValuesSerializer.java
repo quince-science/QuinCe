@@ -51,9 +51,12 @@ public class MeasurementValuesSerializer
 
   private final Gson gson;
 
+  private final FlagScheme flagScheme;
+
   public MeasurementValuesSerializer(FlagScheme flagScheme) {
     this.gson = new GsonBuilder()
       .registerTypeAdapter(Flag.class, new FlagSerializer(flagScheme)).create();
+    this.flagScheme = flagScheme;
   }
 
   @Override
@@ -100,7 +103,7 @@ public class MeasurementValuesSerializer
       // Flag
       // We know that this implementation doesn't utilise the
       // DatasetSensorValues parameter
-      valueJson.add(FLAG_KEY, gson.toJsonTree(value.getQcFlag(null)));
+      valueJson.add(FLAG_KEY, gson.toJsonTree(value.getQcFlag(flagScheme)));
 
       // QC Comments
       JsonArray qcComments = new JsonArray(value.getQcMessages().size());

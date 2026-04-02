@@ -161,7 +161,8 @@ public class DataSetDataDB {
 
   private static final String GET_REQUIRED_FLAGS_QUERY = "SELECT "
     + "COUNT(*) FROM sensor_values sv INNER JOIN coordinates c ON sv.coordinate_id = c.id "
-    + "WHERE c.dataset_id = ? AND sv.user_qc_flag = " + FlagScheme.NEEDED_FLAG;
+    + "WHERE c.dataset_id = ? AND sv.user_qc_flag = '"
+    + FlagScheme.NEEDED_FLAG.getValue() + "'";
 
   private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
     + "dr.measurement_id, dr.variable_id, dr.calculation_values, "

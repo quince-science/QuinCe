@@ -323,7 +323,12 @@ public class MeasurementValue implements PlotPageTableValue {
 
         Flag valueFlag = value.getDisplayFlag(allSensorValues).getSimpleFlag();
 
-        if (valueFlag.equals(flag)) {
+        if (null == flag) {
+          flag = valueFlag;
+          if (!allSensorValues.getFlagScheme().isGood(valueFlag, true)) {
+            qcMessage.add(value.getDisplayQCMessage(allSensorValues));
+          }
+        } else if (valueFlag.equals(flag)) {
           if (value.getUserQCMessage().trim().length() > 0) {
             qcMessage.add(value.getDisplayQCMessage(allSensorValues));
           }
@@ -416,6 +421,22 @@ public class MeasurementValue implements PlotPageTableValue {
     return calculatedValue.isNaN()
       ? allSensorValues.getFlagScheme().getBadFlag()
       : flag;
+  }
+
+  /**
+   * Get the QC flag for this value. If the {@link #calculatedValue} is
+   * {@link Double#NaN}, the flag is always {@link Flag#BAD}.
+   *
+   * <p>
+   * This is a special version of {@link #getQcFlag(DatasetSensorValues)} for
+   * when we know there are no lookup flags (i.e. we are looking at measurement
+   * values and not {@link SensorValue}s.
+   * </p>
+   *
+   * @return The QC flag.
+   */
+  protected Flag getQcFlag(FlagScheme flagScheme) {
+    return calculatedValue.isNaN() ? flagScheme.getBadFlag() : flag;
   }
 
   /**
