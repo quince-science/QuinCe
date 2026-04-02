@@ -323,7 +323,7 @@ spotless {
 }
 
 tasks.withType(Test).configureEach {
-    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(4) ?: 1
 }
 
 tasks.register("migrationCheck") {
