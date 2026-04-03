@@ -59,9 +59,14 @@ public class ControsPco2MeasurementValueCollector
       long referenceColumnId = instrument.getSensorAssignments()
         .getColumnIds("Raw Detector Signal").get(0);
 
-      SensorValuesListValue referenceValue = allSensorValues
-        .getColumnValues(referenceColumnId)
-        .getValue(measurement.getCoordinate(), false);
+      TimeCoordinate castCoordinate = (TimeCoordinate) measurement
+        .getCoordinate();
+
+      TimestampSensorValuesList referenceValuesList = (TimestampSensorValuesList) allSensorValues
+        .getColumnValues(referenceColumnId);
+
+      SensorValuesListValue referenceValue = referenceValuesList
+        .getValue(castCoordinate, castCoordinate, castCoordinate, false);
 
       for (SensorType sensorType : variable
         .getAllSensorTypes(!dataSet.fixedPosition())) {
