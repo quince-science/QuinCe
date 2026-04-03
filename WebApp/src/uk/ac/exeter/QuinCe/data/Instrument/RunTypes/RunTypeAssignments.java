@@ -243,6 +243,16 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
       }
     }
 
+    /*
+     * For any passed in run types that haven't been set, set them to Ignored
+     */
+    for (String runType : runTypes) {
+      if (!result.containsKey(runType)) {
+        result.put(runType,
+          new RunTypeAssignment(runType, RunTypeCategory.IGNORED, 0));
+      }
+    }
+
     return result;
   }
 
