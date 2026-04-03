@@ -611,7 +611,7 @@ public class DataFileDB {
     DataFile result = null;
 
     try {
-      long instrumentId = record.getLong(9);
+      long instrumentId = record.getLong(8);
       Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId);
       result = makeDataFile(record, instrument);
     } catch (SQLException e) {
