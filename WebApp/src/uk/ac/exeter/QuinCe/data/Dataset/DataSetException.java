@@ -1,14 +1,11 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+@SuppressWarnings("serial")
 /**
  * Exception for errors encountered while handling data sets
  */
 public class DataSetException extends Exception {
 
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = 2885877141772725286L;
 
   /**
    * Constructor for a simple error message

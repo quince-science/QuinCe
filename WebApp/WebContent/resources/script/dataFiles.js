@@ -1,3 +1,4 @@
+const IGNORED_RUN_TYPE = '-1';
 const ALIAS_RUN_TYPE = '-2';
 
 function renderMessages(messages) {
@@ -21,10 +22,17 @@ function renderMessages(messages) {
 function runTypeChanged(rowIndex) {
   let runType = PF('runType_' + rowIndex).getSelectedValue();
   if (runType == ALIAS_RUN_TYPE) {
-    PF('alias_' + rowIndex).jq.show()
+    PF('alias_' + rowIndex).getJQ().show()
   } else {
-    PF('alias_' + rowIndex).jq.hide()
+    PF('alias_' + rowIndex).getJQ().hide()
   }
+
+  if (runType == IGNORED_RUN_TYPE || runType == ALIAS_RUN_TYPE) {
+    PF('flushingTime_' + rowIndex).getJQ().hide();
+  } else {
+    PF('flushingTime_' + rowIndex).getJQ().show();
+  }
+
 }
 
 function fileUploaded() {

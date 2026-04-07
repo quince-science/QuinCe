@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractQCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCCascadeRoutine;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -81,27 +82,34 @@ public class RoutineFlag extends Flag {
 
     Routine result;
 
-    String[] routineNameParts = routineName.split("\\.");
+    if (routineName.equals(PositionQCCascadeRoutine.ROUTINE_NAME)) {
+      // This is a special routine that lives outside the routines
+      // configuration.
+      return new PositionQCCascadeRoutine();
+    } else {
 
-    switch (routineNameParts[0]) {
-    case "SensorValues": {
-      result = ResourceManager.getInstance().getQCRoutinesConfiguration()
-        .getRoutine(routineName);
-      break;
-    }
-    case "ExternalStandards": {
-      result = ResourceManager.getInstance()
-        .getExternalStandardsRoutinesConfiguration().getRoutine(routineName);
-      break;
-    }
-    case "DataReduction": {
-      result = DataReductionQCRoutinesConfiguration.getRoutine(routineName);
-      break;
-    }
-    default: {
-      throw new RoutineException(
-        "Cannot determine routine type " + routineNameParts[0]);
-    }
+      String[] routineNameParts = routineName.split("\\.");
+
+      switch (routineNameParts[0]) {
+      case "SensorValues": {
+        result = ResourceManager.getInstance().getQCRoutinesConfiguration()
+          .getRoutine(routineName);
+        break;
+      }
+      case "ExternalStandards": {
+        result = ResourceManager.getInstance()
+          .getExternalStandardsRoutinesConfiguration().getRoutine(routineName);
+        break;
+      }
+      case "DataReduction": {
+        result = DataReductionQCRoutinesConfiguration.getRoutine(routineName);
+        break;
+      }
+      default: {
+        throw new RoutineException(
+          "Cannot determine routine type " + routineNameParts[0]);
+      }
+      }
     }
 
     return result;

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -225,8 +226,15 @@ public class MultipleFileUploadBean extends FileUploadBean {
   }
 
   public List<String> getRunTypeValuesWithExclusion(String exclusion) {
-    return getCurrentInstrument().getFileDefinitions().stream()
-      .map(fd -> fd.getRunTypeValues()).flatMap(Collection::stream).distinct()
+
+    Stream<String> existingRunTypes = getCurrentInstrument()
+      .getFileDefinitions().stream().map(fd -> fd.getRunTypeValues())
+      .flatMap(Collection::stream).distinct();
+
+    Stream<String> newRunTypes = unrecognisedRunTypes.stream()
+      .map(r -> r.getRunType().getRunName());
+
+    return Stream.concat(existingRunTypes, newRunTypes).sorted()
       .filter(r -> !r.equals(exclusion)).toList();
   }
 

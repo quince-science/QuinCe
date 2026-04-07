@@ -14,6 +14,8 @@ import com.google.gson.JsonArray;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -312,6 +314,13 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
    * The sensor offsets defined for the dataset.
    */
   private SensorOffsets sensorOffsets;
+
+  /**
+   * A cache of the External Standards for the DataSet.
+   *
+   * @see #getExternalStandards(Connection)
+   */
+  private CalibrationSet externalStandards = null;
 
   static {
     validStatuses = new HashMap<Integer, String>();
@@ -991,5 +1000,29 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
    */
   public void markExported() {
     exported = true;
+  }
+
+  /**
+   * Get the External Standards for this DataSet.
+   *
+   * <p>
+   * The first time this is called, the standards are retrieved from the
+   * database. After that they are cached.
+   * </p>
+   *
+   * @param conn
+   *          A database connection.
+   * @return The external standards.
+   * @throws Exception
+   *           If the standards cannot be retrieved.
+   */
+  public CalibrationSet getExternalStandards(Connection conn) throws Exception {
+
+    if (null == externalStandards) {
+      externalStandards = ExternalStandardDB.getInstance()
+        .getCalibrationSet(conn, this);
+    }
+
+    return externalStandards;
   }
 }

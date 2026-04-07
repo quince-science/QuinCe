@@ -53,10 +53,8 @@ public class V9__instrument_dataset_properties_1273 extends BaseJavaMigration {
       int depth = propsRecords.getInt(4);
 
       Properties properties = new Properties();
-      properties.put(Instrument.PROP_PRE_FLUSHING_TIME,
-        String.valueOf(preFlushingTime));
-      properties.put(Instrument.PROP_POST_FLUSHING_TIME,
-        String.valueOf(postFlushingTime));
+      properties.put("preFlushingTime", String.valueOf(preFlushingTime));
+      properties.put("postFlushingTime", String.valueOf(postFlushingTime));
       properties.put(Instrument.PROP_DEPTH, String.valueOf(depth));
 
       storeNewPropertiesStmt.setString(1, gson.toJson(properties));
