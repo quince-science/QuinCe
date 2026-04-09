@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecor
 import uk.ac.exeter.QuinCe.data.Dataset.QC.CalibrationFlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -132,8 +133,11 @@ public class DataReductionQCJob extends DataSetJob {
         Class<? extends DataReducer> reducer = DataReducerFactory
           .getReducerClass(var.getName());
 
-        List<DataReductionQCRoutine> routines = config
-          .get(dataSet.getFlagScheme()).getRoutines(reducer);
+        DataReductionQCRoutinesConfiguration routinesConfig = config
+          .get(dataSet.getFlagScheme());
+        List<DataReductionQCRoutine> routines = null == routinesConfig ? null
+          : routinesConfig.getRoutines(reducer);
+
         if (null != routines) {
           for (DataReductionQCRoutine routine : routines) {
 
@@ -171,8 +175,9 @@ public class DataReductionQCJob extends DataSetJob {
       } else {
         if (DataSetDataDB.getFlagsRequired(dataSource, dataSet.getId()) > 0) {
           dataSet.setStatus(DataSet.STATUS_USER_QC);
-        } else if (DataSetDataDB.hasCalibrationRequiredFlags(dataSource,
-          (CalibrationFlagScheme) dataSet.getFlagScheme(), dataSet.getId())) {
+        } else if (dataSet.getInstrument().hasInternalCalibrations()
+          && DataSetDataDB.hasCalibrationRequiredFlags(dataSource,
+            (CalibrationFlagScheme) dataSet.getFlagScheme(), dataSet.getId())) {
           dataSet.setStatus(DataSet.STATUS_CALIBRATION_REQUIRED);
         } else {
           dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);

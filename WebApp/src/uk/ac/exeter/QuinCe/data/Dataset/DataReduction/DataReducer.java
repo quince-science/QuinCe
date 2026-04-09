@@ -116,7 +116,7 @@ public abstract class DataReducer {
 
         MeasurementValue value = measurement.getMeasurementValue(sensorType);
 
-        if (null != value) {
+        if (null != value && !value.isNull()) {
           // Collect all QC messages together. Do not record the same message
           // from multiple sources.
           Flag valueFlag = variable.getCascade(value.getSensorType(),
