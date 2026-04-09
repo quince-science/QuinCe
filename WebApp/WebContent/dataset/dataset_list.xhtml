@@ -324,7 +324,7 @@
                       styleClass="actionIcon"/>
                   </ui:fragment>
                 </ui:fragment>
-                <ui:fragment rendered="#{not dataSetsBean.getCurrentInstrument().fixedPosition()}">
+                <ui:fragment rendered="#{dataSetsBean.canQcPosition()}">
                   <p:commandLink onclick="goToPositionQc(#{dataset.id})">
                     <h:graphicImage value="/resources/image/position.svg"
                       styleClass="actionIcon" alt="Position QC" title="Position QC" />
@@ -360,7 +360,7 @@
                     value="/resources/image/offsets_disabled.svg"
                     styleClass="actionIcon" alt="Sensor Offsets" title="Sensor Offsets" />
                 </ui:fragment>
-                <ui:fragment rendered="#{not dataSetsBean.getCurrentInstrument().fixedPosition()}">
+                <ui:fragment rendered="#{dataSetsBean.canQcPosition()}">
                   <h:graphicImage
                     value="/resources/image/position_disabled.svg"
                     styleClass="actionIcon" alt="Position QC" title="Position QC" />
