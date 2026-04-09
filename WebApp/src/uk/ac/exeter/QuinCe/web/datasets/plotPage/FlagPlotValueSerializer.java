@@ -45,20 +45,30 @@ public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
       }
     } else {
 
-      // Drop the value in the relevant column according to its flag.
       if (src.getFlag().equals(FlagScheme.NEEDED_FLAG)) {
         json.add(src.getY());
-      } else {
-        json.add(JsonNull.INSTANCE);
-      }
 
-      for (Flag highlightFlag : src.getFlagScheme().getPlotHighlightFlags()) {
-        if (src.getFlag().equals(highlightFlag)) {
-          json.add(src.getY());
-        } else {
+        // We ignore the actual flag value - we just need to highlight that it's
+        // needed. All other flag columns are null.
+        for (int i = 0; i < src.getFlagScheme().getPlotHighlightFlags()
+          .size(); i++) {
           json.add(JsonNull.INSTANCE);
         }
+
+      } else {
+        // Needed flag is null
+        json.add(JsonNull.INSTANCE);
+
+        // Work out which flag highlight is needed
+        for (Flag highlightFlag : src.getFlagScheme().getPlotHighlightFlags()) {
+          if (src.getFlag().equals(highlightFlag)) {
+            json.add(src.getY());
+          } else {
+            json.add(JsonNull.INSTANCE);
+          }
+        }
       }
+
     }
 
     // Placeholder for the Y2 value if we're doing a dual-axis plot. I

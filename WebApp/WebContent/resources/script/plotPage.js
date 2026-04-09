@@ -74,26 +74,56 @@ const FLAG_LAYER = 'flags';
 const SELECTION_LAYER = 'selection';
 const PATH_LAYER = 'path';
 
+// Main series colors for plots
 Y1_SERIES = '#01752D';
 Y2_SERIES = '#A9DBF9';
 GHOST = '#C0C0C0';
 
+// Numeric value for Flushing flag
+FLAG_FLUSHING = -100;
+
+// Colors for flags. We define both text and numeric versions.
+// Map of Flag Scheme -> Axis -> Flag
 const FLAG_COLORS = {
-  'time': {
+  'ICOS': {
     'y1': {
+      'Needed': '#817FFF',
+    'Not calibrated': '#AC9326',
+    '1': '#AC9326',
+    'Questionable': '#FFA42B',
+    '3': '#FFA42B',
+    'Bad': '#FF0000',
+    '4': '#FF0000',
+    'Good': '',
+    '2': '',
+    'Assumed Good': '',
+    '-2': '',
+    'GHOST': '#C0C0C0'
+    },
+    'y2': {
       'Needed': '#D7D6FF',
-      'Not calibrated': '#AC9326',
-      'Questionable': '#FFA42B',
-    'Bad': '#FF0000'
-  },
-  'y2': {
       'Not calibrated': '#CCCBAF',
-      'Bad': '#E6B6A6',
-    'Questionable': '#EFDCBF'
-  }
+    '1': '#CCCBAF',
+    'Bad': '#E6B6A6',
+    '4': '#E6B6A6',
+    'Questionable': '#EFDCBF',
+      '3': '#EFDCBF'
+    }
   }
 }
 
+function getFlagScheme() {
+  return $('#plotPageForm\\:flagScheme').val();
+}
+
+function getFlagColor(flag, axis) {
+  return FLAG_COLORS[getFlagScheme()][axis][flag];
+}
+
+function getFlagColors(flags, axis) {
+  let lookupTable = FLAG_COLORS[getFlagScheme()][axis];
+  return flags.map(f => {return lookupTable[f]; });
+}
 
 // VARIABLES FOR THE PLOT/TABLE LAYOUT
 function plotStrokeWidth() {
@@ -295,25 +325,7 @@ function showQCMessage(qcFlag, qcMessage) {
   if (qcMessage != '') {
 
     let content = '';
-    content += '<div class="qcInfoMessage ';
-
-    switch (qcFlag) {
-      case FLAG_NOT_CALIBRATED: {
-        content += 'notCalibrated';
-        break;
-      }
-      case FLAG_QUESTIONABLE: {
-        content += 'questionable';
-        break;
-      }
-      case FLAG_BAD:
-      case FLAG_LOOKUP: {
-        content += 'bad';
-        break;
-      }
-    }
-
-    content += '">';
+    content += '<div class="qcInfoMessage" style="color: ' + getFlagColor(qcFlag, 'y1') + '">';
     content += qcMessage;
     content += '</div>';
 
@@ -879,82 +891,68 @@ function isFixedColumn(columnIndex) {
 
 // Formats for table columns
 function getColumnDefs() {
-
   return [
-  {"defaultContent": "&nbsp;",
-  "targets": '_all'
-},
-{"render":
-function (data, type, row, meta) {
-
-  let result = '';
-
-  if (null != data) {
-    let flagClass = null;
-    switch (data['qcFlag']) {
-      case FLAG_NOT_CALIBRATED: {
-        flagClass = 'notCalibrated';
-        break;
-      }
-      case FLAG_QUESTIONABLE: {
-        flagClass = 'questionable';
-        break;
-      }
-      case FLAG_BAD:
-      case FLAG_LOOKUP: {
-        flagClass = 'bad';
-        break;
-      }
-      case FLAG_FLUSHING: {
-        flagClass = 'ignore';
-      }
-    }
-
-    let classes = ['plotPageCell'];
-
-        // Cell coloring
-        let columnGroup = getColumnGroup(meta.col);
-        if (columnGroup % 2 == 0) {
-          classes.push(meta.row % 2 == 0 ? 'evenColGroupEvenRow' : 'evenColGroupOddRow');
-        } else {
-          classes.push(meta.row % 2 == 0 ? 'oddColGroupEvenRow' : 'oddColGroupOddRow');
-        }
-
-        if ($.isNumeric(data['value'])) {
-          classes.push('numericCol');
-        }
-
-        if (null != flagClass) {
-          classes.push(flagClass);
-        }
-
-        if (data['type'] == 'I') {
-          classes.push('interpolated');
-        }
-
-        if (data['flagNeeded']) {
-          classes.push('needsFlag');
-        }
-
-        result = '<div class="' + classes.join(' ') + '"';
-
-        if (null != flagClass) {
-          result += ' onmouseover="showQCMessage(' + data['qcFlag'] + ', \''+ data['qcMessage'] + '\')" onmouseout="hideQCMessage()"';
-        }
-
-        result += '>';
-        if (null == data['value'] || data['value'] == '') {
-          result += '&nbsp;';
-        } else {
-          result += (data['value']);
-        }
-        result += '</div>';
-        return result;
-      }
-
+    {
+      "defaultContent": "&nbsp;",
+      "targets": '_all'
     },
-    "targets": '_all'
-  }
+    {
+      "render": function (data, type, row, meta) {
+        let result = '';
+        if (null != data && !jQuery.isEmptyObject(data)) {
+          let flagColor = getFlagColor(data['qcFlag'], 'y1');
+          if (null == flagColor) {
+            throw 'Unrecognised flag ' + data['qcFlag'];
+        }
+
+          let classes = ['plotPageCell'];
+
+          // Cell coloring
+          let columnGroup = getColumnGroup(meta.col);
+          if (columnGroup % 2 == 0) {
+            classes.push(meta.row % 2 == 0 ? 'evenColGroupEvenRow' : 'evenColGroupOddRow');
+          } else {
+            classes.push(meta.row % 2 == 0 ? 'oddColGroupEvenRow' : 'oddColGroupOddRow');
+          }
+
+          if ($.isNumeric(data['value'])) {
+            classes.push('numericCol');
+          }
+
+          if (data['type'] == 'I') {
+            classes.push('interpolated');
+          }
+
+          if (data['flagNeeded']) {
+            classes.push('needsFlag');
+          }
+
+      result = '<div ';
+
+      if (flagColor != '') {
+        result += 'style="color: ' + flagColor + '" ';
+      }
+
+          result += 'class="' + classes.join(' ') + '"';
+
+          if (null != data['qcMessage'] && data['qcMessage'] != '') {
+            result += ' onmouseover="showQCMessage(' + data['qcFlag'] + ', \''+ data['qcMessage'] + '\')" onmouseout="hideQCMessage()"';
+          }
+
+          result += '>';
+
+          if (null == data['value'] || data['value'] == '') {
+            result += '&nbsp;';
+          } else {
+            result += (data['value']);
+          }
+
+      result += '</div>';
+          return result;
+        }
+      },
+      "targets": '_all'
+    }
   ];
 }
 
@@ -1148,14 +1146,27 @@ function drawY2Plot(index, keepZoom) {
   }
 
   let y2_options = Object.assign({}, BASE_PLOT_OPTIONS);
+
+  // Labels are an array of X, ID, Y1, <flags>, Y2
   y2_options.labels = labels;
   y2_options.xlabel = labels[0];
   y2_options.ylabel = labels[2];
-  y2_options.y2label = labels[7];
+  y2_options.y2label = labels[labels.length - 1];
   y2_options.strokeWidth = plotStrokeWidth();
   y2_options.legend = 'never';
-  y2_options.visibility = [false, true, true, true, true, true, true];
-  y2_options.colors = ['#00000000', '#00000000', '#E6B6A6', '#EFDCBF', '#CCCBAF', '#C0C0C0', '#A9DBF9'];
+
+  y2_options.visibility = Array(labels.length - 1).fill(true);
+  y2_options.visibility[0] = false;
+
+  // The labels contain the X axis, which we don't use for series colors
+  let y2Colors = getFlagColors(labels.slice(3, labels.length - 1), 'y2');
+  // Insert blank colors for the ID and Y1 series, which aren't shown
+  y2Colors.splice(0, 0, null, null);
+
+  // Add the color of the main series at the end
+  y2Colors.push(Y2_SERIES);
+
+  y2_options.colors = y2Colors;
   y2_options.drawAxesAtZero = axesAtZero();
 
   if (keepZoom && null != zoomOptions) {
@@ -1563,11 +1574,12 @@ function drawFlagPlot1Y(index) {
     window['flagPlot' + index] = null;
   } else {
     let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
-    // Flag colors
-    flag_options.colors = ['#FF0000', '#FFA42B', '#AC9326', '#817FFF', '#FFA42B'];
+  flag_options.labels = JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'FlagLabels').val());
+
+  // The labels contain the X axis, which we don't use for series colors
+  flag_options.colors = getFlagColors(flag_options.labels.slice(1), 'y1');
     flag_options.xlabel = ' ';
     flag_options.ylabel = ' ';
-    flag_options.labels = JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'FlagLabels').val());
     flag_options.pointSize = FLAG_POINT_SIZE;
     flag_options.highlightCircleSize = 0;
     flag_options.selectMode = 'euclidian';
@@ -1613,12 +1625,15 @@ function drawFlagPlot2Y(index) {
     window['flagPlot' + index] = null;
   } else {
     let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
-    // Flag colors
-    flag_options.colors = ['#FF0000', '#FFA42B', '#AC9326', '#817FFF', '#00000000'];
+
+    flag_options.labels = JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'FlagLabels').val());
+
+  // The labels contain the X axis, which we don't use for series colors
+  flag_options.colors = getFlagColors(flag_options.labels.slice(1), 'y1');
+
     flag_options.xlabel = ' ';
     flag_options.ylabel = ' ';
     flag_options.y2label = ' ';
-    flag_options.labels = JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'FlagLabels').val());
     flag_options.pointSize = FLAG_POINT_SIZE;
     flag_options.highlightCircleSize = 0;
     flag_options.strokeWidth = 0;

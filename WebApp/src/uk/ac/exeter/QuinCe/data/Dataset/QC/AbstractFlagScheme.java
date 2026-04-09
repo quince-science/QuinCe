@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * Base implementation of the {@link FlagScheme} interface.
@@ -125,8 +126,11 @@ public abstract class AbstractFlagScheme implements FlagScheme {
   @Override
   public List<Flag> getUserAssignableFlags() {
     List<Flag> list = orderedFlags.stream().filter(f -> f.isUserAssignable())
-      .toList();
-    Collections.reverse(list);
+      .collect(Collectors.collectingAndThen(Collectors.toList(), l -> {
+        Collections.reverse(l);
+        return l;
+      }));
+
     return list;
   }
 

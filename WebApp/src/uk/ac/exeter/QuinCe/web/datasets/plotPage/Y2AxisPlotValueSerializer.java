@@ -34,8 +34,8 @@ public class Y2AxisPlotValueSerializer implements JsonSerializer<PlotValue> {
     // Data point ID
     json.add(src.getId());
 
-    // Placeholder for the Y1 value. It seems to be needed but I don't remember
-    // why.
+    // Dummy placeholder for the Y1 value.
+    // Dygraphs gets confused if this is not here.
     json.add(JsonNull.INSTANCE);
 
     // Y2 axis value
@@ -47,20 +47,24 @@ public class Y2AxisPlotValueSerializer implements JsonSerializer<PlotValue> {
         json.add(JsonNull.INSTANCE);
       }
 
-      // Ghost
-      json.add(JsonNull.INSTANCE);
-
-      // Non-ghost
+      // The Y2 value
       json.add(JsonNull.INSTANCE);
     } else {
-
       // Flags
       for (Flag highlightFlag : src.getFlagScheme().getPlotHighlightFlags()) {
-        if (src.getFlag().equals(highlightFlag)) {
-          json.add(src.getY());
+        if (src.getFlag2().equals(highlightFlag)) {
+          json.add(src.getY2());
         } else {
           json.add(JsonNull.INSTANCE);
         }
+      }
+
+      // The Y2 value
+      if (src.isGhost2()) {
+        // We don't show ghosts in the Y2 series
+        json.add(JsonNull.INSTANCE);
+      } else {
+        json.add(src.getY2());
       }
     }
 

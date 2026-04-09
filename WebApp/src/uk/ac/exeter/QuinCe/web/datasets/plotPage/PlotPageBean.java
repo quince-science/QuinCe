@@ -394,4 +394,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
   public boolean dualYAxes() {
     return false;
   }
+
+  public String getFlagScheme() {
+    return dataset.getFlagScheme().getName();
+  }
 }

@@ -339,10 +339,12 @@ public class Plot {
   public String getFlagLabels() {
     List<String> labels = new ArrayList<>(4);
     labels.add(xAxis.getShortName());
-    labels.add("BAD");
-    labels.add("QUESTIONABLE");
-    labels.add("NEEDED");
-    labels.add("NOT_CALIBRATED");
+
+    labels.add(FlagScheme.NEEDED_FLAG.getName());
+
+    for (Flag highlightFlag : data.getFlagScheme().getPlotHighlightFlags()) {
+      labels.add(highlightFlag.getName());
+    }
 
     if (null != y2Axis) {
       labels.add(""); // Y2 value column
@@ -358,11 +360,16 @@ public class Plot {
       List<String> labels = new ArrayList<>(5);
       labels.add(xAxis.getShortName());
       labels.add("ID");
-      labels.add(""); // Y1 axis
-      labels.add("BAD");
-      labels.add("QUESTIONABLE");
-      labels.add("NOT_CALIBRATED");
-      labels.add("GHOST");
+
+      // Placeholder for the Y1 value
+      labels.add("");
+
+      // Y2 flags
+      for (Flag highlightFlag : data.getFlagScheme().getPlotHighlightFlags()) {
+        labels.add(highlightFlag.getName());
+      }
+
+      // The Y2 value
       labels.add(y2Axis.getShortName());
 
       result = new Gson().toJson(labels);

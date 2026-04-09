@@ -339,6 +339,10 @@ li.menuitem:hover, li.smallMenuitem:hover {
   background: #ddd;
 }
 
+.needsFlag {
+  background: #D7D6FF !important;
+}
+
 div.fullPage {
   margin-left: 30px;
   margin-right: 30px;
