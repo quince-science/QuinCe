@@ -2308,15 +2308,24 @@ function drawMap(index) {
   // Remove old layers
   if (null != window[dataLayerVar]) {
     window[dataLayerVar].removeFrom(window[mapVar]);
-    window[flagLayerVar].removeFrom(window[mapVar]);
+  }
+
+  if (null != window[flagLayerVar]) {
+  window[flagLayerVar].removeFrom(window[mapVar]);
+  }
+
+  if (null != window[selectionLayerVar]) {
     window[selectionLayerVar].removeFrom(window[mapVar]);
-  window[pathLayerVar].removeFrom(window[mapVar]);
+  }
+
+  if (null != window[pathLayerVar]) {
+    window[pathLayerVar].removeFrom(window[mapVar]);
   }
 
   let mapData = JSON.parse($(getMapFormName(index) + '\\:map' + index + 'Data').val());
 
   if (mapData.length >= 4) {
-  window[pathLayerVar] = makeMapPath(index, mapData[3]).addTo(window[mapVar]);
+    window[pathLayerVar] = makeMapPath(index, mapData[3]).addTo(window[mapVar]);
   }
 
   window[flagLayerVar] = makeMapLayer(index, mapData[1], false).addTo(window[mapVar]);
@@ -2399,25 +2408,7 @@ function getPointColor(mapIndex, point) {
       .getColor(point.properties.value);
     }
     case FLAG_TYPE: {
-      switch (point.properties.flag) {
-        case FLAG_QUESTIONABLE: {
-          return '#FFA42B';
-        }
-        case FLAG_BAD:
-        case FLAG_LOOKUP: {
-          return '#FF0000';
-        }
-        case FLAG_NEEDS_FLAG: {
-          return '#D7D6FF';
-        }
-        case FLAG_FLUSHING: {
-          return '#C0C0C0';
-        }
-        default: {
-          console.log('INVALID FLAG VALUE ' + point.properties.flag);
-          return '#000000';
-        }
-      }
+      return getFlagColor(point.properties.flag, 'y1');
     }
     case SELECTION_TYPE: {
       return null != window['mapSelectionColor'] ? window['mapSelectionColor'] : '#FFFF00';
