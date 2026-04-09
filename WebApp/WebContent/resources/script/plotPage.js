@@ -88,26 +88,62 @@ const FLAG_COLORS = {
   'ICOS': {
     'y1': {
       'Needed': '#817FFF',
-    'Not calibrated': '#AC9326',
-    '1': '#AC9326',
-    'Questionable': '#FFA42B',
-    '3': '#FFA42B',
-    'Bad': '#FF0000',
-    '4': '#FF0000',
-    'Good': '',
-    '2': '',
-    'Assumed Good': '',
-    '-2': '',
-    'GHOST': '#C0C0C0'
+      'Not calibrated': '#AC9326',
+      '1': '#AC9326',
+      'Questionable': '#FFA42B',
+      '3': '#FFA42B',
+      'Bad': '#FF0000',
+      '4': '#FF0000',
+      'Good': '',
+      '2': '',
+      'Assumed Good': '',
+      '-2': '',
+      'GHOST': '#C0C0C0'
     },
     'y2': {
       'Needed': '#D7D6FF',
       'Not calibrated': '#CCCBAF',
-    '1': '#CCCBAF',
-    'Bad': '#E6B6A6',
-    '4': '#E6B6A6',
-    'Questionable': '#EFDCBF',
+      '1': '#CCCBAF',
+      'Bad': '#E6B6A6',
+      '4': '#E6B6A6',
+      'Questionable': '#EFDCBF',
       '3': '#EFDCBF'
+    }
+  },
+  'Argo': {
+    'y1': {
+      'Needed': '#817FFF',
+      'Good': '',
+      '1': '',
+      'Assumed Good': '',
+      '-1': '',
+      'Probably Good': '#FFFF00',
+      '2': '#FFFF00',
+      'Bad, potentially correctable': '#ED7F10',
+      '3': '#ED7F10',
+      'Bad': '#FF0000',
+      '4': '#FF0000',
+      'Value Changed': '#FF00FF',
+      '5': '#FF00FF',
+      'Estimated Value': '#0000FF',
+      '8': '#0000FF',
+    },
+    'y2': {
+      'Needed': '#817FFF',
+      'Good': '',
+      '1': '',
+      'Assumed Good': '',
+      '-1': '',
+      'Probably Good': '#FFFF00',
+      '2': '#FFFF00',
+      'Bad, potentially correctable': '#ED7F10',
+      '3': '#ED7F10',
+      'Bad': '#FF0000',
+      '4': '#FF0000',
+      'Value Changed': '#FF00FF',
+      '5': '#FF00FF',
+      'Estimated Value': '#0000FF',
+      '8': '#0000FF',
     }
   }
 }
@@ -116,13 +152,16 @@ function getFlagScheme() {
   return $('#plotPageForm\\:flagScheme').val();
 }
 
-function getFlagColor(flag, axis) {
-  return FLAG_COLORS[getFlagScheme()][axis][flag];
+function getFlagColor(flag, axis, emptyIsTransparent) {
+  let color = FLAG_COLORS[getFlagScheme()][axis][flag];
+  if (color == '') {
+    color = emptyIsTransparent ? '#00000000' : '#000000';
+  }
+  return color;
 }
 
-function getFlagColors(flags, axis) {
-  let lookupTable = FLAG_COLORS[getFlagScheme()][axis];
-  return flags.map(f => {return lookupTable[f]; });
+function getFlagColors(flags, axis, emptyIsTransparent) {
+  return flags.map(f => {return getFlagColor(f, axis, emptyIsTransparent)});
 }
 
 // VARIABLES FOR THE PLOT/TABLE LAYOUT
@@ -325,7 +364,7 @@ function showQCMessage(qcFlag, qcMessage) {
   if (qcMessage != '') {
 
     let content = '';
-    content += '<div class="qcInfoMessage" style="color: ' + getFlagColor(qcFlag, 'y1') + '">';
+    content += '<div class="qcInfoMessage" style="color: ' + getFlagColor(qcFlag, 'y1', false) + '">';
     content += qcMessage;
     content += '</div>';
 
@@ -900,7 +939,7 @@ function getColumnDefs() {
       "render": function (data, type, row, meta) {
         let result = '';
         if (null != data && !jQuery.isEmptyObject(data)) {
-          let flagColor = getFlagColor(data['qcFlag'], 'y1');
+          let flagColor = getFlagColor(data['qcFlag'], 'y1', false);
           if (null == flagColor) {
             throw 'Unrecognised flag ' + data['qcFlag'];
         }
@@ -1159,7 +1198,7 @@ function drawY2Plot(index, keepZoom) {
   y2_options.visibility[0] = false;
 
   // The labels contain the X axis, which we don't use for series colors
-  let y2Colors = getFlagColors(labels.slice(3, labels.length - 1), 'y2');
+  let y2Colors = getFlagColors(labels.slice(3, labels.length - 1), 'y2', true);
   // Insert blank colors for the ID and Y1 series, which aren't shown
   y2Colors.splice(0, 0, null, null);
 
@@ -1574,10 +1613,10 @@ function drawFlagPlot1Y(index) {
     window['flagPlot' + index] = null;
   } else {
     let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
-  flag_options.labels = JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'FlagLabels').val());
+    flag_options.labels = JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'FlagLabels').val());
 
-  // The labels contain the X axis, which we don't use for series colors
-  flag_options.colors = getFlagColors(flag_options.labels.slice(1), 'y1');
+    // The labels contain the X axis, which we don't use for series colors
+    flag_options.colors = getFlagColors(flag_options.labels.slice(1), 'y1', true);
     flag_options.xlabel = ' ';
     flag_options.ylabel = ' ';
     flag_options.pointSize = FLAG_POINT_SIZE;
@@ -1628,8 +1667,8 @@ function drawFlagPlot2Y(index) {
 
     flag_options.labels = JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'FlagLabels').val());
 
-  // The labels contain the X axis, which we don't use for series colors
-  flag_options.colors = getFlagColors(flag_options.labels.slice(1), 'y1');
+    // The labels contain the X axis, which we don't use for series colors
+    flag_options.colors = getFlagColors(flag_options.labels.slice(1), 'y1', true);
 
     flag_options.xlabel = ' ';
     flag_options.ylabel = ' ';
@@ -2408,7 +2447,7 @@ function getPointColor(mapIndex, point) {
       .getColor(point.properties.value);
     }
     case FLAG_TYPE: {
-      return getFlagColor(point.properties.flag, 'y1');
+      return getFlagColor(point.properties.flag, 'y1', true);
     }
     case SELECTION_TYPE: {
       return null != window['mapSelectionColor'] ? window['mapSelectionColor'] : '#FFFF00';

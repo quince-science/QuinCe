@@ -68,7 +68,6 @@ public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
           }
         }
       }
-
     }
 
     // Placeholder for the Y2 value if we're doing a dual-axis plot. I
