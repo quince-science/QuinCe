@@ -62,23 +62,21 @@
         <f:selectItem itemLabel="Bad" itemValue="4" />
       </p:selectOneRadio>
 
-
       <div class="dialogTitle">
         Set QC Flag for <span id="manualRowCount">row count</span>
       </div>
 
-
       <h:panelGrid columns="2" width="100%" id="manualFlag_panel">
-      <p:outputLabel for="manualFlag" value="Flag:" />
+        <p:outputLabel for="manualFlag" value="Flag:" />
 
-    <h:panelGrid columns="6" id="flagButtons">
-      <p:radioButton id="goodFlag" for="manualFlag" itemIndex="0"/>
-      <p:outputLabel for="goodFlag" value="Good" />
-      <p:radioButton id="questionableFlag" for="manualFlag" itemIndex="1"/>
-      <p:outputLabel id="questionableLabel" for="questionableFlag" value="Questionable" />
-      <p:radioButton id="badFlag" for="manualFlag" itemIndex="2"/>
-      <p:outputLabel for="badFlag" value="Bad" />
-    </h:panelGrid>
+        <h:panelGrid columns="6" id="flagButtons">
+          <p:radioButton id="goodFlag" for="manualFlag" itemIndex="0"/>
+          <p:outputLabel for="goodFlag" value="Good" />
+          <p:radioButton id="questionableFlag" for="manualFlag" itemIndex="1"/>
+          <p:outputLabel for="questionableFlag" value="Questionable" />
+          <p:radioButton id="badFlag" for="manualFlag" itemIndex="2"/>
+          <p:outputLabel for="badFlag" value="Bad" />
+        </h:panelGrid>
 
         <p:outputLabel for="manualComment" value="Comment:" />
         <p:inputTextarea widgetVar="manualComment" id="manualComment"
@@ -86,11 +84,13 @@
           maxlength="255" style="width: 95%; height: 150px;"
           onkeyup="updateFlagDialogControls()" />
       </h:panelGrid>
+
       <h:panelGrid columns="2" styleClass="buttonPanel">
         <p:commandButton widgetVar="manualCommentOk" value="OK"
           onclick="saveManualComment();" />
         <p:commandButton value="Cancel" onclick="PF('flagDialog').hide(); return false;" />
       </h:panelGrid>
+
     </p:dialog>
   </ui:define>
 

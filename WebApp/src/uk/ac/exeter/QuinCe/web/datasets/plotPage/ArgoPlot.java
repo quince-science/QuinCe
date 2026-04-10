@@ -108,7 +108,7 @@ public class ArgoPlot extends Plot {
 
     TreeMap<Coordinate, PlotPageTableValue> xValues = getXValues();
     TreeMap<Coordinate, PlotPageTableValue> yValues = getYValues();
-    TreeMap<Coordinate, PlotPageTableValue> y2Values = getY2Values();
+    // TreeMap<Coordinate, PlotPageTableValue> y2Values = getY2Values();
 
     // Re-sort the y values by their ascending entry value.
     LinkedHashMap<Coordinate, PlotPageTableValue> sortedYValues = sortValues(
@@ -119,7 +119,7 @@ public class ArgoPlot extends Plot {
     for (Coordinate coordinate : sortedYValues.keySet()) {
       PlotPageTableValue x = xValues.get(coordinate);
       PlotPageTableValue y = yValues.get(coordinate);
-      PlotPageTableValue y2 = y2Values.get(coordinate);
+      // PlotPageTableValue y2 = y2Values.get(coordinate);
 
       PlotValue plotValue = null;
 
@@ -130,22 +130,33 @@ public class ArgoPlot extends Plot {
         yValue = scaleYValue(MathUtils.nullableParseDouble(y.getValue()));
         yGhost = y.getQcFlag(data.getAllSensorValues())
           .equals(FlagScheme.FLUSHING_FLAG);
-        yFlag = y.getQcFlag(data.getAllSensorValues());
-        if (useNeededFlags && y.getFlagNeeded()) {
+
+        /*
+         * Because these are profile plots, the flags actually come from the X
+         * values.
+         *
+         * The front end still draws flag plots based on the Y axis, so here we
+         * transplant the X flag onto the Y value.
+         */
+        yFlag = x.getQcFlag(data.getAllSensorValues());
+        if (useNeededFlags && x.getFlagNeeded()) {
           yFlag = FlagScheme.NEEDED_FLAG;
         }
       }
 
+      // We aren't doing second Y axis on plots.
       Double y2Value = null;
       boolean y2Ghost = false;
       Flag y2Flag = null;
-      if (null != y2) {
-        y2Value = scaleYValue(MathUtils.nullableParseDouble(y2.getValue()));
-        y2Ghost = y2.getQcFlag(data.getAllSensorValues())
-          .equals(FlagScheme.FLUSHING_FLAG);
-        y2Flag = y2.getQcFlag(data.getAllSensorValues());
-        // We never show NEEDED flags for Y2 axis
-      }
+
+      /*
+       * if (null != y2) { y2Value =
+       * scaleYValue(MathUtils.nullableParseDouble(y2.getValue())); y2Ghost =
+       * y2.getQcFlag(data.getAllSensorValues())
+       * .equals(FlagScheme.FLUSHING_FLAG); y2Flag =
+       * y2.getQcFlag(data.getAllSensorValues()); // We never show NEEDED flags
+       * for Y2 axis }
+       */
 
       if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
         plotValue = new PlotValue(coordinate.getId(),

@@ -359,3 +359,67 @@ function mapClick(id) {
     $('#profileList').find('.selected').get(0).scrollIntoView();
   }, 1000);
 }
+
+function startUserQcFlags() {
+  generateUserQCComments(); // remoteCommand
+}
+
+function showFlagDialog() {
+  errorCheck();
+
+  if (!getSelectedColumn().badFlagOnly) {
+	$('#selectionForm\\:probablyGoodFlag').show();
+	$('#selectionForm\\:probablyGoodLabel').show();
+    $('#selectionForm\\:badCorrectableFlag').show();
+    $('#selectionForm\\:badCorrectableLabel').show();
+  } else {
+	$('#selectionForm\\:probablyGoodFlag').hide();
+	$('#selectionForm\\:probablyGoodLabel').hide();
+    $('#selectionForm\\:badCorrectableFlag').hide();
+    $('#selectionForm\\:badCorrectableLabel').hide();
+  }
+
+  let woceRowHtml = getSelectedRows().length.toString() + ' row';
+  if (getSelectedRows().length > 1) {
+    woceRowHtml += 's';
+  }
+  $('#manualRowCount').html(woceRowHtml);
+
+  updateFlagDialogControls();
+  PF('flagDialog').show();
+}
+
+function updateFlagDialogControls() {
+  var canSubmit = true;
+
+  if (PF('flagMenu').getJQ().find(':checked').val() != 2) {
+    if ($('#selectionForm\\:manualComment').val().trim().length == 0) {
+      canSubmit = false;
+    }
+  }
+
+  if (canSubmit) {
+    PF('manualCommentOk').enable();
+  } else {
+    PF('manualCommentOk').disable();
+  }
+}
+
+function saveManualComment() {
+  applyManualFlag(); // remoteCommand
+}
+
+function qcFlagsAccepted() {
+  errorCheck();
+
+  PF('flagDialog').hide();
+
+  drawPlot(1, true, true);
+  drawPlot(2, true, true);
+  clearSelection();
+
+  // Reload table data
+  jsDataTable.ajax.reload(null, false);
+  itemNotLoading(UPDATE_DATA);
+}
+
