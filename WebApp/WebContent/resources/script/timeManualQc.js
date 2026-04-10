@@ -27,7 +27,7 @@ function startUserQcFlags() {
 function showFlagDialog() {
   errorCheck();
 
-  if (getSelectedColumn().questionableAllowed) {
+  if (!getSelectedColumn().badFlagOnly) {
     $('#selectionForm\\:questionableFlag').show();
     $('#selectionForm\\:questionableLabel').show();
   } else {

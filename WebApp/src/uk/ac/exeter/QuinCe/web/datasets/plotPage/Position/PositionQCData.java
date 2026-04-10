@@ -74,7 +74,7 @@ public class PositionQCData extends ManualQCData {
       1);
 
     timeHeading = new PlotPageColumnHeading(FileDefinition.TIME_COLUMN_HEADING,
-      false, false, false);
+      false, false, true);
 
     rootColumns.add(timeHeading);
 
@@ -89,15 +89,15 @@ public class PositionQCData extends ManualQCData {
 
     sensorColumns
       .add(new PlotPageColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
-        "Position", "Position", "POSITION", null, true, false, true, false));
+        "Position", "Position", "POSITION", null, true, false, true, true));
 
     longitudeHeading = new PlotPageColumnHeading(
-      FileDefinition.LONGITUDE_COLUMN_HEADING, false, true, false);
+      FileDefinition.LONGITUDE_COLUMN_HEADING, false, true, true);
 
     extendedSensorColumns.add(longitudeHeading);
 
     latitudeHeading = new PlotPageColumnHeading(
-      FileDefinition.LATITUDE_COLUMN_HEADING, false, true, false,
+      FileDefinition.LATITUDE_COLUMN_HEADING, false, true, true,
       FileDefinition.LONGITUDE_COLUMN_ID);
 
     extendedSensorColumns.add(latitudeHeading);

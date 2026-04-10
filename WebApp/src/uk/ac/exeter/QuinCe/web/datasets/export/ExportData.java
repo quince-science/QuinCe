@@ -178,10 +178,10 @@ public class ExportData extends ManualQCData {
       if (dataset.fixedPosition()) {
         PlotPageColumnHeading lonColumn = new PlotPageColumnHeading(
           FIXED_LON_ID, "Longitude", "Longitude", "ALONGP01", "degrees_east",
-          true, true, false, true);
+          true, true, false, false);
         PlotPageColumnHeading latColumn = new PlotPageColumnHeading(
           FIXED_LAT_ID, "Latitude", "Latitude", "ALATGP01", "degrees_north",
-          true, true, false, true);
+          true, true, false, false);
         rootColumns.add(lonColumn);
         rootColumns.add(latColumn);
 
@@ -196,7 +196,7 @@ public class ExportData extends ManualQCData {
       if (null != dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY,
         "depth")) {
         PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(DEPTH_ID,
-          "Depth", "Depth", "ADEPZZ01", "m", true, false, true, false);
+          "Depth", "Depth", "ADEPZZ01", "m", true, false, true, true);
         rootColumns.add(depthHeading);
 
         // Set up the fixed value ready for later
@@ -217,9 +217,8 @@ public class ExportData extends ManualQCData {
         for (Variable variable : instrument.getVariables()) {
           ColumnHeading variableHeading = variable.getColumnHeading(sensorType);
           if (null != variableHeading) {
-            measurementValuesHeadings
-              .add(new PlotPageColumnHeading(variableHeading, true, false,
-                sensorType.questionableFlagAllowed()));
+            measurementValuesHeadings.add(new PlotPageColumnHeading(
+              variableHeading, true, false, sensorType.badFlagOnly()));
           }
         }
       }

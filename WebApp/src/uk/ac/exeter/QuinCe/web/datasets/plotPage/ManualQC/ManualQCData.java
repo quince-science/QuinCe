@@ -236,11 +236,11 @@ public class ManualQCData extends PlotPageData {
     List<PlotPageColumnHeading> columns = new ArrayList<PlotPageColumnHeading>(
       3);
     columns.add(new PlotPageColumnHeading(FileDefinition.TIME_COLUMN_HEADING,
-      false, false, false));
+      false, false, true));
 
     if (!dataset.fixedPosition()) {
       columns.add(new PlotPageColumnHeading(FileDefinition.LONGITUDE_COLUMN_ID,
-        "Position", "Position", "POSITION", null, true, false, false, false));
+        "Position", "Position", "POSITION", null, true, false, false, true));
     }
 
     return columns;
@@ -267,14 +267,14 @@ public class ManualQCData extends PlotPageData {
     List<PlotPageColumnHeading> columns = new ArrayList<PlotPageColumnHeading>(
       3);
     columns.add(new PlotPageColumnHeading(FileDefinition.TIME_COLUMN_HEADING,
-      false, false, false));
+      false, false, true));
 
     if (!dataset.fixedPosition()) {
       columns.add(new PlotPageColumnHeading(
-        FileDefinition.LONGITUDE_COLUMN_HEADING, false, false, false));
+        FileDefinition.LONGITUDE_COLUMN_HEADING, false, false, true));
       columns
         .add(new PlotPageColumnHeading(FileDefinition.LATITUDE_COLUMN_HEADING,
-          false, false, false, FileDefinition.LONGITUDE_COLUMN_ID));
+          false, false, true, FileDefinition.LONGITUDE_COLUMN_ID));
     }
 
     return columns;
@@ -325,7 +325,7 @@ public class ManualQCData extends PlotPageData {
       SensorAssignment column = sensorColumns.get(i);
       sensorColumnHeadings
         .add(new PlotPageColumnHeading(column.getColumnHeading(), true, true,
-          column.getSensorType().questionableFlagAllowed()));
+          column.getSensorType().badFlagOnly()));
       sensorColumnIds.add(column.getDatabaseId());
     }
 
@@ -343,7 +343,7 @@ public class ManualQCData extends PlotPageData {
 
         diagnosticColumnNames
           .add(new PlotPageColumnHeading(column.getColumnHeading(), true, true,
-            column.getSensorType().questionableFlagAllowed()));
+            column.getSensorType().badFlagOnly()));
         diagnosticColumnIds.add(column.getDatabaseId());
       }
 

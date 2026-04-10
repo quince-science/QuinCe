@@ -146,7 +146,7 @@ public class ArgoManualQCData extends ManualQCData {
     cycleNumberHeading = new PlotPageColumnHeading(
       instrument.getSensorAssignments().get(cycleNumberSensorType).first()
         .getColumnHeading(),
-      true, false, false);
+      true, false, true);
   }
 
   @Override
@@ -175,11 +175,11 @@ public class ArgoManualQCData extends ManualQCData {
       .add(new PlotPageColumnHeading(
         instrument.getSensorAssignments()
           .get(sensorConfig.getSensorType("Level")).first().getColumnHeading(),
-        true, false, false));
+        true, false, true));
 
     depthColumn = new PlotPageColumnHeading(instrument.getSensorAssignments()
       .get(sensorConfig.getSensorType("Pressure (Depth)")).first()
-      .getColumnHeading(), true, false, false);
+      .getColumnHeading(), true, false, true);
 
     rootColumns.add(depthColumn);
 
