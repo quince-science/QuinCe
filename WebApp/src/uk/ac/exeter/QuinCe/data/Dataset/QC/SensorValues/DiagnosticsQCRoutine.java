@@ -4,6 +4,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.DiagnosticQCConfig;
@@ -21,8 +22,8 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 public class DiagnosticsQCRoutine {
 
   public void run(Instrument instrument, DatasetSensorValues sensorValues,
-    RunTypePeriods runTypePeriods)
-    throws InvalidFlagException, RecordNotFoundException {
+    RunTypePeriods runTypePeriods) throws InvalidFlagException,
+    RecordNotFoundException, SensorValuesListException {
 
     DiagnosticQCConfig diagnosticConfig = instrument.getDiagnosticQCConfig();
 
