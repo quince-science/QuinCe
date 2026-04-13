@@ -1717,6 +1717,61 @@ public class SensorValuesList {
       resetOutput();
     }
   }
+
+  /**
+   * Get a list of the values between the first time (exclusive) and the second
+   * time (inclusive).
+   *
+   * <p>
+   * The method always starts at {@code time1} and moves through the list
+   * towards {@code time2}, regardless of which is greater.
+   * </p>
+   *
+   * @param time1
+   *          The first time.
+   * @param time2
+   *          The second time.
+   * @return The values between the first time (exclusive) and the second time
+   *         (inclusive).
+   * @throws SensorValuesListException
+   */
+  public List<SensorValuesListValue> getValuesBetween(LocalDateTime time1,
+    LocalDateTime time2) throws SensorValuesListException {
+
+    List<SensorValuesListValue> result = new ArrayList<SensorValuesListValue>();
+
+    // If the two time are equal, there are no values between
+    if (!time1.equals(time2)) {
+
+      int step = (time1.isBefore(time2) ? 1 : -1);
+
+      List<LocalDateTime> times = getValueTimes();
+      int index = times.indexOf(time1);
+
+      boolean stop = false;
+
+      /*
+       * The test for stopping is
+       * "Have we gone past time2 or fallen off the end of the list?". The test
+       * is flipped depending on the direction of search.
+       */
+      IntPredicate stopTest = time1.isBefore(time2)
+        ? (x) -> x >= times.size() || times.get(x).isAfter(time2)
+        : (x) -> x < 0 || times.get(x).isBefore(time2);
+
+      while (!stop) {
+        index += step;
+
+        if (stopTest.test(index)) {
+          stop = true;
+        } else {
+          result.add(getValue(times.get(index), false));
+        }
+      }
+    }
+
+    return result;
+  }
 }
 
 /**

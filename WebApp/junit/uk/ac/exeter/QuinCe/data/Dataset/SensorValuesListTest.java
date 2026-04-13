@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.flywaydb.test.annotation.FlywayTest;
@@ -77,8 +78,11 @@ public class SensorValuesListTest extends BaseTest {
    * @return The {@link SensorValue}.
    */
   private SensorValue makeSensorValue(long column, int hour, int minute) {
-    return new SensorValue(1L, column,
-      LocalDateTime.of(2023, 1, 1, hour, minute, 0), "12");
+    return new SensorValue(1L, column, makeTime(hour, minute), "12");
+  }
+
+  private LocalDateTime makeTime(int hour, int minute) {
+    return LocalDateTime.of(2023, 1, 1, hour, minute, 0);
   }
 
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
@@ -384,5 +388,39 @@ public class SensorValuesListTest extends BaseTest {
 
     SensorValuesList list = allSensorValues.getColumnValues(6L);
     assertEquals(SensorValuesList.MODE_CONTINUOUS, list.getMeasurementMode());
+  }
+
+  private static Stream<Arguments> getValuesBetweenTestParams() {
+    return Stream.of(Arguments.of(35, 35, Arrays.asList()),
+      Arguments.of(35, 32, Arrays.asList(32, 33, 34)),
+      Arguments.of(35, 38, Arrays.asList(36, 37, 38)),
+      Arguments.of(35, 29, Arrays.asList(30, 31, 32, 33, 34)),
+      Arguments.of(35, 41, Arrays.asList(36, 37, 38, 39)));
+  }
+
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
+  @ParameterizedTest
+  @MethodSource("getValuesBetweenTestParams")
+  public void getValuesBetweenTest(int minute1, int minute2,
+    List<Integer> expectedMinutes) throws Exception {
+
+    SensorValuesList list = new SensorValuesList(1L, getDatasetSensorValues(),
+      false);
+
+    for (int i = 30; i < 40; i++) {
+      list.add(makeSensorValue(1L, 1, i));
+    }
+
+    LocalDateTime time1 = makeTime(1, minute1);
+    LocalDateTime time2 = makeTime(1, minute2);
+
+    List<SensorValuesListValue> foundValues = list.getValuesBetween(time1,
+      time2);
+
+    List<Integer> foundMinutes = foundValues.stream()
+      .map(v -> v.getTime().getMinute()).sorted().toList();
+
+    assertTrue(listsEqual(expectedMinutes, foundMinutes));
   }
 }
