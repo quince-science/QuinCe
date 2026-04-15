@@ -85,7 +85,7 @@
       }
     ]
   },
-    {
+  {
     "variable": "CONTROS pCO₂",
     "routines": [
       {
@@ -93,7 +93,19 @@
         "flagged_sensors": [],
         "options": {
           "coefficients": ["Runtime", "k1", "k2", "k3"]
-		}
+  	}
+      }
+    ]
+  },
+  {
+    "variable": "CONTROS pCO₂ via FerryBox",
+    "routines": [
+      {
+        "name": "PostDataSetCalculationCoefficientCheck",
+        "flagged_sensors": [],
+        "options": {
+          "coefficients": ["Runtime", "k1", "k2", "k3"]
+  	}
       }
     ]
   }
