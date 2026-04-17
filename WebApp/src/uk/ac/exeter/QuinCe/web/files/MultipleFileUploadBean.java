@@ -88,13 +88,13 @@ public class MultipleFileUploadBean extends FileUploadBean {
 
     // Check that uploaded files don't overlap each other
     List<UploadedDataFile> okFiles = dataFiles.stream().filter(f -> f.getStatusCode() == Status.OK.getStatusCode()).toList();
-    
+
     for (int i = 0; i < okFiles.size(); i++) {
-      
+
       DataFile checkFile = okFiles.get(i).getDataFile();
-      
+
       List<String> overlapFiles = new ArrayList<String>();
-      
+
       // Search previous files for overlaps
       boolean stop = false;
       int backSearch = i;
@@ -108,10 +108,10 @@ public class MultipleFileUploadBean extends FileUploadBean {
             overlapFiles.add(backSearchFile.getFilename());
           } else if (backSearchFile.getRawEndTime().isBefore(checkFile.getRawStartTime())) {
             stop = true;
-          } 
+          }
         }
       }
-      
+
       // Search following files for overlaps
       stop = false;
       int forwardSearch = i;
@@ -128,14 +128,14 @@ public class MultipleFileUploadBean extends FileUploadBean {
           }
         }
       }
-      
+
       if (overlapFiles.size() > 0) {
         String overlapMessage = "This file overlaps with one or more other uploaded files: ";
         overlapMessage += StringUtils.collectionToDelimited(overlapFiles, " ");
         okFiles.get(i).putMessage(UploadedDataFile.UNPROCESSABLE_STATUS, overlapMessage, FacesMessage.SEVERITY_ERROR);
       }
     }
-    
+
     buildUnrecognisedRunTypes();
   }
 
