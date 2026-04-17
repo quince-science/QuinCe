@@ -35,7 +35,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
    * HTTP Status Code to use for files that can't be processed due to data
    * issues (not defined in the {#Status} class).
    */
-  private static final int UNPROCESSABLE_STATUS = 422;
+  public static final int UNPROCESSABLE_STATUS = 422;
 
   /**
    * The contents of the file split into lines
@@ -121,7 +121,14 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   }
 
   /**
-   * @return the startDate
+   * Get the file's start date as a {@link Date} object.
+   *
+   * <p>
+   * Required for compatibility with PrimeFaces.
+   * </p>
+   *
+   * @return The start date.
+   * @see DataFile#getRawStartTime
    */
   public Date getStartDate() {
     Date date = null;
@@ -137,7 +144,12 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   /**
    * Get the last date in the file.
    *
-   * @return The last date.
+   * <p>
+   * Required for PrimeFaces compatibility.
+   * </p>
+   *
+   * @return The end date.
+   * @see DataFile#getRawEndTime()
    */
   public Date getEndDate() {
     Date date = null;
