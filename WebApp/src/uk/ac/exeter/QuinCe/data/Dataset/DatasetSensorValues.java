@@ -801,10 +801,11 @@ public class DatasetSensorValues {
    *         cascade.
    * @throws RecordNotFoundException
    * @throws InvalidFlagException
+   * @throws SensorValuesListException
    */
   public Set<SensorValue> applyQCCascade(SensorValue source,
-    RunTypePeriods runTypePeriods)
-    throws RecordNotFoundException, InvalidFlagException {
+    RunTypePeriods runTypePeriods) throws RecordNotFoundException,
+    InvalidFlagException, SensorValuesListException {
 
     Set<SensorValue> changedValues = new HashSet<SensorValue>();
 
@@ -843,7 +844,31 @@ public class DatasetSensorValues {
 
             if (!dataset.getFlagScheme().isGood(source.getDisplayFlag(this),
               false)) {
-              value.setCascadingQC(source);
+
+              /*
+               * At this point we have, through interpolation, the closest
+               * destination SensorValue to the one that triggered the cascade.
+               * However, there may be Good SensorValues from the same column as
+               * the source that are closer, in which case we should not apply
+               * the cascade.
+               *
+               * This only applies for TIME basis. Otherwise we set the cascade
+               * without the check.
+               */
+              if (dataset.getInstrument().getBasis() != Instrument.BASIS_TIME) {
+                value.setCascadingQC(source);
+              } else {
+                SensorValuesList sourceSensorValues = valuesByColumn
+                  .get(source.getColumnId());
+
+                if (!sourceSensorValues
+                  .getValuesBetween(source.getCoordinate(),
+                    value.getCoordinate())
+                  .stream().anyMatch(
+                    v -> dataset.getFlagScheme().isGood(v.getQCFlag(), true))) {
+                  value.setCascadingQC(source);
+                }
+              }
             } else {
               value.removeCascadingQC(source.getId());
             }

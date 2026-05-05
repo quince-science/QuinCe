@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.files;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -8,13 +9,16 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.ws.rs.core.Response.Status;
 
 import org.primefaces.model.file.UploadedFile;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
+import uk.ac.exeter.QuinCe.data.Files.TimeDataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -22,9 +26,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 
 @ManagedBean(name = "fileUpload")
@@ -80,6 +86,72 @@ public class MultipleFileUploadBean extends FileUploadBean {
     for (UploadedDataFile file : dataFiles) {
       file.extractFile(getCurrentInstrument(), false, false);
       progress.increment();
+    }
+
+    /*
+     * Check that uploaded files don't overlap each other.
+     *
+     * Time-basis files only
+     */
+    if (getCurrentInstrument().getBasis() == Instrument.BASIS_TIME) {
+
+      List<UploadedDataFile> okFiles = dataFiles.stream()
+        .filter(f -> f.getStatusCode() == Status.OK.getStatusCode()).toList();
+
+      for (int i = 0; i < okFiles.size(); i++) {
+
+        TimeDataFile checkFile = (TimeDataFile) okFiles.get(i).getDataFile();
+
+        List<String> overlapFiles = new ArrayList<String>();
+
+        // Search previous files for overlaps
+        boolean stop = false;
+        int backSearch = i;
+        while (!stop) {
+          backSearch--;
+          if (backSearch < 0) {
+            stop = true;
+          } else {
+            TimeDataFile backSearchFile = (TimeDataFile) okFiles.get(backSearch)
+              .getDataFile();
+            if (DateTimeUtils.isEqualOrAfter(backSearchFile.getRawEndTime(),
+              checkFile.getRawStartTime())) {
+              overlapFiles.add(backSearchFile.getFilename());
+            } else if (backSearchFile.getRawEndTime()
+              .isBefore(checkFile.getRawStartTime())) {
+              stop = true;
+            }
+          }
+        }
+
+        // Search following files for overlaps
+        stop = false;
+        int forwardSearch = i;
+        while (!stop) {
+          forwardSearch++;
+          if (forwardSearch >= okFiles.size()) {
+            stop = true;
+          } else {
+            TimeDataFile forwardSearchFile = (TimeDataFile) okFiles
+              .get(forwardSearch).getDataFile();
+            if (DateTimeUtils.isEqualOrBefore(
+              forwardSearchFile.getRawStartTime(), checkFile.getRawEndTime())) {
+              overlapFiles.add(forwardSearchFile.getFilename());
+            } else if (forwardSearchFile.getRawStartTime()
+              .isAfter(checkFile.getRawEndTime())) {
+              stop = true;
+            }
+          }
+        }
+
+        if (overlapFiles.size() > 0) {
+          String overlapMessage = "This file overlaps with one or more other uploaded files: ";
+          overlapMessage += StringUtils.collectionToDelimited(overlapFiles,
+            " ");
+          okFiles.get(i).putMessage(UploadedDataFile.UNPROCESSABLE_STATUS,
+            overlapMessage, FacesMessage.SEVERITY_ERROR);
+        }
+      }
     }
 
     buildUnrecognisedRunTypes();

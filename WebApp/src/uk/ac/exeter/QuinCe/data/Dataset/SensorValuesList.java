@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -617,6 +618,44 @@ public abstract class SensorValuesList {
    * </p>
    */
   protected abstract void listContentsUpdated();
+
+  public List<SensorValuesListValue> getValuesBetween(Coordinate coord1,
+    Coordinate coord2) throws SensorValuesListException {
+
+    List<SensorValuesListValue> result = new ArrayList<SensorValuesListValue>();
+
+    // If the two time are equal, there are no values between
+    if (!coord1.equals(coord2)) {
+
+      int step = (coord1.isBefore(coord2) ? 1 : -1);
+
+      List<Coordinate> coords = getOutputCoordinates();
+      int index = coords.indexOf(coord1);
+
+      boolean stop = false;
+
+      /*
+       * The test for stopping is
+       * "Have we gone past time2 or fallen off the end of the list?". The test
+       * is flipped depending on the direction of search.
+       */
+      IntPredicate stopTest = coord1.isBefore(coord2)
+        ? (x) -> x >= coords.size() || coords.get(x).isAfter(coord2)
+        : (x) -> x < 0 || coords.get(x).isBefore(coord2);
+
+      while (!stop) {
+        index += step;
+
+        if (stopTest.test(index)) {
+          stop = true;
+        } else {
+          result.add(getValue(coords.get(index), false));
+        }
+      }
+    }
+
+    return result;
+  }
 }
 
 /**

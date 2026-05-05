@@ -33,7 +33,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
    * HTTP Status Code to use for files that can't be processed due to data
    * issues (not defined in the {#Status} class).
    */
-  private static final int UNPROCESSABLE_STATUS = 422;
+  public static final int UNPROCESSABLE_STATUS = 422;
 
   /**
    * The contents of the file split into lines
@@ -119,8 +119,14 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   }
 
   /**
-   * @return the startDate
-   * @throws DataFileException
+   * Get the file's start date as a {@link Date} object.
+   *
+   * <p>
+   * Required for compatibility with PrimeFaces.
+   * </p>
+   *
+   * @return The start date.
+   * @see DataFile#getRawStartTime
    */
   public String getStart() throws DataFileException {
     return dataFile.getStartDisplayString();
@@ -129,8 +135,12 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   /**
    * Get the last date in the file.
    *
-   * @return The last date.
-   * @throws DataFileException
+   * <p>
+   * Required for PrimeFaces compatibility.
+   * </p>
+   *
+   * @return The end date.
+   * @see DataFile#getRawEndTime()
    */
   public String getEnd() throws DataFileException {
     return dataFile.getEndDisplayString();
@@ -373,7 +383,10 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
             if (overlappingFiles.size() > 0 && overlappingFiles.size() > 1) {
               fileOK = false;
-              fileMessage = "This file overlaps one or more existing files";
+              fileMessage = "This file overlaps the following file(s): ";
+              fileMessage += overlappingFiles.stream()
+                .map(f -> f.getFilename() + " ");
+
               fileStatus = Status.CONFLICT.getStatusCode();
             } else if (overlappingFiles.size() == 1) {
               DataFile existingFile = overlappingFiles.stream().findAny().get();
@@ -381,7 +394,8 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
               if (!existingFile.getFilename().equals(newFile.getFilename())) {
                 fileOK = false;
-                fileMessage = "This file overlaps an existing file with a different name";
+                fileMessage = "This file overlaps existing file "
+                  + existingFile.getFilename();
                 fileStatus = Status.CONFLICT.getStatusCode();
               } else {
                 String oldContents = existingFile.getContentsAsString();
@@ -389,19 +403,23 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
                 if (newContents.length() < oldContents.length()) {
                   fileOK = false;
-                  fileMessage = "This file would replace an existing file with fewer records";
+                  fileMessage = "This file would replace existing file "
+                    + existingFile.getFilename() + " with fewer records";
                   fileStatus = Status.CONFLICT.getStatusCode();
                 } else if (!allowExactDuplicate
                   && newContents.length() == oldContents.length()) {
                   fileOK = false;
-                  fileMessage = "This is an exact copy of an existing file";
+                  fileMessage = "This is an exact copy of existing file "
+                    + existingFile.getFilename();
                   fileStatus = Status.CONFLICT.getStatusCode();
                 } else {
                   String oldPartOfNewContents = newContents.substring(0,
                     oldContents.length());
                   if (!oldPartOfNewContents.equals(oldContents)) {
                     fileOK = false;
-                    fileMessage = "This file would update an existing file but change existing data";
+                    fileMessage = "This file would update existing file "
+                      + existingFile.getFilename()
+                      + " but change existing data";
                     fileStatus = Status.CONFLICT.getStatusCode();
                   } else {
                     setReplacementFile(existingFile.getDatabaseId());
@@ -413,7 +431,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
 
               // We don't allow duplicate filenames
               fileOK = false;
-              fileMessage = "A file with that name already exists";
+              fileMessage = "A file with this name already exists";
               fileStatus = Status.CONFLICT.getStatusCode();
             }
 
