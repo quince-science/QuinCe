@@ -93,8 +93,9 @@
         "name": "PostDataSetCalculationCoefficientCheck",
         "flagged_sensors": [],
         "options": {
-          "coefficients": ["Runtime", "k1", "k2", "k3"]
-  	}
+          "coefficients": ["Runtime", "k1", "k2", "k3"],
+		  "flagChar": "C"
+  	    }
       }
     ]
   },
