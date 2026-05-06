@@ -112,8 +112,8 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * Converts a String containing values separated a specified delimiter into a
-   * list of String values.
+   * Converts a String containing values separated by a specified delimiter into
+   * a list of String values.
    *
    * <p>
    * <strong>Limitations:</strong>

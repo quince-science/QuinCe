@@ -68,14 +68,18 @@
             </p:inputText>
           </td>
         </tr>
+
         <tr style="vertical-align: top">
-          <td class="labels" style="padding-top: 13px">Measurement Basis</td>
-          <td>
-            <p:selectOneRadio id="basis" value="#{newInstrumentBean.basis}" layout="pageDirection" onchange="setBasis()">
-              <f:selectItem itemLabel="Surface Measurements" itemValue="1"/>
-              <f:selectItem itemLabel="Argo" itemValue="2"/>
-            </p:selectOneRadio>
-          </td>
+          <ui:fragment rendered="#{newInstrumentBean.allowedBasisCount gt 1}">
+            <td class="labels" style="padding-top: 13px">Measurement Basis</td>
+            <td>
+              <p:selectOneRadio id="basis" value="#{newInstrumentBean.basis}" layout="pageDirection" onchange="setBasis()">
+                  <f:selectItems value="#{newInstrumentBean.getAllowedBases().entrySet()}" var="basis"
+                    itemValue="#{basis.key}"
+                    itemLabel="#{basis.value}" />
+              </p:selectOneRadio>
+            </td>
+          </ui:fragment>
         </tr>
       </table>
 

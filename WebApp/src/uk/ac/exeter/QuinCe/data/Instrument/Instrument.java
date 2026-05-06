@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,6 +65,13 @@ public class Instrument {
   public static final String BASIS_NAME_TIME = "time";
 
   /**
+   * Description string of the TIME basis.
+   *
+   * @see #BASIS_TIME
+   */
+  public static final String BASIS_DESCRIPTION_TIME = "Surface Measurements";
+
+  /**
    * Flag that indicates an instrument takes Argo measurements.
    */
   public static final int BASIS_ARGO = 2;
@@ -74,6 +82,13 @@ public class Instrument {
    * @see #BASIS_ARGO
    */
   public static final String BASIS_NAME_ARGO = "argo";
+
+  /**
+   * Description string of the ARGO basis.
+   *
+   * @see #BASIS_ARGO
+   */
+  public static final String BASIS_DESCRIPTION_ARGO = "Argo";
 
   /**
    * Name for the Sensor Groups entry in the JSON representation of the
@@ -1608,5 +1623,53 @@ public class Instrument {
       throw new InstrumentException("Unrecognised basis " + basisName);
     }
     }
+  }
+
+  public static String getBasisDescription(int basis)
+    throws InstrumentException {
+    switch (basis) {
+    case BASIS_TIME: {
+      return BASIS_DESCRIPTION_TIME;
+    }
+    case BASIS_ARGO: {
+      return BASIS_DESCRIPTION_ARGO;
+    }
+    default: {
+      throw new InstrumentException("Unrecognised basis " + basis);
+    }
+    }
+  }
+
+  /**
+   * Take a {@link List} of basis names and return a map of each basis's
+   * identifier and description.
+   *
+   * <p>
+   * The map has the same iteration order as the passed in list. A {@code null}
+   * or empty list will return a map of all available bases.
+   * </p>
+   *
+   * @param basisNames
+   *          The basis names.
+   * @return The map.
+   * @throws InstrumentException
+   *           If any basis name is invalid.
+   */
+  public static LinkedHashMap<Integer, String> getBasesMap(
+    List<String> basisNames) throws InstrumentException {
+
+    LinkedHashMap<Integer, String> result = new LinkedHashMap<Integer, String>();
+
+    if (null == basisNames || basisNames.size() == 0) {
+      result.put(BASIS_TIME, BASIS_DESCRIPTION_TIME);
+      result.put(BASIS_ARGO, BASIS_DESCRIPTION_ARGO);
+    } else {
+      for (String basisName : basisNames) {
+        int basis = basisFromString(basisName);
+        result.put(basis, getBasisDescription(basis));
+      }
+    }
+
+    return result;
   }
 }

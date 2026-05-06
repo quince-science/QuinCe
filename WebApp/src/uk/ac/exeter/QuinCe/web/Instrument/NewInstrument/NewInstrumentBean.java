@@ -21,7 +21,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 
-import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.NodeCollapseEvent;
 import org.primefaces.event.NodeExpandEvent;
 import org.primefaces.model.TreeNode;
@@ -65,6 +64,7 @@ import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.FileUploadException;
 import uk.ac.exeter.QuinCe.web.Instrument.InstrumentListBean;
@@ -524,6 +524,11 @@ public class NewInstrumentBean extends FileUploadBean {
   private int setupStep = 0;
 
   /**
+   * The list of allowed measurement bases (plural of basis)
+   */
+  private LinkedHashMap<Integer, String> allowedBases = null;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
@@ -532,8 +537,34 @@ public class NewInstrumentBean extends FileUploadBean {
     clearAllData();
     makeSetupSteps();
     existingPlatforms = InstrumentDB.getPlatforms(getDataSource(), getUser());
+
+    setupAllowedBases();
+    setBasis(allowedBases.keySet().iterator().next());
+
     setSetupStep(NAV_NAME);
     return NAV_NAME;
+  }
+
+  private void setupAllowedBases() throws InstrumentException {
+    String allowedBasisProperty = getAppConfig().getProperty("allowed_basis");
+
+    // Empty property = all bases
+    if (null == allowedBasisProperty
+      || allowedBasisProperty.strip().length() == 0) {
+      allowedBases = Instrument.getBasesMap(null);
+    } else {
+      List<String> basisNames = StringUtils
+        .delimitedToList(allowedBasisProperty, ",");
+      allowedBases = Instrument.getBasesMap(basisNames);
+    }
+  }
+
+  public int getAllowedBasisCount() {
+    return allowedBases.size();
+  }
+
+  public LinkedHashMap<Integer, String> getAllowedBases() {
+    return allowedBases;
   }
 
   /**
