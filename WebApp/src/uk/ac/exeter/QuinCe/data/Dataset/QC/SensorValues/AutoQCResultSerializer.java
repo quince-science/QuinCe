@@ -53,8 +53,17 @@ public class AutoQCResultSerializer
       JsonObject flagObj = element.getAsJsonObject();
 
       String routineName = flagObj.get("routineName").getAsString();
-      String requiredValue = flagObj.get("requiredValue").getAsString();
-      String actualValue = flagObj.get("actualValue").getAsString();
+
+      String requiredValue = "";
+      if (flagObj.has("requiredValue")) {
+        requiredValue = flagObj.get("requiredValue").getAsString();
+      }
+
+      String actualValue = "";
+      if (flagObj.has("actualValue")) {
+        actualValue = flagObj.get("actualValue").getAsString();
+      }
+
       Flag flag = flagScheme.getFlag(flagObj.get("flagValue").getAsInt());
 
       result.add(new RoutineFlag(flagScheme, routineName, flag, requiredValue,

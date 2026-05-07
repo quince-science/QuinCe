@@ -23,6 +23,8 @@ import com.google.gson.JsonSerializer;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagSerializer;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlagSerializer;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 
 public class MeasurementValuesSerializer
@@ -55,7 +57,9 @@ public class MeasurementValuesSerializer
 
   public MeasurementValuesSerializer(FlagScheme flagScheme) {
     this.gson = new GsonBuilder()
-      .registerTypeAdapter(Flag.class, new FlagSerializer(flagScheme)).create();
+      .registerTypeAdapter(Flag.class, new FlagSerializer(flagScheme))
+      .registerTypeAdapter(RoutineFlag.class, new RoutineFlagSerializer())
+      .create();
     this.flagScheme = flagScheme;
   }
 
