@@ -72,12 +72,16 @@ public class CalibrationFactory {
     case SensorCalibrationDB.SENSOR_CALIBRATION_TYPE: {
       try {
         String fullClass = CALIBRATION_PACKAGE + "." + calibrationClass;
-        Class<?> clazz = Class.forName(fullClass);
 
-        Constructor<?> constructor = clazz.getConstructor(long.class,
-          Instrument.class, String.class, LocalDateTime.class, Map.class);
-        result = (Calibration) constructor.newInstance(id, instrument, target,
-          deploymentDate, coefficients);
+        @SuppressWarnings("unchecked")
+        Class<? extends Calibration> clazz = (Class<? extends Calibration>) Class
+          .forName(fullClass);
+
+        Constructor<? extends Calibration> constructor = clazz.getConstructor(
+          long.class, Instrument.class, String.class, LocalDateTime.class,
+          Map.class);
+        result = constructor.newInstance(id, instrument, target, deploymentDate,
+          coefficients);
       } catch (Exception e) {
         throw new CalibrationException(e);
       }

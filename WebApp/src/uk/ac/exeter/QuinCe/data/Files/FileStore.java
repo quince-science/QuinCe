@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.FileUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -30,8 +31,10 @@ public class FileStore {
    *
    * @param fileStore
    *          The location of the file store
-   * @param dataFile
-   *          The data file
+   * @param fileDefinitionId
+   *          The ID of the file's {@link FileDefinition}.
+   * @param fileId
+   *          The ID of the file.
    * @throws MissingParamException
    *           If any of the parameters are missing
    * @throws FileStoreException
@@ -51,13 +54,14 @@ public class FileStore {
       checkInstrumentDirectory(fileStore,
         dataFile.getFileDefinition().getDatabaseId());
 
-      file = getFileObject(fileStore, dataFile);
+      file = getFileObject(fileStore,
+        dataFile.getFileDefinition().getDatabaseId(), dataFile.getDatabaseId());
       if (file.exists()) {
         file.delete();
       }
 
       fileWriter = new FileWriter(file);
-      fileWriter.write(dataFile.getContents());
+      fileWriter.write(dataFile.getContentsAsString());
       fileWriter.close();
 
     } catch (Exception e) {
@@ -87,25 +91,9 @@ public class FileStore {
     MissingParam.checkMissing(fileStore, "fileStore");
     MissingParam.checkMissing(dataFile, "dataFile");
 
-    File fileToDelete = getFileObject(fileStore, dataFile);
+    File fileToDelete = getFileObject(fileStore,
+      dataFile.getFileDefinition().getDatabaseId(), dataFile.getDatabaseId());
     deleteFile(fileToDelete);
-  }
-
-  /**
-   * Retrieve a file from the file store
-   *
-   * @param fileStore
-   *          The location of the file store
-   * @param dataFile
-   *          The file whose contents are to be loaded
-   * @throws IOException
-   *           If a disk I/O error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   */
-  protected static void loadFileContents(String fileStore, DataFile dataFile)
-    throws IOException, MissingParamException {
-    dataFile.setContents(new String(getBytes(fileStore, dataFile)));
   }
 
   /**
@@ -119,11 +107,11 @@ public class FileStore {
    * @throws IOException
    *           If the file cannot be read
    */
-  protected static byte[] getBytes(String fileStore, DataFile dataFile)
-    throws IOException {
+  protected static byte[] getBytes(String fileStore, long fileDefinitionId,
+    long fileId) throws IOException {
 
     byte[] fileData;
-    File readFile = getFileObject(fileStore, dataFile);
+    File readFile = getFileObject(fileStore, fileDefinitionId, fileId);
 
     FileInputStream inputStream = null;
     try {
@@ -216,10 +204,10 @@ public class FileStore {
    *          The data file
    * @return The Java File object
    */
-  private static File getFileObject(String fileStorePath, DataFile dataFile) {
-    return new File(getStorageDirectory(fileStorePath,
-      dataFile.getFileDefinition().getDatabaseId()) + File.separator
-      + dataFile.getDatabaseId());
+  private static File getFileObject(String fileStorePath, long fileDefinitionId,
+    long fileId) {
+    return new File(getStorageDirectory(fileStorePath, fileDefinitionId)
+      + File.separator + fileId);
   }
 
   /**

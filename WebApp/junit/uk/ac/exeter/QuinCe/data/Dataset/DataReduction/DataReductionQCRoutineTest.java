@@ -8,8 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutine;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -102,7 +102,7 @@ public class DataReductionQCRoutineTest extends BaseTest {
    *
    * @return The configuration.
    */
-  protected DataReductionQCRoutinesConfiguration getDataReductionQCRoutinesConfiguration() {
+  protected DataReductionQCConfiguration getDataReductionQCConfiguration() {
     return ResourceManager.getInstance()
       .getDataReductionQCRoutinesConfiguration();
   }
@@ -121,8 +121,9 @@ public class DataReductionQCRoutineTest extends BaseTest {
     Class<? extends DataReducer> reducerClass,
     Class<? extends DataReductionQCRoutine> routineClass) {
 
-    return getDataReductionQCRoutinesConfiguration().getRoutines(reducerClass)
-      .stream().filter(routine -> routine.getClass().equals(routineClass))
-      .findAny().get();
+    return getDataReductionQCConfiguration().get(flagScheme)
+      .getRoutines(reducerClass).stream()
+      .filter(routine -> routine.getClass().equals(routineClass)).findAny()
+      .get();
   }
 }

@@ -14,14 +14,19 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 
-import org.apache.commons.lang3.StringUtils;
+import org.primefaces.event.NodeCollapseEvent;
+import org.primefaces.event.NodeExpandEvent;
 import org.primefaces.model.TreeNode;
+import org.primefaces.model.menu.DefaultMenuItem;
+import org.primefaces.model.menu.DefaultMenuModel;
+import org.primefaces.model.menu.MenuModel;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -32,6 +37,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.InvalidInstrumentBasisException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.InvalidPositionFormatException;
@@ -58,8 +64,12 @@ import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
+import uk.ac.exeter.QuinCe.web.FileUploadException;
 import uk.ac.exeter.QuinCe.web.Instrument.InstrumentListBean;
+import uk.ac.exeter.QuinCe.web.Instrument.NewInstrument.AssignmentsTree.AssignmentsTree;
+import uk.ac.exeter.QuinCe.web.Instrument.NewInstrument.AssignmentsTree.AssignmentsTreeNodeData;
 import uk.ac.exeter.QuinCe.web.datasets.DataSetsBean;
 import uk.ac.exeter.QuinCe.web.files.DataFilesBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -366,6 +376,11 @@ public class NewInstrumentBean extends FileUploadBean {
   private String platformCode = null;
 
   /**
+   * The instrument's measurement basis.
+   */
+  private int basis = Instrument.BASIS_TIME;
+
+  /**
    * The name of the file for which a Run Type column is being defined
    */
   private String runTypeFile = null;
@@ -493,14 +508,63 @@ public class NewInstrumentBean extends FileUploadBean {
   private boolean runTypesGuessed = false;
 
   /**
+   * The setup steps for the instrument.
+   *
+   * <p>
+   * The steps will vary depending on the type of instrument being created.
+   * </p>
+   */
+  private MenuModel setupSteps = null;
+
+  /**
+   * The current step in the instrument setup.
+   *
+   * @see #setupSteps
+   */
+  private int setupStep = 0;
+
+  /**
+   * The list of allowed measurement bases (plural of basis)
+   */
+  private LinkedHashMap<Integer, String> allowedBases = null;
+
+  /**
    * Begin a new instrument definition
    *
    * @return The navigation to the start page
    */
   public String start() throws Exception {
     clearAllData();
+    makeSetupSteps();
     existingPlatforms = InstrumentDB.getPlatforms(getDataSource(), getUser());
+
+    setupAllowedBases();
+    setBasis(allowedBases.keySet().iterator().next());
+
+    setSetupStep(NAV_NAME);
     return NAV_NAME;
+  }
+
+  private void setupAllowedBases() throws InstrumentException {
+    String allowedBasisProperty = getAppConfig().getProperty("allowed_basis");
+
+    // Empty property = all bases
+    if (null == allowedBasisProperty
+      || allowedBasisProperty.strip().length() == 0) {
+      allowedBases = Instrument.getBasesMap(null);
+    } else {
+      List<String> basisNames = StringUtils
+        .delimitedToList(allowedBasisProperty, ",");
+      allowedBases = Instrument.getBasesMap(basisNames);
+    }
+  }
+
+  public int getAllowedBasisCount() {
+    return allowedBases.size();
+  }
+
+  public LinkedHashMap<Integer, String> getAllowedBases() {
+    return allowedBases;
   }
 
   /**
@@ -517,13 +581,16 @@ public class NewInstrumentBean extends FileUploadBean {
    * Navigate to the Name page
    *
    * @return Navigation to the name page
+   * @throws FileUploadException
    */
-  public String goToName() {
+  public String goToName() throws FileUploadException {
     clearFile();
+    setSetupStep(NAV_NAME);
     return NAV_NAME;
   }
 
   public String goToVariables() {
+    setSetupStep(NAV_VARIABLES);
     return NAV_VARIABLES;
   }
 
@@ -540,12 +607,14 @@ public class NewInstrumentBean extends FileUploadBean {
    * @return Navigation to the files
    * @throws InstrumentFileExistsException
    *           If the default instrument file has already been added.
+   * @throws InvalidInstrumentBasisException
    */
-  public String goToFiles() throws InstrumentFileExistsException {
+  public String goToFiles()
+    throws InstrumentFileExistsException, InvalidInstrumentBasisException {
     String result;
 
     if (instrumentFiles.size() == 0) {
-      currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles);
+      currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles, basis);
 
       result = NAV_UPLOAD_FILE;
     } else {
@@ -556,6 +625,7 @@ public class NewInstrumentBean extends FileUploadBean {
       result = NAV_ASSIGN_VARIABLES;
     }
 
+    setSetupStep(result);
     return result;
   }
 
@@ -572,10 +642,12 @@ public class NewInstrumentBean extends FileUploadBean {
    * Begin the process of adding a new file to the instrument.
    *
    * @return The navigation to the file upload.
+   * @throws InvalidInstrumentBasisException
    * @throws DateTimeSpecificationException.
    */
-  public String addFile() throws DateTimeSpecificationException {
-    currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles);
+  public String addFile()
+    throws DateTimeSpecificationException, InvalidInstrumentBasisException {
+    currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles, basis);
     return NAV_UPLOAD_FILE;
   }
 
@@ -665,10 +737,10 @@ public class NewInstrumentBean extends FileUploadBean {
       this.instrumentVariables = sensorConfig
         .getInstrumentVariables(instrumentVariables);
 
-      sensorAssignments = new SensorAssignments(getDataSource(),
+      sensorAssignments = SensorAssignments.create(basis, getDataSource(),
         instrumentVariables);
-      assignmentsTree = new AssignmentsTree(this.instrumentVariables,
-        sensorAssignments, !fixedPosition);
+      assignmentsTree = AssignmentsTree.create(basis, instrumentFiles,
+        this.instrumentVariables, sensorAssignments, !fixedPosition);
       sensorGroups = new SensorGroups();
       this.instrumentVariables.forEach(v -> v.getAttributes().reset());
     } catch (Exception e) {
@@ -680,7 +752,10 @@ public class NewInstrumentBean extends FileUploadBean {
     Map<Long, String> variables = new HashMap<Long, String>();
 
     try {
-      for (Variable variable : InstrumentDB.getAllVariables(getDataSource())) {
+      List<Variable> allVariables = InstrumentDB
+        .getAllVariables(getDataSource());
+      for (Variable variable : allVariables.stream()
+        .filter(v -> v.basisAllowed(basis)).toList()) {
         variables.put(variable.getId(), variable.getName());
       }
     } catch (Exception e) {
@@ -728,12 +803,12 @@ public class NewInstrumentBean extends FileUploadBean {
    * @throws SensorConfigurationException
    * @throws SensorTypeNotFoundException
    * @throws SensorAssignmentException
+   * @throws FileUploadException
    */
   public String useFile() throws DateTimeSpecificationException,
     SensorAssignmentException, SensorTypeNotFoundException,
-    SensorConfigurationException, SensorGroupsException {
+    SensorConfigurationException, SensorGroupsException, FileUploadException {
     instrumentFiles.add(currentInstrumentFile);
-    assignmentsTree.addFile(currentInstrumentFile);
     updatedFile = currentInstrumentFile.getFileDescription();
 
     autoAssignColumns(currentInstrumentFile);
@@ -755,9 +830,9 @@ public class NewInstrumentBean extends FileUploadBean {
    * {@link User} that has the same platform name and code, check its
    * {@link SensorAssignments} to see if the column name is used. If so, create
    * the same {@link SensorAssignment}.</li>
-   * <li>Check {@link SensorType#getSourceColumns()} for each {@link SensorType}
-   * in the {@link #assignmentsTree} and see if the heading matches any. If so,
-   * create a {@link SensorAssignment}.</li>
+   * <li>Check {@link SensorType#getSourceColumns()} against each column in the
+   * data files and see if the heading matches any. If so, create a
+   * {@link SensorAssignment}.</li>
    * </ol>
    * <p>
    * If the supplied file does not have column headings, no action is taken.
@@ -803,7 +878,7 @@ public class NewInstrumentBean extends FileUploadBean {
       }
 
       if (!assignmentMade) {
-        for (SensorType sensorType : assignmentsTree.getSensorTypes()) {
+        for (SensorType sensorType : getAllSensorTypes()) {
           if (sensorType.getSourceColumns()
             .contains(column.getName().toLowerCase())) {
             autoAssignColumn(file, column, sensorType);
@@ -813,6 +888,21 @@ public class NewInstrumentBean extends FileUploadBean {
         }
       }
     }
+
+    // Make any custom assignments
+    sensorAssignments.customAssignColumns(instrumentFiles);
+  }
+
+  /**
+   * Get all the {@link SensorType}s that can be assigned for the instrument.
+   *
+   * @return The {@link SensorType}s.
+   * @throws SensorConfigurationException
+   */
+  private TreeSet<SensorType> getAllSensorTypes()
+    throws SensorConfigurationException {
+
+    return new TreeSet<SensorType>(sensorAssignments.keySet());
   }
 
   /**
@@ -870,15 +960,11 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Discard the current instrument file
+   *
+   * @throws FileUploadException
    */
-  public void discardUploadedFile() {
+  public void discardUploadedFile() throws FileUploadException {
     clearFile();
-  }
-
-  @Override
-  public void clearFile() {
-    currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles);
-    super.clearFile();
   }
 
   /**
@@ -1050,7 +1136,6 @@ public class NewInstrumentBean extends FileUploadBean {
 
     sensorAssignments.addAssignment(assignment);
     sensorGroups.addAssignment(assignment);
-    assignmentsTree.addAssignment(assignment);
 
     // Reset the assign dialog values, because it's so damn hard to do in
     // Javascript
@@ -1137,12 +1222,20 @@ public class NewInstrumentBean extends FileUploadBean {
     FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles
       .get(longitudeFile);
     file.getLongitudeSpecification().setValueColumn(longitudeColumn);
-    file.getLongitudeSpecification().setFormat(longitudeFormat);
+
+    // If we have a fixed format, we ignore what the form sent us
+    int format = longitudeFormat;
+    if (sensorAssignments
+      .getFixedLongitudeFormat() != PositionSpecification.NO_FORMAT) {
+      format = sensorAssignments.getFixedLongitudeFormat();
+    }
+
+    file.getLongitudeSpecification().setFormat(format);
+
     if (longitudeFormat != LongitudeSpecification.FORMAT_0_180) {
       file.getLongitudeSpecification().setHemisphereColumn(-1);
     }
 
-    assignmentsTree.updatePositionNodes("Longitude");
     resetPositionAssignmentValues();
   }
 
@@ -1213,12 +1306,20 @@ public class NewInstrumentBean extends FileUploadBean {
     FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles
       .get(latitudeFile);
     file.getLatitudeSpecification().setValueColumn(latitudeColumn);
-    file.getLatitudeSpecification().setFormat(latitudeFormat);
+
+    // If we have a fixed format, we ignore what the form sent us
+    int format = latitudeFormat;
+    if (sensorAssignments
+      .getFixedLatitudeFormat() != PositionSpecification.NO_FORMAT) {
+      format = sensorAssignments.getFixedLatitudeFormat();
+    }
+
+    file.getLatitudeSpecification().setFormat(format);
+
     if (latitudeFormat != LatitudeSpecification.FORMAT_0_90) {
       file.getLatitudeSpecification().setHemisphereColumn(-1);
     }
 
-    assignmentsTree.updatePositionNodes("Latitude");
     resetPositionAssignmentValues();
   }
 
@@ -1287,19 +1388,15 @@ public class NewInstrumentBean extends FileUploadBean {
       .get(hemisphereFile);
 
     PositionSpecification posSpec;
-    String expandType;
 
     if (hemisphereCoordinate.equals("Longitude")) {
       posSpec = file.getLongitudeSpecification();
-      expandType = "Longitude";
     } else {
       posSpec = file.getLatitudeSpecification();
-      expandType = "Latitude";
     }
 
     posSpec.setHemisphereColumn(hemisphereColumn);
 
-    assignmentsTree.updatePositionNodes(expandType);
     resetPositionAssignmentValues();
   }
 
@@ -1484,9 +1581,6 @@ public class NewInstrumentBean extends FileUploadBean {
     }
     }
 
-    assignmentsTree
-      .setDateTimeAssignment(instrumentFiles.getByDescription(dateTimeFile));
-
     resetDateTimeAssignmentValues();
   }
 
@@ -1650,11 +1744,12 @@ public class NewInstrumentBean extends FileUploadBean {
         sensorGroups
           .remove(sensorAssignments.getFileAssignments(removeFileName));
         sensorAssignments.removeFileAssignments(removeFileName);
-        assignmentsTree.removeFile(removeFileName);
         sensorAssignmentsGuessed.remove(removeFileName);
       }
 
       if (instrumentFiles.size() == 0) {
+        currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles,
+          basis);
         result = NAV_UPLOAD_FILE;
       } else {
         result = NAV_ASSIGN_VARIABLES;
@@ -1713,6 +1808,7 @@ public class NewInstrumentBean extends FileUploadBean {
       result = NAV_SENSOR_GROUPS;
     }
 
+    setSetupStep(result);
     return result;
   }
 
@@ -1761,6 +1857,7 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   public String goToSensorGroups() {
+    setSetupStep(NAV_SENSOR_GROUPS);
     return NAV_SENSOR_GROUPS;
   }
 
@@ -1770,7 +1867,18 @@ public class NewInstrumentBean extends FileUploadBean {
    * @return The navigation to the General Info page
    */
   public String goToGeneralInfo() {
-    return (nameValid() ? NAV_GENERAL_INFO : null);
+    String result = null;
+
+    if (nameValid()) {
+      if (basis == Instrument.BASIS_ARGO) {
+        result = NAV_VARIABLES;
+      } else {
+        result = NAV_GENERAL_INFO;
+      }
+    }
+
+    setSetupStep(result);
+    return result;
   }
 
   private boolean nameValid() {
@@ -1811,10 +1919,27 @@ public class NewInstrumentBean extends FileUploadBean {
    * attributes to be assigned
    *
    * @return The navigation target
+   * @throws InvalidInstrumentBasisException
    */
-  public String goToVariableInfo() {
-    return instrumentVariables.stream().filter(v -> v.hasAttributes()).findAny()
-      .isPresent() ? NAV_VARIABLE_INFO : NAV_UPLOAD_FILE;
+  public String goToVariableInfo() throws InvalidInstrumentBasisException {
+
+    String result;
+
+    if (instrumentVariables.stream().filter(v -> v.hasAttributes()).findAny()
+      .isPresent()) {
+      result = NAV_VARIABLE_INFO;
+    } else {
+      if (instrumentFiles.size() == 0) {
+        currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles,
+          basis);
+      }
+
+      result = NAV_UPLOAD_FILE;
+    }
+
+    setSetupStep(result);
+
+    return result;
   }
 
   /**
@@ -2051,8 +2176,8 @@ public class NewInstrumentBean extends FileUploadBean {
       // TODO groups in here.
       Instrument instrument = new Instrument(getUser(), instrumentName, null,
         instrumentFiles, instrumentVariables, storedVariableProperties,
-        sensorAssignments, sensorGroups, platformName, platformCode, false,
-        null, LocalDateTime.now());
+        sensorAssignments, sensorGroups, platformName, platformCode, basis,
+        false, null, LocalDateTime.now());
 
       if (hasDepth) {
         instrument.setProperty(Instrument.PROP_DEPTH, depth);
@@ -2184,7 +2309,6 @@ public class NewInstrumentBean extends FileUploadBean {
       file.getFileColumns().get(runTypeColumn).getName(), true, false, null);
 
     sensorAssignments.addAssignment(sensorAssignment);
-    assignmentsTree.addAssignment(sensorAssignment);
   }
 
   public int getDepth() {
@@ -2291,7 +2415,6 @@ public class NewInstrumentBean extends FileUploadBean {
     if (null != fileDefinition) {
       fileDefinition.setFileDescription(renameNewFile);
       sensorAssignments.renameFile(renameOldFile, renameNewFile);
-      assignmentsTree.renameFile(renameOldFile, fileDefinition);
     }
 
     updatedFile = fileDefinition.getFileDescription();
@@ -2305,20 +2428,7 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   public String getSensorTypesJson() throws SensorConfigurationException {
-
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
-      .getSensorsConfiguration();
-
-    HashSet<SensorType> sensorTypes = new HashSet<SensorType>();
-
-    for (Variable var : instrumentVariables) {
-      sensorTypes
-        .addAll(sensorConfig.getSensorTypes(var.getId(), true, true, true));
-    }
-
-    sensorTypes.addAll(sensorConfig.getDiagnosticSensorTypes());
-
-    return new Gson().toJson(sensorTypes);
+    return new Gson().toJson(sensorAssignments.keySet());
   }
 
   public String getSensorTypesWithFixedDependsQuestionAnswer() {
@@ -2379,7 +2489,6 @@ public class NewInstrumentBean extends FileUploadBean {
       SensorAssignment removed = sensorAssignments.removeAssignment(sensorType,
         removeAssignmentDataFile, removeAssignmentColumn);
       sensorGroups.remove(removed);
-      assignmentsTree.removeAssignment(removed);
 
       if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
         instrumentFiles.get(removeAssignmentDataFile)
@@ -2395,9 +2504,6 @@ public class NewInstrumentBean extends FileUploadBean {
       .getDateTimeSpecification();
 
     dateTimeSpec.removeAssignment(dateTimeColumn);
-
-    assignmentsTree
-      .setDateTimeAssignment(instrumentFiles.getByDescription(dateTimeFile));
 
     resetDateTimeAssignmentValues();
   }
@@ -2416,39 +2522,25 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public void removePositionAssignment() throws InvalidPositionFormatException {
 
-    String expandNode = null;
-
     FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles
       .get(removeAssignmentDataFile);
 
-    if (removeColumnFromPositionSpec(file.getLongitudeSpecification(),
-      removeAssignmentColumn)) {
+    removeColumnFromPositionSpec(file.getLongitudeSpecification(),
+      removeAssignmentColumn);
+    removeColumnFromPositionSpec(file.getLatitudeSpecification(),
+      removeAssignmentColumn);
 
-      expandNode = "Longitude";
-    } else if (removeColumnFromPositionSpec(file.getLatitudeSpecification(),
-      removeAssignmentColumn)) {
-
-      expandNode = "Latitude";
-    }
-
-    assignmentsTree.updatePositionNodes(expandNode);
     resetSensorAssignmentValues();
   }
 
-  private boolean removeColumnFromPositionSpec(PositionSpecification spec,
+  private void removeColumnFromPositionSpec(PositionSpecification spec,
     int column) throws InvalidPositionFormatException {
 
-    boolean removed = false;
-
     if (spec.getValueColumn() == column) {
-      removed = true;
       spec.clearValueColumn();
     } else if (spec.getHemisphereColumn() == column) {
-      removed = true;
       spec.clearHemisphereColumn();
     }
-
-    return removed;
   }
 
   public FileDefinitionBuilder getRunTypeFileDefinition() {
@@ -2689,5 +2781,149 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public String getUpdatedFile() {
     return updatedFile;
+  }
+
+  public int getBasis() {
+    return basis;
+  }
+
+  public void setBasis(int basis) {
+    this.basis = basis;
+    makeSetupSteps();
+  }
+
+  public int getSetupStep() {
+    return setupStep;
+  }
+
+  private void makeSetupSteps() {
+    setupSteps = new DefaultMenuModel();
+
+    switch (basis) {
+    case Instrument.BASIS_TIME: {
+      setupSteps.getElements()
+        .add(DefaultMenuItem.builder().value("Name").build());
+      setupSteps.getElements()
+        .add(DefaultMenuItem.builder().value("Info").build());
+      setupSteps.getElements()
+        .add(DefaultMenuItem.builder().value("Variables").build());
+      setupSteps.getElements()
+        .add(DefaultMenuItem.builder().value("Data Files").build());
+      setupSteps.getElements()
+        .add(DefaultMenuItem.builder().value("Run Types").build());
+      setupSteps.getElements()
+        .add(DefaultMenuItem.builder().value("Sensor Groups").build());
+      break;
+    }
+    case Instrument.BASIS_ARGO: {
+      setupSteps.getElements()
+        .add(DefaultMenuItem.builder().value("Name").build());
+      setupSteps.getElements()
+        .add(DefaultMenuItem.builder().value("Variables").build());
+      setupSteps.getElements()
+        .add(DefaultMenuItem.builder().value("Data Files").build());
+      break;
+    }
+    default: {
+      throw new IllegalArgumentException("Invalid basis " + basis);
+    }
+    }
+  }
+
+  public MenuModel getSetupSteps() {
+    return setupSteps;
+  }
+
+  private void setSetupStep(String nav) {
+    switch (nav) {
+    case NAV_NAME: {
+      // Same for all bases
+      setupStep = 0;
+      break;
+    }
+    case NAV_GENERAL_INFO: {
+      // Only Time basis gets this, so we can safely set it directly
+      setupStep = 1;
+      break;
+    }
+    case NAV_VARIABLES:
+    case NAV_VARIABLE_INFO: {
+      switch (basis) {
+      case Instrument.BASIS_TIME: {
+        setupStep = 2;
+        break;
+      }
+      case Instrument.BASIS_ARGO: {
+        setupStep = 1;
+        break;
+      }
+      default: {
+        throw new IllegalArgumentException("Invalid basis " + basis);
+      }
+      }
+      break;
+    }
+    case NAV_UPLOAD_FILE:
+    case NAV_ASSIGN_VARIABLES: {
+      switch (basis) {
+      case Instrument.BASIS_TIME: {
+        setupStep = 3;
+        break;
+      }
+      case Instrument.BASIS_ARGO: {
+        setupStep = 2;
+        break;
+      }
+      default: {
+        throw new IllegalArgumentException("Invalid basis " + basis);
+      }
+      }
+      break;
+    }
+    case NAV_RUN_TYPES: {
+      // Only Time basis gets this, so we can safely set it directly
+      setupStep = 4;
+      break;
+    }
+    case NAV_SENSOR_GROUPS: {
+      // Only Time basis gets this, so we can safely set it directly
+      setupStep = 5;
+      break;
+    }
+    default: {
+      throw new IllegalArgumentException("Invalid navigation " + nav);
+    }
+    }
+  }
+
+  /**
+   * Determine whether or not multiple file definitions can be used with the
+   * instrument.
+   *
+   * @return {@code true} if multiple file definitions are allowed;
+   *         {@code false} if not.
+   */
+  public boolean multipleFilesAllowed() {
+    return basis == Instrument.BASIS_TIME;
+  }
+
+  @Override
+  public void treeNodeExpand(NodeExpandEvent event) {
+    super.treeNodeExpand(event);
+    assignmentsTree.nodeExpanded(event);
+  }
+
+  @Override
+  public void treeNodeCollapse(NodeCollapseEvent event) {
+    super.treeNodeCollapse(event);
+    assignmentsTree.nodeCollapsed(event);
+  }
+
+  public int getFixedLongitudeFormat() {
+    return sensorAssignments.getFixedLongitudeFormat();
+  }
+
+  public int getFixedLatitudeFormat() {
+    return sensorAssignments.getFixedLatitudeFormat();
   }
 }

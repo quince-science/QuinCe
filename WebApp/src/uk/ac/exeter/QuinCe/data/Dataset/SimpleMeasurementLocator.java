@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,23 +34,24 @@ public class SimpleMeasurementLocator extends MeasurementLocator {
         .getSensorValues(measurementColumnIds, false);
 
       // Since we're only dealing with one variable, we don't want multiple
-      // measurements for the same time. Get all the unique times and make
-      // measurements from them. Ignore any SensorValues with NaN values.
+      // measurements for the same coordinate. Get all the unique coordinates
+      // and make measurements from them. Ignore any SensorValues with NaN
+      // values.
 
-      HashSet<LocalDateTime> seenTimes = new HashSet<LocalDateTime>(
+      HashSet<Coordinate> seenTimes = new HashSet<Coordinate>(
         sensorValues.valuesSize());
 
       List<Measurement> measurements = new ArrayList<Measurement>(
         sensorValues.valuesSize());
 
       sensorValues.getValues().stream()
-        .filter(v -> !seenTimes.contains(v.getTime())).forEach(v -> {
+        .filter(v -> !seenTimes.contains(v.getCoordinate())).forEach(v -> {
           // Add the new time to the set of seen times
-          seenTimes.add(v.getTime());
+          seenTimes.add(v.getCoordinate());
 
           // Make the measurement
-          measurements.add(
-            new Measurement(dataset.getId(), v.getTime(), makeRunTypeMap()));
+          measurements.add(new Measurement(dataset.getId(),
+            dataset.getFlagScheme(), v.getCoordinate(), makeRunTypeMap()));
         });
 
       return measurements;

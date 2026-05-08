@@ -20,9 +20,12 @@
         value="#{newInstrumentBean.assignedFiles}" />
       <h:inputHidden id="updatedFile"
         value="#{newInstrumentBean.updatedFile}" />
+      <h:inputHidden id="fixedLongitudeFormat"
+        value="#{newInstrumentBean.fixedLongitudeFormat}" />
+      <h:inputHidden id="fixedLatitudeFormat"
+        value="#{newInstrumentBean.fixedLatitudeFormat}" />
     </h:form>
     <h:form id="newInstrumentForm" method="post" charset="utf8">
-
       <h:inputHidden id="hemisphereFile"
         value="#{newInstrumentBean.hemisphereFile}" />
       <h:inputHidden id="hemisphereCoordinate"
@@ -171,7 +174,7 @@
           <table>
             <tr>
               <td><p:outputLabel value="Format:" /></td>
-              <td><p:selectOneMenu id="longitudeFormat"
+              <td><p:selectOneMenu id="longitudeFormat" widgetVar="longitudeFormat"
                   value="#{newInstrumentBean.longitudeFormat}">
 
                   <f:selectItems value="#{newInstrumentBean.longitudeFormats}" var="format"
@@ -182,7 +185,7 @@
           </table>
         </div>
         <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-          <p:commandButton value="Assign" ajax="true"
+          <p:commandButton value="Assign" ajax="true" widgetVar="assignLongitude"
             action="#{newInstrumentBean.assignLongitude}"
             process="longitudeFile longitudeColumn longitudeFormat"
             update="longitudeFile longitudeColumn longitudeFormat assignmentsTree
@@ -223,7 +226,7 @@
           </table>
         </div>
         <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-          <p:commandButton value="Assign" ajax="true"
+          <p:commandButton value="Assign" ajax="true" widgetVar="assignLatitude"
             action="#{newInstrumentBean.assignLatitude}"
             process="latitudeFile latitudeColumn latitudeFormat"
             update="latitudeFile latitudeColumn latitudeFormat assignmentsTree
@@ -421,10 +424,12 @@
               </p:dataTable>
             </p:tab>
           </p:tabView>
-          <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
-            <p:commandButton value="Add File" ajax="false"
-              action="#{newInstrumentBean.addFile}" immediate="true" />
-          </h:panelGrid>
+          <ui:fragment rendered="#{newInstrumentBean.multipleFilesAllowed()}">
+            <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+              <p:commandButton value="Add File" ajax="false"
+                action="#{newInstrumentBean.addFile}" immediate="true" />
+            </h:panelGrid>
+          </ui:fragment>
         </p:fieldset>
         <div id="assignInstructions">
           Drag and drop
@@ -582,8 +587,15 @@
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
         <p:commandButton value="Back" ajax="false"
           action="#{newInstrumentBean.goToVariables}" immediate="true" />
-        <p:commandButton id="nextButton" widgetVar="next" value="Next"
-          ajax="false" action="#{newInstrumentBean.goToRunTypes}" />
+
+        <ui:fragment rendered="#{newInstrumentBean.basis eq 1}">
+          <p:commandButton id="nextButton" widgetVar="next" value="Next"
+            ajax="false" action="#{newInstrumentBean.goToRunTypes}" />
+        </ui:fragment>
+        <ui:fragment rendered="#{newInstrumentBean.basis eq 2}">
+          <p:commandButton id="saveButton" widgetVar="next" value="Save"
+            ajax="false" action="#{newInstrumentBean.saveInstrument}" />
+        </ui:fragment>
       </h:panelGrid>
     </h:form>
 

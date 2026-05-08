@@ -18,17 +18,19 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeDataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsQCRoutine;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.DiagnosticsQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCCascadeRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.SpeedQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
@@ -72,6 +74,11 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * will have already been set by the user. If the user QC flag is anything other
  * than {@link Flag#ASSUMED_GOOD} or {@link Flag#NEEDED}, it will not be
  * checked.
+ * </p>
+ *
+ * <p>
+ * For the time being, this job will only operate on {@link Instrument}s with
+ * {@link Instrument#BASIS_TIME}.
  * </p>
  *
  * @see AutoQCResult
@@ -141,168 +148,181 @@ public class AutoQCJob extends DataSetJob {
       // Get the data set from the database
       DataSet dataSet = getDataset(conn);
       Instrument instrument = getInstrument(conn);
-
-      dataSet.setStatus(DataSet.STATUS_SENSOR_QC);
-      DataSetDB.updateDataSet(conn, dataSet);
-
-      conn.setAutoCommit(false);
-
-      SensorAssignments sensorAssignments = instrument.getSensorAssignments();
+      FlagScheme flagScheme = dataSet.getFlagScheme();
 
       @SuppressWarnings("unchecked")
       Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
         SENSOR_VALUES);
       if (null == rawSensorValues) {
-        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
-          dataSet.getId());
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn, dataSet);
       }
 
-      DatasetSensorValues sensorValues = new DatasetSensorValues(conn,
-        instrument, dataSet.getId(), true, true, rawSensorValues);
+      if (instrument.getBasis() == Instrument.BASIS_TIME) {
 
-      RunTypePeriods runTypePeriods = null;
-      SensorValuesList runTypeValues = null;
+        dataSet.setStatus(DataSet.STATUS_SENSOR_QC);
+        DataSetDB.updateDataSet(conn, dataSet);
 
-      if (instrument.hasRunTypes()) {
-        measurementRunTypes = instrument.getMeasurementRunTypes();
+        conn.setAutoCommit(false);
 
-        // Get all the run type entries from the data set
-        TreeSet<SensorAssignment> runTypeColumns = sensorAssignments
-          .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+        SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 
-        TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
-        for (SensorAssignment column : runTypeColumns) {
-          runTypeValuesTemp.addAll(sensorValues
-            .getColumnValues(column.getDatabaseId()).getRawValues());
-        }
+        DatasetSensorValues sensorValues = new DatasetSensorValues(conn,
+          dataSet, true, true, rawSensorValues);
 
-        runTypeValues = SensorValuesList
-          .newFromSensorValueCollection(runTypeValuesTemp, sensorValues, true);
+        RunTypePeriods runTypePeriods = null;
+        SensorValuesList runTypeValues = null;
 
-        // Get the Run Type Periods for the dataset
-        runTypePeriods = DataSetDataDB.getRunTypePeriods(conn, instrument,
-          dataSet.getId());
-      }
+        if (instrument.hasRunTypes()) {
+          measurementRunTypes = instrument.getMeasurementRunTypes();
 
-      QCRoutinesConfiguration qcRoutinesConfig = ResourceManager.getInstance()
-        .getQCRoutinesConfiguration();
+          // Get all the run type entries from the data set
+          TreeSet<SensorAssignment> runTypeColumns = sensorAssignments
+            .get(SensorType.RUN_TYPE_SENSOR_TYPE);
 
-      // First run the position QC, unless the instrument has a fixed position.
-      // This will potentially set QC flags on all sensor values, and those
-      // values will then be skipped by the 'normal' routines later on.
-      //
-      // Note that this routine uses a different API - the constructor is given
-      // all values, and therefore doesn't need to pass any to the actual QC
-      // call.
-      if (!dataSet.fixedPosition()) {
-
-        SensorValue.clearAutoQC(sensorValues.getAllPositionSensorValues());
-
-        PositionQCRoutine positionQC = new PositionQCRoutine(sensorValues);
-        positionQC.qc(null, null);
-
-        SpeedQCRoutine speedQC = new SpeedQCRoutine(sensorValues);
-        speedQC.qc(null, null);
-      }
-
-      // Run the auto QC routines for each column
-      for (long columnId : sensorValues.getColumnIds()) {
-
-        SensorType sensorType = sensorAssignments
-          .getSensorTypeForDBColumn(columnId);
-
-        // Where sensors have internal calibrations, their values need to be //
-        // QCed in separate groups.
-        Map<String, SensorValuesList> valuesForQC = new HashMap<String, SensorValuesList>();
-
-        if (!sensorType.hasInternalCalibration()) {
-          // All the values can be QCed as a single group
-          valuesForQC.put("", sensorValues.getColumnValues(columnId));
-        } else {
-          for (SensorValue value : sensorValues.getColumnValues(columnId)
-            .getRawValues()) {
-
-            SensorValuesListValue runType = runTypeValues
-              .getValueOnOrBefore(value.getTime());
-
-            if (!valuesForQC.containsKey(runType.getStringValue())) {
-              valuesForQC.put(runType.getStringValue(),
-                new SensorValuesList(columnId, sensorValues, true));
-            }
-
-            valuesForQC.get(runType.getStringValue()).add(value);
+          TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
+          for (SensorAssignment column : runTypeColumns) {
+            runTypeValuesTemp.addAll(sensorValues
+              .getColumnValues(column.getDatabaseId()).getRawValues());
           }
+
+          runTypeValues = SensorValuesList.newFromSensorValueCollection(
+            runTypeValuesTemp, sensorValues, false);
+
+          // Get the Run Type Periods for the dataset
+          runTypePeriods = DataSetDataDB.getRunTypePeriods(conn, dataSet);
         }
 
-        // QC each group of sensor values in turn
-        for (Map.Entry<String, SensorValuesList> values : valuesForQC
-          .entrySet()) {
+        AbstractQCRoutinesConfiguration qcRoutinesConfig = ResourceManager
+          .getInstance().getQCRoutinesConfiguration(instrument.getBasis());
 
-          SensorValue.clearAutoQC(values.getValue());
+        // First run the position QC, unless the instrument has a fixed
+        // position.
+        // This will potentially set QC flags on all sensor values, and those
+        // values will then be skipped by the 'normal' routines later on.
+        //
+        // Note that this routine uses a different API - the constructor is
+        // given
+        // all values, and therefore doesn't need to pass any to the actual QC
+        // call.
+        if (!dataSet.fixedPosition()) {
 
-          List<SensorValue> filteredValues = values.getValue().getRawValues()
-            .stream()
-            .filter(x -> !(x.getUserQCFlag().equals(Flag.BAD)
-              | x.getUserQCFlag().equals(Flag.QUESTIONABLE)))
-            .collect(Collectors.toList());
+          SensorValue.clearAutoQC(sensorValues.getAllPositionSensorValues());
 
-          if (values.getKey().equals("")
-            || measurementRunTypes.contains(values.getKey())) {
-            // Loop through all routines
-            for (AbstractAutoQCRoutine routine : qcRoutinesConfig
-              .getRoutines(sensorType)) {
+          PositionQCRoutine positionQC = new PositionQCRoutine(sensorValues);
+          positionQC.qc(null, null);
 
-              routine.setSensorType(sensorType);
-              ((AutoQCRoutine) routine).qc(filteredValues, runTypePeriods);
-            }
-          }
+          SpeedQCRoutine speedQC = new SpeedQCRoutine(sensorValues);
+          speedQC.qc(null, null);
         }
-      }
 
-      // External Standards routines
-      if (instrument.hasInternalCalibrations()) {
-        ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfig = ResourceManager
-          .getInstance().getExternalStandardsRoutinesConfiguration();
-
+        // Run the auto QC routines for each column
         for (long columnId : sensorValues.getColumnIds()) {
 
           SensorType sensorType = sensorAssignments
             .getSensorTypeForDBColumn(columnId);
 
-          CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
-            .getCalibrationSet(conn, dataSet);
+          // Where sensors have internal calibrations, their values need to be
+          // //
+          // QCed in separate groups.
+          Map<String, SensorValuesList> valuesForQC = new HashMap<String, SensorValuesList>();
 
-          if (sensorType.hasInternalCalibration()) {
-            for (AbstractAutoQCRoutine routine : externalStandardsRoutinesConfig
-              .getRoutines(sensorType)) {
+          if (!sensorType.hasInternalCalibration()) {
+            // All the values can be QCed as a single group
+            valuesForQC.put("", sensorValues.getColumnValues(columnId));
+          } else {
+            for (SensorValue value : sensorValues.getColumnValues(columnId)
+              .getRawValues()) {
 
-              routine.setSensorType(sensorType);
-              ((ExternalStandardsQCRoutine) routine).qc(calibrationSet,
-                runTypeValues, sensorValues.getColumnValues(columnId));
+              SensorValuesListValue runType = runTypeValues
+                .getValueOnOrBefore(value.getCoordinate());
+
+              if (!valuesForQC.containsKey(runType.getStringValue())) {
+                valuesForQC.put(runType.getStringValue(),
+                  SensorValuesListFactory.makeSensorValuesList(columnId,
+                    sensorValues, false));
+              }
+
+              valuesForQC.get(runType.getStringValue()).add(value);
+            }
+          }
+
+          // QC each group of sensor values in turn
+          for (Map.Entry<String, SensorValuesList> values : valuesForQC
+            .entrySet()) {
+
+            SensorValue.clearAutoQC(values.getValue());
+
+            /*
+             * We don't auto-QC values that the user has already flagged.
+             */
+            List<SensorValue> filteredValues = values.getValue().getRawValues()
+              .stream()
+              .filter(x -> !(flagScheme.isGood(x.getUserQCFlag(), false)
+                || x.getUserQCFlag().isUserAssignable()))
+              .collect(Collectors.toList());
+
+            if (values.getKey().equals("")
+              || measurementRunTypes.contains(values.getKey())) {
+              // Loop through all routines
+              for (AbstractAutoQCRoutine routine : qcRoutinesConfig
+                .getRoutines(sensorType)) {
+
+                ((AutoQCRoutine) routine).qc(filteredValues, runTypePeriods);
+              }
             }
           }
         }
+
+        // External Standards routines
+        if (instrument.hasInternalCalibrations()) {
+
+          TimeDataSet castDataset = (TimeDataSet) dataSet;
+
+          AbstractQCRoutinesConfiguration externalStandardsRoutinesConfig = ResourceManager
+            .getInstance()
+            .getExternalStandardsRoutinesConfiguration(flagScheme.getBasis());
+
+          for (long columnId : sensorValues.getColumnIds()) {
+
+            SensorType sensorType = sensorAssignments
+              .getSensorTypeForDBColumn(columnId);
+
+            CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
+              .getCalibrationSet(conn, castDataset);
+
+            if (sensorType.hasInternalCalibration()) {
+              for (AbstractAutoQCRoutine routine : externalStandardsRoutinesConfig
+                .getRoutines(sensorType)) {
+
+                ((ExternalStandardsQCRoutine) routine).qc(calibrationSet,
+                  runTypeValues, sensorValues.getColumnValues(columnId));
+              }
+            }
+          }
+        }
+
+        // Diagnostics QC
+        DiagnosticsQCRoutine diagnosticsQC = new DiagnosticsQCRoutine();
+        diagnosticsQC.run(instrument, sensorValues, runTypePeriods);
+
+        // Cascade position QC to SensorValues
+        if (!instrument.fixedPosition()) {
+          PositionQCCascadeRoutine positionQCCascade = new PositionQCCascadeRoutine(
+            flagScheme);
+          positionQCCascade.run(instrument, sensorValues, runTypePeriods);
+        }
+
+        // Send all sensor values to be stored. The storeSensorValues method
+        // only
+        // writes those values whose 'dirty' flag is set.
+        DataSetDataDB.updateSensorValues(conn, sensorValues.getAll());
+
+        // Trigger the Locate Measurements job
+        dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
+        DataSetDB.updateDataSet(conn, dataSet);
+
+        conn.commit();
       }
-
-      // Diagnostics QC
-      DiagnosticsQCRoutine diagnosticsQC = new DiagnosticsQCRoutine();
-      diagnosticsQC.run(instrument, sensorValues, runTypePeriods);
-
-      // Cascade position QC to SensorValues
-      if (!instrument.fixedPosition()) {
-        PositionQCCascadeRoutine positionQCCascade = new PositionQCCascadeRoutine();
-        positionQCCascade.run(instrument, sensorValues, runTypePeriods);
-      }
-
-      // Send all sensor values to be stored. The storeSensorValues method only
-      // writes those values whose 'dirty' flag is set.
-      DataSetDataDB.storeSensorValues(conn, sensorValues.getAll());
-
-      // Trigger the Locate Measurements job
-      dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
-      DataSetDB.updateDataSet(conn, dataSet);
-
-      conn.commit();
 
       Properties jobProperties = new Properties();
       jobProperties.setProperty(DataSetJob.ID_PARAM, String

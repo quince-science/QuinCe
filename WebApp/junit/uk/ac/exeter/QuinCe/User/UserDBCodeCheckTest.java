@@ -23,9 +23,6 @@ import uk.ac.exeter.QuinCe.TestBase.TestSetTest;
  * Some of the tests for these methods are in the main {@link UserDBTest} class,
  * but some are more complex and required a Test Set.
  * </p>
- *
- * @author Steve Jones
- *
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public class UserDBCodeCheckTest extends TestSetTest {

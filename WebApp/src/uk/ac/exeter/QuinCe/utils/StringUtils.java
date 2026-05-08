@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.math.NumberUtils;
 
 /**
@@ -111,8 +112,8 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * Converts a String containing values separated a specified delimiter into a
-   * list of String values.
+   * Converts a String containing values separated by a specified delimiter into
+   * a list of String values.
    *
    * <p>
    * <strong>Limitations:</strong>
@@ -624,6 +625,23 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
+   * Format a number to an integer via truncation.
+   *
+   * @param value
+   *          The number.
+   * @return The integer-formatted number.
+   */
+  public static String formatNumberToInt(Double value) {
+    String result = null;
+
+    if (null != value) {
+      result = String.valueOf(value.intValue());
+    }
+
+    return result;
+  }
+
+  /**
    * Replace all instances of a tab character in a {@link String} with a single
    * space.
    *
@@ -878,5 +896,9 @@ public final class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     return result;
+  }
+
+  public static String formatRange(Range<?> range) {
+    return range.getMinimum() + ":" + range.getMaximum();
   }
 }

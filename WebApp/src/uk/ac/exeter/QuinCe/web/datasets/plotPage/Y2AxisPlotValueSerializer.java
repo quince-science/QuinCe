@@ -34,45 +34,36 @@ public class Y2AxisPlotValueSerializer implements JsonSerializer<PlotValue> {
     // Data point ID
     json.add(src.getId());
 
-    // Y1 axis, if we haven't put in a value already
+    // Dummy placeholder for the Y1 value.
+    // Dygraphs gets confused if this is not here.
     json.add(JsonNull.INSTANCE);
 
     // Y2 axis value
     if (!src.hasY2()) {
-      json.add(JsonNull.INSTANCE);
-      json.add(JsonNull.INSTANCE);
-      json.add(JsonNull.INSTANCE);
-      json.add(JsonNull.INSTANCE);
+
+      // Highlight flags - we don't include NEEDED
+      for (int i = 0; i < src.getFlagScheme().getPlotHighlightFlags()
+        .size(); i++) {
+        json.add(JsonNull.INSTANCE);
+      }
+
+      // The Y2 value
       json.add(JsonNull.INSTANCE);
     } else {
-
-      // BAD value
-      if (src.getFlag2().equals(Flag.BAD)) {
-        json.add(src.getY2());
-      } else {
-        json.add(JsonNull.INSTANCE);
+      // Flags
+      for (Flag highlightFlag : src.getFlagScheme().getPlotHighlightFlags()) {
+        if (src.getFlag2().equals(highlightFlag)) {
+          json.add(src.getY2());
+        } else {
+          json.add(JsonNull.INSTANCE);
+        }
       }
 
-      // QUESTIONABLE value
-      if (src.getFlag2().equals(Flag.QUESTIONABLE)) {
-        json.add(src.getY2());
-      } else {
-        json.add(JsonNull.INSTANCE);
-      }
-
-      // NOT_CALIBRATED value
-      if (src.getFlag2().equals(Flag.NOT_CALIBRATED)) {
-        json.add(src.getY2());
-      } else {
-        json.add(JsonNull.INSTANCE);
-      }
-
-      // The value
+      // The Y2 value
       if (src.isGhost2()) {
-        json.add(src.getY2());
+        // We don't show ghosts in the Y2 series
         json.add(JsonNull.INSTANCE);
       } else {
-        json.add(JsonNull.INSTANCE);
         json.add(src.getY2());
       }
     }

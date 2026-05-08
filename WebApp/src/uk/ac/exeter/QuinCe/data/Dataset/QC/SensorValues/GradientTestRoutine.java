@@ -2,40 +2,32 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.Range;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class GradientTestRoutine extends AutoQCRoutine {
 
-  /**
-   * The maximum delta between values, in units per minute
-   */
-  private double maxDeltaPerMinute;
+  public GradientTestRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
 
-  @Override
-  protected void validateParameters() throws RoutineException {
-    // copied from HighDeltaRoutine
-    if (null == parameters || parameters.size() != 1) {
-      throw new RoutineException(
-        "Incorrect number of parameters. Must be <maxDelta>");
-    }
-
-    try {
-      maxDeltaPerMinute = Double.parseDouble(parameters.get(0));
-    } catch (NumberFormatException e) {
-      throw new RoutineException("Max delta parameter must be numeric");
-    }
-
-    if (maxDeltaPerMinute <= 0) {
-      throw new RoutineException("Max duration must be greater than zero");
-    }
+  public GradientTestRoutine(FlagScheme flagScheme, SensorType sensorType,
+    Map<Flag, Range<Double>> limits) {
+    super(flagScheme, sensorType, limits);
   }
 
   @Override
   protected void qcAction(List<SensorValue> values) throws RoutineException {
+
+    double maxDeltaPerMinute = limits.get(flagScheme.getBadFlag()).getMaximum();
 
     SensorValue prevValue = null;
     SensorValue currValue = null;
@@ -63,8 +55,9 @@ public class GradientTestRoutine extends AutoQCRoutine {
       if (Math.abs(valueDelta) > minimumChange) {
 
         // time-increment
-        double tDiff = ChronoUnit.NANOS.between(prevValue.getTime(),
-          currValue.getTime()) / (60.0 * 1000000000);
+        double tDiff = ChronoUnit.NANOS.between(
+          prevValue.getCoordinate().getTime(),
+          currValue.getCoordinate().getTime()) / (60.0 * 1000000000);
 
         double deltaPerMin = Math.abs(valueDelta / tDiff);
 
@@ -83,7 +76,8 @@ public class GradientTestRoutine extends AutoQCRoutine {
           if (spike) {
             // This is a single point spike, so flag the current value (which is
             // the spike)
-            addFlag(currValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
+            addFlag(currValue, flagScheme.getBadFlag(), maxDeltaPerMinute,
+              deltaPerMin);
 
             // We know that this is a single spike, so we can skip checking the
             // next value.
@@ -92,8 +86,10 @@ public class GradientTestRoutine extends AutoQCRoutine {
             // This is a gradient, so mark the previous and current points as
             // the starting point of the gradient. We can't be certain which
             // "side" of the change is wrong.
-            addFlag(prevValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
-            addFlag(currValue, Flag.BAD, maxDeltaPerMinute, deltaPerMin);
+            addFlag(prevValue, flagScheme.getBadFlag(), maxDeltaPerMinute,
+              deltaPerMin);
+            addFlag(currValue, flagScheme.getBadFlag(), maxDeltaPerMinute,
+              deltaPerMin);
           }
         }
       }

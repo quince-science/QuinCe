@@ -23,8 +23,15 @@
 
     function goToQc(id) {
         window['keepAliveActive'] = false;
-        $('#datasetListForm\\:manualQCDatasetId').val(id);
-        $('#datasetListForm\\:manualQCLink').click();
+        $('#datasetListForm\\:timeManualQCDatasetId').val(id);
+        $('#datasetListForm\\:timeManualQCLink').click();
+        return false;
+      }
+
+    function goToArgoQc(id) {
+        window['keepAliveActive'] = false;
+        $('#datasetListForm\\:argoManualQCDatasetId').val(id);
+        $('#datasetListForm\\:argoManualQCLink').click();
         return false;
       }
 
@@ -222,9 +229,13 @@
         <p:commandLink id="deleteLink" ajax="true"
           action="#{dataSetsBean.delete}" oncomplete="updateList()" />
 
-        <h:inputHidden id="manualQCDatasetId" value="#{manualQualityControlBean.datasetId}" />
-        <p:commandLink id="manualQCLink" ajax="false"
-          action="#{manualQualityControlBean.start}" />
+        <h:inputHidden id="timeManualQCDatasetId" value="#{timeManualQualityControlBean.datasetId}" />
+        <p:commandLink id="timeManualQCLink" ajax="false"
+          action="#{timeManualQualityControlBean.start}" />
+
+        <h:inputHidden id="argoManualQCDatasetId" value="#{argoManualQualityControlBean.datasetId}" />
+        <p:commandLink id="argoManualQCLink" ajax="false"
+          action="#{argoManualQualityControlBean.start}" />
 
         <h:inputHidden id="positionQCDatasetId" value="#{positionQualityControlBean.datasetId}" />
         <p:commandLink id="positionQCLink" ajax="false"
@@ -251,15 +262,15 @@
           </p:column>
           <p:column width="200" styleClass="dateTimeCell">
             <f:facet name="header">
-              <h:outputText value="Start Date" />
+              <h:outputText value="Start" />
             </f:facet>
-            <h:outputText value="#{dataset.start}" />
+            <h:outputText value="#{dataset.displayStart}" />
           </p:column>
           <p:column width="200" styleClass="dateTimeCell">
             <f:facet name="header">
-              <h:outputText value="End Date" />
+              <h:outputText value="End" />
             </f:facet>
-            <h:outputText value="#{dataset.end}" />
+            <h:outputText value="#{dataset.displayEnd}" />
           </p:column>
           <p:column width="25">
             <f:facet name="header">
@@ -313,7 +324,7 @@
                       styleClass="actionIcon"/>
                   </ui:fragment>
                 </ui:fragment>
-                <ui:fragment rendered="#{not dataSetsBean.getCurrentInstrument().fixedPosition()}">
+                <ui:fragment rendered="#{dataSetsBean.canQcPosition()}">
                   <p:commandLink onclick="goToPositionQc(#{dataset.id})">
                     <h:graphicImage value="/resources/image/position.svg"
                       styleClass="actionIcon" alt="Position QC" title="Position QC" />
@@ -326,10 +337,18 @@
                       title="External Calibrations" />
                   </p:commandLink>
                 </ui:fragment>
-                <p:commandLink onclick="goToQc(#{dataset.id})">
-                  <h:graphicImage value="/resources/image/qc.svg"
-                    styleClass="actionIcon" alt="Quality Control" title="Quality Control" />
-                </p:commandLink>
+                <ui:fragment rendered="#{dataset.instrument.basis eq 1}">
+                  <p:commandLink onclick="goToQc(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/qc.svg"
+                      styleClass="actionIcon" alt="Quality Control" title="Quality Control" />
+                  </p:commandLink>
+                </ui:fragment>
+                <ui:fragment rendered="#{dataset.instrument.basis eq 2}">
+                  <p:commandLink onclick="goToArgoQc(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/qc.svg"
+                      styleClass="actionIcon" alt="Quality Control" title="Quality Control" />
+                  </p:commandLink>
+                </ui:fragment>
               </ui:fragment>
               <ui:fragment
                 rendered="#{dataset.status lt DataSet.STATUS_USER_QC}">
@@ -341,7 +360,7 @@
                     value="/resources/image/offsets_disabled.svg"
                     styleClass="actionIcon" alt="Sensor Offsets" title="Sensor Offsets" />
                 </ui:fragment>
-                <ui:fragment rendered="#{not dataSetsBean.getCurrentInstrument().fixedPosition()}">
+                <ui:fragment rendered="#{dataSetsBean.canQcPosition()}">
                   <h:graphicImage
                     value="/resources/image/position_disabled.svg"
                     styleClass="actionIcon" alt="Position QC" title="Position QC" />

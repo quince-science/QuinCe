@@ -1,0 +1,21 @@
+{
+  "Time": [
+    {
+      "sensorType": "xCO₂ (with standards)",
+      "routines": [
+        {
+          "class": "StandardOffset",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 4]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "Argo": [
+
+  ]
+}

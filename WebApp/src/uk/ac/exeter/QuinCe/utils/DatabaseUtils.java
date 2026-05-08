@@ -105,9 +105,14 @@ public class DatabaseUtils {
             conn.rollback();
             conn.setAutoCommit(true);
           }
-          conn.close();
         } catch (SQLException e) {
           // Do nothing
+        } finally {
+          try {
+            conn.close();
+          } catch (SQLException e) {
+            // NOOP
+          }
         }
       }
     }

@@ -26,4 +26,16 @@ public class SensorValuesListException extends Exception {
   public SensorValuesListException(String message) {
     super(message);
   }
+
+  /**
+   * Constructs a new exception with the specified detail message and cause.
+   *
+   * @param message
+   *          The message.
+   * @param cause
+   *          The cause.
+   */
+  public SensorValuesListException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

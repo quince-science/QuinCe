@@ -87,7 +87,7 @@ public class UnderwayAtmospheric12_13Pco2ReducerTest2 extends DataReducerTest {
       allMeasurementValues.toArray(MeasurementValue[]::new));
 
     DataReductionRecord record = new DataReductionRecord(measurement, variable,
-      reducer.getCalculationParameterNames());
+      flagScheme, reducer.getCalculationParameterNames());
 
     reducer.doCalculation(instrument, measurement, record,
       getDataSource().getConnection());

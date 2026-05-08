@@ -47,7 +47,7 @@ public class ProOceanusAtmosphericCO2ReducerTest extends DataReducerTest {
 
     // Make a record to work with
     DataReductionRecord record = new DataReductionRecord(measurement, variable,
-      reducer.getCalculationParameterNames());
+      flagScheme, reducer.getCalculationParameterNames());
 
     reducer.doCalculation(instrument, measurement, record,
       getDataSource().getConnection());

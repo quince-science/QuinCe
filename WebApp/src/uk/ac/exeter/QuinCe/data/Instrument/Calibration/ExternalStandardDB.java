@@ -8,9 +8,6 @@ import java.util.TreeMap;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.NaturalOrderComparator;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
@@ -72,22 +69,26 @@ public class ExternalStandardDB extends CalibrationDB {
 
   @Override
   public Map<String, String> getTargets(Connection conn, Instrument instrument)
-    throws MissingParamException, DatabaseException, RecordNotFoundException {
-    List<String> standardNames = InstrumentDB.getRunTypes(conn,
-      instrument.getId(), RunTypeCategory.INTERNAL_CALIBRATION.getType());
-    if (standardNames.size() == 0) {
-      throw new RecordNotFoundException(
-        "No external standard names found for instrument "
-          + instrument.getId());
-    }
+    throws CalibrationException {
 
-    Map<String, String> result = new TreeMap<String, String>(
-      new NaturalOrderComparator());
-    for (String name : standardNames) {
-      result.put(name, name);
-    }
+    try {
+      List<String> standardNames = InstrumentDB.getRunTypes(conn,
+        instrument.getId(), RunTypeCategory.INTERNAL_CALIBRATION.getType());
+      if (standardNames.size() == 0) {
+        throw new RecordNotFoundException(
+          "No external standard names found for instrument "
+            + instrument.getId());
+      }
 
-    return result;
+      Map<String, String> result = new TreeMap<String, String>();
+      for (String name : standardNames) {
+        result.put(name, name);
+      }
+
+      return result;
+    } catch (Exception e) {
+      throw new CalibrationException(e);
+    }
   }
 
   @Override

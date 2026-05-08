@@ -3,6 +3,12 @@ erDiagram
   instrument_variables }|..|| variables : ""
   instrument ||..|{ file_definition : ""
 
+  dataset }|..|| instrument : ""
+  dataset ||..|{ measurements : ""
+
+  dataset ||..|{ dataset_files : ""
+  data_file ||..|{ dataset_files : ""
+
   variables ||..|{ variable_sensors : ""
   variable_sensors }|..|| sensor_types : ""
 
@@ -17,10 +23,9 @@ erDiagram
   file_definition ||..|{ file_column : ""
 
   file_column }|..|| sensor_types : ""
-
-  dataset }|..|| instrument : ""
-  dataset ||..|{ measurements : ""
-  dataset ||..|{ sensor_values : ""
+    
+  dataset ||..|{ coordinate : ""
+  coordinate ||..|{ sensor_values : ""
 
   sensor_values ||..|| file_column : ""
 

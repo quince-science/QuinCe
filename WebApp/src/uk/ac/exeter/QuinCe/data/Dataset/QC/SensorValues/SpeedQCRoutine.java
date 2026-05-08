@@ -1,15 +1,15 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import com.javadocmd.simplelatlng.LatLng;
 import com.javadocmd.simplelatlng.LatLngTool;
 import com.javadocmd.simplelatlng.util.LengthUnit;
 
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -30,16 +30,13 @@ public class SpeedQCRoutine extends PositionQCRoutine {
 
   private static final double MAX_SPEED = 160;
 
+  public SpeedQCRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
+
   public SpeedQCRoutine(DatasetSensorValues positionSensorValues)
     throws RoutineException, MissingParamException {
     super(positionSensorValues);
-  }
-
-  /**
-   * Empty instance constructor used to get messages
-   */
-  public SpeedQCRoutine() {
-
   }
 
   @Override
@@ -47,33 +44,35 @@ public class SpeedQCRoutine extends PositionQCRoutine {
 
     try {
 
-      LocalDateTime lastTime = null;
+      Coordinate lastCoordinate = null;
       SensorValue lastLon = null;
       SensorValue lastLat = null;
       LatLng lastPos = null;
 
       // Step through each time in the dataset
-      for (LocalDateTime time : allSensorValues.getRawPositionTimes()) {
+      for (Coordinate coordinate : allSensorValues
+        .getRawPositionCoordinates()) {
 
         // Get the position values for this time
         SensorValue longitude = allSensorValues
-          .getRawSensorValue(SensorType.LONGITUDE_ID, time);
+          .getRawSensorValue(SensorType.LONGITUDE_ID, coordinate);
         SensorValue latitude = allSensorValues
-          .getRawSensorValue(SensorType.LATITUDE_ID, time);
+          .getRawSensorValue(SensorType.LATITUDE_ID, coordinate);
 
         if (null != longitude && null != latitude && !longitude.isNaN()
           && !latitude.isNaN()
-          && longitude.getDisplayFlag(allSensorValues).isGood()
-          && latitude.getDisplayFlag(allSensorValues).isGood()) {
+          && flagScheme.isGood(longitude.getDisplayFlag(allSensorValues), true)
+          && flagScheme.isGood(latitude.getDisplayFlag(allSensorValues),
+            true)) {
 
           LatLng pos = new LatLng(latitude.getDoubleValue(),
             longitude.getDoubleValue());
 
-          if (null != lastTime) {
+          if (null != lastCoordinate) {
             double distance = LatLngTool.distance(lastPos, pos,
               LengthUnit.METER);
-            long seconds = Math
-              .abs(DateTimeUtils.secondsBetween(time, lastTime));
+            long seconds = Math.abs(DateTimeUtils
+              .secondsBetween(coordinate.getTime(), lastCoordinate.getTime()));
 
             double speed = distance / (double) seconds;
 
@@ -82,7 +81,7 @@ public class SpeedQCRoutine extends PositionQCRoutine {
             }
           }
 
-          lastTime = time;
+          lastCoordinate = coordinate;
           lastLon = longitude;
           lastLat = latitude;
           lastPos = pos;
@@ -107,7 +106,7 @@ public class SpeedQCRoutine extends PositionQCRoutine {
     throws RoutineException {
 
     for (SensorValue value : values) {
-      addFlag(value, Flag.BAD, MAX_SPEED, speed);
+      addFlag(value, flagScheme.getBadFlag(), MAX_SPEED, speed);
     }
   }
 }

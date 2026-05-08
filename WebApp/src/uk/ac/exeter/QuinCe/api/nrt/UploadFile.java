@@ -64,7 +64,7 @@ public class UploadFile {
           fileDetail.getFileName(), is);
 
         // Extract and check the file
-        upload.extractFile(instrument, resourceManager.getConfig(), true, true);
+        upload.extractFile(instrument, true, true);
 
         // See if extraction was successful
         if (!upload.isStore()) {

@@ -3,18 +3,19 @@
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
   xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
   xmlns:c="http://java.sun.com/jsp/jstl/core"
-  template="/WEB-INF/templates/plot_page.xhtml">
+  template="/WEB-INF/templates/time_plot_page.xhtml">
 
   <ui:param name="beanName" value="internalCalibrationBean" />
 
   <ui:define name="localHead">
     <h:outputScript name="script/internalCalibration.js" />
+    <h:outputScript name="script/timeManualQc.js" />
   </ui:define>
 
   <ui:define name="pageStatus">
-    <ui:fragment rendered="#{internalCalibrationBean.canEdit}">
-      Flags needed:
-      <h:outputText id="needsFlagCount" value="#{internalCalibrationBean.data.needsFlagCount}"/>
+    <h:inputHidden id="neededFlagCounts" value="#{sessionScope[beanName].neededFlagCounts}"/>
+    <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
+      Flags needed: <span id="totalFlagsNeeded"></span>
     </ui:fragment>
   </ui:define>
 
@@ -67,6 +68,15 @@
         </h:panelGrid>
       </div>
     </p:dialog>
+  </ui:define>
+
+  <ui:define name="loadDataCommand">
+    <p:remoteCommand name="loadData"
+      action="#{sessionScope[beanName].loadData}"
+      process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis :plot1Form:plot1Y2Axis
+        :plot1Form:map1Column :plot2Form:plot2XAxis :plot2Form:plot2YAxis :plot2Form:plot2Y2Axis
+        :plot2Form:map2Column columnHeadings extendedColumnHeadings rowIDs :statusForm"
+      oncomplete="dataLoaded()" onerror="plotError(xhr)" async="true"/>
   </ui:define>
 
   <ui:define name="selectionActions">

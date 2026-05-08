@@ -5,7 +5,8 @@ import java.time.LocalDateTime;
 import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
@@ -29,9 +30,9 @@ public class DatasetExport {
 
   private double maxLat = -Double.MAX_VALUE;
 
-  private LocalDateTime startDate = null;
+  private TimeCoordinate startDate = null;
 
-  private LocalDateTime endDate = null;
+  private TimeCoordinate endDate = null;
 
   protected void append(String text) {
     content.append(text);
@@ -78,17 +79,17 @@ public class DatasetExport {
     DatasetSensorValues allSensorValues) {
 
     if (null != value && null != value.getValue()
-      && !value.getQcFlag(allSensorValues).equals(Flag.FLUSHING)) {
+      && !value.getQcFlag(allSensorValues).equals(FlagScheme.FLUSHING_FLAG)) {
       if (columnId == FileDefinition.TIME_COLUMN_ID) {
 
         // The first date we receive is the start date
         if (null == startDate) {
-          startDate = (LocalDateTime) value.getRawValue();
+          startDate = (TimeCoordinate) value.getRawValue();
         }
 
         // Assume monotonic time, so the latest time received is also the last
         // time
-        endDate = (LocalDateTime) value.getRawValue();
+        endDate = (TimeCoordinate) value.getRawValue();
       } else if (columnId == FileDefinition.LONGITUDE_COLUMN_ID) {
         try {
           double doubleValue = Double.parseDouble(value.getValue());
@@ -152,11 +153,11 @@ public class DatasetExport {
   }
 
   protected LocalDateTime getStartDate() {
-    return startDate;
+    return startDate.getTime();
   }
 
   protected LocalDateTime getEndDate() {
-    return endDate;
+    return endDate.getTime();
   }
 
   protected JsonObject getBoundsJson() {

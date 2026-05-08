@@ -10,6 +10,7 @@ import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import uk.ac.exeter.QuinCe.data.Dataset.CoordinateException;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -61,7 +62,7 @@ public class UnderwayMarinePco2ReducerTest extends DataReducerTest {
 
     // Make a record to work with
     DataReductionRecord record = new DataReductionRecord(measurement, variable,
-      reducer.getCalculationParameterNames());
+      flagScheme, reducer.getCalculationParameterNames());
 
     reducer.doCalculation(instrument, measurement, record,
       getDataSource().getConnection());
@@ -79,8 +80,8 @@ public class UnderwayMarinePco2ReducerTest extends DataReducerTest {
 
   @FlywayTest
   @Test
-  public void largeDeltaTTest()
-    throws SensorTypeNotFoundException, DataReductionException, SQLException {
+  public void largeDeltaTTest() throws SensorTypeNotFoundException,
+    DataReductionException, SQLException, CoordinateException {
 
     // Mock objects
     Instrument instrument = Mockito.mock(Instrument.class);
@@ -111,7 +112,7 @@ public class UnderwayMarinePco2ReducerTest extends DataReducerTest {
 
     // Make a record to work with
     DataReductionRecord record = new DataReductionRecord(measurement, variable,
-      reducer.getCalculationParameterNames());
+      flagScheme, reducer.getCalculationParameterNames());
 
     reducer.doCalculation(instrument, measurement, record,
       getDataSource().getConnection());

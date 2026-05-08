@@ -1,7 +1,7 @@
 -- Benguela Stream instrument definition
 
 -- Instrument
-INSERT INTO instrument VALUES (1,1,'Benguela Stream','Benguela Stream','BSBS',0,NULL,'','2019-01-28 13:31:21','2019-01-28 14:31:21');
+INSERT INTO instrument VALUES (1,1,'Benguela Stream','Benguela Stream','BSBS',1,0,NULL,'','2019-01-28 13:31:21','2019-01-28 14:31:21');
 
 -- Instrument uses the basic marine pCO2 variable
 INSERT INTO instrument_variables (instrument_id, variable_id)
@@ -13,7 +13,7 @@ INSERT INTO file_definition VALUES
    '{"valueColumn":7,"hemisphereColumn":8,"format":2}',
    '{"valueColumn":5,"hemisphereColumn":6,"format":1}',
    '{"assignments":{"0":{"assignmentIndex":0,"column":-1,"properties":{}},"1":{"assignmentIndex":1,"column":-1,"properties":{}},"2":{"assignmentIndex":2,"column":3,"properties":{"formatString":"dd/MM/yy"}},"3":{"assignmentIndex":3,"column":-1,"properties":{}},"4":{"assignmentIndex":4,"column":-1,"properties":{}},"5":{"assignmentIndex":5,"column":-1,"properties":{}},"6":{"assignmentIndex":6,"column":-1,"properties":{}},"7":{"assignmentIndex":7,"column":-1,"properties":{}},"8":{"assignmentIndex":8,"column":4,"properties":{"formatString":"HH:mm:ss"}},"9":{"assignmentIndex":9,"column":-1,"properties":{}},"10":{"assignmentIndex":10,"column":-1,"properties":{}},"11":{"assignmentIndex":11,"column":-1,"properties":{}},"12":{"assignmentIndex":12,"column":-1,"properties":{}}},"fileHasHeader":false}',
-   '2019-01-28 13:31:21','2019-01-28 14:31:21');
+   'TimeDataFile', '2019-01-28 13:31:21','2019-01-28 14:31:21');
 
 -- File Columns
 

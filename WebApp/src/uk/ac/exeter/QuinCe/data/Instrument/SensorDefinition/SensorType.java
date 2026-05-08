@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -19,6 +20,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public class SensorType extends ColumnHeading
   implements Comparable<SensorType> {
+
+  public static final String COORDINATE_GROUP = "Coordinate";
 
   /**
    * Value to use when a SensorType has no parent
@@ -532,8 +535,23 @@ public class SensorType extends ColumnHeading
       : sensorType.getId();
   }
 
-  public boolean questionableFlagAllowed() {
-    return !isDiagnostic() && !isPosition();
+  /**
+   * Determine whether or not values of this type can only have a <i>Bad</i> QC
+   * flag set.
+   *
+   * <p>
+   * Diagnostic and Position values cannot have any flags other than <i>Bad</i>
+   * set. There is no 'intermediate' quality for these values: they are either
+   * usable or they're not.
+   * </p>
+   *
+   * @return {@code true} if only <i>Bad</i> QC flags can be set; {@code false}
+   *         if any flag can be set.
+   *
+   * @see FlagScheme#getBadFlag()
+   */
+  public boolean badFlagOnly() {
+    return isDiagnostic() || isPosition();
   }
 
   public List<String> getSourceColumns() {

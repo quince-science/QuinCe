@@ -1,22 +1,15 @@
 package uk.ac.exeter.QuinCe.data.Files;
 
-import java.time.LocalDateTime;
-
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * Exception class for handling attempts to store raw data files that already
  * exist
  */
+@SuppressWarnings("serial")
 public class FileExistsException extends Exception {
-
-  /**
-   * The serial version UID
-   */
-  private static final long serialVersionUID = -5136779592604842077L;
 
   /**
    * The exception message, generated in the constructor
@@ -57,12 +50,10 @@ public class FileExistsException extends Exception {
    * @param endDate
    *          The range end
    */
-  public FileExistsException(String fileDescription, LocalDateTime startDate,
-    LocalDateTime endDate) {
+  public FileExistsException(String fileDescription) {
     super();
-    message = "A " + fileDescription + " file already exists covering "
-      + DateTimeUtils.formatDateTime(startDate) + " to "
-      + DateTimeUtils.formatDateTime(endDate);
+    message = "A " + fileDescription
+      + " file already exists that overlaps this file";
   }
 
   @Override

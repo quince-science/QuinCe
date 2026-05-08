@@ -1,4 +1,5 @@
-[
+{
+"Time": [
   {
     "variable": "Underway Marine pCO₂",
     "routines": [
@@ -10,9 +11,9 @@
           "Diagnostic Water Flow"
         ],
         "options": {
-          "questionable_limit": 1,
-          "bad_limit": 3
-        }
+          "limits.B": 3,
+		  "limits.Q": 1
+		}
       },
       {
         "name": "MissingStandards",
@@ -92,8 +93,9 @@
         "name": "PostDataSetCalculationCoefficientCheck",
         "flagged_sensors": [],
         "options": {
-          "coefficients": ["Runtime", "k1", "k2", "k3"]
-  	}
+          "coefficients": ["Runtime", "k1", "k2", "k3"],
+		  "flagChar": "C"
+  	    }
       }
     ]
   },
@@ -104,9 +106,11 @@
         "name": "PostDataSetCalculationCoefficientCheck",
         "flagged_sensors": [],
         "options": {
-          "coefficients": ["Runtime", "k1", "k2", "k3"]
+          "coefficients": ["Runtime", "k1", "k2", "k3"],
+          "flagChar": "C"
   	}
       }
     ]
   }
 ]
+}

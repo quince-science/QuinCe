@@ -3,9 +3,6 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractQCRoutinesConfiguration;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfigurationException;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Configuration for the Auto QC routines run on values in External Standard
@@ -21,11 +18,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class ExternalStandardsRoutinesConfiguration
   extends AbstractQCRoutinesConfiguration {
 
-  public ExternalStandardsRoutinesConfiguration(
-    SensorsConfiguration sensorsConfig, String configFile)
-    throws QCRoutinesConfigurationException, MissingParamException {
-
-    super(sensorsConfig, configFile);
+  public ExternalStandardsRoutinesConfiguration() {
+    super();
   }
 
   @Override

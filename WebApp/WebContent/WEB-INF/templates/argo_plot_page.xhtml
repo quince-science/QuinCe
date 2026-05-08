@@ -1,0 +1,197 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+  xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:c="http://java.sun.com/jsp/jstl/core"
+  template="/WEB-INF/templates/plot_page.xhtml">
+
+  <ui:define name="localStylesheets">
+    <h:outputStylesheet name="style/argoPlotPage.css" />
+  </ui:define>
+
+  <ui:define name="plots">
+    <div id="profiles">
+      <div id="profileData">
+        <div id="profileMap">
+          <h:form id="profileMapForm" method="post">
+            <h:inputHidden id="map1Column"
+              value="#{sessionScope[beanName].data.map1.column}"/>
+            <h:inputHidden id="map1Data"
+              value="#{sessionScope[beanName].data.map1.data}"/>
+            <h:inputHidden id="map1ScaleLimits"
+              value="#{sessionScope[beanName].data.map1.scaleLimits}"/>
+            <h:inputHidden id="map1DataBounds"
+              value="#{sessionScope[beanName].data.map1.dataBounds}"/>
+            <h:inputHidden id="map1Bounds"
+              value="#{sessionScope[beanName].data.map1.viewBounds}"/>
+            <h:inputHidden id="map1UpdateScale"
+              value="#{sessionScope[beanName].data.map1.updateScale}"/>
+
+            <p:remoteCommand name="map1GetData"
+              action="#{sessionScope[beanName].data.map1.generateMapData}"
+              process="map1Bounds map1UpdateScale"
+              update="map1DataBounds map1Data map1ScaleLimits"
+              oncomplete="drawMap(1)" onerror="plotError(xhr)"/>
+
+            <div id="map1Container"></div>
+            <p:commandButton icon="zoomOutButton" onclick="resetMapZoom(1); return false;"
+              styleClass="tightIconButton plotFooterButton resetMapZoomButton" />
+          </h:form>
+        </div>
+        <div id="profileList">
+          <h:form id="profileListForm">
+            <h:inputHidden id="profileListColumns"
+              value="#{sessionScope[beanName].profileData.profileTableColumns}"/>
+            <h:inputHidden id="profileListData"
+              value="#{sessionScope[beanName].profileData.profileTableData}"/>
+            <h:inputHidden id="selectedProfile"
+              value="#{sessionScope[beanName].selectedProfile}"/>
+
+            <p:remoteCommand name="selectProfile"
+              action="#{sessionScope[beanName].selectProfile}"
+              process="selectedProfile"
+              update=":tableForm :profileDetailsForm :plotPageForm:rowIDs"
+              oncomplete="newProfileLoaded()" onerror="plotError(xhr)" async="true"/>
+
+            <table id="profileListTable" class="cell-border compact nowrap"></table>
+          </h:form>
+        </div>
+      </div>
+      <div id="profileDetails">
+        <h:form id="profileDetailsForm">
+          <h:inputHidden id="profileDetailsData"
+            value="#{sessionScope[beanName].data.selectedProfileDetails}"/>
+          <table id="profileDetailsTable" class="cell-border compact nowrap"></table>
+        </h:form>
+      </div>
+    </div>
+    <div id="profilePlots">
+      <div id="plot1Panel" class="plotContainer">
+        <h:form id="plot1Form" method="post">
+          <h:inputHidden id="plot1Data"
+            value="#{sessionScope[beanName].data.plot1.mainData}"/>
+          <h:inputHidden id="plot1DataLabels"
+            value="#{sessionScope[beanName].data.plot1.dataLabels}"/>
+          <h:inputHidden id="plot1Flags"
+            value="#{sessionScope[beanName].data.plot1.flagData}"/>
+          <h:inputHidden id="plot1FlagLabels"
+            value="#{sessionScope[beanName].data.plot1.flagLabels}"/>
+          <h:inputHidden id="plot1Y2Data"
+            value="#{sessionScope[beanName].data.plot1.y2Data}"/>
+          <h:inputHidden id="plot1Y2Labels"
+            value="#{sessionScope[beanName].data.plot1.y2Labels}"/>
+          <h:inputHidden id="plot1XAxis"
+            value="#{sessionScope[beanName].data.plot1.xaxis}"/>
+          <h:inputHidden id="plot1YAxis"
+            value="#{sessionScope[beanName].data.plot1.yaxis}"/>
+          <h:inputHidden id="plot1Y2Axis"
+            value="#{sessionScope[beanName].data.plot1.y2axis}"/>
+          <h:inputHidden id="plot1DisplayVariable"
+            value="#{sessionScope[beanName].data.plot1.displayVariable}"/>
+
+          <p:remoteCommand name="loadPlot1"
+            action="#{sessionScope[beanName].data.plot1.init}"
+            process="@this plot1XAxis plot1YAxis plot1HideFlags"
+            update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels
+              plot1FlagLabels plot1DisplayVariable"
+            oncomplete="drawPlot(1, true, false)" onerror="plotError(xhr)"/>
+
+          <div id="plot1Container">
+            <div id="plot1Y2Plot" class="plot y2Plot"></div>
+            <div id="plot1DataPlot" class="plot dataPlot"></div>
+            <div id="plot1SelectionPlot" class="plot selectionPlot"></div>
+            <div id="plot1FlagPlot" class="plot flagPlot"></div>
+          </div>
+          <div id="plot1Label" class="plotLabels"></div>
+
+          <p:toolbar id="plot1Toolbar" styleClass="plotPageHeader">
+            <f:facet name="left">
+              <div class="plotFooterButtonContainer">
+                <p:commandButton icon="zoomOutButton" onclick="resetZoom(1); return false;"
+                  styleClass="inlineButton tightIconButton plotFooterButton" />
+                <p:selectBooleanButton onIcon="hideFlagsButton" offIcon="hideFlagsButton"
+                  value="#{sessionScope[beanName].data.plot1HideFlags}"
+                  id="plot1HideFlags" onchange="hideFlags(1); return false;"
+                  styleClass="tightIconButton plotFooterButton" />
+              </div>
+              <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode"
+                value="zoom" styleClass="selectModeButtons"
+                onchange="setPlotSelectMode(1)" unselectable="false">
+                <f:selectItem itemLabel=" " itemValue="zoom" />
+                <f:selectItem itemLabel=" " itemValue="select" />
+              </p:selectOneButton>
+
+              <p:selectOneMenu widgetVar="plot1XAxisPicker" onchange="selectXAxis(1);"
+                value="#{sessionScope[beanName].data.plot1XAxis}" styleClass="xAxisSelector">
+                <f:selectItems value="#{sessionScope[beanName].plotMenuEntries}"/>
+              </p:selectOneMenu>
+            </f:facet>
+          </p:toolbar>
+        </h:form>
+      </div>
+      <div id="plot2Panel" class="plotContainer">
+        <h:form id="plot2Form" method="post">
+          <h:inputHidden id="plot2Data"
+            value="#{sessionScope[beanName].data.plot2.mainData}"/>
+          <h:inputHidden id="plot2DataLabels"
+            value="#{sessionScope[beanName].data.plot2.dataLabels}"/>
+          <h:inputHidden id="plot2Flags"
+            value="#{sessionScope[beanName].data.plot2.flagData}"/>
+          <h:inputHidden id="plot2FlagLabels"
+            value="#{sessionScope[beanName].data.plot2.flagLabels}"/>
+          <h:inputHidden id="plot2Y2Data"
+            value="#{sessionScope[beanName].data.plot2.y2Data}"/>
+          <h:inputHidden id="plot2Y2Labels"
+            value="#{sessionScope[beanName].data.plot2.y2Labels}"/>
+          <h:inputHidden id="plot2XAxis"
+            value="#{sessionScope[beanName].data.plot2.xaxis}"/>
+          <h:inputHidden id="plot2YAxis"
+            value="#{sessionScope[beanName].data.plot2.yaxis}"/>
+          <h:inputHidden id="plot2Y2Axis"
+            value="#{sessionScope[beanName].data.plot2.y2axis}"/>
+          <h:inputHidden id="plot2DisplayVariable"
+            value="#{sessionScope[beanName].data.plot2.displayVariable}"/>
+
+          <p:remoteCommand name="loadPlot2"
+            action="#{sessionScope[beanName].data.plot2.init}"
+            process="@this plot2XAxis plot2YAxis plot2HideFlags"
+            update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels
+              plot2FlagLabels plot2DisplayVariable"
+            oncomplete="drawPlot(2, true, false)" onerror="plotError(xhr)"/>
+
+          <div id="plot2Container">
+            <div id="plot2Y2Plot" class="plot y2Plot"></div>
+            <div id="plot2DataPlot" class="plot dataPlot"></div>
+            <div id="plot2SelectionPlot" class="plot selectionPlot"></div>
+            <div id="plot2FlagPlot" class="plot flagPlot"></div>
+          </div>
+          <div id="plot2Label" class="plotLabels"></div>
+
+          <p:toolbar id="plot2Toolbar" styleClass="plotPageHeader">
+            <f:facet name="left">
+              <div class="plotFooterButtonContainer">
+                <p:commandButton icon="zoomOutButton" onclick="resetZoom(2); return false;"
+                  styleClass="inlineButton tightIconButton plotFooterButton" />
+                <p:selectBooleanButton onIcon="hideFlagsButton" offIcon="hideFlagsButton"
+                  value="#{sessionScope[beanName].data.plot2HideFlags}"
+                  id="plot2HideFlags" onchange="hideFlags(2); return false;"
+                  styleClass="tightIconButton plotFooterButton" />
+              </div>
+              <p:selectOneButton id="plotSelectMode" widgetVar="plot2SelectMode"
+                value="zoom" styleClass="selectModeButtons"
+                onchange="setPlotSelectMode(2)" unselectable="false">
+                <f:selectItem itemLabel=" " itemValue="zoom" />
+                <f:selectItem itemLabel=" " itemValue="select" />
+              </p:selectOneButton>
+
+              <p:selectOneMenu widgetVar="plot2XAxisPicker" onchange="selectXAxis(2);"
+                value="#{sessionScope[beanName].data.plot2XAxis}" styleClass="xAxisSelector">
+                <f:selectItems value="#{sessionScope[beanName].plotMenuEntries}"/>
+              </p:selectOneMenu>
+            </f:facet>
+          </p:toolbar>
+        </h:form>
+      </div>
+    </div>
+  </ui:define>
+</ui:composition>

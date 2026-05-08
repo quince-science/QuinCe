@@ -1,12 +1,12 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Collections;
 
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class SimplePlotPageTableValue implements PlotPageTableValue {
@@ -41,6 +41,24 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
   private Collection<Long> sources;
 
   /**
+   * Constructor for a straightforward nominal value.
+   *
+   * @param value
+   *          The value.
+   * @param flagScheme
+   *          The current flag scheme.
+   */
+  public SimplePlotPageTableValue(String value, FlagScheme flagScheme) {
+    this.value = value;
+    this.rawValue = value;
+    this.qcFlag = flagScheme.getGoodFlag();
+    this.qcMessage = null;
+    this.flagNeeded = false;
+    this.type = NOMINAL_TYPE;
+    this.sources = null;
+  }
+
+  /**
    * Simple constructor with all values.
    *
    * @param value
@@ -66,25 +84,41 @@ public class SimplePlotPageTableValue implements PlotPageTableValue {
   }
 
   /**
-   * Constructor for a timestamp.
+   * Simple constructor with all values.
    *
-   * @param time
-   *          The timestamp.
+   * @param value
+   *          The value.
+   * @param used
+   *          Whether the value is used in a calculation.
+   * @param qcFlag
+   *          The QC flag.
+   * @param qcMessage
+   *          The QC message.
+   * @param flagNeeded
+   *          Whether or not user QC is required.
    */
-  public SimplePlotPageTableValue(LocalDateTime time,
-    DateTimeFormatter formatter, boolean milliseconds) {
+  public SimplePlotPageTableValue(String value, Flag qcFlag, String qcMessage,
+    boolean flagNeeded, char type, Long source) {
+    this.value = StringUtils.formatNumber(value);
+    this.rawValue = value;
+    this.qcFlag = qcFlag;
+    this.qcMessage = qcMessage;
+    this.flagNeeded = flagNeeded;
+    this.type = type;
+    this.sources = Collections.singleton(source);
+  }
 
-    this.rawValue = time;
-
-    if (milliseconds) {
-      this.value = String.valueOf(DateTimeUtils.dateToLong(time));
-    } else if (null != formatter) {
-      this.value = formatter.format(time);
-    } else {
-      this.value = DateTimeUtils.toIsoDate(time);
-    }
-
-    this.qcFlag = Flag.GOOD;
+  /**
+   * Constructor for a {@link Coordinate}.
+   *
+   * @param coordinate
+   *          The coordinate.
+   */
+  public SimplePlotPageTableValue(Coordinate coordinate,
+    FlagScheme flagScheme) {
+    this.rawValue = coordinate;
+    this.value = coordinate.toString();
+    this.qcFlag = flagScheme.getGoodFlag();
     this.qcMessage = "";
     this.flagNeeded = false;
     this.type = PlotPageTableValue.MEASURED_TYPE;

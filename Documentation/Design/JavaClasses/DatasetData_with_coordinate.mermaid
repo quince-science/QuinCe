@@ -1,0 +1,162 @@
+classDiagram
+    class ArgoCoordinate {
+        int argoCycle
+        getType() int
+    }
+
+    class Coordinate {
+        long id
+        long datasetId
+        int type
+        LocalDateTime time
+        getType() int
+        isTimeRequired() boolean
+    }
+
+    class DataSet {
+        long id
+        long instrumentId
+    }
+    
+    class DepthCoordinate {
+        int depth
+        getType() int
+    }
+
+    class DataReductionRecord {
+        long measurementId
+    }
+
+    class DatasetSensorValues {
+        Map~SensorValue.id, SensorValue~ valuesById
+        Map~FileColumn.id, SensorValuesList~ valuesByColumn
+        SensorValuesList longitudes
+        SensorValuesList latitudes
+    }
+
+    class GoShipCoordinate {
+        int station
+        int cast
+        int bottle
+        int replicate
+        getType() int
+    }
+
+    class InternalCalibrationData {
+        DatasetSensorValues datasetSensorValues
+        SimplePlotPageDataStructure dataStructure
+    }
+    
+    class ManualQCData {
+        Map~LocalDateTime, Measurement~ measurements
+        List~Long~ coordinateIds
+        Map~Long -> Variable, ReadOnlyDataReductionRecord~ dataReduction
+    }
+
+    class Measurement {
+        long id
+        long datasetId
+        LocalDateTime time
+        Map~SensorType.id, MeasurementValue~ measurementValues
+    }
+
+    class MeasurementValue {
+        SensorType sensorType
+        List~Long~ sensorValueIds
+        List~Long~ supportingSensorValueIds
+    }
+
+    class PlotPageData {
+        DataSet dataSet
+        Instrument instrument
+        Map~COLUMN_GROUP_NAME_string, PlotPageColumnHeading~ columnHeadings
+        generateTableData(start, length)
+    }
+
+    class PlotPageTableRecord {
+        LocalDateTime coordinateId
+        long id
+        long coordinate
+        long columnId
+        String value
+    }
+
+    class SensorValue {
+        long id
+        long coordinate
+        long columnId
+        String value
+    }
+
+    class SensorValuesList {
+        List~SensorValue~ list
+        SensorType sensorType
+        Set~Long~ columnIds
+        DatasetSensorValues allSensorValues
+        List~Coordinate~ rawCoordinatesCache
+        List~Coordinate~ valueCoordinatesCache
+        List~SingleSensorValuesListValue~ outputValues
+    }
+
+    class SensorValuesListValue {
+        getSourceSensorValues()
+    }
+
+    class SingleSensorValuesListValue {
+        sensorValue
+    }
+
+    class SimplePlotPageDataStructure {
+        List~DATE_TIME_long~ ids
+        List~PlotPageColumnHeading~ columnHeadings
+        List~PlotPageColumnHeading~ coordinateHeadings
+    }
+
+
+PlotPageData <-- InternalCalibrationData
+InternalCalibrationData ..> SimplePlotPageDataStructure : dataStructure
+InternalCalibrationData ..> DatasetSensorValues : datasetSensorValues
+SimplePlotPageDataStructure ..> PlotPageColumnHeading : columnHeadings/coordinateHeadings
+PlotPageData ..> PlotPageColumnHeading : columnHeadings
+PlotPageData <-- ManualQCData
+ManualQCData ..> DatasetSensorValues
+
+DatasetSensorValues ..> SensorValue : valuesById/valuesByColumn
+DatasetSensorValues ..> SensorValuesList : valuesByColumn/longitudes/latitudes
+SensorValuesList ..> DatasetSensorValues : allSensorValues
+
+SingleSensorValuesListValue --> SensorValuesListValue
+SingleSensorValuesListValue ..> SensorValue : sensorValue
+
+SensorValuesList ..> SingleSensorValuesListValue : outputValues
+SensorValuesListValue ..> SensorValue : getSourceSensorValues()
+SensorValuesList ..> SensorValue : list
+
+SensorValue ..> Coordinate : coordinate
+
+ManualQCData ..> Measurement : measurements
+ManualQCData ..> ReadOnlyDataReductionRecord : dataReduction
+ReadOnlyDataReductionRecord --> DataReductionRecord
+DataReductionRecord ..> Measurement : measurementId
+
+Measurement ..> MeasurementValue : measurementValues
+
+PlotPageData ..> PlotPageTableRecord : generateTableData()
+PlotPageTableRecord ..> PlotPageTableValue : columns
+PlotPageTableValue <-- MeasurementValue
+MeasurementValue ..> SensorValue : (supporting)sensorValueIds
+
+
+ManualQCData ..> Coordinate : columns
+SensorValuesList ..> Coordinate : coordinateId
+
+ArgoCoordinate --> DepthCoordinate
+GoShipCoordinate --> DepthCoordinate
+DepthCoordinate --> Coordinate
+SurfaceCoordinate --> Coordinate
+
+Coordinate ..> DataSet : datasetId
+DataSet ..> Coordinate : start/end
+
+%% note for SensorValuesListValue "Times for surface coordinates. Coordinate for others. Not sure how this will work yet"
+%% note for Coordinate "Type solidly linked to class, but a getType method with psf constants is probably best"

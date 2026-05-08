@@ -8,8 +8,7 @@ const UPDATE_DATA = 1 << 5;
 
 const TIME_COLUMN_ID = -1100;
 
-// Initially the table and both plots are loading
-var loadingItems = TABLE_LOADING | PLOT1_LOADING | PLOT2_LOADING;
+var loadingItems = getInitialLoadingItems();
 
 var progressBarUpdater = null;
 
@@ -67,26 +66,120 @@ function startProgressBarUpdater() {
 // PAGE CONSTANTS
 const SELECT_ACTION = 1;
 const DESELECT_ACTION = -1;
-const FLAG_FLUSHING = -100;
 
 const MAP_MEASUREMENT_ID_INDEX = 2;
 const MAP_MANUAL_FLAG_INDEX = 3;
 const DATA_LAYER = 'data';
 const FLAG_LAYER = 'flags';
 const SELECTION_LAYER = 'selection';
+const PATH_LAYER = 'path';
 
-const FLAG_NOT_CALIBRATED = 1;
-const FLAG_GOOD = 2;
-const FLAG_ASSUMED_GOOD = -2;
-const FLAG_QUESTIONABLE = 3;
-const FLAG_BAD = 4;
-const FLAG_LOOKUP = -200;
-const FLAG_FATAL = 44;
-const FLAG_NEEDS_FLAG = -10;
-const FLAG_IGNORED = -1002;
+// Main series colors for plots
+Y1_SERIES = '#01752D';
+Y2_SERIES = '#A9DBF9';
+GHOST = '#C0C0C0';
+
+// Numeric value for Flushing flag
+FLAG_FLUSHING = -100;
+
+// Colors for flags. We define both text and numeric versions.
+// Map of Flag Scheme -> Axis -> Flag
+const FLAG_COLORS = {
+  'ICOS': {
+    'y1': {
+      'Needed': '#817FFF',
+      'Not calibrated': '#AC9326',
+      '1': '#AC9326',
+      'Questionable': '#FFA42B',
+      '3': '#FFA42B',
+      'Bad': '#FF0000',
+      '4': '#FF0000',
+      'Good': '',
+      '2': '',
+      'Assumed Good': '',
+      '-2': '',
+      'GHOST': '#C0C0C0'
+    },
+    'y2': {
+      'Needed': '#D7D6FF',
+      'Not calibrated': '#CCCBAF',
+      '1': '#CCCBAF',
+      'Bad': '#E6B6A6',
+      '4': '#E6B6A6',
+      'Questionable': '#EFDCBF',
+      '3': '#EFDCBF'
+    }
+  },
+  'Argo': {
+    'y1': {
+      'Needed': '#817FFF',
+      'Good': '',
+      '1': '',
+      'Assumed Good': '',
+      '-1': '',
+      'Probably Good': '#BBBB00',
+      '2': '#BBBB00',
+      'Bad, potentially correctable': '#ED7F10',
+      '3': '#ED7F10',
+      'Bad': '#FF0000',
+      '4': '#FF0000',
+      'Value Changed': '#FF00FF',
+      '5': '#FF00FF',
+      'Estimated Value': '#0000FF',
+      '8': '#0000FF',
+    },
+    'y2': {
+      'Needed': '#817FFF',
+      'Good': '',
+      '1': '',
+      'Assumed Good': '',
+      '-1': '',
+      'Probably Good': '#BBBB00',
+      '2': '#BBBB00',
+      'Bad, potentially correctable': '#ED7F10',
+      '3': '#ED7F10',
+      'Bad': '#FF0000',
+      '4': '#FF0000',
+      'Value Changed': '#FF00FF',
+      '5': '#FF00FF',
+      'Estimated Value': '#0000FF',
+      '8': '#0000FF',
+    }
+  }
+}
+
+function getFlagScheme() {
+  return $('#plotPageForm\\:flagScheme').val();
+}
+
+function getFlagColor(flag, axis, emptyIsTransparent) {
+  let color = FLAG_COLORS[getFlagScheme()][axis][flag];
+  if (color == '') {
+    color = emptyIsTransparent ? '#00000000' : '#000000';
+  }
+  return color;
+}
+
+function getFlagColors(flags, axis, emptyIsTransparent) {
+  return flags.map(f => {return getFlagColor(f, axis, emptyIsTransparent)});
+}
 
 // VARIABLES FOR THE PLOT/TABLE LAYOUT
+function plotStrokeWidth() {
+  return (typeof getStrokeWidth === 'function') ? getStrokeWidth() : 0;
+}
 
+function isProfilePlot() {
+  return (typeof getIsProfilePlot === 'function') ? getIsProfilePlot() : false;
+}
+
+function axesAtZero() {
+  return (typeof getAxesAtZero === 'function') ? getAxesAtZero() : false;
+}
+
+function includeZero() {
+  return (typeof getIncludeZero === 'function') ? getIncludeZero() : false;
+}
 
 // Timer used to prevent event spamming during page resizes
 var resizeEventTimer = null;
@@ -154,11 +247,11 @@ var plot2Y2AxisVar = null;
 
 var BASE_PLOT_OPTIONS = {
   drawPoints: true,
-  strokeWidth: 0.0,
   labelsUTC: true,
   labelsSeparateLine: true,
   digitsAfterDecimal: 2,
-  animatedZooms: false
+  animatedZooms: false,
+  dataOrdered: !isProfilePlot()
 }
 
 var updatingDialogButtons = false;
@@ -225,7 +318,6 @@ function initPage() {
 
   // Trigger data loading on back end
   // PrimeFaces remoteCommand. Calls dataLoaded() when complete.
-  //PF('progressBar');
   loadData();
 }
 
@@ -243,106 +335,36 @@ function errorCheck() {
   return errorFound;
 }
 
-// Lay out the overall page structure
-function layoutPage() {
-  $('#plotPageContent').split({
-    orientation: 'horizontal',
-    onDragEnd: function(){
-      scaleTableSplit()}
-    });
-
-  $('#plots').split({
-    orientation: 'vertical',
-    onDragEnd: function(){
-      resizePlots()}
-    });
-}
-
-// Handle table/plot split adjustment
-function scaleTableSplit() {
-  tableSplitProportion = $('#plotPageContent').split().position() / $('#plotPageContent').height();
-  resizeAllContent();
-}
-
-// Handle split adjustment between the two plots
-function resizePlots() {
-
-  for (let i = 1; i <= 2; i++) {
-    resizePlot(i);
-
-    if (null != window['map' + i]) {
-      $('#map' + i + 'Container').width($('#plot' + i + 'Panel').width());
-      $('#map' + i + 'Container').height($('#plot' + i + 'Panel').height() - 40);
-    }
-  }
-}
-
 function resizePlot(index) {
   if (null != window['dataPlot' + index] && null != window['dataPlot' + index].maindiv_) {
     $('#plot' + index + 'Container').width('100%');
     $('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
-    window['dataPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+
+  let width = $('#plot' + index + 'Container').width();
+  let height = $('#plot' + index + 'Container').height() - window['plotShrinkHeight'];
+    window['dataPlot' + index].resize(width, height);
 
     if (null != window['y2Plot' + index]) {
-      window['y2Plot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+      window['y2Plot' + index].resize(width, height);
     }
 
     if (null != window['flagPlot' + index]) {
-      window['flagPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+      window['flagPlot' + index].resize(width, height);
     }
 
     if (null != window['selectionPlot' + index]) {
-      window['selectionPlot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+      window['selectionPlot' + index].resize(width, height);
     }
 
     syncZoom(index);
   }
 }
 
-// Adjust the size of all page elements after a window
-// resize or split adjustment
-function resizeAllContent() {
-  $('#plotPageContent').height(window.innerHeight - 73);
-
-  $('#plotPageContent').split().position($('#plotPageContent').height() * tableSplitProportion);
-  resizePlots();
-
-  if (typeof variable !== 'undefined' && null != jsDataTable) {
-    let tableHeight = calcTableScrollY();
-    $('.dataTables_scrollBody').css('max-height',tableHeight);
-    $('.dataTables_scrollBody').css('height', tableHeight);
-    jsDataTable.draw();
-  }
-
-  if (PF('variableDialog').isVisible()) {
-    resizeVariablesDialog();
-  }
-}
-
 function showQCMessage(qcFlag, qcMessage) {
-
   if (qcMessage != '') {
 
     let content = '';
-    content += '<div class="qcInfoMessage ';
-
-    switch (qcFlag) {
-      case FLAG_NOT_CALIBRATED: {
-        content += 'notCalibrated';
-        break;
-      }
-      case FLAG_QUESTIONABLE: {
-        content += 'questionable';
-        break;
-      }
-      case FLAG_BAD:
-      case FLAG_LOOKUP: {
-        content += 'bad';
-        break;
-      }
-    }
-
-    content += '">';
+    content += '<div class="qcInfoMessage" style="color: ' + getFlagColor(qcFlag, 'y1', false) + '">';
     content += qcMessage;
     content += '</div>';
 
@@ -366,18 +388,20 @@ function dataLoaded() {
   if (!errorCheck()) {
     columnHeaders = JSON.parse($('#plotPageForm\\:columnHeadings').val());
     extendedColumnHeaders = JSON.parse($('#plotPageForm\\:extendedColumnHeadings').val());
-    initPlot(1);
-    initPlot(2);
+
+  let tableDrawn = false;
 
     if (typeof dataLoadedLocal === 'function') {
-      dataLoadedLocal();
+      tableDrawn = dataLoadedLocal();
     }
 
-  drawTable();
+    if (!tableDrawn) {
+      drawTable();
+  }
 
-  // Hide the progress bar on the popup
-  $("#pleaseWaitForm\\:progressName").hide();
-  PF('progressBar').jq.hide();
+    // Hide the progress bar on the popup
+    $("#pleaseWaitForm\\:progressName").hide();
+    PF('progressBar').jq.hide();
   }
 }
 
@@ -502,7 +526,7 @@ function getColumnIdsWork(headers) {
 }
 
 function getReferenceValues(index) {
-  return getColumnById($('#plot' + index + 'Form\\:plot' + index + 'YAxis').val()).referenceValues;
+  return getColumnById($(getPlotFormName(index) + '\\:plot' + index + 'DisplayVariable').val()).referenceValues;
 }
 
 function getYRange(index) {
@@ -775,10 +799,10 @@ function calcTableScrollY() {
 // Initialise the click event handlers for the table
 function setupTableClickHandlers() {
   // Remove any existing handlers
-  $('.dataTable').off('click', 'tbody td');
+  $('#dataTable').off('click', 'tbody td');
 
   // Set click handler
-  $('.dataTable').on('click', 'tbody td', function() {
+  $('#dataTable').on('click', 'tbody td', function() {
     clickCellAction(this, event.shiftKey);
   })
 }
@@ -906,82 +930,68 @@ function isFixedColumn(columnIndex) {
 
 // Formats for table columns
 function getColumnDefs() {
-
   return [
-  {"defaultContent": "&nbsp;",
-  "targets": '_all'
-},
-{"render":
-function (data, type, row, meta) {
-
-  let result = '';
-
-  if (null != data) {
-    let flagClass = null;
-    switch (data['qcFlag']) {
-      case FLAG_NOT_CALIBRATED: {
-        flagClass = 'notCalibrated';
-        break;
-      }
-      case FLAG_QUESTIONABLE: {
-        flagClass = 'questionable';
-        break;
-      }
-      case FLAG_BAD:
-      case FLAG_LOOKUP: {
-        flagClass = 'bad';
-        break;
-      }
-      case FLAG_FLUSHING: {
-        flagClass = 'ignore';
-      }
-    }
-
-    let classes = ['plotPageCell'];
-
-        // Cell coloring
-        let columnGroup = getColumnGroup(meta.col);
-        if (columnGroup % 2 == 0) {
-          classes.push(meta.row % 2 == 0 ? 'evenColGroupEvenRow' : 'evenColGroupOddRow');
-        } else {
-          classes.push(meta.row % 2 == 0 ? 'oddColGroupEvenRow' : 'oddColGroupOddRow');
-        }
-
-        if ($.isNumeric(data['value'])) {
-          classes.push('numericCol');
-        }
-
-        if (null != flagClass) {
-          classes.push(flagClass);
-        }
-
-        if (data['type'] == 'I') {
-          classes.push('interpolated');
-        }
-
-        if (data['flagNeeded']) {
-          classes.push('needsFlag');
-        }
-
-        result = '<div class="' + classes.join(' ') + '"';
-
-        if (null != flagClass) {
-          result += ' onmouseover="showQCMessage(' + data['qcFlag'] + ', \''+ data['qcMessage'] + '\')" onmouseout="hideQCMessage()"';
-        }
-
-        result += '>';
-        if (null == data['value'] || data['value'] == '') {
-          result += '&nbsp;';
-        } else {
-          result += (data['value']);
-        }
-        result += '</div>';
-        return result;
-      }
-
+    {
+      "defaultContent": "&nbsp;",
+      "targets": '_all'
     },
-    "targets": '_all'
-  }
+    {
+      "render": function (data, type, row, meta) {
+        let result = '';
+        if (null != data && !jQuery.isEmptyObject(data)) {
+          let flagColor = getFlagColor(data['qcFlag'], 'y1', false);
+          if (null == flagColor) {
+            throw 'Unrecognised flag ' + data['qcFlag'];
+        }
+
+          let classes = ['plotPageCell'];
+
+          // Cell coloring
+          let columnGroup = getColumnGroup(meta.col);
+          if (columnGroup % 2 == 0) {
+            classes.push(meta.row % 2 == 0 ? 'evenColGroupEvenRow' : 'evenColGroupOddRow');
+          } else {
+            classes.push(meta.row % 2 == 0 ? 'oddColGroupEvenRow' : 'oddColGroupOddRow');
+          }
+
+          if ($.isNumeric(data['value'])) {
+            classes.push('numericCol');
+          }
+
+          if (data['type'] == 'I') {
+            classes.push('interpolated');
+          }
+
+          if (data['flagNeeded']) {
+            classes.push('needsFlag');
+          }
+
+      result = '<div ';
+
+      if (flagColor != '') {
+        result += 'style="color: ' + flagColor + '" ';
+      }
+
+          result += 'class="' + classes.join(' ') + '"';
+
+          if (null != data['qcMessage'] && data['qcMessage'] != '') {
+            result += ' onmouseover="showQCMessage(' + data['qcFlag'] + ', \''+ data['qcMessage'] + '\')" onmouseout="hideQCMessage()"';
+          }
+
+          result += '>';
+
+          if (null == data['value'] || data['value'] == '') {
+            result += '&nbsp;';
+          } else {
+            result += (data['value']);
+          }
+
+      result += '</div>';
+          return result;
+        }
+      },
+      "targets": '_all'
+    }
   ];
 }
 
@@ -1089,14 +1099,18 @@ function canSelectCell(rowIndex, colIndex) {
 }
 
 // PLOT FUNCTIONS
+function mapsAllowed() {
+  return true;
+}
+
 function initPlot(index) {
   currentPlot = index;
   let mode = getPlotMode(index);
   let redraw = false;
 
-  window['plot' + index + 'XAxisVar'] = $('#plot' + index + 'Form\\:plot' + index + 'XAxis').val();
-  window['plot' + index + 'YAxisVar'] = $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val();
-  window['plot' + index + 'Y2AxisVar'] = $('#plot' + index + 'Form\\:plot' + index + 'Y2Axis').val();
+  window['plot' + index + 'XAxisVar'] = $(getPlotFormName(index) + '\\:plot' + index + 'XAxis').val();
+  window['plot' + index + 'YAxisVar'] = $(getPlotFormName(index) + '\\:plot' + index + 'YAxis').val();
+  window['plot' + index + 'Y2AxisVar'] = $(getPlotFormName(index) + '\\:plot' + index + 'Y2Axis').val();
 
   if (mode == PLOT_MODE_PLOT) {
     $('#map' + index + 'Container').hide();
@@ -1134,26 +1148,26 @@ function initPlot(index) {
 }
 
 function getPlotLabels(index) {
-  return JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'DataLabels').val());
+  return JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'DataLabels').val());
 }
 
 function getPlotY2Labels(index) {
-  return JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'Y2Labels').val());
+  return JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'Y2Labels').val());
 }
 
 function hasY2(index) {
-  return $('#plot' + index + 'Form\\:plot' + index + 'Y2Labels').val().length > 0;
+  return $(getPlotFormName(index) + '\\:plot' + index + 'Y2Labels').val().length > 0;
 }
 
 function drawY2Plot(index, keepZoom) {
   let y2Var = 'y2Plot' + index;
 
-  let newY2Data = $('#plot' + index + 'Form\\:plot' + index + 'Y2Data').val();
+  let newY2Data = $(getPlotFormName(index) + '\\:plot' + index + 'Y2Data').val();
   if (newY2Data) {
     window['y2Plot' + index + 'Data'] = parseJsonWithDates(newY2Data);
 
     // Clear input so it doesn't get sent back to the server
-    $('#plot' + index + 'Form\\:plot' + index + 'Y2Data').val('');
+    $(getPlotFormName(index) + '\\:plot' + index + 'Y2Data').val('');
   }
 
   let labels = getPlotY2Labels(index);
@@ -1171,13 +1185,28 @@ function drawY2Plot(index, keepZoom) {
   }
 
   let y2_options = Object.assign({}, BASE_PLOT_OPTIONS);
+
+  // Labels are an array of X, ID, Y1, <flags>, Y2
   y2_options.labels = labels;
   y2_options.xlabel = labels[0];
   y2_options.ylabel = labels[2];
-  y2_options.y2label = labels[7];
+  y2_options.y2label = labels[labels.length - 1];
+  y2_options.strokeWidth = plotStrokeWidth();
   y2_options.legend = 'never';
-  y2_options.visibility = [false, true, true, true, true, true, true];
-  y2_options.colors = ['#00000000', '#00000000', '#E6B6A6', '#EFDCBF', '#CCCBAF', '#C0C0C0', '#A9DBF9'];
+
+  y2_options.visibility = Array(labels.length - 1).fill(true);
+  y2_options.visibility[0] = false;
+
+  // The labels contain the X axis, which we don't use for series colors
+  let y2Colors = getFlagColors(labels.slice(3, labels.length - 1), 'y2', true);
+  // Insert blank colors for the ID and Y1 series, which aren't shown
+  y2Colors.splice(0, 0, null, null);
+
+  // Add the color of the main series at the end
+  y2Colors.push(Y2_SERIES);
+
+  y2_options.colors = y2Colors;
+  y2_options.drawAxesAtZero = axesAtZero();
 
   if (keepZoom && null != zoomOptions) {
     y2_options.dateWindow = zoomOptions.dateWindow;
@@ -1240,11 +1269,13 @@ function drawY2Plot(index, keepZoom) {
       drawGrid: false,
       axisLabelFormatter: function(y) {
         return '';
-      }
+      },
+    includeZero: includeZero()
     },
     y2: {
       drawGrid: false,
-      valueRange: keepZoom && null != zoomOptions ? zoomOptions.valueRanges[1] : null
+      valueRange: keepZoom && null != zoomOptions ? zoomOptions.valueRanges[1] : null,
+    includeZero: includeZero()
     }
   }
 
@@ -1259,10 +1290,10 @@ function drawDataPlot1Y(index, keepZoom) {
   let plotVar = 'dataPlot' + index;
 
   // If there's new data, extract it
-  let newPlotData = $('#plot' + index + 'Form\\:plot' + index + 'Data').val();
+  let newPlotData = $(getPlotFormName(index) + '\\:plot' + index + 'Data').val();
   if (newPlotData) {
     window['dataPlot' + index + 'Data'] = parseJsonWithDates(newPlotData);
-    $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
+    $(getPlotFormName(index) + '\\:plot' + index + 'Data').val('');
   }
 
   let labels = getPlotLabels(index);
@@ -1291,6 +1322,9 @@ function drawDataPlot1Y(index, keepZoom) {
   data_options.pointSize = DATA_POINT_SIZE;
   data_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
   data_options.selectMode = 'euclidian';
+  data_options.strokeWidth = plotStrokeWidth();
+  data_options.drawAxesAtZero = axesAtZero();
+  data_options.legendFormatter = (typeof legendFormatter === 'function') ? legendFormatter : null;
 
   if (keepZoom && null != zoomOptions) {
     data_options.dateWindow = zoomOptions.dateWindow;
@@ -1301,7 +1335,6 @@ function drawDataPlot1Y(index, keepZoom) {
     data_options.xRangePad = 10;
     data_options.yRangePad = 10;
   }
-
 
   data_options.interactionModel = getInteractionModel(index);
   data_options.clickCallback = function(e, x, points) {
@@ -1329,6 +1362,13 @@ function drawDataPlot1Y(index, keepZoom) {
       drawGrid: true,
       gridLinePattern: [1, 3],
       gridLineColor: 'rbg(200, 200, 200)',
+    axisLabelFormatter: function(d) {
+      return typeof formatYAxisLabel === 'function' ? formatYAxisLabel(d) : d;
+    },
+    valueFormatter: function (d) {
+      return typeof formatYAxisValue === 'function' ? formatYAxisValue(d) : d;
+    },
+  includeZero: includeZero()
     }
   }
 
@@ -1371,15 +1411,25 @@ function drawDataPlot1Y(index, keepZoom) {
 
 }
 
+// Default y axis formatter does nothing
+function yAxisLabelFormatter(value) {
+  return value;
+}
+
+// Default y axis value formatter does nothing
+function yAxisValueFormatter(value) {
+  return value;
+}
+
 function drawDataPlot2Y(index, keepZoom) {
   let plotVar = 'dataPlot' + index;
 
   // If there's new data, extract it
-  let newPlotData = $('#plot' + index + 'Form\\:plot' + index + 'Data').val();
+  let newPlotData = $(getPlotFormName(index) + '\\:plot' + index + 'Data').val();
   if (newPlotData) {
     window['dataPlot' + index + 'Data'] = parseJsonWithDates(newPlotData);
-    $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
-    $('#plot' + index + 'Form\\:plot' + index + 'Y2Data').val('');
+    $(getPlotFormName(index) + '\\:plot' + index + 'Data').val('');
+    $(getPlotFormName(index) + '\\:plot' + index + 'Y2Data').val('');
   }
 
   let labels = getPlotLabels(index);
@@ -1409,6 +1459,8 @@ function drawDataPlot2Y(index, keepZoom) {
   data_options.pointSize = DATA_POINT_SIZE;
   data_options.highlightCircleSize = DATA_POINT_HIGHLIGHT_SIZE;
   data_options.selectMode = 'euclidian';
+  data_options.strokeWidth = plotStrokeWidth();
+  data_options.drawAxesAtZero = axesAtZero();
 
   if (keepZoom && null != zoomOptions) {
     data_options.dateWindow = zoomOptions.dateWindow;
@@ -1436,13 +1488,15 @@ function drawDataPlot2Y(index, keepZoom) {
       drawGrid: true,
       gridLinePattern: [1, 3],
       gridLineColor: 'rbg(200, 200, 200)',
+    includeZero: includeZero()
     },
     y2: {
       drawGrid: false,
       axisLabelFormatter: function(y) {
         return '';
       },
-      valueRange: keepZoom && null != zoomOptions ? zoomOptions.valueRanges[1] : null
+      valueRange: keepZoom && null != zoomOptions ? zoomOptions.valueRanges[1] : null,
+    includeZero: includeZero()
     }
   }
 
@@ -1465,7 +1519,7 @@ function drawDataPlot2Y(index, keepZoom) {
   };
 
   // Reference value for gas standards and similar
-  let referenceValue = getColumnById($('#plot' + index + 'Form\\:plot' + index + 'YAxis').val()).referenceValue;
+  let referenceValue = getColumnById($(getPlotFormName(index) + '\\:plot' + index + 'DisplayVariable').val()).referenceValue;
   if (null != referenceValue) {
     data_options.underlayCallback = function(canvas, area, g) {
       let xmin = g.toDomXCoord(g.xAxisExtremes()[0]);
@@ -1527,7 +1581,7 @@ function drawPlot(index, drawOtherPlots, keepZoom) {
 
   // Enable/disable the selection mode controls
   if (canEdit()) {
-    let plotVariable = $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val();
+    let plotVariable = $(getPlotFormName(index) + '\\:plot' + index + 'DisplayVariable').val();
     if (getColumnById(plotVariable).editable) {
       PF('plot' + index + 'SelectMode').enable();
     } else {
@@ -1546,9 +1600,9 @@ function drawPlot(index, drawOtherPlots, keepZoom) {
 
 function drawFlagPlot1Y(index) {
   window['flagPlot' + index + 'Data'] =
-  parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
+  parseJsonWithDates($(getPlotFormName(index) + '\\:plot' + index + 'Flags').val());
 
-  $('#plot' + index + 'Form\\:plot' + index + 'Flags').val('');
+  $(getPlotFormName(index) + '\\:plot' + index + 'Flags').val('');
 
   if (null != window['flagPlot' + index]) {
     window['flagPlot' + index].destroy();
@@ -1559,14 +1613,17 @@ function drawFlagPlot1Y(index) {
     window['flagPlot' + index] = null;
   } else {
     let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
-    // Flag colors
-    flag_options.colors = ['#FF0000', '#FFA42B', '#AC9326', '#817FFF', '#FFA42B'];
+    flag_options.labels = JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'FlagLabels').val());
+
+    // The labels contain the X axis, which we don't use for series colors
+    flag_options.colors = getFlagColors(flag_options.labels.slice(1), 'y1', true);
     flag_options.xlabel = ' ';
     flag_options.ylabel = ' ';
-    flag_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
     flag_options.pointSize = FLAG_POINT_SIZE;
     flag_options.highlightCircleSize = 0;
     flag_options.selectMode = 'euclidian';
+    flag_options.strokeWidth = 0;
+    flag_options.drawAxesAtZero = axesAtZero();
     flag_options.xRangePad = 10;
     flag_options.yRangePad = 10;
     flag_options.axes = {
@@ -1574,7 +1631,8 @@ function drawFlagPlot1Y(index) {
         drawGrid: false
       },
       y: {
-        drawGrid: false
+        drawGrid: false,
+    includeZero: includeZero()
       }
     };
     flag_options.axisLabelFontSize = 0;
@@ -1591,11 +1649,11 @@ function drawFlagPlot1Y(index) {
 
 function drawFlagPlot2Y(index) {
   window['flagPlot' + index + 'Data'] =
-  parseJsonWithDates($('#plot' + index + 'Form\\:plot' + index + 'Flags').val());
+  parseJsonWithDates($(getPlotFormName(index) + '\\:plot' + index + 'Flags').val());
 
-  let labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
+  let labels = JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'FlagLabels').val());
 
-  $('#plot' + index + 'Form\\:plot' + index + 'Flags').val('');
+  $(getPlotFormName(index) + '\\:plot' + index + 'Flags').val('');
 
   if (null != window['flagPlot' + index]) {
     window['flagPlot' + index].destroy();
@@ -1606,14 +1664,19 @@ function drawFlagPlot2Y(index) {
     window['flagPlot' + index] = null;
   } else {
     let flag_options = Object.assign({}, BASE_PLOT_OPTIONS);
-    // Flag colors
-    flag_options.colors = ['#FF0000', '#FFA42B', '#AC9326', '#817FFF', '#00000000'];
+
+    flag_options.labels = JSON.parse($(getPlotFormName(index) + '\\:plot' + index + 'FlagLabels').val());
+
+    // The labels contain the X axis, which we don't use for series colors
+    flag_options.colors = getFlagColors(flag_options.labels.slice(1), 'y1', true);
+
     flag_options.xlabel = ' ';
     flag_options.ylabel = ' ';
     flag_options.y2label = ' ';
-    flag_options.labels = JSON.parse($('#plot' + index + 'Form\\:plot' + index + 'FlagLabels').val());
     flag_options.pointSize = FLAG_POINT_SIZE;
     flag_options.highlightCircleSize = 0;
+    flag_options.strokeWidth = 0;
+    flag_options.drawAxesAtZero = axesAtZero();
     flag_options.selectMode = 'euclidian';
     flag_options.xRangePad = 10;
     flag_options.yRangePad = 10;
@@ -1628,7 +1691,8 @@ function drawFlagPlot2Y(index) {
         drawGrid: false
       },
       y: {
-        drawGrid: false
+        drawGrid: false,
+    includeZero: includeZero()
       }
     };
     flag_options.axisLabelFontSize = 0;
@@ -1659,7 +1723,7 @@ function drawSelectionPlot(index) {
 
       let plotLabels = getPlotLabels(index);
 
-      // Convert X values to dates if required
+      // Convert X values to dates if requiredf
       if (plotLabels[0] == 'Time') {
         for (let i = 0; i < selectionData.length; i++) {
           selectionData[i][0] = new Date(selectionData[i][0]);
@@ -1674,6 +1738,8 @@ function drawSelectionPlot(index) {
       selection_options.pointSize = SELECTION_POINT_SIZE;
       selection_options.highlightCircleSize = 0;
       selection_options.selectMode = 'euclidian';
+      selection_options.strokeWidth = 0;
+    selection_options.drawAxesAtZero = axesAtZero();
       selection_options.xRangePad = 0;
       selection_options.yRangePad = 0;
       selection_options.axes = {
@@ -1703,10 +1769,12 @@ function drawSelectionPlot(index) {
             drawGrid: false
           },
           y: {
-            drawGrid: false
+            drawGrid: false,
+      includeZero: includeZero()
           },
           y2: {
-            drawGrid: false
+            drawGrid: false,
+      includeZero: includeZero()
           }
         };
       }
@@ -1937,7 +2005,7 @@ function setupMapVariables(plotIndex) {
       mapWidget.jq.show();
     }
   });
-  updateMapCheckboxes($('#plot' + plotIndex + 'Form\\:map' + plotIndex + 'Column').val());
+  updateMapCheckboxes($(getMapFormName(index) + '\\:map' + plotIndex + 'Column').val());
 }
 
 //Select the specified variable in the dialog
@@ -1953,7 +2021,7 @@ function updateMapCheckboxes(variable) {
         if (widget) {
           if (id == variable) {
             widget.check();
-            $('#plot' + currentPlot + 'Form\\:map' + currentPlot + 'Column').val(variable);
+            $(getMapFormName(index) + '\\:map' + currentPlot + 'Column').val(variable);
           } else {
             widget.uncheck();
           }
@@ -1988,7 +2056,7 @@ function resizeVariablesDialog() {
 }
 
 function getPlotMode(index) {
-  if (PF('plot' + index + 'Mode')) {
+  if (PrimeFaces.widgets['plot' + index + 'Mode']) {
     return +$('[id^=plot' + index + 'Form\\:plot' + index + 'Mode]:checked').val();
   } else {
     return PLOT_MODE_PLOT;
@@ -2044,18 +2112,18 @@ function setPlotAxes(index) {
   let xAxis = getSelectedXAxis();
   window['plot' + index + 'XAxisVar'] = xAxis;
   if (xAxis != 0) {
-    $('#plot' + index + 'Form\\:plot' + index + 'XAxis').val(xAxis);
+    $(getPlotFormName(index) + '\\:plot' + index + 'XAxis').val(xAxis);
   }
 
   let yAxis = getSelectedYAxis();
   window['plot' + index + 'YAxisVar'] = yAxis;
   if (yAxis != 0) {
-    $('#plot' + index + 'Form\\:plot' + index + 'YAxis').val(yAxis);
+    $(getPlotFormName(index) + '\\:plot' + index + 'YAxis').val(yAxis);
   }
 
   let y2Axis = getSelectedY2Axis();
   window['plot' + index + 'Y2AxisVar'] = y2Axis;
-  $('#plot' + index + 'Form\\:plot' + index + 'Y2Axis').val(y2Axis);
+  $(getPlotFormName(index) + '\\:plot' + index + 'Y2Axis').val(y2Axis);
 }
 
 function setPlotSelectMode(index) {
@@ -2093,7 +2161,7 @@ function selectModeMouseUp(event, g, context) {
   g.clearZoomRect_();
 
   let plotIndex = g.maindiv_.id.substring(4,5);
-  let plotVar = $('#plot' + plotIndex + 'Form\\:plot' + plotIndex + 'YAxis').val();
+  let plotVar = $(getPlotFormName([plotIndex]) + '\\:plot' + plotIndex + 'DisplayVariable').val();
 
   if (getColumn(extendedColumnHeaders, getColumnIndex(plotVar)).editable) {
     let minX = g.toDataXCoord(context.dragStartX);
@@ -2153,10 +2221,8 @@ function selectPointsInRect(data, variableId, minX, maxX, minY, maxY) {
   let pointsToSelect = [];
 
   for (var i = 0; i < data.length; i++) {
-    if (data[i][0] > maxX) {
-      break;
-    } else if (data[i][0] >= minX) {
-      // See if any of the Y values are in range
+  if (data[i][0] >= minX && data[i][0] <= maxX) {
+      // See if any of the Y values (remeber there can be 2 Y axes) are in range
       for (let y = 2; y < data[i].length; y++) {
         if (null != data[i][y] && data[i][y] >= minY && data[i][y] <= maxY) {
           pointsToSelect.push(data[i][1]);
@@ -2199,9 +2265,16 @@ function cancelNotes() {
 }
 
 function initMap(index) {
-  $('#map' + index +'Container').empty()
-  $('#map' + index + 'Container').width($('#plot' + index + 'Panel').width());
-  $('#map' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
+  initMap(index, true);
+}
+
+function initMap(index, setSize) {
+  $('#map' + index +'Container').empty();
+
+  if (setSize) {
+    $('#map' + index + 'Container').width($('#plot' + index + 'Panel').width());
+    $('#map' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
+  }
 
   let mapVar = 'map' + index;
 
@@ -2234,7 +2307,7 @@ function initMap(index) {
   window[mapVar].on('moveend', updateMapData);
   window[mapVar].on('zoomend', updateMapData);
 
-  $('#plot' + index + 'Form\\:mapUpdateScale').val(true);
+  $(getMapFormName(index) + '\\:mapUpdateScale').val(true);
   getMapData(index);
 }
 
@@ -2256,11 +2329,11 @@ function getMapData(index) {
   extent.push(visibleBounds._northEast.lng);
   extent.push(visibleBounds._northEast.lat);
 
-  $('#plot' + index + 'Form\\:map' + index + 'Bounds').val(extent);
-  $('#plot' + index + 'Form\\:plot' + index + 'Data').val('');
-  $('#plot' + index + 'Form\\:plot' + index + 'Y2Data').val('');
-  $('#plot' + index + 'Form\\:map' + index + 'Data').val('');
-  eval('map' + index + 'GetData()');
+  $(getMapFormName(index) + '\\:map' + index + 'Bounds').val(extent);
+  $(getPlotFormName(index) + '\\:plot' + index + 'Data').val('');
+  $(getPlotFormName(index) + '\\:plot' + index + 'Y2Data').val('');
+  $(getMapFormName(index) + '\\:map' + index + 'Data').val('');
+  eval('map' + index + 'GetData()'); // PF remote command
 }
 
 function drawMap(index) {
@@ -2268,34 +2341,47 @@ function drawMap(index) {
   let dataLayerVar = mapVar + DATA_LAYER;
   let flagLayerVar = mapVar + FLAG_LAYER;
   let selectionLayerVar = mapVar + SELECTION_LAYER;
+  let pathLayerVar = mapVar + PATH_LAYER;
   let colorScaleVar = mapVar + 'ColorScale';
 
   // Remove old layers
   if (null != window[dataLayerVar]) {
     window[dataLayerVar].removeFrom(window[mapVar]);
-    window[flagLayerVar].removeFrom(window[mapVar]);
+  }
+
+  if (null != window[flagLayerVar]) {
+  window[flagLayerVar].removeFrom(window[mapVar]);
+  }
+
+  if (null != window[selectionLayerVar]) {
     window[selectionLayerVar].removeFrom(window[mapVar]);
   }
 
-  let mapData = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'Data').val());
+  if (null != window[pathLayerVar]) {
+    window[pathLayerVar].removeFrom(window[mapVar]);
+  }
+
+  let mapData = JSON.parse($(getMapFormName(index) + '\\:map' + index + 'Data').val());
+
+  if (mapData.length >= 4) {
+    window[pathLayerVar] = makeMapPath(index, mapData[3]).addTo(window[mapVar]);
+  }
 
   window[flagLayerVar] = makeMapLayer(index, mapData[1], false).addTo(window[mapVar]);
   window[selectionLayerVar] = makeMapLayer(index, mapData[2], false).addTo(window[mapVar]);
   window[dataLayerVar] = makeMapLayer(index, mapData[0], true).addTo(window[mapVar]);
 
-  let scaleLimits = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'ScaleLimits').val());
+
+  let scaleLimits = JSON.parse($(getMapFormName(index) + '\\:map' + index + 'ScaleLimits').val());
   window[colorScaleVar].setValueRange(scaleLimits[0], scaleLimits[1]);
   window[colorScaleVar].drawScale($('#map' + index + 'Scale'), scaleOptions);
 
   if (redrawMap) {
-    $('#plot' + index + 'Form\\:map' + index + 'UpdateScale').val(false);
-    let bounds = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'DataBounds').val());
+    $(getMapFormName(index) + '\\:map' + index + 'UpdateScale').val(false);
+    let bounds = JSON.parse($(getMapFormName(index) + '\\:map' + index + 'DataBounds').val());
     window[mapVar].fitBounds([[bounds[1], bounds[0]], [bounds[3], bounds[2]]]);
-    resetZoom(index);
+    resetMapZoom(index);
   }
-
-  // Destroy the plot, which is no longer visible
-  window['plot' + index] = null;
 
   // We can't use the window object here because consts don't get put there.
   if (index == 1) {
@@ -2320,7 +2406,9 @@ function makeMapLayer(mapIndex, geojson, interactive) {
       })
       .bindTooltip(makeTooltip(feature, mapIndex))
       .on('click', function(e) {
-        scrollToTableRow(feature.properties.rowID)
+    if (typeof mapClick === 'function') {
+          mapClick(feature.properties.rowID);
+    }
       });
     },
     onEachFeature: (feature, layer) => {
@@ -2331,8 +2419,20 @@ function makeMapLayer(mapIndex, geojson, interactive) {
   return result;
 }
 
+function makeMapPath(mapIndex, geojson) {
+  let result = L.layerGroup();
+
+  L.geoJSON(geojson, {
+    style: function (feature) {
+      return { color: '#888', weight: 1 }; // Customize your style here
+    }
+  }).addTo(result);
+
+  return result;
+}
+
 function makeTooltip(point, mapIndex) {
-  if ($('#plot' + mapIndex + 'Form\\:map' + mapIndex + 'Column').val() == TIME_COLUMN_ID) {
+  if ($(getMapFormName(mapIndex) + '\\:map' + mapIndex + 'Column').val() == TIME_COLUMN_ID) {
     return '' + new Date(Math.round(point.properties.value)).toISOString();
   } else {
     return '' + point.properties.value;
@@ -2347,28 +2447,10 @@ function getPointColor(mapIndex, point) {
       .getColor(point.properties.value);
     }
     case FLAG_TYPE: {
-      switch (point.properties.flag) {
-        case FLAG_QUESTIONABLE: {
-          return '#FFA42B';
-        }
-        case FLAG_BAD:
-        case FLAG_LOOKUP: {
-          return '#FF0000';
-        }
-        case FLAG_NEEDS_FLAG: {
-          return '#D7D6FF';
-        }
-        case FLAG_FLUSHING: {
-          return '#C0C0C0';
-        }
-        default: {
-          console.log('INVALID FLAG VALUE ' + point.properties.flag);
-          return '#000000';
-        }
-      }
+      return getFlagColor(point.properties.flag, 'y1', true);
     }
     case SELECTION_TYPE: {
-      return '#FFFF00';
+      return null != window['mapSelectionColor'] ? window['mapSelectionColor'] : '#FFFF00';
     }
     default: {
       console.log('INVALID TYPE ' + point.properties.type);
@@ -2385,13 +2467,17 @@ function getPointSize(point) {
   }
 }
 
+function resetMapZoom(index) {
+  let bounds = JSON.parse($(getMapFormName(index) + '\\:map' + index + 'DataBounds').val());
+  window['map' + index].fitBounds([[bounds[1], bounds[0]], [bounds[3], bounds[2]]]);
+  window['map' + index + 'Zoomed'] = false;
+}
+
 function resetZoom(index) {
-  let mode = getPlotMode(index)
+  let mode = getPlotMode(index);
 
   if (mode == PLOT_MODE_MAP) {
-    let bounds = JSON.parse($('#plot' + index + 'Form\\:map' + index + 'DataBounds').val());
-    window['map' + index].fitBounds([[bounds[1], bounds[0]], [bounds[3], bounds[2]]]);
-    window['map' + index + 'Zoomed'] = false;
+    resetMapZoom(index);
   } else {
     window['dataPlot' + index].updateOptions({
       yRangePad: 10,

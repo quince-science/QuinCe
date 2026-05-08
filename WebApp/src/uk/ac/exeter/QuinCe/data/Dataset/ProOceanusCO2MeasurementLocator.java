@@ -6,11 +6,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -40,6 +41,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * PERIODIC mode (see {@link SensorValuesList}), so there will be one
  * measurement per period of {@code W M} and {@code A M} readings.
  * </p>
+ *
+ * <p>
+ * <b>NOTE:</b> This class will only work if the underlying {@link Instrument}
+ * is operating on {@link Instrument#BASIS_TIME}.
+ * </p>
+ * </p>
  */
 public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
 
@@ -60,6 +67,11 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
     Instrument instrument, DataSet dataset, DatasetSensorValues sensorValues)
     throws MeasurementLocatorException {
 
+    if (instrument.getBasis() != Instrument.BASIS_TIME) {
+      throw new MeasurementLocatorException(
+        "Cannot only use this method on instruments with time basis");
+    }
+
     try {
       SensorsConfiguration sensorConfig = ResourceManager.getInstance()
         .getSensorsConfiguration();
@@ -79,7 +91,8 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
         .getSensorType("ProOceanus Zero Count");
       SensorType co2Type = sensorConfig
         .getSensorType("xCO₂ (wet, no standards)");
-      SensorValuesList runTypes = sensorValues.getRunTypes();
+      TimestampSensorValuesList runTypes = (TimestampSensorValuesList) sensorValues
+        .getRunTypes();
 
       // Assume one column of each type
       long zeroCountColumn = instrument.getSensorAssignments()
@@ -91,7 +104,8 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
       // locate flushing values.
       List<SensorValue> flaggedSensorValues = new ArrayList<SensorValue>();
 
-      SensorValuesList co2Values = sensorValues.getColumnValues(co2Column);
+      TimestampSensorValuesList co2Values = (TimestampSensorValuesList) sensorValues
+        .getColumnValues(co2Column);
 
       // First, the zero values
       SensorValuesList zeroValues = sensorValues
@@ -109,12 +123,12 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
         for (SensorValue zero : zeroValues.getRawValues()) {
           String newZero = zero.getValue();
           if (!newZero.equals(lastZero)) {
-            LocalDateTime flushingStart = zero.getTime();
+            LocalDateTime flushingStart = zero.getCoordinate().getTime();
             LocalDateTime flushingEnd = flushingStart.plusSeconds(flushingTime);
 
             for (SensorValue flushingCO2 : co2Values.getRawValues(flushingStart,
               flushingEnd)) {
-              flushingCO2.setUserQC(Flag.FLUSHING, "Flushing");
+              flushingCO2.setUserQC(FlagScheme.FLUSHING_FLAG, "Flushing");
               flaggedSensorValues.add(flushingCO2);
             }
           }
@@ -127,12 +141,12 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
         for (SensorValue runType : runTypes.getRawValues()) {
           String newRunType = runType.getValue();
           if (!newRunType.equals(lastRunType)) {
-            LocalDateTime flushingStart = runType.getTime();
+            LocalDateTime flushingStart = runType.getCoordinate().getTime();
             LocalDateTime flushingEnd = flushingStart.plusSeconds(flushingTime);
 
             for (SensorValue flushingCO2 : co2Values.getRawValues(flushingStart,
               flushingEnd)) {
-              flushingCO2.setUserQC(Flag.FLUSHING, "Flushing");
+              flushingCO2.setUserQC(FlagScheme.FLUSHING_FLAG, "Flushing");
               flaggedSensorValues.add(flushingCO2);
             }
           }
@@ -141,7 +155,7 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
         }
 
         // Store the updated flags
-        DataSetDataDB.storeSensorValues(conn, flaggedSensorValues);
+        DataSetDataDB.updateSensorValues(conn, flaggedSensorValues);
 
         // Force the CO2 output values to be recalculated now that
         // some values have had their flags changed.
@@ -159,20 +173,22 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
          */
         if (null != runType) {
 
-          SensorValuesListValue co2Value = co2Values.getValue(runType.getTime(),
-            false);
+          SensorValuesListValue co2Value = co2Values
+            .getValue(runType.getCoordinate(), false);
 
           // We only make measurements for non-flushing CO2 values
           if (null != co2Value) {
             if (runType.getStringValue().equals(WATER_MODE)) {
               if (instrument.hasVariable(waterVar)) {
-                measurements.add(new Measurement(dataset.getId(),
-                  runType.getNominalTime(), waterRunTypes));
+                measurements
+                  .add(new Measurement(dataset.getId(), dataset.getFlagScheme(),
+                    runType.getCoordinate(), waterRunTypes));
               }
             } else if (runType.getStringValue().equals(ATM_MODE)) {
               if (instrument.hasVariable(atmVar)) {
-                measurements.add(new Measurement(dataset.getId(),
-                  runType.getNominalTime(), atmRunTypes));
+                measurements
+                  .add(new Measurement(dataset.getId(), dataset.getFlagScheme(),
+                    runType.getCoordinate(), atmRunTypes));
               }
             } else {
               throw new MeasurementLocatorException(
@@ -185,6 +201,7 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
 
       return measurements;
     } catch (Exception e) {
+      DatabaseUtils.rollBack(conn);
       if (e instanceof MeasurementLocatorException) {
         throw (MeasurementLocatorException) e;
       } else {

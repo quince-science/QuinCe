@@ -70,10 +70,12 @@ then
 
   # Delete dataset data
   mysql -u $db_user -p"$db_password" $db_name <<EOF
-    DELETE FROM data_reduction WHERE measurement_id IN (SELECT id FROM measurements WHERE dataset_id = $dataset_id);
-    DELETE FROM measurement_run_types WHERE measurement_id IN (SELECT id FROM measurements WHERE dataset_id = $dataset_id);
-    DELETE FROM measurements WHERE dataset_id = $dataset_id;
-    DELETE FROM sensor_values WHERE dataset_id = $dataset_id;
+    DELETE FROM data_reduction WHERE measurement_id IN (SELECT id FROM measurements WHERE coordinate_id IN (SELECT id FROM coordinates WHERE dataset_id = $dataset_id));
+    DELETE FROM measurement_run_types WHERE measurement_id IN (SELECT id FROM measurements WHERE coordinate_id IN (SELECT id FROM coordinates WHERE dataset_id = $dataset_id));
+    DELETE FROM measurements WHERE coordinate_id IN (SELECT id FROM coordinates WHERE dataset_id = $dataset_id);
+    DELETE FROM sensor_values WHERE coordinate_id IN (SELECT id FROM coordinates WHERE dataset_id = $dataset_id);
+    DELETE FROM coordinates WHERE dataset_id = $dataset_id;
+    DELETE FROM dataset_files WHERE dataset_id = $dataset_id;
     DELETE FROM dataset WHERE id = $dataset_id;
 EOF
 

@@ -30,10 +30,14 @@
   <h:outputStylesheet name="style/main.css" />
   <h:outputStylesheet name="style/plotPage.css" />
 
+  <ui:insert name="localStylesheets"></ui:insert>
+
   <!-- General form for page-level data, commands etc -->
   <h:form id="plotPageForm" method="post">
     <h:inputHidden id="error"
       value="#{sessionScope[beanName].error}" />
+
+    <h:inputHidden id="flagScheme" value="#{sessionScope[beanName].flagScheme}"/>
 
     <h:inputHidden id="canEdit" value="#{sessionScope[beanName].canEdit}"/>
 
@@ -48,12 +52,7 @@
     <h:inputHidden id="dataBounds"
       value="#{sessionScope[beanName].dataBounds}" />
 
-    <p:remoteCommand name="loadData"
-      action="#{sessionScope[beanName].loadData}"
-      process="@this" update="error :plot1Form:plot1XAxis :plot1Form:plot1YAxis :plot1Form:plot1Y2Axis
-        :plot1Form:map1Column :plot2Form:plot2XAxis :plot2Form:plot2YAxis :plot2Form:plot2Y2Axis
-        :plot2Form:map2Column columnHeadings extendedColumnHeadings rowIDs :statusForm"
-      oncomplete="dataLoaded()" onerror="plotError(xhr)" async="true"/>
+  <ui:insert name="loadDataCommand"></ui:insert>
 
   </h:form>
 
@@ -79,9 +78,10 @@
   <p:dialog header="Please wait" widgetVar="pleaseWait" modal="true"
     resizable="false" closable="false">
     <h:form id="pleaseWaitForm">
-    <p:remoteCommand name="updateProgress"
-      action="#{sessionScope[beanName].noop}"
-      process="@none" update="progressName progressBar"/>
+      <p:remoteCommand name="updateProgress"
+        action="#{sessionScope[beanName].noop}"
+        process="@none" update="progressName progressBar"/>
+
       Preparing data. This can take quite a while, so please be patient...
       <h:panelGrid columns="1" cellpadding="5" style="width: 100%">
         <h:outputText id="progressName" value="#{sessionScope[beanName].progress.name}"/>
@@ -100,18 +100,20 @@
   <p:dialog header="Error" widgetVar="errorMessage" modal="true"
     resizable="false" closable="false">
 
-    <div class="error">
-      ERROR: An error occurred during processing.
-      Please report the following to site support:
-    </div>
+    <h:form id="errorMessageFirm">
+      <div class="error">
+        ERROR: An error occurred during processing.
+        Please report the following to site support:
+      </div>
 
-    <div id="errorMessageString" class="instructions">
-      ...
-    </div>
-    <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
-      <p:commandButton id="abortButton" value="Close"
-        action="#{sessionScope[beanName].abort}" />
-    </h:panelGrid>
+      <div id="errorMessageString" class="instructions">
+        ...
+      </div>
+      <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+        <p:commandButton id="abortButton" value="Close"
+          action="#{sessionScope[beanName].abort}" />
+      </h:panelGrid>
+    </h:form>
   </p:dialog>
 
   <p:dialog widgetVar="variableDialog" modal="true" header="Variables"
@@ -160,11 +162,13 @@
         </div>
       </ui:repeat>
     </div>
-    <h:panelGrid columns="2" styleClass="buttonPanel">
-      <p:commandButton widgetVar="variableOk" value="OK"
-        onclick="applyVariables();" />
-      <p:commandButton value="Cancel" onclick="PF('variableDialog').hide();" />
-    </h:panelGrid>
+    <h:form id="applyVariablesForm">
+      <h:panelGrid columns="2" styleClass="buttonPanel">
+        <p:commandButton widgetVar="variableOk" value="OK"
+          onclick="applyVariables();" />
+        <p:commandButton value="Cancel" onclick="PF('variableDialog').hide();" />
+      </h:panelGrid>
+    </h:form>
   </p:dialog>
 
   <p:dialog widgetVar="notesDialog" modal="true" header="Dataset Notes"
@@ -179,7 +183,7 @@
         value="#{sessionScope[beanName].userComments}"
         style="width: 420px; height: 130px;" autoResize="false"/>
 
-      <h:panelGrid columns="3" styleClass="buttonPanel">
+      <h:panelGrid columns="5" styleClass="buttonPanel">
         <p:commandButton widgetVar="notesOK" value="OK"
           onclick="saveNotes();" />
         <p:commandButton widgetVar="notesRevert" value="Revert">
@@ -213,186 +217,7 @@
 
   <div id="plotPageContent" class="plotPageContent">
     <div id="plots">
-      <div id="plot1Panel" class="plotContainer">
-        <h:form id="plot1Form" method="post">
-          <h:inputHidden id="plot1Data"
-            value="#{sessionScope[beanName].data.plot1.mainData}"/>
-          <h:inputHidden id="plot1DataLabels"
-            value="#{sessionScope[beanName].data.plot1.dataLabels}"/>
-          <h:inputHidden id="plot1Flags"
-            value="#{sessionScope[beanName].data.plot1.flagData}"/>
-          <h:inputHidden id="plot1FlagLabels"
-            value="#{sessionScope[beanName].data.plot1.flagLabels}"/>
-          <h:inputHidden id="plot1Y2Data"
-            value="#{sessionScope[beanName].data.plot1.y2Data}"/>
-          <h:inputHidden id="plot1Y2Labels"
-            value="#{sessionScope[beanName].data.plot1.y2Labels}"/>
-          <h:inputHidden id="plot1XAxis"
-            value="#{sessionScope[beanName].data.plot1.xaxis}"/>
-          <h:inputHidden id="plot1YAxis"
-            value="#{sessionScope[beanName].data.plot1.yaxis}"/>
-          <h:inputHidden id="plot1Y2Axis"
-            value="#{sessionScope[beanName].data.plot1.y2axis}"/>
-          <h:inputHidden id="map1Column"
-            value="#{sessionScope[beanName].data.map1.column}"/>
-          <h:inputHidden id="map1Data"
-            value="#{sessionScope[beanName].data.map1.data}"/>
-          <h:inputHidden id="map1ScaleLimits"
-            value="#{sessionScope[beanName].data.map1.scaleLimits}"/>
-          <h:inputHidden id="map1DataBounds"
-            value="#{sessionScope[beanName].data.map1.dataBounds}"/>
-          <h:inputHidden id="map1Bounds"
-            value="#{sessionScope[beanName].data.map1.viewBounds}"/>
-          <h:inputHidden id="map1UpdateScale"
-            value="#{sessionScope[beanName].data.map1.updateScale}"/>
-
-          <p:remoteCommand name="loadPlot1"
-            action="#{sessionScope[beanName].data.plot1.init}"
-            process="@this plot1XAxis plot1YAxis plot1Y2Axis plot1HideFlags"
-            update=":plotPageForm:error plot1Data plot1Flags plot1DataLabels
-              plot1FlagLabels plot1Y2Data plot1Y2Labels"
-            oncomplete="drawPlot(1, true, false)" onerror="plotError(xhr)"/>
-
-          <p:remoteCommand name="map1GetData"
-            action="#{sessionScope[beanName].data.map1.generateMapData}"
-            process="map1Column map1Bounds map1UpdateScale plot1HideFlags"
-            update="map1DataBounds map1Data map1ScaleLimits"
-            oncomplete="drawMap(1)" onerror="plotError(xhr)"/>
-
-          <div id="plot1Container">
-            <div id="plot1Y2Plot" class="plot y2Plot"></div>
-            <div id="plot1DataPlot" class="plot dataPlot"></div>
-            <div id="plot1SelectionPlot" class="plot selectionPlot"></div>
-            <div id="plot1FlagPlot" class="plot flagPlot"></div>
-          </div>
-          <div id="plot1Label" class="plotLabels"></div>
-          <div id="map1Container" class="hidden"></div>
-          <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
-            <f:facet name="left">
-              <ui:fragment rendered="#{sessionScope[beanName].allowMaps()}">
-                <p:selectOneButton id="plot1Mode" widgetVar="plot1Mode"
-                  styleClass="plotModeButtons"
-                  value="0" onchange="initPlot(1)" unselectable="false">
-                  <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
-                  <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
-                </p:selectOneButton>
-              </ui:fragment>
-              <div class="plotFooterButtonContainer">
-                <p:commandButton icon="selectVariableButton"
-                  onclick="showVariableDialog(1); return false;"
-                  styleClass="inlineButton tightIconButton plotFooterButton" />
-                <p:commandButton icon="zoomOutButton" onclick="resetZoom(1); return false;"
-                  styleClass="inlineButton tightIconButton plotFooterButton" />
-                <p:selectBooleanButton onIcon="hideFlagsButton" offIcon="hideFlagsButton"
-                  value="#{sessionScope[beanName].data.plot1HideFlags}"
-                  id="plot1HideFlags" onchange="hideFlags(1); return false;"
-                  styleClass="tightIconButton plotFooterButton" />
-              </div>
-              <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
-                <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode"
-                  value="zoom" styleClass="selectModeButtons"
-                  onchange="setPlotSelectMode(1)" unselectable="false">
-                  <f:selectItem itemLabel=" " itemValue="zoom" />
-                  <f:selectItem itemLabel=" " itemValue="select" />
-                </p:selectOneButton>
-              </ui:fragment>
-            </f:facet>
-            <f:facet name="right">
-              <div id="map1Scale" class="colorScaleContainer"></div>
-            </f:facet>
-          </p:toolbar>
-        </h:form>
-      </div>
-      <div id="plot2Panel" class="plotContainer">
-        <h:form id="plot2Form" method="post">
-          <h:inputHidden id="plot2Data"
-            value="#{sessionScope[beanName].data.plot2.mainData}"/>
-          <h:inputHidden id="plot2DataLabels"
-            value="#{sessionScope[beanName].data.plot2.dataLabels}"/>
-          <h:inputHidden id="plot2Flags"
-            value="#{sessionScope[beanName].data.plot2.flagData}"/>
-          <h:inputHidden id="plot2FlagLabels"
-            value="#{sessionScope[beanName].data.plot2.flagLabels}"/>
-          <h:inputHidden id="plot2Y2Data"
-            value="#{sessionScope[beanName].data.plot2.y2Data}"/>
-          <h:inputHidden id="plot2Y2Labels"
-            value="#{sessionScope[beanName].data.plot2.y2Labels}"/>
-          <h:inputHidden id="plot2XAxis"
-            value="#{sessionScope[beanName].data.plot2.xaxis}"/>
-          <h:inputHidden id="plot2YAxis"
-            value="#{sessionScope[beanName].data.plot2.yaxis}"/>
-          <h:inputHidden id="plot2Y2Axis"
-            value="#{sessionScope[beanName].data.plot2.y2axis}"/>
-          <h:inputHidden id="map2Column"
-            value="#{sessionScope[beanName].data.map2.column}"/>
-          <h:inputHidden id="map2Data"
-            value="#{sessionScope[beanName].data.map2.data}"/>
-          <h:inputHidden id="map2ScaleLimits"
-            value="#{sessionScope[beanName].data.map2.scaleLimits}"/>
-          <h:inputHidden id="map2DataBounds"
-            value="#{sessionScope[beanName].data.map2.dataBounds}"/>
-          <h:inputHidden id="map2Bounds"
-            value="#{sessionScope[beanName].data.map2.viewBounds}"/>
-          <h:inputHidden id="map2UpdateScale"
-            value="#{sessionScope[beanName].data.map2.updateScale}"/>
-
-          <p:remoteCommand name="loadPlot2"
-            action="#{sessionScope[beanName].data.plot2.init}"
-            process="@this plot2XAxis plot2YAxis plot2Y2Axis plot2HideFlags"
-            update=":plotPageForm:error plot2Data plot2Flags plot2DataLabels
-              plot2FlagLabels plot2Y2Data plot2Y2Labels"
-            oncomplete="drawPlot(2, true, false)" onerror="plotError(xhr)"/>
-
-          <p:remoteCommand name="map2GetData"
-            action="#{sessionScope[beanName].data.map2.generateMapData}"
-            process="map2Column map2Bounds map2UpdateScale plot2HideFlags"
-            update="map2DataBounds map2Data map2ScaleLimits"
-            oncomplete="drawMap(2)" onerror="plotError(xhr)"/>
-
-          <div id="plot2Container">
-            <div id="plot2Y2Plot" class="plot y2Plot"></div>
-            <div id="plot2DataPlot" class="plot dataPlot"></div>
-            <div id="plot2SelectionPlot" class="plot selectionPlot"></div>
-            <div id="plot2FlagPlot" class="plot flagPlot"></div>
-          </div>
-          <div id="plot2Label" class="plotLabels"></div>
-          <div id="map2Container" class="hidden"></div>
-          <p:toolbar id="plot2Toolbar" styleClass="plotPageFooter">
-            <f:facet name="left">
-              <ui:fragment rendered="#{sessionScope[beanName].allowMaps()}">
-                <p:selectOneButton id="plot2Mode" widgetVar="plot2Mode"
-                  styleClass="plotModeButtons"
-                  value="0" onchange="initPlot(2)" unselectable="false">
-                  <f:selectItem itemLabel=" " itemValue="0" /> <!-- PLOT_MODE_PLOT -->
-                  <f:selectItem itemLabel=" " itemValue="1" /> <!-- PLOT_MODE_MAP -->
-                </p:selectOneButton>
-              </ui:fragment>
-              <div class="plotFooterButtonContainer">
-                <p:commandButton icon="selectVariableButton"
-                  onclick="showVariableDialog(2); return false;"
-                  styleClass="inlineButton tightIconButton plotFooterButton" />
-                <p:commandButton icon="zoomOutButton" onclick="resetZoom(2); return false;"
-                  styleClass="inlineButton tightIconButton plotFooterButton" />
-                <p:selectBooleanButton onIcon="hideFlagsButton" offIcon="hideFlagsButton"
-                  value="#{sessionScope[beanName].data.plot2HideFlags}"
-                  id="plot2HideFlags" onchange="hideFlags(2); return false;"
-                  styleClass="tightIconButton plotFooterButton" />
-              </div>
-              <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
-                <p:selectOneButton id="plotSelectMode" widgetVar="plot2SelectMode"
-                  value="zoom" styleClass="selectModeButtons"
-                  onchange="setPlotSelectMode(2)" unselectable="false">
-                  <f:selectItem itemLabel=" " itemValue="zoom" />
-                  <f:selectItem itemLabel=" " itemValue="select" />
-                </p:selectOneButton>
-              </ui:fragment>
-            </f:facet>
-            <f:facet name="right">
-              <div id="map2Scale" class="colorScaleContainer"></div>
-            </f:facet>
-          </p:toolbar>
-        </h:form>
-      </div>
+      <ui:insert name="plots"></ui:insert>
     </div>
     <div id="tableContent"></div>
   </div>

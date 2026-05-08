@@ -19,7 +19,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -281,14 +280,14 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
 
     initResourceManager();
 
-    try (Connection conn = getConnection()) {
+    try (Connection conn = getConnection(false)) {
 
       // Load Dataset data
       Instrument instrument = InstrumentDB.getInstrument(conn, 1L);
       Variable variable = instrument.getVariables().get(0);
       DataSet dataset = DataSetDB.getDataSet(conn, 1L);
       DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataset.getId(), false, false);
+        dataset, false, false);
 
       // Set the auto QC and user QC values for the data SensorValues
       SensorValue sst = allSensorValues.getById(SST_VAL_ID);
@@ -305,25 +304,28 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
       runType.setValue(line.getStringField(RUN_TYPE_COL, false));
 
       // Write updated values to DB
-      DataSetDataDB.storeSensorValues(conn,
+      DataSetDataDB.updateSensorValues(conn,
         Arrays.asList(sst, salinity, co2, runType));
+      conn.commit();
 
       // Set the Diagnostic QC flags and apply the cascade
       RunTypePeriods runTypePeriods = makeRunTypePeriods(runType);
 
       SensorValue waterFlow = allSensorValues.getById(DIAGNOSTIC_WATER_VAL_ID);
-      waterFlow.setUserQC(new Flag(line.getIntField(DIAGNOSTIC_WATER_FLAG_COL)),
+      waterFlow.setUserQC(
+        flagScheme.getFlag(line.getIntField(DIAGNOSTIC_WATER_FLAG_COL)),
         "Liquid");
 
       allSensorValues.applyQCCascade(waterFlow, runTypePeriods);
 
       SensorValue gasFlow = allSensorValues.getById(DIAGNOSTIC_GAS_VAL_ID);
-      gasFlow.setUserQC(new Flag(line.getIntField(DIAGNOSTIC_GAS_FLAG_COL)),
-        "Air");
+      gasFlow.setUserQC(
+        flagScheme.getFlag(line.getIntField(DIAGNOSTIC_GAS_FLAG_COL)), "Air");
 
       allSensorValues.applyQCCascade(gasFlow, runTypePeriods);
 
-      DataSetDataDB.storeSensorValues(conn, allSensorValues.getAll());
+      DataSetDataDB.updateSensorValues(conn, allSensorValues.getAll());
+      conn.commit();
 
       // Run the Data Reduction
       DataReductionRecord dataReductionRecord = runDataReduction(conn,
@@ -368,16 +370,19 @@ public class ManualDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
 
         // Update diagnostic flags
         waterFlow.setUserQC(
-          new Flag(line.getIntField(UPDATED_DIAG_WATER_FLAG_COL)), "Liquid");
+          flagScheme.getFlag(line.getIntField(UPDATED_DIAG_WATER_FLAG_COL)),
+          "Liquid");
 
         allSensorValues.applyQCCascade(waterFlow, runTypePeriods);
 
-        gasFlow.setUserQC(new Flag(line.getIntField(UPDATED_DIAG_GAS_FLAG_COL)),
+        gasFlow.setUserQC(
+          flagScheme.getFlag(line.getIntField(UPDATED_DIAG_GAS_FLAG_COL)),
           "Air");
 
         allSensorValues.applyQCCascade(gasFlow, runTypePeriods);
 
-        DataSetDataDB.storeSensorValues(conn, allSensorValues.getAll());
+        DataSetDataDB.updateSensorValues(conn, allSensorValues.getAll());
+        conn.commit();
 
         // Run the Data Reduction
         DataReductionRecord newDataReductionRecord = runDataReduction(conn,

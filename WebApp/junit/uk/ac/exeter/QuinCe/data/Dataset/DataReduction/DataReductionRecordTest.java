@@ -15,6 +15,8 @@ import org.mockito.Mockito;
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 
 /**
@@ -48,13 +50,13 @@ public class DataReductionRecordTest extends BaseTest {
 
   private DataReductionRecord makeEmptyRecord() {
     return new DataReductionRecord(makeMeasurement(), makeVariable(),
-      makeParameterNames());
+      flagScheme, makeParameterNames());
   }
 
   private DataReductionRecord makeQuestionableRecord()
     throws DataReductionException {
     DataReductionRecord record = makeEmptyRecord();
-    record.setQc(Flag.QUESTIONABLE, "Simple Message");
+    record.setQc(IcosFlagScheme.QUESTIONABLE_FLAG, "Simple Message");
     return record;
   }
 
@@ -67,7 +69,7 @@ public class DataReductionRecordTest extends BaseTest {
   @Test
   public void noValuesConstructorTest() throws DataReductionException {
     DataReductionRecord record = new DataReductionRecord(makeMeasurement(),
-      makeVariable(), makeParameterNames());
+      makeVariable(), flagScheme, makeParameterNames());
 
     assertEquals(MEASUREMENT_ID, record.getMeasurementId(),
       "Measurement ID does not match");
@@ -77,7 +79,8 @@ public class DataReductionRecordTest extends BaseTest {
       "PARAM_1 should not be set");
     assertNull(record.getCalculationValue(PARAM_2),
       "PARAM_2 should not be set");
-    assertEquals(Flag.ASSUMED_GOOD, record.getQCFlag(), "QC Flag incorrect");
+    assertEquals(flagScheme.getAssumedGoodFlag(), record.getQCFlag(),
+      "QC Flag incorrect");
     assertEquals(0, record.getQCMessages().size(), "QC messages not empty");
   }
 
@@ -127,9 +130,10 @@ public class DataReductionRecordTest extends BaseTest {
   public void basicQCTest() throws DataReductionException {
     DataReductionRecord record = makeEmptyRecord();
 
-    record.setQc(Flag.BAD, "Bad");
+    record.setQc(flagScheme.getBadFlag(), "Bad");
 
-    assertEquals(Flag.BAD, record.getQCFlag(), "QC Flag incorrect");
+    assertEquals(flagScheme.getBadFlag(), record.getQCFlag(),
+      "QC Flag incorrect");
     assertEquals(1, record.getQCMessages().size());
     assertEquals("Bad", record.getQCMessages().iterator().next());
   }
@@ -146,7 +150,7 @@ public class DataReductionRecordTest extends BaseTest {
     List<String> messages = Arrays
       .asList(new String[] { "Message 1", "Message 2" });
 
-    record.setQc(Flag.BAD, messages);
+    record.setQc(flagScheme.getBadFlag(), messages);
 
     assertEquals(2, record.getQCMessages().size(),
       "Mismatched message list size");
@@ -163,7 +167,7 @@ public class DataReductionRecordTest extends BaseTest {
     DataReductionRecord record = makeEmptyRecord();
 
     assertThrows(DataReductionException.class, () -> {
-      record.setQc(Flag.BAD, message);
+      record.setQc(flagScheme.getBadFlag(), message);
     });
   }
 
@@ -178,8 +182,9 @@ public class DataReductionRecordTest extends BaseTest {
   public void setNoQCEmptyQCTest(String message) throws DataReductionException {
     DataReductionRecord record = makeEmptyRecord();
 
-    record.setQc(Flag.NO_QC, message);
-    assertEquals(Flag.NO_QC, record.getQCFlag(), "Incorrect QC flag");
+    record.setQc(FlagScheme.NO_QC_FLAG, message);
+    assertEquals(FlagScheme.NO_QC_FLAG, record.getQCFlag(),
+      "Incorrect QC flag");
     assertEquals(0, record.getQCMessages().size());
   }
 
@@ -191,8 +196,9 @@ public class DataReductionRecordTest extends BaseTest {
   @Test
   public void lessSignificantQCTest() throws DataReductionException {
     DataReductionRecord record = makeQuestionableRecord();
-    record.setQc(Flag.GOOD, "Message");
-    assertEquals(Flag.QUESTIONABLE, record.getQCFlag(), "Mismatched QC Flag");
+    record.setQc(flagScheme.getGoodFlag(), "Message");
+    assertEquals(IcosFlagScheme.QUESTIONABLE_FLAG, record.getQCFlag(),
+      "Mismatched QC Flag");
   }
 
   /**
@@ -203,9 +209,10 @@ public class DataReductionRecordTest extends BaseTest {
   @Test
   public void equalQCTest() throws DataReductionException {
     DataReductionRecord record = makeQuestionableRecord();
-    record.setQc(Flag.QUESTIONABLE, "New Message");
+    record.setQc(IcosFlagScheme.QUESTIONABLE_FLAG, "New Message");
 
-    assertEquals(Flag.QUESTIONABLE, record.getQCFlag(), "Mismatched QC Flag");
+    assertEquals(IcosFlagScheme.QUESTIONABLE_FLAG, record.getQCFlag(),
+      "Mismatched QC Flag");
     assertEquals(2, record.getQCMessages().size(), "QC Messages not combined");
   }
 
@@ -217,9 +224,9 @@ public class DataReductionRecordTest extends BaseTest {
   @Test
   public void moreSignificantQCTest() throws DataReductionException {
     DataReductionRecord record = makeQuestionableRecord();
-    record.setQc(Flag.BAD, "Bad Message");
+    record.setQc(flagScheme.getBadFlag(), "Bad Message");
 
-    assertEquals(Flag.BAD, record.getQCFlag());
+    assertEquals(flagScheme.getBadFlag(), record.getQCFlag());
     assertEquals(1, record.getQCMessages().size());
     assertEquals("Bad Message", record.getQCMessages().iterator().next());
   }

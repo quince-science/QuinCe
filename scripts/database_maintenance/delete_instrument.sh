@@ -67,11 +67,13 @@ then
   read -ra file_def_ids <<< `mysql -u$db_user -p"$db_password" $db_name -B --skip-column-names -e "select id from file_definition where instrument_id = $instrument_id"`
 
   mysql -u$db_user -p"$db_password" $db_name <<EOF
-    DELETE FROM data_reduction WHERE measurement_id IN (SELECT id FROM measurements WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
-    DELETE FROM measurement_run_types WHERE measurement_id IN (SELECT id FROM measurements WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
-    DELETE FROM measurements WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
+    DELETE FROM data_reduction WHERE measurement_id IN (SELECT id FROM measurements WHERE coordinate_id IN (SELECT id FROM coordinates WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id)));
+    DELETE FROM measurement_run_types WHERE measurement_id IN (SELECT id FROM measurements WHERE coordinate_id IN (SELECT id FROM coordinates WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id)));
+    DELETE FROM measurements WHERE coordinate_id IN (SELECT id FROM coordinates WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
 
-    DELETE FROM sensor_values WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
+    DELETE FROM sensor_values WHERE coordinate_id IN (SELECT id FROM coordinates WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
+    DELETE FROM coordinates WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
+    DELETE FROM dataset_files WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
 
     DELETE FROM dataset WHERE instrument_id = $instrument_id;
 

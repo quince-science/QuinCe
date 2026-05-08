@@ -219,10 +219,13 @@ table.ui-selectmanycheckbox > tbody > tr > td > label {
 
 .assignedDateTimeType {
   color: black;
+  font-weight: normal;
 }
 
 .dateTimeAssignment {
   color: blue;
+  font-weight: normal;
+  font-style: normal;
 }
 
 .positionAssignment {
@@ -265,4 +268,9 @@ table.runTypes thead {
 
 .unassignedFile {
   background-color: #FFbbbb !important;
+}
+
+.ui-selectoneradio label {
+  font-weight: 400;
+  font-size: 14px;
 }

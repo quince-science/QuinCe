@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -20,11 +21,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Dataset.ArgoDataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeDataSet;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFileException;
+import uk.ac.exeter.QuinCe.data.Files.TimeDataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
@@ -39,6 +45,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.NaturalOrderComparator;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -49,11 +56,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 @ManagedBean
 @SessionScoped
 public class DataSetsBean extends BaseManagedBean {
-
-  /**
-   * Navigation string for the New Dataset page
-   */
-  private static final String NAV_NEW_DATASET = "new_dataset";
 
   /**
    * Navigation string for the datasets list
@@ -126,19 +128,92 @@ public class DataSetsBean extends BaseManagedBean {
   private long processingMessagesId = -1L;
 
   /**
+   * The minimum allowed start point for a new dataset.
+   */
+  private String minimumStart = "";
+
+  /**
+   * The maximum allowed end point for a new dataset.
+   */
+  private String maximumEnd = "";
+
+  /**
    * Start the dataset definition procedure
    *
    * @return The navigation to the dataset definition page
+   * @throws DataFileException
+   * @throws DatabaseException
    */
-  public String startNewDataset() {
-    newDataSet = new DataSet(getCurrentInstrument());
+  public String startNewDataset() throws DatabaseException, DataFileException {
     fileDefinitionsJson = null;
     timelineEntriesJson = null;
     calibrationsJson = null;
     validCalibration = true;
     validCalibrationMessage = null;
 
-    return NAV_NEW_DATASET;
+    String nav;
+
+    switch (getCurrentInstrument().getBasis()) {
+    case Instrument.BASIS_TIME: {
+      newDataSet = new TimeDataSet(getCurrentInstrument());
+      nav = "new_dataset_time";
+      break;
+    }
+    case Instrument.BASIS_ARGO: {
+      newDataSet = new ArgoDataSet(getCurrentInstrument());
+
+      String[] fileLimits = getFileLimits();
+
+      minimumStart = fileLimits[0];
+      maximumEnd = fileLimits[1];
+
+      newDataSet.setStart(fileLimits[0]);
+      newDataSet.setEnd(fileLimits[1]);
+      newDataSet.setName(fileLimits[0] + "-" + fileLimits[1]);
+
+      nav = "new_dataset_argo";
+      break;
+    }
+    default: {
+      nav = internalError(new IllegalArgumentException(
+        "Unrecognised instrument basis " + getCurrentInstrument().getBasis()));
+    }
+    }
+
+    return nav;
+  }
+
+  public String getMinimumStart() {
+    return minimumStart;
+  }
+
+  public String getMaximumEnd() {
+    return maximumEnd;
+  }
+
+  private String[] getFileLimits() throws DatabaseException, DataFileException {
+
+    NaturalOrderComparator comparator = new NaturalOrderComparator();
+
+    String lowestStart = null;
+    String highestEnd = null;
+
+    TreeSet<DataFile> dataFiles = DataFileDB.getFiles(getDataSource(),
+      getCurrentInstrument());
+
+    for (DataFile dataFile : dataFiles) {
+      if (null == lowestStart || comparator
+        .compare(dataFile.getStartDisplayString(), lowestStart) < 0) {
+        lowestStart = dataFile.getStartDisplayString();
+      }
+
+      if (null == highestEnd
+        || comparator.compare(dataFile.getEndDisplayString(), highestEnd) > 0) {
+        highestEnd = dataFile.getEndDisplayString();
+      }
+    }
+
+    return new String[] { lowestStart, highestEnd };
   }
 
   /**
@@ -280,25 +355,30 @@ public class DataSetsBean extends BaseManagedBean {
       fileDefinitionsJson = fdJson.toString();
 
       // Now the actual files
-      List<DataFile> dataFiles = DataFileDB.getFiles(getDataSource(),
-        getAppConfig(), getCurrentInstrument());
+      TreeSet<DataFile> dataFiles = DataFileDB.getFiles(getDataSource(),
+        getCurrentInstrument());
 
       JsonArray entriesJson = new JsonArray();
 
-      for (int i = 0; i < dataFiles.size(); i++) {
-        DataFile file = dataFiles.get(i);
-
+      for (DataFile file : dataFiles) {
         JsonObject entry = new JsonObject();
 
         entry.addProperty("type", "range");
         entry.addProperty("group",
           definitionIds.get(file.getFileDefinition().getFileDescription()));
-        entry.addProperty("start",
-          DateTimeUtils.toIsoDate(file.getOffsetStartTime()));
-        entry.addProperty("end",
-          DateTimeUtils.toIsoDate(file.getOffsetEndTime()));
         entry.addProperty("content", file.getFilename());
         entry.addProperty("title", file.getFilename());
+
+        if (getCurrentInstrument().getBasis() == Instrument.BASIS_TIME) {
+          TimeDataFile castFile = (TimeDataFile) file;
+          entry.addProperty("start",
+            DateTimeUtils.toIsoDate(castFile.getOffsetStartTime()));
+          entry.addProperty("end",
+            DateTimeUtils.toIsoDate(castFile.getOffsetEndTime()));
+        } else {
+          entry.addProperty("start", file.getStartDisplayString());
+          entry.addProperty("end", file.getEndDisplayString());
+        }
 
         entriesJson.add(entry);
       }
@@ -307,8 +387,8 @@ public class DataSetsBean extends BaseManagedBean {
         JsonObject entry = new JsonObject();
 
         entry.addProperty("type", "background");
-        entry.addProperty("start", DateTimeUtils.toIsoDate(dataSet.getStart()));
-        entry.addProperty("end", DateTimeUtils.toIsoDate(dataSet.getEnd()));
+        entry.addProperty("start", dataSet.getDisplayStart());
+        entry.addProperty("end", dataSet.getDisplayEnd());
         entry.addProperty("content", dataSet.getName());
         entry.addProperty("title", dataSet.getName());
         entry.addProperty("className",
@@ -364,6 +444,23 @@ public class DataSetsBean extends BaseManagedBean {
    */
   public DataSet getNewDataSet() {
     return newDataSet;
+  }
+
+  /**
+   * Get the new data set as a {@link TimeDataSet} object.
+   *
+   * <p>
+   * This is required for accessing the dataset start and end directly as
+   * {@link LocalDateTime} objects.
+   * </p>
+   *
+   * @return The new data set.
+   */
+  public TimeDataSet getNewTimeDataSet() {
+    if (!(newDataSet instanceof TimeDataSet)) {
+      internalError(new ClassCastException());
+    }
+    return (TimeDataSet) newDataSet;
   }
 
   /**
@@ -657,6 +754,14 @@ public class DataSetsBean extends BaseManagedBean {
     return result;
   }
 
+  public String getMinStart() {
+    return minimumStart;
+  }
+
+  public String getMaxEnd() {
+    return maximumEnd;
+  }
+
   public void delete() {
     try {
       if (canExport(datasetId) != DELETE_NOT_ALLOWED) {
@@ -668,11 +773,15 @@ public class DataSetsBean extends BaseManagedBean {
     }
   }
 
+  public boolean canQcPosition() {
+    return getCurrentInstrument().getBasis() == Instrument.BASIS_TIME
+      && !getCurrentInstrument().fixedPosition();
+  }
+
   class DatasetNameComparator implements Comparator<DataSet> {
     @Override
     public int compare(DataSet o1, DataSet o2) {
       return o1.getName().compareTo(o2.getName());
     }
-
   }
 }

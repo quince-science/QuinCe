@@ -1,13 +1,12 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -50,11 +49,8 @@ public class PositionQCRoutine extends AutoQCRoutine {
    */
   protected DatasetSensorValues allSensorValues;
 
-  /**
-   * Empty instance constructor used to get messages
-   */
-  public PositionQCRoutine() {
-
+  public PositionQCRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
   }
 
   /**
@@ -77,21 +73,10 @@ public class PositionQCRoutine extends AutoQCRoutine {
   public PositionQCRoutine(DatasetSensorValues positionSensorValues)
     throws RoutineException, MissingParamException {
 
-    super();
-    super.parameters = new ArrayList<String>(); // No parameters needed
+    super(positionSensorValues.getFlagScheme(), null, null);
 
     MissingParam.checkMissing(positionSensorValues, "allSensorValues");
-
     this.allSensorValues = positionSensorValues;
-  }
-
-  /**
-   * This routine does not take any parameters, so the validation method does
-   * nothing.
-   */
-  @Override
-  protected void validateParameters() throws RoutineException {
-    // NOOP
   }
 
   @Override
@@ -104,8 +89,8 @@ public class PositionQCRoutine extends AutoQCRoutine {
   protected void qcAction(List<SensorValue> values) throws RoutineException {
 
     try {
-      // Step through each time in the dataset
-      for (LocalDateTime time : allSensorValues.getRawPositionTimes()) {
+      // Step through each coordinate in the dataset
+      for (Coordinate time : allSensorValues.getRawPositionCoordinates()) {
 
         // Get the position values for this time
         SensorValue longitude = allSensorValues
@@ -151,11 +136,11 @@ public class PositionQCRoutine extends AutoQCRoutine {
 
   private void flag(SensorValue lon, SensorValue lat) throws RoutineException {
     if (null != lon) {
-      addFlag(lon, Flag.BAD, "", "");
+      addFlag(lon, allSensorValues.getFlagScheme().getBadFlag(), "", "");
     }
 
     if (null != lat) {
-      addFlag(lat, Flag.BAD, "", "");
+      addFlag(lat, allSensorValues.getFlagScheme().getBadFlag(), "", "");
     }
   }
 }

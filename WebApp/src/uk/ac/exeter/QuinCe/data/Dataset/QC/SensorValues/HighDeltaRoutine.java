@@ -2,40 +2,33 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.Range;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 public class HighDeltaRoutine extends AutoQCRoutine {
 
-  /**
-   * The maximum delta between values, in units per minute
-   */
-  private double maxDelta;
+  public HighDeltaRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
 
-  @Override
-  protected void validateParameters() throws RoutineException {
-    if (parameters.size() != 1) {
-      throw new RoutineException(
-        "Incorrect number of parameters. Must be <maxDelta>");
-    }
-
-    try {
-      maxDelta = Double.parseDouble(parameters.get(0));
-    } catch (NumberFormatException e) {
-      throw new RoutineException("Max delta parameter must be numeric");
-    }
-
-    if (maxDelta <= 0) {
-      throw new RoutineException("Max duration must be greater than zero");
-    }
+  public HighDeltaRoutine(FlagScheme flagScheme, SensorType sensorType,
+    Map<Flag, Range<Double>> limits) {
+    super(flagScheme, sensorType, limits);
   }
 
   @Override
   protected void qcAction(List<SensorValue> values) throws RoutineException {
     SensorValue lastValue = null;
+
+    double maxDelta = limits.get(flagScheme.getBadFlag()).getMaximum();
 
     for (SensorValue sensorValue : values) {
       if (null == lastValue) {
@@ -46,8 +39,9 @@ public class HighDeltaRoutine extends AutoQCRoutine {
 
         // Calculate the change between this record and the previous one
         if (!sensorValue.isNaN()) {
-          double minutesDifference = ChronoUnit.SECONDS
-            .between(lastValue.getTime(), sensorValue.getTime()) / 60.0;
+          double minutesDifference = ChronoUnit.SECONDS.between(
+            lastValue.getCoordinate().getTime(),
+            sensorValue.getCoordinate().getTime()) / 60.0;
 
           double valueDelta = Math
             .abs(sensorValue.getDoubleValue() - lastValue.getDoubleValue());
@@ -55,7 +49,8 @@ public class HighDeltaRoutine extends AutoQCRoutine {
           double deltaPerMinute = valueDelta / minutesDifference;
 
           if (deltaPerMinute > maxDelta) {
-            addFlag(sensorValue, Flag.BAD, maxDelta, deltaPerMinute);
+            addFlag(sensorValue, flagScheme.getBadFlag(), maxDelta,
+              deltaPerMinute);
           }
 
           lastValue = sensorValue;

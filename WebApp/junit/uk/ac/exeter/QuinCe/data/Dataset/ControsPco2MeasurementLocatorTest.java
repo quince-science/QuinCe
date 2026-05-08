@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,14 +89,17 @@ public class ControsPco2MeasurementLocatorTest extends BaseTest {
 
     ControsPco2MeasurementLocator locator = new ControsPco2MeasurementLocator();
 
-    DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(
-      getConnection(), getInstrument(), getDataset().getId(), false, true);
+    Connection conn = getConnection(false);
+    DatasetSensorValues sensorValues = DataSetDataDB.getSensorValues(conn,
+      getDataset(), false, true);
+    conn.commit();
 
-    List<Measurement> measurements = locator.locateMeasurements(getConnection(),
+    List<Measurement> measurements = locator.locateMeasurements(conn,
       getInstrument(), getDataset(), sensorValues);
+    conn.commit();
 
     List<LocalDateTime> locatedMeasurementTimes = measurements.stream()
-      .map(m -> m.getTime()).toList();
+      .map(m -> m.getCoordinate().getTime()).toList();
 
     assertTrue(CollectionUtils.isEqualCollection(
       getNoZeroExpectedMeasurementTimes(), locatedMeasurementTimes));

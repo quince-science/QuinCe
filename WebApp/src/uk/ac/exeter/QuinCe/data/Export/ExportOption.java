@@ -398,11 +398,10 @@ public class ExportOption {
     DataSet dataset) throws ExportConfigurationException {
 
     try {
-      Constructor<?> constructor = dataClass.getConstructor(DataSource.class,
-        Instrument.class, DataSet.class, this.getClass());
+      Constructor<? extends ExportData> constructor = dataClass.getConstructor(
+        DataSource.class, Instrument.class, DataSet.class, this.getClass());
 
-      return (ExportData) constructor.newInstance(dataSource, instrument,
-        dataset, this);
+      return constructor.newInstance(dataSource, instrument, dataset, this);
     } catch (Exception e) {
       throw new ExportConfigurationException(name,
         "Error creating ExportData object", e);

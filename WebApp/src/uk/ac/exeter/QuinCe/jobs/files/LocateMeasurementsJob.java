@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +12,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -92,12 +92,11 @@ public class LocateMeasurementsJob extends DataSetJob {
       Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
         SENSOR_VALUES);
       if (null == rawSensorValues) {
-        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
-          dataSet.getId());
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn, dataSet);
       }
 
-      DatasetSensorValues sensorValues = new DatasetSensorValues(conn,
-        instrument, dataSet.getId(), false, true, rawSensorValues);
+      DatasetSensorValues sensorValues = new DatasetSensorValues(conn, dataSet,
+        false, true, rawSensorValues);
 
       // Work out which measurement locators we need to use
       Set<MeasurementLocator> measurementLocators = new HashSet<MeasurementLocator>();
@@ -112,7 +111,7 @@ public class LocateMeasurementsJob extends DataSetJob {
       }
 
       // Now locate the measurements
-      Map<LocalDateTime, Measurement> measurements = new HashMap<LocalDateTime, Measurement>();
+      Map<Coordinate, Measurement> measurements = new HashMap<Coordinate, Measurement>();
 
       for (MeasurementLocator locator : measurementLocators) {
         addMeasurements(measurements,
@@ -164,14 +163,14 @@ public class LocateMeasurementsJob extends DataSetJob {
     }
   }
 
-  private void addMeasurements(Map<LocalDateTime, Measurement> target,
+  private void addMeasurements(Map<Coordinate, Measurement> target,
     List<Measurement> newMeasurements) {
 
     newMeasurements.forEach(m -> {
-      if (target.containsKey(m.getTime())) {
-        target.get(m.getTime()).addRunTypes(m);
+      if (target.containsKey(m.getCoordinate())) {
+        target.get(m.getCoordinate()).addRunTypes(m);
       } else {
-        target.put(m.getTime(), m);
+        target.put(m.getCoordinate(), m);
       }
     });
 

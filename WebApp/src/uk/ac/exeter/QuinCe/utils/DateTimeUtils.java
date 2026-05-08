@@ -10,7 +10,7 @@ import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
 
 /**
  * Miscellaneous date/time utilities
@@ -35,19 +35,14 @@ public class DateTimeUtils {
   /**
    * A formatter for generating ISO format dates
    */
-  private static java.time.format.DateTimeFormatter isoDateTimeFormatter = null;
+  public static java.time.format.DateTimeFormatter isoDateTimeFormatter = java.time.format.DateTimeFormatter
+    .ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
 
   /**
    * For formatting LocalDateTime - dates and parsing date time strings
    */
-  private static java.time.format.DateTimeFormatter displayDateTimeFormatter = null;
-
-  static {
-    isoDateTimeFormatter = java.time.format.DateTimeFormatter
-      .ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
-    displayDateTimeFormatter = java.time.format.DateTimeFormatter
-      .ofPattern(DISPLAY_DATE_TIME_FORMAT).withZone(ZoneOffset.UTC);
-  }
+  private static java.time.format.DateTimeFormatter displayDateTimeFormatter = java.time.format.DateTimeFormatter
+    .ofPattern(DISPLAY_DATE_TIME_FORMAT).withZone(ZoneOffset.UTC);
 
   /**
    * Determines whether or not the current time is within a given number of
@@ -85,8 +80,8 @@ public class DateTimeUtils {
    *          The date
    * @return The long value
    */
-  public static long dateToLong(LocalDateTime date) {
-    return date.toInstant(ZoneOffset.UTC).toEpochMilli();
+  public static Long dateToLong(LocalDateTime date) {
+    return null == date ? null : date.toInstant(ZoneOffset.UTC).toEpochMilli();
   }
 
   /**
@@ -116,14 +111,18 @@ public class DateTimeUtils {
   }
 
   /**
-   * Generate an ISOformatted date string for a given date
+   * Generate an ISOformatted date string for a given date.
+   *
+   * <p>
+   * Passing in a {@code null} date will give a {@code null} result.
+   * </p>
    *
    * @param date
    *          The date
    * @return The ISO date string
    */
   public static String toIsoDate(LocalDateTime date) {
-    return isoDateTimeFormatter.format(date);
+    return null == date ? null : isoDateTimeFormatter.format(date);
   }
 
   /**
@@ -137,6 +136,20 @@ public class DateTimeUtils {
    */
   public static long secondsBetween(LocalDateTime date1, LocalDateTime date2) {
     return ChronoUnit.SECONDS.between(date1, date2);
+  }
+
+  /**
+   * Calculate the time between two {@link TimeCoordinate}s, in seconds
+   *
+   * @param date1
+   *          The first coordinate
+   * @param date2
+   *          The second coordinate
+   * @return The number of seconds between the dates
+   */
+  public static long secondsBetween(TimeCoordinate date1,
+    TimeCoordinate date2) {
+    return ChronoUnit.SECONDS.between(date1.getTime(), date2.getTime());
   }
 
   /**
@@ -176,10 +189,6 @@ public class DateTimeUtils {
       || isBetween(realEnd1, realStart2, realEnd2)
       || (!realStart1.isAfter(realStart2) && !realEnd1.isBefore(realEnd2));
 
-  }
-
-  public static boolean overlap(DataSet ds1, DataSet ds2) {
-    return overlap(ds1.getStart(), ds1.getEnd(), ds2.getStart(), ds2.getEnd());
   }
 
   /**

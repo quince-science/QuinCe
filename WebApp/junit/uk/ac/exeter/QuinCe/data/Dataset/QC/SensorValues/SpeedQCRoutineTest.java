@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 
 import uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import uk.ac.exeter.QuinCe.TestBase.TestSetTest;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -84,8 +85,12 @@ public class SpeedQCRoutineTest extends TestSetTest {
     Instrument instrument = Mockito.mock(Instrument.class);
     Mockito.when(instrument.getSensorAssignments())
       .thenReturn(sensorAssignments);
+    Mockito.when(instrument.getBasis()).thenReturn(Instrument.BASIS_TIME);
 
-    DatasetSensorValues allSensorValues = new DatasetSensorValues(instrument);
+    DatasetSensorValues allSensorValues = new DatasetSensorValues(
+      Mockito.mock(DataSet.class));
+    Mockito.when(allSensorValues.getInstrument()).thenReturn(instrument);
+    Mockito.when(allSensorValues.getFlagScheme()).thenReturn(flagScheme);
 
     boolean has1 = true;
     boolean has2 = false;
@@ -98,7 +103,7 @@ public class SpeedQCRoutineTest extends TestSetTest {
     // Read in first position
     String lon1 = line.getStringField(LON_1_COL, true);
     String lat1 = line.getStringField(LAT_1_COL, true);
-    Flag flag1 = line.getFlagField(FLAG_1_COL);
+    Flag flag1 = line.getFlagField(FLAG_1_COL, flagScheme);
 
     SensorValue svLon1 = SVTestUtils.makeSensorValue(1L,
       FileDefinition.LONGITUDE_COLUMN_ID, 10, lon1, flag1);
@@ -109,12 +114,12 @@ public class SpeedQCRoutineTest extends TestSetTest {
     allSensorValues.add(svLon1);
     allSensorValues.add(svLat1);
 
-    expectedFlag1 = line.getFlagField(QC_1_COL);
+    expectedFlag1 = line.getFlagField(QC_1_COL, flagScheme);
 
     // Read in second position
     String lon2 = line.getStringField(LON_2_COL, true);
     String lat2 = line.getStringField(LAT_2_COL, true);
-    Flag flag2 = line.getFlagField(FLAG_2_COL);
+    Flag flag2 = line.getFlagField(FLAG_2_COL, flagScheme);
 
     if (null != lon2) {
       SensorValue svLon2 = SVTestUtils.makeSensorValue(3L,
@@ -127,13 +132,13 @@ public class SpeedQCRoutineTest extends TestSetTest {
       allSensorValues.add(svLat2);
 
       has2 = true;
-      expectedFlag2 = line.getFlagField(QC_2_COL);
+      expectedFlag2 = line.getFlagField(QC_2_COL, flagScheme);
     }
 
     // Read in third position
     String lon3 = line.getStringField(LON_3_COL, true);
     String lat3 = line.getStringField(LAT_3_COL, true);
-    Flag flag3 = line.getFlagField(FLAG_3_COL);
+    Flag flag3 = line.getFlagField(FLAG_3_COL, flagScheme);
 
     if (null != lon3) {
       SensorValue svLon3 = SVTestUtils.makeSensorValue(5L,
@@ -146,7 +151,7 @@ public class SpeedQCRoutineTest extends TestSetTest {
       allSensorValues.add(svLat3);
 
       has3 = true;
-      expectedFlag3 = line.getFlagField(QC_3_COL);
+      expectedFlag3 = line.getFlagField(QC_3_COL, flagScheme);
     }
 
     // Run the QC Routine

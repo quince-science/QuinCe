@@ -1,4 +1,5 @@
-[
+{
+"Time": [
   {
     "variable": "Underway Marine pCO₂",
     "routines": [
@@ -10,9 +11,9 @@
           "Diagnostic Water Flow"
         ],
         "options": {
-          "questionable_limit": 1.5,
-          "bad_limit": 3
-        }
+          "limits.B": 3,
+		  "limits.Q": 1
+		}
       },
       {
         "name": "MissingStandards",
@@ -36,5 +37,67 @@
         }
       }      
     ]
+  },
+  {
+    "variable": "Pro Oceanus CO₂ Water",
+    "routines": [
+      {
+        "name": "ZeroCurrentComparison",
+        "flagged_sensors": [
+          "ProOceanus Current Count"
+        ],
+        "options": {
+        }
+      }      
+    ]
+  },
+  {
+    "variable": "Pro Oceanus CO₂ Atmosphere",
+    "routines": [
+      {
+        "name": "ZeroCurrentComparison",
+        "flagged_sensors": [
+          "ProOceanus Current Count"
+        ],
+        "options": {
+        }
+      }      
+    ]
+  },
+  {
+    "variable": "Underway Marine pCO₂ from ¹²CO₂/¹³CO₂",
+    "routines": [
+      {
+        "name": "D12D13TotalCO2Check",
+        "flagged_sensors": [
+          "x¹²CO₂ + x¹³CO₂ (with standards)"
+        ]
+      }
+    ]
+  },
+  {
+    "variable": "Underway Atmospheric pCO₂ from ¹²CO₂/¹³CO₂",
+    "routines": [
+      {
+        "name": "D12D13TotalCO2Check",
+        "flagged_sensors": [
+          "x¹²CO₂ + x¹³CO₂ (with standards)"
+        ]
+      }
+    ]
+  },
+    {
+    "variable": "CONTROS pCO₂",
+    "routines": [
+      {
+        "name": "PostDataSetCalculationCoefficientCheck",
+        "flagged_sensors": [],
+        "options": {
+          "coefficients": ["Runtime", "k1", "k2", "k3"],
+		  "flagChar": "C"
+		}
+      }
+    ]
   }
 ]
+}

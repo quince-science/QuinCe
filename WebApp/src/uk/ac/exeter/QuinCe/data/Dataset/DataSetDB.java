@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,6 +10,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,7 +20,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.sql.DataSource;
-import javax.ws.rs.core.Response.Status;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,6 +29,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
+import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -92,15 +94,13 @@ public class DataSetDB {
     + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude, d.exported "
     + "FROM dataset d WHERE ";
 
-  private static final String GET_DATASETS_BETWEEN_DATES_QUERY = DATASET_QUERY_BASE
-    + "d.instrument_id = ? AND d.start <= ? AND d.end >= ?";
-
   private static final String NRT_COUNT_QUERY = "SELECT COUNT(*) FROM dataset "
     + "WHERE nrt = 1 AND instrument_id = ?";
 
   private static final String NRT_STATUS_QUERY = "SELECT "
-    + "ds.instrument_id, ds.created, ds.end, ds.status, ds.status_date "
+    + "ds.instrument_id, ds.created, c.date, ds.status, ds.status_date "
     + "FROM dataset ds INNER JOIN instrument i ON ds.instrument_id = i.id "
+    + "INNER JOIN coordinates ON c.id = ds.end_coordinate"
     + "WHERE ds.nrt = 1 ORDER BY i.platform_code ASC";
 
   /**
@@ -121,6 +121,12 @@ public class DataSetDB {
 
   private static final String SENSOR_OFFSETS_PROPERTY = "__SENSOR_OFFSETS";
 
+  private static final String DELETE_DATASET_FILES_STATEMENT = "DELETE "
+    + "FROM dataset_files WHERE dataset_id = ?";
+
+  private static final String ADD_DATASET_FILE_STATEMENT = "INSERT INTO "
+    + "dataset_files VALUES (?, ?)";
+
   /**
    * Make an SQL query for retrieving complete datasets using a specified WHERE
    * clause
@@ -136,7 +142,7 @@ public class DataSetDB {
     sql.append(Stream.of(whereFields).map(field -> "d." + field + " = ? ")
       .collect(Collectors.joining("AND ")));
 
-    sql.append("GROUP BY d.id ORDER BY d.start ASC");
+    sql.append("GROUP BY d.id");
 
     return sql.toString();
   }
@@ -162,7 +168,7 @@ public class DataSetDB {
     throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkDatabaseId(instrumentId, "instrumentId", false);
 
     LinkedHashMap<Long, DataSet> result = null;
     Connection conn = null;
@@ -199,7 +205,7 @@ public class DataSetDB {
     throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkDatabaseId(instrumentId, "instrumentId", false);
 
     LinkedHashMap<Long, DataSet> result = new LinkedHashMap<Long, DataSet>();
 
@@ -242,16 +248,17 @@ public class DataSetDB {
    * @throws RecordNotFoundException
    * @throws DatabaseException
    * @throws MissingParamException
+   * @throws CoordinateException
+   * @throws ClassNotFoundException
    */
   private static DataSet dataSetFromRecord(Connection conn, ResultSet record)
-    throws SQLException, MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException, SensorGroupsException {
+    throws Exception {
 
     long id = record.getLong(1);
     Instrument instrument = InstrumentDB.getInstrument(conn, record.getLong(2));
     String name = record.getString(3);
-    LocalDateTime start = DateTimeUtils.longToDate(record.getLong(4));
-    LocalDateTime end = DateTimeUtils.longToDate(record.getLong(5));
+    String start = record.getString(4);
+    String end = record.getString(5);
     int status = record.getInt(6);
     LocalDateTime statusDate = DateTimeUtils.longToDate(record.getLong(7));
     boolean nrt = record.getBoolean(8);
@@ -311,10 +318,13 @@ public class DataSetDB {
     double maxLat = record.getDouble(18);
     boolean exported = record.getBoolean(19);
 
-    return new DataSet(id, instrument, name, start, end, status, statusDate,
-      nrt, properties, sensorOffsets, createdDate, lastTouched, errorMessage,
-      processingMessages, userMessages, minLon, minLat, maxLon, maxLat,
-      exported);
+    Constructor<? extends DataSet> constructor = DataSet
+      .getDataSetConstructor(instrument.getBasis());
+
+    return constructor.newInstance(id, instrument, name, start, end, status,
+      statusDate, nrt, properties, sensorOffsets, createdDate, lastTouched,
+      errorMessage, processingMessages, userMessages, minLon, minLat, maxLon,
+      maxLat, exported);
   }
 
   /**
@@ -330,9 +340,10 @@ public class DataSetDB {
    *           If a database error occurs
    * @throws MissingParamException
    *           If any required parameters are missing
+   * @throws CoordinateException
    */
   public static void addDataSet(DataSource dataSource, DataSet dataSet)
-    throws DatabaseException, MissingParamException {
+    throws DatabaseException, MissingParamException, CoordinateException {
     // Make sure this inserts a new record
     dataSet.setId(DatabaseUtils.NO_DATABASE_RECORD);
     saveDataSet(dataSource, dataSet);
@@ -351,16 +362,17 @@ public class DataSetDB {
    *           If a database error occurs
    * @throws MissingParamException
    *           If any required parameters are missing
+   * @throws CoordinateException
    */
   public static void addDataSet(Connection conn, DataSet dataSet)
-    throws DatabaseException, MissingParamException {
+    throws DatabaseException, MissingParamException, CoordinateException {
     // Make sure this inserts a new record
     dataSet.setId(DatabaseUtils.NO_DATABASE_RECORD);
     saveDataSet(conn, dataSet);
   }
 
   private static void saveDataSet(DataSource dataSource, DataSet dataSet)
-    throws DatabaseException, MissingParamException {
+    throws DatabaseException, CoordinateException {
     MissingParam.checkMissing(dataSource, "dataSource");
     Connection conn = null;
     try {
@@ -368,8 +380,8 @@ public class DataSetDB {
       conn.setAutoCommit(false);
       saveDataSet(conn, dataSet);
       conn.commit();
-      conn.setAutoCommit(true);
     } catch (SQLException e) {
+      DatabaseUtils.rollBack(conn);
       throw new DatabaseException("Error opening database connection", e);
     } finally {
       DatabaseUtils.closeConnection(conn);
@@ -377,7 +389,7 @@ public class DataSetDB {
   }
 
   private static void saveDataSet(Connection conn, DataSet dataSet)
-    throws DatabaseException, MissingParamException {
+    throws DatabaseException, MissingParamException, CoordinateException {
 
     // TODO Validate the data set
     // TODO Make sure it's not a duplicate of an existing data set
@@ -397,8 +409,8 @@ public class DataSetDB {
 
       stmt.setLong(1, dataSet.getInstrumentId());
       stmt.setString(2, dataSet.getName());
-      stmt.setLong(3, DateTimeUtils.dateToLong(dataSet.getStart()));
-      stmt.setLong(4, DateTimeUtils.dateToLong(dataSet.getEnd()));
+      stmt.setString(3, dataSet.getStart());
+      stmt.setString(4, dataSet.getEnd());
       stmt.setInt(5, dataSet.getStatus());
       stmt.setLong(6, DateTimeUtils.dateToLong(dataSet.getStatusDate()));
       stmt.setBoolean(7, dataSet.isNrt());
@@ -477,7 +489,7 @@ public class DataSetDB {
     throws DatabaseException, MissingParamException, RecordNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkZeroPositive(id, "id");
+    MissingParam.checkDatabaseId(id, "id", false);
 
     DataSet result = null;
 
@@ -509,7 +521,7 @@ public class DataSetDB {
     throws DatabaseException, MissingParamException, RecordNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(id, "id");
+    MissingParam.checkDatabaseId(id, "id", false);
 
     DataSet result = null;
 
@@ -549,12 +561,13 @@ public class DataSetDB {
    * @throws RecordNotFoundException
    *           If the data set does not exist
    * @throws MultipleDatasetsException
-   * 			If multiple dataset entries are found for a given datasetName
+   *           If multiple dataset entries are found for a given datasetName
    * @throws RuntimeException
    *           If the datasetName returns several datasetIds
    */
   public static DataSet getDataSet(Connection conn, String name)
-    throws DatabaseException, MissingParamException, RecordNotFoundException, MultipleDatasetsException {
+    throws DatabaseException, MissingParamException, RecordNotFoundException,
+    MultipleDatasetsException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(name, "name");
@@ -567,17 +580,18 @@ public class DataSetDB {
 
       try (ResultSet record = stmt.executeQuery()) {
         if (!record.next()) {
-          throw new RecordNotFoundException("Data set " + name + "does not exist");
+          throw new RecordNotFoundException(
+            "Data set " + name + "does not exist");
         } else {
           if (!record.isLast()) {
             throw new MultipleDatasetsException(name);
           } else {
             result = dataSetFromRecord(conn, record);
-            }
           }
+        }
       }
     } catch (RecordNotFoundException | MultipleDatasetsException e) {
-        throw e;
+      throw e;
     } catch (Exception e) {
       throw new DatabaseException("Error while retrieving data sets", e);
     }
@@ -585,22 +599,37 @@ public class DataSetDB {
     return result;
   }
 
-  public static void setNrtDatasetStatus(DataSource dataSource,
-    Instrument instrument, int status)
-    throws DatabaseException, MissingParamException,
-    InvalidDataSetStatusException, RecordNotFoundException {
+  public static boolean datasetExists(Connection conn, long id)
+    throws DatabaseException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkDatabaseId(id, "id", false);
 
-    try (Connection conn = dataSource.getConnection();) {
+    try (PreparedStatement stmt = conn
+      .prepareStatement("SELECT id FROM dataset WHERE id = ?")) {
 
+      stmt.setLong(1, id);
+      try (ResultSet records = stmt.executeQuery()) {
+        return records.next();
+      }
+
+    } catch (Exception e) {
+      throw new DatabaseException("Error while searching for DataSet", e);
+    }
+  }
+
+  public static void setNrtDatasetStatus(Connection conn, Instrument instrument,
+    int status) throws DatabaseException, MissingParamException,
+    InvalidDataSetStatusException, RecordNotFoundException,
+    CoordinateException {
+
+    try {
       DataSet nrtDataset = getNrtDataSet(conn, instrument.getId());
       if (null != nrtDataset) {
         setDatasetStatus(conn, nrtDataset.getId(), status);
       }
-
-    } catch (SQLException e) {
+    } catch (Exception e) {
       throw new DatabaseException("Error while setting dataset status", e);
     }
-
   }
 
   /**
@@ -618,10 +647,11 @@ public class DataSetDB {
    *           If the status is invalid
    * @throws DatabaseException
    *           If a database error occurs
+   * @throws CoordinateException
    */
   public static void setDatasetStatus(DataSource dataSource, DataSet dataSet,
     int status) throws MissingParamException, InvalidDataSetStatusException,
-    DatabaseException {
+    DatabaseException, CoordinateException {
     dataSet.setStatus(status);
     saveDataSet(dataSource, dataSet);
   }
@@ -643,11 +673,12 @@ public class DataSetDB {
    *           If a database error occurs
    * @throws RecordNotFoundException
    *           If the dataset cannot be found in the database
+   * @throws CoordinateException
    */
   public static void setDatasetStatus(DataSource dataSource, long datasetId,
     int status) throws MissingParamException, InvalidDataSetStatusException,
-    DatabaseException, RecordNotFoundException {
-    MissingParam.checkZeroPositive(datasetId, "datasetId");
+    DatabaseException, RecordNotFoundException, CoordinateException {
+    MissingParam.checkDatabaseId(datasetId, "datasetId", false);
     setDatasetStatus(dataSource, getDataSet(dataSource, datasetId), status);
   }
 
@@ -672,10 +703,11 @@ public class DataSetDB {
    *           If the specified status is invalid
    * @throws RecordNotFoundException
    *           If the dataset does not exist
+   * @throws CoordinateException
    */
   public static void setDatasetStatus(Connection conn, long datasetId,
     int status) throws MissingParamException, InvalidDataSetStatusException,
-    DatabaseException, RecordNotFoundException {
+    DatabaseException, RecordNotFoundException, CoordinateException {
     DataSet dataSet = getDataSet(conn, datasetId);
     dataSet.setStatus(status);
     updateDataSet(conn, dataSet);
@@ -694,9 +726,11 @@ public class DataSetDB {
    *           If a database error occurs
    * @throws RecordNotFoundException
    *           If the dataset is not already in the database
+   * @throws CoordinateException
    */
   public static void updateDataSet(DataSource dataSource, DataSet dataSet)
-    throws MissingParamException, DatabaseException, RecordNotFoundException {
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    CoordinateException {
 
     try (Connection conn = dataSource.getConnection()) {
       saveDataSet(conn, dataSet);
@@ -718,9 +752,11 @@ public class DataSetDB {
    *           If a database error occurs
    * @throws RecordNotFoundException
    *           If the dataset is not already in the database
+   * @throws CoordinateException
    */
   public static void updateDataSet(Connection conn, DataSet dataSet)
-    throws MissingParamException, DatabaseException, RecordNotFoundException {
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    CoordinateException {
     saveDataSet(conn, dataSet);
   }
 
@@ -782,7 +818,7 @@ public class DataSetDB {
     DataSet result = null;
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkDatabaseId(instrumentId, "instrumentId", false);
 
     try (PreparedStatement stmt = conn
       .prepareStatement(makeGetDatasetsQuery("instrument_id", "nrt"))) {
@@ -878,44 +914,26 @@ public class DataSetDB {
     throws MissingParamException, DatabaseException,
     InvalidDataSetStatusException, RecordNotFoundException {
 
-    boolean currentAutoCommitStatus = false;
+    PreparedStatement datasetFilesStatement = null;
     PreparedStatement datasetStatement = null;
-
     try {
-      currentAutoCommitStatus = conn.getAutoCommit();
       setDatasetStatus(conn, dataSet.getId(), DataSet.STATUS_DELETING);
-      if (!currentAutoCommitStatus) {
-        conn.commit();
-      }
-
-      if (currentAutoCommitStatus) {
-        conn.setAutoCommit(false);
-      }
 
       DataSetDataDB.deleteMeasurements(conn, dataSet.getId());
       DataSetDataDB.deleteSensorValues(conn, dataSet.getId());
 
+      datasetFilesStatement = conn
+        .prepareStatement(DELETE_DATASET_FILES_STATEMENT);
+      datasetFilesStatement.setLong(1, dataSet.getId());
+      datasetFilesStatement.execute();
+
       datasetStatement = conn.prepareStatement(DELETE_DATASET_QUERY);
       datasetStatement.setLong(1, dataSet.getId());
       datasetStatement.execute();
-
-      if (currentAutoCommitStatus) {
-        // Return the connection to its non-transaction state
-        conn.commit();
-        conn.setAutoCommit(true);
-      }
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
-      if (currentAutoCommitStatus) {
-        try {
-          conn.rollback();
-          conn.setAutoCommit(true);
-        } catch (SQLException e2) {
-          ExceptionUtils.printStackTrace(e2);
-        }
-      }
     } finally {
-      DatabaseUtils.closeStatements(datasetStatement);
+      DatabaseUtils.closeStatements(datasetStatement, datasetFilesStatement);
     }
   }
 
@@ -937,11 +955,12 @@ public class DataSetDB {
    *           If the instrument details cannot be retrieved
    * @throws SensorGroupsException
    * @throws CalibrationException
+   * @throws ClassNotFoundException
    */
   public static JsonObject getMetadataJson(DataSource dataSource,
-    DataSet dataset)
-    throws DatabaseException, MissingParamException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException, CalibrationException {
+    DataSet dataset) throws DatabaseException, MissingParamException,
+    RecordNotFoundException, InstrumentException, SensorGroupsException,
+    CalibrationException, ClassNotFoundException {
 
     JsonObject result = null;
     Connection conn = null;
@@ -959,7 +978,7 @@ public class DataSetDB {
   }
 
   /**
-   * Generate the metadata portion of the manifest
+   * Generate the metadata portion of the manifest for a {@link DataSet}.
    *
    * @param conn
    *          A database connection
@@ -976,10 +995,12 @@ public class DataSetDB {
    *           If the instrument details cannot be retrieved
    * @throws SensorGroupsException
    * @throws CalibrationException
+   * @throws ClassNotFoundException
    */
   public static JsonObject getMetadataJson(Connection conn, DataSet dataset)
     throws DatabaseException, MissingParamException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException, CalibrationException {
+    InstrumentException, SensorGroupsException, CalibrationException,
+    ClassNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(dataset, "dataset");
@@ -989,9 +1010,8 @@ public class DataSetDB {
 
     JsonObject result = new JsonObject();
     result.addProperty("name", dataset.getName());
-    result.addProperty("startdate",
-      DateTimeUtils.toIsoDate(dataset.getStart()));
-    result.addProperty("enddate", DateTimeUtils.toIsoDate(dataset.getEnd()));
+    result.addProperty("start", dataset.getDisplayStart());
+    result.addProperty("end", dataset.getDisplayEnd());
     result.addProperty("platformCode", instrument.getPlatformCode());
     result.addProperty("platformName", instrument.getPlatformName());
     result.addProperty("instrumentName", instrument.getName());
@@ -1011,24 +1031,27 @@ public class DataSetDB {
     // Calibrations
     JsonObject calibrationObject = new JsonObject();
 
-    if (instrument.hasInternalCalibrations()) {
+    if (dataset instanceof TimeDataSet) {
+      TimeDataSet castDataset = (TimeDataSet) dataset;
 
-      CalibrationSet standards = ExternalStandardDB.getInstance()
-        .getCalibrationSet(conn, dataset);
+      if (instrument.hasInternalCalibrations()) {
 
-      calibrationObject.add("gasStandards",
-        standards.toJson(new DefaultTargetNameMapper(), false));
+        CalibrationSet standards = ExternalStandardDB.getInstance()
+          .getCalibrationSet(conn, castDataset);
+
+        calibrationObject.add("gasStandards",
+          standards.toJson(new DefaultTargetNameMapper(), false));
+      }
+
+      // Sensors
+      CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
+        .getCalibrationSet(conn, castDataset);
+
+      if (!sensorCalibrations.isEmpty()) {
+        calibrationObject.add("sensorCalibrations", sensorCalibrations.toJson(
+          new SensorIdMapper(instrument.getSensorAssignments()), false));
+      }
     }
-
-    // Sensors
-    CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
-      .getCalibrationSet(conn, dataset);
-
-    if (!sensorCalibrations.isEmpty()) {
-      calibrationObject.add("sensorCalibrations", sensorCalibrations
-        .toJson(new SensorIdMapper(instrument.getSensorAssignments()), false));
-    }
-
     return result;
   }
 
@@ -1089,73 +1112,6 @@ public class DataSetDB {
   }
 
   /**
-   * Get the {@link DataSet}s between two dates for a given instrument.
-   *
-   * <p>
-   * Any dataset that is partially covered by the selected date range will be
-   * included in the results.
-   * </p>
-   *
-   * <p>
-   * If either the {@code start} or {@code end} dates are {@code null}, the
-   * method assumes that they are infinitely far away in time and will therefore
-   * encompass all datasets.
-   * </p>
-   *
-   * @param dataSource
-   *          A data source
-   * @param instrumentId
-   *          The instrument's database ID
-   * @param start
-   *          The start date
-   * @param end
-   *          The end date
-   * @return The matching {@link DataSet}s
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   */
-  public static List<DataSet> getDatasetsBetweenDates(DataSource dataSource,
-    long instrumentId, LocalDateTime start, LocalDateTime end)
-    throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkPositive(instrumentId, "instrumentId");
-
-    List<DataSet> result = new ArrayList<DataSet>();
-
-    try (Connection conn = dataSource.getConnection();
-      PreparedStatement stmt = conn
-        .prepareStatement(GET_DATASETS_BETWEEN_DATES_QUERY)) {
-
-      long startDateMillis = null != start ? DateTimeUtils.dateToLong(start)
-        : Long.MIN_VALUE;
-      long endDateMillis = null != end ? DateTimeUtils.dateToLong(end)
-        : Long.MAX_VALUE;
-
-      stmt.setLong(1, instrumentId);
-      stmt.setLong(2, endDateMillis);
-      stmt.setLong(3, startDateMillis);
-
-      try (ResultSet records = stmt.executeQuery()) {
-
-        while (records.next()) {
-          result.add(dataSetFromRecord(conn, records));
-        }
-
-      } catch (Exception e) {
-        throw new DatabaseException("Error while retrieving datasets", e);
-      }
-
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving datasets", e);
-    }
-
-    return result;
-  }
-
-  /**
    * Get the number of NRT datasets defined for the specified instrument.
    *
    * @param conn
@@ -1172,7 +1128,7 @@ public class DataSetDB {
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkPositive(instrumentId, "instrumentId");
+    MissingParam.checkDatabaseId(instrumentId, "instrumentId", false);
 
     int result = 0;
 
@@ -1194,7 +1150,7 @@ public class DataSetDB {
 
   public static List<NrtStatus> getNrtStatus(DataSource dataSource)
     throws DatabaseException, MissingParamException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException {
+    InstrumentException, SensorGroupsException, ClassNotFoundException {
 
     List<NrtStatus> result = new ArrayList<NrtStatus>();
 
@@ -1301,14 +1257,12 @@ public class DataSetDB {
     throws DatabaseException, MissingParamException, RecordNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkPositive(datasetId, "datasetId");
+    MissingParam.checkDatabaseId(datasetId, "datasetId", false);
 
     PreparedStatement setExportedStmt = null;
     PreparedStatement setLastNrtStmt = null;
 
     try {
-      conn.setAutoCommit(false);
-
       setExportedStmt = conn.prepareStatement(DATASET_EXPORTED_STATEMENT);
       setExportedStmt.setLong(1, datasetId);
       setExportedStmt.execute();
@@ -1324,20 +1278,56 @@ public class DataSetDB {
           setLastNrtStmt.execute();
         }
       }
-
-      conn.commit();
     } catch (SQLException e) {
       throw new DatabaseException("Error setting dataset export status", e);
     } finally {
       DatabaseUtils.closeStatements(setExportedStmt, setLastNrtStmt);
+    }
+  }
 
-      try {
-        conn.setAutoCommit(true);
-      } catch (SQLException e) {
-        // Close the connection so it can't be reused
-        DatabaseUtils.closeConnection(conn);
-        throw new DatabaseException("Error setting dataset export status", e);
+  /**
+   * Store the set of {@link DataFile}s used in a {@link DataSet}.
+   *
+   * <p>
+   * The database is updated to exactly match the contents of the supplied
+   * collection: links in the database that are not in this collection are
+   * removed.
+   * </p>
+   *
+   * @param conn
+   *          A database connection.
+   * @param dataset
+   *          The {@link DataSet}.
+   * @param files
+   *          The {@link DataSet}'s files.
+   * @throws DatabaseException
+   */
+  public static void storeDatasetFiles(Connection conn, DataSet dataset,
+    Collection<DataFile> files) throws DatabaseException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(dataset, "dataset");
+    MissingParam.checkMissing(files, "files");
+
+    try (
+      PreparedStatement deleteDatasetFilesStmt = conn
+        .prepareStatement(DELETE_DATASET_FILES_STATEMENT);
+      PreparedStatement addDatasetFileStatement = conn
+        .prepareStatement(ADD_DATASET_FILE_STATEMENT);) {
+
+      // Delete the existing links
+      deleteDatasetFilesStmt.setLong(1, dataset.getId());
+      deleteDatasetFilesStmt.execute();
+
+      // Create the supplied links
+      for (DataFile file : files) {
+        addDatasetFileStatement.setLong(1, dataset.getId());
+        addDatasetFileStatement.setLong(2, file.getDatabaseId());
+        addDatasetFileStatement.addBatch();
       }
+
+      addDatasetFileStatement.executeBatch();
+    } catch (Exception e) {
+      throw new DatabaseException("Error storing dataset files", e);
     }
   }
 }

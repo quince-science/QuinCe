@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -16,8 +18,14 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractQCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCConfigurationDeserializer;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
@@ -53,11 +61,11 @@ public class ResourceManager implements ServletContextListener {
 
   private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
 
-  private QCRoutinesConfiguration qcRoutinesConfiguration;
+  private QCConfiguration qcRoutinesConfiguration;
 
-  private ExternalStandardsRoutinesConfiguration externalStandardsRoutinesConfiguration;
+  private QCConfiguration externalStandardsRoutinesConfiguration;
 
-  private DataReductionQCRoutinesConfiguration dataReductionQCRoutinesConfiguration;
+  private DataReductionQCConfiguration dataReductionQCRoutinesConfiguration;
 
   /**
    * The singleton instance of the resource manage
@@ -115,18 +123,40 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise the QC Routines configuration
     try {
-      qcRoutinesConfiguration = new QCRoutinesConfiguration(
-        sensorsConfiguration,
-        configuration.getProperty("qc_routines.configfile"));
+
+      String fileContent = new String(
+        Files.readAllBytes(
+          Paths.get(configuration.getProperty("qc_routines.configfile"))),
+        StandardCharsets.UTF_8);
+
+      Gson gson = new GsonBuilder().registerTypeAdapter(QCConfiguration.class,
+        new QCConfigurationDeserializer(sensorsConfiguration,
+          QCRoutinesConfiguration.class))
+        .create();
+
+      qcRoutinesConfiguration = gson.fromJson(fileContent,
+        QCConfiguration.class);
     } catch (Exception e) {
       throw new RuntimeException("Could not initialise QC Routines", e);
     }
 
     // Initialise the External Standards Routines configuration
     try {
-      externalStandardsRoutinesConfiguration = new ExternalStandardsRoutinesConfiguration(
-        sensorsConfiguration,
-        configuration.getProperty("externalstandards_routines.configfile"));
+      externalStandardsRoutinesConfiguration = new QCConfiguration();
+
+      Gson gson = new GsonBuilder().registerTypeAdapter(QCConfiguration.class,
+        new QCConfigurationDeserializer(sensorsConfiguration,
+          ExternalStandardsRoutinesConfiguration.class))
+        .create();
+
+      String fileContent = new String(
+        Files.readAllBytes(Paths.get(
+          configuration.getProperty("externalstandards_routines.configfile"))),
+        StandardCharsets.UTF_8);
+
+      externalStandardsRoutinesConfiguration = gson.fromJson(fileContent,
+        QCConfiguration.class);
+
     } catch (Exception e) {
       throw new RuntimeException(
         "Could not initialise External Standards Routines", e);
@@ -134,7 +164,7 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise the Data Reduction QC Routines configuration
     try {
-      dataReductionQCRoutinesConfiguration = new DataReductionQCRoutinesConfiguration(
+      dataReductionQCRoutinesConfiguration = new DataReductionQCConfiguration(
         sensorsConfiguration,
         configuration.getProperty("data_reduction_qc_routines.configfile"));
     } catch (Exception e) {
@@ -190,15 +220,16 @@ public class ResourceManager implements ServletContextListener {
     return runTypeCategoryConfiguration;
   }
 
-  public QCRoutinesConfiguration getQCRoutinesConfiguration() {
-    return qcRoutinesConfiguration;
+  public AbstractQCRoutinesConfiguration getQCRoutinesConfiguration(int basis) {
+    return qcRoutinesConfiguration.get(basis);
   }
 
-  public ExternalStandardsRoutinesConfiguration getExternalStandardsRoutinesConfiguration() {
-    return externalStandardsRoutinesConfiguration;
+  public AbstractQCRoutinesConfiguration getExternalStandardsRoutinesConfiguration(
+    int basis) {
+    return externalStandardsRoutinesConfiguration.get(basis);
   }
 
-  public DataReductionQCRoutinesConfiguration getDataReductionQCRoutinesConfiguration() {
+  public DataReductionQCConfiguration getDataReductionQCRoutinesConfiguration() {
     return dataReductionQCRoutinesConfiguration;
   }
 

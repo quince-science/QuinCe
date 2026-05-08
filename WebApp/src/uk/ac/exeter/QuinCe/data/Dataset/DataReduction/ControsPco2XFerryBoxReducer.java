@@ -33,19 +33,19 @@ public class ControsPco2XFerryBoxReducer extends ControsPco2Reducer {
 
     // Add the S2Beams from the calibrations
     CalculationCoefficient prior_beam = CalculationCoefficient.getCoefficient(
-      calculationCoefficients, variable, "S'2beam,Z", dataset.getStart());
+      calculationCoefficients, variable, "S'2beam,Z", dataset.getStartTime());
     CalculationCoefficient prior_runtime = CalculationCoefficient
       .getCoefficient(calculationCoefficients, variable, "Runtime",
-        dataset.getStart());
+        dataset.getStartTime());
 
     zeroS2Beams.put(prior_runtime.getValue(), prior_beam.getValue());
 
     if (!calculationCoefficients.hasCompletePost()) {
       CalculationCoefficient post_beam = CalculationCoefficient.getCoefficient(
-        calculationCoefficients, variable, "S'2beam,Z", dataset.getStart());
+        calculationCoefficients, variable, "S'2beam,Z", dataset.getStartTime());
       CalculationCoefficient post_runtime = CalculationCoefficient
         .getCoefficient(calculationCoefficients, variable, "Runtime",
-          dataset.getStart());
+          dataset.getStartTime());
 
       zeroS2Beams.put(post_runtime.getValue(), post_beam.getValue());
     }

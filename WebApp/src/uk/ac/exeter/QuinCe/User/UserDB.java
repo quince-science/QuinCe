@@ -362,7 +362,7 @@ public class UserDB {
   public static User getUser(DataSource dataSource, long id)
     throws DatabaseException, MissingParamException {
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkPositive(id, "id");
+    MissingParam.checkDatabaseId(id, "id", false);
 
     User user = null;
     Connection conn = null;
@@ -402,7 +402,7 @@ public class UserDB {
   public static User getUser(Connection conn, long id)
     throws DatabaseException, MissingParamException {
     MissingParam.checkMissing(conn, "dataSource");
-    MissingParam.checkPositive(id, "id");
+    MissingParam.checkDatabaseId(id, "id", false);
 
     PreparedStatement stmt = null;
     ResultSet record = null;
@@ -454,7 +454,7 @@ public class UserDB {
     long userId)
     throws MissingParamException, DatabaseException, NoSuchUserException {
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkPositive(userId, "userId");
+    MissingParam.checkDatabaseId(userId, "userId", false);
 
     UserPreferences result = null;
 

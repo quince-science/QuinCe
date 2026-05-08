@@ -7,11 +7,11 @@ import javax.faces.bean.SessionScoped;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQualityControlBean;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.TimeManualQualityControlBean;
 
 @ManagedBean
 @SessionScoped
-public class PositionQualityControlBean extends ManualQualityControlBean {
+public class PositionQualityControlBean extends TimeManualQualityControlBean {
 
   DatasetSensorValues positionData;
 

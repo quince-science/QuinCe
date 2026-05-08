@@ -53,6 +53,7 @@ public class DataReducerFactory {
     reducers.put("TA [discrete]", NoReductionReducer.class);
     reducers.put("SubCTech CO₂ Water", SubCTechCO2WaterReducer.class);
     reducers.put("SubCTech CO₂ Air", SubCTechCO2AirReducer.class);
+    reducers.put("Aanderaa 4330 Oxygen", AanderaaOxygenReducer.class);
   }
 
   /**

@@ -5,6 +5,10 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class QCRoutinesConfiguration extends AbstractQCRoutinesConfiguration {
 
+  public QCRoutinesConfiguration() {
+    super();
+  }
+
   /**
    * Main constructor - parses supplied config file and builds all Routine
    * objects.
@@ -16,6 +20,7 @@ public class QCRoutinesConfiguration extends AbstractQCRoutinesConfiguration {
    * @throws MissingParamException
    *           If any required parameters are missing
    */
+  @Deprecated
   public QCRoutinesConfiguration(SensorsConfiguration sensorsConfig,
     String configFile)
     throws QCRoutinesConfigurationException, MissingParamException {

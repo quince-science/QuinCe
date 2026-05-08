@@ -1,0 +1,92 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+  xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:c="http://java.sun.com/jsp/jstl/core"
+  template="/WEB-INF/templates/argo_plot_page.xhtml">
+
+  <ui:param name="beanName" value="argoManualQualityControlBean" />
+
+  <ui:define name="localHead">
+    <h:outputScript name="script/argoManualQc.js" />
+  </ui:define>
+
+  <ui:define name="loadDataCommand">
+    <p:remoteCommand name="loadData"
+      action="#{sessionScope[beanName].loadData}"
+      process="@this"
+      update="error columnHeadings extendedColumnHeadings rowIDs :statusForm
+        :profileListForm :profileDetailsForm
+        :plot1Form:plot1XAxis :plot1Form:plot1YAxis :plot1Form:plot1Y2Axis
+        :plot2Form:plot2XAxis :plot2Form:plot2YAxis :plot2Form:plot2Y2Axis"
+      oncomplete="dataLoaded()" onerror="plotError(xhr)" async="true"/>
+  </ui:define>
+
+  <ui:define name="selectionFormEntries">
+    <p:remoteCommand name="generateUserQCComments"
+      action="#{sessionScope[beanName].data.generateUserComment}"
+      partialSubmit="true" process="selectedColumn selectedRows"
+      update="manualFlag manualComment :plotPageForm:error"
+      oncomplete="showFlagDialog()" />
+
+    <p:remoteCommand name="applyManualFlag"
+      action="#{sessionScope[beanName].applyManualFlag}"
+      process="selectedColumn selectedRows manualFlag manualComment"
+      update=":plotPageForm:error :plot1Form:plot1Data :plot1Form:plot1Flags :plot2Form:plot2Data :plot2Form:plot2Flags :statusForm"
+      onstart="itemLoading(UPDATE_DATA, false)"
+      oncomplete="qcFlagsAccepted()" />
+  </ui:define>
+
+  <ui:define name="selectionDialog">
+    <p:dialog widgetVar="flagDialog" modal="true" header="Set QC Flag"
+      width="50%">
+
+      <p:selectOneRadio widgetVar="flagMenu" id="manualFlag"
+        value="#{sessionScope[beanName].data.userFlag}" var="flag"
+        onchange="updateFlagDialogControls()" layout="custom">
+
+        <f:selectItem itemLabel="Good" itemValue="1" />
+        <f:selectItem itemLabel="Probably Good" itemValue="2" />
+        <f:selectItem itemLabel="Bad, Potentially Correctable" itemValue="3" />
+        <f:selectItem itemLabel="Bad" itemValue="4" />
+      </p:selectOneRadio>
+
+      <div class="dialogTitle">
+        Set QC Flag for <span id="manualRowCount">row count</span>
+      </div>
+
+      <h:panelGrid columns="2" width="100%" id="manualFlag_panel">
+        <p:outputLabel for="manualFlag" value="Flag:" />
+
+        <h:panelGrid columns="8" id="flagButtons">
+          <p:radioButton id="goodFlag" for="manualFlag" itemIndex="0"/>
+          <p:outputLabel for="goodFlag" value="Good" />
+          <p:radioButton id="probablyGoodFlag" for="manualFlag" itemIndex="1"/>
+          <p:outputLabel for="probablyGoodFlag" value="Probably Good" />
+          <p:radioButton id="badCorrectableFlag" for="manualFlag" itemIndex="2"/>
+          <p:outputLabel for="badCorrectableFlag" value="Bad, Potentially Correctable" />
+          <p:radioButton id="badFlag" for="manualFlag" itemIndex="3"/>
+          <p:outputLabel for="badFlag" value="Bad" />
+        </h:panelGrid>
+
+        <p:outputLabel for="manualComment" value="Comment:" />
+        <p:inputTextarea widgetVar="manualComment" id="manualComment"
+          value="#{sessionScope[beanName].data.userComment}"
+          maxlength="255" style="width: 95%; height: 150px;"
+          onkeyup="updateFlagDialogControls()" />
+      </h:panelGrid>
+
+      <h:panelGrid columns="2" styleClass="buttonPanel">
+        <p:commandButton widgetVar="manualCommentOk" value="OK"
+          onclick="saveManualComment();" />
+        <p:commandButton value="Cancel" onclick="PF('flagDialog').hide(); return false;" />
+      </h:panelGrid>
+
+    </p:dialog>
+  </ui:define>
+
+  <ui:define name="selectionActions">
+    <p:commandButton widgetVar="overrideQcButton" value="Set QC Flag"
+      onclick="startUserQcFlags(); return false;" styleClass="inlineButton tightTextButton" />
+  </ui:define>
+</ui:composition>

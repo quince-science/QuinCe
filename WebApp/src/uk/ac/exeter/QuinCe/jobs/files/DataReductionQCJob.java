@@ -18,6 +18,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.CalibrationFlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.DataReduction.DataReductionQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
@@ -102,22 +104,21 @@ public class DataReductionQCJob extends DataSetJob {
 
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION_QC);
 
-      DataReductionQCRoutinesConfiguration config = resourceManager
+      DataReductionQCConfiguration config = resourceManager
         .getDataReductionQCRoutinesConfiguration();
 
       @SuppressWarnings("unchecked")
       Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
         SENSOR_VALUES);
       if (null == rawSensorValues) {
-        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
-          dataSet.getId());
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn, dataSet);
       }
 
       DatasetSensorValues allSensorValues = new DatasetSensorValues(conn,
-        instrument, dataSet.getId(), false, false, rawSensorValues);
+        dataSet, false, false, rawSensorValues);
 
       List<Measurement> measurements = DataSetDataDB.getMeasurements(conn,
-        dataSet.getId());
+        dataSet);
 
       Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> records = DataSetDataDB
         .getDataReductionData(conn, instrument, dataSet);
@@ -132,7 +133,11 @@ public class DataReductionQCJob extends DataSetJob {
         Class<? extends DataReducer> reducer = DataReducerFactory
           .getReducerClass(var.getName());
 
-        List<DataReductionQCRoutine> routines = config.getRoutines(reducer);
+        DataReductionQCRoutinesConfiguration routinesConfig = config
+          .get(dataSet.getFlagScheme());
+        List<DataReductionQCRoutine> routines = null == routinesConfig ? null
+          : routinesConfig.getRoutines(reducer);
+
         if (null != routines) {
           for (DataReductionQCRoutine routine : routines) {
 
@@ -157,7 +162,7 @@ public class DataReductionQCJob extends DataSetJob {
         }
       }
 
-      DataSetDataDB.storeSensorValues(conn, flaggedItems.getSensorValues());
+      DataSetDataDB.updateSensorValues(conn, flaggedItems.getSensorValues());
       DataSetDataDB.storeMeasurementValues(conn,
         flaggedItems.getMeasurements());
       DataSetDataDB.storeDataReductionQC(conn,
@@ -170,8 +175,9 @@ public class DataReductionQCJob extends DataSetJob {
       } else {
         if (DataSetDataDB.getFlagsRequired(dataSource, dataSet.getId()) > 0) {
           dataSet.setStatus(DataSet.STATUS_USER_QC);
-        } else if (DataSetDataDB.hasCalibrationRequiredFlags(dataSource,
-          dataSet.getId())) {
+        } else if (dataSet.getInstrument().hasInternalCalibrations()
+          && DataSetDataDB.hasCalibrationRequiredFlags(dataSource,
+            (CalibrationFlagScheme) dataSet.getFlagScheme(), dataSet.getId())) {
           dataSet.setStatus(DataSet.STATUS_CALIBRATION_REQUIRED);
         } else {
           dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);

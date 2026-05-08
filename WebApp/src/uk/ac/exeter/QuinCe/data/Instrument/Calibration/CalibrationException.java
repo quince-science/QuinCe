@@ -26,4 +26,7 @@ public class CalibrationException extends Exception {
     super("Error while processing calibrations", cause);
   }
 
+  public CalibrationException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

@@ -140,15 +140,11 @@
               <p:column headerText="Filename">
                 <h:outputText value="#{uploadedFile.name}" />
               </p:column>
-              <p:column headerText="Start date" styleClass="dateTimeCell">
-                <h:outputText escape="false" value="#{uploadedFile.startDate}">
-                  <f:convertDateTime pattern="#{fileUpload.longDateFormat}" />
-                </h:outputText>
+              <p:column headerText="Start" styleClass="dateTimeCell">
+                <h:outputText escape="false" value="#{uploadedFile.start}"/>
               </p:column>
-              <p:column headerText="End date" styleClass="dateTimeCell">
-                <h:outputText escape="false" value="#{uploadedFile.endDate}">
-                  <f:convertDateTime pattern="#{fileUpload.longDateFormat}" />
-                </h:outputText>
+              <p:column headerText="End" styleClass="dateTimeCell">
+                <h:outputText escape="false" value="#{uploadedFile.end}"/>
               </p:column>
               <p:column headerText="No. of records" styleClass="rightCell" style="width: 140px">
                 <h:outputText value="#{uploadedFile.dataFile.recordCount}"/>

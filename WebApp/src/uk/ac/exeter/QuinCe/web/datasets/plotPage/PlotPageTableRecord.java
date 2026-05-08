@@ -1,13 +1,13 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 
 /**
  * A representation of a record in the plot page table.
@@ -39,22 +39,31 @@ public class PlotPageTableRecord {
    */
   private int nextColumnIndex = 0;
 
+  protected final FlagScheme flagScheme;
+
   /**
    * Simple constructor with a direct ID
    *
    * @param id
    *          The record ID
    */
-  public PlotPageTableRecord(long id) {
+  public PlotPageTableRecord(long id, FlagScheme flagScheme) {
     this.id = id;
+    this.flagScheme = flagScheme;
   }
 
-  public PlotPageTableRecord(LocalDateTime id) {
-    this.id = DateTimeUtils.dateToLong(id);
+  public PlotPageTableRecord(Coordinate coordinate, FlagScheme flagScheme) {
+    this.id = coordinate.getId();
+    this.flagScheme = flagScheme;
   }
 
   /**
-   * Add a timestamp column
+   * Add a {@link Coordinate}.
+   *
+   * <p>
+   * By default this adds a single column containing
+   * {@link Coordinate#toString()}.
+   * </p>
    *
    * @param value
    *          The time value.
@@ -67,8 +76,8 @@ public class PlotPageTableRecord {
    * @param flagNeeded
    *          Indicates whether or not a user QC flag is needed.
    */
-  public void addColumn(LocalDateTime value) {
-    addColumn(new SimplePlotPageTableValue(value, null, false));
+  public void addCoordinate(Coordinate coordinate) {
+    addColumn(new SimplePlotPageTableValue(coordinate, flagScheme));
   }
 
   public void addColumn(SensorValue sensorValue) {
@@ -116,7 +125,7 @@ public class PlotPageTableRecord {
   }
 
   public void addBlankColumn(char type) {
-    addColumn("", Flag.GOOD, null, false, type, null);
+    addColumn("", flagScheme.getGoodFlag(), null, false, type, null);
   }
 
   public void addBlankColumns(int count, char type) {

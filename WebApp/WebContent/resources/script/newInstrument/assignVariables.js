@@ -429,8 +429,14 @@ function openLongitudeDialog(column) {
   $('#longitudeAssignmentFile').text(column.dataFile);
   $('#longitudeAssignmentColumn').text(column.colName);
 
-  PF('longitudeAssignmentDialog').initPosition();
-  PF('longitudeAssignmentDialog').show();
+  // If we have a fixed format, don't show the dialog.
+  // Just submit the form and the back end will work it out. 
+  if ($('#referenceDataForm\\:fixedLongitudeFormat').val() == -1) {
+	PF('longitudeAssignmentDialog').initPosition();
+	PF('longitudeAssignmentDialog').show();
+  } else {
+	PF('assignLongitude').jq.click();
+  }
 }
 
 function openLatitudeDialog(column) {
@@ -440,8 +446,14 @@ function openLatitudeDialog(column) {
   $('#latitudeAssignmentFile').text(column.dataFile);
   $('#latitudeAssignmentColumn').text(column.colName);
 
+  // If we have a fixed format, don't show the dialog.
+  // Just submit the form and the back end will work it out. 
+  if ($('#referenceDataForm\\:fixedLatitudeFormat').val() == -1) {
   PF('latitudeAssignmentDialog').initPosition();
   PF('latitudeAssignmentDialog').show();
+  } else {
+  PF('assignLatitude').jq.click();
+  }
 }
 
 function updateStartTime() {

@@ -17,6 +17,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -56,11 +57,13 @@ public class FlagCascadeDependsTest extends BaseTest {
   }
 
   private List<Flag> getNonGoodFlags() {
-    return Arrays.asList(Flag.QUESTIONABLE, Flag.BAD);
+    return Arrays.asList(IcosFlagScheme.QUESTIONABLE_FLAG,
+      flagScheme.getBadFlag());
   }
 
   private List<Flag> getGoodFlags() {
-    return Arrays.asList(Flag.GOOD, Flag.ASSUMED_GOOD);
+    return Arrays.asList(flagScheme.getGoodFlag(),
+      flagScheme.getAssumedGoodFlag());
   }
 
   private List<SensorType> getFlagReturnSensorTypes()
@@ -86,30 +89,31 @@ public class FlagCascadeDependsTest extends BaseTest {
   public void flagReturnTest(SensorType sensorType, Flag flag)
     throws Exception {
 
-    assertEquals(Flag.QUESTIONABLE,
-      variable.getCascade(sensorType, Flag.QUESTIONABLE, sensorAssignments));
+    assertEquals(IcosFlagScheme.QUESTIONABLE_FLAG,
+      variable.getCascade(sensorType, flagScheme,
+        IcosFlagScheme.QUESTIONABLE_FLAG, sensorAssignments));
   }
 
   @ParameterizedTest
   @MethodSource({ "getGoodFlags" })
   public void goodFlagTest(Flag flag) throws Exception {
     SensorType sensorType = getSensorType("requiredSensor1");
-    assertEquals(Flag.ASSUMED_GOOD,
-      variable.getCascade(sensorType, flag, sensorAssignments));
+    assertEquals(flagScheme.getAssumedGoodFlag(),
+      variable.getCascade(sensorType, flagScheme, flag, sensorAssignments));
   }
 
   private List<Arguments> getRequiredCascadeParams() throws Exception {
     List<Arguments> result = new ArrayList<Arguments>();
 
-    result.add(Arguments.of(getSensorType("requiredSensor1"), Flag.QUESTIONABLE,
-      Flag.QUESTIONABLE));
-    result
-      .add(Arguments.of(getSensorType("requiredSensor1"), Flag.BAD, Flag.BAD));
+    result.add(Arguments.of(getSensorType("requiredSensor1"),
+      IcosFlagScheme.QUESTIONABLE_FLAG, IcosFlagScheme.QUESTIONABLE_FLAG));
+    result.add(Arguments.of(getSensorType("requiredSensor1"),
+      flagScheme.getBadFlag(), flagScheme.getBadFlag()));
 
-    result.add(Arguments.of(getSensorType("requiredSensor2"), Flag.QUESTIONABLE,
-      Flag.QUESTIONABLE));
-    result
-      .add(Arguments.of(getSensorType("requiredSensor2"), Flag.BAD, Flag.BAD));
+    result.add(Arguments.of(getSensorType("requiredSensor2"),
+      IcosFlagScheme.QUESTIONABLE_FLAG, IcosFlagScheme.QUESTIONABLE_FLAG));
+    result.add(Arguments.of(getSensorType("requiredSensor2"),
+      flagScheme.getBadFlag(), flagScheme.getBadFlag()));
 
     return result;
   }
@@ -119,6 +123,6 @@ public class FlagCascadeDependsTest extends BaseTest {
   public void requiredCascadeTest(SensorType sensorType, Flag inFlag,
     Flag cascadeFlag) throws Exception {
     assertEquals(cascadeFlag,
-      variable.getCascade(sensorType, inFlag, sensorAssignments));
+      variable.getCascade(sensorType, flagScheme, inFlag, sensorAssignments));
   }
 }

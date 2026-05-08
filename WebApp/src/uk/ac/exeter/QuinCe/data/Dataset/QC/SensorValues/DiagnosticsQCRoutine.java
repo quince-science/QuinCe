@@ -50,9 +50,10 @@ public class DiagnosticsQCRoutine {
           }
 
           if (bad) {
-            value.setUserQC(Flag.BAD, sensor.getSensorName() + " out of range");
+            value.setUserQC(instrument.getFlagScheme().getBadFlag(),
+              sensor.getSensorName() + " out of range");
           } else {
-            value.setUserQC(Flag.GOOD, null);
+            value.setUserQC(instrument.getFlagScheme().getGoodFlag(), null);
           }
 
           sensorValues.applyQCCascade(value, runTypePeriods);

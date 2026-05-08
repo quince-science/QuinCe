@@ -1,0 +1,720 @@
+{
+  "Time": [
+    {
+      "sensorType": "Water Temperature",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [-5, 40]
+            },
+            {
+              "flag": 4,
+              "range": [-10, 50]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 3]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "Salinity",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [0, 42]
+            },
+            {
+              "flag": 4,
+              "range": [0, 50]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 3]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "Equilibrator Temperature",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [-5, 40]
+            },
+            {
+              "flag": 4,
+              "range": [-10, 50]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 3]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "Equilibrator Pressure (absolute)",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [-3, 1100]
+            },
+            {
+              "flag": 4,
+              "range": [-5, 1250]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 50]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "Equilibrator Pressure (differential)",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [-3, 1100]
+            },
+            {
+              "flag": 4,
+              "range": [-5, 1250]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 50]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "Pressure at instrument",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [900, 1100]
+            },
+            {
+              "flag": 4,
+              "range": [750, 1250]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 50]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "Atmospheric Pressure",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [900, 1100]
+            },
+            {
+              "flag": 4,
+              "range": [750, 1250]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 50]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "xH₂O (with standards)",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [-10, 100]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "xCO₂ (with standards)",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [80, 1200]
+            },
+            {
+              "flag": 4,
+              "range": [0, 50000]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 20]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "xCO₂ water (dry, no standards)",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [80, 1200]
+            },
+            {
+              "flag": 4,
+              "range": [0, 50000]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 20]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "xCO₂ atmosphere (dry, no standards)",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [80, 1200]
+            },
+            {
+              "flag": 4,
+              "range": [0, 50000]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 20]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "pCO₂ (wet at equilibration)",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [80, 1200]
+            },
+            {
+              "flag": 4,
+              "range": [0, 50000]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 20]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "xCO₂ (wet, no standards)",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [80, 1200]
+            },
+            {
+              "flag": 4,
+              "range": [0, 50000]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 20]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "Membrane Pressure",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [900, 1100]
+            },
+            {
+              "flag": 4,
+              "range": [750, 1250]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 50]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "Air Temperature",
+      "routines": [
+        {
+          "class": "ConstantValue",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 120]
+            }
+          ]
+        },
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 3,
+              "range": [-5, 40]
+            },
+            {
+              "flag": 4,
+              "range": [-10, 50]
+            }
+          ]
+        },
+        {
+          "class": "Outlier",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 5]
+            }
+          ]
+        },
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 3]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "ProOceanus Zero Count",
+      "routines": [
+        {
+          "class": "RangeCheck",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [25000, 100000]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "H₂O Water vapour mixing ratio",
+      "routines": [
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 2000]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sensorType": "Ambient Pressure (Torr)",
+      "routines": [
+        {
+          "class": "GradientTest",
+          "limits": [
+            {
+              "flag": 4,
+              "range": [0, 30]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "Argo": [
+
+  ]
+}

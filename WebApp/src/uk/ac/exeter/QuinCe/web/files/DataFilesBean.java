@@ -63,8 +63,8 @@ public class DataFilesBean extends FileUploadBean {
     List<DataFile> result;
 
     if (null != getCurrentInstrument()) {
-      result = DataFileDB.getFiles(getDataSource(), getAppConfig(),
-        getCurrentInstrument());
+      result = new ArrayList<DataFile>(
+        DataFileDB.getFiles(getDataSource(), getCurrentInstrument()));
     } else {
       result = new ArrayList<DataFile>();
     }

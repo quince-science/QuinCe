@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -20,6 +22,9 @@ import org.mockito.Mockito;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroup;
@@ -122,9 +127,16 @@ public class SensorOffsetsTest extends BaseTest {
       .first();
     SensorOffsets offsets = new SensorOffsets(sensorGroups);
 
-    LocalDateTime time = LocalDateTime.of(2021, 01, 01, 12, 00, 00);
+    TimeCoordinate coordinate = new TimeCoordinate(
+      LocalDateTime.of(2021, 01, 01, 12, 00, 00));
 
-    assertEquals(time, offsets.getOffsetTime(time, base, target));
+    DatasetSensorValues allSensorValues = Mockito
+      .mock(DatasetSensorValues.class);
+    Mockito.when(allSensorValues.getCoordinates())
+      .thenReturn(Collections.singletonList(coordinate));
+
+    assertEquals(coordinate,
+      offsets.getOffsetTime(coordinate, base, target, allSensorValues));
   }
 
   @FlywayTest
@@ -143,13 +155,18 @@ public class SensorOffsetsTest extends BaseTest {
     offsets.addOffset(groupPair, LocalDateTime.of(2021, 01, 01, 12, 30, 00),
       60000L);
 
-    LocalDateTime timeToOffset = LocalDateTime.of(2021, 01, 01, 12,
-      minuteToOffset, 00);
-    LocalDateTime expectedTime = LocalDateTime.of(2021, 01, 01, 12,
-      expectedMinute, 00);
+    TimeCoordinate timeToOffset = new TimeCoordinate(
+      LocalDateTime.of(2021, 01, 01, 12, minuteToOffset, 00));
+    TimeCoordinate expectedTime = new TimeCoordinate(
+      LocalDateTime.of(2021, 01, 01, 12, expectedMinute, 00));
+
+    DatasetSensorValues allSensorValues = Mockito
+      .mock(DatasetSensorValues.class);
+    Mockito.when(allSensorValues.getCoordinates()).thenReturn(
+      Arrays.asList(new Coordinate[] { timeToOffset, expectedTime }));
 
     assertEquals(expectedTime,
-      offsets.getOffsetTime(timeToOffset, base, target));
+      offsets.getOffsetTime(timeToOffset, base, target, allSensorValues));
   }
 
   @FlywayTest
@@ -170,13 +187,18 @@ public class SensorOffsetsTest extends BaseTest {
     offsets.addOffset(groupPair, LocalDateTime.of(2021, 01, 01, 18, 30, 00),
       240000L);
 
-    LocalDateTime timeToOffset = LocalDateTime.of(2021, 01, 01, 18,
-      minuteToOffset, 00);
-    LocalDateTime expectedTime = LocalDateTime.of(2021, 01, 01, 18,
-      expectedMinute, 00);
+    TimeCoordinate timeToOffset = new TimeCoordinate(
+      LocalDateTime.of(2021, 01, 01, 18, minuteToOffset, 00));
+    TimeCoordinate expectedTime = new TimeCoordinate(
+      LocalDateTime.of(2021, 01, 01, 18, expectedMinute, 00));
+
+    DatasetSensorValues allSensorValues = Mockito
+      .mock(DatasetSensorValues.class);
+    Mockito.when(allSensorValues.getCoordinates()).thenReturn(
+      Arrays.asList(new Coordinate[] { timeToOffset, expectedTime }));
 
     assertEquals(expectedTime,
-      offsets.getOffsetTime(timeToOffset, base, target));
+      offsets.getOffsetTime(timeToOffset, base, target, allSensorValues));
   }
 
   @FlywayTest
@@ -197,13 +219,18 @@ public class SensorOffsetsTest extends BaseTest {
     offsets.addOffset(groupPair, LocalDateTime.of(2021, 01, 01, 18, 30, 00),
       240000L);
 
-    LocalDateTime timeToOffset = LocalDateTime.of(2021, 01, 01, 18,
-      minuteToOffset, 00);
-    LocalDateTime expectedTime = LocalDateTime.of(2021, 01, 01, 18,
-      expectedMinute, 00);
+    TimeCoordinate timeToOffset = new TimeCoordinate(
+      LocalDateTime.of(2021, 01, 01, 18, minuteToOffset, 00));
+    TimeCoordinate expectedTime = new TimeCoordinate(
+      LocalDateTime.of(2021, 01, 01, 18, expectedMinute, 00));
+
+    DatasetSensorValues allSensorValues = Mockito
+      .mock(DatasetSensorValues.class);
+    Mockito.when(allSensorValues.getCoordinates()).thenReturn(
+      Arrays.asList(new Coordinate[] { timeToOffset, expectedTime }));
 
     assertEquals(expectedTime,
-      offsets.getOffsetTime(timeToOffset, base, target));
+      offsets.getOffsetTime(timeToOffset, base, target, allSensorValues));
   }
 
   @FlywayTest
@@ -230,13 +257,19 @@ public class SensorOffsetsTest extends BaseTest {
     SensorAssignment target = sensorGroups.getGroup("Group " + targetSensor)
       .getMembers().first();
 
-    LocalDateTime timeToOffset = LocalDateTime.of(2021, 01, 01, 18, 30, 00);
+    TimeCoordinate timeToOffset = new TimeCoordinate(
+      LocalDateTime.of(2021, 01, 01, 18, 30, 00));
 
-    LocalDateTime offsetTime = offsets.getOffsetTime(timeToOffset, base,
-      target);
+    DatasetSensorValues allSensorValues = Mockito
+      .mock(DatasetSensorValues.class);
+    Mockito.when(allSensorValues.getCoordinates())
+      .thenReturn(Collections.singletonList(timeToOffset));
 
-    long minutesDifference = ChronoUnit.MINUTES.between(timeToOffset,
-      offsetTime);
+    TimeCoordinate offsetTime = offsets.getOffsetTime(timeToOffset, base,
+      target, allSensorValues);
+
+    long minutesDifference = ChronoUnit.MINUTES.between(timeToOffset.getTime(),
+      offsetTime.getTime());
 
     assertEquals(expectedOffset, minutesDifference);
   }
@@ -262,16 +295,25 @@ public class SensorOffsetsTest extends BaseTest {
     SensorAssignment base = sensorGroups.getGroup("Group " + baseSensor)
       .getMembers().first();
 
-    LocalDateTime timeToOffset = LocalDateTime.of(2021, 01, 01, 18, 30, 00);
+    TimeCoordinate timeToOffset = new TimeCoordinate(
+      LocalDateTime.of(2021, 01, 01, 18, 30, 00));
 
-    LocalDateTime offsetTime = offsets.offsetToFirstGroup(timeToOffset, base);
+    DatasetSensorValues allSensorValues = Mockito
+      .mock(DatasetSensorValues.class);
+    Mockito.when(allSensorValues.getCoordinates())
+      .thenReturn(Collections.singletonList(timeToOffset));
 
-    long minutesDifference = ChronoUnit.MINUTES.between(timeToOffset,
-      offsetTime);
+    TimeCoordinate offsetTime = offsets.offsetToFirstGroup(timeToOffset, base,
+      allSensorValues);
+
+    long minutesDifference = ChronoUnit.MINUTES.between(timeToOffset.getTime(),
+      offsetTime.getTime());
 
     assertEquals(expectedOffset, minutesDifference);
   }
 
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
   public void sensorValuesOffsets() throws Exception {
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
@@ -295,28 +337,45 @@ public class SensorOffsetsTest extends BaseTest {
       360000L);
 
     List<SensorValue> sensorValues = new ArrayList<SensorValue>();
-    sensorValues.add(makeSensorValue(10, Flag.GOOD));
-    sensorValues.add(makeSensorValue(20, Flag.GOOD));
-    sensorValues.add(makeSensorValue(30, Flag.GOOD));
-    sensorValues.add(makeSensorValue(40, Flag.GOOD));
-    sensorValues.add(makeSensorValue(50, Flag.GOOD));
+    sensorValues.add(makeSensorValue(10, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(20, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(30, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(40, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(50, flagScheme.getGoodFlag()));
 
-    List<SensorValue> appliedOffsets = offsets.applyOffsets(pair, sensorValues);
+    Instrument instrument = InstrumentDB.getInstrument(getConnection(), 1L);
+    DatasetSensorValues allSensorValues = new DatasetSensorValues(
+      Mockito.mock(DataSet.class));
+    Mockito.when(allSensorValues.getInstrument()).thenReturn(instrument);
+    Mockito.when(allSensorValues.getDatasetId()).thenReturn(1L);
+    Mockito.when(allSensorValues.getFlagScheme()).thenReturn(flagScheme);
+
+    for (SensorValue sensorValue : sensorValues) {
+      allSensorValues.add(sensorValue);
+    }
+
+    List<SensorValue> appliedOffsets = offsets.applyOffsets(pair, sensorValues,
+      allSensorValues);
 
     assertAll(
       () -> assertEquals(8,
-        appliedOffsets.get(0).getTime().get(ChronoField.MINUTE_OF_HOUR)),
+        appliedOffsets.get(0).getCoordinate().getTime()
+          .get(ChronoField.MINUTE_OF_HOUR)),
       () -> assertEquals(18,
-        appliedOffsets.get(1).getTime().get(ChronoField.MINUTE_OF_HOUR)),
+        appliedOffsets.get(1).getCoordinate().getTime()
+          .get(ChronoField.MINUTE_OF_HOUR)),
       () -> assertEquals(26,
-        appliedOffsets.get(2).getTime().get(ChronoField.MINUTE_OF_HOUR)),
+        appliedOffsets.get(2).getCoordinate().getTime()
+          .get(ChronoField.MINUTE_OF_HOUR)),
       () -> assertEquals(34,
-        appliedOffsets.get(3).getTime().get(ChronoField.MINUTE_OF_HOUR)),
-      () -> assertEquals(44,
-        appliedOffsets.get(4).getTime().get(ChronoField.MINUTE_OF_HOUR)));
+        appliedOffsets.get(3).getCoordinate().getTime()
+          .get(ChronoField.MINUTE_OF_HOUR)),
+      () -> assertEquals(44, appliedOffsets.get(4).getCoordinate().getTime()
+        .get(ChronoField.MINUTE_OF_HOUR)));
   }
 
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
+    "resources/sql/testbase/instrument" })
   @Test
   public void sensorValuesOffsetsFilterNotGood() throws Exception {
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
@@ -340,21 +399,35 @@ public class SensorOffsetsTest extends BaseTest {
       360000L);
 
     List<SensorValue> sensorValues = new ArrayList<SensorValue>();
-    sensorValues.add(makeSensorValue(10, Flag.GOOD));
-    sensorValues.add(makeSensorValue(20, Flag.GOOD));
-    sensorValues.add(makeSensorValue(30, Flag.BAD));
-    sensorValues.add(makeSensorValue(40, Flag.GOOD));
-    sensorValues.add(makeSensorValue(50, Flag.QUESTIONABLE));
+    sensorValues.add(makeSensorValue(10, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(20, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(30, flagScheme.getBadFlag()));
+    sensorValues.add(makeSensorValue(40, flagScheme.getGoodFlag()));
+    sensorValues.add(makeSensorValue(50, IcosFlagScheme.QUESTIONABLE_FLAG));
 
-    List<SensorValue> appliedOffsets = offsets.applyOffsets(pair, sensorValues);
+    Instrument instrument = InstrumentDB.getInstrument(getConnection(), 1L);
+    DatasetSensorValues allSensorValues = new DatasetSensorValues(
+      Mockito.mock(DataSet.class));
+    Mockito.when(allSensorValues.getInstrument()).thenReturn(instrument);
+    Mockito.when(allSensorValues.getDatasetId()).thenReturn(1L);
+    Mockito.when(allSensorValues.getFlagScheme()).thenReturn(flagScheme);
+
+    for (SensorValue sensorValue : sensorValues) {
+      allSensorValues.add(sensorValue);
+    }
+
+    List<SensorValue> appliedOffsets = offsets.applyOffsets(pair, sensorValues,
+      allSensorValues);
 
     assertAll(() -> assertEquals(3, appliedOffsets.size()),
       () -> assertEquals(8,
-        appliedOffsets.get(0).getTime().get(ChronoField.MINUTE_OF_HOUR)),
+        appliedOffsets.get(0).getCoordinate().getTime()
+          .get(ChronoField.MINUTE_OF_HOUR)),
       () -> assertEquals(18,
-        appliedOffsets.get(1).getTime().get(ChronoField.MINUTE_OF_HOUR)),
-      () -> assertEquals(34,
-        appliedOffsets.get(2).getTime().get(ChronoField.MINUTE_OF_HOUR)));
+        appliedOffsets.get(1).getCoordinate().getTime()
+          .get(ChronoField.MINUTE_OF_HOUR)),
+      () -> assertEquals(34, appliedOffsets.get(2).getCoordinate().getTime()
+        .get(ChronoField.MINUTE_OF_HOUR)));
   }
 
   private SensorGroups makeSensorGroups() throws Exception {
@@ -395,8 +468,8 @@ public class SensorOffsetsTest extends BaseTest {
 
   private SensorValue makeSensorValue(int minute, Flag flag) {
     SensorValue sensorValue = Mockito.mock(SensorValue.class);
-    Mockito.when(sensorValue.getTime())
-      .thenReturn(LocalDateTime.of(2021, 01, 01, 13, minute, 00));
+    Mockito.when(sensorValue.getCoordinate()).thenReturn(
+      new TimeCoordinate(LocalDateTime.of(2021, 01, 01, 13, minute, 00)));
     Mockito.when(sensorValue.getUserQCFlag()).thenReturn(flag);
     return sensorValue;
   }

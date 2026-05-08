@@ -1,0 +1,103 @@
+classDiagram
+    class DataReductionRecord {
+        long measurementId
+    }
+
+    class DatasetSensorValues {
+        Map~SensorValue.id, SensorValue~ valuesById
+        Map~FileColumn.id, SensorValuesList~ valuesByColumn
+        SensorValuesList longitudes
+        SensorValuesList latitudes
+    }
+
+    class InternalCalibrationData {
+        DatasetSensorValues datasetSensorValues
+        SimplePlotPageDataStructure dataStructure
+    }
+    
+    class ManualQCData {
+        Map~LocalDateTime, Measurement~ measurements
+        List~Long~ rowIds*
+        Map~Long -> Variable, ReadOnlyDataReductionRecord~ dataReduction
+    }
+
+    class Measurement {
+        long id
+        long datasetId
+        LocalDateTime time*
+        Map~SensorType.id, MeasurementValue~ measurementValues
+    }
+
+    class MeasurementValue {
+        SensorType sensorType
+        List~Long~ sensorValueIds
+        List~Long~ supportingSensorValueIds
+    }
+
+    class PlotPageData {
+        DataSet dataSet
+        Instrument instrument
+        Map~COLUMN_GROUP_NAME_string, PlotPageColumnHeading~ columnHeadings
+        generateTableData(start, length)
+    }
+
+    class PlotPageTableRecord {
+        LocalDateTime id*
+        Map~COLUMN_INDEX_int, PlotPageTableValue~ columns
+    }
+
+    class SensorValue {
+        long id
+        long datasetId
+        long columnId
+        LocalDateTime time*
+        String value
+    }
+
+    class SensorValuesList {
+        List~SensorValue~ list
+        SensorType sensorType
+        Set~Long~ columnIds
+        DatasetSensorValues allSensorValues
+        List~LocalDateTime~ rawTimesCache*
+        List~LocalDateTime~ valueTimesCache*
+        List~SensorValuesListValue~ outputValues
+    }
+
+    class SensorValuesListValue {
+        LocalDateTime startTime*
+        LocalDateTime endTime*
+        LocalDateTime nominalTime*
+        Collection~SensorValue~ sourceSensorValues
+    }
+
+    class SimplePlotPageDataStructure {
+        List~DATE_TIME_long~ ids*
+        List~PlotPageColumnHeading~ columnHeadings
+        PlotPageColumnHeading timeHeading*
+    }
+
+PlotPageData <-- InternalCalibrationData
+PlotPageData <-- ManualQCData
+InternalCalibrationData ..> SimplePlotPageDataStructure : dataStructure
+SimplePlotPageDataStructure ..> PlotPageColumnHeading : columnHeadings/timeHeading
+InternalCalibrationData ..> DatasetSensorValues : datasetSensorValues
+ManualQCData ..> Measurement : measurements
+ManualQCData ..> ReadOnlyDataReductionRecord : dataReduction
+ManualQCData ..> DatasetSensorValues
+ReadOnlyDataReductionRecord --> DataReductionRecord
+DatasetSensorValues ..> SensorValue : valuesById/valuesByColumn
+DatasetSensorValues ..> SensorValuesList : valuesByColumn/longitudes/latitudes
+SensorValuesList ..> DatasetSensorValues : allSensorValues
+SensorValuesList ..> SensorValue : list
+SensorValuesListValue ..> SensorValue : sourceSensorValues
+MeasurementValue ..> SensorValue : (supporting)sensorValueIds
+PlotPageData ..> PlotPageColumnHeading : columnHeadings
+PlotPageData ..> PlotPageTableRecord : generateTableData()
+PlotPageTableRecord ..> PlotPageTableValue : columns
+DataReductionRecord ..> Measurement : measurementId
+Measurement ..> MeasurementValue : measurementValues
+SensorValuesList ..> SensorValuesListValue : outputValues
+PlotPageTableValue <-- MeasurementValue
+
+note "Italics = coordinate issue"

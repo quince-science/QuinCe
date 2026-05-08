@@ -222,8 +222,13 @@
     <display-name>DataSets</display-name>
     <from-view-id>/dataset/*</from-view-id>
     <navigation-case>
-      <from-outcome>new_dataset</from-outcome>
-      <to-view-id>/dataset/new_dataset.xhtml</to-view-id>
+      <from-outcome>new_dataset_time</from-outcome>
+      <to-view-id>/dataset/new_dataset_time.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
+    <navigation-case>
+      <from-outcome>new_dataset_argo</from-outcome>
+      <to-view-id>/dataset/new_dataset_argo.xhtml</to-view-id>
       <redirect/>
     </navigation-case>
     <navigation-case>
@@ -242,8 +247,13 @@
       <redirect/>
     </navigation-case>
     <navigation-case>
-      <from-outcome>user_qc</from-outcome>
-      <to-view-id>/dataset/manual_qc.xhtml</to-view-id>
+      <from-outcome>time_manual_qc</from-outcome>
+      <to-view-id>/dataset/time_manual_qc.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
+    <navigation-case>
+      <from-outcome>argo_manual_qc</from-outcome>
+      <to-view-id>/dataset/argo_manual_qc.xhtml</to-view-id>
       <redirect/>
     </navigation-case>
     <navigation-case>

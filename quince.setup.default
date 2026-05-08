@@ -23,6 +23,9 @@
 %db_port%=3306
 %db_host%=localhost
 
+# Instrument basis options:
+%allowed_basis%=time
+
 # The URL through which QuinCe will be accessed
 # This needs to be in line with the prod_deploy_folder below
 %app.urlstub%=http://localhost:8080/QuinCe

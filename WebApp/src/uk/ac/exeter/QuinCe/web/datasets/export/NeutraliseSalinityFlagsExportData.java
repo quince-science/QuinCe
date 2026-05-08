@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
@@ -39,6 +40,11 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * flag as Questionable for all records, since the climatological value is
  * probably reasonable but shouldn't be relied on.
  * </p>
+ *
+ * <p>
+ * This exporter is written for ICOS stations, and so uses the
+ * {@link IcosFlagScheme} directly.
+ * </p>
  */
 public class NeutraliseSalinityFlagsExportData extends ExportData {
 
@@ -46,6 +52,8 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
     "Equilibrator Temperature", "Equilibrator Pressure (absolute)",
     "Equilibrator Pressure (differential)", "Pressure at instrument",
     "xCO₂ (with standards)" };
+
+  private IcosFlagScheme flagScheme = IcosFlagScheme.getInstance();
 
   public NeutraliseSalinityFlagsExportData(DataSource dataSource,
     Instrument instrument, DataSet dataset, ExportOption exportOption)
@@ -73,12 +81,13 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
 
           // See if the fCO₂ flag is Questionable. If so, it's possible that
           // it was caused by bad salinity
-          if (dataReductionRecord.getQCFlag().equals(Flag.QUESTIONABLE)) {
+          if (dataReductionRecord.getQCFlag()
+            .equals(IcosFlagScheme.QUESTIONABLE_FLAG)) {
 
             // See if the salinity is marked Bad. If it is, then we must
             // recalculate the fCO₂ flag
 
-            Flag salinityFlag = Flag.GOOD;
+            Flag salinityFlag = flagScheme.getGoodFlag();
 
             // There might be multiple salinity columns
             for (Long salinityColumn : salinityColumns) {
@@ -90,7 +99,7 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
               }
             }
 
-            if (salinityFlag.equals(Flag.BAD)) {
+            if (salinityFlag.equals(flagScheme.getBadFlag())) {
 
               // We're not using the built-in cascading here, because it's too
               // hard to extract the logic and even harder to extract the
@@ -98,7 +107,7 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
               // manually.
 
               // The new QC info
-              Flag newFlag = Flag.GOOD;
+              Flag newFlag = flagScheme.getGoodFlag();
               List<String> qcComments = new ArrayList<String>();
 
               // Loop through all the incoming sensor fields
@@ -109,8 +118,8 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
                 // If the flag is Bad or Questionable, record the QC comment
                 // and upgrade the flag if needed
                 Flag cascadeFlag = cascadeValue.getQcFlag(getAllSensorValues());
-                if (cascadeFlag.equals(Flag.BAD)
-                  || cascadeFlag.equals(Flag.QUESTIONABLE)) {
+                if (cascadeFlag.equals(flagScheme.getBadFlag())
+                  || cascadeFlag.equals(IcosFlagScheme.QUESTIONABLE_FLAG)) {
 
                   qcComments
                     .add(cascadeValue.getQcMessage(getAllSensorValues(), true));
@@ -128,7 +137,7 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
 
         // Now set the salinity flags (note we do this for every row
         for (Long salinityColumn : salinityColumns) {
-          overrideQc(rowId, salinityColumn, Flag.QUESTIONABLE,
+          overrideQc(rowId, salinityColumn, IcosFlagScheme.QUESTIONABLE_FLAG,
             "Climatological value from World Ocean Atlas");
         }
       }

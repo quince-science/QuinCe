@@ -17,54 +17,55 @@ INSERT INTO user (id, email, firstname, surname, salt, password)
   VALUES (1, 'test@test.com', 'Fred', 'Bloggs', '', '');
 
 -- A variable. Uses SST, Salinity and CO2
-INSERT INTO variables (id, name) VALUES (1000000, 'testVar');
+INSERT INTO variables (id, name, allowed_basis) VALUES (1000000, 'testVar', 1);
 
 -- Sensors for the variable. No flags cascade
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'Water Temperature'),
-    0, 2, 2
+    0, '{"Time":[[3,2],[4,2]]}'
   );
 
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'Salinity'),
-    0, 2, 2
+    0, '{"Time":[[3,2],[4,2]]}'
   );
 
 INSERT INTO variable_sensors
-  (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
+  (variable_id, sensor_type, core, cascades)
   VALUES (
     (SELECT id FROM variables WHERE name = 'testVar'),
     (SELECT id FROM sensor_types WHERE name = 'xCO₂ (wet, no standards)'),
-    1, 3, 4
+    1, '{"Time":[[3,3],[4,4]]}'
   );
 
   
 -- Instrument
 INSERT INTO instrument
-  (id, owner, name, platform_name, platform_code, nrt, properties)
-  VALUES (1, 1, 'Instrument', 'Platform', 'CODE' ,0 , '{"latitude":"0","longitude":"0","diagnosticQC":{"5":{"affectedRunTypes":{"2":["var_1","var_2"],"4":["var_1","var_3"]}},"6":{"affectedRunTypes":{"4":["var_2","var_3"]}}}}');
+  (id, owner, name, platform_name, platform_code, basis, nrt, properties)
+  VALUES (1, 1, 'Instrument', 'Platform', 'CODE', 1 ,0 , '{"latitude":"0","longitude":"0","diagnosticQC":{"5":{"affectedRunTypes":{"2":["var_1","var_2"],"4":["var_1","var_3"]}},"6":{"affectedRunTypes":{"4":["var_2","var_3"]}}}}');
   
 INSERT INTO instrument_variables (instrument_id, variable_id)
   VALUES (1, 1000000);
 
 -- File definition.
 -- This isn't actually used, but we need a file definition and file columns
--- to conform to the daINSERT INTO file_definition VALUES
+-- to conform to the INSERT INTO file_definition VALUES
 INSERT INTO file_definition
   (id, instrument_id, description, column_separator, header_type, header_lines,
    header_end_string, column_header_rows, column_count, lon_spec, lat_spec,
-   datetime_spec)
+   datetime_spec, file_class)
   VALUES
   (1, 1, 'Data File', ',', 0, 0, NULL, 0, 6,
    '{"valueColumn":-1,"hemisphereColumn":-1,"format":-1}',
    '{"valueColumn":-1,"hemisphereColumn":-1,"format":-1}',
-   '{"assignments":{"0":{"assignmentIndex":0,"column":0,"properties":{"formatString":"yyyy-MM-dd HH:mm:ss.SSS"}},"1":{"assignmentIndex":1,"column":-1,"properties":{}},"2":{"assignmentIndex":2,"column":-1,"properties":{}},"3":{"assignmentIndex":3,"column":-1,"properties":{}},"4":{"assignmentIndex":4,"column":-1,"properties":{}},"5":{"assignmentIndex":5,"column":-1,"properties":{}},"6":{"assignmentIndex":6,"column":-1,"properties":{}},"7":{"assignmentIndex":7,"column":-1,"properties":{}},"8":{"assignmentIndex":8,"column":-1,"properties":{}},"9":{"assignmentIndex":9,"column":-1,"properties":{}},"10":{"assignmentIndex":10,"column":-1,"properties":{}},"11":{"assignmentIndex":11,"column":-1,"properties":{}},"12":{"assignmentIndex":12,"column":-1,"properties":{}}},"fileHasHeader":false}'
+   '{"assignments":{"0":{"assignmentIndex":0,"column":0,"properties":{"formatString":"yyyy-MM-dd HH:mm:ss.SSS"}},"1":{"assignmentIndex":1,"column":-1,"properties":{}},"2":{"assignmentIndex":2,"column":-1,"properties":{}},"3":{"assignmentIndex":3,"column":-1,"properties":{}},"4":{"assignmentIndex":4,"column":-1,"properties":{}},"5":{"assignmentIndex":5,"column":-1,"properties":{}},"6":{"assignmentIndex":6,"column":-1,"properties":{}},"7":{"assignmentIndex":7,"column":-1,"properties":{}},"8":{"assignmentIndex":8,"column":-1,"properties":{}},"9":{"assignmentIndex":9,"column":-1,"properties":{}},"10":{"assignmentIndex":10,"column":-1,"properties":{}},"11":{"assignmentIndex":11,"column":-1,"properties":{}},"12":{"assignmentIndex":12,"column":-1,"properties":{}}},"fileHasHeader":false}',
+   'TimeDataFile'
   );
   
 -- Run Types
@@ -134,5 +135,5 @@ INSERT INTO file_column
    (id, instrument_id, name, start, end, min_longitude, max_longitude, min_latitude, max_latitude,
     status, status_date, properties)
    VALUES
-   (1, 1, 'Dataset', 1704067200000, 1704844800000, 0, 0, 0, 0, 50, 1704844800000,
+   (1, 1, 'Dataset', '1704067200000', '1704844800000', 0, 0, 0, 0, 50, 1704844800000,
    '{"_INSTRUMENT":{"depth":"2","latitude":"0","postFlushingTime":"0","preFlushingTime":"0","longitude":"0"},"_DATASET":{"ProcessingVersion":"v19.2.15"},"__SENSOR_OFFSETS":{}}');

@@ -1,18 +1,19 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MathUtils;
 
 public class Plot {
@@ -22,35 +23,39 @@ public class Plot {
   /**
    * The source data for the plot
    */
-  private final PlotPageData data;
+  protected final PlotPageData data;
 
   /**
    * Indicates whether or not NEEDED flags should be displayed.
    *
    * If {@code false}, the automatic QC flag is used.
    */
-  private final boolean useNeededFlags;
+  protected final boolean useNeededFlags;
 
   /**
    * The column ID of the X axis
    */
-  private PlotPageColumnHeading xAxis = null;
+  protected PlotPageColumnHeading xAxis = null;
 
   /**
    * The column ID of the Y axis
    */
-  private PlotPageColumnHeading yAxis = null;
+  protected PlotPageColumnHeading yAxis = null;
 
   /**
    * The column ID of the second Y axis
    */
-  private PlotPageColumnHeading y2Axis = null;
+  protected PlotPageColumnHeading y2Axis = null;
 
   /**
    * The plot values.
    */
-  private TreeSet<PlotValue> plotValues = null;
+  protected LinkedHashSet<PlotValue> plotValues = null;
 
+  /**
+   * Indicates whether or not values that have been flagged during QC should be
+   * hidden from the plot.
+   */
   private boolean hideFlags = false;
 
   static {
@@ -102,6 +107,15 @@ public class Plot {
     return null == yAxis ? 0 : yAxis.getId();
   }
 
+  /**
+   * Get the variable being displayed in the plot. This is usually the Y Axis.
+   *
+   * @return The variable being displayed in the plot.
+   */
+  public long getDisplayVariable() {
+    return getYaxis();
+  }
+
   public void setYaxis(long yAxis) throws Exception {
     if (yAxis != 0) {
       this.yAxis = data.getColumnHeading(yAxis);
@@ -138,12 +152,12 @@ public class Plot {
       Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
         new MainPlotValueSerializer(null != y2Axis)).create();
 
-      result = gson
-        .toJson(plotValues.stream()
-          .filter(f -> !f.xNull() && !hideFlags ? true
-            : (null == f.getFlag() || f.getFlag().isGood()
-              || f.getFlag().equals(Flag.NEEDED)))
-          .collect(Collectors.toList()));
+      result = gson.toJson(plotValues.stream()
+        .filter(f -> !f.xNull() && !hideFlags ? true
+          : (null == f.getFlag()
+            || data.getFlagScheme().isGood(f.getFlag(), true)
+            || f.getFlag().equals(FlagScheme.NEEDED_FLAG)))
+        .collect(Collectors.toList()));
     }
 
     return result;
@@ -155,8 +169,9 @@ public class Plot {
     if (null != y2Axis) {
       result = Y2_GSON.toJson(plotValues.stream()
         .filter(f -> !f.xNull() && !hideFlags ? true
-          : (null != f && (null == f.getFlag2() || f.getFlag2().isGood()
-            || f.getFlag2().equals(Flag.NEEDED))))
+          : (null != f && (null == f.getFlag2()
+            || data.getFlagScheme().isGood(f.getFlag2(), true)
+            || f.getFlag2().equals(FlagScheme.NEEDED_FLAG))))
         .collect(Collectors.toList()));
     }
 
@@ -176,7 +191,7 @@ public class Plot {
     if (null != plotValues) {
       List<PlotValue> flagValues = plotValues.stream()
         .filter(x -> !hideFlags ? x.inFlagPlot()
-          : null != x.getFlag() && x.getFlag().equals(Flag.NEEDED))
+          : null != x.getFlag() && x.getFlag().equals(FlagScheme.NEEDED_FLAG))
         .collect(Collectors.toList());
 
       Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
@@ -190,24 +205,18 @@ public class Plot {
 
   protected void makePlotValues() throws Exception {
 
-    TreeMap<LocalDateTime, PlotPageTableValue> xValues = data
-      .getColumnValues(xAxis);
+    TreeMap<Coordinate, PlotPageTableValue> xValues = getXValues();
+    TreeMap<Coordinate, PlotPageTableValue> yValues = getYValues();
+    TreeMap<Coordinate, PlotPageTableValue> y2Values = getY2Values();
 
-    TreeMap<LocalDateTime, PlotPageTableValue> yValues = data
-      .getColumnValues(yAxis);
+    plotValues = new LinkedHashSet<>();
 
-    TreeMap<LocalDateTime, PlotPageTableValue> y2Values = null == y2Axis
-      ? new TreeMap<>()
-      : data.getColumnValues(y2Axis);
+    for (Coordinate coordinate : xValues.keySet()) {
+      if (yValues.containsKey(coordinate) || y2Values.containsKey(coordinate)) {
 
-    plotValues = new TreeSet<>();
-
-    for (LocalDateTime time : xValues.keySet()) {
-      if (yValues.containsKey(time) || y2Values.containsKey(time)) {
-
-        PlotPageTableValue x = xValues.get(time);
-        PlotPageTableValue y = yValues.get(time);
-        PlotPageTableValue y2 = y2Values.get(time);
+        PlotPageTableValue x = xValues.get(coordinate);
+        PlotPageTableValue y = yValues.get(coordinate);
+        PlotPageTableValue y2 = y2Values.get(coordinate);
 
         boolean hasYValue = null != y && null != y.getValue();
         boolean hasY2Value = null != y2 && null != y2.getValue();
@@ -220,12 +229,12 @@ public class Plot {
           boolean yGhost = false;
           Flag yFlag = null;
           if (null != y) {
-            yValue = MathUtils.nullableParseDouble(y.getValue());
+            yValue = scaleYValue(MathUtils.nullableParseDouble(y.getValue()));
             yGhost = y.getQcFlag(data.getAllSensorValues())
-              .equals(Flag.FLUSHING);
+              .equals(FlagScheme.FLUSHING_FLAG);
             yFlag = y.getQcFlag(data.getAllSensorValues());
             if (useNeededFlags && y.getFlagNeeded()) {
-              yFlag = Flag.NEEDED;
+              yFlag = FlagScheme.NEEDED_FLAG;
             }
           }
 
@@ -233,20 +242,21 @@ public class Plot {
           boolean y2Ghost = false;
           Flag y2Flag = null;
           if (null != y2) {
-            y2Value = MathUtils.nullableParseDouble(y2.getValue());
+            y2Value = scaleYValue(MathUtils.nullableParseDouble(y2.getValue()));
             y2Ghost = y2.getQcFlag(data.getAllSensorValues())
-              .equals(Flag.FLUSHING);
+              .equals(FlagScheme.FLUSHING_FLAG);
             y2Flag = y2.getQcFlag(data.getAllSensorValues());
             // We never show NEEDED flags for Y2 axis
           }
 
           if (xAxis.getId() == FileDefinition.TIME_COLUMN_ID) {
-            plotValue = new PlotValue(DateTimeUtils.dateToLong(time), time,
-              yValue, yGhost, yFlag, y2Value, y2Ghost, y2Flag);
+            plotValue = new PlotValue(coordinate.getId(),
+              (TimeCoordinate) coordinate, yValue, yGhost, yFlag, y2Value,
+              y2Ghost, y2Flag, data.getFlagScheme());
           } else if (null != x && null != x.getValue() && null != y) {
-            plotValue = new PlotValue(DateTimeUtils.dateToLong(time),
+            plotValue = new PlotValue(coordinate.getId(),
               MathUtils.nullableParseDouble(x.getValue()), yValue, yGhost,
-              yFlag, y2Value, y2Ghost, y2Flag);
+              yFlag, y2Value, y2Ghost, y2Flag, data.getFlagScheme());
           }
         }
 
@@ -255,6 +265,46 @@ public class Plot {
         }
       }
     }
+  }
+
+  protected TreeMap<Coordinate, PlotPageTableValue> getXValues()
+    throws Exception {
+
+    return data.getColumnValues(xAxis);
+  }
+
+  protected TreeMap<Coordinate, PlotPageTableValue> getYValues()
+    throws Exception {
+
+    return data.getColumnValues(yAxis);
+  }
+
+  protected TreeMap<Coordinate, PlotPageTableValue> getY2Values()
+    throws Exception {
+
+    return null == y2Axis ? new TreeMap<>() : data.getColumnValues(y2Axis);
+  }
+
+  /**
+   * Get the multiplier for Y values.
+   *
+   * <p>
+   * Sometimes we may want to scale the values on the Y axis, or make another
+   * adjustment (e.g. make it negative for depths. All Y values are passed
+   * through this method to have the scale applied.
+   * </p>
+   *
+   * <p>
+   * The default implementation simply returns the value unchanged. Override
+   * this method if scaling is required.
+   * </p>
+   *
+   * @param yValue
+   *          The original Y value.
+   * @return The scaled Y value.
+   */
+  protected Double scaleYValue(Double yValue) {
+    return yValue;
   }
 
   /**
@@ -289,10 +339,12 @@ public class Plot {
   public String getFlagLabels() {
     List<String> labels = new ArrayList<>(4);
     labels.add(xAxis.getShortName());
-    labels.add("BAD");
-    labels.add("QUESTIONABLE");
-    labels.add("NEEDED");
-    labels.add("NOT_CALIBRATED");
+
+    labels.add(FlagScheme.NEEDED_FLAG.getName());
+
+    for (Flag highlightFlag : data.getFlagScheme().getPlotHighlightFlags()) {
+      labels.add(highlightFlag.getName());
+    }
 
     if (null != y2Axis) {
       labels.add(""); // Y2 value column
@@ -308,11 +360,16 @@ public class Plot {
       List<String> labels = new ArrayList<>(5);
       labels.add(xAxis.getShortName());
       labels.add("ID");
-      labels.add(""); // Y1 axis
-      labels.add("BAD");
-      labels.add("QUESTIONABLE");
-      labels.add("NOT_CALIBRATED");
-      labels.add("GHOST");
+
+      // Placeholder for the Y1 value
+      labels.add("");
+
+      // Y2 flags
+      for (Flag highlightFlag : data.getFlagScheme().getPlotHighlightFlags()) {
+        labels.add(highlightFlag.getName());
+      }
+
+      // The Y2 value
       labels.add(y2Axis.getShortName());
 
       result = new Gson().toJson(labels);

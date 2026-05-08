@@ -6,6 +6,8 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.sql.DataSource;
 
+import com.google.gson.Gson;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -85,6 +87,10 @@ public class InternalCalibrationBean extends PlotPageBean {
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
     }
+  }
+
+  public String getNeededFlagCounts() {
+    return new Gson().toJson(data.getNeedsFlagCount());
   }
 
   /**

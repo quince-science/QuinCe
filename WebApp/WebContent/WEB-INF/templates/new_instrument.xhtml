@@ -13,16 +13,12 @@
   </ui:define>
   <ui:define name="content">
     <div id="content">
-      <div id="progress">
-        <p:steps activeIndex="#{instrumentStep}" styleClass="custom">
-          <p:menuitem value="Name" />
-          <p:menuitem value="Info" />
-          <p:menuitem value="Variables" />
-          <p:menuitem value="Data Files" />
-          <p:menuitem value="Run Types" />
-          <p:menuitem value="Sensor Groups" />
-        </p:steps>
-      </div>
+      <h:form id="menuForm" method="post" charset="utf8">
+        <div id="progress">
+          <p:steps id="menuSteps" activeIndex="#{newInstrumentBean.setupStep}"
+            model="#{newInstrumentBean.setupSteps}" styleClass="custom" />
+        </div>
+      </h:form>
       <div id="newInstrumentContent">
         <ui:insert name="new_instrument_content" />
       </div>

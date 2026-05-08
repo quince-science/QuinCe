@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
@@ -80,7 +81,7 @@ public class MeasurementValue implements PlotPageTableValue {
    * The QC flag for this value, derived from the contributing
    * {@link SensorValues}.
    */
-  private Flag flag = Flag.ASSUMED_GOOD;
+  private Flag flag;
 
   /**
    * The QC message for this value, derived from the contributing
@@ -105,12 +106,15 @@ public class MeasurementValue implements PlotPageTableValue {
    * @param sensorType
    *          The sensor type that the value is calculated for.
    */
-  public MeasurementValue(SensorType sensorType) {
+  public MeasurementValue(SensorType sensorType, Flag defaultFlag) {
     this.sensorType = sensorType;
     this.sensorValueIds = new ArrayList<Long>();
     this.supportingSensorValueIds = new ArrayList<Long>();
     this.qcMessage = new HashSet<String>();
     this.properties = new Properties();
+
+    // TODO This will be the Assumed Good flag
+    this.flag = defaultFlag;
   }
 
   /**
@@ -173,7 +177,8 @@ public class MeasurementValue implements PlotPageTableValue {
     this.type = type;
   }
 
-  public MeasurementValue(SensorType sensorType, SensorValuesListOutput value) {
+  public MeasurementValue(FlagScheme flagScheme, SensorType sensorType,
+    SensorValuesListOutput value) {
     if (null == value) {
       this.sensorType = sensorType;
       this.calculatedValue = Double.NaN;
@@ -182,7 +187,7 @@ public class MeasurementValue implements PlotPageTableValue {
       this.supportingSensorValueIds = new ArrayList<Long>();
       this.memberCount = 0;
       this.interpolatesAroundFlags = false;
-      this.flag = Flag.BAD;
+      this.flag = flagScheme.getBadFlag();
       this.qcMessage = new HashSet<String>();
       this.properties = new Properties();
     } else {
@@ -318,7 +323,12 @@ public class MeasurementValue implements PlotPageTableValue {
 
         Flag valueFlag = value.getDisplayFlag(allSensorValues).getSimpleFlag();
 
-        if (valueFlag.equals(flag)) {
+        if (null == flag) {
+          flag = valueFlag;
+          if (!allSensorValues.getFlagScheme().isGood(valueFlag, true)) {
+            qcMessage.add(value.getDisplayQCMessage(allSensorValues));
+          }
+        } else if (valueFlag.equals(flag)) {
           if (value.getUserQCMessage().trim().length() > 0) {
             qcMessage.add(value.getDisplayQCMessage(allSensorValues));
           }
@@ -408,7 +418,25 @@ public class MeasurementValue implements PlotPageTableValue {
    * @return The QC flag.
    */
   public Flag getQcFlag(DatasetSensorValues allSensorValues) {
-    return calculatedValue.isNaN() ? Flag.BAD : flag;
+    return calculatedValue.isNaN()
+      ? allSensorValues.getFlagScheme().getBadFlag()
+      : flag;
+  }
+
+  /**
+   * Get the QC flag for this value. If the {@link #calculatedValue} is
+   * {@link Double#NaN}, the flag is always {@link Flag#BAD}.
+   *
+   * <p>
+   * This is a special version of {@link #getQcFlag(DatasetSensorValues)} for
+   * when we know there are no lookup flags (i.e. we are looking at measurement
+   * values and not {@link SensorValue}s.
+   * </p>
+   *
+   * @return The QC flag.
+   */
+  protected Flag getQcFlag(FlagScheme flagScheme) {
+    return calculatedValue.isNaN() ? flagScheme.getBadFlag() : flag;
   }
 
   /**

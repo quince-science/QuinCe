@@ -1,0 +1,50 @@
+.plotPageHeader {
+  position: absolute;
+  top: 0px;
+  height: 43px;
+  width: 100%;
+  color: #2779AA !important;
+  font-weight: bold;
+  padding-left: 10px !important;
+}
+
+.plot {
+  position: absolute;
+  top: 45px;
+  left: 0px;
+}
+
+.xAxisSelector {
+  top: -2px;
+  left: 5px;
+  height: 35px;
+}
+
+.xAxisSelector .ui-selectonemenu-label {
+  position: relative;
+  top: -3px;
+}
+
+.profileDetailsOddRow {
+  background-color: #f6f6ff !important;
+}
+
+.profileDetailsEvenRow {
+  background-color: #e9e9f9 !important;
+}
+
+.profileListOddRow {
+  background-color: #ffffff !important;
+}
+
+.profileListEvenRow {
+  background-color: #f6f6ff !important;
+}
+
+.resetMapZoomButton {
+  position: absolute;
+  top: 8px;
+  left: -5px;
+  z-index: 1000;
+  background-color: #ffffff !important;
+}

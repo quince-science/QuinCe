@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
@@ -28,7 +29,7 @@ public class NullPlotPageTableValue implements PlotPageTableValue {
 
   @Override
   public Flag getQcFlag(DatasetSensorValues allSensorValues) {
-    return Flag.NO_QC;
+    return FlagScheme.NO_QC_FLAG;
   }
 
   @Override

@@ -38,7 +38,7 @@ public class SensorOffsetSerializer implements JsonSerializer<SensorOffset> {
       LocalDateTime firstTime = DateTimeUtils
         .longToDate(DateTimeUtils.dateToLong(secondTime) - src.getOffset());
 
-      TimeSeriesPlotData plotData = sourceBean.getPlotData();
+      SensorOffsetsPlotData plotData = sourceBean.getPlotData();
 
       JsonObject json = new JsonObject();
       json.addProperty("firstTime", DateTimeUtils.dateToLong(firstTime));

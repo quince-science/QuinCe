@@ -5,10 +5,6 @@ import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Methods for storing and retrieving sensor calibrations from the database
@@ -54,10 +50,13 @@ public class SensorCalibrationDB extends CalibrationDB {
 
   @Override
   public Map<String, String> getTargets(Connection conn, Instrument instrument)
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException {
+    throws CalibrationException {
 
-    return InstrumentDB.getCalibratableSensors(conn, instrument.getId());
+    try {
+      return InstrumentDB.getCalibratableSensors(conn, instrument.getId());
+    } catch (Exception e) {
+      throw new CalibrationException("Error getting calibration targets", e);
+    }
   }
 
   @Override

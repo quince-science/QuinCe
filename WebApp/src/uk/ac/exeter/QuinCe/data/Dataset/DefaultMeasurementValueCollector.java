@@ -34,7 +34,7 @@ public class DefaultMeasurementValueCollector
       if (null == referenceValue) {
         throw new MeasurementValueCollectorException(
           "Failed to get referenceValue for measurement at "
-            + measurement.getTime());
+            + measurement.getCoordinate());
       }
 
       List<MeasurementValue> result = new ArrayList<MeasurementValue>();
@@ -136,8 +136,8 @@ public class DefaultMeasurementValueCollector
         .getColumnIds(SensorType.RUN_TYPE_SENSOR_TYPE).get(0);
       SensorValuesList runTypeValues = allSensorValues
         .getColumnValues(runTypeColumn);
-      referenceValuesListValue = runTypeValues.getValue(measurement.getTime(),
-        false);
+      referenceValuesListValue = runTypeValues
+        .getValue(measurement.getCoordinate(), false);
 
     } else {
       long coreSensorTypeColumn = instrument.getSensorAssignments()
@@ -145,7 +145,7 @@ public class DefaultMeasurementValueCollector
       SensorValuesList coreSensorValues = allSensorValues
         .getColumnValues(coreSensorTypeColumn);
       referenceValuesListValue = coreSensorValues
-        .getValue(measurement.getTime(), false);
+        .getValue(measurement.getCoordinate(), false);
     }
 
     return referenceValuesListValue;

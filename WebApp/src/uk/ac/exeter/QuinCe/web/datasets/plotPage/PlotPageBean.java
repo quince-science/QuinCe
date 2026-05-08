@@ -40,7 +40,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    *      "https://datatables.net/examples/data_sources/server_side.html">DataTables
    *      Server-Side Processing</a>
    */
-  private String tableJsonData = null;
+  protected String tableJsonData = null;
 
   /**
    * An internal value for the DataTables library, used when drawing retrieving
@@ -393,5 +393,9 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   public boolean dualYAxes() {
     return false;
+  }
+
+  public String getFlagScheme() {
+    return dataset.getFlagScheme().getName();
   }
 }

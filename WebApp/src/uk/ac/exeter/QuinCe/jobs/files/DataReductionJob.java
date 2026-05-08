@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -21,6 +20,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCollector;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValueCollectorFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -106,16 +106,15 @@ public class DataReductionJob extends DataSetJob {
       Collection<SensorValue> rawSensorValues = (Collection<SensorValue>) getTransferData(
         SENSOR_VALUES);
       if (null == rawSensorValues) {
-        rawSensorValues = DataSetDataDB.getRawSensorValues(conn,
-          dataSet.getId());
+        rawSensorValues = DataSetDataDB.getRawSensorValues(conn, dataSet);
       }
 
       DatasetSensorValues allSensorValues = new DatasetSensorValues(conn,
-        instrument, dataSet.getId(), false, false, rawSensorValues);
+        dataSet, false, false, rawSensorValues);
 
       // Get all the measurements grouped by run type
       DatasetMeasurements allMeasurements = DataSetDataDB
-        .getMeasurementsByRunType(conn, instrument, dataSet.getId());
+        .getMeasurementsByRunType(conn, dataSet);
 
       CalibrationSet calculationCoefficients = CalculationCoefficientDB
         .getInstance().getCalibrationSet(conn, dataSet);
@@ -123,8 +122,7 @@ public class DataReductionJob extends DataSetJob {
       ArrayList<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>();
 
       // First we calculate measurement values for all measurements
-      for (Measurement measurement : allMeasurements
-        .getTimeOrderedMeasurements()) {
+      for (Measurement measurement : allMeasurements.getOrderedMeasurements()) {
 
         // Work out which variables this measurement is relevant for.
         Set<Variable> variablesToProcess = new TreeSet<Variable>();
@@ -197,14 +195,17 @@ public class DataReductionJob extends DataSetJob {
          * to the real time for the measurement. We can use any of the
          * insturment's variables for this purpose.
          */
-        if (null != usedVariable) {
+        if (instrument.getBasis() == Instrument.BASIS_TIME
+          && null != usedVariable) {
+
           SensorType coreSensorType = usedVariable.getCoreSensorType();
           SensorAssignment coreAssignment = instrument.getSensorAssignments()
             .get(coreSensorType).first();
-          LocalDateTime offsetMeasurementTime = dataSet.getSensorOffsets()
-            .offsetToFirstGroup(measurement.getTime(), coreAssignment);
-          measurement.setTime(offsetMeasurementTime);
-          DataSetDataDB.updateMeasurementTime(conn, measurement);
+          TimeCoordinate offsetMeasurementTime = dataSet.getSensorOffsets()
+            .offsetToFirstGroup((TimeCoordinate) measurement.getCoordinate(),
+              coreAssignment, allSensorValues);
+          measurement.setCoordinate(offsetMeasurementTime);
+          DataSetDataDB.updateMeasurementCoordinate(conn, measurement);
         }
       }
 
@@ -215,10 +216,10 @@ public class DataReductionJob extends DataSetJob {
           dataSet.getAllProperties(), calculationCoefficients);
 
         reducer.preprocess(conn, instrument, dataSet,
-          allMeasurements.getTimeOrderedMeasurements());
+          allMeasurements.getOrderedMeasurements());
 
         for (Measurement measurement : allMeasurements
-          .getTimeOrderedMeasurements()) {
+          .getOrderedMeasurements()) {
 
           if (instrument.isRunTypeForVariable(variable,
             measurement.getRunType(variable))

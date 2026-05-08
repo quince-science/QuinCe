@@ -9,6 +9,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
@@ -32,40 +33,45 @@ public class FlagPlotValueSerializer implements JsonSerializer<PlotValue> {
     }
 
     if (!src.hasY()) {
+      // No Y value, so all flags are null
+
+      // The NEEDED flag
       json.add(JsonNull.INSTANCE);
-      json.add(JsonNull.INSTANCE);
-      json.add(JsonNull.INSTANCE);
-      json.add(JsonNull.INSTANCE);
+
+      // And the plot highlight flags
+      for (int i = 0; i < src.getFlagScheme().getPlotHighlightFlags()
+        .size(); i++) {
+        json.add(JsonNull.INSTANCE);
+      }
     } else {
-      // Bad
-      if (src.getFlag().equals(Flag.BAD)) {
-        json.add(src.getY());
-      } else {
-        json.add(JsonNull.INSTANCE);
-      }
 
-      // Questionable
-      if (src.getFlag().equals(Flag.QUESTIONABLE)) {
+      if (src.getFlag().equals(FlagScheme.NEEDED_FLAG)) {
         json.add(src.getY());
-      } else {
-        json.add(JsonNull.INSTANCE);
-      }
 
-      // Not Calibrated
-      if (src.getFlag().equals(Flag.NOT_CALIBRATED)) {
-        json.add(src.getY());
-      } else {
-        json.add(JsonNull.INSTANCE);
-      }
+        // We ignore the actual flag value - we just need to highlight that it's
+        // needed. All other flag columns are null.
+        for (int i = 0; i < src.getFlagScheme().getPlotHighlightFlags()
+          .size(); i++) {
+          json.add(JsonNull.INSTANCE);
+        }
 
-      // Needed
-      if (src.getFlag().equals(Flag.NEEDED)) {
-        json.add(src.getY());
       } else {
+        // Needed flag is null
         json.add(JsonNull.INSTANCE);
+
+        // Work out which flag highlight is needed
+        for (Flag highlightFlag : src.getFlagScheme().getPlotHighlightFlags()) {
+          if (src.getFlag().equals(highlightFlag)) {
+            json.add(src.getY());
+          } else {
+            json.add(JsonNull.INSTANCE);
+          }
+        }
       }
     }
 
+    // Placeholder for the Y2 value if we're doing a dual-axis plot. I
+    // don't remember why it's needed.
     if (plotHasY2) {
       json.add(JsonNull.INSTANCE);
     }

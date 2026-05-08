@@ -44,9 +44,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * relevant {@code .sql} files are in
  * {@code WebApp/resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/}.
  * </p>
- *
- * @author Steve Jones
- *
  */
 public class SensorsConfigurationTest extends BaseTest {
 

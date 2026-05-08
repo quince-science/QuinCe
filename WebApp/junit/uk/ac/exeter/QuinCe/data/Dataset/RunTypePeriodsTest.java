@@ -13,9 +13,6 @@ import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 
 /**
  * Tests for the {@link RunTypePeriods} class.
- *
- * @author Steve Jones
- *
  */
 public class RunTypePeriodsTest extends BaseTest {
 

@@ -62,7 +62,7 @@ public abstract class FileUploadBean extends BaseManagedBean {
   /**
    * Remove any existing uploaded file
    */
-  public void clearFile() {
+  public void clearFile() throws FileUploadException {
     this.file = null;
   }
 

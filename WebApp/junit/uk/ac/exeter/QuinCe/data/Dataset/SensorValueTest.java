@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
@@ -30,10 +31,22 @@ public class SensorValueTest extends BaseTest {
   }
 
   private SensorValue makeDBSensorValue() {
-    SensorValue sensorValue = new SensorValue(1L, 1L, 1L,
-      LocalDateTime.of(2021, 1, 1, 0, 0, 0), "20", null, Flag.ASSUMED_GOOD,
-      null);
+    SensorValue sensorValue = new SensorValue(1L, 1L, flagScheme, 1L,
+      new TimeCoordinate(LocalDateTime.of(2021, 1, 1, 0, 0, 0)), "20", null,
+      flagScheme.getAssumedGoodFlag(), null);
     return sensorValue;
+  }
+
+  private ConstantValueRoutine makeRoutine() {
+    return new ConstantValueRoutine(flagScheme);
+  }
+//    ConstantValueRoutine routine = Mockito.mock(ConstantValueRoutine.class);
+//    Mockito.when(routine.getName()).thenReturn("SensorValues.ConstantValue");
+//    return routine;
+//  }
+
+  private RangeCheckRoutine makeRoutine2() {
+    return new RangeCheckRoutine(flagScheme);
   }
 
   /**
@@ -43,12 +56,13 @@ public class SensorValueTest extends BaseTest {
   @FlywayTest
   @Test
   public void cannotUpdateAutoQCOnNonStoredValueTest() {
-    SensorValue sensorValue = new SensorValue(1L, 1L,
-      LocalDateTime.of(2021, 1, 1, 0, 0, 0), "20");
+    SensorValue sensorValue = new SensorValue(1L, flagScheme, 1L,
+      new TimeCoordinate(LocalDateTime.of(2021, 1, 1, 0, 0, 0)), "20");
 
     assertThrows(RecordNotFoundException.class, () -> {
       sensorValue.addAutoQCFlag(
-        new RoutineFlag(new RangeCheckRoutine(), Flag.BAD, "77", "88"));
+        new RoutineFlag(flagScheme, Mockito.mock(RangeCheckRoutine.class),
+          flagScheme.getBadFlag(), "77", "88"));
     });
   }
 
@@ -57,18 +71,19 @@ public class SensorValueTest extends BaseTest {
   public void singleAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
 
-    AutoQCRoutine routine = new ConstantValueRoutine();
-    RoutineFlag flag = new RoutineFlag(routine, Flag.BAD, "1", "2");
+    ConstantValueRoutine routine = makeRoutine();
+    RoutineFlag flag = new RoutineFlag(flagScheme, routine,
+      flagScheme.getBadFlag(), "1", "2");
 
     SensorValue sensorValue = makeDBSensorValue();
     sensorValue.addAutoQCFlag(flag);
 
-    assertEquals(Flag.BAD, sensorValue.getAutoQcFlag(),
+    assertEquals(flagScheme.getBadFlag(), sensorValue.getAutoQcFlag(),
       "Incorrect Auto QC Flag");
     assertEquals(routine.getShortMessage(),
       sensorValue.getDisplayQCMessage(Mockito.mock(DatasetSensorValues.class)),
       "Incorrect QC message");
-    assertEquals(Flag.NEEDED, sensorValue.getUserQCFlag(),
+    assertEquals(FlagScheme.NEEDED_FLAG, sensorValue.getUserQCFlag(),
       "Incorrect User QC flag");
   }
 
@@ -76,18 +91,19 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void twoBadAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
-    ConstantValueRoutine constantRoutine = new ConstantValueRoutine();
-    RoutineFlag constantFlag = new RoutineFlag(constantRoutine, Flag.BAD, "1",
-      "2");
+    ConstantValueRoutine constantRoutine = makeRoutine();
+    RoutineFlag constantFlag = new RoutineFlag(flagScheme, constantRoutine,
+      flagScheme.getBadFlag(), "1", "2");
 
-    RangeCheckRoutine rangeRoutine = new RangeCheckRoutine();
-    RoutineFlag rangeFlag = new RoutineFlag(rangeRoutine, Flag.BAD, "1", "2");
+    RangeCheckRoutine rangeRoutine = makeRoutine2();
+    RoutineFlag rangeFlag = new RoutineFlag(flagScheme, rangeRoutine,
+      flagScheme.getBadFlag(), "1", "2");
 
     SensorValue sensorValue = makeDBSensorValue();
     sensorValue.addAutoQCFlag(constantFlag);
     sensorValue.addAutoQCFlag(rangeFlag);
 
-    assertEquals(Flag.BAD, sensorValue.getAutoQcFlag(),
+    assertEquals(flagScheme.getBadFlag(), sensorValue.getAutoQcFlag(),
       "Incorrect Auto QC Flag");
     assertTrue(
       sensorValue.getDisplayQCMessage(Mockito.mock(DatasetSensorValues.class))
@@ -103,18 +119,19 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void oneBadOneQuestionableAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
-    ConstantValueRoutine constantRoutine = new ConstantValueRoutine();
-    RoutineFlag constantFlag = new RoutineFlag(constantRoutine,
-      Flag.QUESTIONABLE, "1", "2");
+    ConstantValueRoutine constantRoutine = makeRoutine();
+    RoutineFlag constantFlag = new RoutineFlag(flagScheme, constantRoutine,
+      IcosFlagScheme.QUESTIONABLE_FLAG, "1", "2");
 
-    RangeCheckRoutine rangeRoutine = new RangeCheckRoutine();
-    RoutineFlag rangeFlag = new RoutineFlag(rangeRoutine, Flag.BAD, "1", "2");
+    RangeCheckRoutine rangeRoutine = makeRoutine2();
+    RoutineFlag rangeFlag = new RoutineFlag(flagScheme, rangeRoutine,
+      flagScheme.getBadFlag(), "1", "2");
 
     SensorValue sensorValue = makeDBSensorValue();
     sensorValue.addAutoQCFlag(constantFlag);
     sensorValue.addAutoQCFlag(rangeFlag);
 
-    assertEquals(Flag.BAD, sensorValue.getAutoQcFlag(),
+    assertEquals(flagScheme.getBadFlag(), sensorValue.getAutoQcFlag(),
       "Incorrect Auto QC Flag");
     assertTrue(
       sensorValue.getDisplayQCMessage(Mockito.mock(DatasetSensorValues.class))
@@ -130,16 +147,16 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void userQCOverridesAutoQCTest()
     throws RecordNotFoundException, RoutineException, InvalidFlagException {
-    ConstantValueRoutine constantRoutine = new ConstantValueRoutine();
-    RoutineFlag constantFlag = new RoutineFlag(constantRoutine,
-      Flag.QUESTIONABLE, "1", "2");
+    ConstantValueRoutine constantRoutine = makeRoutine();
+    RoutineFlag constantFlag = new RoutineFlag(flagScheme, constantRoutine,
+      IcosFlagScheme.QUESTIONABLE_FLAG, "1", "2");
 
     SensorValue sensorValue = makeDBSensorValue();
     sensorValue.addAutoQCFlag(constantFlag);
 
-    sensorValue.setUserQC(Flag.BAD, "User Message");
+    sensorValue.setUserQC(flagScheme.getBadFlag(), "User Message");
 
-    assertEquals(Flag.BAD,
+    assertEquals(flagScheme.getBadFlag(),
       sensorValue.getDisplayFlag(Mockito.mock(DatasetSensorValues.class)),
       "Incorrect Flag");
     assertEquals("User Message",
@@ -151,12 +168,13 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void removeOneAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
-    ConstantValueRoutine constantRoutine = new ConstantValueRoutine();
-    RoutineFlag constantFlag = new RoutineFlag(constantRoutine, Flag.BAD, "1",
-      "2");
+    ConstantValueRoutine constantRoutine = makeRoutine();
+    RoutineFlag constantFlag = new RoutineFlag(flagScheme, constantRoutine,
+      flagScheme.getBadFlag(), "1", "2");
 
-    RangeCheckRoutine rangeRoutine = new RangeCheckRoutine();
-    RoutineFlag rangeFlag = new RoutineFlag(rangeRoutine, Flag.BAD, "1", "2");
+    RangeCheckRoutine rangeRoutine = makeRoutine2();
+    RoutineFlag rangeFlag = new RoutineFlag(flagScheme, rangeRoutine,
+      flagScheme.getBadFlag(), "1", "2");
 
     SensorValue sensorValue = makeDBSensorValue();
     sensorValue.addAutoQCFlag(constantFlag);
@@ -164,7 +182,7 @@ public class SensorValueTest extends BaseTest {
 
     assertTrue(sensorValue.removeAutoQCFlag(constantRoutine));
 
-    assertEquals(Flag.BAD, sensorValue.getAutoQcFlag(),
+    assertEquals(flagScheme.getBadFlag(), sensorValue.getAutoQcFlag(),
       "Incorrect Auto QC Flag");
     assertFalse(
       sensorValue.getDisplayQCMessage(Mockito.mock(DatasetSensorValues.class))
@@ -181,14 +199,16 @@ public class SensorValueTest extends BaseTest {
   public void removeUnusedAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
 
-    ConstantValueRoutine constantRoutine = new ConstantValueRoutine();
-    RoutineFlag constantFlag = new RoutineFlag(constantRoutine, Flag.BAD, "1",
-      "2");
+    ConstantValueRoutine constantRoutine = makeRoutine();
+
+    RoutineFlag constantFlag = new RoutineFlag(flagScheme, constantRoutine,
+      flagScheme.getBadFlag(), "1", "2");
 
     SensorValue sensorValue = makeDBSensorValue();
     sensorValue.addAutoQCFlag(constantFlag);
 
-    assertFalse(sensorValue.removeAutoQCFlag(new RangeCheckRoutine()));
+    assertFalse(
+      sensorValue.removeAutoQCFlag(Mockito.mock(RangeCheckRoutine.class)));
   }
 
   @FlywayTest
@@ -196,20 +216,21 @@ public class SensorValueTest extends BaseTest {
   public void removeSingleAutoQCFlagTest()
     throws RecordNotFoundException, RoutineException {
 
-    AutoQCRoutine routine = new ConstantValueRoutine();
-    RoutineFlag flag = new RoutineFlag(routine, Flag.BAD, "1", "2");
+    ConstantValueRoutine routine = makeRoutine();
+    RoutineFlag flag = new RoutineFlag(flagScheme, routine,
+      flagScheme.getBadFlag(), "1", "2");
 
     SensorValue sensorValue = makeDBSensorValue();
     sensorValue.addAutoQCFlag(flag);
 
     assertTrue(sensorValue.removeAutoQCFlag(routine));
 
-    assertEquals(Flag.GOOD, sensorValue.getAutoQcFlag(),
+    assertEquals(flagScheme.getGoodFlag(), sensorValue.getAutoQcFlag(),
       "Incorrect Auto QC Flag");
     assertEquals("",
       sensorValue.getDisplayQCMessage(Mockito.mock(DatasetSensorValues.class)),
       "Incorrect QC message");
-    assertEquals(Flag.ASSUMED_GOOD, sensorValue.getUserQCFlag(),
+    assertEquals(flagScheme.getAssumedGoodFlag(), sensorValue.getUserQCFlag(),
       "Incorrect User QC flag");
   }
 
@@ -217,17 +238,18 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void voidremoveSingleAutoQCWithUserQCTest()
     throws RecordNotFoundException, RoutineException, InvalidFlagException {
-    AutoQCRoutine routine = new ConstantValueRoutine();
-    RoutineFlag flag = new RoutineFlag(routine, Flag.BAD, "1", "2");
+    ConstantValueRoutine routine = makeRoutine();
+    RoutineFlag flag = new RoutineFlag(flagScheme, routine,
+      flagScheme.getBadFlag(), "1", "2");
 
     SensorValue sensorValue = makeDBSensorValue();
     sensorValue.addAutoQCFlag(flag);
 
-    sensorValue.setUserQC(Flag.QUESTIONABLE, "User Message");
+    sensorValue.setUserQC(IcosFlagScheme.QUESTIONABLE_FLAG, "User Message");
 
     sensorValue.removeAutoQCFlag(routine);
 
-    assertEquals(Flag.QUESTIONABLE, sensorValue.getUserQCFlag());
+    assertEquals(IcosFlagScheme.QUESTIONABLE_FLAG, sensorValue.getUserQCFlag());
     assertEquals("User Message", sensorValue.getUserQCMessage());
   }
 
@@ -235,14 +257,15 @@ public class SensorValueTest extends BaseTest {
   @Test
   public void autoQCDoesNotOverrideUserQCTest()
     throws RecordNotFoundException, RoutineException, InvalidFlagException {
-    AutoQCRoutine routine = new ConstantValueRoutine();
-    RoutineFlag flag = new RoutineFlag(routine, Flag.BAD, "1", "2");
+    AutoQCRoutine routine = Mockito.mock(ConstantValueRoutine.class);
+    RoutineFlag flag = new RoutineFlag(flagScheme, routine,
+      flagScheme.getBadFlag(), "1", "2");
 
     SensorValue sensorValue = makeDBSensorValue();
-    sensorValue.setUserQC(Flag.QUESTIONABLE, "User Message");
+    sensorValue.setUserQC(IcosFlagScheme.QUESTIONABLE_FLAG, "User Message");
     sensorValue.addAutoQCFlag(flag);
 
-    assertEquals(Flag.QUESTIONABLE, sensorValue.getUserQCFlag());
+    assertEquals(IcosFlagScheme.QUESTIONABLE_FLAG, sensorValue.getUserQCFlag());
     assertEquals("User Message", sensorValue.getUserQCMessage());
   }
 

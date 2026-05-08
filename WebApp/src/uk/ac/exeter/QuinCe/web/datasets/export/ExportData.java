@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.export;
 
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -13,10 +12,12 @@ import java.util.TreeSet;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
@@ -28,7 +29,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageDataException;
@@ -94,12 +94,12 @@ public class ExportData extends ManualQCData {
      * Filter measurements to only contain those with Good QC flags if required
      */
     if (exportOption.skipBad()) {
-      TreeMap<LocalDateTime, Measurement> filteredMeasurements = new TreeMap<LocalDateTime, Measurement>();
+      TreeMap<Coordinate, Measurement> filteredMeasurements = new TreeMap<Coordinate, Measurement>();
 
-      for (Map.Entry<LocalDateTime, Measurement> entry : measurements
-        .entrySet()) {
-        if (!entry.getValue().getQCFlag(getAllSensorValues())
-          .equals(Flag.BAD)) {
+      for (Map.Entry<Coordinate, Measurement> entry : measurements.entrySet()) {
+        if (!sensorValues.getFlagScheme()
+          .isBad(entry.getValue().getQCFlag(getAllSensorValues()))) {
+
           filteredMeasurements.put(entry.getKey(), entry.getValue());
         }
       }
@@ -110,19 +110,21 @@ public class ExportData extends ManualQCData {
     /*
      * Now filter the SensorValues if required.
      */
-    if (exportOption.filterSensorValues()) {
+    if (exportOption.filterSensorValues())
+
+    {
       /*
        * If filtering is required, we always need SensorValues related to the
        * selected Measurements (which may have been filtered above).
        */
 
       // Get all SensorValues related to the measurements
-      TreeSet<LocalDateTime> filteredTimes = new TreeSet<LocalDateTime>();
+      TreeSet<Coordinate> filteredCoordinates = new TreeSet<Coordinate>();
       TreeSet<Long> filteredIds = new TreeSet<Long>();
 
       // Get all sensor values related to measurements
       for (Measurement measurement : measurements.values()) {
-        filteredTimes.add(measurement.getTime());
+        filteredCoordinates.add(measurement.getCoordinate());
 
         for (MeasurementValue measurementValue : measurement
           .getMeasurementValues()) {
@@ -138,14 +140,14 @@ public class ExportData extends ManualQCData {
        */
       if (!exportOption.measurementsOnly() && exportOption.skipBad()) {
         List<Long> goodIds = sensorValues.getAll().stream()
-          .filter(v -> !v.getUserQCFlag().equals(Flag.BAD)).map(v -> v.getId())
-          .toList();
+          .filter(v -> !sensorValues.getFlagScheme().isBad(v.getUserQCFlag()))
+          .map(v -> v.getId()).toList();
 
         filteredIds.addAll(goodIds);
       }
 
       // Now subset the SensorValues to only contain the selected ones.
-      sensorValues = sensorValues.subset(filteredTimes, filteredIds);
+      sensorValues = sensorValues.subset(filteredCoordinates, filteredIds);
     }
 
     // Diagnostic sensors do not always exist in all datasets. Make sure
@@ -176,10 +178,10 @@ public class ExportData extends ManualQCData {
       if (dataset.fixedPosition()) {
         PlotPageColumnHeading lonColumn = new PlotPageColumnHeading(
           FIXED_LON_ID, "Longitude", "Longitude", "ALONGP01", "degrees_east",
-          true, true, false, true);
+          true, true, false, false);
         PlotPageColumnHeading latColumn = new PlotPageColumnHeading(
           FIXED_LAT_ID, "Latitude", "Latitude", "ALATGP01", "degrees_north",
-          true, true, false, true);
+          true, true, false, false);
         rootColumns.add(lonColumn);
         rootColumns.add(latColumn);
 
@@ -194,7 +196,7 @@ public class ExportData extends ManualQCData {
       if (null != dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY,
         "depth")) {
         PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(DEPTH_ID,
-          "Depth", "Depth", "ADEPZZ01", "m", true, false, true, false);
+          "Depth", "Depth", "ADEPZZ01", "m", true, false, true, true);
         rootColumns.add(depthHeading);
 
         // Set up the fixed value ready for later
@@ -215,10 +217,8 @@ public class ExportData extends ManualQCData {
         for (Variable variable : instrument.getVariables()) {
           ColumnHeading variableHeading = variable.getColumnHeading(sensorType);
           if (null != variableHeading) {
-
-            measurementValuesHeadings
-              .add(new PlotPageColumnHeading(variableHeading, true, false,
-                sensorType.questionableFlagAllowed()));
+            measurementValuesHeadings.add(new PlotPageColumnHeading(
+              variableHeading, true, false, sensorType.badFlagOnly()));
           }
         }
       }
@@ -239,9 +239,10 @@ public class ExportData extends ManualQCData {
 
     // The time is just the time
     if (columnId == FileDefinition.TIME_COLUMN_ID) {
-      LocalDateTime rowTime = DateTimeUtils.longToDate(rowId);
-      value = new SimplePlotPageTableValue(rowTime,
-        exportOption.getTimestampFormatter(), false);
+      TimeCoordinate coordinate = (TimeCoordinate) coordinates.get(rowId);
+      coordinate.setFormatter(exportOption.getTimestampFormatter());
+      value = new SimplePlotPageTableValue(coordinate,
+        sensorValues.getFlagScheme());
     } else if (columnId == FIXED_LON_ID) {
       value = lonValue;
     } else if (columnId == FIXED_LAT_ID) {
@@ -291,14 +292,11 @@ public class ExportData extends ManualQCData {
     String qcComment)
     throws InstrumentException, DataReductionException, InvalidFlagException {
 
-    // The rowId is the row time
-    LocalDateTime rowTime = DateTimeUtils.longToDate(rowId);
-
     if (sensorValues.containsColumn(columnId)) {
 
       // Get the SensorValue
       SensorValue sensorValue = sensorValues.getRawSensorValue(columnId,
-        rowTime);
+        coordinates.get(rowId));
       if (null != sensorValue) {
         sensorValue.setUserQC(qcFlag, qcComment);
       }
@@ -307,7 +305,7 @@ public class ExportData extends ManualQCData {
     } else {
       Variable variable = DataReducerFactory.getVariable(instrument, columnId);
 
-      Measurement measurement = measurements.get(rowTime);
+      Measurement measurement = measurements.get(coordinates.get(rowId));
       if (null != measurement) {
         if (dataReduction.containsKey(measurement.getId())) {
           DataReductionRecord record = dataReduction.get(measurement.getId())
@@ -321,15 +319,18 @@ public class ExportData extends ManualQCData {
     }
   }
 
-  public boolean containsTime(LocalDateTime time, boolean includeSensorValues) {
-    boolean containsMeasurement = !(null == getMeasurement(time));
+  public boolean contains(long rowId, boolean includeSensorValues) {
+    boolean containsMeasurement = !(null == getMeasurement(
+      coordinates.get(rowId)));
     boolean result;
     if (includeSensorValues) {
-      result = containsMeasurement || sensorValues.contains(time);
+      result = containsMeasurement
+        || sensorValues.contains(coordinates.get(rowId));
     } else {
       result = containsMeasurement;
     }
 
     return result;
   }
+
 }

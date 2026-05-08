@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 
 /**
@@ -207,9 +208,10 @@ public class TestSetLine {
     return result;
   }
 
-  public Flag getFlagField(int fieldNumber) throws InvalidFlagException {
+  public Flag getFlagField(int fieldNumber, FlagScheme flagScheme)
+    throws InvalidFlagException {
     char flagChar = getCharField(fieldNumber);
-    return flagChar == '\0' ? null : new Flag(flagChar);
+    return flagChar == '\0' ? null : flagScheme.getFlag(flagChar);
   }
 
   /**

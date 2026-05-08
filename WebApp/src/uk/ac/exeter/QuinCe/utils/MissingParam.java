@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Utility methods for checking method parameters
+ * Utility methods for checking method parameters.
  */
 public class MissingParam {
 
@@ -14,11 +14,11 @@ public class MissingParam {
    * Check that a character array is not {@code null} or empty.
    *
    * @param parameter
-   *          The character array
+   *          The array.
    * @param parameterName
-   *          The parameter name
+   *          The parameter name.
    * @throws MissingParamException
-   *           If the array {@code null} or empty
+   *           If the array is {@code null} or empty.
    */
   public static void checkMissing(char[] parameter, String parameterName)
     throws MissingParamException {
@@ -26,14 +26,14 @@ public class MissingParam {
   }
 
   /**
-   * Check that a database connection is not null and not closed
+   * Check that a database connection is not null and not closed.
    *
    * @param conn
-   *          The database connection
+   *          The database connection.
    * @param parameterName
-   *          The parameter name
+   *          The parameter name.
    * @throws MissingParamException
-   *           If the connection is null or closed
+   *           If the connection is {@code null} or closed.
    */
   public static void checkMissing(Connection conn, String parameterName)
     throws MissingParamException {
@@ -53,17 +53,14 @@ public class MissingParam {
   }
 
   /**
-   * Ensure that a parameter value is not {@code null}
+   * Ensure that a parameter value is not {@code null}.
    *
    * @param parameter
-   *          The parameter value to be checked
+   *          The parameter value.
    * @param parameterName
-   *          The parameter name
-   * @param canBeEmpty
-   *          Indicates whether Strings and Collections can be empty
+   *          The parameter name.
    * @throws MissingParamException
-   *           If the parameter is {@code null} or empty (if {@code canBeEmpty}
-   *           is {@code false})
+   *           If the parameter is {@code null}.
    */
   public static void checkMissing(Object parameter, String parameterName)
     throws MissingParamException {
@@ -73,14 +70,15 @@ public class MissingParam {
   }
 
   /**
-   * Ensure that a Collection is not null and not empty
+   * Ensure that a {@link Collection} is not {@code null} and not empty.
    *
    * @param collection
-   *          The Collection
+   *          The {@link Collection}.
    * @param collectionName
-   *          The Collection name
+   *          The {@link Collection} name.
    * @throws MissingParamException
-   *           If the Collection is missing
+   *           If the {@link Collection} is {@code null} or empty.
+   * @see Collection#isEmpty()
    */
   public static void checkMissing(Collection<?> collection,
     String collectionName) throws MissingParamException {
@@ -89,15 +87,19 @@ public class MissingParam {
   }
 
   /**
-   * Ensure that a Collection is not {@code null}. If {@code canBeEmpty} is
-   * {@code false}, the Collection cannot be empty.
+   * Ensure that a {@link Collection} is not {@code null}. If {@code canBeEmpty}
+   * is {@code false}, the {@link Collection} cannot be empty.
    *
    * @param collection
-   *          The Collection
+   *          The {@link Collection}.
    * @param collectionName
-   *          The Collection name
+   *          The {@link Collection} name.
+   * @param canBeEmpty
+   *          Indicates whether the {@link Collection} is allowed to be empty.
    * @throws MissingParamException
-   *           If the Collection is missing
+   *           If the {@link Collection} is {@code null} or (if applicable)
+   *           empty.
+   * @see Collection#isEmpty()
    */
   public static void checkMissing(Collection<?> collection,
     String collectionName, boolean canBeEmpty) throws MissingParamException {
@@ -110,14 +112,15 @@ public class MissingParam {
   }
 
   /**
-   * Ensure that a Map is not null and not empty
+   * Ensure that a {@link Map} is not null and not empty
    *
    * @param map
-   *          The Map
+   *          The {@link Map}.
    * @param mapName
-   *          The Map name
+   *          The {@link Map} name.
    * @throws MissingParamException
-   *           If the Map is missing
+   *           If the {@link Map} is {@code null} or empty.
+   * @see Map#isEmpty()
    */
   public static void checkMissing(Map<?, ?> map, String mapName)
     throws MissingParamException {
@@ -126,15 +129,18 @@ public class MissingParam {
   }
 
   /**
-   * Ensure that a Map is not {@code null}. If {@code canBeEmpty} is
-   * {@code false}, the Map cannot be empty.
+   * Ensure that a {@link Map} is not {@code null}. If {@code canBeEmpty} is
+   * {@code false}, the {@link Map} cannot be empty.
    *
    * @param map
-   *          The Map
+   *          The {@link Map}
    * @param mapName
-   *          The Map name
+   *          The {@link Map} name.
+   * @param canBeEmpty
+   *          Indicates whether the {@link Map} is allowed to be empty.
    * @throws MissingParamException
-   *           If the Map is missing
+   *           If the {@link Map} is {@code null} or (if applicable) empty.
+   * @see Map#isEmpty()
    */
   public static void checkMissing(Map<?, ?> map, String mapName,
     boolean canBeEmpty) throws MissingParamException {
@@ -142,23 +148,22 @@ public class MissingParam {
     if (null == map) {
       throw new MissingParamException(mapName);
     } else if (!canBeEmpty && map.size() == 0) {
-      throw new EmptyMissingParamException(mapName);
+      throw new EmptyMissingParamException(mapName + " must not be empty");
     }
   }
 
   /**
-   * Check that a character array is not {@code null}. It can be empty if
-   * {@code canBeEmpty} is set to {@code true}.
+   * Check that a character array is not {@code null}. If {@code canBeEmpty} is
+   * {@code false}, the array cannot be empty.
    *
    * @param parameter
-   *          The character array
+   *          The array.
    * @param parameterName
-   *          The parameter name
+   *          The array name.
    * @param canBeEmpty
-   *          Indicates whether the array can be empty
+   *          Indicates whether or not the array can be empty.
    * @throws MissingParamException
-   *           If the array is {@code null} or empty (if {@code canBeEmpty} is
-   *           {@code false})
+   *           If the {@link array} is {@code null} or (if applicable) empty.
    */
   public static void checkMissing(char[] parameter, String parameterName,
     boolean canBeEmpty) throws MissingParamException {
@@ -169,6 +174,14 @@ public class MissingParam {
     }
   }
 
+  /**
+   * Ensure that a {@link String} is not null, or its trimmed value is not
+   * empty.
+   *
+   * @param string
+   * @param stringName
+   * @throws MissingParamException
+   */
   public static void checkMissing(String string, String stringName)
     throws MissingParamException {
 
@@ -176,15 +189,16 @@ public class MissingParam {
   }
 
   /**
-   * Ensure that a String is not {@code null}. If {@code canBeEmpty} is
-   * {@code false}, the String cannot be empty (after trimming).
+   * Ensure that a {@link String} is not {@code null}. If {@code canBeEmpty} is
+   * {@code false}, the {@link String} cannot be empty (after trimming).
    *
    * @param collection
-   *          The String
+   *          The {@link String}.
    * @param collectionName
-   *          The String name
+   *          The {@link String} name.
    * @throws MissingParamException
-   *           If the String is missing
+   *           If the {@link String} is {@code null} or (if applicable) empty.
+   * @see String#trim()
    */
   public static void checkMissing(String string, String stringName,
     boolean canBeEmpty) throws MissingParamException {
@@ -197,14 +211,14 @@ public class MissingParam {
   }
 
   /**
-   * Check that an integer value is positive
+   * Check that an integer value is positive.
    *
    * @param parameter
-   *          The value
+   *          The value.
    * @param parameterName
-   *          The parameter name
+   *          The parameter name.
    * @throws MissingParamException
-   *           If the value is not positive
+   *           If the value is not positive.
    */
   public static void checkPositive(int parameter, String parameterName)
     throws MissingParamException {
@@ -214,14 +228,14 @@ public class MissingParam {
   }
 
   /**
-   * Check that a long value is positive
+   * Check that a long value is positive.
    *
    * @param parameter
-   *          The value
+   *          The value.
    * @param parameterName
-   *          The parameter name
+   *          The parameter name.
    * @throws MissingParamException
-   *           If the value is not positive
+   *           If the value is not positive.
    */
   public static void checkPositive(long parameter, String parameterName)
     throws MissingParamException {
@@ -231,14 +245,14 @@ public class MissingParam {
   }
 
   /**
-   * Check that an integer value is zero or positive
+   * Check that an integer value is zero or positive.
    *
    * @param parameter
-   *          The value
+   *          The value.
    * @param parameterName
-   *          The parameter name
+   *          The parameter name.
    * @throws MissingParamException
-   *           If the value is not zero or positive
+   *           If the value is not zero or positive.
    */
   public static void checkZeroPositive(int parameter, String parameterName)
     throws MissingParamException {
@@ -248,14 +262,14 @@ public class MissingParam {
   }
 
   /**
-   * Check that a double value is zero or positive
+   * Check that a double value is zero or positive.
    *
    * @param parameter
-   *          The value
+   *          The value.
    * @param parameterName
-   *          The parameter name
+   *          The parameter name.
    * @throws MissingParamException
-   *           If the value is not zero or positive
+   *           If the value is not zero or positive.
    */
   public static void checkZeroPositive(double parameter, String parameterName)
     throws MissingParamException {
@@ -265,53 +279,18 @@ public class MissingParam {
   }
 
   /**
-   * Check that a String value contains a comma-separated list of integers
-   *
-   * @param list
-   *          The String value
-   * @param parameterName
-   *          The parameter name
-   * @throws ParameterException
-   *           If the String format is invalid
-   */
-  public static void checkListOfIntegers(String list, String parameterName)
-    throws ParameterException {
-
-    checkMissing(list, parameterName);
-
-    boolean ok = true;
-
-    try {
-      String[] entries = list.split(",");
-      for (String entry : entries) {
-        Integer.parseInt(entry);
-      }
-    } catch (NumberFormatException e) {
-      ok = false;
-    }
-
-    if (!ok) {
-      throw new ParameterException(parameterName, "is not a list of integers");
-    }
-  }
-
-  /**
-   * Check that a Long value is either {@code null} or positive
+   * Check that an array of {code int} values is not {@code null}. If
+   * {@code canBeEmpty} is {@code false}, the array cannot be empty.
    *
    * @param parameter
-   *          The parameter
+   *          The array.
    * @param parameterName
-   *          The parameter name
+   *          The array name.
+   * @param canBeEmpty
+   *          Indicates whether or not the array can be empty.
    * @throws MissingParamException
-   *           If the parameter is not null and not positive
+   *           If the {@link array} is {@code null} or (if applicable) empty.
    */
-  public static void checkNullPositive(Long parameter, String parameterName)
-    throws MissingParamException {
-    if (null != parameter) {
-      checkPositive(parameter, parameterName);
-    }
-  }
-
   public static void checkMissing(int[] parameter, String parameterName,
     boolean canBeEmpty) throws MissingParamException {
 
@@ -320,6 +299,31 @@ public class MissingParam {
     } else if (!canBeEmpty && parameter.length == 0) {
       throw new EmptyMissingParamException(parameterName);
     }
+  }
 
+  /**
+   * Check whether a value is a valid database ID. Optionally allow the
+   * {@link DatabaseUtils#NO_DATABASE_RECORD} value.
+   *
+   * @param parameter
+   *          The parameter value.
+   * @param parameterName
+   *          The parameter name.
+   * @param allowNoRecord
+   *          Indicates whether the {@link DatabaseUtils#NO_DATABASE_RECORD}
+   *          value is allowed.
+   */
+  public static void checkDatabaseId(long parameter, String parameterName,
+    boolean allowNoRecord) {
+
+    boolean ok = parameter > 0;
+    if (!ok && allowNoRecord && parameter == DatabaseUtils.NO_DATABASE_RECORD) {
+      ok = true;
+    }
+
+    if (!ok) {
+      throw new MissingParamException(
+        parameterName + " is not a valid database ID");
+    }
   }
 }

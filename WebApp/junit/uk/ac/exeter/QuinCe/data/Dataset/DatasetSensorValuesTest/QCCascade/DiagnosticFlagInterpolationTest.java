@@ -11,13 +11,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListTest;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 
 /**
  * Test cascade of applying a diagnostic flag to a reliant {@link SensorValue}
@@ -43,12 +44,14 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
  * the {@link SensorValue} is set correctly.</li>
  * </ul>
  */
-public class DiagnosticFlagInterpolationTest extends BaseTest {
+public class DiagnosticFlagInterpolationTest extends SensorValuesListTest {
 
   private SensorValue makeSensorValue(long id, long columnId, int minute)
     throws IllegalAccessException {
-    SensorValue result = new SensorValue(1L, columnId,
-      LocalDateTime.of(2026, 04, 13, minute, 13, 0), "1");
+    SensorValue result = new SensorValue(1L, IcosFlagScheme.getInstance(),
+      columnId,
+      new TimeCoordinate(1L, LocalDateTime.of(2026, 04, 13, minute, 13, 0)),
+      "1");
     result.setId(id);
     return result;
   }
@@ -58,12 +61,16 @@ public class DiagnosticFlagInterpolationTest extends BaseTest {
    */
   private static Stream<Arguments> manualDiagnosticFlagInterpolationParams() {
 
+    Flag bad = IcosFlagScheme.getInstance().getBadFlag();
+    Flag good = IcosFlagScheme.getInstance().getGoodFlag();
+    Flag assumedGood = IcosFlagScheme.getInstance().getAssumedGoodFlag();
+
     return Stream.of(
-      Arguments.of(Flag.BAD, Flag.BAD, Flag.BAD, Flag.LOOKUP, "3,4,5"),
-      Arguments.of(Flag.GOOD, Flag.GOOD, Flag.BAD, Flag.LOOKUP, "5"),
-      Arguments.of(Flag.GOOD, Flag.BAD, Flag.BAD, Flag.LOOKUP, "4,5"),
-      Arguments.of(Flag.BAD, Flag.GOOD, Flag.BAD, Flag.LOOKUP, "5"),
-      Arguments.of(Flag.BAD, Flag.GOOD, Flag.GOOD, Flag.ASSUMED_GOOD, ""));
+      Arguments.of(bad, bad, bad, FlagScheme.LOOKUP_FLAG, "3,4,5"),
+      Arguments.of(good, good, bad, FlagScheme.LOOKUP_FLAG, "5"),
+      Arguments.of(good, bad, bad, FlagScheme.LOOKUP_FLAG, "4,5"),
+      Arguments.of(bad, good, bad, FlagScheme.LOOKUP_FLAG, "5"),
+      Arguments.of(bad, good, good, assumedGood, ""));
 
   }
 
@@ -80,8 +87,7 @@ public class DiagnosticFlagInterpolationTest extends BaseTest {
 
     try (Connection conn = getConnection()) {
 
-      Instrument instrument = InstrumentDB.getInstrument(conn, 1L);
-      DatasetSensorValues allSensorValues = new DatasetSensorValues(instrument);
+      DatasetSensorValues allSensorValues = getDatasetSensorValues();
 
       // Dummy SensorValues to fill out the data structures
       allSensorValues.add(makeSensorValue(1L, 4L, 15));

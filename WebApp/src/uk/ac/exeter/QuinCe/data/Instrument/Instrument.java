@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,6 +25,10 @@ import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementLocator;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.ArgoFlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
@@ -45,6 +50,45 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * Holds all the details of an instrument.
  */
 public class Instrument {
+
+  /**
+   * Flag that indicates an instrument takes surface measurements.
+   */
+  public static final int BASIS_TIME = 1;
+
+  /**
+   * String representation of the TIME basis.
+   *
+   * @see #BASIS_TIME
+   *
+   */
+  public static final String BASIS_NAME_TIME = "time";
+
+  /**
+   * Description string of the TIME basis.
+   *
+   * @see #BASIS_TIME
+   */
+  public static final String BASIS_DESCRIPTION_TIME = "Surface Measurements";
+
+  /**
+   * Flag that indicates an instrument takes Argo measurements.
+   */
+  public static final int BASIS_ARGO = 2;
+
+  /**
+   * String representation of the ARGO basis.
+   *
+   * @see #BASIS_ARGO
+   */
+  public static final String BASIS_NAME_ARGO = "argo";
+
+  /**
+   * Description string of the ARGO basis.
+   *
+   * @see #BASIS_ARGO
+   */
+  public static final String BASIS_DESCRIPTION_ARGO = "Argo";
 
   /**
    * Name for the Sensor Groups entry in the JSON representation of the
@@ -163,6 +207,11 @@ public class Instrument {
   private final LocalDateTime created;
 
   /**
+   * Indicates the type of measurements taken by the instrument.
+   */
+  private int basis = BASIS_TIME;
+
+  /**
    * Create an Instrument object with an existing database record.
    *
    * @param owner
@@ -185,6 +234,8 @@ public class Instrument {
    *          The name of the platform on which the instrument is deployed.
    * @param platformCode
    *          The code for the platform on which the instrument is deployed.
+   * @param basis
+   *          The instrument's measurement basis.
    * @param nrt
    *          Indicates whether or not the instrument provides data in near real
    *          time.
@@ -194,15 +245,15 @@ public class Instrument {
    *          The main instrument properties as a JSON string.
    * @param created
    *          The time when the instrument was created.
-   * @throws SensorGroupsException
-   *           If the sensor groupings configuration is invalid.
+   * @throws InstrumentException
+   *           If any of the parameters are invalid.
    */
   public Instrument(User owner, long databaseId, String name,
     List<Long> sharedWith, InstrumentFileSet fileDefinitions,
     List<Variable> variables, Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, String platformName,
-    String platformCode, boolean nrt, LocalDateTime lastNrtExport,
-    String propertiesJson, LocalDateTime created) throws SensorGroupsException {
+    String platformCode, int basis, boolean nrt, LocalDateTime lastNrtExport,
+    String propertiesJson, LocalDateTime created) throws InstrumentException {
 
     this.owner = owner;
     this.id = databaseId;
@@ -214,9 +265,18 @@ public class Instrument {
     this.sensorAssignments = sensorAssignments;
     this.platformName = platformName;
     this.platformCode = platformCode;
+
+    if (!validateBasis(basis)) {
+      throw new InstrumentException("Invalid basis value " + basis);
+    }
+    this.basis = basis;
     this.nrt = nrt;
     this.lastNrtExport = lastNrtExport;
-    parsePropertiesJson(propertiesJson);
+    try {
+      parsePropertiesJson(propertiesJson);
+    } catch (Exception e) {
+      throw new InstrumentException("Invalid properties JSON", e);
+    }
     this.created = created;
   }
 
@@ -237,6 +297,7 @@ public class Instrument {
     this.sensorAssignments = source.sensorAssignments;
     this.platformName = source.platformName;
     this.platformCode = source.platformCode;
+    this.basis = source.basis;
     this.nrt = source.nrt;
     this.lastNrtExport = source.lastNrtExport;
     this.properties = source.properties;
@@ -261,12 +322,80 @@ public class Instrument {
    *          The configuration properties for the measured variables.
    * @param sensorAssignments
    *          The assignments of input data columns to specific sensors.
-   * @param sensorGroups
-   *          The logical groupings of the defined sensors.
    * @param platformName
    *          The name of the platform on which the instrument is deployed.
    * @param platformCode
    *          The code for the platform on which the instrument is deployed.
+   * @param basis
+   *          The instrument's measurement basis.
+   * @param nrt
+   *          Indicates whether or not the instrument provides data in near real
+   *          time.
+   * @param lastNrtExport
+   *          The time at which an NRT dataset was last exported.
+   * @param propertiesJson
+   *          The main instrument properties as a JSON string.
+   * @param created
+   *          The time when the instrument was created.
+   * @throws InstrumentException
+   *           If any of the parameters are invalid.
+   */
+  public Instrument(User owner, String name, List<Long> sharedWith,
+    InstrumentFileSet fileDefinitions, List<Variable> variables,
+    Map<Variable, Properties> variableProperties,
+    SensorAssignments sensorAssignments, String platformName,
+    String platformCode, int basis, boolean nrt, LocalDateTime lastNrtExport,
+    String propertiesJson, LocalDateTime created) throws InstrumentException {
+
+    this.owner = owner;
+    this.name = name;
+    this.sharedWith = null != sharedWith ? sharedWith : new ArrayList<Long>();
+    this.fileDefinitions = fileDefinitions;
+    this.variables = variables;
+    this.variableProperties = variableProperties;
+    this.sensorAssignments = sensorAssignments;
+    this.platformName = platformName;
+    this.platformCode = platformCode;
+    if (!validateBasis(basis)) {
+      throw new InstrumentException("Invalid basis value " + basis);
+    }
+    this.basis = basis;
+    this.nrt = nrt;
+    this.lastNrtExport = lastNrtExport;
+    try {
+      parsePropertiesJson(propertiesJson);
+    } catch (Exception e) {
+      throw new InstrumentException("Invalid properties JSON", e);
+    }
+    this.created = created;
+  }
+
+  /**
+   * Create a new instrument that is not yet fully configured and not stored in
+   * the database, with no properties defined.
+   *
+   * @param owner
+   *          The instrument's owner.
+   * @param name
+   *          The name of the instrument.
+   * @param sharedWith
+   *          The database IDs of the users with which the instrument is shared.
+   * @param fileDefinitions
+   *          The data file definitions for the instrument.
+   * @param variables
+   *          The variables measured by the instrument.
+   * @param variableProperties
+   *          The configuration properties for the measured variables.
+   * @param sensorAssignments
+   *          The assignments of input data columns to specific sensors.
+   * @param sensorGroups
+   *          The logical sensor groupings.
+   * @param platformName
+   *          The name of the platform on which the instrument is deployed.
+   * @param platformCode
+   *          The code for the platform on which the instrument is deployed.
+   * @param basis
+   *          The instrument's measurement basis.
    * @param nrt
    *          Indicates whether or not the instrument provides data in near real
    *          time.
@@ -274,13 +403,16 @@ public class Instrument {
    *          The time at which an NRT dataset was last exported.
    * @param created
    *          The time when the instrument was created.
+   * @throws InstrumentException
+   *           If any of the parameters are invalid.
    */
   public Instrument(User owner, String name, List<Long> sharedWith,
     InstrumentFileSet fileDefinitions, List<Variable> variables,
     Map<Variable, Properties> variableProperties,
     SensorAssignments sensorAssignments, SensorGroups sensorGroups,
-    String platformName, String platformCode, boolean nrt,
-    LocalDateTime lastNrtExport, LocalDateTime created) {
+    String platformName, String platformCode, int basis, boolean nrt,
+    LocalDateTime lastNrtExport, LocalDateTime created)
+    throws InstrumentException {
 
     this.owner = owner;
     this.name = name;
@@ -292,6 +424,10 @@ public class Instrument {
     this.sensorGroups = sensorGroups;
     this.platformName = platformName;
     this.platformCode = platformCode;
+    if (!validateBasis(basis)) {
+      throw new InstrumentException("Invalid basis value " + basis);
+    }
+    this.basis = basis;
     this.nrt = nrt;
     this.lastNrtExport = lastNrtExport;
     this.properties = new Properties();
@@ -1393,6 +1529,27 @@ public class Instrument {
   }
 
   /**
+   * Get the instrument's measurement basis.
+   *
+   * @return The measurement basis.
+   */
+  public int getBasis() {
+    return basis;
+  }
+
+  /**
+   * Check that a {@code basis} code is valid.
+   *
+   * @param basis
+   *          The basis value to check.
+   * @return {@code true} if the basis value is valid; {@code false} if it is
+   *         not.
+   */
+  private boolean validateBasis(int basis) {
+    return basis == BASIS_TIME || basis == BASIS_ARGO;
+  }
+
+  /**
    * Filter a {@link Collection} of {@link Instrument}s to those matching the
    * specified {@link #platformName} and {@link #platformCode}, and sort them
    * with the most recently created first.
@@ -1425,8 +1582,94 @@ public class Instrument {
       .sorted(new InstrumentCreationDateComparator(true)).toList();
   }
 
+  public FlagScheme getFlagScheme() {
+    return getFlagScheme(basis);
+  }
+
+  public static FlagScheme getFlagScheme(int basis) {
+    switch (basis) {
+    case BASIS_TIME: {
+      return IcosFlagScheme.getInstance();
+    }
+    case BASIS_ARGO: {
+      return ArgoFlagScheme.getInstance();
+    }
+    default: {
+      throw new FlagException("Cannot get flag scheme for basis " + basis);
+    }
+    }
+  }
+
+  public static FlagScheme getFlagScheme(String basisName)
+    throws InstrumentException {
+    return getFlagScheme(basisFromString(basisName));
+  }
+
   @Override
   public String toString() {
     return platformName + ":" + name;
+  }
+
+  public static int basisFromString(String basisName)
+    throws InstrumentException {
+    switch (basisName.toLowerCase()) {
+    case BASIS_NAME_TIME: {
+      return BASIS_TIME;
+    }
+    case BASIS_NAME_ARGO: {
+      return BASIS_ARGO;
+    }
+    default: {
+      throw new InstrumentException("Unrecognised basis " + basisName);
+    }
+    }
+  }
+
+  public static String getBasisDescription(int basis)
+    throws InstrumentException {
+    switch (basis) {
+    case BASIS_TIME: {
+      return BASIS_DESCRIPTION_TIME;
+    }
+    case BASIS_ARGO: {
+      return BASIS_DESCRIPTION_ARGO;
+    }
+    default: {
+      throw new InstrumentException("Unrecognised basis " + basis);
+    }
+    }
+  }
+
+  /**
+   * Take a {@link List} of basis names and return a map of each basis's
+   * identifier and description.
+   *
+   * <p>
+   * The map has the same iteration order as the passed in list. A {@code null}
+   * or empty list will return a map of all available bases.
+   * </p>
+   *
+   * @param basisNames
+   *          The basis names.
+   * @return The map.
+   * @throws InstrumentException
+   *           If any basis name is invalid.
+   */
+  public static LinkedHashMap<Integer, String> getBasesMap(
+    List<String> basisNames) throws InstrumentException {
+
+    LinkedHashMap<Integer, String> result = new LinkedHashMap<Integer, String>();
+
+    if (null == basisNames || basisNames.size() == 0) {
+      result.put(BASIS_TIME, BASIS_DESCRIPTION_TIME);
+      result.put(BASIS_ARGO, BASIS_DESCRIPTION_ARGO);
+    } else {
+      for (String basisName : basisNames) {
+        int basis = basisFromString(basisName);
+        result.put(basis, getBasisDescription(basis));
+      }
+    }
+
+    return result;
   }
 }

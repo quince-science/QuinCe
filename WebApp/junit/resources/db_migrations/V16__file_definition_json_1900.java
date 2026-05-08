@@ -72,7 +72,7 @@ public class V16__file_definition_json_1900 extends BaseJavaMigration {
   }
 
   private void makeJson(Connection conn) throws SQLException, PositionException,
-    IOException, DateTimeSpecificationException {
+    IOException, DateTimeSpecificationException, ClassNotFoundException {
     Gson gson = new Gson();
     PreparedStatement storeJsonStmt = conn
       .prepareStatement("UPDATE file_definition "
@@ -112,7 +112,7 @@ public class V16__file_definition_json_1900 extends BaseJavaMigration {
 
   private List<FileDefinition> getFileDefinitions(Connection conn)
     throws SQLException, PositionException, IOException,
-    DateTimeSpecificationException {
+    DateTimeSpecificationException, ClassNotFoundException {
 
     List<FileDefinition> definitions = new ArrayList<FileDefinition>();
 
@@ -146,7 +146,7 @@ public class V16__file_definition_json_1900 extends BaseJavaMigration {
 
       FileDefinition fileDefinition = new FileDefinition(id, description,
         separator, headerType, headerLines, headerEndString, columnHeaderRows,
-        columnCount, lonSpec, latSpec, dateTimeSpec, null);
+        columnCount, lonSpec, latSpec, dateTimeSpec, null, "TimeDataFile");
 
       definitions.add(fileDefinition);
     }

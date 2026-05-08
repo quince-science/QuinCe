@@ -333,7 +333,7 @@ public class AutoDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
 
     initResourceManager();
 
-    try (Connection conn = getConnection()) {
+    try (Connection conn = getConnection(false)) {
 
       // Load Dataset data
       Instrument instrument = InstrumentDB.getInstrument(conn, 1L);
@@ -346,7 +346,7 @@ public class AutoDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
       Variable variable = instrument.getVariables().get(0);
       DataSet dataset = DataSetDB.getDataSet(conn, 1L);
       DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataset.getId(), false, false);
+        dataset, false, false);
 
       // Set the auto QC and user QC values for the data SensorValues
       SensorValue sst = allSensorValues.getById(SST_VAL_ID);
@@ -363,8 +363,9 @@ public class AutoDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
       runType.setValue(line.getStringField(RUN_TYPE_COL, false));
 
       // Write updated values to DB
-      DataSetDataDB.storeSensorValues(conn,
+      DataSetDataDB.updateSensorValues(conn,
         Arrays.asList(sst, salinity, co2, runType));
+      conn.commit();
 
       // Set the Diagnostic Auto QC limits
       diagnosticQCConfig.setRangeMin(diagnosticWater,
@@ -380,7 +381,7 @@ public class AutoDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
       RunTypePeriods runTypePeriods = makeRunTypePeriods(runType);
       DiagnosticsQCRoutine diagnosticsQC = new DiagnosticsQCRoutine();
       diagnosticsQC.run(instrument, allSensorValues, runTypePeriods);
-      DataSetDataDB.storeSensorValues(conn, allSensorValues.getAll());
+      DataSetDataDB.updateSensorValues(conn, allSensorValues.getAll());
 
       // Run the Data Reduction
       DataReductionRecord dataReductionRecord = runDataReduction(conn,
@@ -446,7 +447,7 @@ public class AutoDiagnosticFlagTest extends AbstractDiagnosticFlagTest {
 
         DiagnosticsQCRoutine newDiagnosticsQC = new DiagnosticsQCRoutine();
         newDiagnosticsQC.run(instrument, allSensorValues, runTypePeriods);
-        DataSetDataDB.storeSensorValues(conn, allSensorValues.getAll());
+        DataSetDataDB.updateSensorValues(conn, allSensorValues.getAll());
 
         // Run the Data Reduction
         DataReductionRecord newDataReductionRecord = runDataReduction(conn,

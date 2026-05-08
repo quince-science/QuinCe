@@ -47,7 +47,7 @@ public class NoReductionReducerTest extends DataReducerTest {
     Measurement measurement = makeMeasurement(waterTemp);
 
     DataReductionRecord record = new DataReductionRecord(measurement, variable,
-      reducer.getCalculationParameterNames());
+      flagScheme, reducer.getCalculationParameterNames());
 
     reducer.doCalculation(instrument, measurement, record,
       getDataSource().getConnection());

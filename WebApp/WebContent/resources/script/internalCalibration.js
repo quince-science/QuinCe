@@ -17,6 +17,18 @@ function updateUseDialogControls() {
   }
 }
 
+function updateFlagCounts() {
+  let flagCounts = JSON.parse($('#statusForm\\:neededFlagCounts').val());
+  if (null != flagCounts) {
+    $('#totalFlagsNeeded').text(flagCounts['-1']);
+  }
+}
+
+function dataLoadedLocal() {
+  updateFlagCounts();
+  return false;
+}
+
 function calibrationUpdated() {
   errorCheck();
   

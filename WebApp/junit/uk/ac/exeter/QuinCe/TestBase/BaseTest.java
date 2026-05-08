@@ -37,6 +37,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
 import uk.ac.exeter.QuinCe.User.UserDB;
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -97,6 +100,13 @@ public class BaseTest {
    */
   @Mock
   protected static ServletContextEvent servletContextEvent;
+
+  /**
+   * Most tests with QC flags use the Time-based (ICOS) flag scheme. Declare it
+   * here for convenience.
+   */
+  protected static FlagScheme flagScheme = Instrument
+    .getFlagScheme(Instrument.BASIS_TIME);
 
   /**
    * Initialises the mock {@link ServletContext} and
@@ -175,7 +185,8 @@ public class BaseTest {
   }
 
   /**
-   * Get a connection to the H2 test database defined in the {@link #context}.
+   * Get a {@link Connection} to the H2 test database defined in the
+   * {@link #context}.
    *
    * @return A database connection.
    * @throws SQLException
@@ -183,6 +194,23 @@ public class BaseTest {
    */
   protected Connection getConnection() throws SQLException {
     return getDataSource().getConnection();
+  }
+
+  /**
+   * Get a {@link Connection} to the H2 test database with the specified
+   * {@code autoCommit} status.
+   *
+   * @param autoCommit
+   *          The {@code autoCommit} status.
+   * @return A database connection.
+   * @throws SQLException
+   *           If the connection cannot be retrieved.
+   * @see #getConnection()
+   */
+  protected Connection getConnection(boolean autoCommit) throws SQLException {
+    Connection conn = getConnection();
+    conn.setAutoCommit(autoCommit);
+    return conn;
   }
 
   /**
@@ -370,6 +398,22 @@ public class BaseTest {
     }
 
     return result;
+  }
+
+  /**
+   * Determine whether or not a list of {@link Coordinate} objects is in
+   * ascending order according to their timestamp.
+   *
+   * <p>
+   * Identical values are allowed.
+   * </p>
+   *
+   * @param list
+   *          The list.
+   * @return {@code true} if the list is ordered; {@code false} otherwise.
+   */
+  protected boolean timeCoordinatesOrdered(List<Coordinate> list) {
+    return timesOrdered(list.stream().map(c -> c.getTime()).toList());
   }
 
   /**

@@ -21,14 +21,15 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagSerializer;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlagSerializer;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 
 public class MeasurementValuesSerializer
   implements JsonSerializer<HashMap<Long, MeasurementValue>>,
   JsonDeserializer<HashMap<Long, MeasurementValue>> {
-
-  private static final Gson gson;
 
   private static final String SENSOR_VALUE_IDS_KEY = "svids";
 
@@ -50,9 +51,16 @@ public class MeasurementValuesSerializer
 
   private static final Double NAN_VALUE = -999999999.9D;
 
-  static {
-    gson = new GsonBuilder()
-      .registerTypeAdapter(Flag.class, new FlagSerializer()).create();
+  private final Gson gson;
+
+  private final FlagScheme flagScheme;
+
+  public MeasurementValuesSerializer(FlagScheme flagScheme) {
+    this.gson = new GsonBuilder()
+      .registerTypeAdapter(Flag.class, new FlagSerializer(flagScheme))
+      .registerTypeAdapter(RoutineFlag.class, new RoutineFlagSerializer())
+      .create();
+    this.flagScheme = flagScheme;
   }
 
   @Override
@@ -99,7 +107,7 @@ public class MeasurementValuesSerializer
       // Flag
       // We know that this implementation doesn't utilise the
       // DatasetSensorValues parameter
-      valueJson.add(FLAG_KEY, gson.toJsonTree(value.getQcFlag(null)));
+      valueJson.add(FLAG_KEY, gson.toJsonTree(value.getQcFlag(flagScheme)));
 
       // QC Comments
       JsonArray qcComments = new JsonArray(value.getQcMessages().size());

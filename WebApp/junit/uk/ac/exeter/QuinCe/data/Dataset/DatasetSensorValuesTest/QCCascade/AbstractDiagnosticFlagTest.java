@@ -113,7 +113,8 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
     Collection<String> expectedComment) {
 
     Flag flag = record.getQCFlag();
-    String qcComment = StringUtils.collectionToDelimited(record.getQCMessages(), ";");
+    String qcComment = StringUtils.collectionToDelimited(record.getQCMessages(),
+      ";");
 
     checkQC("Data Reduction", flag, expectedFlag, qcComment, expectedComment);
   }
@@ -141,14 +142,14 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
 
     boolean flagOK = true;
 
-    if (expectedFlag == 2) {
-      flagOK = valueFlag.isGood();
+    if (expectedFlag == flagScheme.getGoodFlag().getValue()) {
+      flagOK = flagScheme.isGood(valueFlag, true);
     } else {
-      flagOK = valueFlag.getFlagValue() == expectedFlag;
+      flagOK = valueFlag.getValue() == expectedFlag;
     }
 
     assertTrue(flagOK, name + " flag incorrect (expected " + expectedFlag
-      + ", was " + valueFlag.getFlagValue() + ")");
+      + ", was " + valueFlag.getValue() + ")");
 
     boolean commentOK = true;
     String invalidCommentPart = null;
@@ -184,8 +185,8 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
   protected void setUserQC(SensorValue sensorValue, int flagValue)
     throws InvalidFlagException {
 
-    Flag flag = new Flag(flagValue);
-    String comment = flag.isGood() ? "" : "User QC";
+    Flag flag = flagScheme.getFlag(flagValue);
+    String comment = flagScheme.isGood(flag, false) ? "" : "User QC";
     sensorValue.setUserQC(flag, comment);
   }
 
@@ -202,7 +203,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
   protected RunTypePeriods makeRunTypePeriods(SensorValue source)
     throws Exception {
     RunTypePeriods result = new RunTypePeriods();
-    result.add(source.getValue(), source.getTime());
+    result.add(source.getValue(), source.getCoordinate().getTime());
     return result;
   }
 
@@ -251,7 +252,7 @@ public abstract class AbstractDiagnosticFlagTest extends TestSetTest {
 
     // Get all the measurements grouped by run type
     DatasetMeasurements allMeasurements = DataSetDataDB
-      .getMeasurementsByRunType(conn, instrument, dataset.getId());
+      .getMeasurementsByRunType(conn, dataset);
 
     MeasurementValueCollector measurementValueCollector = new DefaultMeasurementValueCollector();
 

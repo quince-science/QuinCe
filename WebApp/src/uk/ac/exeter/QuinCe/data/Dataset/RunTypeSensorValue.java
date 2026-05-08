@@ -1,8 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
-import java.time.LocalDateTime;
-
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 
 /**
@@ -13,12 +12,13 @@ public class RunTypeSensorValue extends SensorValue {
 
   private final String runType;
 
-  public RunTypeSensorValue(long databaseId, long datasetId, long columnId,
-    LocalDateTime time, String value, AutoQCResult autoQc, Flag userQcFlag,
-    String userQcMessage, String runType) {
+  public RunTypeSensorValue(long databaseId, long datasetId,
+    FlagScheme flagScheme, long columnId, Coordinate coordinate, String value,
+    AutoQCResult autoQc, Flag userQcFlag, String userQcMessage,
+    String runType) {
 
-    super(databaseId, datasetId, columnId, time, value, autoQc, userQcFlag,
-      userQcMessage);
+    super(databaseId, datasetId, flagScheme, columnId, coordinate, value,
+      autoQc, userQcFlag, userQcMessage);
     this.runType = runType;
   }
 
@@ -33,7 +33,8 @@ public class RunTypeSensorValue extends SensorValue {
    */
   public RunTypeSensorValue(SensorValue sensorValue, String runType) {
     super(sensorValue.getId(), sensorValue.getDatasetId(),
-      sensorValue.getColumnId(), sensorValue.getTime(), sensorValue.getValue(),
+      sensorValue.getFlagScheme(), sensorValue.getColumnId(),
+      sensorValue.getCoordinate(), sensorValue.getValue(),
       sensorValue.getAutoQcResult(), sensorValue.getUserQCFlag(),
       sensorValue.getUserQCMessage());
 

@@ -23,10 +23,17 @@
 
       function goToQc(id) {
         window['keepAliveActive'] = false;
-        $('#datasetListForm\\:manualQCDatasetId').val(id);
-        $('#datasetListForm\\:manualQCLink').click();
+        $('#datasetListForm\\:timeManualQCDatasetId').val(id);
+        $('#datasetListForm\\:timeManualQCLink').click();
         return false;
       }
+
+      function goToArgoQc(id) {
+          window['keepAliveActive'] = false;
+          $('#datasetListForm\\:argoManualQCDatasetId').val(id);
+          $('#datasetListForm\\:argoManualQCLink').click();
+          return false;
+        }
 
       function goToPositionQc(id) {
           window['keepAliveActive'] = false;
@@ -149,9 +156,13 @@
        <p:commandLink id="approveLink" ajax="true"
          action="#{dataSetsBean.approve}" oncomplete="updateList()" />
 
-       <h:inputHidden id="manualQCDatasetId" value="#{manualQualityControlBean.datasetId}" />
-       <p:commandLink id="manualQCLink" ajax="false"
-         action="#{manualQualityControlBean.start}" />
+       <h:inputHidden id="timeManualQCDatasetId" value="#{timeManualQualityControlBean.datasetId}" />
+       <p:commandLink id="timeManualQCLink" ajax="false"
+         action="#{timeManualQualityControlBean.start}" />
+
+        <h:inputHidden id="argoManualQCDatasetId" value="#{argoManualQualityControlBean.datasetId}" />
+        <p:commandLink id="argoManualQCLink" ajax="false"
+          action="#{argoManualQualityControlBean.start}" />
 
        <h:inputHidden id="positionQCDatasetId" value="#{positionQualityControlBean.datasetId}" />
        <p:commandLink id="positionQCLink" ajax="false"
@@ -241,15 +252,22 @@
                      title="Calibration" />
                  </p:commandLink>
                </ui:fragment>
-              <ui:fragment rendered="#{not dataset.instrument.hasInternalCalibrations()}">
-                <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
-                  styleClass="actionIcon"/>
-              </ui:fragment>
-               <p:commandLink onclick="goToQc(#{dataset.id})">
-                 <h:graphicImage value="/resources/image/qc.svg"
-                   styleClass="actionIcon" alt="Quality Control"
-                   title="Quality Control" />
-               </p:commandLink>
+                <ui:fragment rendered="#{not dataset.instrument.hasInternalCalibrations()}">
+                  <h:graphicImage value="/resources/image/spacer.svg" alt="" title=""
+                    styleClass="actionIcon"/>
+                </ui:fragment>
+                <ui:fragment rendered="#{dataset.instrument.basis eq 1}">
+                  <p:commandLink onclick="goToQc(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/qc.svg"
+                      styleClass="actionIcon" alt="Quality Control" title="Quality Control" />
+                  </p:commandLink>
+                </ui:fragment>
+                <ui:fragment rendered="#{dataset.instrument.basis eq 2}">
+                  <p:commandLink onclick="goToArgoQc(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/qc.svg"
+                      styleClass="actionIcon" alt="Quality Control" title="Quality Control" />
+                  </p:commandLink>
+                </ui:fragment>
              </ui:fragment>
              <ui:fragment
                rendered="#{dataset.status lt DataSet.STATUS_USER_QC}">

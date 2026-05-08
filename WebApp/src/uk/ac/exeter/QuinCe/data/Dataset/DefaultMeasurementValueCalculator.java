@@ -13,10 +13,10 @@ import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -73,7 +73,7 @@ public class DefaultMeasurementValueCalculator
   }
 
   protected MeasurementValue getSensorValue(Instrument instrument,
-    DataSet dataSet, SensorValuesListValue timeReference, Variable variable,
+    DataSet dataSet, SensorValuesListValue baseValue, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, boolean allowCalibration,
     Connection conn) throws MeasurementValueCalculatorException,
@@ -89,36 +89,44 @@ public class DefaultMeasurementValueCalculator
 
     // This can be happen if a sensor has no values at all.
     if (null == sensorValues) {
-      result = new MeasurementValue(requiredSensorType);
+      result = new MeasurementValue(requiredSensorType,
+        instrument.getFlagScheme().getAssumedGoodFlag());
     } else {
-      try {
-        // TODO #1128 This currently assumes only one sensor for each
-        // SensorType.
-        // This will have to change eventually.
-        SensorAssignment coreAssignment = instrument.getSensorAssignments()
-          .get(variable.getCoreSensorType()).first();
+      // TODO #1128 This currently assumes only one sensor for each
+      // SensorType.
+      // This will have to change eventually.
+      SensorAssignment coreAssignment = instrument.getSensorAssignments()
+        .get(variable.getCoreSensorType()).first();
 
-        LocalDateTime valueTime = dataSet.getSensorOffsets().getOffsetTime(
-          timeReference.getNominalTime(), coreAssignment, requiredAssignment);
+      Coordinate valueCoordinate = baseValue.getCoordinate();
 
-        /*
-         * Values from the core SensorType do not get interpolated, because they
-         * are the basis for measurements. Other SensorTypes can be
-         * interpolated.
-         */
-        result = new MeasurementValue(requiredSensorType, sensorValues.getValue(
-          valueTime, !requiredSensorType.equals(variable.getCoreSensorType())));
-      } catch (SensorGroupsException e) {
-        throw new MeasurementValueCalculatorException(
-          "Cannot calculate time offset", e);
+      if (valueCoordinate instanceof TimeCoordinate) {
+        try {
+          valueCoordinate = dataSet.getSensorOffsets().getOffsetTime(
+            (TimeCoordinate) baseValue.getCoordinate(), coreAssignment,
+            requiredAssignment, allSensorValues);
+        } catch (Exception e) {
+          throw new MeasurementValueCalculatorException(
+            "Cannot calculate time offset", e);
+
+        }
       }
+
+      /*
+       * Values from the core SensorType do not get interpolated, because they
+       * are the basis for measurements. Other SensorTypes can be interpolated.
+       */
+      result = new MeasurementValue(instrument.getFlagScheme(),
+        requiredSensorType, sensorValues.getValue(valueCoordinate,
+          !requiredSensorType.equals(variable.getCoreSensorType())));
 
       // Calibrate the value if (a) the SensorType can have calibrations, and
       // (b) the instrument has calibration Run Types defined.
       if (allowCalibration && requiredSensorType.hasInternalCalibration()
         && instrument.hasInternalCalibrations()) {
-        calibrate(instrument, dataSet, timeReference, requiredSensorType,
-          result, allMeasurements, sensorValues, conn);
+        calibrate(instrument, (TimeDataSet) dataSet, baseValue,
+          requiredSensorType, result, allMeasurements, sensorValues,
+          coreAssignment.getDatabaseId(), conn);
       }
     }
 
@@ -158,7 +166,7 @@ public class DefaultMeasurementValueCalculator
    * @throws RecordNotFoundException
    */
   private MeasurementValue getPositionValue(Instrument instrument,
-    DataSet dataSet, SensorValuesListValue timeReference, Variable variable,
+    DataSet dataSet, SensorValuesListValue baseValue, Variable variable,
     SensorType requiredSensorType, DatasetMeasurements allMeasurements,
     DatasetSensorValues allSensorValues, Connection conn)
     throws SensorValuesListException, MeasurementValueCalculatorException,
@@ -169,32 +177,41 @@ public class DefaultMeasurementValueCalculator
     SensorAssignment coreAssignment = instrument.getSensorAssignments()
       .get(variable.getCoreSensorType()).first();
 
-    try {
-      // If Lon/Lat, get offset to first group. Get lat/lon at that time.
-      LocalDateTime positionTime = dataSet.getSensorOffsets()
-        .offsetToFirstGroup(timeReference.getNominalTime(), coreAssignment);
+    Coordinate positionCoordinate = baseValue.getCoordinate();
 
-      long columnId = requiredSensorType
-        .equals(SensorType.LONGITUDE_SENSOR_TYPE) ? SensorType.LONGITUDE_ID
-          : SensorType.LATITUDE_ID;
-
-      SensorValuesList sensorValues = allSensorValues.getColumnValues(columnId);
-
-      SensorValuesListOutput sensorValue = null == sensorValues ? null
-        : sensorValues.getValue(positionTime, true);
-
-      result = null == sensorValue ? null
-        : new MeasurementValue(requiredSensorType, sensorValue);
-    } catch (SensorGroupsException e) {
-      throw new MeasurementValueCalculatorException(
-        "Unable to apply sensor offsets", e);
+    if (positionCoordinate instanceof TimeCoordinate) {
+      try {
+        positionCoordinate = dataSet.getSensorOffsets().offsetToFirstGroup(
+          (TimeCoordinate) positionCoordinate, coreAssignment, allSensorValues);
+      } catch (Exception e) {
+        throw new MeasurementValueCalculatorException(
+          "Unable to apply sensor offsets", e);
+      }
     }
+
+    long columnId = requiredSensorType.equals(SensorType.LONGITUDE_SENSOR_TYPE)
+      ? SensorType.LONGITUDE_ID
+      : SensorType.LATITUDE_ID;
+
+    SensorValuesList sensorValues = allSensorValues.getColumnValues(columnId);
+
+    SensorValuesListOutput sensorValue = null == sensorValues ? null
+      : sensorValues.getValue(positionCoordinate, true);
+
+    result = null == sensorValue ? null
+      : new MeasurementValue(instrument.getFlagScheme(), requiredSensorType,
+        sensorValue);
 
     return result;
   }
 
   /**
    * Apply calibration to a {@link MeasurementValue}.
+   *
+   * <p>
+   * Calibration will only be performed if the supplied {@code baseValue} has a
+   * {@link TimeCoordinate}. Otherwise the original value will remain unchanged.
+   * </p>
    *
    * @param instrument
    *          The {@link Instrument} for which measurements are being
@@ -216,13 +233,16 @@ public class DefaultMeasurementValueCalculator
    * @throws MeasurementValueCalculatorException
    *           If the calibration cannot be performed.
    */
-  protected void calibrate(Instrument instrument, DataSet dataset,
-    SensorValuesListValue timeReference, SensorType sensorType,
+  protected void calibrate(Instrument instrument, TimeDataSet dataset,
+    SensorValuesListValue baseValue, SensorType sensorType,
     MeasurementValue value, DatasetMeasurements allMeasurements,
-    SensorValuesList sensorValues, Connection conn)
+    SensorValuesList sensorValues, long columnId, Connection conn)
     throws MeasurementValueCalculatorException {
 
-    if (!value.getCalculatedValue().isNaN()) {
+    if (baseValue.getCoordinate() instanceof TimeCoordinate
+      && !value.getCalculatedValue().isNaN()) {
+
+      TimeCoordinate coordinate = (TimeCoordinate) baseValue.getCoordinate();
 
       try {
         CalibrationSet externalStandards = dataset.getExternalStandards(conn);
@@ -230,13 +250,13 @@ public class DefaultMeasurementValueCalculator
         // Get the calibration offset for the standard run prior to the
         // measurement
         CalibrationOffset prior = getCalibrationOffset(PRIOR, externalStandards,
-          allMeasurements, sensorValues, sensorType,
-          timeReference.getNominalTime(), value);
+          instrument.getFlagScheme(), allMeasurements, sensorValues, columnId,
+          sensorType, coordinate, value);
 
         // Get the calibration offset for the standard run after the measurement
         CalibrationOffset post = getCalibrationOffset(POST, externalStandards,
-          allMeasurements, sensorValues, sensorType,
-          timeReference.getNominalTime(), value);
+          instrument.getFlagScheme(), allMeasurements, sensorValues, columnId,
+          sensorType, coordinate, value);
 
         /*
          * Note that even though we know QC messages are required here, we can't
@@ -260,7 +280,7 @@ public class DefaultMeasurementValueCalculator
           // interpolated to the time of the measured value.
           double offset = Calculators.interpolate(prior.getTime(),
             prior.getOffset(), post.getTime(), post.getOffset(),
-            timeReference.getNominalTime());
+            coordinate.getTime());
 
           applyOffset(value, offset);
 
@@ -275,10 +295,10 @@ public class DefaultMeasurementValueCalculator
   }
 
   private CalibrationOffset getCalibrationOffset(int direction,
-    CalibrationSet externalStandards, DatasetMeasurements allMeasurements,
-    SensorValuesList sensorValues, SensorType sensorType,
-    LocalDateTime measurementTime, MeasurementValue value)
-    throws RecordNotFoundException {
+    CalibrationSet externalStandards, FlagScheme flagScheme,
+    DatasetMeasurements allMeasurements, SensorValuesList sensorValues,
+    long columnId, SensorType sensorType, TimeCoordinate measurementTime,
+    MeasurementValue value) throws RecordNotFoundException {
 
     CalibrationOffset result = new CalibrationOffset();
 
@@ -288,7 +308,7 @@ public class DefaultMeasurementValueCalculator
     for (String runType : externalStandards.getTargets()) {
 
       double standardConcentration = externalStandards
-        .getCalibrations(measurementTime).get(runType)
+        .getCalibrations(measurementTime.getTime()).get(runType)
         .getDoubleCoefficient(sensorType.getShortName());
 
       if (sensorType.includeZeroInCalibration()
@@ -310,9 +330,10 @@ public class DefaultMeasurementValueCalculator
          * filtering out any bad ones.
          */
         List<SensorValue> runSensorValues = runTypeMeasurements.stream()
-          .map(m -> sensorValues.getRawSensorValue(m.getTime()))
+          .map(m -> sensorValues.getRawSensorValue(m.getCoordinate(), columnId))
           .filter(v -> null != v).filter(v -> !v.getDoubleValue().isNaN())
-          .filter(v -> v.getUserQCFlag().isGood()).collect(Collectors.toList());
+          .filter(v -> flagScheme.isGood(v.getUserQCFlag(), true))
+          .collect(Collectors.toList());
 
         Mean mean = new Mean();
 
@@ -436,7 +457,8 @@ public class DefaultMeasurementValueCalculator
      * @return The calculated calibration time.
      */
     protected LocalDateTime getTime() {
-      return DateTimeUtils.meanTime(usedValues.stream().map(v -> v.getTime()));
+      return DateTimeUtils
+        .meanTime(usedValues.stream().map(v -> v.getCoordinate().getTime()));
     }
 
     /**

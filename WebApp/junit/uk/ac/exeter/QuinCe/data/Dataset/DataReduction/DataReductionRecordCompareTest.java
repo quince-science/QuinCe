@@ -142,7 +142,7 @@ public class DataReductionRecordCompareTest extends TestSetTest {
     Variable variable = makeVariable(line.getLongField(VARIABLE_ID_COL));
 
     DataReductionRecord base = new DataReductionRecord(measurement, variable,
-      makeParameters());
+      flagScheme, makeParameters());
 
     Measurement compareMeasurement = makeMeasurement(
       line.getLongField(COMPARE_MEASUREMENT_ID_COL));
@@ -150,7 +150,7 @@ public class DataReductionRecordCompareTest extends TestSetTest {
       line.getLongField(COMPARE_VARIABLE_ID_COL));
 
     DataReductionRecord compare = new DataReductionRecord(compareMeasurement,
-      compareVariable, makeParameters());
+      compareVariable, flagScheme, makeParameters());
 
     int compareResult = compare.compareTo(base);
     assertTrue(sameSign(compareResult, line.getIntField(COMPARE_SIGN_COL)));

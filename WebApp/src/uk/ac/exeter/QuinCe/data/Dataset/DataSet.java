@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,9 +12,10 @@ import java.util.Properties;
 
 import com.google.gson.JsonArray;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
-import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InvalidInstrumentBasisException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -23,13 +25,15 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.Message;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.TimeRange;
+import uk.ac.exeter.QuinCe.utils.NaturalOrderComparator;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Object to represent a data set
  */
-public class DataSet implements Comparable<DataSet>, TimeRange {
+public class DataSet implements Comparable<DataSet> {
+
+  private static Map<Integer, Class<? extends DataSet>> BASIS_TO_CLASS;
 
   public static final long TIMEPOS_FIELDSET_ID = 0L;
 
@@ -226,14 +230,14 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
   private String name;
 
   /**
-   * The start date of the data set
+   * The start point of the DataSet.
    */
-  private LocalDateTime start;
+  private String start;
 
   /**
-   * The end date of the data set
+   * The end point of the DataSet.
    */
-  private LocalDateTime end;
+  private String end;
 
   /**
    * Properties for each of the measured variables
@@ -343,6 +347,10 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
     validStatuses.put(STATUS_EXPORTING, STATUS_EXPORTING_NAME);
     validStatuses.put(STATUS_EXPORT_COMPLETE, STATUS_EXPORT_COMPLETE_NAME);
     validStatuses.put(STATUS_DELETING, STATUS_DELETING_NAME);
+
+    BASIS_TO_CLASS = new HashMap<Integer, Class<? extends DataSet>>();
+    BASIS_TO_CLASS.put(Instrument.BASIS_TIME, TimeDataSet.class);
+    BASIS_TO_CLASS.put(Instrument.BASIS_ARGO, ArgoDataSet.class);
   }
 
   /**
@@ -354,10 +362,10 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
    *          Database ID of the instrument to which the data set belongs
    * @param name
    *          Dataset name
-   * @param start
-   *          Start date
+   * @param startDate
+   *          Start coordinate
    * @param end
-   *          End date
+   *          End coordinate
    * @param status
    *          The current status
    * @param statusDate
@@ -382,12 +390,11 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
    *          The maximum latitude of the dataset's geographical bounds
    *
    */
-  protected DataSet(long id, Instrument instrument, String name,
-    LocalDateTime start, LocalDateTime end, int status,
-    LocalDateTime statusDate, boolean nrt, Map<String, Properties> properties,
-    SensorOffsets sensorOffsets, LocalDateTime createdDate,
-    LocalDateTime lastTouched, List<Message> errorMessages,
-    DatasetProcessingMessages processingMessages,
+  protected DataSet(long id, Instrument instrument, String name, String start,
+    String end, int status, LocalDateTime statusDate, boolean nrt,
+    Map<String, Properties> properties, SensorOffsets sensorOffsets,
+    LocalDateTime createdDate, LocalDateTime lastTouched,
+    List<Message> errorMessages, DatasetProcessingMessages processingMessages,
     DatasetUserMessages userMessages, double minLon, double minLat,
     double maxLon, double maxLat, boolean exported) {
 
@@ -444,8 +451,8 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
    * @param nrt
    *          Indicates whether or not this is a NRT dataset
    */
-  public DataSet(Instrument instrument, String name, LocalDateTime start,
-    LocalDateTime end, boolean nrt) {
+  public DataSet(Instrument instrument, String name, String start, String end,
+    boolean nrt) {
     this.instrument = instrument;
     this.name = name;
     this.start = start;
@@ -562,41 +569,78 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
   }
 
   /**
-   * Get the start date of the data set
+   * Get the start point of the data set.
    *
-   * @return The start date
+   * <p>
+   * This is an internal format and may not be suitable for display to humans.
+   * Use {@link #getDisplayStart()} for that.
+   * </p>
+   *
+   * @return The start point.
    */
-  public LocalDateTime getStart() {
+  public String getStart() {
     return start;
   }
 
   /**
-   * Set the start date of the data set
+   * Set the start point for the dataset.
+   *
+   * <p>
+   * This must use the internal format for the start point per
+   * {@link #getStart()}, and not the human-readable format supplied by
+   * {@link #getDisplayStart()}.
+   * </p>
    *
    * @param start
-   *          The start date
+   *          The start point.
    */
-  public void setStart(LocalDateTime start) {
+  public void setStart(String start) {
     this.start = start;
   }
 
   /**
-   * Get the end date of the data set
+   * Get the human-readable version of the start point of the DataSet.
    *
-   * @return The end date
+   * @return The human-readable start point
    */
-  public LocalDateTime getEnd() {
+  public String getDisplayStart() {
+    return getStart();
+  }
+
+  /**
+   * Get the end point of the data set
+   *
+   * <p>
+   * This is an internal format and may not be suitable for display to humans.
+   * Use {@link #getDisplayEnd()} for that.
+   * </p>
+   */
+  public String getEnd() {
     return end;
   }
 
   /**
-   * Set the end date of the data set
+   * Set the end point for the dataset.
+   *
+   * <p>
+   * This must use the internal format for the end point per {@link #getEnd()},
+   * and not the human-readable format supplied by {@link #getDisplayEnd()}.
+   * </p>
    *
    * @param end
-   *          The end date
+   *          The end point.
    */
-  public void setEnd(LocalDateTime end) {
+  public void setEnd(String end) {
     this.end = end;
+  }
+
+  /**
+   * Get the human-readable version of the end point of the DataSet.
+   *
+   * @return The human-readable end point
+   */
+  public String getDisplayEnd() {
+    return getEnd();
   }
 
   /**
@@ -752,10 +796,13 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
    * @throws DatabaseException
    *           If a database error occurs
    */
-  public List<Long> getSourceFiles(Connection conn)
-    throws MissingParamException, DatabaseException {
-    return DataFileDB.getFilesWithinDates(conn, instrument, start, end, true);
-  }
+
+  /*
+   * public List<Long> getSourceFiles(Connection conn) throws
+   * MissingParamException, DatabaseException { return
+   * DataFileDB.getFilesWithinDates(conn, instrument, startTime, endTime, true);
+   * }
+   */
 
   /**
    * Determine whether or not this is a NRT dataset
@@ -811,7 +858,7 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
   }
 
   /**
-   * Set the dataset's geographical bounds
+   * Set the dataset's geographical bounds.
    *
    * @param minLon
    *          The minimum longitude
@@ -822,14 +869,13 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
    * @param maxLat
    *          The maximum latitude
    */
-  public void setBounds(double minLon, double minLat, double maxLon,
-    double maxLat) {
+  public void setBounds(GeoBounds bounds) {
 
-    if (!instrument.fixedPosition()) {
-      this.minLon = minLon;
-      this.maxLon = maxLon;
-      this.minLat = minLat;
-      this.maxLat = maxLat;
+    if (null != bounds && !instrument.fixedPosition()) {
+      this.minLon = bounds.getMinLon();
+      this.maxLon = bounds.getMaxLon();
+      this.minLat = bounds.getMinLat();
+      this.maxLat = bounds.getMaxLat();
     }
   }
 
@@ -933,7 +979,16 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
 
   @Override
   public int compareTo(DataSet o) {
-    return start.compareTo(o.start);
+    if (getClass() == o.getClass()) {
+      return this.compareToWorker(o);
+    } else {
+      throw new IllegalArgumentException(
+        "Cannot compare coordinates of different types");
+    }
+  }
+
+  protected int compareToWorker(DataSet o) {
+    return new NaturalOrderComparator().compare(this.start, o.start);
   }
 
   public void addProcessingMessage(String module, String message) {
@@ -1000,6 +1055,124 @@ public class DataSet implements Comparable<DataSet>, TimeRange {
    */
   public void markExported() {
     exported = true;
+  }
+
+  public static Constructor<? extends DataSet> getDataSetConstructor(int basis)
+    throws InvalidInstrumentBasisException, NoSuchMethodException,
+    SecurityException {
+
+    if (!BASIS_TO_CLASS.containsKey(basis)) {
+      throw new InvalidInstrumentBasisException(basis);
+    }
+
+    Class<? extends DataSet> clazz = BASIS_TO_CLASS.get(basis);
+    return clazz.getConstructor(long.class, Instrument.class, String.class,
+      String.class, String.class, int.class, LocalDateTime.class, boolean.class,
+      Map.class, SensorOffsets.class, LocalDateTime.class, LocalDateTime.class,
+      List.class, DatasetProcessingMessages.class, DatasetUserMessages.class,
+      double.class, double.class, double.class, double.class, boolean.class);
+  }
+
+  /**
+   * Get a time from the DataSet's properties.
+   *
+   * @param timeName
+   *          The name of the time property.
+   * @return The time.
+   */
+  private LocalDateTime getTimeProperty(String timeName) {
+    LocalDateTime result = null;
+
+    String propertyString = getProperty(DATASET_PROPERTIES_KEY, timeName);
+    if (null != propertyString) {
+      result = DateTimeUtils.longToDate(propertyString);
+    }
+
+    return result;
+  }
+
+  /**
+   * Set a time in the DataSet's properties.
+   *
+   * @param timeName
+   *          The name of the time property.
+   * @param time
+   *          The time.
+   */
+  private void setTimeProperty(String timeName, LocalDateTime time) {
+    setProperty(DATASET_PROPERTIES_KEY, timeName,
+      String.valueOf(DateTimeUtils.dateToLong(time)));
+  }
+
+  /**
+   * Get the start time for the DataSet.
+   *
+   * @return The start time.
+   */
+  public LocalDateTime getStartTime() {
+    return getTimeProperty("startTime");
+  }
+
+  /**
+   * Get the end time for the DataSet.
+   *
+   * @return The end time.
+   */
+  public LocalDateTime getEndTime() {
+    return getTimeProperty("endTime");
+  }
+
+  /**
+   * Set the start time for the DataSet.
+   *
+   * @param time
+   *          The start time.
+   */
+  public void setStartTime(LocalDateTime time) {
+    setTimeProperty("startTime", time);
+  }
+
+  /**
+   * Set the end time for the DatSet.
+   *
+   * @param time
+   *          The end time.
+   */
+  public void setEndTime(LocalDateTime time) {
+    setTimeProperty("endTime", time);
+  }
+
+  /**
+   * Adjust the DataSet's start and end times such that they encompass the
+   * specified time.
+   *
+   * @param time
+   *          The time.
+   */
+  public void adjustTimeRange(LocalDateTime time) {
+
+    if (null != time) {
+      LocalDateTime currentStartTime = getStartTime();
+
+      if (null == currentStartTime || time.isBefore(currentStartTime)) {
+        setStartTime(time);
+      }
+
+      LocalDateTime currentEndTime = getEndTime();
+
+      if (null == currentEndTime || time.isAfter(currentEndTime)) {
+        setEndTime(time);
+      }
+    }
+  }
+
+  /**
+   * Get the {@link FlagScheme} being used for this dataset.
+   *
+   * @return The {@link FlagScheme}.
+   */
+  public FlagScheme getFlagScheme() {
+    return instrument.getFlagScheme();
   }
 
   /**

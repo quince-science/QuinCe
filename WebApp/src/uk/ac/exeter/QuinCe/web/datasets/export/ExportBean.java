@@ -11,7 +11,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -30,15 +32,17 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeDataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
+import uk.ac.exeter.QuinCe.data.Files.TimeDataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
@@ -259,8 +263,7 @@ public class ExportBean extends BaseManagedBean {
 
     // Process each row of the data
     for (Long rowId : data.getRowIDs()) {
-      if (data.containsTime(DateTimeUtils.longToDate(rowId),
-        exportOption.includeRawSensors())) {
+      if (data.contains(rowId, exportOption.includeRawSensors())) {
 
         boolean firstColumn = true;
 
@@ -285,7 +288,7 @@ public class ExportBean extends BaseManagedBean {
         }
 
         // Measurement values
-        Measurement measurement = data.getMeasurement(data.getRowTime(rowId));
+        Measurement measurement = data.getMeasurement(rowId);
 
         List<PlotPageColumnHeading> measurementValueColumns = data
           .getExtendedColumnHeadings()
@@ -370,8 +373,9 @@ public class ExportBean extends BaseManagedBean {
                  * Note that it's possible for a Measurement to be Good but the
                  * data reduction for an individual Variable to be Bad.
                  */
-                if (null != value && exportOption.skipBad() && value
-                  .getQcFlag(data.getAllSensorValues()).equals(Flag.BAD)) {
+                if (null != value && exportOption.skipBad()
+                  && dataset.getFlagScheme()
+                    .isBad(value.getQcFlag(data.getAllSensorValues()))) {
                   value = null;
                 }
 
@@ -569,7 +573,7 @@ public class ExportBean extends BaseManagedBean {
       export.registerValue(columnId, value, allSensorValues);
 
       // Replacing FLUSHING values with empty
-      if (value.getQcFlag(allSensorValues).equals(Flag.FLUSHING)) {
+      if (value.getQcFlag(allSensorValues).equals(FlagScheme.FLUSHING_FLAG)) {
         // Empty columns
         export.append(exportOption.getMissingValue());
 
@@ -600,7 +604,7 @@ public class ExportBean extends BaseManagedBean {
           // If the value is NULL, the QC flag is empty. So only put in the flag
           // if it's not null.
           if (null != value.getValue()) {
-            export.append(value.getQcFlag(allSensorValues).getWoceValue());
+            export.append(value.getQcFlag(allSensorValues).getExportValue());
           }
 
           // QC Comment
@@ -726,28 +730,32 @@ public class ExportBean extends BaseManagedBean {
     manifest.add("metadata", metadata);
 
     JsonObject calibrations = new JsonObject();
-    CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
-      .getCalibrationSet(conn, dataset);
-    if (!sensorCalibrations.isEmpty()) {
-      calibrations.add("sensorCalibrations", sensorCalibrations
-        .toJson(new SensorIdMapper(instrument.getSensorAssignments()), true));
-    }
+    if (dataset instanceof TimeDataSet) {
+      TimeDataSet castDataset = (TimeDataSet) dataset;
 
-    if (instrument.hasInternalCalibrations()) {
-      CalibrationSet externalStandards = ExternalStandardDB.getInstance()
-        .getCalibrationSet(conn, dataset);
-      if (!externalStandards.isEmpty()) {
-        calibrations.add("externalStandards",
-          externalStandards.toJson(new DefaultTargetNameMapper(), false));
+      CalibrationSet sensorCalibrations = SensorCalibrationDB.getInstance()
+        .getCalibrationSet(conn, castDataset);
+      if (!sensorCalibrations.isEmpty()) {
+        calibrations.add("sensorCalibrations", sensorCalibrations
+          .toJson(new SensorIdMapper(instrument.getSensorAssignments()), true));
       }
-    }
 
-    if (instrument.hasCalculationCoefficients()) {
-      CalibrationSet calculationCoefficients = CalculationCoefficientDB
-        .getInstance().getCalibrationSet(conn, dataset);
-      if (!calculationCoefficients.isEmpty()) {
-        calibrations.add("calculationCoefficients",
-          calculationCoefficients.toJson(new DefaultTargetNameMapper(), true));
+      if (instrument.hasInternalCalibrations()) {
+        CalibrationSet externalStandards = ExternalStandardDB.getInstance()
+          .getCalibrationSet(conn, castDataset);
+        if (!externalStandards.isEmpty()) {
+          calibrations.add("externalStandards",
+            externalStandards.toJson(new DefaultTargetNameMapper(), false));
+        }
+      }
+
+      if (instrument.hasCalculationCoefficients()) {
+        CalibrationSet calculationCoefficients = CalculationCoefficientDB
+          .getInstance().getCalibrationSet(conn, castDataset);
+        if (!calculationCoefficients.isEmpty()) {
+          calibrations.add("calculationCoefficients", calculationCoefficients
+            .toJson(new DefaultTargetNameMapper(), true));
+        }
       }
     }
 
@@ -780,9 +788,7 @@ public class ExportBean extends BaseManagedBean {
     throws Exception {
 
     // Get the list of raw files
-    List<Long> rawIds = dataset.getSourceFiles(conn);
-    List<DataFile> files = DataFileDB.getDataFiles(conn,
-      ResourceManager.getInstance().getConfig(), rawIds);
+    TreeSet<DataFile> files = DataFileDB.getDatasetFiles(conn, dataset);
 
     // Get the base manifest. We will add to it as we go.
     JsonObject manifest = makeManifest(conn, instrument, dataset);
@@ -846,29 +852,38 @@ public class ExportBean extends BaseManagedBean {
     // Add the dataset details to the manifest
     manifest.getAsJsonObject("manifest").add("exportFiles", exportFilesJson);
 
-    // Add the raw files
-    Map<FileDefinition, List<DataFile>> groupedFiles = files.stream()
-      .collect(Collectors.groupingBy(DataFile::getFileDefinition));
-
     JsonArray rawManifest = new JsonArray();
 
-    for (FileDefinition fileDefinition : groupedFiles.keySet()) {
-      double meanFileLength = DataFile
-        .getMeanFileLength(groupedFiles.get(fileDefinition));
+    if (instrument.getBasis() == Instrument.BASIS_TIME) {
+      // Some time-based files are very small, so we combine them into
+      // larger files for convenience.
+      TreeSet<TimeDataFile> timeFiles = new TreeSet<TimeDataFile>();
+      files.forEach(f -> timeFiles.add((TimeDataFile) f));
 
-      boolean combineFiles = !fileDefinition.hasHeader()
-        && fileDefinition.getColumnHeaderRows() == 0 && meanFileLength < 3600D;
+      Map<FileDefinition, List<TimeDataFile>> groupedFiles = timeFiles.stream()
+        .collect(Collectors.groupingBy(DataFile::getFileDefinition));
 
-      if (!combineFiles) {
-        addRawFilesToZip(zip, rawManifest, dirRoot,
-          groupedFiles.get(fileDefinition));
-      } else {
-        combineAndAddRawFilesToZip(zip, rawManifest, dirRoot, fileDefinition,
-          groupedFiles.get(fileDefinition));
+      for (FileDefinition fileDefinition : groupedFiles.keySet()) {
+        double meanFileLength = TimeDataFile
+          .getMeanFileLength(groupedFiles.get(fileDefinition));
+
+        boolean combineFiles = !fileDefinition.hasHeader()
+          && fileDefinition.getColumnHeaderRows() == 0
+          && meanFileLength < 3600D;
+
+        if (!combineFiles) {
+          addRawFilesToZip(zip, rawManifest, dirRoot,
+            new ArrayList<DataFile>(groupedFiles.get(fileDefinition)));
+        } else {
+          combineAndAddRawFilesToZip(zip, rawManifest, dirRoot, fileDefinition,
+            groupedFiles.get(fileDefinition));
+        }
       }
-
-      manifest.getAsJsonObject("manifest").add("raw", rawManifest);
+    } else {
+      addRawFilesToZip(zip, rawManifest, dirRoot, files);
     }
+
+    manifest.getAsJsonObject("manifest").add("raw", rawManifest);
 
     // Manifest
     ZipEntry manifestEntry = new ZipEntry(dirRoot + "/manifest.json");
@@ -885,8 +900,8 @@ public class ExportBean extends BaseManagedBean {
   }
 
   private static void addRawFilesToZip(ZipOutputStream zip,
-    JsonArray rawManifest, String dirRoot, List<DataFile> files)
-    throws IOException {
+    JsonArray rawManifest, String dirRoot, Collection<DataFile> files)
+    throws IOException, DataFileException {
 
     for (DataFile file : files) {
       String filePath = dirRoot + "/raw/" + file.getFilename();
@@ -896,14 +911,15 @@ public class ExportBean extends BaseManagedBean {
       zip.write(file.getBytes());
       zip.closeEntry();
 
-      rawManifest.add(makeRawFileJson(file.getFilename(),
-        file.getRawStartTime(), file.getRawEndTime(), file.getTimeOffset()));
+      rawManifest
+        .add(makeRawFileJson(file.getFilename(), file.getStartDisplayString(),
+          file.getEndDisplayString(), file.getExportProperties()));
     }
   }
 
   private static void combineAndAddRawFilesToZip(ZipOutputStream zip,
     JsonArray rawManifest, String dirRoot, FileDefinition fileDefinition,
-    List<DataFile> files) throws IOException, DataFileException {
+    List<TimeDataFile> files) throws IOException, DataFileException {
 
     LocalDate currentDate = null;
     String filePath = null;
@@ -911,13 +927,15 @@ public class ExportBean extends BaseManagedBean {
     LocalDateTime endTime = null;
     ZipEntry currentEntry = null;
 
-    for (DataFile file : files) {
+    for (TimeDataFile file : files) {
 
       LocalDate fileDate = file.getRawStartTime().toLocalDate();
       if (!fileDate.equals(currentDate)) {
         if (null != currentEntry) {
           zip.closeEntry();
-          rawManifest.add(makeRawFileJson(filePath, startTime, endTime, 0));
+          rawManifest.add(makeRawFileJson(filePath,
+            DateTimeUtils.formatDateTime(startTime),
+            DateTimeUtils.formatDateTime(endTime), file.getExportProperties()));
         }
 
         currentDate = fileDate;
@@ -931,7 +949,7 @@ public class ExportBean extends BaseManagedBean {
       }
 
       zip.write(file.getBytes());
-      if (!file.getContents().endsWith("\n")) {
+      if (!file.getContentsAsString().endsWith("\n")) {
         zip.write("\n".getBytes());
       }
 
@@ -939,17 +957,24 @@ public class ExportBean extends BaseManagedBean {
     }
 
     zip.closeEntry();
-    rawManifest.add(makeRawFileJson(filePath, startTime, endTime, 0));
+    rawManifest
+      .add(makeRawFileJson(filePath, DateTimeUtils.formatDateTime(startTime),
+        DateTimeUtils.formatDateTime(endTime), null));
   }
 
-  private static JsonObject makeRawFileJson(String filePath,
-    LocalDateTime start, LocalDateTime end, long offset) {
+  private static JsonObject makeRawFileJson(String filePath, String start,
+    String end, Properties otherProperties) {
 
     JsonObject fileJson = new JsonObject();
     fileJson.addProperty("filename", new File(filePath).getName());
-    fileJson.addProperty("startDate", DateTimeUtils.toIsoDate(start));
-    fileJson.addProperty("endDate", DateTimeUtils.toIsoDate(end));
-    fileJson.addProperty("timeOffset", offset);
+    fileJson.addProperty("start", start);
+    fileJson.addProperty("end", end);
+
+    if (null != otherProperties) {
+      for (String key : otherProperties.stringPropertyNames()) {
+        fileJson.addProperty(key, otherProperties.getProperty(key));
+      }
+    }
 
     return fileJson;
   }

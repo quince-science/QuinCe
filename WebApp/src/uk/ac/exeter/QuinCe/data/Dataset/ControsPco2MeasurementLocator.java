@@ -1,13 +1,12 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalculationCoefficientDB;
@@ -15,6 +14,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -34,6 +34,8 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
     throws MeasurementLocatorException {
 
     try {
+      TimeDataSet castDataset = (TimeDataSet) dataset;
+
       SensorsConfiguration sensorConfig = ResourceManager.getInstance()
         .getSensorsConfiguration();
 
@@ -59,20 +61,19 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
         .getColumnIds(refSensorType).get(0);
 
       CalibrationSet calibrationSet = CalculationCoefficientDB.getInstance()
-        .getCalibrationSet(conn, dataset);
+        .getCalibrationSet(conn, castDataset);
 
       CalculationCoefficient defaultRunTimeCoefficient = CalculationCoefficient
         .getCoefficient(calibrationSet, variable, "Response Time",
-          dataset.getStart());
+          castDataset.getStartTime());
 
       long totalFlushingTime = Math.round(defaultRunTimeCoefficient.getValue());
-
-      List<LocalDateTime> times = sensorValues.getTimes();
 
       // Loop through all the rows, examining the zero/flush columns to decide
       // what to do
       List<SensorValue> flaggedSensorValues = new ArrayList<SensorValue>();
-      List<Measurement> measurements = new ArrayList<Measurement>(times.size());
+      List<Measurement> measurements = new ArrayList<Measurement>(
+        sensorValues.getCoordinates().size());
 
       /*
        * These values store the status of the record in the source data file
@@ -83,14 +84,17 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
        */
       int currentRecordStatus = NO_STATUS;
       int lastRecordStatus = NO_STATUS;
-      LocalDateTime currentRecordStatusStart = null;
+      TimeCoordinate currentRecordStatusStart = null;
+      TimeCoordinate recordCoordinate = null;
 
       // The time at which the last FLUSHING status started
-      LocalDateTime lastFlushingStatusStart = null;
+      TimeCoordinate lastFlushingStatusStart = null;
 
-      for (LocalDateTime recordTime : times) {
+      for (Coordinate tempCoordinate : sensorValues.getCoordinates()) {
+        recordCoordinate = (TimeCoordinate) tempCoordinate;
 
-        Map<Long, SensorValue> recordValues = sensorValues.get(recordTime);
+        Map<Long, SensorValue> recordValues = sensorValues
+          .get(recordCoordinate);
 
         /*
          * If there is no ZERO value in the record, then this is not from the
@@ -105,10 +109,10 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             if (recordStatus != currentRecordStatus) {
               lastRecordStatus = currentRecordStatus;
               currentRecordStatus = recordStatus;
-              currentRecordStatusStart = recordTime;
+              currentRecordStatusStart = recordCoordinate;
 
               if (recordStatus == FLUSHING) {
-                lastFlushingStatusStart = recordTime;
+                lastFlushingStatusStart = recordCoordinate;
               }
             }
 
@@ -118,7 +122,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             if (recordStatus == ZERO) {
               if (zeroFlushTime > 0
                 && DateTimeUtils.secondsBetween(currentRecordStatusStart,
-                  recordTime) <= zeroFlushTime) {
+                  recordCoordinate) <= zeroFlushTime) {
                 flushSensors = true;
               }
 
@@ -139,8 +143,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
                  */
                 if (lastRecordStatus == FLUSHING) {
                   if (DateTimeUtils.secondsBetween(lastFlushingStatusStart,
-                    recordTime) <= totalFlushingTime) {
-
+                    recordCoordinate) <= totalFlushingTime) {
                     flushSensors = true;
                   }
                 }
@@ -153,7 +156,7 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
                  */
                 if (lastRecordStatus == NO_STATUS || lastRecordStatus == ZERO) {
                   if (DateTimeUtils.secondsBetween(currentRecordStatusStart,
-                    recordTime) <= totalFlushingTime) {
+                    recordCoordinate) <= totalFlushingTime) {
                     flushSensors = true;
                   }
                 }
@@ -166,12 +169,13 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             SensorValue refValue = recordValues.get(refColumn);
 
             if (flushSensors) {
-              rawValue.setUserQC(Flag.FLUSHING, "Flushing");
-              refValue.setUserQC(Flag.FLUSHING, "Flushing");
+              rawValue.setUserQC(FlagScheme.FLUSHING_FLAG, "Flushing");
+              refValue.setUserQC(FlagScheme.FLUSHING_FLAG, "Flushing");
               flaggedSensorValues.add(rawValue);
               flaggedSensorValues.add(refValue);
               recordStatus = FLUSHING;
-            } else if (rawValue.getUserQCFlag().equals(Flag.FLUSHING)) {
+            } else if (rawValue.getUserQCFlag()
+              .equals(FlagScheme.FLUSHING_FLAG)) {
               /*
                * If the Response Time has been changed, some values that were
                * marked FLUSHING should have that flag removed.
@@ -183,17 +187,18 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
             }
 
             if (recordStatus != FLUSHING) {
-              measurements
-                .add(makeMeasurement(dataset, recordTime, variable, runType));
+              measurements.add(
+                makeMeasurement(dataset, recordCoordinate, variable, runType));
             }
           }
         }
       }
 
-      DataSetDataDB.storeSensorValues(conn, flaggedSensorValues);
+      DataSetDataDB.updateSensorValues(conn, flaggedSensorValues);
       return measurements;
 
     } catch (Exception e) {
+      DatabaseUtils.rollBack(conn);
       throw new MeasurementLocatorException(e);
     }
   }
@@ -230,11 +235,12 @@ public class ControsPco2MeasurementLocator extends MeasurementLocator {
     return flag == 0D || flag == 1D;
   }
 
-  private Measurement makeMeasurement(DataSet dataset, LocalDateTime time,
-    Variable variable, String runType) {
+  private Measurement makeMeasurement(DataSet dataset,
+    TimeCoordinate coordinate, Variable variable, String runType) {
 
     HashMap<Long, String> runTypes = new HashMap<Long, String>();
     runTypes.put(variable.getId(), runType);
-    return new Measurement(dataset.getId(), time, runTypes);
+    return new Measurement(dataset.getId(), dataset.getFlagScheme(), coordinate,
+      runTypes);
   }
 }

@@ -33,10 +33,10 @@ public class SubCTechMeasurementValueCalculator
   }
 
   @Override
-  protected void calibrate(Instrument instrument, DataSet dataset,
+  protected void calibrate(Instrument instrument, TimeDataSet dataset,
     SensorValuesListValue timeReference, SensorType sensorType,
     MeasurementValue value, DatasetMeasurements allMeasurements,
-    SensorValuesList sensorValues, Connection conn)
+    SensorValuesList sensorValues, long columnId, Connection conn)
     throws MeasurementValueCalculatorException {
 
     // SubCTech has a custom calibration algorithm

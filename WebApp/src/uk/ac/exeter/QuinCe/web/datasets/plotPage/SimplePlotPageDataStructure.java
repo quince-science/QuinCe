@@ -7,12 +7,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * A basic data structure to be used by classes implementing
@@ -40,37 +40,45 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  */
 public class SimplePlotPageDataStructure {
 
-  /**
-   * Cached list of row IDs, i.e. the times as longs.
-   */
-  private List<Long> rowIds = null;
-
   private final List<PlotPageColumnHeading> columnHeadings;
 
   private final PlotPageColumnHeading timeHeading;
 
   /**
-   * The main data structure, with columns organised by date and column
+   * The main data structure, with columns organised by {@link Coordinate} and
+   * column
    */
-  private TreeMap<LocalDateTime, LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue>> pageData;
+  private TreeMap<Coordinate, LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue>> pageData;
 
-  public SimplePlotPageDataStructure(List<PlotPageColumnHeading> list) {
-    pageData = new TreeMap<LocalDateTime, LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue>>();
+  /**
+   * Cache of the {@link Coordinates} added to the data.
+   */
+  private TreeMap<Long, Coordinate> coordinates;
+
+  private final FlagScheme flagScheme;
+
+  public SimplePlotPageDataStructure(List<PlotPageColumnHeading> list,
+    FlagScheme flagScheme) {
+    pageData = new TreeMap<Coordinate, LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue>>();
+    coordinates = new TreeMap<Long, Coordinate>();
     this.columnHeadings = Collections.unmodifiableList(list);
     timeHeading = getTimeHeading();
+    this.flagScheme = flagScheme;
   }
 
-  private void addTime(LocalDateTime time) {
+  private void addCoordinate(Coordinate coordinate) {
 
     // Create an empty map of all the columns
     LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue> columns = new LinkedHashMap<PlotPageColumnHeading, PlotPageTableValue>();
     columnHeadings.forEach(x -> columns.put(x, null));
 
     if (null != timeHeading) {
-      columns.put(timeHeading, new SimplePlotPageTableValue(time, null, false));
+      columns.put(timeHeading,
+        new SimplePlotPageTableValue(coordinate, flagScheme));
     }
 
-    pageData.put(time, columns);
+    pageData.put(coordinate, columns);
+    coordinates.putIfAbsent(coordinate.getId(), coordinate);
   }
 
   /**
@@ -83,13 +91,7 @@ public class SimplePlotPageDataStructure {
    * @return The row IDs.
    */
   public List<Long> getRowIds() {
-
-    if (null == rowIds) {
-      rowIds = pageData.keySet().stream().map(x -> DateTimeUtils.dateToLong(x))
-        .collect(Collectors.toList());
-    }
-
-    return rowIds;
+    return new ArrayList<Long>(coordinates.keySet());
   }
 
   public List<PlotPageTableRecord> generateTableDataRecords(int start,
@@ -105,21 +107,21 @@ public class SimplePlotPageDataStructure {
     }
 
     for (int i = start; i <= end; i++) {
-      LocalDateTime time = DateTimeUtils.longToDate(ids.get(i));
-      PlotPageTableRecord record = new PlotPageTableRecord(time);
-      record.addAll(pageData.get(time).values());
+      PlotPageTableRecord record = new PlotPageTableRecord(ids.get(i),
+        flagScheme);
+      record.addAll(pageData.get(coordinates.get(ids.get(i))).values());
       result.add(record);
     }
 
     return result;
   }
 
-  public TreeMap<LocalDateTime, PlotPageTableValue> getColumnValues(
+  public TreeMap<Coordinate, PlotPageTableValue> getColumnValues(
     PlotPageColumnHeading column) throws Exception {
 
-    TreeMap<LocalDateTime, PlotPageTableValue> result = new TreeMap<LocalDateTime, PlotPageTableValue>();
+    TreeMap<Coordinate, PlotPageTableValue> result = new TreeMap<Coordinate, PlotPageTableValue>();
 
-    for (LocalDateTime time : pageData.keySet()) {
+    for (Coordinate time : pageData.keySet()) {
       for (PlotPageColumnHeading heading : pageData.get(time).keySet()) {
         if (heading.equals(column)) {
           result.put(time, pageData.get(time).get(column));
@@ -141,32 +143,27 @@ public class SimplePlotPageDataStructure {
    * @param value
    *          The value
    */
-  public void add(LocalDateTime time, PlotPageColumnHeading heading,
+  public void add(Coordinate coordinate, PlotPageColumnHeading heading,
     PlotPageTableValue value) {
 
-    if (!pageData.containsKey(time)) {
+    if (!pageData.containsKey(coordinate)) {
       // Create the time entry
-      addTime(time);
-
-      // Clear the row IDs cache
-      rowIds = null;
+      addCoordinate(coordinate);
     }
 
-    pageData.get(time).put(heading, value);
+    pageData.get(coordinate).put(heading, value);
   }
 
-  public void add(LocalDateTime time, PlotPageColumnHeading heading,
+  public void add(Coordinate coordinate, PlotPageColumnHeading heading,
     SensorValue value) throws RoutineException {
 
-    if (!pageData.containsKey(time)) {
+    if (!pageData.containsKey(coordinate)) {
       // Create the time entry
-      addTime(time);
-
-      // Clear the row IDs cache
-      rowIds = null;
+      addCoordinate(coordinate);
     }
 
-    pageData.get(time).put(heading, new SensorValuePlotPageTableValue(value));
+    pageData.get(coordinate).put(heading,
+      new SensorValuePlotPageTableValue(value));
   }
 
   private PlotPageColumnHeading getTimeHeading() {
@@ -191,16 +188,16 @@ public class SimplePlotPageDataStructure {
   }
 
   public List<SensorValue> getSensorValues(long columnId,
-    List<LocalDateTime> times) {
+    List<Long> coordinateIds) {
 
-    List<SensorValue> result = new ArrayList<SensorValue>(times.size());
+    List<SensorValue> result = new ArrayList<SensorValue>(coordinates.size());
 
     PlotPageColumnHeading heading = getHeading(columnId);
 
-    for (LocalDateTime time : times) {
+    for (Long coordinateId : coordinateIds) {
 
       Map<PlotPageColumnHeading, PlotPageTableValue> timeEntry = pageData
-        .get(time);
+        .get(coordinates.get(coordinateId));
       if (null != timeEntry) {
         PlotPageTableValue column = timeEntry.get(heading);
         if (null != column) {
@@ -230,7 +227,7 @@ public class SimplePlotPageDataStructure {
     return result;
   }
 
-  public List<LocalDateTime> getTimes() {
-    return new ArrayList<LocalDateTime>(pageData.keySet());
+  public List<Coordinate> getCoordinates() {
+    return new ArrayList<Coordinate>(coordinates.values());
   }
 }

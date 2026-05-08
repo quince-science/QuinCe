@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -13,6 +14,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
@@ -41,31 +43,53 @@ public class MapRecords extends ArrayList<MapRecord> {
 
   private Double maxNoFlags = Double.NaN;
 
+  public MapRecords(int size, DatasetSensorValues allSensorValues,
+    Function<Double, String> valueFormatter) {
+
+    super(size);
+    buildGsons(allSensorValues, valueFormatter);
+  }
+
   public MapRecords(int size, DatasetSensorValues allSensorValues) {
     super(size);
+    buildGsons(allSensorValues, null);
+  }
 
-    valueGson = new GsonBuilder().registerTypeHierarchyAdapter(MapRecord.class,
-      new MapRecordJsonSerializer(MapRecordJsonSerializer.VALUE,
-        allSensorValues))
-      .create();
+  private void buildGsons(DatasetSensorValues allSensorValues,
+    Function<Double, String> valueFormatter) {
+
+    if (null == valueFormatter) {
+      valueGson = new GsonBuilder()
+        .registerTypeHierarchyAdapter(MapRecord.class,
+          new MapRecordJsonSerializer(MapRecordJsonSerializer.VALUE,
+            allSensorValues))
+        .create();
+    } else {
+      valueGson = new GsonBuilder()
+        .registerTypeHierarchyAdapter(MapRecord.class,
+          new MapRecordJsonSerializer(MapRecordJsonSerializer.VALUE,
+            allSensorValues, valueFormatter))
+        .create();
+    }
+
     flagGson = new GsonBuilder().registerTypeHierarchyAdapter(MapRecord.class,
-      new MapRecordJsonSerializer(MapRecordJsonSerializer.FLAG,
-        allSensorValues))
+      new MapRecordJsonSerializer(MapRecordJsonSerializer.FLAG, allSensorValues,
+        valueFormatter))
       .create();
     flagNrtGson = new GsonBuilder()
       .registerTypeHierarchyAdapter(MapRecord.class,
         new MapRecordJsonSerializer(MapRecordJsonSerializer.FLAG_IGNORE_NEEDED,
-          allSensorValues))
+          allSensorValues, null))
       .create();
     selectionGson = new GsonBuilder()
       .registerTypeHierarchyAdapter(MapRecord.class,
         new MapRecordJsonSerializer(MapRecordJsonSerializer.SELECTION,
-          allSensorValues))
+          allSensorValues, null))
       .create();
   }
 
   public String getDisplayJson(GeoBounds bounds, List<Long> selectedRows,
-    boolean useNeededFlags, boolean hideNonGoodFlags,
+    boolean useNeededFlags, boolean hideNonGoodFlags, boolean includePath,
     DatasetSensorValues allSensorValues) {
 
     Set<MapRecord> boundedRecords = new TreeSet<MapRecord>();
@@ -113,6 +137,8 @@ public class MapRecords extends ArrayList<MapRecord> {
 
       if (boundedRecords.size() <= DECIMATION_LIMIT) {
         decimated.addAll(boundedRecords);
+        selected = boundedRecords.stream()
+          .filter(r -> selectedRows.contains(r.getRowId())).toList();
       } else {
         int nth = (int) Math.floor(boundedRecords.size() / DECIMATION_LIMIT);
         int count = 0;
@@ -163,7 +189,35 @@ public class MapRecords extends ArrayList<MapRecord> {
     json.add(selectionGson
       .toJsonTree(makeFeatureCollection(selectionGson, selection)));
 
+    if (includePath) {
+      json.add(makeGeoJsonPath());
+    }
+
     return json.toString();
+  }
+
+  private JsonElement makeGeoJsonPath() {
+    JsonObject object = new JsonObject();
+    object.addProperty("type", "FeatureCollection");
+
+    JsonArray features = new JsonArray();
+
+    JsonObject line = new JsonObject();
+    line.addProperty("type", "LineString");
+
+    JsonArray coordinates = new JsonArray();
+    for (MapRecord record : this) {
+      JsonArray coordinate = new JsonArray();
+      coordinate.add(record.position.getLongitude());
+      coordinate.add(record.position.getLatitude());
+      coordinates.add(coordinate);
+    }
+
+    line.add("coordinates", coordinates);
+    features.add(line);
+    object.add("features", features);
+
+    return object;
   }
 
   private boolean showAsFlag(MapRecord record, boolean useNeededFlag,

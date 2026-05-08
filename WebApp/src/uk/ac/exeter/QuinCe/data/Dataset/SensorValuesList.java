@@ -1,52 +1,28 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.TreeSet;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.Calculators;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.MeanCalculator;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
-import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
 
 /**
  * A list of SensorValue objects with various search capabilities.
  *
  * <p>
- * <b>IMPORTANT: READ ALL OF THIS DESCRIPTION, PARTICULARLY THE NOTE IN THE LAST
- * PARAGRAPH.</b>
+ * The list is maintained in {@link Coordinate} order of its members. Attempting
+ * to add two {@link SensorValue}s with the same {@link Coordinate} will result
+ * in an {@link IllegalArgumentException}. Attempting to add values with
+ * different {@link Coordinate} types will also result in an
+ * {@link IllegalArgumentException}.
  * </p>
- *
- * <p>
- * The list is maintained in time order of its members. Attempting to add two
- * {@link SensorValue}s with the same timestamp will result in an
- * {@link UnsupportedOperationException}.
- * </p>
- *
- * <p>
- * When retrieving values, the list is aware of the different measurement
- * strategies (or MODEs as named here) used by different sensors. These are:
- * </p>
- * <ul>
- * <li><b>CONTINUOUS mode:</b> Regular measurements at short intervals (≤ 5
- * minutes).</li>
- * <li><b>PERIODIC mode:</b> Groups of measurements at long intervals (e.g. 5
- * measurements at one minute intervals, every 4 hours). This also encompasses
- * single measurements taken at extended intervals.</li>
- * </ul>
  *
  * <p>
  * {@code get} methods for the list allow access in two ways:
@@ -63,29 +39,12 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * Typically, QC activities will access the {@code raw} methods and data
  * reduction will access the {@code values} methods.
  * </p>
- *
- * <p>
- * Values mode results are automatically stripped of {@link Flag#FLUSHING}
- * values.
- * </p>
- *
- * <p>
- * <b>Note:</b> For the PERIODIC mode, the auto-generated
- * {@link SensorValuesListValue}s may not be suitable for use. For example, a
- * sensor may wake up, take water and air measurements in sequence, and then
- * sleep. The automatic algorithm cannot detect this, and will group both sets
- * of measurements together. To work around this, you must determine the group
- * boundaries elsewhere (most likely in the {@link SensorValuesList} for the Run
- * Type), and use the
- * {@link #getValue(LocalDateTime, LocalDateTime, LocalDateTime, boolean)}
- * method to construct values covering the correct time periods.
- * </p>
  */
-public class SensorValuesList {
+public abstract class SensorValuesList {
 
   /**
    * Pre-defined exception thrown when an attempt is made to a
-   * {@link SensorValue} with the same timestamp as an existing
+   * {@link SensorValue} with the same {@link Coordinate} as an existing
    * {@link SensorValue}.
    *
    * <p>
@@ -93,55 +52,50 @@ public class SensorValuesList {
    * caught if required.
    * </p>
    */
-  private static final IllegalArgumentException SAME_TIMESTAMP_EXCEPTION = new IllegalArgumentException(
-    "Cannot add two SensorValues with the same timestamp");
+  private static final IllegalArgumentException SAME_COORDINATE_EXCEPTION = new IllegalArgumentException(
+    "Cannot add two SensorValues with the same coordinate");
 
   /**
-   * The maximum time between two measurements that can still be considered
-   * continuous. This is also used as the limit for interpolating data in time.
-   */
-  private static final long CONTINUOUS_MEASUREMENT_LIMIT = 300;
-
-  /**
-   * The threshold group size between PERIODIC and CONTINUOUS measurements.
+   * Pre-defined exception thrown when an attempt is made to a
+   * {@link SensorValue} with a different {@link Coordinate} type to the
+   * existing entries in the list.
    *
-   * @see #calculateMeasurementMode()
+   * <p>
+   * Note that this is a {@link RuntimeException} and as such must be explicitly
+   * caught if required.
+   * </p>
+   *
+   * @see Coordinate#getType()
    */
-  private static final int MAX_PERIODIC_GROUP_SIZE = 25;
-
-  /**
-   * The number of large groups (i.e. larger than
-   * {@link #MAX_PERIODIC_GROUP_SIZE}) allowed in a PERIODIC list. Some PERIODIC
-   * lists contain a couple of large groups at the start as the sensor
-   * initialises.
-   */
-  private static final int LARGE_GROUP_LIMIT = 5;
-
-  /**
-   * Indicator for measurements in continuous mode.
-   */
-  public static final int MODE_CONTINUOUS = 0;
-
-  /**
-   * Indicator for measurement in periodic mode.
-   */
-  public static final int MODE_PERIODIC = 1;
+  private static final IllegalArgumentException INVALID_COORDINATE_TYPE_EXCEPTION = new IllegalArgumentException(
+    "Cannot add SensorValues with different coordinate types");
 
   /**
    * An instance of the comparator used to compare two {@link SensorValue}s by
-   * their timestamp.
+   * their {@link Coordinate}.
    */
-  private static final SensorValueTimeComparator TIME_COMPARATOR = new SensorValueTimeComparator();
+  protected static final SensorValueCoordinateComparator COORDINATE_COMPARATOR = new SensorValueCoordinateComparator();
 
   /**
    * The complete set of sensor values for the current dataset.
    */
-  private final DatasetSensorValues allSensorValues;
+  protected final DatasetSensorValues allSensorValues;
 
   /**
    * The list of values.
    */
-  private final ArrayList<SensorValue> list = new ArrayList<SensorValue>();
+  protected final ArrayList<SensorValue> list = new ArrayList<SensorValue>();
+
+  /**
+   * A cached copy of the {@link Coordinate}s from the {@link SensorValues}
+   * stored in {@link #list}.
+   */
+  protected List<Coordinate> rawCoordinates = null;
+
+  /**
+   * A cached copy of the {@link Coordinate}s from the {@link #outputValues}.
+   */
+  private List<Coordinate> outputCoordinates = null;
 
   /**
    * The list of {@link FileColumn} database IDs whose {@link SensorValue}s are
@@ -152,42 +106,7 @@ public class SensorValuesList {
   /**
    * The {@link SensorType} of values in this list.
    */
-  private final SensorType sensorType;
-
-  /**
-   * The measurement mode of these {@link SensorValue}s.
-   */
-  private int measurementMode = -1;
-
-  /**
-   * For periodic mode, the interval between groups of measurements (in
-   * seconds).
-   */
-  private long periodicGroupTimeInterval = -1L;
-
-  /**
-   * A cache of the timestamps of all the {@link SensorValue}s in the list.
-   */
-  private List<LocalDateTime> rawTimesCache = null;
-
-  /**
-   * The set of values to be returned to the rest of the application from this
-   * list, based on its measurement mode.
-   */
-  private List<SensorValuesListValue> outputValues;
-
-  /**
-   * A cache of the timestamps of the entries in {@link #outputValues}.
-   */
-  private List<LocalDateTime> valueTimesCache = null;
-
-  /**
-   * Indicates whether or not String values can be used to determine groups when
-   * calculating the measurement mode
-   *
-   * @see #calculateMeasurementMode()
-   */
-  private boolean allowStringPeriodicGroups = false;
+  protected final SensorType sensorType;
 
   /**
    * Indicate whether or not all values in the list should be forced as String
@@ -196,7 +115,7 @@ public class SensorValuesList {
    * If this is set to {@code false}, the list will automatically decide whether
    * to use String or Double values.
    */
-  private boolean forceString = false;
+  private final boolean forceString;
 
   /**
    * Create a list for a single file column.
@@ -268,7 +187,7 @@ public class SensorValuesList {
    *
    * <p>
    * All the values in the passed in {@link Collection} must be of the same
-   * {@link SensorType}, and have unique timestamps. Otherwise an
+   * {@link SensorType}, and have unique {@link Coordinate}s. Otherwise an
    * {@link IllegalArgumentException} will be thrown.
    * </p>
    *
@@ -286,8 +205,8 @@ public class SensorValuesList {
     TreeSet<Long> columnIds = values.stream().map(SensorValue::getColumnId)
       .collect(Collectors.toCollection(TreeSet::new));
 
-    SensorValuesList list = new SensorValuesList(columnIds, allSensorValues,
-      forceString);
+    SensorValuesList list = SensorValuesListFactory
+      .makeSensorValuesList(columnIds, allSensorValues, forceString);
     list.addAll(values);
 
     return list;
@@ -299,8 +218,8 @@ public class SensorValuesList {
    * <p>
    * Attempting to add a value from a column other than those listed in
    * {@link #columnIds} will result in an {@link IllegalArgumentException}.
-   * Attempting to add a value with a timestamp identical to a value already in
-   * the list will also cause an {@link IllegalArgumentException}.
+   * Attempting to add a value with a {@link Coordinate} identical to a value
+   * already in the list will also cause an {@link IllegalArgumentException}.
    * </p>
    *
    * @param value
@@ -321,12 +240,16 @@ public class SensorValuesList {
 
     if (list.size() == 0) {
       list.add(value);
+    } else if (list.get(0).getCoordinate().getType() != value.getCoordinate()
+      .getType()) {
+      // Values with different coordinate types are not allowed
+      throw INVALID_COORDINATE_TYPE_EXCEPTION;
     } else {
-      int lastComparison = TIME_COMPARATOR.compare(value, last());
+      int lastComparison = COORDINATE_COMPARATOR.compare(value, last());
 
       if (lastComparison == 0) {
-        // Values with identical timestamps are not allowed
-        throw SAME_TIMESTAMP_EXCEPTION;
+        // Values with identical Coordinates are not allowed
+        throw SAME_COORDINATE_EXCEPTION;
       } else if (lastComparison > 0) {
         // The value being added is after the last value, so we just add it to
         // the end.
@@ -334,22 +257,18 @@ public class SensorValuesList {
       } else {
 
         int binarySearchResult = Collections.binarySearch(list, value,
-          TIME_COMPARATOR);
+          COORDINATE_COMPARATOR);
 
-        // Values with the identical timestamps are not allowed
+        // Values with the identical Coordinates are not allowed
         if (binarySearchResult >= 0) {
-          throw SAME_TIMESTAMP_EXCEPTION;
+          throw SAME_COORDINATE_EXCEPTION;
         } else {
           list.add((binarySearchResult * -1) - 1, value);
         }
       }
     }
 
-    // Reset list properties for recalculation
-    measurementMode = -1;
-    rawTimesCache = null;
-    outputValues = null;
-    valueTimesCache = null;
+    resetOutput();
   }
 
   /**
@@ -406,820 +325,27 @@ public class SensorValuesList {
   }
 
   /**
-   * Construct the output values available via this list.
+   * Get the value at the specified {@link Coordinate}.
    *
    * <p>
-   * If the measurement mode is CONTINUOUS, the values will match the timestamps
-   * of the underlying {@link SensorValue}s. If the mode is PERIODIC, they will
-   * be constructed by averaging the values of groups of measurements with the
-   * timestamp as the midpoint of each group. (For text-only values, groups will
-   * be constructed using consecutive measurements with the same value.)
+   * The {@code interpolate} flag will not be honoured if the coordinate type
+   * does not support interpolation.
    * </p>
    *
+   * <p>
+   * Return {@code null} if no matching value can be found.
+   *
+   * @param coordinate
+   *          The coordinate.
+   * @param interpolate
+   *          Indicates whether or not interpolation should be used to construct
+   *          a value for the coordinate.
+   * @return The matching value.
    * @throws SensorValuesListException
+   *
    */
-  private void buildOutputValues() throws SensorValuesListException {
-
-    outputValues = new ArrayList<SensorValuesListValue>();
-
-    switch (getMeasurementMode()) {
-    case MODE_CONTINUOUS: {
-      buildContinuousOutputValues();
-      break;
-    }
-    case MODE_PERIODIC: {
-      buildPeriodicOutputValues();
-      break;
-    }
-    default: {
-      throw new IllegalStateException("Invalid measurement mode");
-    }
-    }
-
-    valueTimesCache = outputValues.stream().map(SensorValuesListValue::getTime)
-      .toList();
-  }
-
-  /**
-   * Build the output values for a list with PERIODIC measurement mode.
-   *
-   * <p>
-   * The output values are built differently according to whether the list
-   * contains string or numeric values.
-   * </p>
-   *
-   * @throws SensorValuesListException
-   */
-  private void buildPeriodicOutputValues() throws SensorValuesListException {
-    if (containsStringValue()) {
-      buildPeriodicStringOutputValues();
-    } else {
-      buildPeriodicNumericOutputValues();
-    }
-  }
-
-  /**
-   * Build the output values for a list with PERIODIC measurement mode
-   * containing string values.
-   *
-   * <p>
-   * Groups of measurements are constructed such that:
-   * </p>
-   *
-   * <ul>
-   * <li>Values are within the {@link #CONTINUOUS_MEASUREMENT_LIMIT}.</li>
-   * <li>All entries in the group have the same value.</li>
-   * </ul>
-   *
-   * <p>
-   * The timestamp for each group will be the midpoint between the first and
-   * last entries in the group.
-   * </p>
-   */
-  private void buildPeriodicStringOutputValues()
-    throws SensorValuesListException {
-
-    try {
-      outputValues = new ArrayList<SensorValuesListValue>();
-
-      LocalDateTime groupStartTime = null;
-      LocalDateTime groupEndTime = null;
-      String groupValue = null;
-      List<SensorValue> groupMembers = new ArrayList<SensorValue>();
-
-      for (SensorValue sensorValue : list) {
-
-        // Ignore empty and flushing values
-        if (null != sensorValue.getValue() && !sensorValue.getValue().equals("")
-          && !sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
-
-          // If this is the first value...
-          if (null == groupStartTime) {
-            groupStartTime = sensorValue.getTime();
-            groupEndTime = sensorValue.getTime();
-            groupValue = sensorValue.getValue();
-            groupMembers.add(sensorValue);
-          } else {
-
-            boolean endGroup = false;
-
-            if (!sensorValue.getValue().equals(groupValue)) {
-              endGroup = true;
-            } else if (DateTimeUtils.secondsBetween(groupEndTime,
-              sensorValue.getTime()) > CONTINUOUS_MEASUREMENT_LIMIT) {
-
-              endGroup = true;
-            }
-
-            if (endGroup) {
-              // All values have the same value, so we grab the first one to get
-              // details
-              SensorValue firstValue = groupMembers.stream().findFirst().get();
-
-              SensorValuesListValue outputValue = new SensorValuesListValue(
-                groupStartTime, groupEndTime,
-                DateTimeUtils.midPoint(groupStartTime, groupEndTime),
-                groupMembers, sensorType, firstValue.getValue(),
-                firstValue.getDisplayFlag(allSensorValues),
-                firstValue.getDisplayQCMessage(allSensorValues));
-              outputValues.add(outputValue);
-
-              // End time and group members updated outside this block below
-              groupStartTime = sensorValue.getTime();
-              groupValue = sensorValue.getValue();
-              groupMembers = new ArrayList<SensorValue>();
-            }
-
-            groupEndTime = sensorValue.getTime();
-            groupMembers.add(sensorValue);
-
-          }
-        }
-      }
-
-      // Finish the last group
-      if (null != groupStartTime) {
-        // All values have the same value, so we grab the first one to get
-        // details
-        SensorValue firstValue = groupMembers.stream().findFirst().get();
-
-        SensorValuesListValue outputValue = new SensorValuesListValue(
-          groupStartTime, groupEndTime,
-          DateTimeUtils.midPoint(groupStartTime, groupEndTime), groupMembers,
-          sensorType, firstValue.getValue(),
-          firstValue.getDisplayFlag(allSensorValues),
-          firstValue.getDisplayQCMessage(allSensorValues));
-        outputValues.add(outputValue);
-      }
-    } catch (Exception e) {
-      throw new SensorValuesListException(e);
-    }
-  }
-
-  /**
-   * Build the output values for a list with PERIODIC measurement mode
-   * containing string values.
-   *
-   * <p>
-   * Groups of measurements are constructed such that:
-   * </p>
-   *
-   * <ul>
-   * <li>Values are within the {@link #CONTINUOUS_MEASUREMENT_LIMIT}.</li>
-   * <li>The group value is the mean of the member values with the best QC
-   * flag.</li>
-   * </ul>
-   *
-   * <p>
-   * The timestamp for each group will be the midpoint between the first and
-   * last entries in the group. Every member of the group will be considered for
-   * these regardless of its QC flag.
-   * </p>
-   *
-   * @throws SensorValuesListException
-   */
-  private void buildPeriodicNumericOutputValues()
-    throws SensorValuesListException {
-
-    // Collect the members of a group together
-    List<SensorValue> groupMembers = new ArrayList<SensorValue>();
-
-    for (SensorValue sensorValue : list) {
-      if (!sensorValue.isNaN()
-        && !sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
-
-        if (groupMembers.size() == 0) {
-          groupMembers.add(sensorValue);
-        } else {
-
-          LocalDateTime groupEndTime = groupMembers.get(groupMembers.size() - 1)
-            .getTime();
-          if (DateTimeUtils.secondsBetween(groupEndTime,
-            sensorValue.getTime()) > CONTINUOUS_MEASUREMENT_LIMIT) {
-
-            LocalDateTime groupStartTime = groupMembers.get(0).getTime();
-
-            outputValues.add(makeNumericValue(groupMembers,
-              DateTimeUtils.midPoint(groupStartTime, groupEndTime), false));
-            groupMembers = new ArrayList<SensorValue>();
-          }
-
-          groupMembers.add(sensorValue);
-        }
-      }
-    }
-
-    if (groupMembers.size() > 0) {
-      LocalDateTime groupStartTime = groupMembers.get(0).getTime();
-      LocalDateTime groupEndTime = groupMembers.get(groupMembers.size() - 1)
-        .getTime();
-      outputValues.add(makeNumericValue(groupMembers,
-        DateTimeUtils.midPoint(groupStartTime, groupEndTime), false));
-    }
-  }
-
-  /**
-   * Create a {@link NumericValue} using the mean of the best quality entries in
-   * the supplied set of {@link SensorValue}s.
-   *
-   * <p>
-   * The {@link SensorValue}s are assumed to be in ascending time order for the
-   * purposes of calculating the result's timestamp. The timestamp is calculated
-   * from the values that are not missing or flushing: even if the first value
-   * is {@link Flag#BAD}, its timestamp will count.
-   * </p>
-   *
-   * @param sensorValues
-   *          The input {@link SensorValue}s.
-   * @return The generated value.
-   * @throws SensorValuesListException
-   */
-  private SensorValuesListOutput makeNumericValue(
-    List<SensorValue> sensorValues, LocalDateTime nominalTime,
-    boolean allowInterpolatesOverFlags) throws SensorValuesListException {
-
-    // Get the timestamps for the value
-    List<LocalDateTime> timestamps = sensorValues.stream()
-      .filter(v -> !v.isNaN()
-        && !v.getDisplayFlag(allSensorValues).equals(Flag.FLUSHING))
-      .map(v -> v.getTime()).toList();
-
-    LocalDateTime startTime = timestamps.get(0);
-    LocalDateTime endTime = timestamps.get(timestamps.size() - 1);
-
-    List<Flag> presentFlags = sensorValues.stream()
-      .map(sv -> sv.getDisplayFlag(allSensorValues)).distinct().toList();
-
-    Flag chosenFlag;
-
-    if (presentFlags.contains(Flag.GOOD)
-      || presentFlags.contains(Flag.ASSUMED_GOOD)) {
-      chosenFlag = Flag.GOOD;
-    } else if (presentFlags.contains(Flag.QUESTIONABLE)) {
-      chosenFlag = Flag.QUESTIONABLE;
-    } else if (presentFlags.contains(Flag.BAD)) {
-      chosenFlag = Flag.BAD;
-    } else if (presentFlags.stream().allMatch(f -> f.equals(Flag.NEEDED))) {
-      /*
-       * If all we have are NEEDED flags, get the flag from the underlying auto
-       * QC
-       */
-      chosenFlag = Flag.getMostSignificantFlag(
-        sensorValues.stream().map(sv -> sv.getAutoQcFlag()).toList());
-    } else {
-      throw new IllegalStateException("No valid flags in sensor values");
-    }
-
-    try {
-
-      boolean interpolatesOverFlags = false;
-
-      List<SensorValue> usedValues;
-
-      if (chosenFlag.isGood()) {
-        usedValues = sensorValues.stream()
-          .filter(v -> v.getDisplayFlag(allSensorValues).isGood()).toList();
-        if (Flag.containsWorseFlag(presentFlags, Flag.GOOD)) {
-          if (allowInterpolatesOverFlags) {
-            interpolatesOverFlags = true;
-          }
-        }
-      } else {
-        usedValues = sensorValues.stream()
-          .filter(v -> v.getDisplayFlag(allSensorValues).equals(chosenFlag))
-          .toList();
-        if (Flag.containsWorseFlag(presentFlags, chosenFlag)) {
-          if (allowInterpolatesOverFlags) {
-            interpolatesOverFlags = true;
-          }
-        }
-      }
-
-      // Use a Set so we don't get duplicate QC messages in the output value
-      TreeSet<String> qcMessages = new TreeSet<String>();
-
-      for (SensorValue v : usedValues) {
-        String message = v.getDisplayQCMessage(allSensorValues);
-
-        if (null != message) {
-          qcMessages.add(message);
-        }
-      }
-
-      MeanCalculator mean = new MeanCalculator(
-        usedValues.stream().map(SensorValue::getDoubleValue).toList());
-
-      return new SensorValuesListOutput(startTime, endTime, nominalTime,
-        usedValues, sensorType, mean.mean(), chosenFlag,
-        StringUtils.collectionToDelimited(qcMessages, ";"),
-        interpolatesOverFlags);
-    } catch (Exception e) {
-      throw new SensorValuesListException(e);
-    }
-
-  }
-
-  /**
-   * Determine whether or not the list contains any non-numeric ({@link String})
-   * values.
-   *
-   * @return {@code true} if at least one non-numeric value exists;
-   *         {@code false} if there are none.
-   */
-  private boolean containsStringValue() {
-    Optional<SensorValue> foundString = list.stream()
-      .filter(v -> null != v.getValue() && !v.isNumeric()).findAny();
-    return foundString.isPresent();
-  }
-
-  /**
-   * Build the output values for a list with CONTINUOUS measurement mode.
-   *
-   * <p>
-   * The resulting output values consist of all {@link SensorValue}s except
-   * those with {@code null} values and those with a {@link Flag#FLUSHING} QC
-   * flag.
-   * </p>
-   *
-   * @throws SensorValuesListException
-   */
-  private void buildContinuousOutputValues() throws SensorValuesListException {
-    for (SensorValue sensorValue : list) {
-      // We skip null values
-      if (null != sensorValue.getValue()
-        && !sensorValue.getUserQCFlag().equals(Flag.FLUSHING)) {
-        outputValues.add(new SensorValuesListValue(sensorValue, sensorType,
-          allSensorValues, forceString));
-      }
-    }
-  }
-
-  /**
-   * Get the list of times for values in the list.
-   *
-   * <p>
-   * For CONTINUOUS mode, this is the list of every valid {@link SensorValue}.
-   * For PERIODIC mode, this is the midpoint of every group of values.
-   * </p>
-   *
-   * @return The list of times.
-   * @throws SensorValuesListException
-   *           If the times cannot be retrieved.
-   */
-  public List<LocalDateTime> getValueTimes() throws SensorValuesListException {
-    if (null == outputValues) {
-      buildOutputValues();
-    }
-
-    return Collections.unmodifiableList(valueTimesCache);
-  }
-
-  /**
-   * Get a list of the timestamps of all the {@link SensorValue}s in the list.
-   *
-   * return The value times.
-   */
-  public List<LocalDateTime> getRawTimes() {
-    if (null == rawTimesCache) {
-      rawTimesCache = list.stream().map(SensorValue::getTime).toList();
-    }
-
-    return rawTimesCache;
-  }
-
-  /**
-   * Construct a {@link SensorValuesListValue} for the specified time using the
-   * values in this list.
-   *
-   * <p>
-   * The value will be constructed from the {@link #outputValues}. If there is a
-   * value exactly corresponding to the specified time it will be used as the
-   * result. Otherwise the {@link SensorValuesListValue} will be constructed
-   * from an interpolation as follows:
-   * </p>
-   *
-   * <p>
-   * If the list has a CONTINUOUS measurement mode, it will interpolate between
-   * the two closest values either side of the specified time, as long as those
-   * values are within the {@link #CONTINUOUS_MEASUREMENT_LIMIT}. The
-   * interpolation will attempt to use only {@link Flag#GOOD} values in the
-   * first instance, but fall back to {@link Flag#QUESTIONABLE} or
-   * {@link Flag#BAD} values if required. If only one value is available (either
-   * before or after the specified time), that value will be used. It will still
-   * be marked as {@link PlotPageTableValue#INTERPOLATED_TYPE}.
-   * </p>
-   *
-   * <p>
-   * If the list has a PERIODIC measurement mode, it will interpolate between
-   * the groups either side of the time. The two groups must have the same QC
-   * flag. If not, or if only one value is available (before or after the
-   * specified time), then only the group with the best QC flag will be used. It
-   * will still be marked as {@link PlotPageTableValue#INTERPOLATED_TYPE}.
-   * </p>
-   *
-   * <p>
-   * Each interpolation is a linear interpolation in time between the two chosen
-   * values, calculating the numeric value to the point of the specified time
-   * between the two chosen times.
-   * </p>
-   *
-   * @param time
-   *          The desired time
-   *
-   * @return The constructed {@link MeasurementValue}.
-   * @throws SensorValuesListException
-   *           If the {@link MeasurementValue} cannot be constructed.
-   */
-  public SensorValuesListOutput getValue(LocalDateTime time,
-    boolean allowInterpolation) throws SensorValuesListException {
-
-    if (null == outputValues) {
-      buildOutputValues();
-    }
-
-    SensorValuesListOutput result;
-
-    if (outputValues.size() == 0) {
-      result = null;
-    } else {
-      switch (getMeasurementMode()) {
-      case MODE_CONTINUOUS: {
-        result = getValueContinuous(time, allowInterpolation);
-        break;
-      }
-      case MODE_PERIODIC: {
-        result = getValuePeriodic(time, allowInterpolation);
-        break;
-      }
-      default: {
-        throw new IllegalStateException("Invalid measurement mode");
-      }
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Construct a {@link SensorValuesListValue} for the list in CONTINUOUS mode.
-   *
-   * @param time
-   *          The required time.
-   * @return The constructed {@link SensorValuesListValue}.
-   * @throws SensorValuesListException
-   *           If the value cannot be constructed.
-   * @see #getValue(LocalDateTime)
-   */
-  private SensorValuesListOutput getValueContinuous(LocalDateTime time,
-    boolean allowInterpolation) throws SensorValuesListException {
-
-    SensorValuesListOutput result;
-
-    int searchIndex = Collections.binarySearch(valueTimesCache, time);
-    SensorValuesListValue exactMatch = null;
-
-    if (searchIndex >= 0) {
-      exactMatch = outputValues.get(searchIndex);
-    }
-
-    /*
-     * If we get an exact match and it's good, then we use it.
-     *
-     * If we get an exact match but it's not good, and interpolation isn't
-     * allowed, then we use it.
-     *
-     * If don't get an exact match, and interpolation isn't allowed, then return
-     * null.
-     *
-     * Otherwise we interpolate to find a value.
-     *
-     */
-    if (null != exactMatch && exactMatch.getQCFlag().isGood()) {
-      result = new SensorValuesListOutput(exactMatch, false);
-    } else if (!allowInterpolation) {
-      if (null != exactMatch) {
-        result = new SensorValuesListOutput(exactMatch, false);
-      } else {
-        result = null;
-      }
-    } else {
-      // Get the best possible interpolated value
-      int priorIndex = searchIndex >= 0 ? searchIndex - 1
-        : Math.abs(searchIndex) - 2;
-      int postIndex = searchIndex >= 0 ? searchIndex + 1
-        : Math.abs(searchIndex) - 1;
-
-      SensorValuesListOutput prior = findInterpContinuousValue(priorIndex, time,
-        -1, (x) -> x >= 0);
-      SensorValuesListOutput post = findInterpContinuousValue(postIndex, time,
-        1, (x) -> x < outputValues.size());
-
-      SensorValuesListOutput interpolated = buildInterpolatedValue(prior, post,
-        time, SensorValuesListOutput.interpolatesAroundFlags(prior, post));
-
-      // If the interpolated value has a better flag than the exact match,
-      // use that.
-      if (null == interpolated) {
-        result = null == exactMatch ? null
-          : new SensorValuesListOutput(exactMatch, false);
-      } else if (null == exactMatch) {
-        result = interpolated;
-      } else if (exactMatch.getQCFlag()
-        .moreSignificantThan(interpolated.getQCFlag())) {
-        result = interpolated;
-        interpolated.setInterpolatesAroundFlags();
-      } else {
-        result = new SensorValuesListOutput(exactMatch, false);
-        ;
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Attempt to find the best value from the list to use in constructing an
-   * interpolated value.
-   *
-   * <p>
-   * The search will start at {@code startIndex}, and proceed in the direction
-   * specified by {@link stepDirection}. The value must have a timestamp within
-   * the {@link #CONTINUOUS_MEASUREMENT_LIMIT} of the {@code referenceTime}, and
-   * also pass the test predicate provided by {@code limitTest}.
-   * </p>
-   *
-   * <p>
-   * The method will return the value with the best {@link Flag} that meets the
-   * above criteria.
-   * </p>
-   *
-   * @param startIndex
-   *          The start point for the search.
-   * @param referenceTime
-   *          The time used to determine the temporal limit of the search.
-   * @param stepDirection
-   *          The search direction.
-   * @param limitTest
-   *          An additional test that the value must meet.
-   * @return The found value.
-   */
-  private SensorValuesListOutput findInterpContinuousValue(int startIndex,
-    LocalDateTime referenceTime, int stepDirection, IntPredicate limitTest) {
-
-    SensorValuesListOutput result = null;
-    boolean stopSearch = false;
-
-    int currentIndex = startIndex;
-
-    // If the start point is already outside the bounds, abort.
-    if (!limitTest.test(currentIndex)) {
-      stopSearch = true;
-    }
-
-    while (!stopSearch) {
-      SensorValuesListValue testValue = outputValues.get(currentIndex);
-
-      // Check that we're still within the interpolation limit
-      if (Math.abs(DateTimeUtils.secondsBetween(referenceTime,
-        testValue.getTime())) > CONTINUOUS_MEASUREMENT_LIMIT) {
-        stopSearch = true;
-      } else {
-        if (testValue.getQCFlag().equals(Flag.GOOD)) {
-          // We want the first GOOD value we find
-          boolean interpolatesAroundFlags = false;
-          if (null != result && !result.getQCFlag().isGood()) {
-            interpolatesAroundFlags = true;
-          }
-          result = new SensorValuesListOutput(testValue,
-            interpolatesAroundFlags);
-          stopSearch = true;
-        } else {
-          if (null == result) {
-            // If this is the first value in the search, store it
-            result = new SensorValuesListOutput(testValue, false);
-          } else {
-            /*
-             * Store this value if it's got a better flag than what we already
-             * have. Note that we do this search 'backwards' so we can use the
-             * flag comparison methods.
-             */
-            if (result.getQCFlag().moreSignificantThan(testValue.getQCFlag())) {
-              result = new SensorValuesListOutput(testValue, true);
-            }
-          }
-
-          // Prepare for the next iteration
-          currentIndex = currentIndex + stepDirection;
-          if (!limitTest.test(currentIndex)) {
-            // We failed the predicate test,
-            // which is the limit to the search
-            stopSearch = true;
-          }
-        }
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Construct a {@link SensorValuesListValue} for the list in PERIODIC mode.
-   *
-   * @param time
-   *          The required time.
-   * @return The constructed {@link SensorValuesListValue}.
-   * @throws SensorValuesListException
-   *           If the value cannot be constructed.
-   * @see #getValue(LocalDateTime)
-   */
-  private SensorValuesListOutput getValuePeriodic(LocalDateTime time,
-    boolean allowInterpolation) throws SensorValuesListException {
-
-    SensorValuesListOutput result;
-
-    /*
-     * Search for a group of the specified time. This works as a binary search,
-     * but: 1. If the time is inside a group, we have an exact match and get the
-     * index of that group. 2. If we fall between groups, we get the negative
-     * result per a standard binary search.
-     */
-    int searchIndex = Collections.binarySearch(outputValues,
-      makeDummyValue(time), new SensorValuesListValueTimeComparator());
-
-    SensorValuesListValue exactMatch = searchIndex >= 0
-      ? outputValues.get(searchIndex)
-      : null;
-
-    if (null != exactMatch) {
-      result = new SensorValuesListOutput(exactMatch, time, false);
-    } else if (!allowInterpolation) {
-      result = null;
-    } else {
-      // Get the previous and next groups
-      SensorValuesListValue prior = null;
-      SensorValuesListValue post = null;
-
-      // Get the best possible interpolated value
-      int priorIndex = searchIndex >= 0 ? searchIndex - 1
-        : Math.abs(searchIndex) - 2;
-
-      if (priorIndex >= 0 && priorIndex < outputValues.size()) {
-        /*
-         * We don't interpolate missing values, so we look for the closest group
-         * only. To account for missing values we ensure that this group is
-         * within 1.5 times the mean period between measurement groups.
-         *
-         * The 1.5 factor is to allow some wiggle room for inconsistencies in
-         * timing.
-         */
-        SensorValuesListValue priorCandidate = outputValues.get(priorIndex);
-
-        if (DateTimeUtils.secondsBetween(priorCandidate.getNominalTime(),
-          time) <= periodicGroupTimeInterval * 1.5) {
-
-          prior = priorCandidate;
-        }
-      }
-
-      int postIndex = searchIndex >= 0 ? searchIndex + 1
-        : Math.abs(searchIndex) - 1;
-
-      if (postIndex >= 0 && postIndex < outputValues.size()) {
-        SensorValuesListValue postCandidate = outputValues.get(postIndex);
-
-        if (DateTimeUtils.secondsBetween(time,
-          postCandidate.getNominalTime()) <= periodicGroupTimeInterval * 1.5) {
-          post = postCandidate;
-        }
-      }
-
-      if (null == prior && null == post) {
-        result = null;
-      } else if (null == prior) {
-        result = new SensorValuesListOutput(post, time, false);
-      } else if (null == post) {
-        result = new SensorValuesListOutput(prior, time, false);
-      } else {
-        result = getBestOrInterpolate(prior, post, time);
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Takes two values and returns either the value with the best quality
-   * {@link Flag}, or an interpolation of the two values if they both have the
-   * same quality {@link Flag}.
-   *
-   * @param first
-   *          The first value.
-   * @param second
-   *          The second value.
-   * @param targetTime
-   *          The timestamp to use for the interpolated value, if required.
-   * @return The selected or interpolated value.
-   * @throws SensorValuesListException
-   *           If the interpolation cannot be performed.
-   */
-  private SensorValuesListOutput getBestOrInterpolate(
-    SensorValuesListValue first, SensorValuesListValue second,
-    LocalDateTime targetTime) throws SensorValuesListException {
-
-    SensorValuesListOutput result;
-
-    if (first.getQCFlag().moreSignificantThan(second.getQCFlag())) {
-      result = new SensorValuesListOutput(second, false);
-    } else if (second.getQCFlag().moreSignificantThan(first.getQCFlag())) {
-      result = new SensorValuesListOutput(first, false);
-    } else {
-      // Equal flags -> interpolate
-      result = buildInterpolatedValue(first, second, targetTime, false);
-    }
-
-    return result;
-  }
-
-  /**
-   * Create a dummy value with the specified timestamp.
-   *
-   * <p>
-   * Used to search for values based on a timestamp for which a value may or may
-   * not exist. If such a value does not exist, it will trigger the
-   * interpolation mechanism.
-   * </p>
-   *
-   * @param time
-   *          The required timestamp.
-   * @return The dummy value.
-   */
-  private SensorValuesListValue makeDummyValue(LocalDateTime time) {
-    return new SensorValuesListValue(time, time, time,
-      new ArrayList<SensorValue>(), sensorType, "DUMMY", Flag.BAD, "DUMMY");
-  }
-
-  /**
-   * Construct an interpolated {@link SensorValuesListValue} from two
-   * {@link SensorValuesListValue}s.
-   *
-   * <p>
-   * The value of the result will be the linear interpolation of the supplied
-   * values to the specified target time. If there is only a prior or post
-   * value, no interpolation will be performed and a {@code null} value will be
-   * returned. If the prior and post values have different flags, the
-   * interpolated value will be given the worst of those flags.
-   * </p>
-   *
-   * @param first
-   *          The first value.
-   * @param second
-   *          The second value.
-   * @param targetTime
-   *          The target time.
-   * @return The constructed {@link SensorValuesListValue}.
-   * @throws SensorValuesListException
-   *           If the value cannot be constructed.
-   */
-  private SensorValuesListOutput buildInterpolatedValue(
-    SensorValuesListValue first, SensorValuesListValue second,
-    LocalDateTime targetTime, boolean interpolatingOverFlag)
-    throws SensorValuesListException {
-
-    SensorValuesListOutput result;
-
-    if (null == first || null == second) {
-      // Only 'interpolate' if we have values both before and after
-      result = null;
-    } else {
-      if (!first.getQCFlag().isGood() || !second.getQCFlag().isGood()) {
-        // We only interpolate good values
-        /*
-         * I'm not sure why this restriction is here, but it's built into the
-         * unit tests so I assume there was a good reason that I failed to
-         * document.
-         */
-        result = null;
-      } else {
-        Double interpValue = Calculators.interpolate(first.getTime(),
-          first.getDoubleValue(), second.getTime(), second.getDoubleValue(),
-          targetTime);
-
-        TreeSet<SensorValue> combinedSourceValues = new TreeSet<SensorValue>(
-          TIME_COMPARATOR);
-        combinedSourceValues.addAll(first.getSourceSensorValues());
-        combinedSourceValues.addAll(second.getSourceSensorValues());
-
-        result = new SensorValuesListOutput(first.getStartTime(),
-          second.getEndTime(), targetTime, combinedSourceValues,
-          first.getSensorType(), interpValue,
-          Flag.getMostSignificantFlag(first.getQCFlag(), second.getQCFlag()),
-          StringUtils.combine(first.getQCMessage(), second.getQCMessage(), ";",
-            true),
-          interpolatingOverFlag);
-      }
-    }
-    return result;
-  }
+  public abstract SensorValuesListOutput getValue(Coordinate coordinate,
+    boolean interpolate) throws SensorValuesListException;
 
   /**
    * Get the set of output values for the list.
@@ -1232,16 +358,25 @@ public class SensorValuesList {
    * @return The output values.
    * @throws SensorValuesListException
    *
-   * @see #buildOutputValues()
+   * @see #getOutputValues()
    */
   public List<SensorValuesListValue> getValues()
     throws SensorValuesListException {
-    if (null == outputValues) {
-      buildOutputValues();
-    }
 
-    return Collections
-      .unmodifiableList(new ArrayList<SensorValuesListValue>(outputValues));
+    return Collections.unmodifiableList(getOutputValues());
+  }
+
+  /**
+   * Get the {@link Coordinate}s of the output values for the list.
+   *
+   * @return The output coordinates.
+   * @throws SensorValuesListException
+   * @see #getOutputCoordinates()
+   */
+  public List<Coordinate> getValueCoordinates()
+    throws SensorValuesListException {
+
+    return Collections.unmodifiableList(getOutputCoordinates());
   }
 
   /**
@@ -1253,11 +388,7 @@ public class SensorValuesList {
    *           If the output values cannot be constructed.
    */
   public int valuesSize() throws SensorValuesListException {
-    if (null == outputValues) {
-      buildOutputValues();
-    }
-
-    return outputValues.size();
+    return getOutputValues().size();
   }
 
   /**
@@ -1269,122 +400,16 @@ public class SensorValuesList {
     return list.get(list.size() - 1);
   }
 
-  /**
-   * Get the measurement mode for the {@link SensorValue}s.
-   *
-   * <p>
-   * This is either CONTINUOUS mode if most measurements are taken within the
-   * {@link #CONTINUOUS_MEASUREMENT_LIMIT}, or PERIODIC mode if measurements are
-   * taken in small groups with a longer 'sleep' periods between.
-   * </p>
-   *
-   * @return The measurement mode.
-   */
-  public int getMeasurementMode() {
-    if (measurementMode == -1) {
-      calculateMeasurementMode();
+  public List<Coordinate> getRawCoordinates() {
+    if (null == rawCoordinates) {
+      buildRawCoordinates();
     }
 
-    return measurementMode;
+    return rawCoordinates;
   }
 
-  /**
-   * Calculate the measurement mode for these {@link SensorValue}s.
-   *
-   * <p>
-   * We create groups of {@link SensorValue}s whose timestamps are within the
-   * {@link #CONTINUOUS_MEASUREMENT_LIMIT}. If either the mean group size or the
-   * largest group size are within the {@link #MAX_PERIODIC_GROUP_SIZE} then the
-   * measurement mode is {@link #MODE_PERIODIC}; otherwise it is
-   * {@link #MODE_CONTINUOUS}.
-   * </p>
-   *
-   * <p>
-   * If the list contains String values, we also create new groups whenever the
-   * value changes (in addition to the time difference threshold).
-   * </p>
-   */
-  private void calculateMeasurementMode() {
-
-    // If the list contains string values, we operate slightly differently.
-    boolean stringMode = allowStringPeriodicGroups && containsStringValue();
-
-    // The largest group size
-    int largeGroupCount = 0;
-
-    // The start times of each group
-    List<LocalDateTime> groupStartTimes = new ArrayList<LocalDateTime>();
-
-    // Calculate the mean group size as we go along
-    int groupsByTime = 0;
-    int totalGroupCount = 0;
-    float meanGroupSize = 0f;
-
-    int groupSize = 0;
-    for (int i = 1; i < list.size(); i++) {
-      long timeDiff = DateTimeUtils.secondsBetween(list.get(i - 1).getTime(),
-        list.get(i).getTime());
-
-      boolean newGroupFromTime = timeDiff > CONTINUOUS_MEASUREMENT_LIMIT;
-
-      boolean newGroupFromValue = stringMode
-        ? SensorValue.valuesEqual(list.get(i - 1), list.get(i))
-        : false;
-
-      if (newGroupFromTime || newGroupFromValue) {
-        if (newGroupFromTime) {
-          groupsByTime++;
-          groupStartTimes.add(list.get(i).getTime());
-        }
-
-        if (groupSize > 0) {
-
-          // Update the max group size
-          if (groupSize > MAX_PERIODIC_GROUP_SIZE) {
-            largeGroupCount++;
-          }
-
-          // Update the running mean group size
-          totalGroupCount++;
-          meanGroupSize = meanGroupSize
-            + (groupSize - meanGroupSize) / totalGroupCount;
-
-          // Reset the group
-          groupSize = 0;
-        }
-      }
-
-      groupSize++;
-    }
-
-    // Tidy up from the last value
-    if (groupSize > 0) {
-      // Update the max group size
-      if (groupSize > MAX_PERIODIC_GROUP_SIZE) {
-        largeGroupCount++;
-      }
-
-      // Update the running mean group size
-      totalGroupCount++;
-      meanGroupSize = meanGroupSize
-        + (groupSize - meanGroupSize) / (float) totalGroupCount;
-    }
-
-    if (groupsByTime > 1 && (meanGroupSize <= MAX_PERIODIC_GROUP_SIZE
-      && largeGroupCount <= LARGE_GROUP_LIMIT)) {
-      measurementMode = MODE_PERIODIC;
-
-      // Calculate the mean time between groups
-      MeanCalculator mean = new MeanCalculator();
-      for (int i = 1; i < groupStartTimes.size(); i++) {
-        mean.add(DateTimeUtils.secondsBetween(groupStartTimes.get(i - 1),
-          groupStartTimes.get(i)));
-      }
-      periodicGroupTimeInterval = Math.round(mean.mean());
-
-    } else {
-      measurementMode = MODE_CONTINUOUS;
-    }
+  private void buildRawCoordinates() {
+    rawCoordinates = list.stream().map(SensorValue::getCoordinate).toList();
   }
 
   /**
@@ -1402,56 +427,41 @@ public class SensorValuesList {
   }
 
   /**
-   * Get the raw {@link SensorValue}s between two times. Both times are
-   * inclusive.
-   *
-   * @param start
-   *          The start time.
-   * @param end
-   *          The end time.
-   * @return The {@link SensorValue}s between the given times.
-   */
-  public List<SensorValue> getRawValues(LocalDateTime start,
-    LocalDateTime end) {
-
-    List<SensorValue> result = new ArrayList<SensorValue>();
-
-    int currentIndex = Collections.binarySearch(getRawTimes(), start);
-
-    // If we didn't get an exact match, move to the index after the returned
-    // insertion point.
-    if (currentIndex < 0) {
-      currentIndex = Math.abs(currentIndex) - 1;
-      if (currentIndex < 0) {
-        currentIndex = 0;
-      }
-    }
-
-    while (currentIndex < list.size() - 1
-      && !list.get(currentIndex).getTime().isAfter(end)) {
-      result.add(list.get(currentIndex));
-      currentIndex++;
-    }
-
-    return result;
-  }
-
-  /**
-   * Get a single {@link SensorValue} from the list referenced by timestamp.
+   * Get a single {@link SensorValue} from the list referenced by
+   * {@link Coordinate}.
    *
    * <p>
    * This method should be used for QC purposes. To get values for use in data
-   * reduction, use {@link #getMeasurementValue(LocalDateTime)}.
+   * reduction, use {@link #getMeasurementValue(Coordinate)}.
    * </p>
    *
    * @param time
-   *          The desired timestamp.
-   * @return The value with the specified timestamp, or {@code null} if there is
-   *         not one.
+   *          The desired {@link Coordinate}.
+   * @return The value with the specified {@link Coordinate}, or {@code null} if
+   *         there is not one.
    */
-  public SensorValue getRawSensorValue(LocalDateTime time) {
-    int searchIndex = Collections.binarySearch(getRawTimes(), time);
+  public SensorValue getRawSensorValue(Coordinate coordinate, long columnId) {
+    int searchIndex = Collections.binarySearch(list,
+      makeDummySensorValue(coordinate, columnId));
     return searchIndex < 0 ? null : list.get(searchIndex);
+  }
+
+  /**
+   * Create a dummy value with the specified {@link Coordinate}.
+   *
+   * <p>
+   * Used to search for values based on a {@link Coordinate} for which a value
+   * may or may not exist.
+   * </p>
+   *
+   * @param coordinate
+   *          The required coordinate.
+   * @return The dummy value.
+   */
+  private SensorValue makeDummySensorValue(Coordinate coordinate,
+    long columnId) {
+    return new SensorValue(allSensorValues.getDatasetId(),
+      allSensorValues.getFlagScheme(), columnId, coordinate, null);
   }
 
   /**
@@ -1469,10 +479,10 @@ public class SensorValuesList {
    *          The time.
    * @return The closest values.
    */
-  public List<SensorValue> getClosestSensorValues(LocalDateTime time) {
+  public List<SensorValue> getClosestSensorValues(Coordinate coordinate) {
     List<SensorValue> result = new ArrayList<SensorValue>(2);
 
-    int searchIndex = Collections.binarySearch(getRawTimes(), time);
+    int searchIndex = Collections.binarySearch(getRawCoordinates(), coordinate);
     if (searchIndex >= 0) {
       result.add(list.get(searchIndex));
     } else {
@@ -1506,45 +516,38 @@ public class SensorValuesList {
   }
 
   /**
-   * Get a value from the list that has a timestamp matching the specified time,
-   * or the value immediately before it. The usual rules regarding limiting
-   * searches to the {@link #CONTINUOUS_MEASUREMENT_LIMIT} are not applied.
-   *
-   * <p>
-   * If the measurement mode is CONTINUOUS, the method will return the value on
-   * or before the specified time.
-   * </p>
-   *
-   * <p>
-   * If the mode is PERIODIC, the values are collected into groups of
-   * consecutive {@link SensorValue}s (where each group boundary is either a
-   * change in value or a period between measurements larger than
-   * {@link #CONTINUOUS_MEASUREMENT_LIMIT}) where the timestamp for each group
-   * is the midpoint of each group. The returned value will be that found in the
-   * group encompassing the passed in time, or the group immediately preceding
-   * that time.
-   * </p>
+   * Determine whether or not the list contains a {@link SensorValue} with the
+   * specified {@link Coordinate}.
    *
    * @param time
-   *          The desired time.
-   * @return The matched value with its timestamp.
+   *          The coordinate.
+   * @return {@code true} if the list contains a {@link SensorValue} with the
+   *         specified {@link Coordinate}; {@code false} otherwise.
+   */
+  public boolean containsCoordinate(Coordinate coordinate) {
+    return Collections.binarySearch(getRawCoordinates(), coordinate) >= 0;
+  }
+
+  /**
+   * Get a value from the list that has a {@link Coordinate} matching the
+   * specified coordinate, or the value immediately before it.
+   *
+   * @param coordinate
+   *          The desired coordinate.
+   * @return The matched value.
    * @throws SensorValuesListException
    */
-  public SensorValuesListOutput getValueOnOrBefore(LocalDateTime time)
+  public SensorValuesListValue getValueOnOrBefore(Coordinate coordinate)
     throws SensorValuesListException {
-
-    if (null == outputValues) {
-      buildOutputValues();
-    }
 
     SensorValuesListValue result = null;
 
-    List<LocalDateTime> times = getValueTimes();
-    int searchIndex = Collections.binarySearch(times, time);
+    List<Coordinate> coordinates = getValueCoordinates();
+    int searchIndex = Collections.binarySearch(coordinates, coordinate);
 
     // A >= 0 = an exact match
     if (searchIndex >= 0) {
-      result = outputValues.get(searchIndex);
+      result = getOutputValues().get(searchIndex);
     } else {
 
       /*
@@ -1555,138 +558,12 @@ public class SensorValuesList {
       if (searchIndex < -1) {
         int getIndex = Math.abs(searchIndex) - 2;
         if (getIndex >= 0) {
-          result = outputValues.get(getIndex);
+          result = getOutputValues().get(getIndex);
         }
       }
-
-    }
-
-    return new SensorValuesListOutput(result, false);
-  }
-
-  /**
-   * Construct a {@link SensorValuesListValue} using {@link SensorValue}s in the
-   * specified time range.
-   *
-   * <p>
-   * The method finds values to use in two stages.
-   * </p>
-   *
-   * <p>
-   * First, it ignores the measurement mode and looks directly at the raw
-   * values. If values are found within the range of the start and end time
-   * (both inclusive), it collects the values with the best available QC flag
-   * and provides an averaged value as the result.
-   * </p>
-   *
-   * <p>
-   * If no usable raw values are found and {@code allowInterpolation} is
-   * {@code true}, the method falls back to using the
-   * {@link #getValue(LocalDateTime)} method, using the nominal time as the
-   * parameter.
-   * </p>
-   *
-   * <p>
-   * This method exists to handle cases of PERIODIC measurements where the
-   * instrument wakes up, measures some measurements in one mode (aka Run Type)
-   * and some in another mode (e.g. water and air) back to back. The standard
-   * methods provided here cannot distinguish these, so an external method (e.g.
-   * {@link DataReductionJob}) will determine the periods for each Run Type and
-   * request the values from those periods only. The fallback described above is
-   * for if a given sensor is measuring to a different schedule, which indicates
-   * that it's running independently of the run types and therefore using
-   * different values doesn't matter.
-   * </p>
-   *
-   * @param start
-   *          The start time.
-   * @param end
-   *          The end time.
-   * @param nominalTime
-   *          The nominal time for the constructed value.
-   * @param allowInterpolation
-   *          Indicates whether interpolation can be used to try to find a value
-   *          if nothing is available in the specified range.
-   * @return The constructed {@link SensorValuesListValue}.
-   * @throws SensorValuesListException
-   *           If the value cannot be constructed.
-   */
-  public SensorValuesListOutput getValue(LocalDateTime start, LocalDateTime end,
-    LocalDateTime nominalTime, boolean allowInterpolation)
-    throws SensorValuesListException {
-
-    List<SensorValue> usedValues = new ArrayList<SensorValue>();
-
-    // Search for the start time
-    int startSearchIndex = Collections.binarySearch(getRawTimes(), start);
-
-    int currentIndex;
-    if (startSearchIndex >= 0) {
-      currentIndex = startSearchIndex;
-    } else {
-      // Get the index immediately after the requested time
-      currentIndex = Math.abs(startSearchIndex) - 1;
-      if (currentIndex < 0) {
-        currentIndex = 0;
-      }
-    }
-
-    // Get all the values between the start and end times
-    while (currentIndex < getRawTimes().size()
-      && !getRawTimes().get(currentIndex).isAfter(end)) {
-      usedValues.add(list.get(currentIndex));
-      currentIndex++;
-    }
-
-    SensorValuesListOutput result = null;
-
-    if (usedValues.size() > 0) {
-      result = makeNumericValue(usedValues, nominalTime, true);
-    } else if (allowInterpolation) {
-      result = getValue(nominalTime, true);
     }
 
     return result;
-  }
-
-  /**
-   * Construct a {@link SensorValuesListValue} using {@link SensorValue}s in the
-   * time range specified in the provided {@link SensorValuesListValue}.
-   *
-   * <p>
-   * This method simply extracts the times and passes them to
-   * {@link #getValue(LocalDateTime, LocalDateTime, LocalDateTime)}.
-   * </p>
-   *
-   *
-   * @param timeReference
-   *          A {@link SensorValuesListValue} object containing the times
-   *          required.
-   * @param allowInterpolation
-   *          Indicates whether interpolation can be used to try to find a value
-   *          if nothing is available in the time range of the passed in value.
-   * @return The constructed {@link SensorValuesListValue}.
-   * @throws SensorValuesListException
-   *           If the value cannot be constructed.
-   */
-  public SensorValuesListOutput getValue(SensorValuesListValue timeReference,
-    boolean allowInterpolation) throws SensorValuesListException {
-
-    return getValue(timeReference.getStartTime(), timeReference.getEndTime(),
-      timeReference.getNominalTime(), allowInterpolation);
-  }
-
-  /**
-   * Determine whether or not the list contains a {@link SensorValue} with the
-   * specified timestamp.
-   *
-   * @param time
-   *          The timestamp.
-   * @return {@code true} if the list contains a {@link SensorValue} with the
-   *         specified timestamp; {@code false} otherwise.
-   */
-  public boolean containsTime(LocalDateTime time) {
-    return Collections.binarySearch(getRawTimes(), time) >= 0;
   }
 
   /**
@@ -1694,59 +571,66 @@ public class SensorValuesList {
    * at the next call to {@code getValue} methods.
    */
   public void resetOutput() {
-    outputValues = null;
+    rawCoordinates = null;
+    listContentsUpdated();
   }
 
   /**
-   * Set a flag indicating whether or not changes in String values can be used
-   * to identify measurement groups.
-   *
-   * @param allow
-   *          Indicates whether string groups are allowed
-   * @throws SensorValuesListException
-   * @see #calculateMeasurementMode()
-   */
-  public void allowStringValuesToDefineGroups(boolean allow)
-    throws SensorValuesListException {
-
-    if (allow && !containsStringValue()) {
-      throw new SensorValuesListException("No string values in list");
-    } else if (allow != allowStringPeriodicGroups) {
-      // Only reset things if we're actually changing the flag
-      allowStringPeriodicGroups = allow;
-      resetOutput();
-    }
-  }
-
-  /**
-   * Get a list of the values between the first time (exclusive) and the second
-   * time (inclusive).
+   * Retrieve the constructed output values from the list.
    *
    * <p>
-   * The method always starts at {@code time1} and moves through the list
-   * towards {@code time2}, regardless of which is greater.
+   * Most instances of this class do not simply return a list of values that
+   * directly corresponds to the individual members supplied through the
+   * {@code add} methods. This method must be implemented to ensure that the
+   * outputs from the list have the necessary processing applied.
    * </p>
    *
-   * @param time1
-   *          The first time.
-   * @param time2
-   *          The second time.
-   * @return The values between the first time (exclusive) and the second time
-   *         (inclusive).
-   * @throws SensorValuesListException
+   * @return The computed output values of the list.
    */
-  public List<SensorValuesListValue> getValuesBetween(LocalDateTime time1,
-    LocalDateTime time2) throws SensorValuesListException {
+  protected abstract List<? extends SensorValuesListValue> getOutputValues()
+    throws SensorValuesListException;
+
+  /**
+   * The {@link Coordinate}s of the constructed output values from the list.
+   *
+   * @return The {@link Coordinate}s of the computed output values of the list.
+   * @throws SensorValuesListException
+   * @see #getOutputValues()
+   */
+  protected List<Coordinate> getOutputCoordinates()
+    throws SensorValuesListException {
+    if (null == outputCoordinates) {
+      outputCoordinates = getOutputValues().stream().map(v -> v.getCoordinate())
+        .toList();
+    }
+
+    return outputCoordinates;
+  };
+
+  /**
+   * Method to broadcast the fact that the base contents of the list have been
+   * changed.
+   *
+   * <p>
+   * When the contents of the list are changed, this method is called to signal
+   * that any previously computed output values may now be invalid and should be
+   * recalculated.
+   * </p>
+   */
+  protected abstract void listContentsUpdated();
+
+  public List<SensorValuesListValue> getValuesBetween(Coordinate coord1,
+    Coordinate coord2) throws SensorValuesListException {
 
     List<SensorValuesListValue> result = new ArrayList<SensorValuesListValue>();
 
     // If the two time are equal, there are no values between
-    if (!time1.equals(time2)) {
+    if (!coord1.equals(coord2)) {
 
-      int step = (time1.isBefore(time2) ? 1 : -1);
+      int step = (coord1.isBefore(coord2) ? 1 : -1);
 
-      List<LocalDateTime> times = getValueTimes();
-      int index = times.indexOf(time1);
+      List<Coordinate> coords = getOutputCoordinates();
+      int index = coords.indexOf(coord1);
 
       boolean stop = false;
 
@@ -1755,9 +639,9 @@ public class SensorValuesList {
        * "Have we gone past time2 or fallen off the end of the list?". The test
        * is flipped depending on the direction of search.
        */
-      IntPredicate stopTest = time1.isBefore(time2)
-        ? (x) -> x >= times.size() || times.get(x).isAfter(time2)
-        : (x) -> x < 0 || times.get(x).isBefore(time2);
+      IntPredicate stopTest = coord1.isBefore(coord2)
+        ? (x) -> x >= coords.size() || coords.get(x).isAfter(coord2)
+        : (x) -> x < 0 || coords.get(x).isBefore(coord2);
 
       while (!stop) {
         index += step;
@@ -1765,7 +649,7 @@ public class SensorValuesList {
         if (stopTest.test(index)) {
           stop = true;
         } else {
-          result.add(getValue(times.get(index), false));
+          result.add(getValue(coords.get(index), false));
         }
       }
     }
@@ -1776,11 +660,11 @@ public class SensorValuesList {
 
 /**
  * Comparator class that compares two {@link SensorValue} objects by their
- * timestamp.
+ * {@link Coordinate}.
  */
-class SensorValueTimeComparator implements Comparator<SensorValue> {
+class SensorValueCoordinateComparator implements Comparator<SensorValue> {
   @Override
   public int compare(SensorValue o1, SensorValue o2) {
-    return o1.getTime().compareTo(o2.getTime());
+    return o1.getCoordinate().compareTo(o2.getCoordinate());
   }
 }

@@ -9,7 +9,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.ReadOnlyDataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.FlaggedItems;
@@ -20,6 +20,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class D12D13TotalCO2CheckRoutine extends DataReductionQCRoutine {
+
+  public D12D13TotalCO2CheckRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
 
   @Override
   public String getShortMessage() {
@@ -70,7 +74,9 @@ public class D12D13TotalCO2CheckRoutine extends DataReductionQCRoutine {
 
           if (Math.abs(difference) > 0.001D) {
             flagSensors(instrument, measurement, record, allSensorValues,
-              new RoutineFlag(this, Flag.BAD, "", ""), flaggedItems,
+              new RoutineFlag(instrument.getFlagScheme(), this,
+                flagScheme.getBadFlag(), "", ""),
+              flaggedItems,
               MeasurementValue.interpolatesAroundFlag(d12CO2, d13CO2));
           }
         }

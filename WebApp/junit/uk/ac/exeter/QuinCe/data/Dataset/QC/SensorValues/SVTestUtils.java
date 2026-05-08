@@ -5,14 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
+import uk.ac.exeter.QuinCe.data.Dataset.CoordinateException;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeCoordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 
 public class SVTestUtils extends BaseTest {
 
   protected static List<SensorValue> makeSensorValues(int[] minutes,
-    Double[] values) {
+    Double[] values) throws CoordinateException {
     if (minutes.length != values.length) {
       throw new IllegalArgumentException(
         "Minutes and Values are different lengths");
@@ -21,10 +23,10 @@ public class SVTestUtils extends BaseTest {
     List<SensorValue> result = new ArrayList<SensorValue>(minutes.length);
 
     for (int i = 0; i < minutes.length; i++) {
-      result.add(new SensorValue(minutes[i], 1L, 1L,
-        LocalDateTime.of(2024, 1, 1, 0, minutes[i], 0),
-        String.valueOf(values[i]), new AutoQCResult(), Flag.ASSUMED_GOOD,
-        null));
+      result.add(new SensorValue(minutes[i], 1L, flagScheme, 1L,
+        new TimeCoordinate(1L, LocalDateTime.of(2024, 1, 1, 0, minutes[i], 0)),
+        String.valueOf(values[i]), new AutoQCResult(flagScheme),
+        flagScheme.getGoodFlag(), null));
     }
 
     return result;
@@ -55,7 +57,7 @@ public class SVTestUtils extends BaseTest {
           // We could break early, but it's good for debugging to see the whole
           // set
         }
-      } else if (!(sv.getAutoQcFlag().isGood())) {
+      } else if (!(flagScheme.isGood(sv.getAutoQcFlag(), true))) {
         result = false;
         // We could break early, but it's good for debugging to see the whole
         // set
@@ -66,10 +68,12 @@ public class SVTestUtils extends BaseTest {
   }
 
   protected static SensorValue makeSensorValue(long id, long fileColumn,
-    int minute, String value, Flag flag) throws InvalidFlagException {
+    int minute, String value, Flag flag)
+    throws InvalidFlagException, CoordinateException {
 
-    LocalDateTime valueTime = LocalDateTime.of(2024, 1, 1, 0, minute, 0);
-    return new SensorValue(id, 1L, fileColumn, valueTime, value,
-      new AutoQCResult(), flag, "");
+    TimeCoordinate coordinate = new TimeCoordinate(id,
+      LocalDateTime.of(2024, 1, 1, 0, minute, 0));
+    return new SensorValue(id, 1L, flagScheme, fileColumn, coordinate, value,
+      new AutoQCResult(flagScheme), flag, "");
   }
 }

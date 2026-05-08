@@ -7,8 +7,10 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
+import uk.ac.exeter.QuinCe.data.Instrument.InvalidInstrumentBasisException;
 import uk.ac.exeter.QuinCe.data.Instrument.InvalidSeparatorException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -54,9 +56,11 @@ public class FileDefinitionBuilder extends FileDefinition {
    *
    * @param fileSet
    *          The file set that will contain this file definition
+   * @throws InvalidInstrumentBasisException
    */
-  public FileDefinitionBuilder(InstrumentFileSet fileSet) {
-    super(DEFAULT_DESCRIPTION, fileSet);
+  public FileDefinitionBuilder(InstrumentFileSet fileSet, int instrumentBasis)
+    throws InvalidInstrumentBasisException {
+    super(DEFAULT_DESCRIPTION, fileSet, instrumentBasis);
 
     int counter = 1;
     while (fileSet.containsFileDescription(getFileDescription())) {
@@ -72,10 +76,19 @@ public class FileDefinitionBuilder extends FileDefinition {
    *          The file description
    * @param fileSet
    *          The file set that will contain this file definition
+   * @throws InvalidInstrumentBasisException
    */
   public FileDefinitionBuilder(String fileDescription,
-    InstrumentFileSet fileSet) {
-    super(fileDescription, fileSet);
+    InstrumentFileSet fileSet, int instrumentBasis)
+    throws InvalidInstrumentBasisException {
+    super(fileDescription, fileSet, instrumentBasis);
+  }
+
+  public FileDefinitionBuilder(String fileDescription,
+    InstrumentFileSet fileSet, Class<? extends DataFile> fileClass)
+    throws InvalidInstrumentBasisException {
+
+    super(fileDescription, fileSet, fileClass);
   }
 
   /**
@@ -251,11 +264,16 @@ public class FileDefinitionBuilder extends FileDefinition {
       matchCount++;
     }
 
-    // If the string ends with a separator, ignore it
-    if (searchString.endsWith(separator)) {
-      matchCount--;
-    }
+    /*
+     * This was implemented for early attempts at SubCTech support. The latest
+     * SubCTech data I have doesn't seem to have a problem that requires this
+     * fix, and it interferes with other data formats, so I'm taking it out.
+     */
 
+    // If the string ends with a separator, ignore it
+    /*
+     * if (searchString.endsWith(separator)) { matchCount--; }
+     */
     return matchCount;
   }
 
@@ -275,11 +293,13 @@ public class FileDefinitionBuilder extends FileDefinition {
    * @param source
    *          The source object
    * @return The copied object
+   * @throws InvalidInstrumentBasisException
    */
-  public static FileDefinitionBuilder copy(FileDefinitionBuilder source) {
+  public static FileDefinitionBuilder copy(FileDefinitionBuilder source)
+    throws InvalidInstrumentBasisException {
 
     FileDefinitionBuilder dest = new FileDefinitionBuilder(
-      source.getFileDescription(), source.getFileSet());
+      source.getFileDescription(), source.getFileSet(), source.getFileClass());
 
     try {
       dest.setHeaderType(source.getHeaderType());
@@ -630,6 +650,19 @@ public class FileDefinitionBuilder extends FileDefinition {
 
     if (column.isPresent()) {
       result = column.get().getName();
+    }
+
+    return result;
+  }
+
+  public int getColumnIndex(String columnName) {
+    int result = -1;
+
+    Optional<FileColumn> column = fileColumns.stream()
+      .filter(c -> c.getName().equals(columnName)).findAny();
+
+    if (column.isPresent()) {
+      result = column.get().getIndex();
     }
 
     return result;

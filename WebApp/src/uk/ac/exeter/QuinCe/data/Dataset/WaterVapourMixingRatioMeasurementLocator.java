@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +45,7 @@ public class WaterVapourMixingRatioMeasurementLocator
 
       SensorValuesList runTypes = allSensorValues.getRunTypes();
 
-      for (LocalDateTime recordTime : allSensorValues.getTimes()) {
+      for (Coordinate recordTime : allSensorValues.getCoordinates()) {
         SensorValuesListValue runType = runTypes.getValueOnOrBefore(recordTime);
 
         RunTypeCategory category = instrument
@@ -55,8 +54,8 @@ public class WaterVapourMixingRatioMeasurementLocator
           HashMap<Long, String> runTypesMap = new HashMap<Long, String>();
           runTypesMap.put(var.getId(), Measurement.MEASUREMENT_RUN_TYPE);
 
-          measurements
-            .add(new Measurement(dataset.getId(), recordTime, runTypesMap));
+          measurements.add(new Measurement(dataset.getId(),
+            dataset.getFlagScheme(), recordTime, runTypesMap));
         }
       }
     } catch (Exception e) {

@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,17 +51,22 @@ public class ControsPco2MeasurementValueCollector
     throws MeasurementValueCollectorException {
 
     try {
-
       // Convenience variable to make code shorter
-      LocalDateTime time = measurement.getTime();
+      TimeCoordinate time = (TimeCoordinate) measurement.getCoordinate();
 
       List<MeasurementValue> result = new ArrayList<MeasurementValue>();
 
       long referenceColumnId = instrument.getSensorAssignments()
         .getColumnIds("Raw Detector Signal").get(0);
 
-      SensorValuesListValue referenceValue = allSensorValues
-        .getColumnValues(referenceColumnId).getValue(time, time, time, false);
+      TimeCoordinate castCoordinate = (TimeCoordinate) measurement
+        .getCoordinate();
+
+      TimestampSensorValuesList referenceValuesList = (TimestampSensorValuesList) allSensorValues
+        .getColumnValues(referenceColumnId);
+
+      SensorValuesListValue referenceValue = referenceValuesList
+        .getValue(castCoordinate, castCoordinate, castCoordinate, false);
 
       for (SensorType sensorType : variable
         .getAllSensorTypes(!dataSet.fixedPosition())) {
@@ -71,11 +75,11 @@ public class ControsPco2MeasurementValueCollector
           try {
             long columnId = instrument.getSensorAssignments()
               .getColumnIds(sensorType).get(0);
-            SensorValuesList sensorValuesList = allSensorValues
+            TimestampSensorValuesList sensorValuesList = (TimestampSensorValuesList) allSensorValues
               .getColumnValues(columnId);
 
-            result.add(new MeasurementValue(sensorType,
-              sensorValuesList.getValue(time, time, time, false)));
+            result.add(new MeasurementValue(instrument.getFlagScheme(),
+              sensorType, sensorValuesList.getValue(time, time, time, false)));
           } catch (SensorValuesListException e) {
             throw new MeasurementValueCalculatorException(
               "Error getting Pro Oceanus value");

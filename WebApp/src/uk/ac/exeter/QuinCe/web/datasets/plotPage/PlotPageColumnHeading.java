@@ -1,10 +1,12 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
@@ -45,10 +47,13 @@ public class PlotPageColumnHeading extends ColumnHeading {
   private final long selectionColumn;
 
   /**
-   * Indicates whether or not the user can set a Questionable flag on values in
-   * this column.
+   * Indicates whether only <i>Bad</i> QC values can be set on values for this
+   * column.
+   *
+   * @see SensorType#badFlagOnly()
+   * @see FlagScheme#getBadFlag()
    */
-  private final boolean questionableAllowed;
+  private final boolean badFlagOnly;
 
   /**
    * Simple constructor.
@@ -60,34 +65,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
    */
   public PlotPageColumnHeading(long id, String shortName, String longName,
     String codeName, String units, boolean includeType, boolean numeric,
-    boolean editable, boolean questionableAllowed) {
+    boolean editable, boolean badFlagOnly) {
 
     super(id, shortName, longName, codeName, units, true, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
     this.referenceValues = null;
-    this.questionableAllowed = questionableAllowed;
-  }
-
-  /**
-   * Simple constructor.
-   *
-   * @param heading
-   *          The heading.
-   * @param numeric
-   *          Whether the column is numeric.
-   */
-  public PlotPageColumnHeading(long id, String shortName, String longName,
-    String codeName, String units, boolean includeType, boolean numeric,
-    boolean editable, boolean hasQC, boolean questionableAllowed) {
-
-    super(id, shortName, longName, codeName, units, hasQC, includeType);
-    this.numeric = numeric;
-    this.editable = editable;
-    this.selectionColumn = id;
-    this.referenceValues = null;
-    this.questionableAllowed = questionableAllowed;
+    this.badFlagOnly = badFlagOnly;
   }
 
   /**
@@ -101,34 +86,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
   public PlotPageColumnHeading(long id, String shortName, String longName,
     String codeName, String units, boolean includeType, boolean numeric,
     boolean editable, TreeMap<LocalDateTime, Double> referenceValue,
-    boolean questionableAllowed) {
+    boolean badFlagOnly) {
 
     super(id, shortName, longName, codeName, units, true, includeType);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = id;
     this.referenceValues = referenceValue;
-    this.questionableAllowed = questionableAllowed;
-  }
-
-  /**
-   * Constructor with a different selection column.
-   *
-   * @param heading
-   *          The heading.
-   * @param numeric
-   *          Whether the column is numeric.
-   */
-  public PlotPageColumnHeading(long id, String shortName, String longName,
-    String codeName, String units, boolean includeType, boolean numeric,
-    boolean editable, long selectionColumn, boolean questionableAllowed) {
-
-    super(id, shortName, longName, codeName, units, true, includeType);
-    this.numeric = numeric;
-    this.editable = editable;
-    this.selectionColumn = selectionColumn;
-    this.referenceValues = null;
-    this.questionableAllowed = questionableAllowed;
+    this.badFlagOnly = badFlagOnly;
   }
 
   /**
@@ -144,7 +109,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.editable = false;
     this.selectionColumn = calculationParameter.getId();
     this.referenceValues = null;
-    this.questionableAllowed = false;
+    this.badFlagOnly = true;
   }
 
   public PlotPageColumnHeading(SensorType sensorType) {
@@ -154,7 +119,7 @@ public class PlotPageColumnHeading extends ColumnHeading {
     this.editable = false;
     this.selectionColumn = sensorType.getId();
     this.referenceValues = null;
-    this.questionableAllowed = sensorType.questionableFlagAllowed();
+    this.badFlagOnly = sensorType.badFlagOnly();
   }
 
   /**
@@ -164,14 +129,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
    *          The calculation parameter
    */
   public PlotPageColumnHeading(ColumnHeading heading, boolean numeric,
-    boolean editable, boolean questionableAllowed) {
+    boolean editable, boolean badFlagOnly) {
 
     super(heading);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = heading.getId();
     this.referenceValues = null;
-    this.questionableAllowed = questionableAllowed;
+    this.badFlagOnly = badFlagOnly;
   }
 
   /**
@@ -181,14 +146,14 @@ public class PlotPageColumnHeading extends ColumnHeading {
    *          The calculation parameter
    */
   public PlotPageColumnHeading(ColumnHeading heading, boolean numeric,
-    boolean editable, boolean questionableAllowed, long selectionColumn) {
+    boolean editable, boolean badFlagOnly, long selectionColumn) {
 
     super(heading);
     this.numeric = numeric;
     this.editable = editable;
     this.selectionColumn = selectionColumn;
     this.referenceValues = null;
-    this.questionableAllowed = questionableAllowed;
+    this.badFlagOnly = badFlagOnly;
   }
 
   /**
@@ -213,7 +178,38 @@ public class PlotPageColumnHeading extends ColumnHeading {
     return referenceValues;
   }
 
-  public boolean questionableAllowed() {
-    return questionableAllowed;
+  public boolean badFlagOnly() {
+    return badFlagOnly;
+  }
+
+  /**
+   * See if a {@link Collection} of {@link PlotPageColumnHeading}s contains the
+   * specified {@link ColumnHeading}.
+   *
+   * <p>
+   * The entries in the {@link Collection} are cast to {@link ColumnHeading} for
+   * comparison.
+   * </p>
+   *
+   * @param headings
+   *          The collection of headings.
+   * @param heading
+   *          The heading to be located.
+   * @return {@code true} if the collection contains the heading; {@code false}
+   *         if not.
+   */
+  public static boolean contains(Collection<PlotPageColumnHeading> headings,
+    ColumnHeading heading) {
+
+    boolean result = false;
+
+    for (PlotPageColumnHeading test : headings) {
+      if (((ColumnHeading) test).equals(heading)) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
   }
 }

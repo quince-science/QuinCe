@@ -1,9 +1,14 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards;
 
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.Range;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
@@ -12,14 +17,20 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public abstract class ExternalStandardsQCRoutine extends AbstractAutoQCRoutine {
 
+  public ExternalStandardsQCRoutine(FlagScheme flagScheme) {
+    super(flagScheme);
+  }
+
+  public ExternalStandardsQCRoutine(FlagScheme flagScheme,
+    SensorType sensorType, Map<Flag, Range<Double>> limits) {
+    super(flagScheme, sensorType, limits);
+  }
+
   @Override
   public String getName() {
     return ResourceManager.getInstance()
-      .getExternalStandardsRoutinesConfiguration().getRoutineName(this);
-  }
-
-  public void setSensorType(SensorType sensorType) {
-    this.sensorType = sensorType;
+      .getExternalStandardsRoutinesConfiguration(flagScheme.getBasis())
+      .getRoutineName(this);
   }
 
   /**

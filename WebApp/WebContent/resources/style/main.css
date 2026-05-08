@@ -223,6 +223,7 @@ form ul {
 form li {
   margin-top: 10px;
 }
+
 form li:first-child {
   margin-top: 0px;
 }
@@ -336,34 +337,6 @@ li.menuitem:hover, li.smallMenuitem:hover {
   box-shadow: 1px 2px 3px #000000;
   padding: 5px;
   background: #ddd;
-}
-
-.bad {
-  color: #FF0000;
-}
-
-.notCalibrated {
-  color: #AC9326;
-}
-
-.questionable {
-  color: #FFA42B;
-}
-
-.good {
-  color: #00C800;
-}
-
-.ignore {
-  color: #D0D0D0;
-}
-
-.assumedGood {
-  color: #76D376;
-}
-
-.notSet {
-  color: #999999;
 }
 
 .needsFlag {
@@ -710,7 +683,6 @@ table.dialogTable td.dialogTableCell {
 
 .dateTimeCell {
   text-align: right !important;
-  width: 170px;
 }
 
 .note {
@@ -776,6 +748,11 @@ table.dialogTable td.dialogTableCell {
 
 .ui-steps.custom .ui-state-default {
   font-weight: 700;
+}
+
+/* Override 'form li:first-child' */
+.ui-steps.custom li:first-child {
+  margin-top: 10px;
 }
 
 .ui-tabs .ui-tabs-nav li a {

@@ -33,6 +33,10 @@
   <ui:define name="new_instrument_name">New Instrument</ui:define>
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
+
+      <p:remoteCommand name="setBasis" action="{#newInstrumentBean.noop}"
+        process="basis" update=":menuForm:menuSteps"/>
+
       <table class="form">
         <tr>
           <td class="labels">Platform Name</td>
@@ -64,7 +68,22 @@
             </p:inputText>
           </td>
         </tr>
+
+        <tr style="vertical-align: top">
+          <ui:fragment rendered="#{newInstrumentBean.allowedBasisCount gt 1}">
+            <td class="labels" style="padding-top: 13px">Measurement Basis</td>
+            <td>
+              <p:selectOneRadio id="basis" value="#{newInstrumentBean.basis}" layout="pageDirection" onchange="setBasis()">
+                  <f:selectItems value="#{newInstrumentBean.getAllowedBases().entrySet()}" var="basis"
+                    itemValue="#{basis.key}"
+                    itemLabel="#{basis.value}" />
+              </p:selectOneRadio>
+            </td>
+          </ui:fragment>
+        </tr>
       </table>
+
+
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="3" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />

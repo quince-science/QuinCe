@@ -1,26 +1,32 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
-import java.time.LocalDateTime;
-
 import com.javadocmd.simplelatlng.LatLng;
 
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 
 public class PlotPageValueMapRecord extends MapRecord {
 
   private PlotPageTableValue value;
 
-  protected PlotPageValueMapRecord(LatLng position, LocalDateTime time,
+  public PlotPageValueMapRecord(LatLng position, Coordinate coordinate,
     PlotPageTableValue value) {
-    super(position, DateTimeUtils.dateToLong(time));
+    super(position, coordinate.getId());
+    this.value = value;
+  }
+
+  public PlotPageValueMapRecord(LatLng position, long id,
+    PlotPageTableValue value) {
+    super(position, id);
     this.value = value;
   }
 
   @Override
   public boolean isGood(DatasetSensorValues allSensorValues) {
-    return value.getQcFlag(allSensorValues).isGood();
+    return allSensorValues.getFlagScheme()
+      .isGood(value.getQcFlag(allSensorValues), true);
   }
 
   @Override
@@ -45,7 +51,7 @@ public class PlotPageValueMapRecord extends MapRecord {
     Flag result;
 
     if (!ignoreNeeded && flagNeeded()) {
-      result = Flag.NEEDED;
+      result = FlagScheme.NEEDED_FLAG;
     } else {
       result = value.getQcFlag(allSensorValues);
     }

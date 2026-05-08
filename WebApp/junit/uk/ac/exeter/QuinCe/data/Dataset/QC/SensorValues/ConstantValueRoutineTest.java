@@ -1,22 +1,26 @@
 package uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang3.Range;
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.mockito.Mockito;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -33,58 +37,11 @@ public class ConstantValueRoutineTest extends BaseTest {
     ResourceManager.destroy();
   }
 
-  @Test
-  public void nullParametersTest() {
-    ConstantValueRoutine routine = new ConstantValueRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.validateParameters();
-    });
-  }
-
-  @Test
-  public void emptyParametersTest() throws Exception {
-    ConstantValueRoutine routine = new ConstantValueRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.setParameters(Arrays.asList(new String[] {}));
-    });
-  }
-
-  @Test
-  public void tooManyParametersTest() throws Exception {
-    ConstantValueRoutine routine = new ConstantValueRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.setParameters(Arrays.asList(new String[] { "5", "7" }));
-    });
-  }
-
-  @Test
-  public void nonNumericParameterTest() throws Exception {
-    ConstantValueRoutine routine = new ConstantValueRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.setParameters(Arrays.asList(new String[] { "Not a number" }));
-    });
-  }
-
-  @Test
-  public void zeroParameterTest() throws Exception {
-    ConstantValueRoutine routine = new ConstantValueRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.setParameters(Arrays.asList(new String[] { "0" }));
-    });
-  }
-
-  @Test
-  public void negativeParameterTest() throws Exception {
-    ConstantValueRoutine routine = new ConstantValueRoutine();
-    assertThrows(RoutineException.class, () -> {
-      routine.setParameters(Arrays.asList(new String[] { "-5" }));
-    });
-  }
-
   private ConstantValueRoutine getRoutine() throws RoutineException {
-    ConstantValueRoutine routine = new ConstantValueRoutine();
-    routine.setParameters(Arrays.asList(new String[] { "3" }));
-    return routine;
+    Map<Flag, Range<Double>> limits = new HashMap<Flag, Range<Double>>();
+    limits.put(flagScheme.getBadFlag(), Range.between(0D, 3D));
+    return new ConstantValueRoutine(flagScheme, Mockito.mock(SensorType.class),
+      limits);
   }
 
   @Test
@@ -95,7 +52,7 @@ public class ConstantValueRoutineTest extends BaseTest {
     ConstantValueRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
 
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] {})));
   }
 
@@ -107,7 +64,7 @@ public class ConstantValueRoutineTest extends BaseTest {
     ConstantValueRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
 
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] {})));
   }
 
@@ -119,7 +76,7 @@ public class ConstantValueRoutineTest extends BaseTest {
     ConstantValueRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
 
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] { 1L, 2L, 3L, 4L, 5L })));
   }
 
@@ -131,7 +88,7 @@ public class ConstantValueRoutineTest extends BaseTest {
     ConstantValueRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
 
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] {})));
   }
 
@@ -144,7 +101,7 @@ public class ConstantValueRoutineTest extends BaseTest {
     ConstantValueRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
 
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] { 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L })));
   }
 
@@ -157,7 +114,7 @@ public class ConstantValueRoutineTest extends BaseTest {
     ConstantValueRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
 
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] { 1L, 2L, 3L, 4L, 5L, 8L, 9L, 10L, 11L, 12L })));
   }
 
@@ -170,7 +127,7 @@ public class ConstantValueRoutineTest extends BaseTest {
     ConstantValueRoutine routine = getRoutine();
     routine.qcAction(sensorValues);
 
-    assertTrue(SVTestUtils.checkAutoQC(sensorValues, Flag.BAD,
+    assertTrue(SVTestUtils.checkAutoQC(sensorValues, flagScheme.getBadFlag(),
       Arrays.asList(new Long[] { 1L, 2L, 3L, 5L })));
   }
 

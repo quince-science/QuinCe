@@ -218,8 +218,8 @@ public abstract class CalibrationDB {
     CalibrationEdit calibrationEdit) throws DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkPositive(calibrationEdit.getCalibrationId(),
-      "edit calibrationId");
+    MissingParam.checkDatabaseId(calibrationEdit.getCalibrationId(),
+      "edit calibrationId", false);
 
     try (PreparedStatement stmt = conn
       .prepareStatement(DELETE_CALIBRATION_STATEMENT);) {
@@ -434,8 +434,7 @@ public abstract class CalibrationDB {
    * @see #getTargets(Connection, Instrument)
    */
   public Map<String, String> getTargets(DataSource dataSource,
-    Instrument instrument)
-    throws DatabaseException, RecordNotFoundException, InstrumentException {
+    Instrument instrument) throws DatabaseException, CalibrationException {
 
     Connection conn = null;
     Map<String, String> result = null;
@@ -477,8 +476,7 @@ public abstract class CalibrationDB {
    *           If the instrument's configuration is invalid.
    */
   public abstract Map<String, String> getTargets(Connection conn,
-    Instrument instrument)
-    throws DatabaseException, RecordNotFoundException, InstrumentException;
+    Instrument instrument) throws CalibrationException;
 
   /**
    * Get the calibration type for database actions.
@@ -516,8 +514,8 @@ public abstract class CalibrationDB {
     throws DatabaseException, RecordNotFoundException, InstrumentException,
     CalibrationException {
 
-    return getCalibrationSet(conn, dataset.getInstrument(), dataset.getStart(),
-      dataset.getEnd());
+    return getCalibrationSet(conn, dataset.getInstrument(),
+      dataset.getStartTime(), dataset.getEndTime());
   }
 
   /**
@@ -708,11 +706,6 @@ public abstract class CalibrationDB {
       DatabaseUtils.rollBack(conn);
       throw new DatabaseException("Error storing calibration edits", e);
     } finally {
-      try {
-        conn.setAutoCommit(true);
-      } catch (Exception e) {
-        // NOOP
-      }
       DatabaseUtils.closeConnection(conn);
     }
   }

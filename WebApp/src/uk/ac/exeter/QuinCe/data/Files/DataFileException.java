@@ -66,6 +66,18 @@ public class DataFileException extends Exception {
     this.lineNumber = lineNumber;
   }
 
+  /**
+   * Constructor for an error with an underlying cause
+   *
+   * @param message
+   *          The error message
+   * @param cause
+   *          The cause
+   */
+  public DataFileException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
   @Override
   public String getMessage() {
     if (lineNumber == NO_LINE_NUMBER) {

@@ -31,7 +31,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SimpleMeasurementLocator;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -60,13 +59,14 @@ public class FlagCascadeTest extends TestSetTest {
     int questionableCascade, int badCascade) throws SQLException {
 
     PreparedStatement stmt = conn.prepareStatement("UPDATE "
-      + "variable_sensors SET questionable_cascade = ?, bad_cascade = ? "
-      + "WHERE variable_id = " + VAR_ID + " AND sensor_type = "
-      + "(SELECT id FROM sensor_types WHERE name = ?)");
+      + "variable_sensors SET cascades = ? " + "WHERE variable_id = " + VAR_ID
+      + " AND sensor_type = " + "(SELECT id FROM sensor_types WHERE name = ?)");
 
-    stmt.setInt(1, questionableCascade);
-    stmt.setInt(2, badCascade);
-    stmt.setString(3, sensorType);
+    String cascades = "{\"Time\":[[3," + questionableCascade + "],[4,"
+      + badCascade + "]]}";
+
+    stmt.setString(1, cascades);
+    stmt.setString(2, sensorType);
 
     int updateCount = stmt.executeUpdate();
     stmt.close();
@@ -110,22 +110,25 @@ public class FlagCascadeTest extends TestSetTest {
     ResourceManager.destroy();
     initResourceManager();
 
-    try (Connection conn = getConnection()) {
+    try (Connection conn = getConnection(false)) {
       Instrument instrument = InstrumentDB.getInstrument(conn, 1L);
       Variable variable = instrument.getVariables().get(0);
       DataSet dataset = DataSetDB.getDataSet(conn, 1L);
 
       // Set the QC flags on sensor values
       DatasetSensorValues allSensorValues = DataSetDataDB.getSensorValues(conn,
-        instrument, dataset.getId(), false, true);
+        dataset, false, true);
 
       SensorValue sstVal = allSensorValues.getById(2L);
       SensorValue salVal = allSensorValues.getById(3L);
 
-      sstVal.setUserQC(new Flag(line.getIntField(SST_FLAG_COL)), "Comment");
-      salVal.setUserQC(new Flag(line.getIntField(SAL_FLAG_COL)), "Comment");
+      sstVal.setUserQC(flagScheme.getFlag(line.getIntField(SST_FLAG_COL)),
+        "Comment");
+      salVal.setUserQC(flagScheme.getFlag(line.getIntField(SAL_FLAG_COL)),
+        "Comment");
 
-      DataSetDataDB.storeSensorValues(conn, Arrays.asList(sstVal, salVal));
+      DataSetDataDB.updateSensorValues(conn, Arrays.asList(sstVal, salVal));
+      conn.commit();
 
       // Create the measurements for the dataset by running the
       // MeasurementLocator job
@@ -138,7 +141,7 @@ public class FlagCascadeTest extends TestSetTest {
 
       // Get all the measurements grouped by run type
       DatasetMeasurements allMeasurements = DataSetDataDB
-        .getMeasurementsByRunType(conn, instrument, dataset.getId());
+        .getMeasurementsByRunType(conn, dataset);
 
       MeasurementValueCollector measurementValueCollector = new DefaultMeasurementValueCollector();
 
@@ -165,7 +168,7 @@ public class FlagCascadeTest extends TestSetTest {
         locatedMeasurements.get(0), allSensorValues, conn);
 
       assertEquals(line.getIntField(DATA_REDUCTION_FLAG_COL),
-        record.getQCFlag().getWoceValue());
+        record.getQCFlag().getExportValue());
     }
   }
 

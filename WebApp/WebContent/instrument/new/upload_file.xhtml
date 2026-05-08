@@ -37,18 +37,20 @@
             rendered="#{!newInstrumentBean.hasMultipleFiles}" />
         </div>
         <h:panelGrid columns="3" cellpadding="5">
-          <p:outputLabel for="fileDescription"
-            value="File Description (e.g. TSG)" />
-          <p:inputText id="fileDescription"
-            value="#{newInstrumentBean.currentInstrumentFile.fileDescription}"
-            required="true" requiredMessage="You must enter a file description">
-            <f:validator validatorId="instrumentFileDescriptionValidator" />
-            <f:attribute name="bean" value="#{newInstrumentBean}" />
-            <p:ajax update="msgFileDescription" event="keyup"
-              oncomplete="updateUseFileButton()" />
-          </p:inputText>
-          <p:message for="fileDescription" id="msgFileDescription"
-            display="both" />
+          <ui:fragment rendered="#{newInstrumentBean.multipleFilesAllowed()}">
+            <p:outputLabel for="fileDescription"
+              value="File Description (e.g. TSG)" />
+            <p:inputText id="fileDescription"
+              value="#{newInstrumentBean.currentInstrumentFile.fileDescription}"
+              required="true" requiredMessage="You must enter a file description">
+              <f:validator validatorId="instrumentFileDescriptionValidator" />
+              <f:attribute name="bean" value="#{newInstrumentBean}" />
+              <p:ajax update="msgFileDescription" event="keyup"
+                oncomplete="updateUseFileButton()" />
+            </p:inputText>
+            <p:message for="fileDescription" id="msgFileDescription"
+              display="both" />
+          </ui:fragment>
         </h:panelGrid>
         <div id="uploadFile" class="hidden">
           <p:outputLabel value="Select a file to upload" />

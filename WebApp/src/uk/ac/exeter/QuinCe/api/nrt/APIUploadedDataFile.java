@@ -9,7 +9,7 @@ import org.apache.commons.io.IOUtils;
 import uk.ac.exeter.QuinCe.web.files.UploadedDataFile;
 
 /**
- * {#UploadedDataFile} instance for use with simple Strings
+ * {@link UploadedDataFile} instance for use with simple Strings
  */
 public class APIUploadedDataFile extends UploadedDataFile {
 

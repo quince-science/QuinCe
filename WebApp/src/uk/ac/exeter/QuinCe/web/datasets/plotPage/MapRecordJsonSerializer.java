@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.lang.reflect.Type;
+import java.util.function.Function;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -28,10 +29,20 @@ public class MapRecordJsonSerializer implements JsonSerializer<MapRecord> {
 
   private DatasetSensorValues allSensorValues;
 
+  private Function<Double, String> formatter;
+
   public MapRecordJsonSerializer(int type,
     DatasetSensorValues allSensorValues) {
     this.type = type;
     this.allSensorValues = allSensorValues;
+    this.formatter = StringUtils::formatNumber;
+  }
+
+  public MapRecordJsonSerializer(int type, DatasetSensorValues allSensorValues,
+    Function<Double, String> formatter) {
+    this.type = type;
+    this.allSensorValues = allSensorValues;
+    this.formatter = formatter;
   }
 
   @Override
@@ -59,19 +70,19 @@ public class MapRecordJsonSerializer implements JsonSerializer<MapRecord> {
     case VALUE: {
       properties.addProperty("type", VALUE);
       properties.addProperty("rowID", src.id);
-      properties.addProperty("value", StringUtils.formatNumber(src.getValue()));
+      properties.addProperty("value", formatter.apply(src.getValue()));
       break;
     }
     case FLAG: {
       properties.addProperty("type", FLAG);
       properties.addProperty("flag",
-        src.getFlag(allSensorValues, false).getFlagValue());
+        src.getFlag(allSensorValues, false).getValue());
       break;
     }
     case FLAG_IGNORE_NEEDED: {
       properties.addProperty("type", FLAG);
       properties.addProperty("flag",
-        src.getFlag(allSensorValues, true).getFlagValue());
+        src.getFlag(allSensorValues, true).getValue());
       break;
     }
     case SELECTION: {

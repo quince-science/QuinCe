@@ -2,14 +2,16 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.TimeDataSet;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.TimeDataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -67,6 +69,7 @@ public class CreateNrtDataset extends Job {
 
     try {
       conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
       long instrumentId = Long.parseLong(properties.getProperty(ID_PARAM));
 
       Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId);
@@ -78,33 +81,33 @@ public class CreateNrtDataset extends Job {
 
       // The NRT dataset will start immediately after the last 'real' dataset.
       // If there isn't one, it will start at the beginning of the first
-      // available
-      // data file.
+      // available data file.
       LocalDateTime nrtStartDate = null;
-      DataSet lastDataset = DataSetDB.getLastDataSet(conn, instrument.getId(),
-        false);
+      TimeDataSet lastDataset = (TimeDataSet) DataSetDB.getLastDataSet(conn,
+        instrument.getId(), false);
 
-      List<DataFile> instrumentFiles = DataFileDB.getFiles(conn,
-        ResourceManager.getInstance().getConfig(), instrument);
+      TreeSet<DataFile> instrumentFiles = DataFileDB.getFiles(conn, instrument);
 
       if (null != lastDataset) {
-        nrtStartDate = lastDataset.getEnd().plusSeconds(1);
+        nrtStartDate = lastDataset.getEndTime().plusSeconds(1);
       } else {
         // We can only continue if there's at least one file
         if (instrumentFiles.size() > 0) {
-          nrtStartDate = instrumentFiles.get(0).getOffsetStartTime();
+          nrtStartDate = ((TimeDataFile) instrumentFiles.first())
+            .getOffsetStartTime();
         }
       }
 
       if (null != nrtStartDate) {
-        LocalDateTime endDate = DataFileDB.getLastFileDate(conn,
-          instrument.getId(), true);
+        TreeSet<DataFile> files = DataFileDB.getFiles(conn, instrument);
+
+        LocalDateTime endDate = ((TimeDataFile) files.last()).getRawEndTime();
 
         boolean canCreateNrt = true;
 
         if (!endDate.isAfter(nrtStartDate)) {
           canCreateNrt = false;
-        } else if (!DataFile.hasConcurrentFiles(instrument, instrumentFiles,
+        } else if (!TimeDataFile.hasConcurrentFiles(instrument, instrumentFiles,
           nrtStartDate, endDate)) {
           canCreateNrt = false;
         }
@@ -113,7 +116,7 @@ public class CreateNrtDataset extends Job {
         if (canCreateNrt) {
           String nrtDatasetName = buildNrtDatasetName(instrument);
 
-          DataSet newDataset = new DataSet(instrument, nrtDatasetName,
+          DataSet newDataset = new TimeDataSet(instrument, nrtDatasetName,
             nrtStartDate, endDate, true);
           DataSetDB.addDataSet(conn, newDataset);
 
@@ -128,6 +131,7 @@ public class CreateNrtDataset extends Job {
         }
       }
 
+      conn.commit();
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
       DatabaseUtils.rollBack(conn);
