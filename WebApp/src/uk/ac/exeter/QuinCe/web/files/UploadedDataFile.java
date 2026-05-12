@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.files;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -129,7 +130,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
    * @see DataFile#getRawStartTime
    */
   public String getStart() throws DataFileException {
-    return dataFile.getStartDisplayString();
+    return null == dataFile ? null : dataFile.getStartDisplayString();
   }
 
   /**
@@ -143,7 +144,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
    * @see DataFile#getRawEndTime()
    */
   public String getEnd() throws DataFileException {
-    return dataFile.getEndDisplayString();
+    return null == dataFile ? null : dataFile.getEndDisplayString();
   }
 
   /**
@@ -472,11 +473,20 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
   }
 
   /**
-   * Get the contents of the file
+   * Get the contents of the file as a String.
    *
-   * @return The file contents
+   * @return The file contents.
    */
-  protected abstract String getFileContents();
+  protected String getFileContents() {
+    return new String(getFileBytes(), StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Get the raw bytes of the file.
+   *
+   * @return
+   */
+  public abstract byte[] getFileBytes();
 
   @Override
   public int compareTo(UploadedDataFile o) {
