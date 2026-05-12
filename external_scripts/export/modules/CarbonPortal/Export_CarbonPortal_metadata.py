@@ -58,8 +58,8 @@ def build_metadata_package(file, manifest, index, hashsum,
 
     if 'L0' in level:  # L0 specific metadata
         meta['specificInfo']['acquisitionInterval'] = ({
-            'start': manifest['manifest']['raw'][index]['startDate'],
-            'stop': manifest['manifest']['raw'][index]['endDate']})
+            'start': manifest['manifest']['raw'][index]['start'],
+            'stop': manifest['manifest']['raw'][index]['end']})
         meta['fileName'] = os.path.split(file)[-1]
 
     meta['references'] = {
