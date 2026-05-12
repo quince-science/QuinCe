@@ -251,12 +251,12 @@ def upload_file(cookie, zip_source, manifest, file_index, filename, level, data_
     if deprecate_hashsum:
         deprecated_info = get_info(deprecate_hashsum[0])
         if level == 'L1':
-            new_start_date = pd.to_datetime(manifest['manifest']['metadata']['startdate'])
+            new_start_date = pd.to_datetime(manifest['manifest']['metadata']['start'])
             if new_start_date > deprecated_info['timeStart']:
                 partial_upload = True
         elif level == 'L2':
-            new_start_date = pd.to_datetime(manifest['manifest']['metadata']['startdate'])
-            new_end_date = pd.to_datetime(manifest['manifest']['metadata']['enddate'])
+            new_start_date = pd.to_datetime(manifest['manifest']['metadata']['start'])
+            new_end_date = pd.to_datetime(manifest['manifest']['metadata']['end'])
             if deprecated_info['dataLevel'] == 1 and \
                 new_start_date != deprecated_info['timeStart'] or new_end_date != deprecated_info['timeEnd']:
 

@@ -44,17 +44,17 @@ def get_export_destination(platform_code,NRT):
 
 def get_start_date(manifest):
   return datetime.datetime.strptime(
-    manifest['manifest']['metadata']['startdate'],
+    manifest['manifest']['metadata']['start'],
     '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y%m%d')
 
 def get_start_time(manifest):
   return datetime.datetime.strptime(
-    manifest['manifest']['metadata']['startdate'],
+    manifest['manifest']['metadata']['start'],
     '%Y-%m-%dT%H:%M:%S.%fZ')
 
 def get_end_time(manifest):
   return datetime.datetime.strptime(
-    manifest['manifest']['metadata']['enddate'],
+    manifest['manifest']['metadata']['end'],
     '%Y-%m-%dT%H:%M:%S.%fZ')
 
 
