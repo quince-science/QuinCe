@@ -2,9 +2,6 @@ package uk.ac.exeter.QuinCe.api.nrt;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
-import org.apache.commons.io.IOUtils;
 
 import uk.ac.exeter.QuinCe.web.files.UploadedDataFile;
 
@@ -21,21 +18,7 @@ public class APIUploadedDataFile extends UploadedDataFile {
   /**
    * The file contents
    */
-  private String contents;
-
-  /**
-   * Basic constructor for pre-prepared strings
-   *
-   * @param filename
-   *          The filename
-   * @param contents
-   *          The file contents
-   */
-  protected APIUploadedDataFile(String filename, String contents) {
-    super();
-    this.filename = filename;
-    this.contents = contents;
-  }
+  private byte[] contents;
 
   /**
    * Constructor to build a file from an {@link InputStream}. Assumes data is in
@@ -54,8 +37,7 @@ public class APIUploadedDataFile extends UploadedDataFile {
     throws IOException {
     super();
     this.filename = filename;
-    this.contents = IOUtils.toString(inputStream,
-      StandardCharsets.UTF_8.displayName());
+    this.contents = inputStream.readAllBytes();
   }
 
   @Override
@@ -64,7 +46,7 @@ public class APIUploadedDataFile extends UploadedDataFile {
   }
 
   @Override
-  protected String getFileContents() {
+  public byte[] getFileBytes() {
     return contents;
   }
 }

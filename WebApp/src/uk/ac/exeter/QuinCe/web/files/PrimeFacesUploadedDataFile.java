@@ -1,7 +1,5 @@
 package uk.ac.exeter.QuinCe.web.files;
 
-import java.nio.charset.StandardCharsets;
-
 import org.primefaces.model.file.UploadedFile;
 
 public class PrimeFacesUploadedDataFile extends UploadedDataFile {
@@ -31,11 +29,6 @@ public class PrimeFacesUploadedDataFile extends UploadedDataFile {
   }
 
   @Override
-  protected String getFileContents() {
-    return new String(uploadedFile.getContent(), StandardCharsets.UTF_8);
-  }
-
-  @Override
   public String getName() {
     return uploadedFile.getFileName();
   }
@@ -43,5 +36,10 @@ public class PrimeFacesUploadedDataFile extends UploadedDataFile {
   @Override
   public String toString() {
     return uploadedFile.getFileName();
+  }
+
+  @Override
+  public byte[] getFileBytes() {
+    return uploadedFile.getContent();
   }
 }
