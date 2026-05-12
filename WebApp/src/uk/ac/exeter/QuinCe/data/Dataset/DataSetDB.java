@@ -1010,8 +1010,18 @@ public class DataSetDB {
 
     JsonObject result = new JsonObject();
     result.addProperty("name", dataset.getName());
-    result.addProperty("start", dataset.getDisplayStart());
-    result.addProperty("end", dataset.getDisplayEnd());
+
+    if (dataset.getInstrument().getBasis() == Instrument.BASIS_TIME) {
+      TimeDataSet castDataset = (TimeDataSet) dataset;
+      result.addProperty("start",
+        DateTimeUtils.toIsoDate(castDataset.getStartTime()));
+      result.addProperty("end",
+        DateTimeUtils.toIsoDate(castDataset.getEndTime()));
+    } else {
+      result.addProperty("start", dataset.getDisplayStart());
+      result.addProperty("end", dataset.getDisplayEnd());
+    }
+
     result.addProperty("platformCode", instrument.getPlatformCode());
     result.addProperty("platformName", instrument.getPlatformName());
     result.addProperty("instrumentName", instrument.getName());
