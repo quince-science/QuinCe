@@ -355,8 +355,10 @@ public class DataSetDataDB {
         throw new DatabaseException("Connection must be autoCommit=false");
       }
 
-      // Extract the Coordinate objects and ensure they are stored
-      // in the database.
+      /*
+       * Extract the Coordinate objects and ensure they are stored in the
+       * database.
+       */
       CoordinateDB.saveCoordinates(conn, sensorValues.getCoordinates());
 
       addStmt = conn.prepareStatement(STORE_NEW_SENSOR_VALUE_STATEMENT,

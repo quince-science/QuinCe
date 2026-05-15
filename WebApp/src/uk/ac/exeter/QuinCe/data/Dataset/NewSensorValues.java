@@ -99,8 +99,41 @@ public class NewSensorValues {
       .toList();
   }
 
+  /**
+   * Get the {@link SensorValue} objects.
+   *
+   * Returns an unmodifiable view of the objects in {@link Coordinate} iteration
+   * order.
+   *
+   * @return The {@link SensorValue} objects.
+   */
   public Collection<SensorValue> getSensorValues() {
+    ensureUniqueCoordinates();
     return Collections.unmodifiableCollection(sensorValues);
   }
 
+  /**
+   * Ensure that the set of {@link SensorValue} contains no duplicate
+   * {@link Coordinate} objects.
+   *
+   * It's possible that multiple {@link SensorValue}s have been added with the
+   * same {@link Coordinate} values. This will be combined so that the same
+   * {@link Coordinate} objects will be shared by those {@link SensorValue}s.
+   */
+  private void ensureUniqueCoordinates() {
+
+    SensorValue last = null;
+    SensorValue current = null;
+
+    Iterator<SensorValue> iterator = sensorValues.iterator();
+    while (iterator.hasNext()) {
+      last = current;
+      current = iterator.next();
+
+      if (null != last
+        && current.getCoordinate().equals(last.getCoordinate())) {
+        current.setCoordinate(last.getCoordinate());
+      }
+    }
+  }
 }

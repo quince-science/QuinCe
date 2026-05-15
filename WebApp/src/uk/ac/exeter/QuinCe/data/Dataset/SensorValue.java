@@ -60,7 +60,7 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
   /**
    * The coordinate for this value.
    */
-  private final Coordinate coordinate;
+  private Coordinate coordinate;
 
   /**
    * The automatic QC result
@@ -960,5 +960,9 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
 
   public FlagScheme getFlagScheme() {
     return flagScheme;
+  }
+
+  protected void setCoordinate(Coordinate coordinate) {
+    this.coordinate = coordinate;
   }
 }
