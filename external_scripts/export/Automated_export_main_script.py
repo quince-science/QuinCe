@@ -68,39 +68,40 @@ def main():
 
                 if len(export_destination) == 0:
                     logging.info('Platform has no export destinations configured')
-
-                successful_upload_cp = 0
-                successful_upload_cmems = 0
-
-                for destination in export_destination:
-                    if 'ICOS' in destination:
-                        successful_upload_cp = icos_upload(raw_filenames, manifest, dataset_zip, dataset)
-
-                    if 'CMEMS' in destination:
-                        raise NotImplementedError('CMEMS required CP_pid, but it is not available from new code')
-
-                        # successful_upload_cmems = 0
-                        # cmems_err_msg = ''
-
-                        # --- Creating netCDFs
-                        # build_dataproduct(dataset_zip, dataset, key, CP_pid)
-                        # try:
-                        #    if config_copernicus['do_upload']:
-                        #        successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus('nrt_server', dataset,
-                        #                                                                      platforms)
-                        # except Exception:
-                        #    logging.error('Exception occurred: ', exc_info=True)
-                        #    successful_upload_CMEMS = 0
-
-                        # export_report('CMEMS', platform_name, dataset, successful_upload_cmems, cmems_err_msg)
-                    else:
-                        successful_upload_cmems = True  # No export => no failure to report to QuinCe
-
-                successful_upload = bool(successful_upload_cp) & bool(successful_upload_cmems)
-                if successful_upload:
                     report_complete_export(dataset['id'])
                 else:
-                    report_abandon_export(dataset['id'])
+                    successful_upload_cp = 0
+                    successful_upload_cmems = 0
+
+                    for destination in export_destination:
+                        if 'ICOS' in destination:
+                            successful_upload_cp = icos_upload(raw_filenames, manifest, dataset_zip, dataset)
+
+                        if 'CMEMS' in destination:
+                            raise NotImplementedError('CMEMS required CP_pid, but it is not available from new code')
+
+                            # successful_upload_cmems = 0
+                            # cmems_err_msg = ''
+
+                            # --- Creating netCDFs
+                            # build_dataproduct(dataset_zip, dataset, key, CP_pid)
+                            # try:
+                            #    if config_copernicus['do_upload']:
+                            #        successful_upload_CMEMS, cmems_err_msg = upload_to_copernicus('nrt_server', dataset,
+                            #                                                                      platforms)
+                            # except Exception:
+                            #    logging.error('Exception occurred: ', exc_info=True)
+                            #    successful_upload_CMEMS = 0
+
+                            # export_report('CMEMS', platform_name, dataset, successful_upload_cmems, cmems_err_msg)
+                        else:
+                            successful_upload_cmems = True  # No export => no failure to report to QuinCe
+
+                    successful_upload = bool(successful_upload_cp) & bool(successful_upload_cmems)
+                    if successful_upload:
+                        report_complete_export(dataset['id'])
+                    else:
+                        report_abandon_export(dataset['id'])
 
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
