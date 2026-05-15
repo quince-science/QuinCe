@@ -153,11 +153,11 @@ public class DatasetExport {
   }
 
   protected LocalDateTime getStartDate() {
-    return startDate.getTime();
+    return null == startDate ? null : startDate.getTime();
   }
 
   protected LocalDateTime getEndDate() {
-    return endDate.getTime();
+    return null == endDate ? null : endDate.getTime();
   }
 
   protected JsonObject getBoundsJson() {
