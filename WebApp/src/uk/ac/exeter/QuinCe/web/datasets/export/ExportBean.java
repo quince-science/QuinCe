@@ -933,9 +933,9 @@ public class ExportBean extends BaseManagedBean {
       if (!fileDate.equals(currentDate)) {
         if (null != currentEntry) {
           zip.closeEntry();
-          rawManifest.add(makeRawFileJson(filePath,
-            DateTimeUtils.formatDateTime(startTime),
-            DateTimeUtils.formatDateTime(endTime), file.getExportProperties()));
+          rawManifest
+            .add(makeRawFileJson(filePath, DateTimeUtils.toIsoDate(startTime),
+              DateTimeUtils.toIsoDate(endTime), file.getExportProperties()));
         }
 
         currentDate = fileDate;
@@ -958,8 +958,8 @@ public class ExportBean extends BaseManagedBean {
 
     zip.closeEntry();
     rawManifest
-      .add(makeRawFileJson(filePath, DateTimeUtils.formatDateTime(startTime),
-        DateTimeUtils.formatDateTime(endTime), null));
+      .add(makeRawFileJson(filePath, DateTimeUtils.toIsoDate(startTime),
+        DateTimeUtils.toIsoDate(endTime), null));
   }
 
   private static JsonObject makeRawFileJson(String filePath, String start,
