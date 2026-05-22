@@ -98,7 +98,9 @@ const FLAG_COLORS = {
       '2': '',
       'Assumed Good': '',
       '-2': '',
-      'GHOST': '#C0C0C0'
+      'GHOST': '#C0C0C0',
+      '-100': '#C0C0C0',
+      'FLUSHING': '#C0C0C0'
     },
     'y2': {
       'Needed': '#D7D6FF',
@@ -107,7 +109,9 @@ const FLAG_COLORS = {
       'Bad': '#E6B6A6',
       '4': '#E6B6A6',
       'Questionable': '#EFDCBF',
-      '3': '#EFDCBF'
+      '3': '#EFDCBF',
+      '-100': '#C0C0C0',
+      'FLUSHING': '#C0C0C0'
     }
   },
   'Argo': {
