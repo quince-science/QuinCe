@@ -414,7 +414,10 @@ function plotError(xhr) {
   itemNotLoading(PLOT1_LOADING);
   itemNotLoading(PLOT2_LOADING);
 
-  alert('Unhandled error in plot/map. If you see this, please report it with details of what you were trying to do.');
+  // It seems like most (all?) plot errors are recoverable, so let's
+  // stop putting up the alert and see how things go.
+
+  //alert('Unhandled error in plot/map. If you see this, please report it with details of what you were trying to do.');
 }
 
 // Get the index of the group that the specified column is in
@@ -2005,7 +2008,7 @@ function setupMapVariables(plotIndex) {
       mapWidget.jq.show();
     }
   });
-  updateMapCheckboxes($(getMapFormName(index) + '\\:map' + plotIndex + 'Column').val());
+  updateMapCheckboxes($(getMapFormName(plotIndex) + '\\:map' + plotIndex + 'Column').val());
 }
 
 //Select the specified variable in the dialog
@@ -2021,7 +2024,7 @@ function updateMapCheckboxes(variable) {
         if (widget) {
           if (id == variable) {
             widget.check();
-            $(getMapFormName(index) + '\\:map' + currentPlot + 'Column').val(variable);
+            $(getMapFormName(currentPlot) + '\\:map' + currentPlot + 'Column').val(variable);
           } else {
             widget.uncheck();
           }
@@ -2361,20 +2364,29 @@ function drawMap(index) {
     window[pathLayerVar].removeFrom(window[mapVar]);
   }
 
-  let mapData = JSON.parse($(getMapFormName(index) + '\\:map' + index + 'Data').val());
+  // Sometimes the communications fail and we get no map data.
+  // I can't find out why it happens, so for now if it happens
+  // we just stop processing.
+  let mapDataJson = $(getMapFormName(index) + '\\:map' + index + 'Data').val();
+  if (mapDataJson.length == 0) {
+  console.log('Map data is empty. Abort processing!');
+    redrawMap = false;
+  } else {
+    let mapData = JSON.parse(mapDataJson);
 
-  if (mapData.length >= 4) {
-    window[pathLayerVar] = makeMapPath(index, mapData[3]).addTo(window[mapVar]);
+    if (mapData.length >= 4) {
+      window[pathLayerVar] = makeMapPath(index, mapData[3]).addTo(window[mapVar]);
+    }
+
+    window[flagLayerVar] = makeMapLayer(index, mapData[1], false).addTo(window[mapVar]);
+    window[selectionLayerVar] = makeMapLayer(index, mapData[2], false).addTo(window[mapVar]);
+    window[dataLayerVar] = makeMapLayer(index, mapData[0], true).addTo(window[mapVar]);
+
+
+    let scaleLimits = JSON.parse($(getMapFormName(index) + '\\:map' + index + 'ScaleLimits').val());
+    window[colorScaleVar].setValueRange(scaleLimits[0], scaleLimits[1]);
+    window[colorScaleVar].drawScale($('#map' + index + 'Scale'), scaleOptions);
   }
-
-  window[flagLayerVar] = makeMapLayer(index, mapData[1], false).addTo(window[mapVar]);
-  window[selectionLayerVar] = makeMapLayer(index, mapData[2], false).addTo(window[mapVar]);
-  window[dataLayerVar] = makeMapLayer(index, mapData[0], true).addTo(window[mapVar]);
-
-
-  let scaleLimits = JSON.parse($(getMapFormName(index) + '\\:map' + index + 'ScaleLimits').val());
-  window[colorScaleVar].setValueRange(scaleLimits[0], scaleLimits[1]);
-  window[colorScaleVar].drawScale($('#map' + index + 'Scale'), scaleOptions);
 
   if (redrawMap) {
     $(getMapFormName(index) + '\\:map' + index + 'UpdateScale').val(false);
