@@ -33,7 +33,7 @@ public class QCMap {
    *
    * <p>
    * This may not include all data points depending on the configuration of the
-   * map view.
+   * map view (e.g. hiding flags).
    * </p>
    */
   private GeoBounds dataBounds = null;
