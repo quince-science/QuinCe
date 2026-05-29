@@ -164,6 +164,7 @@ public class SensorOffsets {
     throws SensorGroupsException, CoordinateException {
 
     LocalDateTime resultTime = source.getTime();
+    boolean noOffset = true;
 
     SensorGroup baseGroup = sensorGroups.getGroup(base);
     int baseGroupIndex = sensorGroups.getGroupIndex(baseGroup);
@@ -172,6 +173,8 @@ public class SensorOffsets {
     int offsetGroupIndex = sensorGroups.getGroupIndex(offsetGroup);
 
     if (baseGroupIndex != offsetGroupIndex) {
+      noOffset = false;
+
       int startIndex = Math.min(baseGroupIndex, offsetGroupIndex);
       SensorGroup startGroup = startIndex == baseGroupIndex ? baseGroup
         : offsetGroup;
@@ -215,8 +218,9 @@ public class SensorOffsets {
 
     }
 
-    return TimeCoordinate.getCoordinate(resultTime, source.getDatasetId(),
-      allSensorValues.getCoordinates());
+    return noOffset ? source
+      : TimeCoordinate.getCoordinate(resultTime, source.getDatasetId(),
+        allSensorValues.getCoordinates());
   }
 
   public TimeCoordinate offsetToFirstGroup(TimeCoordinate source,
