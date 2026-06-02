@@ -91,65 +91,79 @@ public class MultipleFileUploadBean extends FileUploadBean {
     /*
      * Check that uploaded files don't overlap each other.
      *
-     * Time-basis files only
+     * Time-basis files only, and split by file definition.
      */
     if (getCurrentInstrument().getBasis() == Instrument.BASIS_TIME) {
 
-      List<UploadedDataFile> okFiles = dataFiles.stream()
-        .filter(f -> f.getStatusCode() == Status.OK.getStatusCode()).toList();
+      Map<FileDefinition, List<UploadedDataFile>> okFiles = new HashMap<FileDefinition, List<UploadedDataFile>>();
 
-      for (int i = 0; i < okFiles.size(); i++) {
+      dataFiles.stream()
+        .filter(f -> f.getStatusCode() == Status.OK.getStatusCode())
+        .forEach(f -> {
 
-        TimeDataFile checkFile = (TimeDataFile) okFiles.get(i).getDataFile();
+          FileDefinition fileDefinition = f.getDataFile().getFileDefinition();
+          if (!okFiles.containsKey(fileDefinition)) {
+            okFiles.put(fileDefinition, new ArrayList<UploadedDataFile>());
+          }
 
-        List<String> overlapFiles = new ArrayList<String>();
+          okFiles.get(fileDefinition).add(f);
+        });
 
-        // Search previous files for overlaps
-        boolean stop = false;
-        int backSearch = i;
-        while (!stop) {
-          backSearch--;
-          if (backSearch < 0) {
-            stop = true;
-          } else {
-            TimeDataFile backSearchFile = (TimeDataFile) okFiles.get(backSearch)
-              .getDataFile();
-            if (DateTimeUtils.isEqualOrAfter(backSearchFile.getRawEndTime(),
-              checkFile.getRawStartTime())) {
-              overlapFiles.add(backSearchFile.getFilename());
-            } else if (backSearchFile.getRawEndTime()
-              .isBefore(checkFile.getRawStartTime())) {
+      for (List<UploadedDataFile> testFiles : okFiles.values()) {
+
+        for (int i = 0; i < testFiles.size(); i++) {
+          TimeDataFile checkFile = (TimeDataFile) testFiles.get(i)
+            .getDataFile();
+          List<String> overlapFiles = new ArrayList<String>();
+
+          // Search previous files for overlaps
+          boolean stop = false;
+          int backSearch = i;
+          while (!stop) {
+            backSearch--;
+            if (backSearch < 0) {
               stop = true;
+            } else {
+              TimeDataFile backSearchFile = (TimeDataFile) testFiles
+                .get(backSearch).getDataFile();
+              if (DateTimeUtils.isEqualOrAfter(backSearchFile.getRawEndTime(),
+                checkFile.getRawStartTime())) {
+                overlapFiles.add(backSearchFile.getFilename());
+              } else if (backSearchFile.getRawEndTime()
+                .isBefore(checkFile.getRawStartTime())) {
+                stop = true;
+              }
             }
           }
-        }
 
-        // Search following files for overlaps
-        stop = false;
-        int forwardSearch = i;
-        while (!stop) {
-          forwardSearch++;
-          if (forwardSearch >= okFiles.size()) {
-            stop = true;
-          } else {
-            TimeDataFile forwardSearchFile = (TimeDataFile) okFiles
-              .get(forwardSearch).getDataFile();
-            if (DateTimeUtils.isEqualOrBefore(
-              forwardSearchFile.getRawStartTime(), checkFile.getRawEndTime())) {
-              overlapFiles.add(forwardSearchFile.getFilename());
-            } else if (forwardSearchFile.getRawStartTime()
-              .isAfter(checkFile.getRawEndTime())) {
+          // Search following files for overlaps
+          stop = false;
+          int forwardSearch = i;
+          while (!stop) {
+            forwardSearch++;
+            if (forwardSearch >= testFiles.size()) {
               stop = true;
+            } else {
+              TimeDataFile forwardSearchFile = (TimeDataFile) testFiles
+                .get(forwardSearch).getDataFile();
+              if (DateTimeUtils.isEqualOrBefore(
+                forwardSearchFile.getRawStartTime(),
+                checkFile.getRawEndTime())) {
+                overlapFiles.add(forwardSearchFile.getFilename());
+              } else if (forwardSearchFile.getRawStartTime()
+                .isAfter(checkFile.getRawEndTime())) {
+                stop = true;
+              }
             }
           }
-        }
 
-        if (overlapFiles.size() > 0) {
-          String overlapMessage = "This file overlaps with one or more other uploaded files: ";
-          overlapMessage += StringUtils.collectionToDelimited(overlapFiles,
-            " ");
-          okFiles.get(i).putMessage(UploadedDataFile.UNPROCESSABLE_STATUS,
-            overlapMessage, FacesMessage.SEVERITY_ERROR);
+          if (overlapFiles.size() > 0) {
+            String overlapMessage = "This file overlaps with one or more other uploaded files: ";
+            overlapMessage += StringUtils.collectionToDelimited(overlapFiles,
+              " ");
+            testFiles.get(i).putMessage(UploadedDataFile.UNPROCESSABLE_STATUS,
+              overlapMessage, FacesMessage.SEVERITY_ERROR);
+          }
         }
       }
     }
