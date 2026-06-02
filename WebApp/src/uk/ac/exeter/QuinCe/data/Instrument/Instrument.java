@@ -1257,16 +1257,20 @@ public class Instrument {
         if (fixedPosition()) {
           result = false;
         }
-      } else if (null == getSensorAssignments()
-        .getSensorTypeForDBColumn(columnId)) {
-        result = false;
       } else {
-        result = ((hasRunTypes()
-          && getSensorAssignments().getSensorTypeForDBColumn(columnId)
-            .equals(SensorType.RUN_TYPE_SENSOR_TYPE))
-          || getSensorAssignments().getSensorColumnIds().contains(columnId)
-          || getSensorAssignments().getDiagnosticColumnIds()
-            .contains(columnId));
+        SensorType sensorType = getSensorAssignments()
+          .getSensorTypeForDBColumn(columnId);
+        if (null == sensorType) {
+          result = false;
+        } else if (sensorType.equals(SensorType.DEPTH_SENSOR_TYPE)) {
+          result = true;
+        } else {
+          result = ((hasRunTypes()
+            && sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE))
+            || getSensorAssignments().getSensorColumnIds().contains(columnId)
+            || getSensorAssignments().getDiagnosticColumnIds()
+              .contains(columnId));
+        }
       }
     } catch (RecordNotFoundException e) {
       result = false;

@@ -356,14 +356,15 @@ public class NewInstrumentBean extends FileUploadBean {
   private int runTypeFlushingTime = 0;
 
   /**
-   * Indicates whether or not intake depth is specified for the instrument
+   * Indicates whether or not intake depth is fixed for the instrument (or
+   * supplied in the data).
    */
-  private boolean hasDepth = true;
+  private boolean hasFixedDepth = true;
 
   /**
-   * The instrument/intake depth
+   * The fixed instrument/intake depth.
    */
-  private int depth;
+  private int fixedDepth = 0;
 
   /**
    * The platform name.
@@ -682,7 +683,7 @@ public class NewInstrumentBean extends FileUploadBean {
       assignmentsTree = null;
       sensorGroups = null;
       instrumentVariables = null;
-      depth = 0;
+      fixedDepth = 0;
       platformName = "";
       platformCode = "";
       fixedPosition = false;
@@ -739,8 +740,14 @@ public class NewInstrumentBean extends FileUploadBean {
 
       sensorAssignments = SensorAssignments.create(basis, getDataSource(),
         instrumentVariables);
+
+      if (!hasFixedDepth) {
+        sensorAssignments.forceAssignment(SensorType.DEPTH_SENSOR_TYPE);
+      }
+
       assignmentsTree = AssignmentsTree.create(basis, instrumentFiles,
-        this.instrumentVariables, sensorAssignments, !fixedPosition);
+        this.instrumentVariables, sensorAssignments, !fixedPosition,
+        !hasFixedDepth);
       sensorGroups = new SensorGroups();
       this.instrumentVariables.forEach(v -> v.getAttributes().reset());
     } catch (Exception e) {
@@ -2179,8 +2186,8 @@ public class NewInstrumentBean extends FileUploadBean {
         sensorAssignments, sensorGroups, platformName, platformCode, basis,
         false, null, LocalDateTime.now());
 
-      if (hasDepth) {
-        instrument.setProperty(Instrument.PROP_DEPTH, depth);
+      if (hasFixedDepth) {
+        instrument.setProperty(Instrument.PROP_DEPTH, fixedDepth);
       }
 
       if (fixedPosition) {
@@ -2311,12 +2318,12 @@ public class NewInstrumentBean extends FileUploadBean {
     sensorAssignments.addAssignment(sensorAssignment);
   }
 
-  public int getDepth() {
-    return depth;
+  public int getFixedDepth() {
+    return fixedDepth;
   }
 
-  public void setDepth(int depth) {
-    this.depth = depth;
+  public void setFixedDepth(int depth) {
+    this.fixedDepth = depth;
   }
 
   @Override
@@ -2384,12 +2391,12 @@ public class NewInstrumentBean extends FileUploadBean {
     this.latitude = latitude;
   }
 
-  public boolean getHasDepth() {
-    return hasDepth;
+  public boolean getHasFixedDepth() {
+    return hasFixedDepth;
   }
 
-  public void setHasDepth(boolean hasDepth) {
-    this.hasDepth = hasDepth;
+  public void setHasFixedDepth(boolean hasDepth) {
+    this.hasFixedDepth = hasDepth;
   }
 
   public String getRenameOldFile() {

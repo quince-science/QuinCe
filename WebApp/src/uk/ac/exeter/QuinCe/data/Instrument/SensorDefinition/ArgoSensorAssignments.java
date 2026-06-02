@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.util.List;
-import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -38,17 +37,12 @@ public class ArgoSensorAssignments extends SensorAssignments {
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
 
-    addProfileAssignment(sensorConfig.getSensorType("Cycle Number"));
-    addProfileAssignment(sensorConfig.getSensorType("Profile"));
-    addProfileAssignment(sensorConfig.getSensorType("Direction"));
-    addProfileAssignment(sensorConfig.getSensorType("Level"));
-    addProfileAssignment(sensorConfig.getSensorType("Pressure (Depth)"));
-    addProfileAssignment(sensorConfig.getSensorType("Source File"));
-  }
-
-  private void addProfileAssignment(SensorType sensorType) {
-    put(sensorType, new TreeSet<SensorAssignment>());
-    forcedAssignmentRequired.put(sensorType, true);
+    forceAssignment(sensorConfig.getSensorType("Cycle Number"));
+    forceAssignment(sensorConfig.getSensorType("Profile"));
+    forceAssignment(sensorConfig.getSensorType("Direction"));
+    forceAssignment(sensorConfig.getSensorType("Level"));
+    forceAssignment(sensorConfig.getSensorType("Pressure (Depth)"));
+    forceAssignment(sensorConfig.getSensorType("Source File"));
   }
 
   @Override

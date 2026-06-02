@@ -534,6 +534,8 @@ public class SensorsConfiguration {
       result = SensorType.LONGITUDE_SENSOR_TYPE;
     } else if (sensorId == SensorType.LATITUDE_ID) {
       result = SensorType.LATITUDE_SENSOR_TYPE;
+    } else if (sensorId == SensorType.DEPTH_ID) {
+      result = SensorType.DEPTH_SENSOR_TYPE;
     } else {
       result = sensorTypes.get(sensorId);
     }

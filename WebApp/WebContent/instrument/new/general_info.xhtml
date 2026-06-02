@@ -44,11 +44,11 @@
         }
       }
 
-      function hasDepthChange() {
-        if (PF('hasDepth').isChecked()) {
-          PF('depth').enable();
+      function hasFixedDepthChange() {
+        if (PF('hasFixedDepth').isChecked()) {
+          PF('fixedDepth').enable();
         } else {
-          PF('depth').disable();
+          PF('fixedDepth').disable();
         }
       }
     </script>
@@ -59,13 +59,13 @@
         style="margin-bottom: 20px">
         <table class="form">
           <tr>
-            <td class="labels">Instrument/Intake Depth (metres)</td>
+            <td class="labels">Fixed Instrument/Intake Depth (metres)?</td>
             <td>
-              <p:selectBooleanCheckbox widgetVar="hasDepth" id="hasDepth"
-                value="#{newInstrumentBean.hasDepth}" onchange="hasDepthChange()"/>
+              <p:selectBooleanCheckbox widgetVar="hasFixedDepth" id="hasFixedDepth"
+                value="#{newInstrumentBean.hasFixedDepth}" onchange="hasFixedDepthChange()"/>
               &#160;
-              <p:inputNumber widgetVar="depth" id="depth"
-                value="#{newInstrumentBean.depth}" decimalPlaces="0" />
+              <p:inputNumber widgetVar="fixedDepth" id="fixedDepth"
+                value="#{newInstrumentBean.fixedDepth}" decimalPlaces="0" />
             </td>
           </tr>
         </table>

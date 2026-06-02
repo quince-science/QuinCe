@@ -190,21 +190,30 @@ public abstract class AssignmentsTree {
     variables.forEach(v -> varAttributes.put(v.getId(), v.getAttributes()));
   }
 
-  protected void buildPositionNodes(TreeNode<AssignmentsTreeNodeData> parent) {
+  protected void buildPositionNodes(TreeNode<AssignmentsTreeNodeData> parent,
+    boolean needsPosition, boolean needsDepth)
+    throws SensorAssignmentException, SensorConfigurationException {
     AssignmentsTreeNode<AssignmentsTreeNodeData> positionNode = new AssignmentsTreeNode<AssignmentsTreeNodeData>(
       this, null, new StringNodeData("Position"), parent);
 
-    makePositionNodes("Longitude", positionNode,
-      PositionSpecification.NO_FORMAT);
-    makePositionNodes("Latitude", positionNode,
-      PositionSpecification.NO_FORMAT);
-
     boolean allAssigned = true;
+
+    if (needsPosition) {
+      makePositionNodes("Longitude", positionNode,
+        PositionSpecification.NO_FORMAT);
+      makePositionNodes("Latitude", positionNode,
+        PositionSpecification.NO_FORMAT);
+    }
+
+    if (needsDepth) {
+      makeSensorTypeNode(SensorType.DEPTH_SENSOR_TYPE, positionNode);
+    }
 
     for (TreeNode<AssignmentsTreeNodeData> child : positionNode.getChildren()) {
       if (child.getType().equals(LONGITUDE_UNASSIGNED)
         || child.getType().equals(LATITUDE_UNASSIGNED)
-        || child.getType().equals(HEMISPHERE_UNASSIGNED)) {
+        || child.getType().equals(HEMISPHERE_UNASSIGNED)
+        || child.getType().equals(SENSOR_TYPE_UNASSIGNED)) {
         allAssigned = false;
         break;
       }
@@ -412,7 +421,7 @@ public abstract class AssignmentsTree {
 
   public static AssignmentsTree create(int basis, NewInstrumentFileSet files,
     List<Variable> variables, SensorAssignments assignments,
-    boolean needsPosition)
+    boolean needsPosition, boolean needsDepth)
     throws SensorConfigurationException, SensorTypeNotFoundException {
 
     AssignmentsTree result = null;
@@ -420,7 +429,7 @@ public abstract class AssignmentsTree {
     switch (basis) {
     case Instrument.BASIS_TIME: {
       result = new TimeBasisAssignmentsTree(files, variables, assignments,
-        needsPosition);
+        needsPosition, needsDepth);
       break;
     }
     case Instrument.BASIS_ARGO: {
