@@ -48,6 +48,16 @@ public class SensorType extends ColumnHeading
   private static final int RUN_TYPE_ORDER = -1000;
 
   /**
+   * Special ID for the Depth sensor
+   */
+  public static final long DEPTH_ID = -2;
+
+  /**
+   * The display order for the Depth
+   */
+  private static final int DEPTH_ORDER = -1000;
+
+  /**
    * Special ID for dummy longitude sensor type
    */
   public static final long LONGITUDE_ID = FileDefinition.LONGITUDE_COLUMN_ID;
@@ -68,9 +78,14 @@ public class SensorType extends ColumnHeading
   private static final int LATITUDE_ORDER = -1;
 
   /**
-   * The special Run Type sensor type
+   * The special Run Type sensor type.
    */
   public static SensorType RUN_TYPE_SENSOR_TYPE;
+
+  /**
+   * The special Depth sensor type.
+   */
+  public static SensorType DEPTH_SENSOR_TYPE;
 
   /**
    * Dummy longitude sensor type
@@ -158,6 +173,8 @@ public class SensorType extends ColumnHeading
     RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_ID, "Run Type", "Run Type",
       RUN_TYPE_ORDER, null, "RUNTYPE",
       new String[] { "Type", "Measurement Type" });
+    DEPTH_SENSOR_TYPE = new SensorType(DEPTH_ID, "Depth", "Depth", DEPTH_ORDER,
+      null, "DEPH", new String[] { "Depth" });
     LONGITUDE_SENSOR_TYPE = new SensorType(LONGITUDE_ID, "Longitude",
       "Longitude", LONGITUDE_ORDER, "degrees_east", "ALONGP01", null);
     LATITUDE_SENSOR_TYPE = new SensorType(LATITUDE_ID, "Latitude", "Latitude",

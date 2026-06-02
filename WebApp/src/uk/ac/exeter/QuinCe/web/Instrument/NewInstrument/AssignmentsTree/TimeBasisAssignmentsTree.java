@@ -29,13 +29,25 @@ public class TimeBasisAssignmentsTree extends AssignmentsTree {
    */
   private final boolean needsPosition;
 
+  /**
+   * Indicates whether or not depth information needs to be assigned for the
+   * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
+   *
+   * <p>
+   * Note that this indicates whether depth is needed <i>at all</i>, and not
+   * whether required depth details have been assigned.
+   * </p>
+   */
+  private final boolean needsDepth;
+
   protected TimeBasisAssignmentsTree(NewInstrumentFileSet files,
     List<Variable> variables, SensorAssignments assignments,
-    boolean needsPosition)
+    boolean needsPosition, boolean needsDepth)
     throws SensorConfigurationException, SensorTypeNotFoundException {
 
     super(files, variables, assignments);
     this.needsPosition = needsPosition;
+    this.needsDepth = needsDepth;
   }
 
   @Override
@@ -49,8 +61,8 @@ public class TimeBasisAssignmentsTree extends AssignmentsTree {
 
       buildDateTimeNode(root);
 
-      if (needsPosition) {
-        buildPositionNodes(root);
+      if (needsPosition || needsDepth) {
+        buildPositionNodes(root, needsPosition, needsDepth);
       }
 
       buildSensorTypeNodes(root);

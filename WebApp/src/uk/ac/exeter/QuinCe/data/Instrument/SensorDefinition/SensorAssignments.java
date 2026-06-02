@@ -612,10 +612,24 @@ public class SensorAssignments
         + assignment.getSensorName() + " has already been assigned");
     }
 
+    /*
+     * The Depth type is not within any Variables, so we add it to our
+     * assignments without checks.
+     */
+    if (assignment.getSensorType().equals(SensorType.DEPTH_SENSOR_TYPE)) {
+      if (!containsKey(SensorType.DEPTH_SENSOR_TYPE)) {
+        put(SensorType.DEPTH_SENSOR_TYPE, new TreeSet<SensorAssignment>());
+      }
+
+      get(SensorType.DEPTH_SENSOR_TYPE).add(assignment);
+    }
+
     TreeSet<SensorAssignment> assignments = get(assignment.getSensorType());
     if (null == assignments) {
-      // The sensor is not valid for this instrument, so it has not
-      // been added to the assignments list
+      /*
+       * The sensor is not valid for this instrument, so it has not been added
+       * to the assignments list
+       */
       throw new SensorAssignmentException(
         assignment.getSensorType().getShortName()
           + " is not valid for this instrument");
@@ -1288,6 +1302,11 @@ public class SensorAssignments
 
   public int getFixedLatitudeFormat() {
     return PositionSpecification.NO_FORMAT;
+  }
+
+  public void forceAssignment(SensorType sensorType) {
+    put(sensorType, new TreeSet<SensorAssignment>());
+    forcedAssignmentRequired.put(sensorType, true);
   }
 
   /**
