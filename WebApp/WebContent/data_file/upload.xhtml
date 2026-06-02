@@ -140,6 +140,9 @@
               <p:column headerText="Filename">
                 <h:outputText value="#{uploadedFile.name}" />
               </p:column>
+              <p:column headerText="File Type">
+                <h:outputText value="#{uploadedFile.dataFile.fileDefinition.fileDescription}" />
+              </p:column>
               <p:column headerText="Start" styleClass="dateTimeCell">
                 <h:outputText escape="false" value="#{uploadedFile.start}"/>
               </p:column>
