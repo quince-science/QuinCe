@@ -78,7 +78,7 @@ public class ArgoDataSetExtractor extends DataSetExtractor {
     Set<SensorAssignment> dataColumns = new TreeSet<SensorAssignment>();
 
     for (Variable variable : instrument.getVariables()) {
-      for (SensorType sensorType : variable.getAllSensorTypes(false)) {
+      for (SensorType sensorType : variable.getAllSensorTypes(false, false)) {
         dataColumns
           .add(instrument.getSensorAssignments().get(sensorType).first());
       }

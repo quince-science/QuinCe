@@ -55,7 +55,7 @@ public class ExportData extends ManualQCData {
 
   private static final long FIXED_LAT_ID = -10001L;
 
-  private static final long DEPTH_ID = -10002L;
+  private static final long FIXED_DEPTH_ID = -10002L;
 
   private ExportOption exportOption = null;
 
@@ -173,8 +173,10 @@ public class ExportData extends ManualQCData {
       List<PlotPageColumnHeading> rootColumns = headingsWithProperties
         .get(ROOT_FIELD_GROUP);
 
-      // Manually add the position headings if the dataset has fixed position
-      // properties
+      /*
+       * Manually add the position headings if the dataset has fixed position
+       * properties.
+       */
       if (dataset.fixedPosition()) {
         PlotPageColumnHeading lonColumn = new PlotPageColumnHeading(
           FIXED_LON_ID, "Longitude", "Longitude", "ALONGP01", "degrees_east",
@@ -192,10 +194,12 @@ public class ExportData extends ManualQCData {
           dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "latitude"));
 
       }
-      // Add the depth heading if the dataset has the depth property
-      if (null != dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY,
-        "depth")) {
-        PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(DEPTH_ID,
+
+      /*
+       * Add the depth if the dataset has fixed depth
+       */
+      if (dataset.fixedDepth()) {
+        PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(FIXED_DEPTH_ID,
           "Depth", "Depth", "ADEPZZ01", "m", true, false, true, true);
         rootColumns.add(depthHeading);
 
@@ -247,7 +251,7 @@ public class ExportData extends ManualQCData {
       value = lonValue;
     } else if (columnId == FIXED_LAT_ID) {
       value = latValue;
-    } else if (columnId == DEPTH_ID) {
+    } else if (columnId == FIXED_DEPTH_ID) {
       value = depthValue;
     } else {
       value = super.getColumnValue(rowId, columnId);

@@ -69,7 +69,7 @@ public class ControsPco2MeasurementValueCollector
         .getValue(castCoordinate, castCoordinate, castCoordinate, false);
 
       for (SensorType sensorType : variable
-        .getAllSensorTypes(!dataSet.fixedPosition())) {
+        .getAllSensorTypes(!dataSet.fixedPosition(), !dataSet.fixedDepth())) {
 
         if (CONTROS_SENSOR_TYPES.contains(sensorType.getShortName())) {
           try {

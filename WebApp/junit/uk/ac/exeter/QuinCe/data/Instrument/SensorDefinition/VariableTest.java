@@ -11,7 +11,7 @@ import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -65,13 +65,13 @@ public class VariableTest extends BaseTest {
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument", "resources/sql/testbase/variable" })
   @ParameterizedTest
-  @ValueSource(booleans = { false, true })
-  public void getRequiredSensorTypesTest(boolean includePosition)
-    throws Exception {
+  @CsvSource({ "true, true", "false, false" })
+  public void getRequiredSensorTypesTest(boolean includePosition,
+    boolean includeDepth) throws Exception {
 
     initResourceManager();
     List<SensorType> sensorTypes = getVariable(1000000L)
-      .getAllSensorTypes(includePosition);
+      .getAllSensorTypes(includePosition, includeDepth);
 
     assertTrue(sensorTypes.contains(getSensorType("testSensor")));
     assertTrue(sensorTypes.contains(getSensorType("Water Temperature")));
@@ -82,6 +82,8 @@ public class VariableTest extends BaseTest {
       sensorTypes.contains(SensorType.LONGITUDE_SENSOR_TYPE));
     assertEquals(includePosition,
       sensorTypes.contains(SensorType.LATITUDE_SENSOR_TYPE));
+    assertEquals(includeDepth,
+      sensorTypes.contains(SensorType.DEPTH_SENSOR_TYPE));
   }
 
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",

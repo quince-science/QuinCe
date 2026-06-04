@@ -963,14 +963,24 @@ public class DataSet implements Comparable<DataSet> {
   }
 
   /**
-   * Convenience method to determine whether or not this dataset has a fixed
-   * position (i.e. does not have lat/lon data values).
+   * Determine whether or not this dataset has a fixed position (i.e. does not
+   * have lat/lon data values).
    *
    * @return {@code true} if the dataset has a fixed position; {@code false}
    *         otherwise.
    */
   public boolean fixedPosition() {
     return null != getProperty(INSTRUMENT_PROPERTIES_KEY, "longitude");
+  }
+
+  /**
+   * Determine whether or not this dataset has a fixed depth.
+   *
+   * @return {@code true} if the dataset has a fixed depth; {@code false}
+   *         otherwise.
+   */
+  public boolean fixedDepth() {
+    return null != getProperty(INSTRUMENT_PROPERTIES_KEY, "depth");
   }
 
   public SensorOffsets getSensorOffsets() {

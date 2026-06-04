@@ -171,14 +171,14 @@ public class SensorType extends ColumnHeading
 
   static {
     RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_ID, "Run Type", "Run Type",
-      RUN_TYPE_ORDER, null, "RUNTYPE",
+      RUN_TYPE_ORDER, null, "RUNTYPE", false,
       new String[] { "Type", "Measurement Type" });
     DEPTH_SENSOR_TYPE = new SensorType(DEPTH_ID, "Depth", "Depth", DEPTH_ORDER,
-      null, "DEPH", new String[] { "Depth" });
+      null, "DEPH", true, new String[] { "Depth" });
     LONGITUDE_SENSOR_TYPE = new SensorType(LONGITUDE_ID, "Longitude",
-      "Longitude", LONGITUDE_ORDER, "degrees_east", "ALONGP01", null);
+      "Longitude", LONGITUDE_ORDER, "degrees_east", "ALONGP01", true, null);
     LATITUDE_SENSOR_TYPE = new SensorType(LATITUDE_ID, "Latitude", "Latitude",
-      LATITUDE_ORDER, "degrees_north", "ALATGP01", null);
+      LATITUDE_ORDER, "degrees_north", "ALATGP01", true, null);
   }
 
   /**
@@ -198,9 +198,9 @@ public class SensorType extends ColumnHeading
    *          The vocabulary code for this Sensor Type.
    */
   private SensorType(long id, String name, String group, int displayOrder,
-    String units, String columnCode, String[] sourceColumns) {
+    String units, String columnCode, boolean hasQC, String[] sourceColumns) {
 
-    super(id, name, name, columnCode, units, false, true);
+    super(id, name, name, columnCode, units, hasQC, true);
 
     this.group = group;
     this.parent = NO_PARENT;
@@ -510,8 +510,21 @@ public class SensorType extends ColumnHeading
     return systemType;
   }
 
+  /**
+   * Determine whether or not the specified {@link SensorType} ID is for a
+   * position sensor type.
+   *
+   * <p>
+   * Note that this includes Depth as well as Longitude/Latitude.
+   * </p>
+   *
+   * @param id
+   *          The SensorType ID
+   * @return {@code true} if the ID is for a positional SensorType;
+   *         {@code false} otherwise.
+   */
   public static boolean isPosition(long id) {
-    return (id == LONGITUDE_ID || id == LATITUDE_ID);
+    return (id == LONGITUDE_ID || id == LATITUDE_ID || id == DEPTH_ID);
   }
 
   /**
@@ -531,7 +544,8 @@ public class SensorType extends ColumnHeading
   }
 
   public boolean isPosition() {
-    return equals(LONGITUDE_SENSOR_TYPE) || equals(LATITUDE_SENSOR_TYPE);
+    return equals(LONGITUDE_SENSOR_TYPE) || equals(LATITUDE_SENSOR_TYPE)
+      || equals(DEPTH_SENSOR_TYPE);
   }
 
   public boolean isRunTypeAware() {

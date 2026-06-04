@@ -649,7 +649,8 @@ public class SensorsConfiguration {
 
     boolean required = false;
 
-    List<SensorType> variableSensorTypes = variable.getAllSensorTypes(false);
+    List<SensorType> variableSensorTypes = variable.getAllSensorTypes(false,
+      false);
     for (SensorType varSensorType : variableSensorTypes) {
       if (varSensorType.equalsIncludingRelations(sensorType)) {
 
@@ -738,7 +739,8 @@ public class SensorsConfiguration {
             sensorTypes.add(SensorType.RUN_TYPE_SENSOR_TYPE);
           }
 
-          for (SensorType sensorType : variable.getAllSensorTypes(false)) {
+          for (SensorType sensorType : variable.getAllSensorTypes(false,
+            false)) {
             if (sensorType.hasInternalCalibration() && includeRunType) {
               sensorTypes.add(SensorType.RUN_TYPE_SENSOR_TYPE);
             }
