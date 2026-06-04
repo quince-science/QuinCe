@@ -69,7 +69,7 @@ public class ProOceanusMeasurementValueCollector
       List<MeasurementValue> result = new ArrayList<MeasurementValue>();
 
       for (SensorType sensorType : variable
-        .getAllSensorTypes(!dataSet.fixedPosition())) {
+        .getAllSensorTypes(!dataSet.fixedPosition(), !dataSet.fixedDepth())) {
 
         if (INTERNAL_SENSOR_TYPES.contains(sensorType.getShortName())) {
           try {

@@ -40,7 +40,7 @@ public class DefaultMeasurementValueCollector
       List<MeasurementValue> result = new ArrayList<MeasurementValue>();
 
       for (SensorType sensorType : variable
-        .getAllSensorTypes(!dataSet.fixedPosition())) {
+        .getAllSensorTypes(!dataSet.fixedPosition(), !dataSet.fixedDepth())) {
 
         MeasurementValue measurementValue = MeasurementValueCalculatorFactory
           .calculateMeasurementValue(instrument, dataSet, referenceValue,

@@ -28,6 +28,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListException;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.TimestampSensorValuesListOutput;
+import uk.ac.exeter.QuinCe.data.Dataset.TimestampSensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
@@ -154,6 +155,11 @@ public class ManualQCData extends PlotPageData {
   private String userComment = null;
 
   /**
+   * Cached depth value for instruments with a fixed depth.
+   */
+  private PlotPageTableValue fixedDepthValue = null;
+
+  /**
    * Construct the data object.
    *
    * <p>
@@ -243,6 +249,10 @@ public class ManualQCData extends PlotPageData {
         "Position", "Position", "POSITION", null, true, false, false, true));
     }
 
+    if (!dataset.fixedDepth()) {
+      columns.add(new PlotPageColumnHeading(SensorType.DEPTH_SENSOR_TYPE));
+    }
+
     return columns;
   }
 
@@ -275,6 +285,10 @@ public class ManualQCData extends PlotPageData {
       columns
         .add(new PlotPageColumnHeading(FileDefinition.LATITUDE_COLUMN_HEADING,
           false, false, true, FileDefinition.LONGITUDE_COLUMN_ID));
+    }
+
+    if (!dataset.fixedDepth()) {
+      columns.add(new PlotPageColumnHeading(SensorType.DEPTH_SENSOR_TYPE));
     }
 
     return columns;
@@ -365,7 +379,7 @@ public class ManualQCData extends PlotPageData {
     for (Variable variable : instrument.getVariables()) {
 
       // Get the SensorTypes for this variable
-      variable.getAllSensorTypes(true).stream()
+      variable.getAllSensorTypes(true, true).stream()
         .filter(
           s -> instrument.getSensorAssignments().isAssigned(s, false, true))
         .forEach(s -> {
@@ -458,6 +472,10 @@ public class ManualQCData extends PlotPageData {
             record.addColumn("", sensorValues.getFlagScheme().getGoodFlag(),
               null, false, PlotPageTableValue.NAN_TYPE, null);
           }
+        }
+
+        if (!dataset.fixedDepth()) {
+          record.addColumn(getInterpolatedDepthValue(coordinates.get(i)));
         }
 
         for (long columnId : sensorColumnIds) {
@@ -883,7 +901,7 @@ public class ManualQCData extends PlotPageData {
       values.forEach(v -> result.put(v.getCoordinate(),
         new MeasurementValue(sensorValues.getFlagScheme(), v.getSensorType(),
           new TimestampSensorValuesListOutput(
-            (TimestampSensorValuesListOutput) v, false))));
+            (TimestampSensorValuesListValue) v, false))));
     } else if (coordinateColumnIds.contains(column.getId())) {
       SensorType sensorType = instrument.getSensorAssignments()
         .getSensorTypeForDBColumn(column.getId());
@@ -1046,6 +1064,8 @@ public class ManualQCData extends PlotPageData {
       } else if (columnId == FileDefinition.LATITUDE_COLUMN_ID) {
         result = getInterpolatedPositionValue(SensorType.LATITUDE_SENSOR_TYPE,
           coordinates.get(rowId));
+      } else if (columnId == SensorType.DEPTH_ID) {
+        result = getInterpolatedDepthValue(coordinates.get(rowId));
 
         // Sensor Value
       } else if (sensorColumnIds.contains(columnId)
@@ -1198,6 +1218,69 @@ public class ManualQCData extends PlotPageData {
           // Now just try to get an interpolated value
           long columnId = instrument.getSensorAssignments()
             .getColumnIds(sensorType).get(0);
+
+          result = sensorValues.getPositionTableValue(columnId, coordinate);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the Depth value interpolated to the specified {@link Coordinate}.
+   *
+   * <p>
+   * If the {@link Instrument} has a fixed depth, return that depth regardless
+   * of the {@link Coordinate}.
+   * </p>
+   *
+   * @param coordinate
+   *          The target {@link Coordinate}.
+   * @return The depth value.
+   * @throws PositionException
+   * @throws SensorValuesListException
+   */
+  protected PlotPageTableValue getInterpolatedDepthValue(Coordinate coordinate)
+    throws SensorValuesListException, PositionException {
+
+    PlotPageTableValue result = null;
+
+    if (dataset.fixedDepth()) {
+      if (null == fixedDepthValue) {
+        fixedDepthValue = new SimplePlotPageTableValue(
+          dataset.getProperty(DataSet.INSTRUMENT_PROPERTIES_KEY, "depth"),
+          getFlagScheme());
+      }
+
+      result = fixedDepthValue;
+    } else {
+      // If there is a measurement at this time, try using the value from that
+      Measurement measurement = null == measurements ? null
+        : measurements.get(coordinate);
+
+      if (null != measurement) {
+        if (measurement.hasMeasurementValue(SensorType.DEPTH_SENSOR_TYPE)) {
+          result = measurement
+            .getMeasurementValue(SensorType.DEPTH_SENSOR_TYPE);
+        }
+      }
+
+      // Try getting SensorValues from the current row
+      if (null == result) {
+        Map<Long, SensorValue> recordSensorValues = sensorValues
+          .get(coordinate);
+        if (null != recordSensorValues) {
+          SensorValue sensorValue = recordSensorValues.get(SensorType.DEPTH_ID);
+          if (null != sensorValue && null != sensorValue.getValue()) {
+            result = new SensorValuePlotPageTableValue(sensorValue);
+          }
+        }
+
+        if (null == result) {
+          // Now just try to get an interpolated value
+          long columnId = instrument.getSensorAssignments()
+            .getColumnIds(SensorType.DEPTH_SENSOR_TYPE).get(0);
 
           result = sensorValues.getPositionTableValue(columnId, coordinate);
         }

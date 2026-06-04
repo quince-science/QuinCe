@@ -199,7 +199,7 @@ public class TimeDataSetExtractor extends DataSetExtractor {
 
                     if (null != fieldValue) {
                       SensorValue sensorValue = sensorValues.create(
-                        assignment.getDatabaseId(), coordinate, fieldValue);
+                        getStoredColumnId(assignment), coordinate, fieldValue);
 
                       // Apply calibration if required
                       Calibration sensorCalibration = sensorCalibrations
@@ -290,6 +290,26 @@ public class TimeDataSetExtractor extends DataSetExtractor {
     return (flushingTime > 0
       && DateTimeUtils.secondsBetween(runTypePeriod.getStart(),
         coordinate.getTime()) <= flushingTime);
+  }
+
+  /**
+   * Get the ID to be stored with a {@link SensorValue} to indicate its type.
+   *
+   * <p>
+   * In most cases, this is the database ID of the assigned file column, but
+   * there are special cases for specific {@link SensorType}s (e.g Depth).
+   * Longitude and Latitude are handled separately and so are not considered
+   * here.
+   * </p>
+   *
+   * @param assignment
+   *          The {@link SensorAssignment for the value being processed.
+   * @return The column ID to store.
+   */
+  private long getStoredColumnId(SensorAssignment assignment) {
+    return assignment.getSensorType().equals(SensorType.DEPTH_SENSOR_TYPE)
+      ? SensorType.DEPTH_ID
+      : assignment.getDatabaseId();
   }
 
   @Override

@@ -330,6 +330,9 @@ public class DatasetSensorValues {
       values = longitudes;
     } else if (columnId == SensorType.LATITUDE_ID) {
       values = latitudes;
+    } else if (dataset.getInstrument().getSensorAssignments()
+      .getSensorTypeForDBColumn(columnId) == SensorType.DEPTH_SENSOR_TYPE) {
+      values = valuesByColumn.get(SensorType.DEPTH_ID);
     } else {
       values = valuesByColumn.get(columnId);
       if (null == values) {

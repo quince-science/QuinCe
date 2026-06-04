@@ -112,7 +112,7 @@ public abstract class DataReducer {
       LinkedHashMap<SensorType, List<String>> messages = new LinkedHashMap<SensorType, List<String>>();
 
       // Apply QC flags to the data reduction records
-      for (SensorType sensorType : variable.getAllSensorTypes(true)) {
+      for (SensorType sensorType : variable.getAllSensorTypes(true, true)) {
 
         MeasurementValue value = measurement.getMeasurementValue(sensorType);
 

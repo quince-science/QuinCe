@@ -805,6 +805,8 @@ public class SensorAssignments
       result = SensorType.LONGITUDE_SENSOR_TYPE;
     } else if (columnId == FileDefinition.LATITUDE_COLUMN_ID) {
       result = SensorType.LATITUDE_SENSOR_TYPE;
+    } else if (columnId == SensorType.DEPTH_ID) {
+      result = SensorType.DEPTH_SENSOR_TYPE;
     } else {
       // Try to get the SensorType from the cache
       result = dbColumnSensorTypeCache.get(columnId);
