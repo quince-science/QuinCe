@@ -65,6 +65,11 @@ public class DatasetSensorValues {
   private SensorValuesList latitudes = null;
 
   /**
+   * The depths in the dataset.
+   */
+  private SensorValuesList depths = null;
+
+  /**
    * Cache of all the {@link Coordinate}s in the {@link DataSet}.
    */
   private List<Coordinate> coordinatesCache = null;
@@ -204,6 +209,15 @@ public class DatasetSensorValues {
       addById(sensorValue);
       positionValueCoordinatesCache = null;
       rawPositionCoordinatesCache = null;
+    } else if (sensorValue.getColumnId() == SensorType.DEPTH_ID) {
+      if (null == depths) {
+        depths = SensorValuesListFactory
+          .makeSensorValuesList(SensorType.DEPTH_ID, this, false);
+      }
+      depths.add(sensorValue);
+      addById(sensorValue);
+      positionValueCoordinatesCache = null;
+      rawPositionCoordinatesCache = null;
     } else if (!contains(sensorValue)) {
       addById(sensorValue);
       addByColumn(sensorValue);
@@ -250,9 +264,12 @@ public class DatasetSensorValues {
   public boolean contains(Coordinate coordinate) {
     boolean result = false;
 
-    if (!result) {
-      result = null != latitudes && latitudes.containsCoordinate(coordinate);
+    result = null != latitudes && latitudes.containsCoordinate(coordinate);
+
+    if (!result && null != depths) {
+      result = depths.containsCoordinate(coordinate);
     }
+
     if (!result) {
       for (SensorValuesList sensorValues : valuesByColumn.values()) {
         result = sensorValues.containsCoordinate(coordinate);
@@ -277,9 +294,10 @@ public class DatasetSensorValues {
 
     if (sensorValue.getColumnId() == SensorType.LONGITUDE_ID) {
       longitudes.remove(sensorValue);
-    }
-    if (sensorValue.getColumnId() == SensorType.LATITUDE_ID) {
+    } else if (sensorValue.getColumnId() == SensorType.LATITUDE_ID) {
       latitudes.remove(sensorValue);
+    } else if (sensorValue.getColumnId() == SensorType.DEPTH_ID) {
+      depths.remove(sensorValue);
     } else {
       removeById(sensorValue);
       removeByColumn(sensorValue);
@@ -326,18 +344,25 @@ public class DatasetSensorValues {
 
     SensorValuesList values;
 
-    if (columnId == SensorType.LONGITUDE_ID) {
+    long trueColumnId = columnId;
+
+    if (dataset.getInstrument().getSensorAssignments()
+      .getSensorTypeForDBColumn(columnId)
+      .equals(SensorType.DEPTH_SENSOR_TYPE)) {
+      trueColumnId = FileDefinition.DEPTH_COLUMN_ID;
+    }
+
+    if (trueColumnId == SensorType.LONGITUDE_ID) {
       values = longitudes;
-    } else if (columnId == SensorType.LATITUDE_ID) {
+    } else if (trueColumnId == SensorType.LATITUDE_ID) {
       values = latitudes;
-    } else if (dataset.getInstrument().getSensorAssignments()
-      .getSensorTypeForDBColumn(columnId) == SensorType.DEPTH_SENSOR_TYPE) {
-      values = valuesByColumn.get(SensorType.DEPTH_ID);
+    } else if (trueColumnId == SensorType.DEPTH_ID) {
+      values = depths;
     } else {
-      values = valuesByColumn.get(columnId);
+      values = valuesByColumn.get(trueColumnId);
       if (null == values) {
-        values = SensorValuesListFactory.makeSensorValuesList(columnId, this,
-          false);
+        values = SensorValuesListFactory.makeSensorValuesList(trueColumnId,
+          this, false);
       }
     }
 
@@ -495,12 +520,9 @@ public class DatasetSensorValues {
         coordinates.addAll(longitudes.getRawCoordinates());
       }
 
-      // I think we can get away with only getting coordinates from one part of
-      // the position
-      /*
-       * if (null != latitudes) {
-       * coordinates.addAll(latitudes.getRawCoordinates()); }
-       */
+      if (null != depths) {
+        coordinates.addAll(depths.getRawCoordinates());
+      }
 
       coordinatesCache = new ArrayList<Coordinate>(coordinates);
     }
@@ -522,6 +544,10 @@ public class DatasetSensorValues {
         result.addAll(latitudes.getValueCoordinates());
       }
 
+      if (null != depths) {
+        result.addAll(depths.getValueCoordinates());
+      }
+
       positionValueCoordinatesCache = new ArrayList<Coordinate>(result);
     }
 
@@ -540,6 +566,10 @@ public class DatasetSensorValues {
 
       if (null != latitudes) {
         result.addAll(latitudes.getRawCoordinates());
+      }
+
+      if (null != depths) {
+        result.addAll(depths.getRawCoordinates());
       }
 
       rawPositionCoordinatesCache = new ArrayList<Coordinate>(result);
@@ -593,6 +623,9 @@ public class DatasetSensorValues {
     } else if (columnID == SensorType.LATITUDE_ID) {
       result = null == latitudes ? null
         : latitudes.getRawSensorValue(coordinate, columnID);
+    } else if (columnID == SensorType.DEPTH_ID) {
+      result = null == depths ? null
+        : depths.getRawSensorValue(coordinate, columnID);
     } else if (valuesByColumn.containsKey(columnID)) {
       result = valuesByColumn.get(columnID).getRawSensorValue(coordinate,
         columnID);
@@ -671,24 +704,40 @@ public class DatasetSensorValues {
     Set<Coordinate> needsFlagTimes = new HashSet<Coordinate>();
 
     int lonCount = 0;
-    for (SensorValue longitude : longitudes.getRawValues()) {
-      if (longitude.getUserQCFlag().equals(FlagScheme.NEEDED_FLAG)) {
-        needsFlagTimes.add(longitude.getCoordinate());
-        lonCount++;
+
+    if (!dataset.fixedPosition()) {
+      for (SensorValue longitude : longitudes.getRawValues()) {
+        if (longitude.getUserQCFlag().equals(FlagScheme.NEEDED_FLAG)) {
+          needsFlagTimes.add(longitude.getCoordinate());
+          lonCount++;
+        }
       }
     }
 
     int latCount = 0;
-    for (SensorValue latitude : latitudes.getRawValues()) {
-      if (latitude.getUserQCFlag().equals(FlagScheme.NEEDED_FLAG)) {
-        needsFlagTimes.add(latitude.getCoordinate());
-        latCount++;
+    if (!dataset.fixedPosition()) {
+      for (SensorValue latitude : latitudes.getRawValues()) {
+        if (latitude.getUserQCFlag().equals(FlagScheme.NEEDED_FLAG)) {
+          needsFlagTimes.add(latitude.getCoordinate());
+          latCount++;
+        }
+      }
+    }
+
+    int depthCount = 0;
+    if (!dataset.fixedDepth()) {
+      for (SensorValue depth : depths.getRawValues()) {
+        if (depth.getUserQCFlag().equals(FlagScheme.NEEDED_FLAG)) {
+          needsFlagTimes.add(depth.getCoordinate());
+          depthCount++;
+        }
       }
     }
 
     Map<Long, Integer> result = new HashMap<Long, Integer>();
     result.put(SensorType.LONGITUDE_ID, lonCount);
     result.put(SensorType.LATITUDE_ID, latCount);
+    result.put(SensorType.DEPTH_ID, depthCount);
     result.put(FLAG_TOTAL, needsFlagTimes.size());
 
     return result;
@@ -720,6 +769,9 @@ public class DatasetSensorValues {
     }
     if (null != longitudes) {
       result += longitudes.rawSize();
+    }
+    if (null != depths) {
+      result += depths.rawSize();
     }
 
     return result;
@@ -766,6 +818,7 @@ public class DatasetSensorValues {
 
       if (value.getColumnId() == SensorType.LONGITUDE_ID
         || value.getColumnId() == SensorType.LATITUDE_ID
+        || value.getColumnId() == SensorType.DEPTH_ID
         || ids.contains(value.getId())
         || coordinates.contains(value.getCoordinate())) {
         valuesToAdd.add(value);
@@ -812,7 +865,7 @@ public class DatasetSensorValues {
 
     Set<SensorValue> changedValues = new HashSet<SensorValue>();
 
-    // For position values, we just copy from the source to the counterpart.
+    // For lat/lon values, we just copy from the source to the counterpart.
     // Other sensors are sorted out as part of the Data Reduction QC.
     if (SensorType.isPosition(source.getColumnId())) {
 
@@ -1027,6 +1080,10 @@ public class DatasetSensorValues {
       result.addAll(latitudes.getRawValues());
     }
 
+    if (null != depths) {
+      result.addAll(depths.getRawValues());
+    }
+
     return result;
   }
 
@@ -1055,6 +1112,8 @@ public class DatasetSensorValues {
       values = longitudes;
     } else if (columnId == SensorType.LATITUDE_ID) {
       values = latitudes;
+    } else if (columnId == SensorType.DEPTH_ID) {
+      values = depths;
     } else {
       throw new PositionException("Invalid position column ID");
     }

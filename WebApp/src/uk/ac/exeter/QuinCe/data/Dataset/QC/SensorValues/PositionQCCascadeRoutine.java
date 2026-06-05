@@ -12,6 +12,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineFlag;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -38,12 +39,12 @@ public class PositionQCCascadeRoutine extends Routine {
 
       for (Coordinate coordinate : allCoordiantes) {
         PlotPageTableValue position = allSensorValues
-          .getPositionTableValue(SensorType.LONGITUDE_ID, coordinate);
+          .getPositionTableValue(getSensorValueId(), coordinate);
 
         // If the position is empty, all SensorValues are Bad.
         if (null == position) {
           RoutineFlag missingPositionFlag = new RoutineFlag(flagScheme, this,
-            flagScheme.getBadFlag(), "Any Position", "null");
+            flagScheme.getBadFlag(), getExpectedValue(), "null");
 
           for (SensorValue value : allSensorValues.get(coordinate).values()) {
             if (shouldApplyFlag(instrument, runTypePeriods,
@@ -124,7 +125,7 @@ public class PositionQCCascadeRoutine extends Routine {
 
       for (Long sourceID : sources) {
         SensorValue source = allSensorValues.getById(sourceID);
-        if (source.isPosition()) {
+        if (isPosition(source)) {
           value.removeCascadingQC(sourceID);
         }
       }
@@ -144,5 +145,19 @@ public class PositionQCCascadeRoutine extends Routine {
   @Override
   public String getLongMessage(RoutineFlag flag) {
     return "Invalid/missing position";
+  }
+
+  protected long getSensorValueId() {
+    return SensorType.LONGITUDE_ID;
+  }
+
+  protected String getExpectedValue() {
+    return "Any position";
+  }
+
+  protected boolean isPosition(SensorValue value) {
+    long columnId = value.getColumnId();
+    return columnId == FileDefinition.LONGITUDE_COLUMN_ID
+      || columnId == FileDefinition.LATITUDE_COLUMN_ID;
   }
 }

@@ -88,6 +88,21 @@ public class FileDefinition implements Comparable<FileDefinition> {
   public static final ColumnHeading LATITUDE_COLUMN_HEADING;
 
   /**
+   * Special column ID for depth.
+   */
+  public static final long DEPTH_COLUMN_ID = -1002L;
+
+  /**
+   * Fixed name for the Depth column.
+   */
+  public static final String DEPTH_COLUMN_NAME = "Depth";
+
+  /**
+   * The application-wide standard depth column heading.
+   */
+  public static final ColumnHeading DEPTH_COLUMN_HEADING;
+
+  /**
    * The name of the Run Type column
    */
   public static final String RUN_TYPE_COL_NAME = "Run Type";
@@ -227,6 +242,8 @@ public class FileDefinition implements Comparable<FileDefinition> {
     LATITUDE_COLUMN_HEADING = new ColumnHeading(LATITUDE_COLUMN_ID,
       LATITUDE_COLUMN_NAME, LATITUDE_COLUMN_NAME, "ALATGP01", "degrees_north",
       true, true);
+    DEPTH_COLUMN_HEADING = new ColumnHeading(DEPTH_COLUMN_ID, DEPTH_COLUMN_NAME,
+      DEPTH_COLUMN_NAME, "DEPH", "m", true, true);
 
     BASIS_TO_CLASS = new HashMap<Integer, Class<? extends DataFile>>();
     BASIS_TO_CLASS.put(Instrument.BASIS_TIME, TimeDataFile.class);

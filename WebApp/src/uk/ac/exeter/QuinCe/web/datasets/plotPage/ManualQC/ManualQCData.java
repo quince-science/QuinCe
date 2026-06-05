@@ -1064,7 +1064,7 @@ public class ManualQCData extends PlotPageData {
       } else if (columnId == FileDefinition.LATITUDE_COLUMN_ID) {
         result = getInterpolatedPositionValue(SensorType.LATITUDE_SENSOR_TYPE,
           coordinates.get(rowId));
-      } else if (columnId == SensorType.DEPTH_ID) {
+      } else if (columnId == FileDefinition.DEPTH_COLUMN_ID) {
         result = getInterpolatedDepthValue(coordinates.get(rowId));
 
         // Sensor Value

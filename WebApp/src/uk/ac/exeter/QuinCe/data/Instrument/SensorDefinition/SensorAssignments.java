@@ -805,7 +805,7 @@ public class SensorAssignments
       result = SensorType.LONGITUDE_SENSOR_TYPE;
     } else if (columnId == FileDefinition.LATITUDE_COLUMN_ID) {
       result = SensorType.LATITUDE_SENSOR_TYPE;
-    } else if (columnId == SensorType.DEPTH_ID) {
+    } else if (columnId == FileDefinition.DEPTH_COLUMN_ID) {
       result = SensorType.DEPTH_SENSOR_TYPE;
     } else {
       // Try to get the SensorType from the cache
@@ -975,6 +975,9 @@ public class SensorAssignments
       } else if (sensorType.equals(SensorType.LATITUDE_SENSOR_TYPE)) {
         result = new ArrayList<Long>(1);
         result.add(FileDefinition.LATITUDE_COLUMN_ID);
+      } else if (sensorType.equals(SensorType.DEPTH_SENSOR_TYPE)) {
+        result = new ArrayList<Long>(1);
+        result.add(FileDefinition.DEPTH_COLUMN_ID);
       } else {
 
         SensorsConfiguration sensorConfig = ResourceManager.getInstance()

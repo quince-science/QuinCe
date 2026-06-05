@@ -50,7 +50,7 @@ public class SensorType extends ColumnHeading
   /**
    * Special ID for the Depth sensor
    */
-  public static final long DEPTH_ID = -2;
+  public static final long DEPTH_ID = FileDefinition.DEPTH_COLUMN_ID;
 
   /**
    * The display order for the Depth
