@@ -775,7 +775,8 @@ public class DataSetsBean extends BaseManagedBean {
 
   public boolean canQcPosition() {
     return getCurrentInstrument().getBasis() == Instrument.BASIS_TIME
-      && !getCurrentInstrument().fixedPosition();
+      && (!getCurrentInstrument().fixedPosition()
+        || !getCurrentInstrument().fixedDepth());
   }
 
   class DatasetNameComparator implements Comparator<DataSet> {

@@ -28,6 +28,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractQCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCRoutine;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.DepthQCCascadeRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.DiagnosticsQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCCascadeRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.PositionQCRoutine;
@@ -195,16 +196,17 @@ public class AutoQCJob extends DataSetJob {
         AbstractQCRoutinesConfiguration qcRoutinesConfig = ResourceManager
           .getInstance().getQCRoutinesConfiguration(instrument.getBasis());
 
-        // First run the position QC, unless the instrument has a fixed
-        // position.
-        // This will potentially set QC flags on all sensor values, and those
-        // values will then be skipped by the 'normal' routines later on.
-        //
-        // Note that this routine uses a different API - the constructor is
-        // given
-        // all values, and therefore doesn't need to pass any to the actual QC
-        // call.
-        if (!dataSet.fixedPosition()) {
+        /*
+         * First run the position QC, unless the instrument has a fixed position
+         * (including Depth). This will potentially set QC flags on all sensor
+         * values, and those values will then be skipped by the 'normal'
+         * routines later on.
+         *
+         * Note that this routine uses a different API - the constructor is
+         * given all values, and therefore doesn't need to pass any to the
+         * actual QC call.
+         */
+        if (!dataSet.fixedPosition() || !dataSet.fixedDepth()) {
 
           SensorValue.clearAutoQC(sensorValues.getAllPositionSensorValues());
 
@@ -310,6 +312,12 @@ public class AutoQCJob extends DataSetJob {
           PositionQCCascadeRoutine positionQCCascade = new PositionQCCascadeRoutine(
             flagScheme);
           positionQCCascade.run(instrument, sensorValues, runTypePeriods);
+        }
+
+        if (!instrument.fixedDepth()) {
+          DepthQCCascadeRoutine depthQCCascade = new DepthQCCascadeRoutine(
+            flagScheme);
+          depthQCCascade.run(instrument, sensorValues, runTypePeriods);
         }
 
         // Send all sensor values to be stored. The storeSensorValues method

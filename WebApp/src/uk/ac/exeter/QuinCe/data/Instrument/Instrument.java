@@ -1267,7 +1267,7 @@ public class Instrument {
         if (fixedPosition()) {
           result = false;
         }
-      } else if (columnId == SensorType.DEPTH_ID) {
+      } else if (columnId == FileDefinition.DEPTH_COLUMN_ID) {
         if (fixedDepth()) {
           result = false;
         }

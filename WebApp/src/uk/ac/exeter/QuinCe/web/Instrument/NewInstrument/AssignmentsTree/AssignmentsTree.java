@@ -411,6 +411,9 @@ public abstract class AssignmentsTree {
               PositionSpecNodeData.HEMISPHERE),
             hemisphereNode);
         }
+
+        // We've found assignment info in a file. Don't process more files.
+        break;
       } else {
         mainNode.setType(unassignedType);
       }
