@@ -805,6 +805,13 @@ public class DataSetDataDB {
       PreparedStatement runTypeStmt = conn
         .prepareStatement(STORE_RUN_TYPE_STATEMENT);) {
 
+      /*
+       * Extract the Coordinate objects and ensure they are stored in the
+       * database.
+       */
+      CoordinateDB.saveCoordinates(conn,
+        measurements.stream().map(m -> m.getCoordinate()).toList());
+
       // Batch up all the measurements
       for (Measurement measurement : measurements) {
         measurementStmt.setLong(1, measurement.getCoordinate().getId());
