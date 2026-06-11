@@ -72,21 +72,24 @@ public class ProOceanusMeasurementValueCollector
         .getAllSensorTypes(!dataSet.fixedPosition(), !dataSet.fixedDepth())) {
 
         if (INTERNAL_SENSOR_TYPES.contains(sensorType.getShortName())) {
-          try {
-            long columnId = instrument.getSensorAssignments()
-              .getColumnIds(sensorType).get(0);
-            TimestampSensorValuesList sensorValuesList = (TimestampSensorValuesList) allSensorValues
-              .getColumnValues(columnId);
+          long columnId = instrument.getSensorAssignments()
+            .getColumnIds(sensorType).get(0);
+          TimestampSensorValuesList sensorValuesList = (TimestampSensorValuesList) allSensorValues
+            .getColumnValues(columnId);
 
-            SensorValuesListOutput value = sensorValuesList
-              .getValue(referenceValue.getCoordinate(), true);
+          /*
+           * Pro Oceanus sensors can measure water and atm back to back, which
+           * confuses the SensorValuesList automated grouping of measurements.
+           * Therefore we explicitly collect the value for the range of the
+           * current measurement.
+           *
+           * See also ProOceanusCO2MeasurementLocator.
+           */
+          SensorValuesListOutput value = sensorValuesList
+            .getValueForPeriod((TimestampSensorValuesListValue) referenceValue);
 
-            result.add(new MeasurementValue(instrument.getFlagScheme(),
-              sensorType, value));
-          } catch (SensorValuesListException e) {
-            throw new MeasurementValueCalculatorException(
-              "Error getting Pro Oceanus value");
-          }
+          result.add(new MeasurementValue(instrument.getFlagScheme(),
+            sensorType, value));
         } else {
           result.add(MeasurementValueCalculatorFactory
             .calculateMeasurementValue(instrument, dataSet, referenceValue,

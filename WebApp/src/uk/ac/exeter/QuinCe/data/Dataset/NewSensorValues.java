@@ -117,7 +117,7 @@ public class NewSensorValues {
    * {@link Coordinate} objects.
    *
    * It's possible that multiple {@link SensorValue}s have been added with the
-   * same {@link Coordinate} values. This will be combined so that the same
+   * same {@link Coordinate} values. These will be combined so that the same
    * {@link Coordinate} objects will be shared by those {@link SensorValue}s.
    */
   private void ensureUniqueCoordinates() {

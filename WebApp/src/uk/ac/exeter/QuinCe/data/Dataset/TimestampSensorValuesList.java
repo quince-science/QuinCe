@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.IntPredicate;
 
@@ -129,6 +130,11 @@ public class TimestampSensorValuesList extends SensorValuesList {
    * @see #calculateMeasurementMode()
    */
   private boolean allowStringPeriodicGroups = false;
+
+  /**
+   * A cache of the {@link TimeCoordinate}s in this list keyed by time.
+   */
+  private TreeMap<LocalDateTime, TimeCoordinate> coordinatesMap;
 
   /**
    * Create a list for a single file column.
@@ -1454,5 +1460,83 @@ public class TimestampSensorValuesList extends SensorValuesList {
   @Override
   protected void listContentsUpdated() {
     outputValues = null;
+    coordinatesMap = null;
+  }
+
+  /**
+   * Extract a value from the list for the period encompassed by the specified
+   * {@link TimestampSensorValuesListValue}.
+   *
+   * <p>
+   * There are times where the automatic grouping of values is incompatible with
+   * a {@link Variable}'s requirements. For example, there may be records for
+   * two different Run Types so close together that they end up being grouped by
+   * the {@link #MODE_PERIODIC} processing. The workaround is for the caller to
+   * establish the time periods itself based on the Run Types and call this
+   * method to override the automated grouping and extract values directly for
+   * the corresponding time period.
+   * </p>
+   *
+   * <p>
+   * The returned value will contain only those values from the best available
+   * quality flag, in the same manner as for the {@link PERIODIC} mode. For
+   * example, if the time period encompasses three value, two of which are Good
+   * and one of which are Bad, the returned value will be constructed using only
+   * the Good values.
+   * </p>
+   *
+   * <p>
+   * If there are no values in this list for the specified time period, the
+   * method returns {@code null}.
+   * </p>
+   *
+   *
+   * @param coordinate
+   *          The value representing the target time period.
+   * @return The value from this list for the time period.
+   * @throws RoutineException
+   */
+  public SensorValuesListOutput getValueForPeriod(
+    TimestampSensorValuesListValue timeReference) throws RoutineException {
+
+    if (null == coordinatesMap) {
+      buildCoordinatesMap();
+    }
+
+    SensorValuesListOutput result = null;
+
+    LocalDateTime startTime = coordinatesMap
+      .ceilingKey(timeReference.getStartTime().getTime());
+    LocalDateTime endTime = coordinatesMap
+      .floorKey(timeReference.getEndTime().getTime());
+
+    if (null != startTime && null != endTime) {
+
+      Collection<TimeCoordinate> coordinates = coordinatesMap
+        .subMap(startTime, true, endTime, true).values();
+
+      Collection<SensorValue> sensorValues = coordinates.stream()
+        .map(c -> getRawSensorValue(c, -1L)).toList();
+
+      Flag usedFlag = Flag.leastSignificant(sensorValues.stream()
+        .map(c -> c.getDisplayFlag(allSensorValues)).toList());
+
+      List<SensorValue> usedValues = sensorValues.stream()
+        .filter(v -> v.getDisplayFlag(allSensorValues).equals(usedFlag))
+        .toList();
+
+      result = new TimestampSensorValuesListOutput(timeReference.getStartTime(),
+        timeReference.getEndTime(), timeReference.getNominalTime(), usedValues,
+        sensorType, SensorValue.getMeanValue(usedValues), usedFlag,
+        SensorValue.getCombinedQcComment(usedValues, allSensorValues), true);
+    }
+
+    return result;
+  }
+
+  private void buildCoordinatesMap() {
+    coordinatesMap = new TreeMap<LocalDateTime, TimeCoordinate>();
+    getRawCoordinates().stream()
+      .forEach(c -> coordinatesMap.put(c.getTime(), (TimeCoordinate) c));
   }
 }

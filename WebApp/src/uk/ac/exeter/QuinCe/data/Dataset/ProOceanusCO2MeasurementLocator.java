@@ -173,8 +173,16 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
          */
         if (null != runType) {
 
+          TimestampSensorValuesListValue castRunType = (TimestampSensorValuesListValue) runType;
+
+          /*
+           * Pro Oceanus sensors can measure water and atm back to back, which
+           * confuses the SensorValuesList automated grouping of measurements.
+           * Therefore we explicitly collect the value for the range of the
+           * current run type (which will be either water or atm).
+           */
           SensorValuesListValue co2Value = co2Values
-            .getValue(runType.getCoordinate(), false);
+            .getValueForPeriod(castRunType);
 
           // We only make measurements for non-flushing CO2 values
           if (null != co2Value) {

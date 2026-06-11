@@ -33,11 +33,11 @@ public class TimestampSensorValuesListOutput
   public TimestampSensorValuesListOutput(TimeCoordinate startTime,
     TimeCoordinate endTime, TimeCoordinate nominalTime,
     Collection<SensorValue> usedValues, SensorType sensorType, Double mean,
-    Flag chosenFlag, String collectionToDelimited,
+    Flag chosenFlag, String qcMessage,
     boolean interpolatesAroundFlags) {
 
     super(startTime, endTime, nominalTime, usedValues, sensorType, mean,
-      chosenFlag, collectionToDelimited);
+      chosenFlag, qcMessage);
 
     this.interpolatesAroundFlags = interpolatesAroundFlags;
   }
