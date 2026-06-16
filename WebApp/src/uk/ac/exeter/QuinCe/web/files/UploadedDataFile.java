@@ -367,7 +367,7 @@ public abstract class UploadedDataFile implements Comparable<UploadedDataFile> {
           if (dataFile.hasFundametalProcessingIssue()) {
             putMessage(UNPROCESSABLE_STATUS, getName() + " has "
               + dataFile.getFundamentalProcessingIssueItem()
-              + " issues, see messages below. Please fix these problems and upload the file again.",
+              + " issues (see individual messages below). Please fix these problems and upload the file again.",
               FacesMessage.SEVERITY_ERROR);
           } else if (getDataFile().getMessageCount() > 0) {
             putMessage(UNPROCESSABLE_STATUS, getName()
