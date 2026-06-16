@@ -659,7 +659,15 @@ public class TimeDataFile extends DataFile implements TimeRange {
         "Cannot compare DataFile of different type");
     }
 
-    return getRawStartTime().compareTo(((TimeDataFile) o).getRawStartTime());
+    TimeDataFile other = (TimeDataFile) o;
+    int result = getRawStartTime().compareTo((other).getRawStartTime());
+
+    if (result == 0) {
+      result = this.getFileDefinition().getFileDescription()
+        .compareTo(other.getFileDefinition().getFileDescription());
+    }
+
+    return result;
   }
 
   @Override
