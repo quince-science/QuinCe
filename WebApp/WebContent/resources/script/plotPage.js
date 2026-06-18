@@ -88,6 +88,7 @@ const FLAG_COLORS = {
   'ICOS': {
     'y1': {
       'Needed': '#817FFF',
+	  '-10': '#817FFF',
       'Not calibrated': '#AC9326',
       '1': '#AC9326',
       'Questionable': '#FFA42B',
@@ -104,6 +105,7 @@ const FLAG_COLORS = {
     },
     'y2': {
       'Needed': '#D7D6FF',
+	  '-10': '#D7D6FF',
       'Not calibrated': '#CCCBAF',
       '1': '#CCCBAF',
       'Bad': '#E6B6A6',
@@ -117,6 +119,7 @@ const FLAG_COLORS = {
   'Argo': {
     'y1': {
       'Needed': '#817FFF',
+	  '-10': '#817FFF',
       'Good': '',
       '1': '',
       'Assumed Good': '',
@@ -134,6 +137,7 @@ const FLAG_COLORS = {
     },
     'y2': {
       'Needed': '#817FFF',
+	  '-10': '817FFF',
       'Good': '',
       '1': '',
       'Assumed Good': '',
