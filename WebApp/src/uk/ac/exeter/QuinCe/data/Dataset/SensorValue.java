@@ -604,8 +604,10 @@ public class SensorValue implements Comparable<SensorValue>, Cloneable {
       result = flagScheme.getBadFlag();
     } else if (userQCFlag.equals(FlagScheme.LOOKUP_FLAG)) {
       Set<Long> sourceValues = StringUtils.delimitedToLongSet(userQCMessage);
-      result = SensorValue.getValueWithWorstFlag(
-        allSensorValues.getById(sourceValues), allSensorValues).getUserQCFlag();
+      result = SensorValue
+        .getValueWithWorstFlag(allSensorValues.getById(sourceValues),
+          allSensorValues)
+        .getDisplayFlag(allSensorValues);
     } else {
       result = flagNeeded() ? autoQC.getOverallFlag() : getUserQCFlag();
     }
