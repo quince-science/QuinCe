@@ -423,3 +423,13 @@ function qcFlagsAccepted() {
   itemNotLoading(UPDATE_DATA);
 }
 
+
+function showNoDataMessage(index) {
+  $('#plot' + index + 'Container').hide();
+  $('#plot' + index + 'NoDataMessage').removeClass('noDataMessage-hidden');
+}
+
+function hideNoDataMessage(index) {
+  $('#plot' + index + 'NoDataMessage').addClass('noDataMessage-hidden');
+  $('#plot' + index + 'Container').show();
+}
