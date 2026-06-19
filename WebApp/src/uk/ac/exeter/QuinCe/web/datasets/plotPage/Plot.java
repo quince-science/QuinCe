@@ -167,12 +167,20 @@ public class Plot {
     String result = "[]";
 
     if (null != y2Axis) {
-      result = Y2_GSON.toJson(plotValues.stream()
+      /*
+       * If there are no Y2 values, return the empty array. This will be dealt
+       * with on the front end.
+       */
+      List<PlotValue> plotData = plotValues.stream()
         .filter(f -> !f.xNull() && !hideFlags ? true
           : (null != f && (null == f.getFlag2()
             || data.getFlagScheme().isGood(f.getFlag2(), true)
             || f.getFlag2().equals(FlagScheme.NEEDED_FLAG))))
-        .collect(Collectors.toList()));
+        .collect(Collectors.toList());
+
+      if (plotData.stream().anyMatch(d -> d.hasY2())) {
+        result = Y2_GSON.toJson(plotData);
+      }
     }
 
     return result;

@@ -62,6 +62,9 @@
         </div>
         <div id="plot1Label" class="plotLabels"></div>
         <div id="map1Container" class="hidden"></div>
+        <div id="plot1NoDataMessage" class="noDataMessage-hidden noDataMessage">
+          No data in plot
+        </div>
         <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
           <f:facet name="left">
             <ui:fragment rendered="#{sessionScope[beanName].allowMaps()}">
@@ -154,6 +157,9 @@
         </div>
         <div id="plot2Label" class="plotLabels"></div>
         <div id="map2Container" class="hidden"></div>
+        <div id="plot2NoDataMessage" class="noDataMessage-hidden noDataMessage">
+          No data in plot
+        </div>
         <p:toolbar id="plot2Toolbar" styleClass="plotPageFooter">
           <f:facet name="left">
             <ui:fragment rendered="#{sessionScope[beanName].allowMaps()}">
