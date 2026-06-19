@@ -157,3 +157,15 @@ function getMapFormName(index) {
 function mapClick(id) {
   scrollToTableRow(id);
 }
+
+function showNoDataMessage(index) {
+  $('#plot' + index + 'Container').hide();
+  $('#map' + index + 'Container').hide();
+  $('#plot' + index + 'NoDataMessage').removeClass('noDataMessage-hidden');
+}
+
+function hideNoDataMessage(index) {
+  $('#plot' + index + 'NoDataMessage').addClass('noDataMessage-hidden');
+  $('#plot' + index + 'Container').show();
+}
+

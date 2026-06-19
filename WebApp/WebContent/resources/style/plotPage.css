@@ -367,3 +367,17 @@ table.dataTable tbody tr.selected > * {
 #qcMessage {
   margin-top: 6px;
 }
+
+.noDataMessage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 2em;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.noDataMessage-hidden {
+  display: none;
+}

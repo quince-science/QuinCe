@@ -347,9 +347,11 @@ function resizePlot(index) {
   if (null != window['dataPlot' + index] && null != window['dataPlot' + index].maindiv_) {
     $('#plot' + index + 'Container').width('100%');
     $('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
+    $('#plot' + index + 'NoDataMessage').width('100%');
+    $('#plot' + index + 'NoDataMessage').height($('#plot' + index + 'Panel').height() - 40);
 
-  let width = $('#plot' + index + 'Container').width();
-  let height = $('#plot' + index + 'Container').height() - window['plotShrinkHeight'];
+    let width = $('#plot' + index + 'Container').width();
+    let height = $('#plot' + index + 'Container').height() - window['plotShrinkHeight'];
     window['dataPlot' + index].resize(width, height);
 
     if (null != window['y2Plot' + index]) {
@@ -1559,45 +1561,81 @@ function drawDataPlot2Y(index, keepZoom) {
 function drawPlot(index, drawOtherPlots, keepZoom) {
   errorCheck();
 
-  if (drawOtherPlots) {
-    if (hasY2(index)) {
-      drawY2Plot(index, keepZoom);
-    } else {
-      if (window['y2Plot' + index]) {
-        window['y2Plot' + index].destroy();
-        window['y2Plot' + index] = null;
-      }
-    }
+  let noData = false;
 
-    drawSelectionPlot(index);
+  let plotData = $(getPlotFormName(index) + '\\:plot' + index + 'Data').val();
+  if (null == plotData || plotData == '[]') {
+  noData = true;
+  } else if (hasY2(index)) {
+  let plotY2Data = $(getPlotFormName(index) + '\\:plot' + index + 'Y2Data').val();
+    if (null == plotY2Data || plotY2Data == '[]') {
+      noData = true;
+    }
   }
 
-  if (hasY2(index)) {
-    if (drawOtherPlots) {
-      drawFlagPlot2Y(index, keepZoom);
-    }
-    drawDataPlot2Y(index, keepZoom);
+  if (noData) {
+    showNoDataMessage(index);
+
+  if (window['dataPlot' + index]) {
+    window['dataPlot' + index].destroy();
+    window['dataPlot' + index] = null;
+  }
+  if (window['flagPlot' + index]) {
+    window['flagPlot' + index].destroy();
+    window['flagPlot' + index] = null;
+  }
+  if (window['selectionPlot' + index]) {
+    window['selectionPlot' + index].destroy();
+    window['selectionPlot' + index] = null;
+  }
+  if (window['y2Plot' + index]) {
+    window['y2Plot' + index].destroy();
+    window['y2Plot' + index] = null;
+  }
+
   } else {
+    hideNoDataMessage(index);
     if (drawOtherPlots) {
-      drawFlagPlot1Y(index, keepZoom);
+      if (hasY2(index)) {
+        drawY2Plot(index, keepZoom);
+      } else {
+        if (window['y2Plot' + index]) {
+          window['y2Plot' + index].destroy();
+          window['y2Plot' + index] = null;
+        }
+      }
+
+      drawSelectionPlot(index);
     }
-    drawDataPlot1Y(index, keepZoom);
-  }
 
-  resizePlot(index);
-
-  if (!keepZoom) {
-    resetZoom(index);
-  }
-
-  // Enable/disable the selection mode controls
-  if (canEdit()) {
-    let plotVariable = $(getPlotFormName(index) + '\\:plot' + index + 'DisplayVariable').val();
-    if (getColumnById(plotVariable).editable) {
-      PF('plot' + index + 'SelectMode').enable();
+    if (hasY2(index)) {
+      if (drawOtherPlots) {
+        drawFlagPlot2Y(index, keepZoom);
+      }
+      drawDataPlot2Y(index, keepZoom);
     } else {
-      $('[id^=plot' + index + 'Form\\:plotSelectMode\\:0]').click() // Set to zoom mode
-      PF('plot' + index + 'SelectMode').disable();
+      if (drawOtherPlots) {
+          drawFlagPlot1Y(index, keepZoom);
+      }
+
+    drawDataPlot1Y(index, keepZoom);
+    }
+
+    resizePlot(index);
+
+    if (!keepZoom) {
+      resetZoom(index);
+    }
+
+    // Enable/disable the selection mode controls
+    if (canEdit()) {
+      let plotVariable = $(getPlotFormName(index) + '\\:plot' + index + 'DisplayVariable').val();
+      if (getColumnById(plotVariable).editable) {
+        PF('plot' + index + 'SelectMode').enable();
+      } else {
+        $('[id^=plot' + index + 'Form\\:plotSelectMode\\:0]').click() // Set to zoom mode
+        PF('plot' + index + 'SelectMode').disable();
+      }
     }
   }
 
@@ -1750,7 +1788,7 @@ function drawSelectionPlot(index) {
       selection_options.highlightCircleSize = 0;
       selection_options.selectMode = 'euclidian';
       selection_options.strokeWidth = 0;
-    selection_options.drawAxesAtZero = axesAtZero();
+      selection_options.drawAxesAtZero = axesAtZero();
       selection_options.xRangePad = 0;
       selection_options.yRangePad = 0;
       selection_options.axes = {
