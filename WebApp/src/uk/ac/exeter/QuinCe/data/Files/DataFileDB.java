@@ -326,6 +326,12 @@ public class DataFileDB {
 
         // Store the file - automatically replaces the old one
         FileStore.storeFile(appConfig.getProperty("filestore"), dataFile);
+
+        conn.commit();
+
+        if (initialAutoCommit) {
+          conn.setAutoCommit(true);
+        }
       }
     } catch (Exception e) {
       DatabaseUtils.rollBack(conn);
