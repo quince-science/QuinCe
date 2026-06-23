@@ -41,14 +41,17 @@ def main():
         nrt_ids = get_ids(nrt_instruments)
 
         for nrt_id in nrt_ids:
-            nrt_response = quince.make_nrt_dataset(config, nrt_id)
-            status_code = nrt_response.status_code
-            if status_code == 200:
-                log_instrument(logger, nrt_id, logging.INFO,
-                               "NRT dataset created")
-            elif status_code != 204:
-                log_instrument(logger, nrt_id, logging.ERROR,
-                               "NRT dataset failed: " + str(status_code))
+            if nrtdb.new_nrt_data(db_conn, nrt_id):
+                nrt_response = quince.make_nrt_dataset(config, nrt_id)
+                status_code = nrt_response.status_code
+                if status_code == 200:
+                    log_instrument(logger, nrt_id, logging.INFO,
+                                "NRT dataset created")
+                elif status_code != 204:
+                    log_instrument(logger, nrt_id, logging.ERROR,
+                                "NRT dataset failed: " + str(status_code))
+
+                nrtdb.nrt_created(db_conn, nrt_id)
 
     except urllib.error.HTTPError as e:
         print("%s %s" % (e.code, e.reason))

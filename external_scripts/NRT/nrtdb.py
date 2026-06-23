@@ -59,7 +59,7 @@ def get_instrument_ids(conn):
 def get_instrument(conn, instrument_id):
     c = conn.cursor()
     c.execute("SELECT id, name, owner, type, preprocessor, config, preprocessor_config, "
-              "check_hours, last_check, paused FROM instrument WHERE id = ?",
+              "check_hours, last_check, last_nrt_creation, paused FROM instrument WHERE id = ?",
               (instrument_id,))
 
     row = c.fetchone()
@@ -114,7 +114,7 @@ def store_configuration(conn, instrument_id, retriever, preprocessor, check_hour
     if retriever is None:
         c.execute(
             "UPDATE instrument SET type=NULL, config=NULL, preprocessor=NULL, preprocessor_config=NULL,"
-            "check_hours=NULL, last_check=NULL WHERE id = ?", (instrument_id,))
+            "check_hours=NULL, last_check=NULL, last_nrt_creation=NULL WHERE id = ?", (instrument_id,))
     else:
         c.execute("UPDATE instrument SET type=?, config=?, preprocessor=?, preprocessor_config=?, "
                   "check_hours=? WHERE id = ?",
@@ -152,6 +152,7 @@ def __init_db(conn):
                       "preprocessor_config TEXT, "
                       "check_hours TEXT, "
                       "last_check INTEGER",
+                      "last_nrt_creation INTEGER",
                       "paused INTEGER DEFAULT 0"
                       ")"
                       )
@@ -173,3 +174,33 @@ def toggle_pause(conn, instrument):
             conn.commit()
     finally:
         c.close()
+
+def new_nrt_data(conn, instrument):
+    try:
+        result = False
+
+        c = conn.cursor()
+        c.execute("SELECT last_check, last_nrt_creation FROM instrument WHERE id=? and paused = 0",
+            (instrument, ))
+
+        record = c.fetchone()
+        if record is not None:
+            last_check = record[0]
+            last_nrt = record[1]
+
+            print(f'{last_check} {last_nrt}')
+
+            if last_check is not None:
+                if last_nrt is None or last_nrt < last_check:
+                    result = True
+        
+        return result
+    finally:
+        c.close()
+
+def nrt_created(conn, instrument):
+    c = conn.cursor()
+    c.execute("UPDATE instrument SET last_nrt_creation=? WHERE id = ?",
+              (int(datetime.now().timestamp()), instrument))
+    conn.commit()
+    
