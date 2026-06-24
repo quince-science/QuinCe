@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,11 @@ public class ArgoPlot extends Plot {
    * Stores the data object locally as the correct class.
    */
   ArgoManualQCData data;
+
+  /**
+   * The plot values.
+   */
+  private LinkedHashSet<PlotValue> plotValues = null;
 
   public ArgoPlot(ArgoManualQCData data, PlotPageColumnHeading xAxis,
     PlotPageColumnHeading yAxis, boolean useNeededFlags) throws Exception {
@@ -184,5 +190,10 @@ public class ArgoPlot extends Plot {
         Map.Entry.comparingByValue(new PlotPageTableValueNumericComparator()))
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
         (e1, e2) -> e1, LinkedHashMap::new));
+  }
+
+  @Override
+  protected Set<PlotValue> getPlotValues() {
+    return plotValues;
   }
 }

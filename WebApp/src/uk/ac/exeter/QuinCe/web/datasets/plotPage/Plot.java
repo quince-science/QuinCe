@@ -1,9 +1,10 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -49,8 +50,15 @@ public class Plot {
 
   /**
    * The plot values.
+   *
+   * <p>
+   * <b>Do not reference this directly unless you know what you're doing!</b>
+   * Different types of Plots order their values differently, so we must always
+   * use {@link #getPlotValues()} to ensure that we get the values from the
+   * correct instance.
+   * </p>
    */
-  protected LinkedHashSet<PlotValue> plotValues = null;
+  private TreeSet<PlotValue> plotValues = null;
 
   /**
    * Indicates whether or not values that have been flagged during QC should be
@@ -148,11 +156,11 @@ public class Plot {
   public String getMainData() {
     String result = "[]";
 
-    if (null != plotValues) {
+    if (null != getPlotValues()) {
       Gson gson = new GsonBuilder().registerTypeAdapter(PlotValue.class,
         new MainPlotValueSerializer(null != y2Axis)).create();
 
-      result = gson.toJson(plotValues.stream()
+      result = gson.toJson(getPlotValues().stream()
         .filter(f -> !f.xNull() && !hideFlags ? true
           : (null == f.getFlag()
             || data.getFlagScheme().isGood(f.getFlag(), true)
@@ -171,7 +179,7 @@ public class Plot {
        * If there are no Y2 values, return the empty array. This will be dealt
        * with on the front end.
        */
-      List<PlotValue> plotData = plotValues.stream()
+      List<PlotValue> plotData = getPlotValues().stream()
         .filter(f -> !f.xNull() && !hideFlags ? true
           : (null != f && (null == f.getFlag2()
             || data.getFlagScheme().isGood(f.getFlag2(), true)
@@ -196,8 +204,8 @@ public class Plot {
 
     String result = "[]";
 
-    if (null != plotValues) {
-      List<PlotValue> flagValues = plotValues.stream()
+    if (null != getPlotValues()) {
+      List<PlotValue> flagValues = getPlotValues().stream()
         .filter(x -> !hideFlags ? x.inFlagPlot()
           : null != x.getFlag() && x.getFlag().equals(FlagScheme.NEEDED_FLAG))
         .collect(Collectors.toList());
@@ -217,7 +225,7 @@ public class Plot {
     TreeMap<Coordinate, PlotPageTableValue> yValues = getYValues();
     TreeMap<Coordinate, PlotPageTableValue> y2Values = getY2Values();
 
-    plotValues = new LinkedHashSet<>();
+    plotValues = new TreeSet<PlotValue>();
 
     for (Coordinate coordinate : xValues.keySet()) {
       if (yValues.containsKey(coordinate) || y2Values.containsKey(coordinate)) {
@@ -392,5 +400,9 @@ public class Plot {
 
   protected boolean getHideFlags() {
     return hideFlags;
+  }
+
+  protected Set<PlotValue> getPlotValues() {
+    return plotValues;
   }
 }
