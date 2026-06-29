@@ -26,11 +26,11 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * unsure how we would ingest the delayed salinity data.) To get round this, all
  * Nuka Arctica data is pre-processed before being loaded into QuinCe, and has a
  * fake salinity column added with the value taken from the World Ocean Atlas
- * climatology. This causes some salinity values to be flagged as
- * {@link Flag#BAD}, which in turn cascades to the final fCO₂ value, marking
- * them all {@link Flag#QUESTIONABLE}. In this special case, the PI has
- * established that the influence of the fixed salinity value is not sufficient
- * to warrant the flag placed on fCO₂, and therefore it should be removed.
+ * climatology. This causes some salinity values to be flagged as <i>Bad</i>,
+ * which in turn cascades to the final fCO₂ value, marking them all
+ * <i>Questionable</i>. In this special case, the PI has established that the
+ * influence of the fixed salinity value is not sufficient to warrant the flag
+ * placed on fCO₂, and therefore it should be removed.
  * </p>
  *
  * <p>

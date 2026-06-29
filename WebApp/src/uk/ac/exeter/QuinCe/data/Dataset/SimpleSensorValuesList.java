@@ -9,8 +9,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
- * A basic implementation of {@link SensorValuesList} where {@link SensorValues}
- * are returned exactly as they are added, with no extra processing.s
+ * A basic implementation of {@link SensorValuesList} where {@link SensorValue}s
+ * are returned exactly as they are added, with no extra processing.
  */
 public class SimpleSensorValuesList extends SensorValuesList {
 

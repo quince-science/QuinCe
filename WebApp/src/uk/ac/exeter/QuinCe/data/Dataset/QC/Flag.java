@@ -11,7 +11,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
  * Represents a quality control flag placed on a value.
  *
  * <p>
- * A flag has multiple representations: </p?
+ * A flag has multiple representations:
+ * </p>
  *
  * <ul>
  * <li>Numeric (used in exported data)</li>

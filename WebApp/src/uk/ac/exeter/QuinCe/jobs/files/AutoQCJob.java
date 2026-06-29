@@ -21,7 +21,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValuesListValue;
 import uk.ac.exeter.QuinCe.data.Dataset.TimeDataSet;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ExternalStandards.ExternalStandardsQCRoutine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AbstractAutoQCRoutine;
@@ -60,20 +59,20 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  * <p>
  * Once the QC has been completed, an {@link AutoQCResult} is set on the
- * {@link SensorValue}. If the QC result was {@link Flag#GOOD}, the WOCE flag
- * for the record will be set to {@link Flag#ASSUMED_GOOD}, to indicate that the
- * software will assume that the record is good unless the user overrides it.
- * Otherwise the WOCE Flag will be set to {@link Flag#NEEDED}. The user will be
- * required to manually choose a value for the WOCE Flag, either by accepting
- * the suggestion from the QC job, or overriding the flag and choosing their
- * own. The WOCE Comment will default to being identical to the QC Message, but
- * this can also be changed if required.
+ * {@link SensorValue}. If the QC result was <i>Good</i>, the QC flag for the
+ * record will be set to <i>Assumed Good</i>, to indicate that the software will
+ * assume that the record is good unless the user overrides it. Otherwise the
+ * WOCE Flag will be set to {@link FlagScheme#NEEDED_FLAG}. The user will be
+ * required to manually choose a value for the QC flag, either by accepting the
+ * suggestion from the QC job, or overriding the flag and choosing their own.
+ * The QC comment will default to being identical to the QC Message, but this
+ * can also be changed if required.
  * </p>
  *
  * <p>
- * If the {@code AutoQCJob} has been run before, some WOCE Flags and Comments
- * will have already been set by the user. If the user QC flag is anything other
- * than {@link Flag#ASSUMED_GOOD} or {@link Flag#NEEDED}, it will not be
+ * If the {@code AutoQCJob} has been run before, some QC flags and comments will
+ * have already been set by the user. If the user QC flag is anything other than
+ * <i>Assumed Good</i> or {@link FlagScheme#NEEDED_FLAG}, it will not be
  * checked.
  * </p>
  *
@@ -83,6 +82,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </p>
  *
  * @see AutoQCResult
+ * @see FlagScheme#getGoodFlag()
+ * @see FlagScheme#getAssumedGoodFlag()
  */
 public class AutoQCJob extends DataSetJob {
 
