@@ -1,7 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
-import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
@@ -12,7 +10,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Test the
- * {@link SensorValuesList#getValue(LocalDateTime, LocalDateTime, LocalDateTime, boolean)}
+ * {@link TimestampSensorValuesList#getValue(TimeCoordinate, TimeCoordinate, TimeCoordinate, boolean)}
  * method.
  */
 @TestInstance(Lifecycle.PER_CLASS)

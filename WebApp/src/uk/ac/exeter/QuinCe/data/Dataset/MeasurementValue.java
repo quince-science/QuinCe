@@ -22,8 +22,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <p>
  * The calculated value is derived from one or more {@link SensorValue}s,
  * depending on the configuration of the instrument, the relative time of the
- * measurement and available {@link SensorValue}s, and whether
- * {@link Flag#BAD}/{@link Flag#QUESTIONABLE} values are being ignored.
+ * measurement and available {@link SensorValue}s, and whether flagged values
+ * are being ignored.
  * </p>
  * <p>
  * This class implements the most common calculation of a measurement value.

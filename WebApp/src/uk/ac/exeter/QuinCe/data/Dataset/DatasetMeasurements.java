@@ -17,8 +17,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
  *
  * <p>
  * The main object is a map grouping the measurements by run type, but a second
- * view of all measurements in time order is accessible through
- * {@link #getTimeOrderedMeasurements()}.
+ * view of all measurements in {@link Coordinate} order is accessible through
+ * {@link #getOrderedMeasurements()}.
  * </p>
  */
 public class DatasetMeasurements {

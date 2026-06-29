@@ -52,8 +52,8 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  *
  *
  * <p>
- * Values mode results are automatically stripped of {@link Flag#FLUSHING}
- * values.
+ * Values mode results are automatically stripped of
+ * {@link FlagScheme#FLUSHING_FLAG} values.
  * </p>
  *
  * <p>
@@ -64,7 +64,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
  * both sets of measurements together. To work around this, you must determine
  * the group boundaries elsewhere (most likely in the {@link SensorValuesList}
  * for the Run Type), and use the
- * {@link #getValue(LocalDateTime, LocalDateTime, LocalDateTime, boolean)}
+ * {@link #getValue(TimeCoordinate, TimeCoordinate, TimeCoordinate, boolean)}
  * method to construct values covering the correct time periods.
  * </p>
  */

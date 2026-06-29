@@ -5,7 +5,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
  * flag schemes.
  *
  * <p>
- * This is a {@link RunTimeException} because we anticipate that errors raised
+ * This is a {@link RuntimeException} because we anticipate that errors raised
  * from a {@link FlagScheme} will be coding errors that shouldn't occur, and
  * there's nothing that can be done if they're raised.
  * </p>

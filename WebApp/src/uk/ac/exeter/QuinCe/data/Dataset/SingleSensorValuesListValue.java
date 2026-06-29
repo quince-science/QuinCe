@@ -13,7 +13,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
  * <p>
  * This default implementation is essentially a wrapper around a
  * {@link SensorValue}. However, there can be more complex implementations that
- * build values from multiple source {@link SensorValues} and provide extra
+ * build values from multiple source {@link SensorValue}s and provide extra
  * functionality such as interpolation and grouping.
  * </p>
  */

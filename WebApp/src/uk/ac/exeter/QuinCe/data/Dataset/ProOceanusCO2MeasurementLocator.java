@@ -46,7 +46,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <b>NOTE:</b> This class will only work if the underlying {@link Instrument}
  * is operating on {@link Instrument#BASIS_TIME}.
  * </p>
- * </p>
  */
 public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
 

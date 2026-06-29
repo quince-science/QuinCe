@@ -14,9 +14,11 @@ import java.util.List;
  * </p>
  *
  * <p>
- * Each {@link Instrument} will be assigned a single flagging scheme. At the
- * time of writing, this is anticipated to be linked to the {@link Instrument}'s
- * measurement basis (see {@link Instrument#getBasis}.
+ * Each {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} will be assigned
+ * a single flagging scheme. At the time of writing, this is anticipated to be
+ * linked to the {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}'s
+ * measurement basis (see
+ * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument#getBasis}).
  * </p>
  *
  * <p>
@@ -31,9 +33,7 @@ import java.util.List;
  * automatically created, and indicates that any automatic QC checks have no
  * found any reason to think that a value has any issues. This distinguishes
  * untouched values from those which have been explicitly flagged as <i>Good</i>
- * by a user. The <i>Good</i> flag must be registered by calling
- * {@link #registerGoodFlag(Flag)} instead of {@link #registerFlag(Flag)}. There
- * must be one and only one <i>Good</i> flag registered for each scheme.
+ * by a user.
  * </p>
  *
  * <p>

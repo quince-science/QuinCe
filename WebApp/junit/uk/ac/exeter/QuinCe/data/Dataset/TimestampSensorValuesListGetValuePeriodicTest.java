@@ -8,8 +8,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
- * Test the {@link SensorValuesList#getValue(java.time.LocalDateTime, boolean)}
- * method for periodic measurements.
+ * Test the {@link SensorValuesList#getValue(TimeCoordinate, boolean)} method
+ * for periodic measurements.
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public class TimestampSensorValuesListGetValuePeriodicTest

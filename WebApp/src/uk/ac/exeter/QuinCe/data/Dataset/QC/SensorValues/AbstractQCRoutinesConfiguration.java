@@ -27,40 +27,11 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
  * </p>
  *
  * <p>
- * Routines are configured in a CSV file with the columns listed below. The
- * column names must be included as the first line of the file.
+ * Routines are configured in a JSON file. The same routine can be configured
+ * multiple times for different {@link SensorType}s, which may need the same
+ * type of check but with different limits (a range check is the obvious
+ * example).
  * </p>
- *
- * <p>
- * The same routine can be configured multiple times for different
- * {@link SensorType}s, which may need the same type of check but with different
- * limits (a range check is the obvious example).
- * </p>
- *
- * <table>
- * <caption>QC Routine configuration file columns</caption>
- * <tr>
- * <th>Column Name</th>
- * <th>Purpose</th>
- * </tr>
- * <tr>
- * <td>Class</td>
- * <td>The name of the routine, which is also the root of the
- * {@link AbstractAutoQCRoutine} class name for the routine. The
- * {@link #getRoutine(String)} method is responsible for retrieving concrete
- * routine instances from the name.</td>
- * </tr>
- * <tr>
- * <td>Sensor Type</td>
- * <td>The {@link SensorType} to which this routine will be applied.</td>
- * </tr>
- * <tr>
- * <td>Option...</td>
- * <td>The options for the routine. The number and type of options will vary
- * between Routines, so the validation of these options is left to the specific
- * Routine's {@link AbstractAutoQCRoutine#validateParameters()} method.</td>
- * </tr>
- * </table>
  */
 public abstract class AbstractQCRoutinesConfiguration {
 

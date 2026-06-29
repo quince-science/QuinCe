@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -96,7 +97,7 @@ public abstract class DataReducer {
    * @return The data reduction result.
    * @throws DataReductionException
    *           If an error occurs during the calculations.
-   * @see Variable#getCascade(SensorType, Flag, SensorAssignments)
+   * @see Variable#getCascade(SensorType, FlagScheme, Flag, SensorAssignments)
    */
   public DataReductionRecord performDataReduction(Instrument instrument,
     Measurement measurement, DatasetSensorValues allSensorValues,
