@@ -3,6 +3,9 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
 import java.util.Collection;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+
 /**
  * Defines a flagging scheme for a particular type of data.
  *
@@ -14,11 +17,10 @@ import java.util.List;
  * </p>
  *
  * <p>
- * Each {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} will be assigned
- * a single flagging scheme. At the time of writing, this is anticipated to be
- * linked to the {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}'s
- * measurement basis (see
- * {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument#getBasis}).
+ * Each {@link Instrument} will be assigned a single flagging scheme. At the
+ * same time, a {@code FlagScheme} is directly linked to a specific
+ * {@link Instrument} measurement basis through the {@link #getBasis} method
+ * (see {@link Instrument#basis}).
  * </p>
  *
  * <p>
@@ -30,15 +32,13 @@ import java.util.List;
  * There is the special concept of a <i>Good</i> flag, which is a flag
  * indicating that the data is fully accepted with no questions over its
  * quality. The <i>Good</i> flag has an <i>Assumed Good</i> counterpart which is
- * automatically created, and indicates that any automatic QC checks have no
+ * automatically created, and indicates that any automatic QC checks have not
  * found any reason to think that a value has any issues. This distinguishes
  * untouched values from those which have been explicitly flagged as <i>Good</i>
- * by a user.
- * </p>
- *
- * <p>
- * There is also the concept of a <i>Bad</i> flag, indicating a value that
- * should not be used because it is invalid in some way.
+ * by a user. There is also the concept of a <i>Bad</i> flag, indicating a value
+ * that should not be used because it is invalid in some way. Other flags can be
+ * defined according to the flagging scheme being implemented, but will not have
+ * any special meaning in QuinCe.
  * </p>
  *
  * <p>
@@ -50,9 +50,11 @@ import java.util.List;
  * <li>{@link #NO_QC_FLAG}: No QC of any type has been performed.</li>
  * <li>{@link #NEEDED_FLAG}: The user must confirm the result of automatic
  * QC.</li>
- * <li>{@link #FLUSHING_FLAG}: indicates that the flag for a value is defined by
+ * <li>{@link #LOOKUP_FLAG}: indicates that the flag for a value is defined by
  * the flag on another value. The QC message will specify the location of the
- * other flag, but the exact details are not defined here.</li>
+ * other flag, usually (but not necessarily) as a comma-separated list of the
+ * database IDs of the {@link SensorValue}s that are the source of the
+ * Flag.</li>
  * <li>{@link #FLUSHING_FLAG}: The instrument is flushing after a change in
  * operation mode.</li>
  * </ul>
@@ -107,9 +109,9 @@ public interface FlagScheme {
   Flag getFlag(int value);
 
   /**
-   * Get the {@link Flag} object for a specified numeric flag value.
+   * Get the {@link Flag} object for a specified character flag value.
    *
-   * @param value
+   * @param character
    *          The flag value.
    * @return The Flag object.
    * @throws FlagException
@@ -127,7 +129,6 @@ public interface FlagScheme {
    * </p>
    *
    * @return The user-assignable {@link Flag}s.
-   * @throws FlagException
    */
   List<Flag> getUserAssignableFlags();
 
@@ -158,9 +159,11 @@ public interface FlagScheme {
   }
 
   /**
-   * Get the instrument basis for this scheme.
+   * Get the {@link Instrument} measurement basis corresponding to this
+   * {@code FlagScheme}.
    *
-   * @return
+   * @return The instrument basis.
+   * @see Instrument#basis
    */
   int getBasis();
 
@@ -188,12 +191,12 @@ public interface FlagScheme {
   /**
    * Get the <i>Bad</i> {@link Flag} for this flag scheme.
    *
-   * @return
+   * @return The <i>Bad</i> {@link Flag}.
    */
   Flag getBadFlag();
 
   /**
-   * Determine whether the specified {@link Flag} is a <i>Bad</i< flag.
+   * Determine whether the specified {@link Flag} is a <i>Bad</i> flag.
    *
    * @param flag
    *          The {@link Flag} to test.

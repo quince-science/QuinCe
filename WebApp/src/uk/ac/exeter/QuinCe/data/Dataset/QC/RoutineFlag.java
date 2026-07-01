@@ -54,6 +54,8 @@ public class RoutineFlag extends Flag {
   /**
    * Create a Flag related to a specific automatic QC routine.
    *
+   * @param flagScheme
+   *          The FlagScheme being used.
    * @param routine
    *          The source of the flag.
    * @param flag
@@ -75,6 +77,8 @@ public class RoutineFlag extends Flag {
   /**
    * Create a Flag related to a specific automatic QC routine.
    *
+   * @param flagScheme
+   *          The FlagScheme being used.
    * @param routineName
    *          The name of the {@link Routine} that generated the flag.
    * @param flag

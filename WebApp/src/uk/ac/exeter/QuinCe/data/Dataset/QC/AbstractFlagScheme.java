@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 
 /**
  * Base implementation of the {@link FlagScheme} interface.
- *
- *
  */
 public abstract class AbstractFlagScheme implements FlagScheme {
 
@@ -80,17 +78,20 @@ public abstract class AbstractFlagScheme implements FlagScheme {
   }
 
   /**
-   * Register the <i>Good</i> flag for this scheme.
+   * Register the <i>Good</i> {@link Flag} for this scheme.
    *
    * <p>
-   * The corresponding <i>Assumed Good</i> flag is automatically created.
+   * The corresponding <i>Assumed Good</i> flag is automatically created with
+   * the negative numeric value and lower case character value of the
+   * <i>Good</i> {@link Flag}.
    * </p>
    *
-   * @param goodFlag
+   * @param flag
+   *          The <i>Good</i> {@link Flag}.
    * @throws FlagException
+   *           If the supplied {@link Flag} is invalid.
    */
   protected void registerGoodFlag(Flag flag) {
-
     if (null != goodFlag) {
       throw new FlagException("Good Flag already registered");
     }

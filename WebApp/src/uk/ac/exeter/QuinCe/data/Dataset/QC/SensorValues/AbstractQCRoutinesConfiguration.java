@@ -13,8 +13,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routine;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
-import uk.ac.exeter.QuinCe.utils.MissingParam;
 
 /**
  * Base class for QC Routine configurations.
@@ -40,45 +38,30 @@ public abstract class AbstractQCRoutinesConfiguration {
    */
   private Map<SensorType, List<AbstractAutoQCRoutine>> routines = new HashMap<SensorType, List<AbstractAutoQCRoutine>>();
 
-  public AbstractQCRoutinesConfiguration() {
-  }
-
   /**
-   * Build the configuration from a configuration file.
-   *
-   * @param sensorsConfig
-   *          The sensor configuration for the
-   *          {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument} whose
-   *          values are being processed.
-   * @param configFile
-   *          The path of the configuration file.
-   * @throws QCRoutinesConfigurationException
-   *           If the configuration is invalid.
+   * Basic constructor. Does nothing.
    */
-  @Deprecated
-  public AbstractQCRoutinesConfiguration(SensorsConfiguration sensorsConfig,
-    String configFile) throws QCRoutinesConfigurationException {
-
-    MissingParam.checkMissing(configFile, "configFile");
-    routines = new HashMap<SensorType, List<AbstractAutoQCRoutine>>();
-    // init(sensorsConfig, configFile);
+  public AbstractQCRoutinesConfiguration() {
   }
 
   /**
    * Add a routine to the configuration.
    *
+   * @param flagScheme
+   *          The {@link FlagScheme} to use when generating {@link Flag}s from
+   *          the Routine.
    * @param sensorType
    *          The routine's target {@link SensorType}. It will be run on all
    *          values for sensors of that type.
-   * @param routineClass
-   *          The routine's Java class.
-   * @param parameters
-   *          The routine parameters (specified in the Option columns in the
-   *          configuration file).
+   * @param className
+   *          The class name for the Routine, without the package name (see
+   *          {@link #getFullClassName(String)}).
+   * @param limits
+   *          The routine limits.
    * @throws Exception
    *           If the {@code routineClass} is not of the correct type, or it
    *           cannot be instantiated.
-   * @see #makeInstance(Class, List)
+   * @see #makeInstance(Class, FlagScheme, SensorType, Map)
    */
   protected void addRoutine(FlagScheme flagScheme, SensorType sensorType,
     String className, Map<Flag, Range<Double>> limits) throws Exception {
@@ -102,16 +85,21 @@ public abstract class AbstractQCRoutinesConfiguration {
    * Create a concrete instance of an Auto QC Routine.
    *
    * @param routineClass
-   *          The routine class.
-   * @param parameters
-   *          The parameters for the routine (specified in the Option columns in
-   *          the configuration file).
-   * @return The routine instance.
+   *          The Routine class.
+   * @param flagScheme
+   *          The {@link FlagScheme} to use when generating {@link Flag}s from
+   *          the Routine.
+   * @param sensorType
+   *          The Routine's target {@link SensorType}. It will be run on all
+   *          values for sensors of that type.
+   * @param limits
+   *          The Routine limits.
+   *
+   * @return The Routine instance.
    * @throws Exception
    *           If the routine class cannot be instantiated, or the supplied
    *           parameters are invalid.
    * @see Constructor#newInstance
-   * @see AbstractAutoQCRoutine#validateParameters()
    */
   private AbstractAutoQCRoutine makeInstance(Class<?> routineClass,
     FlagScheme flagScheme, SensorType sensorType,
@@ -201,6 +189,9 @@ public abstract class AbstractQCRoutinesConfiguration {
    *
    * @param routineName
    *          The routine's short name.
+   * @param flagScheme
+   *          The {@link FlagScheme} to use when generating {@link Flag}s from
+   *          the Routine.
    * @return The routine instance.
    * @throws RoutineException
    *           If the routine cannot be instantiated.
