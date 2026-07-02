@@ -185,13 +185,15 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
 
           // We only make measurements for non-flushing CO2 values
           if (null != co2Value) {
-            if (runType.getStringValue().equals(WATER_MODE)) {
+            if (runType.getStringValue().equals(WATER_MODE) || instrument
+              .isRunTypeForVariable(waterVar, runType.getStringValue())) {
               if (instrument.hasVariable(waterVar)) {
                 measurements
                   .add(new Measurement(dataset.getId(), dataset.getFlagScheme(),
                     runType.getCoordinate(), waterRunTypes));
               }
-            } else if (runType.getStringValue().equals(ATM_MODE)) {
+            } else if (runType.getStringValue().equals(ATM_MODE) || instrument
+              .isRunTypeForVariable(atmVar, runType.getStringValue())) {
               if (instrument.hasVariable(atmVar)) {
                 measurements
                   .add(new Measurement(dataset.getId(), dataset.getFlagScheme(),
