@@ -165,14 +165,14 @@ public abstract class AssignmentsTree {
   /**
    * Initialise and construct the assignments tree.
    *
+   * @param files
+   *          The uploaded sample files.
    * @param variables
    *          The {@link Variable}s measured by the
    *          {@link uk.ac.exeter.QuinCe.data.Instrument.Instrument}.
    * @param assignments
    *          The object holding the assignments columns columns to times,
    *          positions, {@link SensorType}s etc.
-   * @param needsPosition
-   *          Indicates whether or not position columns are needed.
    * @throws SensorConfigurationException
    *           If the system's sensor configuration is invalid.
    * @throws SensorTypeNotFoundException
