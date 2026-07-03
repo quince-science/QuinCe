@@ -54,6 +54,6 @@ public class ProOceanusAtmosphericCO2ReducerTest extends DataReducerTest {
 
     assertEquals(404.21811D, record.getCalculationValue("xCO₂"), 0.0001);
     assertEquals(402.07584D, record.getCalculationValue("pCO₂"), 0.0001);
-    assertEquals(402.07439D, record.getCalculationValue("fCO₂"), 0.0001);
+    assertEquals(400.60542D, record.getCalculationValue("fCO₂"), 0.0001);
   }
 }

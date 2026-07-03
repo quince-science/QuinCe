@@ -49,7 +49,8 @@ public class ProOceanusAtmosphericCO2Reducer extends DataReducer {
 
       Double p = Calculators.hPaToAtmospheres(cellGasPressure);
       Double pCO2 = xCO2wet * p;
-      Double fCO2 = Calculators.calcfCO2(pCO2, xCO2wet, p, airTemperature);
+      Double fCO2 = Calculators.calcfCO2(pCO2, xCO2wet, cellGasPressure,
+        airTemperature);
 
       record.put("xCO₂", xCO2dry);
       record.put("pCO₂", pCO2);
