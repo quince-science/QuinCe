@@ -82,10 +82,12 @@ public abstract class Coordinate implements Comparable<Coordinate> {
   }
 
   /**
-   * Get the database ID of the {@link DataSet} that this coordinate is part of.
+   * Set the database ID of the {@link DataSet} that this coordinate is part of.
    *
-   * @return The dataset ID
+   * @param datasetId
+   *          The dataset ID.
    * @throws CoordinateException
+   *           If the ID has already been assigned.
    */
   public void setDatasetId(long datasetId) throws CoordinateException {
     if (datasetId != DatabaseUtils.NO_DATABASE_RECORD) {

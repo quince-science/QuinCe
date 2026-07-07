@@ -259,6 +259,27 @@ public abstract class AssignmentsTree {
     }
   }
 
+  /**
+   * Create a node for a {@link SensorType} to be assigned.
+   *
+   * <p>
+   * The node will include child nodes for each column assigned to the
+   * {@link SensorType}. The child node will include a button to remove the
+   * assignment.
+   * </p>
+   *
+   * @param sensorType
+   *          The name of the {@link SensorType}.
+   * @param parent
+   *          The parent node to which the created node should be added.
+   * @throws SensorTypeNotFoundException
+   *           If the named {@link SensorType} does not exist.
+   * @throws SensorAssignmentException
+   *           If the corresponding {@link SensorAssignment} information cannot
+   *           be retrieved.
+   * @throws SensorConfigurationException
+   *           If the application configuration is invalid.
+   */
   protected void makeSensorTypeNode(SensorType sensorType,
     TreeNode<AssignmentsTreeNodeData> parent)
     throws SensorAssignmentException, SensorConfigurationException {
@@ -286,6 +307,28 @@ public abstract class AssignmentsTree {
     }
   }
 
+  /**
+   * Create a node for a {@link SensorType} (defined by its name) to be
+   * assigned.
+   *
+   * <p>
+   * The node will include child nodes for each column assigned to the
+   * {@link SensorType}. The child node will include a button to remove the
+   * assignment.
+   * </p>
+   *
+   * @param sensorTypeName
+   *          The name of the {@link SensorType}.
+   * @param parent
+   *          The parent node to which the created node should be added.
+   * @throws SensorTypeNotFoundException
+   *           If the named {@link SensorType} does not exist.
+   * @throws SensorAssignmentException
+   *           If the corresponding {@link SensorAssignment} information cannot
+   *           be retrieved.
+   * @throws SensorConfigurationException
+   *           If the application configuration is invalid.
+   */
   protected void makeSensorTypeNode(String sensorTypeName,
     TreeNode<AssignmentsTreeNodeData> parent)
     throws SensorTypeNotFoundException, SensorAssignmentException,
@@ -297,6 +340,13 @@ public abstract class AssignmentsTree {
     makeSensorTypeNode(sensorType, parent);
   }
 
+  /**
+   * Get the root node of the tree.
+   *
+   * @return The tree's root node.
+   * @throws AssignmentsTreeException
+   *           If the root node cannot be retrieved.
+   */
   public abstract TreeNode<AssignmentsTreeNodeData> getRoot()
     throws AssignmentsTreeException;
 
