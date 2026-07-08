@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,6 +32,9 @@ import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -38,6 +42,11 @@ import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public abstract class PlotPageData {
+
+  /**
+   * Entry to indicate that no filtering is being applied to data.
+   */
+  public static final String NO_FILTER = "No Filter";
 
   /**
    * Indicates a select action
@@ -156,6 +165,11 @@ public abstract class PlotPageData {
   protected Map<PlotPageColumnHeading, MapRecords> mapCache = new HashMap<PlotPageColumnHeading, MapRecords>();
 
   /**
+   * The available filter values.
+   */
+  private List<String> filterValues = null;
+
+  /**
    * The indicator of the root field group.
    *
    * <p>
@@ -173,10 +187,52 @@ public abstract class PlotPageData {
   public static final String MEASUREMENTVALUES_FIELD_GROUP = "Measurement Values";
 
   protected PlotPageData(DataSource dataSource, Instrument instrument,
-    DataSet dataset) throws SQLException {
+    DataSet dataset) throws SQLException, MissingRunTypeException {
     this.dataSource = dataSource;
     this.instrument = instrument;
     this.dataset = dataset;
+    initFilterValues();
+  }
+
+  /**
+   * Build the list of possible data filter values.
+   *
+   * <p>
+   * These are based on the instrument's Run Types, ordered by:
+   * </p>
+   * <ol>
+   * <li>Measurements</li>
+   * <li>Internal Calibrations</li>
+   * <li>Other run types</li>
+   * </ol>
+   *
+   * @throws MissingRunTypeException
+   */
+  private void initFilterValues() throws MissingRunTypeException {
+    // Build the list of filter options from the instrument's run types
+    filterValues = new ArrayList<String>();
+    filterValues.add(NO_FILTER);
+
+    filterValues.addAll(
+      instrument.getMeasurementRunTypes(false).stream().sorted().toList());
+    filterValues.addAll(instrument.getInternalCalibrationRunTypes(false)
+      .stream().sorted().toList());
+
+    // Extract all other run types in alphabetical order
+    TreeSet<String> otherRunTypes = new TreeSet<String>();
+
+    for (Map.Entry<RunTypeCategory, TreeSet<RunTypeAssignment>> entry : instrument
+      .getAllRunTypes().entrySet()) {
+
+      if (!entry.getKey().isMeasurementType()
+        && !entry.getKey().equals(RunTypeCategory.INTERNAL_CALIBRATION)
+        && !entry.getKey().equals(RunTypeCategory.ALIAS)) {
+        otherRunTypes
+          .addAll(entry.getValue().stream().map(a -> a.getRunName()).toList());
+      }
+    }
+
+    filterValues.addAll(otherRunTypes);
   }
 
   /**
@@ -204,6 +260,7 @@ public abstract class PlotPageData {
         }
       } else {
         runTypePeriods = new RunTypePeriods();
+        this.filterValues = Arrays.asList(NO_FILTER);
       }
 
       initTableDataGson();
@@ -1168,5 +1225,17 @@ public abstract class PlotPageData {
 
   public FlagScheme getFlagScheme() {
     return dataset.getFlagScheme();
+  }
+
+  public Instrument getInstrument() {
+    return instrument;
+  }
+
+  public List<String> getFilterValues() {
+    return filterValues;
+  }
+
+  public RunTypePeriods getRunTypePeriods() {
+    return runTypePeriods;
   }
 }

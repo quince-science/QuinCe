@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.DataSetJob;
@@ -38,7 +39,8 @@ public class TimeManualQualityControlBean extends PlotPageBean {
   }
 
   @Override
-  public void initDataObject(DataSource dataSource) throws SQLException {
+  public void initDataObject(DataSource dataSource)
+    throws SQLException, MissingRunTypeException {
     data = new ManualQCData(dataSource, getCurrentInstrument(), dataset);
   }
 
@@ -97,5 +99,10 @@ public class TimeManualQualityControlBean extends PlotPageBean {
   @Override
   public boolean allowMaps() {
     return !dataset.fixedPosition();
+  }
+
+  @Override
+  public boolean getCanFilter() {
+    return true;
   }
 }

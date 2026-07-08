@@ -40,6 +40,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -174,11 +175,12 @@ public class ManualQCData extends PlotPageData {
    * @param dataSource
    *          A data source.
    * @throws SQLException
+   * @throws MissingRunTypeException
    * @throws Exception
    *           If the data cannot be loaded.
    */
   protected ManualQCData(DataSource dataSource, Instrument instrument,
-    DataSet dataset) throws SQLException {
+    DataSet dataset) throws SQLException, MissingRunTypeException {
     super(dataSource, instrument, dataset);
     this.userFlag = instrument.getFlagScheme().getGoodFlag();
   }

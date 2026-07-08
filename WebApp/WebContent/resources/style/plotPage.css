@@ -236,6 +236,15 @@ table.dataTable tbody tr.selected > * {
   height: 25px !important;
 }
 
+.filterRunTypesButton {
+  background-image: url("#{resource['image/filter_button.svg']}") !important;
+  background-size: cover;
+  margin-left: -13px !important;
+  margin-top: -13px !important;
+  width: 25px !important;
+  height: 25px !important;
+}
+
 .selectModeButtons {
   margin-left: 10px;
 }

@@ -772,27 +772,32 @@ public class Instrument {
    * @param variable
    *          The {@link Variable} whose Run Type values are required.
    * @return The Run Type values, grouped by category.
+   * @throws MissingRunTypeException
    * @see RunTypeCategory
    */
-  public Map<Long, List<String>> getVariableRunTypes(Variable variable) {
+  public Map<Long, List<String>> getVariableRunTypes(Variable variable,
+    boolean includeAlias) throws MissingRunTypeException {
     Map<Long, List<String>> result = new HashMap<Long, List<String>>();
 
     for (FileDefinition fileDefinition : fileDefinitions) {
       RunTypeAssignments runTypeAssignments = fileDefinition.getRunTypes();
       if (null != runTypeAssignments) {
         for (String runType : runTypeAssignments.keySet()) {
-          RunTypeAssignment assignment = runTypeAssignments.get(runType);
+          RunTypeAssignment assignment = runTypeAssignments.get(runType, false);
 
-          while (assignment.isAlias()) {
-            assignment = runTypeAssignments.get(assignment.getAliasTo());
-          }
-
-          if (assignment.getCategory().isVariable()) {
-            if (!result.containsKey(assignment.getCategoryCode())) {
-              result.put(assignment.getCategoryCode(), new ArrayList<String>());
+          if (includeAlias || !assignment.isAlias()) {
+            while (assignment.isAlias()) {
+              assignment = runTypeAssignments.get(assignment.getAliasTo());
             }
 
-            result.get(assignment.getCategoryCode()).add(runType);
+            if (assignment.getCategory().isVariable()) {
+              if (!result.containsKey(assignment.getCategoryCode())) {
+                result.put(assignment.getCategoryCode(),
+                  new ArrayList<String>());
+              }
+
+              result.get(assignment.getCategoryCode()).add(runType);
+            }
           }
         }
       }
@@ -866,12 +871,15 @@ public class Instrument {
    * {@link Variable} measured by the instrument.
    *
    * @return The Run Types associated with measurements.
+   * @throws MissingRunTypeException
    */
-  public List<String> getMeasurementRunTypes() {
+  public List<String> getMeasurementRunTypes(boolean includeAlias)
+    throws MissingRunTypeException {
     List<String> result = new ArrayList<String>();
 
     for (Variable variable : variables) {
-      Map<Long, List<String>> variableRunTypes = getVariableRunTypes(variable);
+      Map<Long, List<String>> variableRunTypes = getVariableRunTypes(variable,
+        includeAlias);
       if (variableRunTypes.size() > 0
         && variableRunTypes.containsKey(variable.getId())) {
         result.addAll(variableRunTypes.get(variable.getId()));
@@ -886,7 +894,7 @@ public class Instrument {
    *
    * @return The Run Types associated with internal calibrations.
    */
-  public List<String> getInternalCalibrationRunTypes() {
+  public List<String> getInternalCalibrationRunTypes(boolean includeAlias) {
     // Get the list of run type values that indicate measurements
     List<String> result = new ArrayList<String>(0);
 
@@ -897,16 +905,18 @@ public class Instrument {
         for (Map.Entry<String, RunTypeAssignment> assignment : assignments
           .entrySet()) {
 
-          // Follow aliases
           RunTypeAssignment checkAssignment = assignment.getValue();
-          if (checkAssignment.isAlias()) {
-            checkAssignment = fileDef.getRunTypes()
-              .get(checkAssignment.getAliasTo());
-          }
 
-          if (checkAssignment.getCategory()
-            .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
-            result.add(assignment.getKey());
+          if (includeAlias || !checkAssignment.isAlias()) {
+            if (checkAssignment.isAlias()) {
+              checkAssignment = fileDef.getRunTypes()
+                .get(checkAssignment.getAliasTo());
+            }
+
+            if (checkAssignment.getCategory()
+              .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+              result.add(assignment.getKey());
+            }
           }
         }
       }

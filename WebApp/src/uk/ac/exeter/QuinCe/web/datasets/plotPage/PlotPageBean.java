@@ -398,4 +398,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
   public String getFlagScheme() {
     return dataset.getFlagScheme().getName();
   }
+
+  public boolean getCanFilter() {
+    return false;
+  }
 }

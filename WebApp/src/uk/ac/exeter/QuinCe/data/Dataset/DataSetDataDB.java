@@ -1402,7 +1402,7 @@ public class DataSetDataDB {
     TreeSet<Long> result = new TreeSet<Long>();
 
     List<String> calibrationRunTypes = dataset.getInstrument()
-      .getInternalCalibrationRunTypes();
+      .getInternalCalibrationRunTypes(true);
     List<Long> calibratedColumns = dataset.getInstrument()
       .getSensorAssignments().getInternalCalibrationSensors();
 
@@ -1448,7 +1448,7 @@ public class DataSetDataDB {
     List<RunTypeSensorValue> result = new ArrayList<RunTypeSensorValue>();
 
     List<String> calibrationRunTypes = dataset.getInstrument()
-      .getInternalCalibrationRunTypes();
+      .getInternalCalibrationRunTypes(true);
     List<Long> calibratedColumns = dataset.getInstrument()
       .getSensorAssignments().getInternalCalibrationSensors();
 

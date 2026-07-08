@@ -2565,3 +2565,35 @@ function toggleScale(index) {
     ($('#map' + index + 'Scale').css('display') === 'block');
   });
 }
+
+function showFilterDialog(index) {
+  currentPlot = index;
+  let currentFilterValue = '';
+  let mode = getPlotMode(index);
+  if (mode == PLOT_MODE_MAP) {
+    currentFilterValue = $('#plot' + index + 'Form\\:map' + index + 'Filter').val();
+  } else {
+  currentFilterValue = $('#plot' + index + 'Form\\:plot' + index + 'Filter').val();
+  }
+
+  PF('filterMenu').jq.find('input:radio[value="' + currentFilterValue + '"]').parent().next().click();
+  PF('filterDialog').show();
+}
+
+function setFilter() {
+  let index = currentPlot;
+  let mode = getPlotMode(index) == PLOT_MODE_MAP ? 'map' : 'plot';
+  let filter = PF('filterMenu').jq.find('input:checked').val();
+
+  $('#plot' + index + 'Form\\:' + mode + index + 'Filter').val(filter);
+
+  PF('filterDialog').hide();
+
+  plotLoading(currentPlot, mode);
+  if (mode == 'plot') {
+    eval('loadPlot' + currentPlot + '()'); // PF remoteCommand
+  } else {
+    eval('map' + currentPlot + 'GetData()'); // PF remoteCommand
+    initMap(currentPlot);
+  }
+}

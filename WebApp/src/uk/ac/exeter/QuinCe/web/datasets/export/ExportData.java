@@ -27,6 +27,7 @@ import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.Progress;
@@ -66,7 +67,8 @@ public class ExportData extends ManualQCData {
   private FixedPlotPageTableValue depthValue = null;
 
   public ExportData(DataSource dataSource, Instrument instrument,
-    DataSet dataset, ExportOption exportOption) throws SQLException {
+    DataSet dataset, ExportOption exportOption)
+    throws SQLException, MissingRunTypeException {
     super(dataSource, instrument, dataset);
     this.exportOption = exportOption;
   }
@@ -199,8 +201,9 @@ public class ExportData extends ManualQCData {
        * Add the depth if the dataset has fixed depth
        */
       if (dataset.fixedDepth()) {
-        PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(FIXED_DEPTH_ID,
-          "Depth", "Depth", "ADEPZZ01", "m", true, false, true, true);
+        PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(
+          FIXED_DEPTH_ID, "Depth", "Depth", "ADEPZZ01", "m", true, false, true,
+          true);
         rootColumns.add(depthHeading);
 
         // Set up the fixed value ready for later

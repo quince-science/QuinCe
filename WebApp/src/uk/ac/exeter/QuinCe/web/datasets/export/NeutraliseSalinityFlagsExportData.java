@@ -12,6 +12,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
@@ -57,7 +58,7 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
 
   public NeutraliseSalinityFlagsExportData(DataSource dataSource,
     Instrument instrument, DataSet dataset, ExportOption exportOption)
-    throws SQLException {
+    throws SQLException, MissingRunTypeException {
     super(dataSource, instrument, dataset, exportOption);
   }
 
