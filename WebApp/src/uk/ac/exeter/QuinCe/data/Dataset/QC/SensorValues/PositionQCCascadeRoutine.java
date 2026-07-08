@@ -109,8 +109,8 @@ public class PositionQCCascadeRoutine extends Routine {
       .getSensorTypeForDBColumn(value.getColumnId());
 
     if (sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)
-      || (sensorType.hasInternalCalibration()
-        && !instrument.isMeasurementRunType(runTypePeriods.getRunType(time)))) {
+      || (sensorType.hasInternalCalibration() && !instrument
+        .isMeasurementRunType(runTypePeriods.getRunType(time, false)))) {
       result = false;
     }
 

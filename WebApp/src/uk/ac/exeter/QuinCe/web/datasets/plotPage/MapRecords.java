@@ -117,7 +117,8 @@ public class MapRecords extends ArrayList<MapRecord> {
         if (!filter.equals(PlotPageData.NO_FILTER)) {
           if (data.getInstrument().hasRunTypes()) {
             if (!data.getRunTypePeriods()
-              .getRunType(record.getCoordinate().getTime()).equals(filter)) {
+              .getRunType(record.getCoordinate().getTime(), true)
+              .equals(filter)) {
               filteredOut = true;
             }
           }

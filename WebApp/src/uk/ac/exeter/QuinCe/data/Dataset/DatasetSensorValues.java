@@ -894,7 +894,7 @@ public class DatasetSensorValues {
 
         for (SensorValue value : affectedSensorValues) {
           String valueRunType = runTypePeriods
-            .getRunType(value.getCoordinate().getTime());
+            .getRunType(value.getCoordinate().getTime(), false);
           if (null == valueRunType || affectedSensorAssignments.get(assignment)
             .contains(valueRunType)) {
 

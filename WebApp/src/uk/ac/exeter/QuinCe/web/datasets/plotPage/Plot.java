@@ -242,8 +242,10 @@ public class Plot {
 
       if (!filter.equals(PlotPageData.NO_FILTER)) {
         if (data.getInstrument().hasRunTypes()) {
-          if (!data.getRunTypePeriods().getRunType(coordinate.getTime())
-            .equals(filter)) {
+          String runType = data.getRunTypePeriods()
+            .getRunType(coordinate.getTime(), true);
+
+          if (null == runType || !runType.equals(filter)) {
             filteredOut = true;
           }
         }

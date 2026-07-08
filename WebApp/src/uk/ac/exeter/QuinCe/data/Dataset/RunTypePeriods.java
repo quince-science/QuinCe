@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -62,11 +63,41 @@ public class RunTypePeriods extends ArrayList<RunTypePeriod> {
     return result;
   }
 
-  public String getRunType(LocalDateTime time) {
+  /**
+   * Get the Run Type name that is current at the specified time.
+   *
+   * <p>
+   * If there is no active Run Type at the specified time and {@code fallback}
+   * is {@code true}, the last Run Type before the time will be returned.
+   * Otherwise the method will return {@code null}.
+   *
+   * @param time
+   *          The time.
+   * @param fallback
+   *          Whether the method should fall back to using the previous Run Type
+   *          if there is no concurrent Run Type.
+   * @return The found Run Type name.
+   */
+  public String getRunType(LocalDateTime time, boolean fallback) {
+
+    String result = null;
+
     Optional<RunTypePeriod> period = stream().filter(p -> p.encompasses(time))
       .findAny();
 
-    return period.isEmpty() ? null : period.get().getRunType();
+    if (!period.isEmpty()) {
+      result = period.get().getRunType();
+    } else {
+      if (fallback) {
+        List<RunTypePeriod> priorPeriods = stream()
+          .filter(p -> p.getEnd().isBefore(time)).toList();
+        if (priorPeriods.size() > 0) {
+          result = priorPeriods.get(priorPeriods.size() - 1).getRunType();
+        }
+      }
+    }
+
+    return result;
   }
 
   /**

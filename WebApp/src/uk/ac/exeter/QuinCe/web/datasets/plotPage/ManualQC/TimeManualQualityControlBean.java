@@ -103,6 +103,6 @@ public class TimeManualQualityControlBean extends PlotPageBean {
 
   @Override
   public boolean getCanFilter() {
-    return true;
+    return data.getInstrument().hasRunTypes();
   }
 }
