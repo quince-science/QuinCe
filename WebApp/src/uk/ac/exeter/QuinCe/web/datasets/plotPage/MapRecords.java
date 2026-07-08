@@ -43,16 +43,20 @@ public class MapRecords extends ArrayList<MapRecord> {
 
   private Double maxNoFlags = Double.NaN;
 
-  public MapRecords(int size, DatasetSensorValues allSensorValues,
+  private final PlotPageData data;
+
+  public MapRecords(int size, PlotPageData data,
     Function<Double, String> valueFormatter) {
 
     super(size);
-    buildGsons(allSensorValues, valueFormatter);
+    this.data = data;
+    buildGsons(data.getAllSensorValues(), valueFormatter);
   }
 
-  public MapRecords(int size, DatasetSensorValues allSensorValues) {
+  public MapRecords(int size, PlotPageData data) {
     super(size);
-    buildGsons(allSensorValues, null);
+    this.data = data;
+    buildGsons(data.getAllSensorValues(), null);
   }
 
   private void buildGsons(DatasetSensorValues allSensorValues,
@@ -89,11 +93,11 @@ public class MapRecords extends ArrayList<MapRecord> {
   }
 
   public String getDisplayJson(GeoBounds bounds, List<Long> selectedRows,
-    boolean useNeededFlags, boolean hideNonGoodFlags, boolean includePath,
-    DatasetSensorValues allSensorValues) {
+    boolean useNeededFlags, boolean hideNonGoodFlags, String filter,
+    boolean includePath, DatasetSensorValues allSensorValues) {
 
     Set<MapRecord> boundedRecords = new TreeSet<MapRecord>();
-    List<MapRecord> data = new ArrayList<MapRecord>();
+    List<MapRecord> mapData = new ArrayList<MapRecord>();
     Set<MapRecord> flags = new TreeSet<MapRecord>();
     List<MapRecord> selection = new ArrayList<MapRecord>();
 
@@ -108,8 +112,19 @@ public class MapRecords extends ArrayList<MapRecord> {
       // closest to the bound limits.
       for (MapRecord record : this) {
 
-        if (!hideNonGoodFlags || record.isGood(allSensorValues)
-          || record.flagNeeded()) {
+        boolean filteredOut = false;
+
+        if (!filter.equals(PlotPageData.NO_FILTER)) {
+          if (data.getInstrument().hasRunTypes()) {
+            if (!data.getRunTypePeriods()
+              .getRunType(record.getCoordinate().getTime()).equals(filter)) {
+              filteredOut = true;
+            }
+          }
+        }
+
+        if (!filteredOut && (!hideNonGoodFlags || record.isGood(allSensorValues)
+          || record.flagNeeded())) {
           if (bounds.inBounds(record.position)) {
             if (record.position.getLongitude() < minLon.position
               .getLongitude()) {
@@ -161,7 +176,7 @@ public class MapRecords extends ArrayList<MapRecord> {
       decimated.add(maxLat);
 
       for (MapRecord record : decimated) {
-        data.add(record);
+        mapData.add(record);
         if (showAsFlag(record, useNeededFlags, allSensorValues)) {
           flags.add(record);
         }
@@ -177,7 +192,7 @@ public class MapRecords extends ArrayList<MapRecord> {
 
     JsonArray json = new JsonArray();
 
-    json.add(valueGson.toJsonTree(makeFeatureCollection(valueGson, data)));
+    json.add(valueGson.toJsonTree(makeFeatureCollection(valueGson, mapData)));
 
     if (useNeededFlags) {
       json.add(flagGson.toJsonTree(makeFeatureCollection(flagGson, flags)));

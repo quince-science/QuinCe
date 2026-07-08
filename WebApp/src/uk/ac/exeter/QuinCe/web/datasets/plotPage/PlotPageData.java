@@ -1065,15 +1065,15 @@ public abstract class PlotPageData {
   protected abstract List<Coordinate> getCoordinates();
 
   public String getMapData(PlotPageColumnHeading column, GeoBounds bounds,
-    boolean useNeededFlags, boolean hideNonGoodFlags, boolean includePath,
-    DatasetSensorValues allSensorValues) throws Exception {
+    boolean useNeededFlags, boolean hideNonGoodFlags, String filter,
+    boolean includePath, DatasetSensorValues allSensorValues) throws Exception {
 
     if (!mapCache.containsKey(column)) {
       buildMapCache(column);
     }
 
     return mapCache.get(column).getDisplayJson(bounds, getMapSelection(),
-      useNeededFlags, hideNonGoodFlags, includePath, allSensorValues);
+      useNeededFlags, hideNonGoodFlags, filter, includePath, allSensorValues);
   }
 
   /**
@@ -1101,7 +1101,7 @@ public abstract class PlotPageData {
 
   protected void buildMapCache(PlotPageColumnHeading column) throws Exception {
 
-    MapRecords records = new MapRecords(size(), getAllSensorValues());
+    MapRecords records = new MapRecords(size(), this);
 
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
       for (Coordinate coordinate : getCoordinates()) {

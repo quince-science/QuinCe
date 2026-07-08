@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.javadocmd.simplelatlng.LatLng;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
@@ -13,13 +15,13 @@ public class PlotPageValueMapRecord extends MapRecord {
 
   public PlotPageValueMapRecord(LatLng position, Coordinate coordinate,
     PlotPageTableValue value) {
-    super(position, coordinate.getId());
+    super(coordinate, position, coordinate.getId());
     this.value = value;
   }
 
-  public PlotPageValueMapRecord(LatLng position, long id,
+  public PlotPageValueMapRecord(Coordinate coordinate, LatLng position, long id,
     PlotPageTableValue value) {
-    super(position, id);
+    super(coordinate, position, id);
     this.value = value;
   }
 
@@ -57,6 +59,15 @@ public class PlotPageValueMapRecord extends MapRecord {
     }
 
     return result;
+  }
+
+  @Override
+  public Coordinate getCoordinate() {
+    if (null == coordinate) {
+      throw new NotImplementedException("Coordinates not available");
+    } else {
+      return super.getCoordinate();
+    }
   }
 
 }

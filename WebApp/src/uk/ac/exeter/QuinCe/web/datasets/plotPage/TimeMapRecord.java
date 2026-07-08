@@ -14,7 +14,7 @@ public class TimeMapRecord extends MapRecord {
   private LocalDateTime time;
 
   public TimeMapRecord(LatLng position, Coordinate coordinate) {
-    super(position, coordinate.getId());
+    super(coordinate, position, coordinate.getId());
     this.time = coordinate.getTime();
   }
 

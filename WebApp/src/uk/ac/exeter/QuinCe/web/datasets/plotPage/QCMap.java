@@ -138,7 +138,7 @@ public class QCMap {
     try {
       mapScaleLimits = data.getValueRange(dataColumn, hideFlags);
       mapData = data.getMapData(dataColumn, viewBounds, useNeededFlags,
-        hideFlags, includePath(), data.getAllSensorValues());
+        hideFlags, filter, includePath(), data.getAllSensorValues());
       dataBounds = null;
     } catch (Exception e) {
       e.printStackTrace();

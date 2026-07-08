@@ -285,7 +285,7 @@ public class ArgoManualQCData extends ManualQCData {
   @Override
   protected void buildMapCache(PlotPageColumnHeading column) throws Exception {
 
-    MapRecords records = new MapRecords(0, getAllSensorValues(),
+    MapRecords records = new MapRecords(0, this,
       StringUtils::formatNumberToInt);
 
     HashSet<Integer> usedCycleNumbers = new HashSet<Integer>();
@@ -297,7 +297,7 @@ public class ArgoManualQCData extends ManualQCData {
       if (!usedCycleNumbers.contains(profile.getCycleNumber())) {
 
         if (null != profile.getPosition()) {
-          records.add(new PlotPageValueMapRecord(profile.getPosition(), i,
+          records.add(new PlotPageValueMapRecord(null, profile.getPosition(), i,
             new SimplePlotPageTableValue(
               String.valueOf(profile.getCycleNumber()),
               sensorValues.getFlagScheme())));

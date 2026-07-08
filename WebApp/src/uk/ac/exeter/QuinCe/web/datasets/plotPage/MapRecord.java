@@ -2,15 +2,18 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import com.javadocmd.simplelatlng.LatLng;
 
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DatasetSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
 public abstract class MapRecord implements Comparable<MapRecord> {
 
+  protected final Coordinate coordinate;
   protected final LatLng position;
   protected final long id;
 
-  protected MapRecord(LatLng position, long id) {
+  protected MapRecord(Coordinate coordinate, LatLng position, long id) {
+    this.coordinate = coordinate;
     this.position = position;
     this.id = id;
   }
@@ -40,5 +43,9 @@ public abstract class MapRecord implements Comparable<MapRecord> {
 
   public boolean isNaN() {
     return (null == getValue() || getValue().isNaN());
+  }
+
+  public Coordinate getCoordinate() {
+    return coordinate;
   }
 }
