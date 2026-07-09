@@ -109,8 +109,8 @@ public class TimestampSensorValuesListValue implements SensorValuesListValue {
    * @throws RoutineException
    */
   protected TimestampSensorValuesListValue(SensorValue sourceSensorValue,
-    SensorType sensorType, DatasetSensorValues allSensorValues)
-    throws SensorValuesListException, RoutineException {
+    SensorType sensorType, DatasetSensorValues allSensorValues,
+    boolean forceString) throws SensorValuesListException, RoutineException {
 
     if (!(sourceSensorValue.getCoordinate() instanceof TimeCoordinate)) {
       throw new IllegalArgumentException("Cannot use non-time coordinates");
@@ -122,7 +122,7 @@ public class TimestampSensorValuesListValue implements SensorValuesListValue {
     sourceSensorValues = Collections.singleton(sourceSensorValue);
     this.sensorType = sensorType;
 
-    if (sourceSensorValue.isNumeric()) {
+    if (!forceString && sourceSensorValue.isNumeric()) {
       doubleValue = sourceSensorValue.getDoubleValue();
       qcFlag = sourceSensorValue.getDisplayFlag(allSensorValues);
       qcMessage = sourceSensorValue.getDisplayQCMessage(allSensorValues);

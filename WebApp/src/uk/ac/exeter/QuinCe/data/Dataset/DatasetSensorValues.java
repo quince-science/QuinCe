@@ -1156,7 +1156,7 @@ public class DatasetSensorValues {
     boolean forceString) throws RecordNotFoundException {
 
     SensorValuesList result = SensorValuesListFactory
-      .makeSensorValuesList(columnIds, this, false);
+      .makeSensorValuesList(columnIds, this, forceString);
 
     for (long id : columnIds) {
       result.addAll(valuesByColumn.get(id));

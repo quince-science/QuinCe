@@ -260,13 +260,8 @@ public class TimestampSensorValuesList extends SensorValuesList {
       if (null != sensorValue.getValue()
         && !sensorValue.getUserQCFlag().equals(FlagScheme.FLUSHING_FLAG)) {
         try {
-          if (sensorValue.isNumeric()) {
-            outputValues.add(new TimestampSensorValuesListValue(sensorValue,
-              sensorType, allSensorValues));
-          } else {
-            outputValues.add(new TimestampSensorValuesListValue(sensorValue,
-              sensorType, allSensorValues));
-          }
+          outputValues.add(new TimestampSensorValuesListValue(sensorValue,
+            sensorType, allSensorValues, forceString));
         } catch (RoutineException e) {
           throw new SensorValuesListException(e);
         }

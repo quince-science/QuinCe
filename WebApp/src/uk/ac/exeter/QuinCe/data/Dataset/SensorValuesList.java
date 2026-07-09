@@ -115,7 +115,7 @@ public abstract class SensorValuesList {
    * If this is set to {@code false}, the list will automatically decide whether
    * to use String or Double values.
    */
-  private final boolean forceString;
+  protected final boolean forceString;
 
   /**
    * Create a list for a single file column.
