@@ -54,4 +54,9 @@ public class RunTypePeriod {
     return result;
   }
 
+  @Override
+  public String toString() {
+    return start.toString() + " - " + end.toString() + ": " + runType;
+  }
+
 }

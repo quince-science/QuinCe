@@ -1,7 +1,9 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -236,15 +238,18 @@ public class Plot {
 
     plotValues = new TreeSet<PlotValue>();
 
+    Map<LocalDateTime, String> coordinateRunTypes = data.getRunTypePeriods()
+      .getRunTypes(
+        xValues.keySet().stream().map(c -> c.getTime()).sorted().toList(),
+        true);
+
     for (Coordinate coordinate : xValues.keySet()) {
 
       boolean filteredOut = false;
 
       if (!filter.equals(PlotPageData.NO_FILTER)) {
         if (data.getInstrument().hasRunTypes()) {
-          String runType = data.getRunTypePeriods()
-            .getRunType(coordinate.getTime(), true);
-
+          String runType = coordinateRunTypes.get(coordinate.getTime());
           if (null == runType || !runType.equals(filter)) {
             filteredOut = true;
           }

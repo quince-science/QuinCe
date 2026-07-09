@@ -6,8 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
 
@@ -192,5 +196,36 @@ public class RunTypePeriodsTest extends BaseTest {
   public void containsInSecond() throws Exception {
     assertTrue(
       makeContainsPeriods().contains(LocalDateTime.of(2000, 2, 1, 12, 0, 0)));
+  }
+
+  private static Stream<Arguments> getSingleTimeTestParams() {
+    return Stream.of(Arguments.of(9, 45, true, null),
+      Arguments.of(9, 45, false, null), Arguments.of(10, 0, true, "A"),
+      Arguments.of(10, 15, true, "A"), Arguments.of(10, 30, true, "A"),
+      Arguments.of(10, 45, true, "A"), Arguments.of(10, 45, false, null),
+      Arguments.of(11, 10, true, "B"), Arguments.of(14, 0, true, "B"),
+      Arguments.of(14, 0, false, null));
+  }
+
+  private LocalDateTime getTime(int hour, int minute) {
+    return LocalDateTime.of(2026, 7, 9, hour, minute, 0);
+  }
+
+  @ParameterizedTest
+  @MethodSource("getSingleTimeTestParams")
+  public void getRunTypePeriodTest(int hour, int minute, boolean fallback,
+    String runType) {
+
+    RunTypePeriods periods = new RunTypePeriods();
+    for (int i = 10; i <= 13; i++) {
+      LocalDateTime start = getTime(i, 0);
+      LocalDateTime end = getTime(i, 30);
+
+      RunTypePeriod period = new RunTypePeriod(i % 2 == 0 ? "A" : "B", start);
+      period.setEnd(end);
+      periods.add(period);
+    }
+
+    assertEquals(runType, periods.getRunType(getTime(hour, minute), fallback));
   }
 }

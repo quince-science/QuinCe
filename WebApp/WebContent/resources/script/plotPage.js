@@ -2569,7 +2569,7 @@ function toggleScale(index) {
 function showFilterDialog(index) {
   // Clear leftover formatting that doesn't clear itself
   $('#plot1Form\\:filterMenu').find('.ui-radiobutton-box').removeClass('ui-state-focus');
-		
+
   currentPlot = index;
   let currentFilterValue = '';
   let mode = getPlotMode(index);
