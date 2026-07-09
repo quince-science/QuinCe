@@ -227,8 +227,8 @@ public abstract class PlotPageData {
       if (!entry.getKey().isMeasurementType()
         && !entry.getKey().equals(RunTypeCategory.INTERNAL_CALIBRATION)
         && !entry.getKey().equals(RunTypeCategory.ALIAS)) {
-        otherRunTypes
-          .addAll(entry.getValue().stream().map(a -> a.getRunName()).toList());
+        otherRunTypes.addAll(entry.getValue().stream().map(a -> a.getRunName())
+          .filter(n -> !StringUtils.isEmpty(n)).toList());
       }
     }
 
