@@ -129,56 +129,58 @@ public class RunTypePeriods extends ArrayList<RunTypePeriod> {
 
     HashMap<LocalDateTime, String> result = new HashMap<LocalDateTime, String>();
 
-    int currentIndex = 0;
-    RunTypePeriod previousPeriod = null;
-    RunTypePeriod currentPeriod = get(0);
+    if (size() > 0) {
+      int currentIndex = 0;
+      RunTypePeriod previousPeriod = null;
+      RunTypePeriod currentPeriod = get(0);
 
-    LocalDateTime lastTime = null;
+      LocalDateTime lastTime = null;
 
-    for (LocalDateTime time : times) {
-      if (null != lastTime && time.isBefore(lastTime)) {
-        throw new IllegalArgumentException("Times must be in order");
-      }
-
-      if (null == currentPeriod) {
-        if (fallback && null != previousPeriod) {
-          result.put(time, previousPeriod.getRunType());
-        } else {
-          result.put(time, null);
+      for (LocalDateTime time : times) {
+        if (null != lastTime && time.isBefore(lastTime)) {
+          throw new IllegalArgumentException("Times must be in order");
         }
-      } else if (currentPeriod.encompasses(time)) {
-        result.put(time, currentPeriod.getRunType());
-      } else if (time.isBefore(currentPeriod.getStart())) {
-        if (null == previousPeriod) {
-          result.put(time, null);
-        } else if (fallback) {
-          result.put(time, previousPeriod.getRunType());
-        } else {
-          result.put(time, null);
-        }
-      } else {
-        while (currentPeriod.getEnd().isBefore(time)) {
-          if (currentIndex == size() - 1) {
-            previousPeriod = currentPeriod;
-            currentPeriod = null;
-            break;
+
+        if (null == currentPeriod) {
+          if (fallback && null != previousPeriod) {
+            result.put(time, previousPeriod.getRunType());
           } else {
-            previousPeriod = currentPeriod;
-            currentIndex++;
-            currentPeriod = get(currentIndex);
+            result.put(time, null);
+          }
+        } else if (currentPeriod.encompasses(time)) {
+          result.put(time, currentPeriod.getRunType());
+        } else if (time.isBefore(currentPeriod.getStart())) {
+          if (null == previousPeriod) {
+            result.put(time, null);
+          } else if (fallback) {
+            result.put(time, previousPeriod.getRunType());
+          } else {
+            result.put(time, null);
+          }
+        } else {
+          while (currentPeriod.getEnd().isBefore(time)) {
+            if (currentIndex == size() - 1) {
+              previousPeriod = currentPeriod;
+              currentPeriod = null;
+              break;
+            } else {
+              previousPeriod = currentPeriod;
+              currentIndex++;
+              currentPeriod = get(currentIndex);
+            }
+          }
+
+          if (null != currentPeriod && currentPeriod.encompasses(time)) {
+            result.put(time, currentPeriod.getRunType());
+          } else if (fallback) {
+            result.put(time, previousPeriod.getRunType());
+          } else {
+            result.put(time, null);
           }
         }
 
-        if (null != currentPeriod && currentPeriod.encompasses(time)) {
-          result.put(time, currentPeriod.getRunType());
-        } else if (fallback) {
-          result.put(time, previousPeriod.getRunType());
-        } else {
-          result.put(time, null);
-        }
+        lastTime = time;
       }
-
-      lastTime = time;
     }
 
     return result;

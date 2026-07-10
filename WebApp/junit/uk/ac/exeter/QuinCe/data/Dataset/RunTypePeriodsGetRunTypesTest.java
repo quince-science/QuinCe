@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import uk.ac.exeter.QuinCe.TestBase.BaseTest;
@@ -104,6 +106,12 @@ public class RunTypePeriodsGetRunTypesTest extends BaseTest {
 
     assertEquals(runType1, runTypes.get(time1));
     assertEquals(runType2, runTypes.get(time2));
+  }
 
+  @ParameterizedTest
+  @CsvSource({ "true", "false" })
+  public void emptyPeriodsTest(boolean fallback) {
+    RunTypePeriods emptyPeriods = new RunTypePeriods();
+    assertNull(emptyPeriods.getRunType(getTime(12, 0), fallback));
   }
 }
