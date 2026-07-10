@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -238,10 +239,13 @@ public class Plot {
 
     plotValues = new TreeSet<PlotValue>();
 
-    Map<LocalDateTime, String> coordinateRunTypes = data.getRunTypePeriods()
-      .getRunTypes(
+    Map<LocalDateTime, String> coordinateRunTypes = new HashMap<LocalDateTime, String>();
+
+    if (data.getInstrument().hasRunTypes()) {
+      coordinateRunTypes = data.getRunTypePeriods().getRunTypes(
         xValues.keySet().stream().map(c -> c.getTime()).sorted().toList(),
         true);
+    }
 
     for (Coordinate coordinate : xValues.keySet()) {
 
