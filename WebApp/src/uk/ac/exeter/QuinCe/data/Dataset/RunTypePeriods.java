@@ -140,7 +140,13 @@ public class RunTypePeriods extends ArrayList<RunTypePeriod> {
         throw new IllegalArgumentException("Times must be in order");
       }
 
-      if (currentPeriod.encompasses(time)) {
+      if (null == currentPeriod) {
+        if (fallback && null != previousPeriod) {
+          result.put(time, previousPeriod.getRunType());
+        } else {
+          result.put(time, null);
+        }
+      } else if (currentPeriod.encompasses(time)) {
         result.put(time, currentPeriod.getRunType());
       } else if (time.isBefore(currentPeriod.getStart())) {
         if (null == previousPeriod) {
