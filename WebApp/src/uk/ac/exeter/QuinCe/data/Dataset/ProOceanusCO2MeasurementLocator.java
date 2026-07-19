@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagScheme;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -112,12 +113,20 @@ public class ProOceanusCO2MeasurementLocator extends MeasurementLocator {
 
       Variable variable = sensorConfig.getInstrumentVariable(getVariableName());
 
-      int flushingTime = (int) Math
-        .round(Double.parseDouble(dataset.getAllProperties()
-          .get(variable.getName()).getProperty("flushing_time")));
+      int flushingTime = 0;
+
+      Properties varProps = dataset.getAllProperties()
+        .get(variable.getName());
+
+      if (null != varProps) {
+        String flushingTimeProp = varProps.getProperty("flushing_time");
+        if (null != flushingTimeProp) {
+          flushingTime = (int) Math
+            .round(Double.parseDouble(flushingTimeProp));
+        }
+      }
 
       if (flushingTime > 0) {
-
         String lastZero = "";
         for (SensorValue zero : zeroValues.getRawValues()) {
           String newZero = zero.getValue();
