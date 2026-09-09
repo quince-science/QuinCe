@@ -148,6 +148,11 @@ sourceSets {
     java {
       srcDirs = ['WebApp/junit']
     }
+    resources {
+      srcDirs = ['WebApp/junit']
+      exclude '**/*.java'
+    }
+
   }
 }
 
