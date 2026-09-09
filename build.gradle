@@ -163,6 +163,20 @@ test {
   useJUnitPlatform()
 }
 
+task testReport(type: JacocoReport) {
+  dependsOn test
+
+  reports {
+    xml.required = true
+    xml.destination = file("${buildDir}/reports/jacoco/report.xml")
+    csv.required = false
+    html.required = false
+  }
+
+  sourceSets sourceSets.main
+  executionData test
+}
+
 def rootPath = file('.').absolutePath
 def webContext=new XmlSlurper().parse(rootPath + '/WebApp/WebContent/META-INF/context.xml')
 
