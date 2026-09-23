@@ -49,11 +49,18 @@
       }
 
       function exportDataset(id) {
-        window['keepAliveActive'] = false;
-        $('#exportForm\\:exportDatasetId').val(id);
-        $('#exportForm\\:exportLink').click();
-        return false;
-      }
+          window['keepAliveActive'] = false;
+          $('#exportForm\\:exportDatasetId').val(id);
+          $('#exportForm\\:exportLink').click();
+          return false;
+        }
+
+      function exportArgoDataset(id) {
+          window['keepAliveActive'] = false;
+          $('#argoExportForm\\:exportDatasetId').val(id);
+          $('#argoExportForm\\:exportLink').click();
+          return false;
+        }
 
       function submitForApproval(id) {
         $('#datasetListForm\\:datasetId').val(id);
@@ -163,6 +170,10 @@
       <h:form id="exportForm" method="post" charset="utf8">
         <h:inputHidden id="exportDatasetId" value="#{exportBean.datasetId}" />
         <p:commandLink id="exportLink" ajax="false" action="#{exportBean.start}" />
+      </h:form>
+      <h:form id="argoExportForm" method="post" charset="utf8">
+        <h:inputHidden id="exportDatasetId" value="#{argoExportBean.datasetId}" />
+        <p:commandLink id="exportLink" ajax="false" action="#{argoExportBean.export}" />
       </h:form>
       <h:form id="datasetListForm" method="post" charset="utf8">
         <h:inputHidden id="hasFiles" value="#{dataSetsBean.hasFiles}"/>
@@ -375,10 +386,18 @@
                   title="Quality Control" />
               </ui:fragment>
               <ui:fragment rendered="#{dataset.canBeExported}">
-                <p:commandLink onclick="exportDataset(#{dataset.id})">
+        <ui:fragment rendered="#{dataset.instrument.basis eq 1}">
+                  <p:commandLink onclick="exportDataset(#{dataset.id})">
                   <h:graphicImage value="/resources/image/export.svg"
                     styleClass="actionIcon" alt="Export" title="Export" />
                 </p:commandLink>
+        </ui:fragment>
+        <ui:fragment rendered="#{dataset.instrument.basis eq 2}">
+                  <p:commandLink onclick="exportArgoDataset(#{dataset.id})">
+                  <h:graphicImage value="/resources/image/export.svg"
+                    styleClass="actionIcon" alt="Export" title="Export" />
+                </p:commandLink>
+        </ui:fragment>
               </ui:fragment>
               <ui:fragment rendered="#{!dataset.canBeExported}">
                 <h:graphicImage value="/resources/image/export_disabled.svg"

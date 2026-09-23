@@ -781,13 +781,6 @@ public class DatasetSensorValues {
    * Create a subset of this object containing the specified
    * {@link SensorValue}s, identified by their database IDs.
    *
-   * <p>
-   * All {@link SensorValue}s with the specified {@link Coordinate} are kept,
-   * plus those with the specified database IDs and all position
-   * {@link SensorValue}s. If any of the specified {@link Coordinate}s or
-   * {@link SensorValue} IDs are not in the data structure they will be ignored.
-   * </p>
-   *
    * @param times
    *          The coordinates of {@link SensorValues} to keep.
    * @param ids
@@ -797,8 +790,8 @@ public class DatasetSensorValues {
    * @throws RecordNotFoundException
    *           If the {@link Instrument}'s configuration is invalid.
    */
-  public DatasetSensorValues subset(TreeSet<Coordinate> coordinates,
-    TreeSet<Long> ids) throws RecordNotFoundException {
+  public DatasetSensorValues subset(TreeSet<Long> ids)
+    throws RecordNotFoundException {
 
     DatasetSensorValues result = new DatasetSensorValues(dataset);
 
@@ -819,8 +812,7 @@ public class DatasetSensorValues {
       if (value.getColumnId() == SensorType.LONGITUDE_ID
         || value.getColumnId() == SensorType.LATITUDE_ID
         || value.getColumnId() == SensorType.DEPTH_ID
-        || ids.contains(value.getId())
-        || coordinates.contains(value.getCoordinate())) {
+        || ids.contains(value.getId())) {
         valuesToAdd.add(value);
       }
     }

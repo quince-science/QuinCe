@@ -5,16 +5,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import org.apache.commons.lang3.math.NumberUtils;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
 
 /**
  * Class to hold details of a single export configuration
@@ -189,8 +186,8 @@ public class ExportOption {
   }
 
   protected void setIncludeCalculationColumns(
-    boolean includeCalculationColuns) {
-    this.includeCalculationColumns = includeCalculationColuns;
+    boolean includeCalculationColumns) {
+    this.includeCalculationColumns = includeCalculationColumns;
   }
 
   protected void setHeaderMode(int headerMode)
@@ -311,10 +308,6 @@ public class ExportOption {
     return skipBad;
   }
 
-  public boolean filterSensorValues() {
-    return measurementsOnly || skipBad;
-  }
-
   public boolean getVisible() {
     return visible;
   }
@@ -394,14 +387,14 @@ public class ExportOption {
    *          The dataset that will be exported
    * @return The ExportData object
    */
-  public ExportData makeExportData(DataSource dataSource, Instrument instrument,
-    DataSet dataset) throws ExportConfigurationException {
+  public ExportData makeExportData(ManualQCData sourceData)
+    throws ExportConfigurationException {
 
     try {
-      Constructor<? extends ExportData> constructor = dataClass.getConstructor(
-        DataSource.class, Instrument.class, DataSet.class, this.getClass());
+      Constructor<? extends ExportData> constructor = dataClass
+        .getConstructor(ManualQCData.class, this.getClass());
 
-      return constructor.newInstance(dataSource, instrument, dataset, this);
+      return constructor.newInstance(sourceData, this);
     } catch (Exception e) {
       throw new ExportConfigurationException(name,
         "Error creating ExportData object", e);

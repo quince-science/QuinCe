@@ -53,7 +53,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorIdMapper;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
-import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExceptionUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -62,6 +61,8 @@ import uk.ac.exeter.QuinCe.web.Progress;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.NullPlotPageTableValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCDataFactory;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @ManagedBean
@@ -76,7 +77,7 @@ public class ExportBean extends BaseManagedBean {
   /**
    * The dataset to be exported
    */
-  private DataSet dataset = null;
+  protected DataSet dataset = null;
 
   /**
    * The chosen export options
@@ -179,10 +180,7 @@ public class ExportBean extends BaseManagedBean {
    */
   private void exportDatasetWithRawFiles() {
 
-    Connection conn = null;
-
-    try {
-      conn = getDataSource().getConnection();
+    try (Connection conn = getDataSource().getConnection();) {
 
       byte[] outBytes = buildExportZip(conn, getCurrentInstrument(), dataset,
         ExportConfig.getInstance().getOptions(chosenExportOptions),
@@ -194,14 +192,10 @@ public class ExportBean extends BaseManagedBean {
       ec.responseReset();
       ec.setResponseContentType("application/zip");
 
-      // Set it with the file size. This header is optional. It will work if
-      // it's omitted,
-      // but the download progress will be unknown.
+      // File size
       ec.setResponseContentLength(outBytes.length);
 
-      // The Save As popup magic is done here. You can give it any file name you
-      // want, this only won't work in MSIE,
-      // it will use current request URL as file name instead.
+      // Filename
       ec.setResponseHeader("Content-Disposition",
         "attachment; filename=\"" + dataset.getName() + ".zip\"");
 
@@ -218,8 +212,6 @@ public class ExportBean extends BaseManagedBean {
       DataSetDB.setDatasetExported(conn, dataset.getId(), false);
     } catch (Exception e) {
       ExceptionUtils.printStackTrace(e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -236,15 +228,17 @@ public class ExportBean extends BaseManagedBean {
    * @return The exported dataset
    * @throws Exception
    */
-  private static DatasetExport getDatasetExport(Instrument instrument,
+  protected static DatasetExport getDatasetExport(Instrument instrument,
     DataSet dataset, ExportOption exportOption, Progress progress)
     throws Exception {
 
     DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
-    ExportData data = exportOption.makeExportData(dataSource, instrument,
-      dataset);
-    data.loadData(progress);
+    ManualQCData sourceData = ManualQCDataFactory.getManualQCData(dataSource,
+      instrument, dataset);
+    sourceData.loadData(progress);
+
+    ExportData data = exportOption.makeExportData(sourceData);
 
     // Run the post-processor before generating the final output
     data.postProcess();
@@ -264,12 +258,11 @@ public class ExportBean extends BaseManagedBean {
     // Process each row of the data
     for (Long rowId : data.getRowIDs()) {
       if (data.contains(rowId, exportOption.includeRawSensors())) {
-
         boolean firstColumn = true;
 
         // Time and position
-        List<PlotPageColumnHeading> baseColumns = data
-          .getExtendedColumnHeadings().get(ExportData.ROOT_FIELD_GROUP);
+        List<PlotPageColumnHeading> baseColumns = data.getColumnHeadings()
+          .get(ManualQCData.ROOT_FIELD_GROUP);
 
         for (PlotPageColumnHeading column : baseColumns) {
           if (allowedExportColumns.contains(column)) {
@@ -283,7 +276,7 @@ public class ExportBean extends BaseManagedBean {
               column.getId());
 
             addValueToOutput(result, exportOption, column.getId(), value,
-              column.hasQC(), column.includeType(), data.getAllSensorValues());
+              column.hasQC(), column.includeType(), data.getSensorValues());
           }
         }
 
@@ -291,8 +284,7 @@ public class ExportBean extends BaseManagedBean {
         Measurement measurement = data.getMeasurement(rowId);
 
         List<PlotPageColumnHeading> measurementValueColumns = data
-          .getExtendedColumnHeadings()
-          .get(ExportData.MEASUREMENTVALUES_FIELD_GROUP);
+          .getColumnHeadings().get(ManualQCData.MEASUREMENTVALUES_FIELD_GROUP);
 
         for (PlotPageColumnHeading column : measurementValueColumns) {
           if (allowedExportColumns.contains(column)) {
@@ -349,7 +341,7 @@ public class ExportBean extends BaseManagedBean {
             result.append(exportOption.getSeparator());
             addValueToOutput(result, exportOption, column.getId(),
               useValueInThisColumn ? value : null, true, true,
-              data.getAllSensorValues());
+              data.getSensorValues());
           }
         }
 
@@ -375,20 +367,20 @@ public class ExportBean extends BaseManagedBean {
                  */
                 if (null != value && exportOption.skipBad()
                   && dataset.getFlagScheme()
-                    .isBad(value.getQcFlag(data.getAllSensorValues()))) {
+                    .isBad(value.getQcFlag(data.getSensorValues()))) {
                   value = null;
                 }
 
                 addValueToOutput(result, exportOption, param.getId(), value,
-                  param.isResult(), false, data.getAllSensorValues());
+                  param.isResult(), false, data.getSensorValues());
               }
             }
           }
         }
 
         if (exportOption.includeRawSensors()) {
-          List<PlotPageColumnHeading> sensorHeadings = data
-            .getExtendedColumnHeadings().get(ExportData.SENSORS_FIELD_GROUP);
+          List<PlotPageColumnHeading> sensorHeadings = data.getColumnHeadings()
+            .get(ManualQCData.SENSORS_FIELD_GROUP);
 
           for (PlotPageColumnHeading heading : sensorHeadings) {
             if (allowedExportColumns.contains(heading)) {
@@ -397,13 +389,12 @@ public class ExportBean extends BaseManagedBean {
               PlotPageTableValue value = data.getColumnValue(rowId,
                 heading.getId());
               addValueToOutput(result, exportOption, heading.getId(), value,
-                true, false, data.getAllSensorValues());
+                true, false, data.getSensorValues());
             }
           }
 
           List<PlotPageColumnHeading> diagnosticHeadings = data
-            .getExtendedColumnHeadings()
-            .get(ExportData.DIAGNOSTICS_FIELD_GROUP);
+            .getColumnHeadings().get(ManualQCData.DIAGNOSTICS_FIELD_GROUP);
 
           if (null != diagnosticHeadings) {
             for (PlotPageColumnHeading heading : diagnosticHeadings) {
@@ -413,7 +404,7 @@ public class ExportBean extends BaseManagedBean {
                 PlotPageTableValue value = data.getColumnValue(rowId,
                   heading.getId());
                 addValueToOutput(result, exportOption, heading.getId(), value,
-                  true, false, data.getAllSensorValues());
+                  true, false, data.getSensorValues());
               }
             }
           }
@@ -450,24 +441,24 @@ public class ExportBean extends BaseManagedBean {
     ExportOption exportOption) throws Exception {
     List<ColumnHeading> columnsToCheck = new ArrayList<ColumnHeading>();
 
-    columnsToCheck.addAll(
-      data.getExtendedColumnHeadings().get(ExportData.ROOT_FIELD_GROUP));
+    columnsToCheck
+      .addAll(data.getColumnHeadings().get(ManualQCData.ROOT_FIELD_GROUP));
 
-    columnsToCheck.addAll(data.getExtendedColumnHeadings()
-      .get(ExportData.MEASUREMENTVALUES_FIELD_GROUP));
+    columnsToCheck.addAll(
+      data.getColumnHeadings().get(ManualQCData.MEASUREMENTVALUES_FIELD_GROUP));
 
     for (Variable variable : exportOption.getVariables()) {
       columnsToCheck
         .addAll(DataReducerFactory.getCalculationParameters(variable, true));
     }
 
-    columnsToCheck.addAll(
-      data.getExtendedColumnHeadings().get(ExportData.SENSORS_FIELD_GROUP));
+    columnsToCheck
+      .addAll(data.getColumnHeadings().get(ManualQCData.SENSORS_FIELD_GROUP));
 
-    if (null != data.getExtendedColumnHeadings()
-      .get(ExportData.DIAGNOSTICS_FIELD_GROUP)) {
-      columnsToCheck.addAll(data.getExtendedColumnHeadings()
-        .get(ExportData.DIAGNOSTICS_FIELD_GROUP));
+    if (null != data.getColumnHeadings()
+      .get(ManualQCData.DIAGNOSTICS_FIELD_GROUP)) {
+      columnsToCheck.addAll(
+        data.getColumnHeadings().get(ManualQCData.DIAGNOSTICS_FIELD_GROUP));
     }
 
     return columnsToCheck.stream().filter(c -> !exportOption.columnExcluded(c))
@@ -490,16 +481,15 @@ public class ExportBean extends BaseManagedBean {
     List<String> headers = new ArrayList<String>();
 
     // Time and position
-    for (PlotPageColumnHeading heading : data.getExtendedColumnHeadings()
-      .get(ExportData.ROOT_FIELD_GROUP)) {
+    for (PlotPageColumnHeading heading : data.getColumnHeadings()
+      .get(ManualQCData.ROOT_FIELD_GROUP)) {
       addHeader(headers, exportOption, heading, allowedColumns);
     }
 
     // Measurement Sensor Types - these are the calculated sensor values
     // used as input for the data reducers
     for (PlotPageColumnHeading measurementValueHeading : data
-      .getExtendedColumnHeadings()
-      .get(ExportData.MEASUREMENTVALUES_FIELD_GROUP)) {
+      .getColumnHeadings().get(ManualQCData.MEASUREMENTVALUES_FIELD_GROUP)) {
 
       addHeader(headers, exportOption, measurementValueHeading, allowedColumns);
     }
@@ -521,16 +511,16 @@ public class ExportBean extends BaseManagedBean {
     // Raw sensors, if required. These always use the Short name, which
     // is the sensor name defined for the instrument. Includes diagnostics.
     if (exportOption.includeRawSensors()) {
-      List<PlotPageColumnHeading> sensorHeadings = data
-        .getExtendedColumnHeadings().get(ExportData.SENSORS_FIELD_GROUP);
+      List<PlotPageColumnHeading> sensorHeadings = data.getColumnHeadings()
+        .get(ManualQCData.SENSORS_FIELD_GROUP);
 
       for (PlotPageColumnHeading heading : sensorHeadings) {
         addHeader(headers, exportOption, heading,
           ExportOption.HEADER_MODE_SHORT, allowedColumns);
       }
 
-      List<PlotPageColumnHeading> diagnosticHeadings = data
-        .getExtendedColumnHeadings().get(ExportData.DIAGNOSTICS_FIELD_GROUP);
+      List<PlotPageColumnHeading> diagnosticHeadings = data.getColumnHeadings()
+        .get(ManualQCData.DIAGNOSTICS_FIELD_GROUP);
 
       if (null != diagnosticHeadings) {
         for (PlotPageColumnHeading heading : diagnosticHeadings) {

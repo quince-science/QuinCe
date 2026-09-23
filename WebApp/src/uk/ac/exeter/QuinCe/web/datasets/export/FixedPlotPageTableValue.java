@@ -59,4 +59,9 @@ public class FixedPlotPageTableValue implements PlotPageTableValue {
   public Collection<Long> getSources() {
     return null;
   }
+
+  @Override
+  public String toString() {
+    return getValue();
+  }
 }

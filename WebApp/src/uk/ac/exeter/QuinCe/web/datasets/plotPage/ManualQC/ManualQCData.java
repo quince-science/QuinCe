@@ -616,7 +616,7 @@ public class ManualQCData extends PlotPageData {
       .anyMatch(v -> v.getCoreSensorType().equals(sensorType));
   }
 
-  private boolean isMeasurementForAnyVariable(Measurement measurement)
+  public boolean isMeasurementForAnyVariable(Measurement measurement)
     throws RunTypeCategoryException {
     boolean result = false;
 
@@ -856,6 +856,10 @@ public class ManualQCData extends PlotPageData {
     return sensorValues.getCoordinates();
   }
 
+  public Coordinate getCoordinate(long rowId) {
+    return coordinates.get(rowId);
+  }
+
   /**
    * Determine whether or not a given {@link SensorValue} should be regarded as
    * a ghost value (i.e. visible but not editable).
@@ -889,9 +893,10 @@ public class ManualQCData extends PlotPageData {
       .getDiagnosticColumnIds();
 
     if (column.getId() == FileDefinition.TIME_COLUMN_ID) {
-      // This is a special instance of the coordinate handler for
-      // TimeCoordinates.
-      // Because times are weird.
+      /*
+       * This is a special instance of the coordinate handler for
+       * TimeCoordinates. Because times are weird.
+       */
       for (Coordinate coordinate : getCoordinates()) {
         result.put(coordinate, new SimplePlotPageTableValue(coordinate,
           sensorValues.getFlagScheme()));
@@ -1131,7 +1136,7 @@ public class ManualQCData extends PlotPageData {
     return result;
   }
 
-  protected DataReductionRecord getDataReductionRecord(long rowId,
+  public DataReductionRecord getDataReductionRecord(long rowId,
     Variable variable) {
 
     DataReductionRecord result = null;
@@ -1146,6 +1151,23 @@ public class ManualQCData extends PlotPageData {
       }
     }
 
+    return result;
+  }
+
+  public boolean hasMeasurementDataReductionRecord(long measurementId) {
+    return dataReduction.containsKey(measurementId);
+  }
+
+  public DataReductionRecord getMeasurementDataReductionRecord(
+    long measurementId, Variable variable) {
+
+    DataReductionRecord result = null;
+
+    Map<Variable, ReadOnlyDataReductionRecord> rowRecords = dataReduction
+      .get(measurementId);
+    if (null != rowRecords) {
+      result = rowRecords.get(variable);
+    }
     return result;
   }
 
@@ -1172,6 +1194,10 @@ public class ManualQCData extends PlotPageData {
 
   public Measurement getMeasurement(Coordinate coordinate) {
     return measurements.get(coordinate);
+  }
+
+  public TreeMap<Coordinate, Measurement> getAllMeasurements() {
+    return measurements;
   }
 
   protected boolean headingGroupContains(String group, long columnId) {

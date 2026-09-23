@@ -1,21 +1,16 @@
 package uk.ac.exeter.QuinCe.web.datasets.export;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.IcosFlagScheme;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
 
 /**
  * A special version of the {@link ExportData} class that removes the influence
@@ -56,27 +51,27 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
 
   private IcosFlagScheme flagScheme = IcosFlagScheme.getInstance();
 
-  public NeutraliseSalinityFlagsExportData(DataSource dataSource,
-    Instrument instrument, DataSet dataset, ExportOption exportOption)
-    throws SQLException, MissingRunTypeException {
-    super(dataSource, instrument, dataset, exportOption);
+  public NeutraliseSalinityFlagsExportData(ManualQCData sourceData,
+    ExportOption exportOption) throws Exception {
+    super(sourceData, exportOption);
   }
 
   @Override
   public void postProcess() throws Exception {
 
-    List<Long> salinityColumns = instrument.getSensorAssignments()
-      .getColumnIds("Salinity");
+    List<Long> salinityColumns = sourceData.getInstrument()
+      .getSensorAssignments().getColumnIds("Salinity");
 
     List<Long> cascadeColumns = getCascadeColumns();
 
-    Variable variable = instrument.getVariable("Underway Marine pCO₂");
+    Variable variable = sourceData.getInstrument()
+      .getVariable("Underway Marine pCO₂");
 
     if (null != variable) {
 
-      for (Long rowId : getRowIDs()) {
-        DataReductionRecord dataReductionRecord = getDataReductionRecord(rowId,
-          variable);
+      for (Long rowId : sourceData.getRowIDs()) {
+        DataReductionRecord dataReductionRecord = sourceData
+          .getDataReductionRecord(rowId, variable);
 
         if (null != dataReductionRecord) {
 
@@ -94,9 +89,9 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
             for (Long salinityColumn : salinityColumns) {
               PlotPageTableValue salinity = getColumnValue(rowId,
                 salinityColumn);
-              if (null != salinity && salinity.getQcFlag(getAllSensorValues())
+              if (null != salinity && salinity.getQcFlag(sensorValues)
                 .moreSignificantThan(salinityFlag)) {
-                salinityFlag = salinity.getQcFlag(getAllSensorValues());
+                salinityFlag = salinity.getQcFlag(sensorValues);
               }
             }
 
@@ -118,12 +113,11 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
 
                 // If the flag is Bad or Questionable, record the QC comment
                 // and upgrade the flag if needed
-                Flag cascadeFlag = cascadeValue.getQcFlag(getAllSensorValues());
+                Flag cascadeFlag = cascadeValue.getQcFlag(sensorValues);
                 if (cascadeFlag.equals(flagScheme.getBadFlag())
                   || cascadeFlag.equals(IcosFlagScheme.QUESTIONABLE_FLAG)) {
 
-                  qcComments
-                    .add(cascadeValue.getQcMessage(getAllSensorValues(), true));
+                  qcComments.add(cascadeValue.getQcMessage(sensorValues, true));
                   if (cascadeFlag.moreSignificantThan(newFlag)) {
                     newFlag = cascadeFlag;
                   }
@@ -150,7 +144,8 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
     List<Long> result = new ArrayList<Long>();
 
     for (String sensorType : CASCADE_SENSOR_TYPES) {
-      result.addAll(instrument.getSensorAssignments().getColumnIds(sensorType));
+      result.addAll(sourceData.getInstrument().getSensorAssignments()
+        .getColumnIds(sensorType));
     }
 
     return result;

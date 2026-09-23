@@ -8,8 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -17,13 +15,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
 
 public class ExportOptionDeserializer
   implements JsonDeserializer<ExportOption> {
@@ -228,8 +225,7 @@ public class ExportOptionDeserializer
 
       // Check that the correct constructor is available
       try {
-        testClass.getConstructor(DataSource.class, Instrument.class,
-          DataSet.class, ExportOption.class);
+        testClass.getConstructor(ManualQCData.class, ExportOption.class);
       } catch (NoSuchMethodException e) {
         throw new ExportConfigurationException(optionName,
           "No valid constructor found in " + fullClassName);
