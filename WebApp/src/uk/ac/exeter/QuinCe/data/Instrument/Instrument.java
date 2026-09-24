@@ -1258,7 +1258,7 @@ public class Instrument {
    *         otherwise.
    */
   public boolean fixedDepth() {
-    return null != getProperty("depth");
+    return null != getProperty(PROP_DEPTH);
   }
 
   /**
@@ -1707,5 +1707,17 @@ public class Instrument {
     }
 
     return result;
+  }
+
+  /**
+   * Indicates whether or not a Depth value is required for instruments of the
+   * specified {@code basis}.
+   *
+   * @param basis
+   *          The Basis of the new instrument.
+   * @return The default fixed depth flag.
+   */
+  public static boolean depthRequired(int basis) {
+    return basis == BASIS_ARGO ? false : true;
   }
 }

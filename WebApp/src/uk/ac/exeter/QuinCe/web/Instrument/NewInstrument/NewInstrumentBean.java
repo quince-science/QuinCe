@@ -33,6 +33,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -2796,6 +2797,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   public void setBasis(int basis) {
     this.basis = basis;
+    this.hasFixedDepth = Instrument.depthRequired(basis);
     makeSetupSteps();
   }
 
