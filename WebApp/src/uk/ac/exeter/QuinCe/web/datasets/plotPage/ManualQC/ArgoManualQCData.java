@@ -55,7 +55,22 @@ public class ArgoManualQCData extends ManualQCData {
   /**
    * Column heading for the Cycle Number, which is the basis for the map scale.
    */
+  private PlotPageColumnHeading sourceFileHeading;
+
+  /**
+   * Column heading for the Cycle Number, which is the basis for the map scale.
+   */
   private PlotPageColumnHeading cycleNumberHeading;
+
+  /**
+   * Column heading for the Direction.
+   */
+  private PlotPageColumnHeading directionHeading;
+
+  /**
+   * Column heading for the Profile.
+   */
+  private PlotPageColumnHeading profileHeading;
 
   /**
    * The profiles which are the basis for user selection of the data view.
@@ -143,6 +158,23 @@ public class ArgoManualQCData extends ManualQCData {
     throws SensorTypeNotFoundException, SQLException, MissingRunTypeException {
     super(dataSource, instrument, dataset);
 
+    setupColumnHeadings();
+  }
+
+  /**
+   * Set up the ColumnHeadings for the profile details.
+   * 
+   * @throws SensorTypeNotFoundException
+   */
+  private void setupColumnHeadings() throws SensorTypeNotFoundException {
+    SensorType sourceFileSensorType = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Source File");
+
+    sourceFileHeading = new PlotPageColumnHeading(
+      instrument.getSensorAssignments().get(sourceFileSensorType).first()
+        .getColumnHeading(),
+      true, false, true);
+
     SensorType cycleNumberSensorType = ResourceManager.getInstance()
       .getSensorsConfiguration().getSensorType("Cycle Number");
 
@@ -150,6 +182,20 @@ public class ArgoManualQCData extends ManualQCData {
       instrument.getSensorAssignments().get(cycleNumberSensorType).first()
         .getColumnHeading(),
       true, false, true);
+
+    SensorType directionSensorType = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Direction");
+
+    directionHeading = new PlotPageColumnHeading(
+      instrument.getSensorAssignments().get(directionSensorType).first()
+        .getColumnHeading(),
+      true, false, true);
+
+    SensorType profileSensorType = ResourceManager.getInstance()
+      .getSensorsConfiguration().getSensorType("Profile");
+
+    profileHeading = new PlotPageColumnHeading(instrument.getSensorAssignments()
+      .get(profileSensorType).first().getColumnHeading(), true, false, true);
   }
 
   @Override
@@ -488,4 +534,8 @@ public class ArgoManualQCData extends ManualQCData {
     return profilesMap;
   }
 
+  public List<PlotPageColumnHeading> getProfileDataHeadings() {
+    return Arrays.asList(sourceFileHeading, cycleNumberHeading,
+      directionHeading, profileHeading);
+  }
 }

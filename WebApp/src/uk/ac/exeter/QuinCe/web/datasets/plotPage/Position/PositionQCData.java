@@ -212,7 +212,7 @@ public class PositionQCData extends ManualQCData {
   }
 
   @Override
-  protected List<Coordinate> getCoordinates() {
+  public List<Coordinate> getCoordinates() {
     return sensorValues.getRawPositionCoordinates();
   }
 

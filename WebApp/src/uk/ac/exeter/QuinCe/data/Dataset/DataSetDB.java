@@ -33,7 +33,6 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.DefaultTargetNameMapper;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -945,22 +944,10 @@ public class DataSetDB {
    * @param dataset
    *          The dataset
    * @return The metadata
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws RecordNotFoundException
-   *           If the dataset doesn't exist
-   * @throws InstrumentException
-   *           If the instrument details cannot be retrieved
-   * @throws SensorGroupsException
-   * @throws CalibrationException
-   * @throws ClassNotFoundException
+   * @throws Exception
    */
   public static JsonObject getMetadataJson(DataSource dataSource,
-    DataSet dataset) throws DatabaseException, MissingParamException,
-    RecordNotFoundException, InstrumentException, SensorGroupsException,
-    CalibrationException, ClassNotFoundException {
+    DataSet dataset) throws Exception {
 
     JsonObject result = null;
     Connection conn = null;
@@ -985,22 +972,10 @@ public class DataSetDB {
    * @param dataset
    *          The dataset
    * @return The metadata
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws RecordNotFoundException
-   *           If the dataset doesn't exist
-   * @throws InstrumentException
-   *           If the instrument details cannot be retrieved
-   * @throws SensorGroupsException
-   * @throws CalibrationException
-   * @throws ClassNotFoundException
+   * @throws Exception
    */
   public static JsonObject getMetadataJson(Connection conn, DataSet dataset)
-    throws DatabaseException, MissingParamException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException, CalibrationException,
-    ClassNotFoundException {
+    throws Exception {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(dataset, "dataset");
@@ -1159,8 +1134,7 @@ public class DataSetDB {
   }
 
   public static List<NrtStatus> getNrtStatus(DataSource dataSource)
-    throws DatabaseException, MissingParamException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException, ClassNotFoundException {
+    throws Exception {
 
     List<NrtStatus> result = new ArrayList<NrtStatus>();
 

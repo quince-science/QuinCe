@@ -143,10 +143,11 @@ public class SensorsConfiguration {
    *           If any of the flag cascade values are invalid.
    * @throws VariableCascadeException
    * @throws InstrumentException
+   * @throws SensorTypeNotFoundException
    */
   private void loadInstrumentVariables(Connection conn)
     throws DatabaseException, InvalidFlagException, InstrumentException,
-    VariableCascadeException {
+    VariableCascadeException, SensorTypeNotFoundException {
 
     instrumentVariables = new HashMap<Long, Variable>();
 

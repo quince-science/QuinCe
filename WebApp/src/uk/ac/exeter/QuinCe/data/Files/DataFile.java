@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -637,7 +638,7 @@ public abstract class DataFile implements Comparable<DataFile> {
   protected List<Instrument> getPreviousInstruments()
     throws MissingParamException, VariableNotFoundException, DatabaseException,
     RecordNotFoundException, InstrumentException, SensorGroupsException,
-    ClassNotFoundException {
+    ClassNotFoundException, SensorTypeNotFoundException {
 
     List<Instrument> result = null;
 

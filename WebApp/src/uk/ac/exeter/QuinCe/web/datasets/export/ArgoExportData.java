@@ -1,21 +1,36 @@
 package uk.ac.exeter.QuinCe.web.datasets.export;
 
-import java.sql.SQLException;
+import java.util.List;
 
-import javax.sql.DataSource;
-
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
+import uk.ac.exeter.QuinCe.data.Export.ExportOption;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageColumnHeading;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ArgoManualQCData;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCData;
 
-public class ArgoExportData extends ArgoManualQCData {
+public class ArgoExportData extends ExportData {
 
-  public ArgoExportData(DataSource dataSource, Instrument instrument,
-    DataSet dataset)
-    throws SQLException, MissingRunTypeException, SensorTypeNotFoundException {
-    super(dataSource, instrument, dataset);
+  private ArgoManualQCData localSourceData;
+
+  public ArgoExportData(ManualQCData sourceData, ExportOption exportOption)
+    throws Exception {
+    super(sourceData, exportOption);
+    this.localSourceData = (ArgoManualQCData) sourceData;
+    localInit();
   }
 
+  /**
+   * Additional initialisation steps.
+   */
+  protected void localInit() {
+    // Add the profile headers to the root column group
+    List<PlotPageColumnHeading> rootColumnGroup = headingsWithProperties
+      .get(ManualQCData.ROOT_FIELD_GROUP);
+
+    rootColumnGroup.addAll(0, localSourceData.getProfileDataHeadings());
+  }
+
+  public List<Coordinate> getCoordinates() {
+    return localSourceData.getCoordinates();
+  }
 }

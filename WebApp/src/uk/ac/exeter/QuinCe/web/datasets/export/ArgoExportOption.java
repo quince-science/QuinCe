@@ -10,7 +10,8 @@ public class ArgoExportOption extends ExportOption {
     throws ExportConfigurationException {
     super(0, "Argo", ",", dataset.getInstrument().getVariables());
 
-    setHeaderMode(HEADER_MODE_LONG);
+    setDataClass(ArgoExportData.class);
+    setHeaderMode(HEADER_MODE_CODE);
     setIncludeCalculationColumns(false);
     setIncludeQCComments(false);
     setIncludeRawSensors(true);

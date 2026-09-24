@@ -2,11 +2,13 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
 
+import uk.ac.exeter.QuinCe.data.Dataset.QC.ArgoFlagScheme;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.FlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageTableValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.SimplePlotPageTableValue;
 
 /**
  * {@link Coordinate} for Argo measurements.
@@ -290,41 +292,47 @@ public class ArgoCoordinate extends Coordinate {
   }
 
   @Override
-  public String getValue(SensorType sensorType)
-    throws SensorTypeNotFoundException {
+  public String getValue(ColumnHeading columnHeading)
+    throws ColumnHeadingNotFoundException {
 
     String result = null;
 
-    switch (sensorType.getShortName()) {
-    case "Cycle Number": {
+    switch (columnHeading.getCodeName()) {
+    case "CYCLE_NUMBER": {
       result = String.valueOf(cycleNumber);
       break;
     }
-    case "Profile": {
+    case "NPROF": {
       result = String.valueOf(nProf);
       break;
     }
-    case "Direction": {
+    case "DIRECTION": {
       result = String.valueOf(direction);
       break;
     }
-    case "Level": {
+    case "NLEVEL": {
       result = String.valueOf(nLevel);
       break;
     }
-    case "Pressure (Depth)": {
+    case "PRES": {
       result = String.valueOf(pres);
       break;
     }
-    case "Source File": {
+    case "SOURCE_FILE": {
       result = sourceFile;
       break;
     }
     default: {
-      throw new SensorTypeNotFoundException(sensorType);
+      throw new ColumnHeadingNotFoundException(columnHeading);
     }
     }
 
     return result;
+  }
+
+  public PlotPageTableValue getPlotPageTableValue(ColumnHeading columnHeading)
+    throws FlagException, ColumnHeadingNotFoundException {
+    return new SimplePlotPageTableValue(getValue(columnHeading),
+      ArgoFlagScheme.getInstance());
   }
 }

@@ -57,7 +57,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.MeasurementValueSensor
  */
 public class ExportData {
 
-  LinkedHashMap<String, List<PlotPageColumnHeading>> headingsWithProperties = null;
+  protected LinkedHashMap<String, List<PlotPageColumnHeading>> headingsWithProperties = null;
 
   // TODO Replace this with something more generic. See issue #1845
 
@@ -126,7 +126,7 @@ public class ExportData {
    * @throws SensorTypeNotFoundException
    */
   @SuppressWarnings("unchecked")
-  private void init() throws Exception {
+  protected void init() throws Exception {
 
     // Default to storing all values
     this.measurements = sourceData.getAllMeasurements();

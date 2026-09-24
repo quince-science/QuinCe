@@ -392,7 +392,7 @@ public class ExportOption {
 
     try {
       Constructor<? extends ExportData> constructor = dataClass
-        .getConstructor(ManualQCData.class, this.getClass());
+        .getConstructor(ManualQCData.class, ExportOption.class);
 
       return constructor.newInstance(sourceData, this);
     } catch (Exception e) {

@@ -32,9 +32,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.SensorValues.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorGroupsException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.Variable;
@@ -221,21 +219,10 @@ public class DataSetDataDB {
    * @param originalFields
    *          The list of fields
    * @return The fields that come from dataset data
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws RecordNotFoundException
-   *           If the dataset or its instrument do not exist
-   * @throws InstrumentException
-   *           If the instrument details cannot be retrieved
-   * @throws SensorGroupsException
-   * @throws ClassNotFoundException
+   * @throws Exception
    */
   public static List<String> extractDatasetFields(Connection conn,
-    DataSet dataSet, List<String> originalFields)
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException, ClassNotFoundException {
+    DataSet dataSet, List<String> originalFields) throws Exception {
 
     List<String> datasetFields = new ArrayList<String>();
 
@@ -288,21 +275,10 @@ public class DataSetDataDB {
    *          The field name
    * @return {@code true} if the field is a dataset field; {@code false} if it
    *         is not
-   * @throws DatabaseException
-   *           If a database error occurs
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws RecordNotFoundException
-   *           If the dataset or its instrument do not exist
-   * @throws InstrumentException
-   *           If the instrument details cannot be retrieved
-   * @throws SensorGroupsException
-   * @throws ClassNotFoundException
+   * @throws Exception
    */
   public static boolean isDatasetField(Connection conn, DataSet dataset,
-    String field)
-    throws MissingParamException, DatabaseException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException, ClassNotFoundException {
+    String field) throws Exception {
 
     List<String> fieldList = new ArrayList<String>(1);
     fieldList.add(field);
@@ -452,18 +428,10 @@ public class DataSetDataDB {
    *
    * @param conn
    * @param sensorValues
-   * @throws DatabaseException
-   * @throws InvalidSensorValueException
-   * @throws SensorGroupsException
-   * @throws InstrumentException
-   * @throws RecordNotFoundException
-   * @throws ClassNotFoundException
-   * @throws MissingParamException
+   * @throws Exception
    */
   public static void updateSensorValues(Connection conn,
-    Collection<SensorValue> sensorValues) throws DatabaseException,
-    InvalidSensorValueException, RecordNotFoundException, InstrumentException,
-    SensorGroupsException, MissingParamException, ClassNotFoundException {
+    Collection<SensorValue> sensorValues) throws Exception {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(sensorValues, "sensorValues", true);

@@ -29,7 +29,6 @@ import uk.ac.exeter.QuinCe.api.nrt.NrtInstrument;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
-import uk.ac.exeter.QuinCe.data.Files.FileStoreException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
@@ -515,11 +514,12 @@ public class InstrumentDB {
    * @throws VariableNotFoundException
    * @throws SensorGroupsException
    * @throws ClassNotFoundException
+   * @throws SensorTypeNotFoundException
    */
   public static List<Instrument> getInstrumentList(DataSource dataSource,
     User owner) throws MissingParamException, DatabaseException,
     VariableNotFoundException, RecordNotFoundException, InstrumentException,
-    SensorGroupsException, ClassNotFoundException {
+    SensorGroupsException, ClassNotFoundException, SensorTypeNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(owner, "owner");
@@ -563,11 +563,12 @@ public class InstrumentDB {
    * @throws VariableNotFoundException
    * @throws SensorGroupsException
    * @throws ClassNotFoundException
+   * @throws SensorTypeNotFoundException
    */
   public static List<Instrument> getInstrumentList(Connection conn,
     long ownerId) throws MissingParamException, DatabaseException,
     VariableNotFoundException, RecordNotFoundException, InstrumentException,
-    SensorGroupsException, ClassNotFoundException {
+    SensorGroupsException, ClassNotFoundException, SensorTypeNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
 
@@ -697,9 +698,10 @@ public class InstrumentDB {
     long id, String name, List<Long> sharedWith, List<Long> variableIds,
     Map<Long, String> variableProperties, String platformName,
     String platformCode, int basis, boolean nrt, LocalDateTime lastNrtExport,
-    String propertiesJson, LocalDateTime created) throws MissingParamException,
-    DatabaseException, RecordNotFoundException, InstrumentException,
-    VariableNotFoundException, SensorGroupsException, ClassNotFoundException {
+    String propertiesJson, LocalDateTime created)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException, VariableNotFoundException, SensorGroupsException,
+    ClassNotFoundException, SensorTypeNotFoundException {
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
@@ -750,11 +752,12 @@ public class InstrumentDB {
    * @throws VariableNotFoundException
    * @throws SensorGroupsException
    * @throws ClassNotFoundException
+   * @throws SensorTypeNotFoundException
    */
   private static List<Instrument> getAllUsersInstrumentList(Connection conn)
     throws MissingParamException, DatabaseException, VariableNotFoundException,
     RecordNotFoundException, InstrumentException, SensorGroupsException,
-    ClassNotFoundException {
+    ClassNotFoundException, SensorTypeNotFoundException {
 
     return getInstrumentList(conn, -1);
   }
@@ -804,9 +807,7 @@ public class InstrumentDB {
   }
 
   public static Instrument getInstrument(DataSource dataSource,
-    long instrumentId)
-    throws DatabaseException, MissingParamException, RecordNotFoundException,
-    InstrumentException, SensorGroupsException, ClassNotFoundException {
+    long instrumentId) throws Exception {
     try (Connection conn = dataSource.getConnection()) {
       return getInstrument(conn, instrumentId);
     } catch (SQLException e) {
@@ -826,19 +827,10 @@ public class InstrumentDB {
    * @param runTypeConfiguration
    *          The run type category configuration
    * @return The complete Instrument object
-   * @throws DatabaseException
-   *           If an error occurs while retrieving the instrument details
-   * @throws RecordNotFoundException
-   *           If the specified instrument cannot be found
-   * @throws InstrumentException
-   *           If any instrument values are invalid
-   * @throws SensorGroupsException
-   * @throws ClassNotFoundException
-   * @throws MissingParamException
+   * @throws Exception
    */
   public static Instrument getInstrument(Connection conn, long instrumentId)
-    throws DatabaseException, RecordNotFoundException, InstrumentException,
-    SensorGroupsException, MissingParamException, ClassNotFoundException {
+    throws Exception {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkDatabaseId(instrumentId, "instrumentId", false);
@@ -941,10 +933,12 @@ public class InstrumentDB {
    *           If no file definitions are stored for the instrument
    * @throws InstrumentException
    * @throws ClassNotFoundException
+   * @throws SensorTypeNotFoundException
    */
   public static InstrumentFileSet getFileDefinitions(Connection conn,
-    long instrumentId) throws MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException, ClassNotFoundException {
+    long instrumentId)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException, ClassNotFoundException, SensorTypeNotFoundException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkDatabaseId(instrumentId, "instrumentId", false);
 
@@ -1104,12 +1098,14 @@ public class InstrumentDB {
    *           If any instrument values are invalid
    * @throws MissingParamException
    *           If any internal calls are missing required parameters
+   * @throws SensorTypeNotFoundException
    */
   private static SensorAssignments getSensorAssignments(Connection conn,
     long instrumentId, InstrumentFileSet files,
     SensorsConfiguration sensorConfiguration,
-    RunTypeCategoryConfiguration runTypeConfiguration) throws DatabaseException,
-    RecordNotFoundException, InstrumentException, MissingParamException {
+    RunTypeCategoryConfiguration runTypeConfiguration)
+    throws DatabaseException, RecordNotFoundException, InstrumentException,
+    MissingParamException, SensorTypeNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkDatabaseId(instrumentId, "instrumentId", false);
@@ -1273,10 +1269,12 @@ public class InstrumentDB {
    * @throws RecordNotFoundException
    * @throws InstrumentException
    * @throws ClassNotFoundException
+   * @throws SensorTypeNotFoundException
    */
   public static Map<String, String> getCalibratableSensors(Connection conn,
-    long instrumentId) throws MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException, ClassNotFoundException {
+    long instrumentId)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    InstrumentException, ClassNotFoundException, SensorTypeNotFoundException {
 
     Map<String, String> result = new LinkedHashMap<String, String>();
 
@@ -1838,9 +1836,7 @@ public class InstrumentDB {
   }
 
   public static void deleteInstrument(DataSource dataSource, long instrumentId)
-    throws DatabaseException, RecordNotFoundException, MissingParamException,
-    InstrumentException, SensorGroupsException, FileStoreException, IOException,
-    ClassNotFoundException {
+    throws Exception {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkDatabaseId(instrumentId, "instrumentId", false);

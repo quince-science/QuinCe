@@ -1,42 +1,28 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
+import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeadingNotFoundException;
 
 /**
  * Exception for sensor types that can't be found
  */
 @SuppressWarnings("serial")
-public class SensorTypeNotFoundException extends InstrumentException {
+public class SensorTypeNotFoundException
+  extends ColumnHeadingNotFoundException {
 
-  /**
-   * Sensor name not found
-   *
-   * @param sensorName
-   *          The sensor name
-   */
   public SensorTypeNotFoundException(String sensorName) {
-    super("The sensor type with name '" + sensorName + "' does not exist");
+    super(sensorName);
   }
 
-  /**
-   * Sensor ID not found
-   *
-   * @param sensorId
-   *          The sensor ID
-   */
   public SensorTypeNotFoundException(long sensorId) {
-    super("The sensor type with ID " + sensorId + " does not exist");
+    super(sensorId);
   }
 
-  /**
-   * Special case when looking up something based on a {@link SensorType}
-   * object.
-   *
-   * @param sensorType
-   *          The SensorType we were looking for.
-   */
-  public SensorTypeNotFoundException(SensorType sensorType) {
-    super("The SensorType object for " + sensorType.getId() + ":"
-      + sensorType.getShortName() + " is not valid");
+  public SensorTypeNotFoundException(ColumnHeading columnHeading) {
+    super(columnHeading);
+  }
+
+  protected String getItemName() {
+    return "Sensor Type";
   }
 }

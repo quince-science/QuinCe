@@ -437,7 +437,7 @@ public class ExportBean extends BaseManagedBean {
    * @return
    * @throws Exception
    */
-  private static List<ColumnHeading> getAllowedExportColumns(ExportData data,
+  protected static List<ColumnHeading> getAllowedExportColumns(ExportData data,
     ExportOption exportOption) throws Exception {
     List<ColumnHeading> columnsToCheck = new ArrayList<ColumnHeading>();
 
@@ -533,7 +533,7 @@ public class ExportBean extends BaseManagedBean {
     return headers;
   }
 
-  private static void addValueToOutput(DatasetExport export,
+  protected static void addValueToOutput(DatasetExport export,
     ExportOption exportOption, long columnId, PlotPageTableValue value,
     boolean includeQcColumns, boolean includeType,
     DatasetSensorValues allSensorValues) {
@@ -618,15 +618,15 @@ public class ExportBean extends BaseManagedBean {
     }
   }
 
-  private static void addHeader(List<String> headers, ExportOption exportOption,
-    ColumnHeading heading, List<ColumnHeading> allowedColumns)
-    throws ExportException {
+  protected static void addHeader(List<String> headers,
+    ExportOption exportOption, ColumnHeading heading,
+    List<ColumnHeading> allowedColumns) throws ExportException {
     addHeader(headers, exportOption, heading, null, allowedColumns);
   }
 
-  private static void addHeader(List<String> headers, ExportOption exportOption,
-    ColumnHeading heading, Integer mode, List<ColumnHeading> allowedColumns)
-    throws ExportException {
+  protected static void addHeader(List<String> headers,
+    ExportOption exportOption, ColumnHeading heading, Integer mode,
+    List<ColumnHeading> allowedColumns) throws ExportException {
 
     if (allowedColumns.contains(heading)) {
 
@@ -983,7 +983,7 @@ public class ExportBean extends BaseManagedBean {
     return boundsObject;
   }
 
-  private static long columnsWithId(List<PlotPageColumnHeading> columns,
+  protected static long columnsWithId(List<PlotPageColumnHeading> columns,
     long id) {
     return columns.stream().filter(c -> c.getId() == id).count();
   }

@@ -852,7 +852,7 @@ public class ManualQCData extends PlotPageData {
   }
 
   @Override
-  protected List<Coordinate> getCoordinates() {
+  public List<Coordinate> getCoordinates() {
     return sensorValues.getCoordinates();
   }
 

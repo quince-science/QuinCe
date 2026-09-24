@@ -5,8 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
@@ -205,9 +203,9 @@ public class TimeCoordinate extends Coordinate {
   }
 
   @Override
-  public String getValue(SensorType sensorType)
-    throws SensorTypeNotFoundException {
-    throw new SensorTypeNotFoundException(sensorType);
+  public String getValue(ColumnHeading columnHeading)
+    throws ColumnHeadingNotFoundException {
+    throw new ColumnHeadingNotFoundException(columnHeading);
   }
 
 }
