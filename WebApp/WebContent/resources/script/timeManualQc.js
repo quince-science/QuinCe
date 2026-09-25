@@ -11,8 +11,18 @@ function qcFlagsAccepted() {
 
   PF('flagDialog').hide();
 
-  drawPlot(1, true, true);
-  drawPlot(2, true, true);
+  if (getPlotMode(1) == PLOT_MODE_PLOT) {
+    drawPlot(1, true, true);
+  } else {
+    drawMap(1);
+  }
+
+  if (getPlotMode(2) == PLOT_MODE_PLOT) {
+    drawPlot(2, true, true);
+  } else {
+    drawMap(2);
+  }
+
   clearSelection();
 
   // Reload table data
