@@ -106,29 +106,18 @@ dependencies {
   gretty 'org.apache.tomcat:tomcat-dbcp:8.0.1'
   gretty 'org.apache.tomcat:tomcat:8.0.1'
 
-  // Use JUnit test framework
-  implementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
-  implementation 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
-  implementation 'org.junit.jupiter:junit-jupiter-params:5.9.3'
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-  implementation 'com.h2database:h2:1.4.197'
-  implementation 'org.flywaydb.flyway-test-extensions:flyway-test:7.0.0'
-  implementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:7.0.0'
-  implementation 'org.mockito:mockito-core:5.13.0'
-
   // Flyway library for Java-based migrations
   implementation 'org.flywaydb:flyway-core:7.15.0'
 
   // JUnit resources
-  testImplementation 'org.junit.jupiter:junit-jupiter:5.14.4'
+  implementation 'org.junit.jupiter:junit-jupiter:5.14.4'
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
-  testImplementation 'org.mockito:mockito-core:5.8.0'
-  testImplementation 'org.flywaydb.flyway-test-extensions:flyway-test:7.0.0'  
-  testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:7.0.0'
-  testImplementation 'org.springframework:spring-context:5.2.0.RELEASE'
-  testImplementation 'org.springframework:spring-test:5.2.0.RELEASE'
-  testRuntimeOnly 'com.h2database:h2:1.4.197'    
+  implementation 'org.flywaydb.flyway-test-extensions:flyway-test:7.0.0'  
+  implementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:7.0.0'
+  implementation 'org.springframework:spring-context:5.2.0.RELEASE'
+  implementation 'org.springframework:spring-test:5.2.0.RELEASE'
+  implementation 'org.mockito:mockito-core:5.13.0'
+  implementation 'com.h2database:h2:1.4.197'
   
   // JavaMelody monitoring
   // Can't use v2 until we use Tomcat 10
