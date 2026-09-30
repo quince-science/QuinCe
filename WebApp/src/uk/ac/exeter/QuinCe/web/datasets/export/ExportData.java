@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -273,7 +274,8 @@ public class ExportData {
     /*
      * Add the depth if the dataset has fixed depth
      */
-    if (sourceData.getDataset().fixedDepth()) {
+    if (!Instrument.depthInCoordinate(sourceData.getInstrument().getBasis())
+      && sourceData.getDataset().fixedDepth()) {
       PlotPageColumnHeading depthHeading = new PlotPageColumnHeading(
         FIXED_DEPTH_ID, "Depth", "Depth", "ADEPZZ01", "m", true, false, true,
         true);

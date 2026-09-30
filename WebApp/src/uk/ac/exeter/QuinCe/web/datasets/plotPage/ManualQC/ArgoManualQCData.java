@@ -163,7 +163,7 @@ public class ArgoManualQCData extends ManualQCData {
 
   /**
    * Set up the ColumnHeadings for the profile details.
-   * 
+   *
    * @throws SensorTypeNotFoundException
    */
   private void setupColumnHeadings() throws SensorTypeNotFoundException {

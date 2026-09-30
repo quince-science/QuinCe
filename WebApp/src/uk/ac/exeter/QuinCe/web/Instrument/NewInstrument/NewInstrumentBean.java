@@ -2797,7 +2797,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   public void setBasis(int basis) {
     this.basis = basis;
-    this.hasFixedDepth = Instrument.depthRequired(basis);
+    this.hasFixedDepth = !Instrument.depthInCoordinate(basis);
     makeSetupSteps();
   }
 

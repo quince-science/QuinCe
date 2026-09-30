@@ -39,13 +39,14 @@ public class DefaultMeasurementValueCollector
 
       List<MeasurementValue> result = new ArrayList<MeasurementValue>();
 
-      // Determine whether or not we need a depth sensor value
-      boolean depthRequired = Instrument.depthRequired(instrument.getBasis());
-
       /*
+       * Determine whether or not we need a depth sensor value.
+       *
        * If the instrument requires a depth, then see if the dataset has a fixed
        * depth. If it does not, we must retrieve it.
        */
+      boolean depthRequired = !Instrument
+        .depthInCoordinate(instrument.getBasis());
       if (depthRequired) {
         depthRequired = !dataSet.fixedDepth();
       }

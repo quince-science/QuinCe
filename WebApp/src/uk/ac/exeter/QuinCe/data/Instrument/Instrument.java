@@ -23,6 +23,7 @@ import com.google.gson.JsonParser;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementLocator;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.ArgoFlagScheme;
@@ -1710,14 +1711,19 @@ public class Instrument {
   }
 
   /**
-   * Indicates whether or not a Depth value is required for instruments of the
-   * specified {@code basis}.
+   * Indicates whether or not the {@link Coordinate}s for instruments of the
+   * specified {@code basis} will contain a Depth value.
+   *
+   * <p>
+   * Instruments that do not include a Depth in their {@link Coordinates} will
+   * supply either a fixed value, or a Depth column in their data files.
+   * </p>
    *
    * @param basis
    *          The Basis of the new instrument.
    * @return The default fixed depth flag.
    */
-  public static boolean depthRequired(int basis) {
-    return basis == BASIS_ARGO ? false : true;
+  public static boolean depthInCoordinate(int basis) {
+    return basis == BASIS_ARGO ? true : false;
   }
 }
