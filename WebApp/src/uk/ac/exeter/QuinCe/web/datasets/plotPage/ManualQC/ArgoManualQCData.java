@@ -538,4 +538,8 @@ public class ArgoManualQCData extends ManualQCData {
     return Arrays.asList(sourceFileHeading, cycleNumberHeading,
       directionHeading, profileHeading);
   }
+
+  public Map<Long, Map<Variable, ReadOnlyDataReductionRecord>> getDataReduction() {
+    return dataReduction;
+  }
 }

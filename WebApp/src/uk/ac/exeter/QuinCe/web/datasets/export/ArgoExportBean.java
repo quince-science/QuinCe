@@ -13,7 +13,6 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.ArgoCoordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.ColumnHeading;
-import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
@@ -116,9 +115,8 @@ public class ArgoExportBean extends ExportBean {
       StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
     result.append('\n');
 
-    for (Coordinate coordinate : data.getCoordinates()) {
+    for (ArgoCoordinate coordinate : data.getCoordinates()) {
       boolean firstColumn = true;
-      ArgoCoordinate castCoordinate = (ArgoCoordinate) coordinate;
 
       List<PlotPageColumnHeading> baseColumns = data.getColumnHeadings()
         .get(ManualQCData.ROOT_FIELD_GROUP);
@@ -131,11 +129,47 @@ public class ArgoExportBean extends ExportBean {
             result.append(exportOption.getSeparator());
           }
 
-          PlotPageTableValue value = castCoordinate
-            .getPlotPageTableValue(column);
+          PlotPageTableValue value = coordinate.getPlotPageTableValue(column);
 
           addValueToOutput(result, exportOption, column.getId(), value,
             column.hasQC(), column.includeType(), data.getSensorValues());
+        }
+      }
+
+      // Data Reduction for all variables
+      for (Variable variable : exportOption.getVariables()) {
+        if (instrument.getVariables().contains(variable)) {
+          List<CalculationParameter> params = DataReducerFactory
+            .getCalculationParameters(variable,
+              exportOption.includeCalculationColumns());
+
+          for (CalculationParameter param : params) {
+            if (allowedExportColumns.contains(param)) {
+              result.append(exportOption.getSeparator());
+
+              PlotPageTableValue value = data.getColumnValue(coordinate,
+                param.getId());
+
+              addValueToOutput(result, exportOption, param.getId(), value,
+                param.isResult(), false, data.getSensorValues());
+            }
+          }
+        }
+      }
+
+      if (exportOption.includeRawSensors()) {
+        List<PlotPageColumnHeading> sensorHeadings = data.getColumnHeadings()
+          .get(ManualQCData.SENSORS_FIELD_GROUP);
+
+        for (PlotPageColumnHeading heading : sensorHeadings) {
+          if (allowedExportColumns.contains(heading)) {
+            result.append(exportOption.getSeparator());
+
+            PlotPageTableValue value = data.getColumnValue(coordinate,
+              heading.getId());
+            addValueToOutput(result, exportOption, heading.getId(), value, true,
+              false, data.getSensorValues());
+          }
         }
       }
 
@@ -144,120 +178,6 @@ public class ArgoExportBean extends ExportBean {
       result.addRecord();
     }
 
-    // ++_+_+_+_+_+_+_+_+_+_+_+__+_+_+_+_+_+_+_+_
-
-    /*
-     * // Process each row of the data for (Long rowId : data.getRowIDs()) { if
-     * (data.contains(rowId, exportOption.includeRawSensors())) { boolean
-     * firstColumn = true;
-     *
-     * // Time and position List<PlotPageColumnHeading> baseColumns =
-     * data.getColumnHeadings() .get(ManualQCData.ROOT_FIELD_GROUP);
-     *
-     * for (PlotPageColumnHeading column : baseColumns) { if
-     * (allowedExportColumns.contains(column)) { if (firstColumn) { firstColumn
-     * = false; } else { result.append(exportOption.getSeparator()); }
-     *
-     * PlotPageTableValue value = data.getColumnValue(rowId, column.getId());
-     *
-     * addValueToOutput(result, exportOption, column.getId(), value,
-     * column.hasQC(), column.includeType(), data.getSensorValues()); } }
-     *
-     * // Measurement values Measurement measurement =
-     * data.getMeasurement(rowId);
-     *
-     * List<PlotPageColumnHeading> measurementValueColumns = data
-     * .getColumnHeadings().get(ManualQCData.MEASUREMENTVALUES_FIELD_GROUP);
-     *
-     * for (PlotPageColumnHeading column : measurementValueColumns) { if
-     * (allowedExportColumns.contains(column)) { SensorType sensorType =
-     * ResourceManager.getInstance()
-     * .getSensorsConfiguration().getSensorType(column.getId());
-     *
-     * PlotPageTableValue value = null;
-     *
-     * if (null != measurement && measurement.hasMeasurementValue(sensorType)) {
-     * value = measurement.getMeasurementValue(sensorType); } else { value = new
-     * NullPlotPageTableValue(); }
-     *
-     * boolean useValueInThisColumn;
-     *
-     * if (columnsWithId(measurementValueColumns, column.getId()) == 1) {
-     *
-     * // There is only one column registered for this SensorType, so use // it
-     * useValueInThisColumn = true; } else { // There are multiple columns for
-     * this SensorType (e.g. xCO2 is // for // underway marine pCO2 and underway
-     * atmospheric pCO2, so where // the // value goes is determined by the
-     * measurement's Run Type if (null == measurement) { // There is no
-     * measurement, so we leave the column blank useValueInThisColumn = false;
-     *
-     * } else {
-     *
-     * // If this column is for the Run Type of the measurement, we // populate
-     * it. Otherwise we leave it blank - there'll be // another // column for
-     * the Run Type somewhere (or perhaps not, if it's a // non-measurement run
-     * type eg gas standard run) String runType = measurement
-     * .getRunType(Measurement.RUN_TYPE_DEFINES_VARIABLE);
-     *
-     * // Look through all the column headings defined for the run type // to
-     * see if it contains our current column. If it does, we add // the value.
-     * If not, it'll be blank. Set<ColumnHeading> runTypeColumns = instrument
-     * .getAllVariableColumnHeadings(runType);
-     *
-     * useValueInThisColumn = ColumnHeading
-     * .containsColumnWithCode(runTypeColumns, column.getCodeName()); } }
-     *
-     * result.append(exportOption.getSeparator()); addValueToOutput(result,
-     * exportOption, column.getId(), useValueInThisColumn ? value : null, true,
-     * true, data.getSensorValues()); } }
-     *
-     * // Data Reduction for all variables for (Variable variable :
-     * exportOption.getVariables()) { if
-     * (instrument.getVariables().contains(variable)) {
-     * List<CalculationParameter> params = DataReducerFactory
-     * .getCalculationParameters(variable,
-     * exportOption.includeCalculationColumns());
-     *
-     * for (CalculationParameter param : params) { if
-     * (allowedExportColumns.contains(param)) {
-     * result.append(exportOption.getSeparator());
-     *
-     * PlotPageTableValue value = data.getColumnValue(rowId, param.getId());
-     *
-     * // // If the data reduction is bad, store an empty value instead. // //
-     * Note that it's possible for a Measurement to be Good but the // data
-     * reduction for an individual Variable to be Bad. // if (null != value &&
-     * exportOption.skipBad() && dataset.getFlagScheme()
-     * .isBad(value.getQcFlag(data.getSensorValues()))) { value = null; }
-     *
-     * addValueToOutput(result, exportOption, param.getId(), value,
-     * param.isResult(), false, data.getSensorValues()); } } } }
-     *
-     * if (exportOption.includeRawSensors()) { List<PlotPageColumnHeading>
-     * sensorHeadings = data.getColumnHeadings()
-     * .get(ManualQCData.SENSORS_FIELD_GROUP);
-     *
-     * for (PlotPageColumnHeading heading : sensorHeadings) { if
-     * (allowedExportColumns.contains(heading)) {
-     * result.append(exportOption.getSeparator());
-     *
-     * PlotPageTableValue value = data.getColumnValue(rowId, heading.getId());
-     * addValueToOutput(result, exportOption, heading.getId(), value, true,
-     * false, data.getSensorValues()); } }
-     *
-     * List<PlotPageColumnHeading> diagnosticHeadings = data
-     * .getColumnHeadings().get(ManualQCData.DIAGNOSTICS_FIELD_GROUP);
-     *
-     * if (null != diagnosticHeadings) { for (PlotPageColumnHeading heading :
-     * diagnosticHeadings) { if (allowedExportColumns.contains(heading)) {
-     * result.append(exportOption.getSeparator());
-     *
-     * PlotPageTableValue value = data.getColumnValue(rowId, heading.getId());
-     * addValueToOutput(result, exportOption, heading.getId(), value, true,
-     * false, data.getSensorValues()); } } } }
-     *
-     * result.append('\n'); result.addRecord(); } }
-     */
     // Destroy the ExportData object so it cleans up its resources
     data.destroy();
 
@@ -276,13 +196,7 @@ public class ArgoExportBean extends ExportBean {
       addHeader(headers, exportOption, heading, allowedColumns);
     }
 
-    // Measurement Sensor Types - these are the calculated sensor values
-    // used as input for the data reducers
-    for (PlotPageColumnHeading measurementValueHeading : data
-      .getColumnHeadings().get(ManualQCData.MEASUREMENTVALUES_FIELD_GROUP)) {
-
-      addHeader(headers, exportOption, measurementValueHeading, allowedColumns);
-    }
+    // We don't export MeasurementValues
 
     // Headers for each variable
     for (Variable variable : exportOption.getVariables()) {

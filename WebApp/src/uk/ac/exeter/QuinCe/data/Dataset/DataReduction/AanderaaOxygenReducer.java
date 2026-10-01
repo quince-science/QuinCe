@@ -69,7 +69,7 @@ public class AanderaaOxygenReducer extends DataReducer {
 
       calculationParameters.add(
         new CalculationParameter(makeParameterId(0), "Adjusted Oxygen Fake",
-          "Adjusted Oxygen Fake", "O2FAKE", "fake", false));
+          "Adjusted Oxygen Fake", "O2FAKE", "fake", true));
     }
 
     return calculationParameters;

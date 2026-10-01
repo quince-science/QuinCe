@@ -4,6 +4,15 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfigurationException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 
+/**
+ * Fixed {@link ExportOption} configuration for Argo datasets.
+ *
+ * <p>
+ * These options provide the necessary information to inject QuinCe output back
+ * into Argo's netCDF-based data flow. An external Python script will take care
+ * of this step after export.
+ * </p>
+ */
 public class ArgoExportOption extends ExportOption {
 
   protected ArgoExportOption(DataSet dataset)
