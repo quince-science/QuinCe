@@ -272,8 +272,6 @@ public abstract class AssignmentsTree {
    *          The name of the {@link SensorType}.
    * @param parent
    *          The parent node to which the created node should be added.
-   * @throws SensorTypeNotFoundException
-   *           If the named {@link SensorType} does not exist.
    * @throws SensorAssignmentException
    *           If the corresponding {@link SensorAssignment} information cannot
    *           be retrieved.

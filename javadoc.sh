@@ -78,8 +78,8 @@ classPath="${classPath}:${jarsDir}/servlet-api.jar" # Copied from tomcat/libs
 
 # JUnit libraries
 classPath="${classPath}:${jarsDir}/flyway-spring5-test-5.2.4.jar"
-classPath="${classPath}:${jarsDir}/junit-jupiter-api-5.7.0.jar"
-classPath="${classPath}:${jarsDir}/junit-jupiter-params-5.7.0-all.jar"
+classPath="${classPath}:${jarsDir}/junit-jupiter-api-5.14.4.jar"
+classPath="${classPath}:${jarsDir}/junit-jupiter-params-5.14.4.jar"
 classPath="${classPath}:${jarsDir}/apiguardian-api-1.1.0.jar"
 classPath="${classPath}:${jarsDir}/mockito-core-5.13.0.jar"
 classPath="${classPath}:${jarsDir}/spring-context-5.2.0.RELEASE.jar"
@@ -94,7 +94,7 @@ javadoc -sourcepath "$sourcePath" -d "$output" \
         -link https://docs.oracle.com/en/java/javase/17/docs/api \
         -link https://javadoc.io/doc/org.primefaces/primefaces/13.0.0/ \
         -link https://javadoc.io/doc/org.apache.commons/commons-email/1.6.0 \
-        -link https://docs.junit.org/5.7.0/api/ \
+        -link https://docs.junit.org/5.14.4/api/ \
         -link https://docs.spring.io/spring-framework/docs/current/javadoc-api/ \
         -link https://www.javadoc.io/doc/org.mockito/mockito-core/5.13.0/ \
         -link https://javadoc.io/doc/org.apache.myfaces.core/myfaces-api/2.2.8

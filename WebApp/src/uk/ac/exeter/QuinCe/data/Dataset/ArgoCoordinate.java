@@ -9,7 +9,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
- * Coordinate for Argo measurements.
+ * {@link Coordinate} for Argo measurements.
  *
  * @see uk.ac.exeter.QuinCe.data.Instrument.Instrument#BASIS_ARGO
  */
@@ -26,7 +26,7 @@ public class ArgoCoordinate extends Coordinate {
   public static final char DIRECTION_DESCENDING = 'D';
 
   /**
-   * THe current float cycle number
+   * The current float cycle number.
    */
   private int cycleNumber;
 
@@ -65,7 +65,7 @@ public class ArgoCoordinate extends Coordinate {
   private double pres;
 
   /**
-   * The filename of the Argo profile file from which this coordinate was
+   * The filename of the Argo profile netCDF file from which this Coordinate was
    * retrieved.
    */
   private String sourceFile;
@@ -74,20 +74,30 @@ public class ArgoCoordinate extends Coordinate {
    * Construct a new ArgoCoordinate with all values.
    *
    * <p>
-   * Pass {@link DatabaseUtil#NO_DATABASE_RECORD} for a new Coordinate that is
+   * Pass {@link DatabaseUtils#NO_DATABASE_RECORD} for a new Coordinate that is
    * not yet in the database.
    * </p>
    *
    * @param id
+   *          The Coordinate's database ID.
    * @param datasetId
+   *          The ID of the {@link DataSet} to which this Coordinate belongs.
    * @param cycleNumber
+   *          The current float cycle number.
    * @param nProf
+   *          The profile number.
    * @param direction
+   *          The float's travel direction.
    * @param nLevel
+   *          The level number in the specified profile.
    * @param pres
+   *          The pressure.
    * @param sourceFile
+   *          The netCDF file from which the coordinate was extracted.
    * @param timestamp
+   *          The timestamp of the Coordinate.
    * @throws CoordinateException
+   *           If the provided Coordinate details are invalid.
    */
   public ArgoCoordinate(long id, long datasetId, int cycleNumber, int nProf,
     char direction, int nLevel, double pres, String sourceFile,
@@ -103,6 +113,29 @@ public class ArgoCoordinate extends Coordinate {
     this.sourceFile = sourceFile;
   }
 
+  /**
+   * Construct a new ArgoCoordinate that has not yet been stored in the
+   * database.
+   *
+   * @param datasetId
+   *          The ID of the {@link DataSet} to which this Coordinate belongs.
+   * @param cycleNumber
+   *          The current float cycle number.
+   * @param nProf
+   *          The profile number.
+   * @param direction
+   *          The float's travel direction.
+   * @param nLevel
+   *          The level number in the specified profile.
+   * @param pres
+   *          The pressure.
+   * @param sourceFile
+   *          The netCDF file from which the coordinate was extracted.
+   * @param timestamp
+   *          The timestamp of the Coordinate.
+   * @throws CoordinateException
+   *           If the provided Coordinate details are invalid.
+   */
   public ArgoCoordinate(long datasetId, int cycleNumber, int nProf,
     char direction, int nLevel, double pres, String sourceFile,
     LocalDateTime timestamp) throws CoordinateException {
@@ -247,6 +280,11 @@ public class ArgoCoordinate extends Coordinate {
       + StringUtils.formatNumber(pres);
   }
 
+  /**
+   * Create an {@link ArgoProfile} object based on this Coordinate.
+   *
+   * @return The new {@link ArgoProfile} object.
+   */
   public ArgoProfile toProfile() {
     return new ArgoProfile(this);
   }
