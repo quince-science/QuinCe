@@ -18,6 +18,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('in_file', help='SAMI output file')
 parser.add_argument('out_file', help='Destination file')
+parser.add_argument('-c', '--replace-commas', required=False, action='store_true', help='Convert decimal separators from commas to points')
 parser.add_argument('-y', '--year', required=False, default=current_year(), type=int, help='The year to add. Defaults to current year if not specified')
 
 args = parser.parse_args()
@@ -38,6 +39,9 @@ with open(args.in_file) as input:
 
         while len(in_line) > 0:
             if len(stripped) > 0:
+
+                if args.replace_commas:
+                    stripped = stripped.replace(',', '.')
                 
                 if lines_copied > 0:
                     date = float(stripped.split('\t')[0])
