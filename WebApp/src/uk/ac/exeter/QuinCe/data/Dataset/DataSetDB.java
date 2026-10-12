@@ -417,7 +417,7 @@ public class DataSetDB {
       stmt.setString(8, getDatasetPropertiesJson(dataSet));
       stmt.setLong(9, DateTimeUtils.dateToLong(LocalDateTime.now()));
 
-      if (dataSet.getMessageCount() > 0) {
+      if (dataSet.getErrorMessageCount() > 0) {
         String jsonString = dataSet.getErrorMessagesAsJSONString();
         stmt.setString(10, jsonString);
       } else {
